@@ -1,8 +1,11 @@
+using _116.Identity.Application.Shared.Errors.Messages;
+using _116.Identity.Application.Shared.Exceptions;
 using _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfile.V1;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Builders.Requests.Identity;
 using _116.Tests.Fixtures.Factories.Identity;
 
@@ -45,13 +48,6 @@ public class PublicUpdateOwnProfileEndpointV1Tests(PostgresFixture db) : BaseApi
         user.CountryDialCode.Should().Be(request.CountryDialCode);
     }
 
-    /// <summary>
-    /// Verifies that submitting a phone number another account already holds returns the
-    /// <c>PhoneNumberAlreadyExists</c> 409 raised by <c>PublicUpdateProfileAuthFactory</c>. The
-    /// username is left out of the request so the phone-uniqueness check is the only branch that
-    /// can fail, and the caller's own profile is left unchanged because the conflict is thrown
-    /// before the unit of work commits.
-    /// </summary>
     [Fact]
     public async Task PublicUpdateOwnProfile_WithPhoneNumberHeldByAnotherUser_ReturnsConflict()
     {
@@ -77,18 +73,19 @@ public class PublicUpdateOwnProfileEndpointV1Tests(PostgresFixture db) : BaseApi
 
         var response = await Client.PatchAsJsonAsync(Routes.Public.Me.Profile(), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict, $"Phone number '{fullPhoneNumber}' is already taken.");
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<ConflictErrorMessage>(
+                m => m.PhoneNumberAlreadyExists(fullPhoneNumber),
+                LocalizedMessage.EnglishCulture
+            )
+        );
 
         await using var verifyContext = CreateDbContext<IdentityDbContext>();
         UserEntity? caller = await verifyContext.Users.FindAsync(TestUser.VisitorId);
         caller!.FullPhoneNumber.Should().BeNull();
     }
 
-    /// <summary>
-    /// Verifies that an address whose local part is a single character is still masked in the
-    /// alert sent to the address that just lost the account. There is no leading character to
-    /// keep once the whole local part is the masked part, so the notice carries only the domain.
-    /// </summary>
     [Fact]
     public async Task PublicUpdateOwnProfile_ToASingleCharacterLocalPart_MasksTheWholeLocalPart()
     {
@@ -136,6 +133,9 @@ public class PublicUpdateOwnProfileEndpointV1Tests(PostgresFixture db) : BaseApi
 
         var response = await Client.PatchAsJsonAsync(Routes.Public.Me.Profile(), request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.Forbidden, HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<RefreshTokenExpiryException>(
+            HttpStatusCode.Forbidden,
+            Localized<AuthenticationErrorMessage>(m => m.InvalidRefreshToken())
+        );
     }
 }
