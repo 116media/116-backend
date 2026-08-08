@@ -77,10 +77,6 @@ public class PublicRecordLyricsViewDedupTests(PostgresFixture db) : BaseApiTest(
             .ToListAsync();
     }
 
-    /// <summary>
-    /// An authenticated viewer is deduplicated on their user id, so a repeat read inside the
-    /// window is recorded but not counted a second time.
-    /// </summary>
     [Fact]
     public async Task RecordLyricsView_AuthenticatedViewer_DedupesOnUserId()
     {
@@ -106,10 +102,6 @@ public class PublicRecordLyricsViewDedupTests(PostgresFixture db) : BaseApiTest(
         updated!.ViewCount.Should().Be(1);
     }
 
-    /// <summary>
-    /// An anonymous viewer with no device id falls back to the forwarded client IP as the
-    /// dedup key, so a repeat read from the same IP inside the window does not count twice.
-    /// </summary>
     [Fact]
     public async Task RecordLyricsView_AnonymousWithForwardedIp_DedupesOnIpAddress()
     {
@@ -135,10 +127,6 @@ public class PublicRecordLyricsViewDedupTests(PostgresFixture db) : BaseApiTest(
         updated!.ViewCount.Should().Be(1);
     }
 
-    /// <summary>
-    /// A long dwell time with a shallow scroll depth fails the read-time gate: the request
-    /// still succeeds and the raw event is kept for tuning, but the view never counts.
-    /// </summary>
     [Fact]
     public async Task RecordLyricsView_LongDwellButShallowScroll_IsNotCounted()
     {
