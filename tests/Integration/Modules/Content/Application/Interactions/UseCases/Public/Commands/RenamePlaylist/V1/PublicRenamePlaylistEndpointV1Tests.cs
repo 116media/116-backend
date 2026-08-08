@@ -1,6 +1,8 @@
 using _116.Content.Application.Interactions.UseCases.Public.Commands.RenamePlaylist.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -38,10 +40,14 @@ public class PublicRenamePlaylistEndpointV1Tests(PostgresFixture db) : BaseApiTe
     {
         Client.AuthenticateAsVisitor();
         PublicRenamePlaylistRequest request = new PublicRenamePlaylistRequestBuilder().Build();
+        var missingId = Guid.NewGuid();
 
-        var response = await Client.PutAsJsonAsync(Routes.Public.Playlists.ById(Guid.NewGuid()), request);
+        var response = await Client.PutAsJsonAsync(Routes.Public.Playlists.ById(missingId), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<PlaylistErrorMessage>(m => m.NotFound(missingId))
+        );
     }
 
     [Fact]
@@ -53,7 +59,10 @@ public class PublicRenamePlaylistEndpointV1Tests(PostgresFixture db) : BaseApiTe
 
         var response = await Client.PutAsJsonAsync(Routes.Public.Playlists.ById(playlist.Id), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<PlaylistErrorMessage>(m => m.NotOwner())
+        );
     }
 
     [Fact]
