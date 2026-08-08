@@ -20,10 +20,6 @@ public class PublicSignOutFromAllDevicesEndpointV1Tests(PostgresFixture db) : Ba
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    /// <summary>
-    /// Verifies that a Visitor signing out from all devices receives a success payload and that
-    /// every active session for the user is revoked in the database.
-    /// </summary>
     [Fact]
     public async Task SignOutFromAllDevices_AsVisitor_ReturnsOk()
     {
