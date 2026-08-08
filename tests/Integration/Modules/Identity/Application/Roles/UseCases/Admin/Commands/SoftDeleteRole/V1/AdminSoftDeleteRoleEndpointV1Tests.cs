@@ -1,6 +1,8 @@
 using _116.Identity.Application.Roles.UseCases.Admin.Commands.SoftDeleteRole.V1;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Identity;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.Roles.UseCases.Admin.Commands.SoftDeleteRole.V1;
@@ -44,9 +46,6 @@ public class AdminSoftDeleteRoleEndpointV1Tests(PostgresFixture db) : BaseApiTes
         (await IsRoleDeletedAsync(role.Id)).Should().BeTrue();
     }
 
-    /// <summary>
-    /// Verifies that soft-deleting a role that is already deleted returns a 409 Conflict.
-    /// </summary>
     [Fact]
     public async Task SoftDeleteRole_WhenAlreadyDeleted_ReturnsConflict()
     {
@@ -61,7 +60,10 @@ public class AdminSoftDeleteRoleEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Roles}/{role.Id}");
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<ConflictErrorMessage>(m => m.RoleAlreadyDeleted())
+        );
         (await IsRoleDeletedAsync(role.Id)).Should().BeTrue();
     }
 }
