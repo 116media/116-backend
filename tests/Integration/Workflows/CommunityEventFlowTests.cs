@@ -42,8 +42,6 @@ public class CommunityEventFlowTests(PostgresFixture db) : BaseApiTest(db)
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        // The rejection reaches the submitter through both channels, and the
-        // moderator's note is finally readable by its addressee.
         await using MailerDbContext mailerContext = CreateDbContext<MailerDbContext>();
         var outbox = await mailerContext
             .OutboxEmails.Where(o => o.RecipientAddress == TestUser.VisitorEmail)
@@ -205,8 +203,6 @@ public class CommunityEventFlowTests(PostgresFixture db) : BaseApiTest(db)
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        // The former log line is now a reviewable row; the profile itself
-        // stays untouched until the separate admin verification.
         await using ContentDbContext contentContext = CreateDbContext<ContentDbContext>();
         List<ArtistClaimRequestEntity> requests = await contentContext
             .ArtistClaimRequests.Where(r => r.ArtistId == artist.Id)
@@ -281,8 +277,6 @@ public class CommunityEventFlowTests(PostgresFixture db) : BaseApiTest(db)
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        // The parent author hears about the reply on both channels, with the
-        // excerpt riding the email body.
         await using MailerDbContext mailerContext = CreateDbContext<MailerDbContext>();
         var outbox = await mailerContext
             .OutboxEmails.Where(o => o.RecipientAddress == TestUser.AdminEmail)
