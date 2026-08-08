@@ -1,7 +1,9 @@
 using _116.Identity.Application.Roles.Constants;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Application.User.UseCases.Admin.Commands.RemoveRoleFromUser.V1;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Identity;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.User.UseCases.Admin.Commands.RemoveRoleFromUser.V1;
@@ -60,9 +62,6 @@ public class AdminRemoveRoleFromUserEndpointV1Tests(PostgresFixture db) : BaseAp
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
-    /// <summary>
-    /// Verifies that removing a role that is not assigned to the user returns a 400 Bad Request.
-    /// </summary>
     [Fact]
     public async Task RemoveRole_WhenNotAssigned_ReturnsBadRequest()
     {
@@ -77,6 +76,9 @@ public class AdminRemoveRoleFromUserEndpointV1Tests(PostgresFixture db) : BaseAp
 
         var response = await Client.DeleteAsync(UserRoleUrl(TestUser.AdminId, role.Id));
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<ValidationErrorMessage>(m => m.RoleNotAssignedToUser())
+        );
     }
 }
