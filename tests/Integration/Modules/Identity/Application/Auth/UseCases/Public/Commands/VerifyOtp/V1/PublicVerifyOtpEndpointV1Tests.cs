@@ -1,8 +1,14 @@
+using _116.Identity.Application.Auth.Exceptions;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.VerifyOtp.V1;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Builders.Requests.Identity;
 using _116.Tests.Fixtures.Factories.Identity;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.Auth.UseCases.Public.Commands.VerifyOtp.V1;
 
@@ -12,6 +18,9 @@ namespace _116.Integration.Tests.Modules.Identity.Application.Auth.UseCases.Publ
 [Collection("Database")]
 public class PublicVerifyOtpEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private static string ValidationDetail(string property, string message) =>
+        new ValidationException([new ValidationFailure(property, message)]).Message;
+
     [Fact]
     public async Task VerifyOtp_WithEmptyEmail_ReturnsValidationError()
     {
@@ -20,11 +29,14 @@ public class PublicVerifyOtpEndpointV1Tests(PostgresFixture db) : BaseApiTest(db
 
         var response = await Client.PostAsJsonAsync(Routes.Public.Auth.VerifyOtp(), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("Email", Localized<ValidationErrorMessage>(m => m.EmailRequired()))
+        );
     }
 
     [Fact]
-    public async Task VerifyOtp_WithInvalidOtp_ReturnsError()
+    public async Task VerifyOtp_WithNonExistentEmail_ReturnsNotFound()
     {
         Client.ClearAuthentication();
         var request = new PublicVerifyOtpRequestBuilder()
@@ -34,13 +46,12 @@ public class PublicVerifyOtpEndpointV1Tests(PostgresFixture db) : BaseApiTest(db
 
         var response = await Client.PostAsJsonAsync(Routes.Public.Auth.VerifyOtp(), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("User"))
+        );
     }
 
-    /// <summary>
-    /// Verifies that submitting a valid, unexpired OTP marks the account as verified and
-    /// consumes the OTP in the database.
-    /// </summary>
     [Fact]
     public async Task VerifyOtp_WithValidOtp_MarksUserVerifiedAndConsumesOtp()
     {
@@ -78,13 +89,6 @@ public class PublicVerifyOtpEndpointV1Tests(PostgresFixture db) : BaseApiTest(db
         consumedOtp.IsUsed.Should().BeTrue();
     }
 
-    /// <summary>
-    /// Verifies that a wrong code submitted while a usable OTP exists returns the
-    /// <c>InvalidOtpCode</c> 400 and burns one attempt. Seeding a valid, unexpired OTP whose
-    /// attempt count is below the maximum takes <c>OtpRepository.ValidateOtpAsync</c> past its
-    /// <c>NoValidOtpFound</c>, <c>MaxOtpAttemptsReached</c> and <c>OtpExpired</c> branches, so the
-    /// wrong-code branch is the only one that can fire.
-    /// </summary>
     [Fact]
     public async Task VerifyOtp_WithWrongCodeWhileAValidOtpExists_ReturnsBadRequestAndIncrementsAttemptCount()
     {
@@ -111,9 +115,9 @@ public class PublicVerifyOtpEndpointV1Tests(PostgresFixture db) : BaseApiTest(db
 
         var response = await Client.PostAsJsonAsync(Routes.Public.Auth.VerifyOtp(), request);
 
-        await response.ShouldBeProblem(
+        await response.ShouldBeProblem<BadRequestException>(
             HttpStatusCode.BadRequest,
-            "Invalid verification code. Please check and try again."
+            Localized<ValidationErrorMessage>(m => m.InvalidOtpCode(), LocalizedMessage.EnglishCulture)
         );
 
         await using var verifyContext = CreateDbContext<IdentityDbContext>();
@@ -125,12 +129,6 @@ public class PublicVerifyOtpEndpointV1Tests(PostgresFixture db) : BaseApiTest(db
         persistedUser.IsVerified.Should().BeFalse();
     }
 
-    /// <summary>
-    /// Verifies that an already-verified account submitting an email-verification OTP returns the
-    /// <c>AccountAlreadyVerified</c> 409 that <c>PublicVerifyOtpHandler</c> raises before it ever
-    /// consults the OTP store. A usable OTP is seeded so the conflict cannot be mistaken for a
-    /// missing or invalid code, and the OTP is left unconsumed.
-    /// </summary>
     [Fact]
     public async Task VerifyOtp_WhenAccountAlreadyVerified_ReturnsConflictAndLeavesOtpUnconsumed()
     {
@@ -158,7 +156,10 @@ public class PublicVerifyOtpEndpointV1Tests(PostgresFixture db) : BaseApiTest(db
 
         var response = await Client.PostAsJsonAsync(Routes.Public.Auth.VerifyOtp(), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict, "Account is already verified.");
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<ValidationErrorMessage>(m => m.AccountAlreadyVerified(), LocalizedMessage.EnglishCulture)
+        );
 
         await using var verifyContext = CreateDbContext<IdentityDbContext>();
         var persistedOtp = await verifyContext.Otps.FirstAsync(o => o.Id == otp.Id);
@@ -166,10 +167,6 @@ public class PublicVerifyOtpEndpointV1Tests(PostgresFixture db) : BaseApiTest(db
         persistedOtp.AttemptCount.Should().Be(0);
     }
 
-    /// <summary>
-    /// Verifies that submitting an expired OTP returns 410 Gone.
-    /// Covers the OtpExpirationExceptionHandler path.
-    /// </summary>
     [Fact]
     public async Task VerifyOtp_WithExpiredOtp_ReturnsGone()
     {
@@ -194,13 +191,12 @@ public class PublicVerifyOtpEndpointV1Tests(PostgresFixture db) : BaseApiTest(db
 
         var response = await Client.PostAsJsonAsync(Routes.Public.Auth.VerifyOtp(), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.Gone);
+        await response.ShouldBeProblem<OtpExpirationException>(
+            HttpStatusCode.Gone,
+            Localized<ValidationErrorMessage>(m => m.OtpExpired())
+        );
     }
 
-    /// <summary>
-    /// Verifies that submitting an OTP after maximum attempts have been reached returns 429 TooManyRequests.
-    /// Covers the OtpAttemptsLimitExceptionHandler path.
-    /// </summary>
     [Fact]
     public async Task VerifyOtp_WithMaxAttemptsReached_ReturnsTooManyRequests()
     {
@@ -225,6 +221,9 @@ public class PublicVerifyOtpEndpointV1Tests(PostgresFixture db) : BaseApiTest(db
 
         var response = await Client.PostAsJsonAsync(Routes.Public.Auth.VerifyOtp(), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.TooManyRequests);
+        await response.ShouldBeProblem<OtpAttemptsLimitException>(
+            HttpStatusCode.TooManyRequests,
+            Localized<ValidationErrorMessage>(m => m.MaxOtpAttemptsReached())
+        );
     }
 }
