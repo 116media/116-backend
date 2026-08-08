@@ -24,10 +24,6 @@ public class AdminSignOutFromAllDevicesEndpointV1Tests(PostgresFixture db) : Bas
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    /// <summary>
-    /// Verifies that a SuperAdmin signing out from all devices receives a success payload and
-    /// that every session belonging to the user is revoked in the database.
-    /// </summary>
     [Fact]
     public async Task SignOutFromAllDevices_AsSuperAdmin_ReturnsOk()
     {
