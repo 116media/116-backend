@@ -1,8 +1,12 @@
 using _116.Content.Application.Lookup.UseCases.Admin.Commands.CreatePricingTier.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Factories.Content;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Lookup.UseCases.Admin.Commands.CreatePricingTier.V1;
 
@@ -12,6 +16,9 @@ namespace _116.Integration.Tests.Modules.Content.Application.Lookup.UseCases.Adm
 [Collection("Database")]
 public class AdminCreatePricingTierEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private static string ValidationDetail(string property, string message) =>
+        new ValidationException([new ValidationFailure(property, message)]).Message;
+
     [Fact]
     public async Task CreatePricingTier_WithNoAuth_ReturnsUnauthorized()
     {
@@ -56,10 +63,6 @@ public class AdminCreatePricingTierEndpointV1Tests(PostgresFixture db) : BaseApi
         persisted!.Name.Should().Be(request.Name);
     }
 
-    /// <summary>
-    /// Verifies that creating a pricing tier with a name that already exists
-    /// returns a 409 Conflict response.
-    /// </summary>
     [Fact]
     public async Task CreatePricingTier_WithDuplicateName_ReturnsConflict()
     {
@@ -75,13 +78,12 @@ public class AdminCreatePricingTierEndpointV1Tests(PostgresFixture db) : BaseApi
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.PricingTiers, request);
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<PricingTierErrorMessage>(m => m.AlreadyExists(request.Name))
+        );
     }
 
-    /// <summary>
-    /// Verifies that creating a pricing tier with an empty name returns a
-    /// 400 Bad Request response from the validator.
-    /// </summary>
     [Fact]
     public async Task CreatePricingTier_WithEmptyName_ReturnsBadRequest()
     {
@@ -90,6 +92,9 @@ public class AdminCreatePricingTierEndpointV1Tests(PostgresFixture db) : BaseApi
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.PricingTiers, request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("Name", Localized<PricingTierErrorMessage>(m => m.NameRequired()))
+        );
     }
 }
