@@ -1,9 +1,15 @@
 using _116.Content.Application.Lookup.UseCases.Admin.Commands.UpdatePromotionLevel.V1;
+using _116.Content.Application.Shared.Errors.Messages;
+using _116.Content.Domain.Constants;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Lookup.UseCases.Admin.Commands.UpdatePromotionLevel.V1;
 
@@ -13,6 +19,9 @@ namespace _116.Integration.Tests.Modules.Content.Application.Lookup.UseCases.Adm
 [Collection("Database")]
 public class AdminUpdatePromotionLevelEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private static string ValidationDetail(string property, string message) =>
+        new ValidationException([new ValidationFailure(property, message)]).Message;
+
     [Fact]
     public async Task UpdatePromotionLevel_WithNoAuth_ReturnsUnauthorized()
     {
@@ -32,7 +41,10 @@ public class AdminUpdatePromotionLevelEndpointV1Tests(PostgresFixture db) : Base
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.PromotionLevels}/{Guid.NewGuid()}", request);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("PromotionLevel"))
+        );
     }
 
     [Fact]
@@ -66,29 +78,26 @@ public class AdminUpdatePromotionLevelEndpointV1Tests(PostgresFixture db) : Base
         persisted.PriceUsd.Should().Be(request.PriceUsd);
     }
 
-    /// <summary>
-    /// Verifies that updating a promotion level with a name exceeding the maximum allowed length
-    /// (40 characters) returns a 400 Bad Request response, exercising the
-    /// <c>isRequired=false</c> branch of <c>ValidPromotionLevelName</c> in PromotionLevelValidation.
-    /// </summary>
     [Fact]
     public async Task UpdatePromotionLevel_WithNameTooLong_ReturnsBadRequest()
     {
         Client.AuthenticateAsSuperAdmin();
         Guid id = Guid.NewGuid();
         var request = new AdminUpdatePromotionLevelRequestBuilder()
-            .WithName(new string('L', TestConstants.Content.PromotionLevel.NameMaxLength + 1))
+            .WithName(new string('L', TestConstants.PromotionLevel.NameMaxLength + 1))
             .Build();
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.PromotionLevels}/{id}", request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail(
+                "Name",
+                Localized<PromotionLevelErrorMessage>(m => m.NameTooLong(ContentConstants.MaxPromotionLevelNameLength))
+            )
+        );
     }
 
-    /// <summary>
-    /// Verifies that updating a promotion level with a negative price returns a 400 Bad Request
-    /// response, exercising the <c>ValidPriceUsd</c> rule in PromotionLevelValidation.
-    /// </summary>
     [Fact]
     public async Task UpdatePromotionLevel_WithNegativePrice_ReturnsBadRequest()
     {
@@ -98,13 +107,12 @@ public class AdminUpdatePromotionLevelEndpointV1Tests(PostgresFixture db) : Base
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.PromotionLevels}/{id}", request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("PriceUsd", Localized<PromotionLevelErrorMessage>(m => m.PriceMustBeNonNegative()))
+        );
     }
 
-    /// <summary>
-    /// Verifies that updating a promotion level with a zero duration returns a 400 Bad Request
-    /// response, exercising the <c>ValidDurationDays</c> rule in PromotionLevelValidation.
-    /// </summary>
     [Fact]
     public async Task UpdatePromotionLevel_WithZeroDuration_ReturnsBadRequest()
     {
@@ -114,14 +122,12 @@ public class AdminUpdatePromotionLevelEndpointV1Tests(PostgresFixture db) : Base
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.PromotionLevels}/{id}", request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("DurationDays", Localized<PromotionLevelErrorMessage>(m => m.DurationMustBePositive()))
+        );
     }
 
-    /// <summary>
-    /// Verifies that updating a promotion level with an invalid spot priority (outside 1-3)
-    /// returns a 400 Bad Request response, exercising the <c>ValidSpotPriority</c> rule
-    /// in PromotionLevelValidation.
-    /// </summary>
     [Fact]
     public async Task UpdatePromotionLevel_WithInvalidSpotPriority_ReturnsBadRequest()
     {
@@ -131,6 +137,9 @@ public class AdminUpdatePromotionLevelEndpointV1Tests(PostgresFixture db) : Base
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.PromotionLevels}/{id}", request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("SpotPriority", Localized<PromotionLevelErrorMessage>(m => m.InvalidSpotPriority()))
+        );
     }
 }
