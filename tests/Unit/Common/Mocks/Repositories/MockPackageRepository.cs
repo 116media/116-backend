@@ -49,6 +49,23 @@ public static class MockPackageRepository
         return mock;
     }
 
+    /// <summary>
+    /// Sets up the package-scoped slot lookup to return the slot only for the given package id.
+    /// Any other package id falls through to the default null, so a cross-package lookup is
+    /// distinguishable from a matching one.
+    /// </summary>
+    public static Mock<IPackageRepository> SetupGetSlotByIdInPackage(
+        this Mock<IPackageRepository> mock,
+        Guid slotId,
+        Guid packageId,
+        PackageSlotEntity? slot
+    )
+    {
+        mock.Setup(x => x.GetSlotByIdAsync(slotId, It.Is<Guid>(id => id == packageId), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(slot);
+        return mock;
+    }
+
     public static Mock<IPackageRepository> SetupGetAllAsync(
         this Mock<IPackageRepository> mock,
         List<PackageEntity> list,
@@ -84,6 +101,8 @@ public static class MockPackageRepository
         mock.Setup(x => x.AddSlotAsync(It.IsAny<PackageSlotEntity>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
         mock.Setup(x => x.GetSlotByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((PackageSlotEntity?)null);
+        mock.Setup(x => x.GetSlotByIdAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((PackageSlotEntity?)null);
         mock.Setup(x =>
                 x.GetAllAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool?>(), It.IsAny<CancellationToken>())
