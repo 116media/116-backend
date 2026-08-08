@@ -28,10 +28,6 @@ public class ExpiredOtpCleanupJobTests(PostgresFixture db) : BaseApiTest(db)
     private ExpiredOtpCleanupJob CreateJob() =>
         new(Api.Services.GetRequiredService<IServiceScopeFactory>(), NullLogger<ExpiredOtpCleanupJob>.Instance);
 
-    /// <summary>
-    /// Verifies that <c>IdentityModule</c> actually schedules the job, so the purge behaviour
-    /// proven below runs in production rather than only when a test invokes it.
-    /// </summary>
     [Fact]
     public async Task IdentityModule_SchedulesTheJobWithTheRunningScheduler()
     {
@@ -46,13 +42,6 @@ public class ExpiredOtpCleanupJobTests(PostgresFixture db) : BaseApiTest(db)
         exists.Should().BeTrue();
     }
 
-    /// <summary>
-    /// Verifies the whole purge in one run: every OTP past its expiry is deleted regardless of
-    /// purpose and regardless of whether it was ever consumed, while OTPs still inside their
-    /// expiry window survive, consumed or not. This is the repository's expired-row selection —
-    /// <c>OtpIsExpiredSpecification</c> — reaching the database through the job's commit, which
-    /// is what turns the staged removal into deleted rows.
-    /// </summary>
     [Fact]
     public async Task Execute_PurgesEveryExpiredOtpAndLeavesTheLiveOnesAlone()
     {
@@ -86,11 +75,6 @@ public class ExpiredOtpCleanupJobTests(PostgresFixture db) : BaseApiTest(db)
         (await identityCtx.Otps.FindAsync(liveUsed.Id)).Should().NotBeNull();
     }
 
-    /// <summary>
-    /// Verifies that a run with nothing to purge is a no-op: an OTP inside its expiry window
-    /// survives, so expiry is what selects rows rather than the consumed flag or the mere
-    /// presence of the row.
-    /// </summary>
     [Fact]
     public async Task Execute_WithNoExpiredOtp_RemovesNothing()
     {
