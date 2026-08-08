@@ -1,6 +1,9 @@
 using _116.Content.Application.Interactions.UseCases.Public.Commands.LikeShortVideo.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Interactions.UseCases.Public.Commands.LikeShortVideo.V1;
@@ -38,12 +41,12 @@ public class PublicLikeShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiTe
 
         var response = await Client.PostAsync(Routes.Public.Shorts.Likes(Guid.NewGuid()), null);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("ShortVideo"))
+        );
     }
 
-    /// <summary>
-    /// Verifies that liking a short video creates the like row and returns success.
-    /// </summary>
     [Fact]
     public async Task LikeShortVideo_AsVisitor_WithValidShort_ReturnsOk()
     {
@@ -66,9 +69,6 @@ public class PublicLikeShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiTe
             .BeTrue();
     }
 
-    /// <summary>
-    /// Verifies that liking a short video that is already liked returns 409 Conflict.
-    /// </summary>
     [Fact]
     public async Task LikeShortVideo_WhenAlreadyLiked_ReturnsConflict()
     {
@@ -79,7 +79,10 @@ public class PublicLikeShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiTe
 
         var response = await Client.PostAsync(Routes.Public.Shorts.Likes(shortVideo.Id), null);
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<ShortVideoInteractionErrorMessage>(m => m.AlreadyLiked())
+        );
 
         await using var verifyDb = CreateDbContext<ContentDbContext>();
         (
