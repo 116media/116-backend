@@ -34,10 +34,6 @@ public class PublicSubscribeNewsletterEndpointV1Tests(PostgresFixture db) : Base
         outbox[0].HtmlBody.Should().Contain(subscriber.ConfirmationToken);
     }
 
-    /// <summary>
-    /// A duplicate subscribe answers exactly like a fresh one — the response
-    /// never reveals whether an address is already subscribed.
-    /// </summary>
     [Fact]
     public async Task Subscribe_AlreadySubscribedAddress_IsNeutralAndSendsNothing()
     {
