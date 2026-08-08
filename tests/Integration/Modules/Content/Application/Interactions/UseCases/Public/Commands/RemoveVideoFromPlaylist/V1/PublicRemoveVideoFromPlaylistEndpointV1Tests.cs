@@ -1,6 +1,8 @@
 using _116.Content.Application.Interactions.UseCases.Public.Commands.RemoveVideoFromPlaylist.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Interactions.UseCases.Public.Commands.RemoveVideoFromPlaylist.V1;
@@ -50,10 +52,14 @@ public class PublicRemoveVideoFromPlaylistEndpointV1Tests(PostgresFixture db) : 
     public async Task RemoveVideoFromPlaylist_AsVisitor_NonExistent_ReturnsNotFound()
     {
         Client.AuthenticateAsVisitor();
+        var missingPlaylistId = Guid.NewGuid();
 
-        var response = await Client.DeleteAsync(Routes.Public.Playlists.Video(Guid.NewGuid(), Guid.NewGuid()));
+        var response = await Client.DeleteAsync(Routes.Public.Playlists.Video(missingPlaylistId, Guid.NewGuid()));
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<PlaylistErrorMessage>(m => m.NotFound(missingPlaylistId))
+        );
     }
 
     [Fact]
@@ -65,7 +71,10 @@ public class PublicRemoveVideoFromPlaylistEndpointV1Tests(PostgresFixture db) : 
 
         var response = await Client.DeleteAsync(Routes.Public.Playlists.Video(playlist.Id, video.Id));
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<PlaylistErrorMessage>(m => m.NotOwner())
+        );
     }
 
     [Fact]
