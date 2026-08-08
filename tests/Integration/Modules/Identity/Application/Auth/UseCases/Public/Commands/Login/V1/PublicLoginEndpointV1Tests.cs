@@ -1,10 +1,16 @@
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.Login.V1;
 using _116.Identity.Application.Shared.Errors;
+using _116.Identity.Application.Shared.Errors.Messages;
+using _116.Identity.Application.Shared.Exceptions;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Builders.Requests.Identity;
 using _116.Tests.Fixtures.Factories.Identity;
 using _116.Tests.Fixtures.Helpers;
+using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.Auth.UseCases.Public.Commands.Login.V1;
@@ -15,6 +21,9 @@ namespace _116.Integration.Tests.Modules.Identity.Application.Auth.UseCases.Publ
 [Collection("Database")]
 public class PublicLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private static string ValidationDetail(params (string Property, string Message)[] failures) =>
+        new ValidationException(failures.Select(f => new ValidationFailure(f.Property, f.Message))).Message;
+
     [Fact]
     public async Task Login_WithEmptyCredentials_ReturnsValidationError()
     {
@@ -23,7 +32,13 @@ public class PublicLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.PostAsJsonAsync(Routes.Public.Auth.Login(), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail(
+                ("Credentials", Localized<ValidationErrorMessage>(m => m.EmailOrUsernameRequired())),
+                ("Password", Localized<ValidationErrorMessage>(m => m.PasswordRequired()))
+            )
+        );
     }
 
     [Fact]
@@ -37,13 +52,12 @@ public class PublicLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.PostAsJsonAsync(Routes.Public.Auth.Login(), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("User"))
+        );
     }
 
-    /// <summary>
-    /// Verifies that a verified, active account can log in successfully and receives a
-    /// fully-populated mobile token response carrying the authenticated user's details.
-    /// </summary>
     [Fact]
     public async Task Login_WithValidCredentials_ReturnsTokensAndUser()
     {
@@ -91,10 +105,6 @@ public class PublicLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
         body.User.IsVerified.Should().BeTrue();
     }
 
-    /// <summary>
-    /// Verifies that logging in with an inactive (but verified) account returns 423 Locked.
-    /// Covers the AccountInactiveExceptionHandler and UserErrors.AccountInactive() path.
-    /// </summary>
     [Fact]
     public async Task Login_WithInactiveAccount_ReturnsLocked()
     {
@@ -129,13 +139,12 @@ public class PublicLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.PostAsJsonAsync(Routes.Public.Auth.Login(), loginRequest);
 
-        await response.ShouldBeProblem(HttpStatusCode.Locked);
+        await response.ShouldBeProblem<AccountInactiveException>(
+            HttpStatusCode.Locked,
+            Localized<AuthorizationErrorMessage>(m => m.AccountInactive(email))
+        );
     }
 
-    /// <summary>
-    /// Verifies that logging in without the X-Device-Id header returns a 400 Bad Request,
-    /// covering the SessionErrors.DeviceIdRequired() error path in SessionFactory.
-    /// </summary>
     [Fact]
     public async Task Login_WithoutDeviceIdHeader_ReturnsBadRequest()
     {
@@ -172,13 +181,12 @@ public class PublicLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.PostAsJsonAsync(Routes.Public.Auth.Login(), loginRequest);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<AuthenticationErrorMessage>(m => m.DeviceIdRequired())
+        );
     }
 
-    /// <summary>
-    /// Verifies that logging in with an unverified (but active) account returns 403 Forbidden.
-    /// Covers the AccountNotVerifiedExceptionHandler and UserErrors.AccountNotVerified() path.
-    /// </summary>
     [Fact]
     public async Task Login_WithUnverifiedAccount_ReturnsForbidden()
     {
@@ -212,15 +220,12 @@ public class PublicLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.PostAsJsonAsync(Routes.Public.Auth.Login(), loginRequest);
 
-        await response.ShouldBeProblem(HttpStatusCode.Forbidden);
+        await response.ShouldBeProblem<AccountNotVerifiedException>(
+            HttpStatusCode.Forbidden,
+            Localized<AuthorizationErrorMessage>(m => m.AccountNotVerified(email))
+        );
     }
 
-    /// <summary>
-    /// Verifies that a known account rejected on its password reaches
-    /// <c>PublicLoginAuthFactory</c>'s <c>InvalidCredentials</c> branch: the credentials lookup
-    /// succeeds, <c>IPasswordService.Verify</c> fails, and the response is a 401 carrying the
-    /// neutral credential message — distinct from the 404 a nonexistent account produces.
-    /// </summary>
     [Fact]
     public async Task Login_WithKnownEmailAndWrongPassword_ReturnsInvalidCredentialsUnauthorized()
     {
@@ -246,17 +251,15 @@ public class PublicLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.PostAsJsonAsync(Routes.Public.Auth.Login(), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.Unauthorized, "Invalid email or password.");
+        await response.ShouldBeProblem<AuthenticationException>(
+            HttpStatusCode.Unauthorized,
+            Localized<AuthenticationErrorMessage>(m => m.InvalidCredentials(), LocalizedMessage.EnglishCulture)
+        );
 
         ProblemDetails problem = await response.ReadAsAsync<ProblemDetails>();
         problem.Detail.Should().NotContain("user account");
     }
 
-    /// <summary>
-    /// Reproduces the reported bug: a non-existent login (Accept-Language: en) must
-    /// return a friendly English message that never leaks the raw entity class name,
-    /// the "credentials" key, or the searched email.
-    /// </summary>
     [Fact]
     public async Task Login_WithNonExistentCredentials_ReturnsFriendlyDetailWithoutLeakingEmail()
     {
@@ -275,7 +278,10 @@ public class PublicLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.SendAsync(httpRequest);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("User"), LocalizedMessage.EnglishCulture)
+        );
 
         ProblemDetails problem = await response.ReadAsAsync<ProblemDetails>();
         problem.Detail.Should().Contain("user account");
@@ -284,11 +290,6 @@ public class PublicLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
         problem.Detail.Should().NotContain("User with");
     }
 
-    /// <summary>
-    /// Verifies the localization fix end-to-end: with Accept-Language: fr the same
-    /// not-found returns the friendly French message — proving request localization now
-    /// wraps the exception handler — still without leaking the searched email.
-    /// </summary>
     [Fact]
     public async Task Login_WithNonExistentCredentials_InFrench_ReturnsLocalizedFriendlyDetail()
     {
@@ -307,7 +308,10 @@ public class PublicLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.SendAsync(httpRequest);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("User"))
+        );
 
         ProblemDetails problem = await response.ReadAsAsync<ProblemDetails>();
         problem.Detail.Should().Contain("Impossible de trouver");
