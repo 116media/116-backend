@@ -5,6 +5,7 @@ using _116.Content.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Services;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
@@ -37,7 +38,8 @@ public class AdminForceUnpromoteLyricsHandlerTests
         _handler = new AdminForceUnpromoteLyricsHandler(
             _lyricsRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            currentActor
+            currentActor,
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 
@@ -82,10 +84,6 @@ public class AdminForceUnpromoteLyricsHandlerTests
         await act.Should().ThrowAsync<NotFoundException>();
     }
 
-    /// <summary>
-    /// Exercises the <c>!IsPromoted</c> guard in <c>LyricsEntity.ForceUnpromote</c> — an
-    /// unpromoted lyrics page cannot be force-unpromoted again.
-    /// </summary>
     [Fact]
     public async Task Handle_WhenLyricsNotCurrentlyPromoted_ShouldThrowBadRequestException()
     {
