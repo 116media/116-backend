@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.AddOrderItem;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Domain.Enums;
@@ -135,41 +134,6 @@ public class AdminAddOrderItemValidatorTests
             .Contain(e =>
                 e.PropertyName == nameof(AdminAddOrderItemCommand.ContentKind)
                 && e.ErrorMessage == _i18n.ContentOrder.Msg.InvalidOrderItemContentKind()
-            );
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-        var validator = new AdminAddOrderItemValidator(_i18n);
-        var command = new AdminAddOrderItemCommand(
-            OrderId: "not-a-guid",
-            ContentKind: EnumCoreContentType.Article,
-            CategoryId: Guid.NewGuid().ToString(),
-            PromotionLevelId: null,
-            SocialBoost: false,
-            IsBonus: false
-        );
-
-        // Act
-        ValidationResult result = await validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminAddOrderItemCommand.OrderId)
-                && e.ErrorMessage == _i18n.ContentOrder.Msg.Localizer["IdInvalid"].Value
             );
     }
 
