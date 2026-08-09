@@ -49,8 +49,8 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
         // Arrange
         ContentTypeEntity contentType = ContentTypeFactory.Create();
         CategoryEntity category = CategoryFactory.Create(contentType.Id);
-        string newName = TestConstants.Content.Category.AnotherValidName;
-        string newSlug = TestConstants.Content.Category.AnotherValidSlug;
+        string newName = TestConstants.Category.AnotherValidName;
+        string newSlug = TestConstants.Category.AnotherValidSlug;
 
         var command = new AdminUpdateCategoryCommand(
             Id: category.Id.ToString(),
@@ -84,18 +84,14 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         ContentTypeEntity contentType = ContentTypeFactory.Create();
-        string slug = TestConstants.Content.Category.ValidSlug;
-        CategoryEntity category = CategoryFactory.Create(
-            contentType.Id,
-            TestConstants.Content.Category.ValidName,
-            slug
-        );
+        string slug = TestConstants.Category.ValidSlug;
+        CategoryEntity category = CategoryFactory.Create(contentType.Id, TestConstants.Category.ValidName, slug);
 
         var command = new AdminUpdateCategoryCommand(
             Id: category.Id.ToString(),
             Name: "Updated Name",
             Slug: slug,
-            Description: TestConstants.Content.Category.ValidDescription,
+            Description: TestConstants.Category.ValidDescription,
             IsGossip: false,
             IsExclusive: false,
             IsDefaultForLyrics: false
@@ -126,16 +122,16 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
 
         var command = new AdminUpdateCategoryCommand(
             Id: category.Id.ToString(),
-            Name: TestConstants.Content.Category.ValidName,
-            Slug: TestConstants.Content.Category.ValidSlug,
-            Description: TestConstants.Content.Category.ValidDescription,
+            Name: TestConstants.Category.ValidName,
+            Slug: TestConstants.Category.ValidSlug,
+            Description: TestConstants.Category.ValidDescription,
             IsGossip: false,
             IsExclusive: true,
             IsDefaultForLyrics: false
         );
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-        _categoryRepositoryMock.SetupGetBySlug(TestConstants.Content.Category.ValidSlug, null);
+        _categoryRepositoryMock.SetupGetBySlug(TestConstants.Category.ValidSlug, null);
         _categoryRepositoryMock.SetupGetExclusiveCategory(currentExclusive);
 
         // Act
@@ -155,16 +151,16 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
 
         var command = new AdminUpdateCategoryCommand(
             Id: category.Id.ToString(),
-            Name: TestConstants.Content.Category.ValidName,
-            Slug: TestConstants.Content.Category.ValidSlug,
-            Description: TestConstants.Content.Category.ValidDescription,
+            Name: TestConstants.Category.ValidName,
+            Slug: TestConstants.Category.ValidSlug,
+            Description: TestConstants.Category.ValidDescription,
             IsGossip: false,
             IsExclusive: true,
             IsDefaultForLyrics: false
         );
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-        _categoryRepositoryMock.SetupGetBySlug(TestConstants.Content.Category.ValidSlug, null);
+        _categoryRepositoryMock.SetupGetBySlug(TestConstants.Category.ValidSlug, null);
         _categoryRepositoryMock.SetupGetExclusiveCategory(category);
 
         // Act
@@ -183,16 +179,16 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
 
         var command = new AdminUpdateCategoryCommand(
             Id: category.Id.ToString(),
-            Name: TestConstants.Content.Category.ValidName,
-            Slug: TestConstants.Content.Category.ValidSlug,
-            Description: TestConstants.Content.Category.ValidDescription,
+            Name: TestConstants.Category.ValidName,
+            Slug: TestConstants.Category.ValidSlug,
+            Description: TestConstants.Category.ValidDescription,
             IsGossip: false,
             IsExclusive: false,
             IsDefaultForLyrics: false
         );
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-        _categoryRepositoryMock.SetupGetBySlug(TestConstants.Content.Category.ValidSlug, null);
+        _categoryRepositoryMock.SetupGetBySlug(TestConstants.Category.ValidSlug, null);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
@@ -201,11 +197,6 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
         _categoryRepositoryMock.Verify(x => x.GetExclusiveCategoryAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
 
-    /// <summary>
-    /// Regression guard: an unrelated edit must not clear the lyrics default. Before
-    /// <c>isDefaultForLyrics</c> became a required parameter it defaulted to <c>false</c>, so
-    /// renaming the holder silently unset the flag and broke community lyrics submission.
-    /// </summary>
     [Fact]
     public async Task Handle_RenamingTheLyricsDefault_ShouldKeepTheFlagSet()
     {
@@ -216,16 +207,16 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
 
         var command = new AdminUpdateCategoryCommand(
             Id: category.Id.ToString(),
-            Name: TestConstants.Content.Category.AnotherValidName,
-            Slug: TestConstants.Content.Category.ValidSlug,
-            Description: TestConstants.Content.Category.ValidDescription,
+            Name: TestConstants.Category.AnotherValidName,
+            Slug: TestConstants.Category.ValidSlug,
+            Description: TestConstants.Category.ValidDescription,
             IsGossip: false,
             IsExclusive: false,
             IsDefaultForLyrics: true
         );
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-        _categoryRepositoryMock.SetupGetBySlug(TestConstants.Content.Category.ValidSlug, null);
+        _categoryRepositoryMock.SetupGetBySlug(TestConstants.Category.ValidSlug, null);
         _categoryRepositoryMock.SetupGetDefaultLyricsCategory(category);
 
         // Act
@@ -233,7 +224,7 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
 
         // Assert
         category.IsDefaultForLyrics.Should().BeTrue();
-        category.Name.Should().Be(TestConstants.Content.Category.AnotherValidName);
+        category.Name.Should().Be(TestConstants.Category.AnotherValidName);
     }
 
     [Fact]
@@ -247,16 +238,16 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
 
         var command = new AdminUpdateCategoryCommand(
             Id: category.Id.ToString(),
-            Name: TestConstants.Content.Category.ValidName,
-            Slug: TestConstants.Content.Category.ValidSlug,
-            Description: TestConstants.Content.Category.ValidDescription,
+            Name: TestConstants.Category.ValidName,
+            Slug: TestConstants.Category.ValidSlug,
+            Description: TestConstants.Category.ValidDescription,
             IsGossip: false,
             IsExclusive: false,
             IsDefaultForLyrics: true
         );
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-        _categoryRepositoryMock.SetupGetBySlug(TestConstants.Content.Category.ValidSlug, null);
+        _categoryRepositoryMock.SetupGetBySlug(TestConstants.Category.ValidSlug, null);
         _categoryRepositoryMock.SetupGetDefaultLyricsCategory(currentDefault);
 
         // Act
@@ -276,16 +267,16 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
 
         var command = new AdminUpdateCategoryCommand(
             Id: category.Id.ToString(),
-            Name: TestConstants.Content.Category.ValidName,
-            Slug: TestConstants.Content.Category.ValidSlug,
-            Description: TestConstants.Content.Category.ValidDescription,
+            Name: TestConstants.Category.ValidName,
+            Slug: TestConstants.Category.ValidSlug,
+            Description: TestConstants.Category.ValidDescription,
             IsGossip: false,
             IsExclusive: false,
             IsDefaultForLyrics: false
         );
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-        _categoryRepositoryMock.SetupGetBySlug(TestConstants.Content.Category.ValidSlug, null);
+        _categoryRepositoryMock.SetupGetBySlug(TestConstants.Category.ValidSlug, null);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
@@ -306,16 +297,16 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
 
         var command = new AdminUpdateCategoryCommand(
             Id: category.Id.ToString(),
-            Name: TestConstants.Content.Category.ValidName,
-            Slug: TestConstants.Content.Category.ValidSlug,
-            Description: TestConstants.Content.Category.ValidDescription,
+            Name: TestConstants.Category.ValidName,
+            Slug: TestConstants.Category.ValidSlug,
+            Description: TestConstants.Category.ValidDescription,
             IsGossip: false,
             IsExclusive: false,
             IsDefaultForLyrics: true
         );
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-        _categoryRepositoryMock.SetupGetBySlug(TestConstants.Content.Category.ValidSlug, null);
+        _categoryRepositoryMock.SetupGetBySlug(TestConstants.Category.ValidSlug, null);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
@@ -334,16 +325,16 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
 
         var command = new AdminUpdateCategoryCommand(
             Id: category.Id.ToString(),
-            Name: TestConstants.Content.Category.ValidName,
-            Slug: TestConstants.Content.Category.ValidSlug,
-            Description: TestConstants.Content.Category.ValidDescription,
+            Name: TestConstants.Category.ValidName,
+            Slug: TestConstants.Category.ValidSlug,
+            Description: TestConstants.Category.ValidDescription,
             IsGossip: false,
             IsExclusive: false,
             IsDefaultForLyrics: true
         );
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-        _categoryRepositoryMock.SetupGetBySlug(TestConstants.Content.Category.ValidSlug, null);
+        _categoryRepositoryMock.SetupGetBySlug(TestConstants.Category.ValidSlug, null);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
@@ -361,16 +352,16 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
 
         var command = new AdminUpdateCategoryCommand(
             Id: category.Id.ToString(),
-            Name: TestConstants.Content.Category.ValidName,
-            Slug: TestConstants.Content.Category.ValidSlug,
-            Description: TestConstants.Content.Category.ValidDescription,
+            Name: TestConstants.Category.ValidName,
+            Slug: TestConstants.Category.ValidSlug,
+            Description: TestConstants.Category.ValidDescription,
             IsGossip: false,
             IsExclusive: true,
             IsDefaultForLyrics: false
         );
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-        _categoryRepositoryMock.SetupGetBySlug(TestConstants.Content.Category.ValidSlug, null);
+        _categoryRepositoryMock.SetupGetBySlug(TestConstants.Category.ValidSlug, null);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
@@ -392,16 +383,16 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
 
         var command = new AdminUpdateCategoryCommand(
             Id: inactive.Id.ToString(),
-            Name: TestConstants.Content.Category.ValidName,
-            Slug: TestConstants.Content.Category.ValidSlug,
-            Description: TestConstants.Content.Category.ValidDescription,
+            Name: TestConstants.Category.ValidName,
+            Slug: TestConstants.Category.ValidSlug,
+            Description: TestConstants.Category.ValidDescription,
             IsGossip: false,
             IsExclusive: true,
             IsDefaultForLyrics: false
         );
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(inactive);
-        _categoryRepositoryMock.SetupGetBySlug(TestConstants.Content.Category.ValidSlug, null);
+        _categoryRepositoryMock.SetupGetBySlug(TestConstants.Category.ValidSlug, null);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
@@ -418,9 +409,9 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
 
         var command = new AdminUpdateCategoryCommand(
             Id: nonExistentId.ToString(),
-            Name: TestConstants.Content.Category.ValidName,
-            Slug: TestConstants.Content.Category.ValidSlug,
-            Description: TestConstants.Content.Category.ValidDescription,
+            Name: TestConstants.Category.ValidName,
+            Slug: TestConstants.Category.ValidSlug,
+            Description: TestConstants.Category.ValidDescription,
             IsGossip: false,
             IsExclusive: false,
             IsDefaultForLyrics: false
@@ -441,13 +432,13 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
         // Arrange
         ContentTypeEntity contentType = ContentTypeFactory.Create();
         CategoryEntity category = CategoryFactory.Create(contentType.Id);
-        string conflictingSlug = TestConstants.Content.Category.AnotherValidSlug;
+        string conflictingSlug = TestConstants.Category.AnotherValidSlug;
 
         var command = new AdminUpdateCategoryCommand(
             Id: category.Id.ToString(),
-            Name: TestConstants.Content.Category.ValidName,
+            Name: TestConstants.Category.ValidName,
             Slug: conflictingSlug,
-            Description: TestConstants.Content.Category.ValidDescription,
+            Description: TestConstants.Category.ValidDescription,
             IsGossip: false,
             IsExclusive: false,
             IsDefaultForLyrics: false
