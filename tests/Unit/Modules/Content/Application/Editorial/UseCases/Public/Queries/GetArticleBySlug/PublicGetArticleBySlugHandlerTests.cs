@@ -63,7 +63,7 @@ public class PublicGetArticleBySlugHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenArticleNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        string slug = TestConstants.Content.Editorial.Article.ValidSlug;
+        string slug = TestConstants.Article.ValidSlug;
         var query = new PublicGetArticleBySlugQuery(Slug: slug);
 
         _articleRepositoryMock.SetupGetBySlug(slug, null);
