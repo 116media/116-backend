@@ -45,7 +45,7 @@ public class AdminRejectLyricsHandlerTests
         LyricsEntity lyrics = LyricsFactory.CreatePendingReview(CategoryId);
         var command = new AdminRejectLyricsCommand(
             Id: lyrics.Id.ToString(),
-            Reason: TestConstants.Content.Editorial.Lyrics.ValidRejectionReason
+            Reason: TestConstants.Lyrics.ValidRejectionReason
         );
         _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
 
@@ -69,7 +69,7 @@ public class AdminRejectLyricsHandlerTests
         Guid nonExistentId = Guid.NewGuid();
         var command = new AdminRejectLyricsCommand(
             Id: nonExistentId.ToString(),
-            Reason: TestConstants.Content.Editorial.Lyrics.ValidRejectionReason
+            Reason: TestConstants.Lyrics.ValidRejectionReason
         );
         _lyricsRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentId);
 
@@ -87,7 +87,7 @@ public class AdminRejectLyricsHandlerTests
         LyricsEntity lyrics = LyricsFactory.CreateRejected(CategoryId);
         var command = new AdminRejectLyricsCommand(
             Id: lyrics.Id.ToString(),
-            Reason: TestConstants.Content.Editorial.Lyrics.ValidRejectionReason
+            Reason: TestConstants.Lyrics.ValidRejectionReason
         );
         _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
 
@@ -105,7 +105,7 @@ public class AdminRejectLyricsHandlerTests
         LyricsEntity lyrics = LyricsFactory.Create(CategoryId); // Draft status
         var command = new AdminRejectLyricsCommand(
             Id: lyrics.Id.ToString(),
-            Reason: TestConstants.Content.Editorial.Lyrics.ValidRejectionReason
+            Reason: TestConstants.Lyrics.ValidRejectionReason
         );
         _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
 
