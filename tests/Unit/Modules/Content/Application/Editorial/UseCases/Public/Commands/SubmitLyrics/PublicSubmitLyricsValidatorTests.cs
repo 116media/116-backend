@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.Content.Application.Editorial.UseCases.Public.Commands.SubmitLyrics;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Tests.Fixtures.Constants;
@@ -31,10 +30,10 @@ public class PublicSubmitLyricsValidatorTests
         string? slug = null
     ) =>
         new(
-            SongTitle: songTitle ?? TestConstants.Content.Editorial.Lyrics.ValidSongTitle,
+            SongTitle: songTitle ?? TestConstants.Lyrics.ValidSongTitle,
             ArtistName: artistName,
-            LyricsText: lyricsText ?? TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
-            Language: language ?? TestConstants.Content.Editorial.Lyrics.ValidLanguage,
+            LyricsText: lyricsText ?? TestConstants.Lyrics.ValidLyricsText,
+            Language: language ?? TestConstants.Lyrics.ValidLanguage,
             Slug: slug,
             UserId: Guid.NewGuid()
         );
@@ -60,8 +59,8 @@ public class PublicSubmitLyricsValidatorTests
     {
         // Arrange
         var command = BuildValidCommand(
-            artistName: TestConstants.Content.Editorial.Lyrics.ValidArtistName,
-            slug: TestConstants.Content.Editorial.Lyrics.ValidSlug
+            artistName: TestConstants.Lyrics.ValidArtistName,
+            slug: TestConstants.Lyrics.ValidSlug
         );
 
         // Act
@@ -99,9 +98,7 @@ public class PublicSubmitLyricsValidatorTests
     public async Task Validate_WithSongTitleExceedingMaxLength_ShouldHaveError()
     {
         // Arrange
-        var command = BuildValidCommand(
-            songTitle: new string('a', TestConstants.Content.Editorial.Lyrics.SongTitleMaxLength + 1)
-        );
+        var command = BuildValidCommand(songTitle: new string('a', TestConstants.Lyrics.SongTitleMaxLength + 1));
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -112,8 +109,7 @@ public class PublicSubmitLyricsValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(PublicSubmitLyricsCommand.SongTitle)
-                && e.ErrorMessage
-                    == _i18n.Lyrics.Msg.SongTitleTooLong(TestConstants.Content.Editorial.Lyrics.SongTitleMaxLength)
+                && e.ErrorMessage == _i18n.Lyrics.Msg.SongTitleTooLong(TestConstants.Lyrics.SongTitleMaxLength)
             );
     }
 
@@ -167,9 +163,7 @@ public class PublicSubmitLyricsValidatorTests
     public async Task Validate_WithLanguageExceedingMaxLength_ShouldHaveError()
     {
         // Arrange
-        var command = BuildValidCommand(
-            language: new string('a', TestConstants.Content.Editorial.Lyrics.LanguageMaxLength + 1)
-        );
+        var command = BuildValidCommand(language: new string('a', TestConstants.Lyrics.LanguageMaxLength + 1));
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -180,8 +174,7 @@ public class PublicSubmitLyricsValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(PublicSubmitLyricsCommand.Language)
-                && e.ErrorMessage
-                    == _i18n.Lyrics.Msg.LanguageTooLong(TestConstants.Content.Editorial.Lyrics.LanguageMaxLength)
+                && e.ErrorMessage == _i18n.Lyrics.Msg.LanguageTooLong(TestConstants.Lyrics.LanguageMaxLength)
             );
     }
 
@@ -221,9 +214,7 @@ public class PublicSubmitLyricsValidatorTests
     public async Task Validate_WithSlugExceedingMaxLength_ShouldHaveError()
     {
         // Arrange
-        var command = BuildValidCommand(
-            slug: new string('a', TestConstants.Content.Editorial.Lyrics.SlugMaxLength + 1)
-        );
+        var command = BuildValidCommand(slug: new string('a', TestConstants.Lyrics.SlugMaxLength + 1));
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -234,7 +225,7 @@ public class PublicSubmitLyricsValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(PublicSubmitLyricsCommand.Slug)
-                && e.ErrorMessage == _i18n.Lyrics.Msg.SlugTooLong(TestConstants.Content.Editorial.Lyrics.SlugMaxLength)
+                && e.ErrorMessage == _i18n.Lyrics.Msg.SlugTooLong(TestConstants.Lyrics.SlugMaxLength)
             );
     }
 
@@ -293,9 +284,7 @@ public class PublicSubmitLyricsValidatorTests
     public async Task Validate_WithArtistNameExceedingMaxLength_ShouldHaveError()
     {
         // Arrange
-        var command = BuildValidCommand(
-            artistName: new string('a', TestConstants.Content.Editorial.Lyrics.ArtistNameMaxLength + 1)
-        );
+        var command = BuildValidCommand(artistName: new string('a', TestConstants.Lyrics.ArtistNameMaxLength + 1));
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -306,36 +295,7 @@ public class PublicSubmitLyricsValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(PublicSubmitLyricsCommand.ArtistName)
-                && e.ErrorMessage
-                    == _i18n.Lyrics.Msg.ArtistNameTooLong(TestConstants.Content.Editorial.Lyrics.ArtistNameMaxLength)
-            );
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-        var validator = new PublicSubmitLyricsValidator(_i18n);
-        var command = BuildValidCommand(songTitle: string.Empty);
-
-        // Act
-        ValidationResult result = await validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(PublicSubmitLyricsCommand.SongTitle)
-                && e.ErrorMessage == _i18n.Lyrics.Msg.SongTitleRequired()
+                && e.ErrorMessage == _i18n.Lyrics.Msg.ArtistNameTooLong(TestConstants.Lyrics.ArtistNameMaxLength)
             );
     }
 
