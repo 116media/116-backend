@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.EditOrder;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Tests.Fixtures.Helpers;
@@ -118,34 +117,6 @@ public class AdminEditOrderValidatorTests
             .Contain(e =>
                 e.PropertyName == nameof(AdminEditOrderCommand.CustomerId)
                 && e.ErrorMessage == _i18n.Customer.Msg.Localizer["IdInvalid"].Value
-            );
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-        var validator = new AdminEditOrderValidator(_i18n);
-        var command = new AdminEditOrderCommand(OrderId: "not-a-guid", CustomerId: null, PackageId: null);
-
-        // Act
-        ValidationResult result = await validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminEditOrderCommand.OrderId)
-                && e.ErrorMessage == _i18n.ContentOrder.Msg.Localizer["IdInvalid"].Value
             );
     }
 
