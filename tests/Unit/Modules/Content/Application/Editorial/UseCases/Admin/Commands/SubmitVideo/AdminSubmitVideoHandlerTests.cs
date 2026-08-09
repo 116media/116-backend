@@ -3,6 +3,7 @@ using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Shared.Application.Exceptions;
+using _116.Tests.Fixtures.Builders.Entities.Content;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
@@ -139,7 +140,10 @@ public class AdminSubmitVideoHandlerTests
         // Arrange
         Guid customerId = Guid.NewGuid();
         Guid orderItemId = Guid.NewGuid();
-        VideoEntity video = VideoFactory.CreatePendingPayment(CategoryId, customerId, orderItemId);
+        VideoEntity video = new VideoBuilder(CategoryId)
+            .WithCustomer(customerId, orderItemId)
+            .AsPendingPayment()
+            .Build();
         ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
         var command = new AdminSubmitVideoCommand(Id: video.Id.ToString());
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
