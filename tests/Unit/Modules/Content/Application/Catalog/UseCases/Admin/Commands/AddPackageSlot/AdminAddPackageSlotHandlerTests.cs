@@ -53,7 +53,7 @@ public class AdminAddPackageSlotHandlerTests : BaseContentHandlerTest
             PackageId: package.Id.ToString(),
             CategoryId: category.Id,
             IsRequired: true,
-            Quantity: TestConstants.Content.PackageSlot.ValidQuantity
+            Quantity: TestConstants.PackageSlot.ValidQuantity
         );
 
         _packageRepositoryMock.SetupGetByIdWithSlotsOrThrow(package);
@@ -80,7 +80,7 @@ public class AdminAddPackageSlotHandlerTests : BaseContentHandlerTest
             PackageId: package.Id.ToString(),
             CategoryId: null,
             IsRequired: false,
-            Quantity: TestConstants.Content.PackageSlot.ValidQuantity
+            Quantity: TestConstants.PackageSlot.ValidQuantity
         );
 
         _packageRepositoryMock.SetupGetByIdWithSlotsOrThrow(package);
@@ -116,7 +116,7 @@ public class AdminAddPackageSlotHandlerTests : BaseContentHandlerTest
             PackageId: nonExistentPackageId.ToString(),
             CategoryId: null,
             IsRequired: false,
-            Quantity: TestConstants.Content.PackageSlot.ValidQuantity
+            Quantity: TestConstants.PackageSlot.ValidQuantity
         );
 
         _packageRepositoryMock.SetupGetByIdWithSlotsOrThrowNotFound(nonExistentPackageId);
@@ -139,7 +139,7 @@ public class AdminAddPackageSlotHandlerTests : BaseContentHandlerTest
             PackageId: package.Id.ToString(),
             CategoryId: nonExistentCategoryId,
             IsRequired: true,
-            Quantity: TestConstants.Content.PackageSlot.ValidQuantity
+            Quantity: TestConstants.PackageSlot.ValidQuantity
         );
 
         _packageRepositoryMock.SetupGetByIdWithSlotsOrThrow(package);
