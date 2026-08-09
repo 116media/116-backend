@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCategory;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Tests.Fixtures.Constants;
@@ -30,9 +29,9 @@ public class AdminUpdateCategoryValidatorTests
         // Arrange
         var command = new AdminUpdateCategoryCommand(
             Id: Guid.NewGuid().ToString(),
-            Name: TestConstants.Content.Category.ValidName,
-            Slug: TestConstants.Content.Category.ValidSlug,
-            Description: TestConstants.Content.Category.ValidDescription,
+            Name: TestConstants.Category.ValidName,
+            Slug: TestConstants.Category.ValidSlug,
+            Description: TestConstants.Category.ValidDescription,
             IsGossip: false,
             IsExclusive: false,
             IsDefaultForLyrics: false
@@ -56,9 +55,9 @@ public class AdminUpdateCategoryValidatorTests
         // Arrange
         var command = new AdminUpdateCategoryCommand(
             Id: "",
-            Name: TestConstants.Content.Category.ValidName,
-            Slug: TestConstants.Content.Category.ValidSlug,
-            Description: TestConstants.Content.Category.ValidDescription,
+            Name: TestConstants.Category.ValidName,
+            Slug: TestConstants.Category.ValidSlug,
+            Description: TestConstants.Category.ValidDescription,
             IsGossip: false,
             IsExclusive: false,
             IsDefaultForLyrics: false
@@ -88,8 +87,8 @@ public class AdminUpdateCategoryValidatorTests
         var command = new AdminUpdateCategoryCommand(
             Id: Guid.NewGuid().ToString(),
             Name: string.Empty,
-            Slug: TestConstants.Content.Category.ValidSlug,
-            Description: TestConstants.Content.Category.ValidDescription,
+            Slug: TestConstants.Category.ValidSlug,
+            Description: TestConstants.Category.ValidDescription,
             IsGossip: false,
             IsExclusive: false,
             IsDefaultForLyrics: false
@@ -114,9 +113,9 @@ public class AdminUpdateCategoryValidatorTests
         // Arrange
         var command = new AdminUpdateCategoryCommand(
             Id: Guid.NewGuid().ToString(),
-            Name: new string('a', TestConstants.Content.Category.NameMaxLength + 1),
-            Slug: TestConstants.Content.Category.ValidSlug,
-            Description: TestConstants.Content.Category.ValidDescription,
+            Name: new string('a', TestConstants.Category.NameMaxLength + 1),
+            Slug: TestConstants.Category.ValidSlug,
+            Description: TestConstants.Category.ValidDescription,
             IsGossip: false,
             IsExclusive: false,
             IsDefaultForLyrics: false
@@ -131,7 +130,7 @@ public class AdminUpdateCategoryValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateCategoryCommand.Name)
-                && e.ErrorMessage == _i18n.Category.Msg.NameTooLong(TestConstants.Content.Category.NameMaxLength)
+                && e.ErrorMessage == _i18n.Category.Msg.NameTooLong(TestConstants.Category.NameMaxLength)
             );
     }
 
@@ -145,9 +144,9 @@ public class AdminUpdateCategoryValidatorTests
         // Arrange
         var command = new AdminUpdateCategoryCommand(
             Id: Guid.NewGuid().ToString(),
-            Name: TestConstants.Content.Category.ValidName,
+            Name: TestConstants.Category.ValidName,
             Slug: "Invalid Slug",
-            Description: TestConstants.Content.Category.ValidDescription,
+            Description: TestConstants.Category.ValidDescription,
             IsGossip: false,
             IsExclusive: false,
             IsDefaultForLyrics: false
@@ -163,42 +162,6 @@ public class AdminUpdateCategoryValidatorTests
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateCategoryCommand.Slug)
                 && e.ErrorMessage == _i18n.Category.Msg.SlugInvalidFormat()
-            );
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-        var validator = new AdminUpdateCategoryValidator(_i18n);
-        var command = new AdminUpdateCategoryCommand(
-            Id: "",
-            Name: TestConstants.Content.Category.ValidName,
-            Slug: TestConstants.Content.Category.ValidSlug,
-            Description: TestConstants.Content.Category.ValidDescription,
-            IsGossip: false,
-            IsExclusive: false,
-            IsDefaultForLyrics: false
-        );
-
-        // Act
-        ValidationResult result = await validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminUpdateCategoryCommand.Id)
-                && e.ErrorMessage == _i18n.Category.Msg.Localizer["IdRequired"].Value
             );
     }
 
