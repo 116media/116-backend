@@ -5,6 +5,7 @@ using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.Results;
+using Microsoft.Extensions.Time.Testing;
 using Xunit;
 
 namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.UpdateAlbum;
@@ -19,7 +20,10 @@ public class AdminUpdateAlbumValidatorTests
 
     public AdminUpdateAlbumValidatorTests()
     {
-        _validator = new AdminUpdateAlbumValidator(_i18n);
+        _validator = new AdminUpdateAlbumValidator(
+            _i18n,
+            new FakeTimeProvider(new DateTimeOffset(2026, 6, 30, 0, 0, 0, TimeSpan.Zero))
+        );
     }
 
     [Fact]
@@ -28,9 +32,9 @@ public class AdminUpdateAlbumValidatorTests
         // Arrange
         var command = new AdminUpdateAlbumCommand(
             Guid.NewGuid(),
-            TestConstants.Content.Editorial.Album.ValidName,
-            TestConstants.Content.Editorial.Album.ValidReleaseYear,
-            TestConstants.Content.Editorial.Album.ValidLabel,
+            TestConstants.Album.ValidName,
+            TestConstants.Album.ValidReleaseYear,
+            TestConstants.Album.ValidLabel,
             EnumReleaseType.Album
         );
 
@@ -66,7 +70,7 @@ public class AdminUpdateAlbumValidatorTests
         // Arrange
         var command = new AdminUpdateAlbumCommand(
             Guid.NewGuid(),
-            TestConstants.Content.Editorial.Album.ValidName,
+            TestConstants.Album.ValidName,
             1899,
             null,
             EnumReleaseType.Album
