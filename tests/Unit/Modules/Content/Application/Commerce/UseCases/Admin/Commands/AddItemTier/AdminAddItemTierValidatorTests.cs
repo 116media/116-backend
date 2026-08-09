@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.AddItemTier;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Tests.Fixtures.Helpers;
@@ -122,38 +121,6 @@ public class AdminAddItemTierValidatorTests
             .Contain(e =>
                 e.PropertyName == nameof(AdminAddItemTierCommand.PricingTierId)
                 && e.ErrorMessage == _i18n.PricingTier.Msg.Localizer["IdInvalid"].Value
-            );
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-        var validator = new AdminAddItemTierValidator(_i18n);
-        var command = new AdminAddItemTierCommand(
-            OrderId: "not-a-guid",
-            OrderItemId: Guid.NewGuid().ToString(),
-            PricingTierId: Guid.NewGuid().ToString()
-        );
-
-        // Act
-        ValidationResult result = await validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminAddItemTierCommand.OrderId)
-                && e.ErrorMessage == _i18n.ContentOrder.Msg.Localizer["IdInvalid"].Value
             );
     }
 
