@@ -5,6 +5,7 @@ using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.Results;
+using Microsoft.Extensions.Time.Testing;
 using Xunit;
 
 namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.CreateAlbum;
@@ -19,7 +20,10 @@ public class AdminCreateAlbumValidatorTests
 
     public AdminCreateAlbumValidatorTests()
     {
-        _validator = new AdminCreateAlbumValidator(_i18n);
+        _validator = new AdminCreateAlbumValidator(
+            _i18n,
+            new FakeTimeProvider(new DateTimeOffset(2026, 6, 30, 0, 0, 0, TimeSpan.Zero))
+        );
     }
 
     [Fact]
@@ -27,10 +31,10 @@ public class AdminCreateAlbumValidatorTests
     {
         // Arrange
         var command = new AdminCreateAlbumCommand(
-            TestConstants.Content.Editorial.Album.ValidName,
+            TestConstants.Album.ValidName,
             null,
-            TestConstants.Content.Editorial.Album.ValidReleaseYear,
-            TestConstants.Content.Editorial.Album.ValidLabel,
+            TestConstants.Album.ValidReleaseYear,
+            TestConstants.Album.ValidLabel,
             EnumReleaseType.Album
         );
 
@@ -65,7 +69,7 @@ public class AdminCreateAlbumValidatorTests
     {
         // Arrange
         var command = new AdminCreateAlbumCommand(
-            TestConstants.Content.Editorial.Album.ValidName,
+            TestConstants.Album.ValidName,
             null,
             1899,
             null,
@@ -85,7 +89,7 @@ public class AdminCreateAlbumValidatorTests
     {
         // Arrange
         var command = new AdminCreateAlbumCommand(
-            TestConstants.Content.Editorial.Album.ValidName,
+            TestConstants.Album.ValidName,
             null,
             null,
             null,
