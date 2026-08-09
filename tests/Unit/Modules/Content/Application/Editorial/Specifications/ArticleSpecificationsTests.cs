@@ -1,6 +1,7 @@
 using _116.Content.Application.Editorial.Specifications;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
+using _116.Tests.Fixtures.Builders.Entities.Content;
 using _116.Tests.Fixtures.Factories.Content;
 using AwesomeAssertions;
 using Xunit;
@@ -201,8 +202,7 @@ public class ArticleSpecificationsTests
     public void AbandonedDraftSpecification_WithDraftArticleCreatedBeforeCutoff_ShouldReturnTrue()
     {
         // Arrange
-        ArticleEntity article = ArticleFactory.Create(CategoryId);
-        article.GetType().GetProperty("CreatedAt")!.SetValue(article, DateTime.UtcNow.AddDays(-7));
+        ArticleEntity article = new ArticleBuilder(CategoryId).WithCreatedAt(DateTime.UtcNow.AddDays(-7)).Build();
         var spec = new AbandonedDraftSpecification(DateTime.UtcNow);
 
         // Act
@@ -216,8 +216,10 @@ public class ArticleSpecificationsTests
     public void AbandonedDraftSpecification_WithPublishedArticle_ShouldReturnFalse()
     {
         // Arrange
-        ArticleEntity article = ArticleFactory.CreatePublished(CategoryId);
-        article.GetType().GetProperty("CreatedAt")!.SetValue(article, DateTime.UtcNow.AddDays(-7));
+        ArticleEntity article = new ArticleBuilder(CategoryId)
+            .AsPublished()
+            .WithCreatedAt(DateTime.UtcNow.AddDays(-7))
+            .Build();
         var spec = new AbandonedDraftSpecification(DateTime.UtcNow);
 
         // Act
@@ -231,8 +233,7 @@ public class ArticleSpecificationsTests
     public void AbandonedDraftSpecification_WithDraftArticleCreatedAfterCutoff_ShouldReturnFalse()
     {
         // Arrange
-        ArticleEntity article = ArticleFactory.Create(CategoryId);
-        article.GetType().GetProperty("CreatedAt")!.SetValue(article, DateTime.UtcNow);
+        ArticleEntity article = new ArticleBuilder(CategoryId).WithCreatedAt(DateTime.UtcNow).Build();
         var spec = new AbandonedDraftSpecification(DateTime.UtcNow.AddDays(-1));
 
         // Act
