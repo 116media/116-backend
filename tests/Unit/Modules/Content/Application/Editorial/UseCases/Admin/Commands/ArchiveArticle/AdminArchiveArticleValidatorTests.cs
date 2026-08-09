@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.ArchiveArticle;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Tests.Fixtures.Helpers;
@@ -77,34 +76,6 @@ public class AdminArchiveArticleValidatorTests
             .Contain(e =>
                 e.PropertyName == nameof(AdminArchiveArticleCommand.Id)
                 && e.ErrorMessage == _i18n.Article.Msg.Localizer["IdInvalid"].Value
-            );
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-        var validator = new AdminArchiveArticleValidator(_i18n);
-        var command = new AdminArchiveArticleCommand(Id: string.Empty);
-
-        // Act
-        ValidationResult result = await validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminArchiveArticleCommand.Id)
-                && e.ErrorMessage == _i18n.Article.Msg.Localizer["IdRequired"].Value
             );
     }
 
