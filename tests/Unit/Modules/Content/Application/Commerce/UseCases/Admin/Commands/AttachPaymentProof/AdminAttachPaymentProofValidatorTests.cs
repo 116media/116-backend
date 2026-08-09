@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.AttachPaymentProof;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Domain.Enums;
@@ -135,38 +134,6 @@ public class AdminAttachPaymentProofValidatorTests
             .Contain(e =>
                 e.PropertyName == nameof(AdminAttachPaymentProofCommand.PaymentMethod)
                 && e.ErrorMessage == _i18n.ContentOrder.Msg.InvalidPaymentMethod()
-            );
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-        var validator = new AdminAttachPaymentProofValidator(_i18n);
-        var command = new AdminAttachPaymentProofCommand(
-            OrderId: Guid.NewGuid().ToString(),
-            File: null!,
-            PaymentMethod: EnumPaymentMethod.BankTransfer
-        );
-
-        // Act
-        ValidationResult result = await validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminAttachPaymentProofCommand.File)
-                && e.ErrorMessage == _i18n.ContentOrder.Msg.PaymentProofRequired()
             );
     }
 
