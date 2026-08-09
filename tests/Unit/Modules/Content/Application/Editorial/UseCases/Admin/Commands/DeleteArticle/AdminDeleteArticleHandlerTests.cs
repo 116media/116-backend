@@ -4,6 +4,7 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Events;
 using _116.Shared.Application.Exceptions;
+using _116.Tests.Fixtures.Builders.Entities.Content;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
@@ -83,11 +84,6 @@ public class AdminDeleteArticleHandlerTests
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
-    /// <summary>
-    /// A cover-type <c>article_images</c> row shares its storage key with the cover file row,
-    /// whose remote asset the file soft-delete reaction already purges. Carrying that key in the
-    /// deletion event as well would delete the same asset twice, so only body keys are captured.
-    /// </summary>
     [Fact]
     public async Task Handle_WhenArticleHasACoverImageRow_ShouldCaptureOnlyTheBodyImageKeys()
     {
@@ -116,7 +112,7 @@ public class AdminDeleteArticleHandlerTests
     public async Task Handle_WhenRejectedArticle_ShouldDeleteAndReturnSuccess()
     {
         // Arrange
-        ArticleEntity article = ArticleFactory.CreateRejected(CategoryId);
+        ArticleEntity article = new ArticleBuilder(CategoryId).AsRejected().Build();
         var command = new AdminDeleteArticleCommand(Id: article.Id.ToString());
 
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
