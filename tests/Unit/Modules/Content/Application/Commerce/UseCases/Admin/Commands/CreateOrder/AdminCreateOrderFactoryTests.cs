@@ -2,6 +2,7 @@ using _116.Content.Application.Commerce.UseCases.Admin.Commands.CreateOrder;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
+using _116.Tests.Fixtures.Builders.Entities.Content;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common.Mocks.Repositories;
@@ -35,11 +36,12 @@ public class AdminCreateOrderFactoryTests
         Guid contentTypeId = Guid.NewGuid();
         CategoryEntity category = CreateCategoryWithContentType(contentTypeId, "Video");
         PackageEntity package = PackageFactory.Create();
-        PackageSlotEntity slot = PackageSlotFactory.Create(package.Id, category.Id, isRequired: true, quantity: 1);
+        PackageSlotEntity slot = new PackageSlotBuilder(package.Id)
+            .WithCategory(category)
+            .WithIsRequired(true)
+            .WithQuantity(1)
+            .Build();
         package.Slots.Add(slot);
-
-        // Attach Category nav property via reflection
-        typeof(PackageSlotEntity).GetProperty(nameof(PackageSlotEntity.Category))!.SetValue(slot, category);
 
         CategoryPricingEntity pricing = CategoryPricingFactory.Create(category.Id, Guid.NewGuid(), 50m);
         _categoryRepositoryMock
@@ -65,10 +67,12 @@ public class AdminCreateOrderFactoryTests
         Guid contentTypeId = Guid.NewGuid();
         CategoryEntity category = CreateCategoryWithContentType(contentTypeId, "Article");
         PackageEntity package = PackageFactory.Create();
-        PackageSlotEntity slot = PackageSlotFactory.Create(package.Id, category.Id, isRequired: false, quantity: 1);
+        PackageSlotEntity slot = new PackageSlotBuilder(package.Id)
+            .WithCategory(category)
+            .WithIsRequired(false)
+            .WithQuantity(1)
+            .Build();
         package.Slots.Add(slot);
-
-        typeof(PackageSlotEntity).GetProperty(nameof(PackageSlotEntity.Category))!.SetValue(slot, category);
 
         _categoryRepositoryMock
             .Setup(x => x.GetPricingByCategoryAsync(category.Id, It.IsAny<CancellationToken>()))
@@ -112,10 +116,12 @@ public class AdminCreateOrderFactoryTests
         Guid contentTypeId = Guid.NewGuid();
         CategoryEntity category = CreateCategoryWithContentType(contentTypeId, "Video");
         PackageEntity package = PackageFactory.Create();
-        PackageSlotEntity slot = PackageSlotFactory.Create(package.Id, category.Id, isRequired: true, quantity: 3);
+        PackageSlotEntity slot = new PackageSlotBuilder(package.Id)
+            .WithCategory(category)
+            .WithIsRequired(true)
+            .WithQuantity(3)
+            .Build();
         package.Slots.Add(slot);
-
-        typeof(PackageSlotEntity).GetProperty(nameof(PackageSlotEntity.Category))!.SetValue(slot, category);
 
         _categoryRepositoryMock
             .Setup(x => x.GetPricingByCategoryAsync(category.Id, It.IsAny<CancellationToken>()))
@@ -137,10 +143,12 @@ public class AdminCreateOrderFactoryTests
         Guid contentTypeId = Guid.NewGuid();
         CategoryEntity category = CreateCategoryWithContentType(contentTypeId, "Video");
         PackageEntity package = PackageFactory.Create();
-        PackageSlotEntity slot = PackageSlotFactory.Create(package.Id, category.Id, isRequired: false, quantity: 1);
+        PackageSlotEntity slot = new PackageSlotBuilder(package.Id)
+            .WithCategory(category)
+            .WithIsRequired(false)
+            .WithQuantity(1)
+            .Build();
         package.Slots.Add(slot);
-
-        typeof(PackageSlotEntity).GetProperty(nameof(PackageSlotEntity.Category))!.SetValue(slot, category);
 
         CategoryPricingEntity pricing = CategoryPricingFactory.Create(category.Id, Guid.NewGuid(), 100m);
         _categoryRepositoryMock
@@ -162,10 +170,12 @@ public class AdminCreateOrderFactoryTests
         Guid contentTypeId = Guid.NewGuid();
         CategoryEntity category = CreateCategoryWithContentType(contentTypeId, "PhotoShoot");
         PackageEntity package = PackageFactory.Create();
-        PackageSlotEntity slot = PackageSlotFactory.Create(package.Id, category.Id, isRequired: true, quantity: 1);
+        PackageSlotEntity slot = new PackageSlotBuilder(package.Id)
+            .WithCategory(category)
+            .WithIsRequired(true)
+            .WithQuantity(1)
+            .Build();
         package.Slots.Add(slot);
-
-        typeof(PackageSlotEntity).GetProperty(nameof(PackageSlotEntity.Category))!.SetValue(slot, category);
 
         _categoryRepositoryMock
             .Setup(x => x.GetPricingByCategoryAsync(category.Id, It.IsAny<CancellationToken>()))
@@ -180,15 +190,14 @@ public class AdminCreateOrderFactoryTests
 
     #endregion
 
-    private static CategoryEntity CreateCategoryWithContentType(Guid contentTypeId, string contentTypeName)
-    {
-        CategoryEntity category = CategoryFactory.Create(contentTypeId);
-        ContentTypeEntity contentType = ContentTypeEntity.Create(
-            contentTypeId,
-            contentTypeName,
-            TestErrorsFactory.CreateContentTypeErrors()
-        );
-        typeof(CategoryEntity).GetProperty(nameof(CategoryEntity.ContentType))!.SetValue(category, contentType);
-        return category;
-    }
+    /// <summary>
+    /// Creates a category carrying the ContentType navigation EF Core would populate, which the
+    /// order factory reads to decide the content kind of each generated item.
+    /// </summary>
+    private static CategoryEntity CreateCategoryWithContentType(Guid contentTypeId, string contentTypeName) =>
+        new CategoryBuilder(contentTypeId)
+            .WithContentType(
+                ContentTypeEntity.Create(contentTypeId, contentTypeName, TestErrorsFactory.CreateContentTypeErrors())
+            )
+            .Build();
 }
