@@ -43,7 +43,7 @@ public class AdminRejectVideoHandlerTests
         VideoEntity video = VideoFactory.CreatePendingReview(CategoryId);
         var command = new AdminRejectVideoCommand(
             Id: video.Id.ToString(),
-            Reason: TestConstants.Content.Editorial.Video.ValidRejectionReason
+            Reason: TestConstants.Video.ValidRejectionReason
         );
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
 
@@ -63,7 +63,7 @@ public class AdminRejectVideoHandlerTests
         Guid nonExistentId = Guid.NewGuid();
         var command = new AdminRejectVideoCommand(
             Id: nonExistentId.ToString(),
-            Reason: TestConstants.Content.Editorial.Video.ValidRejectionReason
+            Reason: TestConstants.Video.ValidRejectionReason
         );
         _videoRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentId);
 
@@ -81,7 +81,7 @@ public class AdminRejectVideoHandlerTests
         VideoEntity video = VideoFactory.CreateRejected(CategoryId);
         var command = new AdminRejectVideoCommand(
             Id: video.Id.ToString(),
-            Reason: TestConstants.Content.Editorial.Video.ValidRejectionReason
+            Reason: TestConstants.Video.ValidRejectionReason
         );
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
 
@@ -99,7 +99,7 @@ public class AdminRejectVideoHandlerTests
         VideoEntity video = VideoFactory.Create(CategoryId); // Draft
         var command = new AdminRejectVideoCommand(
             Id: video.Id.ToString(),
-            Reason: TestConstants.Content.Editorial.Video.ValidRejectionReason
+            Reason: TestConstants.Video.ValidRejectionReason
         );
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
 
