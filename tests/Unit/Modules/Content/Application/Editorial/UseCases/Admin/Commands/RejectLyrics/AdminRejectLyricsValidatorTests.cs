@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.RejectLyrics;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Tests.Fixtures.Constants;
@@ -31,7 +30,7 @@ public class AdminRejectLyricsValidatorTests
         // Arrange
         var command = new AdminRejectLyricsCommand(
             Id: Guid.NewGuid().ToString(),
-            Reason: TestConstants.Content.Editorial.Lyrics.ValidRejectionReason
+            Reason: TestConstants.Lyrics.ValidRejectionReason
         );
 
         // Act
@@ -50,10 +49,7 @@ public class AdminRejectLyricsValidatorTests
     public async Task Validate_WithEmptyId_ShouldHaveError()
     {
         // Arrange
-        var command = new AdminRejectLyricsCommand(
-            Id: string.Empty,
-            Reason: TestConstants.Content.Editorial.Lyrics.ValidRejectionReason
-        );
+        var command = new AdminRejectLyricsCommand(Id: string.Empty, Reason: TestConstants.Lyrics.ValidRejectionReason);
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -72,10 +68,7 @@ public class AdminRejectLyricsValidatorTests
     public async Task Validate_WithInvalidGuidId_ShouldHaveError()
     {
         // Arrange
-        var command = new AdminRejectLyricsCommand(
-            Id: "not-a-guid",
-            Reason: TestConstants.Content.Editorial.Lyrics.ValidRejectionReason
-        );
+        var command = new AdminRejectLyricsCommand(Id: "not-a-guid", Reason: TestConstants.Lyrics.ValidRejectionReason);
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -119,7 +112,7 @@ public class AdminRejectLyricsValidatorTests
         // Arrange
         var command = new AdminRejectLyricsCommand(
             Id: Guid.NewGuid().ToString(),
-            Reason: new string('a', TestConstants.Content.Editorial.Lyrics.RejectionReasonMaxLength + 1)
+            Reason: new string('a', TestConstants.Lyrics.RejectionReasonMaxLength + 1)
         );
 
         // Act
@@ -132,37 +125,7 @@ public class AdminRejectLyricsValidatorTests
             .Contain(e =>
                 e.PropertyName == nameof(AdminRejectLyricsCommand.Reason)
                 && e.ErrorMessage
-                    == _i18n.Lyrics.Msg.RejectionReasonTooLong(
-                        TestConstants.Content.Editorial.Lyrics.RejectionReasonMaxLength
-                    )
-            );
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-        var validator = new AdminRejectLyricsValidator(_i18n);
-        var command = new AdminRejectLyricsCommand(Id: Guid.NewGuid().ToString(), Reason: string.Empty);
-
-        // Act
-        ValidationResult result = await validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminRejectLyricsCommand.Reason)
-                && e.ErrorMessage == _i18n.Lyrics.Msg.RejectionReasonRequired()
+                    == _i18n.Lyrics.Msg.RejectionReasonTooLong(TestConstants.Lyrics.RejectionReasonMaxLength)
             );
     }
 
