@@ -3,6 +3,7 @@ using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Shared.Application.Exceptions;
+using _116.Tests.Fixtures.Builders.Entities.Content;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
@@ -44,9 +45,8 @@ public class AdminEditOrderHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenDraftOrder_ShouldUpdateAndReturnResult()
     {
         // Arrange
-        ContentOrderEntity order = ContentOrderFactory.Create();
         CustomerEntity customer = CustomerFactory.Create();
-        typeof(ContentOrderEntity).GetProperty(nameof(ContentOrderEntity.Customer))!.SetValue(order, customer);
+        ContentOrderEntity order = new ContentOrderBuilder().WithCustomer(customer).Build();
 
         _orderRepositoryMock
             .Setup(x => x.GetByIdWithItemsAsync(order.Id, It.IsAny<CancellationToken>()))
@@ -97,9 +97,8 @@ public class AdminEditOrderHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenNotDraft_ShouldThrowBadRequestException()
     {
         // Arrange
-        ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
         CustomerEntity customer = CustomerFactory.Create();
-        typeof(ContentOrderEntity).GetProperty(nameof(ContentOrderEntity.Customer))!.SetValue(order, customer);
+        ContentOrderEntity order = new ContentOrderBuilder().AsSubmitted().WithCustomer(customer).Build();
 
         _orderRepositoryMock
             .Setup(x => x.GetByIdWithItemsAsync(order.Id, It.IsAny<CancellationToken>()))
@@ -122,9 +121,8 @@ public class AdminEditOrderHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenCustomerNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        ContentOrderEntity order = ContentOrderFactory.Create();
         CustomerEntity customer = CustomerFactory.Create();
-        typeof(ContentOrderEntity).GetProperty(nameof(ContentOrderEntity.Customer))!.SetValue(order, customer);
+        ContentOrderEntity order = new ContentOrderBuilder().WithCustomer(customer).Build();
 
         _orderRepositoryMock
             .Setup(x => x.GetByIdWithItemsAsync(order.Id, It.IsAny<CancellationToken>()))
