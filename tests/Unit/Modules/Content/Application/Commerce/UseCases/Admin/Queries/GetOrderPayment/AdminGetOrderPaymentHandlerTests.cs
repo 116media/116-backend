@@ -1,9 +1,11 @@
 using _116.Content.Application.Commerce.Factories;
 using _116.Content.Application.Commerce.UseCases.Admin.Queries.GetOrderPayment;
+using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
 using _116.Identity.Contracts.Application;
+using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Factories.Core;
@@ -23,6 +25,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Commerce.UseCases.Admin.Qu
 public class AdminGetOrderPaymentHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<IOrderPaymentFactory> _orderPaymentFactoryMock;
+    private readonly Mock<IContentOrderRepository> _orderRepositoryMock;
     private readonly Mock<IFileRepository> _fileRepositoryMock;
     private readonly Mock<IUserLookupService> _userLookupMock;
     private readonly AdminGetOrderPaymentHandler _handler;
@@ -30,10 +33,12 @@ public class AdminGetOrderPaymentHandlerTests : BaseContentHandlerTest
     public AdminGetOrderPaymentHandlerTests()
     {
         _orderPaymentFactoryMock = MockOrderPaymentFactory.Create();
+        _orderRepositoryMock = MockContentOrderRepository.Create();
         _fileRepositoryMock = MockFileRepository.Create();
         _userLookupMock = MockUserLookupService.Create();
         _handler = new AdminGetOrderPaymentHandler(
             _orderPaymentFactoryMock.Object,
+            _orderRepositoryMock.Object,
             _fileRepositoryMock.Object,
             Mapper,
             _userLookupMock.Object
@@ -125,6 +130,30 @@ public class AdminGetOrderPaymentHandlerTests : BaseContentHandlerTest
         // Assert
         result.Payment.VerifiedByUserName.Should().BeNull();
         _userLookupMock.VerifyGetUserNameByIdNotCalled();
+    }
+
+    #endregion
+
+    #region Failure Cases
+
+    [Fact]
+    public async Task Handle_WhenOrderNotFound_ShouldThrowNotFoundExceptionWithoutResolvingPayment()
+    {
+        // Arrange
+        Guid orderId = Guid.NewGuid();
+        _orderRepositoryMock.SetupGetByIdOrThrowNotFound(orderId);
+
+        var query = new AdminGetOrderPaymentQuery(OrderId: orderId);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
+        _orderPaymentFactoryMock.Verify(
+            x => x.GetByOrderIdOrThrowAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
     }
 
     #endregion
