@@ -81,11 +81,6 @@ public class PublicGetArtistBySlugHandlerTests : BaseContentHandlerTest
         await act.Should().ThrowAsync<NotFoundException>();
     }
 
-    /// <summary>
-    /// Verifies the lyrics and videos pagination parameters are threaded independently through
-    /// to both <c>GetPublishedByArtistAsync</c> calls, converting the zero-based page index to
-    /// the repository's one-based page number.
-    /// </summary>
     [Fact]
     public async Task Handle_ShouldThreadPaginationToBothLyricsAndVideosCalls()
     {
