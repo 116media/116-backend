@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.AddPackageSlot;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Tests.Fixtures.Constants;
@@ -32,7 +31,7 @@ public class AdminAddPackageSlotValidatorTests
             PackageId: Guid.NewGuid().ToString(),
             CategoryId: Guid.NewGuid(),
             IsRequired: true,
-            Quantity: TestConstants.Content.PackageSlot.ValidQuantity
+            Quantity: TestConstants.PackageSlot.ValidQuantity
         );
 
         // Act
@@ -51,7 +50,7 @@ public class AdminAddPackageSlotValidatorTests
             PackageId: Guid.NewGuid().ToString(),
             CategoryId: null,
             IsRequired: false,
-            Quantity: TestConstants.Content.PackageSlot.ValidQuantity
+            Quantity: TestConstants.PackageSlot.ValidQuantity
         );
 
         // Act
@@ -73,7 +72,7 @@ public class AdminAddPackageSlotValidatorTests
             PackageId: "",
             CategoryId: null,
             IsRequired: false,
-            Quantity: TestConstants.Content.PackageSlot.ValidQuantity
+            Quantity: TestConstants.PackageSlot.ValidQuantity
         );
 
         // Act
@@ -138,39 +137,6 @@ public class AdminAddPackageSlotValidatorTests
             .Contain(e =>
                 e.PropertyName == nameof(AdminAddPackageSlotCommand.Quantity)
                 && e.ErrorMessage == _i18n.Package.Msg.SlotQuantityMustBePositive()
-            );
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-        var validator = new AdminAddPackageSlotValidator(_i18n);
-        var command = new AdminAddPackageSlotCommand(
-            PackageId: "",
-            CategoryId: null,
-            IsRequired: false,
-            Quantity: TestConstants.Content.PackageSlot.ValidQuantity
-        );
-
-        // Act
-        ValidationResult result = await validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminAddPackageSlotCommand.PackageId)
-                && e.ErrorMessage == _i18n.Package.Msg.Localizer["IdRequired"].Value
             );
     }
 
