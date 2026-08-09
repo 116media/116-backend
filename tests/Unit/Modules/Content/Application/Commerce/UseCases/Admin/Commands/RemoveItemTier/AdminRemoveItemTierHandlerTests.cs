@@ -3,6 +3,7 @@ using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Shared.Application.Exceptions;
+using _116.Tests.Fixtures.Builders.Entities.Content;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
@@ -42,12 +43,14 @@ public class AdminRemoveItemTierHandlerTests
         ContentOrderEntity order = ContentOrderFactory.Create();
         _orderRepositoryMock.SetupGetByIdOrThrow(order);
 
-        ContentItemTierEntity tier = ContentItemTierFactory.CreateDefault(Guid.NewGuid(), Guid.NewGuid());
+        ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, Guid.NewGuid());
+        _orderRepositoryMock.SetupGetItemByIdOrThrow(item);
+
+        ContentItemTierEntity tier = ContentItemTierFactory.CreateDefault(item.Id, Guid.NewGuid());
         _orderRepositoryMock.SetupGetItemTierByIdOrThrow(tier);
 
-        ContentOrderEntity orderWithItems = ContentOrderFactory.Create();
         CustomerEntity customer = CustomerFactory.Create();
-        typeof(ContentOrderEntity).GetProperty(nameof(ContentOrderEntity.Customer))!.SetValue(orderWithItems, customer);
+        ContentOrderEntity orderWithItems = new ContentOrderBuilder().WithCustomer(customer).Build();
 
         _orderRepositoryMock
             .Setup(x => x.GetByIdWithItemsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
@@ -55,7 +58,7 @@ public class AdminRemoveItemTierHandlerTests
 
         var command = new AdminRemoveItemTierCommand(
             OrderId: order.Id.ToString(),
-            ItemId: Guid.NewGuid().ToString(),
+            ItemId: item.Id.ToString(),
             TierId: tier.Id.ToString()
         );
 
@@ -73,12 +76,14 @@ public class AdminRemoveItemTierHandlerTests
         ContentOrderEntity order = ContentOrderFactory.Create();
         _orderRepositoryMock.SetupGetByIdOrThrow(order);
 
-        ContentItemTierEntity tier = ContentItemTierFactory.CreateDefault(Guid.NewGuid(), Guid.NewGuid());
+        ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, Guid.NewGuid());
+        _orderRepositoryMock.SetupGetItemByIdOrThrow(item);
+
+        ContentItemTierEntity tier = ContentItemTierFactory.CreateDefault(item.Id, Guid.NewGuid());
         _orderRepositoryMock.SetupGetItemTierByIdOrThrow(tier);
 
-        ContentOrderEntity orderWithItems = ContentOrderFactory.Create();
         CustomerEntity customer = CustomerFactory.Create();
-        typeof(ContentOrderEntity).GetProperty(nameof(ContentOrderEntity.Customer))!.SetValue(orderWithItems, customer);
+        ContentOrderEntity orderWithItems = new ContentOrderBuilder().WithCustomer(customer).Build();
 
         _orderRepositoryMock
             .Setup(x => x.GetByIdWithItemsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
@@ -86,7 +91,7 @@ public class AdminRemoveItemTierHandlerTests
 
         var command = new AdminRemoveItemTierCommand(
             OrderId: order.Id.ToString(),
-            ItemId: Guid.NewGuid().ToString(),
+            ItemId: item.Id.ToString(),
             TierId: tier.Id.ToString()
         );
 
@@ -104,12 +109,14 @@ public class AdminRemoveItemTierHandlerTests
         ContentOrderEntity order = ContentOrderFactory.Create();
         _orderRepositoryMock.SetupGetByIdOrThrow(order);
 
-        ContentItemTierEntity tier = ContentItemTierFactory.CreateDefault(Guid.NewGuid(), Guid.NewGuid());
+        ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, Guid.NewGuid());
+        _orderRepositoryMock.SetupGetItemByIdOrThrow(item);
+
+        ContentItemTierEntity tier = ContentItemTierFactory.CreateDefault(item.Id, Guid.NewGuid());
         _orderRepositoryMock.SetupGetItemTierByIdOrThrow(tier);
 
-        ContentOrderEntity orderWithItems = ContentOrderFactory.Create();
         CustomerEntity customer = CustomerFactory.Create();
-        typeof(ContentOrderEntity).GetProperty(nameof(ContentOrderEntity.Customer))!.SetValue(orderWithItems, customer);
+        ContentOrderEntity orderWithItems = new ContentOrderBuilder().WithCustomer(customer).Build();
 
         _orderRepositoryMock
             .Setup(x => x.GetByIdWithItemsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
@@ -117,14 +124,14 @@ public class AdminRemoveItemTierHandlerTests
 
         var command = new AdminRemoveItemTierCommand(
             OrderId: order.Id.ToString(),
-            ItemId: Guid.NewGuid().ToString(),
+            ItemId: item.Id.ToString(),
             TierId: tier.Id.ToString()
         );
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
-        // Assert — first commit after remove, second after recalculate
+        // Assert
         _unitOfWorkMock.VerifyCommitCalled(times: 2);
     }
 
@@ -135,12 +142,14 @@ public class AdminRemoveItemTierHandlerTests
         ContentOrderEntity order = ContentOrderFactory.Create();
         _orderRepositoryMock.SetupGetByIdOrThrow(order);
 
-        ContentItemTierEntity tier = ContentItemTierFactory.CreateDefault(Guid.NewGuid(), Guid.NewGuid());
+        ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, Guid.NewGuid());
+        _orderRepositoryMock.SetupGetItemByIdOrThrow(item);
+
+        ContentItemTierEntity tier = ContentItemTierFactory.CreateDefault(item.Id, Guid.NewGuid());
         _orderRepositoryMock.SetupGetItemTierByIdOrThrow(tier);
 
-        ContentOrderEntity orderWithItems = ContentOrderFactory.Create();
         CustomerEntity customer = CustomerFactory.Create();
-        typeof(ContentOrderEntity).GetProperty(nameof(ContentOrderEntity.Customer))!.SetValue(orderWithItems, customer);
+        ContentOrderEntity orderWithItems = new ContentOrderBuilder().WithCustomer(customer).Build();
 
         _orderRepositoryMock
             .Setup(x => x.GetByIdWithItemsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
@@ -148,7 +157,7 @@ public class AdminRemoveItemTierHandlerTests
 
         var command = new AdminRemoveItemTierCommand(
             OrderId: order.Id.ToString(),
-            ItemId: Guid.NewGuid().ToString(),
+            ItemId: item.Id.ToString(),
             TierId: tier.Id.ToString()
         );
 
@@ -250,17 +259,48 @@ public class AdminRemoveItemTierHandlerTests
         ContentOrderEntity order = ContentOrderFactory.Create();
         _orderRepositoryMock.SetupGetByIdOrThrow(order);
 
+        ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, Guid.NewGuid());
+        _orderRepositoryMock.SetupGetItemByIdOrThrow(item);
+
+        var command = new AdminRemoveItemTierCommand(
+            OrderId: order.Id.ToString(),
+            ItemId: item.Id.ToString(),
+            TierId: Guid.NewGuid().ToString()
+        );
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
+    }
+
+    [Fact]
+    public async Task Handle_WhenItemBelongsToAnotherOrder_ShouldThrowNotFoundExceptionWithoutRemoving()
+    {
+        // Arrange
+        ContentOrderEntity order = ContentOrderFactory.Create();
+        _orderRepositoryMock.SetupGetByIdOrThrow(order);
+
         var command = new AdminRemoveItemTierCommand(
             OrderId: order.Id.ToString(),
             ItemId: Guid.NewGuid().ToString(),
             TierId: Guid.NewGuid().ToString()
         );
 
-        // Act — default mock throws NotFoundException for GetItemTierByIdOrThrowAsync
+        // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _orderRepositoryMock.Verify(
+            x => x.GetItemTierByIdOrThrowAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
+        _orderRepositoryMock.Verify(
+            x => x.RemoveItemTierAsync(It.IsAny<ContentItemTierEntity>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
     }
 
     [Fact]
@@ -270,17 +310,19 @@ public class AdminRemoveItemTierHandlerTests
         ContentOrderEntity order = ContentOrderFactory.Create();
         _orderRepositoryMock.SetupGetByIdOrThrow(order);
 
-        ContentItemTierEntity tier = ContentItemTierFactory.CreateDefault(Guid.NewGuid(), Guid.NewGuid());
+        ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, Guid.NewGuid());
+        _orderRepositoryMock.SetupGetItemByIdOrThrow(item);
+
+        ContentItemTierEntity tier = ContentItemTierFactory.CreateDefault(item.Id, Guid.NewGuid());
         _orderRepositoryMock.SetupGetItemTierByIdOrThrow(tier);
 
-        // GetByIdWithItemsAsync returns null after removal
         _orderRepositoryMock
             .Setup(x => x.GetByIdWithItemsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((ContentOrderEntity?)null);
 
         var command = new AdminRemoveItemTierCommand(
             OrderId: order.Id.ToString(),
-            ItemId: Guid.NewGuid().ToString(),
+            ItemId: item.Id.ToString(),
             TierId: tier.Id.ToString()
         );
 
