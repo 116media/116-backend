@@ -53,7 +53,7 @@ public class AdminForceUnpromoteArticleHandlerTests
         ArticleEntity article = ArticleFactory.CreatePromoted(CategoryId);
         var command = new AdminForceUnpromoteArticleCommand(
             Slug: article.Slug,
-            Reason: TestConstants.Content.Editorial.Article.ValidRejectionReason
+            Reason: TestConstants.Article.ValidRejectionReason
         );
         _articleRepositoryMock.SetupGetBySlug(article.Slug, article);
 
@@ -77,7 +77,7 @@ public class AdminForceUnpromoteArticleHandlerTests
         // Arrange
         var command = new AdminForceUnpromoteArticleCommand(
             Slug: "non-existent-slug",
-            Reason: TestConstants.Content.Editorial.Article.ValidRejectionReason
+            Reason: TestConstants.Article.ValidRejectionReason
         );
         _articleRepositoryMock.SetupGetBySlug("non-existent-slug", null);
 
