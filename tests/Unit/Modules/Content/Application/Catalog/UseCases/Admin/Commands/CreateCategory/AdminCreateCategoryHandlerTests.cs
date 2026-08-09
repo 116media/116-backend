@@ -51,14 +51,14 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         ContentTypeEntity contentType = ContentTypeFactory.Create();
-        string name = TestConstants.Content.Category.ValidName;
-        string slug = TestConstants.Content.Category.ValidSlug;
+        string name = TestConstants.Category.ValidName;
+        string slug = TestConstants.Category.ValidSlug;
 
         var command = new AdminCreateCategoryCommand(
             ContentTypeId: contentType.Id.ToString(),
             Name: name,
             Slug: slug,
-            Description: TestConstants.Content.Category.ValidDescription,
+            Description: TestConstants.Category.ValidDescription,
             IsFree: false,
             IsGossip: false,
             IsExclusive: false
@@ -88,13 +88,13 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         ContentTypeEntity contentType = ContentTypeFactory.Create();
-        string slug = TestConstants.Content.Category.ValidSlug;
+        string slug = TestConstants.Category.ValidSlug;
 
         var command = new AdminCreateCategoryCommand(
             ContentTypeId: contentType.Id.ToString(),
-            Name: TestConstants.Content.Category.ValidName,
+            Name: TestConstants.Category.ValidName,
             Slug: slug,
-            Description: TestConstants.Content.Category.ValidDescription,
+            Description: TestConstants.Category.ValidDescription,
             IsFree: true,
             IsGossip: false,
             IsExclusive: false
@@ -118,13 +118,13 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         ContentTypeEntity contentType = ContentTypeFactory.Create();
-        string slug = TestConstants.Content.Category.ValidSlug;
+        string slug = TestConstants.Category.ValidSlug;
 
         var command = new AdminCreateCategoryCommand(
             ContentTypeId: contentType.Id.ToString(),
-            Name: TestConstants.Content.Category.ValidName,
+            Name: TestConstants.Category.ValidName,
             Slug: slug,
-            Description: TestConstants.Content.Category.ValidDescription,
+            Description: TestConstants.Category.ValidDescription,
             IsFree: false,
             IsGossip: false,
             IsExclusive: false
@@ -162,16 +162,16 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
 
         var command = new AdminCreateCategoryCommand(
             ContentTypeId: videoType.Id.ToString(),
-            Name: TestConstants.Content.Category.ValidName,
-            Slug: TestConstants.Content.Category.ValidSlug,
-            Description: TestConstants.Content.Category.ValidDescription,
+            Name: TestConstants.Category.ValidName,
+            Slug: TestConstants.Category.ValidSlug,
+            Description: TestConstants.Category.ValidDescription,
             IsFree: false,
             IsGossip: false,
             IsExclusive: true
         );
 
         _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(videoType);
-        _categoryRepositoryMock.SetupGetBySlug(TestConstants.Content.Category.ValidSlug, null);
+        _categoryRepositoryMock.SetupGetBySlug(TestConstants.Category.ValidSlug, null);
         _categoryRepositoryMock.SetupGetExclusiveCategory(currentExclusive);
 
         CategoryEntity created = CategoryFactory.Create(videoType);
@@ -194,16 +194,16 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
 
         var command = new AdminCreateCategoryCommand(
             ContentTypeId: contentType.Id.ToString(),
-            Name: TestConstants.Content.Category.ValidName,
-            Slug: TestConstants.Content.Category.ValidSlug,
-            Description: TestConstants.Content.Category.ValidDescription,
+            Name: TestConstants.Category.ValidName,
+            Slug: TestConstants.Category.ValidSlug,
+            Description: TestConstants.Category.ValidDescription,
             IsFree: false,
             IsGossip: false,
             IsExclusive: false
         );
 
         _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
-        _categoryRepositoryMock.SetupGetBySlug(TestConstants.Content.Category.ValidSlug, null);
+        _categoryRepositoryMock.SetupGetBySlug(TestConstants.Category.ValidSlug, null);
 
         CategoryEntity created = CategoryFactory.Create(contentType.Id);
         _categoryRepositoryMock
@@ -225,16 +225,16 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
 
         var command = new AdminCreateCategoryCommand(
             ContentTypeId: videoType.Id.ToString(),
-            Name: TestConstants.Content.Category.ValidName,
-            Slug: TestConstants.Content.Category.ValidSlug,
-            Description: TestConstants.Content.Category.ValidDescription,
+            Name: TestConstants.Category.ValidName,
+            Slug: TestConstants.Category.ValidSlug,
+            Description: TestConstants.Category.ValidDescription,
             IsFree: false,
             IsGossip: false,
             IsExclusive: true
         );
 
         _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(videoType);
-        _categoryRepositoryMock.SetupGetBySlug(TestConstants.Content.Category.ValidSlug, null);
+        _categoryRepositoryMock.SetupGetBySlug(TestConstants.Category.ValidSlug, null);
         _categoryRepositoryMock.SetupGetExclusiveCategory(null);
 
         CategoryEntity created = CategoryFactory.Create(videoType);
@@ -257,16 +257,16 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
 
         var command = new AdminCreateCategoryCommand(
             ContentTypeId: articleType.Id.ToString(),
-            Name: TestConstants.Content.Category.ValidName,
-            Slug: TestConstants.Content.Category.ValidSlug,
-            Description: TestConstants.Content.Category.ValidDescription,
+            Name: TestConstants.Category.ValidName,
+            Slug: TestConstants.Category.ValidSlug,
+            Description: TestConstants.Category.ValidDescription,
             IsFree: false,
             IsGossip: false,
             IsExclusive: true
         );
 
         _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(articleType);
-        _categoryRepositoryMock.SetupGetBySlug(TestConstants.Content.Category.ValidSlug, null);
+        _categoryRepositoryMock.SetupGetBySlug(TestConstants.Category.ValidSlug, null);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
@@ -287,9 +287,9 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
 
         var command = new AdminCreateCategoryCommand(
             ContentTypeId: nonExistentId.ToString(),
-            Name: TestConstants.Content.Category.ValidName,
-            Slug: TestConstants.Content.Category.ValidSlug,
-            Description: TestConstants.Content.Category.ValidDescription,
+            Name: TestConstants.Category.ValidName,
+            Slug: TestConstants.Category.ValidSlug,
+            Description: TestConstants.Category.ValidDescription,
             IsFree: false,
             IsGossip: false,
             IsExclusive: false
@@ -309,13 +309,13 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         ContentTypeEntity contentType = ContentTypeFactory.Create();
-        const string slug = TestConstants.Content.Category.ValidSlug;
+        const string slug = TestConstants.Category.ValidSlug;
 
         var command = new AdminCreateCategoryCommand(
             ContentTypeId: contentType.Id.ToString(),
-            Name: TestConstants.Content.Category.ValidName,
+            Name: TestConstants.Category.ValidName,
             Slug: slug,
-            Description: TestConstants.Content.Category.ValidDescription,
+            Description: TestConstants.Category.ValidDescription,
             IsFree: false,
             IsGossip: false,
             IsExclusive: false
@@ -338,13 +338,13 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         ContentTypeEntity contentType = ContentTypeFactory.Create();
-        string slug = TestConstants.Content.Category.ValidSlug;
+        string slug = TestConstants.Category.ValidSlug;
 
         var command = new AdminCreateCategoryCommand(
             ContentTypeId: contentType.Id.ToString(),
-            Name: TestConstants.Content.Category.ValidName,
+            Name: TestConstants.Category.ValidName,
             Slug: slug,
-            Description: TestConstants.Content.Category.ValidDescription,
+            Description: TestConstants.Category.ValidDescription,
             IsFree: false,
             IsGossip: false,
             IsExclusive: false
