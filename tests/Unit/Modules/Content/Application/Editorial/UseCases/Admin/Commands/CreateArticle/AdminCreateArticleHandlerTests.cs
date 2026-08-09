@@ -57,11 +57,11 @@ public class AdminCreateArticleHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         CategoryEntity category = CategoryFactory.Create(CategoryId);
-        string slug = TestConstants.Content.Editorial.Article.ValidSlug;
+        string slug = TestConstants.Article.ValidSlug;
 
         var command = new AdminCreateArticleCommand(
             CategoryId: category.Id,
-            Title: TestConstants.Content.Editorial.Article.ValidTitle,
+            Title: TestConstants.Article.ValidTitle,
             Slug: slug,
             AuthorId: AuthorId,
             CustomerId: null,
@@ -92,13 +92,13 @@ public class AdminCreateArticleHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         CategoryEntity category = CategoryFactory.Create(CategoryId);
-        string slug = TestConstants.Content.Editorial.Article.ValidSlug;
+        string slug = TestConstants.Article.ValidSlug;
         Guid customerId = Guid.NewGuid();
         Guid orderItemId = Guid.NewGuid();
 
         var command = new AdminCreateArticleCommand(
             CategoryId: category.Id,
-            Title: TestConstants.Content.Editorial.Article.ValidTitle,
+            Title: TestConstants.Article.ValidTitle,
             Slug: slug,
             AuthorId: AuthorId,
             CustomerId: customerId,
@@ -129,11 +129,11 @@ public class AdminCreateArticleHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         CategoryEntity category = CategoryFactory.Create(CategoryId);
-        string slug = TestConstants.Content.Editorial.Article.ValidSlug;
+        string slug = TestConstants.Article.ValidSlug;
 
         var command = new AdminCreateArticleCommand(
             CategoryId: category.Id,
-            Title: TestConstants.Content.Editorial.Article.ValidTitle,
+            Title: TestConstants.Article.ValidTitle,
             Slug: slug,
             AuthorId: AuthorId,
             CustomerId: null,
@@ -170,8 +170,8 @@ public class AdminCreateArticleHandlerTests : BaseContentHandlerTest
 
         var command = new AdminCreateArticleCommand(
             CategoryId: nonExistentId,
-            Title: TestConstants.Content.Editorial.Article.ValidTitle,
-            Slug: TestConstants.Content.Editorial.Article.ValidSlug,
+            Title: TestConstants.Article.ValidTitle,
+            Slug: TestConstants.Article.ValidSlug,
             AuthorId: AuthorId,
             CustomerId: null,
             OrderItemId: null
@@ -191,11 +191,11 @@ public class AdminCreateArticleHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         CategoryEntity category = CategoryFactory.Create(CategoryId);
-        const string slug = TestConstants.Content.Editorial.Article.ValidSlug;
+        const string slug = TestConstants.Article.ValidSlug;
 
         var command = new AdminCreateArticleCommand(
             CategoryId: category.Id,
-            Title: TestConstants.Content.Editorial.Article.ValidTitle,
+            Title: TestConstants.Article.ValidTitle,
             Slug: slug,
             AuthorId: AuthorId,
             CustomerId: null,
@@ -219,11 +219,11 @@ public class AdminCreateArticleHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         CategoryEntity category = CategoryFactory.Create(CategoryId);
-        const string slug = TestConstants.Content.Editorial.Article.ValidSlug;
+        const string slug = TestConstants.Article.ValidSlug;
 
         var command = new AdminCreateArticleCommand(
             CategoryId: category.Id,
-            Title: TestConstants.Content.Editorial.Article.ValidTitle,
+            Title: TestConstants.Article.ValidTitle,
             Slug: slug,
             AuthorId: AuthorId,
             CustomerId: null,
