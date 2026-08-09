@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadArticleImage;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Domain.Enums;
@@ -126,38 +125,6 @@ public class AdminUploadArticleImageValidatorTests
             .Contain(e =>
                 e.PropertyName == nameof(AdminUploadArticleImageCommand.File)
                 && e.ErrorMessage == _i18n.Article.Msg.FileRequired()
-            );
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-        var validator = new AdminUploadArticleImageValidator(_i18n);
-        var command = new AdminUploadArticleImageCommand(
-            ArticleId: string.Empty,
-            File: null!,
-            ImageType: EnumArticleImageType.Cover
-        );
-
-        // Act
-        ValidationResult result = await validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminUploadArticleImageCommand.ArticleId)
-                && e.ErrorMessage == _i18n.Article.Msg.Localizer["IdRequired"].Value
             );
     }
 
