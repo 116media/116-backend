@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateShortVideo;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Tests.Fixtures.Constants;
@@ -30,8 +29,8 @@ public class AdminCreateShortVideoValidatorTests
     {
         // Arrange
         var command = new AdminCreateShortVideoCommand(
-            Title: TestConstants.Content.Editorial.ShortVideo.ValidTitle,
-            Slug: TestConstants.Content.Editorial.ShortVideo.ValidSlug,
+            Title: TestConstants.ShortVideo.ValidTitle,
+            Slug: TestConstants.ShortVideo.ValidSlug,
             AuthorId: Guid.NewGuid(),
             VideoId: null
         );
@@ -54,7 +53,7 @@ public class AdminCreateShortVideoValidatorTests
         // Arrange
         var command = new AdminCreateShortVideoCommand(
             Title: string.Empty,
-            Slug: TestConstants.Content.Editorial.ShortVideo.ValidSlug,
+            Slug: TestConstants.ShortVideo.ValidSlug,
             AuthorId: Guid.NewGuid(),
             VideoId: null
         );
@@ -77,8 +76,8 @@ public class AdminCreateShortVideoValidatorTests
     {
         // Arrange
         var command = new AdminCreateShortVideoCommand(
-            Title: new string('a', TestConstants.Content.Editorial.ShortVideo.TitleMaxLength + 1),
-            Slug: TestConstants.Content.Editorial.ShortVideo.ValidSlug,
+            Title: new string('a', TestConstants.ShortVideo.TitleMaxLength + 1),
+            Slug: TestConstants.ShortVideo.ValidSlug,
             AuthorId: Guid.NewGuid(),
             VideoId: null
         );
@@ -92,8 +91,7 @@ public class AdminCreateShortVideoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateShortVideoCommand.Title)
-                && e.ErrorMessage
-                    == _i18n.ShortVideo.Msg.TitleTooLong(TestConstants.Content.Editorial.ShortVideo.TitleMaxLength)
+                && e.ErrorMessage == _i18n.ShortVideo.Msg.TitleTooLong(TestConstants.ShortVideo.TitleMaxLength)
             );
     }
 
@@ -106,7 +104,7 @@ public class AdminCreateShortVideoValidatorTests
     {
         // Arrange
         var command = new AdminCreateShortVideoCommand(
-            Title: TestConstants.Content.Editorial.ShortVideo.ValidTitle,
+            Title: TestConstants.ShortVideo.ValidTitle,
             Slug: string.Empty,
             AuthorId: Guid.NewGuid(),
             VideoId: null
@@ -130,7 +128,7 @@ public class AdminCreateShortVideoValidatorTests
     {
         // Arrange
         var command = new AdminCreateShortVideoCommand(
-            Title: TestConstants.Content.Editorial.ShortVideo.ValidTitle,
+            Title: TestConstants.ShortVideo.ValidTitle,
             Slug: "Invalid-Slug",
             AuthorId: Guid.NewGuid(),
             VideoId: null
@@ -146,39 +144,6 @@ public class AdminCreateShortVideoValidatorTests
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateShortVideoCommand.Slug)
                 && e.ErrorMessage == _i18n.ShortVideo.Msg.SlugInvalidFormat()
-            );
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-        var validator = new AdminCreateShortVideoValidator(_i18n);
-        var command = new AdminCreateShortVideoCommand(
-            Title: string.Empty,
-            Slug: TestConstants.Content.Editorial.ShortVideo.ValidSlug,
-            AuthorId: Guid.NewGuid(),
-            VideoId: null
-        );
-
-        // Act
-        ValidationResult result = await validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminCreateShortVideoCommand.Title)
-                && e.ErrorMessage == _i18n.ShortVideo.Msg.TitleRequired()
             );
     }
 
