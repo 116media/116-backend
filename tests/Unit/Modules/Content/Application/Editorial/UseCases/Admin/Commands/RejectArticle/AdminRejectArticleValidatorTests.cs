@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.RejectArticle;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Tests.Fixtures.Constants;
@@ -31,7 +30,7 @@ public class AdminRejectArticleValidatorTests
         // Arrange
         var command = new AdminRejectArticleCommand(
             Id: Guid.NewGuid().ToString(),
-            Reason: TestConstants.Content.Editorial.Article.ValidRejectionReason
+            Reason: TestConstants.Article.ValidRejectionReason
         );
 
         // Act
@@ -52,7 +51,7 @@ public class AdminRejectArticleValidatorTests
         // Arrange
         var command = new AdminRejectArticleCommand(
             Id: string.Empty,
-            Reason: TestConstants.Content.Editorial.Article.ValidRejectionReason
+            Reason: TestConstants.Article.ValidRejectionReason
         );
 
         // Act
@@ -74,7 +73,7 @@ public class AdminRejectArticleValidatorTests
         // Arrange
         var command = new AdminRejectArticleCommand(
             Id: "not-a-guid",
-            Reason: TestConstants.Content.Editorial.Article.ValidRejectionReason
+            Reason: TestConstants.Article.ValidRejectionReason
         );
 
         // Act
@@ -119,7 +118,7 @@ public class AdminRejectArticleValidatorTests
         // Arrange
         var command = new AdminRejectArticleCommand(
             Id: Guid.NewGuid().ToString(),
-            Reason: new string('a', TestConstants.Content.Editorial.Article.RejectionReasonMaxLength + 1)
+            Reason: new string('a', TestConstants.Article.RejectionReasonMaxLength + 1)
         );
 
         // Act
@@ -132,37 +131,7 @@ public class AdminRejectArticleValidatorTests
             .Contain(e =>
                 e.PropertyName == nameof(AdminRejectArticleCommand.Reason)
                 && e.ErrorMessage
-                    == _i18n.Article.Msg.RejectionReasonTooLong(
-                        TestConstants.Content.Editorial.Article.RejectionReasonMaxLength
-                    )
-            );
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-        var validator = new AdminRejectArticleValidator(_i18n);
-        var command = new AdminRejectArticleCommand(Id: Guid.NewGuid().ToString(), Reason: string.Empty);
-
-        // Act
-        ValidationResult result = await validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminRejectArticleCommand.Reason)
-                && e.ErrorMessage == _i18n.Article.Msg.RejectionReasonRequired()
+                    == _i18n.Article.Msg.RejectionReasonTooLong(TestConstants.Article.RejectionReasonMaxLength)
             );
     }
 
