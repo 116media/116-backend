@@ -65,11 +65,11 @@ public class AdminCreateLyricsHandlerTests : BaseContentHandlerTest
     ) =>
         new(
             CategoryId: categoryId,
-            SongTitle: TestConstants.Content.Editorial.Lyrics.ValidSongTitle,
-            ArtistName: TestConstants.Content.Editorial.Lyrics.ValidArtistName,
+            SongTitle: TestConstants.Lyrics.ValidSongTitle,
+            ArtistName: TestConstants.Lyrics.ValidArtistName,
             Slug: slug,
-            LyricsText: TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
-            Language: TestConstants.Content.Editorial.Lyrics.ValidLanguage,
+            LyricsText: TestConstants.Lyrics.ValidLyricsText,
+            Language: TestConstants.Lyrics.ValidLanguage,
             AuthorId: AuthorId,
             VideoId: videoId,
             CustomerId: customerId,
@@ -83,7 +83,7 @@ public class AdminCreateLyricsHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         CategoryEntity category = CategoryFactory.Create(CategoryId);
-        string slug = TestConstants.Content.Editorial.Lyrics.ValidSlug;
+        string slug = TestConstants.Lyrics.ValidSlug;
         var command = BuildCommand(category.Id, slug);
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
@@ -110,7 +110,7 @@ public class AdminCreateLyricsHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         CategoryEntity category = CategoryFactory.Create(CategoryId);
-        string slug = TestConstants.Content.Editorial.Lyrics.ValidSlug;
+        string slug = TestConstants.Lyrics.ValidSlug;
         Guid customerId = Guid.NewGuid();
         Guid orderItemId = Guid.NewGuid();
 
@@ -140,7 +140,7 @@ public class AdminCreateLyricsHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         CategoryEntity category = CategoryFactory.Create(CategoryId);
-        string slug = TestConstants.Content.Editorial.Lyrics.ValidSlug;
+        string slug = TestConstants.Lyrics.ValidSlug;
         Guid videoId = Guid.NewGuid();
 
         var command = BuildCommand(category.Id, slug, videoId: videoId);
@@ -176,7 +176,7 @@ public class AdminCreateLyricsHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         CategoryEntity category = CategoryFactory.Create(CategoryId);
-        string slug = TestConstants.Content.Editorial.Lyrics.ValidSlug;
+        string slug = TestConstants.Lyrics.ValidSlug;
         var command = BuildCommand(category.Id, slug);
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
@@ -206,7 +206,7 @@ public class AdminCreateLyricsHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         Guid nonExistentId = Guid.NewGuid();
-        var command = BuildCommand(nonExistentId, TestConstants.Content.Editorial.Lyrics.ValidSlug);
+        var command = BuildCommand(nonExistentId, TestConstants.Lyrics.ValidSlug);
 
         _categoryRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentId);
 
@@ -222,7 +222,7 @@ public class AdminCreateLyricsHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         CategoryEntity category = CategoryFactory.Create(CategoryId);
-        string slug = TestConstants.Content.Editorial.Lyrics.ValidSlug;
+        string slug = TestConstants.Lyrics.ValidSlug;
         var command = BuildCommand(category.Id, slug);
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
@@ -242,7 +242,7 @@ public class AdminCreateLyricsHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         CategoryEntity category = CategoryFactory.Create(CategoryId);
-        string slug = TestConstants.Content.Editorial.Lyrics.ValidSlug;
+        string slug = TestConstants.Lyrics.ValidSlug;
         var command = BuildCommand(category.Id, slug);
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
