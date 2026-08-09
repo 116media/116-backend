@@ -47,7 +47,7 @@ public class AdminRemovePackageSlotHandlerTests : BaseContentHandlerTest
         var command = new AdminRemovePackageSlotCommand(PackageId: package.Id.ToString(), SlotId: slot.Id.ToString());
 
         _packageRepositoryMock.SetupGetByIdWithSlotsOrThrow(package);
-        _packageRepositoryMock.SetupGetSlotById(slot.Id, slot);
+        _packageRepositoryMock.SetupGetSlotByIdInPackage(slot.Id, package.Id, slot);
 
         // Act
         AdminRemovePackageSlotResult result = await _handler.Handle(command, CancellationToken.None);
@@ -68,7 +68,6 @@ public class AdminRemovePackageSlotHandlerTests : BaseContentHandlerTest
     [Fact]
     public async Task Handle_WhenPackageNotFound_ShouldThrowNotFoundException()
     {
-        // Arrange
         var nonExistentPackageId = Guid.NewGuid();
 
         var command = new AdminRemovePackageSlotCommand(
@@ -98,13 +97,37 @@ public class AdminRemovePackageSlotHandlerTests : BaseContentHandlerTest
         );
 
         _packageRepositoryMock.SetupGetByIdWithSlotsOrThrow(package);
-        _packageRepositoryMock.SetupGetSlotById(nonExistentSlotId, null);
+        _packageRepositoryMock.SetupGetSlotByIdInPackage(nonExistentSlotId, package.Id, null);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+    }
+
+    [Fact]
+    public async Task Handle_WhenSlotBelongsToAnotherPackage_ShouldThrowNotFoundExceptionWithoutRemoving()
+    {
+        PackageEntity addressedPackage = PackageFactory.Create();
+        PackageEntity owningPackage = PackageFactory.Create();
+        PackageSlotEntity slot = PackageSlotFactory.Create(owningPackage.Id);
+
+        var command = new AdminRemovePackageSlotCommand(
+            PackageId: addressedPackage.Id.ToString(),
+            SlotId: slot.Id.ToString()
+        );
+
+        _packageRepositoryMock.SetupGetByIdWithSlotsOrThrow(addressedPackage);
+        _packageRepositoryMock.SetupGetSlotByIdInPackage(slot.Id, owningPackage.Id, slot);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
+        _packageRepositoryMock.Verify(x => x.RemoveSlot(It.IsAny<PackageSlotEntity>()), Times.Never);
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     #endregion
