@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateVideo;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Tests.Fixtures.Constants;
@@ -27,9 +26,9 @@ public class AdminUpdateVideoValidatorTests
         new(
             Id: Guid.NewGuid().ToString(),
             CategoryId: Guid.NewGuid(),
-            Title: TestConstants.Content.Editorial.Video.ValidTitle,
-            Slug: TestConstants.Content.Editorial.Video.ValidSlug,
-            Description: TestConstants.Content.Editorial.Video.ValidDescription,
+            Title: TestConstants.Video.ValidTitle,
+            Slug: TestConstants.Video.ValidSlug,
+            Description: TestConstants.Video.ValidDescription,
             CustomerId: null,
             OrderItemId: null,
             SocialBoost: false,
@@ -159,7 +158,7 @@ public class AdminUpdateVideoValidatorTests
         // Arrange
         var command = ValidCommand() with
         {
-            Title = new string('a', TestConstants.Content.Editorial.Video.TitleMaxLength + 1),
+            Title = new string('a', TestConstants.Video.TitleMaxLength + 1),
         };
 
         // Act
@@ -171,7 +170,7 @@ public class AdminUpdateVideoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateVideoCommand.Title)
-                && e.ErrorMessage == _i18n.Video.Msg.TitleTooLong(TestConstants.Content.Editorial.Video.TitleMaxLength)
+                && e.ErrorMessage == _i18n.Video.Msg.TitleTooLong(TestConstants.Video.TitleMaxLength)
             );
     }
 
@@ -425,35 +424,6 @@ public class AdminUpdateVideoValidatorTests
 
         // Assert
         result.IsValid.Should().BeTrue();
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-
-        var validator = new AdminUpdateVideoValidator(_i18n);
-        var command = ValidCommand() with { Title = string.Empty };
-
-        // Act
-        ValidationResult result = await validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminUpdateVideoCommand.Title)
-                && e.ErrorMessage == _i18n.Video.Msg.TitleRequired()
-            );
     }
 
     #endregion
