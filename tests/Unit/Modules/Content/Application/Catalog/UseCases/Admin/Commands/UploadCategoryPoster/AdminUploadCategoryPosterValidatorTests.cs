@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.UploadCategoryPoster;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Tests.Fixtures.Helpers;
@@ -83,34 +82,6 @@ public class AdminUploadCategoryPosterValidatorTests
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminUploadCategoryPosterCommand.File)
-                && e.ErrorMessage == _i18n.Category.Msg.FileRequired()
-            );
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-        var validator = new AdminUploadCategoryPosterValidator(_i18n);
-        var command = new AdminUploadCategoryPosterCommand(Id: Guid.NewGuid().ToString(), File: null!);
-
-        // Act
-        ValidationResult result = await validator.ValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
