@@ -41,12 +41,9 @@ public class AdminCreatePackageHandlerTests : BaseContentHandlerTest
     public async Task Handle_ShouldCreatePackageAndReloadWithSlots()
     {
         // Arrange
-        string name = TestConstants.Content.Package.ValidName;
+        string name = TestConstants.Package.ValidName;
 
-        var command = new AdminCreatePackageCommand(
-            Name: name,
-            Description: TestConstants.Content.Package.ValidDescription
-        );
+        var command = new AdminCreatePackageCommand(Name: name, Description: TestConstants.Package.ValidDescription);
 
         PackageEntity created = PackageFactory.Create(name);
         _packageRepositoryMock
@@ -70,8 +67,8 @@ public class AdminCreatePackageHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         var command = new AdminCreatePackageCommand(
-            Name: TestConstants.Content.Package.ValidName,
-            Description: TestConstants.Content.Package.ValidDescription
+            Name: TestConstants.Package.ValidName,
+            Description: TestConstants.Package.ValidDescription
         );
 
         PackageEntity created = PackageFactory.Create();
