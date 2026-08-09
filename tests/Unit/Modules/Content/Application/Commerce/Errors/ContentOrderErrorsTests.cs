@@ -13,7 +13,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Commerce.Errors;
 public class ContentOrderErrorsTests
 {
     private readonly ContentOrderErrors _errors = TestErrorsFactory.CreateContentOrderErrors();
-    private readonly ContentOrderErrorMessage _message = LocalizerFactory.CreateMessage<ContentOrderErrorMessage>("en");
+    private readonly ContentOrderErrorMessage _message = LocalizerFactory.CreateMessage<ContentOrderErrorMessage>();
 
     [Fact]
     public void NotFound_ShouldReturnNotFoundException()
