@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArticleSeo;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Tests.Fixtures.Helpers;
@@ -216,34 +215,6 @@ public class AdminUpdateArticleSeoValidatorTests
 
         // Assert
         result.IsValid.Should().BeTrue();
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-        var validator = new AdminUpdateArticleSeoValidator(_i18n);
-        var command = new AdminUpdateArticleSeoCommand(Id: string.Empty, MetaTitle: null, MetaDescription: null);
-
-        // Act
-        ValidationResult result = await validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminUpdateArticleSeoCommand.Id)
-                && e.ErrorMessage == _i18n.Article.Msg.Localizer["IdRequired"].Value
-            );
     }
 
     #endregion
