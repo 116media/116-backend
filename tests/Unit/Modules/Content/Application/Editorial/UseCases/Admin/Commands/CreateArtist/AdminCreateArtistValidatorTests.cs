@@ -27,8 +27,8 @@ public class AdminCreateArtistValidatorTests
         string? bio = null
     ) =>
         new(
-            name ?? TestConstants.Content.Editorial.Artist.ValidName,
-            slug ?? TestConstants.Content.Editorial.Artist.ValidSlug,
+            name ?? TestConstants.Artist.ValidName,
+            slug ?? TestConstants.Artist.ValidSlug,
             bio,
             null,
             null,
