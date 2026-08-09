@@ -1,4 +1,3 @@
-using System.Reflection;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.AttachYoutubeVideoUrl;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -6,6 +5,7 @@ using _116.Content.Domain.Entities;
 using _116.Content.Domain.Events;
 using _116.Core.Application.Shared.Repositories;
 using _116.Shared.Application.Exceptions;
+using _116.Tests.Fixtures.Builders.Entities.Content;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
@@ -45,14 +45,20 @@ public class AdminAttachYoutubeVideoUrlHandlerTests : BaseContentHandlerTest
         );
     }
 
-    // Sets the Category navigation property via reflection so mapper can access Category.Name.
-    private static VideoEntity WithCategory(VideoEntity entity)
+    /// <summary>
+    /// Builds a video carrying the Category navigation EF Core would populate, so the mapper can
+    /// read Category.Name.
+    /// </summary>
+    private static VideoEntity CreateVideoWithCategory(DateTimeOffset? shootingScheduledAt = null)
     {
-        CategoryEntity category = CategoryFactory.Create(CategoryId);
-        typeof(VideoEntity)
-            .GetProperty("Category", BindingFlags.Public | BindingFlags.Instance)!
-            .SetValue(entity, category);
-        return entity;
+        var builder = new VideoBuilder(CategoryId).WithCategory(CategoryFactory.Create(CategoryId));
+
+        if (shootingScheduledAt.HasValue)
+        {
+            builder.WithShootingScheduledAt(shootingScheduledAt.Value);
+        }
+
+        return builder.Build();
     }
 
     #region Success Cases
@@ -61,10 +67,10 @@ public class AdminAttachYoutubeVideoUrlHandlerTests : BaseContentHandlerTest
     public async Task Handle_WithValidUrl_ShouldAttachUrlAndCommit()
     {
         // Arrange
-        VideoEntity video = WithCategory(VideoFactory.Create(CategoryId));
+        VideoEntity video = CreateVideoWithCategory();
         var command = new AdminAttachYoutubeVideoUrlCommand(
             VideoId: video.Id.ToString(),
-            YoutubeVideoUrl: TestConstants.Content.Editorial.Video.ValidYoutubeVideoUrl
+            YoutubeVideoUrl: TestConstants.Video.ValidYoutubeVideoUrl
         );
 
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
@@ -87,10 +93,10 @@ public class AdminAttachYoutubeVideoUrlHandlerTests : BaseContentHandlerTest
     public async Task Handle_WithValidUrl_ShouldRaiseAttachmentEventAndSkipInlineThumbnailWork()
     {
         // Arrange
-        VideoEntity video = WithCategory(VideoFactory.Create(CategoryId));
+        VideoEntity video = CreateVideoWithCategory();
         var command = new AdminAttachYoutubeVideoUrlCommand(
             VideoId: video.Id.ToString(),
-            YoutubeVideoUrl: TestConstants.Content.Editorial.Video.ValidYoutubeVideoUrl
+            YoutubeVideoUrl: TestConstants.Video.ValidYoutubeVideoUrl
         );
 
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
@@ -122,7 +128,7 @@ public class AdminAttachYoutubeVideoUrlHandlerTests : BaseContentHandlerTest
         Guid nonExistentId = Guid.NewGuid();
         var command = new AdminAttachYoutubeVideoUrlCommand(
             VideoId: nonExistentId.ToString(),
-            YoutubeVideoUrl: TestConstants.Content.Editorial.Video.ValidYoutubeVideoUrl
+            YoutubeVideoUrl: TestConstants.Video.ValidYoutubeVideoUrl
         );
         _videoRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentId);
 
@@ -137,10 +143,10 @@ public class AdminAttachYoutubeVideoUrlHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenShootIsScheduledInTheFuture_ShouldThrowBadRequestException()
     {
         // Arrange
-        VideoEntity video = WithCategory(VideoFactory.CreateWithFutureShoot(CategoryId));
+        VideoEntity video = CreateVideoWithCategory(DateTimeOffset.UtcNow.AddDays(30));
         var command = new AdminAttachYoutubeVideoUrlCommand(
             VideoId: video.Id.ToString(),
-            YoutubeVideoUrl: TestConstants.Content.Editorial.Video.ValidYoutubeVideoUrl
+            YoutubeVideoUrl: TestConstants.Video.ValidYoutubeVideoUrl
         );
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
 
@@ -157,10 +163,10 @@ public class AdminAttachYoutubeVideoUrlHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenShootIsScheduledInThePast_ShouldAttachUrlSuccessfully()
     {
         // Arrange
-        VideoEntity video = WithCategory(VideoFactory.CreateWithPastShoot(CategoryId));
+        VideoEntity video = CreateVideoWithCategory(DateTimeOffset.UtcNow.AddDays(-7));
         var command = new AdminAttachYoutubeVideoUrlCommand(
             VideoId: video.Id.ToString(),
-            YoutubeVideoUrl: TestConstants.Content.Editorial.Video.ValidYoutubeVideoUrl
+            YoutubeVideoUrl: TestConstants.Video.ValidYoutubeVideoUrl
         );
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
         _videoRepositoryMock
