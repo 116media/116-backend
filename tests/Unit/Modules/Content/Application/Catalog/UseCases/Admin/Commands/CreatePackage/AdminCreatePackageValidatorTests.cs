@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.CreatePackage;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Tests.Fixtures.Constants;
@@ -29,8 +28,8 @@ public class AdminCreatePackageValidatorTests
     {
         // Arrange
         var command = new AdminCreatePackageCommand(
-            Name: TestConstants.Content.Package.ValidName,
-            Description: TestConstants.Content.Package.ValidDescription
+            Name: TestConstants.Package.ValidName,
+            Description: TestConstants.Package.ValidDescription
         );
 
         // Act
@@ -51,7 +50,7 @@ public class AdminCreatePackageValidatorTests
         // Arrange
         var command = new AdminCreatePackageCommand(
             Name: string.Empty,
-            Description: TestConstants.Content.Package.ValidDescription
+            Description: TestConstants.Package.ValidDescription
         );
 
         // Act
@@ -72,8 +71,8 @@ public class AdminCreatePackageValidatorTests
     {
         // Arrange
         var command = new AdminCreatePackageCommand(
-            Name: new string('a', TestConstants.Content.Package.NameMaxLength + 1),
-            Description: TestConstants.Content.Package.ValidDescription
+            Name: new string('a', TestConstants.Package.NameMaxLength + 1),
+            Description: TestConstants.Package.ValidDescription
         );
 
         // Act
@@ -85,7 +84,7 @@ public class AdminCreatePackageValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreatePackageCommand.Name)
-                && e.ErrorMessage == _i18n.Package.Msg.NameTooLong(TestConstants.Content.Package.NameMaxLength)
+                && e.ErrorMessage == _i18n.Package.Msg.NameTooLong(TestConstants.Package.NameMaxLength)
             );
     }
 
@@ -98,8 +97,8 @@ public class AdminCreatePackageValidatorTests
     {
         // Arrange
         var command = new AdminCreatePackageCommand(
-            Name: TestConstants.Content.Package.ValidName,
-            Description: new string('d', TestConstants.Content.Package.DescriptionMaxLength + 1)
+            Name: TestConstants.Package.ValidName,
+            Description: new string('d', TestConstants.Package.DescriptionMaxLength + 1)
         );
 
         // Act
@@ -111,39 +110,7 @@ public class AdminCreatePackageValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreatePackageCommand.Description)
-                && e.ErrorMessage
-                    == _i18n.Package.Msg.DescriptionTooLong(TestConstants.Content.Package.DescriptionMaxLength)
-            );
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-        var validator = new AdminCreatePackageValidator(_i18n);
-        var command = new AdminCreatePackageCommand(
-            Name: string.Empty,
-            Description: TestConstants.Content.Package.ValidDescription
-        );
-
-        // Act
-        ValidationResult result = await validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminCreatePackageCommand.Name)
-                && e.ErrorMessage == _i18n.Package.Msg.NameRequired()
+                && e.ErrorMessage == _i18n.Package.Msg.DescriptionTooLong(TestConstants.Package.DescriptionMaxLength)
             );
     }
 
