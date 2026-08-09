@@ -49,9 +49,9 @@ public class AdminUpdateVideoHandlerTests : BaseContentHandlerTest
         new(
             Id: video.Id.ToString(),
             CategoryId: categoryId,
-            Title: TestConstants.Content.Editorial.Video.ValidTitle,
-            Slug: TestConstants.Content.Editorial.Video.ValidSlug,
-            Description: TestConstants.Content.Editorial.Video.ValidDescription,
+            Title: TestConstants.Video.ValidTitle,
+            Slug: TestConstants.Video.ValidSlug,
+            Description: TestConstants.Video.ValidDescription,
             CustomerId: null,
             OrderItemId: null,
             SocialBoost: false,
