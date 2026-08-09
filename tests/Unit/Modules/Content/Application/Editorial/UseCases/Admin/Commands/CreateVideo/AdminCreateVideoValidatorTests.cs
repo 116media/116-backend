@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateVideo;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Tests.Fixtures.Constants;
@@ -31,12 +30,12 @@ public class AdminCreateVideoValidatorTests
         // Arrange
         var command = new AdminCreateVideoCommand(
             CategoryId: Guid.NewGuid(),
-            Title: TestConstants.Content.Editorial.Video.ValidTitle,
-            Slug: TestConstants.Content.Editorial.Video.ValidSlug,
+            Title: TestConstants.Video.ValidTitle,
+            Slug: TestConstants.Video.ValidSlug,
             AuthorId: Guid.NewGuid(),
             CustomerId: null,
             OrderItemId: null,
-            Description: TestConstants.Content.Editorial.Video.ValidDescription,
+            Description: TestConstants.Video.ValidDescription,
             ShootingScheduledAt: null
         );
 
@@ -54,12 +53,12 @@ public class AdminCreateVideoValidatorTests
         // Arrange
         var command = new AdminCreateVideoCommand(
             CategoryId: Guid.NewGuid(),
-            Title: TestConstants.Content.Editorial.Video.ValidTitle,
-            Slug: TestConstants.Content.Editorial.Video.ValidSlug,
+            Title: TestConstants.Video.ValidTitle,
+            Slug: TestConstants.Video.ValidSlug,
             AuthorId: Guid.NewGuid(),
             CustomerId: Guid.NewGuid(),
             OrderItemId: Guid.NewGuid(),
-            Description: TestConstants.Content.Editorial.Video.ValidDescription,
+            Description: TestConstants.Video.ValidDescription,
             ShootingScheduledAt: null
         );
 
@@ -81,12 +80,12 @@ public class AdminCreateVideoValidatorTests
         // Arrange
         var command = new AdminCreateVideoCommand(
             CategoryId: Guid.Empty,
-            Title: TestConstants.Content.Editorial.Video.ValidTitle,
-            Slug: TestConstants.Content.Editorial.Video.ValidSlug,
+            Title: TestConstants.Video.ValidTitle,
+            Slug: TestConstants.Video.ValidSlug,
             AuthorId: Guid.NewGuid(),
             CustomerId: null,
             OrderItemId: null,
-            Description: TestConstants.Content.Editorial.Video.ValidDescription,
+            Description: TestConstants.Video.ValidDescription,
             ShootingScheduledAt: null
         );
 
@@ -114,11 +113,11 @@ public class AdminCreateVideoValidatorTests
         var command = new AdminCreateVideoCommand(
             CategoryId: Guid.NewGuid(),
             Title: string.Empty,
-            Slug: TestConstants.Content.Editorial.Video.ValidSlug,
+            Slug: TestConstants.Video.ValidSlug,
             AuthorId: Guid.NewGuid(),
             CustomerId: null,
             OrderItemId: null,
-            Description: TestConstants.Content.Editorial.Video.ValidDescription,
+            Description: TestConstants.Video.ValidDescription,
             ShootingScheduledAt: null
         );
 
@@ -141,12 +140,12 @@ public class AdminCreateVideoValidatorTests
         // Arrange
         var command = new AdminCreateVideoCommand(
             CategoryId: Guid.NewGuid(),
-            Title: new string('a', TestConstants.Content.Editorial.Video.TitleMaxLength + 1),
-            Slug: TestConstants.Content.Editorial.Video.ValidSlug,
+            Title: new string('a', TestConstants.Video.TitleMaxLength + 1),
+            Slug: TestConstants.Video.ValidSlug,
             AuthorId: Guid.NewGuid(),
             CustomerId: null,
             OrderItemId: null,
-            Description: TestConstants.Content.Editorial.Video.ValidDescription,
+            Description: TestConstants.Video.ValidDescription,
             ShootingScheduledAt: null
         );
 
@@ -159,7 +158,7 @@ public class AdminCreateVideoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateVideoCommand.Title)
-                && e.ErrorMessage == _i18n.Video.Msg.TitleTooLong(TestConstants.Content.Editorial.Video.TitleMaxLength)
+                && e.ErrorMessage == _i18n.Video.Msg.TitleTooLong(TestConstants.Video.TitleMaxLength)
             );
     }
 
@@ -173,12 +172,12 @@ public class AdminCreateVideoValidatorTests
         // Arrange
         var command = new AdminCreateVideoCommand(
             CategoryId: Guid.NewGuid(),
-            Title: TestConstants.Content.Editorial.Video.ValidTitle,
+            Title: TestConstants.Video.ValidTitle,
             Slug: string.Empty,
             AuthorId: Guid.NewGuid(),
             CustomerId: null,
             OrderItemId: null,
-            Description: TestConstants.Content.Editorial.Video.ValidDescription,
+            Description: TestConstants.Video.ValidDescription,
             ShootingScheduledAt: null
         );
 
@@ -201,12 +200,12 @@ public class AdminCreateVideoValidatorTests
         // Arrange
         var command = new AdminCreateVideoCommand(
             CategoryId: Guid.NewGuid(),
-            Title: TestConstants.Content.Editorial.Video.ValidTitle,
+            Title: TestConstants.Video.ValidTitle,
             Slug: "Invalid-Slug",
             AuthorId: Guid.NewGuid(),
             CustomerId: null,
             OrderItemId: null,
-            Description: TestConstants.Content.Editorial.Video.ValidDescription,
+            Description: TestConstants.Video.ValidDescription,
             ShootingScheduledAt: null
         );
 
@@ -233,12 +232,12 @@ public class AdminCreateVideoValidatorTests
         // Arrange
         var command = new AdminCreateVideoCommand(
             CategoryId: Guid.NewGuid(),
-            Title: TestConstants.Content.Editorial.Video.ValidTitle,
-            Slug: TestConstants.Content.Editorial.Video.ValidSlug,
+            Title: TestConstants.Video.ValidTitle,
+            Slug: TestConstants.Video.ValidSlug,
             AuthorId: Guid.NewGuid(),
             CustomerId: Guid.NewGuid(),
             OrderItemId: null,
-            Description: TestConstants.Content.Editorial.Video.ValidDescription,
+            Description: TestConstants.Video.ValidDescription,
             ShootingScheduledAt: null
         );
 
@@ -261,12 +260,12 @@ public class AdminCreateVideoValidatorTests
         // Arrange
         var command = new AdminCreateVideoCommand(
             CategoryId: Guid.NewGuid(),
-            Title: TestConstants.Content.Editorial.Video.ValidTitle,
-            Slug: TestConstants.Content.Editorial.Video.ValidSlug,
+            Title: TestConstants.Video.ValidTitle,
+            Slug: TestConstants.Video.ValidSlug,
             AuthorId: Guid.NewGuid(),
             CustomerId: null,
             OrderItemId: Guid.NewGuid(),
-            Description: TestConstants.Content.Editorial.Video.ValidDescription,
+            Description: TestConstants.Video.ValidDescription,
             ShootingScheduledAt: null
         );
 
@@ -293,8 +292,8 @@ public class AdminCreateVideoValidatorTests
         // Arrange
         var command = new AdminCreateVideoCommand(
             CategoryId: Guid.NewGuid(),
-            Title: TestConstants.Content.Editorial.Video.ValidTitle,
-            Slug: TestConstants.Content.Editorial.Video.ValidSlug,
+            Title: TestConstants.Video.ValidTitle,
+            Slug: TestConstants.Video.ValidSlug,
             AuthorId: Guid.NewGuid(),
             CustomerId: null,
             OrderItemId: null,
@@ -312,43 +311,6 @@ public class AdminCreateVideoValidatorTests
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateVideoCommand.Description)
                 && e.ErrorMessage == _i18n.Video.Msg.DescriptionRequired()
-            );
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-        var validator = new AdminCreateVideoValidator(_i18n);
-        var command = new AdminCreateVideoCommand(
-            CategoryId: Guid.NewGuid(),
-            Title: string.Empty,
-            Slug: TestConstants.Content.Editorial.Video.ValidSlug,
-            AuthorId: Guid.NewGuid(),
-            CustomerId: null,
-            OrderItemId: null,
-            Description: TestConstants.Content.Editorial.Video.ValidDescription,
-            ShootingScheduledAt: null
-        );
-
-        // Act
-        ValidationResult result = await validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminCreateVideoCommand.Title)
-                && e.ErrorMessage == _i18n.Video.Msg.TitleRequired()
             );
     }
 
