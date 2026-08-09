@@ -53,7 +53,7 @@ public class AdminVerifyPaymentHandlerTests
 
         var command = new AdminVerifyPaymentCommand(
             OrderId: order.Id.ToString(),
-            ReceiptUrl: TestConstants.Content.Commerce.ValidReceiptUrl,
+            ReceiptUrl: TestConstants.Commerce.ValidReceiptUrl,
             AdminUserId: Guid.NewGuid()
         );
 
@@ -77,7 +77,7 @@ public class AdminVerifyPaymentHandlerTests
 
         var command = new AdminVerifyPaymentCommand(
             OrderId: Guid.NewGuid().ToString(),
-            ReceiptUrl: TestConstants.Content.Commerce.ValidReceiptUrl,
+            ReceiptUrl: TestConstants.Commerce.ValidReceiptUrl,
             AdminUserId: Guid.NewGuid()
         );
 
@@ -98,7 +98,7 @@ public class AdminVerifyPaymentHandlerTests
 
         var command = new AdminVerifyPaymentCommand(
             OrderId: order.Id.ToString(),
-            ReceiptUrl: TestConstants.Content.Commerce.ValidReceiptUrl,
+            ReceiptUrl: TestConstants.Commerce.ValidReceiptUrl,
             AdminUserId: Guid.NewGuid()
         );
 
