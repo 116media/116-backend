@@ -19,8 +19,8 @@ public class PricingTierEntityTests
     {
         // Arrange
         var id = Guid.NewGuid();
-        string name = TestConstants.Content.PricingTier.ValidName;
-        string description = TestConstants.Content.PricingTier.ValidDescription;
+        string name = TestConstants.PricingTier.ValidName;
+        string description = TestConstants.PricingTier.ValidDescription;
 
         // Act
         var entity = PricingTierEntity.Create(id, name, description, TestErrorsFactory.CreatePricingTierErrors());
@@ -36,12 +36,12 @@ public class PricingTierEntityTests
     public void Create_WithDescription_ShouldSetDescription()
     {
         // Arrange
-        string description = TestConstants.Content.PricingTier.ValidDescription;
+        string description = TestConstants.PricingTier.ValidDescription;
 
         // Act
         var entity = PricingTierEntity.Create(
             Guid.NewGuid(),
-            TestConstants.Content.PricingTier.ValidName,
+            TestConstants.PricingTier.ValidName,
             description,
             TestErrorsFactory.CreatePricingTierErrors()
         );
@@ -61,7 +61,7 @@ public class PricingTierEntityTests
             PricingTierEntity.Create(
                 Guid.NewGuid(),
                 invalidName!,
-                TestConstants.Content.PricingTier.ValidDescription,
+                TestConstants.PricingTier.ValidDescription,
                 TestErrorsFactory.CreatePricingTierErrors()
             );
 
@@ -79,21 +79,21 @@ public class PricingTierEntityTests
         // Arrange
         var entity = PricingTierEntity.Create(
             Guid.NewGuid(),
-            TestConstants.Content.PricingTier.ValidName,
-            TestConstants.Content.PricingTier.ValidDescription,
+            TestConstants.PricingTier.ValidName,
+            TestConstants.PricingTier.ValidDescription,
             TestErrorsFactory.CreatePricingTierErrors()
         );
 
         // Act
         entity.Update(
-            TestConstants.Content.PricingTier.AnotherValidName,
-            TestConstants.Content.PricingTier.ValidDescription,
+            TestConstants.PricingTier.AnotherValidName,
+            TestConstants.PricingTier.ValidDescription,
             TestErrorsFactory.CreatePricingTierErrors()
         );
 
         // Assert
-        entity.Name.Should().Be(TestConstants.Content.PricingTier.AnotherValidName);
-        entity.Description.Should().Be(TestConstants.Content.PricingTier.ValidDescription);
+        entity.Name.Should().Be(TestConstants.PricingTier.AnotherValidName);
+        entity.Description.Should().Be(TestConstants.PricingTier.ValidDescription);
     }
 
     [Theory]
@@ -105,8 +105,8 @@ public class PricingTierEntityTests
         // Arrange
         var entity = PricingTierEntity.Create(
             Guid.NewGuid(),
-            TestConstants.Content.PricingTier.ValidName,
-            TestConstants.Content.PricingTier.ValidDescription,
+            TestConstants.PricingTier.ValidName,
+            TestConstants.PricingTier.ValidDescription,
             TestErrorsFactory.CreatePricingTierErrors()
         );
 
@@ -114,7 +114,7 @@ public class PricingTierEntityTests
         Action act = () =>
             entity.Update(
                 invalidName!,
-                TestConstants.Content.PricingTier.ValidDescription,
+                TestConstants.PricingTier.ValidDescription,
                 TestErrorsFactory.CreatePricingTierErrors()
             );
 
@@ -128,18 +128,14 @@ public class PricingTierEntityTests
         // Arrange
         var entity = PricingTierEntity.Create(
             Guid.NewGuid(),
-            TestConstants.Content.PricingTier.ValidName,
-            TestConstants.Content.PricingTier.ValidDescription,
+            TestConstants.PricingTier.ValidName,
+            TestConstants.PricingTier.ValidDescription,
             TestErrorsFactory.CreatePricingTierErrors()
         );
         const string newDescription = "Updated pricing tier description.";
 
         // Act
-        entity.Update(
-            TestConstants.Content.PricingTier.ValidName,
-            newDescription,
-            TestErrorsFactory.CreatePricingTierErrors()
-        );
+        entity.Update(TestConstants.PricingTier.ValidName, newDescription, TestErrorsFactory.CreatePricingTierErrors());
 
         // Assert
         entity.Description.Should().Be(newDescription);
@@ -155,8 +151,8 @@ public class PricingTierEntityTests
         // Arrange
         var entity = PricingTierEntity.Create(
             Guid.NewGuid(),
-            TestConstants.Content.PricingTier.ValidName,
-            TestConstants.Content.PricingTier.ValidDescription,
+            TestConstants.PricingTier.ValidName,
+            TestConstants.PricingTier.ValidDescription,
             TestErrorsFactory.CreatePricingTierErrors()
         );
         entity.Deactivate();
@@ -175,8 +171,8 @@ public class PricingTierEntityTests
         // Arrange
         var entity = PricingTierEntity.Create(
             Guid.NewGuid(),
-            TestConstants.Content.PricingTier.ValidName,
-            TestConstants.Content.PricingTier.ValidDescription,
+            TestConstants.PricingTier.ValidName,
+            TestConstants.PricingTier.ValidDescription,
             TestErrorsFactory.CreatePricingTierErrors()
         );
 
@@ -197,8 +193,8 @@ public class PricingTierEntityTests
         // Arrange
         var entity = PricingTierEntity.Create(
             Guid.NewGuid(),
-            TestConstants.Content.PricingTier.ValidName,
-            TestConstants.Content.PricingTier.ValidDescription,
+            TestConstants.PricingTier.ValidName,
+            TestConstants.PricingTier.ValidDescription,
             TestErrorsFactory.CreatePricingTierErrors()
         );
 
@@ -216,8 +212,8 @@ public class PricingTierEntityTests
         // Arrange
         var entity = PricingTierEntity.Create(
             Guid.NewGuid(),
-            TestConstants.Content.PricingTier.ValidName,
-            TestConstants.Content.PricingTier.ValidDescription,
+            TestConstants.PricingTier.ValidName,
+            TestConstants.PricingTier.ValidDescription,
             TestErrorsFactory.CreatePricingTierErrors()
         );
         entity.Deactivate();
