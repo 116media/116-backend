@@ -14,7 +14,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Shared.Errors;
 public class TranslationErrorsTests
 {
     private readonly TranslationErrors _errors = TestErrorsFactory.CreateTranslationErrors();
-    private readonly TranslationErrorMessage _message = LocalizerFactory.CreateMessage<TranslationErrorMessage>("en");
+    private readonly TranslationErrorMessage _message = LocalizerFactory.CreateMessage<TranslationErrorMessage>();
 
     #region TranslationErrors
 
