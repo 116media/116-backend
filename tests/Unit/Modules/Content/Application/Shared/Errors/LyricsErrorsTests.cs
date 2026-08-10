@@ -13,7 +13,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Shared.Errors;
 public class LyricsErrorsTests
 {
     private readonly LyricsErrors _errors = TestErrorsFactory.CreateLyricsErrors();
-    private readonly LyricsErrorMessage _message = LocalizerFactory.CreateMessage<LyricsErrorMessage>("en");
+    private readonly LyricsErrorMessage _message = LocalizerFactory.CreateMessage<LyricsErrorMessage>();
 
     [Fact]
     public void NotFound_WithId_ShouldReturnNotFoundException()
