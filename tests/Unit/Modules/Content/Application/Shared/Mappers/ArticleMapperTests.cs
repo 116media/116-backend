@@ -4,6 +4,7 @@ using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
 using _116.Shared.Application.DTOs;
+using _116.Tests.Fixtures.Builders.Entities.Content;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Factories.Core;
 using _116.Unit.Tests.Common;
@@ -67,9 +68,8 @@ public class ArticleMapperTests : BaseContentHandlerTest
     public async Task ToArticleSummaryDtoAsync_WhenCategoryIsLoaded_ShouldMapCategoryName()
     {
         // Arrange
-        ArticleEntity article = ArticleFactory.Create(CategoryId);
         CategoryEntity category = CategoryFactory.Create(ContentTypeId);
-        article.GetType().GetProperty("Category")!.SetValue(article, category);
+        ArticleEntity article = new ArticleBuilder(CategoryId).WithCategory(category).Build();
 
         // Act
         ArticleSummaryDto dto = await article.ToArticleSummaryDtoAsync(
@@ -399,9 +399,8 @@ public class ArticleMapperTests : BaseContentHandlerTest
     public async Task ToArticleDetailDtoAsync_WhenCategoryIsLoaded_ShouldMapCategoryName()
     {
         // Arrange
-        ArticleEntity article = ArticleFactory.Create(CategoryId);
         CategoryEntity category = CategoryFactory.Create(ContentTypeId);
-        article.GetType().GetProperty("Category")!.SetValue(article, category);
+        ArticleEntity article = new ArticleBuilder(CategoryId).WithCategory(category).Build();
 
         // Act
         ArticleDetailDto dto = await article.ToArticleDetailDtoAsync(
@@ -567,9 +566,8 @@ public class ArticleMapperTests : BaseContentHandlerTest
     public async Task ToArticleDetailDtoAsync_WhenFreeArticle_ShouldMapCustomerFieldsAsNull()
     {
         // Arrange
-        ArticleEntity article = ArticleFactory.Create(CategoryId);
         CategoryEntity category = CategoryFactory.Create(ContentTypeId);
-        article.GetType().GetProperty("Category")!.SetValue(article, category);
+        ArticleEntity article = new ArticleBuilder(CategoryId).WithCategory(category).Build();
 
         // Act
         ArticleDetailDto dto = await article.ToArticleDetailDtoAsync(
@@ -591,12 +589,13 @@ public class ArticleMapperTests : BaseContentHandlerTest
         Guid customerId = Guid.NewGuid();
         Guid orderItemId = Guid.NewGuid();
 
-        ArticleEntity article = ArticleFactory.CreatePaid(CategoryId, customerId, orderItemId);
         CategoryEntity category = CategoryFactory.Create(ContentTypeId);
         CustomerEntity customer = CustomerFactory.Create();
-
-        article.GetType().GetProperty("Category")!.SetValue(article, category);
-        article.GetType().GetProperty("Customer")!.SetValue(article, customer);
+        ArticleEntity article = new ArticleBuilder(CategoryId)
+            .WithCustomer(customerId, orderItemId)
+            .WithCategory(category)
+            .WithCustomerNavigation(customer)
+            .Build();
 
         // Act
         ArticleDetailDto dto = await article.ToArticleDetailDtoAsync(
