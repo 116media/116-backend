@@ -165,11 +165,6 @@ public class YoutubeThumbnailServiceTests
 
     #region DownloadThumbnailAsync — cancellation is not retried
 
-    /// <summary>
-    /// The fallback exists for a missing maxres rendition, not for a fetch that ran out of time.
-    /// A cancelled or timed-out attempt propagates so the caller waits one client timeout at
-    /// most rather than two.
-    /// </summary>
     [Fact]
     public async Task DownloadThumbnailAsync_WhenTheFetchIsCancelled_ShouldNotAttemptTheFallback()
     {
