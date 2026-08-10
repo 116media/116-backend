@@ -85,8 +85,7 @@ public class UserCredentialSpecificationsTests
     {
         // Arrange
         string phoneNumber = "+1234567890";
-        UserEntity user = UserFactory.Create();
-        user.GetType().GetProperty("FullPhoneNumber")!.SetValue(user, phoneNumber);
+        UserEntity user = UserFactory.CreateWithPhoneNumber(phoneNumber, "1234567890");
         UserByPhoneNumberSpecification spec = new(phoneNumber);
 
         // Act
@@ -100,8 +99,7 @@ public class UserCredentialSpecificationsTests
     public void UserByPhoneNumberSpecification_WithDifferentPhoneNumber_ShouldReturnFalse()
     {
         // Arrange
-        UserEntity user = UserFactory.Create();
-        user.GetType().GetProperty("FullPhoneNumber")!.SetValue(user, "+1234567890");
+        UserEntity user = UserFactory.CreateWithPhoneNumber("+1234567890", "1234567890");
         UserByPhoneNumberSpecification spec = new("+9876543210");
 
         // Act
@@ -116,7 +114,6 @@ public class UserCredentialSpecificationsTests
     {
         // Arrange
         UserEntity user = UserFactory.Create();
-        user.GetType().GetProperty("FullPhoneNumber")!.SetValue(user, null);
         UserByPhoneNumberSpecification spec = new("+1234567890");
 
         // Act
