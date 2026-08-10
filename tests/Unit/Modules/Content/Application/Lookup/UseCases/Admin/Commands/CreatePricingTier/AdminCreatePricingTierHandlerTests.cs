@@ -40,10 +40,10 @@ public class AdminCreatePricingTierHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenNameDoesNotExist_ShouldCreateAndReturnDto()
     {
         // Arrange
-        string name = TestConstants.Content.PricingTier.ValidName;
+        string name = TestConstants.PricingTier.ValidName;
         var command = new AdminCreatePricingTierCommand(
             Name: name,
-            Description: TestConstants.Content.PricingTier.ValidDescription
+            Description: TestConstants.PricingTier.ValidDescription
         );
 
         _lookupRepositoryMock.SetupPricingTierExistsByName(name, false);
@@ -64,8 +64,8 @@ public class AdminCreatePricingTierHandlerTests : BaseContentHandlerTest
     public async Task Handle_WithDescription_ShouldCreateWithDescription()
     {
         // Arrange
-        string name = TestConstants.Content.PricingTier.ValidName;
-        string description = TestConstants.Content.PricingTier.ValidDescription;
+        string name = TestConstants.PricingTier.ValidName;
+        string description = TestConstants.PricingTier.ValidDescription;
         var command = new AdminCreatePricingTierCommand(Name: name, Description: description);
 
         _lookupRepositoryMock.SetupPricingTierExistsByName(name, false);
@@ -85,10 +85,10 @@ public class AdminCreatePricingTierHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenNameAlreadyExists_ShouldThrowConflictException()
     {
         // Arrange
-        string name = TestConstants.Content.PricingTier.ValidName;
+        string name = TestConstants.PricingTier.ValidName;
         var command = new AdminCreatePricingTierCommand(
             Name: name,
-            Description: TestConstants.Content.PricingTier.ValidDescription
+            Description: TestConstants.PricingTier.ValidDescription
         );
 
         _lookupRepositoryMock.SetupPricingTierExistsByName(name, true);
@@ -104,10 +104,10 @@ public class AdminCreatePricingTierHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenNameAlreadyExists_ShouldNotAddOrCommit()
     {
         // Arrange
-        string name = TestConstants.Content.PricingTier.ValidName;
+        string name = TestConstants.PricingTier.ValidName;
         var command = new AdminCreatePricingTierCommand(
             Name: name,
-            Description: TestConstants.Content.PricingTier.ValidDescription
+            Description: TestConstants.PricingTier.ValidDescription
         );
 
         _lookupRepositoryMock.SetupPricingTierExistsByName(name, true);
