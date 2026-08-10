@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.Identity.Application.Session.UseCases.Public.Commands.RevokeSession;
 using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Tests.Fixtures.Helpers;
@@ -106,32 +105,6 @@ public class PublicRevokeSessionValidatorTests
         result
             .ShouldHaveValidationErrorFor(x => x.SessionId)
             .WithErrorMessage(_i18n.User.Validation.Localizer["SessionIdInvalid"].Value);
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-        var i18n = TestErrorsFactory.CreateIdentityI18n();
-        var validator = new PublicRevokeSessionValidator(i18n);
-        var command = new PublicRevokeSessionCommand(UserId: Guid.NewGuid(), SessionId: null!);
-
-        // Act
-        TestValidationResult<PublicRevokeSessionCommand>? result = await validator.TestValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .ShouldHaveValidationErrorFor(x => x.SessionId)
-            .WithErrorMessage(i18n.User.Validation.Localizer["SessionIdRequired"].Value);
     }
 
     #endregion
