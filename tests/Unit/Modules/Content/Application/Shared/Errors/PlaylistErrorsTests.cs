@@ -13,7 +13,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Shared.Errors;
 public class PlaylistErrorsTests
 {
     private readonly PlaylistErrors _errors = TestErrorsFactory.CreatePlaylistErrors();
-    private readonly PlaylistErrorMessage _message = LocalizerFactory.CreateMessage<PlaylistErrorMessage>("en");
+    private readonly PlaylistErrorMessage _message = LocalizerFactory.CreateMessage<PlaylistErrorMessage>();
 
     [Fact]
     public void NotFound_WithId_ShouldReturnNotFoundException()
