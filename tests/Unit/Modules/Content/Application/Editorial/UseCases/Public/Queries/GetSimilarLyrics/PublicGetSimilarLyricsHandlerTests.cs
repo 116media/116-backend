@@ -66,10 +66,6 @@ public class PublicGetSimilarLyricsHandlerTests
         result.Lyrics.Should().BeEmpty();
     }
 
-    /// <summary>
-    /// Proves the handler stamps each matched summary's <c>IsLiked</c> flag from
-    /// <see cref="ILyricsRepository.GetLikedIdsAsync"/>'s resolved set for the current caller.
-    /// </summary>
     [Fact]
     public async Task Handle_WhenCurrentUserLikedOneOfTheMatches_ShouldStampIsLikedPerItem()
     {
