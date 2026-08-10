@@ -13,9 +13,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Shared.Errors;
 public class StreamingLinkErrorsTests
 {
     private readonly StreamingLinkErrors _errors = TestErrorsFactory.CreateStreamingLinkErrors();
-    private readonly StreamingLinkErrorMessage _message = LocalizerFactory.CreateMessage<StreamingLinkErrorMessage>(
-        "en"
-    );
+    private readonly StreamingLinkErrorMessage _message = LocalizerFactory.CreateMessage<StreamingLinkErrorMessage>();
 
     [Fact]
     public void ResolutionFailed_ShouldReturnBadGatewayException()
@@ -52,10 +50,6 @@ public class StreamingLinkErrorsTests
         _message.ResolutionRateLimited().Should().NotBeNullOrWhiteSpace().And.NotBe("ResolutionRateLimited");
     }
 
-    /// <summary>
-    /// Message-only member: no exception factory exists for it — the resolve validators word
-    /// it directly onto their 400 via WithMessage.
-    /// </summary>
     [Fact]
     public void UnresolvableSourceUrl_ShouldResolveToLocalizedText()
     {
