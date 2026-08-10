@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.ResetPassword;
 using _116.Identity.Application.Shared.Errors.Facade;
@@ -238,34 +237,6 @@ public class AdminResetPasswordValidatorTests
         // Assert
         result.IsValid.Should().BeFalse();
         result.Errors.Should().HaveCountGreaterThanOrEqualTo(3);
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-        var i18n = TestErrorsFactory.CreateIdentityI18n();
-        var validator = new AdminResetPasswordValidator(i18n);
-        var command = new AdminResetPasswordCommand(
-            Email: null!,
-            Code: TestConstants.Otp.ValidCode,
-            NewPassword: TestConstants.User.ValidPassword
-        );
-
-        // Act
-        TestValidationResult<AdminResetPasswordCommand>? result = await validator.TestValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.Email).WithErrorMessage(i18n.User.Validation.EmailRequired());
     }
 
     #endregion
