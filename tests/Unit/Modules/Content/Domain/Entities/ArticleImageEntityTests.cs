@@ -19,8 +19,8 @@ public class ArticleImageEntityTests
         // Arrange
         var id = Guid.NewGuid();
         var articleId = Guid.NewGuid();
-        const string storageKey = TestConstants.Content.Editorial.ArticleImage.ValidStorageKey;
-        const string url = TestConstants.Content.Editorial.ArticleImage.ValidUrl;
+        const string storageKey = TestConstants.ArticleImage.ValidStorageKey;
+        const string url = TestConstants.ArticleImage.ValidUrl;
 
         // Act
         ArticleImageEntity image = ArticleImageEntity.Create(id, articleId, storageKey, url, EnumArticleImageType.Body);
@@ -40,8 +40,8 @@ public class ArticleImageEntityTests
         ArticleImageEntity image = ArticleImageEntity.Create(
             Guid.NewGuid(),
             Guid.NewGuid(),
-            TestConstants.Content.Editorial.ArticleImage.ValidStorageKey,
-            TestConstants.Content.Editorial.ArticleImage.ValidUrl,
+            TestConstants.ArticleImage.ValidStorageKey,
+            TestConstants.ArticleImage.ValidUrl,
             EnumArticleImageType.Cover
         );
 
@@ -56,8 +56,8 @@ public class ArticleImageEntityTests
         ArticleImageEntity image = ArticleImageEntity.Create(
             Guid.NewGuid(),
             Guid.NewGuid(),
-            TestConstants.Content.Editorial.ArticleImage.ValidStorageKey,
-            TestConstants.Content.Editorial.ArticleImage.ValidUrl,
+            TestConstants.ArticleImage.ValidStorageKey,
+            TestConstants.ArticleImage.ValidUrl,
             EnumArticleImageType.Body
         );
 
