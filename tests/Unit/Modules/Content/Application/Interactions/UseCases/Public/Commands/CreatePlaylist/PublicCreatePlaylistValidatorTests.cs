@@ -23,7 +23,7 @@ public class PublicCreatePlaylistValidatorTests
         // Arrange
         var command = new PublicCreatePlaylistCommand(
             UserId: Guid.NewGuid(),
-            Name: TestConstants.Content.Interactions.ValidPlaylistName
+            Name: TestConstants.Interactions.ValidPlaylistName
         );
 
         // Act
