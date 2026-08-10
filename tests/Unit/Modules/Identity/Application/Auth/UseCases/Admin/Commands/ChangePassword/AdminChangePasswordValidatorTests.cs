@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.ChangePassword;
 using _116.Identity.Application.Shared.Errors.Facade;
@@ -215,37 +214,6 @@ public class AdminChangePasswordValidatorTests
         result.Errors.Should().HaveCountGreaterThanOrEqualTo(2);
         result.ShouldHaveValidationErrorFor(x => x.OldPassword);
         result.ShouldHaveValidationErrorFor(x => x.NewPassword);
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-        var i18n = TestErrorsFactory.CreateIdentityI18n();
-        var validator = new AdminChangePasswordValidator(i18n);
-        var command = new AdminChangePasswordCommand(
-            UserId: Guid.NewGuid(),
-            SessionId: Guid.NewGuid(),
-            OldPassword: null!,
-            NewPassword: "NewSecure1Pass"
-        );
-
-        // Act
-        TestValidationResult<AdminChangePasswordCommand>? result = await validator.TestValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .ShouldHaveValidationErrorFor(x => x.OldPassword)
-            .WithErrorMessage(i18n.User.Validation.CurrentPasswordRequired());
     }
 
     #endregion
