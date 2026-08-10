@@ -45,8 +45,7 @@ public class AdminDeleteArticleCommentHandlerTests
         Guid userId = Guid.NewGuid();
         ArticleCommentEntity comment = ArticleCommentFactory.Create(article.Id, userId);
         var command = new AdminDeleteArticleCommentCommand(ArticleId: article.Id, CommentId: comment.Id);
-        _articleRepositoryMock.SetupGetCommentByIdAsync(comment);
-        _articleRepositoryMock.SetupGetByIdOrThrow(article);
+        _articleRepositoryMock.SetupGetCommentByIdInArticleAsync(comment, article.Id);
 
         // Act
         AdminDeleteArticleCommentResult result = await _handler.Handle(command, CancellationToken.None);
@@ -67,8 +66,7 @@ public class AdminDeleteArticleCommentHandlerTests
         comment.SoftDelete();
         comment.ClearDomainEvents();
         var command = new AdminDeleteArticleCommentCommand(ArticleId: article.Id, CommentId: comment.Id);
-        _articleRepositoryMock.SetupGetCommentByIdAsync(comment);
-        _articleRepositoryMock.SetupGetByIdOrThrow(article);
+        _articleRepositoryMock.SetupGetCommentByIdInArticleAsync(comment, article.Id);
 
         // Act
         AdminDeleteArticleCommentResult result = await _handler.Handle(command, CancellationToken.None);
@@ -89,7 +87,7 @@ public class AdminDeleteArticleCommentHandlerTests
     {
         // Arrange
         var command = new AdminDeleteArticleCommentCommand(ArticleId: Guid.NewGuid(), CommentId: Guid.NewGuid());
-        _articleRepositoryMock.SetupGetCommentByIdAsync(null);
+        _articleRepositoryMock.SetupGetCommentByIdInArticleAsync(null, command.ArticleId);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
