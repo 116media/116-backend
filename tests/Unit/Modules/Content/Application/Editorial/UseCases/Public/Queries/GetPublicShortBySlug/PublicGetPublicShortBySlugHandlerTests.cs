@@ -68,7 +68,7 @@ public class PublicGetPublicShortBySlugHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenShortVideoNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        string slug = TestConstants.Content.Editorial.ShortVideo.ValidSlug;
+        string slug = TestConstants.ShortVideo.ValidSlug;
         var query = new PublicGetPublicShortBySlugQuery(Slug: slug);
 
         _shortVideoRepositoryMock.SetupGetBySlug(slug, null);
