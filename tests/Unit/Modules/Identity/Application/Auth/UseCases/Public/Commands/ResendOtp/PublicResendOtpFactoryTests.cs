@@ -41,10 +41,6 @@ public class PublicResendOtpFactoryTests
 
     #region Success Cases
 
-    /// <summary>
-    /// Verifies that the entity handed to the OTP repository is exactly the one from the creation
-    /// result and that it carries the hash, never the plaintext the caller will mail out.
-    /// </summary>
     [Fact]
     public async Task ResendOtpAsync_ShouldPersistTheHashedEntityNotThePlainCode()
     {
