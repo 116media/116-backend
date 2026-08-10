@@ -1,6 +1,7 @@
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Domain.Entities;
+using _116.Tests.Fixtures.Builders.Entities.Content;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Unit.Tests.Common;
 using AwesomeAssertions;
@@ -14,16 +15,11 @@ namespace _116.Unit.Tests.Modules.Content.Application.Shared.Mappers;
 public class ContentOrderMapperTests : BaseContentHandlerTest
 {
     /// <summary>
-    /// Creates an order entity with the Customer navigation property
-    /// populated via reflection so the mapper can access Customer.FullName.
+    /// Creates an order carrying the Customer navigation EF Core would populate, so the mapper
+    /// can read Customer.FullName.
     /// </summary>
-    private static ContentOrderEntity CreateOrderWithCustomer()
-    {
-        ContentOrderEntity order = ContentOrderFactory.Create();
-        CustomerEntity customer = CustomerFactory.Create();
-        typeof(ContentOrderEntity).GetProperty(nameof(ContentOrderEntity.Customer))!.SetValue(order, customer);
-        return order;
-    }
+    private static ContentOrderEntity CreateOrderWithCustomer() =>
+        new ContentOrderBuilder().WithCustomer(CustomerFactory.Create()).Build();
 
     #region ToContentOrderSummaryDto
 
@@ -149,12 +145,11 @@ public class ContentOrderMapperTests : BaseContentHandlerTest
     public void ToContentOrderDetailDto_ShouldMapPayment_WhenPaymentExists()
     {
         // Arrange
-        ContentOrderEntity order = CreateOrderWithCustomer();
-
-        ContentPaymentEntity payment = ContentPaymentFactory.Create(order.Id);
-
-        // Attach payment via reflection (same pattern as Customer)
-        typeof(ContentOrderEntity).GetProperty(nameof(ContentOrderEntity.Payment))!.SetValue(order, payment);
+        ContentPaymentEntity payment = ContentPaymentFactory.Create(Guid.NewGuid());
+        ContentOrderEntity order = new ContentOrderBuilder()
+            .WithCustomer(CustomerFactory.Create())
+            .WithPayment(payment)
+            .Build();
 
         // Act
         var dto = order.ToContentOrderDetailDto(Mapper);
