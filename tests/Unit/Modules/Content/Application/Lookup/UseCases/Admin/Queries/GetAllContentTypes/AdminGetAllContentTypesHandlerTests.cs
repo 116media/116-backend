@@ -48,7 +48,7 @@ public class AdminGetAllContentTypesHandlerTests : BaseContentHandlerTest
     public async Task Handle_WithSearchTerm_ShouldPassSearchToRepository()
     {
         // Arrange
-        string searchTerm = TestConstants.Content.ContentType.ValidName;
+        string searchTerm = TestConstants.ContentType.ValidName;
         ContentTypeEntity contentType = ContentTypeFactory.CreateDefault();
         _lookupRepositoryMock.SetupGetAllContentTypes(new List<ContentTypeEntity> { contentType });
 
