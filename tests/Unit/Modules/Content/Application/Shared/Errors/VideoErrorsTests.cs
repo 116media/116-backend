@@ -13,7 +13,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Shared.Errors;
 public class VideoErrorsTests
 {
     private readonly VideoErrors _errors = TestErrorsFactory.CreateVideoErrors();
-    private readonly VideoErrorMessage _message = LocalizerFactory.CreateMessage<VideoErrorMessage>("en");
+    private readonly VideoErrorMessage _message = LocalizerFactory.CreateMessage<VideoErrorMessage>();
 
     [Fact]
     public void NotFound_WithId_ShouldReturnNotFoundException()
