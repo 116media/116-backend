@@ -17,6 +17,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
@@ -26,7 +27,6 @@ namespace _116.Unit.Tests.Modules.Content;
 /// <summary>
 /// Unit tests for <see cref="ContentModule"/>.
 /// </summary>
-[Collection("EnvironmentVariable")]
 public class ContentModuleTests : IDisposable
 {
     private readonly ServiceCollection _services;
@@ -44,11 +44,24 @@ public class ContentModuleTests : IDisposable
         GC.SuppressFinalize(this);
     }
 
+    /// <summary>
+    /// Builds a host environment stub reporting the given name.
+    /// </summary>
+    /// <param name="name">The environment name the stub reports.</param>
+    /// <returns>The stubbed host environment.</returns>
+    private static IHostEnvironment HostEnvironment(string name)
+    {
+        var environment = new Mock<IHostEnvironment>();
+        environment.SetupGet(host => host.EnvironmentName).Returns(name);
+
+        return environment.Object;
+    }
+
     [Fact]
     public void AddContentModule_ShouldRegisterContentUnitOfWork()
     {
         // Act
-        _services.AddContentModule();
+        _services.AddContentModule(HostEnvironment("Testing"));
         ServiceProvider serviceProvider = _services.BuildServiceProvider();
 
         // Assert
@@ -61,7 +74,7 @@ public class ContentModuleTests : IDisposable
     public void AddContentModule_ShouldRegisterLookupRepository()
     {
         // Act
-        _services.AddContentModule();
+        _services.AddContentModule(HostEnvironment("Testing"));
         ServiceProvider serviceProvider = _services.BuildServiceProvider();
 
         // Assert
@@ -74,7 +87,7 @@ public class ContentModuleTests : IDisposable
     public void AddContentModule_ShouldRegisterCategoryRepository()
     {
         // Act
-        _services.AddContentModule();
+        _services.AddContentModule(HostEnvironment("Testing"));
         ServiceProvider serviceProvider = _services.BuildServiceProvider();
 
         // Assert
@@ -87,7 +100,7 @@ public class ContentModuleTests : IDisposable
     public void AddContentModule_ShouldRegisterCustomerRepository()
     {
         // Act
-        _services.AddContentModule();
+        _services.AddContentModule(HostEnvironment("Testing"));
         ServiceProvider serviceProvider = _services.BuildServiceProvider();
 
         // Assert
@@ -100,7 +113,7 @@ public class ContentModuleTests : IDisposable
     public void AddContentModule_ShouldRegisterPackageRepository()
     {
         // Act
-        _services.AddContentModule();
+        _services.AddContentModule(HostEnvironment("Testing"));
         ServiceProvider serviceProvider = _services.BuildServiceProvider();
 
         // Assert
@@ -113,7 +126,7 @@ public class ContentModuleTests : IDisposable
     public void AddContentModule_ShouldRegisterContentTypeSeeder()
     {
         // Act
-        _services.AddContentModule();
+        _services.AddContentModule(HostEnvironment("Testing"));
         ServiceProvider serviceProvider = _services.BuildServiceProvider();
 
         // Assert
@@ -125,7 +138,7 @@ public class ContentModuleTests : IDisposable
     public void AddContentModule_ShouldRegisterMapperConfiguration()
     {
         // Act
-        _services.AddContentModule();
+        _services.AddContentModule(HostEnvironment("Testing"));
         ServiceProvider serviceProvider = _services.BuildServiceProvider();
 
         // Assert
@@ -137,7 +150,7 @@ public class ContentModuleTests : IDisposable
     public void AddContentModule_ShouldRegisterMapper()
     {
         // Act
-        _services.AddContentModule();
+        _services.AddContentModule(HostEnvironment("Testing"));
         ServiceProvider serviceProvider = _services.BuildServiceProvider();
 
         // Assert
@@ -149,7 +162,7 @@ public class ContentModuleTests : IDisposable
     public void AddContentModule_ShouldReturnServiceCollection()
     {
         // Act
-        IServiceCollection result = _services.AddContentModule();
+        IServiceCollection result = _services.AddContentModule(HostEnvironment("Testing"));
 
         // Assert
         result.Should().NotBeNull();
@@ -160,7 +173,7 @@ public class ContentModuleTests : IDisposable
     public void AddContentModule_ShouldRegisterAllServices()
     {
         // Arrange & Act
-        IServiceCollection result = _services.AddContentModule();
+        IServiceCollection result = _services.AddContentModule(HostEnvironment("Testing"));
         ServiceProvider serviceProvider = _services.BuildServiceProvider();
 
         // Assert
@@ -177,25 +190,12 @@ public class ContentModuleTests : IDisposable
     [Fact]
     public void AddContentModule_WithTestingEnvironment_ShouldDisableSeedingButStillRegisterServices()
     {
-        // Arrange — set environment to Testing to hit the enableSeeding=false branch
-        string? previousEnv = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Testing");
+        _services.AddContentModule(HostEnvironment("Testing"));
+        ServiceProvider serviceProvider = _services.BuildServiceProvider();
 
-        try
-        {
-            // Act
-            _services.AddContentModule();
-            ServiceProvider serviceProvider = _services.BuildServiceProvider();
-
-            // Assert — all services still registered regardless of seeding flag
-            serviceProvider.GetService<IContentUnitOfWork>().Should().NotBeNull();
-            serviceProvider.GetService<ILookupRepository>().Should().NotBeNull();
-            serviceProvider.GetService<ContentTypeSeeder>().Should().NotBeNull();
-        }
-        finally
-        {
-            Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", previousEnv);
-        }
+        serviceProvider.GetService<IContentUnitOfWork>().Should().NotBeNull();
+        serviceProvider.GetService<ILookupRepository>().Should().NotBeNull();
+        serviceProvider.GetService<ContentTypeSeeder>().Should().NotBeNull();
     }
 
     [Fact]
@@ -203,84 +203,64 @@ public class ContentModuleTests : IDisposable
     {
         // Arrange — Testing env sets EnableMigrations=false and EnableSeeding=false, so
         // UseModuleDatabase is a no-op and the method returns app at the EnableSeeding guard.
-        string? previousEnv = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Testing");
+        var services = new ServiceCollection();
+        services.AddSingleton<IHostEnvironment>(HostEnvironment("Testing"));
 
-        try
-        {
-            var appBuilderMock = new Mock<IApplicationBuilder>();
+        var appBuilderMock = new Mock<IApplicationBuilder>();
+        appBuilderMock.Setup(builder => builder.ApplicationServices).Returns(services.BuildServiceProvider());
 
-            // Act
-            IApplicationBuilder result = appBuilderMock.Object.UseContentModule();
+        // Act
+        IApplicationBuilder result = appBuilderMock.Object.UseContentModule();
 
-            // Assert
-            result.Should().NotBeNull();
-            result.Should().BeSameAs(appBuilderMock.Object);
-        }
-        finally
-        {
-            Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", previousEnv);
-        }
+        // Assert
+        result.Should().NotBeNull();
+        result.Should().BeSameAs(appBuilderMock.Object);
     }
 
-    /// <summary>
-    /// Verifies that outside the Testing environment the pipeline runs the
-    /// migration step and then executes the content type seeder, so a fresh
-    /// deployment comes up with the structural content types in place.
-    /// </summary>
     [Fact]
     public void UseContentModule_OutsideTheTestingEnvironment_ShouldSeedTheContentTypes()
     {
         // Arrange — Development enables migrations and seeding; the migrator is
         // replaced so the startup migration completes without a database, and
         // the seeder is bound to an in-memory store it can write to.
-        string? previousEnv = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Development");
-
         DbContextOptions<ContentDbContext> seedOptions = new DbContextOptionsBuilder<ContentDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
 
-        try
-        {
-            using var seedContext = new ContentDbContext(seedOptions);
+        using var seedContext = new ContentDbContext(seedOptions);
 
-            var services = new ServiceCollection();
-            services.AddLogging();
-            services.AddLocalization();
-            services.AddDbContext<ContentDbContext>(options =>
-                options
-                    .UseNpgsql("Host=localhost;Port=5432;Database=unit;Username=unit;Password=unit")
-                    .ReplaceService<IMigrator, NoOpMigrator>()
-            );
-            services.AddContentModule();
-            services.AddScoped(serviceProvider => new ContentTypeSeeder(
-                seedContext,
-                serviceProvider.GetRequiredService<ILogger<ContentTypeSeeder>>(),
-                serviceProvider.GetRequiredService<ContentTypeErrors>()
-            ));
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddLocalization();
+        services.AddDbContext<ContentDbContext>(options =>
+            options
+                .UseNpgsql("Host=localhost;Port=5432;Database=unit;Username=unit;Password=unit")
+                .ReplaceService<IMigrator, NoOpMigrator>()
+        );
+        services.AddSingleton<IHostEnvironment>(HostEnvironment("Development"));
+        services.AddContentModule(HostEnvironment("Development"));
+        services.AddScoped(serviceProvider => new ContentTypeSeeder(
+            seedContext,
+            serviceProvider.GetRequiredService<ILogger<ContentTypeSeeder>>(),
+            serviceProvider.GetRequiredService<ContentTypeErrors>()
+        ));
 
-            ServiceProvider provider = services.BuildServiceProvider();
-            var app = new ApplicationBuilder(provider);
+        ServiceProvider provider = services.BuildServiceProvider();
+        var app = new ApplicationBuilder(provider);
 
-            // Act
-            IApplicationBuilder result = app.UseContentModule();
+        // Act
+        IApplicationBuilder result = app.UseContentModule();
 
-            // Assert
-            result.Should().BeSameAs(app);
-            seedContext.ContentTypes.Select(contentType => contentType.Name).Should().Contain("Article");
-        }
-        finally
-        {
-            Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", previousEnv);
-        }
+        // Assert
+        result.Should().BeSameAs(app);
+        seedContext.ContentTypes.Select(contentType => contentType.Name).Should().Contain("Article");
     }
 
     [Fact]
     public void AddContentModule_ShouldRegisterStreamingLinkErrors()
     {
         // Act
-        _services.AddContentModule();
+        _services.AddContentModule(HostEnvironment("Testing"));
         ServiceProvider serviceProvider = _services.BuildServiceProvider();
 
         // Assert
@@ -296,7 +276,7 @@ public class ContentModuleTests : IDisposable
 
         // Act — resolving the port builds the typed HttpClient, which runs the timeout
         // configuration the registration declares.
-        _services.AddContentModule();
+        _services.AddContentModule(HostEnvironment("Testing"));
         ServiceProvider serviceProvider = _services.BuildServiceProvider();
         var service = serviceProvider.GetService<IStreamingLinkResolutionService>();
 
