@@ -3,6 +3,7 @@ using _116.Content.Application.Shared.Mappers;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
 using _116.Shared.Application.DTOs;
+using _116.Tests.Fixtures.Builders.Entities.Content;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Unit.Tests.Common;
 using AwesomeAssertions;
@@ -26,9 +27,8 @@ public class VideoMapperTests : BaseContentHandlerTest
     /// </summary>
     private static VideoEntity CreateVideoWithCategory()
     {
-        VideoEntity video = VideoFactory.Create(CategoryId);
         CategoryEntity category = CategoryFactory.Create(ContentTypeId);
-        video.GetType().GetProperty("Category")!.SetValue(video, category);
+        VideoEntity video = new VideoBuilder(CategoryId).WithCategory(category).Build();
         return video;
     }
 
@@ -570,12 +570,13 @@ public class VideoMapperTests : BaseContentHandlerTest
         Guid customerId = Guid.NewGuid();
         Guid orderItemId = Guid.NewGuid();
 
-        VideoEntity video = VideoFactory.CreatePaid(CategoryId, customerId, orderItemId);
         CategoryEntity category = CategoryFactory.Create(ContentTypeId);
         CustomerEntity customer = CustomerFactory.Create();
-
-        video.GetType().GetProperty("Category")!.SetValue(video, category);
-        video.GetType().GetProperty("Customer")!.SetValue(video, customer);
+        VideoEntity video = new VideoBuilder(CategoryId)
+            .WithCustomer(customerId, orderItemId)
+            .WithCategory(category)
+            .WithCustomerNavigation(customer)
+            .Build();
 
         // Act
         VideoDetailDto dto = await video.ToVideoDetailDtoAsync(
