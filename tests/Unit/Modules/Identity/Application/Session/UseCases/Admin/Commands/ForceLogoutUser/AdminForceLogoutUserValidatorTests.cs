@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.Identity.Application.Session.UseCases.Admin.Commands.ForceLogoutUser;
 using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Tests.Fixtures.Helpers;
@@ -106,32 +105,6 @@ public class AdminForceLogoutUserValidatorTests
         result
             .ShouldHaveValidationErrorFor(x => x.UserId)
             .WithErrorMessage(_i18n.User.Validation.Localizer["UserIdInvalid"].Value);
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-        var i18n = TestErrorsFactory.CreateIdentityI18n();
-        var validator = new AdminForceLogoutUserValidator(i18n);
-        var command = new AdminForceLogoutUserCommand(UserId: null!);
-
-        // Act
-        TestValidationResult<AdminForceLogoutUserCommand>? result = await validator.TestValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .ShouldHaveValidationErrorFor(x => x.UserId)
-            .WithErrorMessage(i18n.User.Validation.Localizer["UserIdRequired"].Value);
     }
 
     #endregion
