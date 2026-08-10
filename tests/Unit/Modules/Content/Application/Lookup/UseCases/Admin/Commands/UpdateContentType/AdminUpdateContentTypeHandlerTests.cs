@@ -42,21 +42,21 @@ public class AdminUpdateContentTypeHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenEntityExists_ShouldUpdateAndReturnDto()
     {
         // Arrange
-        ContentTypeEntity existing = ContentTypeFactory.Create(TestConstants.Content.ContentType.ValidName);
+        ContentTypeEntity existing = ContentTypeFactory.Create(TestConstants.ContentType.ValidName);
         var command = new AdminUpdateContentTypeCommand(
             Id: existing.Id.ToString(),
-            Name: TestConstants.Content.ContentType.AnotherValidName
+            Name: TestConstants.ContentType.AnotherValidName
         );
 
         _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(existing);
-        _lookupRepositoryMock.SetupContentTypeExistsByName(TestConstants.Content.ContentType.AnotherValidName, false);
+        _lookupRepositoryMock.SetupContentTypeExistsByName(TestConstants.ContentType.AnotherValidName, false);
 
         // Act
         AdminUpdateContentTypeResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull();
-        result.ContentType.Name.Should().Be(TestConstants.Content.ContentType.AnotherValidName);
+        result.ContentType.Name.Should().Be(TestConstants.ContentType.AnotherValidName);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -64,15 +64,15 @@ public class AdminUpdateContentTypeHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenNewNameIsSameAsCurrentName_ShouldAllowUpdate()
     {
         // Arrange
-        ContentTypeEntity existing = ContentTypeFactory.Create(TestConstants.Content.ContentType.ValidName);
+        ContentTypeEntity existing = ContentTypeFactory.Create(TestConstants.ContentType.ValidName);
         var command = new AdminUpdateContentTypeCommand(
             Id: existing.Id.ToString(),
-            Name: TestConstants.Content.ContentType.ValidName
+            Name: TestConstants.ContentType.ValidName
         );
 
         _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(existing);
         // Same name exists — but it belongs to the same entity so allowed
-        _lookupRepositoryMock.SetupContentTypeExistsByName(TestConstants.Content.ContentType.ValidName, true);
+        _lookupRepositoryMock.SetupContentTypeExistsByName(TestConstants.ContentType.ValidName, true);
 
         // Act
         AdminUpdateContentTypeResult result = await _handler.Handle(command, CancellationToken.None);
@@ -93,7 +93,7 @@ public class AdminUpdateContentTypeHandlerTests : BaseContentHandlerTest
         var nonExistentId = Guid.NewGuid();
         var command = new AdminUpdateContentTypeCommand(
             Id: nonExistentId.ToString(),
-            Name: TestConstants.Content.ContentType.AnotherValidName
+            Name: TestConstants.ContentType.AnotherValidName
         );
 
         _lookupRepositoryMock.SetupGetContentTypeByIdOrThrowNotFound(nonExistentId);
@@ -109,8 +109,8 @@ public class AdminUpdateContentTypeHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenNewNameConflictsWithDifferentEntity_ShouldThrowConflictException()
     {
         // Arrange
-        ContentTypeEntity existing = ContentTypeFactory.Create(TestConstants.Content.ContentType.ValidName);
-        string conflictingName = TestConstants.Content.ContentType.AnotherValidName;
+        ContentTypeEntity existing = ContentTypeFactory.Create(TestConstants.ContentType.ValidName);
+        string conflictingName = TestConstants.ContentType.AnotherValidName;
         var command = new AdminUpdateContentTypeCommand(Id: existing.Id.ToString(), Name: conflictingName);
 
         _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(existing);
