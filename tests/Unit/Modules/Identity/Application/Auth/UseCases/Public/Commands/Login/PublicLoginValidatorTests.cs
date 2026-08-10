@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.Login;
 using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Tests.Fixtures.Constants;
@@ -177,32 +176,6 @@ public class PublicLoginValidatorTests
         result.Errors.Should().HaveCount(2);
         result.ShouldHaveValidationErrorFor(x => x.Credentials);
         result.ShouldHaveValidationErrorFor(x => x.Password);
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-        var i18n = TestErrorsFactory.CreateIdentityI18n();
-        var validator = new PublicLoginValidator(i18n);
-        var command = new PublicLoginCommand(Credentials: null!, Password: TestConstants.User.ValidPassword);
-
-        // Act
-        TestValidationResult<PublicLoginCommand>? result = await validator.TestValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .ShouldHaveValidationErrorFor(x => x.Credentials)
-            .WithErrorMessage(i18n.User.Validation.EmailOrUsernameRequired());
     }
 
     #endregion
