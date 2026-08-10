@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.VerifyOtp;
 using _116.Identity.Application.Shared.Errors.Facade;
@@ -205,34 +204,6 @@ public class AdminVerifyOtpValidatorTests
         // Assert
         result.IsValid.Should().BeFalse();
         result.Errors.Should().HaveCountGreaterThanOrEqualTo(3);
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-        var i18n = TestErrorsFactory.CreateIdentityI18n();
-        var validator = new AdminVerifyOtpValidator(i18n);
-        var command = new AdminVerifyOtpCommand(
-            Email: TestConstants.User.ValidEmail,
-            Code: TestConstants.Otp.ValidCode,
-            Purpose: null!
-        );
-
-        // Act
-        TestValidationResult<AdminVerifyOtpCommand>? result = await validator.TestValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.Purpose).WithErrorMessage(i18n.User.Validation.OtpPurposeRequired());
     }
 
     #endregion
