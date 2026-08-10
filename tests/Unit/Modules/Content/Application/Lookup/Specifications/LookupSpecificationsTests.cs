@@ -191,7 +191,7 @@ public class LookupSpecificationsTests
         // Arrange
         TagEntity tag = TagFactory.CreateDefault();
         // Note: ILike is not supported in InMemoryDatabase — using Slug exact match for unit test
-        var spec = new TagBySlugSpecification(TestConstants.Content.Tag.ValidSlug);
+        var spec = new TagBySlugSpecification(TestConstants.Tag.ValidSlug);
         Func<TagEntity, bool> predicate = spec.ToExpression().Compile();
 
         // Act & Assert
