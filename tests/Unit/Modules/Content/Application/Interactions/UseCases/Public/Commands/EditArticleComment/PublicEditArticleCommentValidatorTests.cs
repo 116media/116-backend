@@ -25,7 +25,7 @@ public class PublicEditArticleCommentValidatorTests
             ArticleId: Guid.NewGuid(),
             CommentId: Guid.NewGuid(),
             UserId: Guid.NewGuid(),
-            Body: TestConstants.Content.Interactions.ValidCommentBody
+            Body: TestConstants.Interactions.ValidCommentBody
         );
 
         // Act
