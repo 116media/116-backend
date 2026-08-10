@@ -19,7 +19,7 @@ public class ContentTypeEntityTests
     {
         // Arrange
         var id = Guid.NewGuid();
-        string name = TestConstants.Content.ContentType.ValidName;
+        string name = TestConstants.ContentType.ValidName;
 
         // Act
         var entity = ContentTypeEntity.Create(id, name, TestErrorsFactory.CreateContentTypeErrors());
@@ -54,10 +54,10 @@ public class ContentTypeEntityTests
         // Arrange
         var entity = ContentTypeEntity.Create(
             Guid.NewGuid(),
-            TestConstants.Content.ContentType.ValidName,
+            TestConstants.ContentType.ValidName,
             TestErrorsFactory.CreateContentTypeErrors()
         );
-        string newName = TestConstants.Content.ContentType.AnotherValidName;
+        string newName = TestConstants.ContentType.AnotherValidName;
 
         // Act
         entity.Update(newName, TestErrorsFactory.CreateContentTypeErrors());
@@ -75,7 +75,7 @@ public class ContentTypeEntityTests
         // Arrange
         var entity = ContentTypeEntity.Create(
             Guid.NewGuid(),
-            TestConstants.Content.ContentType.ValidName,
+            TestConstants.ContentType.ValidName,
             TestErrorsFactory.CreateContentTypeErrors()
         );
 
@@ -96,7 +96,7 @@ public class ContentTypeEntityTests
         // Arrange
         var entity = ContentTypeEntity.Create(
             Guid.NewGuid(),
-            TestConstants.Content.ContentType.ValidName,
+            TestConstants.ContentType.ValidName,
             TestErrorsFactory.CreateContentTypeErrors()
         );
         entity.Deactivate();
@@ -115,7 +115,7 @@ public class ContentTypeEntityTests
         // Arrange
         var entity = ContentTypeEntity.Create(
             Guid.NewGuid(),
-            TestConstants.Content.ContentType.ValidName,
+            TestConstants.ContentType.ValidName,
             TestErrorsFactory.CreateContentTypeErrors()
         );
 
@@ -137,7 +137,7 @@ public class ContentTypeEntityTests
         // Arrange
         var entity = ContentTypeEntity.Create(
             Guid.NewGuid(),
-            TestConstants.Content.ContentType.ValidName,
+            TestConstants.ContentType.ValidName,
             TestErrorsFactory.CreateContentTypeErrors()
         );
 
@@ -155,7 +155,7 @@ public class ContentTypeEntityTests
         // Arrange
         var entity = ContentTypeEntity.Create(
             Guid.NewGuid(),
-            TestConstants.Content.ContentType.ValidName,
+            TestConstants.ContentType.ValidName,
             TestErrorsFactory.CreateContentTypeErrors()
         );
         entity.Deactivate();
