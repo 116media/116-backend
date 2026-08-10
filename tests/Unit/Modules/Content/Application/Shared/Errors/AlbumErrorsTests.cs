@@ -14,7 +14,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Shared.Errors;
 public class AlbumErrorsTests
 {
     private readonly AlbumErrors _errors = TestErrorsFactory.CreateAlbumErrors();
-    private readonly AlbumErrorMessage _message = LocalizerFactory.CreateMessage<AlbumErrorMessage>("en");
+    private readonly AlbumErrorMessage _message = LocalizerFactory.CreateMessage<AlbumErrorMessage>();
 
     #region AlbumErrors
 
