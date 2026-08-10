@@ -179,11 +179,6 @@ public class PublicGetPublishedLyricsHandlerTests
         );
     }
 
-    /// <summary>
-    /// Proves the "New Lyrics" bug fix: with no explicit sort param, the handler must thread
-    /// a null <c>Sort</c> through to the repository (which defaults to <c>CreatedAt</c>
-    /// descending), not the previous always-alphabetical-by-title behaviour.
-    /// </summary>
     [Fact]
     public async Task Handle_WithNoSortParam_ShouldPassNullSortToRepositoryForNewestDefault()
     {
@@ -218,10 +213,6 @@ public class PublicGetPublishedLyricsHandlerTests
         );
     }
 
-    /// <summary>
-    /// An explicit <c>sort=newest</c> query param must be threaded through to the repository
-    /// verbatim so the repository's sort switch can honour it.
-    /// </summary>
     [Fact]
     public async Task Handle_WithExplicitNewestSort_ShouldPassSortValueToRepository()
     {
@@ -256,10 +247,6 @@ public class PublicGetPublishedLyricsHandlerTests
         );
     }
 
-    /// <summary>
-    /// The lyrics page liked by the current user must resolve <c>IsLiked: true</c> on its
-    /// summary; every other lyrics page in the same page must resolve <c>IsLiked: false</c>.
-    /// </summary>
     [Fact]
     public async Task Handle_WhenCurrentUserLikedOneOfTheResults_ShouldStampIsLikedPerItem()
     {
@@ -286,9 +273,6 @@ public class PublicGetPublishedLyricsHandlerTests
         result.Lyrics.Items.Single(l => l.Id == notLikedLyrics.Id).IsLiked.Should().BeFalse();
     }
 
-    /// <summary>
-    /// An anonymous caller must see <c>IsLiked: false</c> on every summary in the page.
-    /// </summary>
     [Fact]
     public async Task Handle_WhenAnonymous_ShouldReturnIsLikedFalseForAllItems()
     {
@@ -312,9 +296,6 @@ public class PublicGetPublishedLyricsHandlerTests
         result.Lyrics.Items.Should().OnlyContain(l => l.IsLiked == false);
     }
 
-    /// <summary>
-    /// The view/like/share interaction counters must pass through from the entity unchanged.
-    /// </summary>
     [Fact]
     public async Task Handle_ShouldPassThroughViewLikeAndShareCounts()
     {
@@ -345,11 +326,6 @@ public class PublicGetPublishedLyricsHandlerTests
         dto.ShareCount.Should().Be(1);
     }
 
-    /// <summary>
-    /// Sanity check carried over from Phase 4: <c>IsPromoted</c> must never leak into the
-    /// sort-switch guard tests above (unrelated commerce field near the sort/likes/shares fields
-    /// this phase adds).
-    /// </summary>
     [Fact]
     public void Handle_SortSwitchGuardTests_ShouldNotReferenceIsPromoted()
     {
