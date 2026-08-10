@@ -14,7 +14,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Shared.Errors;
 public class SubmissionErrorsTests
 {
     private readonly SubmissionErrors _errors = TestErrorsFactory.CreateSubmissionErrors();
-    private readonly SubmissionErrorMessage _message = LocalizerFactory.CreateMessage<SubmissionErrorMessage>("en");
+    private readonly SubmissionErrorMessage _message = LocalizerFactory.CreateMessage<SubmissionErrorMessage>();
 
     #region SubmissionErrors
 
