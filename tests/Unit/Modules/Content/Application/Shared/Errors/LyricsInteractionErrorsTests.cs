@@ -15,7 +15,7 @@ public class LyricsInteractionErrorsTests
 {
     private readonly LyricsInteractionErrors _errors = TestErrorsFactory.CreateLyricsInteractionErrors();
     private readonly LyricsInteractionErrorMessage _message =
-        LocalizerFactory.CreateMessage<LyricsInteractionErrorMessage>("en");
+        LocalizerFactory.CreateMessage<LyricsInteractionErrorMessage>();
 
     #region LyricsInteractionErrors
 
