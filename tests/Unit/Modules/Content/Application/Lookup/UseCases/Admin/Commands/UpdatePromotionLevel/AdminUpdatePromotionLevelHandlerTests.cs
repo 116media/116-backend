@@ -43,7 +43,7 @@ public class AdminUpdatePromotionLevelHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         PromotionLevelEntity existing = PromotionLevelFactory.CreateDefault();
-        string newName = TestConstants.Content.PromotionLevel.AnotherValidName;
+        string newName = TestConstants.PromotionLevel.AnotherValidName;
         int newDuration = 14;
         decimal newPrice = 99.99m;
         var command = new AdminUpdatePromotionLevelCommand(
@@ -72,7 +72,7 @@ public class AdminUpdatePromotionLevelHandlerTests : BaseContentHandlerTest
     public async Task Handle_WithSameName_ShouldAllowUpdateDespiteConflict()
     {
         // Arrange
-        string sameName = TestConstants.Content.PromotionLevel.ValidName;
+        string sameName = TestConstants.PromotionLevel.ValidName;
         PromotionLevelEntity existing = PromotionLevelFactory.Create(sameName, 7, 50m);
         var command = new AdminUpdatePromotionLevelCommand(
             Id: existing.Id.ToString(),
@@ -105,7 +105,7 @@ public class AdminUpdatePromotionLevelHandlerTests : BaseContentHandlerTest
         var nonExistentId = Guid.NewGuid();
         var command = new AdminUpdatePromotionLevelCommand(
             Id: nonExistentId.ToString(),
-            Name: TestConstants.Content.PromotionLevel.ValidName,
+            Name: TestConstants.PromotionLevel.ValidName,
             DurationDays: 7,
             PriceUsd: 50m,
             SpotPriority: 1
@@ -125,7 +125,7 @@ public class AdminUpdatePromotionLevelHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         PromotionLevelEntity existing = PromotionLevelFactory.CreateDefault();
-        string conflictingName = TestConstants.Content.PromotionLevel.AnotherValidName;
+        string conflictingName = TestConstants.PromotionLevel.AnotherValidName;
         var command = new AdminUpdatePromotionLevelCommand(
             Id: existing.Id.ToString(),
             Name: conflictingName,
@@ -149,7 +149,7 @@ public class AdminUpdatePromotionLevelHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         PromotionLevelEntity existing = PromotionLevelFactory.CreateDefault();
-        string conflictingName = TestConstants.Content.PromotionLevel.AnotherValidName;
+        string conflictingName = TestConstants.PromotionLevel.AnotherValidName;
         var command = new AdminUpdatePromotionLevelCommand(
             Id: existing.Id.ToString(),
             Name: conflictingName,
