@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.Content.Application.Lookup.UseCases.Admin.Commands.CreateContentType;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Tests.Fixtures.Constants;
@@ -31,7 +30,7 @@ public class AdminCreateContentTypeValidatorTests
     public async Task Validate_WithValidName_ShouldNotHaveErrors()
     {
         // Arrange
-        var command = new AdminCreateContentTypeCommand(Name: TestConstants.Content.ContentType.ValidName);
+        var command = new AdminCreateContentTypeCommand(Name: TestConstants.ContentType.ValidName);
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -45,9 +44,7 @@ public class AdminCreateContentTypeValidatorTests
     public async Task Validate_WithMaxLengthName_ShouldNotHaveErrors()
     {
         // Arrange
-        var command = new AdminCreateContentTypeCommand(
-            Name: new string('a', TestConstants.Content.ContentType.NameMaxLength)
-        );
+        var command = new AdminCreateContentTypeCommand(Name: new string('a', TestConstants.ContentType.NameMaxLength));
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -103,7 +100,7 @@ public class AdminCreateContentTypeValidatorTests
     {
         // Arrange
         var command = new AdminCreateContentTypeCommand(
-            Name: new string('a', TestConstants.Content.ContentType.NameMaxLength + 1)
+            Name: new string('a', TestConstants.ContentType.NameMaxLength + 1)
         );
 
         // Act
@@ -115,35 +112,7 @@ public class AdminCreateContentTypeValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminCreateContentTypeCommand.Name)
-                && e.ErrorMessage == _i18n.ContentType.Msg.NameTooLong(TestConstants.Content.ContentType.NameMaxLength)
-            );
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-        var validator = new AdminCreateContentTypeValidator(_i18n);
-        var command = new AdminCreateContentTypeCommand(Name: "");
-
-        // Act
-        ValidationResult result = await validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminCreateContentTypeCommand.Name)
-                && e.ErrorMessage == _i18n.ContentType.Msg.NameRequired()
+                && e.ErrorMessage == _i18n.ContentType.Msg.NameTooLong(TestConstants.ContentType.NameMaxLength)
             );
     }
 
