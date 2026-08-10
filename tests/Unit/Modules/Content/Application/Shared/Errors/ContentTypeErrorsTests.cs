@@ -13,7 +13,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Shared.Errors;
 public class ContentTypeErrorsTests
 {
     private readonly ContentTypeErrors _errors = TestErrorsFactory.CreateContentTypeErrors();
-    private readonly ContentTypeErrorMessage _message = LocalizerFactory.CreateMessage<ContentTypeErrorMessage>("en");
+    private readonly ContentTypeErrorMessage _message = LocalizerFactory.CreateMessage<ContentTypeErrorMessage>();
 
     [Fact]
     public void AlreadyExists_WithName_ShouldReturnConflictException()
