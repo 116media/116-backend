@@ -59,10 +59,6 @@ public class PublicGetLyricsByVideoIdHandlerTests : BaseContentHandlerTest
         result.Lyrics.VideoId.Should().Be(videoId);
     }
 
-    /// <summary>
-    /// A lyrics page linked to a video but not yet Published must be invisible to this public
-    /// endpoint, mirroring the by-slug lookup's status gate.
-    /// </summary>
     [Fact]
     public async Task Handle_WhenLyricsLinkedToVideoButNotPublished_ShouldThrowNotFoundException()
     {
@@ -94,9 +90,6 @@ public class PublicGetLyricsByVideoIdHandlerTests : BaseContentHandlerTest
         await act.Should().ThrowAsync<NotFoundException>();
     }
 
-    /// <summary>
-    /// The authenticated caller who liked the linked lyrics page must see <c>IsLiked: true</c>.
-    /// </summary>
     [Fact]
     public async Task Handle_WhenCurrentUserHasLiked_ShouldReturnIsLikedTrue()
     {
@@ -116,9 +109,6 @@ public class PublicGetLyricsByVideoIdHandlerTests : BaseContentHandlerTest
         result.Lyrics.IsLiked.Should().BeTrue();
     }
 
-    /// <summary>
-    /// An anonymous caller must always see <c>IsLiked: false</c>, regardless of any like records.
-    /// </summary>
     [Fact]
     public async Task Handle_WhenAnonymous_ShouldReturnIsLikedFalse()
     {
@@ -138,9 +128,6 @@ public class PublicGetLyricsByVideoIdHandlerTests : BaseContentHandlerTest
         result.Lyrics.IsLiked.Should().BeFalse();
     }
 
-    /// <summary>
-    /// The view/like/share interaction counters must pass through from the entity unchanged.
-    /// </summary>
     [Fact]
     public async Task Handle_ShouldPassThroughViewLikeAndShareCounts()
     {
