@@ -13,7 +13,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Shared.Errors;
 public class PricingTierErrorsTests
 {
     private readonly PricingTierErrors _errors = TestErrorsFactory.CreatePricingTierErrors();
-    private readonly PricingTierErrorMessage _message = LocalizerFactory.CreateMessage<PricingTierErrorMessage>("en");
+    private readonly PricingTierErrorMessage _message = LocalizerFactory.CreateMessage<PricingTierErrorMessage>();
 
     [Fact]
     public void AlreadyExists_WithName_ShouldReturnConflictException()
