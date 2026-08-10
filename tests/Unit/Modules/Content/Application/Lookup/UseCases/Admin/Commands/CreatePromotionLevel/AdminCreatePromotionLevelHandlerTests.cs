@@ -40,9 +40,9 @@ public class AdminCreatePromotionLevelHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenNameDoesNotExist_ShouldCreateAndReturnDto()
     {
         // Arrange
-        string name = TestConstants.Content.PromotionLevel.ValidName;
-        int durationDays = TestConstants.Content.PromotionLevel.ValidDurationDays;
-        decimal priceUsd = TestConstants.Content.PromotionLevel.ValidPriceUsd;
+        string name = TestConstants.PromotionLevel.ValidName;
+        int durationDays = TestConstants.PromotionLevel.ValidDurationDays;
+        decimal priceUsd = TestConstants.PromotionLevel.ValidPriceUsd;
         var command = new AdminCreatePromotionLevelCommand(
             Name: name,
             DurationDays: durationDays,
@@ -70,9 +70,9 @@ public class AdminCreatePromotionLevelHandlerTests : BaseContentHandlerTest
     public async Task Handle_WithZeroPrice_ShouldCreateSuccessfully()
     {
         // Arrange
-        string name = TestConstants.Content.PromotionLevel.ValidName;
-        int durationDays = TestConstants.Content.PromotionLevel.ValidDurationDays;
-        decimal priceUsd = TestConstants.Content.PromotionLevel.ZeroPriceUsd;
+        string name = TestConstants.PromotionLevel.ValidName;
+        int durationDays = TestConstants.PromotionLevel.ValidDurationDays;
+        decimal priceUsd = TestConstants.PromotionLevel.ZeroPriceUsd;
         var command = new AdminCreatePromotionLevelCommand(
             Name: name,
             DurationDays: durationDays,
@@ -98,7 +98,7 @@ public class AdminCreatePromotionLevelHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenNameAlreadyExists_ShouldThrowConflictException()
     {
         // Arrange
-        string name = TestConstants.Content.PromotionLevel.ValidName;
+        string name = TestConstants.PromotionLevel.ValidName;
         var command = new AdminCreatePromotionLevelCommand(
             Name: name,
             DurationDays: 7,
@@ -119,7 +119,7 @@ public class AdminCreatePromotionLevelHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenNameAlreadyExists_ShouldNotAddOrCommit()
     {
         // Arrange
-        string name = TestConstants.Content.PromotionLevel.ValidName;
+        string name = TestConstants.PromotionLevel.ValidName;
         var command = new AdminCreatePromotionLevelCommand(
             Name: name,
             DurationDays: 7,
@@ -152,7 +152,7 @@ public class AdminCreatePromotionLevelHandlerTests : BaseContentHandlerTest
     public async Task Handle_WithCancellationToken_ShouldPassTokenToRepository()
     {
         // Arrange
-        string name = TestConstants.Content.PromotionLevel.ValidName;
+        string name = TestConstants.PromotionLevel.ValidName;
         var command = new AdminCreatePromotionLevelCommand(
             Name: name,
             DurationDays: 7,
