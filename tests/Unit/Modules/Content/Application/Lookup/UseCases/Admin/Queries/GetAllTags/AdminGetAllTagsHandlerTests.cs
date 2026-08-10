@@ -49,7 +49,7 @@ public class AdminGetAllTagsHandlerTests : BaseContentHandlerTest
     public async Task Handle_WithSearchTerm_ShouldPassSearchToRepository()
     {
         // Arrange
-        string searchTerm = TestConstants.Content.Tag.ValidName;
+        string searchTerm = TestConstants.Tag.ValidName;
         TagEntity tag = TagFactory.CreateDefault();
         _lookupRepositoryMock.SetupGetAllTags(new List<TagEntity> { tag });
 
