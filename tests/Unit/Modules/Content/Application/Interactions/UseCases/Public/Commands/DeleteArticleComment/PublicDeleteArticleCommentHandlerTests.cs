@@ -49,8 +49,7 @@ public class PublicDeleteArticleCommentHandlerTests
             ArticleId: article.Id,
             CommentId: comment.Id
         );
-        _articleRepositoryMock.SetupGetCommentByIdAsync(comment);
-        _articleRepositoryMock.SetupGetByIdOrThrow(article);
+        _articleRepositoryMock.SetupGetCommentByIdInArticleAsync(comment, article.Id);
 
         // Act
         PublicDeleteArticleCommentResult result = await _handler.Handle(command, CancellationToken.None);
@@ -75,8 +74,7 @@ public class PublicDeleteArticleCommentHandlerTests
             ArticleId: article.Id,
             CommentId: comment.Id
         );
-        _articleRepositoryMock.SetupGetCommentByIdAsync(comment);
-        _articleRepositoryMock.SetupGetByIdOrThrow(article);
+        _articleRepositoryMock.SetupGetCommentByIdInArticleAsync(comment, article.Id);
 
         // Act
         PublicDeleteArticleCommentResult result = await _handler.Handle(command, CancellationToken.None);
@@ -101,7 +99,7 @@ public class PublicDeleteArticleCommentHandlerTests
             ArticleId: Guid.NewGuid(),
             CommentId: Guid.NewGuid()
         );
-        _articleRepositoryMock.SetupGetCommentByIdAsync(null);
+        _articleRepositoryMock.SetupGetCommentByIdInArticleAsync(null, command.ArticleId);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
@@ -122,7 +120,7 @@ public class PublicDeleteArticleCommentHandlerTests
             ArticleId: article.Id,
             CommentId: comment.Id
         );
-        _articleRepositoryMock.SetupGetCommentByIdAsync(comment);
+        _articleRepositoryMock.SetupGetCommentByIdInArticleAsync(comment, article.Id);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
