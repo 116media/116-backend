@@ -43,8 +43,8 @@ public class AdminUpdateTagHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         TagEntity tag = TagFactory.CreateDefault();
-        string newName = TestConstants.Content.Tag.AnotherValidName;
-        string newSlug = TestConstants.Content.Tag.AnotherValidSlug;
+        string newName = TestConstants.Tag.AnotherValidName;
+        string newSlug = TestConstants.Tag.AnotherValidSlug;
         var command = new AdminUpdateTagCommand(Id: tag.Id.ToString(), Name: newName, Slug: newSlug);
 
         _lookupRepositoryMock.SetupGetTagByIdOrThrow(entity: tag);
@@ -66,8 +66,8 @@ public class AdminUpdateTagHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         TagEntity tag = TagFactory.CreateDefault();
-        string newName = TestConstants.Content.Tag.AnotherValidName;
-        string currentSlug = TestConstants.Content.Tag.ValidSlug;
+        string newName = TestConstants.Tag.AnotherValidName;
+        string currentSlug = TestConstants.Tag.ValidSlug;
         var command = new AdminUpdateTagCommand(Id: tag.Id.ToString(), Name: newName, Slug: currentSlug);
 
         _lookupRepositoryMock.SetupGetTagByIdOrThrow(entity: tag);
@@ -91,12 +91,12 @@ public class AdminUpdateTagHandlerTests : BaseContentHandlerTest
         TagEntity tag = TagFactory.CreateDefault();
         var command = new AdminUpdateTagCommand(
             Id: tag.Id.ToString(),
-            Name: TestConstants.Content.Tag.ValidName,
-            Slug: TestConstants.Content.Tag.ValidSlug
+            Name: TestConstants.Tag.ValidName,
+            Slug: TestConstants.Tag.ValidSlug
         );
 
         _lookupRepositoryMock.SetupGetTagByIdOrThrow(entity: tag);
-        _lookupRepositoryMock.SetupGetTagBySlug(slug: TestConstants.Content.Tag.ValidSlug, tag: tag);
+        _lookupRepositoryMock.SetupGetTagBySlug(slug: TestConstants.Tag.ValidSlug, tag: tag);
 
         // Act
         AdminUpdateTagResult result = await _handler.Handle(command, CancellationToken.None);
@@ -117,8 +117,8 @@ public class AdminUpdateTagHandlerTests : BaseContentHandlerTest
         Guid nonExistentId = Guid.NewGuid();
         var command = new AdminUpdateTagCommand(
             Id: nonExistentId.ToString(),
-            Name: TestConstants.Content.Tag.ValidName,
-            Slug: TestConstants.Content.Tag.ValidSlug
+            Name: TestConstants.Tag.ValidName,
+            Slug: TestConstants.Tag.ValidSlug
         );
 
         _lookupRepositoryMock.SetupGetTagByIdOrThrowNotFound(id: nonExistentId);
@@ -135,17 +135,14 @@ public class AdminUpdateTagHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         TagEntity tag = TagFactory.CreateDefault();
-        string conflictingSlug = TestConstants.Content.Tag.AnotherValidSlug;
+        string conflictingSlug = TestConstants.Tag.AnotherValidSlug;
         var command = new AdminUpdateTagCommand(
             Id: tag.Id.ToString(),
-            Name: TestConstants.Content.Tag.AnotherValidName,
+            Name: TestConstants.Tag.AnotherValidName,
             Slug: conflictingSlug
         );
 
-        TagEntity existingTag = TagFactory.Create(
-            name: TestConstants.Content.Tag.AnotherValidName,
-            slug: conflictingSlug
-        );
+        TagEntity existingTag = TagFactory.Create(name: TestConstants.Tag.AnotherValidName, slug: conflictingSlug);
 
         _lookupRepositoryMock.SetupGetTagByIdOrThrow(entity: tag);
         _lookupRepositoryMock.SetupGetTagBySlug(slug: conflictingSlug, tag: existingTag);
@@ -162,17 +159,14 @@ public class AdminUpdateTagHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         TagEntity tag = TagFactory.CreateDefault();
-        string conflictingSlug = TestConstants.Content.Tag.AnotherValidSlug;
+        string conflictingSlug = TestConstants.Tag.AnotherValidSlug;
         var command = new AdminUpdateTagCommand(
             Id: tag.Id.ToString(),
-            Name: TestConstants.Content.Tag.AnotherValidName,
+            Name: TestConstants.Tag.AnotherValidName,
             Slug: conflictingSlug
         );
 
-        TagEntity existingTag = TagFactory.Create(
-            name: TestConstants.Content.Tag.AnotherValidName,
-            slug: conflictingSlug
-        );
+        TagEntity existingTag = TagFactory.Create(name: TestConstants.Tag.AnotherValidName, slug: conflictingSlug);
 
         _lookupRepositoryMock.SetupGetTagByIdOrThrow(entity: tag);
         _lookupRepositoryMock.SetupGetTagBySlug(slug: conflictingSlug, tag: existingTag);
@@ -200,10 +194,10 @@ public class AdminUpdateTagHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         TagEntity tag = TagFactory.CreateDefault();
-        string newSlug = TestConstants.Content.Tag.AnotherValidSlug;
+        string newSlug = TestConstants.Tag.AnotherValidSlug;
         var command = new AdminUpdateTagCommand(
             Id: tag.Id.ToString(),
-            Name: TestConstants.Content.Tag.AnotherValidName,
+            Name: TestConstants.Tag.AnotherValidName,
             Slug: newSlug
         );
 
