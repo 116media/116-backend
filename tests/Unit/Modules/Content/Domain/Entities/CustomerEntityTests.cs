@@ -19,8 +19,8 @@ public class CustomerEntityTests
     {
         // Arrange
         var id = Guid.NewGuid();
-        string fullName = TestConstants.Content.Customer.ValidFullName;
-        string email = TestConstants.Content.Customer.ValidEmail;
+        string fullName = TestConstants.Customer.ValidFullName;
+        string email = TestConstants.Customer.ValidEmail;
 
         // Act
         var entity = CustomerEntity.Create(
@@ -48,18 +48,18 @@ public class CustomerEntityTests
         // Act
         var entity = CustomerEntity.Create(
             Guid.NewGuid(),
-            TestConstants.Content.Customer.ValidFullName,
-            TestConstants.Content.Customer.ValidEmail,
-            TestConstants.Content.Customer.ValidPhone,
-            TestConstants.Content.Customer.ValidCompany,
-            TestConstants.Content.Customer.ValidNotes,
+            TestConstants.Customer.ValidFullName,
+            TestConstants.Customer.ValidEmail,
+            TestConstants.Customer.ValidPhone,
+            TestConstants.Customer.ValidCompany,
+            TestConstants.Customer.ValidNotes,
             TestErrorsFactory.CreateCustomerErrors()
         );
 
         // Assert
-        entity.Phone.Should().Be(TestConstants.Content.Customer.ValidPhone);
-        entity.Company.Should().Be(TestConstants.Content.Customer.ValidCompany);
-        entity.Notes.Should().Be(TestConstants.Content.Customer.ValidNotes);
+        entity.Phone.Should().Be(TestConstants.Customer.ValidPhone);
+        entity.Company.Should().Be(TestConstants.Customer.ValidCompany);
+        entity.Notes.Should().Be(TestConstants.Customer.ValidNotes);
     }
 
     [Theory]
@@ -73,7 +73,7 @@ public class CustomerEntityTests
             CustomerEntity.Create(
                 Guid.NewGuid(),
                 invalidFullName!,
-                TestConstants.Content.Customer.ValidEmail,
+                TestConstants.Customer.ValidEmail,
                 null,
                 null,
                 null,
@@ -94,7 +94,7 @@ public class CustomerEntityTests
         Action act = () =>
             CustomerEntity.Create(
                 Guid.NewGuid(),
-                TestConstants.Content.Customer.ValidFullName,
+                TestConstants.Customer.ValidFullName,
                 invalidEmail!,
                 null,
                 null,
@@ -116,8 +116,8 @@ public class CustomerEntityTests
         // Arrange
         var entity = CustomerEntity.Create(
             Guid.NewGuid(),
-            TestConstants.Content.Customer.ValidFullName,
-            TestConstants.Content.Customer.ValidEmail,
+            TestConstants.Customer.ValidFullName,
+            TestConstants.Customer.ValidEmail,
             null,
             null,
             null,
@@ -128,7 +128,7 @@ public class CustomerEntityTests
         entity.Update(
             "New Name",
             "new@example.com",
-            TestConstants.Content.Customer.ValidPhone,
+            TestConstants.Customer.ValidPhone,
             "New Company",
             "Some notes",
             TestErrorsFactory.CreateCustomerErrors()
@@ -137,7 +137,7 @@ public class CustomerEntityTests
         // Assert
         entity.FullName.Should().Be("New Name");
         entity.Email.Should().Be("new@example.com");
-        entity.Phone.Should().Be(TestConstants.Content.Customer.ValidPhone);
+        entity.Phone.Should().Be(TestConstants.Customer.ValidPhone);
         entity.Company.Should().Be("New Company");
         entity.Notes.Should().Be("Some notes");
     }
@@ -148,8 +148,8 @@ public class CustomerEntityTests
         // Arrange
         var entity = CustomerEntity.Create(
             Guid.NewGuid(),
-            TestConstants.Content.Customer.ValidFullName,
-            TestConstants.Content.Customer.ValidEmail,
+            TestConstants.Customer.ValidFullName,
+            TestConstants.Customer.ValidEmail,
             null,
             null,
             null,
@@ -172,8 +172,8 @@ public class CustomerEntityTests
         // Arrange
         var entity = CustomerEntity.Create(
             Guid.NewGuid(),
-            TestConstants.Content.Customer.ValidFullName,
-            TestConstants.Content.Customer.ValidEmail,
+            TestConstants.Customer.ValidFullName,
+            TestConstants.Customer.ValidEmail,
             null,
             null,
             null,
@@ -184,7 +184,7 @@ public class CustomerEntityTests
         Action act = () =>
             entity.Update(
                 invalidFullName!,
-                TestConstants.Content.Customer.ValidEmail,
+                TestConstants.Customer.ValidEmail,
                 null,
                 null,
                 null,
@@ -204,8 +204,8 @@ public class CustomerEntityTests
         // Arrange
         var entity = CustomerEntity.Create(
             Guid.NewGuid(),
-            TestConstants.Content.Customer.ValidFullName,
-            TestConstants.Content.Customer.ValidEmail,
+            TestConstants.Customer.ValidFullName,
+            TestConstants.Customer.ValidEmail,
             null,
             null,
             null,
@@ -215,7 +215,7 @@ public class CustomerEntityTests
         // Act
         Action act = () =>
             entity.Update(
-                TestConstants.Content.Customer.ValidFullName,
+                TestConstants.Customer.ValidFullName,
                 invalidEmail!,
                 null,
                 null,
@@ -233,11 +233,11 @@ public class CustomerEntityTests
         // Arrange
         var entity = CustomerEntity.Create(
             Guid.NewGuid(),
-            TestConstants.Content.Customer.ValidFullName,
-            TestConstants.Content.Customer.ValidEmail,
-            TestConstants.Content.Customer.ValidPhone,
-            TestConstants.Content.Customer.ValidCompany,
-            TestConstants.Content.Customer.ValidNotes,
+            TestConstants.Customer.ValidFullName,
+            TestConstants.Customer.ValidEmail,
+            TestConstants.Customer.ValidPhone,
+            TestConstants.Customer.ValidCompany,
+            TestConstants.Customer.ValidNotes,
             TestErrorsFactory.CreateCustomerErrors()
         );
 
