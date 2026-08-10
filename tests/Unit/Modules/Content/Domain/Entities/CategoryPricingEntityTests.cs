@@ -21,7 +21,7 @@ public class CategoryPricingEntityTests
         var id = Guid.NewGuid();
         var categoryId = Guid.NewGuid();
         var tierId = Guid.NewGuid();
-        decimal price = TestConstants.Content.CategoryPricing.ValidPriceUsd;
+        decimal price = TestConstants.CategoryPricing.ValidPriceUsd;
 
         // Act
         var entity = CategoryPricingEntity.Create(
@@ -47,7 +47,7 @@ public class CategoryPricingEntityTests
             Guid.NewGuid(),
             Guid.NewGuid(),
             Guid.NewGuid(),
-            TestConstants.Content.CategoryPricing.ZeroPriceUsd,
+            TestConstants.CategoryPricing.ZeroPriceUsd,
             TestErrorsFactory.CreateCategoryErrors()
         );
 
@@ -86,18 +86,15 @@ public class CategoryPricingEntityTests
             Guid.NewGuid(),
             Guid.NewGuid(),
             Guid.NewGuid(),
-            TestConstants.Content.CategoryPricing.ValidPriceUsd,
+            TestConstants.CategoryPricing.ValidPriceUsd,
             TestErrorsFactory.CreateCategoryErrors()
         );
 
         // Act
-        entity.UpdatePrice(
-            TestConstants.Content.CategoryPricing.UpdatedPriceUsd,
-            TestErrorsFactory.CreateCategoryErrors()
-        );
+        entity.UpdatePrice(TestConstants.CategoryPricing.UpdatedPriceUsd, TestErrorsFactory.CreateCategoryErrors());
 
         // Assert
-        entity.PriceUsd.Should().Be(TestConstants.Content.CategoryPricing.UpdatedPriceUsd);
+        entity.PriceUsd.Should().Be(TestConstants.CategoryPricing.UpdatedPriceUsd);
     }
 
     [Fact]
@@ -108,7 +105,7 @@ public class CategoryPricingEntityTests
             Guid.NewGuid(),
             Guid.NewGuid(),
             Guid.NewGuid(),
-            TestConstants.Content.CategoryPricing.ValidPriceUsd,
+            TestConstants.CategoryPricing.ValidPriceUsd,
             TestErrorsFactory.CreateCategoryErrors()
         );
 
@@ -129,7 +126,7 @@ public class CategoryPricingEntityTests
             Guid.NewGuid(),
             Guid.NewGuid(),
             Guid.NewGuid(),
-            TestConstants.Content.CategoryPricing.ValidPriceUsd,
+            TestConstants.CategoryPricing.ValidPriceUsd,
             TestErrorsFactory.CreateCategoryErrors()
         );
 
