@@ -51,7 +51,7 @@ public class PublicGetVideoBySlugHandlerTests : BaseContentHandlerTest
         CategoryEntity category = CategoryFactory.Create(CategoryId);
         VideoEntity video = VideoFactory.CreateWithCategory(CategoryId, category);
         // Manually transition to Published for the slug lookup
-        video.AttachYoutubeVideoUrl(TestConstants.Content.Editorial.Video.ValidYoutubeVideoUrl, _videoErrors);
+        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl, _videoErrors);
         video.MarkPendingReview();
         video.Approve();
         video.Publish(_videoErrors);
@@ -75,7 +75,7 @@ public class PublicGetVideoBySlugHandlerTests : BaseContentHandlerTest
         // Arrange — the common case at launch: a video with no artist profile.
         CategoryEntity category = CategoryFactory.Create(CategoryId);
         VideoEntity video = VideoFactory.CreateWithCategory(CategoryId, category);
-        video.AttachYoutubeVideoUrl(TestConstants.Content.Editorial.Video.ValidYoutubeVideoUrl, _videoErrors);
+        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl, _videoErrors);
         video.MarkPendingReview();
         video.Approve();
         video.Publish(_videoErrors);
@@ -98,7 +98,7 @@ public class PublicGetVideoBySlugHandlerTests : BaseContentHandlerTest
         // Arrange
         CategoryEntity category = CategoryFactory.Create(CategoryId);
         VideoEntity video = VideoFactory.CreateWithCategory(CategoryId, category);
-        video.AttachYoutubeVideoUrl(TestConstants.Content.Editorial.Video.ValidYoutubeVideoUrl, _videoErrors);
+        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl, _videoErrors);
         video.MarkPendingReview();
         video.Approve();
         video.Publish(_videoErrors);
@@ -123,7 +123,7 @@ public class PublicGetVideoBySlugHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenVideoNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        string slug = TestConstants.Content.Editorial.Video.ValidSlug;
+        string slug = TestConstants.Video.ValidSlug;
         var query = new PublicGetVideoBySlugQuery(Slug: slug);
 
         _videoRepositoryMock.SetupGetBySlug(slug, null);
