@@ -38,11 +38,6 @@ public class AdminForgotPasswordHandlerTests
 
     #region Success Cases
 
-    /// <summary>
-    /// Verifies that the code reaching the mailer is the plaintext from the creation result while
-    /// the OTP entity the flow produced carries only its hash. This is the assertion that would
-    /// fail if the plaintext ever leaked back into the persisted row.
-    /// </summary>
     [Fact]
     public async Task Handle_ShouldMailThePlainCodeWhileTheOtpEntityKeepsOnlyItsHash()
     {
