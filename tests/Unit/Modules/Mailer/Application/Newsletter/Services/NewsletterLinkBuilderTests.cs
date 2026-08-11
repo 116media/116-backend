@@ -26,10 +26,6 @@ public class NewsletterLinkBuilderTests : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    /// <summary>
-    /// Verifies that the double opt-in link lands on the frontend confirmation
-    /// route carrying the subscriber's token.
-    /// </summary>
     [Fact]
     public void ConfirmUrl_WithAConfiguredBaseUrl_ShouldPointAtTheFrontendConfirmRoute()
     {
@@ -43,10 +39,6 @@ public class NewsletterLinkBuilderTests : IDisposable
         url.Should().Be("https://116.cd/newsletter/confirm/token-123");
     }
 
-    /// <summary>
-    /// Verifies that the one-click unsubscribe link lands on the frontend
-    /// unsubscribe route carrying the subscriber's token.
-    /// </summary>
     [Fact]
     public void UnsubscribeUrl_WithAConfiguredBaseUrl_ShouldPointAtTheFrontendUnsubscribeRoute()
     {
@@ -60,10 +52,6 @@ public class NewsletterLinkBuilderTests : IDisposable
         url.Should().Be("https://116.cd/newsletter/unsubscribe/token-123");
     }
 
-    /// <summary>
-    /// Verifies that an unconfigured frontend base URL still produces a usable
-    /// absolute link, so local development works with no configuration.
-    /// </summary>
     [Fact]
     public void UnsubscribeUrl_WithoutAConfiguredBaseUrl_ShouldFallBackToLocalDevelopment()
     {
