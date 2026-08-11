@@ -454,16 +454,48 @@ limit across the editorial types. Keep the per-type test constants rather than c
 them: they document which column each assertion is about, and if production ever splits
 the limits the aliases are the only thing that has to change.
 
+## Implementation notes
+
+Implemented 2026-08-22, first in the executed order because several builder methods
+bake the drifted values in.
+
+**There are 29 `TestConstants` partials, not nine.** The audit counted the nine that
+held drifted numeric limits; the file set is 29 across `Content/`, `Core/`, `Identity/`
+and `Shared/`. The aliasing rule was applied to all of them rather than only the nine,
+since a partial that aliases nothing today is exactly where the next drift starts.
+
+The doc-comment convention landed as two mutually exclusive forms, so a reader can
+tell aliased from owned without opening `src/`:
+
+- an aliased value states what production calls it — *"The production maximum username
+  length."* over `public const int UserNameMaxLength = UserConstants.MaxUserNameLength;`
+- an owned value says so and says why nothing binds it — *"Test-owned. Production
+  declares no maximum password length, so this value binds nothing in `src/`."*
+
+No "Mirrors `src/...`" comment survives anywhere under `tests/Fixtures/Constants/`.
+`TestConstants.Jwt` carries the sync note against `ApiFixture.SetEnvironmentVariables`
+as specified.
+
+Change 2 landed as two added facts rather than an edit to the existing ones:
+`HasMaxAttemptsReached_OneAttemptBelowTheThreshold_ShouldReturnFalse` and
+`HasMaxAttemptsReached_AtTheThreshold_ShouldReturnTrue` both drive
+`TestConstants.Otp.MaxAttempts` through real `RecordAttempt()` calls, so the boundary
+moves with production rather than with a literal.
+
+`OtpBuilder.AsMaxAttemptsReached()` is documented as *"the attempt threshold, the
+locked state a real row holds"* — the drift the audit found (a count production cannot
+reach) is gone.
+
 ## Checklist
 
-- [ ] 1 — All nine `TestConstants` partials alias production constants where one exists
-- [ ] 1 — Every remaining literal carries a doc comment stating it is test-owned and why
-- [ ] 1 — The "Mirrors `src/...`" doc comments replaced with a statement of the real
+- [x] 1 — All 29 `TestConstants` partials alias production constants where one exists
+- [x] 1 — Every remaining literal carries a doc comment stating it is test-owned and why
+- [x] 1 — The "Mirrors `src/...`" doc comments replaced with a statement of the real
       relationship
-- [ ] 1 — `TestConstants.Jwt` notes that its values must match
+- [x] 1 — `TestConstants.Jwt` notes that its values must match
       `ApiFixture.SetEnvironmentVariables`
-- [ ] 2 — `OtpEntityTests` asserts both sides of the lockout boundary
-- [ ] 3 — `OtpBuilder.AsMaxAttemptsReached()` documented as the highest persistable count
-- [ ] Every test that turned red was fixed as a test; no file under
+- [x] 2 — `OtpEntityTests` asserts both sides of the lockout boundary
+- [x] 3 — `OtpBuilder.AsMaxAttemptsReached()` documented as the highest persistable count
+- [x] Every test that turned red was fixed as a test; no file under
       `src/**/Constants/` appears in the diff
-- [ ] Full unit suite green; full integration suite green
+- [x] Full unit suite green; full integration suite green
