@@ -24,15 +24,6 @@ public class LyricsSubmissionBuilder
     private Guid? _publishedLyricsId;
 
     /// <summary>
-    /// Sets the submission ID.
-    /// </summary>
-    public LyricsSubmissionBuilder WithId(Guid id)
-    {
-        _id = id;
-        return this;
-    }
-
-    /// <summary>
     /// Sets the submitted song title.
     /// </summary>
     public LyricsSubmissionBuilder WithSongTitle(string songTitle)
@@ -47,24 +38,6 @@ public class LyricsSubmissionBuilder
     public LyricsSubmissionBuilder WithArtistName(string artistName)
     {
         _artistName = artistName;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the submitted lyrics text.
-    /// </summary>
-    public LyricsSubmissionBuilder WithLyricsText(string lyricsText)
-    {
-        _lyricsText = lyricsText;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the submitted language code.
-    /// </summary>
-    public LyricsSubmissionBuilder WithLanguage(string language)
-    {
-        _language = language;
         return this;
     }
 
@@ -98,19 +71,6 @@ public class LyricsSubmissionBuilder
         _rejected = true;
         _approved = false;
         _needsRevision = false;
-        _reviewedByUserId = reviewedByUserId;
-        _reviewNote = note;
-        return this;
-    }
-
-    /// <summary>
-    /// Transitions the submission to <c>NeedsRevision</c> with a mandatory note.
-    /// </summary>
-    public LyricsSubmissionBuilder AsNeedsRevision(Guid reviewedByUserId, string note)
-    {
-        _needsRevision = true;
-        _approved = false;
-        _rejected = false;
         _reviewedByUserId = reviewedByUserId;
         _reviewNote = note;
         return this;
