@@ -143,11 +143,6 @@ public class UserEmailChangedNotificationsHandlerTests
         );
     }
 
-    /// <summary>
-    /// Verifies that an address whose local part cannot be partially revealed —
-    /// a single character, or none at all — is masked entirely rather than
-    /// disclosing the whole local part.
-    /// </summary>
     [Theory]
     [InlineData("a@example.com")]
     [InlineData("@example.com")]
