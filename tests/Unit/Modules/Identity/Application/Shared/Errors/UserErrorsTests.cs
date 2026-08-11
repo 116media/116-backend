@@ -16,12 +16,12 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Shared.Errors;
 public class UserErrorsTests
 {
     private readonly UserErrors _errors = TestErrorsFactory.CreateUserErrors();
-    private readonly ConflictErrorMessage _conflict = LocalizerFactory.CreateMessage<ConflictErrorMessage>("en");
-    private readonly ValidationErrorMessage _validation = LocalizerFactory.CreateMessage<ValidationErrorMessage>("en");
+    private readonly ConflictErrorMessage _conflict = LocalizerFactory.CreateMessage<ConflictErrorMessage>();
+    private readonly ValidationErrorMessage _validation = LocalizerFactory.CreateMessage<ValidationErrorMessage>();
     private readonly AuthenticationErrorMessage _authentication =
-        LocalizerFactory.CreateMessage<AuthenticationErrorMessage>("en");
+        LocalizerFactory.CreateMessage<AuthenticationErrorMessage>();
     private readonly AuthorizationErrorMessage _authorization =
-        LocalizerFactory.CreateMessage<AuthorizationErrorMessage>("en");
+        LocalizerFactory.CreateMessage<AuthorizationErrorMessage>();
 
     [Fact]
     public void Validation_ShouldReturnValidationErrorMessage()
