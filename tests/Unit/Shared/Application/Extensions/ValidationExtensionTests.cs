@@ -13,7 +13,7 @@ namespace _116.Unit.Tests.Shared.Application.Extensions;
 /// </summary>
 public class ValidationExtensionTests
 {
-    private readonly CategoryErrorMessage _i18n = LocalizerFactory.CreateMessage<CategoryErrorMessage>("en");
+    private readonly CategoryErrorMessage _i18n = LocalizerFactory.CreateMessage<CategoryErrorMessage>();
 
     private class TestCommand
     {
