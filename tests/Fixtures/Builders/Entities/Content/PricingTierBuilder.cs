@@ -32,15 +32,6 @@ public class PricingTierBuilder
     }
 
     /// <summary>
-    /// Sets the pricing tier ID.
-    /// </summary>
-    public PricingTierBuilder WithId(Guid id)
-    {
-        _id = id;
-        return this;
-    }
-
-    /// <summary>
     /// Sets the pricing tier name.
     /// </summary>
     public PricingTierBuilder WithName(string name)
