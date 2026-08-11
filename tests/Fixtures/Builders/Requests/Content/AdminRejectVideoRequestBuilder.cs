@@ -21,17 +21,6 @@ public class AdminRejectVideoRequestBuilder
     }
 
     /// <summary>
-    /// Sets the rejection reason.
-    /// </summary>
-    /// <param name="reason">The rejection reason.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public AdminRejectVideoRequestBuilder WithReason(string reason)
-    {
-        _reason = reason;
-        return this;
-    }
-
-    /// <summary>
     /// Builds the <see cref="AdminRejectVideoRequest"/> instance.
     /// </summary>
     /// <returns>A configured AdminRejectVideoRequest instance.</returns>
