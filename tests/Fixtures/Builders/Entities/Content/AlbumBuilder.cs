@@ -21,15 +21,6 @@ public class AlbumBuilder
     private EnumReleaseType _releaseType = EnumReleaseType.Album;
 
     /// <summary>
-    /// Sets the album ID.
-    /// </summary>
-    public AlbumBuilder WithId(Guid id)
-    {
-        _id = id;
-        return this;
-    }
-
-    /// <summary>
     /// Sets the album's display name.
     /// </summary>
     public AlbumBuilder WithName(string name)
@@ -53,15 +44,6 @@ public class AlbumBuilder
     public AlbumBuilder WithCoverImageFileId(Guid coverImageFileId)
     {
         _coverImageFileId = coverImageFileId;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the album's release year.
-    /// </summary>
-    public AlbumBuilder WithReleaseYear(short releaseYear)
-    {
-        _releaseYear = releaseYear;
         return this;
     }
 
