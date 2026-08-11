@@ -17,6 +17,7 @@ using AwesomeAssertions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Moq;
 using Quartz;
 using Xunit;
@@ -53,6 +54,19 @@ public class MailerModuleTests : IDisposable
         GC.SuppressFinalize(this);
     }
 
+    /// <summary>
+    /// Builds a host environment stub reporting the given name.
+    /// </summary>
+    /// <param name="name">The environment name the stub reports.</param>
+    /// <returns>The stubbed host environment.</returns>
+    private static IHostEnvironment HostEnvironment(string name)
+    {
+        var environment = new Mock<IHostEnvironment>();
+        environment.SetupGet(host => host.EnvironmentName).Returns(name);
+
+        return environment.Object;
+    }
+
     private ServiceDescriptor GetDescriptor<TService>()
     {
         ServiceDescriptor? descriptor = _services.LastOrDefault(service => service.ServiceType == typeof(TService));
@@ -67,7 +81,7 @@ public class MailerModuleTests : IDisposable
     public void AddMailerModule_ShouldRegisterTheMailerDbContext()
     {
         // Act
-        _services.AddMailerModule();
+        _services.AddMailerModule(HostEnvironment("Testing"));
 
         // Assert
         _services.Should().Contain(service => service.ServiceType == typeof(MailerDbContext));
@@ -77,7 +91,7 @@ public class MailerModuleTests : IDisposable
     public void AddMailerModule_ShouldRegisterTheUnitOfWork()
     {
         // Act
-        _services.AddMailerModule();
+        _services.AddMailerModule(HostEnvironment("Testing"));
 
         // Assert
         ServiceDescriptor descriptor = GetDescriptor<IMailerUnitOfWork>();
@@ -89,7 +103,7 @@ public class MailerModuleTests : IDisposable
     public void AddMailerModule_ShouldRegisterTheRepositories()
     {
         // Act
-        _services.AddMailerModule();
+        _services.AddMailerModule(HostEnvironment("Testing"));
 
         // Assert
         GetDescriptor<IOutboxEmailRepository>().ImplementationType.Should().Be<OutboxEmailRepository>();
@@ -101,7 +115,7 @@ public class MailerModuleTests : IDisposable
     public void AddMailerModule_ShouldRegisterTheRenderersWithTheirMessageSources()
     {
         // Act
-        _services.AddMailerModule();
+        _services.AddMailerModule(HostEnvironment("Testing"));
 
         // Assert
         GetDescriptor<IEmailTemplateRenderer>().ImplementationType.Should().Be<EmailTemplateRenderer>();
@@ -114,7 +128,7 @@ public class MailerModuleTests : IDisposable
     public void AddMailerModule_ShouldRegisterTheErrorFactoriesWithTheirMessageSources()
     {
         // Act
-        _services.AddMailerModule();
+        _services.AddMailerModule(HostEnvironment("Testing"));
 
         // Assert
         _services.Should().Contain(service => service.ServiceType == typeof(NewsletterErrors));
@@ -127,7 +141,7 @@ public class MailerModuleTests : IDisposable
     public void AddMailerModule_ShouldRegisterTheMailerContract()
     {
         // Act
-        _services.AddMailerModule();
+        _services.AddMailerModule(HostEnvironment("Testing"));
 
         // Assert
         ServiceDescriptor descriptor = GetDescriptor<IMailer>();
@@ -139,7 +153,7 @@ public class MailerModuleTests : IDisposable
     public void AddMailerModule_ShouldRegisterTheNotifierContract()
     {
         // Act
-        _services.AddMailerModule();
+        _services.AddMailerModule(HostEnvironment("Testing"));
 
         // Assert
         ServiceDescriptor descriptor = GetDescriptor<INotifier>();
@@ -151,7 +165,7 @@ public class MailerModuleTests : IDisposable
     public void AddMailerModule_ShouldScheduleTheOutboxDispatcherJob()
     {
         // Act
-        _services.AddMailerModule();
+        _services.AddMailerModule(HostEnvironment("Testing"));
 
         // Assert
         _services.Should().Contain(service => service.ServiceType == typeof(ISchedulerFactory));
@@ -161,7 +175,7 @@ public class MailerModuleTests : IDisposable
     public void AddMailerModule_ShouldReturnServiceCollection()
     {
         // Act
-        IServiceCollection result = _services.AddMailerModule();
+        IServiceCollection result = _services.AddMailerModule(HostEnvironment("Testing"));
 
         // Assert
         result.Should().NotBeNull();
@@ -176,7 +190,7 @@ public class MailerModuleTests : IDisposable
     public void AddMailerModule_WithoutAProviderSet_ShouldFallBackToSmtp()
     {
         // Act
-        _services.AddMailerModule();
+        _services.AddMailerModule(HostEnvironment("Testing"));
 
         // Assert
         GetDescriptor<IEmailSender>().ImplementationType.Should().Be<SmtpEmailSender>();
@@ -189,7 +203,7 @@ public class MailerModuleTests : IDisposable
         Environment.SetEnvironmentVariable(EmailProviderVariable, MailerConstants.EmailProviders.Smtp);
 
         // Act
-        _services.AddMailerModule();
+        _services.AddMailerModule(HostEnvironment("Testing"));
 
         // Assert
         GetDescriptor<IEmailSender>().ImplementationType.Should().Be<SmtpEmailSender>();
@@ -202,7 +216,7 @@ public class MailerModuleTests : IDisposable
         Environment.SetEnvironmentVariable(EmailProviderVariable, "SMTP");
 
         // Act
-        _services.AddMailerModule();
+        _services.AddMailerModule(HostEnvironment("Testing"));
 
         // Assert
         GetDescriptor<IEmailSender>().ImplementationType.Should().Be<SmtpEmailSender>();
@@ -215,7 +229,7 @@ public class MailerModuleTests : IDisposable
         Environment.SetEnvironmentVariable(EmailProviderVariable, MailerConstants.EmailProviders.Resend);
 
         // Act
-        _services.AddMailerModule();
+        _services.AddMailerModule(HostEnvironment("Testing"));
         ServiceProvider serviceProvider = _services.BuildServiceProvider();
 
         // Assert
@@ -231,7 +245,7 @@ public class MailerModuleTests : IDisposable
         Environment.SetEnvironmentVariable(EmailProviderVariable, "carrier-pigeon");
 
         // Act
-        Action act = () => _services.AddMailerModule();
+        Action act = () => _services.AddMailerModule(HostEnvironment("Testing"));
 
         // Assert
         act.Should().Throw<InvalidOperationException>().WithMessage("Unknown EMAIL_PROVIDER 'carrier-pigeon'.");
@@ -246,24 +260,18 @@ public class MailerModuleTests : IDisposable
     {
         // Arrange — Testing disables migrations and the module never seeds, so
         // UseModuleDatabase is a no-op and the builder is returned untouched.
-        string? previousEnvironment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Testing");
+        var services = new ServiceCollection();
+        services.AddSingleton<IHostEnvironment>(HostEnvironment("Testing"));
 
-        try
-        {
-            var appBuilder = new Mock<IApplicationBuilder>();
+        var appBuilder = new Mock<IApplicationBuilder>();
+        appBuilder.Setup(builder => builder.ApplicationServices).Returns(services.BuildServiceProvider());
 
-            // Act
-            IApplicationBuilder result = appBuilder.Object.UseMailerModule();
+        // Act
+        IApplicationBuilder result = appBuilder.Object.UseMailerModule();
 
-            // Assert
-            result.Should().NotBeNull();
-            result.Should().BeSameAs(appBuilder.Object);
-        }
-        finally
-        {
-            Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", previousEnvironment);
-        }
+        // Assert
+        result.Should().NotBeNull();
+        result.Should().BeSameAs(appBuilder.Object);
     }
 
     #endregion
