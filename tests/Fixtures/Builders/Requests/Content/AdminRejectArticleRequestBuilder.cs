@@ -21,17 +21,6 @@ public class AdminRejectArticleRequestBuilder
     }
 
     /// <summary>
-    /// Sets the rejection reason.
-    /// </summary>
-    /// <param name="reason">The rejection reason.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public AdminRejectArticleRequestBuilder WithReason(string reason)
-    {
-        _reason = reason;
-        return this;
-    }
-
-    /// <summary>
     /// Builds the <see cref="AdminRejectArticleRequest"/> instance.
     /// </summary>
     /// <returns>A configured AdminRejectArticleRequest instance.</returns>
