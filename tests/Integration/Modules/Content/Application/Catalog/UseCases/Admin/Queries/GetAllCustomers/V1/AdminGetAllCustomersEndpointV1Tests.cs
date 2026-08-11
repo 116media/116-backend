@@ -50,7 +50,7 @@ public class AdminGetAllCustomersEndpointV1Tests(PostgresFixture db) : BaseApiTe
         var body = await response.ReadAsAsync<AdminGetAllCustomersResponse>();
         body.Customers.PageIndex.Should().Be(0);
         body.Customers.PageSize.Should().Be(10);
-        body.Customers.Count.Should().BeGreaterThanOrEqualTo(3);
+        body.Customers.Count.Should().Be(3);
         body.Customers.Items.Should().Contain(c => c.Id == customers[0].Id);
     }
 
