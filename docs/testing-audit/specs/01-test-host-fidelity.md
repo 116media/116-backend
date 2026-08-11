@@ -812,5 +812,6 @@ internal-API usage, and the analyzer warns on them by default.
       rows their seeders own; Moq removed from `tests/Integration/`
 - [x] Module unit tests take a stubbed `IHostEnvironment` and no longer mutate
       `ASPNETCORE_ENVIRONMENT`
-- [ ] Full integration suite run twice back to back with identical results
+- [x] Full integration suite run twice back to back with identical results —
+      verified 2026-08-25: unit 7,693 passed / 6 skipped and integration 1,936 passed, each run twice back to back with identical executed-test-name sets and identical outcomes, compared from `.trx` rather than by pass count
 - [ ] A CI run and a local run produce the same result on the full suite
