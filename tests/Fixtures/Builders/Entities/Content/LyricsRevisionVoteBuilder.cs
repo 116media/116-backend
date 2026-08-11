@@ -17,15 +17,6 @@ public class LyricsRevisionVoteBuilder
     private string? _comment;
 
     /// <summary>
-    /// Sets the vote ID.
-    /// </summary>
-    public LyricsRevisionVoteBuilder WithId(Guid id)
-    {
-        _id = id;
-        return this;
-    }
-
-    /// <summary>
     /// Sets the lyrics revision being voted on.
     /// </summary>
     public LyricsRevisionVoteBuilder WithRevisionId(Guid revisionId)
@@ -49,15 +40,6 @@ public class LyricsRevisionVoteBuilder
     public LyricsRevisionVoteBuilder WithVote(EnumVote vote)
     {
         _vote = vote;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the optional free-text comment.
-    /// </summary>
-    public LyricsRevisionVoteBuilder WithComment(string? comment)
-    {
-        _comment = comment;
         return this;
     }
 
