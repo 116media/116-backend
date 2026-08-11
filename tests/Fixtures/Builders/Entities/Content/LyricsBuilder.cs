@@ -46,29 +46,11 @@ public class LyricsBuilder
     }
 
     /// <summary>
-    /// Sets the lyrics ID.
-    /// </summary>
-    public LyricsBuilder WithId(Guid id)
-    {
-        _id = id;
-        return this;
-    }
-
-    /// <summary>
     /// Sets the lyrics slug.
     /// </summary>
     public LyricsBuilder WithSlug(string slug)
     {
         _slug = slug;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the author ID.
-    /// </summary>
-    public LyricsBuilder WithAuthorId(Guid authorId)
-    {
-        _authorId = authorId;
         return this;
     }
 
@@ -87,15 +69,6 @@ public class LyricsBuilder
     public LyricsBuilder WithArtistName(string artistName)
     {
         _artistName = artistName;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the lyrics text.
-    /// </summary>
-    public LyricsBuilder WithLyricsText(string lyricsText)
-    {
-        _lyricsText = lyricsText;
         return this;
     }
 
@@ -183,35 +156,6 @@ public class LyricsBuilder
     }
 
     /// <summary>
-    /// Sets the cover/album art file id.
-    /// </summary>
-    public LyricsBuilder WithCoverImageFileId(Guid coverImageFileId)
-    {
-        _coverImageFileId = coverImageFileId;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the song-credit metadata fields (album, release year, label, songwriter, producer)
-    /// in a single call. Any parameter left null stays unset.
-    /// </summary>
-    public LyricsBuilder WithMetadata(
-        string? album = null,
-        short? releaseYear = null,
-        string? label = null,
-        string? songwriter = null,
-        string? producer = null
-    )
-    {
-        _album = album;
-        _releaseYear = releaseYear;
-        _label = label;
-        _songwriter = songwriter;
-        _producer = producer;
-        return this;
-    }
-
-    /// <summary>
     /// Links this lyrics page to a real, addressable artist profile.
     /// </summary>
     public LyricsBuilder WithArtistId(Guid artistId)
@@ -244,15 +188,6 @@ public class LyricsBuilder
     public LyricsBuilder WithPromotion(Guid? promotionLevelId = null, DateTimeOffset? until = null)
     {
         _promotion = (promotionLevelId ?? Guid.NewGuid(), until ?? DateTimeOffset.UtcNow.AddDays(7));
-        return this;
-    }
-
-    /// <summary>
-    /// Overrides the <c>CreatedAt</c> timestamp — used to exercise recency-based sort ordering.
-    /// </summary>
-    public LyricsBuilder WithCreatedAt(DateTime createdAt)
-    {
-        _createdAt = createdAt;
         return this;
     }
 
