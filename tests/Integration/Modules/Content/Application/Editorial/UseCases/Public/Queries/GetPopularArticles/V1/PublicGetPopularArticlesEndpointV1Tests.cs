@@ -29,9 +29,9 @@ public class PublicGetPopularArticlesEndpointV1Tests(PostgresFixture db) : BaseA
     }
 
     /// <summary>
-    /// Seeds a published article. When <paramref name="publishedAt" /> is supplied the stamp
-    /// applied by <c>Publish</c> is replaced through the tracked entry, so an ordering test gets
-    /// its ordering from a seeded value rather than from how fast the seeding ran.
+    /// Seeds a published article. When <paramref name="publishedAt" /> is supplied the article is
+    /// published at that explicit instant, so an ordering test gets its ordering from a seeded
+    /// value rather than from how fast the seeding ran.
     /// </summary>
     private async Task<ArticleEntity> SeedArticleAsync(
         Guid categoryId,
@@ -44,7 +44,9 @@ public class PublicGetPopularArticlesEndpointV1Tests(PostgresFixture db) : BaseA
     {
         return await SeedAsync<ContentDbContext, ArticleEntity>(ctx =>
         {
-            ArticleEntity article = ArticleFactory.CreatePublished(categoryId);
+            ArticleEntity article = publishedAt.HasValue
+                ? ArticleFactory.CreatePublishedAt(categoryId, publishedAt.Value)
+                : ArticleFactory.CreatePublished(categoryId);
 
             for (int i = 0; i < likes; i++)
             {
@@ -67,11 +69,6 @@ public class PublicGetPopularArticlesEndpointV1Tests(PostgresFixture db) : BaseA
             }
 
             ctx.Articles.Add(article);
-
-            if (publishedAt.HasValue)
-            {
-                ctx.Entry(article).Property(a => a.PublishedAt).CurrentValue = publishedAt.Value;
-            }
 
             return article;
         });
