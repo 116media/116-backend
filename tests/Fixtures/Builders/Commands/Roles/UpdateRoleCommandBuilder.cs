@@ -61,26 +61,6 @@ public class UpdateRoleCommandBuilder
     }
 
     /// <summary>
-    /// Clears the name (null).
-    /// </summary>
-    /// <returns>The builder instance for chaining.</returns>
-    public UpdateRoleCommandBuilder WithoutName()
-    {
-        _name = null;
-        return this;
-    }
-
-    /// <summary>
-    /// Clears the description (null).
-    /// </summary>
-    /// <returns>The builder instance for chaining.</returns>
-    public UpdateRoleCommandBuilder WithoutDescription()
-    {
-        _description = null;
-        return this;
-    }
-
-    /// <summary>
     /// Sets valid test values for the command.
     /// </summary>
     /// <returns>The builder instance for chaining.</returns>
