@@ -128,10 +128,6 @@ public class AppEnvironmentTests : IDisposable
 
     #region FrontendBaseUrl Tests
 
-    /// <summary>
-    /// Verifies that a configured base URL loses its trailing slash, so the
-    /// paths appended to it never produce a doubled separator.
-    /// </summary>
     [Fact]
     public void FrontendBaseUrl_WithATrailingSlash_ShouldTrimIt()
     {
@@ -145,10 +141,6 @@ public class AppEnvironmentTests : IDisposable
         result.Should().Be("https://116.cd");
     }
 
-    /// <summary>
-    /// Verifies that an unset variable yields null, leaving callers to apply
-    /// their own fallback.
-    /// </summary>
     [Fact]
     public void FrontendBaseUrl_WhenNotSet_ShouldReturnNull()
     {
