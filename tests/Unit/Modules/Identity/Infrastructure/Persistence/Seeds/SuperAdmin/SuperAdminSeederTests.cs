@@ -14,16 +14,10 @@ using Xunit;
 namespace _116.Unit.Tests.Modules.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
 
 /// <summary>
-/// Collection definition to prevent parallel test execution for SuperAdminSeeder tests.
-/// </summary>
-[CollectionDefinition("SuperAdminSeeder", DisableParallelization = true)]
-public class SuperAdminSeederCollection { }
-
-/// <summary>
 /// Unit tests for <see cref="SuperAdminSeeder"/> using SQLite in-memory database,
 /// which supports transactions unlike the EF Core InMemory provider.
 /// </summary>
-[Collection("SuperAdminSeeder")]
+[Collection("EnvironmentVariable")]
 public class SuperAdminSeederTests : IDisposable
 {
     private readonly Mock<ILogger<SuperAdminSeeder>> _seederLoggerMock;
@@ -45,6 +39,7 @@ public class SuperAdminSeederTests : IDisposable
         Environment.SetEnvironmentVariable("DEFAULT_USER_PASSWORD", "TestPassword123!");
     }
 
+    /// <inheritdoc />
     public void Dispose()
     {
         Environment.SetEnvironmentVariable("DEFAULT_USER_PASSWORD", _originalPassword);
