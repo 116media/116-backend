@@ -29,20 +29,81 @@ result from the later specs can be trusted.
 
 ## Global progress
 
-- [ ] 01 — Test host fidelity
-- [ ] 02 — Test isolation
-- [ ] 03 — Constant aliasing
-- [ ] 04 — Error assertion discipline
-- [ ] 05 — Outcome assertions
-- [ ] 06 — Localization testing
-- [ ] 07 — Mock discipline
-- [ ] 08 — Fixture architecture
-- [ ] 09 — Time and determinism
-- [ ] 10 — Duplication to theories
-- [ ] 11 — Suite performance
-- [ ] 12 — Contract coverage
-- [ ] 13 — Production defects
-- [ ] 14 — Verification
+All fourteen specs have been implemented and the verification sweep has been run,
+including its behavioural section. Both suites are green at **7,693 unit (6 skipped,
+7,699 total) / 1,936 integration** tests, and the integration suite ran twice back to
+back with identical results in 2 m 23 s and 2 m 24 s, down from 3 m 41 s. Each spec
+carries an "Implementation notes" section recording where the code disagreed with the
+spec.
+
+Section D's ten mutations were run on 2026-08-25 and are the first evidence in this
+doc set that the suite fails when production behaviour changes, rather than that it is
+shaped correctly. Nine of the ten discriminated as specified. The tenth, D2, exposed a
+multi-filter integration test that could not fail; it is fixed, and the write-up is in
+[13-production-defects.md](13-production-defects.md). Three rows of the mutation table
+were themselves wrong and are corrected in
+[14-verification-checklist.md](14-verification-checklist.md) — a file path that does
+not exist, an expected failure count the code cannot produce, and a mutation that
+changed a constant both production and the test read, so nothing could fail.
+
+A tick below means every *change* the spec asked for is in the code and grep-verified.
+It does not mean every line of that spec's checklist is ticked: several landed specs
+still carry an unticked process item — a suite run repeated back to back, a ticket to
+file — that is not a code change and cannot be confirmed from the tree. Those are
+listed under open follow-ups rather than quietly ticked.
+
+The three changes an earlier pass recorded as outstanding — spec 05 change 4, spec 07
+change 1 and spec 10 change 3 — have since landed and are measured in
+[14-verification-checklist.md](14-verification-checklist.md). One spec keeps an
+unticked box below, rather than a tick with a footnote: spec 07's changes 5 and 6 are
+not in the code at all, change 6 deliberately so.
+
+- [x] 01 — Test host fidelity
+- [x] 02 — Test isolation
+- [x] 03 — Constant aliasing
+- [x] 04 — Error assertion discipline
+- [x] 05 — Outcome assertions — all six changes in the code; change 4 converted all 33
+      `BeGreaterThanOrEqualTo(n)` sites and tightened three assertions past a straight
+      conversion, leaving one `TimeSpan` exemption suite-wide. Change 2's own box stays
+      unticked in the spec: the named sites were converted, but the 83 surviving
+      `BeOfType<T>` assertions were not re-audited against their declared types
+- [x] 06 — Localization testing
+- [ ] 07 — Mock discipline — changes 1 through 4 landed, plus 27 swallowed-exception Act
+      phases fixed; 48 blanket read defaults removed across 18 mock factories.
+      **Changes 5 and 6 outstanding**: the dead-helper deletion was not attempted, and
+      change 6 is gated on `MockBehavior.Strict` by design
+- [x] 08 — Fixture architecture — changes 1, 2 and 3 done; change 4's `nameof`
+      conversion done suite-wide, its stricter "no `SetValue` in `tests/Unit`" clause
+      deliberately not met because it contradicts the same change's own rule
+- [x] 09 — Time and determinism
+- [x] 10 — Duplication to theories — changes 1, 2, 4, 5 and 6 landed, 222 facts into 39
+      theories carrying 336 rows; change 3 followed with
+      `ExceptionStrategyContractTests`, 3 theories and 2 facts over 59 rows and 20
+      strategies, and the facts under `Handlers/Strategies/` fell 119 → 58
+- [x] 11 — Suite performance
+- [x] 12 — Contract coverage
+- [x] 13 — Production defects
+- [ ] 14 — Verification — run 2026-08-24, C3 and C7 re-measured after the three
+      closures; **Section D run in full 2026-08-25**. Sections A through D recorded, 18
+      of 19 measured invariants holding — the survivor is `MockBehavior`, which is
+      absent by design until spec 07 change 6. All ten mutations were applied, run and
+      reverted with `src/` verified pristine between each: nine discriminated, D2
+      surfaced a test that could not fail and is now fixed, and four rows were
+      corrected against the code (D3's file path, D7's expected count, D8's mutation
+      and D10's test name). The entry stays unticked for Section A's formatter,
+      build-warning and baseline-reconciliation items and Section E's
+      standards-document review
+
+Five production fixes landed alongside, all under spec 13's mandate and none anywhere
+else: the child-entity parent scoping (thirteen handlers, not the two the audit named),
+the culture-sensitive `ToLower()` in the session status filter, the three
+un-localized `ForceUnpromote` guards, the bodiless-400 on nine upload endpoints, and
+the `TimeProvider` seams spec 09's decision authorised. Spec 04's proposed sixth
+change — a `code` extension on `ProblemDetails` — was built, rejected in review and
+fully reverted; no line of it remains.
+
+Open follow-ups that implementation surfaced but did not fix are listed in
+[../90-remediation-plan.md](../90-remediation-plan.md).
 
 ## Decisions — settled
 
@@ -104,3 +165,12 @@ Both suites green, the full integration suite passing twice back to back with
 identical results, and the grep-provable invariants in
 [14-verification-checklist.md](14-verification-checklist.md) all holding. The
 audit documents stay as the record of why each change was made.
+
+**Measured against that definition on 2026-08-24:** all three clauses hold. Both
+suites are green, the integration suite passed twice back to back with identical
+results, and C3 now returns its single exempt duration assertion. C7's second clause —
+no blanket `It.IsAny` read default in a mock factory — holds at zero. Its first
+clause, `MockBehavior` stated or documented, is still absent, and that is the one
+invariant this doc set records as unmet by decision rather than by omission: spec 07's
+Scope section rules out changing the behaviour mode while the defaults are being
+tightened, and spec 07 change 6 is sequenced behind it.
