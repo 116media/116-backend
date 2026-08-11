@@ -17,15 +17,6 @@ public class StreamingLinkBuilder
     private string _url = "https://open.spotify.com/album/curated-abc123";
 
     /// <summary>
-    /// Sets the streaming link ID.
-    /// </summary>
-    public StreamingLinkBuilder WithId(Guid id)
-    {
-        _id = id;
-        return this;
-    }
-
-    /// <summary>
     /// Targets the given album, clearing any lyrics target.
     /// </summary>
     public StreamingLinkBuilder ForAlbum(Guid albumId)
