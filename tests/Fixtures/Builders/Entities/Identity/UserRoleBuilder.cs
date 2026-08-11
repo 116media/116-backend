@@ -93,21 +93,11 @@ public class UserRoleBuilder
 
         if (_role is not null)
         {
-            SetNavigationProperty(userRole, "Role", _role);
+            typeof(UserRoleEntity)
+                .GetProperty(nameof(UserRoleEntity.Role), BindingFlags.Public | BindingFlags.Instance)!
+                .SetValue(userRole, _role);
         }
 
         return userRole;
-    }
-
-    /// <summary>
-    /// Sets a navigation property using reflection for testing purposes.
-    /// </summary>
-    private static void SetNavigationProperty<T>(UserRoleEntity entity, string propertyName, T value)
-    {
-        PropertyInfo? property = typeof(UserRoleEntity).GetProperty(
-            propertyName,
-            BindingFlags.Public | BindingFlags.Instance
-        );
-        property?.SetValue(entity, value);
     }
 }
