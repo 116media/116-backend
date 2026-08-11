@@ -63,17 +63,6 @@ public class AdminCreateLyricsRequestBuilder
     }
 
     /// <summary>
-    /// Sets the artist name.
-    /// </summary>
-    /// <param name="artistName">The artist name.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public AdminCreateLyricsRequestBuilder WithArtistName(string artistName)
-    {
-        _artistName = artistName;
-        return this;
-    }
-
-    /// <summary>
     /// Sets the URL-safe slug for the lyrics page.
     /// </summary>
     /// <param name="slug">The lyrics page slug.</param>
@@ -92,17 +81,6 @@ public class AdminCreateLyricsRequestBuilder
     public AdminCreateLyricsRequestBuilder WithLyricsText(string lyricsText)
     {
         _lyricsText = lyricsText;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the lyrics language code.
-    /// </summary>
-    /// <param name="language">The language code.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public AdminCreateLyricsRequestBuilder WithLanguage(string language)
-    {
-        _language = language;
         return this;
     }
 
