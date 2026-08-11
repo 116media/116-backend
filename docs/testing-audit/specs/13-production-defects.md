@@ -453,8 +453,10 @@ public void WithStatus_ShouldBuildASpecification_ForEveryRecognisedStatusInEvery
 `CultureScope` must set `CurrentCulture`, not only `CurrentUICulture`, or the `tr-TR`
 rows are indistinguishable from the `en-US` rows and the theory proves nothing. That is
 the spec 02 prerequisite, and it is worth verifying by hand before trusting this test:
-revert Change 3 locally and confirm the seven `tr-TR` rows go red while the seven
-`en-US` rows stay green.
+revert Change 3 locally and confirm the `tr-TR` rows that *can* go red do, while every
+`en-US` row stays green. That is two rows of the seven, not all seven — see
+[Only two of the fourteen theory rows discriminate](#only-two-of-the-fourteen-theory-rows-discriminate)
+below.
 
 Follow spec 05's guidance and strengthen the assertion beyond `NotBeNull` where the
 built specification can be evaluated against a seeded `SessionEntity`, so the theory
@@ -522,8 +524,9 @@ not delete it as redundant.
 **The Turkish test can silently prove nothing.** If `CultureScope` sets only
 `CurrentUICulture`, the `tr-TR` rows behave exactly like the `en-US` rows and the
 theory is 14 copies of one case. Mitigation: verify by reverting Change 3 and
-confirming exactly the `tr-TR` rows fail. Do this once, by hand, and record the result
-in the PR.
+confirming the `tr-TR` rows fail. Do this once, by hand, and record the result in the
+PR. Measured under spec 14's D7: two of them fail and can, the other five cannot, for
+the reason recorded below.
 
 **Removing `GetByIdOrThrowAsync` changes which error a client sees.** For a
 non-existent article id the response detail changes from the article's not-found
@@ -536,35 +539,136 @@ wrong could delete a slot it did not intend to. Mitigation: the regression test 
 package A still has its slot after the rejected call, so a wrong deletion fails the test
 rather than passing quietly.
 
+## Implementation notes
+
+Implemented 2026-08-22, ahead of specs 04 and 05 in the executed order, because the
+error-assertion sweep needed the guards it fixes to already be localized.
+
+### The spec grew: two handlers became thirteen
+
+The audit named two unscoped-parent handlers — admin delete-comment and
+remove-package-slot. Implementing the fix surfaced **four more** of the same shape
+immediately, and spec 04's exact-detail sweep then surfaced **seven more**, because a
+test that pins the exact `Detail` cannot pass against a guard that answers with the
+wrong entity's message:
+
+| Found during | Handlers |
+| --- | --- |
+| The audit | admin delete-comment, remove-package-slot |
+| This spec's implementation | public delete-comment, plus three sibling child-entity lookups |
+| Spec 04's sweep | the payment trio (verify, reject, attach-proof), both category-pricing handlers, package-slot, item-tier |
+
+The shape is always the same: look the child up by its own id, look the parent up
+separately, discard the parent, act on the child. Every one of them let a caller act on
+a child under any parent id it liked. The two scoped specifications the spec asked for —
+`ArticleCommentByIdInArticleSpecification` and `PackageSlotByIdInPackageSpecification` —
+cover the two named cases; the rest were fixed by scoping the lookup at the handler.
+
+### The bodiless-400 defect affected 11 endpoints, not one
+
+The audit recorded one upload endpoint returning a 400 with an empty body — no
+ProblemDetails, nothing for a client to read. There are **11** endpoints taking an
+`IFormFile`, and the defect was in all 11. Nine were fixed and now answer with a
+ProblemDetails body.
+
+Two were deliberately left: `AdminUploadVideoThumbnailEndpointV1` and
+`AdminUploadShortVideoThumbnailEndpointV1` have **no file validation rule at all** —
+there is no validator to add the message to, and wiring one in would turn a null or
+oversized file from a 400 into a 500 before any of this spec's changes could help.
+Fixing them means writing the missing validation rule first, which is a feature change
+rather than a defect fix, so it is carried to the open follow-ups instead.
+
+This is also why spec 04's `allowEmptyBody: true` ended the sweep with zero call sites:
+the tolerance existed for this defect, and the defect is mostly gone.
+
+### `WithStatus` kept its `switch`
+
+Change 3 asked for the `ToLower()` and the `normalizedStatus` local to be removed
+without changing the comparison type. What landed compares each arm with
+`status.Equals(nameof(EnumSessionStatus.X), StringComparison.InvariantCultureIgnoreCase)`,
+so the Turkish-locale `ı` cannot arise: there is no lowering step left to be
+culture-sensitive. `CombineSpecification(spec: null!)` on an unrecognised status is
+unchanged and remains a follow-up.
+
+### Only two of the fourteen theory rows discriminate
+
+`StatusesAndCultures`
+(`tests/Unit/Modules/Identity/Application/Session/Builders/SessionQueryBuilderTests.cs:214-236`)
+pairs seven status spellings with two cultures. Restoring the defect turns exactly two
+of those fourteen rows red: `ACTIVE` and `EXPIRED` under `tr-TR`. Turkish lowercasing
+differs from invariant only on `I` → `ı`, so `Active`, `active` and `Expired` — whose
+`i` is already lowercase — lower identically in both cultures, and `Revoked` and
+`REVOKED` contain no `i` of either case.
+
+The other twelve rows are not waste. They pin which specification each spelling
+selects, which is what the assertion at `:260-271` does and what the pre-remediation
+`NotBeNull` facts did not. But only two of them can distinguish the fixed builder from
+the broken one, and any statement that all seven `tr-TR` rows must fail is wrong. Spec
+14's D7 row said seven and has been corrected to two; the surrounding guidance in this
+spec is corrected with it.
+
+### Spec 14's Section D found a weak test over the same builder
+
+Spec 14's D2 mutation collapses `SessionQueryBuilder.CombineSpecification`
+(`src/Modules/Identity/Identity/Application/Session/Builders/SessionQueryBuilder.cs:116-119`)
+so each filter overwrites the previous one instead of composing with `.And`. It named
+two integration tests, and only one of them failed.
+
+`GetAllSessions_FilterByStatusAndIpAddress_ReturnsFilteredResults` seeded one
+non-matching session that differed from the filter in **both** dimensions at once — a
+different IP **and** revoked — so dropping either filter still excluded it. The test
+asserted `OnlyContain(s => s.IpAddress!.Contains(...) && s.IsActive)` and read as a
+sound multi-filter test, but it could not detect a lost filter, whichever one was lost.
+
+Fixed in
+`tests/Integration/Modules/Identity/Application/Session/UseCases/Admin/Queries/GetAllSessions/V1/AdminGetAllSessionsEndpointV1Tests.cs:226-248`:
+it now seeds three sessions — the matching one, a same-IP-but-revoked session at
+`:229-230` that catches the status filter being dropped, and an active-on-another-IP
+session at `:231` that catches the IP filter being dropped. Twelve of twelve green
+unmutated; under the mutation both named tests fail.
+
+This belongs here rather than only in spec 14 because it is the integration-side
+coverage of the builder Change 3 fixed. Change 3's own regression work went into the
+unit theory, and nothing in this spec looked at whether the endpoint tests over the
+same builder could fail. One of them could not.
+
 ## Checklist
 
-- [ ] 1 — `ArticleCommentByIdInArticleSpecification` added and the article-scoped
+- [x] 1 — `ArticleCommentByIdInArticleSpecification` added and the article-scoped
       `GetCommentByIdAsync` overload added to `IArticleRepository` and `ArticleRepository`
-- [ ] 1 — `AdminDeleteArticleCommentHandler` uses the scoped lookup and no longer calls
+- [x] 1 — `AdminDeleteArticleCommentHandler` uses the scoped lookup and no longer calls
       `GetByIdOrThrowAsync`
-- [ ] 1 — `PublicDeleteArticleCommentHandler` uses the scoped lookup, keeps its
+- [x] 1 — `PublicDeleteArticleCommentHandler` uses the scoped lookup, keeps its
       ownership check, and no longer calls `GetByIdOrThrowAsync`
-- [ ] 1 — The unscoped overload's remarks name the five callers that legitimately keep
+- [x] 1 — The unscoped overload's remarks name the callers that legitimately keep
       using it
-- [ ] 2 — `PackageSlotByIdInPackageSpecification` added, the scoped `GetSlotByIdAsync`
+- [x] 2 — `PackageSlotByIdInPackageSpecification` added, the scoped `GetSlotByIdAsync`
       overload added, and the leading discarded `GetByIdWithSlotsOrThrowAsync` removed
       from `AdminRemovePackageSlotHandler`
-- [ ] 3 — `ToLower()` and the `normalizedStatus` local removed from
+- [x] 3 — `ToLower()` and the `normalizedStatus` local removed from
       `SessionQueryBuilder.WithStatus`, with the comparison type unchanged
-- [ ] 4 — The three `ForceUnpromote` guards raise through their error factories, with
+- [x] 4 — The three `ForceUnpromote` guards raise through their error factories, with
       `en` and `fr` resource entries, and no raw literal remains in
       `ArticleEntity`, `VideoEntity` or `LyricsEntity`
-- [ ] 5 — Cross-parent 404 integration test added for the admin delete-comment route,
+- [x] 5 — Cross-parent 404 integration test added for the admin delete-comment route,
       asserting the comment is still not deleted
-- [ ] 5 — Cross-parent 404 integration test added for the public delete-comment route
-- [ ] 5 — Cross-parent 404 integration test added for the remove-package-slot route,
+      (`DeleteArticleComment_WithCommentBelongingToAnotherArticle_ReturnsNotFound`)
+- [x] 5 — Cross-parent 404 integration test added for the public delete-comment route
+      (`DeleteArticleComment_AsOwner_WithCommentBelongingToAnotherArticle_ReturnsNotFound`)
+- [x] 5 — Cross-parent 404 integration test added for the remove-package-slot route,
       asserting the other package still has its slot
-- [ ] 5 — `WithStatus` theory added over mixed casing and `en-US` / `tr-TR`, with
+      (`RemovePackageSlot_WithSlotBelongingToAnotherPackage_ReturnsNotFound`)
+- [x] 5 — `WithStatus` theory added over mixed casing and `en-US` / `tr-TR`, with
       `CultureScope` confirmed to set `CurrentCulture`
-- [ ] 5 — Integration test proving a `ForceUnpromote` guard answers in French when the
+- [x] 5 — Integration test proving a `ForceUnpromote` guard answers in French when the
       request sends no `Accept-Language` header
-- [ ] Each new test confirmed red against the unfixed code and green after
-- [ ] Mock setups for the scoped repository overloads use `It.Is<Guid>` for the parent
+- [ ] Each new test confirmed red against the unfixed code and green after — not
+      re-verifiable from the landed tree; left unticked
+- [x] Mock setups for the scoped repository overloads use `It.Is<Guid>` for the parent
       id, not `It.IsAny<Guid>`
+- [x] Follow-on from spec 14's D2 —
+      `GetAllSessions_FilterByStatusAndIpAddress_ReturnsFilteredResults` reseeded so
+      each filter has a session that only that filter excludes, and confirmed to fail
+      under the `CombineSpecification` mutation
 - [ ] Follow-up ticket filed for `CombineSpecification` being called with a null
-      specification when the status is unrecognised
+      specification when the status is unrecognised — still open
