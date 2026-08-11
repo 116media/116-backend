@@ -58,29 +58,11 @@ public class CustomerBuilder
     }
 
     /// <summary>
-    /// Sets the customer phone.
-    /// </summary>
-    public CustomerBuilder WithPhone(string? phone)
-    {
-        _phone = phone;
-        return this;
-    }
-
-    /// <summary>
     /// Sets the customer company.
     /// </summary>
     public CustomerBuilder WithCompany(string? company)
     {
         _company = company;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the customer notes.
-    /// </summary>
-    public CustomerBuilder WithNotes(string? notes)
-    {
-        _notes = notes;
         return this;
     }
 
