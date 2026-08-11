@@ -14,9 +14,7 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Shared.Errors;
 public class SessionErrorsTests
 {
     private readonly SessionErrors _errors = TestErrorsFactory.CreateSessionErrors();
-    private readonly AuthenticationErrorMessage _i18n = LocalizerFactory.CreateMessage<AuthenticationErrorMessage>(
-        "en"
-    );
+    private readonly AuthenticationErrorMessage _i18n = LocalizerFactory.CreateMessage<AuthenticationErrorMessage>();
 
     [Fact]
     public void InvalidRefreshToken_ShouldReturnRefreshTokenExpiryException()
