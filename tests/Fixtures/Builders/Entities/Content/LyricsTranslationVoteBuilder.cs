@@ -17,15 +17,6 @@ public class LyricsTranslationVoteBuilder
     private string? _comment;
 
     /// <summary>
-    /// Sets the vote ID.
-    /// </summary>
-    public LyricsTranslationVoteBuilder WithId(Guid id)
-    {
-        _id = id;
-        return this;
-    }
-
-    /// <summary>
     /// Sets the translation revision being voted on.
     /// </summary>
     public LyricsTranslationVoteBuilder WithRevisionId(Guid revisionId)
@@ -49,15 +40,6 @@ public class LyricsTranslationVoteBuilder
     public LyricsTranslationVoteBuilder WithVote(EnumVote vote)
     {
         _vote = vote;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the optional free-text comment.
-    /// </summary>
-    public LyricsTranslationVoteBuilder WithComment(string? comment)
-    {
-        _comment = comment;
         return this;
     }
 
