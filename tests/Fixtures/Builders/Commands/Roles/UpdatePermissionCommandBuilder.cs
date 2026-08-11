@@ -74,36 +74,6 @@ public class UpdatePermissionCommandBuilder
     }
 
     /// <summary>
-    /// Clears the resource (null).
-    /// </summary>
-    /// <returns>The builder instance for chaining.</returns>
-    public UpdatePermissionCommandBuilder WithoutResource()
-    {
-        _resource = null;
-        return this;
-    }
-
-    /// <summary>
-    /// Clears the action (null).
-    /// </summary>
-    /// <returns>The builder instance for chaining.</returns>
-    public UpdatePermissionCommandBuilder WithoutAction()
-    {
-        _action = null;
-        return this;
-    }
-
-    /// <summary>
-    /// Clears the description (null).
-    /// </summary>
-    /// <returns>The builder instance for chaining.</returns>
-    public UpdatePermissionCommandBuilder WithoutDescription()
-    {
-        _description = null;
-        return this;
-    }
-
-    /// <summary>
     /// Sets valid test values for the command.
     /// </summary>
     /// <returns>The builder instance for chaining.</returns>
