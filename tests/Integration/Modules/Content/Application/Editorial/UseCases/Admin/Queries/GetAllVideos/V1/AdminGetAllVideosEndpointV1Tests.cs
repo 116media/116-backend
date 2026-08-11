@@ -65,7 +65,7 @@ public class AdminGetAllVideosEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         AdminGetAllVideosResponse body = await response.ReadAsAsync<AdminGetAllVideosResponse>();
         body.Videos.Items.Should().Contain(item => item.Id == video.Id);
-        body.Videos.Count.Should().BeGreaterThanOrEqualTo(1);
+        body.Videos.Count.Should().Be(1);
         body.Videos.PageIndex.Should().Be(0);
         body.Videos.PageSize.Should().Be(10);
     }
