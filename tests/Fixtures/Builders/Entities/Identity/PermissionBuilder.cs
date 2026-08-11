@@ -47,28 +47,6 @@ public class PermissionBuilder
     }
 
     /// <summary>
-    /// Sets the resource name.
-    /// </summary>
-    /// <param name="resource">The resource name.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public PermissionBuilder WithResource(string resource)
-    {
-        _resource = resource;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the action name.
-    /// </summary>
-    /// <param name="action">The action name.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public PermissionBuilder WithAction(string action)
-    {
-        _action = action;
-        return this;
-    }
-
-    /// <summary>
     /// Sets the resource and action together.
     /// </summary>
     /// <param name="resource">The resource name.</param>
