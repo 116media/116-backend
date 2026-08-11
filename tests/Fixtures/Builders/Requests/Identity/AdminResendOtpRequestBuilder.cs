@@ -39,17 +39,6 @@ public class AdminResendOtpRequestBuilder
     }
 
     /// <summary>
-    /// Sets the OTP purpose.
-    /// </summary>
-    /// <param name="purpose">The purpose for which the OTP is being resent.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public AdminResendOtpRequestBuilder WithPurpose(string purpose)
-    {
-        _purpose = purpose;
-        return this;
-    }
-
-    /// <summary>
     /// Builds the <see cref="AdminResendOtpRequest"/> instance.
     /// </summary>
     /// <returns>A configured AdminResendOtpRequest instance.</returns>
