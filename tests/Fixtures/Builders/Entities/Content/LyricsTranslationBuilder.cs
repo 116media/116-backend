@@ -16,15 +16,6 @@ public class LyricsTranslationBuilder
     private string? _acceptedRevisionText;
 
     /// <summary>
-    /// Sets the translation ID.
-    /// </summary>
-    public LyricsTranslationBuilder WithId(Guid id)
-    {
-        _id = id;
-        return this;
-    }
-
-    /// <summary>
     /// Sets the lyrics page this translation belongs to.
     /// </summary>
     public LyricsTranslationBuilder WithLyricsId(Guid lyricsId)
@@ -48,16 +39,6 @@ public class LyricsTranslationBuilder
     public LyricsTranslationBuilder WithText(string text)
     {
         _text = text;
-        return this;
-    }
-
-    /// <summary>
-    /// Applies an accepted community revision's text, moving the translation's source from
-    /// <c>Ai</c> to <c>Community</c>.
-    /// </summary>
-    public LyricsTranslationBuilder WithAcceptedRevision(string newText)
-    {
-        _acceptedRevisionText = newText;
         return this;
     }
 
