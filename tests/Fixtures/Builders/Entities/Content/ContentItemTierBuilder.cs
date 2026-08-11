@@ -22,12 +22,6 @@ public class ContentItemTierBuilder
         _pricingTierId = Guid.NewGuid();
     }
 
-    public ContentItemTierBuilder WithId(Guid id)
-    {
-        _id = id;
-        return this;
-    }
-
     public ContentItemTierBuilder WithOrderItemId(Guid orderItemId)
     {
         _orderItemId = orderItemId;
