@@ -122,17 +122,6 @@ public class SessionBuilder
     }
 
     /// <summary>
-    /// Sets the device type.
-    /// </summary>
-    /// <param name="device">The device type.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public SessionBuilder WithDevice(EnumDevice device)
-    {
-        _device = device;
-        return this;
-    }
-
-    /// <summary>
     /// Sets the platform type.
     /// </summary>
     /// <param name="platform">The platform type.</param>
@@ -162,17 +151,6 @@ public class SessionBuilder
     public SessionBuilder WithIpAddress(string? ipAddress)
     {
         _ipAddress = ipAddress;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the user agent.
-    /// </summary>
-    /// <param name="userAgent">The user agent string.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public SessionBuilder WithUserAgent(string? userAgent)
-    {
-        _userAgent = userAgent;
         return this;
     }
 
