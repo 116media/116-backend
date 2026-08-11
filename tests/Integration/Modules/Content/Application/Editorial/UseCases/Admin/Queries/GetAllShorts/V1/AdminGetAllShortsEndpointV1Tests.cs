@@ -49,7 +49,7 @@ public class AdminGetAllShortsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         AdminGetAllShortsResponse body = await response.ReadAsAsync<AdminGetAllShortsResponse>();
         body.ShortVideos.Items.Should().Contain(item => item.Id == shortVideo.Id);
-        body.ShortVideos.Count.Should().BeGreaterThanOrEqualTo(1);
+        body.ShortVideos.Count.Should().Be(1);
         body.ShortVideos.PageIndex.Should().Be(0);
         body.ShortVideos.PageSize.Should().Be(10);
     }
