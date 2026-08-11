@@ -9,7 +9,7 @@ namespace _116.Unit.Tests.Modules.Identity.Infrastructure.Persistence.Seeds.Supe
 /// <summary>
 /// Unit tests for <see cref="SuperAdminConfiguration"/>.
 /// </summary>
-[Collection("SuperAdminSeeder")]
+[Collection("EnvironmentVariable")]
 public class SuperAdminConfigurationTests
 {
     #region Constants Tests
