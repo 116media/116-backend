@@ -21,15 +21,6 @@ public class ShortVideoBuilder
     private bool _isInactive;
 
     /// <summary>
-    /// Sets the short video ID.
-    /// </summary>
-    public ShortVideoBuilder WithId(Guid id)
-    {
-        _id = id;
-        return this;
-    }
-
-    /// <summary>
     /// Sets the short video title.
     /// </summary>
     public ShortVideoBuilder WithTitle(string title)
@@ -57,30 +48,12 @@ public class ShortVideoBuilder
     }
 
     /// <summary>
-    /// Sets the video file ID (FileEntity reference).
-    /// </summary>
-    public ShortVideoBuilder WithVideoFileId(Guid fileId)
-    {
-        _videoFileId = fileId;
-        return this;
-    }
-
-    /// <summary>
     /// Builds the short video as a file-less draft, simulating a short video created before its
     /// video file has been uploaded. Such drafts cannot be activated and are hidden from the feed.
     /// </summary>
     public ShortVideoBuilder WithoutVideoFile()
     {
         _videoFileId = null;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the thumbnail file ID (FileEntity reference).
-    /// </summary>
-    public ShortVideoBuilder WithThumbnailFileId(Guid fileId)
-    {
-        _thumbnailFileId = fileId;
         return this;
     }
 
