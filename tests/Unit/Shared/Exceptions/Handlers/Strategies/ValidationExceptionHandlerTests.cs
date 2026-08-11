@@ -1,3 +1,4 @@
+using System.Reflection;
 using _116.Shared.Application.Exceptions.Handlers.Strategies;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
@@ -172,8 +173,8 @@ public class ValidationExceptionHandlerTests
         ValidationException exception = new("Validation failed");
         typeof(ValidationException)
             .GetField(
-                "<Errors>k__BackingField",
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance
+                $"<{nameof(ValidationException.Errors)}>k__BackingField",
+                BindingFlags.NonPublic | BindingFlags.Instance
             )
             ?.SetValue(exception, null);
         DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
