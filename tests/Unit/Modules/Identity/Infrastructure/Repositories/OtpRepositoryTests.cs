@@ -43,10 +43,13 @@ public class OtpRepositoryTests : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    private static OtpEntity CreateOtpWithCreatedAt(OtpEntity otp)
+    /// <summary>
+    /// Stamps the audit timestamp the persistence interceptor writes in production, which the
+    /// OTP repository orders on. <c>CreatedAt</c> is a public setter on the shared entity base.
+    /// </summary>
+    private static OtpEntity CreateOtpWithCreatedAt(OtpEntity otp, DateTime? createdAt = null)
     {
-        // Set CreatedAt using reflection to bypass OtpEntity limitation
-        typeof(OtpEntity).GetProperty("CreatedAt")!.SetValue(otp, DateTime.UtcNow);
+        otp.CreatedAt = createdAt ?? DateTime.UtcNow;
         return otp;
     }
 
@@ -295,11 +298,12 @@ public class OtpRepositoryTests : IDisposable
         string code = "123456";
         var purpose = EnumOtpPurpose.EmailVerification;
 
-        OtpEntity olderOtp = CreateOtpWithCreatedAt(OtpFactory.Create(userId, code, purpose));
-        typeof(OtpEntity).GetProperty("CreatedAt")!.SetValue(olderOtp, DateTime.UtcNow.AddMinutes(-10));
+        OtpEntity olderOtp = CreateOtpWithCreatedAt(
+            OtpFactory.Create(userId, code, purpose),
+            DateTime.UtcNow.AddMinutes(-10)
+        );
 
-        OtpEntity newerOtp = CreateOtpWithCreatedAt(OtpFactory.Create(userId, code, purpose));
-        typeof(OtpEntity).GetProperty("CreatedAt")!.SetValue(newerOtp, DateTime.UtcNow);
+        OtpEntity newerOtp = CreateOtpWithCreatedAt(OtpFactory.Create(userId, code, purpose), DateTime.UtcNow);
 
         _context.Otps.AddRange(olderOtp, newerOtp);
         await _context.SaveChangesAsync();
@@ -379,11 +383,12 @@ public class OtpRepositoryTests : IDisposable
         string code = "123456";
         var purpose = EnumOtpPurpose.EmailVerification;
 
-        OtpEntity olderOtp = CreateOtpWithCreatedAt(OtpFactory.CreateUsed(userId, code, purpose));
-        typeof(OtpEntity).GetProperty("CreatedAt")!.SetValue(olderOtp, DateTime.UtcNow.AddMinutes(-10));
+        OtpEntity olderOtp = CreateOtpWithCreatedAt(
+            OtpFactory.CreateUsed(userId, code, purpose),
+            DateTime.UtcNow.AddMinutes(-10)
+        );
 
-        OtpEntity newerOtp = CreateOtpWithCreatedAt(OtpFactory.CreateUsed(userId, code, purpose));
-        typeof(OtpEntity).GetProperty("CreatedAt")!.SetValue(newerOtp, DateTime.UtcNow);
+        OtpEntity newerOtp = CreateOtpWithCreatedAt(OtpFactory.CreateUsed(userId, code, purpose), DateTime.UtcNow);
 
         _context.Otps.AddRange(olderOtp, newerOtp);
         await _context.SaveChangesAsync();
@@ -449,11 +454,12 @@ public class OtpRepositoryTests : IDisposable
     {
         // Arrange
         var userId = Guid.NewGuid();
-        OtpEntity emailVerificationOtp = OtpFactory.CreateForEmailVerification(userId);
-        typeof(OtpEntity).GetProperty("CreatedAt")!.SetValue(emailVerificationOtp, DateTime.UtcNow);
+        OtpEntity emailVerificationOtp = CreateOtpWithCreatedAt(
+            OtpFactory.CreateForEmailVerification(userId),
+            DateTime.UtcNow
+        );
 
-        OtpEntity passwordResetOtp = OtpFactory.CreateForPasswordReset(userId);
-        typeof(OtpEntity).GetProperty("CreatedAt")!.SetValue(passwordResetOtp, DateTime.UtcNow);
+        OtpEntity passwordResetOtp = CreateOtpWithCreatedAt(OtpFactory.CreateForPasswordReset(userId), DateTime.UtcNow);
 
         _context.Otps.AddRange(emailVerificationOtp, passwordResetOtp);
         await _context.SaveChangesAsync();
