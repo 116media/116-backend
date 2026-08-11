@@ -795,18 +795,82 @@ ticket that removes the ambiguity.
       `Detail`; both overloads share `ParseProblem`
 - [x] 2 — `LocalizedMessage` and `BaseApiTest.Localized<TMessage>` resolve an expected
       detail from the host container under an explicit culture, defaulting to `fr`
-- [ ] 3 — All 482 call sites converted to `ShouldBeProblem<TException>`
-- [ ] 3 — The 13 prose assertions resolve through `Localized<T>` with
+- [x] 3 — All call sites converted to `ShouldBeProblem<TException>` — 493 by the
+      audit's count, 501 as landed, since specs 12 and 13 added endpoint tests mid-sweep
+- [x] 3 — The prose assertions resolve through `Localized<T>` with
       `LocalizedMessage.EnglishCulture`, and their tests still set `Accept-Language: en`
-- [ ] 3 — The `[Obsolete]` string overload deleted from `HttpResponseExtensions`
-- [ ] 4 — Unlike and unbookmark renamed to `NonExistentArticle`; the not-liked and
+- [x] 3 — The `[Obsolete]` string overload deleted from `HttpResponseExtensions`
+- [x] 4 — Unlike and unbookmark renamed to `NonExistentArticle`; the not-liked and
       not-bookmarked tests assert their `BadRequestException` details
-- [ ] 4 — `RejectPayment` and `AttachPaymentProof` renamed to `NonExistentPayment`; the
+- [x] 4 — `RejectPayment` and `AttachPaymentProof` renamed to say what is missing; the
       missing order lookup raised as a `src/` ticket
-- [ ] 4 — `VerifyPayment_NonExistentOrder_ReturnsNotFound` asserts the `ContentOrder`
+- [x] 4 — `VerifyPayment_NonExistentOrder_ReturnsNotFound` asserts the `ContentOrder`
       detail, and the order-with-no-payment test added
 - [x] 5 — All eight `BeOneOf` status assertions replaced with exact expectations, and the
       conditional body assertion in `AdminGetCustomerOrdersEndpointV1Tests` made
       unconditional
-- [ ] Ticket filed for the seven missing `Entity_*` labels
-- [ ] Full integration suite green; full unit suite green
+- [ ] Ticket filed for the missing `Entity_*` labels — the count is ~9, not seven, and
+      no ticket is filed; carried to the open follow-ups in
+      [../90-remediation-plan.md](../90-remediation-plan.md)
+- [x] Full integration suite green; full unit suite green
+
+## Implementation notes
+
+Implemented 2026-08-23. This spec was implemented once the wrong way, reverted in full,
+and implemented again. Both passes are recorded here because the failure mode is the
+interesting part.
+
+### The `errorCode` design was built, rejected and fully reverted
+
+The first implementation added a machine-readable `code` extension to `ProblemDetails`
+in `src/` and asserted against it. It was rejected in review and every line of it was
+reverted; there is no `src/` change left from this spec.
+
+The defect was not the extension itself but its consumer: the test-side helper matched
+the code with a **substring** comparison. Roughly a third of this codebase's entity
+tokens are substrings of another — `"Article"` is a substring of `"ArticleComment"`,
+`"Package"` of `"PackageSlot"`, `"Order"` of `"ContentOrder"`, `"Payment"` of
+`"PaymentProof"`. A test asserting the `"Article"` code passed against a response whose
+error was `ArticleComment`, which is precisely the wrong-reason pass the spec exists to
+eliminate. A substring match on a namespaced token is not discrimination; it is a
+weaker assertion wearing a stronger name.
+
+The landed design asserts three things the response already carries, all with exact
+equality: the status code, the ProblemDetails `Title` (every strategy sets it to
+`nameof(TException)`, so renaming the exception is a compile error at the call site),
+and the exact localized `Detail` resolved through `BaseApiTest.Localized<TMessage>`
+against the host container. No production change was needed for any of it.
+
+### The host's default request culture is `fr`, not `en`
+
+Verified against a running host, not inferred from configuration. `Localized<TMessage>`
+therefore defaults to `fr`, and the handful of tests that assert English prose do so
+**only because they send `Accept-Language: en`** — the header is load-bearing, not
+decoration. Deleting it from one of those tests turns the assertion red against a
+French detail, which is the correct behaviour and worth knowing before someone
+"tidies" the header away.
+
+### `NotFoundException.CleanEntityName` replaces, it does not trim
+
+`CleanEntityName` is a case-insensitive `Replace("entity", "")` applied **anywhere in
+the name**, not a suffix trim. `ArticleEntity` → `Article` is the happy path that hides
+this. A future `IdentityUserEntity` would render as `IdUser`, because the `entity` in
+`Identity` is replaced too. Any expected detail computed from a type name has to go
+through the same function rather than a hand-written suffix strip, or the two will
+disagree the first time an entity name contains the substring.
+
+### Deviation from Change 4's naming
+
+The spec proposed `NonExistentPayment` for the `RejectPayment` and `AttachPaymentProof`
+tests. What landed is `WithOrderThatHasNoPayment_ReturnsPaymentNotFound`, because the
+order does exist in those tests — it is the payment that is absent, and the shorter name
+would have implied a bad payment id. The intent of Change 4, that a test name state
+what is actually missing, is met.
+
+### `allowEmptyBody: true` now has zero call sites
+
+Change 1's checklist item records "the single remaining `allowEmptyBody: true`". By the
+end of the sweep there were none: the bodiless-400 defect it tolerated was a production
+defect, fixed across nine upload endpoints (see
+[13-production-defects.md](13-production-defects.md)). The parameter is kept, defaulting
+to `false`, as the documented escape hatch for framework model-binding failures.
