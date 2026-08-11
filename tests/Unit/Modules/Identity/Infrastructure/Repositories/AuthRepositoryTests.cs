@@ -1,4 +1,3 @@
-using System.Reflection;
 using System.Security.Claims;
 using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Application.Shared.Exceptions;
@@ -8,6 +7,7 @@ using _116.Identity.Domain.ValueObjects;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Repositories;
 using _116.Shared.Application.Exceptions;
+using _116.Tests.Fixtures.Builders.Entities.Identity;
 using _116.Tests.Fixtures.Factories.Identity;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
@@ -581,9 +581,7 @@ public class AuthRepositoryTests : IDisposable
     {
         // Arrange
         UserEntity user = UserFactory.Create();
-        SessionEntity session = SessionFactory.Create(user.Id);
-
-        typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(session, DateTime.UtcNow);
+        SessionEntity session = new SessionBuilder().WithUserId(user.Id).WithCreatedAt(DateTime.UtcNow).Build();
 
         _context.Users.Add(user);
         _context.Sessions.Add(session);
@@ -620,9 +618,7 @@ public class AuthRepositoryTests : IDisposable
     {
         // Arrange
         UserEntity user = UserFactory.Create();
-        SessionEntity session = SessionFactory.Create(user.Id);
-
-        typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(session, DateTime.UtcNow);
+        SessionEntity session = new SessionBuilder().WithUserId(user.Id).WithCreatedAt(DateTime.UtcNow).Build();
 
         _context.Users.Add(user);
         _context.Sessions.Add(session);
@@ -653,11 +649,11 @@ public class AuthRepositoryTests : IDisposable
     {
         // Arrange
         UserEntity user = UserFactory.Create();
-        SessionEntity session = SessionFactory.Create(user.Id);
-
-        // Set CreatedAt and ExpiresAt using reflection
-        typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(session, DateTime.UtcNow);
-        typeof(SessionEntity).GetProperty("ExpiresAt")!.SetValue(session, DateTime.UtcNow.AddDays(-1));
+        SessionEntity session = new SessionBuilder()
+            .WithUserId(user.Id)
+            .WithCreatedAt(DateTime.UtcNow)
+            .AsExpired()
+            .Build();
 
         _context.Users.Add(user);
         _context.Sessions.Add(session);
@@ -1002,17 +998,8 @@ public class AuthRepositoryTests : IDisposable
     [Fact]
     public void SetPasswordForExternalUser_WhenUserHasNoEmail_ShouldThrowBadRequestException()
     {
-        // Arrange - Create user without email by using reflection
-        var user = UserEntity.CreateExternal(
-            Guid.NewGuid(),
-            "user",
-            EnumAuthProvider.Google,
-            TestErrorsFactory.CreateUserErrors(),
-            "temp@example.com"
-        );
-        // Set email to null using reflection
-        PropertyInfo? emailProperty = typeof(UserEntity).GetProperty("Email");
-        emailProperty!.SetValue(user, null);
+        // Arrange
+        UserEntity user = UserFactory.CreateExternalWithoutEmail(EnumAuthProvider.Google);
 
         // Act
         Action act = () => _repository.SetPasswordForExternalUser(user, "hashedPassword");
