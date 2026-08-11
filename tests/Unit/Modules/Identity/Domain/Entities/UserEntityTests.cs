@@ -3,6 +3,7 @@ using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.Events;
 using _116.Shared.Application.Exceptions;
+using _116.Tests.Fixtures.Builders.Entities.Identity;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Identity;
 using _116.Tests.Fixtures.Helpers;
@@ -258,10 +259,7 @@ public class UserEntityTests
     public void InitializePasswordHash_WhenNonLocalUserWithoutEmail_ShouldThrowException()
     {
         // Arrange
-        UserEntity user = UserFactory.CreateExternal(EnumAuthProvider.Google);
-
-        // Remove email by using reflection to set it to null (simulating social login without email)
-        typeof(UserEntity).GetProperty(nameof(UserEntity.Email))!.SetValue(user, null);
+        UserEntity user = UserFactory.CreateExternalWithoutEmail(EnumAuthProvider.Google);
 
         // Act
         Action act = () => user.InitializePasswordHash("new_password_hash", _userErrors);
@@ -309,10 +307,7 @@ public class UserEntityTests
     public void SetPasswordAndChangeToLocal_WhenUserHasNoEmail_ShouldThrowException()
     {
         // Arrange
-        UserEntity user = UserFactory.CreateExternal(EnumAuthProvider.Facebook);
-
-        // Remove email by using reflection to set it to null (simulating social login without email)
-        typeof(UserEntity).GetProperty(nameof(UserEntity.Email))!.SetValue(user, null);
+        UserEntity user = UserFactory.CreateExternalWithoutEmail(EnumAuthProvider.Facebook);
 
         // Act
         Action act = () => user.SetPasswordAndChangeToLocal("valid_password_hash", _userErrors);
@@ -423,8 +418,7 @@ public class UserEntityTests
     public void ValidateCanLogin_WhenInactive_ShouldThrowException()
     {
         // Arrange
-        UserEntity user = UserFactory.CreateInactive();
-        typeof(UserEntity).GetProperty("IsVerified")!.SetValue(user, true);
+        UserEntity user = new UserBuilder().AsInactive().AsVerified().Build();
 
         // Act
         Action act = () => user.ValidateCanLogin(_userErrors);
