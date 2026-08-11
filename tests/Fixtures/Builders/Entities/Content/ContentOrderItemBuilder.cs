@@ -21,21 +21,9 @@ public class ContentOrderItemBuilder
     private bool _isBonus;
     private CategoryEntity? _category;
 
-    public ContentOrderItemBuilder WithId(Guid id)
-    {
-        _id = id;
-        return this;
-    }
-
     public ContentOrderItemBuilder WithOrderId(Guid orderId)
     {
         _orderId = orderId;
-        return this;
-    }
-
-    public ContentOrderItemBuilder WithContentKind(EnumCoreContentType contentKind)
-    {
-        _contentKind = contentKind;
         return this;
     }
 
