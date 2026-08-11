@@ -28,48 +28,6 @@ public static class AuthTestHelpers
     }
 
     /// <summary>
-    /// Creates a RoleDto for testing purposes.
-    /// </summary>
-    public static RoleDto CreateRoleDto(
-        string name = "Admin",
-        string description = "Administrator role",
-        bool isActive = true,
-        bool isDeleted = false
-    )
-    {
-        return new RoleDto(
-            Id: Guid.NewGuid(),
-            Name: name,
-            Description: description,
-            IsActive: isActive,
-            IsDeleted: isDeleted,
-            DeletedAt: isDeleted ? DateTime.UtcNow : null
-        );
-    }
-
-    /// <summary>
-    /// Creates a PermissionDto for testing purposes.
-    /// </summary>
-    public static PermissionDto CreatePermissionDto(
-        string resource = "users",
-        string action = "read",
-        string description = "Read users",
-        bool isActive = true,
-        bool isDeleted = false
-    )
-    {
-        return new PermissionDto(
-            Id: Guid.NewGuid(),
-            Resource: resource,
-            Action: action,
-            Description: description,
-            IsActive: isActive,
-            IsDeleted: isDeleted,
-            DeletedAt: isDeleted ? DateTime.UtcNow : null
-        );
-    }
-
-    /// <summary>
     /// Creates PublicLoginAuthData with a specific user (predictable scenario).
     /// These three aliases are the intended entry point; AuthDataBuilder is an implementation
     /// detail of this file and is not part of the fixture API tests reach for.
