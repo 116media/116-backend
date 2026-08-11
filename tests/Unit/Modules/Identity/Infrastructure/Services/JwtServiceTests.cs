@@ -16,13 +16,14 @@ namespace _116.Unit.Tests.Modules.Identity.Infrastructure.Services;
 /// <summary>
 /// Unit tests for <see cref="JwtService"/>.
 /// </summary>
+[Collection("EnvironmentVariable")]
 public class JwtServiceTests : IDisposable
 {
     private readonly JwtService _sut;
-    private readonly string _originalSecret;
-    private readonly string _originalIssuer;
-    private readonly string _originalAudience;
-    private readonly string _originalExpiration;
+    private readonly string? _originalSecret;
+    private readonly string? _originalIssuer;
+    private readonly string? _originalAudience;
+    private readonly string? _originalExpiration;
 
     private const string TestSecret = "ThisIsAVerySecureSecretKeyForUnitTesting123!@#$%";
     private const string TestIssuer = "test_issuer";
@@ -31,11 +32,10 @@ public class JwtServiceTests : IDisposable
 
     public JwtServiceTests()
     {
-        // Save original environment variables
-        _originalSecret = Environment.GetEnvironmentVariable("JWT_SECRET") ?? "";
-        _originalIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? "";
-        _originalAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? "";
-        _originalExpiration = Environment.GetEnvironmentVariable("JWT_ACCESS_TOKEN_EXPIRATION") ?? "";
+        _originalSecret = Environment.GetEnvironmentVariable("JWT_SECRET");
+        _originalIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER");
+        _originalAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE");
+        _originalExpiration = Environment.GetEnvironmentVariable("JWT_ACCESS_TOKEN_EXPIRATION");
 
         // Set test environment variables
         Environment.SetEnvironmentVariable("JWT_SECRET", TestSecret);
@@ -46,6 +46,7 @@ public class JwtServiceTests : IDisposable
         _sut = new JwtService();
     }
 
+    /// <inheritdoc />
     public void Dispose()
     {
         // Restore original environment variables
