@@ -1,5 +1,15 @@
 # Spec 10 — Collapse duplication clusters into theories
 
+> **Status: landed.** Changes 1, 2, 4, 5 and 6 collapsed 222 facts into 39 theories
+> carrying 336 rows, raising executed cases from 228 to 353. Change 3 followed:
+> `ExceptionStrategyContractTests.cs` holds 3 theories and 2 facts covering 59 rows
+> over 20 strategies, and the facts under `Handlers/Strategies/` fell from 119 to 58.
+> See the implementation notes below.
+>
+> The two fixture methods spec 08 held back for this spec were both consumed:
+> `ArticleFactory.CreateRejected` and `ArticleFactory.CreateArchived` now have call
+> sites in the reject and archive endpoint tests.
+
 ## Goal
 
 Replace the largest copy-paste clusters in the unit suite with `[Theory]` methods
@@ -627,19 +637,109 @@ is a defect, and reflection used to enumerate the type system, which is the poin
 this spec. Mitigation: state that distinction in the doc comment on each
 `[MemberData]` factory, and never use reflection in these theories to set a field.
 
+## Implementation notes
+
+Implemented and verified 2026-08-24. 222 facts were collapsed into 39 theories
+carrying 336 rows. Executed cases rose from 228 to 353, which is the number that
+matters: the fact count fell and the coverage rose.
+
+**Coverage that was genuinely absent before, and is not now:**
+
+| Gap | Before | After |
+| --- | --- | --- |
+| `PopularVideosCacheInvalidator` | no test file at all | covered by the assembly-sourced theory in `CacheInvalidatorTests.cs` |
+| `ArticleArtistEntity`, `ArtistSocialLinkEntity` | the only 2 of 49 `DbSet`s with no test | covered by the entity-type theory |
+| `ValidAvatar(isRequired: true)` | no passing test on the branch | covered |
+| email, password, username, avatar and Cloudinary size limits | no boundary rows | boundary rows on each |
+
+**`UploadVideoAsync_AtExactMaxSize` was not testing the boundary.** It used 100 MB
+against a 350 MB ceiling, so it exercised an ordinary-sized upload under a name that
+claimed otherwise. The rows now read the production constant:
+`CloudinaryServiceTests.cs:381` uses `FileConstants.MaxVideoFileSizeBytes` and
+`:198` uses `FileConstants.MaxVideoFileSizeBytes + 1`. The 100 MB figure came from
+the doc comment on `CloudinaryService.ValidateVideoFile`, which is itself wrong — see
+the open follow-ups in [../90-remediation-plan.md](../90-remediation-plan.md).
+
+**Reflection-driven completeness guards were added so the next gap fails loudly**
+rather than waiting for someone to notice a missing file. `CacheInvalidatorTests.cs:41`
+sources its rows from the invalidator types in the assembly and pairs them with a
+count fact at `:54`; `ContentDbContextTests.cs:91` enumerates the domain's entity
+types. Adding an invalidator or an entity without its configuration now fails.
+
+**Change 3 landed, over 20 strategies rather than the 13 the change list assumed.**
+`tests/Unit/Shared/Exceptions/Handlers/Strategies/ExceptionStrategyContractTests.cs`
+carries 3 theories and 2 facts covering 59 rows. The rows are discovered by reflection
+over two assemblies anchored on a type rather than a name
+(`ExceptionStrategyContractTests.cs:43-47`), which is what widened the scope: the
+Shared assembly declares 13 strategies and the Identity module adds 7. The count fact
+at `:269` pins 20, so a strategy added to either assembly fails rather than dropping
+silently out of the theory, and `ContractFor` (`:322`) throws on a strategy with no
+contract entry rather than skipping it — the two guards the change list called for.
+
+Facts under `Handlers/Strategies/` went from 119 to 58; executed cases went from 119
+to 117, and the unit suite total from 7,695 to 7,693. The fact count is the number the
+change's Expected fallout section asked not to be read as lost coverage: the 61 facts
+removed were per-file copies of clauses the base class supplies, and the 59 rows that
+replaced them cover 7 strategies no per-file fact ever reached.
+
+Three deviations from the change list as written:
+
+1. **No file was deleted.** The change list expected the nine non-specific files to
+   disappear; every one retained at least its status code and detail, so all 13
+   per-strategy files survive alongside the new one. `AuthenticationExceptionHandlerTests`,
+   `AuthorizationExceptionHandlerTests`, `BadGatewayExceptionHandlerTests`,
+   `ConflictExceptionHandlerTests`, `InternalServerExceptionHandlerTests` and
+   `MethodNotAllowedExceptionHandlerTests` are down to 2 facts each.
+2. **The theory names differ.** The contract file exposes
+   `ExceptionType_ShouldBeTheDeclaredExceptionType`,
+   `CreateProblemDetails_ShouldReportTheDeclaredTitleStatusAndInstance` and
+   `CreateProblemDetails_ShouldProduceTheStandardEnvelope`. The last is the name
+   mutation D9 in [14-verification-checklist.md](14-verification-checklist.md)
+   references, so D9 is now runnable as stated; its 19 rows fail under that mutation.
+3. **The envelope theory ranges over 19 strategies, not 20.** `DefaultExceptionHandler`
+   is exempt, and `StrategyTypes_ShouldExemptOnlyTheFallbackFromTheTraceExtensions`
+   (`:284`) asserts that the exemption list holds exactly that one name, so a second
+   strategy drifting off the shared helper fails.
+
+**Change 3 surfaced two `src/` findings**, both carried as open follow-ups in
+[../90-remediation-plan.md](../90-remediation-plan.md):
+
+- `DefaultExceptionHandler` (`src/Shared/Shared/Application/Exceptions/Handlers/Strategies/DefaultExceptionHandler.cs:19-25`)
+  builds its ProblemDetails inline instead of calling `CreateStandardProblemDetails`,
+  so it emits neither `traceId` nor `timestamp`. Clients never see the difference,
+  because `ExceptionHandler.EnrichProblemDetails`
+  (`ExceptionHandler.cs:108-112`) re-stamps both on every response — which also makes
+  the base helper's own stamping redundant with the middleware.
+- `FormatExceptionStrategy` sets `Title = nameof(InvalidFormatException)` rather than
+  `nameof(FormatException)` (`FormatExceptionStrategy.cs:21`). It reads as deliberate —
+  the strategy rewrites a raw `FormatException` into a domain-shaped error — but it is
+  undocumented, so the contract table carries it as an explicit expected-title column
+  (`ExceptionStrategyContractTests.cs:125-131`) rather than deriving the title from the
+  exception type.
+
+**Change 2 landed as one theory plus five facts, not three theories plus five.**
+`UserErrorsTests` carries a single factory theory covering the rows the three
+proposed theories would have held. The property the change asked for — every row
+asserting exception type and message, with a case name — is met.
+
 ## Checklist
 
-- [ ] 1 — `ContentDbContextTests` collapsed to one entity-type theory plus the three
+- [x] 1 — `ContentDbContextTests` collapsed to one entity-type theory plus the three
       schema and configuration facts, with a count fact guarding the data source
-- [ ] 2 — `UserErrorsTests` collapsed to three factory theories plus the five
+- [x] 2 — `UserErrorsTests` collapsed to three factory theories plus the five
       non-factory facts, each row carrying a case name and asserting type and message
-- [ ] 3 — `ExceptionStrategyContractTests` added, the nine common facts removed from
-      each strategy file, and files with nothing specific left deleted
-- [ ] 4 — `CredentialValidationTests` collapsed to nine theories plus the two cascade
-      facts, with expected messages read from the localizer
-- [ ] 5 — `CloudinaryServiceTests` collapsed to one fact plus eight theories, using
-      `ThrowExactlyAsync` throughout
-- [ ] 6 — The two invalidator test files replaced by one assembly-sourced theory file
+      — landed as one theory plus five facts; see the notes
+- [x] 3 — `ExceptionStrategyContractTests` added, the nine common facts removed from
+      each strategy file, and files with nothing specific left deleted — 3 theories
+      plus 2 facts over 59 rows and 20 strategies, facts under `Handlers/Strategies/`
+      119 → 58; no file was deletable, because each retained its own status and detail
+- [x] 4 — `CredentialValidationTests` collapsed to nine theories plus the two cascade
+      facts, with expected messages read from the localizer — 16 theories plus two
+      facts, the boundary rows above being the difference
+- [x] 5 — `CloudinaryServiceTests` collapsed to one fact plus eight theories, using
+      `ThrowExactlyAsync` throughout — one fact plus nine theories
+- [x] 6 — The two invalidator test files replaced by one assembly-sourced theory file
       covering all three invalidators, with a count fact
-- [ ] Suite totals recorded in the PR: facts before and after, theory methods before
-      and after, and theory *cases* after
+- [x] Suite totals recorded in the PR: facts before and after, theory methods before
+      and after, and theory *cases* after — 222 facts collapsed, 39 theories, 336
+      rows, executed cases 228 → 353
