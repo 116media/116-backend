@@ -19,15 +19,6 @@ public class LyricsTranslationRevisionBuilder
     private Guid? _decidedByUserId;
 
     /// <summary>
-    /// Sets the revision ID.
-    /// </summary>
-    public LyricsTranslationRevisionBuilder WithId(Guid id)
-    {
-        _id = id;
-        return this;
-    }
-
-    /// <summary>
     /// Sets the translation being corrected.
     /// </summary>
     public LyricsTranslationRevisionBuilder WithTranslationId(Guid translationId)
@@ -42,15 +33,6 @@ public class LyricsTranslationRevisionBuilder
     public LyricsTranslationRevisionBuilder WithProposedText(string proposedText)
     {
         _proposedText = proposedText;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the optional edit summary.
-    /// </summary>
-    public LyricsTranslationRevisionBuilder WithEditSummary(string? editSummary)
-    {
-        _editSummary = editSummary;
         return this;
     }
 
