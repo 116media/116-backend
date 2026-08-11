@@ -37,61 +37,6 @@ public class AdminUpdateOwnProfileRequestBuilder
     }
 
     /// <summary>
-    /// Sets the username to update.
-    /// </summary>
-    /// <param name="userName">The new username.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public AdminUpdateOwnProfileRequestBuilder WithUserName(string? userName)
-    {
-        _userName = userName;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the country name to update.
-    /// </summary>
-    /// <param name="countryName">The new country name.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public AdminUpdateOwnProfileRequestBuilder WithCountryName(string? countryName)
-    {
-        _countryName = countryName;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the partial phone number to update.
-    /// </summary>
-    /// <param name="partialPhoneNumber">The new partial phone number.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public AdminUpdateOwnProfileRequestBuilder WithPartialPhoneNumber(string? partialPhoneNumber)
-    {
-        _partialPhoneNumber = partialPhoneNumber;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the country ISO code to update.
-    /// </summary>
-    /// <param name="countryIsoCode">The new country ISO code.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public AdminUpdateOwnProfileRequestBuilder WithCountryIsoCode(string? countryIsoCode)
-    {
-        _countryIsoCode = countryIsoCode;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the country dial code to update.
-    /// </summary>
-    /// <param name="countryDialCode">The new country dial code.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public AdminUpdateOwnProfileRequestBuilder WithCountryDialCode(string? countryDialCode)
-    {
-        _countryDialCode = countryDialCode;
-        return this;
-    }
-
-    /// <summary>
     /// Builds the <see cref="AdminUpdateOwnProfileRequest"/> instance.
     /// </summary>
     /// <returns>A configured AdminUpdateOwnProfileRequest instance.</returns>
