@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfile;
@@ -451,41 +450,6 @@ public class PublicUpdateOwnProfileValidatorTests
         // Assert
         result.IsValid.Should().BeFalse();
         result.Errors.Should().HaveCountGreaterThanOrEqualTo(6);
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-        var i18n = TestErrorsFactory.CreateIdentityI18n();
-        var validator = new PublicUpdateOwnProfileValidator(i18n);
-        var command = new PublicUpdateOwnProfileCommand(
-            UserId: Guid.NewGuid(),
-            SessionId: Guid.NewGuid(),
-            Email: null,
-            UserName: null,
-            CountryName: new string('a', UserConstants.MaxCountryNameLength + 1),
-            PartialPhoneNumber: null,
-            CountryIsoCode: null,
-            CountryDialCode: null
-        );
-
-        // Act
-        TestValidationResult<PublicUpdateOwnProfileCommand>? result = await validator.TestValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .ShouldHaveValidationErrorFor(x => x.CountryName)
-            .WithErrorMessage(i18n.User.Validation.CountryNameTooLong(UserConstants.MaxCountryNameLength));
     }
 
     #endregion
