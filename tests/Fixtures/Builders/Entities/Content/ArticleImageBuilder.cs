@@ -26,24 +26,6 @@ public class ArticleImageBuilder
     }
 
     /// <summary>
-    /// Sets the image record ID.
-    /// </summary>
-    public ArticleImageBuilder WithId(Guid id)
-    {
-        _id = id;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the article ID.
-    /// </summary>
-    public ArticleImageBuilder WithArticleId(Guid articleId)
-    {
-        _articleId = articleId;
-        return this;
-    }
-
-    /// <summary>
     /// Sets the storage key.
     /// </summary>
     public ArticleImageBuilder WithStorageKey(string storageKey)
