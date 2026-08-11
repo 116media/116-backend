@@ -26,15 +26,20 @@ public class ContentOrderBuilder
         return this;
     }
 
-    public ContentOrderBuilder WithCustomerId(Guid customerId)
+    /// <summary>
+    /// Sets the package the order was created from.
+    /// </summary>
+    /// <param name="packageId">The package identifier.</param>
+    /// <returns>The builder instance for chaining.</returns>
+    public ContentOrderBuilder WithPackageId(Guid packageId)
     {
-        _customerId = customerId;
+        _packageId = packageId;
         return this;
     }
 
-    public ContentOrderBuilder WithPackageId(Guid? packageId)
+    public ContentOrderBuilder WithCustomerId(Guid customerId)
     {
-        _packageId = packageId;
+        _customerId = customerId;
         return this;
     }
 
