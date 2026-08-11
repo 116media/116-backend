@@ -90,17 +90,6 @@ public class RoleBuilder
     }
 
     /// <summary>
-    /// Adds a permission to the role.
-    /// </summary>
-    /// <param name="permission">The permission to add.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public RoleBuilder WithPermission(PermissionEntity permission)
-    {
-        _permissions.Add(permission);
-        return this;
-    }
-
-    /// <summary>
     /// Adds multiple permissions to the role.
     /// </summary>
     /// <param name="permissions">The permissions to add.</param>
