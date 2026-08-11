@@ -33,15 +33,6 @@ public class PlaylistBuilder
     }
 
     /// <summary>
-    /// Sets the playlist name.
-    /// </summary>
-    public PlaylistBuilder WithName(string name)
-    {
-        _name = name;
-        return this;
-    }
-
-    /// <summary>
     /// Builds the <see cref="PlaylistEntity"/> instance.
     /// </summary>
     public PlaylistEntity Build() => PlaylistEntity.Create(id: _id, userId: _userId, name: _name);
