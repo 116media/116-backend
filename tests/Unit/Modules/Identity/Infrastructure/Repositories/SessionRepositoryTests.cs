@@ -2,6 +2,7 @@ using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Repositories;
+using _116.Tests.Fixtures.Builders.Entities.Identity;
 using _116.Tests.Fixtures.Factories.Identity;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
@@ -34,14 +35,8 @@ public class SessionRepositoryTests : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    private static SessionEntity CreateSessionWithCreatedAt(Guid? userId = null)
-    {
-        SessionEntity session = SessionFactory.Create(userId ?? Guid.NewGuid());
-
-        typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(session, DateTime.UtcNow);
-
-        return session;
-    }
+    private static SessionEntity CreateSessionWithCreatedAt(Guid? userId = null, DateTime? createdAt = null) =>
+        new SessionBuilder().WithUserId(userId ?? Guid.NewGuid()).WithCreatedAt(createdAt ?? DateTime.UtcNow).Build();
 
     #region CreateAsync Tests
 
@@ -305,13 +300,9 @@ public class SessionRepositoryTests : IDisposable
     public async Task DeleteExpiredSessionsAsync_WhenExpiredSessionsExist_ShouldRevokeThemAndReturnCount()
     {
         // Arrange
-        SessionEntity expiredSession1 = SessionFactory.CreateExpired();
-        SessionEntity expiredSession2 = SessionFactory.CreateExpired();
+        SessionEntity expiredSession1 = new SessionBuilder().AsExpired().WithCreatedAt(DateTime.UtcNow).Build();
+        SessionEntity expiredSession2 = new SessionBuilder().AsExpired().WithCreatedAt(DateTime.UtcNow).Build();
         SessionEntity activeSession = CreateSessionWithCreatedAt();
-
-        // Set CreatedAt for expired sessions
-        typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(expiredSession1, DateTime.UtcNow);
-        typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(expiredSession2, DateTime.UtcNow);
 
         _context.Sessions.AddRange(expiredSession1, expiredSession2, activeSession);
         await _context.SaveChangesAsync();
@@ -352,8 +343,7 @@ public class SessionRepositoryTests : IDisposable
     public async Task DeleteExpiredSessionsAsync_ShouldNotRevokeAlreadyRevokedSessions()
     {
         // Arrange
-        SessionEntity expiredSession = SessionFactory.CreateExpired();
-        typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(expiredSession, DateTime.UtcNow);
+        SessionEntity expiredSession = new SessionBuilder().AsExpired().WithCreatedAt(DateTime.UtcNow).Build();
         expiredSession.Revoke();
 
         _context.Sessions.Add(expiredSession);
@@ -426,9 +416,11 @@ public class SessionRepositoryTests : IDisposable
         // Arrange
         var userId = Guid.NewGuid();
         string deviceId = "device-123";
-        SessionEntity session = SessionFactory.Create(userId, deviceId);
-
-        typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(session, DateTime.UtcNow);
+        SessionEntity session = new SessionBuilder()
+            .WithUserId(userId)
+            .WithDeviceId(deviceId)
+            .WithCreatedAt(DateTime.UtcNow)
+            .Build();
 
         _context.Sessions.Add(session);
         await _context.SaveChangesAsync();
@@ -506,11 +498,9 @@ public class SessionRepositoryTests : IDisposable
     {
         // Arrange
         var userId = Guid.NewGuid();
-        SessionEntity session1 = CreateSessionWithCreatedAt(userId);
-        typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(session1, DateTime.UtcNow.AddMinutes(-10));
+        SessionEntity session1 = CreateSessionWithCreatedAt(userId, DateTime.UtcNow.AddMinutes(-10));
 
-        SessionEntity session2 = CreateSessionWithCreatedAt(userId);
-        typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(session2, DateTime.UtcNow);
+        SessionEntity session2 = CreateSessionWithCreatedAt(userId, DateTime.UtcNow);
 
         _context.Sessions.AddRange(session1, session2);
         await _context.SaveChangesAsync();
@@ -570,8 +560,7 @@ public class SessionRepositoryTests : IDisposable
     {
         // Arrange
         SessionEntity activeSession = CreateSessionWithCreatedAt();
-        SessionEntity expiredSession = SessionFactory.CreateExpired();
-        typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(expiredSession, DateTime.UtcNow);
+        SessionEntity expiredSession = new SessionBuilder().AsExpired().WithCreatedAt(DateTime.UtcNow).Build();
 
         _context.Sessions.AddRange(activeSession, expiredSession);
         await _context.SaveChangesAsync();
@@ -612,11 +601,14 @@ public class SessionRepositoryTests : IDisposable
     public async Task GetAllWithPaginationAsync_WithIpAddressFilter_ShouldFilterByIpAddress()
     {
         // Arrange
-        SessionEntity session1 = SessionFactory.CreateWithIpAddress("192.168.1.1");
-        SessionEntity session2 = SessionFactory.CreateWithIpAddress("192.168.1.2");
-
-        typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(session1, DateTime.UtcNow);
-        typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(session2, DateTime.UtcNow);
+        SessionEntity session1 = new SessionBuilder()
+            .WithIpAddress("192.168.1.1")
+            .WithCreatedAt(DateTime.UtcNow)
+            .Build();
+        SessionEntity session2 = new SessionBuilder()
+            .WithIpAddress("192.168.1.2")
+            .WithCreatedAt(DateTime.UtcNow)
+            .Build();
 
         _context.Sessions.AddRange(session1, session2);
         await _context.SaveChangesAsync();
@@ -638,11 +630,9 @@ public class SessionRepositoryTests : IDisposable
     public async Task GetAllWithPaginationAsync_WithDateRangeFilter_ShouldFilterByDateRange()
     {
         // Arrange
-        SessionEntity oldSession = CreateSessionWithCreatedAt();
-        typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(oldSession, DateTime.UtcNow.AddDays(-10));
+        SessionEntity oldSession = CreateSessionWithCreatedAt(createdAt: DateTime.UtcNow.AddDays(-10));
 
-        SessionEntity recentSession = CreateSessionWithCreatedAt();
-        typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(recentSession, DateTime.UtcNow);
+        SessionEntity recentSession = CreateSessionWithCreatedAt(createdAt: DateTime.UtcNow);
 
         _context.Sessions.AddRange(oldSession, recentSession);
         await _context.SaveChangesAsync();
@@ -668,13 +658,18 @@ public class SessionRepositoryTests : IDisposable
     public async Task GetActiveSessionCountByBrowserAsync_ShouldReturnCountsByBrowser()
     {
         // Arrange
-        SessionEntity chromeSession1 = SessionFactory.CreateWithBrowser(EnumBrowser.Chrome);
-        SessionEntity chromeSession2 = SessionFactory.CreateWithBrowser(EnumBrowser.Chrome);
-        SessionEntity firefoxSession = SessionFactory.CreateWithBrowser(EnumBrowser.Firefox);
-
-        typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(chromeSession1, DateTime.UtcNow);
-        typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(chromeSession2, DateTime.UtcNow);
-        typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(firefoxSession, DateTime.UtcNow);
+        SessionEntity chromeSession1 = new SessionBuilder()
+            .WithBrowser(EnumBrowser.Chrome)
+            .WithCreatedAt(DateTime.UtcNow)
+            .Build();
+        SessionEntity chromeSession2 = new SessionBuilder()
+            .WithBrowser(EnumBrowser.Chrome)
+            .WithCreatedAt(DateTime.UtcNow)
+            .Build();
+        SessionEntity firefoxSession = new SessionBuilder()
+            .WithBrowser(EnumBrowser.Firefox)
+            .WithCreatedAt(DateTime.UtcNow)
+            .Build();
 
         _context.Sessions.AddRange(chromeSession1, chromeSession2, firefoxSession);
         await _context.SaveChangesAsync();
@@ -693,12 +688,15 @@ public class SessionRepositoryTests : IDisposable
     public async Task GetActiveSessionCountByBrowserAsync_ShouldNotIncludeRevokedSessions()
     {
         // Arrange
-        SessionEntity activeSession = SessionFactory.CreateWithBrowser(EnumBrowser.Chrome);
-        SessionEntity revokedSession = SessionFactory.CreateWithBrowser(EnumBrowser.Chrome);
+        SessionEntity activeSession = new SessionBuilder()
+            .WithBrowser(EnumBrowser.Chrome)
+            .WithCreatedAt(DateTime.UtcNow)
+            .Build();
+        SessionEntity revokedSession = new SessionBuilder()
+            .WithBrowser(EnumBrowser.Chrome)
+            .WithCreatedAt(DateTime.UtcNow)
+            .Build();
         revokedSession.Revoke();
-
-        typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(activeSession, DateTime.UtcNow);
-        typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(revokedSession, DateTime.UtcNow);
 
         _context.Sessions.AddRange(activeSession, revokedSession);
         await _context.SaveChangesAsync();
@@ -718,11 +716,8 @@ public class SessionRepositoryTests : IDisposable
     public async Task GetActiveSessionCountByDeviceAsync_ShouldReturnCountsByDevice()
     {
         // Arrange
-        SessionEntity desktopSession = SessionFactory.CreateDesktop();
-        SessionEntity mobileSession = SessionFactory.CreateMobile();
-
-        typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(desktopSession, DateTime.UtcNow);
-        typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(mobileSession, DateTime.UtcNow);
+        SessionEntity desktopSession = new SessionBuilder().AsDesktopSession().WithCreatedAt(DateTime.UtcNow).Build();
+        SessionEntity mobileSession = new SessionBuilder().AsMobileSession().WithCreatedAt(DateTime.UtcNow).Build();
 
         _context.Sessions.AddRange(desktopSession, mobileSession);
         await _context.SaveChangesAsync();
@@ -743,11 +738,14 @@ public class SessionRepositoryTests : IDisposable
     public async Task GetActiveSessionCountByPlatformAsync_ShouldReturnCountsByPlatform()
     {
         // Arrange
-        SessionEntity iosSession = SessionFactory.CreateWithPlatform(EnumPlatform.Ios);
-        SessionEntity windowsSession = SessionFactory.CreateWithPlatform(EnumPlatform.Windows);
-
-        typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(windowsSession, DateTime.UtcNow);
-        typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(iosSession, DateTime.UtcNow);
+        SessionEntity iosSession = new SessionBuilder()
+            .WithPlatform(EnumPlatform.Ios)
+            .WithCreatedAt(DateTime.UtcNow)
+            .Build();
+        SessionEntity windowsSession = new SessionBuilder()
+            .WithPlatform(EnumPlatform.Windows)
+            .WithCreatedAt(DateTime.UtcNow)
+            .Build();
 
         _context.Sessions.AddRange(windowsSession, iosSession);
         await _context.SaveChangesAsync();
@@ -768,11 +766,14 @@ public class SessionRepositoryTests : IDisposable
     public async Task GetActiveSessionCountByClientAsync_ShouldReturnCountsByClient()
     {
         // Arrange
-        SessionEntity webAppSession = SessionFactory.CreateWithClient(EnumClient.WebApp);
-        SessionEntity mobileAppSession = SessionFactory.CreateWithClient(EnumClient.MobileApp);
-
-        typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(webAppSession, DateTime.UtcNow);
-        typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(mobileAppSession, DateTime.UtcNow);
+        SessionEntity webAppSession = new SessionBuilder()
+            .WithClient(EnumClient.WebApp)
+            .WithCreatedAt(DateTime.UtcNow)
+            .Build();
+        SessionEntity mobileAppSession = new SessionBuilder()
+            .WithClient(EnumClient.MobileApp)
+            .WithCreatedAt(DateTime.UtcNow)
+            .Build();
 
         _context.Sessions.AddRange(webAppSession, mobileAppSession);
         await _context.SaveChangesAsync();
@@ -876,11 +877,9 @@ public class SessionRepositoryTests : IDisposable
     public async Task GetSessionsForExportAsync_WithDateRangeFilter_ShouldFilterByDateRange()
     {
         // Arrange
-        SessionEntity oldSession = CreateSessionWithCreatedAt();
-        typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(oldSession, DateTime.UtcNow.AddDays(-10));
+        SessionEntity oldSession = CreateSessionWithCreatedAt(createdAt: DateTime.UtcNow.AddDays(-10));
 
-        SessionEntity recentSession = CreateSessionWithCreatedAt();
-        typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(recentSession, DateTime.UtcNow);
+        SessionEntity recentSession = CreateSessionWithCreatedAt(createdAt: DateTime.UtcNow);
 
         _context.Sessions.AddRange(oldSession, recentSession);
         await _context.SaveChangesAsync();
