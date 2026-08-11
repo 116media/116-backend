@@ -36,17 +36,6 @@ public class AdminCreateOrderRequestBuilder
     }
 
     /// <summary>
-    /// Sets the optional pre-configured package to apply to the order.
-    /// </summary>
-    /// <param name="packageId">The package identifier, or null for no package.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public AdminCreateOrderRequestBuilder WithPackageId(Guid? packageId)
-    {
-        _packageId = packageId;
-        return this;
-    }
-
-    /// <summary>
     /// Builds the <see cref="AdminCreateOrderRequest"/> instance.
     /// </summary>
     /// <returns>A configured AdminCreateOrderRequest instance.</returns>
