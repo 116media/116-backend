@@ -42,17 +42,6 @@ public class OtpBuilder
     }
 
     /// <summary>
-    /// Sets the OTP ID.
-    /// </summary>
-    /// <param name="id">The OTP identifier.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public OtpBuilder WithId(Guid id)
-    {
-        _id = id;
-        return this;
-    }
-
-    /// <summary>
     /// Sets the user ID.
     /// </summary>
     /// <param name="userId">The user identifier.</param>
