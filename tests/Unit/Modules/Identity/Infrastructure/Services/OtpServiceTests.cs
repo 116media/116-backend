@@ -3,6 +3,7 @@ using _116.Identity.Application.Auth.Services;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Services;
 using AwesomeAssertions;
+using Microsoft.Extensions.Time.Testing;
 using Xunit;
 
 namespace _116.Unit.Tests.Modules.Identity.Infrastructure.Services;
@@ -12,6 +13,12 @@ namespace _116.Unit.Tests.Modules.Identity.Infrastructure.Services;
 /// </summary>
 public class OtpServiceTests
 {
+    /// <summary>
+    /// The instant the service's clock is pinned to. Expiration assertions are literal offsets
+    /// from it rather than reads of the same clock the service uses.
+    /// </summary>
+    private static readonly DateTime StartInstant = new(2026, 6, 30, 10, 0, 0, DateTimeKind.Utc);
+
     private readonly PasswordService _passwordService;
     private readonly OtpService _sut;
 
@@ -20,7 +27,7 @@ public class OtpServiceTests
         // The real hashing service: it has no dependencies, and the assertions below are about
         // the hash the service actually stores.
         _passwordService = new PasswordService();
-        _sut = new OtpService(_passwordService);
+        _sut = new OtpService(_passwordService, new FakeTimeProvider(new DateTimeOffset(StartInstant)));
     }
 
     #region GenerateOtpCode Tests
@@ -164,14 +171,12 @@ public class OtpServiceTests
         // Arrange
         var userId = Guid.NewGuid();
         var purpose = EnumOtpPurpose.EmailVerification;
-        DateTime beforeCreation = DateTime.UtcNow;
 
         // Act
         OtpCreationResult result = _sut.CreateOtp(userId, purpose);
 
         // Assert
-        DateTime expectedExpiration = beforeCreation.AddMinutes(UserConstants.OtpExpirationMinutes);
-        result.Otp.ExpiresAt.Should().BeCloseTo(expectedExpiration, TimeSpan.FromSeconds(2));
+        result.Otp.ExpiresAt.Should().Be(StartInstant.AddMinutes(UserConstants.OtpExpirationMinutes));
     }
 
     [Fact]
@@ -210,40 +215,21 @@ public class OtpServiceTests
     [Fact]
     public void CalculateExpirationTime_ShouldReturnFutureTime()
     {
-        // Arrange
-        DateTime now = DateTime.UtcNow;
-
         // Act
         DateTime expirationTime = _sut.CalculateExpirationTime();
 
         // Assert
-        expirationTime.Should().BeAfter(now);
+        expirationTime.Should().BeAfter(StartInstant);
     }
 
     [Fact]
     public void CalculateExpirationTime_ShouldReturnCorrectExpiration()
     {
-        // Arrange
-        DateTime beforeCall = DateTime.UtcNow;
-
         // Act
         DateTime expirationTime = _sut.CalculateExpirationTime();
 
         // Assert
-        DateTime expectedExpiration = beforeCall.AddMinutes(UserConstants.OtpExpirationMinutes);
-        expirationTime.Should().BeCloseTo(expectedExpiration, TimeSpan.FromSeconds(2));
-    }
-
-    [Fact]
-    public void CalculateExpirationTime_CalledMultipleTimes_ShouldReturnIncreasingTimes()
-    {
-        // Act
-        DateTime time1 = _sut.CalculateExpirationTime();
-        Thread.Sleep(10); // Small delay
-        DateTime time2 = _sut.CalculateExpirationTime();
-
-        // Assert
-        time2.Should().BeOnOrAfter(time1);
+        expirationTime.Should().Be(StartInstant.AddMinutes(UserConstants.OtpExpirationMinutes));
     }
 
     #endregion
