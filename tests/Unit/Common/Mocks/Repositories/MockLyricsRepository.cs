@@ -81,9 +81,13 @@ public static class MockLyricsRepository
         mock.Verify(x => x.AddAsync(It.IsAny<LyricsEntity>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    public static void VerifyUpdateCalled(this Mock<ILyricsRepository> mock)
+    /// <summary>
+    /// Verifies that the repository was handed exactly the expected entity once,
+    /// so updating a different instance than the one looked up fails the test.
+    /// </summary>
+    public static void VerifyUpdateCalled(this Mock<ILyricsRepository> mock, LyricsEntity expected)
     {
-        mock.Verify(x => x.Update(It.IsAny<LyricsEntity>()), Times.Once);
+        mock.Verify(x => x.Update(expected), Times.Once);
     }
 
     public static Mock<ILyricsRepository> SetupGetPublishedByArtist(
@@ -137,11 +141,39 @@ public static class MockLyricsRepository
         return mock;
     }
 
-    public static Mock<ILyricsRepository> SetupHasLikedAsync(this Mock<ILyricsRepository> mock, bool result)
+    /// <summary>
+    /// Answers the like-existence check for one user and lyrics pair only. Any other pair falls
+    /// through to the default false, so a handler that asks on behalf of another user or about a
+    /// different lyrics row is not silently handed this answer.
+    /// </summary>
+    public static Mock<ILyricsRepository> SetupHasLikedAsync(
+        this Mock<ILyricsRepository> mock,
+        Guid userId,
+        Guid lyricsId,
+        bool result
+    )
     {
-        mock.Setup(x => x.HasLikedAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+        mock.Setup(x =>
+                x.HasLikedAsync(
+                    It.Is<Guid>(id => id == userId),
+                    It.Is<Guid>(id => id == lyricsId),
+                    It.IsAny<CancellationToken>()
+                )
+            )
             .ReturnsAsync(result);
         return mock;
+    }
+
+    /// <summary>
+    /// Verifies the like-existence check was never reached, which is what the anonymous fast path
+    /// means: no user id exists to ask about.
+    /// </summary>
+    public static void VerifyHasLikedNotCalled(this Mock<ILyricsRepository> mock)
+    {
+        mock.Verify(
+            x => x.HasLikedAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
     }
 
     public static void VerifyAddLikeCalled(this Mock<ILyricsRepository> mock)
@@ -237,20 +269,18 @@ public static class MockLyricsRepository
         return mock;
     }
 
+    /// <summary>
+    /// Installs defaults for write, void and aggregate members only. Identity lookups are left
+    /// unconfigured so that a miss has to be arranged by the test, naming the identifier it is a
+    /// miss for, rather than being asserted for every identifier before the test says anything.
+    /// </summary>
+    /// <param name="mock">The repository mock to configure.</param>
     private static void SetupDefaults(Mock<ILyricsRepository> mock)
     {
         mock.Setup(x => x.AddAsync(It.IsAny<LyricsEntity>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
-        mock.Setup(x => x.GetBySlugAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((LyricsEntity?)null);
-        mock.Setup(x => x.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((LyricsEntity?)null);
-        mock.Setup(x => x.GetByVideoIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((LyricsEntity?)null);
         mock.Setup(x => x.GetPublishedByAlbumAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<LyricsEntity>());
-        mock.Setup(x => x.GetByOrderItemIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((LyricsEntity?)null);
         mock.Setup(x =>
                 x.GetAllAsync(
                     It.IsAny<int>(),
