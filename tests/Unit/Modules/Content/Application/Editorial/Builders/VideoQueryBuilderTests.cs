@@ -2,7 +2,9 @@ using _116.Content.Application.Editorial.Builders;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Shared.Application.Specifications;
+using _116.Tests.Fixtures.Builders.Entities.Content;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Unit.Tests.Common.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
@@ -14,6 +16,17 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.Builders;
 public class VideoQueryBuilderTests
 {
     private static readonly Guid CategoryId = Guid.NewGuid();
+
+    /// <summary>
+    /// Attaches a tag to a video through the junction entity, populating the Tag
+    /// navigation EF Core would load via Include.
+    /// </summary>
+    private static void AttachTag(VideoEntity video, TagEntity tag)
+    {
+        VideoTagEntity videoTag = VideoTagEntity.Create(Guid.NewGuid(), video.Id, tag.Id);
+        typeof(VideoTagEntity).GetProperty(nameof(VideoTagEntity.Tag))!.SetValue(videoTag, tag);
+        video.Tags.Add(videoTag);
+    }
 
     #region Build — no filters
 
@@ -46,12 +59,38 @@ public class VideoQueryBuilderTests
     }
 
     [Fact]
-    public void WithSearch_WithTerm_ShouldReturnNonNullSpec()
+    public void WithSearch_WithTerm_ShouldMatchTitleCaseInsensitively()
     {
+        VideoEntity match = new VideoBuilder(CategoryId)
+            .WithTitle("116 Le Focus Fally Ipupa")
+            .WithDescription("Interview intégrale")
+            .Build();
+        VideoEntity noMatch = new VideoBuilder(CategoryId)
+            .WithTitle("116 Le Focus Koffi Olomide")
+            .WithDescription("Interview intégrale")
+            .Build();
         var builder = new VideoQueryBuilder();
-        builder.WithSearch("some search");
-        // VideoSearchSpecification uses ILike — only verify spec is non-null
-        builder.Build().Should().NotBeNull();
+        builder.WithSearch("FALLY");
+
+        Specification<VideoEntity> spec = builder.Build()!;
+
+        spec.IsSatisfiedInMemoryBy(match).Should().BeTrue();
+        spec.IsSatisfiedInMemoryBy(noMatch).Should().BeFalse();
+    }
+
+    [Fact]
+    public void WithSearch_WithTerm_ShouldMatchDescriptionAsWellAsTitle()
+    {
+        VideoEntity match = new VideoBuilder(CategoryId)
+            .WithTitle("116 Le Focus Koffi Olomide")
+            .WithDescription("Un hommage à Fally Ipupa")
+            .Build();
+        var builder = new VideoQueryBuilder();
+        builder.WithSearch("fally");
+
+        Specification<VideoEntity> spec = builder.Build()!;
+
+        spec.IsSatisfiedInMemoryBy(match).Should().BeTrue();
     }
 
     #endregion
@@ -151,21 +190,36 @@ public class VideoQueryBuilderTests
     }
 
     [Fact]
-    public void WithTag_WithSlug_ShouldReturnNonNullSpec()
+    public void WithTag_WithSlug_ShouldMatchOnlyVideosCarryingTheTag()
     {
+        VideoEntity taggedVideo = VideoFactory.Create(CategoryId);
+        AttachTag(taggedVideo, TagFactory.Create("Rumba", "rumba"));
+        VideoEntity untaggedVideo = VideoFactory.Create(CategoryId);
         var builder = new VideoQueryBuilder();
-        builder.WithTag("rumba");
-        // VideoByTagSlugSpecification uses ILike — only verify spec is non-null
-        builder.Build().Should().NotBeNull();
+        builder.WithTag("RUMBA");
+
+        Specification<VideoEntity> spec = builder.Build()!;
+
+        spec.IsSatisfiedInMemoryBy(taggedVideo).Should().BeTrue();
+        spec.IsSatisfiedInMemoryBy(untaggedVideo).Should().BeFalse();
     }
 
     [Fact]
-    public void WithTag_AndWithStatus_Combined_ShouldReturnNonNullSpec()
+    public void WithTag_AndWithStatus_Combined_ShouldMatchOnlyVideosSatisfyingBoth()
     {
+        VideoEntity match = VideoFactory.CreatePublished(CategoryId);
+        AttachTag(match, TagFactory.Create("Rumba", "rumba"));
+        VideoEntity draftTagged = VideoFactory.Create(CategoryId);
+        AttachTag(draftTagged, TagFactory.Create("Rumba", "rumba"));
+        VideoEntity publishedUntagged = VideoFactory.CreatePublished(CategoryId);
         var builder = new VideoQueryBuilder();
         builder.WithStatus(EnumContentStatus.Published).WithTag("rumba");
-        // Combined spec includes ILike — only verify the chain builds a spec
-        builder.Build().Should().NotBeNull();
+
+        Specification<VideoEntity> spec = builder.Build()!;
+
+        spec.IsSatisfiedInMemoryBy(match).Should().BeTrue();
+        spec.IsSatisfiedInMemoryBy(draftTagged).Should().BeFalse();
+        spec.IsSatisfiedInMemoryBy(publishedUntagged).Should().BeFalse();
     }
 
     #endregion
