@@ -63,8 +63,7 @@ public class AdminAddPackageSlotHandlerTests : BaseContentHandlerTest
         AdminAddPackageSlotResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Package.Should().NotBeNull();
+        result.Package.Id.Should().Be(package.Id);
 
         _packageRepositoryMock.VerifyAddSlotCalled();
         _unitOfWorkMock.VerifyCommitCalled();
@@ -89,13 +88,11 @@ public class AdminAddPackageSlotHandlerTests : BaseContentHandlerTest
         AdminAddPackageSlotResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Package.Should().NotBeNull();
+        result.Package.Id.Should().Be(package.Id);
 
         _packageRepositoryMock.VerifyAddSlotCalled();
         _unitOfWorkMock.VerifyCommitCalled();
 
-        // Category lookup should not be called when CategoryId is null
         _categoryRepositoryMock.Verify(
             x => x.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
             Times.Never
