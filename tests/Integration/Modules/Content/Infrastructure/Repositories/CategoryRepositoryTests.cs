@@ -35,7 +35,7 @@ public class CategoryRepositoryTests : BaseRepositoryTest
         var repo = Resolve<ICategoryRepository>();
         var (result, totalCount) = await repo.GetAllAsync(page: 1, pageSize: 3, isActive: null, isFree: null);
 
-        totalCount.Should().BeGreaterThanOrEqualTo(5);
+        totalCount.Should().Be(5);
         result.Should().HaveCount(3);
     }
 
