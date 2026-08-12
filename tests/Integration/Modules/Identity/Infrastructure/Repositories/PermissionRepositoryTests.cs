@@ -25,7 +25,7 @@ public class PermissionRepositoryTests(PostgresFixture postgres) : BaseRepositor
 
         var (result, totalCount) = await repo.GetAllWithPaginationAsync(1, 3);
 
-        totalCount.Should().BeGreaterThanOrEqualTo(5);
+        totalCount.Should().Be(5);
         result.Should().HaveCount(3);
     }
 
@@ -151,7 +151,7 @@ public class PermissionRepositoryTests(PostgresFixture postgres) : BaseRepositor
 
         var (results, totalCount) = await repo.GetAllWithPaginationAsync(1, 50, search: "invoices");
 
-        totalCount.Should().BeGreaterThanOrEqualTo(1);
+        totalCount.Should().Be(1);
         results.Should().Contain(p => p.Resource == "invoices");
     }
 }
