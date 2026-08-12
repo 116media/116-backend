@@ -53,7 +53,6 @@ public class AdminCreateShortVideoHandlerTests : BaseContentHandlerTest
             VideoId: null
         );
 
-        // Capture the entity created internally by the handler so GetByIdOrThrowAsync returns it.
         ShortVideoEntity? capturedEntity = null;
         _shortVideoRepositoryMock
             .Setup(x => x.AddAsync(It.IsAny<ShortVideoEntity>(), It.IsAny<CancellationToken>()))
@@ -67,10 +66,10 @@ public class AdminCreateShortVideoHandlerTests : BaseContentHandlerTest
         AdminCreateShortVideoResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.ShortVideo.Should().NotBeNull();
         capturedEntity.Should().NotBeNull();
-        capturedEntity!.VideoFileId.Should().BeNull();
+        result.ShortVideo.Id.Should().Be(capturedEntity!.Id);
+        result.ShortVideo.IsActive.Should().BeFalse();
+        capturedEntity.VideoFileId.Should().BeNull();
         capturedEntity.IsActive.Should().BeFalse();
         _shortVideoRepositoryMock.VerifyAddCalled();
         _unitOfWorkMock.VerifyCommitCalled();
@@ -100,7 +99,6 @@ public class AdminCreateShortVideoHandlerTests : BaseContentHandlerTest
             VideoId: videoId
         );
 
-        // Capture the entity created internally by the handler so GetByIdOrThrowAsync returns it.
         ShortVideoEntity? capturedEntity = null;
         _shortVideoRepositoryMock
             .Setup(x => x.AddAsync(It.IsAny<ShortVideoEntity>(), It.IsAny<CancellationToken>()))
@@ -114,8 +112,8 @@ public class AdminCreateShortVideoHandlerTests : BaseContentHandlerTest
         AdminCreateShortVideoResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.ShortVideo.Should().NotBeNull();
+        result.ShortVideo.VideoId.Should().Be(videoId);
+        result.ShortVideo.HasFullVideo.Should().BeTrue();
         _shortVideoRepositoryMock.VerifyAddCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
