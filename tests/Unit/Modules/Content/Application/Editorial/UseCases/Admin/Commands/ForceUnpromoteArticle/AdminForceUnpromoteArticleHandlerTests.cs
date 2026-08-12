@@ -2,6 +2,8 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.ForceUnpromoteA
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
+using _116.Content.Domain.Events;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Services;
 using _116.Tests.Fixtures.Constants;
@@ -61,10 +63,48 @@ public class AdminForceUnpromoteArticleHandlerTests
         AdminForceUnpromoteArticleResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        article.IsPromoted.Should().BeFalse();
+        article.PromotedUntil.Should().BeNull();
+        article.PromotionLevelId.Should().BeNull();
+        article.UnpromotedBy.Should().Be(ActorUserId);
+        article.UnpromotedReason.Should().Be(TestConstants.Article.ValidRejectionReason);
+        article.UnpromotedAt.Should().NotBeNull();
         result.ArticleId.Should().Be(article.Id);
-        result.UnpromotedAt.Should().NotBe(default);
-        _articleRepositoryMock.VerifyUpdateCalled();
+        result.UnpromotedAt.Should().Be(article.UnpromotedAt.Value);
+        _articleRepositoryMock.VerifyUpdateCalled(article);
         _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    [Fact]
+    public async Task Handle_WhenArticleIsPromoted_ShouldRaiseContentPromotionRemovedEvent()
+    {
+        // Arrange
+        ArticleEntity article = ArticleFactory.CreatePromoted(CategoryId);
+        article.ClearDomainEvents();
+        var command = new AdminForceUnpromoteArticleCommand(
+            Slug: article.Slug,
+            Reason: TestConstants.Article.ValidRejectionReason
+        );
+        _articleRepositoryMock.SetupGetBySlug(article.Slug, article);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        article
+            .DomainEvents.OfType<ContentPromotionRemovedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(
+                new ContentPromotionRemovedEvent(
+                    ContentId: article.Id,
+                    ContentType: EnumCoreContentType.Article,
+                    CustomerId: article.CustomerId,
+                    Title: article.Title,
+                    Reason: TestConstants.Article.ValidRejectionReason
+                )
+            );
     }
 
     #endregion
@@ -86,6 +126,7 @@ public class AdminForceUnpromoteArticleHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     #endregion
