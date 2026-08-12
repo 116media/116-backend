@@ -2,6 +2,7 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.ApproveLyrics;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
@@ -38,7 +39,7 @@ public class AdminApproveLyricsHandlerTests
     #region Success Cases
 
     [Fact]
-    public async Task Handle_WhenLyricsInPendingReview_ShouldApproveAndReturnSuccess()
+    public async Task Handle_WhenLyricsInPendingReview_ShouldTransitionToApproved()
     {
         // Arrange
         LyricsEntity lyrics = LyricsFactory.CreatePendingReview(CategoryId);
@@ -46,11 +47,11 @@ public class AdminApproveLyricsHandlerTests
         _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
 
         // Act
-        AdminApproveLyricsResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
-        _lyricsRepositoryMock.VerifyUpdateCalled();
+        lyrics.Status.Should().Be(EnumContentStatus.Approved);
+        _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -71,6 +72,7 @@ public class AdminApproveLyricsHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
@@ -86,13 +88,15 @@ public class AdminApproveLyricsHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<ConflictException>();
+        lyrics.Status.Should().Be(EnumContentStatus.Approved);
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
     public async Task Handle_WhenLyricsInWrongStatus_ShouldThrowBadRequestException()
     {
         // Arrange
-        LyricsEntity lyrics = LyricsFactory.Create(CategoryId); // Draft status
+        LyricsEntity lyrics = LyricsFactory.Create(CategoryId);
         var command = new AdminApproveLyricsCommand(Id: lyrics.Id.ToString());
         _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
 
@@ -101,6 +105,8 @@ public class AdminApproveLyricsHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<BadRequestException>();
+        lyrics.Status.Should().Be(EnumContentStatus.Draft);
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     #endregion
