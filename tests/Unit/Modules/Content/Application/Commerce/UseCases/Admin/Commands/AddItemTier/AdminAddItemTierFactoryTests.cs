@@ -50,6 +50,9 @@ public class AdminAddItemTierFactoryTests
         Guid contentTypeId = Guid.NewGuid();
         CategoryEntity category = CategoryFactory.Create(contentTypeId);
         ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, category.Id);
+        ContentItemTierEntity existingTier = ContentItemTierFactory.Create(item.Id, Guid.NewGuid(), 40m);
+        item.Tiers.Add(existingTier);
+        order.Items.Add(item);
         PricingTierEntity pricingTier = PricingTierFactory.CreateDefault();
         CategoryPricingEntity categoryPricing = CategoryPricingFactory.Create(category.Id, pricingTier.Id, 100m);
 
@@ -67,13 +70,13 @@ public class AdminAddItemTierFactoryTests
         );
 
         // Assert
-        tier.Should().NotBeNull();
         tier.OrderItemId.Should().Be(item.Id);
         tier.PricingTierId.Should().Be(pricingTier.Id);
         tier.PriceSnapshotUsd.Should().Be(categoryPricing.PriceUsd);
         tierName.Should().Be(pricingTier.Name);
-        _orderRepositoryMock.VerifyAddItemTierCalled();
-        _orderRepositoryMock.VerifyUpdateCalled();
+        order.TotalAmountUsd.Should().Be(existingTier.PriceSnapshotUsd);
+        _orderRepositoryMock.Verify(x => x.AddItemTierAsync(tier, It.IsAny<CancellationToken>()), Times.Once);
+        _orderRepositoryMock.VerifyUpdateCalled(order);
         _unitOfWorkMock.VerifyCommitCalled(times: 2);
     }
 
@@ -93,6 +96,7 @@ public class AdminAddItemTierFactoryTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
@@ -108,6 +112,7 @@ public class AdminAddItemTierFactoryTests
 
         // Assert
         await act.Should().ThrowAsync<BadRequestException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
@@ -124,6 +129,7 @@ public class AdminAddItemTierFactoryTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
@@ -147,6 +153,7 @@ public class AdminAddItemTierFactoryTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
@@ -171,6 +178,8 @@ public class AdminAddItemTierFactoryTests
 
         // Assert
         await act.Should().ThrowAsync<ConflictException>();
+        item.Tiers.Should().ContainSingle().Which.Should().Be(existingTier);
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     #endregion
