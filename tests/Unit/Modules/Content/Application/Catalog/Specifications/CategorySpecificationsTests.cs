@@ -1,6 +1,7 @@
 using _116.Content.Application.Catalog.Specifications;
 using _116.Content.Domain.Entities;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Unit.Tests.Common.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
@@ -9,8 +10,8 @@ namespace _116.Unit.Tests.Modules.Content.Application.Catalog.Specifications;
 /// <summary>
 /// Unit tests for the category specification classes not already covered by
 /// <see cref="CatalogSpecificationsTests"/> and <see cref="CategorySpecificationTests"/>.
-/// Note: Specifications using EF.Functions.ILike require a real PostgreSQL provider —
-/// those are covered via ToExpression().Compile() only.
+/// Specifications using EF.Functions.ILike are evaluated through
+/// <see cref="ILikeSpecificationEvaluator" />, which rewrites ILike for in-memory execution.
 /// </summary>
 public class CategorySpecificationsTests
 {
@@ -18,18 +19,22 @@ public class CategorySpecificationsTests
 
     #region CategoryBySlugSpecification
 
-    // ILike: requires PostgreSQL provider — compile-only
-    [Fact]
-    public void CategoryBySlugSpecification_ShouldCompileExpression()
+    [Theory]
+    [InlineData("music-videos", true)]
+    [InlineData("MUSIC-VIDEOS", true)]
+    [InlineData("music", false)]
+    [InlineData("artist-profile", false)]
+    public void CategoryBySlugSpecification_ShouldMatchWholeSlugCaseInsensitively(string slug, bool expected)
     {
         // Arrange
-        var spec = new CategoryBySlugSpecification("music-videos");
+        CategoryEntity category = CategoryFactory.Create(ContentTypeId, "Music Videos", "music-videos");
+        var spec = new CategoryBySlugSpecification(slug);
 
         // Act
-        Func<CategoryEntity, bool> predicate = spec.ToExpression().Compile();
+        bool result = spec.IsSatisfiedInMemoryBy(category);
 
         // Assert
-        predicate.Should().NotBeNull();
+        result.Should().Be(expected);
     }
 
     #endregion
