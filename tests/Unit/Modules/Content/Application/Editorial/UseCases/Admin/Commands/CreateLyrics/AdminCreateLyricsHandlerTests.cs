@@ -2,6 +2,7 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateLyrics;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
 using _116.Identity.Contracts.Application;
@@ -79,7 +80,7 @@ public class AdminCreateLyricsHandlerTests : BaseContentHandlerTest
     #region Success Cases
 
     [Fact]
-    public async Task Handle_WhenValidFreeLyrics_ShouldCreateAndReturnLyrics()
+    public async Task Handle_WhenValidFreeLyrics_ShouldCreateDraftLyricsFromCommand()
     {
         // Arrange
         CategoryEntity category = CategoryFactory.Create(CategoryId);
@@ -88,6 +89,12 @@ public class AdminCreateLyricsHandlerTests : BaseContentHandlerTest
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
         _lyricsRepositoryMock.SetupGetBySlug(slug, null);
+
+        LyricsEntity? added = null;
+        _lyricsRepositoryMock
+            .Setup(x => x.AddAsync(It.IsAny<LyricsEntity>(), It.IsAny<CancellationToken>()))
+            .Callback<LyricsEntity, CancellationToken>((entity, _) => added = entity)
+            .Returns(Task.CompletedTask);
 
         LyricsEntity created = LyricsFactory.Create(category.Id);
         _lyricsRepositoryMock
@@ -98,8 +105,18 @@ public class AdminCreateLyricsHandlerTests : BaseContentHandlerTest
         AdminCreateLyricsResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Lyrics.Should().NotBeNull();
+        added.Should().NotBeNull();
+        added!.Status.Should().Be(EnumContentStatus.Draft);
+        added.CategoryId.Should().Be(category.Id);
+        added.SongTitle.Should().Be(TestConstants.Lyrics.ValidSongTitle);
+        added.ArtistName.Should().Be(TestConstants.Lyrics.ValidArtistName);
+        added.Slug.Should().Be(slug);
+        added.LyricsText.Should().Be(TestConstants.Lyrics.ValidLyricsText);
+        added.Language.Should().Be(TestConstants.Lyrics.ValidLanguage);
+        added.AuthorId.Should().Be(AuthorId);
+        added.CustomerId.Should().BeNull();
+        added.OrderItemId.Should().BeNull();
+        result.Lyrics.Id.Should().Be(created.Id);
 
         _lyricsRepositoryMock.VerifyAddCalled();
         _unitOfWorkMock.VerifyCommitCalled();
@@ -119,6 +136,12 @@ public class AdminCreateLyricsHandlerTests : BaseContentHandlerTest
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
         _lyricsRepositoryMock.SetupGetBySlug(slug, null);
 
+        LyricsEntity? added = null;
+        _lyricsRepositoryMock
+            .Setup(x => x.AddAsync(It.IsAny<LyricsEntity>(), It.IsAny<CancellationToken>()))
+            .Callback<LyricsEntity, CancellationToken>((entity, _) => added = entity)
+            .Returns(Task.CompletedTask);
+
         LyricsEntity created = LyricsFactory.CreatePaid(category.Id, customerId, orderItemId);
         _lyricsRepositoryMock
             .Setup(x => x.GetByIdOrThrowAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
@@ -128,8 +151,11 @@ public class AdminCreateLyricsHandlerTests : BaseContentHandlerTest
         AdminCreateLyricsResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Lyrics.Should().NotBeNull();
+        added.Should().NotBeNull();
+        added!.Status.Should().Be(EnumContentStatus.Draft);
+        added.CustomerId.Should().Be(customerId);
+        added.OrderItemId.Should().Be(orderItemId);
+        result.Lyrics.Id.Should().Be(created.Id);
 
         _lyricsRepositoryMock.VerifyAddCalled();
         _unitOfWorkMock.VerifyCommitCalled();
@@ -148,6 +174,12 @@ public class AdminCreateLyricsHandlerTests : BaseContentHandlerTest
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
         _lyricsRepositoryMock.SetupGetBySlug(slug, null);
 
+        LyricsEntity? added = null;
+        _lyricsRepositoryMock
+            .Setup(x => x.AddAsync(It.IsAny<LyricsEntity>(), It.IsAny<CancellationToken>()))
+            .Callback<LyricsEntity, CancellationToken>((entity, _) => added = entity)
+            .Returns(Task.CompletedTask);
+
         VideoEntity video = VideoFactory.Create(category.Id);
         _videoRepositoryMock
             .Setup(x => x.GetByIdOrThrowAsync(videoId, It.IsAny<CancellationToken>()))
@@ -162,12 +194,13 @@ public class AdminCreateLyricsHandlerTests : BaseContentHandlerTest
         AdminCreateLyricsResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Lyrics.Should().NotBeNull();
+        added.Should().NotBeNull();
+        added!.VideoId.Should().Be(videoId);
         video.HasLyrics.Should().BeTrue();
+        result.Lyrics.Id.Should().Be(created.Id);
 
         _lyricsRepositoryMock.VerifyAddCalled();
-        _videoRepositoryMock.VerifyUpdateCalled();
+        _videoRepositoryMock.VerifyUpdateCalled(video);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -188,9 +221,10 @@ public class AdminCreateLyricsHandlerTests : BaseContentHandlerTest
             .ReturnsAsync(reloaded);
 
         // Act
-        await _handler.Handle(command, CancellationToken.None);
+        AdminCreateLyricsResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        result.Lyrics.Id.Should().Be(reloaded.Id);
         _lyricsRepositoryMock.Verify(
             x => x.GetByIdOrThrowAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
             Times.Once
@@ -215,6 +249,7 @@ public class AdminCreateLyricsHandlerTests : BaseContentHandlerTest
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
@@ -235,32 +270,6 @@ public class AdminCreateLyricsHandlerTests : BaseContentHandlerTest
 
         // Assert
         await act.Should().ThrowAsync<ConflictException>();
-    }
-
-    [Fact]
-    public async Task Handle_WhenSlugAlreadyExists_ShouldNotAddOrCommit()
-    {
-        // Arrange
-        CategoryEntity category = CategoryFactory.Create(CategoryId);
-        string slug = TestConstants.Lyrics.ValidSlug;
-        var command = BuildCommand(category.Id, slug);
-
-        _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-
-        LyricsEntity existing = LyricsFactory.CreateWithSlug(category.Id, slug);
-        _lyricsRepositoryMock.SetupGetBySlug(slug, existing);
-
-        // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (ConflictException)
-        {
-            // Expected
-        }
-
-        // Assert
         _lyricsRepositoryMock.Verify(
             x => x.AddAsync(It.IsAny<LyricsEntity>(), It.IsAny<CancellationToken>()),
             Times.Never
