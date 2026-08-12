@@ -50,8 +50,17 @@ public class PublicGetOwnArticleFavoritesEndpointV1Tests(PostgresFixture db) : B
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    public static TheoryData<string> PrivateCollectionUrls =>
-        new() { LikedUrl, CommentedUrl, SharedUrl, MineUrl(Guid.NewGuid()) };
+    public static TheoryData<string> PrivateCollectionUrls => new() { LikedUrl, CommentedUrl, SharedUrl };
+
+    [Fact]
+    public async Task PrivateArticleFavoriteStatus_WithoutAuthentication_ReturnsUnauthorized()
+    {
+        Client.ClearAuthentication();
+
+        HttpResponseMessage response = await Client.GetAsync(MineUrl(Guid.NewGuid()));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
 
     [Fact]
     public async Task LikedArticles_ReturnOnlyCurrentUserRows_AndPaginateDistinctArticles()
