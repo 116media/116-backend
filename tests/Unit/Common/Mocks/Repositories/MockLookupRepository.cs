@@ -289,6 +289,12 @@ public static class MockLookupRepository
         mock.Verify(x => x.Remove(It.IsAny<TagEntity>()), Times.Never);
     }
 
+    /// <summary>
+    /// Installs defaults for write, void and aggregate members only. Identity lookups are left
+    /// unconfigured so that a miss has to be arranged by the test, naming the identifier it is a
+    /// miss for, rather than being asserted for every identifier before the test says anything.
+    /// </summary>
+    /// <param name="mock">The repository mock to configure.</param>
     private static void SetupDefaults(Mock<ILookupRepository> mock)
     {
         // ContentType
@@ -318,10 +324,6 @@ public static class MockLookupRepository
             .ReturnsAsync(new List<PromotionLevelEntity>());
 
         // Tag
-        mock.Setup(x => x.GetTagByIdOrThrowAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new NotFoundException("Tag not found."));
-        mock.Setup(x => x.GetTagBySlugAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((TagEntity?)null);
         mock.Setup(x => x.AddTagAsync(It.IsAny<TagEntity>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
         mock.Setup(x =>
