@@ -182,7 +182,7 @@ public class OtpRepositoryTests(PostgresFixture postgres) : BaseRepositoryTest(p
         var deletedCount = await repo.CleanupExpiredOtpsAsync();
         await db.SaveChangesAsync();
 
-        deletedCount.Should().BeGreaterThanOrEqualTo(2);
+        deletedCount.Should().Be(2);
 
         await using var verifyContext = CreateDbContext<IdentityDbContext>();
         var remaining = await verifyContext.Otps.Where(o => o.Id == expired1.Id || o.Id == expired2.Id).ToListAsync();
