@@ -102,7 +102,7 @@ public class ContentOrderRepositoryTests(PostgresFixture postgres) : BaseReposit
 
         var (result, totalCount) = await repo.GetAllAsync(page: 1, pageSize: 3, status: null, customerId: null);
 
-        totalCount.Should().BeGreaterThanOrEqualTo(5);
+        totalCount.Should().Be(5);
         result.Should().HaveCount(3);
     }
 
@@ -129,7 +129,7 @@ public class ContentOrderRepositoryTests(PostgresFixture postgres) : BaseReposit
             customerId: customerA.Id
         );
 
-        totalCount.Should().BeGreaterThanOrEqualTo(1);
+        totalCount.Should().Be(1);
         result.Should().OnlyContain(o => o.CustomerId == customerA.Id);
     }
 
