@@ -31,8 +31,8 @@ public class AdminGetSessionMetricsEndpointV1Tests(PostgresFixture db) : BaseApi
         body.Devices.Should().NotBeNull();
         body.Platforms.Should().NotBeNull();
         body.Clients.Should().NotBeNull();
-        body.TotalActiveSessions.Should().BeGreaterThanOrEqualTo(1);
-        body.TotalActiveUsers.Should().BeGreaterThanOrEqualTo(1);
+        body.TotalActiveSessions.Should().Be(1);
+        body.TotalActiveUsers.Should().Be(1);
     }
 
     [Fact]
