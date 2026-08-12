@@ -59,8 +59,6 @@ public class AdminCreateCustomerHandlerTests : BaseContentHandlerTest
         AdminCreateCustomerResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Customer.Should().NotBeNull();
         result.Customer.Email.Should().Be(email);
         result.Customer.FullName.Should().Be(fullName);
 
@@ -114,16 +112,10 @@ public class AdminCreateCustomerHandlerTests : BaseContentHandlerTest
         _customerRepositoryMock.SetupGetByEmail(email, existing);
 
         // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (ConflictException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<ConflictException>();
         _customerRepositoryMock.Verify(
             x => x.AddAsync(It.IsAny<CustomerEntity>(), It.IsAny<CancellationToken>()),
             Times.Never
