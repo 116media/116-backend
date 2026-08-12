@@ -2,6 +2,8 @@ using _116.Content.Application.Commerce.UseCases.Admin.Commands.SubmitOrder;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
+using _116.Content.Domain.Events;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
@@ -36,10 +38,44 @@ public class AdminSubmitOrderFactoryTests
     #region Success Cases
 
     [Fact]
-    public async Task SubmitAsync_WhenOrderHasItemWithTier_ShouldCreatePaymentAndCommit()
+    public async Task SubmitAsync_WhenOrderHasItemWithTier_ShouldTransitionToPendingPaymentAndCreatePayment()
     {
         // Arrange
         ContentOrderEntity order = ContentOrderFactory.Create();
+        Guid categoryId = Guid.NewGuid();
+        ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, categoryId);
+        ContentItemTierEntity tier = ContentItemTierFactory.CreateDefault(item.Id, Guid.NewGuid());
+        item.Tiers.Add(tier);
+        order.Items.Add(item);
+        order.RecalculateTotalFromItems();
+
+        // Act
+        await _factory.SubmitAsync(order, CancellationToken.None);
+
+        // Assert
+        order.Status.Should().Be(EnumOrderStatus.PendingPayment);
+        _orderRepositoryMock.Verify(
+            x =>
+                x.AddPaymentAsync(
+                    It.Is<ContentPaymentEntity>(p =>
+                        p.OrderId == order.Id
+                        && p.AmountUsd == tier.PriceSnapshotUsd
+                        && p.Status == EnumPaymentStatus.Pending
+                    ),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Once
+        );
+        _orderRepositoryMock.VerifyUpdateCalled(order);
+        _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    [Fact]
+    public async Task SubmitAsync_WhenOrderHasItemWithTier_ShouldRaiseOrderSubmittedEvent()
+    {
+        // Arrange
+        ContentOrderEntity order = ContentOrderFactory.Create();
+        order.ClearDomainEvents();
         Guid categoryId = Guid.NewGuid();
         ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, categoryId);
         ContentItemTierEntity tier = ContentItemTierFactory.CreateDefault(item.Id, Guid.NewGuid());
@@ -50,9 +86,12 @@ public class AdminSubmitOrderFactoryTests
         await _factory.SubmitAsync(order, CancellationToken.None);
 
         // Assert
-        _orderRepositoryMock.VerifyAddPaymentCalled();
-        _orderRepositoryMock.VerifyUpdateCalled();
-        _unitOfWorkMock.VerifyCommitCalled();
+        order
+            .DomainEvents.OfType<OrderSubmittedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(new OrderSubmittedEvent(OrderId: order.Id));
     }
 
     #endregion
@@ -62,8 +101,9 @@ public class AdminSubmitOrderFactoryTests
     [Fact]
     public async Task SubmitAsync_WhenNoItemsWithTiers_ShouldThrowBadRequestException()
     {
-        // Arrange — order with an item but no tiers on it
+        // Arrange
         ContentOrderEntity order = ContentOrderFactory.Create();
+        order.ClearDomainEvents();
         Guid categoryId = Guid.NewGuid();
         ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, categoryId);
         order.Items.Add(item);
@@ -73,19 +113,52 @@ public class AdminSubmitOrderFactoryTests
 
         // Assert
         await act.Should().ThrowAsync<BadRequestException>();
+        order.Status.Should().Be(EnumOrderStatus.Draft);
+        order.DomainEvents.Should().BeEmpty();
+        _orderRepositoryMock.Verify(
+            x => x.AddPaymentAsync(It.IsAny<ContentPaymentEntity>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
     public async Task SubmitAsync_WhenOrderHasNoItems_ShouldThrowBadRequestException()
     {
-        // Arrange — completely empty order
+        // Arrange
         ContentOrderEntity order = ContentOrderFactory.Create();
+        order.ClearDomainEvents();
 
         // Act
         Func<Task> act = async () => await _factory.SubmitAsync(order, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<BadRequestException>();
+        order.Status.Should().Be(EnumOrderStatus.Draft);
+        order.DomainEvents.Should().BeEmpty();
+        _unitOfWorkMock.VerifyCommitNotCalled();
+    }
+
+    [Fact]
+    public async Task SubmitAsync_WhenOrderAlreadySubmitted_ShouldThrowConflictException()
+    {
+        // Arrange
+        ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
+        order.ClearDomainEvents();
+        Guid categoryId = Guid.NewGuid();
+        ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, categoryId);
+        ContentItemTierEntity tier = ContentItemTierFactory.CreateDefault(item.Id, Guid.NewGuid());
+        item.Tiers.Add(tier);
+        order.Items.Add(item);
+
+        // Act
+        Func<Task> act = async () => await _factory.SubmitAsync(order, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<ConflictException>();
+        order.Status.Should().Be(EnumOrderStatus.PendingPayment);
+        order.DomainEvents.Should().BeEmpty();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     #endregion
