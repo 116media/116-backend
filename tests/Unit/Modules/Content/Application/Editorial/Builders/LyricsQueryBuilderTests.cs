@@ -3,7 +3,9 @@ using _116.Content.Application.Editorial.Builders.Contracts;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Shared.Application.Specifications;
+using _116.Tests.Fixtures.Builders.Entities.Content;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Unit.Tests.Common.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
@@ -45,12 +47,18 @@ public class LyricsQueryBuilderTests
     }
 
     [Fact]
-    public void WithSearch_WithTerm_ShouldReturnNonNullSpec()
+    public void WithSearch_WithTerm_ShouldMatchTitleOrArtistCaseInsensitively()
     {
+        Guid categoryId = Guid.NewGuid();
+        LyricsEntity match = LyricsFactory.Create(categoryId, "Eloko Oyo", "Fally Ipupa");
+        LyricsEntity noMatch = LyricsFactory.Create(categoryId, "Loi", "Koffi Olomide");
         var builder = new LyricsQueryBuilder();
-        builder.WithSearch("some search");
-        // LyricsSearchSpecification uses ILike — only verify spec is non-null
-        builder.Build().Should().NotBeNull();
+        builder.WithSearch("FALLY");
+
+        Specification<LyricsEntity> spec = builder.Build()!;
+
+        spec.IsSatisfiedInMemoryBy(match).Should().BeTrue();
+        spec.IsSatisfiedInMemoryBy(noMatch).Should().BeFalse();
     }
 
     [Fact]
@@ -149,12 +157,18 @@ public class LyricsQueryBuilderTests
     }
 
     [Fact]
-    public void WithLanguage_WithValue_ShouldReturnNonNullSpec()
+    public void WithLanguage_WithValue_ShouldMatchLanguageCaseInsensitively()
     {
+        Guid categoryId = Guid.NewGuid();
+        LyricsEntity match = new LyricsBuilder(categoryId).WithLanguage("FR").Build();
+        LyricsEntity noMatch = new LyricsBuilder(categoryId).WithLanguage("en").Build();
         var builder = new LyricsQueryBuilder();
         builder.WithLanguage("fr");
-        // LyricsByLanguageSpecification uses ILike — only verify spec is non-null
-        builder.Build().Should().NotBeNull();
+
+        Specification<LyricsEntity> spec = builder.Build()!;
+
+        spec.IsSatisfiedInMemoryBy(match).Should().BeTrue();
+        spec.IsSatisfiedInMemoryBy(noMatch).Should().BeFalse();
     }
 
     #endregion
