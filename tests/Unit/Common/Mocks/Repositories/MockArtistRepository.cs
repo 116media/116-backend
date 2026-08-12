@@ -123,21 +123,25 @@ public static class MockArtistRepository
         mock.Verify(x => x.AddAsync(It.IsAny<ArtistEntity>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
-    public static void VerifyUpdateCalled(this Mock<IArtistRepository> mock)
+    /// <summary>
+    /// Verifies that the repository was handed exactly the expected entity once,
+    /// so updating a different instance than the one looked up fails the test.
+    /// </summary>
+    public static void VerifyUpdateCalled(this Mock<IArtistRepository> mock, ArtistEntity expected)
     {
-        mock.Verify(x => x.Update(It.IsAny<ArtistEntity>()), Times.Once);
+        mock.Verify(x => x.Update(expected), Times.Once);
     }
 
+    /// <summary>
+    /// Installs defaults for write, void and aggregate members only. Identity lookups are left
+    /// unconfigured so that a miss has to be arranged by the test, naming the identifier it is a
+    /// miss for, rather than being asserted for every identifier before the test says anything.
+    /// </summary>
+    /// <param name="mock">The repository mock to configure.</param>
     private static void SetupDefaults(Mock<IArtistRepository> mock)
     {
         mock.Setup(x => x.AddAsync(It.IsAny<ArtistEntity>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
-        mock.Setup(x => x.GetBySlugAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((ArtistEntity?)null);
-        mock.Setup(x => x.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((ArtistEntity?)null);
-        mock.Setup(x => x.GetByUserIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((ArtistEntity?)null);
         mock.Setup(x =>
                 x.GetAllAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>(), It.IsAny<CancellationToken>())
             )
@@ -149,10 +153,6 @@ public static class MockArtistRepository
             .ReturnsAsync(new ArtistTotals(Songs: 1, Videos: 0, Albums: 0, Mixtapes: 0, News: 0));
         mock.Setup(x => x.GetSocialLinksAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<ArtistSocialLinkEntity>());
-        mock.Setup(x =>
-                x.GetSocialLinkAsync(It.IsAny<Guid>(), It.IsAny<EnumSocialPlatform>(), It.IsAny<CancellationToken>())
-            )
-            .ReturnsAsync((ArtistSocialLinkEntity?)null);
         mock.Setup(x => x.AddSocialLinkAsync(It.IsAny<ArtistSocialLinkEntity>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
         mock.Setup(x => x.GetAvailableLettersAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new List<string>());
