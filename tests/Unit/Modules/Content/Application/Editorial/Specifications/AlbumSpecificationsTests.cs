@@ -1,7 +1,9 @@
 using _116.Content.Application.Editorial.Specifications;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
+using _116.Tests.Fixtures.Builders.Entities.Content;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Unit.Tests.Common.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
@@ -9,8 +11,8 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.Specifications;
 
 /// <summary>
 /// Unit tests for album specification classes.
-/// Note: Specifications using EF.Functions.ILike require a real PostgreSQL provider —
-/// those are covered via ToExpression().Compile() only.
+/// Specifications using EF.Functions.ILike are evaluated through
+/// <see cref="ILikeSpecificationEvaluator" />, which rewrites ILike for in-memory execution.
 /// </summary>
 public class AlbumSpecificationsTests
 {
@@ -48,18 +50,36 @@ public class AlbumSpecificationsTests
 
     #region AlbumSearchSpecification
 
-    // ILike: requires PostgreSQL provider — compile-only
-    [Fact]
-    public void AlbumSearchSpecification_ShouldCompileExpression()
+    [Theory]
+    [InlineData("control", true)]
+    [InlineData("CONTROL", true)]
+    [InlineData("obouo", true)]
+    [InlineData("tokooos", false)]
+    public void AlbumSearchSpecification_ShouldMatchNameOrLabelCaseInsensitively(string search, bool expected)
     {
         // Arrange
-        var spec = new AlbumSearchSpecification("control");
+        AlbumEntity album = new AlbumBuilder().WithName("Control").WithLabel("Obouo Music").Build();
+        var spec = new AlbumSearchSpecification(search);
 
         // Act
-        Func<AlbumEntity, bool> predicate = spec.ToExpression().Compile();
+        bool result = spec.IsSatisfiedInMemoryBy(album);
 
         // Assert
-        predicate.Should().NotBeNull();
+        result.Should().Be(expected);
+    }
+
+    [Fact]
+    public void AlbumSearchSpecification_WithNullLabel_ShouldNotMatchLabelTerm()
+    {
+        // Arrange
+        AlbumEntity album = AlbumFactory.CreateWithName("Control");
+        var spec = new AlbumSearchSpecification("obouo");
+
+        // Act
+        bool result = spec.IsSatisfiedInMemoryBy(album);
+
+        // Assert
+        result.Should().BeFalse();
     }
 
     #endregion
