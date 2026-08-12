@@ -2,6 +2,7 @@ using _116.Content.Application.Commerce.UseCases.Admin.Commands.EditOrder;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Builders.Entities.Content;
 using _116.Tests.Fixtures.Factories.Content;
@@ -42,11 +43,14 @@ public class AdminEditOrderHandlerTests : BaseContentHandlerTest
     #region Success Cases
 
     [Fact]
-    public async Task Handle_WhenDraftOrder_ShouldUpdateAndReturnResult()
+    public async Task Handle_WhenDraftOrder_ShouldReassignCustomerAndReturnSummary()
     {
         // Arrange
         CustomerEntity customer = CustomerFactory.Create();
-        ContentOrderEntity order = new ContentOrderBuilder().WithCustomer(customer).Build();
+        ContentOrderEntity order = new ContentOrderBuilder()
+            .WithCustomer(customer)
+            .WithPackageId(Guid.NewGuid())
+            .Build();
 
         _orderRepositoryMock
             .Setup(x => x.GetByIdWithItemsAsync(order.Id, It.IsAny<CancellationToken>()))
@@ -65,9 +69,13 @@ public class AdminEditOrderHandlerTests : BaseContentHandlerTest
         AdminEditOrderResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Order.Should().NotBeNull();
-        _orderRepositoryMock.VerifyUpdateCalled();
+        order.CustomerId.Should().Be(newCustomer.Id);
+        order.PackageId.Should().BeNull();
+        order.Status.Should().Be(EnumOrderStatus.Draft);
+        result.Order.Id.Should().Be(order.Id);
+        result.Order.Status.Should().Be(EnumOrderStatus.Draft);
+        result.Order.TotalAmountUsd.Should().Be(order.TotalAmountUsd);
+        _orderRepositoryMock.VerifyUpdateCalled(order);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -91,6 +99,7 @@ public class AdminEditOrderHandlerTests : BaseContentHandlerTest
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
@@ -99,6 +108,7 @@ public class AdminEditOrderHandlerTests : BaseContentHandlerTest
         // Arrange
         CustomerEntity customer = CustomerFactory.Create();
         ContentOrderEntity order = new ContentOrderBuilder().AsSubmitted().WithCustomer(customer).Build();
+        order.ClearDomainEvents();
 
         _orderRepositoryMock
             .Setup(x => x.GetByIdWithItemsAsync(order.Id, It.IsAny<CancellationToken>()))
@@ -115,6 +125,10 @@ public class AdminEditOrderHandlerTests : BaseContentHandlerTest
 
         // Assert
         await act.Should().ThrowAsync<BadRequestException>();
+        order.CustomerId.Should().Be(customer.Id);
+        order.Status.Should().Be(EnumOrderStatus.PendingPayment);
+        order.DomainEvents.Should().BeEmpty();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
@@ -142,6 +156,8 @@ public class AdminEditOrderHandlerTests : BaseContentHandlerTest
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        order.CustomerId.Should().Be(customer.Id);
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     #endregion
