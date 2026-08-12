@@ -3,6 +3,7 @@ using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Shared.Application.Specifications;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Unit.Tests.Common.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
@@ -46,12 +47,17 @@ public class ArticleQueryBuilderTests
     }
 
     [Fact]
-    public void WithSearch_WithTerm_ShouldReturnNonNullSpec()
+    public void WithSearch_WithTerm_ShouldMatchTitleCaseInsensitively()
     {
+        ArticleEntity match = ArticleFactory.Create(CategoryId, "Fally Ipupa Portrait", "fally-ipupa-portrait");
+        ArticleEntity noMatch = ArticleFactory.Create(CategoryId, "Koffi Olomide Live", "koffi-olomide-live");
         var builder = new ArticleQueryBuilder();
-        builder.WithSearch("some search");
-        // ArticleSearchSpecification uses ILike — only verify spec is non-null
-        builder.Build().Should().NotBeNull();
+        builder.WithSearch("FALLY");
+
+        Specification<ArticleEntity> spec = builder.Build()!;
+
+        spec.IsSatisfiedInMemoryBy(match).Should().BeTrue();
+        spec.IsSatisfiedInMemoryBy(noMatch).Should().BeFalse();
     }
 
     #endregion
