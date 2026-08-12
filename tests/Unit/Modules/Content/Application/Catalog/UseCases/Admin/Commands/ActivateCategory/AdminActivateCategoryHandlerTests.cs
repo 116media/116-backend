@@ -55,8 +55,9 @@ public class AdminActivateCategoryHandlerTests : BaseContentHandlerTest
         AdminActivateCategoryResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Category.Should().NotBeNull();
+        inactive.IsActive.Should().BeTrue();
+        result.Category.Id.Should().Be(inactive.Id);
+        result.Category.IsActive.Should().BeTrue();
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -99,29 +100,7 @@ public class AdminActivateCategoryHandlerTests : BaseContentHandlerTest
 
         // Assert
         await act.Should().ThrowAsync<ConflictException>();
-    }
-
-    [Fact]
-    public async Task Handle_WhenAlreadyActive_ShouldNotCommit()
-    {
-        // Arrange
-        ContentTypeEntity contentType = ContentTypeFactory.Create();
-        CategoryEntity active = CategoryFactory.Create(contentType.Id);
-        var command = new AdminActivateCategoryCommand(Id: active.Id.ToString());
-
-        _categoryRepositoryMock.SetupGetByIdOrThrow(active);
-
-        // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (ConflictException)
-        {
-            // Expected
-        }
-
-        // Assert
+        active.IsActive.Should().BeTrue();
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
@@ -139,6 +118,7 @@ public class AdminActivateCategoryHandlerTests : BaseContentHandlerTest
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     #endregion
