@@ -28,7 +28,7 @@ public class AdminCleanupExpiredSessionsEndpointV1Tests(PostgresFixture db) : Ba
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         AdminCleanupExpiredSessionsResponse body = await response.ReadAsAsync<AdminCleanupExpiredSessionsResponse>();
-        body.DeletedCount.Should().BeGreaterThanOrEqualTo(1);
+        body.DeletedCount.Should().Be(1);
 
         await using IdentityDbContext context = CreateDbContext<IdentityDbContext>();
         SessionEntity? persisted = await context.Sessions.FirstOrDefaultAsync(s => s.Id == expiredSession.Id);
