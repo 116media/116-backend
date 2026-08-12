@@ -40,8 +40,6 @@ public class AdminGetCustomerByIdHandlerTests : BaseContentHandlerTest
         AdminGetCustomerByIdResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Customer.Should().NotBeNull();
         result.Customer.Id.Should().Be(customer.Id);
     }
 
