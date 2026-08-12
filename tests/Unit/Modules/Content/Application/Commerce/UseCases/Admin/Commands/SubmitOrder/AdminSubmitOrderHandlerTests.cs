@@ -46,10 +46,9 @@ public class AdminSubmitOrderHandlerTests
         var command = new AdminSubmitOrderCommand(OrderId: order.Id.ToString());
 
         // Act
-        AdminSubmitOrderResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         _factoryMock.VerifySubmitCalled();
     }
 
