@@ -76,7 +76,7 @@ public class AdminGetAllSessionsEndpointV1Tests(PostgresFixture db) : BaseApiTes
         body.Sessions.Items.Should().Contain(s => s.Id == session.Id);
         body.Sessions.PageIndex.Should().Be(0);
         body.Sessions.PageSize.Should().Be(10);
-        body.Sessions.Count.Should().BeGreaterThanOrEqualTo(1);
+        body.Sessions.Count.Should().Be(1);
     }
 
     [Fact]
@@ -226,11 +226,12 @@ public class AdminGetAllSessionsEndpointV1Tests(PostgresFixture db) : BaseApiTes
     public async Task GetAllSessions_FilterByStatusAndIpAddress_ReturnsFilteredResults()
     {
         SessionEntity matchingSession = CreateSessionWithIp(TestUser.SuperAdminId, "203.0.113.50");
-        SessionEntity nonMatchingSession = CreateSessionWithIp(TestUser.AdminId, "198.51.100.1");
-        nonMatchingSession.Revoke();
+        SessionEntity sameIpButRevoked = CreateSessionWithIp(TestUser.AdminId, "203.0.113.50");
+        sameIpButRevoked.Revoke();
+        SessionEntity activeOnAnotherIp = CreateSessionWithIp(TestUser.VisitorId, "198.51.100.1");
         await SeedAsync<IdentityDbContext>(ctx =>
         {
-            ctx.Sessions.AddRange(matchingSession, nonMatchingSession);
+            ctx.Sessions.AddRange(matchingSession, sameIpButRevoked, activeOnAnotherIp);
         });
 
         Client.AuthenticateAsSuperAdmin();
