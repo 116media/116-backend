@@ -69,9 +69,13 @@ public static class MockStreamingLinkRepository
         mock.Verify(x => x.AddAsync(It.IsAny<StreamingLinkEntity>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    public static void VerifyUpdateCalled(this Mock<IStreamingLinkRepository> mock)
+    /// <summary>
+    /// Verifies that the repository was handed exactly the expected entity once,
+    /// so updating a different instance than the one looked up fails the test.
+    /// </summary>
+    public static void VerifyUpdateCalled(this Mock<IStreamingLinkRepository> mock, StreamingLinkEntity expected)
     {
-        mock.Verify(x => x.Update(It.IsAny<StreamingLinkEntity>()), Times.Once);
+        mock.Verify(x => x.Update(expected), Times.Once);
     }
 
     public static void VerifyRemoveCalled(this Mock<IStreamingLinkRepository> mock)
@@ -79,26 +83,16 @@ public static class MockStreamingLinkRepository
         mock.Verify(x => x.Remove(It.IsAny<StreamingLinkEntity>()), Times.Once);
     }
 
+    /// <summary>
+    /// Installs defaults for write, void and aggregate members only. Identity lookups are left
+    /// unconfigured so that a miss has to be arranged by the test, naming the identifier it is a
+    /// miss for, rather than being asserted for every identifier before the test says anything.
+    /// </summary>
+    /// <param name="mock">The repository mock to configure.</param>
     private static void SetupDefaults(Mock<IStreamingLinkRepository> mock)
     {
-        mock.Setup(x =>
-                x.GetByAlbumAndPlatformAsync(
-                    It.IsAny<Guid>(),
-                    It.IsAny<EnumStreamingPlatform>(),
-                    It.IsAny<CancellationToken>()
-                )
-            )
-            .ReturnsAsync((StreamingLinkEntity?)null);
         mock.Setup(x => x.GetByAlbumAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new Dictionary<EnumStreamingPlatform, string>());
-        mock.Setup(x =>
-                x.GetByLyricsAndPlatformAsync(
-                    It.IsAny<Guid>(),
-                    It.IsAny<EnumStreamingPlatform>(),
-                    It.IsAny<CancellationToken>()
-                )
-            )
-            .ReturnsAsync((StreamingLinkEntity?)null);
         mock.Setup(x => x.GetByLyricsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new Dictionary<EnumStreamingPlatform, string>());
         mock.Setup(x => x.AddAsync(It.IsAny<StreamingLinkEntity>(), It.IsAny<CancellationToken>()))
