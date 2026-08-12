@@ -48,7 +48,6 @@ public class PublicGetActiveCategoriesHandlerTests : BaseContentHandlerTest
         PublicGetActiveCategoriesResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.Categories.Should().HaveCount(3);
     }
 
