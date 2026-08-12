@@ -33,8 +33,8 @@ public class LyricsRepositoryTests(PostgresFixture postgres) : BaseRepositoryTes
 
         var (lyrics, totalCount) = await repo.GetAllAsync(1, 10, null, null, null);
 
-        totalCount.Should().BeGreaterThanOrEqualTo(3);
-        lyrics.Should().NotBeEmpty();
+        totalCount.Should().Be(3);
+        lyrics.Should().HaveCount(3);
     }
 
     [Fact]
@@ -224,7 +224,7 @@ public class LyricsRepositoryTests(PostgresFixture postgres) : BaseRepositoryTes
         var repo = Resolve<ILyricsRepository>();
         var (result, totalCount) = await repo.GetAllAsync(1, 100, uniqueKeyword, null, null);
 
-        totalCount.Should().BeGreaterThanOrEqualTo(1);
+        totalCount.Should().Be(1);
         result.Should().Contain(l => l.Id == matchingLyrics.Id);
         result.Should().NotContain(l => l.Id == nonMatchingLyrics.Id);
     }
