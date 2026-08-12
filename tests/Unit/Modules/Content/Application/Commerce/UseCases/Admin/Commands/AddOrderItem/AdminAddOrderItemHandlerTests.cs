@@ -56,8 +56,6 @@ public class AdminAddOrderItemHandlerTests
         AdminAddOrderItemResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Item.Should().NotBeNull();
         result.Item.Id.Should().Be(item.Id);
         result.Item.CategoryName.Should().Be(categoryName);
     }
