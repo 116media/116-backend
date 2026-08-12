@@ -76,8 +76,8 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
         AdminCreateCategoryResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Category.Should().NotBeNull();
+        result.Category.Name.Should().Be(name);
+        result.Category.Slug.Should().Be(slug);
 
         _categoryRepositoryMock.VerifyAddCalled();
         _unitOfWorkMock.VerifyCommitCalled();
@@ -356,16 +356,10 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
         _categoryRepositoryMock.SetupGetBySlug(slug, existing);
 
         // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (ConflictException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<ConflictException>();
         _categoryRepositoryMock.Verify(
             x => x.AddAsync(It.IsAny<CategoryEntity>(), It.IsAny<CancellationToken>()),
             Times.Never
