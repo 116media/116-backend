@@ -1,6 +1,7 @@
 using _116.Content.Application.Editorial.Specifications;
 using _116.Content.Domain.Entities;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Unit.Tests.Common.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
@@ -8,8 +9,8 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.Specifications;
 
 /// <summary>
 /// Unit tests for artist specification classes.
-/// Note: Specifications using EF.Functions.ILike require a real PostgreSQL provider —
-/// those are covered via ToExpression().Compile() only.
+/// Specifications using EF.Functions.ILike are evaluated through
+/// <see cref="ILikeSpecificationEvaluator" />, which rewrites ILike for in-memory execution.
 /// </summary>
 public class ArtistSpecificationsTests
 {
@@ -47,18 +48,22 @@ public class ArtistSpecificationsTests
 
     #region ArtistBySlugSpecification
 
-    // ILike: requires PostgreSQL provider — compile-only
-    [Fact]
-    public void ArtistBySlugSpecification_ShouldCompileExpression()
+    [Theory]
+    [InlineData("fally-ipupa", true)]
+    [InlineData("FALLY-IPUPA", true)]
+    [InlineData("fally", false)]
+    [InlineData("koffi-olomide", false)]
+    public void ArtistBySlugSpecification_ShouldMatchWholeSlugCaseInsensitively(string slug, bool expected)
     {
         // Arrange
-        var spec = new ArtistBySlugSpecification("fally-ipupa");
+        ArtistEntity artist = ArtistFactory.CreateWithSlug("fally-ipupa");
+        var spec = new ArtistBySlugSpecification(slug);
 
         // Act
-        Func<ArtistEntity, bool> predicate = spec.ToExpression().Compile();
+        bool result = spec.IsSatisfiedInMemoryBy(artist);
 
         // Assert
-        predicate.Should().NotBeNull();
+        result.Should().Be(expected);
     }
 
     #endregion
@@ -98,18 +103,36 @@ public class ArtistSpecificationsTests
 
     #region ArtistSearchSpecification
 
-    // ILike: requires PostgreSQL provider — compile-only
-    [Fact]
-    public void ArtistSearchSpecification_ShouldCompileExpression()
+    [Theory]
+    [InlineData("fally", true)]
+    [InlineData("FALLY IPUPA", true)]
+    [InlineData("rumba", true)]
+    [InlineData("koffi", false)]
+    public void ArtistSearchSpecification_ShouldMatchNameOrBioCaseInsensitively(string search, bool expected)
     {
         // Arrange
-        var spec = new ArtistSearchSpecification("fally");
+        ArtistEntity artist = ArtistFactory.Create("Fally Ipupa", "fally-ipupa", "Icone de la rumba congolaise");
+        var spec = new ArtistSearchSpecification(search);
 
         // Act
-        Func<ArtistEntity, bool> predicate = spec.ToExpression().Compile();
+        bool result = spec.IsSatisfiedInMemoryBy(artist);
 
         // Assert
-        predicate.Should().NotBeNull();
+        result.Should().Be(expected);
+    }
+
+    [Fact]
+    public void ArtistSearchSpecification_WithNullBio_ShouldNotMatchBioTerm()
+    {
+        // Arrange
+        ArtistEntity artist = ArtistFactory.Create("Fally Ipupa", "fally-ipupa", bio: null);
+        var spec = new ArtistSearchSpecification("rumba");
+
+        // Act
+        bool result = spec.IsSatisfiedInMemoryBy(artist);
+
+        // Assert
+        result.Should().BeFalse();
     }
 
     #endregion
