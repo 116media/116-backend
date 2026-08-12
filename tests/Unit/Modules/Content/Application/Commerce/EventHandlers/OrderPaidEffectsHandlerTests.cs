@@ -83,7 +83,7 @@ public class OrderPaidEffectsHandlerTests
         article.IsPromoted.Should().BeTrue();
         article.PromotionLevelId.Should().Be(promotionLevelId);
         article.Status.Should().Be(EnumContentStatus.PendingReview);
-        _articleRepositoryMock.VerifyUpdateCalled();
+        _articleRepositoryMock.VerifyUpdateCalled(article);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -149,7 +149,7 @@ public class OrderPaidEffectsHandlerTests
         // Assert
         video.SocialBoost.Should().BeTrue();
         video.Status.Should().Be(EnumContentStatus.PendingReview);
-        _videoRepositoryMock.VerifyUpdateCalled();
+        _videoRepositoryMock.VerifyUpdateCalled(video);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -174,14 +174,14 @@ public class OrderPaidEffectsHandlerTests
         lyrics.IsPromoted.Should().BeTrue();
         lyrics.PromotedUntil.Should().Be(promotionUntil);
         lyrics.Status.Should().Be(EnumContentStatus.PendingReview);
-        _lyricsRepositoryMock.VerifyUpdateCalled();
+        _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
     [Fact]
     public async Task Handle_WhenNoContentFulfilsItem_ShouldNotCommit()
     {
-        // Arrange — all repositories return null by default
+        // Arrange
 
         // Act
         await _handler.Handle(
@@ -196,9 +196,7 @@ public class OrderPaidEffectsHandlerTests
     [Fact]
     public async Task Handle_WhenItemAlreadyStamped_ShouldBeANoOp()
     {
-        // Arrange — the article already carries every effect on the payload:
-        // social boost flagged, the exact promotion level and expiry stamped,
-        // and a status already past pending review.
+        // Arrange
         Guid orderItemId = Guid.NewGuid();
         Guid promotionLevelId = Guid.NewGuid();
         DateTimeOffset promotionUntil = DateTimeOffset.UtcNow.AddDays(14);
@@ -213,7 +211,7 @@ public class OrderPaidEffectsHandlerTests
             CancellationToken.None
         );
 
-        // Assert — redispatch after a crash is safe: nothing is written.
+        // Assert
         _articleRepositoryMock.Verify(x => x.Update(It.IsAny<ArticleEntity>()), Times.Never);
         _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
@@ -221,7 +219,7 @@ public class OrderPaidEffectsHandlerTests
     [Fact]
     public async Task Handle_WhenArticleAlreadyPublished_ShouldStampPromotionWithoutDisturbingStatus()
     {
-        // Arrange — retroactive promotion on live content must not un-publish it.
+        // Arrange
         Guid orderItemId = Guid.NewGuid();
         DateTimeOffset promotionUntil = DateTimeOffset.UtcNow.AddDays(14);
         ArticleEntity article = ArticleFactory.CreatePublished(Guid.NewGuid());
@@ -236,15 +234,14 @@ public class OrderPaidEffectsHandlerTests
         // Assert
         article.IsPromoted.Should().BeTrue();
         article.Status.Should().Be(EnumContentStatus.Published);
-        _articleRepositoryMock.VerifyUpdateCalled();
+        _articleRepositoryMock.VerifyUpdateCalled(article);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
     [Fact]
     public async Task Handle_WhenPromotionForceRemovedAfterPayment_ShouldNotReStampIt()
     {
-        // Arrange — a SuperAdmin pulled the placement after the order was paid,
-        // so a redispatch must leave the removal (and its audit trail) standing.
+        // Arrange
         Guid orderItemId = Guid.NewGuid();
         Guid promotionLevelId = Guid.NewGuid();
         ArticleEntity article = ArticleFactory.CreatePublished(Guid.NewGuid());
@@ -274,8 +271,7 @@ public class OrderPaidEffectsHandlerTests
     [Fact]
     public async Task Handle_WhenPromotionForceRemovedBeforeThisPayment_ShouldStampTheNewlyPurchasedPromotion()
     {
-        // Arrange — the removal predates this payment, so it settled an earlier
-        // order and must not block the promotion this one paid for.
+        // Arrange
         Guid orderItemId = Guid.NewGuid();
         Guid promotionLevelId = Guid.NewGuid();
         DateTimeOffset laterPaidAt = DateTimeOffset.UtcNow.AddMinutes(5);
@@ -302,7 +298,7 @@ public class OrderPaidEffectsHandlerTests
         article.IsPromoted.Should().BeTrue();
         article.PromotionLevelId.Should().Be(promotionLevelId);
         article.PromotedUntil.Should().Be(promotionUntil);
-        _articleRepositoryMock.VerifyUpdateCalled();
+        _articleRepositoryMock.VerifyUpdateCalled(article);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -329,7 +325,7 @@ public class OrderPaidEffectsHandlerTests
             CancellationToken.None
         );
 
-        // Assert — only the review transition may still apply.
+        // Assert
         lyrics.IsPromoted.Should().BeFalse();
         lyrics.PromotedUntil.Should().BeNull();
     }
@@ -355,7 +351,7 @@ public class OrderPaidEffectsHandlerTests
             CancellationToken.None
         );
 
-        // Assert — each item's effects commit on their own.
+        // Assert
         _unitOfWorkMock.VerifyCommitCalled(times: 2);
     }
 }
