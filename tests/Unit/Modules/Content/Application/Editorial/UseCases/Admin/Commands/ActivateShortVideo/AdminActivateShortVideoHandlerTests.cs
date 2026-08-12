@@ -42,11 +42,11 @@ public class AdminActivateShortVideoHandlerTests
         _shortVideoRepositoryMock.SetupGetByIdOrThrow(shortVideo);
 
         // Act
-        AdminActivateShortVideoResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
-        _shortVideoRepositoryMock.VerifyUpdateCalled();
+        shortVideo.IsActive.Should().BeTrue();
+        _shortVideoRepositoryMock.VerifyUpdateCalled(shortVideo);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -54,7 +54,7 @@ public class AdminActivateShortVideoHandlerTests
     public async Task Handle_WhenShortVideoAlreadyActive_ShouldThrowConflictException()
     {
         // Arrange
-        ShortVideoEntity shortVideo = ShortVideoFactory.Create(); // active by default
+        ShortVideoEntity shortVideo = ShortVideoFactory.Create();
         var command = new AdminActivateShortVideoCommand(Id: shortVideo.Id.ToString());
         _shortVideoRepositoryMock.SetupGetByIdOrThrow(shortVideo);
 
@@ -63,6 +63,8 @@ public class AdminActivateShortVideoHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<ConflictException>();
+        shortVideo.IsActive.Should().BeTrue();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
@@ -78,5 +80,6 @@ public class AdminActivateShortVideoHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 }
