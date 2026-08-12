@@ -1,6 +1,8 @@
 using _116.Content.Application.Editorial.Specifications;
 using _116.Content.Domain.Entities;
+using _116.Tests.Fixtures.Builders.Entities.Content;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Unit.Tests.Common.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
@@ -8,8 +10,8 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.Specifications;
 
 /// <summary>
 /// Unit tests for short video specification classes.
-/// Note: Specifications using EF.Functions.ILike require a real PostgreSQL provider —
-/// those are covered via ToExpression().Compile() only.
+/// Specifications using EF.Functions.ILike are evaluated through
+/// <see cref="ILikeSpecificationEvaluator" />, which rewrites ILike for in-memory execution.
 /// </summary>
 public class ShortVideoSpecificationsTests
 {
@@ -47,18 +49,22 @@ public class ShortVideoSpecificationsTests
 
     #region ShortVideoSearchSpecification
 
-    // ILike: requires PostgreSQL provider — compile-only
-    [Fact]
-    public void ShortVideoSearchSpecification_ShouldCompileExpression()
+    [Theory]
+    [InlineData("fally", true)]
+    [InlineData("FALLY IPUPA", true)]
+    [InlineData("teaser", true)]
+    [InlineData("koffi", false)]
+    public void ShortVideoSearchSpecification_ShouldMatchTitleSubstringCaseInsensitively(string search, bool expected)
     {
         // Arrange
-        var spec = new ShortVideoSearchSpecification("fally");
+        ShortVideoEntity shortVideo = new ShortVideoBuilder().WithTitle("Teaser Fally Ipupa Focus").Build();
+        var spec = new ShortVideoSearchSpecification(search);
 
         // Act
-        Func<ShortVideoEntity, bool> predicate = spec.ToExpression().Compile();
+        bool result = spec.IsSatisfiedInMemoryBy(shortVideo);
 
         // Assert
-        predicate.Should().NotBeNull();
+        result.Should().Be(expected);
     }
 
     #endregion
