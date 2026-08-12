@@ -39,7 +39,6 @@ public class OrderPaymentFactoryTests
         ContentPaymentEntity result = await _factory.GetByOrderIdOrThrowAsync(orderId, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.Id.Should().Be(payment.Id);
         result.OrderId.Should().Be(orderId);
     }
