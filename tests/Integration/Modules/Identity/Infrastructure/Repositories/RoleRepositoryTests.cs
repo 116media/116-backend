@@ -216,7 +216,7 @@ public class RoleRepositoryTests : BaseRepositoryTest
         var (result, totalCount) = await repo.GetAllWithPaginationAsync(page: 1, pageSize: 10, isActive: true);
 
         // Assert
-        totalCount.Should().BeGreaterThanOrEqualTo(1);
+        totalCount.Should().Be(1);
         result.Should().OnlyContain(r => r.IsActive);
     }
 }
