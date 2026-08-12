@@ -41,11 +41,12 @@ public class AdminVerifyPaymentHandlerTests
     #region Success Cases
 
     [Fact]
-    public async Task Handle_WhenOrderAndPaymentFound_ShouldVerifyAndReturnSuccess()
+    public async Task Handle_WhenOrderAndPaymentFound_ShouldDelegateVerificationForArrangedOrderAndPayment()
     {
         // Arrange
         ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
         ContentPaymentEntity payment = ContentPaymentFactory.Create(order.Id);
+        Guid adminUserId = Guid.NewGuid();
 
         _orderRepositoryMock.SetupGetByIdWithItems(order);
         _orderPaymentFactoryMock.SetupGetByOrderId(order.Id, payment);
@@ -54,15 +55,24 @@ public class AdminVerifyPaymentHandlerTests
         var command = new AdminVerifyPaymentCommand(
             OrderId: order.Id.ToString(),
             ReceiptUrl: TestConstants.Commerce.ValidReceiptUrl,
-            AdminUserId: Guid.NewGuid()
+            AdminUserId: adminUserId
         );
 
         // Act
-        AdminVerifyPaymentResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
-        _verifyPaymentFactoryMock.VerifyVerifyCalled();
+        _verifyPaymentFactoryMock.Verify(
+            x =>
+                x.VerifyAsync(
+                    order,
+                    payment,
+                    adminUserId,
+                    TestConstants.Commerce.ValidReceiptUrl,
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Once
+        );
     }
 
     #endregion
@@ -86,6 +96,17 @@ public class AdminVerifyPaymentHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _verifyPaymentFactoryMock.Verify(
+            x =>
+                x.VerifyAsync(
+                    It.IsAny<ContentOrderEntity>(),
+                    It.IsAny<ContentPaymentEntity>(),
+                    It.IsAny<Guid>(),
+                    It.IsAny<string>(),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Never
+        );
     }
 
     [Fact]
@@ -107,6 +128,17 @@ public class AdminVerifyPaymentHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _verifyPaymentFactoryMock.Verify(
+            x =>
+                x.VerifyAsync(
+                    It.IsAny<ContentOrderEntity>(),
+                    It.IsAny<ContentPaymentEntity>(),
+                    It.IsAny<Guid>(),
+                    It.IsAny<string>(),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Never
+        );
     }
 
     #endregion
