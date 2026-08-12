@@ -50,8 +50,9 @@ public class AdminActivatePackageHandlerTests : BaseContentHandlerTest
         AdminActivatePackageResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Package.Should().NotBeNull();
+        inactive.IsActive.Should().BeTrue();
+        result.Package.Id.Should().Be(inactive.Id);
+        result.Package.IsActive.Should().BeTrue();
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -92,28 +93,7 @@ public class AdminActivatePackageHandlerTests : BaseContentHandlerTest
 
         // Assert
         await act.Should().ThrowAsync<ConflictException>();
-    }
-
-    [Fact]
-    public async Task Handle_WhenAlreadyActive_ShouldNotCommit()
-    {
-        // Arrange
-        PackageEntity active = PackageFactory.Create();
-        var command = new AdminActivatePackageCommand(Id: active.Id.ToString());
-
-        _packageRepositoryMock.SetupGetByIdWithSlotsOrThrow(active);
-
-        // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (ConflictException)
-        {
-            // Expected
-        }
-
-        // Assert
+        active.IsActive.Should().BeTrue();
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
@@ -131,6 +111,7 @@ public class AdminActivatePackageHandlerTests : BaseContentHandlerTest
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     #endregion
