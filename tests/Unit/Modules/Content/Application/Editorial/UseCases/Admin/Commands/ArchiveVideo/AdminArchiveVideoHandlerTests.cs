@@ -2,6 +2,8 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.ArchiveVideo;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
+using _116.Content.Domain.Events;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
@@ -36,7 +38,7 @@ public class AdminArchiveVideoHandlerTests
     }
 
     [Fact]
-    public async Task Handle_WhenVideoIsPublished_ShouldArchiveAndReturnSuccess()
+    public async Task Handle_WhenVideoIsPublished_ShouldTransitionToArchived()
     {
         // Arrange
         VideoEntity video = VideoFactory.CreatePublished(CategoryId);
@@ -44,11 +46,51 @@ public class AdminArchiveVideoHandlerTests
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
 
         // Act
-        AdminArchiveVideoResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
-        _videoRepositoryMock.VerifyUpdateCalled();
+        video.Status.Should().Be(EnumContentStatus.Archived);
+        _videoRepositoryMock.VerifyUpdateCalled(video);
+        _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    [Fact]
+    public async Task Handle_WhenVideoIsPublished_ShouldRaiseVideoUnpublishedEvent()
+    {
+        // Arrange
+        VideoEntity video = VideoFactory.CreatePublished(CategoryId);
+        video.ClearDomainEvents();
+        var command = new AdminArchiveVideoCommand(Id: video.Id.ToString());
+        _videoRepositoryMock.SetupGetByIdOrThrow(video);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        video
+            .DomainEvents.OfType<VideoUnpublishedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(new VideoUnpublishedEvent(VideoId: video.Id));
+    }
+
+    [Fact]
+    public async Task Handle_WhenVideoIsNotPublished_ShouldArchiveWithoutUnpublishedEvent()
+    {
+        // Arrange
+        VideoEntity video = VideoFactory.Create(CategoryId);
+        video.ClearDomainEvents();
+        var command = new AdminArchiveVideoCommand(Id: video.Id.ToString());
+        _videoRepositoryMock.SetupGetByIdOrThrow(video);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        video.Status.Should().Be(EnumContentStatus.Archived);
+        video.DomainEvents.Should().BeEmpty();
+        _videoRepositoryMock.VerifyUpdateCalled(video);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -65,6 +107,7 @@ public class AdminArchiveVideoHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
@@ -72,6 +115,7 @@ public class AdminArchiveVideoHandlerTests
     {
         // Arrange
         VideoEntity video = VideoFactory.CreateArchived(CategoryId);
+        video.ClearDomainEvents();
         var command = new AdminArchiveVideoCommand(Id: video.Id.ToString());
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
 
@@ -80,5 +124,8 @@ public class AdminArchiveVideoHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<ConflictException>();
+        video.Status.Should().Be(EnumContentStatus.Archived);
+        video.DomainEvents.Should().BeEmpty();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 }
