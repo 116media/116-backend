@@ -74,8 +74,8 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
         AdminUpdateCategoryResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Category.Should().NotBeNull();
+        result.Category.Name.Should().Be(newName);
+        result.Category.Slug.Should().Be(newSlug);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
