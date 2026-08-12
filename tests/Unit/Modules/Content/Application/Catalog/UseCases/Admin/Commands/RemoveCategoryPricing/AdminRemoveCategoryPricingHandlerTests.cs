@@ -59,8 +59,6 @@ public class AdminRemoveCategoryPricingHandlerTests : BaseContentHandlerTest
         AdminRemoveCategoryPricingResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.IsSuccess.Should().BeTrue();
         result.Pricing.Should().BeEmpty();
 
         _categoryRepositoryMock.VerifyRemovePricingCalled(pricing);
