@@ -45,8 +45,6 @@ public class AdminGetAllPackagesHandlerTests : BaseContentHandlerTest
         AdminGetAllPackagesResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Packages.Should().NotBeNull();
         result.Packages.Items.Should().HaveCount(3);
         result.Packages.Count.Should().Be(totalCount);
     }
