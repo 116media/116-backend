@@ -58,8 +58,6 @@ public class AdminGetAllPaymentsHandlerTests : BaseContentHandlerTest
         AdminGetAllPaymentsResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Payments.Should().NotBeNull();
         result.Payments.Items.Should().ContainSingle();
     }
 
@@ -145,7 +143,6 @@ public class AdminGetAllPaymentsHandlerTests : BaseContentHandlerTest
         AdminGetAllPaymentsResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.Payments.Items.Should().BeEmpty();
     }
 
@@ -166,7 +163,6 @@ public class AdminGetAllPaymentsHandlerTests : BaseContentHandlerTest
         AdminGetAllPaymentsResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.Payments.Items.Should().BeEmpty();
     }
 
