@@ -59,8 +59,6 @@ public class AdminGetOrderByIdHandlerTests : BaseContentHandlerTest
         AdminGetOrderByIdResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Order.Should().NotBeNull();
         result.Order.Id.Should().Be(order.Id);
         result.Order.Payment.Should().BeNull();
     }
