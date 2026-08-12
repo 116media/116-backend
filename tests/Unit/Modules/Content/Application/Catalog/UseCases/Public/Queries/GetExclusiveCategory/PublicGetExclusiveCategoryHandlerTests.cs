@@ -58,8 +58,6 @@ public class PublicGetExclusiveCategoryHandlerTests : BaseContentHandlerTest
         PublicGetExclusiveCategoryResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Category.Should().NotBeNull();
         result.Category.IsExclusive.Should().BeTrue();
         result.Videos.Items.Should().HaveCount(3);
         result.Videos.Count.Should().Be(3);
@@ -81,8 +79,7 @@ public class PublicGetExclusiveCategoryHandlerTests : BaseContentHandlerTest
         PublicGetExclusiveCategoryResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Category.Should().NotBeNull();
+        result.Category.IsExclusive.Should().BeTrue();
         result.Videos.Items.Should().BeEmpty();
         result.Videos.Count.Should().Be(0);
     }
