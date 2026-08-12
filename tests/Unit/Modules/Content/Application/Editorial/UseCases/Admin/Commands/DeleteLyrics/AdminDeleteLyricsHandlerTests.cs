@@ -48,10 +48,9 @@ public class AdminDeleteLyricsHandlerTests
         _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
 
         // Act
-        AdminDeleteLyricsResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         _lyricsRepositoryMock.VerifyRemoveCalled(lyrics);
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -72,12 +71,11 @@ public class AdminDeleteLyricsHandlerTests
             .ReturnsAsync(video);
 
         // Act
-        AdminDeleteLyricsResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         video.HasLyrics.Should().BeFalse();
-        _videoRepositoryMock.VerifyUpdateCalled();
+        _videoRepositoryMock.VerifyUpdateCalled(video);
         _lyricsRepositoryMock.VerifyRemoveCalled(lyrics);
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -99,6 +97,8 @@ public class AdminDeleteLyricsHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _lyricsRepositoryMock.Verify(x => x.Remove(It.IsAny<LyricsEntity>()), Times.Never);
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     #endregion
