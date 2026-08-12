@@ -185,8 +185,11 @@ public static class MockOtpRepository
     }
 
     /// <summary>
-    /// Sets up default behaviors for the mock.
+    /// Installs defaults for write, void and aggregate members only. Identity lookups are left
+    /// unconfigured so that a miss has to be arranged by the test, naming the identifier it is a
+    /// miss for, rather than being asserted for every identifier before the test says anything.
     /// </summary>
+    /// <param name="mock">The repository mock to configure.</param>
     private static void SetupDefaults(Mock<IOtpRepository> mock)
     {
         mock.Setup(x => x.AddAsync(It.IsAny<OtpEntity>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
