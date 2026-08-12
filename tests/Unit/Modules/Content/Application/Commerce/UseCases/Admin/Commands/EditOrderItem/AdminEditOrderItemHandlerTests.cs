@@ -45,7 +45,7 @@ public class AdminEditOrderItemHandlerTests : BaseContentHandlerTest
     #region Success Cases
 
     [Fact]
-    public async Task Handle_WhenDraftOrder_ShouldUpdateItemAndReturnResult()
+    public async Task Handle_WhenDraftOrder_ShouldApplySocialBoostAndRecalculateTotal()
     {
         // Arrange
         CustomerEntity customer = CustomerFactory.Create();
@@ -74,10 +74,15 @@ public class AdminEditOrderItemHandlerTests : BaseContentHandlerTest
         AdminEditOrderItemResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Item.Should().NotBeNull();
-        _orderRepositoryMock.VerifyUpdateItemCalled();
-        _orderRepositoryMock.VerifyUpdateCalled();
+        item.SocialBoost.Should().BeTrue();
+        item.CategoryId.Should().Be(categoryId);
+        item.PromotionLevelId.Should().BeNull();
+        item.PromoPriceSnapshotUsd.Should().BeNull();
+        order.TotalAmountUsd.Should().Be(0);
+        result.Item.Id.Should().Be(item.Id);
+        result.Item.SocialBoost.Should().BeTrue();
+        _orderRepositoryMock.Verify(x => x.UpdateItemAsync(item, It.IsAny<CancellationToken>()), Times.Once);
+        _orderRepositoryMock.VerifyUpdateCalled(order);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -109,6 +114,7 @@ public class AdminEditOrderItemHandlerTests : BaseContentHandlerTest
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
@@ -137,6 +143,11 @@ public class AdminEditOrderItemHandlerTests : BaseContentHandlerTest
 
         // Assert
         await act.Should().ThrowAsync<BadRequestException>();
+        _orderRepositoryMock.Verify(
+            x => x.GetItemByIdOrThrowAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
@@ -145,14 +156,16 @@ public class AdminEditOrderItemHandlerTests : BaseContentHandlerTest
         // Arrange
         CustomerEntity customer = CustomerFactory.Create();
         ContentOrderEntity order = new ContentOrderBuilder().WithCustomer(customer).Build();
+        Guid missingItemId = Guid.NewGuid();
 
         _orderRepositoryMock
             .Setup(x => x.GetByIdWithItemsAsync(order.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(order);
+        _orderRepositoryMock.SetupGetItemByIdOrThrowNotFound(order.Id, missingItemId);
 
         var command = new AdminEditOrderItemCommand(
             OrderId: order.Id.ToString(),
-            ItemId: Guid.NewGuid().ToString(),
+            ItemId: missingItemId.ToString(),
             ContentKind: null,
             CategoryId: null,
             PromotionLevelId: null,
@@ -160,11 +173,12 @@ public class AdminEditOrderItemHandlerTests : BaseContentHandlerTest
             IsBonus: null
         );
 
-        // Act — default mock throws NotFoundException for GetItemByIdOrThrowAsync
+        // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     #endregion
