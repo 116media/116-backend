@@ -1,7 +1,9 @@
 using _116.Content.Application.Editorial.Builders;
 using _116.Content.Domain.Entities;
 using _116.Shared.Application.Specifications;
+using _116.Tests.Fixtures.Builders.Entities.Content;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Unit.Tests.Common.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
@@ -43,12 +45,17 @@ public class ShortVideoQueryBuilderTests
     }
 
     [Fact]
-    public void WithSearch_WithTerm_ShouldReturnNonNullSpec()
+    public void WithSearch_WithTerm_ShouldMatchTitleCaseInsensitively()
     {
+        ShortVideoEntity match = new ShortVideoBuilder().WithTitle("Teaser Fally Ipupa Focus").Build();
+        ShortVideoEntity noMatch = new ShortVideoBuilder().WithTitle("Teaser Koffi Olomide Live").Build();
         var builder = new ShortVideoQueryBuilder();
-        builder.WithSearch("some search");
-        // ShortVideoSearchSpecification uses ILike — only verify spec is non-null
-        builder.Build().Should().NotBeNull();
+        builder.WithSearch("FALLY");
+
+        Specification<ShortVideoEntity> spec = builder.Build()!;
+
+        spec.IsSatisfiedInMemoryBy(match).Should().BeTrue();
+        spec.IsSatisfiedInMemoryBy(noMatch).Should().BeFalse();
     }
 
     #endregion
