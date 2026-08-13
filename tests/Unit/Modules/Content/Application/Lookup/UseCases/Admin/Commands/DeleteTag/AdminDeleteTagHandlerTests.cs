@@ -40,10 +40,9 @@ public class AdminDeleteTagHandlerTests
         _lookupRepositoryMock.SetupGetTagByIdOrThrow(entity: tag);
 
         // Act
-        AdminDeleteTagResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         _lookupRepositoryMock.VerifyRemoveTagCalled(tag: tag);
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -78,16 +77,10 @@ public class AdminDeleteTagHandlerTests
         _lookupRepositoryMock.SetupGetTagByIdOrThrowNotFound(id: nonExistentId);
 
         // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (NotFoundException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
         _lookupRepositoryMock.VerifyRemoveTagNotCalled();
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
