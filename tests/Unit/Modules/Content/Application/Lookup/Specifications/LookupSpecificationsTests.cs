@@ -1,8 +1,9 @@
-using System.Linq.Expressions;
 using _116.Content.Application.Lookup.Specifications;
 using _116.Content.Domain.Entities;
+using _116.Tests.Fixtures.Builders.Entities.Content;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Unit.Tests.Common.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
@@ -10,8 +11,8 @@ namespace _116.Unit.Tests.Modules.Content.Application.Lookup.Specifications;
 
 /// <summary>
 /// Unit tests for lookup specification classes.
-/// Note: Specifications using EF.Functions.ILike are tested for compile / expression structure only —
-/// the in-memory evaluation of ILike is covered in integration tests.
+/// Specifications using EF.Functions.ILike are evaluated through
+/// <see cref="ILikeSpecificationEvaluator" />, which rewrites ILike for in-memory execution.
 /// </summary>
 public class LookupSpecificationsTests
 {
@@ -185,72 +186,86 @@ public class LookupSpecificationsTests
 
     #region TagBySlugSpecification
 
-    [Fact]
-    public void TagBySlugSpecification_WithMatchingSlug_ShouldReturnTrue()
+    [Theory]
+    [InlineData(TestConstants.Tag.ValidSlug, true)]
+    [InlineData(TestConstants.Tag.AnotherValidSlug, false)]
+    public void TagBySlugSpecification_ShouldMatchSlugExactly(string slug, bool expected)
     {
         // Arrange
         TagEntity tag = TagFactory.CreateDefault();
-        // Note: ILike is not supported in InMemoryDatabase — using Slug exact match for unit test
-        var spec = new TagBySlugSpecification(TestConstants.Tag.ValidSlug);
-        Func<TagEntity, bool> predicate = spec.ToExpression().Compile();
-
-        // Act & Assert
-        // ILike not evaluable in-memory with exact case match — this test documents spec structure
-        predicate.Should().NotBeNull();
-    }
-
-    #endregion
-
-    #region ContentTypeByNameSpecification — ToExpression only (ILike)
-
-    [Fact]
-    public void ContentTypeByNameSpecification_ShouldCreateValidExpression()
-    {
-        // Arrange
-        var spec = new ContentTypeByNameSpecification("Article");
+        var spec = new TagBySlugSpecification(slug);
 
         // Act
-        Expression<Func<ContentTypeEntity, bool>> expression = spec.ToExpression();
-
-        // Assert — ILike-based; compile only, do not invoke against in-memory data
-        expression.Should().NotBeNull();
-        expression.Compile().Should().NotBeNull();
-    }
-
-    #endregion
-
-    #region PricingTierByNameSpecification — ToExpression only (ILike)
-
-    [Fact]
-    public void PricingTierByNameSpecification_ShouldCreateValidExpression()
-    {
-        // Arrange
-        var spec = new PricingTierByNameSpecification("Standard");
-
-        // Act
-        Expression<Func<PricingTierEntity, bool>> expression = spec.ToExpression();
+        bool result = spec.IsSatisfiedBy(tag);
 
         // Assert
-        expression.Should().NotBeNull();
-        expression.Compile().Should().NotBeNull();
+        result.Should().Be(expected);
     }
 
     #endregion
 
-    #region PromotionLevelByNameSpecification — ToExpression only (ILike)
+    #region ContentTypeByNameSpecification
 
-    [Fact]
-    public void PromotionLevelByNameSpecification_ShouldCreateValidExpression()
+    [Theory]
+    [InlineData("Article", true)]
+    [InlineData("ARTICLE", true)]
+    [InlineData("Art", false)]
+    [InlineData("Video", false)]
+    public void ContentTypeByNameSpecification_ShouldMatchWholeNameCaseInsensitively(string name, bool expected)
     {
         // Arrange
-        var spec = new PromotionLevelByNameSpecification("Gold");
+        ContentTypeEntity contentType = ContentTypeFactory.Create("Article");
+        var spec = new ContentTypeByNameSpecification(name);
 
         // Act
-        Expression<Func<PromotionLevelEntity, bool>> expression = spec.ToExpression();
+        bool result = spec.IsSatisfiedInMemoryBy(contentType);
 
         // Assert
-        expression.Should().NotBeNull();
-        expression.Compile().Should().NotBeNull();
+        result.Should().Be(expected);
+    }
+
+    #endregion
+
+    #region PricingTierByNameSpecification
+
+    [Theory]
+    [InlineData("base_upload", true)]
+    [InlineData("BASE_UPLOAD", true)]
+    [InlineData("base", false)]
+    [InlineData("premium_upload", false)]
+    public void PricingTierByNameSpecification_ShouldMatchWholeNameCaseInsensitively(string name, bool expected)
+    {
+        // Arrange
+        PricingTierEntity tier = PricingTierFactory.Create("base_upload");
+        var spec = new PricingTierByNameSpecification(name);
+
+        // Act
+        bool result = spec.IsSatisfiedInMemoryBy(tier);
+
+        // Assert
+        result.Should().Be(expected);
+    }
+
+    #endregion
+
+    #region PromotionLevelByNameSpecification
+
+    [Theory]
+    [InlineData("Gold", true)]
+    [InlineData("GOLD", true)]
+    [InlineData("Gol", false)]
+    [InlineData("Silver", false)]
+    public void PromotionLevelByNameSpecification_ShouldMatchWholeNameCaseInsensitively(string name, bool expected)
+    {
+        // Arrange
+        PromotionLevelEntity level = new PromotionLevelBuilder().WithName("Gold").Build();
+        var spec = new PromotionLevelByNameSpecification(name);
+
+        // Act
+        bool result = spec.IsSatisfiedInMemoryBy(level);
+
+        // Assert
+        result.Should().Be(expected);
     }
 
     #endregion
@@ -283,74 +298,94 @@ public class LookupSpecificationsTests
 
     #endregion
 
-    #region ContentTypeSearchSpecification — ToExpression only (ILike)
+    #region ContentTypeSearchSpecification
 
-    [Fact]
-    public void ContentTypeSearchSpecification_ShouldCreateValidExpression()
+    [Theory]
+    [InlineData("art", true)]
+    [InlineData("ARTICLE", true)]
+    [InlineData("video", false)]
+    public void ContentTypeSearchSpecification_ShouldMatchNameSubstringCaseInsensitively(string search, bool expected)
     {
         // Arrange
-        var spec = new ContentTypeSearchSpecification("art");
+        ContentTypeEntity contentType = ContentTypeFactory.Create("Article");
+        var spec = new ContentTypeSearchSpecification(search);
 
         // Act
-        Expression<Func<ContentTypeEntity, bool>> expression = spec.ToExpression();
+        bool result = spec.IsSatisfiedInMemoryBy(contentType);
 
-        // Assert — ILike-based; compile only, do not invoke against in-memory data
-        expression.Should().NotBeNull();
-        expression.Compile().Should().NotBeNull();
+        // Assert
+        result.Should().Be(expected);
     }
 
     #endregion
 
-    #region PricingTierSearchSpecification — ToExpression only (ILike)
+    #region PricingTierSearchSpecification
 
-    [Fact]
-    public void PricingTierSearchSpecification_ShouldCreateValidExpression()
+    [Theory]
+    [InlineData("base", true)]
+    [InlineData("BASE_UPLOAD", true)]
+    [InlineData("standard tier", true)]
+    [InlineData("premium", false)]
+    public void PricingTierSearchSpecification_ShouldMatchNameOrDescriptionCaseInsensitively(
+        string search,
+        bool expected
+    )
     {
         // Arrange
-        var spec = new PricingTierSearchSpecification("base");
+        PricingTierEntity tier = PricingTierFactory.CreateWithDescription("base_upload", "The standard tier");
+        var spec = new PricingTierSearchSpecification(search);
 
         // Act
-        Expression<Func<PricingTierEntity, bool>> expression = spec.ToExpression();
+        bool result = spec.IsSatisfiedInMemoryBy(tier);
 
-        // Assert — ILike-based; compile only, do not invoke against in-memory data
-        expression.Should().NotBeNull();
-        expression.Compile().Should().NotBeNull();
+        // Assert
+        result.Should().Be(expected);
     }
 
     #endregion
 
-    #region PromotionLevelSearchSpecification — ToExpression only (ILike)
+    #region PromotionLevelSearchSpecification
 
-    [Fact]
-    public void PromotionLevelSearchSpecification_ShouldCreateValidExpression()
+    [Theory]
+    [InlineData("feat", true)]
+    [InlineData("FEATURED", true)]
+    [InlineData("spotlight", false)]
+    public void PromotionLevelSearchSpecification_ShouldMatchNameSubstringCaseInsensitively(
+        string search,
+        bool expected
+    )
     {
         // Arrange
-        var spec = new PromotionLevelSearchSpecification("feat");
+        PromotionLevelEntity level = new PromotionLevelBuilder().WithName("Featured").Build();
+        var spec = new PromotionLevelSearchSpecification(search);
 
         // Act
-        Expression<Func<PromotionLevelEntity, bool>> expression = spec.ToExpression();
+        bool result = spec.IsSatisfiedInMemoryBy(level);
 
-        // Assert — ILike-based; compile only, do not invoke against in-memory data
-        expression.Should().NotBeNull();
-        expression.Compile().Should().NotBeNull();
+        // Assert
+        result.Should().Be(expected);
     }
 
     #endregion
 
-    #region TagSearchSpecification — ToExpression only (ILike)
+    #region TagSearchSpecification
 
-    [Fact]
-    public void TagSearchSpecification_ShouldCreateValidExpression()
+    [Theory]
+    [InlineData("hip", true)]
+    [InlineData("HIP-HOP", true)]
+    [InlineData("Hip Hop", true)]
+    [InlineData("rumba", false)]
+    public void TagSearchSpecification_ShouldMatchNameOrSlugCaseInsensitively(string search, bool expected)
     {
         // Arrange
-        var spec = new TagSearchSpecification("hip");
+        TagEntity tag = TagFactory.Create("Hip Hop", "hip-hop");
+        var spec = new TagSearchSpecification(search);
 
         // Act
-        Expression<Func<TagEntity, bool>> expression = spec.ToExpression();
+        bool result = spec.IsSatisfiedInMemoryBy(tag);
 
-        // Assert — ILike-based; compile only, do not invoke against in-memory data
-        expression.Should().NotBeNull();
-        expression.Compile().Should().NotBeNull();
+        // Assert
+        result.Should().Be(expected);
     }
 
     #endregion
