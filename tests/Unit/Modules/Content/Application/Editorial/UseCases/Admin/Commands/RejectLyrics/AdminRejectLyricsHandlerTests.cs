@@ -2,6 +2,8 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.RejectLyrics;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
+using _116.Content.Domain.Events;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
@@ -39,7 +41,7 @@ public class AdminRejectLyricsHandlerTests
     #region Success Cases
 
     [Fact]
-    public async Task Handle_WhenLyricsInPendingReview_ShouldRejectWithReasonAndReturnSuccess()
+    public async Task Handle_WhenLyricsInPendingReview_ShouldRecordStatusAndReason()
     {
         // Arrange
         LyricsEntity lyrics = LyricsFactory.CreatePendingReview(CategoryId);
@@ -50,12 +52,45 @@ public class AdminRejectLyricsHandlerTests
         _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
 
         // Act
-        AdminRejectLyricsResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
-        _lyricsRepositoryMock.VerifyUpdateCalled();
+        lyrics.Status.Should().Be(EnumContentStatus.Rejected);
+        lyrics.RejectionReason.Should().Be(TestConstants.Lyrics.ValidRejectionReason);
+        _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
         _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    [Fact]
+    public async Task Handle_WhenLyricsInPendingReview_ShouldRaiseCommissionedContentRejectedEvent()
+    {
+        // Arrange
+        LyricsEntity lyrics = LyricsFactory.CreatePendingReview(CategoryId);
+        lyrics.ClearDomainEvents();
+        var command = new AdminRejectLyricsCommand(
+            Id: lyrics.Id.ToString(),
+            Reason: TestConstants.Lyrics.ValidRejectionReason
+        );
+        _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        lyrics
+            .DomainEvents.OfType<CommissionedContentRejectedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(
+                new CommissionedContentRejectedEvent(
+                    ContentId: lyrics.Id,
+                    ContentType: EnumCoreContentType.Lyrics,
+                    CustomerId: lyrics.CustomerId,
+                    Title: lyrics.SongTitle,
+                    Reason: TestConstants.Lyrics.ValidRejectionReason
+                )
+            );
     }
 
     #endregion
@@ -78,6 +113,7 @@ public class AdminRejectLyricsHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
@@ -85,6 +121,7 @@ public class AdminRejectLyricsHandlerTests
     {
         // Arrange
         LyricsEntity lyrics = LyricsFactory.CreateRejected(CategoryId);
+        lyrics.ClearDomainEvents();
         var command = new AdminRejectLyricsCommand(
             Id: lyrics.Id.ToString(),
             Reason: TestConstants.Lyrics.ValidRejectionReason
@@ -96,13 +133,17 @@ public class AdminRejectLyricsHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<ConflictException>();
+        lyrics.Status.Should().Be(EnumContentStatus.Rejected);
+        lyrics.DomainEvents.Should().BeEmpty();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
     public async Task Handle_WhenLyricsInWrongStatus_ShouldThrowBadRequestException()
     {
         // Arrange
-        LyricsEntity lyrics = LyricsFactory.Create(CategoryId); // Draft status
+        LyricsEntity lyrics = LyricsFactory.Create(CategoryId);
+        lyrics.ClearDomainEvents();
         var command = new AdminRejectLyricsCommand(
             Id: lyrics.Id.ToString(),
             Reason: TestConstants.Lyrics.ValidRejectionReason
@@ -114,6 +155,10 @@ public class AdminRejectLyricsHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<BadRequestException>();
+        lyrics.Status.Should().Be(EnumContentStatus.Draft);
+        lyrics.RejectionReason.Should().BeNull();
+        lyrics.DomainEvents.Should().BeEmpty();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     #endregion
