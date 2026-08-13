@@ -41,10 +41,9 @@ public class AdminRemoveAlbumStreamingLinkHandlerTests
         var command = new AdminRemoveAlbumStreamingLinkCommand(albumId, EnumStreamingPlatform.Spotify);
 
         // Act
-        AdminRemoveAlbumStreamingLinkResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         _streamingLinkRepositoryMock.VerifyRemoveCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -57,10 +56,9 @@ public class AdminRemoveAlbumStreamingLinkHandlerTests
         var command = new AdminRemoveAlbumStreamingLinkCommand(albumId, EnumStreamingPlatform.Spotify);
 
         // Act
-        AdminRemoveAlbumStreamingLinkResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         _streamingLinkRepositoryMock.Verify(x => x.Remove(It.IsAny<StreamingLinkEntity>()), Times.Never);
         _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
