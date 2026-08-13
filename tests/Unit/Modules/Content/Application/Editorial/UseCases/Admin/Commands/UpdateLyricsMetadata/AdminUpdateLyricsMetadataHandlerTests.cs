@@ -62,14 +62,17 @@ public class AdminUpdateLyricsMetadataHandlerTests : BaseContentHandlerTest
         AdminUpdateLyricsMetadataResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Lyrics.Should().NotBeNull();
+        lyrics.Album.Should().Be("Testament");
+        lyrics.ReleaseYear.Should().Be(1995);
+        lyrics.Label.Should().Be("Sonodisc");
+        lyrics.Songwriter.Should().Be("Papa Wemba");
+        lyrics.Producer.Should().Be("Viviane Arnoux");
         result.Lyrics.Album.Should().Be("Testament");
         result.Lyrics.ReleaseYear.Should().Be(1995);
         result.Lyrics.Label.Should().Be("Sonodisc");
         result.Lyrics.Songwriter.Should().Be("Papa Wemba");
         result.Lyrics.Producer.Should().Be("Viviane Arnoux");
-        _lyricsRepositoryMock.VerifyUpdateCalled();
+        _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -94,11 +97,18 @@ public class AdminUpdateLyricsMetadataHandlerTests : BaseContentHandlerTest
         AdminUpdateLyricsMetadataResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        lyrics.Album.Should().BeNull();
+        lyrics.ReleaseYear.Should().BeNull();
+        lyrics.Label.Should().BeNull();
+        lyrics.Songwriter.Should().BeNull();
+        lyrics.Producer.Should().BeNull();
         result.Lyrics.Album.Should().BeNull();
         result.Lyrics.ReleaseYear.Should().BeNull();
         result.Lyrics.Label.Should().BeNull();
         result.Lyrics.Songwriter.Should().BeNull();
         result.Lyrics.Producer.Should().BeNull();
+        _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
+        _unitOfWorkMock.VerifyCommitCalled();
     }
 
     [Fact]
@@ -121,5 +131,6 @@ public class AdminUpdateLyricsMetadataHandlerTests : BaseContentHandlerTest
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 }
