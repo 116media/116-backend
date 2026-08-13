@@ -57,7 +57,6 @@ public class AdminUpdatePricingTierHandlerTests : BaseContentHandlerTest
         AdminUpdatePricingTierResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.PricingTier.Name.Should().Be(newName);
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -81,7 +80,6 @@ public class AdminUpdatePricingTierHandlerTests : BaseContentHandlerTest
         AdminUpdatePricingTierResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.PricingTier.Name.Should().Be(sameName);
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -171,16 +169,10 @@ public class AdminUpdatePricingTierHandlerTests : BaseContentHandlerTest
         _lookupRepositoryMock.SetupPricingTierExistsByName(conflictingName, true);
 
         // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (ConflictException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<ConflictException>();
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
@@ -205,10 +197,9 @@ public class AdminUpdatePricingTierHandlerTests : BaseContentHandlerTest
         _lookupRepositoryMock.SetupPricingTierExistsByName(newName, false);
 
         // Act
-        AdminUpdatePricingTierResult result = await _handler.Handle(command, cts.Token);
+        await _handler.Handle(command, cts.Token);
 
         // Assert
-        result.Should().NotBeNull();
         _unitOfWorkMock.Verify(x => x.CommitAsync(cts.Token), Times.Once);
     }
 
