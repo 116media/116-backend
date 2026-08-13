@@ -48,12 +48,11 @@ public class AdminLinkLyricsAlbumHandlerTests
         var command = new AdminLinkLyricsAlbumCommand(lyrics.Id, album.Id);
 
         // Act
-        AdminLinkLyricsAlbumResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         lyrics.AlbumId.Should().Be(album.Id);
-        _lyricsRepositoryMock.VerifyUpdateCalled();
+        _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -67,11 +66,12 @@ public class AdminLinkLyricsAlbumHandlerTests
         var command = new AdminLinkLyricsAlbumCommand(lyrics.Id, null);
 
         // Act
-        AdminLinkLyricsAlbumResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         lyrics.AlbumId.Should().BeNull();
+        _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
+        _unitOfWorkMock.VerifyCommitCalled();
         _albumRepositoryMock.Verify(
             x => x.GetByIdOrThrowAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
             Times.Never
@@ -94,5 +94,7 @@ public class AdminLinkLyricsAlbumHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        lyrics.AlbumId.Should().BeNull();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 }
