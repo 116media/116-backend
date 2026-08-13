@@ -40,15 +40,14 @@ public class PublicRateVideoHandlerTests
         VideoEntity video = VideoFactory.CreatePublished(CategoryId);
 
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
-        _videoRepositoryMock.SetupGetRatingAsync(null);
+        _videoRepositoryMock.SetupGetRatingNotFound(userId, video.Id);
 
         var command = new PublicRateVideoCommand(VideoId: video.Id, UserId: userId, Stars: 5);
 
         // Act
-        PublicRateVideoResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         _videoRepositoryMock.VerifyAddRatingCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -67,10 +66,10 @@ public class PublicRateVideoHandlerTests
         var command = new PublicRateVideoCommand(VideoId: video.Id, UserId: userId, Stars: 5);
 
         // Act
-        PublicRateVideoResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
+        existingRating.Stars.Should().Be(5);
         _videoRepositoryMock.VerifyUpdateRatingCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
