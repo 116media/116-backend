@@ -65,9 +65,12 @@ public class AdminUpdateArticleSeoHandlerTests : BaseContentHandlerTest
         AdminUpdateArticleSeoResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Article.Should().NotBeNull();
-        _articleRepositoryMock.VerifyUpdateCalled();
+        article.MetaTitle.Should().Be("Custom SEO Title");
+        article.MetaDescription.Should().Be("Custom SEO description for testing.");
+        result.Article.Id.Should().Be(article.Id);
+        result.Article.MetaTitle.Should().Be("Custom SEO Title");
+        result.Article.MetaDescription.Should().Be("Custom SEO description for testing.");
+        _articleRepositoryMock.VerifyUpdateCalled(article);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -92,6 +95,7 @@ public class AdminUpdateArticleSeoHandlerTests : BaseContentHandlerTest
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     #endregion
