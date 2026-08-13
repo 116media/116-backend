@@ -34,6 +34,7 @@ public class PublicGetShortsFeedHandlerTests : BaseContentHandlerTest
 
         FileEntity videoFile = FileFactory.CreateVideo();
         _fileRepositoryMock.SetupGetById(videoFile);
+        _fileRepositoryMock.SetupGetByIds(new Dictionary<Guid, FileEntity>());
 
         _handler = new PublicGetShortsFeedHandler(
             _shortVideoRepositoryMock.Object,
@@ -68,7 +69,7 @@ public class PublicGetShortsFeedHandlerTests : BaseContentHandlerTest
     [Fact]
     public async Task Handle_WhenPageIsNotFull_ShouldReturnNullCursor()
     {
-        // Arrange — one item for a page size of two: the feed is exhausted
+        // Arrange
         List<ShortVideoEntity> shorts = ShortVideoFactory.CreateMany(1);
         var query = new PublicGetShortsFeedQuery(Cursor: null, PageSize: 2);
 
