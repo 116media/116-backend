@@ -52,7 +52,7 @@ public class VideoEngagementHandlerTests
 
         // Assert
         video.ShareCount.Should().Be(1);
-        _videoRepositoryMock.VerifyUpdateCalled();
+        _videoRepositoryMock.VerifyUpdateCalled(video);
         _unitOfWorkMock.VerifyCommitCalled();
         _cacheInvalidatorMock.VerifyInvalidateCalled();
     }
@@ -74,7 +74,7 @@ public class VideoEngagementHandlerTests
         // Assert
         video.RatingCount.Should().Be(2);
         video.RatingAverage.Should().Be(4.5m);
-        _videoRepositoryMock.VerifyUpdateCalled();
+        _videoRepositoryMock.VerifyUpdateCalled(video);
         _unitOfWorkMock.VerifyCommitCalled();
         _cacheInvalidatorMock.VerifyInvalidateCalled();
     }
@@ -90,6 +90,9 @@ public class VideoEngagementHandlerTests
         await _handler.Handle(new VideoEngagedEvent(video.Id, EnumEngagementKind.Like, 1), CancellationToken.None);
 
         // Assert
+        video.ShareCount.Should().Be(0);
+        video.RatingCount.Should().Be(0);
+        _videoRepositoryMock.Verify(x => x.Update(It.IsAny<VideoEntity>()), Times.Never);
         _unitOfWorkMock.VerifyCommitNotCalled();
         _cacheInvalidatorMock.VerifyInvalidateCalled();
     }
@@ -97,8 +100,7 @@ public class VideoEngagementHandlerTests
     [Fact]
     public async Task Handle_WhenVideoMissing_ShouldSkipWithoutCommitOrInvalidation()
     {
-        // Arrange — the video vanished between the interaction commit and the
-        // dispatch, which is a race, not an error.
+        // Arrange
         Guid videoId = Guid.NewGuid();
         _videoRepositoryMock.SetupGetByIdAsync(videoId, null);
 
