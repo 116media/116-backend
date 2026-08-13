@@ -2,6 +2,7 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.SubmitLyrics;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
@@ -49,11 +50,11 @@ public class AdminSubmitLyricsHandlerTests
         _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
 
         // Act
-        AdminSubmitLyricsResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
-        _lyricsRepositoryMock.VerifyUpdateCalled();
+        lyrics.Status.Should().Be(EnumContentStatus.PendingReview);
+        _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -70,11 +71,11 @@ public class AdminSubmitLyricsHandlerTests
         _orderRepositoryMock.SetupGetOrderByItemId(orderItemId, order);
 
         // Act
-        AdminSubmitLyricsResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
-        _lyricsRepositoryMock.VerifyUpdateCalled();
+        lyrics.Status.Should().Be(EnumContentStatus.PendingPayment);
+        _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -91,11 +92,11 @@ public class AdminSubmitLyricsHandlerTests
         _orderRepositoryMock.SetupGetOrderByItemId(orderItemId, order);
 
         // Act
-        AdminSubmitLyricsResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
-        _lyricsRepositoryMock.VerifyUpdateCalled();
+        lyrics.Status.Should().Be(EnumContentStatus.PendingReview);
+        _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -116,6 +117,7 @@ public class AdminSubmitLyricsHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
@@ -131,6 +133,8 @@ public class AdminSubmitLyricsHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<ConflictException>();
+        lyrics.Status.Should().Be(EnumContentStatus.PendingReview);
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
@@ -150,6 +154,8 @@ public class AdminSubmitLyricsHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<ConflictException>();
+        lyrics.Status.Should().Be(EnumContentStatus.PendingPayment);
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     #endregion
