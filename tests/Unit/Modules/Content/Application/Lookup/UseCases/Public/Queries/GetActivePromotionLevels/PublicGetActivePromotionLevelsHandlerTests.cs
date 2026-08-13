@@ -39,7 +39,6 @@ public class PublicGetActivePromotionLevelsHandlerTests : BaseContentHandlerTest
         PublicGetActivePromotionLevelsResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.PromotionLevels.Should().HaveCount(2);
     }
 
