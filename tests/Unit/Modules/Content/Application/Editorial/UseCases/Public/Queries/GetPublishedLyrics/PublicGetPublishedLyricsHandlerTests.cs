@@ -49,7 +49,6 @@ public class PublicGetPublishedLyricsHandlerTests
         PublicGetPublishedLyricsResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.Lyrics.Items.Should().HaveCount(lyricsList.Count);
         result.Lyrics.Count.Should().Be((long)lyricsList.Count);
     }
@@ -329,9 +328,7 @@ public class PublicGetPublishedLyricsHandlerTests
     [Fact]
     public void Handle_SortSwitchGuardTests_ShouldNotReferenceIsPromoted()
     {
-        // Arrange / Act / Assert — this is a documentation-style sanity check: none of the sort
-        // guard tests above assert on IsPromoted, and PublicGetPublishedLyricsQuery does not
-        // expose an IsPromoted filter parameter.
+        // Assert
         typeof(PublicGetPublishedLyricsQuery).GetProperties().Select(p => p.Name).Should().NotContain("IsPromoted");
     }
 }
