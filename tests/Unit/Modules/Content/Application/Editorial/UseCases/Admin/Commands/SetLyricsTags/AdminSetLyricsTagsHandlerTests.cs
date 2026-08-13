@@ -44,10 +44,9 @@ public class AdminSetLyricsTagsHandlerTests
             .Returns(Task.CompletedTask);
 
         // Act
-        AdminSetLyricsTagsResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         _lyricsRepositoryMock.Verify(
             x => x.ReplaceTagsAsync(lyrics.Id, tagIds, It.IsAny<CancellationToken>()),
             Times.Once
@@ -69,10 +68,9 @@ public class AdminSetLyricsTagsHandlerTests
             .Returns(Task.CompletedTask);
 
         // Act
-        AdminSetLyricsTagsResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         _lyricsRepositoryMock.Verify(
             x => x.ReplaceTagsAsync(lyrics.Id, tagIds, It.IsAny<CancellationToken>()),
             Times.Once
