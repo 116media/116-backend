@@ -47,10 +47,9 @@ public class PublicDeletePlaylistHandlerTests
         var command = new PublicDeletePlaylistCommand(Id: playlistId, UserId: userId);
 
         // Act
-        PublicDeletePlaylistResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         _playlistRepositoryMock.VerifyDeleteCalled(playlist);
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -63,9 +62,10 @@ public class PublicDeletePlaylistHandlerTests
     public async Task Handle_WhenPlaylistNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        _playlistRepositoryMock.SetupGetByIdAsync(null);
+        Guid playlistId = Guid.NewGuid();
+        _playlistRepositoryMock.SetupGetByIdNotFound(playlistId);
 
-        var command = new PublicDeletePlaylistCommand(Id: Guid.NewGuid(), UserId: Guid.NewGuid());
+        var command = new PublicDeletePlaylistCommand(Id: playlistId, UserId: Guid.NewGuid());
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
