@@ -123,6 +123,7 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
     {
         // Arrange
         IReadOnlyList<ShortVideoEntity> entities = ShortVideoFactory.CreateMany(3);
+        _fileRepositoryMock.SetupGetByIds(new Dictionary<Guid, FileEntity>());
 
         // Act
         IReadOnlyList<ShortVideoDto> dtos = await entities.ToShortVideoDtosAsync(
@@ -205,6 +206,7 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
 
         IReadOnlySet<Guid> likedIds = new HashSet<Guid> { liked.Id };
         IReadOnlySet<Guid> bookmarkedIds = new HashSet<Guid> { bookmarked.Id };
+        _fileRepositoryMock.SetupGetByIds(new Dictionary<Guid, FileEntity>());
 
         // Act
         IReadOnlyList<ShortVideoDto> dtos = await entities.ToShortVideoDtosAsync(
@@ -269,6 +271,7 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
             [other.AuthorId] = new AuthorInfo("kinix_editor", null, null, "Admin"),
         };
         Mock<IUserLookupService> userLookup = MockUserLookupService.Create().SetupGetAuthorInfosByIds(authors);
+        _fileRepositoryMock.SetupGetByIds(new Dictionary<Guid, FileEntity>());
 
         // Act
         IReadOnlyList<ShortVideoDto> dtos = await entities.ToShortVideoDtosAsync(
@@ -292,6 +295,7 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
         // Arrange
         List<ShortVideoEntity> shorts = ShortVideoFactory.CreateMany(4);
         Mock<IUserLookupService> userLookup = MockUserLookupService.Create();
+        _fileRepositoryMock.SetupGetByIds(new Dictionary<Guid, FileEntity>());
 
         // Act
         await shorts.ToShortVideoDtosAsync(
