@@ -40,7 +40,6 @@ public class AdminGetAllPromotionLevelsHandlerTests : BaseContentHandlerTest
         AdminGetAllPromotionLevelsResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.PromotionLevels.Should().HaveCount(3);
     }
 
@@ -58,7 +57,6 @@ public class AdminGetAllPromotionLevelsHandlerTests : BaseContentHandlerTest
         AdminGetAllPromotionLevelsResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.PromotionLevels.Should().ContainSingle();
         _lookupRepositoryMock.Verify(
             x => x.GetAllPromotionLevelsAsync(searchTerm, It.IsAny<CancellationToken>()),
@@ -78,7 +76,6 @@ public class AdminGetAllPromotionLevelsHandlerTests : BaseContentHandlerTest
         AdminGetAllPromotionLevelsResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.PromotionLevels.Should().BeEmpty();
     }
 
