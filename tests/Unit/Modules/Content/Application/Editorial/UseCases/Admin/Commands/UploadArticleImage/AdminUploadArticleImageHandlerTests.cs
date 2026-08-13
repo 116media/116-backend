@@ -7,6 +7,7 @@ using _116.Core.Application.Shared.Repositories;
 using _116.Core.Application.Shared.Services;
 using _116.Core.Domain.Entities;
 using _116.Shared.Application.Exceptions;
+using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Factories.Core;
 using _116.Unit.Tests.Common;
@@ -31,6 +32,7 @@ public class AdminUploadArticleImageHandlerTests : BaseContentHandlerTest
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminUploadArticleImageHandler _handler;
     private readonly IFormFile _mockFile;
+    private readonly FileEntity _coverFile;
 
     private static readonly Guid CategoryId = Guid.NewGuid();
 
@@ -41,8 +43,8 @@ public class AdminUploadArticleImageHandlerTests : BaseContentHandlerTest
         _fileRepositoryMock = MockFileRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
 
-        FileEntity fileEntity = FileFactory.CreateImage();
-        _fileRepositoryMock.SetupReplaceImageFile(fileEntity);
+        _coverFile = FileFactory.CreateImage();
+        _fileRepositoryMock.SetupReplaceImageFile(_coverFile);
 
         _handler = new AdminUploadArticleImageHandler(
             _articleRepositoryMock.Object,
@@ -73,8 +75,10 @@ public class AdminUploadArticleImageHandlerTests : BaseContentHandlerTest
         AdminUploadArticleImageResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Image.Should().NotBeNull();
+        result.Image.Url.Should().Be(TestConstants.Cloudinary.ValidSecureUrl);
+        result.Image.StorageKey.Should().Be(TestConstants.Cloudinary.ValidPublicId);
+        result.Image.ImageType.Should().Be(EnumArticleImageType.Body);
+        article.CoverImageFileId.Should().BeNull();
         _cloudinaryMock.VerifyUploadCalled();
         _articleRepositoryMock.VerifyAddImageCalled();
         _unitOfWorkMock.VerifyCommitCalled();
@@ -98,10 +102,11 @@ public class AdminUploadArticleImageHandlerTests : BaseContentHandlerTest
         AdminUploadArticleImageResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Image.Should().NotBeNull();
+        article.CoverImageFileId.Should().Be(_coverFile.Id);
+        result.Image.Url.Should().Be(_coverFile.StorageUrl);
+        result.Image.ImageType.Should().Be(EnumArticleImageType.Cover);
         _fileRepositoryMock.VerifyReplaceImageFileCalled();
-        _articleRepositoryMock.VerifyUpdateCalled();
+        _articleRepositoryMock.VerifyUpdateCalled(article);
         _articleRepositoryMock.VerifyAddImageCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -125,9 +130,14 @@ public class AdminUploadArticleImageHandlerTests : BaseContentHandlerTest
         AdminUploadArticleImageResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
+        article.CoverImageFileId.Should().Be(_coverFile.Id);
+        result.Image.ImageType.Should().Be(EnumArticleImageType.Cover);
         _fileRepositoryMock.VerifyReplaceImageFileCalled();
-        _articleRepositoryMock.VerifyRemoveImagesCalled();
+        _articleRepositoryMock.Verify(
+            x => x.RemoveImages(It.Is<IEnumerable<ArticleImageEntity>>(images => images.Single() == oldCover)),
+            Times.Once
+        );
+        _articleRepositoryMock.VerifyUpdateCalled(article);
         _articleRepositoryMock.VerifyAddImageCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -153,6 +163,7 @@ public class AdminUploadArticleImageHandlerTests : BaseContentHandlerTest
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     #endregion
