@@ -60,8 +60,6 @@ public class PublicGetPopularVideosHandlerTests : BaseContentHandlerTest
         PublicGetPopularVideosResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Videos.Should().NotBeNull();
         result.Videos.Count.Should().Be(videos.Count);
     }
 
@@ -123,18 +121,28 @@ public class PublicGetPopularVideosHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         _videoRepositoryMock.SetupGetPopularVideosAsync(VideoFactory.CreateManyPublished(CategoryId, 3));
+        Guid firstExcludeId = Guid.NewGuid();
+        Guid secondExcludeId = Guid.NewGuid();
 
         // Act
         await _handler.Handle(
-            new PublicGetPopularVideosQuery(Limit: 5, CategoryId: null, ExcludeId: Guid.NewGuid()),
+            new PublicGetPopularVideosQuery(Limit: 5, CategoryId: null, ExcludeId: firstExcludeId),
             CancellationToken.None
         );
         await _handler.Handle(
-            new PublicGetPopularVideosQuery(Limit: 5, CategoryId: null, ExcludeId: Guid.NewGuid()),
+            new PublicGetPopularVideosQuery(Limit: 5, CategoryId: null, ExcludeId: secondExcludeId),
             CancellationToken.None
         );
 
         // Assert
+        _videoRepositoryMock.Verify(
+            x => x.GetPopularVideosAsync(5, null, firstExcludeId, It.IsAny<CancellationToken>()),
+            Times.Once
+        );
+        _videoRepositoryMock.Verify(
+            x => x.GetPopularVideosAsync(5, null, secondExcludeId, It.IsAny<CancellationToken>()),
+            Times.Once
+        );
         _videoRepositoryMock.Verify(
             x =>
                 x.GetPopularVideosAsync(
