@@ -42,15 +42,15 @@ public class PublicLikeArticleHandlerTests
     {
         // Arrange
         ArticleEntity article = ArticleFactory.CreatePublished(CategoryId);
-        var command = new PublicLikeArticleCommand(ArticleId: article.Id, UserId: Guid.NewGuid());
+        var userId = Guid.NewGuid();
+        var command = new PublicLikeArticleCommand(ArticleId: article.Id, UserId: userId);
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
-        _articleRepositoryMock.SetupHasLikedAsync(false);
+        _articleRepositoryMock.SetupHasLikedAsync(userId, article.Id, result: false);
 
         // Act
-        PublicLikeArticleResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         _articleRepositoryMock.VerifyAddLikeCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -79,9 +79,10 @@ public class PublicLikeArticleHandlerTests
     {
         // Arrange
         ArticleEntity article = ArticleFactory.CreatePublished(CategoryId);
-        var command = new PublicLikeArticleCommand(ArticleId: article.Id, UserId: Guid.NewGuid());
+        var userId = Guid.NewGuid();
+        var command = new PublicLikeArticleCommand(ArticleId: article.Id, UserId: userId);
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
-        _articleRepositoryMock.SetupHasLikedAsync(true);
+        _articleRepositoryMock.SetupHasLikedAsync(userId, article.Id, result: true);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
