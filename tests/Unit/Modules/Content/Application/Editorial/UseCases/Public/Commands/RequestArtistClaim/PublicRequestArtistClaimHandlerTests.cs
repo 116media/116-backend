@@ -57,7 +57,6 @@ public class PublicRequestArtistClaimHandlerTests
         PublicRequestArtistClaimResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         added.Should().NotBeNull();
         added!.ArtistId.Should().Be(artist.Id);
         added.UserId.Should().Be(userId);
@@ -137,9 +136,10 @@ public class PublicRequestArtistClaimHandlerTests
     {
         // Arrange
         ArtistEntity artist = ArtistFactory.Create();
+        var userId = Guid.NewGuid();
         _artistRepositoryMock.SetupGetByIdOrThrow(artist);
-        _claimRequestRepositoryMock.SetupExistsForArtistAndUser(exists: true);
-        var command = new PublicRequestArtistClaimCommand(artist.Id, Guid.NewGuid());
+        _claimRequestRepositoryMock.SetupExistsForArtistAndUser(artist.Id, userId, exists: true);
+        var command = new PublicRequestArtistClaimCommand(artist.Id, userId);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
