@@ -54,7 +54,6 @@ public class AdminUpdateTagHandlerTests : BaseContentHandlerTest
         AdminUpdateTagResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.Tag.Name.Should().Be(newName);
         result.Tag.Slug.Should().Be(newSlug);
 
@@ -77,7 +76,6 @@ public class AdminUpdateTagHandlerTests : BaseContentHandlerTest
         AdminUpdateTagResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.Tag.Name.Should().Be(newName);
         result.Tag.Slug.Should().Be(currentSlug);
 
@@ -102,7 +100,7 @@ public class AdminUpdateTagHandlerTests : BaseContentHandlerTest
         AdminUpdateTagResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
+        result.Tag.Slug.Should().Be(TestConstants.Tag.ValidSlug);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -172,16 +170,10 @@ public class AdminUpdateTagHandlerTests : BaseContentHandlerTest
         _lookupRepositoryMock.SetupGetTagBySlug(slug: conflictingSlug, tag: existingTag);
 
         // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (ConflictException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<ConflictException>();
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
