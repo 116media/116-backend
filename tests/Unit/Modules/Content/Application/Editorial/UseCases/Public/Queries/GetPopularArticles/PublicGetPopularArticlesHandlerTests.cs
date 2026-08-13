@@ -60,8 +60,6 @@ public class PublicGetPopularArticlesHandlerTests : BaseContentHandlerTest
         PublicGetPopularArticlesResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Articles.Should().NotBeNull();
         result.Articles.Count.Should().Be(articles.Count);
     }
 
@@ -123,18 +121,28 @@ public class PublicGetPopularArticlesHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         _articleRepositoryMock.SetupGetPopularArticlesAsync(ArticleFactory.CreateManyPublished(CategoryId, 3));
+        Guid firstExcludeId = Guid.NewGuid();
+        Guid secondExcludeId = Guid.NewGuid();
 
         // Act
         await _handler.Handle(
-            new PublicGetPopularArticlesQuery(Limit: 5, CategoryId: null, ExcludeId: Guid.NewGuid()),
+            new PublicGetPopularArticlesQuery(Limit: 5, CategoryId: null, ExcludeId: firstExcludeId),
             CancellationToken.None
         );
         await _handler.Handle(
-            new PublicGetPopularArticlesQuery(Limit: 5, CategoryId: null, ExcludeId: Guid.NewGuid()),
+            new PublicGetPopularArticlesQuery(Limit: 5, CategoryId: null, ExcludeId: secondExcludeId),
             CancellationToken.None
         );
 
         // Assert
+        _articleRepositoryMock.Verify(
+            x => x.GetPopularArticlesAsync(5, null, firstExcludeId, It.IsAny<CancellationToken>()),
+            Times.Once
+        );
+        _articleRepositoryMock.Verify(
+            x => x.GetPopularArticlesAsync(5, null, secondExcludeId, It.IsAny<CancellationToken>()),
+            Times.Once
+        );
         _articleRepositoryMock.Verify(
             x =>
                 x.GetPopularArticlesAsync(
