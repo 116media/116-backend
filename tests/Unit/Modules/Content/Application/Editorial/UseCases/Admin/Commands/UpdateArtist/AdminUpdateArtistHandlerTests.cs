@@ -48,9 +48,17 @@ public class AdminUpdateArtistHandlerTests
         AdminUpdateArtistResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        artist.Name.Should().Be("Updated Name");
+        artist.Bio.Should().Be("Updated Bio");
+        artist.RealName.Should().BeNull();
+        artist.Aliases.Should().BeEmpty();
+        artist.Birthdate.Should().BeNull();
+        artist.Hometown.Should().BeNull();
+        artist.NameFolded.Should().Be("UPDATED NAME");
+        artist.InitialLetter.Should().Be("U");
         result.Artist.Name.Should().Be("Updated Name");
         result.Artist.Bio.Should().Be("Updated Bio");
-        _artistRepositoryMock.VerifyUpdateCalled();
+        _artistRepositoryMock.VerifyUpdateCalled(artist);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -67,6 +75,7 @@ public class AdminUpdateArtistHandlerTests
         AdminUpdateArtistResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        artist.Slug.Should().Be(originalSlug);
         result.Artist.Slug.Should().Be(originalSlug);
     }
 
@@ -83,5 +92,6 @@ public class AdminUpdateArtistHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 }
