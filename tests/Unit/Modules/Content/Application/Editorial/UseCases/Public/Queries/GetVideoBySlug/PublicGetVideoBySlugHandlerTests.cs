@@ -50,7 +50,6 @@ public class PublicGetVideoBySlugHandlerTests : BaseContentHandlerTest
         // Arrange
         CategoryEntity category = CategoryFactory.Create(CategoryId);
         VideoEntity video = VideoFactory.CreateWithCategory(CategoryId, category);
-        // Manually transition to Published for the slug lookup
         video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl, _videoErrors);
         video.MarkPendingReview();
         video.Approve();
@@ -65,14 +64,14 @@ public class PublicGetVideoBySlugHandlerTests : BaseContentHandlerTest
         PublicGetVideoBySlugResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Video.Should().NotBeNull();
+        result.Video.Id.Should().Be(video.Id);
+        result.Video.Slug.Should().Be(slug);
     }
 
     [Fact]
     public async Task Handle_WhenVideoHasNoLinkedArtist_ShouldReturnNullArtistSlug()
     {
-        // Arrange — the common case at launch: a video with no artist profile.
+        // Arrange
         CategoryEntity category = CategoryFactory.Create(CategoryId);
         VideoEntity video = VideoFactory.CreateWithCategory(CategoryId, category);
         video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl, _videoErrors);
@@ -115,7 +114,7 @@ public class PublicGetVideoBySlugHandlerTests : BaseContentHandlerTest
             CancellationToken.None
         );
 
-        // Assert — the slug rides beside the DTO, mirroring the lyrics detail response.
+        // Assert
         result.ArtistSlug.Should().Be(artist.Slug);
     }
 
@@ -139,7 +138,7 @@ public class PublicGetVideoBySlugHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenVideoExistsButNotPublished_ShouldThrowNotFoundException()
     {
         // Arrange
-        VideoEntity draftVideo = VideoFactory.Create(CategoryId); // Draft status
+        VideoEntity draftVideo = VideoFactory.Create(CategoryId);
         string slug = draftVideo.Slug;
         var query = new PublicGetVideoBySlugQuery(Slug: slug);
 
