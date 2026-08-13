@@ -43,8 +43,6 @@ public class PublicGetPromotedVideosHandlerTests : BaseContentHandlerTest
         PublicGetPromotedVideosResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Videos.Should().NotBeNull();
         result.Videos.Count.Should().Be(promoted.Count);
     }
 
