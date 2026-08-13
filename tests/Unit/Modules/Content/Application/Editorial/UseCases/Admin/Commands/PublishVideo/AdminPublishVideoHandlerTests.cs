@@ -2,6 +2,8 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.PublishVideo;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
+using _116.Content.Domain.Events;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
@@ -36,7 +38,7 @@ public class AdminPublishVideoHandlerTests
     }
 
     [Fact]
-    public async Task Handle_WhenVideoIsApproved_ShouldPublishAndReturnSuccess()
+    public async Task Handle_WhenVideoIsApproved_ShouldTransitionToPublished()
     {
         // Arrange
         VideoEntity video = VideoFactory.CreateApprovedWithYoutubeUrl(CategoryId);
@@ -44,12 +46,48 @@ public class AdminPublishVideoHandlerTests
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
 
         // Act
-        AdminPublishVideoResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
-        _videoRepositoryMock.VerifyUpdateCalled();
+        video.Status.Should().Be(EnumContentStatus.Published);
+        video.PublishedAt.Should().NotBeNull();
+        _videoRepositoryMock.VerifyUpdateCalled(video);
         _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    [Fact]
+    public async Task Handle_WhenVideoIsApproved_ShouldRaiseVideoPublishedEvent()
+    {
+        // Arrange
+        VideoEntity video = VideoFactory.CreateApprovedWithYoutubeUrl(CategoryId);
+        video.ClearDomainEvents();
+        var command = new AdminPublishVideoCommand(Id: video.Id.ToString());
+        _videoRepositoryMock.SetupGetByIdOrThrow(video);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        video
+            .DomainEvents.OfType<VideoPublishedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(new VideoPublishedEvent(VideoId: video.Id));
+        video
+            .DomainEvents.OfType<CommissionedContentPublishedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(
+                new CommissionedContentPublishedEvent(
+                    ContentId: video.Id,
+                    ContentType: EnumCoreContentType.Video,
+                    CustomerId: video.CustomerId,
+                    Title: video.Title,
+                    Slug: video.Slug
+                )
+            );
     }
 
     [Fact]
@@ -65,6 +103,7 @@ public class AdminPublishVideoHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
@@ -72,6 +111,7 @@ public class AdminPublishVideoHandlerTests
     {
         // Arrange
         VideoEntity video = VideoFactory.CreatePublished(CategoryId);
+        video.ClearDomainEvents();
         var command = new AdminPublishVideoCommand(Id: video.Id.ToString());
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
 
@@ -80,13 +120,17 @@ public class AdminPublishVideoHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<ConflictException>();
+        video.Status.Should().Be(EnumContentStatus.Published);
+        video.DomainEvents.Should().BeEmpty();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
     public async Task Handle_WhenVideoInWrongStatus_ShouldThrowBadRequestException()
     {
         // Arrange
-        VideoEntity video = VideoFactory.Create(CategoryId); // Draft
+        VideoEntity video = VideoFactory.Create(CategoryId);
+        video.ClearDomainEvents();
         var command = new AdminPublishVideoCommand(Id: video.Id.ToString());
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
 
@@ -95,5 +139,8 @@ public class AdminPublishVideoHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<BadRequestException>();
+        video.Status.Should().Be(EnumContentStatus.Draft);
+        video.DomainEvents.Should().BeEmpty();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 }
