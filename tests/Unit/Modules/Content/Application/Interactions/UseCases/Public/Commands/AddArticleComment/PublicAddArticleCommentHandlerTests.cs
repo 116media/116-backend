@@ -51,7 +51,7 @@ public class PublicAddArticleCommentHandlerTests : BaseContentHandlerTest
         PublicAddArticleCommentResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Comment.Should().NotBeNull();
+        result.Comment.Body.Should().Be(command.Body);
         _articleRepositoryMock.VerifyAddCommentCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
