@@ -50,7 +50,6 @@ public class AdminDeactivateContentTypeHandlerTests : BaseContentHandlerTest
         AdminDeactivateContentTypeResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.ContentType.IsActive.Should().BeFalse();
         _unitOfWorkMock.VerifyCommitCalled();
     }
