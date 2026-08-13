@@ -2,6 +2,8 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.ForceUnpromoteL
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
+using _116.Content.Domain.Events;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Services;
 using _116.Tests.Fixtures.Factories.Content;
@@ -58,11 +60,43 @@ public class AdminForceUnpromoteLyricsHandlerTests
 
         // Assert
         result.LyricsId.Should().Be(lyrics.Id);
-        result.UnpromotedAt.Should().NotBe(default);
+        result.UnpromotedAt.Should().Be(lyrics.UnpromotedAt!.Value);
         lyrics.IsPromoted.Should().BeFalse();
+        lyrics.PromotedUntil.Should().BeNull();
+        lyrics.UnpromotedAt.Should().NotBeNull();
         lyrics.UnpromotedBy.Should().Be(ActorUserId);
-        _lyricsRepositoryMock.VerifyUpdateCalled();
+        lyrics.UnpromotedReason.Should().Be("Government takedown request.");
+        _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
         _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    [Fact]
+    public async Task Handle_WhenLyricsIsPromoted_ShouldRaiseContentPromotionRemovedEvent()
+    {
+        // Arrange
+        LyricsEntity lyrics = LyricsFactory.CreatePromoted(CategoryId);
+        lyrics.ClearDomainEvents();
+        _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
+        var command = new AdminForceUnpromoteLyricsCommand(lyrics.Id, "Government takedown request.");
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        lyrics
+            .DomainEvents.OfType<ContentPromotionRemovedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(
+                new ContentPromotionRemovedEvent(
+                    ContentId: lyrics.Id,
+                    ContentType: EnumCoreContentType.Lyrics,
+                    CustomerId: lyrics.CustomerId,
+                    Title: lyrics.SongTitle,
+                    Reason: "Government takedown request."
+                )
+            );
     }
 
     #endregion
@@ -82,6 +116,7 @@ public class AdminForceUnpromoteLyricsHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
@@ -89,6 +124,7 @@ public class AdminForceUnpromoteLyricsHandlerTests
     {
         // Arrange
         LyricsEntity lyrics = LyricsFactory.CreatePublished(CategoryId);
+        lyrics.ClearDomainEvents();
         _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
         var command = new AdminForceUnpromoteLyricsCommand(lyrics.Id, "Government takedown request.");
 
@@ -97,6 +133,12 @@ public class AdminForceUnpromoteLyricsHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<BadRequestException>();
+        lyrics.IsPromoted.Should().BeFalse();
+        lyrics.UnpromotedAt.Should().BeNull();
+        lyrics.UnpromotedBy.Should().BeNull();
+        lyrics.UnpromotedReason.Should().BeNull();
+        lyrics.DomainEvents.Should().BeEmpty();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     #endregion
