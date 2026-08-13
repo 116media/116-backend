@@ -2,6 +2,7 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.SubmitArticle;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
@@ -49,11 +50,11 @@ public class AdminSubmitArticleHandlerTests
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
 
         // Act
-        AdminSubmitArticleResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
-        _articleRepositoryMock.VerifyUpdateCalled();
+        article.Status.Should().Be(EnumContentStatus.PendingReview);
+        _articleRepositoryMock.VerifyUpdateCalled(article);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -70,11 +71,11 @@ public class AdminSubmitArticleHandlerTests
         _orderRepositoryMock.SetupGetOrderByItemId(orderItemId, order);
 
         // Act
-        AdminSubmitArticleResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
-        _articleRepositoryMock.VerifyUpdateCalled();
+        article.Status.Should().Be(EnumContentStatus.PendingPayment);
+        _articleRepositoryMock.VerifyUpdateCalled(article);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -91,11 +92,11 @@ public class AdminSubmitArticleHandlerTests
         _orderRepositoryMock.SetupGetOrderByItemId(orderItemId, order);
 
         // Act
-        AdminSubmitArticleResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
-        _articleRepositoryMock.VerifyUpdateCalled();
+        article.Status.Should().Be(EnumContentStatus.PendingReview);
+        _articleRepositoryMock.VerifyUpdateCalled(article);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -116,6 +117,7 @@ public class AdminSubmitArticleHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
@@ -131,6 +133,8 @@ public class AdminSubmitArticleHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<ConflictException>();
+        article.Status.Should().Be(EnumContentStatus.PendingReview);
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
@@ -150,6 +154,8 @@ public class AdminSubmitArticleHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<ConflictException>();
+        article.Status.Should().Be(EnumContentStatus.PendingPayment);
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     #endregion
