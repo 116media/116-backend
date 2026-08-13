@@ -56,7 +56,6 @@ public class AdminCreatePromotionLevelHandlerTests : BaseContentHandlerTest
         AdminCreatePromotionLevelResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.PromotionLevel.Name.Should().Be(name);
         result.PromotionLevel.DurationDays.Should().Be(durationDays);
         result.PromotionLevel.PriceUsd.Should().Be(priceUsd);
@@ -86,7 +85,6 @@ public class AdminCreatePromotionLevelHandlerTests : BaseContentHandlerTest
         AdminCreatePromotionLevelResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.PromotionLevel.PriceUsd.Should().Be(0m);
     }
 
@@ -130,16 +128,10 @@ public class AdminCreatePromotionLevelHandlerTests : BaseContentHandlerTest
         _lookupRepositoryMock.SetupPromotionLevelExistsByName(name, true);
 
         // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (ConflictException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<ConflictException>();
         _lookupRepositoryMock.VerifyAddPromotionLevelNotCalled();
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
@@ -164,10 +156,9 @@ public class AdminCreatePromotionLevelHandlerTests : BaseContentHandlerTest
         _lookupRepositoryMock.SetupPromotionLevelExistsByName(name, false);
 
         // Act
-        AdminCreatePromotionLevelResult result = await _handler.Handle(command, cts.Token);
+        await _handler.Handle(command, cts.Token);
 
         // Assert
-        result.Should().NotBeNull();
         _unitOfWorkMock.Verify(x => x.CommitAsync(cts.Token), Times.Once);
     }
 
