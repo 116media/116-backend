@@ -130,12 +130,8 @@ public class PublicGetArticleCommentsHandlerTests : BaseContentHandlerTest
         dto.Body.Should().BeNull();
         dto.Author.Should().BeNull();
         _userLookupMock.Verify(
-            x =>
-                x.GetAuthorInfosByIdsAsync(
-                    It.Is<IReadOnlyCollection<Guid>>(ids => ids.Count == 0),
-                    It.IsAny<CancellationToken>()
-                ),
-            Times.AtMostOnce
+            x => x.GetAuthorInfosByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()),
+            Times.Never
         );
     }
 
