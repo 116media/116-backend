@@ -2,6 +2,7 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.ScheduleShoot;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Events;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
@@ -40,12 +41,41 @@ public class AdminScheduleShootHandlerTests
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
 
         // Act
-        AdminScheduleShootResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
-        _videoRepositoryMock.VerifyUpdateCalled();
+        video.ShootingScheduledAt.Should().Be(scheduledAt);
+        _videoRepositoryMock.VerifyUpdateCalled(video);
         _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    [Fact]
+    public async Task Handle_WhenValidRequest_ShouldRaiseVideoShootScheduledEvent()
+    {
+        // Arrange
+        VideoEntity video = VideoFactory.Create(CategoryId);
+        video.ClearDomainEvents();
+        DateTimeOffset scheduledAt = DateTimeOffset.UtcNow.AddDays(7);
+        var command = new AdminScheduleShootCommand(VideoId: video.Id.ToString(), ShootingScheduledAt: scheduledAt);
+        _videoRepositoryMock.SetupGetByIdOrThrow(video);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        video
+            .DomainEvents.OfType<VideoShootScheduledEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(
+                new VideoShootScheduledEvent(
+                    VideoId: video.Id,
+                    CustomerId: video.CustomerId,
+                    Title: video.Title,
+                    ShootDate: scheduledAt
+                )
+            );
     }
 
     [Fact]
@@ -64,5 +94,6 @@ public class AdminScheduleShootHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 }
