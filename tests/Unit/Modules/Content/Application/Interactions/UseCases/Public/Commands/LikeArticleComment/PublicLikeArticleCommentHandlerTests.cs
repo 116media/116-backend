@@ -38,14 +38,14 @@ public class PublicLikeArticleCommentHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenNotYetLiked_ShouldAddLikeAndCommit()
     {
         ArticleCommentEntity comment = ArticleCommentFactory.Create(Guid.NewGuid(), Guid.NewGuid());
+        var userId = Guid.NewGuid();
         _articleRepositoryMock.SetupGetCommentByIdAsync(comment);
-        _articleRepositoryMock.SetupHasLikedCommentAsync(false);
+        _articleRepositoryMock.SetupHasLikedCommentAsync(userId, comment.Id, result: false);
 
-        var command = new PublicLikeArticleCommentCommand(comment.Id, Guid.NewGuid());
+        var command = new PublicLikeArticleCommentCommand(comment.Id, userId);
 
-        PublicLikeArticleCommentResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
-        result.IsSuccess.Should().BeTrue();
         _articleRepositoryMock.VerifyAddCommentLikeCalled(Times.Once());
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -54,14 +54,14 @@ public class PublicLikeArticleCommentHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenAlreadyLiked_ShouldBeIdempotentNoOp()
     {
         ArticleCommentEntity comment = ArticleCommentFactory.Create(Guid.NewGuid(), Guid.NewGuid());
+        var userId = Guid.NewGuid();
         _articleRepositoryMock.SetupGetCommentByIdAsync(comment);
-        _articleRepositoryMock.SetupHasLikedCommentAsync(true);
+        _articleRepositoryMock.SetupHasLikedCommentAsync(userId, comment.Id, result: true);
 
-        var command = new PublicLikeArticleCommentCommand(comment.Id, Guid.NewGuid());
+        var command = new PublicLikeArticleCommentCommand(comment.Id, userId);
 
-        PublicLikeArticleCommentResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
-        result.IsSuccess.Should().BeTrue();
         comment.LikeCount.Should().Be(0);
         _articleRepositoryMock.VerifyAddCommentLikeCalled(Times.Never());
     }
@@ -69,9 +69,10 @@ public class PublicLikeArticleCommentHandlerTests : BaseContentHandlerTest
     [Fact]
     public async Task Handle_WhenCommentNotFound_ShouldThrowNotFound()
     {
-        _articleRepositoryMock.SetupGetCommentByIdAsync(null);
+        Guid missingCommentId = Guid.NewGuid();
+        _articleRepositoryMock.SetupGetCommentByIdNotFound(missingCommentId);
 
-        var command = new PublicLikeArticleCommentCommand(Guid.NewGuid(), Guid.NewGuid());
+        var command = new PublicLikeArticleCommentCommand(missingCommentId, Guid.NewGuid());
 
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
