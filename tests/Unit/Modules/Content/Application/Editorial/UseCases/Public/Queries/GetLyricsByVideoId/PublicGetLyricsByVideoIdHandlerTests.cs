@@ -54,8 +54,6 @@ public class PublicGetLyricsByVideoIdHandlerTests : BaseContentHandlerTest
         PublicGetLyricsByVideoIdResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Lyrics.Should().NotBeNull();
         result.Lyrics.VideoId.Should().Be(videoId);
     }
 
@@ -97,10 +95,11 @@ public class PublicGetLyricsByVideoIdHandlerTests : BaseContentHandlerTest
         Guid videoId = Guid.NewGuid();
         LyricsEntity lyrics = LyricsFactory.CreateForVideo(CategoryId, videoId);
         lyrics.Publish();
-        var query = new PublicGetLyricsByVideoIdQuery(VideoId: videoId.ToString(), CurrentUserId: Guid.NewGuid());
+        Guid currentUserId = Guid.NewGuid();
+        var query = new PublicGetLyricsByVideoIdQuery(VideoId: videoId.ToString(), CurrentUserId: currentUserId);
 
         _lyricsRepositoryMock.SetupGetByVideoIdAsync(videoId, lyrics);
-        _lyricsRepositoryMock.SetupHasLikedAsync(true);
+        _lyricsRepositoryMock.SetupHasLikedAsync(currentUserId, lyrics.Id, result: true);
 
         // Act
         PublicGetLyricsByVideoIdResult result = await _handler.Handle(query, CancellationToken.None);
@@ -119,13 +118,13 @@ public class PublicGetLyricsByVideoIdHandlerTests : BaseContentHandlerTest
         var query = new PublicGetLyricsByVideoIdQuery(VideoId: videoId.ToString(), CurrentUserId: null);
 
         _lyricsRepositoryMock.SetupGetByVideoIdAsync(videoId, lyrics);
-        _lyricsRepositoryMock.SetupHasLikedAsync(true);
 
         // Act
         PublicGetLyricsByVideoIdResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
         result.Lyrics.IsLiked.Should().BeFalse();
+        _lyricsRepositoryMock.VerifyHasLikedNotCalled();
     }
 
     [Fact]
