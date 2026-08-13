@@ -56,8 +56,6 @@ public class AdminGetArticleByIdHandlerTests : BaseContentHandlerTest
         AdminGetArticleByIdResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Article.Should().NotBeNull();
         result.Article.Id.Should().Be(article.Id);
     }
 
