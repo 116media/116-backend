@@ -58,7 +58,19 @@ public class AdminUpsertSingleStreamingLinkHandlerTests
 
         // Assert
         result.StreamingLinkId.Should().NotBeEmpty();
-        _streamingLinkRepositoryMock.VerifyAddCalled();
+        _streamingLinkRepositoryMock.Verify(
+            x =>
+                x.AddAsync(
+                    It.Is<StreamingLinkEntity>(link =>
+                        link.Id == result.StreamingLinkId
+                        && link.LyricsId == lyrics.Id
+                        && link.Platform == EnumStreamingPlatform.Spotify
+                        && link.Url == "https://open.spotify.com/track/abc"
+                    ),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Once
+        );
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -83,7 +95,8 @@ public class AdminUpsertSingleStreamingLinkHandlerTests
         // Assert
         result.StreamingLinkId.Should().Be(existing.Id);
         existing.Url.Should().Be("https://listen.tidal.com/track/updated");
-        _streamingLinkRepositoryMock.VerifyUpdateCalled();
+        existing.Platform.Should().Be(EnumStreamingPlatform.Tidal);
+        _streamingLinkRepositoryMock.VerifyUpdateCalled(existing);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -108,6 +121,7 @@ public class AdminUpsertSingleStreamingLinkHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
@@ -127,6 +141,11 @@ public class AdminUpsertSingleStreamingLinkHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<ConflictException>();
+        _streamingLinkRepositoryMock.Verify(
+            x => x.AddAsync(It.IsAny<StreamingLinkEntity>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     #endregion
