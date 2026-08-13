@@ -64,7 +64,7 @@ public class AdminUploadAlbumCoverHandlerTests
         result.CoverImageStorageKey.Should().Be(fileEntity.StorageKey);
         album.CoverImageFileId.Should().Be(fileEntity.Id);
 
-        _albumRepositoryMock.VerifyUpdateCalled();
+        _albumRepositoryMock.VerifyUpdateCalled(album);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -92,6 +92,7 @@ public class AdminUploadAlbumCoverHandlerTests
         // Assert
         album.Name.Should().Be(originalName);
         album.Label.Should().Be(originalLabel);
+        album.CoverImageFileId.Should().Be(fileEntity.Id);
     }
 
     [Fact]
@@ -109,5 +110,6 @@ public class AdminUploadAlbumCoverHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 }
