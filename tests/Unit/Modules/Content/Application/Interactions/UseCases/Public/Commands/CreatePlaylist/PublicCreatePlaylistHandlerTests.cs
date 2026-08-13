@@ -41,7 +41,6 @@ public class PublicCreatePlaylistHandlerTests
         PublicCreatePlaylistResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Playlist.Should().NotBeNull();
         result.Playlist.Name.Should().Be(command.Name);
         result.Playlist.VideoCount.Should().Be(0);
         _playlistRepositoryMock.VerifyAddCalled();
