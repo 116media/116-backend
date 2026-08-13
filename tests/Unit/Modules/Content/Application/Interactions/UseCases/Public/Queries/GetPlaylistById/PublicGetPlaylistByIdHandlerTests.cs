@@ -52,7 +52,6 @@ public class PublicGetPlaylistByIdHandlerTests : BaseContentHandlerTest
         PublicGetPlaylistByIdResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Playlist.Should().NotBeNull();
         result.Playlist.Id.Should().Be(playlist.Id);
     }
 
@@ -64,9 +63,10 @@ public class PublicGetPlaylistByIdHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenPlaylistNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        _playlistRepositoryMock.SetupGetByIdWithVideosAsync(null);
+        Guid playlistId = Guid.NewGuid();
+        _playlistRepositoryMock.SetupGetByIdWithVideosNotFound(playlistId);
 
-        var query = new PublicGetPlaylistByIdQuery(Id: Guid.NewGuid(), UserId: UserId);
+        var query = new PublicGetPlaylistByIdQuery(Id: playlistId, UserId: UserId);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(query, CancellationToken.None);
