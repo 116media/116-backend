@@ -105,9 +105,10 @@ public class PublicAddCommentReplyHandlerTests : BaseContentHandlerTest
     {
         ArticleEntity article = ArticleFactory.CreatePublished(CategoryId);
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
-        _articleRepositoryMock.SetupGetCommentByIdAsync(null);
+        Guid missingParentId = Guid.NewGuid();
+        _articleRepositoryMock.SetupGetCommentByIdNotFound(missingParentId);
 
-        var command = new PublicAddCommentReplyCommand(article.Id, Guid.NewGuid(), Guid.NewGuid(), "reply");
+        var command = new PublicAddCommentReplyCommand(article.Id, missingParentId, Guid.NewGuid(), "reply");
 
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
