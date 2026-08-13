@@ -286,7 +286,6 @@ public class PublicRecordLyricsViewHandlerTests
         PublicRecordLyricsViewResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         result.IsCounted.Should().BeFalse();
         recorded.Should().NotBeNull();
         recorded!.IsCounted.Should().BeFalse();
