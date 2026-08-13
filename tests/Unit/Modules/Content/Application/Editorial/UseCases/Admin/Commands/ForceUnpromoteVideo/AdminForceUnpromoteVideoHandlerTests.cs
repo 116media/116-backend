@@ -2,6 +2,8 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.ForceUnpromoteV
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
+using _116.Content.Domain.Events;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Services;
 using _116.Tests.Fixtures.Constants;
@@ -61,10 +63,48 @@ public class AdminForceUnpromoteVideoHandlerTests
         AdminForceUnpromoteVideoResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        video.IsPromoted.Should().BeFalse();
+        video.PromotedUntil.Should().BeNull();
+        video.PromotionLevelId.Should().BeNull();
+        video.UnpromotedAt.Should().NotBeNull();
+        video.UnpromotedBy.Should().Be(ActorUserId);
+        video.UnpromotedReason.Should().Be(command.Reason);
         result.VideoId.Should().Be(video.Id);
-        result.UnpromotedAt.Should().NotBe(default);
-        _videoRepositoryMock.VerifyUpdateCalled();
+        result.UnpromotedAt.Should().Be(video.UnpromotedAt!.Value);
+        _videoRepositoryMock.VerifyUpdateCalled(video);
         _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    [Fact]
+    public async Task Handle_WhenVideoIsPromoted_ShouldRaiseContentPromotionRemovedEvent()
+    {
+        // Arrange
+        VideoEntity video = VideoFactory.CreatePromoted(CategoryId);
+        video.ClearDomainEvents();
+        var command = new AdminForceUnpromoteVideoCommand(
+            Slug: video.Slug,
+            Reason: TestConstants.Video.ValidRejectionReason
+        );
+        _videoRepositoryMock.SetupGetBySlug(video.Slug, video);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        video
+            .DomainEvents.OfType<ContentPromotionRemovedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(
+                new ContentPromotionRemovedEvent(
+                    ContentId: video.Id,
+                    ContentType: EnumCoreContentType.Video,
+                    CustomerId: video.CustomerId,
+                    Title: video.Title,
+                    Reason: command.Reason
+                )
+            );
     }
 
     #endregion
@@ -86,6 +126,7 @@ public class AdminForceUnpromoteVideoHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     #endregion
