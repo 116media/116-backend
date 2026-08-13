@@ -40,17 +40,17 @@ public class PublicLikeShortVideoHandlerTests
     {
         // Arrange
         ShortVideoEntity shortVideo = ShortVideoFactory.Create();
+        var userId = Guid.NewGuid();
 
         _shortVideoRepositoryMock.SetupGetByIdOrThrow(shortVideo);
-        _shortVideoRepositoryMock.SetupHasLikedAsync(false);
+        _shortVideoRepositoryMock.SetupHasLikedAsync(userId, shortVideo.Id, result: false);
 
-        var command = new PublicLikeShortVideoCommand(ShortVideoId: shortVideo.Id, UserId: Guid.NewGuid());
+        var command = new PublicLikeShortVideoCommand(ShortVideoId: shortVideo.Id, UserId: userId);
 
         // Act
-        PublicLikeShortVideoResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         _shortVideoRepositoryMock.VerifyAddLikeCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -80,11 +80,12 @@ public class PublicLikeShortVideoHandlerTests
     {
         // Arrange
         ShortVideoEntity shortVideo = ShortVideoFactory.Create();
+        var userId = Guid.NewGuid();
 
         _shortVideoRepositoryMock.SetupGetByIdOrThrow(shortVideo);
-        _shortVideoRepositoryMock.SetupHasLikedAsync(true);
+        _shortVideoRepositoryMock.SetupHasLikedAsync(userId, shortVideo.Id, result: true);
 
-        var command = new PublicLikeShortVideoCommand(ShortVideoId: shortVideo.Id, UserId: Guid.NewGuid());
+        var command = new PublicLikeShortVideoCommand(ShortVideoId: shortVideo.Id, UserId: userId);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
