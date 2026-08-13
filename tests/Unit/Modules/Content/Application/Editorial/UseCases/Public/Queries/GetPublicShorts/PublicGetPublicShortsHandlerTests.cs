@@ -34,6 +34,7 @@ public class PublicGetPublicShortsHandlerTests : BaseContentHandlerTest
 
         FileEntity videoFile = FileFactory.CreateVideo();
         _fileRepositoryMock.SetupGetById(videoFile);
+        _fileRepositoryMock.SetupGetByIds(new Dictionary<Guid, FileEntity>());
 
         _handler = new PublicGetPublicShortsHandler(
             _shortVideoRepositoryMock.Object,
@@ -56,7 +57,6 @@ public class PublicGetPublicShortsHandlerTests : BaseContentHandlerTest
         PublicGetPublicShortsResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.ShortVideos.Items.Should().HaveCount(shorts.Count);
         result.ShortVideos.Count.Should().Be((long)shorts.Count);
     }
