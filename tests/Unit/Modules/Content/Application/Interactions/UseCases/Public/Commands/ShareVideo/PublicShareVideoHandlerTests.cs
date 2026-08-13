@@ -43,10 +43,9 @@ public class PublicShareVideoHandlerTests
         var command = new PublicShareVideoCommand(VideoId: video.Id, UserId: null);
 
         // Act
-        PublicShareVideoResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         _videoRepositoryMock.VerifyAddShareCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -62,10 +61,9 @@ public class PublicShareVideoHandlerTests
         var command = new PublicShareVideoCommand(VideoId: video.Id, UserId: Guid.NewGuid());
 
         // Act
-        PublicShareVideoResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         _videoRepositoryMock.VerifyAddShareCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
