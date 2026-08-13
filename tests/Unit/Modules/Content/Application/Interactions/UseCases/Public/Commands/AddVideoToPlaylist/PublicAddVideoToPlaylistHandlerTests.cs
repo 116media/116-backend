@@ -62,10 +62,9 @@ public class PublicAddVideoToPlaylistHandlerTests
         );
 
         // Act
-        PublicAddVideoToPlaylistResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         _playlistRepositoryMock.VerifyAddVideoAsyncCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -78,10 +77,11 @@ public class PublicAddVideoToPlaylistHandlerTests
     public async Task Handle_WhenPlaylistNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        _playlistRepositoryMock.SetupGetByIdAsync(null);
+        Guid playlistId = Guid.NewGuid();
+        _playlistRepositoryMock.SetupGetByIdNotFound(playlistId);
 
         var command = new PublicAddVideoToPlaylistCommand(
-            PlaylistId: Guid.NewGuid(),
+            PlaylistId: playlistId,
             VideoId: Guid.NewGuid(),
             UserId: Guid.NewGuid(),
             SortOrder: 1
