@@ -45,10 +45,9 @@ public class AdminRemoveSingleStreamingLinkHandlerTests
         var command = new AdminRemoveSingleStreamingLinkCommand(lyricsId, EnumStreamingPlatform.AppleMusic);
 
         // Act
-        AdminRemoveSingleStreamingLinkResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         _streamingLinkRepositoryMock.VerifyRemoveCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -61,10 +60,9 @@ public class AdminRemoveSingleStreamingLinkHandlerTests
         var command = new AdminRemoveSingleStreamingLinkCommand(lyricsId, EnumStreamingPlatform.AppleMusic);
 
         // Act
-        AdminRemoveSingleStreamingLinkResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         _streamingLinkRepositoryMock.Verify(x => x.Remove(It.IsAny<StreamingLinkEntity>()), Times.Never);
         _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
