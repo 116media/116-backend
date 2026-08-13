@@ -4,6 +4,7 @@ using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
+using _116.Content.Domain.Events;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
@@ -49,15 +50,45 @@ public class AdminRejectLyricsSubmissionHandlerTests
         var command = new AdminRejectLyricsSubmissionCommand(submission.Id, note, reviewerId);
 
         // Act
-        AdminRejectLyricsSubmissionResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         submission.Status.Should().Be(EnumSubmissionStatus.Rejected);
         submission.ReviewedByUserId.Should().Be(reviewerId);
         submission.ReviewNote.Should().Be(note);
-        _submissionRepositoryMock.VerifyUpdateCalled();
+        _submissionRepositoryMock.VerifyUpdateCalled(submission);
         _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    [Fact]
+    public async Task Handle_WithValidCommand_ShouldRaiseLyricsSubmissionDecidedEvent()
+    {
+        // Arrange
+        LyricsSubmissionEntity submission = LyricsSubmissionFactory.Create();
+        submission.ClearDomainEvents();
+        _submissionRepositoryMock.SetupGetByIdOrThrow(submission);
+        var reviewerId = Guid.NewGuid();
+        const string note = "Duplicate of an existing song.";
+        var command = new AdminRejectLyricsSubmissionCommand(submission.Id, note, reviewerId);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        submission
+            .DomainEvents.OfType<LyricsSubmissionDecidedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(
+                new LyricsSubmissionDecidedEvent(
+                    SubmissionId: submission.Id,
+                    SubmittedByUserId: submission.SubmittedByUserId,
+                    Outcome: EnumSubmissionStatus.Rejected,
+                    ReviewNote: note,
+                    PublishedLyricsId: null
+                )
+            );
     }
 
     #endregion
@@ -69,6 +100,7 @@ public class AdminRejectLyricsSubmissionHandlerTests
     {
         // Arrange
         LyricsSubmissionEntity submission = LyricsSubmissionFactory.CreateApproved(Guid.NewGuid(), Guid.NewGuid());
+        submission.ClearDomainEvents();
         _submissionRepositoryMock.SetupGetByIdOrThrow(submission);
         var command = new AdminRejectLyricsSubmissionCommand(submission.Id, "Too late.", Guid.NewGuid());
 
@@ -77,6 +109,10 @@ public class AdminRejectLyricsSubmissionHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<ConflictException>();
+        submission.Status.Should().Be(EnumSubmissionStatus.Approved);
+        submission.ReviewNote.Should().BeNull();
+        submission.DomainEvents.Should().BeEmpty();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     #endregion
