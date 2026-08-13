@@ -57,9 +57,12 @@ public class AdminUpdateVideoSeoHandlerTests : BaseContentHandlerTest
         AdminUpdateVideoSeoResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Video.Should().NotBeNull();
-        _videoRepositoryMock.VerifyUpdateCalled();
+        video.MetaTitle.Should().Be(command.MetaTitle);
+        video.MetaDescription.Should().Be(command.MetaDescription);
+        result.Video.Id.Should().Be(video.Id);
+        result.Video.MetaTitle.Should().Be(command.MetaTitle);
+        result.Video.MetaDescription.Should().Be(command.MetaDescription);
+        _videoRepositoryMock.VerifyUpdateCalled(video);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -80,5 +83,6 @@ public class AdminUpdateVideoSeoHandlerTests : BaseContentHandlerTest
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 }
