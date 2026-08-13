@@ -40,7 +40,6 @@ public class AdminGetAllContentTypesHandlerTests : BaseContentHandlerTest
         AdminGetAllContentTypesResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.ContentTypes.Should().HaveCount(3);
     }
 
@@ -58,7 +57,6 @@ public class AdminGetAllContentTypesHandlerTests : BaseContentHandlerTest
         AdminGetAllContentTypesResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.ContentTypes.Should().ContainSingle();
         _lookupRepositoryMock.Verify(
             x => x.GetAllContentTypesAsync(searchTerm, It.IsAny<CancellationToken>()),
