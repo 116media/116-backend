@@ -2,6 +2,7 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.VerifyArtistOwn
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Events;
 using _116.Core.Application.Shared.Repositories;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
@@ -52,15 +53,39 @@ public class AdminVerifyArtistOwnerHandlerTests
         artist.UserId.Should().Be(userId);
         artist.VerifiedAt.Should().NotBeNull();
         result.Artist.Id.Should().Be(artist.Id);
-        _artistRepositoryMock.VerifyUpdateCalled();
+        _artistRepositoryMock.VerifyUpdateCalled(artist);
         _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    [Fact]
+    public async Task Handle_WhenArtistUnclaimed_ShouldRaiseArtistOwnershipVerifiedEvent()
+    {
+        // Arrange
+        ArtistEntity artist = ArtistFactory.Create();
+        artist.ClearDomainEvents();
+        _artistRepositoryMock.SetupGetByIdOrThrow(artist);
+        Guid userId = Guid.NewGuid();
+        var command = new AdminVerifyArtistOwnerCommand(artist.Id, userId);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        artist
+            .DomainEvents.OfType<ArtistOwnershipVerifiedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(new ArtistOwnershipVerifiedEvent(ArtistId: artist.Id, UserId: userId));
     }
 
     [Fact]
     public async Task Handle_WhenArtistAlreadyClaimed_ShouldThrowConflictException()
     {
         // Arrange
-        ArtistEntity artist = ArtistFactory.CreateClaimed(Guid.NewGuid());
+        Guid originalOwnerId = Guid.NewGuid();
+        ArtistEntity artist = ArtistFactory.CreateClaimed(originalOwnerId);
+        artist.ClearDomainEvents();
         _artistRepositoryMock.SetupGetByIdOrThrow(artist);
         var command = new AdminVerifyArtistOwnerCommand(artist.Id, Guid.NewGuid());
 
@@ -69,6 +94,9 @@ public class AdminVerifyArtistOwnerHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<ConflictException>();
+        artist.UserId.Should().Be(originalOwnerId);
+        artist.DomainEvents.Should().BeEmpty();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
@@ -84,5 +112,6 @@ public class AdminVerifyArtistOwnerHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 }
