@@ -45,13 +45,12 @@ public class PublicUnbookmarkArticleHandlerTests
         Guid userId = Guid.NewGuid();
         var command = new PublicUnbookmarkArticleCommand(ArticleId: article.Id, UserId: userId);
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
-        _articleRepositoryMock.SetupHasBookmarkedAsync(true);
+        _articleRepositoryMock.SetupHasBookmarkedAsync(userId, article.Id, result: true);
 
         // Act
-        PublicUnbookmarkArticleResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         _articleRepositoryMock.VerifyRemoveBookmarkCalled(userId, article.Id);
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -80,9 +79,10 @@ public class PublicUnbookmarkArticleHandlerTests
     {
         // Arrange
         ArticleEntity article = ArticleFactory.CreatePublished(CategoryId);
-        var command = new PublicUnbookmarkArticleCommand(ArticleId: article.Id, UserId: Guid.NewGuid());
+        Guid userId = Guid.NewGuid();
+        var command = new PublicUnbookmarkArticleCommand(ArticleId: article.Id, UserId: userId);
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
-        _articleRepositoryMock.SetupHasBookmarkedAsync(false);
+        _articleRepositoryMock.SetupHasBookmarkedAsync(userId, article.Id, result: false);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
