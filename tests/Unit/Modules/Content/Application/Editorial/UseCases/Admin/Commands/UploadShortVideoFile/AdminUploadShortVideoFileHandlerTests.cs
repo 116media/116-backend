@@ -48,6 +48,8 @@ public class AdminUploadShortVideoFileHandlerTests
     {
         // Arrange
         ShortVideoEntity shortVideo = ShortVideoFactory.CreateDraft();
+        FileEntity uploadedFile = FileFactory.CreateVideo();
+        _fileRepositoryMock.SetupReplaceVideoFile(uploadedFile);
         IFormFile fileMock = FileTestHelpers.CreateMockVideoFile();
         var command = new AdminUploadShortVideoFileCommand(ShortVideoId: shortVideo.Id.ToString(), File: fileMock);
 
@@ -57,12 +59,11 @@ public class AdminUploadShortVideoFileHandlerTests
         AdminUploadShortVideoFileResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.VideoUrl.Should().NotBeNullOrEmpty();
-        result.VideoStorageKey.Should().NotBeNullOrEmpty();
-        shortVideo.VideoFileId.Should().NotBeNull();
+        shortVideo.VideoFileId.Should().Be(uploadedFile.Id);
+        result.VideoUrl.Should().Be(uploadedFile.StorageUrl);
+        result.VideoStorageKey.Should().Be(uploadedFile.StorageKey);
         _fileRepositoryMock.VerifyReplaceVideoFileCalled();
-        _shortVideoRepositoryMock.VerifyUpdateCalled();
+        _shortVideoRepositoryMock.VerifyUpdateCalled(shortVideo);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -71,6 +72,8 @@ public class AdminUploadShortVideoFileHandlerTests
     {
         // Arrange
         ShortVideoEntity shortVideo = ShortVideoFactory.Create();
+        FileEntity uploadedFile = FileFactory.CreateVideo();
+        _fileRepositoryMock.SetupReplaceVideoFile(uploadedFile);
         IFormFile fileMock = FileTestHelpers.CreateMockVideoFile();
         var command = new AdminUploadShortVideoFileCommand(ShortVideoId: shortVideo.Id.ToString(), File: fileMock);
 
@@ -80,8 +83,11 @@ public class AdminUploadShortVideoFileHandlerTests
         AdminUploadShortVideoFileResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
+        shortVideo.VideoFileId.Should().Be(uploadedFile.Id);
+        result.VideoUrl.Should().Be(uploadedFile.StorageUrl);
+        result.VideoStorageKey.Should().Be(uploadedFile.StorageKey);
         _fileRepositoryMock.VerifyReplaceVideoFileCalled();
+        _shortVideoRepositoryMock.VerifyUpdateCalled(shortVideo);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -99,5 +105,6 @@ public class AdminUploadShortVideoFileHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 }
