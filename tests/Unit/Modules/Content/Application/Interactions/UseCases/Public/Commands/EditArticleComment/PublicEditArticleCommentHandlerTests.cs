@@ -53,10 +53,10 @@ public class PublicEditArticleCommentHandlerTests
         _articleRepositoryMock.SetupGetCommentByIdInArticleAsync(comment, article.Id);
 
         // Act
-        PublicEditArticleCommentResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
+        comment.Body.Should().Be(command.Body);
         _articleRepositoryMock.VerifyUpdateCommentCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -75,7 +75,7 @@ public class PublicEditArticleCommentHandlerTests
             UserId: Guid.NewGuid(),
             Body: "Updated comment body."
         );
-        _articleRepositoryMock.SetupGetCommentByIdInArticleAsync(null, command.ArticleId);
+        _articleRepositoryMock.SetupGetCommentByIdInArticleNotFound(command.CommentId, command.ArticleId);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
