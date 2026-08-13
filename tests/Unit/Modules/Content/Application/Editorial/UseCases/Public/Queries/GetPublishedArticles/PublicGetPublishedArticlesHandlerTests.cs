@@ -56,7 +56,6 @@ public class PublicGetPublishedArticlesHandlerTests : BaseContentHandlerTest
         PublicGetPublishedArticlesResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.Articles.Items.Should().HaveCount(articles.Count);
         result.Articles.Count.Should().Be((long)articles.Count);
     }
