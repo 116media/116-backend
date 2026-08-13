@@ -50,7 +50,7 @@ public class PublicGetPublicShortBySlugHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenActiveShortVideoExists_ShouldReturnShortVideo()
     {
         // Arrange
-        ShortVideoEntity shortVideo = ShortVideoFactory.Create(); // active by default
+        ShortVideoEntity shortVideo = ShortVideoFactory.Create();
         string slug = shortVideo.Slug;
         var query = new PublicGetPublicShortBySlugQuery(Slug: slug);
 
@@ -60,8 +60,8 @@ public class PublicGetPublicShortBySlugHandlerTests : BaseContentHandlerTest
         PublicGetPublicShortBySlugResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.ShortVideo.Should().NotBeNull();
+        result.ShortVideo.Id.Should().Be(shortVideo.Id);
+        result.ShortVideo.Slug.Should().Be(slug);
     }
 
     [Fact]
@@ -106,8 +106,8 @@ public class PublicGetPublicShortBySlugHandlerTests : BaseContentHandlerTest
         var query = new PublicGetPublicShortBySlugQuery(Slug: shortVideo.Slug, CurrentUserId: userId);
 
         _shortVideoRepositoryMock.SetupGetBySlug(shortVideo.Slug, shortVideo);
-        _shortVideoRepositoryMock.SetupHasLikedAsync(true);
-        _shortVideoRepositoryMock.SetupHasBookmarkedAsync(true);
+        _shortVideoRepositoryMock.SetupHasLikedAsync(userId, shortVideo.Id, result: true);
+        _shortVideoRepositoryMock.SetupHasBookmarkedAsync(userId, shortVideo.Id, result: true);
 
         // Act
         PublicGetPublicShortBySlugResult result = await _handler.Handle(query, CancellationToken.None);
