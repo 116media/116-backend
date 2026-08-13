@@ -47,11 +47,11 @@ public class PublicRenamePlaylistHandlerTests
         var command = new PublicRenamePlaylistCommand(Id: playlistId, UserId: userId, Name: "New Name");
 
         // Act
-        PublicRenamePlaylistResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
-        _playlistRepositoryMock.VerifyUpdateCalled();
+        playlist.Name.Should().Be("New Name");
+        _playlistRepositoryMock.VerifyUpdateCalled(playlist);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -63,9 +63,10 @@ public class PublicRenamePlaylistHandlerTests
     public async Task Handle_WhenPlaylistNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        _playlistRepositoryMock.SetupGetByIdAsync(null);
+        Guid playlistId = Guid.NewGuid();
+        _playlistRepositoryMock.SetupGetByIdNotFound(playlistId);
 
-        var command = new PublicRenamePlaylistCommand(Id: Guid.NewGuid(), UserId: Guid.NewGuid(), Name: "New Name");
+        var command = new PublicRenamePlaylistCommand(Id: playlistId, UserId: Guid.NewGuid(), Name: "New Name");
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
