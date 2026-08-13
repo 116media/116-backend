@@ -50,7 +50,6 @@ public class AdminGetAllVideosHandlerTests : BaseContentHandlerTest
         AdminGetAllVideosResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.Videos.Items.Should().HaveCount(videos.Count);
         result.Videos.Count.Should().Be((long)videos.Count);
     }
