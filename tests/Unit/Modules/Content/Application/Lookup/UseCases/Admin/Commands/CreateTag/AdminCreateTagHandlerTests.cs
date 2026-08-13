@@ -52,7 +52,6 @@ public class AdminCreateTagHandlerTests : BaseContentHandlerTest
         AdminCreateTagResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.Tag.Name.Should().Be(name);
         result.Tag.Slug.Should().Be(slug);
 
@@ -92,16 +91,10 @@ public class AdminCreateTagHandlerTests : BaseContentHandlerTest
         _lookupRepositoryMock.SetupGetTagBySlug(slug, existingTag);
 
         // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (ConflictException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<ConflictException>();
         _lookupRepositoryMock.VerifyAddTagNotCalled();
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
