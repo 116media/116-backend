@@ -55,10 +55,14 @@ public class AdminUpdateAlbumHandlerTests
         AdminUpdateAlbumResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        album.Name.Should().Be("Updated Name");
+        album.ReleaseYear.Should().Be(2001);
+        album.Label.Should().Be("Updated Label");
+        album.ReleaseType.Should().Be(EnumReleaseType.Album);
         result.Album.Name.Should().Be("Updated Name");
         result.Album.ReleaseYear.Should().Be(2001);
         result.Album.Label.Should().Be("Updated Label");
-        _albumRepositoryMock.VerifyUpdateCalled();
+        _albumRepositoryMock.VerifyUpdateCalled(album);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -75,8 +79,11 @@ public class AdminUpdateAlbumHandlerTests
         AdminUpdateAlbumResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Album.CoverImageUrl.Should().BeNull(); // no file repository match set up, but no exception either
+        result.Album.CoverImageUrl.Should().BeNull();
         album.CoverImageFileId.Should().Be(coverImageFileId);
+        album.Name.Should().Be("Updated Name");
+        _albumRepositoryMock.VerifyUpdateCalled(album);
+        _unitOfWorkMock.VerifyCommitCalled();
     }
 
     [Fact]
@@ -92,5 +99,6 @@ public class AdminUpdateAlbumHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 }
