@@ -41,7 +41,6 @@ public class AdminGetAllTagsHandlerTests : BaseContentHandlerTest
         AdminGetAllTagsResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.Tags.Should().HaveCount(3);
     }
 
@@ -59,7 +58,6 @@ public class AdminGetAllTagsHandlerTests : BaseContentHandlerTest
         AdminGetAllTagsResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.Tags.Should().ContainSingle();
         _lookupRepositoryMock.Verify(
             x =>
@@ -85,7 +83,6 @@ public class AdminGetAllTagsHandlerTests : BaseContentHandlerTest
         AdminGetAllTagsResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.Tags.Should().BeEmpty();
     }
 
