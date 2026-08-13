@@ -52,7 +52,6 @@ public class AdminCreatePricingTierHandlerTests : BaseContentHandlerTest
         AdminCreatePricingTierResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.PricingTier.Name.Should().Be(name);
         result.PricingTier.IsActive.Should().BeTrue();
 
@@ -113,16 +112,10 @@ public class AdminCreatePricingTierHandlerTests : BaseContentHandlerTest
         _lookupRepositoryMock.SetupPricingTierExistsByName(name, true);
 
         // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (ConflictException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<ConflictException>();
         _lookupRepositoryMock.VerifyAddPricingTierNotCalled();
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
