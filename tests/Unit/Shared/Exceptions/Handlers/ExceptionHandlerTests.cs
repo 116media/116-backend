@@ -115,7 +115,7 @@ public class ExceptionHandlerTests
         // Act
         await _handler.TryHandleAsync(context, exception, CancellationToken.None);
 
-        // Assert - Read the actual response
+        // Assert
         context.Response.Body.Position = 0;
         using StreamReader reader = new(context.Response.Body);
         string responseBody = await reader.ReadToEndAsync();
@@ -136,7 +136,7 @@ public class ExceptionHandlerTests
         // Act
         await _handler.TryHandleAsync(context, exception, CancellationToken.None);
 
-        // Assert - Read the actual response
+        // Assert
         context.Response.Body.Position = 0;
         using StreamReader reader = new(context.Response.Body);
         string responseBody = await reader.ReadToEndAsync();
@@ -145,7 +145,6 @@ public class ExceptionHandlerTests
         problemDetails.Should().NotBeNull();
         problemDetails.Extensions.Should().ContainKey("timestamp");
 
-        // Verify the timestamp can be parsed as a valid DateTime
         string timestampStr = problemDetails.Extensions["timestamp"]!.ToString()!;
         bool canParse = DateTime.TryParse(timestampStr, out DateTime timestamp);
         canParse.Should().BeTrue("timestamp should be a valid DateTime");
@@ -174,29 +173,32 @@ public class ExceptionHandlerTests
         string responseBody = await reader.ReadToEndAsync();
         responseBody.Should().NotBeEmpty();
 
-        // Verify it's valid JSON
         var deserializedProblem = JsonSerializer.Deserialize<ProblemDetails>(responseBody);
         deserializedProblem.Should().NotBeNull();
     }
 
     [Fact]
-    public async Task TryHandleAsync_ShouldCallStrategyRegistry()
+    public async Task TryHandleAsync_WithUnmappedException_ShouldWriteInternalServerErrorProblemDetails()
     {
         // Arrange
         DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
         Exception exception = new("Test error");
-        ProblemDetails problemDetails = new()
-        {
-            Status = StatusCodes.Status500InternalServerError,
-            Title = "Exception",
-            Detail = "Test error",
-        };
 
         // Act
-        await _handler.TryHandleAsync(context, exception, CancellationToken.None);
+        bool handled = await _handler.TryHandleAsync(context, exception, CancellationToken.None);
 
         // Assert
-        // Registry is called internally, verification not needed with real implementation
+        handled.Should().BeTrue();
+        context.Response.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
+
+        context.Response.Body.Position = 0;
+        using StreamReader reader = new(context.Response.Body);
+        string responseBody = await reader.ReadToEndAsync();
+        var problem = JsonSerializer.Deserialize<ProblemDetails>(responseBody);
+
+        problem.Should().NotBeNull();
+        problem!.Status.Should().Be(StatusCodes.Status500InternalServerError);
+        problem.Title.Should().Be("Exception");
     }
 
     [Fact]
@@ -459,7 +461,7 @@ public class ExceptionHandlerTests
     [Fact]
     public async Task TryHandleAsync_WithIdentityButNoNameClaim_ShouldLogAnonymous()
     {
-        // Arrange — covers Identity?.Name null branch: Identity not null but Name claim absent
+        // Arrange
         DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
         context.User = new System.Security.Claims.ClaimsPrincipal(new System.Security.Claims.ClaimsIdentity());
 
