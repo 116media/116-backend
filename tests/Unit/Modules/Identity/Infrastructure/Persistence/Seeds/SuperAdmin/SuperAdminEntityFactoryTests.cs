@@ -54,7 +54,6 @@ public class SuperAdminEntityFactoryTests : IDisposable
         UserEntity result = _factory.CreateSuperAdminUser();
 
         // Assert
-        result.Should().NotBeNull();
         result.Email.Should().Be(SuperAdminConfiguration.Email);
     }
 
@@ -163,7 +162,6 @@ public class SuperAdminEntityFactoryTests : IDisposable
         RoleEntity result = _factory.CreateSuperAdminRole();
 
         // Assert
-        result.Should().NotBeNull();
         result.Name.Should().Be(SuperAdminConfiguration.RoleName);
     }
 
@@ -209,7 +207,6 @@ public class SuperAdminEntityFactoryTests : IDisposable
         PermissionEntity result = _factory.CreateSystemAllPermission();
 
         // Assert
-        result.Should().NotBeNull();
         result.Resource.Should().Be(SuperAdminConfiguration.PermissionResource);
     }
 
@@ -269,7 +266,6 @@ public class SuperAdminEntityFactoryTests : IDisposable
         UserRoleEntity result = SuperAdminEntityFactory.CreateUserRoleAssociation(userId, roleId);
 
         // Assert
-        result.Should().NotBeNull();
         result.UserId.Should().Be(userId);
     }
 
@@ -331,7 +327,6 @@ public class SuperAdminEntityFactoryTests : IDisposable
         RolePermissionEntity result = SuperAdminEntityFactory.CreateRolePermissionAssociation(roleId, permissionId);
 
         // Assert
-        result.Should().NotBeNull();
         result.RoleId.Should().Be(roleId);
     }
 
