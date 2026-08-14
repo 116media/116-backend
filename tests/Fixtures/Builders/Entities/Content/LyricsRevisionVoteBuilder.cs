@@ -14,7 +14,6 @@ public class LyricsRevisionVoteBuilder
     private Guid _revisionId = Guid.NewGuid();
     private Guid _userId = Guid.NewGuid();
     private EnumVote _vote = EnumVote.Approve;
-    private string? _comment;
 
     /// <summary>
     /// Sets the lyrics revision being voted on.
@@ -53,7 +52,7 @@ public class LyricsRevisionVoteBuilder
             revisionId: _revisionId,
             userId: _userId,
             vote: _vote,
-            comment: _comment
+            comment: null
         );
 
         entity.CreatedAt = DateTime.UtcNow;
