@@ -79,8 +79,6 @@ public class PublicRefreshTokenHandlerTests : BaseHandlerTest
         PublicRefreshTokenResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.AuthenticationResult.Should().NotBeNull();
         result.AuthenticationResult.AccessToken.Should().Be(accessToken);
         result.AuthenticationResult.RefreshToken.Should().Be(newRefreshToken);
     }
@@ -258,7 +256,6 @@ public class PublicRefreshTokenHandlerTests : BaseHandlerTest
         PublicRefreshTokenResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.AuthenticationResult.User.Should().NotBeNull();
         result.AuthenticationResult.User.Id.Should().Be(user.Id);
     }
 
