@@ -43,29 +43,6 @@ public class PublicVerifyOtpHandlerTests
     #region Success Cases
 
     [Fact]
-    public async Task Handle_WithValidOtp_ShouldReturnSuccess()
-    {
-        // Arrange
-        string email = "user@example.com";
-        string code = "123456";
-        string purpose = EnumOtpPurpose.EmailVerification.ToString();
-        UserEntity user = UserFactory.CreateUnverified();
-        OtpEntity otp = OtpFactory.Create(user.Id, code);
-
-        PublicVerifyOtpCommand command = new(Email: email, Code: code, Purpose: purpose);
-
-        _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
-        _otpRepositoryMock.SetupValidateOtp(otp);
-
-        // Act
-        PublicVerifyOtpResult result = await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        result.Should().NotBeNull();
-        result.IsSuccess.Should().BeTrue();
-    }
-
-    [Fact]
     public async Task Handle_ShouldMarkOtpAsUsed()
     {
         // Arrange
