@@ -45,11 +45,9 @@ public class AdminHardDeletePermissionHandlerTests
         _permissionRepositoryMock.SetupGetByIdOrThrow(permission);
 
         // Act
-        AdminHardDeletePermissionResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.IsSuccess.Should().BeTrue();
         _permissionRepositoryMock.VerifyDeleteCalled(permission);
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -69,10 +67,9 @@ public class AdminHardDeletePermissionHandlerTests
         _permissionRepositoryMock.SetupGetByIdOrThrow(deletedPermission);
 
         // Act
-        AdminHardDeletePermissionResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         _permissionRepositoryMock.VerifyDeleteCalled(deletedPermission);
     }
 
@@ -91,10 +88,9 @@ public class AdminHardDeletePermissionHandlerTests
         _permissionRepositoryMock.SetupGetByIdOrThrow(inactivePermission);
 
         // Act
-        AdminHardDeletePermissionResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         _permissionRepositoryMock.VerifyDeleteCalled(inactivePermission);
     }
 
@@ -128,16 +124,10 @@ public class AdminHardDeletePermissionHandlerTests
         _permissionRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentPermissionId);
 
         // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (NotFoundException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
