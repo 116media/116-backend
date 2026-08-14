@@ -159,8 +159,8 @@ public class LoggingDecoratorTests
                     It.IsAny<Exception>(),
                     It.IsAny<Func<It.IsAnyType, Exception?, string>>()
                 ),
-            Times.AtLeast(2)
-        ); // At least START and END logs
+            Times.Exactly(2)
+        );
     }
 
     [Fact]
@@ -379,7 +379,7 @@ public class LoggingDecoratorTests
     }
 
     [Fact]
-    public async Task Handle_ShouldLogEndEvenIfHandlerThrows()
+    public async Task Handle_WhenHandlerThrows_ShouldLogStartButNotEnd()
     {
         // Arrange
         Mock<IRequestHandler<TestRequest, TestResponse>> handlerMock = new();
@@ -391,16 +391,10 @@ public class LoggingDecoratorTests
         LoggingDecorator<TestRequest, TestResponse> decorator = new(handlerMock.Object, loggerMock.Object, _time);
 
         // Act
-        try
-        {
-            await decorator.Handle(new TestRequest("test"));
-        }
-        catch (InvalidOperationException)
-        {
-            // Expected exception
-        }
+        Func<Task> act = async () => await decorator.Handle(new TestRequest("test"));
 
-        // Assert - START should be logged, but END won't be because exception interrupts flow
+        // Assert
+        await act.Should().ThrowAsync<InvalidOperationException>();
         loggerMock.Verify(
             x =>
                 x.Log(
@@ -411,6 +405,17 @@ public class LoggingDecoratorTests
                     It.IsAny<Func<It.IsAnyType, Exception?, string>>()
                 ),
             Times.Once
+        );
+        loggerMock.Verify(
+            x =>
+                x.Log(
+                    LogLevel.Information,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("[END]")),
+                    It.IsAny<Exception>(),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()
+                ),
+            Times.Never
         );
     }
 
