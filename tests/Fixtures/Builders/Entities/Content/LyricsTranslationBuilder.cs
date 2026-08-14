@@ -13,7 +13,6 @@ public class LyricsTranslationBuilder
     private Guid _lyricsId = Guid.NewGuid();
     private string _language = "es";
     private string _text = "Texto traducido de la letra.";
-    private string? _acceptedRevisionText;
 
     /// <summary>
     /// Sets the lyrics page this translation belongs to.
@@ -53,11 +52,6 @@ public class LyricsTranslationBuilder
             language: _language,
             text: _text
         );
-
-        if (_acceptedRevisionText is not null)
-        {
-            entity.ApplyAcceptedRevision(_acceptedRevisionText);
-        }
 
         entity.CreatedAt = DateTime.UtcNow;
 
