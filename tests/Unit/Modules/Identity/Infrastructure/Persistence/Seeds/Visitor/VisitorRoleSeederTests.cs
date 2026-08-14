@@ -204,7 +204,7 @@ public class VisitorRoleSeederTests
                     It.IsAny<Exception>(),
                     It.IsAny<Func<It.IsAnyType, Exception?, string>>()
                 ),
-            Times.AtLeastOnce
+            Times.Once
         );
     }
 
@@ -254,7 +254,7 @@ public class VisitorRoleSeederTests
                     It.IsAny<Exception>(),
                     It.IsAny<Func<It.IsAnyType, Exception?, string>>()
                 ),
-            Times.AtLeastOnce
+            Times.Once
         );
     }
 
