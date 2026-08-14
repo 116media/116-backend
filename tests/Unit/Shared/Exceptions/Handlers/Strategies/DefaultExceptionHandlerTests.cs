@@ -8,56 +8,14 @@ using Xunit;
 namespace _116.Unit.Tests.Shared.Exceptions.Handlers.Strategies;
 
 /// <summary>
-/// Unit tests for <see cref="DefaultExceptionHandler"/>.
+/// Unit tests for <see cref="DefaultExceptionHandler" />.
+/// This is the only strategy that builds its ProblemDetails inline instead of routing through the
+/// shared envelope helper, so the trace extensions it omits are pinned here rather than in
+/// <see cref="ExceptionStrategyContractTests" />.
 /// </summary>
 public class DefaultExceptionHandlerTests
 {
     private readonly DefaultExceptionHandler _handler = new();
-
-    #region ExceptionType Tests
-
-    [Fact]
-    public void ExceptionType_ShouldReturnBaseExceptionType()
-    {
-        // Act
-        Type exceptionType = _handler.ExceptionType;
-
-        // Assert
-        exceptionType.Should().Be(typeof(Exception));
-    }
-
-    #endregion
-
-    #region CreateProblemDetails Tests
-
-    [Fact]
-    public void CreateProblemDetails_ShouldReturnProblemDetailsWithCorrectTitle()
-    {
-        // Arrange
-        Exception exception = new("Test error");
-        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
-
-        // Act
-        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
-
-        // Assert
-        problemDetails.Title.Should().Be("Exception");
-    }
-
-    [Fact]
-    public void CreateProblemDetails_ShouldReturnProblemDetailsWithExceptionMessage()
-    {
-        // Arrange
-        string errorMessage = "Test error message";
-        Exception exception = new(errorMessage);
-        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
-
-        // Act
-        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
-
-        // Assert
-        problemDetails.Detail.Should().Be(errorMessage);
-    }
 
     [Fact]
     public void CreateProblemDetails_ShouldReturn500StatusCode()
@@ -74,19 +32,18 @@ public class DefaultExceptionHandlerTests
     }
 
     [Fact]
-    public void CreateProblemDetails_ShouldIncludeRequestPath()
+    public void CreateProblemDetails_ShouldUseTheExceptionMessageAsDetail()
     {
         // Arrange
-        Exception exception = new("Test error");
+        string errorMessage = "Test error message";
+        Exception exception = new(errorMessage);
         DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
-        string requestPath = "/api/test";
-        context.Request.Path = requestPath;
 
         // Act
         ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
-        problemDetails.Instance.Should().Be(requestPath);
+        problemDetails.Detail.Should().Be(errorMessage);
     }
 
     [Fact]
@@ -100,7 +57,7 @@ public class DefaultExceptionHandlerTests
         ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
-        problemDetails.Title.Should().Be("InvalidOperationException");
+        problemDetails.Title.Should().Be(nameof(InvalidOperationException));
     }
 
     [Fact]
@@ -118,5 +75,18 @@ public class DefaultExceptionHandlerTests
         problemDetails.Status.Should().Be(StatusCodes.Status500InternalServerError);
     }
 
-    #endregion
+    [Fact]
+    public void CreateProblemDetails_ShouldNotCarryTheTraceExtensions()
+    {
+        // Arrange
+        Exception exception = new("Test error");
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
+
+        // Act
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
+
+        // Assert
+        problemDetails.Extensions.Should().NotContainKey("traceId");
+        problemDetails.Extensions.Should().NotContainKey("timestamp");
+    }
 }
