@@ -45,8 +45,6 @@ public class AdminExportSessionDataHandlerTests
         AdminExportSessionDataResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.SessionData.Should().NotBeNull();
         result.SessionData.Should().HaveCount(5);
     }
 
