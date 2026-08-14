@@ -50,8 +50,6 @@ public class AdminGetAllPermissionsHandlerTests : BaseHandlerTest
         AdminGetAllPermissionsResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Permissions.Should().NotBeNull();
         result.Permissions.Items.Should().HaveCount(3);
         result.Permissions.Count.Should().Be(3);
         result.Permissions.PageIndex.Should().Be(0);
@@ -71,7 +69,6 @@ public class AdminGetAllPermissionsHandlerTests : BaseHandlerTest
         AdminGetAllPermissionsResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.Permissions.Items.Should().BeEmpty();
         result.Permissions.Count.Should().Be(0);
     }
