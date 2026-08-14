@@ -55,8 +55,8 @@ public class PublicSignUpHandlerTests : BaseHandlerTest
         PublicSignUpResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.AuthenticationResult.Should().NotBeNull();
+        result.AuthenticationResult.AccessToken.Should().Be("access-token");
+        result.AuthenticationResult.RefreshToken.Should().Be("refresh-token");
         result.VerificationRequired.Should().BeTrue();
     }
 
@@ -180,16 +180,10 @@ public class PublicSignUpHandlerTests : BaseHandlerTest
             .ThrowsAsync(new ConflictException("Email already exists."));
 
         // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (ConflictException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<ConflictException>();
         _sessionFactoryMock.Verify(
             x =>
                 x.CreateSessionAsync(
