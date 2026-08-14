@@ -46,14 +46,13 @@ public class PublicLoginAuthFactoryTests
         UserEntity user = UserFactory.CreateVerifiedActive();
 
         _authRepositoryMock.SetupGetUserWithRolesByCredentials(user);
-        _passwordServiceMock.SetupVerifyReturnsTrue();
+        _passwordServiceMock.SetupVerifySuccess(password, user.PasswordHash);
 
         // Act
         PublicLoginAuthData result = await _factory.AuthenticateAsync(credentials, password, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.User.Should().NotBeNull();
+        result.User.Should().BeSameAs(user);
         result.User.Id.Should().Be(user.Id);
     }
 
@@ -66,7 +65,7 @@ public class PublicLoginAuthFactoryTests
         UserEntity user = UserFactory.CreateVerifiedActive();
 
         _authRepositoryMock.SetupGetUserWithRolesByCredentials(user);
-        _passwordServiceMock.SetupVerifyReturnsTrue();
+        _passwordServiceMock.SetupVerifySuccess(password, user.PasswordHash);
 
         // Act
         await _factory.AuthenticateAsync(credentials, password, CancellationToken.None);
@@ -87,7 +86,7 @@ public class PublicLoginAuthFactoryTests
         UserEntity user = UserFactory.CreateVerifiedActive();
 
         _authRepositoryMock.SetupGetUserWithRolesByCredentials(user);
-        _passwordServiceMock.SetupVerifyReturnsTrue();
+        _passwordServiceMock.SetupVerifySuccess(password, user.PasswordHash);
 
         // Act
         await _factory.AuthenticateAsync(credentials, password, CancellationToken.None);
@@ -105,14 +104,14 @@ public class PublicLoginAuthFactoryTests
         UserEntity user = UserFactory.CreateVerifiedActive();
 
         _authRepositoryMock.SetupGetUserWithRolesByCredentials(user);
-        _passwordServiceMock.SetupVerifyReturnsTrue();
+        _passwordServiceMock.SetupVerifySuccess(password, user.PasswordHash);
 
         // Act
         PublicLoginAuthData result = await _factory.AuthenticateAsync(credentials, password, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.User.Should().NotBeNull();
+        result.User.Should().BeSameAs(user);
+        result.User.UserName.Should().Be(user.UserName);
     }
 
     #endregion
@@ -144,7 +143,7 @@ public class PublicLoginAuthFactoryTests
         UserEntity user = UserFactory.CreateVerifiedActive();
 
         _authRepositoryMock.SetupGetUserWithRolesByCredentials(user);
-        _passwordServiceMock.SetupVerifyReturnsFalse();
+        _passwordServiceMock.SetupVerifyFailure(password, user.PasswordHash);
 
         // Act
         Func<Task> act = async () => await _factory.AuthenticateAsync(credentials, password, CancellationToken.None);
@@ -167,7 +166,7 @@ public class PublicLoginAuthFactoryTests
         using CancellationTokenSource cts = new();
 
         _authRepositoryMock.SetupGetUserWithRolesByCredentials(user);
-        _passwordServiceMock.SetupVerifyReturnsTrue();
+        _passwordServiceMock.SetupVerifySuccess(password, user.PasswordHash);
 
         // Act
         await _factory.AuthenticateAsync(credentials, password, cts.Token);
