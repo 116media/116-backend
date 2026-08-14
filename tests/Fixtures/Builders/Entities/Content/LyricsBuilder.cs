@@ -27,15 +27,8 @@ public class LyricsBuilder
     private Guid? _albumId;
     private EnumContentStatus _targetStatus = EnumContentStatus.Draft;
     private string? _rejectionReason;
-    private Guid? _coverImageFileId;
-    private string? _album;
-    private short? _releaseYear;
-    private string? _label;
-    private string? _songwriter;
-    private string? _producer;
     private readonly List<Guid> _tagIds = [];
     private (Guid PromotionLevelId, DateTimeOffset Until)? _promotion;
-    private DateTime? _createdAt;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LyricsBuilder"/> class with a required category ID.
@@ -227,22 +220,6 @@ public class LyricsBuilder
 
         ApplyStatusTransition(entity);
 
-        if (_coverImageFileId.HasValue)
-        {
-            entity.SetCoverImageFileId(_coverImageFileId.Value);
-        }
-
-        if (
-            _album is not null
-            || _releaseYear is not null
-            || _label is not null
-            || _songwriter is not null
-            || _producer is not null
-        )
-        {
-            entity.UpdateMetadata(_album, _releaseYear, _label, _songwriter, _producer);
-        }
-
         foreach (Guid tagId in _tagIds)
         {
             entity.Tags.Add(LyricsTagEntity.Create(Guid.NewGuid(), entity.Id, tagId));
@@ -263,7 +240,7 @@ public class LyricsBuilder
             entity.StampPromotion(_promotion.Value.PromotionLevelId, _promotion.Value.Until);
         }
 
-        entity.CreatedAt = _createdAt ?? DateTime.UtcNow;
+        entity.CreatedAt = DateTime.UtcNow;
 
         return entity;
     }
