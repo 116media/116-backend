@@ -50,8 +50,6 @@ public class AdminGetAllRolesHandlerTests : BaseHandlerTest
         AdminGetAllRolesResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Roles.Should().NotBeNull();
         result.Roles.Items.Should().HaveCount(3);
         result.Roles.Count.Should().Be(3);
         result.Roles.PageIndex.Should().Be(0);
@@ -71,7 +69,6 @@ public class AdminGetAllRolesHandlerTests : BaseHandlerTest
         AdminGetAllRolesResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.Roles.Items.Should().BeEmpty();
         result.Roles.Count.Should().Be(0);
     }
