@@ -38,7 +38,6 @@ public class AdminCleanupExpiredSessionsHandlerTests
         AdminCleanupExpiredSessionsResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.DeletedCount.Should().Be(10);
     }
 
