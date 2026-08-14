@@ -43,6 +43,60 @@ public class CatalogSpecificationsTests
 
     #endregion
 
+    #region PackageSlotByIdInPackageSpecification
+
+    [Fact]
+    public void PackageSlotByIdInPackageSpecification_WithMatchingSlotAndPackage_ShouldReturnTrue()
+    {
+        // Arrange
+        var packageId = Guid.NewGuid();
+        PackageSlotEntity slot = PackageSlotFactory.Create(packageId);
+        var spec = new PackageSlotByIdInPackageSpecification(slot.Id, packageId);
+        Func<PackageSlotEntity, bool> predicate = spec.ToExpression().Compile();
+
+        // Act & Assert
+        predicate(slot).Should().BeTrue();
+    }
+
+    [Fact]
+    public void PackageSlotByIdInPackageSpecification_WithMatchingSlotUnderDifferentPackage_ShouldReturnFalse()
+    {
+        // Arrange
+        PackageSlotEntity slot = PackageSlotFactory.Create(Guid.NewGuid());
+        var spec = new PackageSlotByIdInPackageSpecification(slot.Id, Guid.NewGuid());
+        Func<PackageSlotEntity, bool> predicate = spec.ToExpression().Compile();
+
+        // Act & Assert
+        predicate(slot).Should().BeFalse();
+    }
+
+    [Fact]
+    public void PackageSlotByIdInPackageSpecification_WithDifferentSlotUnderMatchingPackage_ShouldReturnFalse()
+    {
+        // Arrange
+        var packageId = Guid.NewGuid();
+        PackageSlotEntity slot = PackageSlotFactory.Create(packageId);
+        var spec = new PackageSlotByIdInPackageSpecification(Guid.NewGuid(), packageId);
+        Func<PackageSlotEntity, bool> predicate = spec.ToExpression().Compile();
+
+        // Act & Assert
+        predicate(slot).Should().BeFalse();
+    }
+
+    [Fact]
+    public void PackageSlotByIdInPackageSpecification_WithDifferentSlotAndPackage_ShouldReturnFalse()
+    {
+        // Arrange
+        PackageSlotEntity slot = PackageSlotFactory.Create(Guid.NewGuid());
+        var spec = new PackageSlotByIdInPackageSpecification(Guid.NewGuid(), Guid.NewGuid());
+        Func<PackageSlotEntity, bool> predicate = spec.ToExpression().Compile();
+
+        // Act & Assert
+        predicate(slot).Should().BeFalse();
+    }
+
+    #endregion
+
     #region CategoryByIdSpecification
 
     [Fact]
