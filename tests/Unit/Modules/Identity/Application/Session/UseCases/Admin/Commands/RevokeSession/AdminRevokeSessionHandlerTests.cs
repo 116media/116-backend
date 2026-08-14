@@ -47,11 +47,11 @@ public class AdminRevokeSessionHandlerTests
         _sessionRepositoryMock.SetupGetById(session);
 
         // Act
-        AdminRevokeSessionResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.IsSuccess.Should().BeTrue();
+        _sessionRepositoryMock.VerifyRevokeCalled(session.Id);
+        _unitOfWorkMock.VerifyCommitCalled();
     }
 
     [Fact]
@@ -138,16 +138,10 @@ public class AdminRevokeSessionHandlerTests
         _sessionRepositoryMock.SetupGetByIdReturnsNull(sessionId);
 
         // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (NotFoundException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
         _sessionRepositoryMock.Verify(
             x => x.RevokeAsync(It.IsAny<Guid>(), It.IsAny<EnumSessionRevokeReason>(), It.IsAny<CancellationToken>()),
             Times.Never
@@ -165,16 +159,10 @@ public class AdminRevokeSessionHandlerTests
         _sessionRepositoryMock.SetupGetByIdReturnsNull(sessionId);
 
         // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (NotFoundException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
