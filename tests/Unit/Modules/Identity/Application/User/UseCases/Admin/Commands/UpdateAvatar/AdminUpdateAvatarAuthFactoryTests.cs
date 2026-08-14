@@ -55,7 +55,6 @@ public class AdminUpdateAvatarAuthFactoryTests
         );
 
         // Assert
-        result.Should().NotBeNull();
         result.User.Should().Be(user);
     }
 
@@ -155,7 +154,6 @@ public class AdminUpdateAvatarAuthFactoryTests
         AdminUpdateAvatarAuthData result = await _factory.UpdateAvatarAsync(user, avatarFileId, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.User.Should().Be(user);
     }
 
