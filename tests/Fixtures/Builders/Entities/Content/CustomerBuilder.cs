@@ -16,9 +16,7 @@ public class CustomerBuilder
     private Guid _id;
     private string _fullName;
     private string _email;
-    private string? _phone;
     private string? _company;
-    private string? _notes;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CustomerBuilder"/> class with random default values.
@@ -72,13 +70,13 @@ public class CustomerBuilder
     public CustomerEntity Build()
     {
         return CustomerEntity.Create(
-            _id,
-            _fullName,
-            _email,
-            _phone,
-            _company,
-            _notes,
-            TestErrorsFactory.CreateCustomerErrors()
+            id: _id,
+            fullName: _fullName,
+            email: _email,
+            phone: null,
+            company: _company,
+            notes: null,
+            errors: TestErrorsFactory.CreateCustomerErrors()
         );
     }
 }
