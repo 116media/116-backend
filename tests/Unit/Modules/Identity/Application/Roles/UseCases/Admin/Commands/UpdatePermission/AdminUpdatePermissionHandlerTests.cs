@@ -66,7 +66,6 @@ public class AdminUpdatePermissionHandlerTests : BaseHandlerTest
         AdminUpdatePermissionResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.Permission.Resource.Should().Be(newResource);
         result.Permission.Action.Should().Be(newAction);
         result.Permission.Description.Should().Be(newDescription);
