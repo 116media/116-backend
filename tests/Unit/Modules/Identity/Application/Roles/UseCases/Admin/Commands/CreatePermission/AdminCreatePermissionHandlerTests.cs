@@ -58,8 +58,6 @@ public class AdminCreatePermissionHandlerTests : BaseHandlerTest
         AdminCreatePermissionResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Permission.Should().NotBeNull();
         result.Permission.Resource.Should().Be(TestConstants.Permission.ValidResource);
         result.Permission.Action.Should().Be(TestConstants.Permission.ValidAction);
         result.Permission.Description.Should().Be(TestConstants.Permission.ValidDescription);
@@ -119,16 +117,10 @@ public class AdminCreatePermissionHandlerTests : BaseHandlerTest
         );
 
         // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (ConflictException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<ConflictException>();
         _permissionRepositoryMock.Verify(
             x => x.AddAsync(It.IsAny<PermissionEntity>(), It.IsAny<CancellationToken>()),
             Times.Never
@@ -148,16 +140,10 @@ public class AdminCreatePermissionHandlerTests : BaseHandlerTest
         );
 
         // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (ConflictException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<ConflictException>();
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
