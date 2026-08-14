@@ -3,6 +3,9 @@ using _116.Shared.Domain;
 using _116.Shared.Infrastructure.interceptors;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Xunit;
@@ -268,6 +271,60 @@ public class AuditableEntityInterceptorTests
         entity.UpdatedBy.Should().Be("System");
         entity.UpdatedAt.Should().Be(StartInstant.AddMinutes(1));
     }
+
+    #region Contextless interception
+
+    /// <summary>
+    /// Builds the event data EF Core hands to an interceptor when the save is not associated with a
+    /// <see cref="DbContext"/>, so <see cref="DbContextEventData.Context"/> is <c>null</c>.
+    /// </summary>
+    private static DbContextEventData CreateContextlessEventData()
+    {
+        var eventDefinition = new Mock<EventDefinitionBase>(
+            Mock.Of<ILoggingOptions>(),
+            CoreEventId.SaveChangesStarting,
+            LogLevel.Debug,
+            nameof(CoreEventId.SaveChangesStarting)
+        );
+
+        return new DbContextEventData(eventDefinition.Object, (_, _) => string.Empty, context: null);
+    }
+
+    [Fact]
+    public void SavingChanges_WithoutAContext_ShouldReturnWithoutResolvingTheActor()
+    {
+        // Arrange
+        var actorMock = new Mock<ICurrentActor>();
+        var interceptor = new AuditableEntityInterceptor(actorMock.Object, _time);
+        DbContextEventData eventData = CreateContextlessEventData();
+
+        // Act
+        Exception? exception = Record.Exception(() => interceptor.SavingChanges(eventData, default));
+
+        // Assert
+        exception.Should().BeNull();
+        actorMock.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task SavingChangesAsync_WithoutAContext_ShouldReturnWithoutResolvingTheActor()
+    {
+        // Arrange
+        var actorMock = new Mock<ICurrentActor>();
+        var interceptor = new AuditableEntityInterceptor(actorMock.Object, _time);
+        DbContextEventData eventData = CreateContextlessEventData();
+
+        // Act
+        Exception? exception = await Record.ExceptionAsync(async () =>
+            await interceptor.SavingChangesAsync(eventData, default)
+        );
+
+        // Assert
+        exception.Should().BeNull();
+        actorMock.VerifyNoOtherCalls();
+    }
+
+    #endregion
 
     #region ResolveActor
 
