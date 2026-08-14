@@ -98,7 +98,6 @@ public class RefreshTokenFactoryTests : IDisposable
         RefreshTokenData result = await _factory.RefreshTokenAsync(refreshToken, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.User.Should().Be(user);
         result.Session.Should().Be(session);
         result.NewRefreshToken.Should().Be(newRefreshToken);
@@ -336,7 +335,6 @@ public class RefreshTokenFactoryTests : IDisposable
         RefreshTokenData result = await _factory.RefreshTokenAsync(refreshToken, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.User.Should().Be(user);
         result.Session.Should().Be(session);
     }
