@@ -69,7 +69,6 @@ public class AdminRemoveRoleFromUserHandlerTests : BaseHandlerTest
         AdminRemoveRoleFromUserResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.Roles.Should().ContainSingle();
         result.Roles.First().Name.Should().Be("User");
     }
@@ -193,16 +192,10 @@ public class AdminRemoveRoleFromUserHandlerTests : BaseHandlerTest
         _userRoleRepositoryMock.SetupGetByUserAndRoleReturnsNull(userId, roleId);
 
         // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (BadRequestException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<BadRequestException>();
         _userRoleRepositoryMock.Verify(x => x.Delete(It.IsAny<UserRoleEntity>()), Times.Never);
     }
 
@@ -217,16 +210,10 @@ public class AdminRemoveRoleFromUserHandlerTests : BaseHandlerTest
         _userRoleRepositoryMock.SetupGetByUserAndRoleReturnsNull(userId, roleId);
 
         // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (BadRequestException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<BadRequestException>();
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
