@@ -47,7 +47,7 @@ public class AdminChangePasswordHandlerTests
     #region Success Cases
 
     [Fact]
-    public async Task Handle_WithValidOldPassword_ShouldReturnSuccess()
+    public async Task Handle_WithValidOldPassword_ShouldUpdateUserPasswordHash()
     {
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
@@ -67,17 +67,15 @@ public class AdminChangePasswordHandlerTests
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
         _authRepositoryMock.SetupIsSessionValid(sessionId);
 
-        // Old password matches, new password doesn't match old hash
         _passwordServiceMock.Setup(x => x.Verify(oldPassword, user.PasswordHash)).Returns(true);
         _passwordServiceMock.Setup(x => x.Verify(newPassword, user.PasswordHash)).Returns(false);
         _passwordServiceMock.Setup(x => x.Hash(newPassword)).Returns(newPasswordHash);
 
         // Act
-        AdminChangePasswordResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.IsSuccess.Should().BeTrue();
+        user.PasswordHash.Should().Be(newPasswordHash);
     }
 
     [Fact]
@@ -261,16 +259,10 @@ public class AdminChangePasswordHandlerTests
         _passwordServiceMock.Setup(x => x.Verify("wrong", user.PasswordHash)).Returns(false);
 
         // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (BadRequestException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<BadRequestException>();
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
