@@ -4,6 +4,7 @@ using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
+using _116.Identity.Domain.Events;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Identity;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
@@ -40,7 +41,7 @@ public class AdminSignOutFromAllDevicesHandlerTests
     #region Success Cases
 
     [Fact]
-    public async Task Handle_WithValidRequest_ShouldReturnSuccess()
+    public async Task Handle_ShouldRecordMassSignOutDomainEventNotDrivenByAdmin()
     {
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
@@ -50,11 +51,17 @@ public class AdminSignOutFromAllDevicesHandlerTests
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
 
         // Act
-        AdminSignOutFromAllDevicesResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.IsSuccess.Should().BeTrue();
+        UserSignedOutAllDevicesEvent signedOut = user
+            .DomainEvents.OfType<UserSignedOutAllDevicesEvent>()
+            .Should()
+            .ContainSingle()
+            .Subject;
+
+        signedOut.UserId.Should().Be(user.Id);
+        signedOut.ByAdmin.Should().BeFalse();
     }
 
     [Fact]
@@ -193,16 +200,10 @@ public class AdminSignOutFromAllDevicesHandlerTests
         _authRepositoryMock.SetupFindUserByIdOrThrowNotFound(userId);
 
         // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (NotFoundException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
         _sessionRepositoryMock.Verify(
             x =>
                 x.DeleteAllByUserIdAsync(
@@ -225,16 +226,10 @@ public class AdminSignOutFromAllDevicesHandlerTests
         _authRepositoryMock.SetupFindUserByIdOrThrowNotFound(userId);
 
         // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (NotFoundException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
