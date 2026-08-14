@@ -1,7 +1,7 @@
-using System.Linq.Expressions;
 using _116.Identity.Application.Roles.Specifications;
 using _116.Identity.Domain.Entities;
 using _116.Tests.Fixtures.Factories.Identity;
+using _116.Unit.Tests.Common.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
@@ -291,20 +291,24 @@ public class RoleSpecificationsTests
 
     #endregion
 
-    #region RoleSearchSpecification Tests - ToExpression Only
+    #region RoleSearchSpecification Tests
 
-    [Fact]
-    public void RoleSearchSpecification_ShouldCreateValidExpression()
+    [Theory]
+    [InlineData("admin", true)]
+    [InlineData("CONTENT", true)]
+    [InlineData("editorial", true)]
+    [InlineData("visitor", false)]
+    public void RoleSearchSpecification_ShouldMatchNameOrDescriptionCaseInsensitively(string search, bool expected)
     {
         // Arrange
-        RoleSearchSpecification spec = new("Admin");
+        RoleEntity role = RoleFactory.Create("ContentAdmin", "Manages editorial workflows");
+        RoleSearchSpecification spec = new(search);
 
         // Act
-        Expression<Func<RoleEntity, bool>> expression = spec.ToExpression();
+        bool result = spec.IsSatisfiedInMemoryBy(role);
 
         // Assert
-        expression.Should().NotBeNull();
-        expression.Compile().Should().NotBeNull();
+        result.Should().Be(expected);
     }
 
     #endregion
