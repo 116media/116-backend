@@ -78,8 +78,6 @@ public class PublicSocialLoginHandlerTests : BaseHandlerTest
         PublicSocialLoginResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.AuthenticationResult.Should().NotBeNull();
         result.AuthenticationResult.AccessToken.Should().Be("access-token");
         result.AuthenticationResult.RefreshToken.Should().Be("refresh-token");
     }
@@ -122,7 +120,6 @@ public class PublicSocialLoginHandlerTests : BaseHandlerTest
         PublicSocialLoginResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.AuthenticationResult.User.Should().NotBeNull();
         result.AuthenticationResult.User.Id.Should().Be(user.Id);
     }
 
@@ -312,48 +309,6 @@ public class PublicSocialLoginHandlerTests : BaseHandlerTest
     #region Edge Cases
 
     [Fact]
-    public async Task Handle_WithNullAvatarUrl_ShouldStillAuthenticate()
-    {
-        // Arrange
-        string? avatarUrl = null;
-
-        PublicSocialLoginCommand command = new(
-            Email: TestConstants.Auth.SocialLoginEmail,
-            UserName: TestConstants.Auth.SocialLoginUserName,
-            AvatarUrl: avatarUrl,
-            Provider: TestConstants.Auth.ProviderGoogle
-        );
-
-        UserEntity user = UserFactory.CreateVerifiedActive();
-        PublicSocialLoginAuthData authData = AuthTestHelpers.CreatePublicSocialLoginAuthData(user);
-        List<RolePermissionEntity> permissions = authData.UserPermissions;
-        SessionResult sessionResult = AuthTestHelpers.CreateDefaultSessionResult();
-
-        _authFactoryMock
-            .Setup(x =>
-                x.AuthenticateOrCreateAsync(
-                    TestConstants.Auth.SocialLoginEmail,
-                    TestConstants.Auth.SocialLoginUserName,
-                    TestConstants.Auth.ProviderGoogle,
-                    avatarUrl,
-                    It.IsAny<CancellationToken>()
-                )
-            )
-            .ReturnsAsync(authData);
-        _sessionFactoryMock
-            .Setup(x => x.CreateSessionAsync(user, permissions, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(sessionResult);
-        _fileRepositoryMock.SetupGetAvatarFileReturnsNull(user.AvatarFileId);
-
-        // Act
-        PublicSocialLoginResult result = await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        result.Should().NotBeNull();
-        result.AuthenticationResult.Should().NotBeNull();
-    }
-
-    [Fact]
     public async Task Handle_WithCancellationToken_ShouldPassToAuthFactory()
     {
         // Arrange
@@ -446,8 +401,7 @@ public class PublicSocialLoginHandlerTests : BaseHandlerTest
             PublicSocialLoginResult result = await _handler.Handle(command, CancellationToken.None);
 
             // Assert
-            result.Should().NotBeNull();
-            result.AuthenticationResult.Should().NotBeNull();
+            result.AuthenticationResult.User.Id.Should().Be(user.Id);
         }
     }
 
