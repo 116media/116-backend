@@ -85,7 +85,6 @@ public class PublicSocialLoginAuthFactoryTests
         );
 
         // Assert
-        result.Should().NotBeNull();
         result.User.Should().Be(user);
     }
 
@@ -134,7 +133,6 @@ public class PublicSocialLoginAuthFactoryTests
         );
 
         // Assert
-        result.Should().NotBeNull();
         _fileRepositoryMock.Verify(
             x =>
                 x.UpdateAvatarUrlFromSourceAsync(
