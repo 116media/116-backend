@@ -2,6 +2,8 @@ using _116.Identity.Application.Roles.Builders;
 using _116.Identity.Application.Roles.Builders.Contracts;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Specifications;
+using _116.Tests.Fixtures.Factories.Identity;
+using _116.Unit.Tests.Common.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
@@ -75,17 +77,22 @@ public class PermissionQueryBuilderTests
     #region WithSearch Tests
 
     [Fact]
-    public void WithSearch_WithValidSearchTerm_ShouldBuildSpecification()
+    public void WithSearch_WithValidSearchTerm_ShouldMatchResourceActionOrDescriptionCaseInsensitively()
     {
         // Arrange
         PermissionQueryBuilder builder = new();
-        string searchTerm = "users.read";
+        PermissionEntity matchByResource = PermissionFactory.Create("users", "read", "Read user accounts");
+        PermissionEntity matchByDescription = PermissionFactory.Create("roles", "read", "Assign users to roles");
+        PermissionEntity noMatch = PermissionFactory.Create("articles", "read", "Read published articles");
 
         // Act
-        Specification<PermissionEntity>? specification = builder.WithSearch(searchTerm).Build();
+        Specification<PermissionEntity>? specification = builder.WithSearch("users").Build();
 
         // Assert
         specification.Should().NotBeNull("search term was provided");
+        specification!.IsSatisfiedInMemoryBy(matchByResource).Should().BeTrue();
+        specification.IsSatisfiedInMemoryBy(matchByDescription).Should().BeTrue();
+        specification.IsSatisfiedInMemoryBy(noMatch).Should().BeFalse();
     }
 
     [Fact]
@@ -132,29 +139,37 @@ public class PermissionQueryBuilderTests
     #region WithActiveStatus Tests
 
     [Fact]
-    public void WithActiveStatus_WithTrue_ShouldBuildSpecification()
+    public void WithActiveStatus_WithTrue_ShouldMatchOnlyActivePermissions()
     {
         // Arrange
         PermissionQueryBuilder builder = new();
+        PermissionEntity activePermission = PermissionFactory.Create();
+        PermissionEntity inactivePermission = PermissionFactory.CreateInactive();
 
         // Act
         Specification<PermissionEntity>? specification = builder.WithActiveStatus(true).Build();
 
         // Assert
         specification.Should().NotBeNull("active status filter was provided");
+        specification!.IsSatisfiedBy(activePermission).Should().BeTrue();
+        specification.IsSatisfiedBy(inactivePermission).Should().BeFalse();
     }
 
     [Fact]
-    public void WithActiveStatus_WithFalse_ShouldBuildSpecification()
+    public void WithActiveStatus_WithFalse_ShouldMatchOnlyInactivePermissions()
     {
         // Arrange
         PermissionQueryBuilder builder = new();
+        PermissionEntity inactivePermission = PermissionFactory.CreateInactive();
+        PermissionEntity activePermission = PermissionFactory.Create();
 
         // Act
         Specification<PermissionEntity>? specification = builder.WithActiveStatus(false).Build();
 
         // Assert
         specification.Should().NotBeNull("inactive status filter was provided");
+        specification!.IsSatisfiedBy(inactivePermission).Should().BeTrue();
+        specification.IsSatisfiedBy(activePermission).Should().BeFalse();
     }
 
     [Fact]
@@ -175,29 +190,37 @@ public class PermissionQueryBuilderTests
     #region WithDeletedStatus Tests
 
     [Fact]
-    public void WithDeletedStatus_WithTrue_ShouldBuildSpecification()
+    public void WithDeletedStatus_WithTrue_ShouldMatchOnlyDeletedPermissions()
     {
         // Arrange
         PermissionQueryBuilder builder = new();
+        PermissionEntity deletedPermission = PermissionFactory.CreateDeleted();
+        PermissionEntity livePermission = PermissionFactory.Create();
 
         // Act
         Specification<PermissionEntity>? specification = builder.WithDeletedStatus(true).Build();
 
         // Assert
         specification.Should().NotBeNull("deleted status filter was provided");
+        specification!.IsSatisfiedBy(deletedPermission).Should().BeTrue();
+        specification.IsSatisfiedBy(livePermission).Should().BeFalse();
     }
 
     [Fact]
-    public void WithDeletedStatus_WithFalse_ShouldBuildSpecification()
+    public void WithDeletedStatus_WithFalse_ShouldMatchOnlyLivePermissions()
     {
         // Arrange
         PermissionQueryBuilder builder = new();
+        PermissionEntity livePermission = PermissionFactory.Create();
+        PermissionEntity deletedPermission = PermissionFactory.CreateDeleted();
 
         // Act
         Specification<PermissionEntity>? specification = builder.WithDeletedStatus(false).Build();
 
         // Assert
         specification.Should().NotBeNull("not-deleted status filter was provided");
+        specification!.IsSatisfiedBy(livePermission).Should().BeTrue();
+        specification.IsSatisfiedBy(deletedPermission).Should().BeFalse();
     }
 
     [Fact]
@@ -216,6 +239,27 @@ public class PermissionQueryBuilderTests
     #endregion
 
     #region Specification Chaining Tests
+
+    [Fact]
+    public void Build_WithActiveAndNotDeleted_ShouldMatchOnlyPermissionsSatisfyingBoth()
+    {
+        // Arrange
+        PermissionEntity match = PermissionFactory.Create();
+        PermissionEntity inactive = PermissionFactory.CreateInactive();
+        PermissionEntity deleted = PermissionFactory.CreateDeleted();
+
+        // Act
+        Specification<PermissionEntity>? specification = new PermissionQueryBuilder()
+            .WithActiveStatus(true)
+            .WithDeletedStatus(false)
+            .Build();
+
+        // Assert
+        specification.Should().NotBeNull();
+        specification!.IsSatisfiedBy(match).Should().BeTrue();
+        specification.IsSatisfiedBy(inactive).Should().BeFalse();
+        specification.IsSatisfiedBy(deleted).Should().BeFalse();
+    }
 
     [Fact]
     public void Build_WithMultipleFilters_ShouldCombineSpecifications()
