@@ -47,18 +47,20 @@ public static class MockPasswordService
 
     /// <summary>
     /// Sets up Verify to return true for the specified password and hash.
+    /// A null hash still verifies false, matching the real service: a user with no stored
+    /// password hash can never authenticate, so the mock refuses to claim otherwise.
     /// </summary>
     /// <param name="mock">The mock instance.</param>
     /// <param name="password">The password to verify.</param>
-    /// <param name="hash">The hash to verify against.</param>
+    /// <param name="hash">The stored hash to verify against, null when the user has no password.</param>
     /// <returns>The mock instance for chaining.</returns>
     public static Mock<IPasswordService> SetupVerifySuccess(
         this Mock<IPasswordService> mock,
         string password,
-        string hash
+        string? hash
     )
     {
-        mock.Setup(x => x.Verify(password, hash)).Returns(true);
+        mock.Setup(x => x.Verify(password, hash)).Returns(hash is not null);
         return mock;
     }
 
@@ -67,12 +69,12 @@ public static class MockPasswordService
     /// </summary>
     /// <param name="mock">The mock instance.</param>
     /// <param name="password">The password to verify.</param>
-    /// <param name="hash">The hash to verify against.</param>
+    /// <param name="hash">The stored hash to verify against, null when the user has no password.</param>
     /// <returns>The mock instance for chaining.</returns>
     public static Mock<IPasswordService> SetupVerifyFailure(
         this Mock<IPasswordService> mock,
         string password,
-        string hash
+        string? hash
     )
     {
         mock.Setup(x => x.Verify(password, hash)).Returns(false);
