@@ -59,8 +59,6 @@ public class AdminSoftDeletePermissionHandlerTests : BaseHandlerTest
         AdminSoftDeletePermissionResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Permission.Should().NotBeNull();
         result.Permission.Id.Should().Be(activePermission.Id);
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -162,16 +160,10 @@ public class AdminSoftDeletePermissionHandlerTests : BaseHandlerTest
         _permissionRepositoryMock.SetupGetByIdOrThrow(deletedPermission);
 
         // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (ConflictException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<ConflictException>();
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
