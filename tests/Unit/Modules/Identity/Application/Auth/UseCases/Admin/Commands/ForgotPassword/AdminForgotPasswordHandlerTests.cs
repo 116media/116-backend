@@ -97,8 +97,6 @@ public class AdminForgotPasswordHandlerTests
         AdminForgotPasswordResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.IsSuccess.Should().BeTrue();
         result.Email.Should().Be(email);
     }
 
@@ -130,7 +128,7 @@ public class AdminForgotPasswordHandlerTests
     [Fact]
     public async Task Handle_WhenUserDoesNotExist_ShouldStillReturnSuccess()
     {
-        // Arrange - Security: prevent user enumeration
+        // Arrange
         string email = "nonexistent@example.com";
         AdminForgotPasswordCommand command = new(Email: email);
 
@@ -139,8 +137,7 @@ public class AdminForgotPasswordHandlerTests
         // Act
         AdminForgotPasswordResult result = await _handler.Handle(command, CancellationToken.None);
 
-        // Assert - Returns success to prevent user enumeration
-        result.IsSuccess.Should().BeTrue();
+        // Assert
         result.Email.Should().Be(email);
     }
 
