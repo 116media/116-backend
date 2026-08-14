@@ -35,11 +35,10 @@ public class AdminGetSessionMetricsHandlerTests
         AdminGetSessionMetricsResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Browsers.Should().NotBeNull();
-        result.Devices.Should().NotBeNull();
-        result.Platforms.Should().NotBeNull();
-        result.Clients.Should().NotBeNull();
+        result.Browsers.Chrome.Should().Be(0);
+        result.Devices.Desktop.Should().Be(0);
+        result.Platforms.Windows.Should().Be(0);
+        result.Clients.WebApp.Should().Be(0);
     }
 
     [Fact]
