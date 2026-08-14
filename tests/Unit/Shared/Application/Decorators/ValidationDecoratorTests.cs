@@ -176,16 +176,10 @@ public class ValidationDecoratorTests
         TestRequest request = new("");
 
         // Act
-        try
-        {
-            await decorator.Handle(request);
-        }
-        catch (ValidationException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await decorator.Handle(request);
 
         // Assert
+        await act.Should().ThrowAsync<ValidationException>();
         handlerMock.Verify(h => h.Handle(It.IsAny<TestRequest>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
