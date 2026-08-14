@@ -2,6 +2,7 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateAlbum;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Core.Application.Shared.Repositories;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
@@ -42,7 +43,13 @@ public class AdminUpdateAlbumHandlerTests
         // Arrange
         AlbumEntity album = AlbumFactory.Create();
         _albumRepositoryMock.SetupGetByIdOrThrow(album);
-        var command = new AdminUpdateAlbumCommand(album.Id, "Updated Name", 2001, "Updated Label");
+        var command = new AdminUpdateAlbumCommand(
+            album.Id,
+            "Updated Name",
+            2001,
+            "Updated Label",
+            EnumReleaseType.Album
+        );
 
         // Act
         AdminUpdateAlbumResult result = await _handler.Handle(command, CancellationToken.None);
@@ -62,7 +69,7 @@ public class AdminUpdateAlbumHandlerTests
         Guid coverImageFileId = Guid.NewGuid();
         AlbumEntity album = AlbumFactory.CreateWithCoverImageFileId(coverImageFileId);
         _albumRepositoryMock.SetupGetByIdOrThrow(album);
-        var command = new AdminUpdateAlbumCommand(album.Id, "Updated Name", null, null);
+        var command = new AdminUpdateAlbumCommand(album.Id, "Updated Name", null, null, EnumReleaseType.Album);
 
         // Act
         AdminUpdateAlbumResult result = await _handler.Handle(command, CancellationToken.None);
@@ -78,7 +85,7 @@ public class AdminUpdateAlbumHandlerTests
         // Arrange
         Guid nonExistentId = Guid.NewGuid();
         _albumRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentId);
-        var command = new AdminUpdateAlbumCommand(nonExistentId, "Name", null, null);
+        var command = new AdminUpdateAlbumCommand(nonExistentId, "Name", null, null, EnumReleaseType.Album);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);

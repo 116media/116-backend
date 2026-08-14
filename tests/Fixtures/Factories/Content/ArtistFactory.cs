@@ -35,6 +35,28 @@ public static class ArtistFactory
     public static ArtistEntity CreateWithBio(string bio) => new ArtistBuilder().WithBio(bio).Build();
 
     /// <summary>
+    /// Creates an artist profile with a specific name, slug and biography.
+    /// </summary>
+    public static ArtistEntity Create(string name, string slug, string? bio) =>
+        new ArtistBuilder().WithName(name).WithSlug(slug).WithBio(bio).Build();
+
+    /// <summary>
+    /// Creates an artist profile carrying every identity field.
+    /// </summary>
+    public static ArtistEntity CreateWithIdentity(
+        string realName,
+        IReadOnlyList<string> aliases,
+        DateOnly birthdate,
+        string hometown
+    ) =>
+        new ArtistBuilder()
+            .WithRealName(realName)
+            .WithAliases(aliases)
+            .WithBirthdate(birthdate)
+            .WithHometown(hometown)
+            .Build();
+
+    /// <summary>
     /// Creates an artist profile with an avatar file id set.
     /// </summary>
     public static ArtistEntity CreateWithAvatarFileId(Guid avatarFileId) =>

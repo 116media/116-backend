@@ -69,6 +69,10 @@ public class VideoConfiguration : IEntityTypeConfiguration<VideoEntity>
         builder.HasIndex(x => x.Slug).IsUnique();
         builder.HasIndex(x => x.Title).IsUnique();
 
+        // Serves the artist profile's video surface and the artist content predicate — both
+        // filter on this exact pair per artist row.
+        builder.HasIndex(x => new { x.ArtistId, x.Status });
+
         builder.HasOne(x => x.Category).WithMany().HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.Restrict);
 
         builder

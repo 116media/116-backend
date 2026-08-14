@@ -1,4 +1,5 @@
 using _116.Content.Application.Shared.DTOs;
+using _116.Content.Domain.Enums;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateAlbum;
@@ -12,8 +13,14 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateAlbum
 /// <param name="Name">The album's display name.</param>
 /// <param name="ReleaseYear">The release year, or null to clear it.</param>
 /// <param name="Label">The record label, or null to clear it.</param>
-public record AdminUpdateAlbumCommand(Guid Id, string Name, short? ReleaseYear, string? Label)
-    : ICommand<AdminUpdateAlbumResult>;
+/// <param name="ReleaseType">What kind of release this is.</param>
+public record AdminUpdateAlbumCommand(
+    Guid Id,
+    string Name,
+    short? ReleaseYear,
+    string? Label,
+    EnumReleaseType ReleaseType
+) : ICommand<AdminUpdateAlbumResult>;
 
 /// <summary>
 /// Result of the <see cref="AdminUpdateAlbumCommand" /> containing the updated album.

@@ -24,7 +24,17 @@ public class ArtistEntityTests
         const string bio = TestConstants.Content.Editorial.Artist.ValidBio;
 
         // Act
-        ArtistEntity artist = ArtistEntity.Create(id, name, slug, bio, TestErrorsFactory.CreateArtistErrors());
+        ArtistEntity artist = ArtistEntity.Create(
+            id,
+            name,
+            slug,
+            bio,
+            null,
+            null,
+            null,
+            null,
+            TestErrorsFactory.CreateArtistErrors()
+        );
 
         // Assert
         artist.Id.Should().Be(id);
@@ -44,6 +54,10 @@ public class ArtistEntityTests
             Guid.NewGuid(),
             TestConstants.Content.Editorial.Artist.ValidName,
             TestConstants.Content.Editorial.Artist.ValidSlug,
+            null,
+            null,
+            null,
+            null,
             null,
             TestErrorsFactory.CreateArtistErrors()
         );
@@ -65,6 +79,10 @@ public class ArtistEntityTests
                 invalidName!,
                 TestConstants.Content.Editorial.Artist.ValidSlug,
                 null,
+                null,
+                null,
+                null,
+                null,
                 TestErrorsFactory.CreateArtistErrors()
             );
 
@@ -85,6 +103,10 @@ public class ArtistEntityTests
                 TestConstants.Content.Editorial.Artist.ValidName,
                 invalidSlug!,
                 null,
+                null,
+                null,
+                null,
+                null,
                 TestErrorsFactory.CreateArtistErrors()
             );
 
@@ -103,7 +125,7 @@ public class ArtistEntityTests
         ArtistEntity artist = CreateArtist();
 
         // Act
-        artist.Update("Updated Name", "Updated Bio", TestErrorsFactory.CreateArtistErrors());
+        artist.Update("Updated Name", "Updated Bio", null, null, null, null, TestErrorsFactory.CreateArtistErrors());
 
         // Assert
         artist.Name.Should().Be("Updated Name");
@@ -118,7 +140,7 @@ public class ArtistEntityTests
         string originalSlug = artist.Slug;
 
         // Act
-        artist.Update("Updated Name", "Updated Bio", TestErrorsFactory.CreateArtistErrors());
+        artist.Update("Updated Name", "Updated Bio", null, null, null, null, TestErrorsFactory.CreateArtistErrors());
 
         // Assert
         artist.Slug.Should().Be(originalSlug);
@@ -133,11 +155,15 @@ public class ArtistEntityTests
             TestConstants.Content.Editorial.Artist.ValidName,
             TestConstants.Content.Editorial.Artist.ValidSlug,
             TestConstants.Content.Editorial.Artist.ValidBio,
+            null,
+            null,
+            null,
+            null,
             TestErrorsFactory.CreateArtistErrors()
         );
 
         // Act
-        artist.Update(artist.Name, null, TestErrorsFactory.CreateArtistErrors());
+        artist.Update(artist.Name, null, null, null, null, null, TestErrorsFactory.CreateArtistErrors());
 
         // Assert
         artist.Bio.Should().BeNull();
@@ -153,7 +179,8 @@ public class ArtistEntityTests
         ArtistEntity artist = CreateArtist();
 
         // Act
-        Action act = () => artist.Update(invalidName!, "Bio", TestErrorsFactory.CreateArtistErrors());
+        Action act = () =>
+            artist.Update(invalidName!, "Bio", null, null, null, null, TestErrorsFactory.CreateArtistErrors());
 
         // Assert
         act.Should().Throw<BadRequestException>();
@@ -250,6 +277,219 @@ public class ArtistEntityTests
 
     #endregion
 
+    #region Identity Field Tests
+
+    [Fact]
+    public void Create_WithIdentityFields_ShouldStoreThem()
+    {
+        // Arrange
+        var birthdate = new DateOnly(1986, 10, 24);
+
+        // Act
+        ArtistEntity artist = ArtistEntity.Create(
+            Guid.NewGuid(),
+            TestConstants.Content.Editorial.Artist.ValidName,
+            TestConstants.Content.Editorial.Artist.ValidSlug,
+            null,
+            "Aubrey Drake Graham",
+            ["Drizzy", "Champagne Papi"],
+            birthdate,
+            "Toronto, Canada",
+            TestErrorsFactory.CreateArtistErrors()
+        );
+
+        // Assert
+        artist.RealName.Should().Be("Aubrey Drake Graham");
+        artist.Aliases.Should().Equal("Drizzy", "Champagne Papi");
+        artist.Birthdate.Should().Be(birthdate);
+        artist.Hometown.Should().Be("Toronto, Canada");
+    }
+
+    [Fact]
+    public void Create_WithNullAliases_ShouldStoreEmptyList()
+    {
+        ArtistEntity artist = CreateArtist();
+
+        artist.Aliases.Should().NotBeNull();
+        artist.Aliases.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Create_WithBlankAndDuplicateAliases_ShouldNormaliseThem()
+    {
+        // Arrange — blanks dropped, whitespace trimmed, case-insensitive dedupe keeps first casing.
+        ArtistEntity artist = ArtistEntity.Create(
+            Guid.NewGuid(),
+            TestConstants.Content.Editorial.Artist.ValidName,
+            TestConstants.Content.Editorial.Artist.ValidSlug,
+            null,
+            null,
+            ["  Drizzy  ", "", "   ", "drizzy", "Champagne Papi"],
+            null,
+            null,
+            TestErrorsFactory.CreateArtistErrors()
+        );
+
+        // Assert
+        artist.Aliases.Should().Equal("Drizzy", "Champagne Papi");
+    }
+
+    [Fact]
+    public void Create_WithTooManyAliases_ShouldThrowBadRequest()
+    {
+        // Arrange
+        List<string> aliases = Enumerable.Range(0, 11).Select(i => $"Alias {i}").ToList();
+
+        // Act
+        Action act = () =>
+            ArtistEntity.Create(
+                Guid.NewGuid(),
+                TestConstants.Content.Editorial.Artist.ValidName,
+                TestConstants.Content.Editorial.Artist.ValidSlug,
+                null,
+                null,
+                aliases,
+                null,
+                null,
+                TestErrorsFactory.CreateArtistErrors()
+            );
+
+        // Assert
+        act.Should().Throw<BadRequestException>();
+    }
+
+    [Fact]
+    public void Create_WithOverlongAlias_ShouldThrowBadRequest()
+    {
+        // Act
+        Action act = () =>
+            ArtistEntity.Create(
+                Guid.NewGuid(),
+                TestConstants.Content.Editorial.Artist.ValidName,
+                TestConstants.Content.Editorial.Artist.ValidSlug,
+                null,
+                null,
+                [new string('a', 101)],
+                null,
+                null,
+                TestErrorsFactory.CreateArtistErrors()
+            );
+
+        // Assert
+        act.Should().Throw<BadRequestException>();
+    }
+
+    [Fact]
+    public void Create_WithFutureBirthdate_ShouldThrowBadRequest()
+    {
+        // Arrange
+        DateOnly future = DateOnly.FromDateTime(DateTime.UtcNow).AddDays(1);
+
+        // Act
+        Action act = () =>
+            ArtistEntity.Create(
+                Guid.NewGuid(),
+                TestConstants.Content.Editorial.Artist.ValidName,
+                TestConstants.Content.Editorial.Artist.ValidSlug,
+                null,
+                null,
+                null,
+                future,
+                null,
+                TestErrorsFactory.CreateArtistErrors()
+            );
+
+        // Assert
+        act.Should().Throw<BadRequestException>();
+    }
+
+    [Fact]
+    public void Update_WithNullIdentityFields_ShouldClearThem()
+    {
+        // Arrange
+        ArtistEntity artist = ArtistEntity.Create(
+            Guid.NewGuid(),
+            TestConstants.Content.Editorial.Artist.ValidName,
+            TestConstants.Content.Editorial.Artist.ValidSlug,
+            null,
+            "Real Name",
+            ["Alias"],
+            new DateOnly(1990, 1, 1),
+            "Kinshasa, RDC",
+            TestErrorsFactory.CreateArtistErrors()
+        );
+
+        // Act
+        artist.Update(artist.Name, null, null, null, null, null, TestErrorsFactory.CreateArtistErrors());
+
+        // Assert
+        artist.RealName.Should().BeNull();
+        artist.Aliases.Should().BeEmpty();
+        artist.Birthdate.Should().BeNull();
+        artist.Hometown.Should().BeNull();
+    }
+
+    #endregion
+
+    #region Name Folding Tests
+
+    [Theory]
+    [InlineData("Élodie", "ELODIE")]
+    [InlineData("Ferré Gola", "FERRE GOLA")]
+    [InlineData("  Fally   Ipupa  ", "FALLY IPUPA")]
+    [InlineData("Ça Va", "CA VA")]
+    public void FoldName_ShouldStripAccentsCollapseWhitespaceAndUppercase(string input, string expected)
+    {
+        ArtistEntity.FoldName(input).Should().Be(expected);
+    }
+
+    [Fact]
+    public void FoldName_WithEmptyInput_ShouldReturnEmpty()
+    {
+        ArtistEntity.FoldName("   ").Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("Élodie", "E")]
+    [InlineData("fally ipupa", "F")]
+    [InlineData("113 Crew", "#")]
+    [InlineData("'Ndombolo", "#")]
+    public void Create_ShouldDeriveInitialLetterFromFoldedName(string name, string expectedLetter)
+    {
+        // Act
+        ArtistEntity artist = ArtistEntity.Create(
+            Guid.NewGuid(),
+            name,
+            $"slug-{Guid.NewGuid():N}",
+            null,
+            null,
+            null,
+            null,
+            null,
+            TestErrorsFactory.CreateArtistErrors()
+        );
+
+        // Assert
+        artist.InitialLetter.Should().Be(expectedLetter);
+        artist.NameFolded.Should().Be(ArtistEntity.FoldName(name));
+    }
+
+    [Fact]
+    public void Update_WhenRenamed_ShouldRecomputeFoldedNameAndBucket()
+    {
+        // Arrange
+        ArtistEntity artist = CreateArtist();
+
+        // Act
+        artist.Update("Élodie", null, null, null, null, null, TestErrorsFactory.CreateArtistErrors());
+
+        // Assert — the artist moves bucket with the rename.
+        artist.NameFolded.Should().Be("ELODIE");
+        artist.InitialLetter.Should().Be("E");
+    }
+
+    #endregion
+
     private static ArtistEntity CreateArtist()
     {
         return ArtistEntity.Create(
@@ -257,6 +497,10 @@ public class ArtistEntityTests
             TestConstants.Content.Editorial.Artist.ValidName,
             TestConstants.Content.Editorial.Artist.ValidSlug,
             TestConstants.Content.Editorial.Artist.ValidBio,
+            null,
+            null,
+            null,
+            null,
             TestErrorsFactory.CreateArtistErrors()
         );
     }

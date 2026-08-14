@@ -11,18 +11,32 @@ namespace _116.Content.Application.Shared.Mappers;
 public static class ArtistMapper
 {
     /// <summary>
-    /// Maps an <see cref="ArtistEntity" /> to an <see cref="ArtistDto" />,
-    /// resolving the avatar URL from the associated FileEntity.
+    /// Maps an <see cref="ArtistEntity" /> to an <see cref="ArtistDto" />, resolving the
+    /// avatar URL from the associated FileEntity. The verified flag is derived here from the
+    /// claim state — the claiming user's identity never leaves the entity.
     /// </summary>
     public static async Task<ArtistDto> ToArtistDtoAsync(
         this ArtistEntity entity,
         IFileRepository fileRepository,
-        CancellationToken ct = default
+        CancellationToken ct = default,
+        IReadOnlyList<ArtistSocialLinkEntity>? socialLinks = null
     )
     {
         string? avatarUrl = await ResolveAvatarUrlAsync(entity, fileRepository, ct);
 
-        return new ArtistDto(entity.Id, entity.Name, entity.Slug, entity.Bio, avatarUrl);
+        return new ArtistDto(
+            Id: entity.Id,
+            Name: entity.Name,
+            Slug: entity.Slug,
+            Bio: entity.Bio,
+            AvatarUrl: avatarUrl,
+            IsVerified: entity.UserId is not null && entity.VerifiedAt is not null,
+            RealName: entity.RealName,
+            Aliases: entity.Aliases,
+            Birthdate: entity.Birthdate,
+            Hometown: entity.Hometown,
+            SocialLinks: socialLinks.ToArtistSocialLinkDtoList()
+        );
     }
 
     /// <summary>

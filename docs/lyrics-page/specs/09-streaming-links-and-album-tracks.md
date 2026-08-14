@@ -270,7 +270,7 @@ dotnet ef migrations add AddStreamingLinksAndAlbumLink \
 - [x] `DELETE /api/v1/admin/albums/{id}/streaming-links/{platform}`
 - [x] `DELETE /api/v1/admin/lyrics/{id}/streaming-links/{platform}`
 - [x] `ResolveStreamingLinks` helper — always returns all four platforms, for either release kind
-  (shipped as `StreamingLinkResolver.ResolveStreamingLinks`, a shared static class, not nested in a
+  (shipped as `StreamingLinkFactory.CreateStreamingLinks`, an Editorial factory, not nested in a
   handler, since spec 12 §2's future affiliate-param change also needs to reach it)
 - [x] `ILyricsRepository.GetPublishedByAlbumAsync`
 - [x] `PublicGetLyricsBySlugResponse` gains `AlbumTracks` (empty when `AlbumId` is null) and

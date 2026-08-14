@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using _116.Content.Application.Shared.Errors;
 using _116.Content.Domain.Constants;
+using _116.Content.Domain.Enums;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -42,6 +43,13 @@ public class AlbumEntity : Aggregate<Guid>
     public string? Label { get; private set; }
 
     /// <summary>
+    /// What kind of release this is. Non-nullable with a default of
+    /// <see cref="EnumReleaseType.Album" /> — an untyped release would fall out of every
+    /// profile section and silently disappear, so every row is always in exactly one bucket.
+    /// </summary>
+    public EnumReleaseType ReleaseType { get; private set; }
+
+    /// <summary>
     /// Private parameterless constructor required by Entity Framework Core.
     /// </summary>
     private AlbumEntity() { }
@@ -55,6 +63,7 @@ public class AlbumEntity : Aggregate<Guid>
     /// <param name="coverImageFileId">Optional cover art file reference.</param>
     /// <param name="releaseYear">The release year, if known.</param>
     /// <param name="label">The record label, if known.</param>
+    /// <param name="releaseType">What kind of release this is.</param>
     /// <param name="errors">The errors factory instance.</param>
     /// <returns>A new <see cref="AlbumEntity" />.</returns>
     public static AlbumEntity Create(
@@ -64,6 +73,7 @@ public class AlbumEntity : Aggregate<Guid>
         Guid? coverImageFileId,
         short? releaseYear,
         string? label,
+        EnumReleaseType releaseType,
         AlbumErrors errors
     )
     {
@@ -80,6 +90,7 @@ public class AlbumEntity : Aggregate<Guid>
             CoverImageFileId = coverImageFileId,
             ReleaseYear = releaseYear,
             Label = label,
+            ReleaseType = releaseType,
         };
     }
 
@@ -90,8 +101,16 @@ public class AlbumEntity : Aggregate<Guid>
     /// <param name="coverImageFileId">Optional cover art file reference, or null to clear it.</param>
     /// <param name="releaseYear">The release year, or null to clear it.</param>
     /// <param name="label">The record label, or null to clear it.</param>
+    /// <param name="releaseType">What kind of release this is.</param>
     /// <param name="errors">The errors factory instance.</param>
-    public void Update(string name, Guid? coverImageFileId, short? releaseYear, string? label, AlbumErrors errors)
+    public void Update(
+        string name,
+        Guid? coverImageFileId,
+        short? releaseYear,
+        string? label,
+        EnumReleaseType releaseType,
+        AlbumErrors errors
+    )
     {
         if (string.IsNullOrWhiteSpace(value: name))
         {
@@ -102,5 +121,6 @@ public class AlbumEntity : Aggregate<Guid>
         CoverImageFileId = coverImageFileId;
         ReleaseYear = releaseYear;
         Label = label;
+        ReleaseType = releaseType;
     }
 }

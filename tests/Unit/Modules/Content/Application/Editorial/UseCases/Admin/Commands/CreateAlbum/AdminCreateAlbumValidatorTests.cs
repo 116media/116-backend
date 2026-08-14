@@ -1,5 +1,6 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateAlbum;
 using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Domain.Enums;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
@@ -29,7 +30,8 @@ public class AdminCreateAlbumValidatorTests
             TestConstants.Content.Editorial.Album.ValidName,
             null,
             TestConstants.Content.Editorial.Album.ValidReleaseYear,
-            TestConstants.Content.Editorial.Album.ValidLabel
+            TestConstants.Content.Editorial.Album.ValidLabel,
+            EnumReleaseType.Album
         );
 
         // Act
@@ -43,7 +45,7 @@ public class AdminCreateAlbumValidatorTests
     public async Task Validate_WithEmptyName_ShouldHaveError()
     {
         // Arrange
-        var command = new AdminCreateAlbumCommand(string.Empty, null, null, null);
+        var command = new AdminCreateAlbumCommand(string.Empty, null, null, null, EnumReleaseType.Album);
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -62,7 +64,13 @@ public class AdminCreateAlbumValidatorTests
     public async Task Validate_WithReleaseYearOutOfBounds_ShouldHaveError()
     {
         // Arrange
-        var command = new AdminCreateAlbumCommand(TestConstants.Content.Editorial.Album.ValidName, null, 1899, null);
+        var command = new AdminCreateAlbumCommand(
+            TestConstants.Content.Editorial.Album.ValidName,
+            null,
+            1899,
+            null,
+            EnumReleaseType.Album
+        );
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -76,7 +84,13 @@ public class AdminCreateAlbumValidatorTests
     public async Task Validate_WithNullReleaseYear_ShouldNotHaveErrors()
     {
         // Arrange
-        var command = new AdminCreateAlbumCommand(TestConstants.Content.Editorial.Album.ValidName, null, null, null);
+        var command = new AdminCreateAlbumCommand(
+            TestConstants.Content.Editorial.Album.ValidName,
+            null,
+            null,
+            null,
+            EnumReleaseType.Album
+        );
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);

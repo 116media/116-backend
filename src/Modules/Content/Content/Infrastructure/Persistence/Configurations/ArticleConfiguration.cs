@@ -70,6 +70,10 @@ public class ArticleConfiguration : IEntityTypeConfiguration<ArticleEntity>
         builder.HasIndex(x => x.Slug).IsUnique();
         builder.HasIndex(x => x.Title).IsUnique();
 
+        // The artist content predicate joins article_artists to articles filtered on status;
+        // without this the news term scans the articles table per artist row.
+        builder.HasIndex(x => x.Status);
+
         builder.HasOne(x => x.Category).WithMany().HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.Restrict);
 
         builder

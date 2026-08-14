@@ -198,6 +198,12 @@ public static class Routes
 
             public static string StreamingLink(string collection, Guid id, string platform) =>
                 $"{Action(collection, id, EditorialRouteConstants.StreamingLinks)}/{platform}";
+
+            public static string ResolveStreamingLinks(string collection, Guid id) =>
+                $"{Action(collection, id, EditorialRouteConstants.StreamingLinks)}/{EditorialRouteConstants.Resolve}";
+
+            public static string Artists(string collection, Guid id) =>
+                Action(collection, id, EditorialRouteConstants.Artists);
         }
 
         /// <summary>
@@ -209,6 +215,9 @@ public static class Routes
 
             public static string VerifyOwner(Guid id) =>
                 $"{ApiRoutes.Admin.Artists}/{id}/{EditorialRouteConstants.VerifyOwner}";
+
+            public static string SocialLink(Guid id, string platform) =>
+                $"{ApiRoutes.Admin.Artists}/{id}/{EditorialRouteConstants.SocialLinks}/{platform}";
         }
 
         /// <summary>
@@ -439,7 +448,15 @@ public static class Routes
         /// </summary>
         public static class Artists
         {
+            public static string Directory(string query = "") => $"{ApiRoutes.Public.Artists}{query}";
+
             public static string BySlug(string slug) => $"{ApiRoutes.Public.Artists}/{slug}";
+
+            public static string Releases(string slug, string query = "") =>
+                $"{ApiRoutes.Public.Artists}/{slug}/{EditorialRouteConstants.Releases}{query}";
+
+            public static string Articles(string slug, string query = "") =>
+                $"{ApiRoutes.Public.Artists}/{slug}/{EditorialRouteConstants.Articles}{query}";
 
             /// <summary>
             /// The unscoped claim-request route — <c>POST /api/v1/artists/{id}/claim</c>.

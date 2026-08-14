@@ -17,7 +17,10 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetVideoByS
 /// Response model for retrieving a published video by its slug.
 /// </summary>
 /// <param name="Video">The full video detail information.</param>
-public record PublicGetVideoBySlugResponse(VideoDetailDto Video);
+/// <param name="ArtistSlug">
+/// The linked artist profile's slug, or null when the video has no linked profile.
+/// </param>
+public record PublicGetVideoBySlugResponse(VideoDetailDto Video, string? ArtistSlug);
 
 /// <summary>
 /// Defines the public get video by slug endpoint.
@@ -51,7 +54,7 @@ public class PublicGetVideoBySlugEndpointV1 : ICarterModule
                     var query = new PublicGetVideoBySlugQuery(Slug: slug, CurrentUserId: userId);
                     PublicGetVideoBySlugResult result = await dispatcher.Send(request: query);
 
-                    var response = new PublicGetVideoBySlugResponse(Video: result.Video);
+                    var response = new PublicGetVideoBySlugResponse(Video: result.Video, ArtistSlug: result.ArtistSlug);
                     return Results.Ok(response);
                 }
             )

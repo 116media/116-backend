@@ -19,7 +19,19 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateArtis
 /// <param name="Name">The artist's display name.</param>
 /// <param name="Slug">The URL-safe slug for the artist's public page.</param>
 /// <param name="Bio">Optional free-text biography.</param>
-public record AdminCreateArtistRequest(string Name, string Slug, string? Bio);
+/// <param name="RealName">The artist's legal or birth name, or null when unknown.</param>
+/// <param name="Aliases">Alternate names the artist is known by, or null for none.</param>
+/// <param name="Birthdate">The artist's date of birth, or null when unknown.</param>
+/// <param name="Hometown">Where the artist is from, or null when unknown.</param>
+public record AdminCreateArtistRequest(
+    string Name,
+    string Slug,
+    string? Bio,
+    string? RealName,
+    IReadOnlyList<string>? Aliases,
+    DateOnly? Birthdate,
+    string? Hometown
+);
 
 /// <summary>
 /// Response model for a successful artist profile creation.
@@ -52,7 +64,11 @@ public class AdminCreateArtistEndpointV1 : ICarterModule
                     var command = new AdminCreateArtistCommand(
                         Name: request.Name,
                         Slug: request.Slug,
-                        Bio: request.Bio
+                        Bio: request.Bio,
+                        RealName: request.RealName,
+                        Aliases: request.Aliases,
+                        Birthdate: request.Birthdate,
+                        Hometown: request.Hometown
                     );
 
                     AdminCreateArtistResult result = await dispatcher.Send(request: command);

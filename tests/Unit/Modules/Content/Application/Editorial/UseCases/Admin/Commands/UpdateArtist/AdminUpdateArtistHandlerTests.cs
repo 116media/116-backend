@@ -42,7 +42,7 @@ public class AdminUpdateArtistHandlerTests
         // Arrange
         ArtistEntity artist = ArtistFactory.Create();
         _artistRepositoryMock.SetupGetByIdOrThrow(artist);
-        var command = new AdminUpdateArtistCommand(artist.Id, "Updated Name", "Updated Bio");
+        var command = new AdminUpdateArtistCommand(artist.Id, "Updated Name", "Updated Bio", null, null, null, null);
 
         // Act
         AdminUpdateArtistResult result = await _handler.Handle(command, CancellationToken.None);
@@ -61,7 +61,7 @@ public class AdminUpdateArtistHandlerTests
         ArtistEntity artist = ArtistFactory.Create();
         string originalSlug = artist.Slug;
         _artistRepositoryMock.SetupGetByIdOrThrow(artist);
-        var command = new AdminUpdateArtistCommand(artist.Id, "Updated Name", null);
+        var command = new AdminUpdateArtistCommand(artist.Id, "Updated Name", null, null, null, null, null);
 
         // Act
         AdminUpdateArtistResult result = await _handler.Handle(command, CancellationToken.None);
@@ -76,7 +76,7 @@ public class AdminUpdateArtistHandlerTests
         // Arrange
         Guid nonExistentId = Guid.NewGuid();
         _artistRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentId);
-        var command = new AdminUpdateArtistCommand(nonExistentId, "Name", null);
+        var command = new AdminUpdateArtistCommand(nonExistentId, "Name", null, null, null, null, null);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);

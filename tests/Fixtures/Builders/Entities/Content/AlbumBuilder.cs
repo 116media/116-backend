@@ -1,4 +1,5 @@
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Helpers;
 
@@ -16,6 +17,7 @@ internal class AlbumBuilder
     private Guid? _coverImageFileId;
     private short? _releaseYear;
     private string? _label;
+    private EnumReleaseType _releaseType = EnumReleaseType.Album;
 
     /// <summary>
     /// Sets the album ID.
@@ -72,6 +74,24 @@ internal class AlbumBuilder
     }
 
     /// <summary>
+    /// Sets the album's release year, allowing null for an undated release.
+    /// </summary>
+    public AlbumBuilder WithReleaseYearOrNull(short? releaseYear)
+    {
+        _releaseYear = releaseYear;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the album's release type.
+    /// </summary>
+    public AlbumBuilder WithReleaseType(EnumReleaseType releaseType)
+    {
+        _releaseType = releaseType;
+        return this;
+    }
+
+    /// <summary>
     /// Builds the <see cref="AlbumEntity"/> instance.
     /// </summary>
     public AlbumEntity Build()
@@ -83,6 +103,7 @@ internal class AlbumBuilder
             coverImageFileId: _coverImageFileId,
             releaseYear: _releaseYear,
             label: _label,
+            releaseType: _releaseType,
             errors: TestErrorsFactory.CreateAlbumErrors()
         );
 

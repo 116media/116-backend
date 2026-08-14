@@ -45,6 +45,7 @@ public class AdminCreateAlbumHandler(
             coverImageFileId: null,
             releaseYear: command.ReleaseYear,
             label: command.Label,
+            releaseType: command.ReleaseType,
             errors: i18n.Album
         );
 

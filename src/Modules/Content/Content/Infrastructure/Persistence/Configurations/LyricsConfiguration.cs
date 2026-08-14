@@ -83,6 +83,10 @@ public class LyricsConfiguration : IEntityTypeConfiguration<LyricsEntity>
 
         builder.HasIndex(x => x.Slug).IsUnique();
 
+        // Serves the artist profile's song surface and the artist content predicate — both
+        // filter on this exact pair per artist row.
+        builder.HasIndex(x => new { x.ArtistId, x.Status });
+
         builder.HasOne(x => x.Category).WithMany().HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.Restrict);
 
         builder

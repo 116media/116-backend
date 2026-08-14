@@ -2,6 +2,7 @@ using System.Text;
 using System.Threading.RateLimiting;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Content.Application.Editorial.Services;
+using _116.Content.Application.Shared.Services;
 using _116.Content.Infrastructure.Persistence;
 using _116.Core.Application.Shared.Services;
 using _116.Core.Infrastructure.Persistence;
@@ -201,6 +202,7 @@ public class ApiFixture(PostgresFixture db) : WebApplicationFactory<Program>
     {
         Replace<ICloudinaryService, StubCloudinaryService>(services);
         Replace<IYoutubeThumbnailService, StubYoutubeThumbnailService>(services);
+        Replace<IStreamingLinkResolutionService, StubStreamingLinkResolutionService>(services);
     }
 
     /// <summary>

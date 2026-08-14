@@ -1,5 +1,6 @@
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Shared.Application.Exceptions;
 using Moq;
 
@@ -63,6 +64,42 @@ public static class MockArtistRepository
         return mock;
     }
 
+    public static Mock<IArtistRepository> SetupGetTotals(this Mock<IArtistRepository> mock, ArtistTotals totals)
+    {
+        mock.Setup(x => x.GetTotalsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(totals);
+        return mock;
+    }
+
+    public static Mock<IArtistRepository> SetupGetPublicDirectory(
+        this Mock<IArtistRepository> mock,
+        List<ArtistDirectoryRow> rows,
+        int totalCount
+    )
+    {
+        mock.Setup(x =>
+                x.GetPublicDirectoryAsync(
+                    It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync((rows, totalCount));
+        return mock;
+    }
+
+    public static Mock<IArtistRepository> SetupGetSocialLink(
+        this Mock<IArtistRepository> mock,
+        Guid artistId,
+        EnumSocialPlatform platform,
+        ArtistSocialLinkEntity? entity
+    )
+    {
+        mock.Setup(x => x.GetSocialLinkAsync(artistId, platform, It.IsAny<CancellationToken>())).ReturnsAsync(entity);
+        return mock;
+    }
+
     public static Mock<IArtistRepository> SetupGetAllAsync(
         this Mock<IArtistRepository> mock,
         List<ArtistEntity> artists,
@@ -105,5 +142,29 @@ public static class MockArtistRepository
                 x.GetAllAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>(), It.IsAny<CancellationToken>())
             )
             .ReturnsAsync((new List<ArtistEntity>(), 0));
+
+        // A profile with content on one surface, so handler tests exercising the catalog do
+        // not trip the zero-content 404 rule unless they opt into it explicitly.
+        mock.Setup(x => x.GetTotalsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ArtistTotals(Songs: 1, Videos: 0, Albums: 0, Mixtapes: 0, News: 0));
+        mock.Setup(x => x.GetSocialLinksAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ArtistSocialLinkEntity>());
+        mock.Setup(x =>
+                x.GetSocialLinkAsync(It.IsAny<Guid>(), It.IsAny<EnumSocialPlatform>(), It.IsAny<CancellationToken>())
+            )
+            .ReturnsAsync((ArtistSocialLinkEntity?)null);
+        mock.Setup(x => x.AddSocialLinkAsync(It.IsAny<ArtistSocialLinkEntity>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        mock.Setup(x => x.GetAvailableLettersAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new List<string>());
+        mock.Setup(x =>
+                x.GetPublicDirectoryAsync(
+                    It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync((new List<ArtistDirectoryRow>(), 0));
     }
 }

@@ -33,7 +33,15 @@ public class AdminUpdateArtistHandler(
             cancellationToken: cancellationToken
         );
 
-        artist.Update(name: command.Name, bio: command.Bio, errors: i18n.Artist);
+        artist.Update(
+            name: command.Name,
+            bio: command.Bio,
+            realName: command.RealName,
+            aliases: command.Aliases,
+            birthdate: command.Birthdate,
+            hometown: command.Hometown,
+            errors: i18n.Artist
+        );
 
         artistRepository.Update(artist: artist);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);

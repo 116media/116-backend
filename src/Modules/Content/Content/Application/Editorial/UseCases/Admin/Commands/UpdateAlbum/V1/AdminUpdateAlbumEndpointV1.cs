@@ -3,6 +3,7 @@ using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Constants;
+using _116.Content.Domain.Enums;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
 using Carter;
@@ -18,7 +19,8 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateAlbum
 /// <param name="Name">The album's display name.</param>
 /// <param name="ReleaseYear">The release year, or null to clear it.</param>
 /// <param name="Label">The record label, or null to clear it.</param>
-public record AdminUpdateAlbumRequest(string Name, short? ReleaseYear, string? Label);
+/// <param name="ReleaseType">What kind of release this is.</param>
+public record AdminUpdateAlbumRequest(string Name, short? ReleaseYear, string? Label, EnumReleaseType ReleaseType);
 
 /// <summary>
 /// Response model for a successful album update.
@@ -52,7 +54,8 @@ public class AdminUpdateAlbumEndpointV1 : ICarterModule
                         Id: id,
                         Name: request.Name,
                         ReleaseYear: request.ReleaseYear,
-                        Label: request.Label
+                        Label: request.Label,
+                        ReleaseType: request.ReleaseType
                     );
 
                     AdminUpdateAlbumResult result = await dispatcher.Send(request: command);

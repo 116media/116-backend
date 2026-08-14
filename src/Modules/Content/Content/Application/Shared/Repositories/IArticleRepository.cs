@@ -180,6 +180,48 @@ public interface IArticleRepository : IRepository<ArticleEntity>
     );
 
     /// <summary>
+    /// Retrieves all artist junction records for a given article.
+    /// </summary>
+    /// <param name="articleId">The article identifier.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>A read-only list of article-artist junction entities.</returns>
+    Task<IReadOnlyList<ArticleArtistEntity>> GetArtistsByArticleIdAsync(
+        Guid articleId,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Set-replaces an article's artist tags: removes junction rows not in the new list and
+    /// adds rows not already present. Does not commit — the caller's unit of work owns the
+    /// transaction, so the tag change stays atomic with the rest of the request.
+    /// </summary>
+    /// <param name="articleId">The article whose artist tags are being replaced.</param>
+    /// <param name="artistIds">The complete new set of artist identifiers. Empty untags everything.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    Task ReplaceArticleArtistsAsync(
+        Guid articleId,
+        IReadOnlyList<Guid> artistIds,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Retrieves a paginated page of published articles tagged to an artist, newest first.
+    /// Shaped identically to the lyrics and video equivalents — it answers the same
+    /// question for the third surface.
+    /// </summary>
+    /// <param name="artistId">The artist profile the articles are tagged to.</param>
+    /// <param name="page">The 1-based page number.</param>
+    /// <param name="pageSize">The number of items per page.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>A tuple containing the page of articles and the total count.</returns>
+    Task<(List<ArticleEntity> Articles, int TotalCount)> GetPublishedByArtistAsync(
+        Guid artistId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
     /// Returns true if the user has already liked the given article.
     /// </summary>
     Task<bool> HasLikedAsync(Guid userId, Guid articleId, CancellationToken cancellationToken = default);

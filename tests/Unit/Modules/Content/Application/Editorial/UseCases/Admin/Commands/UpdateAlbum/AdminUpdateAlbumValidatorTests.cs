@@ -1,5 +1,6 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateAlbum;
 using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Domain.Enums;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
@@ -29,7 +30,8 @@ public class AdminUpdateAlbumValidatorTests
             Guid.NewGuid(),
             TestConstants.Content.Editorial.Album.ValidName,
             TestConstants.Content.Editorial.Album.ValidReleaseYear,
-            TestConstants.Content.Editorial.Album.ValidLabel
+            TestConstants.Content.Editorial.Album.ValidLabel,
+            EnumReleaseType.Album
         );
 
         // Act
@@ -43,7 +45,7 @@ public class AdminUpdateAlbumValidatorTests
     public async Task Validate_WithEmptyName_ShouldHaveError()
     {
         // Arrange
-        var command = new AdminUpdateAlbumCommand(Guid.NewGuid(), string.Empty, null, null);
+        var command = new AdminUpdateAlbumCommand(Guid.NewGuid(), string.Empty, null, null, EnumReleaseType.Album);
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -66,7 +68,8 @@ public class AdminUpdateAlbumValidatorTests
             Guid.NewGuid(),
             TestConstants.Content.Editorial.Album.ValidName,
             1899,
-            null
+            null,
+            EnumReleaseType.Album
         );
 
         // Act

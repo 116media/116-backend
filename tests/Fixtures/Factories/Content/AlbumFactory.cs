@@ -1,4 +1,5 @@
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Tests.Fixtures.Builders.Entities.Content;
 
 namespace _116.Tests.Fixtures.Factories.Content;
@@ -22,6 +23,23 @@ public static class AlbumFactory
     /// Creates an album linked to the given artist profile.
     /// </summary>
     public static AlbumEntity CreateForArtist(Guid artistId) => new AlbumBuilder().WithArtistId(artistId).Build();
+
+    /// <summary>
+    /// Creates an album of a specific release type linked to an artist.
+    /// </summary>
+    public static AlbumEntity CreateForArtist(Guid artistId, EnumReleaseType releaseType) =>
+        new AlbumBuilder().WithArtistId(artistId).WithReleaseType(releaseType).Build();
+
+    /// <summary>
+    /// Creates an album of a specific release type, name and year linked to an artist.
+    /// </summary>
+    public static AlbumEntity CreateForArtist(Guid artistId, EnumReleaseType releaseType, string name, short? year) =>
+        new AlbumBuilder()
+            .WithArtistId(artistId)
+            .WithReleaseType(releaseType)
+            .WithName(name)
+            .WithReleaseYearOrNull(year)
+            .Build();
 
     /// <summary>
     /// Creates an album with a specific name.

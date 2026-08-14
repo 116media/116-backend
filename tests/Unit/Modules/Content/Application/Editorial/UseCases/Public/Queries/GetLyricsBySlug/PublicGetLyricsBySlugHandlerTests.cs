@@ -309,7 +309,7 @@ public class PublicGetLyricsBySlugHandlerTests : BaseContentHandlerTest
     /// The streaming links section always resolves exactly four platforms for an album release.
     /// </summary>
     [Fact]
-    public async Task Handle_WhenLyricsLinkedToAlbum_ShouldReturnFourStreamingLinks()
+    public async Task Handle_WhenLyricsLinkedToAlbum_ShouldReturnFiveStreamingLinks()
     {
         // Arrange
         string slug = TestConstants.Content.Editorial.Lyrics.ValidSlug;
@@ -325,14 +325,14 @@ public class PublicGetLyricsBySlugHandlerTests : BaseContentHandlerTest
         PublicGetLyricsBySlugResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.StreamingLinks.Should().HaveCount(4);
+        result.StreamingLinks.Should().HaveCount(5);
     }
 
     /// <summary>
     /// The streaming links section always resolves exactly four platforms for a standalone single.
     /// </summary>
     [Fact]
-    public async Task Handle_WhenLyricsStandalone_ShouldReturnFourStreamingLinks()
+    public async Task Handle_WhenLyricsStandalone_ShouldReturnFiveStreamingLinks()
     {
         // Arrange
         string slug = TestConstants.Content.Editorial.Lyrics.ValidSlug;
@@ -346,7 +346,7 @@ public class PublicGetLyricsBySlugHandlerTests : BaseContentHandlerTest
         PublicGetLyricsBySlugResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.StreamingLinks.Should().HaveCount(4);
+        result.StreamingLinks.Should().HaveCount(5);
     }
 
     /// <summary>

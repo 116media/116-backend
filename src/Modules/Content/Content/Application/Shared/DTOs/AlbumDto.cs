@@ -1,3 +1,5 @@
+using _116.Content.Domain.Enums;
+
 namespace _116.Content.Application.Shared.DTOs;
 
 /// <summary>
@@ -22,4 +24,16 @@ namespace _116.Content.Application.Shared.DTOs;
 /// <param name="Label">
 /// The record label that released the album, or null if unknown.
 /// </param>
-public record AlbumDto(Guid Id, string Name, Guid? ArtistId, string? CoverImageUrl, short? ReleaseYear, string? Label);
+/// <param name="ReleaseType">
+/// What kind of release this is. Serialised by name so clients branch on "Album", never on
+/// an integer.
+/// </param>
+public record AlbumDto(
+    Guid Id,
+    string Name,
+    Guid? ArtistId,
+    string? CoverImageUrl,
+    short? ReleaseYear,
+    string? Label,
+    EnumReleaseType ReleaseType
+);

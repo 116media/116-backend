@@ -31,29 +31,18 @@ public static partial class EditorialValidation
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the title property.</param>
     /// <param name="i18n">The article error message provider.</param>
-    /// <param name="isRequired">Whether the title is required (default: true).</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidArticleTitle<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder,
-        ArticleErrorMessage i18n,
-        bool isRequired = true
+        ArticleErrorMessage i18n
     )
     {
-        if (isRequired)
-        {
-            return ruleBuilder
-                .Cascade(cascadeMode: CascadeMode.Stop)
-                .NotEmpty()
-                .WithMessage(i18n.TitleRequired())
-                .MaximumLength(maximumLength: ContentConstants.MaxTitleLength)
-                .WithMessage(i18n.TitleTooLong(ContentConstants.MaxTitleLength));
-        }
-
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
+            .NotEmpty()
+            .WithMessage(i18n.TitleRequired())
             .MaximumLength(maximumLength: ContentConstants.MaxTitleLength)
-            .WithMessage(i18n.TitleTooLong(ContentConstants.MaxTitleLength))
-            .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Title")));
+            .WithMessage(i18n.TitleTooLong(ContentConstants.MaxTitleLength));
     }
 
     /// <summary>
@@ -62,33 +51,20 @@ public static partial class EditorialValidation
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the slug property.</param>
     /// <param name="i18n">The article error message provider.</param>
-    /// <param name="isRequired">Whether the slug is required (default: true).</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidArticleSlug<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder,
-        ArticleErrorMessage i18n,
-        bool isRequired = true
+        ArticleErrorMessage i18n
     )
     {
-        if (isRequired)
-        {
-            return ruleBuilder
-                .Cascade(cascadeMode: CascadeMode.Stop)
-                .NotEmpty()
-                .WithMessage(i18n.SlugRequired())
-                .MaximumLength(maximumLength: ContentConstants.MaxSlugLength)
-                .WithMessage(i18n.SlugTooLong(ContentConstants.MaxSlugLength))
-                .Matches(SlugRegex())
-                .WithMessage(i18n.SlugInvalidFormat());
-        }
-
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
+            .NotEmpty()
+            .WithMessage(i18n.SlugRequired())
             .MaximumLength(maximumLength: ContentConstants.MaxSlugLength)
             .WithMessage(i18n.SlugTooLong(ContentConstants.MaxSlugLength))
             .Matches(SlugRegex())
-            .WithMessage(i18n.SlugInvalidFormat())
-            .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Slug")));
+            .WithMessage(i18n.SlugInvalidFormat());
     }
 
     /// <summary>
@@ -323,29 +299,18 @@ public static partial class EditorialValidation
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the title property.</param>
     /// <param name="i18n">The video error message provider.</param>
-    /// <param name="isRequired">Whether the title is required (default: true).</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidVideoTitle<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder,
-        VideoErrorMessage i18n,
-        bool isRequired = true
+        VideoErrorMessage i18n
     )
     {
-        if (isRequired)
-        {
-            return ruleBuilder
-                .Cascade(cascadeMode: CascadeMode.Stop)
-                .NotEmpty()
-                .WithMessage(i18n.TitleRequired())
-                .MaximumLength(maximumLength: ContentConstants.MaxTitleLength)
-                .WithMessage(i18n.TitleTooLong(ContentConstants.MaxTitleLength));
-        }
-
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
+            .NotEmpty()
+            .WithMessage(i18n.TitleRequired())
             .MaximumLength(maximumLength: ContentConstants.MaxTitleLength)
-            .WithMessage(i18n.TitleTooLong(ContentConstants.MaxTitleLength))
-            .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Title")));
+            .WithMessage(i18n.TitleTooLong(ContentConstants.MaxTitleLength));
     }
 
     /// <summary>
@@ -354,33 +319,20 @@ public static partial class EditorialValidation
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the slug property.</param>
     /// <param name="i18n">The video error message provider.</param>
-    /// <param name="isRequired">Whether the slug is required (default: true).</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidVideoSlug<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder,
-        VideoErrorMessage i18n,
-        bool isRequired = true
+        VideoErrorMessage i18n
     )
     {
-        if (isRequired)
-        {
-            return ruleBuilder
-                .Cascade(cascadeMode: CascadeMode.Stop)
-                .NotEmpty()
-                .WithMessage(i18n.SlugRequired())
-                .MaximumLength(maximumLength: ContentConstants.MaxSlugLength)
-                .WithMessage(i18n.SlugTooLong(ContentConstants.MaxSlugLength))
-                .Matches(SlugRegex())
-                .WithMessage(i18n.SlugInvalidFormat());
-        }
-
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
+            .NotEmpty()
+            .WithMessage(i18n.SlugRequired())
             .MaximumLength(maximumLength: ContentConstants.MaxSlugLength)
             .WithMessage(i18n.SlugTooLong(ContentConstants.MaxSlugLength))
             .Matches(SlugRegex())
-            .WithMessage(i18n.SlugInvalidFormat())
-            .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Slug")));
+            .WithMessage(i18n.SlugInvalidFormat());
     }
 
     /// <summary>
@@ -795,6 +747,73 @@ public static partial class EditorialValidation
             .WithMessage(i18n.SlugRequired())
             .MaximumLength(maximumLength: ContentConstants.MaxSlugLength)
             .Matches(SlugRegex());
+    }
+
+    /// <summary>
+    /// Validates an artist's optional legal or birth name with length constraints.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the real name property.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, string?> ValidArtistRealName<T>(
+        this IRuleBuilderInitial<T, string?> ruleBuilder
+    )
+    {
+        return ruleBuilder.MaximumLength(maximumLength: ContentConstants.MaxArtistRealNameLength);
+    }
+
+    /// <summary>
+    /// Validates an artist's optional alias list: bounded count and per-entry length. The
+    /// domain re-enforces both after normalisation; this rule exists so the client gets a
+    /// clean 400 with a field path instead of a domain exception.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the aliases property.</param>
+    /// <param name="i18n">The artist error message provider.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, IReadOnlyList<string>?> ValidArtistAliases<T>(
+        this IRuleBuilderInitial<T, IReadOnlyList<string>?> ruleBuilder,
+        ArtistErrorMessage i18n
+    )
+    {
+        return ruleBuilder
+            .Cascade(cascadeMode: CascadeMode.Stop)
+            .Must(aliases => aliases is null || aliases.Count <= ContentConstants.MaxArtistAliasCount)
+            .WithMessage(i18n.TooManyAliases())
+            .Must(aliases =>
+                aliases is null || aliases.All(alias => alias.Trim().Length <= ContentConstants.MaxArtistNameLength)
+            )
+            .WithMessage(i18n.AliasTooLong());
+    }
+
+    /// <summary>
+    /// Validates an artist's optional birthdate as strictly in the past.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the birthdate property.</param>
+    /// <param name="i18n">The artist error message provider.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, DateOnly?> ValidArtistBirthdate<T>(
+        this IRuleBuilderInitial<T, DateOnly?> ruleBuilder,
+        ArtistErrorMessage i18n
+    )
+    {
+        return ruleBuilder
+            .Must(birthdate => birthdate is null || birthdate.Value < DateOnly.FromDateTime(DateTime.UtcNow))
+            .WithMessage(i18n.BirthdateInFuture());
+    }
+
+    /// <summary>
+    /// Validates an artist's optional hometown with length constraints.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the hometown property.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, string?> ValidArtistHometown<T>(
+        this IRuleBuilderInitial<T, string?> ruleBuilder
+    )
+    {
+        return ruleBuilder.MaximumLength(maximumLength: ContentConstants.MaxArtistHometownLength);
     }
 
     /// <summary>

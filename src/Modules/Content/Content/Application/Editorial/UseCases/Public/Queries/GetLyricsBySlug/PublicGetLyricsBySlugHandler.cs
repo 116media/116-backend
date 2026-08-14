@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared;
+using _116.Content.Application.Editorial.Factories;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
@@ -88,8 +88,8 @@ public class PublicGetLyricsBySlugHandler(
                 albumId: albumId,
                 cancellationToken: cancellationToken
             );
-            streamingLinks = StreamingLinkResolver
-                .ResolveStreamingLinks(
+            streamingLinks = StreamingLinkFactory
+                .CreateStreamingLinks(
                     artistName: lyrics.ArtistName,
                     releaseName: album?.Name ?? lyrics.SongTitle,
                     curated: curated
@@ -105,8 +105,8 @@ public class PublicGetLyricsBySlugHandler(
                 lyricsId: lyrics.Id,
                 cancellationToken: cancellationToken
             );
-            streamingLinks = StreamingLinkResolver
-                .ResolveStreamingLinks(artistName: lyrics.ArtistName, releaseName: lyrics.SongTitle, curated: curated)
+            streamingLinks = StreamingLinkFactory
+                .CreateStreamingLinks(artistName: lyrics.ArtistName, releaseName: lyrics.SongTitle, curated: curated)
                 .Select(link => new StreamingLinkDto(Platform: link.Platform.ToString(), Url: link.Url))
                 .ToList();
         }

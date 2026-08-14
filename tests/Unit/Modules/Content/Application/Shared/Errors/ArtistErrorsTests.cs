@@ -147,4 +147,44 @@ public class ArtistErrorsTests
     }
 
     #endregion
+
+    #region Identity, Social Link and Directory Errors
+
+    [Fact]
+    public void TooManyAliases_ShouldReturnBadRequestException()
+    {
+        BadRequestException exception = _errors.TooManyAliases();
+
+        exception.Should().NotBeNull();
+        exception.Message.Should().Contain(_message.TooManyAliases());
+    }
+
+    [Fact]
+    public void AliasTooLong_ShouldReturnBadRequestException()
+    {
+        BadRequestException exception = _errors.AliasTooLong();
+
+        exception.Should().NotBeNull();
+        exception.Message.Should().Contain(_message.AliasTooLong());
+    }
+
+    [Fact]
+    public void BirthdateInFuture_ShouldReturnBadRequestException()
+    {
+        BadRequestException exception = _errors.BirthdateInFuture();
+
+        exception.Should().NotBeNull();
+        exception.Message.Should().Contain(_message.BirthdateInFuture());
+    }
+
+    [Fact]
+    public void SocialLinkNotFound_ShouldReturnNotFoundExceptionNamingThePlatform()
+    {
+        NotFoundException exception = _errors.SocialLinkNotFound("Instagram");
+
+        exception.Should().BeOfType<NotFoundException>();
+        exception.Message.Should().Contain("Instagram");
+    }
+
+    #endregion
 }

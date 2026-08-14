@@ -16,6 +16,10 @@ internal class ArtistBuilder
     private string? _bio;
     private Guid? _avatarFileId;
     private Guid? _userId;
+    private string? _realName;
+    private IReadOnlyList<string>? _aliases;
+    private DateOnly? _birthdate;
+    private string? _hometown;
 
     /// <summary>
     /// Sets the artist ID.
@@ -63,6 +67,42 @@ internal class ArtistBuilder
     }
 
     /// <summary>
+    /// Sets the artist's legal or birth name.
+    /// </summary>
+    public ArtistBuilder WithRealName(string? realName)
+    {
+        _realName = realName;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the artist's alternate names.
+    /// </summary>
+    public ArtistBuilder WithAliases(IReadOnlyList<string>? aliases)
+    {
+        _aliases = aliases;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the artist's date of birth.
+    /// </summary>
+    public ArtistBuilder WithBirthdate(DateOnly? birthdate)
+    {
+        _birthdate = birthdate;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the artist's hometown.
+    /// </summary>
+    public ArtistBuilder WithHometown(string? hometown)
+    {
+        _hometown = hometown;
+        return this;
+    }
+
+    /// <summary>
     /// Marks the artist profile as claimed by the given identity user.
     /// </summary>
     public ArtistBuilder AsClaimedBy(Guid userId)
@@ -81,6 +121,10 @@ internal class ArtistBuilder
             name: _name,
             slug: _slug,
             bio: _bio,
+            realName: _realName,
+            aliases: _aliases,
+            birthdate: _birthdate,
+            hometown: _hometown,
             errors: TestErrorsFactory.CreateArtistErrors()
         );
 

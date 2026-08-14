@@ -1,5 +1,6 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateAlbum.V1;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -28,7 +29,7 @@ public class AdminUpdateAlbumEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         var response = await Client.PutAsJsonAsync(
             $"{ApiRoutes.Admin.Albums}/{Guid.NewGuid()}",
-            new AdminUpdateAlbumRequest("Name", null, null)
+            new AdminUpdateAlbumRequest("Name", null, null, EnumReleaseType.Album)
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -41,7 +42,7 @@ public class AdminUpdateAlbumEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         var response = await Client.PutAsJsonAsync(
             $"{ApiRoutes.Admin.Albums}/{Guid.NewGuid()}",
-            new AdminUpdateAlbumRequest("Name", null, null)
+            new AdminUpdateAlbumRequest("Name", null, null, EnumReleaseType.Album)
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
@@ -54,7 +55,7 @@ public class AdminUpdateAlbumEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         var response = await Client.PutAsJsonAsync(
             $"{ApiRoutes.Admin.Albums}/{Guid.NewGuid()}",
-            new AdminUpdateAlbumRequest("Name", null, null)
+            new AdminUpdateAlbumRequest("Name", null, null, EnumReleaseType.Album)
         );
 
         await response.ShouldBeProblem(HttpStatusCode.NotFound);
@@ -68,7 +69,7 @@ public class AdminUpdateAlbumEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         var response = await Client.PutAsJsonAsync(
             $"{ApiRoutes.Admin.Albums}/{album.Id}",
-            new AdminUpdateAlbumRequest("Updated Name", 2001, "Updated Label")
+            new AdminUpdateAlbumRequest("Updated Name", 2001, "Updated Label", EnumReleaseType.Album)
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -102,7 +103,7 @@ public class AdminUpdateAlbumEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         await Client.PutAsJsonAsync(
             $"{ApiRoutes.Admin.Albums}/{album.Id}",
-            new AdminUpdateAlbumRequest("Updated Name", null, null)
+            new AdminUpdateAlbumRequest("Updated Name", null, null, EnumReleaseType.Album)
         );
 
         await using ContentDbContext ctx2 = CreateDbContext<ContentDbContext>();
@@ -118,7 +119,7 @@ public class AdminUpdateAlbumEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         var response = await Client.PutAsJsonAsync(
             $"{ApiRoutes.Admin.Albums}/{album.Id}",
-            new AdminUpdateAlbumRequest(string.Empty, null, null)
+            new AdminUpdateAlbumRequest(string.Empty, null, null, EnumReleaseType.Album)
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);

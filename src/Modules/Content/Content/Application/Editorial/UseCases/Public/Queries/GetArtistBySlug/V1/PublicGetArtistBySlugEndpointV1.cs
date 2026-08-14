@@ -16,10 +16,12 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetArtistBy
 /// Response model for retrieving an artist's public profile page by slug.
 /// </summary>
 /// <param name="Artist">The matched artist profile information.</param>
+/// <param name="Totals">Every per-surface item count, for the stat row and tab resolution.</param>
 /// <param name="Lyrics">The artist's paginated published lyrics pages.</param>
 /// <param name="Videos">The artist's paginated published videos.</param>
 public record PublicGetArtistBySlugResponse(
     ArtistDto Artist,
+    ArtistTotalsDto Totals,
     PaginatedResult<LyricsSummaryDto> Lyrics,
     PaginatedResult<VideoSummaryDto> Videos
 );
@@ -63,6 +65,7 @@ public class PublicGetArtistBySlugEndpointV1 : ICarterModule
 
                     var response = new PublicGetArtistBySlugResponse(
                         Artist: result.Artist,
+                        Totals: result.Totals,
                         Lyrics: result.Lyrics,
                         Videos: result.Videos
                     );

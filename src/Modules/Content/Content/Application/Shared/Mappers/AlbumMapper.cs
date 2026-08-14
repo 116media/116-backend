@@ -22,7 +22,15 @@ public static class AlbumMapper
     {
         string? coverImageUrl = await ResolveCoverImageUrlAsync(entity, fileRepository, ct);
 
-        return new AlbumDto(entity.Id, entity.Name, entity.ArtistId, coverImageUrl, entity.ReleaseYear, entity.Label);
+        return new AlbumDto(
+            entity.Id,
+            entity.Name,
+            entity.ArtistId,
+            coverImageUrl,
+            entity.ReleaseYear,
+            entity.Label,
+            entity.ReleaseType
+        );
     }
 
     /// <summary>
