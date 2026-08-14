@@ -78,7 +78,6 @@ public class AdminForgotPasswordOtpFactoryTests
         OtpCreationResult result = await _factory.CreatePasswordResetOtpAsync(userId, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.Otp.UserId.Should().Be(userId);
         result.Otp.Purpose.Should().Be(EnumOtpPurpose.PasswordReset);
     }
