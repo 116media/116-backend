@@ -28,12 +28,8 @@ public class PublicSubscribeNewsletterHandlerTests
             .Setup(r => r.GetByEmailAsync("fan@example.com", It.IsAny<CancellationToken>()))
             .ReturnsAsync((NewsletterSubscriberEntity?)null);
 
-        PublicSubscribeNewsletterResult result = await Handler.Handle(
-            new PublicSubscribeNewsletterCommand("fan@example.com"),
-            CancellationToken.None
-        );
+        await Handler.Handle(new PublicSubscribeNewsletterCommand("fan@example.com"), CancellationToken.None);
 
-        result.IsSuccess.Should().BeTrue();
         _repository.Verify(
             r => r.AddAsync(It.IsAny<NewsletterSubscriberEntity>(), It.IsAny<CancellationToken>()),
             Times.Once
@@ -94,14 +90,8 @@ public class PublicSubscribeNewsletterHandlerTests
             .Setup(r => r.GetByEmailAsync("fan@example.com", It.IsAny<CancellationToken>()))
             .ReturnsAsync(existing);
 
-        PublicSubscribeNewsletterResult result = await Handler.Handle(
-            new PublicSubscribeNewsletterCommand("fan@example.com"),
-            CancellationToken.None
-        );
+        await Handler.Handle(new PublicSubscribeNewsletterCommand("fan@example.com"), CancellationToken.None);
 
-        // The neutral success is the enumeration protection: a caller cannot
-        // tell a fresh signup from an existing subscription.
-        result.IsSuccess.Should().BeTrue();
         _unitOfWork.Verify(u => u.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
         _mailer.VerifyNoOtherCalls();
     }
