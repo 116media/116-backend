@@ -47,8 +47,6 @@ public class AdminGetPermissionByIdHandlerTests : BaseHandlerTest
         AdminGetPermissionByIdResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Permission.Should().NotBeNull();
         result.Permission.Id.Should().Be(permission.Id);
         result.Permission.Resource.Should().Be(TestConstants.Permission.ValidResource);
         result.Permission.Action.Should().Be(TestConstants.Permission.ValidAction);
