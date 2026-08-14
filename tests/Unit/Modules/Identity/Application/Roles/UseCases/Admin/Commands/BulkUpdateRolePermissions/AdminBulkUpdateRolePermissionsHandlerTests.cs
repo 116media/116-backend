@@ -61,8 +61,6 @@ public class AdminBulkUpdateRolePermissionsHandlerTests : BaseHandlerTest
         AdminBulkUpdateRolePermissionsResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Role.Should().NotBeNull();
         result.Role.Id.Should().Be(role.Id);
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -239,16 +237,10 @@ public class AdminBulkUpdateRolePermissionsHandlerTests : BaseHandlerTest
         _roleRepositoryMock.SetupGetByIdWithPermissionsOrThrowNotFound(nonExistentRoleId);
 
         // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (NotFoundException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
@@ -275,10 +267,7 @@ public class AdminBulkUpdateRolePermissionsHandlerTests : BaseHandlerTest
         await _handler.Handle(command, cts.Token);
 
         // Assert
-        _roleRepositoryMock.Verify(
-            x => x.GetRoleByIdWithPermissionsOrThrowAsync(role.Id, cts.Token),
-            Times.AtLeastOnce
-        );
+        _roleRepositoryMock.Verify(x => x.GetRoleByIdWithPermissionsOrThrowAsync(role.Id, cts.Token), Times.Exactly(2));
     }
 
     [Fact]
@@ -301,7 +290,7 @@ public class AdminBulkUpdateRolePermissionsHandlerTests : BaseHandlerTest
         // Assert
         _roleRepositoryMock.Verify(
             x => x.GetRoleByIdWithPermissionsOrThrowAsync(role.Id, It.IsAny<CancellationToken>()),
-            Times.Exactly(2) // Once at start, once after update
+            Times.Exactly(2)
         );
     }
 
