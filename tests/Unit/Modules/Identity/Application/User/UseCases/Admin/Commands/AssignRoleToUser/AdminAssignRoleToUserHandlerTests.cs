@@ -67,7 +67,6 @@ public class AdminAssignRoleToUserHandlerTests : BaseHandlerTest
         AdminAssignRoleToUserResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.Roles.Should().ContainSingle();
         result.Roles.First().Name.Should().Be("Admin");
     }
@@ -247,16 +246,10 @@ public class AdminAssignRoleToUserHandlerTests : BaseHandlerTest
         _userRoleRepositoryMock.SetupExistsByUserAndRole(userId, role.Id, true);
 
         // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (ConflictException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<ConflictException>();
         _userRoleRepositoryMock.Verify(
             x => x.AddAsync(It.IsAny<UserRoleEntity>(), It.IsAny<CancellationToken>()),
             Times.Never
