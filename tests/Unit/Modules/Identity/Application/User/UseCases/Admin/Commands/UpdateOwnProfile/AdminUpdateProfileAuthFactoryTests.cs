@@ -79,7 +79,6 @@ public class AdminUpdateProfileAuthFactoryTests
         );
 
         // Assert
-        result.Should().NotBeNull();
         result.User.Should().Be(user);
     }
 
@@ -283,15 +282,14 @@ public class AdminUpdateProfileAuthFactoryTests
             .Setup(x => x.IsSessionValidAsync(sessionId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
-        // Same user already has this phone number
         _authRepositoryMock
             .Setup(x => x.GetUserByPhoneNumberAsync(fullPhoneNumber, It.IsAny<CancellationToken>()))
             .ReturnsAsync(user);
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
-        // Act & Assert (should not throw)
-        await _factory.UpdateProfileAsync(
+        // Act
+        AdminUpdateProfileAuthData result = await _factory.UpdateProfileAsync(
             userId,
             sessionId,
             null,
@@ -301,6 +299,12 @@ public class AdminUpdateProfileAuthFactoryTests
             partialPhoneNumber,
             CancellationToken.None
         );
+
+        // Assert
+        result.User.FullPhoneNumber.Should().Be(fullPhoneNumber);
+        result.User.CountryDialCode.Should().Be(countryDialCode);
+        result.User.PartialPhoneNumber.Should().Be(partialPhoneNumber);
+        _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
