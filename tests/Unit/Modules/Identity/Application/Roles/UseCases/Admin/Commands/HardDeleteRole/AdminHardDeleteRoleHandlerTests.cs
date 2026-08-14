@@ -45,11 +45,9 @@ public class AdminHardDeleteRoleHandlerTests
         _roleRepositoryMock.SetupGetByIdOrThrow(customRole);
 
         // Act
-        AdminHardDeleteRoleResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.IsSuccess.Should().BeTrue();
         _roleRepositoryMock.VerifyDeleteCalled(customRole);
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -65,10 +63,9 @@ public class AdminHardDeleteRoleHandlerTests
         _roleRepositoryMock.SetupGetByIdOrThrow(deletedRole);
 
         // Act
-        AdminHardDeleteRoleResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         _roleRepositoryMock.VerifyDeleteCalled(deletedRole);
     }
 
@@ -102,16 +99,10 @@ public class AdminHardDeleteRoleHandlerTests
         _roleRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentRoleId);
 
         // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (NotFoundException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
@@ -181,16 +172,10 @@ public class AdminHardDeleteRoleHandlerTests
         _roleRepositoryMock.SetupGetByIdOrThrow(superAdminRole);
 
         // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (BadRequestException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<BadRequestException>();
         _roleRepositoryMock.Verify(x => x.Delete(It.IsAny<RoleEntity>()), Times.Never);
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
