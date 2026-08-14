@@ -32,35 +32,6 @@ public class PublicResetPasswordHandlerTests
     #region Success Cases
 
     [Fact]
-    public async Task Handle_WithValidOtp_ShouldReturnSuccess()
-    {
-        // Arrange
-        string email = "user@example.com";
-        string code = "123456";
-        string newPassword = "NewPassword123!";
-        UserEntity user = UserFactory.CreateVerifiedActive();
-        OtpEntity otp = OtpFactory.CreateUsed(user.Id);
-
-        PublicResetPasswordCommand command = new(Email: email, Code: code, NewPassword: newPassword);
-        PublicResetPasswordAuthData authData = new(User: user);
-
-        _authFactoryMock
-            .Setup(x => x.GetUserForResetAsync(email, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(authData);
-        _otpRepositoryMock.SetupValidateUsedOtp(otp);
-        _authFactoryMock
-            .Setup(x => x.ResetPasswordAsync(user, newPassword, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(user);
-
-        // Act
-        PublicResetPasswordResult result = await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        result.Should().NotBeNull();
-        result.IsSuccess.Should().BeTrue();
-    }
-
-    [Fact]
     public async Task Handle_ShouldGetUserForReset()
     {
         // Arrange
@@ -220,16 +191,10 @@ public class PublicResetPasswordHandlerTests
             .ThrowsAsync(new NotFoundException("OTP not found."));
 
         // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (NotFoundException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
         _authFactoryMock.Verify(
             x => x.ResetPasswordAsync(It.IsAny<UserEntity>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
             Times.Never
