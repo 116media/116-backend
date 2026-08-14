@@ -44,8 +44,6 @@ public class AdminGetRoleByIdHandlerTests : BaseHandlerTest
         AdminGetRoleByIdResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Role.Should().NotBeNull();
         result.Role.Id.Should().Be(role.Id);
         result.Role.Name.Should().Be(TestConstants.Role.ValidName);
         result.Role.Description.Should().Be(TestConstants.Role.ValidDescription);
