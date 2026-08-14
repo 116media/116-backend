@@ -70,8 +70,6 @@ public class AdminAssignPermissionToRoleHandlerTests : BaseHandlerTest
         AdminAssignPermissionToRoleResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Role.Should().NotBeNull();
         result.Role.Id.Should().Be(role.Id);
         _rolePermissionRepositoryMock.VerifyAddCalled();
         _unitOfWorkMock.VerifyCommitCalled();
@@ -294,16 +292,10 @@ public class AdminAssignPermissionToRoleHandlerTests : BaseHandlerTest
         _rolePermissionRepositoryMock.SetupExistsByRoleAndPermission(role.Id, permission.Id, exists: true);
 
         // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (ConflictException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<ConflictException>();
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
