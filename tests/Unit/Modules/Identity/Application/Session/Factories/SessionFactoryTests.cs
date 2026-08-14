@@ -124,7 +124,6 @@ public class SessionFactoryTests : IDisposable
         SessionResult result = await _factory.CreateSessionAsync(user, userPermissions, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.RefreshToken.Should().Be(refreshToken);
         result.AccessToken.Should().Be(jwtResult.Token);
         _sessionRepositoryMock.Verify(
@@ -177,7 +176,6 @@ public class SessionFactoryTests : IDisposable
         SessionResult result = await _factory.CreateSessionAsync(user, userPermissions, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.RefreshToken.Should().Be(refreshToken);
         _sessionRepositoryMock.Verify(
             x => x.CreateAsync(It.IsAny<SessionEntity>(), It.IsAny<CancellationToken>()),
