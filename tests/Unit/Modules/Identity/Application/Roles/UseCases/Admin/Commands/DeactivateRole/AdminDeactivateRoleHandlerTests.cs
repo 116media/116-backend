@@ -56,8 +56,6 @@ public class AdminDeactivateRoleHandlerTests : BaseHandlerTest
         AdminDeactivateRoleResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Role.Should().NotBeNull();
         result.Role.Id.Should().Be(activeRole.Id);
         result.Role.Name.Should().Be(TestConstants.Role.ValidName);
         _unitOfWorkMock.VerifyCommitCalled();
@@ -110,16 +108,10 @@ public class AdminDeactivateRoleHandlerTests : BaseHandlerTest
         _roleRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentRoleId);
 
         // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (NotFoundException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
@@ -155,16 +147,10 @@ public class AdminDeactivateRoleHandlerTests : BaseHandlerTest
         _roleRepositoryMock.SetupGetByIdOrThrow(inactiveRole);
 
         // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (ConflictException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<ConflictException>();
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
