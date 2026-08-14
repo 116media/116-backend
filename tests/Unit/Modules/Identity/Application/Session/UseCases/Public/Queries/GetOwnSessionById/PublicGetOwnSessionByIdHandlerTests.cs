@@ -47,8 +47,6 @@ public class PublicGetOwnSessionByIdHandlerTests : BaseHandlerTest
         PublicGetOwnSessionByIdResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Session.Should().NotBeNull();
         result.Session.Id.Should().Be(session.Id);
     }
 
