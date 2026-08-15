@@ -41,7 +41,7 @@ public class AdminGetAllRolesHandlerTests : BaseHandlerTest
             RoleFactory.Create("Role3"),
         ];
 
-        PaginatedRequest paginatedRequest = new(PageIndex: 0, PageSize: 10);
+        PaginatedRequest paginatedRequest = new(0, 10);
         AdminGetAllRolesQuery query = new(PaginatedRequest: paginatedRequest);
 
         _roleRepositoryMock.SetupGetAllWithPagination(roles, totalCount: 3);
@@ -60,7 +60,7 @@ public class AdminGetAllRolesHandlerTests : BaseHandlerTest
     public async Task Handle_WithEmptyRepository_ShouldReturnEmptyPaginatedResult()
     {
         // Arrange
-        PaginatedRequest paginatedRequest = new(PageIndex: 0, PageSize: 10);
+        PaginatedRequest paginatedRequest = new(0, 10);
         AdminGetAllRolesQuery query = new(PaginatedRequest: paginatedRequest);
 
         _roleRepositoryMock.SetupGetAllWithPaginationEmpty();
@@ -84,7 +84,7 @@ public class AdminGetAllRolesHandlerTests : BaseHandlerTest
         int pageIndex = 2;
         int pageSize = 5;
 
-        PaginatedRequest paginatedRequest = new(PageIndex: pageIndex, PageSize: pageSize);
+        PaginatedRequest paginatedRequest = new(pageIndex, pageSize);
         AdminGetAllRolesQuery query = new(PaginatedRequest: paginatedRequest);
 
         _roleRepositoryMock.SetupGetAllWithPaginationEmpty();
@@ -114,7 +114,7 @@ public class AdminGetAllRolesHandlerTests : BaseHandlerTest
         int pageSize = 25;
         List<RoleEntity> roles = [RoleFactory.Create("Role1")];
 
-        PaginatedRequest paginatedRequest = new(PageIndex: 0, PageSize: pageSize);
+        PaginatedRequest paginatedRequest = new(0, pageSize);
         AdminGetAllRolesQuery query = new(PaginatedRequest: paginatedRequest);
 
         _roleRepositoryMock.SetupGetAllWithPagination(roles, totalCount: 1);
@@ -133,7 +133,7 @@ public class AdminGetAllRolesHandlerTests : BaseHandlerTest
         int totalCount = 100;
         List<RoleEntity> roles = [RoleFactory.Create("Role1")];
 
-        PaginatedRequest paginatedRequest = new(PageIndex: 0, PageSize: 10);
+        PaginatedRequest paginatedRequest = new(0, 10);
         AdminGetAllRolesQuery query = new(PaginatedRequest: paginatedRequest);
 
         _roleRepositoryMock.SetupGetAllWithPagination(roles, totalCount: totalCount);
@@ -156,7 +156,7 @@ public class AdminGetAllRolesHandlerTests : BaseHandlerTest
         // Arrange
         string searchTerm = "Admin";
 
-        PaginatedRequest paginatedRequest = new(PageIndex: 0, PageSize: 10);
+        PaginatedRequest paginatedRequest = new(0, 10);
         AdminGetAllRolesQuery query = new(PaginatedRequest: paginatedRequest, Search: searchTerm);
 
         _roleRepositoryMock.SetupGetAllWithPaginationEmpty();
@@ -185,7 +185,7 @@ public class AdminGetAllRolesHandlerTests : BaseHandlerTest
         // Arrange
         bool isActive = true;
 
-        PaginatedRequest paginatedRequest = new(PageIndex: 0, PageSize: 10);
+        PaginatedRequest paginatedRequest = new(0, 10);
         AdminGetAllRolesQuery query = new(PaginatedRequest: paginatedRequest, IsActive: isActive);
 
         _roleRepositoryMock.SetupGetAllWithPaginationEmpty();
@@ -214,7 +214,7 @@ public class AdminGetAllRolesHandlerTests : BaseHandlerTest
         // Arrange
         bool isDeleted = true;
 
-        PaginatedRequest paginatedRequest = new(PageIndex: 0, PageSize: 10);
+        PaginatedRequest paginatedRequest = new(0, 10);
         AdminGetAllRolesQuery query = new(PaginatedRequest: paginatedRequest, IsDeleted: isDeleted);
 
         _roleRepositoryMock.SetupGetAllWithPaginationEmpty();
@@ -245,7 +245,7 @@ public class AdminGetAllRolesHandlerTests : BaseHandlerTest
         bool isActive = true;
         bool isDeleted = false;
 
-        PaginatedRequest paginatedRequest = new(PageIndex: 0, PageSize: 10);
+        PaginatedRequest paginatedRequest = new(0, 10);
         AdminGetAllRolesQuery query = new(
             PaginatedRequest: paginatedRequest,
             Search: searchTerm,
@@ -285,7 +285,7 @@ public class AdminGetAllRolesHandlerTests : BaseHandlerTest
 
         List<RoleEntity> roles = [role];
 
-        PaginatedRequest paginatedRequest = new(PageIndex: 0, PageSize: 10);
+        PaginatedRequest paginatedRequest = new(0, 10);
         AdminGetAllRolesQuery query = new(PaginatedRequest: paginatedRequest);
 
         _roleRepositoryMock.SetupGetAllWithPagination(roles, totalCount: 1);
@@ -308,7 +308,7 @@ public class AdminGetAllRolesHandlerTests : BaseHandlerTest
     public async Task Handle_WithCancellationToken_ShouldPassToRepository()
     {
         // Arrange
-        PaginatedRequest paginatedRequest = new(PageIndex: 0, PageSize: 10);
+        PaginatedRequest paginatedRequest = new(0, 10);
         AdminGetAllRolesQuery query = new(PaginatedRequest: paginatedRequest);
 
         using CancellationTokenSource cts = new();
