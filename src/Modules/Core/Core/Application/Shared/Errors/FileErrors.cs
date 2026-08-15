@@ -41,6 +41,12 @@ public class FileErrors(ValidationErrorMessage validation, InternalServerErrorMe
         new(internalServer.FileDownloadFailed(fileUrl, reason));
 
     /// <summary>
+    /// Throws a generic download failure that reveals neither the URL nor the underlying reason.
+    /// Used when the target is rejected for safety or the provider response cannot be trusted.
+    /// </summary>
+    public InternalServerException FileDownloadFailed() => new(internalServer.FileDownloadFailedGeneric());
+
+    /// <summary>
     /// Throws when the file URL format is invalid.
     /// </summary>
     public BadRequestException InvalidFileUrl(string fileUrl) => new(validation.InvalidFileUrl(fileUrl));
@@ -61,10 +67,9 @@ public class FileErrors(ValidationErrorMessage validation, InternalServerErrorMe
     public BadRequestException FileRequired() => new(validation.FileRequired());
 
     /// <summary>
-    /// Throws when the uploaded file exceeds size limits (overload with MB display).
+    /// Throws when the uploaded file exceeds the size limit, shown in megabytes.
     /// </summary>
-    public BadRequestException FileTooLarge(long actualSize, long maxSize, long maxSizeMB) =>
-        new(validation.FileTooLargeWithLimit(maxSizeMB));
+    public BadRequestException FileTooLarge(long maxSizeMB) => new(validation.FileTooLargeWithLimit(maxSizeMB));
 
     /// <summary>
     /// Throws when the file type is not allowed.
