@@ -13,17 +13,21 @@ public static class HttpTestHelpers
 {
     /// <summary>
     /// Creates a default HttpContext for testing exception handlers and middleware.
-    /// Includes a service provider with localization, shared exception messages, and a Development
-    /// <see cref="IHostEnvironment"/> (the exception fallback resolves it to decide whether to expose
-    /// the raw error detail).
+    /// Includes a service provider with localization, shared exception messages, and an
+    /// <see cref="IHostEnvironment"/> reporting <paramref name="environmentName"/> (the exception
+    /// fallback resolves it to decide whether to expose the raw error detail). Defaults to Development.
     /// </summary>
-    public static DefaultHttpContext CreateDefaultHttpContext()
+    /// <param name="environmentName">
+    /// The hosting environment the resolved <see cref="IHostEnvironment"/> reports. Pass
+    /// <see cref="Environments.Production"/> to exercise the sanitized, non-Development branch.
+    /// </param>
+    public static DefaultHttpContext CreateDefaultHttpContext(string environmentName = "Development")
     {
         var services = new ServiceCollection();
         services.AddLogging();
         services.AddLocalization();
         services.AddScoped<SharedExceptionMessage>();
-        services.AddSingleton<IHostEnvironment>(new TestHostEnvironment());
+        services.AddSingleton<IHostEnvironment>(new TestHostEnvironment { EnvironmentName = environmentName });
         ServiceProvider provider = services.BuildServiceProvider();
 
         DefaultHttpContext context = new();
