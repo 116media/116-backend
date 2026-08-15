@@ -46,10 +46,7 @@ public class SocialTokenVerifierFactoryTests
         Action act = () => factory.For(EnumAuthProvider.Facebook);
 
         // Assert
-        act.Should()
-            .Throw<UnsupportedProviderException>()
-            .Which.Provider.Should()
-            .Be(EnumAuthProvider.Facebook);
+        act.Should().Throw<UnsupportedProviderException>().Which.Provider.Should().Be(EnumAuthProvider.Facebook);
     }
 
     private sealed class FakeVerifier : ISocialTokenVerifier
