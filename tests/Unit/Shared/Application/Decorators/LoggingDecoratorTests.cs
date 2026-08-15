@@ -124,7 +124,7 @@ public class LoggingDecoratorTests
         loggerMock.Verify(
             x =>
                 x.Log(
-                    LogLevel.Information,
+                    LogLevel.Debug,
                     It.IsAny<EventId>(),
                     It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("[END]")),
                     It.IsAny<Exception>(),
@@ -182,7 +182,7 @@ public class LoggingDecoratorTests
         loggerMock.Verify(
             x =>
                 x.Log(
-                    LogLevel.Information,
+                    LogLevel.Debug,
                     It.IsAny<EventId>(),
                     It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("TestResponse")),
                     It.IsAny<Exception>(),
@@ -409,7 +409,7 @@ public class LoggingDecoratorTests
         loggerMock.Verify(
             x =>
                 x.Log(
-                    LogLevel.Information,
+                    LogLevel.Debug,
                     It.IsAny<EventId>(),
                     It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("[END]")),
                     It.IsAny<Exception>(),
