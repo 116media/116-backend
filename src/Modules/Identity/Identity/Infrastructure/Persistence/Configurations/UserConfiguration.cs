@@ -25,6 +25,10 @@ public class UserConfiguration : IEntityTypeConfiguration<UserEntity>
         builder.Property(u => u.UserName).HasMaxLength(maxLength: UserConstants.MaxUserNameLength).IsRequired();
         builder.Property(u => u.PasswordHash).IsRequired(false); // Can be null for external auth providers
         builder.Property(u => u.AuthProvider).HasConversion<string>().IsRequired();
+        builder
+            .Property(u => u.ProviderSubjectId)
+            .HasMaxLength(maxLength: UserConstants.MaxProviderSubjectIdLength)
+            .IsRequired(false); // Null for local accounts and legacy external accounts
         builder.Property(u => u.IsVerified).HasDefaultValue(value: UserConstants.DefaultIsVerified);
         builder.Property(u => u.IsActive).HasDefaultValue(true);
         builder
@@ -53,6 +57,10 @@ public class UserConfiguration : IEntityTypeConfiguration<UserEntity>
         // Indexes
         builder.HasIndex(u => u.Email).IsUnique();
         builder.HasIndex(u => u.UserName).IsUnique();
+        builder
+            .HasIndex(u => new { u.AuthProvider, u.ProviderSubjectId })
+            .IsUnique()
+            .HasFilter("provider_subject_id IS NOT NULL");
 
         // Relationships
         builder
