@@ -3,9 +3,12 @@ using _116.Identity.Application.Auth.Exceptions;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin.V1;
 using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Application.Shared.Exceptions;
+using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Integration.Tests.Common.Stubs;
+using _116.Shared.Application.Exceptions;
+using _116.Tests.Fixtures.Builders.Entities.Identity;
 using _116.Tests.Fixtures.Builders.Requests.Identity;
 using _116.Tests.Fixtures.Factories.Identity;
 using FluentValidation;
@@ -109,6 +112,42 @@ public class PublicSocialLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         await using var verifyContext = CreateDbContext<IdentityDbContext>();
         int count = await verifyContext.Users.CountAsync(u => u.Email == email);
         count.Should().Be(1);
+    }
+
+    private async Task SeedExternalGoogleUserAsync(string email, string providerSubjectId)
+    {
+        UserEntity user = new UserBuilder()
+            .WithAuthProvider(EnumAuthProvider.Google)
+            .WithProviderSubjectId(providerSubjectId)
+            .WithEmail(email)
+            .AsVerified()
+            .Build();
+
+        await using var seedContext = CreateDbContext<IdentityDbContext>();
+        seedContext.Users.Add(user);
+        await seedContext.SaveChangesAsync();
+    }
+
+    [Fact]
+    public async Task SocialLogin_WhenEmailBoundToDifferentSubject_ReturnsConflict()
+    {
+        await SeedVisitorRoleAsync();
+        Client.ClearAuthentication();
+        Client.DefaultRequestHeaders.Add("X-Device-Id", Guid.NewGuid().ToString());
+
+        // An external account already owns this email under one provider subject id.
+        var email = $"social-{Guid.NewGuid():N}@test.com";
+        await SeedExternalGoogleUserAsync(email, providerSubjectId: $"sub-{Guid.NewGuid():N}");
+
+        // A token for the same email but a different subject id must not silently take the account.
+        Verifier.NextPayload = Payload(email, subjectId: $"sub-{Guid.NewGuid():N}");
+
+        var response = await Client.PostAsJsonAsync(Routes.Public.Auth.SocialLogin(), GoogleRequest());
+
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<ConflictErrorMessage>(m => m.ProviderMismatch())
+        );
     }
 
     [Fact]
