@@ -352,7 +352,7 @@ public class CloudinaryService : ICloudinaryService
         if (file.Length > FileConstants.MaxAvatarFileSizeBytes)
         {
             const long maxSizeMb = FileConstants.MaxAvatarFileSizeBytes / (1024 * 1024);
-            throw _i18n.File.FileTooLarge(file.Length, FileConstants.MaxAvatarFileSizeBytes, maxSizeMb);
+            throw _i18n.File.FileTooLarge(maxSizeMb);
         }
 
         // Check file extension first (more reliable than MIME type for mobile uploads)
@@ -391,7 +391,7 @@ public class CloudinaryService : ICloudinaryService
         if (file.Length > FileConstants.MaxRawFileSizeBytes)
         {
             const long maxSizeMb = FileConstants.MaxRawFileSizeBytes / (1024 * 1024);
-            throw _i18n.File.FileTooLarge(file.Length, FileConstants.MaxRawFileSizeBytes, maxSizeMb);
+            throw _i18n.File.FileTooLarge(maxSizeMb);
         }
 
         string extension = Path.GetExtension(file.FileName).ToLowerInvariant();
@@ -427,7 +427,7 @@ public class CloudinaryService : ICloudinaryService
         if (file.Length > FileConstants.MaxVideoFileSizeBytes)
         {
             const long maxSizeMb = FileConstants.MaxVideoFileSizeBytes / (1024 * 1024);
-            throw _i18n.File.FileTooLarge(file.Length, FileConstants.MaxVideoFileSizeBytes, maxSizeMb);
+            throw _i18n.File.FileTooLarge(maxSizeMb);
         }
 
         string extension = Path.GetExtension(file.FileName).ToLowerInvariant();
