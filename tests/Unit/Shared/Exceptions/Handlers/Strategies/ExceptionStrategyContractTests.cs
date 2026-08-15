@@ -34,7 +34,7 @@ public class ExceptionStrategyContractTests
     /// deliberately when a strategy is added; the failure is the notification that the new strategy
     /// needs a contract entry.
     /// </summary>
-    private const int ExpectedStrategyCount = 20;
+    private const int ExpectedStrategyCount = 21;
 
     /// <summary>
     /// The production assemblies scanned for strategy implementations, each anchored on a type rather
@@ -120,7 +120,14 @@ public class ExceptionStrategyContractTests
             () => new Exception("Unhandled failure"),
             StatusCodes.Status500InternalServerError,
             nameof(Exception),
-            CarriesTraceExtensions: false
+            CarriesTraceExtensions: true
+        ),
+        [typeof(OperationCanceledExceptionHandler)] = new StrategyContract(
+            typeof(OperationCanceledException),
+            () => new OperationCanceledException("The request was cancelled"),
+            499,
+            nameof(OperationCanceledException),
+            CarriesTraceExtensions: true
         ),
         [typeof(FormatExceptionStrategy)] = new StrategyContract(
             typeof(FormatException),
@@ -277,12 +284,12 @@ public class ExceptionStrategyContractTests
             .Should()
             .HaveCount(
                 ExpectedStrategyCount,
-                "the Shared assembly declares 13 strategies and the Identity module adds 7"
+                "the Shared assembly declares 14 strategies and the Identity module adds 7"
             );
     }
 
     [Fact]
-    public void StrategyTypes_ShouldExemptOnlyTheFallbackFromTheTraceExtensions()
+    public void StrategyTypes_ShouldAllCarryTheTraceExtensions()
     {
         // Act
         List<string> exempt = DiscoverStrategyTypes()
@@ -293,10 +300,7 @@ public class ExceptionStrategyContractTests
         // Assert
         exempt
             .Should()
-            .BeEquivalentTo(
-                new[] { nameof(DefaultExceptionHandler) },
-                "the fallback builds its ProblemDetails inline instead of routing through the shared envelope helper"
-            );
+            .BeEmpty("every strategy — including the inline fallback — now emits the traceId and timestamp extensions");
     }
 
     /// <summary>
