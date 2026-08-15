@@ -1,6 +1,5 @@
 using _116.Identity.Application.Adapters.SocialAuth;
 using _116.Identity.Application.Auth.Exceptions;
-using _116.Identity.Domain.Enums;
 
 namespace _116.Integration.Tests.Common.Stubs;
 
@@ -48,14 +47,4 @@ public class StubSocialTokenVerifier : ISocialTokenVerifier, IResettableStub
             Name: "Social User",
             PictureUrl: null
         );
-}
-
-/// <summary>
-/// Stub factory that returns the single <see cref="StubSocialTokenVerifier" /> for every provider.
-/// </summary>
-/// <param name="verifier">The shared stub verifier.</param>
-public class StubSocialTokenVerifierFactory(StubSocialTokenVerifier verifier) : ISocialTokenVerifierFactory
-{
-    /// <inheritdoc />
-    public ISocialTokenVerifier For(EnumAuthProvider provider) => verifier;
 }
