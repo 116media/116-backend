@@ -3,6 +3,7 @@ using _116.Identity.Application.Auth.Exceptions;
 using _116.Identity.Application.Auth.Exceptions.Handlers;
 using _116.Identity.Application.Shared.Exceptions;
 using _116.Identity.Application.Shared.Exceptions.Handlers;
+using _116.Identity.Domain.Enums;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Exceptions.Handlers.Contracts;
 using _116.Shared.Application.Exceptions.Handlers.Strategies;
@@ -34,7 +35,7 @@ public class ExceptionStrategyContractTests
     /// deliberately when a strategy is added; the failure is the notification that the new strategy
     /// needs a contract entry.
     /// </summary>
-    private const int ExpectedStrategyCount = 21;
+    private const int ExpectedStrategyCount = 23;
 
     /// <summary>
     /// The production assemblies scanned for strategy implementations, each anchored on a type rather
@@ -199,6 +200,20 @@ public class ExceptionStrategyContractTests
             nameof(ValidationException),
             CarriesTraceExtensions: true
         ),
+        [typeof(SocialTokenVerificationExceptionHandler)] = new StrategyContract(
+            typeof(SocialTokenVerificationException),
+            () => new SocialTokenVerificationException(),
+            StatusCodes.Status401Unauthorized,
+            nameof(SocialTokenVerificationException),
+            CarriesTraceExtensions: true
+        ),
+        [typeof(UnsupportedProviderExceptionHandler)] = new StrategyContract(
+            typeof(UnsupportedProviderException),
+            () => new UnsupportedProviderException(EnumAuthProvider.Google),
+            StatusCodes.Status400BadRequest,
+            nameof(UnsupportedProviderException),
+            CarriesTraceExtensions: true
+        ),
     };
 
     /// <summary>
@@ -284,7 +299,7 @@ public class ExceptionStrategyContractTests
             .Should()
             .HaveCount(
                 ExpectedStrategyCount,
-                "the Shared assembly declares 14 strategies and the Identity module adds 7"
+                "the Shared assembly declares 14 strategies and the Identity module adds 9"
             );
     }
 
