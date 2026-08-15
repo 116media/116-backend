@@ -33,7 +33,7 @@ public class PublicGetOwnRatedVideosHandlerTests : BaseContentHandlerTest
         var handler = new PublicGetOwnRatedVideosHandler(_videoRepository.Object, _fileRepository.Object, Mapper);
 
         PublicGetOwnRatedVideosResult result = await handler.Handle(
-            new PublicGetOwnRatedVideosQuery(userId, new PaginatedRequest(PageIndex: 1, PageSize: 7)),
+            new PublicGetOwnRatedVideosQuery(userId, new PaginatedRequest(1, 7)),
             CancellationToken.None
         );
 
