@@ -58,7 +58,7 @@ public class PublicGetOwnArticleBookmarksHandlerTests : BaseContentHandlerTest
 
         var query = new PublicGetOwnArticleBookmarksQuery(
             UserId: UserId,
-            PaginatedRequest: new PaginatedRequest(PageIndex: 0, PageSize: 10)
+            PaginatedRequest: new PaginatedRequest(0, 10)
         );
 
         // Act
@@ -78,7 +78,7 @@ public class PublicGetOwnArticleBookmarksHandlerTests : BaseContentHandlerTest
 
         var query = new PublicGetOwnArticleBookmarksQuery(
             UserId: UserId,
-            PaginatedRequest: new PaginatedRequest(PageIndex: 0, PageSize: 10)
+            PaginatedRequest: new PaginatedRequest(0, 10)
         );
 
         // Act
