@@ -101,6 +101,7 @@ public class AuthRepository(IdentityDbContext context, UserErrors userErrors, Se
     {
         // Use specification to determine if credentials is an email or username
         var specification = new UserByCredentialsSpecification(credentials: credentials);
+
         // Get the user by email or username without any status checks
         return await context
             .Users.ApplySpecification(specification: specification)
@@ -258,6 +259,7 @@ public class AuthRepository(IdentityDbContext context, UserErrors userErrors, Se
     {
         // Find the user
         UserEntity? user = await context.Users.FindAsync([userId], cancellationToken: cancellationToken);
+
         // Find the Visitor role using specification
         var roleSpec = new RoleByNameSpecification(nameof(EnumCoreUserRole.Visitor));
         RoleEntity? visitorRole = await context.Roles.FirstOrDefaultBySpecificationAsync(
@@ -272,6 +274,7 @@ public class AuthRepository(IdentityDbContext context, UserErrors userErrors, Se
 
         // Create user-role association using the static factory method
         var userRole = UserRoleEntity.CreateBootstrap(Guid.NewGuid(), userId: userId, roleId: visitorRole.Id);
+
         // Use the domain method to assign the role
         user?.AssignRole(userRole: userRole, errors: userErrors);
     }
@@ -293,46 +296,62 @@ public class AuthRepository(IdentityDbContext context, UserErrors userErrors, Se
         string email,
         string? userName,
         AuthProvider authProvider,
+        string providerSubjectId,
         CancellationToken cancellationToken = default
     )
     {
-        UserEntity? user;
+        // Subject-id match — the authoritative key.
+        UserEntity? user = await GetUserWithRolesAndPermissionsByProviderSubjectAsync(
+            authProvider: authProvider.Value,
+            providerSubjectId: providerSubjectId,
+            cancellationToken: cancellationToken
+        );
+        if (user is not null)
+        {
+            return user;
+        }
+
         try
         {
-            // Try to load existing user including roles and permissions
+            // Email match — link or reject; never silently take over.
             user = await GetUserWithRolesAndPermissionsByCredentialsOrThrow(
                 credentials: email,
                 cancellationToken: cancellationToken
             );
-            // Prevent social login if a local account exists
+
+            // Prevent social login if a local account owns the email.
             if (user!.AuthProvider == EnumAuthProvider.Local)
             {
                 throw userErrors.EmailAlreadyExists(email: email);
             }
 
-            // Update username if a new one is provided and it's different
+            // Existing external row: link if unlinked, reject if it belongs to another subject.
+            user.LinkProviderSubject(providerSubjectId: providerSubjectId, errors: userErrors);
+
+            // Update username if a new, still-available one is provided.
             if (!string.IsNullOrWhiteSpace(value: userName) && user.UserName != userName)
             {
-                // Check if another user already takes the new username
                 bool usernameExists = await ExistsByUserNameAsync(
                     userName: userName,
                     cancellationToken: cancellationToken
                 );
-                if (usernameExists)
+                if (!usernameExists)
                 {
-                    throw userErrors.UsernameAlreadyExists(username: userName);
+                    user.UpdateUserName(newUserName: userName, errors: userErrors);
                 }
-
-                user.UpdateUserName(newUserName: userName, errors: userErrors);
             }
+
+            await context.SaveChangesAsync(cancellationToken: cancellationToken);
+            return user;
         }
         catch (NotFoundException)
         {
-            // User doesn't exist, create a new one
+            // Case of a Brand-new account.
             user = UserEntity.CreateExternal(
                 Guid.NewGuid(),
                 userName!,
                 authProvider: authProvider.Value,
+                providerSubjectId: providerSubjectId,
                 errors: userErrors,
                 email: email
             );
@@ -341,14 +360,37 @@ public class AuthRepository(IdentityDbContext context, UserErrors userErrors, Se
             await AssignVisitorRoleAsync(userId: user.Id, cancellationToken: cancellationToken);
             await context.SaveChangesAsync(cancellationToken: cancellationToken);
 
-            // Reload user with roles and permissions after creation
-            user = await GetUserWithRolesAndPermissionsByCredentialsOrThrow(
-                credentials: email,
+            // Reload with roles and permissions after creation.
+            return await GetUserWithRolesAndPermissionsByProviderSubjectAsync(
+                authProvider: authProvider.Value,
+                providerSubjectId: providerSubjectId,
                 cancellationToken: cancellationToken
             );
         }
+    }
 
-        return user;
+    /// <summary>
+    /// Loads the external user identified by the provider and subject id, including roles and
+    /// permissions, or null when no such account exists.
+    /// </summary>
+    /// <param name="authProvider">The provider the subject id belongs to.</param>
+    /// <param name="providerSubjectId">The provider's stable subject id.</param>
+    /// <param name="cancellationToken">Token to cancel the operation.</param>
+    /// <returns>The matching user with its role graph, or null.</returns>
+    private async Task<UserEntity?> GetUserWithRolesAndPermissionsByProviderSubjectAsync(
+        EnumAuthProvider authProvider,
+        string providerSubjectId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        return await context
+            .Users.Where(u => u.AuthProvider == authProvider && u.ProviderSubjectId == providerSubjectId)
+            .Include(u => u.UserRoles)
+                .ThenInclude(ur => ur.Role)
+                    .ThenInclude(r => r.RolePermissions)
+                        .ThenInclude(rp => rp.Permission)
+            .AsSplitQuery()
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
     /// <inheritdoc />
