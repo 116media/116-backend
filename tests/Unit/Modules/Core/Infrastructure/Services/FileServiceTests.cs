@@ -7,6 +7,7 @@ using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using AwesomeAssertions.Specialized;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Moq.Protected;
 using Xunit;
@@ -21,16 +22,27 @@ public class FileServiceTests
     private readonly FileService _service;
     private readonly Mock<ICloudinaryService> _cloudinaryServiceMock;
     private readonly Mock<HttpMessageHandler> _httpMessageHandlerMock;
+    private readonly Mock<IUrlSafetyGuard> _urlSafetyGuardMock;
 
     public FileServiceTests()
     {
         _httpMessageHandlerMock = new Mock<HttpMessageHandler>();
         var httpClient = new HttpClient(_httpMessageHandlerMock.Object);
         _cloudinaryServiceMock = new Mock<ICloudinaryService>();
+        _urlSafetyGuardMock = new Mock<IUrlSafetyGuard>();
+        _urlSafetyGuardMock
+            .Setup(x => x.EnsureSafeAsync(It.IsAny<Uri>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
 
         CoreI18n coreI18n = TestErrorsFactory.CreateCoreI18n();
 
-        _service = new FileService(httpClient, _cloudinaryServiceMock.Object, coreI18n);
+        _service = new FileService(
+            httpClient,
+            _cloudinaryServiceMock.Object,
+            coreI18n,
+            _urlSafetyGuardMock.Object,
+            NullLogger<FileService>.Instance
+        );
     }
 
     #region UploadFileAsync Tests
@@ -221,7 +233,8 @@ public class FileServiceTests
         ExceptionAssertions<InternalServerException>? exception = await act.Should()
             .ThrowExactlyAsync<InternalServerException>();
 
-        exception.Which.Message.Should().Contain("Unexpected error");
+        // The generic failure must not reflect the underlying exception text back to the client.
+        exception.Which.Message.Should().NotContain("Unexpected error");
     }
 
     [Fact]
