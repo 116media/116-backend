@@ -243,4 +243,10 @@
   <data name="ExportDateRangeInvalid" xml:space="preserve">
     <value>La date de fin doit être supérieure ou égale à la date de début.</value>
   </data>
+  <data name="IdTokenRequired" xml:space="preserve">
+    <value>Le jeton du fournisseur est requis.</value>
+  </data>
+  <data name="UnsupportedProvider" xml:space="preserve">
+    <value>Le fournisseur social « {0} » n'est pas pris en charge.</value>
+  </data>
 </root>
