@@ -45,7 +45,7 @@ public class PublicGetCommentRepliesEndpointV1 : ICarterModule
                         viewerUserId = claimsProvider.GetUserIdFromClaims(user: user);
                     }
 
-                    var paginatedRequest = new PaginatedRequest(PageIndex: pageIndex, PageSize: pageSize);
+                    var paginatedRequest = new PaginatedRequest(pageIndex: pageIndex, pageSize: pageSize);
                     var query = new PublicGetCommentRepliesQuery(
                         CommentId: commentId,
                         PaginatedRequest: paginatedRequest,
