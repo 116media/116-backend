@@ -1,8 +1,11 @@
+using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Exceptions.Handlers.Strategies;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Hosting;
 using Xunit;
 
 namespace _116.Unit.Tests.Shared.Exceptions.Handlers.Strategies;
@@ -17,6 +20,7 @@ namespace _116.Unit.Tests.Shared.Exceptions.Handlers.Strategies;
 public class DefaultExceptionHandlerTests
 {
     private readonly DefaultExceptionHandler _handler = new();
+    private readonly SharedExceptionMessage i18n = LocalizerFactory.CreateMessage<SharedExceptionMessage>();
 
     [Fact]
     public void CreateProblemDetails_ShouldReturn500StatusCode()
@@ -73,6 +77,23 @@ public class DefaultExceptionHandlerTests
 
         // Assert
         problemDetails.Detail.Should().Be(string.Empty);
+        problemDetails.Status.Should().Be(StatusCodes.Status500InternalServerError);
+    }
+
+    [Fact]
+    public void CreateProblemDetails_OutsideDevelopment_ShouldWithholdRawDetailAndSanitizeTitle()
+    {
+        // Arrange — the raw message carries secrets that must never reach a client outside Development
+        Exception exception = new("connection host=db-primary password=hunter2 database=116");
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext(Environments.Production);
+
+        // Act
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
+
+        // Assert
+        problemDetails.Title.Should().Be(nameof(InternalServerException));
+        problemDetails.Detail.Should().Be(i18n.UnexpectedError());
+        problemDetails.Detail.Should().NotContain("hunter2");
         problemDetails.Status.Should().Be(StatusCodes.Status500InternalServerError);
     }
 
