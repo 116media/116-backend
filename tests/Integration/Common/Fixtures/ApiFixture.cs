@@ -5,6 +5,7 @@ using _116.Content.Application.Shared.Services;
 using _116.Content.Infrastructure.Persistence;
 using _116.Core.Application.Shared.Services;
 using _116.Core.Infrastructure.Persistence;
+using _116.Identity.Application.Adapters.SocialAuth;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Integration.Tests.Common.Stubs;
 using _116.Mailer.Application.Shared.Services;
@@ -224,6 +225,23 @@ public class ApiFixture(PostgresFixture db) : WebApplicationFactory<Program>
         Replace<IYoutubeThumbnailService, StubYoutubeThumbnailService>(services);
         ReplaceStreamingLinkResolutionService(services);
         ReplaceEmailSender(services);
+        ReplaceSocialTokenVerifier(services);
+    }
+
+    /// <summary>
+    /// Replaces the real keyed provider verifiers and their factory with a single scriptable stub, so
+    /// social-login is driven through the real pipeline without calling Google or Facebook.
+    /// </summary>
+    private static void ReplaceSocialTokenVerifier(IServiceCollection services)
+    {
+        RemoveAll<ISocialTokenVerifier>(services);
+        RemoveAll<ISocialTokenVerifierFactory>(services);
+
+        services.AddSingleton<StubSocialTokenVerifier>();
+        services.AddSingleton<ISocialTokenVerifierFactory>(sp => new StubSocialTokenVerifierFactory(
+            sp.GetRequiredService<StubSocialTokenVerifier>()
+        ));
+        services.AddSingleton<IResettableStub>(sp => sp.GetRequiredService<StubSocialTokenVerifier>());
     }
 
     /// <summary>
