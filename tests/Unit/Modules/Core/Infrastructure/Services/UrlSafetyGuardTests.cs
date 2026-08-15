@@ -23,6 +23,11 @@ public class UrlSafetyGuardTests
     [InlineData("https://172.16.4.4/avatar.png")]
     [InlineData("https://192.168.1.10/avatar.png")]
     [InlineData("https://169.254.169.254/latest/meta-data")]
+    [InlineData("https://224.0.0.1/avatar.png")] // IPv4 multicast
+    [InlineData("https://[::1]/avatar.png")] // IPv6 loopback
+    [InlineData("https://[fc00::1]/avatar.png")] // IPv6 unique-local
+    [InlineData("https://[fe80::1]/avatar.png")] // IPv6 link-local
+    [InlineData("https://[ff02::1]/avatar.png")] // IPv6 multicast
     public async Task EnsureSafeAsync_WithPrivateOrLoopbackAddress_Throws(string url)
     {
         // Act
@@ -61,6 +66,21 @@ public class UrlSafetyGuardTests
         // Act — 93.184.216.34 (example.com) is a routable public address
         Func<Task> act = async () =>
             await Guard().EnsureSafeAsync(new Uri("https://93.184.216.34/avatar.png"), CancellationToken.None);
+
+        // Assert
+        await act.Should().NotThrowAsync();
+    }
+
+    [Fact]
+    public async Task EnsureSafeAsync_WithPublicIPv6Address_DoesNotThrow()
+    {
+        // Act — a routable public IPv6 literal (example.com) is outside every blocked range
+        Func<Task> act = async () =>
+            await Guard()
+                .EnsureSafeAsync(
+                    new Uri("https://[2606:2800:220:1:248:1893:25c8:1946]/avatar.png"),
+                    CancellationToken.None
+                );
 
         // Assert
         await act.Should().NotThrowAsync();
