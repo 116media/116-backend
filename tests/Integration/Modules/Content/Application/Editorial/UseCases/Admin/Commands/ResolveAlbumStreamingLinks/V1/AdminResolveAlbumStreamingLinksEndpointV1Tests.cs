@@ -187,7 +187,7 @@ public class AdminResolveAlbumStreamingLinksEndpointV1Tests(PostgresFixture db) 
             new AdminResolveAlbumStreamingLinksRequest(SourceUrl)
         );
 
-        await response.ShouldBeProblem<RateLimitExceededException>(
+        await response.ShouldBeProblem<StreamingLinkResolutionException>(
             HttpStatusCode.TooManyRequests,
             Localized<StreamingLinkErrorMessage>(m => m.ResolutionRateLimited())
         );
@@ -205,7 +205,7 @@ public class AdminResolveAlbumStreamingLinksEndpointV1Tests(PostgresFixture db) 
             new AdminResolveAlbumStreamingLinksRequest(SourceUrl)
         );
 
-        await response.ShouldBeProblem<BadGatewayException>(
+        await response.ShouldBeProblem<StreamingLinkResolutionException>(
             HttpStatusCode.BadGateway,
             Localized<StreamingLinkErrorMessage>(m => m.ResolutionFailed())
         );
