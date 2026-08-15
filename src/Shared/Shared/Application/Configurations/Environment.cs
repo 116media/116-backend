@@ -116,6 +116,30 @@ public class AppEnvironment
     }
 
     /// <summary>
+    /// Retrieves social-login provider credentials from environment variables.
+    /// </summary>
+    /// <remarks>
+    /// Expected environment variables:
+    /// - GOOGLE_CLIENT_ID: The Google OAuth client id, used as the audience the ID token must target
+    /// - FACEBOOK_APP_ID: The Facebook app id, used to build the app access token and check ownership
+    /// - FACEBOOK_APP_SECRET: The Facebook app secret, used to build the app access token
+    /// </remarks>
+    /// <returns>
+    /// A tuple containing:
+    /// - <c>googleClientId</c>: The Google OAuth client id
+    /// - <c>facebookAppId</c>: The Facebook app id
+    /// - <c>facebookAppSecret</c>: The Facebook app secret
+    /// </returns>
+    public static (string? googleClientId, string? facebookAppId, string? facebookAppSecret) SocialAuth()
+    {
+        string? facebookAppId = Environment.GetEnvironmentVariable("FACEBOOK_APP_ID");
+        string? googleClientId = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID");
+        string? facebookAppSecret = Environment.GetEnvironmentVariable("FACEBOOK_APP_SECRET");
+
+        return (googleClientId, facebookAppId, facebookAppSecret);
+    }
+
+    /// <summary>
     /// Retrieves the allowed CORS origins from the DASHBOARD_ORIGIN and WEBAPP_ORIGIN
     /// environment variables.
     /// </summary>
@@ -128,8 +152,8 @@ public class AppEnvironment
     /// </returns>
     public static string[] CorsAllowedOrigins()
     {
-        string? dashboardOrigin = Environment.GetEnvironmentVariable("DASHBOARD_ORIGIN");
         string? webAppOrigin = Environment.GetEnvironmentVariable("WEBAPP_ORIGIN");
+        string? dashboardOrigin = Environment.GetEnvironmentVariable("DASHBOARD_ORIGIN");
 
         return
         [
