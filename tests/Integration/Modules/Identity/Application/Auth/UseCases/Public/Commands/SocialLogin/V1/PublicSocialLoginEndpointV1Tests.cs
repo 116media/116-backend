@@ -1,4 +1,5 @@
 using _116.Identity.Application.Adapters.SocialAuth;
+using _116.Identity.Application.Auth.Exceptions;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin.V1;
 using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Application.Shared.Exceptions;
@@ -108,6 +109,23 @@ public class PublicSocialLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         await using var verifyContext = CreateDbContext<IdentityDbContext>();
         int count = await verifyContext.Users.CountAsync(u => u.Email == email);
         count.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task SocialLogin_WithInvalidToken_ReturnsUnauthorized()
+    {
+        Client.ClearAuthentication();
+        Client.DefaultRequestHeaders.Add("X-Device-Id", Guid.NewGuid().ToString());
+
+        // The provider could not verify the token — the verifier throws, the pipeline maps it.
+        Verifier.ThrowInvalid = true;
+
+        var response = await Client.PostAsJsonAsync(Routes.Public.Auth.SocialLogin(), GoogleRequest());
+
+        await response.ShouldBeProblem<SocialTokenVerificationException>(
+            HttpStatusCode.Unauthorized,
+            Localized<AuthenticationErrorMessage>(m => m.InvalidProviderToken())
+        );
     }
 
     [Fact]
