@@ -44,21 +44,12 @@ public class AdminResolveSingleStreamingLinksHandler(
             throw i18n.Lyrics.BelongsToAlbum();
         }
 
-        IReadOnlyDictionary<EnumStreamingPlatform, string> resolved;
-
-        try
-        {
-            resolved = await resolutionService.ResolveAsync(
-                sourceUrl: command.SourceUrl,
-                cancellationToken: cancellationToken
-            );
-        }
-        catch (StreamingLinkResolutionException exception)
-        {
-            throw exception.IsRateLimited
-                ? i18n.StreamingLink.ResolutionRateLimited()
-                : i18n.StreamingLink.ResolutionFailed();
-        }
+        // A provider failure surfaces as StreamingLinkResolutionException, mapped by the global
+        // pipeline; the resolution service stays i18n-free.
+        IReadOnlyDictionary<EnumStreamingPlatform, string> resolved = await resolutionService.ResolveAsync(
+            sourceUrl: command.SourceUrl,
+            cancellationToken: cancellationToken
+        );
 
         if (resolved.Count == 0)
         {
