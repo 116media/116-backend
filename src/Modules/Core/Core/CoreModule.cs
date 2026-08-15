@@ -69,7 +69,12 @@ public static class CoreModule
         services.AddScoped<IFileRepository, FileRepository>();
 
         // Register core management services
-        services.AddHttpClient<IFileService, FileService>();
+        services.AddScoped<IUrlSafetyGuard, UrlSafetyGuard>();
+        services
+            .AddHttpClient<IFileService, FileService>(client => client.Timeout = TimeSpan.FromSeconds(10))
+            .ConfigurePrimaryHttpMessageHandler(() =>
+                new SocketsHttpHandler { AllowAutoRedirect = false, ConnectTimeout = TimeSpan.FromSeconds(5) }
+            );
         services.AddScoped<ICloudinaryService, CloudinaryService>();
         services.AddScoped<IImageColorService, ImageColorService>();
 
