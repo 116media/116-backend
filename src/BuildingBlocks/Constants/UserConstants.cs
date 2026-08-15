@@ -58,6 +58,11 @@ public static class UserConstants
     public const int MaxEmailLength = 254;
 
     /// <summary>
+    /// Maximum allowed length for a provider subject id (Google sub, Facebook user id).
+    /// </summary>
+    public const int MaxProviderSubjectIdLength = 255;
+
+    /// <summary>
     /// Maximum allowed length for country names.
     /// </summary>
     public const int MaxCountryNameLength = 100;
