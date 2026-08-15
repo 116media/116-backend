@@ -44,6 +44,18 @@ public class SharedExceptionMessage(IStringLocalizer<SharedExceptionMessage> loc
     public string InvalidIdentifier() => localizer["InvalidIdentifier"];
 
     /// <summary>
+    /// Generic, localized message for an unhandled/unexpected server error. Used outside Development so
+    /// the raw exception text (which may carry connection strings, SQL or schema detail) never reaches
+    /// the client.
+    /// </summary>
+    public string UnexpectedError() => localizer["UnexpectedError"];
+
+    /// <summary>
+    /// Localized message for a request the client cancelled (disconnect).
+    /// </summary>
+    public string RequestCancelled() => localizer["RequestCancelled"];
+
+    /// <summary>
     /// Maps a technical entity name to its friendly localized label (keyed
     /// <c>Entity_{entityName}</c> in the resources), falling back to a generic
     /// "requested resource" label when no specific label is defined.
