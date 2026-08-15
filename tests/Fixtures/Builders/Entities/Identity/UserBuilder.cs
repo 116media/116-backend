@@ -22,6 +22,7 @@ public class UserBuilder
     private string _userName;
     private string _passwordHash;
     private EnumAuthProvider _authProvider = EnumAuthProvider.Local;
+    private string _providerSubjectId = $"sub-{Guid.NewGuid():N}";
     private bool _isVerified;
     private bool _isActive = true;
     private readonly List<RoleEntity> _roles = [];
@@ -165,6 +166,17 @@ public class UserBuilder
     }
 
     /// <summary>
+    /// Sets the provider subject id used when building an external user.
+    /// </summary>
+    /// <param name="providerSubjectId">The provider's stable subject id.</param>
+    /// <returns>The builder instance for chaining.</returns>
+    public UserBuilder WithProviderSubjectId(string providerSubjectId)
+    {
+        _providerSubjectId = providerSubjectId;
+        return this;
+    }
+
+    /// <summary>
     /// Builds the <see cref="UserEntity"/> instance for local authentication.
     /// </summary>
     /// <returns>A configured UserEntity instance.</returns>
@@ -174,7 +186,7 @@ public class UserBuilder
         UserEntity user =
             _authProvider == EnumAuthProvider.Local
                 ? UserEntity.Create(_id, _email!, _userName, _passwordHash, errors)
-                : UserEntity.CreateExternal(_id, _userName, _authProvider, errors, _email);
+                : UserEntity.CreateExternal(_id, _userName, _authProvider, _providerSubjectId, errors, _email);
 
         if (_isVerified)
         {
