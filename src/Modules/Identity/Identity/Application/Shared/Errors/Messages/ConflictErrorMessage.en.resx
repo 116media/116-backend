@@ -57,4 +57,7 @@
   <data name="PermissionNotDeleted" xml:space="preserve">
     <value>Permission is not deleted and cannot be restored.</value>
   </data>
+  <data name="ProviderMismatch" xml:space="preserve">
+    <value>This account is linked to a different social identity.</value>
+  </data>
 </root>
