@@ -18,4 +18,7 @@
   <data name="FileStorageFailed" xml:space="preserve">
     <value>Échec du stockage du fichier : {0}.</value>
   </data>
+  <data name="FileDownloadFailedGeneric" xml:space="preserve">
+    <value>Le fichier n'a pas pu être téléchargé.</value>
+  </data>
 </root>
