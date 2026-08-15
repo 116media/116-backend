@@ -243,4 +243,10 @@
   <data name="ExportDateRangeInvalid" xml:space="preserve">
     <value>ToDate must be greater than or equal to FromDate.</value>
   </data>
+  <data name="IdTokenRequired" xml:space="preserve">
+    <value>The provider token is required.</value>
+  </data>
+  <data name="UnsupportedProvider" xml:space="preserve">
+    <value>The social provider '{0}' is not supported.</value>
+  </data>
 </root>
