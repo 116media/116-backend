@@ -129,6 +129,7 @@ public class UserEntityTests
             id,
             userName,
             EnumAuthProvider.Google,
+            $"sub-{Guid.NewGuid():N}",
             TestErrorsFactory.CreateUserErrors(),
             email
         );
@@ -154,6 +155,7 @@ public class UserEntityTests
             id,
             userName,
             EnumAuthProvider.Facebook,
+            $"sub-{Guid.NewGuid():N}",
             TestErrorsFactory.CreateUserErrors()
         );
 
@@ -179,6 +181,7 @@ public class UserEntityTests
                 id,
                 invalidUserName!,
                 EnumAuthProvider.Google,
+                $"sub-{Guid.NewGuid():N}",
                 TestErrorsFactory.CreateUserErrors()
             );
 
