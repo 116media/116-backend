@@ -125,15 +125,13 @@ public class CoreErrorsTests
     }
 
     [Fact]
-    public void FileTooLarge_WithDetailedInfo_ShouldReturnBadRequestException()
+    public void FileTooLarge_WithLimit_ShouldReturnBadRequestException()
     {
         // Arrange
-        long actualSize = 10485760;
-        long maxSize = 5242880;
         long maxSizeMB = 5;
 
         // Act
-        BadRequestException exception = _errors.FileTooLarge(actualSize, maxSize, maxSizeMB);
+        BadRequestException exception = _errors.FileTooLarge(maxSizeMB);
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
