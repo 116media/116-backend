@@ -157,9 +157,9 @@ public class AdminResolveAlbumStreamingLinksHandlerTests
     }
 
     [Fact]
-    public async Task Handle_WhenProviderIsUnreachable_ShouldThrowBadGateway()
+    public async Task Handle_WhenProviderFails_ShouldPropagateResolutionException()
     {
-        // Arrange
+        // Arrange — the command handler no longer maps the failure; the global pipeline does
         AlbumEntity album = AlbumFactory.Create();
         _albumRepositoryMock.SetupGetByIdOrThrow(album);
         _resolutionServiceMock
@@ -172,12 +172,12 @@ public class AdminResolveAlbumStreamingLinksHandlerTests
         Func<Task> act = () => _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        await act.Should().ThrowAsync<BadGatewayException>();
+        await act.Should().ThrowAsync<StreamingLinkResolutionException>();
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
-    public async Task Handle_WhenProviderRateLimits_ShouldThrowRateLimitExceeded()
+    public async Task Handle_WhenProviderRateLimits_ShouldPropagateResolutionException()
     {
         // Arrange
         AlbumEntity album = AlbumFactory.Create();
@@ -192,7 +192,7 @@ public class AdminResolveAlbumStreamingLinksHandlerTests
         Func<Task> act = () => _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        await act.Should().ThrowAsync<RateLimitExceededException>();
+        await act.Should().ThrowAsync<StreamingLinkResolutionException>();
     }
 
     [Fact]
