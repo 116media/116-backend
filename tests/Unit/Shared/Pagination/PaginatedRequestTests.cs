@@ -5,7 +5,8 @@ using Xunit;
 namespace _116.Unit.Tests.Shared.Pagination;
 
 /// <summary>
-/// Unit tests for <see cref="PaginatedRequest"/>.
+/// Unit tests for <see cref="PaginatedRequest"/>, including the constructor-enforced bounds:
+/// page index is floored at 0 and page size is clamped to [1, <see cref="PaginatedRequest.MaxPageSize"/>].
 /// </summary>
 public class PaginatedRequestTests
 {
@@ -14,150 +15,97 @@ public class PaginatedRequestTests
     [Fact]
     public void Constructor_WithNoParameters_ShouldUseDefaultValues()
     {
-        // Arrange & Act
         PaginatedRequest request = new();
 
-        // Assert
         request.PageIndex.Should().Be(0);
         request.PageSize.Should().Be(10);
     }
 
-    [Fact]
-    public void Constructor_WithDefaultParameters_ShouldHaveZeroBasedPageIndex()
-    {
-        // Arrange & Act
-        PaginatedRequest request = new();
-
-        // Assert
-        request.PageIndex.Should().Be(0, "page index should be zero-based by default");
-    }
-
-    [Fact]
-    public void Constructor_WithDefaultParameters_ShouldHavePageSizeOfTen()
-    {
-        // Arrange & Act
-        PaginatedRequest request = new();
-
-        // Assert
-        request.PageSize.Should().Be(10, "default page size should be 10");
-    }
-
     #endregion
 
-    #region Custom Values Tests
+    #region Custom Values Within Bounds
 
     [Fact]
     public void Constructor_WithCustomPageIndex_ShouldSetPageIndex()
     {
-        // Arrange
-        int customPageIndex = 5;
+        PaginatedRequest request = new(pageIndex: 5);
 
-        // Act
-        PaginatedRequest request = new(PageIndex: customPageIndex);
-
-        // Assert
-        request.PageIndex.Should().Be(customPageIndex);
+        request.PageIndex.Should().Be(5);
     }
 
     [Fact]
-    public void Constructor_WithCustomPageSize_ShouldSetPageSize()
+    public void Constructor_WithPageSizeWithinBounds_ShouldSetPageSize()
     {
-        // Arrange
-        int customPageSize = 25;
+        PaginatedRequest request = new(pageSize: 25);
 
-        // Act
-        PaginatedRequest request = new(PageSize: customPageSize);
-
-        // Assert
-        request.PageSize.Should().Be(customPageSize);
+        request.PageSize.Should().Be(25);
     }
 
     [Fact]
-    public void Constructor_WithCustomPageIndexAndPageSize_ShouldSetBothValues()
+    public void Constructor_WithBothValuesWithinBounds_ShouldSetBoth()
     {
-        // Arrange
-        int customPageIndex = 3;
-        int customPageSize = 50;
+        PaginatedRequest request = new(3, 50);
 
-        // Act
-        PaginatedRequest request = new(PageIndex: customPageIndex, PageSize: customPageSize);
-
-        // Assert
-        request.PageIndex.Should().Be(customPageIndex);
-        request.PageSize.Should().Be(customPageSize);
-    }
-
-    #endregion
-
-    #region Boundary Values Tests
-
-    [Fact]
-    public void Constructor_WithZeroPageIndex_ShouldAllowZero()
-    {
-        // Arrange & Act
-        PaginatedRequest request = new(PageIndex: 0);
-
-        // Assert
-        request.PageIndex.Should().Be(0);
+        request.PageIndex.Should().Be(3);
+        request.PageSize.Should().Be(50);
     }
 
     [Fact]
     public void Constructor_WithLargePageIndex_ShouldAcceptValue()
     {
-        // Arrange
-        int largePageIndex = int.MaxValue;
+        PaginatedRequest request = new(pageIndex: int.MaxValue);
 
-        // Act
-        PaginatedRequest request = new(PageIndex: largePageIndex);
+        request.PageIndex.Should().Be(int.MaxValue, "page index has no upper bound, only a floor of 0");
+    }
 
-        // Assert
-        request.PageIndex.Should().Be(largePageIndex);
+    #endregion
+
+    #region Bounds Enforcement
+
+    [Fact]
+    public void MaxPageSize_ShouldBe100()
+    {
+        PaginatedRequest.MaxPageSize.Should().Be(100);
     }
 
     [Fact]
-    public void Constructor_WithNegativePageIndex_ShouldAcceptValue()
+    public void Constructor_WithNegativePageIndex_ShouldFloorToZero()
     {
-        // Arrange
-        int negativePageIndex = -1;
+        PaginatedRequest request = new(pageIndex: -1);
 
-        // Act
-        PaginatedRequest request = new(PageIndex: negativePageIndex);
-
-        // Assert
-        request.PageIndex.Should().Be(negativePageIndex);
+        request.PageIndex.Should().Be(0, "a negative page index is floored to 0");
     }
 
     [Fact]
-    public void Constructor_WithOnePageSize_ShouldAcceptValue()
+    public void Constructor_WithZeroPageSize_ShouldClampToOne()
     {
-        // Arrange & Act
-        PaginatedRequest request = new(PageSize: 1);
+        PaginatedRequest request = new(pageSize: 0);
 
-        // Assert
+        request.PageSize.Should().Be(1, "page size is clamped to a minimum of 1");
+    }
+
+    [Fact]
+    public void Constructor_WithNegativePageSize_ShouldClampToOne()
+    {
+        PaginatedRequest request = new(pageSize: -5);
+
         request.PageSize.Should().Be(1);
     }
 
     [Fact]
-    public void Constructor_WithLargePageSize_ShouldAcceptValue()
+    public void Constructor_WithPageSizeAboveMax_ShouldClampToMax()
     {
-        // Arrange
-        int largePageSize = 1000;
+        PaginatedRequest request = new(pageSize: 1_000_000);
 
-        // Act
-        PaginatedRequest request = new(PageSize: largePageSize);
-
-        // Assert
-        request.PageSize.Should().Be(largePageSize);
+        request.PageSize.Should().Be(PaginatedRequest.MaxPageSize, "an over-large page size is clamped to the max");
     }
 
     [Fact]
-    public void Constructor_WithZeroPageSize_ShouldAcceptValue()
+    public void Constructor_WithPageSizeAtMax_ShouldKeepMax()
     {
-        // Arrange & Act
-        PaginatedRequest request = new(PageSize: 0);
+        PaginatedRequest request = new(pageSize: PaginatedRequest.MaxPageSize);
 
-        // Assert
-        request.PageSize.Should().Be(0);
+        request.PageSize.Should().Be(PaginatedRequest.MaxPageSize);
     }
 
     #endregion
@@ -167,58 +115,37 @@ public class PaginatedRequestTests
     [Fact]
     public void Equals_WithSameValues_ShouldReturnTrue()
     {
-        // Arrange
-        PaginatedRequest request1 = new(PageIndex: 2, PageSize: 20);
-        PaginatedRequest request2 = new(PageIndex: 2, PageSize: 20);
+        PaginatedRequest request1 = new(2, 20);
+        PaginatedRequest request2 = new(2, 20);
 
-        // Act
-        bool areEqual = request1.Equals(request2);
-
-        // Assert
-        areEqual.Should().BeTrue("records with same values should be equal");
+        request1.Equals(request2).Should().BeTrue("records with same values should be equal");
     }
 
     [Fact]
     public void Equals_WithDifferentPageIndex_ShouldReturnFalse()
     {
-        // Arrange
-        PaginatedRequest request1 = new(PageIndex: 1, PageSize: 20);
-        PaginatedRequest request2 = new(PageIndex: 2, PageSize: 20);
+        PaginatedRequest request1 = new(1, 20);
+        PaginatedRequest request2 = new(2, 20);
 
-        // Act
-        bool areEqual = request1.Equals(request2);
-
-        // Assert
-        areEqual.Should().BeFalse("records with different page index should not be equal");
+        request1.Equals(request2).Should().BeFalse();
     }
 
     [Fact]
     public void Equals_WithDifferentPageSize_ShouldReturnFalse()
     {
-        // Arrange
-        PaginatedRequest request1 = new(PageIndex: 2, PageSize: 10);
-        PaginatedRequest request2 = new(PageIndex: 2, PageSize: 20);
+        PaginatedRequest request1 = new(2, 10);
+        PaginatedRequest request2 = new(2, 20);
 
-        // Act
-        bool areEqual = request1.Equals(request2);
-
-        // Assert
-        areEqual.Should().BeFalse("records with different page size should not be equal");
+        request1.Equals(request2).Should().BeFalse();
     }
 
     [Fact]
     public void GetHashCode_WithSameValues_ShouldReturnSameHashCode()
     {
-        // Arrange
-        PaginatedRequest request1 = new(PageIndex: 3, PageSize: 15);
-        PaginatedRequest request2 = new(PageIndex: 3, PageSize: 15);
+        PaginatedRequest request1 = new(3, 15);
+        PaginatedRequest request2 = new(3, 15);
 
-        // Act
-        int hashCode1 = request1.GetHashCode();
-        int hashCode2 = request2.GetHashCode();
-
-        // Assert
-        hashCode1.Should().Be(hashCode2, "same values should produce same hash code");
+        request1.GetHashCode().Should().Be(request2.GetHashCode());
     }
 
     #endregion
