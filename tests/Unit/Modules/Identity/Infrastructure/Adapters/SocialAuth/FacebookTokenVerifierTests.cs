@@ -24,10 +24,7 @@ public class FacebookTokenVerifierTests
     private static FacebookTokenVerifier Verifier(string debugTokenJson, string profileJson)
     {
         var handler = new StubHandler(debugTokenJson, profileJson);
-        var httpClient = new HttpClient(handler)
-        {
-            BaseAddress = new Uri(SocialAuthConstants.FacebookGraphBaseUrl),
-        };
+        var httpClient = new HttpClient(handler) { BaseAddress = new Uri(SocialAuthConstants.FacebookGraphBaseUrl) };
         IOptions<SocialAuthOptions> options = Options.Create(
             new SocialAuthOptions { FacebookAppId = AppId, FacebookAppSecret = AppSecret }
         );
@@ -41,7 +38,8 @@ public class FacebookTokenVerifierTests
     public async Task VerifyAsync_WithValidTokenAndProfile_ReturnsPayload()
     {
         // Arrange
-        string profile = """{"id":"fb-123","name":"Test User","email":"user@test.com","picture":{"data":{"url":"https://img/x.png"}}}""";
+        string profile =
+            """{"id":"fb-123","name":"Test User","email":"user@test.com","picture":{"data":{"url":"https://img/x.png"}}}""";
         FacebookTokenVerifier verifier = Verifier(ValidDebugToken(), profile);
 
         // Act
