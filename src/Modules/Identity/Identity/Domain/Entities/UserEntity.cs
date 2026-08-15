@@ -37,6 +37,14 @@ public class UserEntity : Aggregate<Guid>
     public EnumAuthProvider AuthProvider { get; private set; }
 
     /// <summary>
+    /// The provider's stable subject id (Google <c>sub</c>, Facebook user id). Null for local accounts,
+    /// and for legacy external accounts that predate subject-id tracking until their first verified
+    /// login links it.
+    /// </summary>
+    [MaxLength(length: UserConstants.MaxProviderSubjectIdLength)]
+    public string? ProviderSubjectId { get; private set; }
+
+    /// <summary>
     /// Whether the user has verified their email. Auto-true for social logins.
     /// </summary>
     public bool IsVerified { get; private set; } = UserConstants.DefaultIsVerified;
@@ -135,6 +143,7 @@ public class UserEntity : Aggregate<Guid>
         Guid id,
         string userName,
         EnumAuthProvider authProvider,
+        string providerSubjectId,
         UserErrors errors,
         string? email = null
     )
@@ -150,8 +159,25 @@ public class UserEntity : Aggregate<Guid>
             Email = email?.ToLowerInvariant(),
             UserName = userName,
             AuthProvider = authProvider,
+            ProviderSubjectId = providerSubjectId,
             IsVerified = UserConstants.ExternalAuthIsVerified,
         };
+    }
+
+    /// <summary>
+    /// Associates a provider subject id with an external account that predates subject-id tracking.
+    /// Refuses to rebind an account already tied to a different subject — that is a mismatched token.
+    /// </summary>
+    /// <param name="providerSubjectId">The verified provider subject id to link.</param>
+    /// <param name="errors">User domain error factory for generating domain exceptions.</param>
+    public void LinkProviderSubject(string providerSubjectId, UserErrors errors)
+    {
+        if (!string.IsNullOrWhiteSpace(value: ProviderSubjectId) && ProviderSubjectId != providerSubjectId)
+        {
+            throw errors.ProviderMismatch();
+        }
+
+        ProviderSubjectId = providerSubjectId;
     }
 
     // Authentication Methods
