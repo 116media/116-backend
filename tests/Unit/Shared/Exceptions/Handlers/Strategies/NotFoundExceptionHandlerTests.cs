@@ -168,4 +168,69 @@ public class NotFoundExceptionHandlerTests
     }
 
     #endregion
+
+    #region Entity label mapping
+
+    [Theory]
+    [InlineData("UserEntity")]
+    [InlineData("SessionEntity")]
+    [InlineData("RoleEntity")]
+    [InlineData("ArticleEntity")]
+    [InlineData("VideoEntity")]
+    [InlineData("LyricsEntity")]
+    [InlineData("CategoryEntity")]
+    public void CreateProblemDetails_ForEachMappedEntity_UsesItsFriendlyLabelWithoutLeakingTheName(string entityName)
+    {
+        // Arrange
+        NotFoundException exception = new(entityName, (object)"key-value-123");
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
+
+        // Act
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
+
+        // Assert
+        string cleaned = entityName.Replace("Entity", "");
+        problemDetails.Detail.Should().Be(i18n.EntityNotFound(cleaned));
+        problemDetails.Detail.Should().NotContain(entityName);
+        problemDetails.Detail.Should().NotContain("key-value-123");
+    }
+
+    [Fact]
+    public void CreateProblemDetails_ForDifferentMappedEntities_ProducesDistinctFriendlyLabels()
+    {
+        // Arrange
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
+
+        // Act
+        string userDetail = _handler
+            .CreateProblemDetails(new NotFoundException("UserEntity", (object)"1"), context)
+            .Detail!;
+        string articleDetail = _handler
+            .CreateProblemDetails(new NotFoundException("ArticleEntity", (object)"1"), context)
+            .Detail!;
+
+        // Assert
+        userDetail.Should().NotBe(articleDetail);
+    }
+
+    [Fact]
+    public void CreateProblemDetails_ForUnmappedEntity_InFrench_FallsBackToLocalizedGenericLabel()
+    {
+        // Arrange
+        string enDetail = i18n.EntityNotFound("SomethingObscure");
+        using var scope = new CultureScope("fr");
+        NotFoundException exception = new("SomethingObscureEntity", (object)"xyz-789");
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
+
+        // Act
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
+
+        // Assert
+        problemDetails.Detail.Should().NotBe(enDetail);
+        problemDetails.Detail.Should().Be(i18n.EntityNotFound("SomethingObscure"));
+        problemDetails.Detail.Should().NotContain("SomethingObscure");
+        problemDetails.Detail.Should().NotContain("xyz-789");
+    }
+
+    #endregion
 }
