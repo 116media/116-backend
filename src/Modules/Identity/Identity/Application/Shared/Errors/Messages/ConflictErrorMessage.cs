@@ -97,6 +97,14 @@ public class ConflictErrorMessage(IStringLocalizer<ConflictErrorMessage> localiz
     }
 
     /// <summary>
+    /// Error message indicating that the account is linked to a different social identity.
+    /// </summary>
+    public string ProviderMismatch()
+    {
+        return localizer["ProviderMismatch"];
+    }
+
+    /// <summary>
     /// Gets an error message for when a permission is already assigned to a role.
     /// </summary>
     /// <returns>
