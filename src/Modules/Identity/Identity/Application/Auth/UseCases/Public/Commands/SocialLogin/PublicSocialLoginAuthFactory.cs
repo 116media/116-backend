@@ -1,11 +1,11 @@
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
+using _116.Identity.Application.Adapters.SocialAuth;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin.Contracts;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
-using _116.Identity.Domain.ValueObjects;
 
 namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin;
 
@@ -21,29 +21,26 @@ public class PublicSocialLoginAuthFactory(
     IIdentityUnitOfWork unitOfWork
 ) : IPublicSocialLoginAuthFactory
 {
-    /// <summary>
-    /// Authenticates or creates a user via social provider.
-    /// </summary>
+    /// <inheritdoc />
     public async Task<PublicSocialLoginAuthData> AuthenticateOrCreateAsync(
-        string email,
-        string userName,
-        string provider,
-        string? avatarUrl,
+        SocialTokenPayload payload,
+        EnumAuthProvider provider,
         CancellationToken cancellationToken
     )
     {
         UserEntity? user = await authRepository.GetOrCreateExternalUserAsync(
-            userName: userName,
-            email: new Email(value: email),
-            authProvider: new AuthProvider(value: provider),
+            email: payload.Email,
+            userName: payload.Name ?? payload.Email,
+            authProvider: provider,
+            providerSubjectId: payload.ProviderSubjectId,
             cancellationToken: cancellationToken
         );
 
-        // Update avatar from provider URL if allowed
+        // Update avatar from the verified provider picture if allowed
         bool isAvatarSourceManual = user!.AvatarSource == EnumAvatarSource.Manual;
         FileEntity? avatarFileEntity = await fileRepository.UpdateAvatarUrlFromSourceAsync(
             currentAvatarFileId: user.AvatarFileId,
-            avatarUrl: avatarUrl,
+            avatarUrl: payload.PictureUrl,
             user.Id.ToString(),
             isAvatarSourceManual: isAvatarSourceManual,
             cancellationToken: cancellationToken
