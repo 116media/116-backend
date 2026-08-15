@@ -132,4 +132,10 @@
   <data name="InvalidIdentifier" xml:space="preserve">
     <value>L'identifiant fourni est invalide.</value>
   </data>
+  <data name="UnexpectedError" xml:space="preserve">
+    <value>Une erreur inattendue s'est produite. Veuillez réessayer plus tard.</value>
+  </data>
+  <data name="RequestCancelled" xml:space="preserve">
+    <value>La requête a été annulée.</value>
+  </data>
 </root>
