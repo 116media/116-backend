@@ -13,6 +13,7 @@ using _116.Tests.Fixtures.Builders.Requests.Identity;
 using _116.Tests.Fixtures.Factories.Identity;
 using FluentValidation;
 using FluentValidation.Results;
+using InternalServerErrorMessage = _116.Core.Application.Shared.Errors.Messages.InternalServerErrorMessage;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin.V1;
 
@@ -27,13 +28,18 @@ public class PublicSocialLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(
     private static string ValidationDetail(string property, string message) =>
         new ValidationException([new ValidationFailure(property, message)]).Message;
 
-    private static SocialTokenPayload Payload(string email, string subjectId, bool emailVerified = true) =>
+    private static SocialTokenPayload Payload(
+        string email,
+        string subjectId,
+        bool emailVerified = true,
+        string? pictureUrl = null
+    ) =>
         new(
             Email: email,
             Name: "Social User",
             ProviderSubjectId: subjectId,
             EmailVerified: emailVerified,
-            PictureUrl: null
+            PictureUrl: pictureUrl
         );
 
     private async Task SeedVisitorRoleAsync()
@@ -45,6 +51,9 @@ public class PublicSocialLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
     private PublicSocialLoginRequest GoogleRequest() =>
         new PublicSocialLoginRequestBuilder().WithProvider(nameof(EnumAuthProvider.Google)).Build();
+
+    private PublicSocialLoginRequest FacebookRequest() =>
+        new PublicSocialLoginRequestBuilder().WithProvider(nameof(EnumAuthProvider.Facebook)).Build();
 
     [Fact]
     public async Task SocialLogin_WithInvalidProvider_ReturnsValidationError()
@@ -147,6 +156,71 @@ public class PublicSocialLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         await response.ShouldBeProblem<ConflictException>(
             HttpStatusCode.Conflict,
             Localized<ConflictErrorMessage>(m => m.ProviderMismatch())
+        );
+    }
+
+    [Fact]
+    public async Task SocialLogin_WithUnsupportedProvider_ReturnsBadRequest()
+    {
+        Client.ClearAuthentication();
+        Client.DefaultRequestHeaders.Add("X-Device-Id", Guid.NewGuid().ToString());
+
+        // Facebook passes validation but has no registered verifier — the factory rejects it.
+        var response = await Client.PostAsJsonAsync(Routes.Public.Auth.SocialLogin(), FacebookRequest());
+
+        await response.ShouldBeProblem<UnsupportedProviderException>(
+            HttpStatusCode.BadRequest,
+            Localized<ValidationErrorMessage>(m => m.UnsupportedProvider(nameof(EnumAuthProvider.Facebook)))
+        );
+    }
+
+    [Fact]
+    public async Task SocialLogin_WithProviderPicture_DownloadsAndStoresAvatar()
+    {
+        await SeedVisitorRoleAsync();
+        Client.ClearAuthentication();
+        Client.DefaultRequestHeaders.Add("X-Device-Id", Guid.NewGuid().ToString());
+
+        // A routable public IP literal passes the SSRF guard with no DNS lookup; the stub transport
+        // then serves the image, so the whole download-and-store path runs deterministically.
+        var email = $"social-{Guid.NewGuid():N}@test.com";
+        Verifier.NextPayload = Payload(
+            email,
+            subjectId: $"sub-{Guid.NewGuid():N}",
+            pictureUrl: "https://93.184.216.34/avatar.jpg"
+        );
+
+        var response = await Client.PostAsJsonAsync(Routes.Public.Auth.SocialLogin(), GoogleRequest());
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        await using var verifyContext = CreateDbContext<IdentityDbContext>();
+        UserEntity? created = await verifyContext.Users.FirstOrDefaultAsync(u => u.Email == email);
+        created.Should().NotBeNull();
+        created!.AvatarFileId.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task SocialLogin_WithSsrfProviderPicture_IsBlockedAndSanitized()
+    {
+        await SeedVisitorRoleAsync();
+        Client.ClearAuthentication();
+        Client.DefaultRequestHeaders.Add("X-Device-Id", Guid.NewGuid().ToString());
+
+        // The cloud metadata endpoint (link-local) must be refused by the guard before any request,
+        // and surfaced as a generic error that reveals neither the URL nor the reason.
+        var email = $"social-{Guid.NewGuid():N}@test.com";
+        Verifier.NextPayload = Payload(
+            email,
+            subjectId: $"sub-{Guid.NewGuid():N}",
+            pictureUrl: "https://169.254.169.254/latest/meta-data"
+        );
+
+        var response = await Client.PostAsJsonAsync(Routes.Public.Auth.SocialLogin(), GoogleRequest());
+
+        await response.ShouldBeProblem<InternalServerException>(
+            HttpStatusCode.InternalServerError,
+            Localized<InternalServerErrorMessage>(m => m.FileDownloadFailedGeneric())
         );
     }
 
