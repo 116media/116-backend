@@ -30,4 +30,7 @@
   <data name="DeviceIdRequired" xml:space="preserve">
     <value>Device ID is required. Please provide X-Device-Id header.</value>
   </data>
+  <data name="InvalidProviderToken" xml:space="preserve">
+    <value>The social sign-in token could not be verified.</value>
+  </data>
 </root>
