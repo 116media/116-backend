@@ -464,6 +464,11 @@ namespace _116.Identity.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("password_hash");
 
+                    b.Property<string>("ProviderSubjectId")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("provider_subject_id");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
@@ -488,6 +493,11 @@ namespace _116.Identity.Infrastructure.Persistence.Migrations
                     b.HasIndex("UserName")
                         .IsUnique()
                         .HasDatabaseName("ix_users_user_name");
+
+                    b.HasIndex("AuthProvider", "ProviderSubjectId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_users_auth_provider_provider_subject_id")
+                        .HasFilter("provider_subject_id IS NOT NULL");
 
                     b.ToTable("users", "identity");
                 });
