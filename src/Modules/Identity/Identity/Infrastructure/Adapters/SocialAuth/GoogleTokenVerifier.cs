@@ -27,15 +27,16 @@ public sealed class GoogleTokenVerifier(IOptions<SocialAuthOptions> options) : I
             GoogleJsonWebSignature.Payload payload = await GoogleJsonWebSignature.ValidateAsync(idToken, settings);
 
             return new SocialTokenPayload(
-                ProviderSubjectId: payload.Subject,
+                Name: payload.Name,
                 Email: payload.Email,
                 EmailVerified: payload.EmailVerified,
-                Name: payload.Name,
+                ProviderSubjectId: payload.Subject,
                 PictureUrl: payload.Picture
             );
         }
-        catch (InvalidJwtException)
+        catch (Exception ex) when (ex is InvalidJwtException or ArgumentException)
         {
+            // A token that is malformed (bad segments) or fails signature/claim validation.
             throw new SocialTokenVerificationException();
         }
     }
