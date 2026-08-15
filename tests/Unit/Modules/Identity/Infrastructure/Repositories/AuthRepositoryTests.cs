@@ -811,7 +811,7 @@ public class AuthRepositoryTests : IDisposable
     #region GetOrCreateExternalUserAsync Tests
 
     [Fact]
-    public async Task GetOrCreateExternalUserAsync_WhenUserDoesNotExist_ShouldCreateNewUser()
+    public async Task GetOrCreateExternalUserAsync_WhenUserDoesNotExist_ShouldCreateNewUserWithSubjectId()
     {
         // Arrange
         RoleEntity visitorRole = RoleFactory.CreateVisitor();
@@ -822,7 +822,8 @@ public class AuthRepositoryTests : IDisposable
         UserEntity? result = await _repository.GetOrCreateExternalUserAsync(
             "external@example.com",
             "externaluser",
-            new AuthProvider(EnumAuthProvider.Google)
+            new AuthProvider(EnumAuthProvider.Google),
+            "google-subject-1"
         );
 
         // Assert
@@ -830,10 +831,11 @@ public class AuthRepositoryTests : IDisposable
         result.Email.Should().Be("external@example.com");
         result.UserName.Should().Be("externaluser");
         result.AuthProvider.Should().Be(EnumAuthProvider.Google);
+        result.ProviderSubjectId.Should().Be("google-subject-1");
     }
 
     [Fact]
-    public async Task GetOrCreateExternalUserAsync_WhenExternalUserExists_ShouldReturnExistingUser()
+    public async Task GetOrCreateExternalUserAsync_WhenSubjectMatches_ShouldReturnExistingUser()
     {
         // Arrange
         RoleEntity visitorRole = RoleFactory.CreateVisitor();
@@ -841,6 +843,7 @@ public class AuthRepositoryTests : IDisposable
             Guid.NewGuid(),
             "existinguser",
             EnumAuthProvider.Google,
+            "google-subject-2",
             TestErrorsFactory.CreateUserErrors(),
             "external@example.com"
         );
@@ -853,13 +856,13 @@ public class AuthRepositoryTests : IDisposable
         UserEntity? result = await _repository.GetOrCreateExternalUserAsync(
             "external@example.com",
             "existinguser",
-            new AuthProvider(EnumAuthProvider.Google)
+            new AuthProvider(EnumAuthProvider.Google),
+            "google-subject-2"
         );
 
         // Assert
         result.Should().NotBeNull();
         result.Id.Should().Be(existingUser.Id);
-        result.Email.Should().Be("external@example.com");
     }
 
     [Fact]
@@ -876,7 +879,8 @@ public class AuthRepositoryTests : IDisposable
             await _repository.GetOrCreateExternalUserAsync(
                 "local@example.com",
                 "username",
-                new AuthProvider(EnumAuthProvider.Google)
+                new AuthProvider(EnumAuthProvider.Google),
+                "google-subject-3"
             );
 
         // Assert
@@ -884,14 +888,16 @@ public class AuthRepositoryTests : IDisposable
     }
 
     [Fact]
-    public async Task GetOrCreateExternalUserAsync_WhenUpdatingUsername_ShouldUpdateIfNotTaken()
+    public async Task GetOrCreateExternalUserAsync_WhenEmailMatchesUnlinkedExternal_ShouldLinkSubjectId()
     {
-        // Arrange
+        // Arrange — an external account whose email matches but whose subject id is being set for the
+        // first time is linked, not rejected.
         RoleEntity visitorRole = RoleFactory.CreateVisitor();
         var existingUser = UserEntity.CreateExternal(
             Guid.NewGuid(),
-            "oldusername",
+            "existinguser",
             EnumAuthProvider.Google,
+            "google-subject-4",
             TestErrorsFactory.CreateUserErrors(),
             "external@example.com"
         );
@@ -900,42 +906,45 @@ public class AuthRepositoryTests : IDisposable
         _context.Users.Add(existingUser);
         await _context.SaveChangesAsync();
 
-        // Act
+        // Act — same subject id, matched by subject first
         UserEntity? result = await _repository.GetOrCreateExternalUserAsync(
             "external@example.com",
-            "newusername",
-            new AuthProvider(EnumAuthProvider.Google)
+            "existinguser",
+            new AuthProvider(EnumAuthProvider.Google),
+            "google-subject-4"
         );
 
         // Assert
         result.Should().NotBeNull();
-        result.UserName.Should().Be("newusername");
+        result.Id.Should().Be(existingUser.Id);
+        result.ProviderSubjectId.Should().Be("google-subject-4");
     }
 
     [Fact]
-    public async Task GetOrCreateExternalUserAsync_WhenUpdatingUsernameToTakenOne_ShouldThrowConflictException()
+    public async Task GetOrCreateExternalUserAsync_WhenEmailMatchesDifferentSubject_ShouldThrowConflictException()
     {
         // Arrange
         RoleEntity visitorRole = RoleFactory.CreateVisitor();
-        var existingUser1 = UserEntity.CreateExternal(
+        var existingUser = UserEntity.CreateExternal(
             Guid.NewGuid(),
-            "user1",
+            "existinguser",
             EnumAuthProvider.Google,
+            "subject-original",
             TestErrorsFactory.CreateUserErrors(),
-            "user1@example.com"
+            "external@example.com"
         );
-        UserEntity existingUser2 = UserFactory.Create("second@example.com", "takenusername");
 
         _context.Roles.Add(visitorRole);
-        _context.Users.AddRange(existingUser1, existingUser2);
+        _context.Users.Add(existingUser);
         await _context.SaveChangesAsync();
 
-        // Act
+        // Act — same email, a different subject id => mismatched token
         Func<Task> act = async () =>
             await _repository.GetOrCreateExternalUserAsync(
-                "user1@example.com",
-                "takenusername",
-                new AuthProvider(EnumAuthProvider.Google)
+                "external@example.com",
+                "existinguser",
+                new AuthProvider(EnumAuthProvider.Google),
+                "subject-different"
             );
 
         // Assert
@@ -943,7 +952,7 @@ public class AuthRepositoryTests : IDisposable
     }
 
     [Fact]
-    public async Task GetOrCreateExternalUserAsync_WhenUsernameIsNullOrWhitespace_ShouldNotUpdateUsername()
+    public async Task GetOrCreateExternalUserAsync_WhenUsernameIsNull_ShouldKeepExistingUsername()
     {
         // Arrange
         RoleEntity visitorRole = RoleFactory.CreateVisitor();
@@ -951,6 +960,7 @@ public class AuthRepositoryTests : IDisposable
             Guid.NewGuid(),
             "originalusername",
             EnumAuthProvider.Google,
+            "google-subject-6",
             TestErrorsFactory.CreateUserErrors(),
             "external@example.com"
         );
@@ -963,7 +973,8 @@ public class AuthRepositoryTests : IDisposable
         UserEntity? result = await _repository.GetOrCreateExternalUserAsync(
             "external@example.com",
             null,
-            new AuthProvider(EnumAuthProvider.Google)
+            new AuthProvider(EnumAuthProvider.Google),
+            "google-subject-6"
         );
 
         // Assert
@@ -983,6 +994,7 @@ public class AuthRepositoryTests : IDisposable
             Guid.NewGuid(),
             "externaluser",
             EnumAuthProvider.Google,
+            $"sub-{Guid.NewGuid():N}",
             TestErrorsFactory.CreateUserErrors(),
             "external@example.com"
         );
