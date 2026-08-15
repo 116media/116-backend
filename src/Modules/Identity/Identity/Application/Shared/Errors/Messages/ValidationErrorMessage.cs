@@ -188,6 +188,17 @@ public class ValidationErrorMessage(IStringLocalizer<ValidationErrorMessage> loc
     public string AuthProviderInvalid() => localizer["AuthProviderInvalid"];
 
     /// <summary>
+    /// Error message indicating that the provider token is required.
+    /// </summary>
+    public string IdTokenRequired() => localizer["IdTokenRequired"];
+
+    /// <summary>
+    /// Error message indicating that the requested social provider is not supported.
+    /// </summary>
+    /// <param name="provider">The unsupported provider name.</param>
+    public string UnsupportedProvider(string provider) => string.Format(localizer["UnsupportedProvider"], provider);
+
+    /// <summary>
     /// Error message indicating that a refresh token is required.
     /// </summary>
     public string RefreshTokenRequired() => localizer["RefreshTokenRequired"];
