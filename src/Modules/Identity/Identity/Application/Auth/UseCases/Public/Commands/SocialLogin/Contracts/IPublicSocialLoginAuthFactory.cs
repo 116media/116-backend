@@ -1,4 +1,6 @@
+using _116.Identity.Application.Adapters.SocialAuth;
 using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.Enums;
 
 namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin.Contracts;
 
@@ -13,19 +15,15 @@ public record PublicSocialLoginAuthData(UserEntity User, List<RolePermissionEnti
 public interface IPublicSocialLoginAuthFactory
 {
     /// <summary>
-    /// Authenticates or creates a user via social provider.
+    /// Authenticates or creates a user from a verified social provider payload.
     /// </summary>
-    /// <param name="email">The user's email from social provider.</param>
-    /// <param name="userName">The user's username from social provider.</param>
+    /// <param name="payload">The verified identity asserted by the provider token.</param>
     /// <param name="provider">The social authentication provider.</param>
-    /// <param name="avatarUrl">The avatar URL from social provider.</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
-    /// <returns>Authentication data containing user, permissions, roles, and permission names.</returns>
+    /// <returns>Authentication data containing the user and its permissions.</returns>
     Task<PublicSocialLoginAuthData> AuthenticateOrCreateAsync(
-        string email,
-        string userName,
-        string provider,
-        string? avatarUrl,
+        SocialTokenPayload payload,
+        EnumAuthProvider provider,
         CancellationToken cancellationToken
     );
 }
