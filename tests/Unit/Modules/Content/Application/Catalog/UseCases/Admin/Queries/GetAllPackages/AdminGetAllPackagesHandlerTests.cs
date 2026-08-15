@@ -36,10 +36,7 @@ public class AdminGetAllPackagesHandlerTests : BaseContentHandlerTest
 
         _packageRepositoryMock.SetupGetAllAsync(packages, totalCount);
 
-        var query = new AdminGetAllPackagesQuery(
-            PaginatedRequest: new PaginatedRequest(PageIndex: 0, PageSize: 10),
-            IsActive: null
-        );
+        var query = new AdminGetAllPackagesQuery(PaginatedRequest: new PaginatedRequest(0, 10), IsActive: null);
 
         // Act
         AdminGetAllPackagesResult result = await _handler.Handle(query, CancellationToken.None);
@@ -55,10 +52,7 @@ public class AdminGetAllPackagesHandlerTests : BaseContentHandlerTest
         // Arrange
         _packageRepositoryMock.SetupGetAllAsync(new List<PackageEntity>(), 0);
 
-        var query = new AdminGetAllPackagesQuery(
-            PaginatedRequest: new PaginatedRequest(PageIndex: 0, PageSize: 10),
-            IsActive: null
-        );
+        var query = new AdminGetAllPackagesQuery(PaginatedRequest: new PaginatedRequest(0, 10), IsActive: null);
 
         // Act
         AdminGetAllPackagesResult result = await _handler.Handle(query, CancellationToken.None);
