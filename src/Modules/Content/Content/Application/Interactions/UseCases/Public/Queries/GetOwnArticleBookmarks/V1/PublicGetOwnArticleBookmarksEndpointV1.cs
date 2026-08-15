@@ -39,7 +39,7 @@ public class PublicGetOwnArticleBookmarksEndpointV1 : ICarterModule
                 ) =>
                 {
                     Guid userId = claimsProvider.GetUserIdFromClaims(user: user);
-                    var paginatedRequest = new PaginatedRequest(PageIndex: pageIndex, PageSize: pageSize);
+                    var paginatedRequest = new PaginatedRequest(pageIndex: pageIndex, pageSize: pageSize);
                     var query = new PublicGetOwnArticleBookmarksQuery(
                         UserId: userId,
                         PaginatedRequest: paginatedRequest
