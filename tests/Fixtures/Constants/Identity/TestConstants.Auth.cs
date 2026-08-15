@@ -28,6 +28,8 @@ public static partial class TestConstants
         public const string SocialLoginEmail = "socialuser@example.com";
         public const string SocialLoginUserName = "socialuser";
         public const string SocialLoginAvatarUrl = "https://avatar.url/image.jpg";
+        public const string SocialLoginIdToken = "provider-id-token";
+        public const string SocialLoginProviderSubjectId = "provider-subject-123";
 
         public const string ProviderGoogle = "Google";
         public const string ProviderGitHub = "GitHub";
