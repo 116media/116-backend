@@ -39,6 +39,14 @@ public class AuthorizationErrorMessage(IStringLocalizer<AuthorizationErrorMessag
     }
 
     /// <summary>
+    /// Error message indicating that the social provider reports the account email as not verified.
+    /// </summary>
+    public string ProviderEmailNotVerified()
+    {
+        return localizer["ProviderEmailNotVerified"];
+    }
+
+    /// <summary>
     /// Error message indicating that access is denied due to insufficient permissions.
     /// </summary>
     public string AccessDenied()
