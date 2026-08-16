@@ -24,7 +24,7 @@ IP (trusted forwarded headers) and the **authenticated subject** (rate limiter a
 - [ ] 3.3 — `RateLimitPartitioning.ResolvePartitionKey` (authenticated subject → client IP)
 - [ ] 3.4 — Partition all three builders (`SlidingWindow`, `TokenBucket`, `FixedWindow`) by that key
 - [ ] 3.5 — Middleware order: `UseCors` above the exception handler; `UseRateLimiter` **after** `UseAuthentication`
-- [ ] 3.6 — `IAccountRateLimiter` (in-process, per-account) applied to the login/OTP/password handlers
+- [ ] 3.6 — `IAccountRateLimiter` (in-process, per-account) applied via an `AccountRateLimitDecorator`; the login/OTP/password commands opt in through `IAccountRateLimited`
 - [ ] 3.7 — CORS fails **closed** when origins are empty outside Development, with a startup warning
 - [ ] 3.8 — Unit + integration tests
 - [ ] 3.9 — Verify (build 0/0, unit green; run integration locally)
@@ -300,8 +300,9 @@ app.UseApiVersioning();
 The middleware partition keys anonymous login/OTP/password requests by **IP**, which stops one IP
 from draining the policy. It does **not** stop credential stuffing against a single account from many
 IPs, because the target account (the email) lives in the request body — invisible to the limiter
-partitioner. That throttle belongs where the email is known: inside the handlers, via a small
-in-process per-account limiter. (Stage 9 swaps the in-process store for Redis so it holds across
+partitioner. That throttle belongs where the account is known — but rather than inject a limiter into
+every handler, it is applied centrally by a CQRS decorator that reads the account key off the command,
+and each pre-auth command opts in. (Stage 9 swaps the in-process store for Redis so it holds across
 instances; until then it is per-instance, which still meaningfully raises the cost of an attack.)
 
 `src/Shared/Shared/Application/Builders/RateLimit/IAccountRateLimiter.cs` (new)
@@ -421,32 +422,95 @@ Register it in `AddRateLimiting` (same extension), so it lives beside the middle
 services.AddSingleton<IAccountRateLimiter, AccountRateLimiter>();
 ```
 
-**Apply it in each pre-auth handler**, keyed by the request email, before any credential work.
-`PublicLoginHandler` is the exemplar (inject `IAccountRateLimiter accountRateLimiter`):
+**The throttle is applied by a decorator, not injected into handlers.** A marker interface lets a
+command opt in, and a CQRS decorator does the work — so handlers stay untouched and adding a new
+throttled endpoint is a one-line change on its command.
+
+`src/Shared/Shared.Contracts/Application/CQRS/IAccountRateLimited.cs` (new)
 
 ```csharp
-public async Task<PublicLoginResult> Handle(PublicLoginCommand command, CancellationToken cancellationToken)
-{
-    await accountRateLimiter.EnsureWithinLimitAsync(
-        RateLimitPolicies.Authentication,
-        command.Email,
-        cancellationToken
-    );
+namespace _116.Shared.Contracts.Application.CQRS;
 
-    // ... existing credential verification ...
+/// <summary>
+/// Marks a command whose handling must be throttled per target account, keyed by a stable account
+/// identifier rather than the caller IP. The account-rate-limit decorator applies the throttle before
+/// the handler runs; commands without this interface pass straight through.
+/// </summary>
+public interface IAccountRateLimited
+{
+    /// <summary>
+    /// The rate-limit policy name whose window the account is charged against.
+    /// </summary>
+    string RateLimitPolicy { get; }
+
+    /// <summary>
+    /// The account identifier (typically the email) the throttle buckets by.
+    /// </summary>
+    string AccountKey { get; }
 }
 ```
 
-Wire the same call into the other handlers behind these policies, using each command's email:
+`src/Shared/Shared/Application/Decorators/AccountRateLimitDecorator.cs` (new) — runs the throttle only
+for opted-in requests, then delegates:
 
-| Policy | Handlers | Key |
+```csharp
+public class AccountRateLimitDecorator<TRequest, TResponse>(
+    IRequestHandler<TRequest, TResponse> handler,
+    IAccountRateLimiter accountRateLimiter
+) : IRequestHandler<TRequest, TResponse>
+    where TRequest : IRequest<TResponse>
+{
+    public async Task<TResponse> Handle(TRequest request, CancellationToken cancellationToken = default)
+    {
+        if (request is IAccountRateLimited limited)
+        {
+            await accountRateLimiter.EnsureWithinLimitAsync(
+                limited.RateLimitPolicy,
+                limited.AccountKey,
+                cancellationToken
+            );
+        }
+
+        return await handler.Handle(request, cancellationToken);
+    }
+}
+```
+
+Register it as the **innermost** decorator in `CqrsExtension.AddCqrsWithAssemblies`, so the throttle
+runs after validation, on a well-formed request, immediately before the handler:
+
+```csharp
+services.Decorate(typeof(IRequestHandler<,>), typeof(AccountRateLimitDecorator<,>));
+services.Decorate(typeof(IRequestHandler<,>), typeof(ValidationDecorator<,>));
+services.Decorate(typeof(IRequestHandler<,>), typeof(LoggingDecorator<,>));
+```
+
+**Opt each pre-auth command in** by implementing `IAccountRateLimited`. `PublicLoginCommand` is the
+exemplar:
+
+```csharp
+public record PublicLoginCommand(string Credentials, string Password)
+    : ICommand<PublicLoginResult>, IAccountRateLimited
+{
+    /// <inheritdoc />
+    public string RateLimitPolicy => RateLimitPolicies.Authentication;
+
+    /// <inheritdoc />
+    public string AccountKey => Credentials;
+}
+```
+
+Do the same on the other pre-auth commands (change-password is excluded — it is authenticated, so the
+middleware already partitions it per subject):
+
+| Policy | Commands | Key |
 | --- | --- | --- |
-| `Authentication` | `PublicLoginHandler`, `AdminLoginHandler` | `command.Email` |
-| `Otp` | `PublicVerifyOtpHandler`, `PublicResendOtpHandler`, `AdminVerifyOtpHandler`, `AdminResendOtpHandler` (whichever exist) | `command.Email` |
-| `PasswordManagement` | `PublicForgotPasswordHandler`, `PublicResetPasswordHandler`, `AdminForgotPasswordHandler`, `AdminResetPasswordHandler`, change-password | `command.Email` |
+| `Authentication` | `PublicLoginCommand`, `AdminLoginCommand` | login credential (`Credentials` / `Email`) |
+| `Otp` | `PublicVerifyOtpCommand`, `AdminVerifyOtpCommand`, `PublicResendOtpCommand`, `AdminResendOtpCommand` | `Email` |
+| `PasswordManagement` | `PublicForgotPasswordCommand`, `AdminForgotPasswordCommand`, `PublicResetPasswordCommand`, `AdminResetPasswordCommand` | `Email` |
 
-> The account-enumeration-safe forms (Stage 5 `[07 S7]`) still call this for **every** email,
-> including unknown accounts, so the throttle itself never reveals whether an account exists.
+> The account-enumeration-safe forms (Stage 5 `[07 S7]`) still opt in for **every** email, including
+> unknown accounts, so the throttle itself never reveals whether an account exists.
 
 ---
 
@@ -521,12 +585,16 @@ The `UseCors`-above-the-exception-handler move is in §3.5.
     throws `RateLimitExceededException`; a **different** key is unaffected; an unknown policy is a
     no-op; the key is normalized so a mixed-case, whitespace-padded email shares one bucket with its
     trimmed lowercase form.
+  - `AccountRateLimitDecorator`: a command implementing `IAccountRateLimited` is throttled with its
+    own policy and key before the handler runs; a plain command skips the throttle entirely.
 - **Integration** (real HTTP, under the `RateLimitedApiFixture` collection)
   - **Per-subject partition:** authenticate as subject A and exhaust a policy to 429; subject B still
     gets 200 on the same policy — proving buckets no longer collide (and that the limiter sees the
     authenticated principal after the §3.5 reorder).
-  - **Per-account throttle:** repeated failed logins for one email 429 after the limit, while a
-    different email still reaches the handler — even from the same connection/IP.
+  - **Per-account throttle:** on a dedicated host that disables the middleware limiter but keeps the
+    account throttle, repeated forgot-password calls for one email 429 after the `PasswordManagement`
+    limit, while a different email still succeeds — isolating the decorator's per-account throttle
+    from the per-IP middleware limiter (which would otherwise reject at the same threshold first).
   - **Forwarded headers:** with `TRUSTED_PROXY_NETWORKS` covering the loopback test connection, two
     distinct `X-Forwarded-For` client IPs partition separately; with no trusted network the header is
     ignored (both share the connection-IP bucket).
