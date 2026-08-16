@@ -358,6 +358,12 @@ public class AuthRepository(IdentityDbContext context, UserErrors userErrors, Se
 
             await AddAsync(user: user, cancellationToken: cancellationToken);
             await AssignVisitorRoleAsync(userId: user.Id, cancellationToken: cancellationToken);
+
+            await context.UserTokenStates.AddAsync(
+                entity: UserTokenStateEntity.Create(userId: user.Id),
+                cancellationToken: cancellationToken
+            );
+
             await context.SaveChangesAsync(cancellationToken: cancellationToken);
 
             // Reload with roles and permissions after creation.
