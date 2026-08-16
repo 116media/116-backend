@@ -22,6 +22,8 @@ public interface IJwtService
     /// <param name="userPermissions">Collection of permissions granted to the user through roles.</param>
     /// <param name="isVerified">Indicates whether the user's email/account has been verified.</param>
     /// <param name="isActive">Indicates whether the user account is currently active.</param>
+    /// <param name="securityStamp">The user's current security stamp, embedded as the <c>sstamp</c> claim.</param>
+    /// <param name="tokenVersion">The user's current token version, embedded as the <c>tver</c> claim.</param>
     /// <param name="authProvider">The authentication provider used by the user (Local, Google, Facebook, etc.).</param>
     /// <returns>A JWT generation result containing both the token and its expiration time.</returns>
     /// <remarks>
@@ -36,6 +38,8 @@ public interface IJwtService
         ICollection<RolePermissionEntity> userPermissions,
         bool isVerified,
         bool isActive,
+        Guid securityStamp,
+        long tokenVersion,
         EnumAuthProvider authProvider
     );
 }
