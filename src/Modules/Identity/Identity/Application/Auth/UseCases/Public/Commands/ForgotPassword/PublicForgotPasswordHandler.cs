@@ -1,10 +1,12 @@
 using _116.BuildingBlocks.Constants;
+using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.ForgotPassword.Contracts;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.ValueObjects;
 using _116.Mailer.Contracts.Application;
+using _116.Shared.Application.Builders.RateLimit;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Identity.Application.Auth.UseCases.Public.Commands.ForgotPassword;
@@ -15,10 +17,12 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.ForgotPassword
 /// <param name="otpFactory">Factory for handling forgot password OTP creation.</param>
 /// <param name="authRepository">Repository for user data access operations.</param>
 /// <param name="mailer">Outbox mailer delivering the reset code.</param>
+/// <param name="accountRateLimiter">Per-account throttle for the pre-auth security endpoints.</param>
 public class PublicForgotPasswordHandler(
     IPublicForgotPasswordOtpFactory otpFactory,
     IAuthRepository authRepository,
-    IMailer mailer
+    IMailer mailer,
+    IAccountRateLimiter accountRateLimiter
 ) : ICommandHandler<PublicForgotPasswordCommand, PublicForgotPasswordResult>
 {
     /// <summary>
@@ -30,6 +34,14 @@ public class PublicForgotPasswordHandler(
         CancellationToken cancellationToken
     )
     {
+        // Throttle per target account before any work — for every email, including unknown ones, so
+        // the throttle never becomes an account-enumeration oracle.
+        await accountRateLimiter.EnsureWithinLimitAsync(
+            RateLimitPolicies.PasswordManagement,
+            command.Email,
+            cancellationToken
+        );
+
         var email = new Email(value: command.Email);
         if (!await authRepository.ExistsByEmailAsync(email: email, cancellationToken: cancellationToken))
         {
