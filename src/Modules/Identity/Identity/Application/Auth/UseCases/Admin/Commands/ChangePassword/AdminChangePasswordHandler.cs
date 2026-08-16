@@ -19,12 +19,14 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.ChangePassword;
 /// <param name="authRepository">Repository for user data access operations.</param>
 /// <param name="passwordService">Service for password hashing and verification operations.</param>
 /// <param name="sessionRepository">Repository revoking the user's sessions.</param>
+/// <param name="tokenStateRepository">Repository rotating the user's security stamp.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="i18n">Single i18n entry point for the Identity module.</param>
 public class AdminChangePasswordHandler(
     IAuthRepository authRepository,
     IPasswordService passwordService,
     ISessionRepository sessionRepository,
+    IUserTokenStateRepository tokenStateRepository,
     IIdentityUnitOfWork unitOfWork,
     IdentityI18n i18n
 ) : ICommandHandler<AdminChangePasswordCommand, AdminChangePasswordResult>
@@ -82,6 +84,8 @@ public class AdminChangePasswordHandler(
         );
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+        await tokenStateRepository.RotateSecurityStampAsync(userId: user.Id, cancellationToken: cancellationToken);
 
         return new AdminChangePasswordResult(IsSuccess: true);
     }
