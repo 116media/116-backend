@@ -1,8 +1,13 @@
+using System.Security.Claims;
 using System.Text.Json;
+using _116.BuildingBlocks.Constants;
+using _116.BuildingBlocks.Constants.Authorization.Policies;
 using _116.Identity.Application.Auth.Constants;
+using _116.Identity.Application.Session.Cache;
 using _116.Identity.Application.Shared.Authorizations.Configuration;
 using _116.Identity.Application.Shared.Authorizations.Handlers;
 using _116.Identity.Application.Shared.Authorizations.Requirements;
+using _116.Identity.Application.Shared.Cache;
 using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Application.Shared.Exceptions;
 using _116.Identity.Application.Shared.Exceptions.Handlers;
@@ -97,7 +102,8 @@ public static class AuthorizationExtensions
     }
 
     /// <summary>
-    /// Configures user role policies using requirements.
+    /// Configures user role policies using requirements. The Visitor policy additionally
+    /// requires the <c>is_active</c> and <c>is_verified</c> claims.
     /// </summary>
     /// <param name="authBuilder">The authorization builder</param>
     /// <param name="policies">Dictionary of policy configurations</param>
@@ -111,7 +117,16 @@ public static class AuthorizationExtensions
         {
             authBuilder.AddPolicy(
                 name: policyName,
-                policy => policy.Requirements.Add(new UserRoleRequirement(allowedRoles: roles))
+                policy =>
+                {
+                    policy.Requirements.Add(new UserRoleRequirement(allowedRoles: roles));
+
+                    if (policyName == UserRolePolicies.RequireVisitorOnly)
+                    {
+                        policy.RequireClaim(JwtClaimsConstants.IsActive, "true");
+                        policy.RequireClaim(JwtClaimsConstants.IsVerified, "true");
+                    }
+                }
             );
         }
 
@@ -138,6 +153,48 @@ public static class AuthorizationExtensions
                 }
 
                 return Task.CompletedTask;
+            },
+            OnTokenValidated = async context =>
+            {
+                ClaimsPrincipal? principal = context.Principal;
+
+                if (
+                    !Guid.TryParse(principal?.FindFirst(JwtClaimsConstants.SessionId)?.Value, out Guid sessionId)
+                    || !Guid.TryParse(principal.FindFirst(ClaimTypes.NameIdentifier)?.Value, out Guid userId)
+                    || !Guid.TryParse(principal.FindFirst(JwtClaimsConstants.SecurityStamp)?.Value, out Guid tokenStamp)
+                    || !long.TryParse(
+                        principal.FindFirst(JwtClaimsConstants.TokenVersion)?.Value,
+                        out long tokenVersion
+                    )
+                )
+                {
+                    // Missing/garbled markers mean a pre-migration or tampered token.
+                    context.Fail("The token is missing required session or security claims.");
+                    return;
+                }
+
+                IServiceProvider services = context.HttpContext.RequestServices;
+
+                if (services.GetRequiredService<ISessionRevocationCache>().IsRevoked(sessionId: sessionId))
+                {
+                    context.Fail("The session has been revoked.");
+                    return;
+                }
+
+                UserSecurityState current = await services
+                    .GetRequiredService<IUserSecurityStateCache>()
+                    .GetAsync(userId: userId, cancellationToken: context.HttpContext.RequestAborted);
+
+                if (tokenStamp != current.SecurityStamp)
+                {
+                    context.Fail("Credentials changed; re-authentication required.");
+                    return;
+                }
+
+                if (tokenVersion < current.TokenVersion)
+                {
+                    context.Fail("Permissions changed; token refresh required.");
+                }
             },
             OnChallenge = async context =>
             {
