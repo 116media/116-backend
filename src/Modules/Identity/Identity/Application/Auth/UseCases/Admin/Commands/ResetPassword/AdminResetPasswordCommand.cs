@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.ResetPassword;
@@ -13,7 +14,15 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.ResetPassword;
 /// The OTP must be valid, not expired, and match the admin user's email address.
 /// </remarks>
 public record AdminResetPasswordCommand(string Email, string Code, string NewPassword)
-    : ICommand<AdminResetPasswordResult>;
+    : ICommand<AdminResetPasswordResult>,
+        IAccountRateLimited
+{
+    /// <inheritdoc />
+    public string RateLimitPolicy => RateLimitPolicies.PasswordManagement;
+
+    /// <inheritdoc />
+    public string AccountKey => Email;
+}
 
 /// <summary>
 /// Result of the <see cref="AdminResetPasswordCommand" /> containing reset status.
