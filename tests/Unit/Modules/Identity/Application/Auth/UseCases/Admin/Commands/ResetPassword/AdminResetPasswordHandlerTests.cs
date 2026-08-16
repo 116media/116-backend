@@ -3,7 +3,6 @@ using _116.Identity.Application.Auth.UseCases.Admin.Commands.ResetPassword;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.ResetPassword.Contracts;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
-using _116.Shared.Application.Builders.RateLimit;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Identity;
 using _116.Unit.Tests.Common.Mocks.Repositories;
@@ -27,11 +26,7 @@ public class AdminResetPasswordHandlerTests
         _authFactoryMock = new Mock<IAdminResetPasswordAuthFactory>();
         _otpRepositoryMock = MockOtpRepository.Create();
 
-        _handler = new AdminResetPasswordHandler(
-            _authFactoryMock.Object,
-            _otpRepositoryMock.Object,
-            Mock.Of<IAccountRateLimiter>()
-        );
+        _handler = new AdminResetPasswordHandler(_authFactoryMock.Object, _otpRepositoryMock.Object);
     }
 
     #region Success Cases
