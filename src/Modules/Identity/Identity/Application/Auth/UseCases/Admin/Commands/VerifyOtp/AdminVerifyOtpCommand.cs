@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.VerifyOtp;
@@ -12,7 +13,16 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.VerifyOtp;
 /// This command is used to verify the OTP code sent to the admin user's email for various purposes.
 /// Upon successful verification, the admin user's account will be marked as verified for email verification purpose.
 /// </remarks>
-public record AdminVerifyOtpCommand(string Email, string Code, string Purpose) : ICommand<AdminVerifyOtpResult>;
+public record AdminVerifyOtpCommand(string Email, string Code, string Purpose)
+    : ICommand<AdminVerifyOtpResult>,
+        IAccountRateLimited
+{
+    /// <inheritdoc />
+    public string RateLimitPolicy => RateLimitPolicies.Otp;
+
+    /// <inheritdoc />
+    public string AccountKey => Email;
+}
 
 /// <summary>
 /// Result of the <see cref="AdminVerifyOtpCommand" /> containing verification status.
