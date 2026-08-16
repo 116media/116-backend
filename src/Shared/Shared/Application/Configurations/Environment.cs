@@ -95,6 +95,18 @@ public class AppEnvironment
     }
 
     /// <summary>
+    /// The absolute session lifetime in days, read from
+    /// <c>JWT_SESSION_ABSOLUTE_LIFETIME_IN_DAYS</c>.
+    /// </summary>
+    /// <param name="fallbackDays">The lifetime used when the variable is unset or malformed.</param>
+    /// <returns>The configured lifetime in days, or the fallback.</returns>
+    public static int SessionAbsoluteLifetimeDays(int fallbackDays)
+    {
+        string? raw = Environment.GetEnvironmentVariable("JWT_SESSION_ABSOLUTE_LIFETIME_IN_DAYS");
+        return int.TryParse(s: raw, out int days) && days > 0 ? days : fallbackDays;
+    }
+
+    /// <summary>
     /// Retrieves Cloudinary configuration values from environment variables.
     /// </summary>
     /// <remarks>
