@@ -56,8 +56,10 @@ public static class CqrsExtension
                 .WithScopedLifetime()
         );
 
-        // Register decorators using Scrutor - validation first, then logging
-        // Decorate handlers with return values (all our current handlers use this)
+        // Register decorators using Scrutor. Decorate order is inner-to-outer: the account-rate-limit
+        // decorator is applied first so it is innermost — the throttle runs after validation, on a
+        // well-formed request, immediately before the handler. Validation then logging wrap it.
+        services.Decorate(typeof(IRequestHandler<,>), typeof(AccountRateLimitDecorator<,>));
         services.Decorate(typeof(IRequestHandler<,>), typeof(ValidationDecorator<,>));
         services.Decorate(typeof(IRequestHandler<,>), typeof(LoggingDecorator<,>));
 
