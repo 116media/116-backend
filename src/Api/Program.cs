@@ -55,6 +55,7 @@ builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddAppLocalization();
 
 string[] allowedOrigins = AppEnvironment.CorsAllowedOrigins();
+bool isDevelopment = builder.Environment.IsDevelopment();
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
@@ -63,10 +64,14 @@ builder.Services.AddCors(options =>
         {
             policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod().AllowCredentials();
         }
-        else
+        else if (isDevelopment)
         {
+            // Local convenience only: no origins configured in Development means allow any.
             policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
         }
+
+        // Outside Development with no configured origins the policy is left empty — CORS fails closed,
+        // so a misconfigured deploy rejects cross-origin calls instead of allowing every origin.
     });
 });
 
@@ -87,11 +92,26 @@ builder.Services.AddAppExceptionHandler();
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+
     options.KnownNetworks.Clear();
     options.KnownProxies.Clear();
+    options.ForwardLimit = 1;
+
+    foreach (var network in AppEnvironment.TrustedProxyNetworks())
+    {
+        options.KnownNetworks.Add(network);
+    }
 });
 
 WebApplication app = builder.Build();
+
+if (!app.Environment.IsDevelopment() && allowedOrigins.Length == 0)
+{
+    app.Logger.LogWarning(
+        "CORS: no allowed origins configured outside Development — cross-origin browser requests are "
+            + "blocked (fail-closed). Set WEBAPP_ORIGIN / DASHBOARD_ORIGIN."
+    );
+}
 
 app.UseForwardedHeaders();
 app.UseSwaggerFormatting();
@@ -100,10 +120,10 @@ app.UseSwaggerUI();
 
 app.UseSerilogRequestLogging();
 app.UseAppLocalization();
-app.UseAppExceptionHandler();
 app.UseCors();
-app.UseRateLimiter();
+app.UseAppExceptionHandler();
 app.UseAuthentication();
+app.UseRateLimiter();
 app.UseAuthorization();
 
 app.UseApiVersioning();
