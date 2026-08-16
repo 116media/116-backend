@@ -11,17 +11,17 @@ namespace _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfi
 
 /// <summary>
 /// Factory implementation for handling user profile update logic. An email change revokes the
-/// account's other sessions in the same transaction as the new address, keeping the acting
-/// session alive. The dual email-change notification and the in-app notification react to the
-/// domain event the aggregate raises when the email changes.
+/// account's other sessions — keeping the acting session alive — and rotates the security stamp.
 /// </summary>
 /// <param name="authRepository">Repository for user data access operations.</param>
 /// <param name="sessionRepository">Repository revoking the user's sessions.</param>
+/// <param name="tokenStateRepository">Repository rotating the user's security stamp.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="userErrors">User domain error factory for generating domain exceptions.</param>
 public class PublicUpdateProfileAuthFactory(
     IAuthRepository authRepository,
     ISessionRepository sessionRepository,
+    IUserTokenStateRepository tokenStateRepository,
     IIdentityUnitOfWork unitOfWork,
     UserErrors userErrors
 ) : IPublicUpdateProfileAuthFactory
@@ -93,6 +93,11 @@ public class PublicUpdateProfileAuthFactory(
         }
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+        if (isEmailUpdated)
+        {
+            await tokenStateRepository.RotateSecurityStampAsync(userId: user!.Id, cancellationToken: cancellationToken);
+        }
 
         return new PublicUpdateProfileAuthData(User: user!);
     }
