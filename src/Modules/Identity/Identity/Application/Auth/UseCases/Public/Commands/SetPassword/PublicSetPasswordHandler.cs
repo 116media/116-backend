@@ -18,11 +18,13 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SetPassword;
 /// <param name="authRepository">Repository for user data access operations.</param>
 /// <param name="passwordService">Service for password hashing operations.</param>
 /// <param name="sessionRepository">Repository revoking the user's sessions.</param>
+/// <param name="tokenStateRepository">Repository rotating the user's security stamp.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 public class PublicSetPasswordHandler(
     IAuthRepository authRepository,
     IPasswordService passwordService,
     ISessionRepository sessionRepository,
+    IUserTokenStateRepository tokenStateRepository,
     IIdentityUnitOfWork unitOfWork
 ) : ICommandHandler<PublicSetPasswordCommand, PublicSetPasswordResult>
 {
@@ -61,6 +63,8 @@ public class PublicSetPasswordHandler(
         );
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+        await tokenStateRepository.RotateSecurityStampAsync(userId: user.Id, cancellationToken: cancellationToken);
 
         return new PublicSetPasswordResult(IsSuccess: true);
     }
