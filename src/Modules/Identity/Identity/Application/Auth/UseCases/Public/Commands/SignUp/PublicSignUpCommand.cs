@@ -1,4 +1,4 @@
-using _116.Identity.Domain.Results;
+using _116.Identity.Application.Shared.DTOs;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp;
@@ -16,12 +16,9 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp;
 public record PublicSignUpCommand(string Email, string UserName, string Password) : ICommand<PublicSignUpResult>;
 
 /// <summary>
-/// Result of the <see cref="PublicSignUpCommand" /> containing registration details.
+/// Result of the <see cref="PublicSignUpCommand" /> containing registration details, deliberately
+/// carrying no tokens.
 /// </summary>
-/// <param name="AuthenticationResult">The authentication result with user info and JWT token.</param>
-/// <param name="VerificationRequired">Indicates if email verification is required before full access.</param>
-/// <remarks>
-/// Contains registration information and indicates next steps for the user.
-/// If verification is required, the user should check their email for a verification link.
-/// </remarks>
-public record PublicSignUpResult(AuthenticationResult AuthenticationResult, bool VerificationRequired);
+/// <param name="User">The created user information.</param>
+/// <param name="VerificationRequired">Indicates that email verification must happen before login.</param>
+public record PublicSignUpResult(UserResponseDto User, bool VerificationRequired);
