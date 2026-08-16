@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Auth.Repositories;
 using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Persistence;
@@ -5,6 +6,7 @@ using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.ValueObjects;
+using _116.Shared.Application.Builders.RateLimit;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Contracts.Application.CQRS;
 
@@ -19,11 +21,13 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.VerifyOtp;
 /// <param name="otpRepository">Repository for OTP data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="i18n">Single i18n entry point for the Identity module.</param>
+/// <param name="accountRateLimiter">Per-account throttle for the pre-auth security endpoints.</param>
 public class PublicVerifyOtpHandler(
     IAuthRepository authRepository,
     IOtpRepository otpRepository,
     IIdentityUnitOfWork unitOfWork,
-    IdentityI18n i18n
+    IdentityI18n i18n,
+    IAccountRateLimiter accountRateLimiter
 ) : ICommandHandler<PublicVerifyOtpCommand, PublicVerifyOtpResult>
 {
     /// <summary>
@@ -40,6 +44,9 @@ public class PublicVerifyOtpHandler(
     /// <exception cref="AuthorizationException">Thrown when max attempts are reached.</exception>
     public async Task<PublicVerifyOtpResult> Handle(PublicVerifyOtpCommand command, CancellationToken cancellationToken)
     {
+        // Throttle OTP attempts per target account so a code cannot be brute-forced from many IPs.
+        await accountRateLimiter.EnsureWithinLimitAsync(RateLimitPolicies.Otp, command.Email, cancellationToken);
+
         var email = new Email(value: command.Email);
         var purpose = new OtpPurpose(value: command.Purpose);
         UserEntity? user = await authRepository.GetUserWithRolesByEmailOrThrow(
