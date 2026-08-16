@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Identity.Application.Auth.UseCases.Public.Commands.ResetPassword;
@@ -13,7 +14,15 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.ResetPassword;
 /// The OTP must be valid, not expired, and match the user's email address.
 /// </remarks>
 public record PublicResetPasswordCommand(string Email, string Code, string NewPassword)
-    : ICommand<PublicResetPasswordResult>;
+    : ICommand<PublicResetPasswordResult>,
+        IAccountRateLimited
+{
+    /// <inheritdoc />
+    public string RateLimitPolicy => RateLimitPolicies.PasswordManagement;
+
+    /// <inheritdoc />
+    public string AccountKey => Email;
+}
 
 /// <summary>
 /// Result of the <see cref="PublicResetPasswordCommand" /> containing reset status.
