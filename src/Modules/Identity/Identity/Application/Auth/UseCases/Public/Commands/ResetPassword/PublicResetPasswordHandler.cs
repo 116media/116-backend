@@ -1,8 +1,6 @@
-using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Auth.Repositories;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.ResetPassword.Contracts;
 using _116.Identity.Domain.Enums;
-using _116.Shared.Application.Builders.RateLimit;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Contracts.Application.CQRS;
 
@@ -13,12 +11,8 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.ResetPassword;
 /// </summary>
 /// <param name="authFactory">Factory for handling user password reset logic.</param>
 /// <param name="otpRepository">Repository for OTP data access operations.</param>
-/// <param name="accountRateLimiter">Per-account throttle for the pre-auth security endpoints.</param>
-public class PublicResetPasswordHandler(
-    IPublicResetPasswordAuthFactory authFactory,
-    IOtpRepository otpRepository,
-    IAccountRateLimiter accountRateLimiter
-) : ICommandHandler<PublicResetPasswordCommand, PublicResetPasswordResult>
+public class PublicResetPasswordHandler(IPublicResetPasswordAuthFactory authFactory, IOtpRepository otpRepository)
+    : ICommandHandler<PublicResetPasswordCommand, PublicResetPasswordResult>
 {
     /// <summary>
     /// Handles the password reset command by validating OTP and updating the user's password.
@@ -37,13 +31,6 @@ public class PublicResetPasswordHandler(
         CancellationToken cancellationToken
     )
     {
-        // Throttle reset attempts per target account so the OTP cannot be brute-forced from many IPs.
-        await accountRateLimiter.EnsureWithinLimitAsync(
-            RateLimitPolicies.PasswordManagement,
-            command.Email,
-            cancellationToken
-        );
-
         PublicResetPasswordAuthData authData = await authFactory.GetUserForResetAsync(
             email: command.Email,
             cancellationToken: cancellationToken
