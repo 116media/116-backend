@@ -82,4 +82,14 @@ public class SuperAdminEntityFactory(IPasswordService passwordService, UserError
     {
         return RolePermissionEntity.Create(Guid.NewGuid(), roleId: roleId, permissionId: permissionId);
     }
+
+    /// <summary>
+    /// Creates the token-invalidation record that accompanies the Super Admin user.
+    /// </summary>
+    /// <param name="userId">The Super Admin user ID.</param>
+    /// <returns>A <see cref="UserTokenStateEntity" /> for the user.</returns>
+    public static UserTokenStateEntity CreateUserTokenState(Guid userId)
+    {
+        return UserTokenStateEntity.Create(userId: userId);
+    }
 }
