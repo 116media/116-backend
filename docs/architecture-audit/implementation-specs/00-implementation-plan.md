@@ -13,9 +13,9 @@ shippable work. **Rules of engagement:**
 
 ## Stage index
 
-- [ ] **Stage 1 — Critical security quick wins** → [`stage-01-critical-security-hardening.md`](stage-01-critical-security-hardening.md)
-- [ ] **Stage 2 — Social-login verification & SSRF** → [`stage-02-social-login-and-ssrf.md`](stage-02-social-login-and-ssrf.md)
-- [ ] **Stage 3 — Rate-limit partitioning & trusted proxies**
+- [x] **Stage 1 — Critical security quick wins** → [`stage-01-critical-security-hardening.md`](stage-01-critical-security-hardening.md)
+- [x] **Stage 2 — Social-login verification & SSRF** → [`stage-02-social-login-and-ssrf.md`](stage-02-social-login-and-ssrf.md)
+- [ ] **Stage 3 — Rate-limit partitioning & trusted proxies** → [`stage-03-rate-limits-and-proxies.md`](stage-03-rate-limits-and-proxies.md)
 - [ ] **Stage 4 — Session revocation, verified signup & account-status enforcement**
 - [ ] **Stage 5 — Password & OTP hardening**
 - [ ] **Stage 6 — Domain state-machine guards, order total & payment proof**
@@ -36,18 +36,18 @@ shippable work. **Rules of engagement:**
 
 ### Stage 1 — Critical security quick wins
 Small, isolated, high-urgency fixes with no cross-module surgery. Full code in the stage spec.
-- [ ] Stop `LoggingDecorator` serializing command payloads (credentials/OTP/tokens) `[01 §1.2 / 08 §2]`
-- [ ] Sanitize unhandled-exception responses in `DefaultExceptionHandler` (env-gated) + add an
+- [x] Stop `LoggingDecorator` serializing command payloads (credentials/OTP/tokens) `[01 §1.2 / 08 §2]`
+- [x] Sanitize unhandled-exception responses in `DefaultExceptionHandler` (env-gated) + add an
       `OperationCanceledException` strategy `[08 §3]`
-- [ ] Enforce `PaginatedRequest` page-size clamp in the constructor `[06 §2 / 08 §6]`
+- [x] Enforce `PaginatedRequest` page-size clamp in the constructor `[06 §2 / 08 §6]`
 - **PR:** `fix(security): stop logging credentials, sanitize errors, clamp page size`
 
 ### Stage 2 — Social-login verification & SSRF
-- [ ] `IExternalTokenVerifier` + Google/Facebook verifiers; change `PublicSocialLoginRequest` to
+- [x] `IExternalTokenVerifier` + Google/Facebook verifiers; change `PublicSocialLoginRequest` to
       `(Provider, IdToken)`; reject unverified email `[07 S1]`
-- [ ] Add `ProviderSubjectId` to `UserEntity` + unique `(AuthProvider, ProviderSubjectId)` index +
+- [x] Add `ProviderSubjectId` to `UserEntity` + unique `(AuthProvider, ProviderSubjectId)` index +
       migration; match subject-id first `[07 S1]`
-- [ ] `UrlSafetyGuard` (block loopback/private/link-local, non-default ports) wired into
+- [x] `UrlSafetyGuard` (block loopback/private/link-local, non-default ports) wired into
       `FileService.ValidateFileUrl`; disable auto-redirect; stop echoing provider errors `[05 §1]`
 - **PR:** `fix(auth): verify social-login provider tokens and block avatar-url SSRF`
 
