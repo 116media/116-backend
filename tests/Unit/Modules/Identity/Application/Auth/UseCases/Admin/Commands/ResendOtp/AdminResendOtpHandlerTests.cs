@@ -6,6 +6,7 @@ using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.ValueObjects;
 using _116.Mailer.Contracts.Application;
+using _116.Shared.Application.Builders.RateLimit;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Identity;
 using _116.Unit.Tests.Common.Mocks.Repositories;
@@ -30,7 +31,12 @@ public class AdminResendOtpHandlerTests
         _otpFactoryMock = new Mock<IAdminResendOtpFactory>();
         _authRepositoryMock = MockAuthRepository.Create();
 
-        _handler = new AdminResendOtpHandler(_otpFactoryMock.Object, _authRepositoryMock.Object, _mailerMock.Object);
+        _handler = new AdminResendOtpHandler(
+            _otpFactoryMock.Object,
+            _authRepositoryMock.Object,
+            _mailerMock.Object,
+            Mock.Of<IAccountRateLimiter>()
+        );
     }
 
     #region Success Cases
