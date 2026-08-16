@@ -40,6 +40,11 @@ public class SessionEntity : Aggregate<Guid>
     public DateTime ExpiresAt { get; private set; }
 
     /// <summary>
+    /// UTC timestamp beyond which token refreshes can no longer extend this session.
+    /// </summary>
+    public DateTime AbsoluteExpiresAt { get; private set; }
+
+    /// <summary>
     /// IP address from which the session was created.
     /// Useful for security auditing and anomaly detection.
     /// </summary>
@@ -102,6 +107,7 @@ public class SessionEntity : Aggregate<Guid>
         string deviceId,
         string refreshTokenHash,
         DateTime expiresAt,
+        DateTime absoluteExpiresAt,
         EnumBrowser browser,
         EnumDevice device,
         EnumPlatform platform,
@@ -118,6 +124,7 @@ public class SessionEntity : Aggregate<Guid>
             DeviceId = deviceId,
             RefreshTokenHash = refreshTokenHash,
             ExpiresAt = expiresAt,
+            AbsoluteExpiresAt = absoluteExpiresAt,
             Browser = browser,
             Device = device,
             Platform = platform,
@@ -141,13 +148,22 @@ public class SessionEntity : Aggregate<Guid>
     }
 
     /// <summary>
-    /// Rotates the refresh token and updates the session expiration.
-    /// Typically called during token refresh.
+    /// Rotates the refresh token and updates the session expiration. The absolute expiry is
+    /// deliberately left untouched.
     /// </summary>
     public void UpdateRefreshToken(string newRefreshTokenHash, DateTime newExpiresAt)
     {
         RefreshTokenHash = newRefreshTokenHash;
         ExpiresAt = newExpiresAt;
+    }
+
+    /// <summary>
+    /// Determines whether the session has reached its absolute lifetime ceiling.
+    /// </summary>
+    /// <returns>True once the absolute expiry has passed.</returns>
+    public bool HasReachedAbsoluteExpiry()
+    {
+        return DateTime.UtcNow >= AbsoluteExpiresAt;
     }
 
     /// <summary>
@@ -166,15 +182,15 @@ public class SessionEntity : Aggregate<Guid>
     }
 
     /// <summary>
-    /// Reactivates a previously expired or revoked session with a new refresh token and expiry.
-    /// Used when a user logs in again on the same device after their previous session has expired or been revoked.
-    /// Reusing the existing row avoids unique constraint violations on (user_id, device_id).
-    /// Raises <see cref="SessionReactivatedEvent" />.
+    /// Reactivates a previously expired or revoked session with a new refresh token, expiry and
+    /// absolute expiry. Reusing the existing row avoids unique constraint violations on
+    /// (user_id, device_id). Raises <see cref="SessionReactivatedEvent" />.
     /// </summary>
-    public void Reactivate(string newRefreshTokenHash, DateTime newExpiresAt)
+    public void Reactivate(string newRefreshTokenHash, DateTime newExpiresAt, DateTime newAbsoluteExpiresAt)
     {
         RefreshTokenHash = newRefreshTokenHash;
         ExpiresAt = newExpiresAt;
+        AbsoluteExpiresAt = newAbsoluteExpiresAt;
         IsRevoked = false;
         RevokedAt = null;
 
