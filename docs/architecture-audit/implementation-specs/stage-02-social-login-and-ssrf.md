@@ -15,21 +15,21 @@ Closes **[07 S1]** (`social-login` trusts a client-supplied email → account ta
 
 ## Checklist
 
-- [ ] 2.1 — `ISocialTokenVerifier` + `SocialTokenPayload` + `ISocialTokenVerifierFactory` + neutral exceptions + `SocialAuthConstants` (`Application/Adapters/SocialAuth`)
-- [ ] 2.2 — `GoogleTokenVerifier` (`Google.Apis.Auth`) + `FacebookTokenVerifier` (debug_token) + `SocialTokenVerifierFactory` (`Infrastructure/Adapters/SocialAuth`)
-- [ ] 2.3 — `AppEnvironment.SocialAuth()` + `.env.template` + typed options + DI registration
-- [ ] 2.4 — `PublicSocialLoginRequest`/`Command` → `(Provider, IdToken)`; validator rewrite
-- [ ] 2.5 — Handler verifies the token, rejects unverified email, passes the **verified** payload
-- [ ] 2.6 — `UserEntity.ProviderSubjectId` + `LinkProviderSubject`; `CreateExternal` takes the subject id
-- [ ] 2.7 — `UserConfiguration`: column + filtered unique `(AuthProvider, ProviderSubjectId)` index
-- [ ] 2.8 — `AuthRepository.GetOrCreateExternalUserAsync`: match subject-id first, reject email/subject mismatch, link legacy rows
-- [ ] 2.9 — New auth error messages (`InvalidProviderToken`, `ProviderEmailNotVerified`, `ProviderMismatch`, `UnsupportedProvider`) in all 3 `.resx`
-- [ ] 2.10 — `UrlSafetyGuard` in Core (loopback/private/link-local/ULA/multicast + non-default port + non-https-outside-dev)
-- [ ] 2.11 — `FileService`: run the guard, follow redirects manually (guarded, capped), stop echoing provider text
-- [ ] 2.12 — `CoreModule`: typed `HttpClient` with `AllowAutoRedirect=false` + 5s connect / 10s total timeout
-- [ ] 2.13 — Migration `AddUserProviderSubjectId` (leave unapplied)
-- [ ] 2.14 — Unit + integration tests (stub `ISocialTokenVerifier` in `ApiFixture`)
-- [ ] 2.15 — Verify (build 0/0, unit green; run integration locally)
+- [x] 2.1 — `ISocialTokenVerifier` + `SocialTokenPayload` + `ISocialTokenVerifierFactory` + neutral exceptions + `SocialAuthConstants` (`Application/Adapters/SocialAuth`)
+- [x] 2.2 — `GoogleTokenVerifier` (`Google.Apis.Auth`) + `FacebookTokenVerifier` (debug_token) + `SocialTokenVerifierFactory` (`Infrastructure/Adapters/SocialAuth`)
+- [x] 2.3 — `AppEnvironment.SocialAuth()` + `.env.template` + typed options + DI registration
+- [x] 2.4 — `PublicSocialLoginRequest`/`Command` → `(Provider, IdToken)`; validator rewrite
+- [x] 2.5 — Handler verifies the token, rejects unverified email, passes the **verified** payload
+- [x] 2.6 — `UserEntity.ProviderSubjectId` + `LinkProviderSubject`; `CreateExternal` takes the subject id
+- [x] 2.7 — `UserConfiguration`: column + filtered unique `(AuthProvider, ProviderSubjectId)` index
+- [x] 2.8 — `AuthRepository.GetOrCreateExternalUserAsync`: match subject-id first, reject email/subject mismatch, link legacy rows
+- [x] 2.9 — New auth error messages (`InvalidProviderToken`, `ProviderEmailNotVerified`, `ProviderMismatch`, `UnsupportedProvider`) in all 3 `.resx`
+- [x] 2.10 — `UrlSafetyGuard` in Core (loopback/private/link-local/ULA/multicast + non-default port + non-https-outside-dev)
+- [x] 2.11 — `FileService`: run the guard, follow redirects manually (guarded, capped), stop echoing provider text
+- [x] 2.12 — `CoreModule`: typed `HttpClient` with `AllowAutoRedirect=false` + 5s connect / 10s total timeout
+- [x] 2.13 — Migration `AddUserProviderSubjectId` (leave unapplied)
+- [x] 2.14 — Unit + integration tests (stub `ISocialTokenVerifier` in `ApiFixture`)
+- [x] 2.15 — Verify (build 0/0, unit green; run integration locally)
 
 ---
 
