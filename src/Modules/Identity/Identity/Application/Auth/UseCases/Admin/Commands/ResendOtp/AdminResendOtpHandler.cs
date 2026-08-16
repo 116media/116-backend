@@ -1,5 +1,4 @@
 using _116.BuildingBlocks.Constants;
-using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.ResendOtp.Contracts;
 using _116.Identity.Application.Shared.Repositories;
@@ -7,7 +6,6 @@ using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.ValueObjects;
 using _116.Mailer.Contracts.Application;
-using _116.Shared.Application.Builders.RateLimit;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.ResendOtp;
@@ -18,13 +16,8 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.ResendOtp;
 /// <param name="otpFactory">Factory for handling admin OTP resend logic.</param>
 /// <param name="authRepository">Repository for user data access operations.</param>
 /// <param name="mailer">Outbox mailer re-delivering the code.</param>
-/// <param name="accountRateLimiter">Per-account throttle for the pre-auth security endpoints.</param>
-public class AdminResendOtpHandler(
-    IAdminResendOtpFactory otpFactory,
-    IAuthRepository authRepository,
-    IMailer mailer,
-    IAccountRateLimiter accountRateLimiter
-) : ICommandHandler<AdminResendOtpCommand, AdminResendOtpResult>
+public class AdminResendOtpHandler(IAdminResendOtpFactory otpFactory, IAuthRepository authRepository, IMailer mailer)
+    : ICommandHandler<AdminResendOtpCommand, AdminResendOtpResult>
 {
     /// <summary>
     /// Handles the resend OTP command by invalidating existing OTPs and generating a new one.
@@ -36,10 +29,6 @@ public class AdminResendOtpHandler(
     /// <exception cref="BadRequestException">Thrown when the admin account is inactive or not verified.</exception>
     public async Task<AdminResendOtpResult> Handle(AdminResendOtpCommand command, CancellationToken cancellationToken)
     {
-        // Throttle resends per target account, for every email, so it is neither an abuse vector nor
-        // an account-enumeration oracle.
-        await accountRateLimiter.EnsureWithinLimitAsync(RateLimitPolicies.Otp, command.Email, cancellationToken);
-
         var email = new Email(value: command.Email);
         var purpose = new OtpPurpose(value: command.Purpose);
         if (!await authRepository.ExistsByEmailAsync(email: email, cancellationToken: cancellationToken))
