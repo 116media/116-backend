@@ -28,16 +28,21 @@ public class TokenBucketBuilder(RateLimiterOptions options)
         int replenishmentPeriodSeconds
     )
     {
-        options.AddTokenBucketLimiter(
+        options.AddPolicy(
             policyName,
-            limiterOptions =>
-            {
-                limiterOptions.TokenLimit = tokenLimit;
-                limiterOptions.TokensPerPeriod = tokensPerPeriod;
-                limiterOptions.ReplenishmentPeriod = TimeSpan.FromSeconds(replenishmentPeriodSeconds);
-                limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-                limiterOptions.QueueLimit = 0;
-            }
+            httpContext =>
+                RateLimitPartition.GetTokenBucketLimiter(
+                    partitionKey: RateLimitPartitioning.ResolvePartitionKey(httpContext),
+                    factory: _ => new TokenBucketRateLimiterOptions
+                    {
+                        TokenLimit = tokenLimit,
+                        TokensPerPeriod = tokensPerPeriod,
+                        ReplenishmentPeriod = TimeSpan.FromSeconds(replenishmentPeriodSeconds),
+                        QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                        QueueLimit = 0,
+                        AutoReplenishment = true,
+                    }
+                )
         );
 
         return this;
