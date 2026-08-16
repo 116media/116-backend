@@ -133,7 +133,7 @@ public class ApiFixture(PostgresFixture db) : WebApplicationFactory<Program>
         Environment.SetEnvironmentVariable("EMAIL_FROM_NAME", "116 Tests");
         Environment.SetEnvironmentVariable("FRONTEND_BASE_URL", "http://localhost:3000");
 
-        Environment.SetEnvironmentVariable("TRUSTED_PROXY_NETWORKS", "10.0.0.0/8, badcidr, 10.0.0.0/xx");
+        Environment.SetEnvironmentVariable("TRUSTED_PROXY_NETWORKS", string.Empty);
     }
 
     /// <summary>
