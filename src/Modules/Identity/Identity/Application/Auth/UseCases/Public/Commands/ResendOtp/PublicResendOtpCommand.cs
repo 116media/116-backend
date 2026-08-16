@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Identity.Application.Auth.UseCases.Public.Commands.ResendOtp;
@@ -12,7 +13,16 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.ResendOtp;
 /// Used for email verification, password reset, and other verification scenarios where the user didn't receive the
 /// initial OTP.
 /// </remarks>
-public record PublicResendOtpCommand(string Email, string Purpose) : ICommand<PublicResendOtpResult>;
+public record PublicResendOtpCommand(string Email, string Purpose)
+    : ICommand<PublicResendOtpResult>,
+        IAccountRateLimited
+{
+    /// <inheritdoc />
+    public string RateLimitPolicy => RateLimitPolicies.Otp;
+
+    /// <inheritdoc />
+    public string AccountKey => Email;
+}
 
 /// <summary>
 /// Result of the <see cref="PublicResendOtpCommand" /> containing OTP resend status.
