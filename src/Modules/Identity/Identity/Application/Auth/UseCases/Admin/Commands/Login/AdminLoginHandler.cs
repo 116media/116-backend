@@ -1,9 +1,11 @@
+using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.Login.Contracts;
 using _116.Identity.Application.Session.Factories.Contracts;
 using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Domain.Results;
+using _116.Shared.Application.Builders.RateLimit;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
 
@@ -16,11 +18,13 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.Login;
 /// <param name="sessionFactory">Factory for creating authentication sessions.</param>
 /// <param name="fileRepository">Repository for accessing file metadata.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="accountRateLimiter">Per-account throttle for the pre-auth security endpoints.</param>
 public class AdminLoginHandler(
     IAdminLoginAuthFactory authFactory,
     ISessionFactory sessionFactory,
     IFileRepository fileRepository,
-    IMapper mapper
+    IMapper mapper,
+    IAccountRateLimiter accountRateLimiter
 ) : ICommandHandler<AdminLoginCommand, AdminLoginResult>
 {
     /// <summary>
@@ -28,6 +32,12 @@ public class AdminLoginHandler(
     /// </summary>
     public async Task<AdminLoginResult> Handle(AdminLoginCommand command, CancellationToken cancellationToken)
     {
+        await accountRateLimiter.EnsureWithinLimitAsync(
+            RateLimitPolicies.Authentication,
+            command.Email,
+            cancellationToken
+        );
+
         // Authenticate admin user and get associated data
         AdminLoginAuthData authData = await authFactory.AuthenticateAsync(
             email: command.Email,
