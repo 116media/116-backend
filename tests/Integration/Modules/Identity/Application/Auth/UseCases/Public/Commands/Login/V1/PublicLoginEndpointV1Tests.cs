@@ -1,8 +1,11 @@
+using System.IdentityModel.Tokens.Jwt;
+using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.Login.V1;
 using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Application.Shared.Exceptions;
+using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Exceptions.Messages;
@@ -103,6 +106,62 @@ public class PublicLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
         body.User.Email.Should().Be(email);
         body.User.IsActive.Should().BeTrue();
         body.User.IsVerified.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Login_WhenTheRoleCarriesPermissions_StampsThemOnTheAccessToken()
+    {
+        // Arrange — the Visitor role signup assigns carries two permissions
+        await using var seedContext = CreateDbContext<IdentityDbContext>();
+        var visitorRole = RoleFactory.CreateWithId(Guid.NewGuid(), "Visitor");
+        PermissionEntity readArticles = PermissionFactory.Create("articles", "read");
+        PermissionEntity createLikes = PermissionFactory.Create("likes", "create");
+
+        seedContext.Roles.Add(visitorRole);
+        seedContext.Permissions.AddRange(readArticles, createLikes);
+        seedContext.RolePermissions.Add(RolePermissionFactory.Create(visitorRole.Id, readArticles.Id));
+        seedContext.RolePermissions.Add(RolePermissionFactory.Create(visitorRole.Id, createLikes.Id));
+        await seedContext.SaveChangesAsync();
+
+        Client.ClearAuthentication();
+        Client.DefaultRequestHeaders.Add("X-Device-Id", Guid.NewGuid().ToString());
+
+        var email = $"login-perms-{Guid.NewGuid():N}@test.com";
+        var userName = $"u{Guid.NewGuid():N}"[..10];
+        var signupRequest = new PublicSignUpRequestBuilder()
+            .WithEmail(email)
+            .WithUserName(userName)
+            .WithPassword(TestAuth.ValidPassword)
+            .Build();
+
+        await Client.PostAsJsonAsync(Routes.Public.Auth.SignUp(), signupRequest);
+
+        await using var updateContext = CreateDbContext<IdentityDbContext>();
+        var user = await updateContext.Users.FirstAsync(u => u.Email == email);
+        user.MarkAsVerified();
+        user.Activate();
+        await updateContext.SaveChangesAsync();
+
+        var loginRequest = new PublicLoginRequestBuilder()
+            .WithCredentials(email)
+            .WithPassword(TestAuth.ValidPassword)
+            .Build();
+
+        // Act
+        var response = await Client.PostAsJsonAsync(Routes.Public.Auth.Login(), loginRequest);
+
+        // Assert — the minted token carries one claim per granted permission
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        PublicLoginMobileResponse body = await response.ReadAsAsync<PublicLoginMobileResponse>();
+        JwtSecurityToken token = new JwtSecurityTokenHandler().ReadJwtToken(body.AccessToken);
+
+        string[] permissions = token
+            .Claims.Where(claim => claim.Type == JwtClaimsConstants.Permissions)
+            .Select(claim => claim.Value)
+            .ToArray();
+
+        permissions.Should().BeEquivalentTo("articles:read", "likes:create");
     }
 
     [Fact]
