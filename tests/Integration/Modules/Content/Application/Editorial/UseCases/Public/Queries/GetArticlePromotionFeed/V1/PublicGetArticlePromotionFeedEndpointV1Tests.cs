@@ -97,7 +97,7 @@ public class PublicGetArticlePromotionFeedEndpointV1Tests(PostgresFixture db) : 
             return gossipCategory.Id;
         });
 
-        Guid userId = Guid.NewGuid();
+        Guid userId = await SeedAuthenticatedUserAsync();
         Guid otherUserId = Guid.NewGuid();
         ArticleEntity likedArticle = await SeedAsync<ContentDbContext, ArticleEntity>(ctx =>
         {
