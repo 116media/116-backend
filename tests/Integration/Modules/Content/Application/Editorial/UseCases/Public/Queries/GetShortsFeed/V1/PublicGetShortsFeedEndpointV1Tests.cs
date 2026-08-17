@@ -83,7 +83,7 @@ public class PublicGetShortsFeedEndpointV1Tests(PostgresFixture db) : BaseApiTes
     [Fact]
     public async Task GetShortsFeed_WhenVisitorLikedOne_StampsFlag()
     {
-        var userId = Guid.NewGuid();
+        var userId = await SeedAuthenticatedUserAsync();
         ShortVideoEntity likedShort = await SeedAsync<ContentDbContext, ShortVideoEntity>(ctx =>
         {
             ShortVideoEntity entity = ShortVideoFactory.Create();
