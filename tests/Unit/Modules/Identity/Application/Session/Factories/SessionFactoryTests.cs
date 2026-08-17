@@ -3,8 +3,10 @@ using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Session.Factories.Contracts;
 using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Session.Services;
+using _116.Identity.Application.Shared.Cache;
 using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Application.Shared.Persistence;
+using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.Results;
@@ -31,7 +33,9 @@ public class SessionFactoryTests : IDisposable
     private readonly Mock<IRefreshTokenService> _refreshTokenServiceMock;
     private readonly Mock<ISessionRepository> _sessionRepositoryMock;
     private readonly Mock<ISessionMetadataService> _sessionMetadataServiceMock;
+    private readonly Mock<IUserTokenStateRepository> _tokenStateRepositoryMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
+    private readonly UserSecurityState _tokenState = new(Guid.NewGuid(), 1);
     private readonly SessionsFactory _factory;
 
     public SessionFactoryTests()
@@ -43,7 +47,12 @@ public class SessionFactoryTests : IDisposable
         _refreshTokenServiceMock = new Mock<IRefreshTokenService>();
         _sessionRepositoryMock = new Mock<ISessionRepository>();
         _sessionMetadataServiceMock = new Mock<ISessionMetadataService>();
+        _tokenStateRepositoryMock = new Mock<IUserTokenStateRepository>();
         _unitOfWorkMock = new Mock<IIdentityUnitOfWork>();
+
+        _tokenStateRepositoryMock
+            .Setup(x => x.GetOrCreateAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(_tokenState);
 
         SessionErrors sessionErrors = TestErrorsFactory.CreateSessionErrors();
 
@@ -52,6 +61,7 @@ public class SessionFactoryTests : IDisposable
             _refreshTokenServiceMock.Object,
             _sessionRepositoryMock.Object,
             _sessionMetadataServiceMock.Object,
+            _tokenStateRepositoryMock.Object,
             _unitOfWorkMock.Object,
             sessionErrors
         );
@@ -115,6 +125,8 @@ public class SessionFactoryTests : IDisposable
                     userPermissions,
                     user.IsVerified,
                     user.IsActive,
+                    _tokenState.SecurityStamp,
+                    _tokenState.TokenVersion,
                     user.AuthProvider
                 )
             )
@@ -167,6 +179,8 @@ public class SessionFactoryTests : IDisposable
                     userPermissions,
                     user.IsVerified,
                     user.IsActive,
+                    _tokenState.SecurityStamp,
+                    _tokenState.TokenVersion,
                     user.AuthProvider
                 )
             )
@@ -230,6 +244,8 @@ public class SessionFactoryTests : IDisposable
                     It.IsAny<List<RolePermissionEntity>>(),
                     It.IsAny<bool>(),
                     It.IsAny<bool>(),
+                    It.IsAny<Guid>(),
+                    It.IsAny<long>(),
                     It.IsAny<EnumAuthProvider>()
                 )
             )
@@ -291,6 +307,8 @@ public class SessionFactoryTests : IDisposable
                     It.IsAny<List<RolePermissionEntity>>(),
                     It.IsAny<bool>(),
                     It.IsAny<bool>(),
+                    It.IsAny<Guid>(),
+                    It.IsAny<long>(),
                     It.IsAny<EnumAuthProvider>()
                 )
             )
@@ -354,6 +372,8 @@ public class SessionFactoryTests : IDisposable
                     It.IsAny<List<RolePermissionEntity>>(),
                     It.IsAny<bool>(),
                     It.IsAny<bool>(),
+                    It.IsAny<Guid>(),
+                    It.IsAny<long>(),
                     It.IsAny<EnumAuthProvider>()
                 )
             )
@@ -417,6 +437,8 @@ public class SessionFactoryTests : IDisposable
                     It.IsAny<List<RolePermissionEntity>>(),
                     It.IsAny<bool>(),
                     It.IsAny<bool>(),
+                    It.IsAny<Guid>(),
+                    It.IsAny<long>(),
                     It.IsAny<EnumAuthProvider>()
                 )
             )
@@ -476,6 +498,8 @@ public class SessionFactoryTests : IDisposable
                     userPermissions,
                     user.IsVerified,
                     user.IsActive,
+                    _tokenState.SecurityStamp,
+                    _tokenState.TokenVersion,
                     user.AuthProvider
                 )
             )
@@ -496,10 +520,13 @@ public class SessionFactoryTests : IDisposable
                     userPermissions,
                     user.IsVerified,
                     user.IsActive,
+                    _tokenState.SecurityStamp,
+                    _tokenState.TokenVersion,
                     user.AuthProvider
                 ),
             Times.Once
         );
+        _tokenStateRepositoryMock.Verify(x => x.GetOrCreateAsync(user.Id, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -544,6 +571,8 @@ public class SessionFactoryTests : IDisposable
                     It.IsAny<List<RolePermissionEntity>>(),
                     It.IsAny<bool>(),
                     It.IsAny<bool>(),
+                    It.IsAny<Guid>(),
+                    It.IsAny<long>(),
                     It.IsAny<EnumAuthProvider>()
                 )
             )
@@ -559,6 +588,7 @@ public class SessionFactoryTests : IDisposable
         );
         _sessionRepositoryMock.Verify(x => x.CreateAsync(It.IsAny<SessionEntity>(), cancellationToken), Times.Once);
         _unitOfWorkMock.Verify(x => x.CommitAsync(cancellationToken), Times.Once);
+        _tokenStateRepositoryMock.Verify(x => x.GetOrCreateAsync(user.Id, cancellationToken), Times.Once);
     }
 
     #endregion
