@@ -1,4 +1,5 @@
 using _116.BuildingBlocks.Constants;
+using _116.Identity.Application.Auth.Constants;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp.V1;
 using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Infrastructure.Persistence;
@@ -34,21 +35,31 @@ public class PublicSignUpEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
         var response = await Client.PostAsJsonAsync(Routes.Public.Auth.SignUp(), request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
+        response.Headers.Location.Should().NotBeNull();
 
-        PublicSignUpMobileResponse body = await response.ReadAsAsync<PublicSignUpMobileResponse>();
+        PublicSignUpResponse body = await response.ReadAsAsync<PublicSignUpResponse>();
         body.User.Id.Should().NotBeEmpty();
         body.User.Email.Should().Be(request.Email);
         body.User.UserName.Should().Be(request.UserName);
-        body.TokenType.Should().Be("Bearer");
-        body.AccessToken.Should().NotBeNullOrWhiteSpace();
-        body.RefreshToken.Should().NotBeNullOrWhiteSpace();
         body.VerificationRequired.Should().BeTrue();
+
+        string rawBody = await response.Content.ReadAsStringAsync();
+        rawBody.Should().NotContainAny("accessToken", "refreshToken");
+
+        response.Headers.TryGetValues("Set-Cookie", out IEnumerable<string>? cookies);
+        (cookies ?? [])
+            .Should()
+            .NotContain(cookie =>
+                cookie.StartsWith(TokenCookieConstants.AccessTokenCookie)
+                || cookie.StartsWith(TokenCookieConstants.RefreshTokenCookie)
+            );
 
         await using var verifyContext = CreateDbContext<IdentityDbContext>();
         var created = await verifyContext.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
         created.Should().NotBeNull();
         created!.Id.Should().Be(body.User.Id);
         created.UserName.Should().Be(request.UserName);
+        created.IsVerified.Should().BeFalse();
     }
 
     [Fact]
