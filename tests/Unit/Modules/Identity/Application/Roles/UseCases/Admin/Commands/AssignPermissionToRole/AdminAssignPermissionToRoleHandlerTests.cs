@@ -24,6 +24,7 @@ public class AdminAssignPermissionToRoleHandlerTests : BaseHandlerTest
     private readonly Mock<IRoleRepository> _roleRepositoryMock;
     private readonly Mock<IPermissionRepository> _permissionRepositoryMock;
     private readonly Mock<IRolePermissionRepository> _rolePermissionRepositoryMock;
+    private readonly Mock<IUserTokenStateRepository> _tokenStateRepositoryMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
     private readonly IdentityI18n _userErrors;
     private readonly AdminAssignPermissionToRoleHandler _handler;
@@ -33,6 +34,7 @@ public class AdminAssignPermissionToRoleHandlerTests : BaseHandlerTest
         _roleRepositoryMock = MockRoleRepository.Create();
         _permissionRepositoryMock = MockPermissionRepository.Create();
         _rolePermissionRepositoryMock = MockRolePermissionRepository.Create();
+        _tokenStateRepositoryMock = new Mock<IUserTokenStateRepository>();
         _unitOfWorkMock = MockIdentityUnitOfWork.Create();
         _userErrors = TestErrorsFactory.CreateIdentityI18n();
 
@@ -40,6 +42,7 @@ public class AdminAssignPermissionToRoleHandlerTests : BaseHandlerTest
             _roleRepositoryMock.Object,
             _permissionRepositoryMock.Object,
             _rolePermissionRepositoryMock.Object,
+            _tokenStateRepositoryMock.Object,
             _unitOfWorkMock.Object,
             Mapper,
             _userErrors
@@ -73,6 +76,10 @@ public class AdminAssignPermissionToRoleHandlerTests : BaseHandlerTest
         result.Role.Id.Should().Be(role.Id);
         _rolePermissionRepositoryMock.VerifyAddCalled();
         _unitOfWorkMock.VerifyCommitCalled();
+        _tokenStateRepositoryMock.Verify(
+            x => x.BumpTokenVersionForRoleUsersAsync(role.Id, It.IsAny<CancellationToken>()),
+            Times.Once
+        );
     }
 
     [Fact]
@@ -297,6 +304,10 @@ public class AdminAssignPermissionToRoleHandlerTests : BaseHandlerTest
         // Assert
         await act.Should().ThrowAsync<ConflictException>();
         _unitOfWorkMock.VerifyCommitNotCalled();
+        _tokenStateRepositoryMock.Verify(
+            x => x.BumpTokenVersionForRoleUsersAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
     }
 
     #endregion
