@@ -72,7 +72,7 @@ public class TokenInvalidationFlowTests(PostgresFixture db) : BaseApiTest(db)
         var rawRefreshToken = $"invalidation-tver-{Guid.NewGuid():N}";
         var (role, permission) = await SeedAsync<IdentityDbContext, (RoleEntity, PermissionEntity)>(ctx =>
         {
-            RoleEntity createdRole = RoleFactory.Create();
+            RoleEntity createdRole = RoleFactory.Create(nameof(EnumCoreUserRole.Visitor));
             PermissionEntity createdPermission = PermissionFactory.Create();
             ctx.Roles.Add(createdRole);
             ctx.Permissions.Add(createdPermission);
