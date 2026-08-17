@@ -9,6 +9,7 @@ using _116.Core.Infrastructure.Services;
 using _116.Identity.Application.Adapters.SocialAuth;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Integration.Tests.Common.Seeders;
 using _116.Integration.Tests.Common.Stubs;
 using _116.Mailer.Application.Shared.Services;
 using _116.Mailer.Infrastructure.Persistence;
@@ -64,6 +65,9 @@ public class ApiFixture(PostgresFixture db) : WebApplicationFactory<Program>
 
         builder.ConfigureTestServices(services =>
         {
+            // Every user a test inserts gets the token-state row production paths create.
+            services.AddSingleton<ISaveChangesInterceptor, UserTokenStateSeedingInterceptor>();
+
             ReplaceDbContexts(services);
             StubExternalServices(services);
             DisableScheduledJobs(services);
