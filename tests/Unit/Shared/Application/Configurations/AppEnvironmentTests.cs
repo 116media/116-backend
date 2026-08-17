@@ -6,7 +6,8 @@ namespace _116.Unit.Tests.Shared.Application.Configurations;
 
 /// <summary>
 /// Unit tests for <see cref="AppEnvironment.CorsAllowedOrigins"/>,
-/// <see cref="AppEnvironment.FrontendBaseUrl"/> and <see cref="AppEnvironment.TrustedProxyNetworks"/>.
+/// <see cref="AppEnvironment.FrontendBaseUrl"/>, <see cref="AppEnvironment.TrustedProxyNetworks"/>
+/// and <see cref="AppEnvironment.SessionAbsoluteLifetimeDays"/>.
 /// </summary>
 [Collection("EnvironmentVariable")]
 public class AppEnvironmentTests : IDisposable
@@ -15,10 +16,12 @@ public class AppEnvironmentTests : IDisposable
     private const string WebAppEnvVar = "WEBAPP_ORIGIN";
     private const string FrontendBaseUrlEnvVar = "FRONTEND_BASE_URL";
     private const string TrustedProxyEnvVar = "TRUSTED_PROXY_NETWORKS";
+    private const string SessionLifetimeEnvVar = "JWT_SESSION_ABSOLUTE_LIFETIME_IN_DAYS";
     private readonly string? _originalDashboard;
     private readonly string? _originalWebApp;
     private readonly string? _originalFrontendBaseUrl;
     private readonly string? _originalTrustedProxy;
+    private readonly string? _originalSessionLifetime;
 
     public AppEnvironmentTests()
     {
@@ -26,6 +29,7 @@ public class AppEnvironmentTests : IDisposable
         _originalWebApp = Environment.GetEnvironmentVariable(WebAppEnvVar);
         _originalFrontendBaseUrl = Environment.GetEnvironmentVariable(FrontendBaseUrlEnvVar);
         _originalTrustedProxy = Environment.GetEnvironmentVariable(TrustedProxyEnvVar);
+        _originalSessionLifetime = Environment.GetEnvironmentVariable(SessionLifetimeEnvVar);
     }
 
     public void Dispose()
@@ -34,6 +38,7 @@ public class AppEnvironmentTests : IDisposable
         Environment.SetEnvironmentVariable(WebAppEnvVar, _originalWebApp);
         Environment.SetEnvironmentVariable(FrontendBaseUrlEnvVar, _originalFrontendBaseUrl);
         Environment.SetEnvironmentVariable(TrustedProxyEnvVar, _originalTrustedProxy);
+        Environment.SetEnvironmentVariable(SessionLifetimeEnvVar, _originalSessionLifetime);
         GC.SuppressFinalize(this);
     }
 
@@ -188,6 +193,62 @@ public class AppEnvironmentTests : IDisposable
 
         // Assert
         result.Should().BeEmpty();
+    }
+
+    #endregion
+
+    #region SessionAbsoluteLifetimeDays Tests
+
+    [Fact]
+    public void SessionAbsoluteLifetimeDays_WithAValidValue_ShouldParseIt()
+    {
+        // Arrange
+        Environment.SetEnvironmentVariable(SessionLifetimeEnvVar, "14");
+
+        // Act
+        int result = AppEnvironment.SessionAbsoluteLifetimeDays(fallbackDays: 30);
+
+        // Assert
+        result.Should().Be(14);
+    }
+
+    [Fact]
+    public void SessionAbsoluteLifetimeDays_WhenUnset_ShouldFallBack()
+    {
+        // Arrange
+        Environment.SetEnvironmentVariable(SessionLifetimeEnvVar, null);
+
+        // Act
+        int result = AppEnvironment.SessionAbsoluteLifetimeDays(fallbackDays: 30);
+
+        // Assert
+        result.Should().Be(30);
+    }
+
+    [Fact]
+    public void SessionAbsoluteLifetimeDays_WhenMalformed_ShouldFallBack()
+    {
+        // Arrange
+        Environment.SetEnvironmentVariable(SessionLifetimeEnvVar, "not-a-number");
+
+        // Act
+        int result = AppEnvironment.SessionAbsoluteLifetimeDays(fallbackDays: 30);
+
+        // Assert
+        result.Should().Be(30);
+    }
+
+    [Fact]
+    public void SessionAbsoluteLifetimeDays_WhenZeroOrNegative_ShouldFallBack()
+    {
+        // Arrange — a non-positive lifetime would make every session dead on arrival
+        Environment.SetEnvironmentVariable(SessionLifetimeEnvVar, "0");
+
+        // Act
+        int result = AppEnvironment.SessionAbsoluteLifetimeDays(fallbackDays: 30);
+
+        // Assert
+        result.Should().Be(30);
     }
 
     #endregion
