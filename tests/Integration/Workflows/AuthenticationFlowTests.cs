@@ -14,13 +14,14 @@ namespace _116.Integration.Tests.Workflows;
 
 /// <summary>
 /// Cross-module workflow tests for the authentication lifecycle:
-/// signup → login → access protected endpoint → signout.
+/// signup → email verification → login → access protected endpoint.
+/// Signup issues no credentials; tokens only exist after the verified user logs in.
 /// </summary>
 [Collection("Database")]
 public class AuthenticationFlowTests(PostgresFixture db) : BaseApiTest(db)
 {
     [Fact]
-    public async Task SignUp_PersistsTheUserAndReturnsTokens()
+    public async Task SignUp_PersistsTheUserUnverifiedAndReturnsNoTokens()
     {
         await SeedAsync<IdentityDbContext>(context =>
             context.Roles.Add(RoleFactory.CreateWithId(Guid.NewGuid(), nameof(EnumCoreUserRole.Visitor)))
@@ -36,14 +37,18 @@ public class AuthenticationFlowTests(PostgresFixture db) : BaseApiTest(db)
         HttpResponseMessage signupResponse = await Client.PostAsJsonAsync(Routes.Public.Auth.SignUp(), signupRequest);
         signupResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        PublicSignUpMobileResponse signupBody = await signupResponse.ReadAsAsync<PublicSignUpMobileResponse>();
-        signupBody.AccessToken.Should().NotBeNullOrEmpty();
-        signupBody.RefreshToken.Should().NotBeNullOrEmpty();
+        PublicSignUpResponse signupBody = await signupResponse.ReadAsAsync<PublicSignUpResponse>();
+        signupBody.VerificationRequired.Should().BeTrue();
         signupBody.User.Email.Should().Be(email);
         signupBody.User.UserName.Should().Be(userName);
 
+        string rawBody = await signupResponse.Content.ReadAsStringAsync();
+        rawBody.Should().NotContainAny("accessToken", "refreshToken");
+
         await using IdentityDbContext verifyContext = CreateDbContext<IdentityDbContext>();
-        (await verifyContext.Users.AnyAsync(u => u.Id == signupBody.User.Id)).Should().BeTrue();
+        UserEntity? created = await verifyContext.Users.FirstOrDefaultAsync(u => u.Id == signupBody.User.Id);
+        created.Should().NotBeNull();
+        created!.IsVerified.Should().BeFalse();
     }
 
     [Fact]
@@ -63,7 +68,7 @@ public class AuthenticationFlowTests(PostgresFixture db) : BaseApiTest(db)
         HttpResponseMessage signupResponse = await Client.PostAsJsonAsync(Routes.Public.Auth.SignUp(), signupRequest);
         signupResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        PublicSignUpMobileResponse signupBody = await signupResponse.ReadAsAsync<PublicSignUpMobileResponse>();
+        PublicSignUpResponse signupBody = await signupResponse.ReadAsAsync<PublicSignUpResponse>();
         Guid userId = signupBody.User.Id;
 
         await using (IdentityDbContext verifyContext = CreateDbContext<IdentityDbContext>())
