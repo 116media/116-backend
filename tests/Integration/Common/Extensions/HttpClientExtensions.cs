@@ -91,6 +91,61 @@ public static class HttpClientExtensions
     }
 
     /// <summary>
+    /// Authenticates the client with a correctly signed token whose security markers diverge
+    /// from the well-known state the fixture seeds.
+    /// </summary>
+    /// <param name="client">The client to authenticate.</param>
+    /// <param name="userId">The user identifier to put in the token.</param>
+    /// <param name="role">The role to put in the token.</param>
+    /// <param name="securityStamp">The stamp to emit; the well-known one when omitted.</param>
+    /// <param name="tokenVersion">The version to emit; zero when omitted.</param>
+    public static void AuthenticateWithSecurityMarkers(
+        this HttpClient client,
+        Guid userId,
+        string role,
+        Guid? securityStamp = null,
+        long tokenVersion = 0
+    )
+    {
+        string token = GenerateToken(userId, role, securityStamp: securityStamp, tokenVersion: tokenVersion);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+    }
+
+    /// <summary>
+    /// Authenticates the client with a correctly signed token whose account-status claims carry
+    /// the given values.
+    /// </summary>
+    /// <param name="client">The client to authenticate.</param>
+    /// <param name="userId">The user identifier to put in the token.</param>
+    /// <param name="role">The role to put in the token.</param>
+    /// <param name="isActive">The <c>is_active</c> claim value.</param>
+    /// <param name="isVerified">The <c>is_verified</c> claim value.</param>
+    public static void AuthenticateWithAccountFlags(
+        this HttpClient client,
+        Guid userId,
+        string role,
+        bool isActive,
+        bool isVerified
+    )
+    {
+        string token = GenerateToken(userId, role, isActive: isActive, isVerified: isVerified);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+    }
+
+    /// <summary>
+    /// Authenticates the client with a correctly signed token that carries no security markers,
+    /// reproducing a credential minted before token invalidation shipped.
+    /// </summary>
+    /// <param name="client">The client to authenticate.</param>
+    /// <param name="userId">The user identifier to put in the token.</param>
+    /// <param name="role">The role to put in the token.</param>
+    public static void AuthenticateWithoutSecurityMarkers(this HttpClient client, Guid userId, string role)
+    {
+        string token = GenerateToken(userId, role, includeSecurityMarkers: false);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+    }
+
+    /// <summary>
     /// Mints a JWT token in-memory using the same secret, issuer, and audience
     /// that the test server validates against. The claim set is complete by default;
     /// the optional parameters exist to mint the malformed shapes the endpoints
@@ -101,12 +156,22 @@ public static class HttpClientExtensions
     /// <param name="sessionId">The session identifier; a fresh one when omitted.</param>
     /// <param name="includeSessionId">Whether to emit the session claim at all.</param>
     /// <param name="malformedUserId">When set, replaces the subject identifier with this raw value.</param>
+    /// <param name="securityStamp">The security stamp to emit; the well-known one when omitted.</param>
+    /// <param name="tokenVersion">The token version to emit; zero — the seeded value — when omitted.</param>
+    /// <param name="includeSecurityMarkers">Whether to emit the security stamp and version claims at all.</param>
+    /// <param name="isActive">The <c>is_active</c> claim value.</param>
+    /// <param name="isVerified">The <c>is_verified</c> claim value.</param>
     private static string GenerateToken(
         Guid userId,
         string role,
         Guid? sessionId = null,
         bool includeSessionId = true,
-        string? malformedUserId = null
+        string? malformedUserId = null,
+        Guid? securityStamp = null,
+        long tokenVersion = 0,
+        bool includeSecurityMarkers = true,
+        bool isActive = true,
+        bool isVerified = true
     )
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Jwt.ValidSecret));
@@ -122,14 +187,22 @@ public static class HttpClientExtensions
             new(JwtRegisteredClaimNames.Sub, subject),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new(ClaimTypes.Role, role),
-            new(JwtClaimsConstants.IsVerified, "true", ClaimValueTypes.Boolean),
-            new(JwtClaimsConstants.IsActive, "true", ClaimValueTypes.Boolean),
+            new(JwtClaimsConstants.IsVerified, isVerified ? "true" : "false", ClaimValueTypes.Boolean),
+            new(JwtClaimsConstants.IsActive, isActive ? "true" : "false", ClaimValueTypes.Boolean),
             new(JwtClaimsConstants.AuthProvider, "Email"),
         };
 
         if (includeSessionId)
         {
             claims.Add(new Claim(JwtClaimsConstants.SessionId, (sessionId ?? Guid.NewGuid()).ToString()));
+        }
+
+        // The markers must agree with the fixture-seeded token-state row, or the request is rejected.
+        if (includeSecurityMarkers)
+        {
+            Guid stamp = securityStamp ?? Jwt.WellKnownSecurityStamp;
+            claims.Add(new Claim(JwtClaimsConstants.SecurityStamp, stamp.ToString()));
+            claims.Add(new Claim(JwtClaimsConstants.TokenVersion, $"{tokenVersion}", ClaimValueTypes.Integer64));
         }
 
         var descriptor = new SecurityTokenDescriptor
