@@ -161,15 +161,20 @@ public static class AuthorizationExtensions
                 if (
                     !Guid.TryParse(principal?.FindFirst(JwtClaimsConstants.SessionId)?.Value, out Guid sessionId)
                     || !Guid.TryParse(principal.FindFirst(ClaimTypes.NameIdentifier)?.Value, out Guid userId)
-                    || !Guid.TryParse(principal.FindFirst(JwtClaimsConstants.SecurityStamp)?.Value, out Guid tokenStamp)
+                )
+                {
+                    return;
+                }
+
+                if (
+                    !Guid.TryParse(principal.FindFirst(JwtClaimsConstants.SecurityStamp)?.Value, out Guid tokenStamp)
                     || !long.TryParse(
                         principal.FindFirst(JwtClaimsConstants.TokenVersion)?.Value,
                         out long tokenVersion
                     )
                 )
                 {
-                    // Missing/garbled markers mean a pre-migration or tampered token.
-                    context.Fail("The token is missing required session or security claims.");
+                    context.Fail("The token is missing its security markers.");
                     return;
                 }
 
