@@ -30,6 +30,7 @@ public class PublicSignUpAuthFactoryTests
     private readonly Mock<IOtpRepository> _otpRepositoryMock;
     private readonly Mock<IPasswordService> _passwordServiceMock;
     private readonly Mock<IOtpService> _otpServiceMock;
+    private readonly Mock<IUserTokenStateRepository> _tokenStateRepositoryMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
     private readonly Mock<IMailer> _mailerMock = new();
     private readonly PublicSignUpAuthFactory _factory;
@@ -40,6 +41,7 @@ public class PublicSignUpAuthFactoryTests
         _otpRepositoryMock = MockOtpRepository.Create();
         _passwordServiceMock = MockPasswordService.Create();
         _otpServiceMock = MockOtpService.Create();
+        _tokenStateRepositoryMock = new Mock<IUserTokenStateRepository>();
         _unitOfWorkMock = MockIdentityUnitOfWork.Create();
 
         _factory = new PublicSignUpAuthFactory(
@@ -47,6 +49,7 @@ public class PublicSignUpAuthFactoryTests
             _otpRepositoryMock.Object,
             _passwordServiceMock.Object,
             _otpServiceMock.Object,
+            _tokenStateRepositoryMock.Object,
             _unitOfWorkMock.Object,
             TestErrorsFactory.CreateUserErrors(),
             _mailerMock.Object
@@ -190,6 +193,10 @@ public class PublicSignUpAuthFactoryTests
 
         // Assert
         _authRepositoryMock.VerifyAddCalled();
+        _tokenStateRepositoryMock.Verify(
+            x => x.AddAsync(It.IsAny<UserTokenStateEntity>(), It.IsAny<CancellationToken>()),
+            Times.Once
+        );
     }
 
     [Fact]
@@ -343,6 +350,10 @@ public class PublicSignUpAuthFactoryTests
         // Assert
         await act.Should().ThrowAsync<ConflictException>();
         _authRepositoryMock.Verify(x => x.AddAsync(It.IsAny<UserEntity>(), It.IsAny<CancellationToken>()), Times.Never);
+        _tokenStateRepositoryMock.Verify(
+            x => x.AddAsync(It.IsAny<UserTokenStateEntity>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
     }
 
     #endregion
