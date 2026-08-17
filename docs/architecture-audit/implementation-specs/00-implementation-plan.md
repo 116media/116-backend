@@ -15,8 +15,8 @@ shippable work. **Rules of engagement:**
 
 - [x] **Stage 1 — Critical security quick wins** → [`stage-01-critical-security-hardening.md`](stage-01-critical-security-hardening.md)
 - [x] **Stage 2 — Social-login verification & SSRF** → [`stage-02-social-login-and-ssrf.md`](stage-02-social-login-and-ssrf.md)
-- [ ] **Stage 3 — Rate-limit partitioning & trusted proxies** → [`stage-03-rate-limits-and-proxies.md`](stage-03-rate-limits-and-proxies.md)
-- [ ] **Stage 4 — Session revocation, verified signup & account-status enforcement**
+- [x] **Stage 3 — Rate-limit partitioning & trusted proxies** → [`stage-03-rate-limits-and-proxies.md`](stage-03-rate-limits-and-proxies.md)
+- [ ] **Stage 4 — Session revocation, verified signup & account-status enforcement** → [`stage-04-session-revocation-and-account-status.md`](stage-04-session-revocation-and-account-status.md)
 - [ ] **Stage 5 — Password & OTP hardening**
 - [ ] **Stage 6 — Domain state-machine guards, order total & payment proof**
 - [ ] **Stage 7 — Atomic engagement counters & audit-trail integrity**
@@ -52,21 +52,21 @@ Small, isolated, high-urgency fixes with no cross-module surgery. Full code in t
 - **PR:** `fix(auth): verify social-login provider tokens and block avatar-url SSRF`
 
 ### Stage 3 — Rate-limit partitioning & trusted proxies
-- [ ] Populate `ForwardedHeadersOptions.KnownNetworks` from config; `ForwardLimit = 1` `[08 §20]`
-- [ ] Partition the 3 rate-limit builders per authenticated subject → client IP; add per-account
+- [x] Populate `ForwardedHeadersOptions.KnownNetworks` from config; `ForwardLimit = 1` `[08 §20]`
+- [x] Partition the 3 rate-limit builders per authenticated subject → client IP; add per-account
       partition for `Authentication`/`Otp`/`PasswordManagement` `[01 §1.1 / 07 S6]`
-- [ ] Fail CORS closed when origins empty outside Development; move `UseCors` above the exception handler
+- [x] Fail CORS closed when origins empty outside Development; move `UseCors` above the exception handler
       `[08 §8]`
 - **PR:** `fix(security): partition rate limits per caller and trust only known proxies`
 
 ### Stage 4 — Session revocation, verified signup & account-status enforcement
-- [ ] `SessionActiveRequirement` + handler + `ISessionRevocationCache`; add to every policy centrally
-      `[07 S2]`
-- [ ] Stop issuing tokens at signup; return "verify email" result `[07 S8]`
-- [ ] Add `RequireActiveUser` to the 35 Interactions endpoints (or fold into `RequireVisitorOnly`)
+- [x] `UserTokenStateEntity` markers (`sstamp`/`tver`) + `ISessionRevocationCache` denylist, enforced
+      once per request in `OnTokenValidated` `[07 S2]`
+- [x] Stop issuing tokens at signup; return "verify email" result `[07 S8]`
+- [x] Fold `is_active`/`is_verified` claim checks into `RequireVisitorOnly` (no per-request DB)
       `[06 §5 / 07 S8]`
-- [ ] Refresh re-checks account state; add `AbsoluteExpiresAt` cap `[07 S11]`
-- **PR:** `feat(auth): enforce session revocation, verified signup and active-account checks`
+- [x] Refresh re-checks account state; add `AbsoluteExpiresAt` cap `[07 S11]`
+- **PR:** `feat(auth): token invalidation, session revocation and verified signup`
 
 ### Stage 5 — Password & OTP hardening
 - [ ] PBKDF2 iterations 25k→600k with `v2:` prefix + lazy re-hash; separate cheap OTP hasher `[07 S10]`
