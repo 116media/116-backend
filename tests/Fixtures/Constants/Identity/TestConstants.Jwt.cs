@@ -36,6 +36,12 @@ public static partial class TestConstants
         public const int RefreshTokenExpirationDays = 30;
 
         /// <summary>
+        /// Test-owned security stamp seeded on every test-created user's token-state row and
+        /// emitted as the <c>sstamp</c> claim by the hand-minted test tokens.
+        /// </summary>
+        public static readonly Guid WellKnownSecurityStamp = Guid.Parse("7f3a1c58-9b2d-4e6f-8a01-5c4d3e2b1a09");
+
+        /// <summary>
         /// Test-owned hand-written token for tests needing a well-formed JWT string they never
         /// verify. The signature is a placeholder and does not validate.
         /// </summary>
