@@ -29,12 +29,14 @@ using _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp.Contracts;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin.Contracts;
+using _116.Identity.Application.Session.Cache;
 using _116.Identity.Application.Session.EventHandlers;
 using _116.Identity.Application.Session.Factories;
 using _116.Identity.Application.Session.Factories.Contracts;
 using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Session.Services;
 using _116.Identity.Application.Shared.Authorizations.Extensions;
+using _116.Identity.Application.Shared.Cache;
 using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Errors.Messages;
@@ -58,6 +60,7 @@ using _116.Identity.Domain.Events;
 using _116.Identity.Infrastructure.Adapters.SocialAuth;
 using _116.Identity.Infrastructure.Adapters.Wangkanai.Detection;
 using _116.Identity.Infrastructure.BackgroundJobs;
+using _116.Identity.Infrastructure.Cache;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
 using _116.Identity.Infrastructure.Persistence.Seeds.Visitor;
@@ -153,7 +156,11 @@ public static class IdentityModule
         services.AddScoped<IOtpService, OtpService>();
         services.AddScoped<IOtpRepository, OtpRepository>();
         services.AddScoped<ISessionRepository, SessionRepository>();
+        services.AddScoped<IUserTokenStateRepository, UserTokenStateRepository>();
         services.AddScoped<ISessionMetadataService, SessionMetadataService>();
+
+        services.AddSingleton<ISessionRevocationCache, SessionRevocationCache>();
+        services.AddSingleton<IUserSecurityStateCache, UserSecurityStateCache>();
         services.AddScoped<ITokenDeliveryService, TokenDeliveryService>();
         services.AddScoped<ISessionExportService, SessionExportService>();
 
