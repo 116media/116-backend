@@ -72,7 +72,7 @@ public class PublicGetPublicShortBySlugEndpointV1Tests(PostgresFixture db) : Bas
     [Fact]
     public async Task GetShortBySlug_WhenVisitorLikedAndBookmarked_ReturnsTrueFlags()
     {
-        var userId = Guid.NewGuid();
+        var userId = await SeedAuthenticatedUserAsync();
         ShortVideoEntity shortVideo = await SeedAsync<ContentDbContext, ShortVideoEntity>(ctx =>
         {
             ShortVideoEntity entity = ShortVideoFactory.Create();
@@ -124,7 +124,7 @@ public class PublicGetPublicShortBySlugEndpointV1Tests(PostgresFixture db) : Bas
             return entity;
         });
 
-        Client.AuthenticateAs(Guid.NewGuid(), "Visitor");
+        Client.AuthenticateAs(await SeedAuthenticatedUserAsync(), "Visitor");
 
         var response = await Client.GetAsync($"{ApiRoutes.Public.Shorts}/{shortVideo.Slug}");
 
