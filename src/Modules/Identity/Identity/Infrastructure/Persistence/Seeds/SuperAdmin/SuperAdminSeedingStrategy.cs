@@ -20,6 +20,7 @@ public class SuperAdminSeedingStrategy(
     public async Task ExecuteSeedingAsync()
     {
         logger.LogInformation("Executing Super Admin seeding strategy...");
+
         // Step 1: Create or get the system-wide permission
         PermissionEntity systemPermission = await CreateOrGetSystemPermissionAsync();
         logger.LogInformation(
@@ -27,19 +28,28 @@ public class SuperAdminSeedingStrategy(
             systemPermission.Resource,
             systemPermission.Action
         );
+
         // Step 2: Create or get the Super Admin role
         RoleEntity superAdminRole = await CreateOrGetSuperAdminRoleAsync();
         logger.LogInformation("Super Admin role ready: {RoleName}", superAdminRole.Name);
+
         // Step 3: Associate permission with the role
         await AssociatePermissionWithRoleAsync(roleId: superAdminRole.Id, permissionId: systemPermission.Id);
         logger.LogInformation("Associated system permission with Super Admin role");
+
         // Step 4: Create the Super Admin user
         UserEntity superAdminUser = CreateSuperAdminUser();
         repositoryManager.AddUser(user: superAdminUser);
         logger.LogInformation("Created Super Admin user: {Username}", superAdminUser.UserName);
-        // Step 5: Associate user with the role
+
+        // Step 5: Create the user's token-invalidation record
+        repositoryManager.AddUserTokenState(SuperAdminEntityFactory.CreateUserTokenState(superAdminUser.Id));
+        logger.LogInformation("Created Super Admin token state");
+
+        // Step 6: Associate user with the role
         await AssociateUserWithRoleAsync(userId: superAdminUser.Id, roleId: superAdminRole.Id);
         logger.LogInformation("Associated Super Admin user with role");
+
         logger.LogInformation("Super Admin seeding strategy completed successfully");
     }
 
