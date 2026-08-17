@@ -23,6 +23,7 @@ public class AdminRemovePermissionFromRoleHandlerTests : BaseHandlerTest
 {
     private readonly Mock<IRoleRepository> _roleRepositoryMock;
     private readonly Mock<IRolePermissionRepository> _rolePermissionRepositoryMock;
+    private readonly Mock<IUserTokenStateRepository> _tokenStateRepositoryMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
     private readonly IdentityI18n _userErrors;
     private readonly AdminRemovePermissionFromRoleHandler _handler;
@@ -31,12 +32,14 @@ public class AdminRemovePermissionFromRoleHandlerTests : BaseHandlerTest
     {
         _roleRepositoryMock = MockRoleRepository.Create();
         _rolePermissionRepositoryMock = MockRolePermissionRepository.Create();
+        _tokenStateRepositoryMock = new Mock<IUserTokenStateRepository>();
         _unitOfWorkMock = MockIdentityUnitOfWork.Create();
         _userErrors = TestErrorsFactory.CreateIdentityI18n();
 
         _handler = new AdminRemovePermissionFromRoleHandler(
             _roleRepositoryMock.Object,
             _rolePermissionRepositoryMock.Object,
+            _tokenStateRepositoryMock.Object,
             _unitOfWorkMock.Object,
             Mapper,
             _userErrors
@@ -74,6 +77,10 @@ public class AdminRemovePermissionFromRoleHandlerTests : BaseHandlerTest
         result.Role.Id.Should().Be(role.Id);
         _rolePermissionRepositoryMock.VerifyDeleteCalled(rolePermission);
         _unitOfWorkMock.VerifyCommitCalled();
+        _tokenStateRepositoryMock.Verify(
+            x => x.BumpTokenVersionForRoleUsersAsync(role.Id, It.IsAny<CancellationToken>()),
+            Times.Once
+        );
     }
 
     [Fact]
@@ -172,6 +179,10 @@ public class AdminRemovePermissionFromRoleHandlerTests : BaseHandlerTest
         // Assert
         await act.Should().ThrowAsync<BadRequestException>();
         _unitOfWorkMock.VerifyCommitNotCalled();
+        _tokenStateRepositoryMock.Verify(
+            x => x.BumpTokenVersionForRoleUsersAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
     }
 
     #endregion
