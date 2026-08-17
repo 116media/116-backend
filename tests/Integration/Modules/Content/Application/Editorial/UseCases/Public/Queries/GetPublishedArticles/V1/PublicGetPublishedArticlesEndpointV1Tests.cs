@@ -61,7 +61,7 @@ public class PublicGetPublishedArticlesEndpointV1Tests(PostgresFixture db) : Bas
     public async Task GetPublishedArticles_WhenAuthenticated_StampsOnlyTheUsersInteractions()
     {
         Guid categoryId = await SeedCategoryAsync();
-        Guid userId = Guid.NewGuid();
+        Guid userId = await SeedAuthenticatedUserAsync();
         List<ArticleEntity> articles = await SeedAsync<ContentDbContext, List<ArticleEntity>>(ctx =>
         {
             List<ArticleEntity> entities = ArticleFactory.CreateManyPublished(categoryId, 3);
@@ -90,8 +90,8 @@ public class PublicGetPublishedArticlesEndpointV1Tests(PostgresFixture db) : Bas
     public async Task GetPublishedArticles_DoesNotLeakInteractionStateAcrossUsers()
     {
         Guid categoryId = await SeedCategoryAsync();
-        Guid userAId = Guid.NewGuid();
-        Guid userBId = Guid.NewGuid();
+        Guid userAId = await SeedAuthenticatedUserAsync();
+        Guid userBId = await SeedAuthenticatedUserAsync();
         ArticleEntity likedArticle = await SeedAsync<ContentDbContext, ArticleEntity>(ctx =>
         {
             ArticleEntity entity = ArticleFactory.CreatePublished(categoryId);
