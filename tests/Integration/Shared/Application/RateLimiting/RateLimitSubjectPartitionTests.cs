@@ -1,3 +1,9 @@
+using _116.Identity.Domain.Entities;
+using _116.Identity.Infrastructure.Persistence;
+using _116.Shared.Domain;
+using _116.Tests.Fixtures.Factories.Identity;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+
 namespace _116.Integration.Tests.Shared.Application.RateLimiting;
 
 /// <summary>
@@ -19,10 +25,34 @@ public class RateLimitSubjectPartitionTests(RateLimitedPostgresFixture db) : IDi
         GC.SuppressFinalize(this);
     }
 
+    /// <summary>
+    /// Seeds a user so its minted token passes the token-invalidation check and the limiter can
+    /// resolve an authenticated subject.
+    /// </summary>
+    /// <returns>The id of the seeded user.</returns>
+    private async Task<Guid> SeedUserAsync()
+    {
+        using IServiceScope scope = db.Api.Services.CreateScope();
+        await using var context = scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
+
+        UserEntity user = UserFactory.Create();
+        user.Activate();
+        context.Users.Add(user);
+
+        foreach (EntityEntry<IAggregate> entry in context.ChangeTracker.Entries<IAggregate>())
+        {
+            entry.Entity.ClearDomainEvents();
+        }
+
+        await context.SaveChangesAsync();
+        return user.Id;
+    }
+
     [Fact]
     public async Task AuthenticatedRequest_IsPartitionedBySubject_AndNotRejectedOnFirstCall()
     {
-        _client.AuthenticateAs(TestUser.VisitorId, "Visitor");
+        Guid userId = await SeedUserAsync();
+        _client.AuthenticateAs(userId, "Visitor");
 
         using HttpResponseMessage response = await _client.GetAsync(Routes.Public.Me.Profile());
 
