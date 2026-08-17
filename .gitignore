@@ -67,7 +67,5 @@ nunit-*.xml
 *.env.development
 *.env.production
 
-# Claude Configurations
-CLAUDE.md
+# Test coverage
 coverage/
-.claude/
