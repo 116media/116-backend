@@ -64,7 +64,7 @@ public class PublicGetPromotedArticlesEndpointV1Tests(PostgresFixture db) : Base
     public async Task GetPromotedArticles_WhenAuthenticated_StampsOnlyTheUsersInteractions()
     {
         (Guid categoryId, Guid promotionLevelId) = await SeedCategoryAsync();
-        Guid userId = Guid.NewGuid();
+        Guid userId = await SeedAuthenticatedUserAsync();
         Guid otherUserId = Guid.NewGuid();
         ArticleEntity interactedArticle = await SeedAsync<ContentDbContext, ArticleEntity>(ctx =>
         {
