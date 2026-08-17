@@ -89,7 +89,7 @@ public class PublicGetArticleBySlugEndpointV1Tests(PostgresFixture db) : BaseApi
     public async Task GetArticleBySlug_WhenUserLikedAndBookmarked_ReturnsTrueFlags()
     {
         Guid categoryId = await SeedCategoryAsync();
-        Guid userId = Guid.NewGuid();
+        Guid userId = await SeedAuthenticatedUserAsync();
         ArticleEntity article = await SeedAsync<ContentDbContext, ArticleEntity>(ctx =>
         {
             ArticleEntity entity = ArticleFactory.CreatePublished(categoryId);
@@ -138,7 +138,7 @@ public class PublicGetArticleBySlugEndpointV1Tests(PostgresFixture db) : BaseApi
     {
         Guid categoryId = await SeedCategoryAsync();
         Guid likingUserId = Guid.NewGuid();
-        Guid otherUserId = Guid.NewGuid();
+        Guid otherUserId = await SeedAuthenticatedUserAsync();
         ArticleEntity article = await SeedAsync<ContentDbContext, ArticleEntity>(ctx =>
         {
             ArticleEntity entity = ArticleFactory.CreatePublished(categoryId);
