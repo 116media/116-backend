@@ -21,6 +21,7 @@ public class SessionBuilder
     private string _deviceId;
     private string _refreshTokenHash;
     private DateTime _expiresAt;
+    private DateTime _absoluteExpiresAt;
     private EnumBrowser _browser = EnumBrowser.Chrome;
     private EnumDevice _device = EnumDevice.Desktop;
     private EnumPlatform _platform = EnumPlatform.Windows;
@@ -41,6 +42,7 @@ public class SessionBuilder
         _deviceId = $"device-{_faker.Random.AlphaNumeric(16)}";
         _refreshTokenHash = _faker.Random.Hash();
         _expiresAt = DateTime.UtcNow.AddDays(TestConstants.Session.DefaultRefreshTokenExpirationDays);
+        _absoluteExpiresAt = DateTime.UtcNow.AddDays(TestConstants.Session.DefaultAbsoluteLifetimeDays);
         _ipAddress = TestConstants.Session.ValidIpAddress;
         _userAgent = TestConstants.Session.ValidUserAgent;
     }
@@ -107,6 +109,17 @@ public class SessionBuilder
     public SessionBuilder AsExpired()
     {
         _expiresAt = DateTime.UtcNow.AddDays(-1);
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the absolute expiration ceiling.
+    /// </summary>
+    /// <param name="absoluteExpiresAt">The absolute expiration date.</param>
+    /// <returns>The builder instance for chaining.</returns>
+    public SessionBuilder WithAbsoluteExpiresAt(DateTime absoluteExpiresAt)
+    {
+        _absoluteExpiresAt = absoluteExpiresAt;
         return this;
     }
 
@@ -227,6 +240,7 @@ public class SessionBuilder
             _deviceId,
             _refreshTokenHash,
             _expiresAt,
+            _absoluteExpiresAt,
             _browser,
             _device,
             _platform,
