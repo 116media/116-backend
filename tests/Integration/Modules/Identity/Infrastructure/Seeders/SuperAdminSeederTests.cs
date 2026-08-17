@@ -30,6 +30,28 @@ public class SuperAdminSeederTests(PostgresFixture postgres) : BaseRepositoryTes
     }
 
     [Fact]
+    public async Task SeedAllAsync_ShouldCreateTheSuperAdminTokenState()
+    {
+        var seeder = Resolve<SuperAdminSeeder>();
+
+        await seeder.SeedAllAsync();
+
+        await using var context = CreateDbContext<IdentityDbContext>();
+        UserEntity superAdmin = await context
+            .Users.Include(u => u.UserRoles)
+                .ThenInclude(ur => ur.Role)
+            .FirstAsync(u => u.UserRoles.Any(ur => ur.Role.Name == "SuperAdmin"));
+
+        UserTokenStateEntity? tokenState = await context.UserTokenStates.FirstOrDefaultAsync(s =>
+            s.Id == superAdmin.Id
+        );
+
+        tokenState.Should().NotBeNull();
+        tokenState!.SecurityStamp.Should().NotBe(Guid.Empty);
+        tokenState.TokenVersion.Should().Be(0);
+    }
+
+    [Fact]
     public async Task SeedAllAsync_ShouldAssignSuperAdminRole()
     {
         var seeder = Resolve<SuperAdminSeeder>();
