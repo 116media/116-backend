@@ -149,6 +149,7 @@ public abstract class BaseApiTest : IAsyncLifetime
     {
         await Db.ResetAsync();
         ResetStubs();
+        ClearMemoryCache();
         InvalidateTagCache();
         InvalidatePopularArticlesCache();
         InvalidatePopularVideosCache();
@@ -167,6 +168,19 @@ public abstract class BaseApiTest : IAsyncLifetime
         foreach (IResettableStub stub in scope.ServiceProvider.GetServices<IResettableStub>())
         {
             stub.Reset();
+        }
+    }
+
+    /// <summary>
+    /// Clears the shared in-process cache before each test, since it outlives the database reset
+    /// and security-state/denylist entries would otherwise leak into the next test.
+    /// </summary>
+    private void ClearMemoryCache()
+    {
+        using var scope = Api.Services.CreateScope();
+        if (scope.ServiceProvider.GetRequiredService<IMemoryCache>() is MemoryCache memoryCache)
+        {
+            memoryCache.Clear();
         }
     }
 
