@@ -139,6 +139,22 @@ public abstract class BaseApiTest : IAsyncLifetime
     }
 
     /// <summary>
+    /// Seeds an active, verified user so a token minted for it passes the token-invalidation
+    /// check. Use it instead of a bare <see cref="Guid" /> whenever a test authenticates as
+    /// someone other than the well-known users.
+    /// </summary>
+    /// <returns>The id of the seeded user.</returns>
+    protected async Task<Guid> SeedAuthenticatedUserAsync()
+    {
+        var user = UserFactory.Create();
+        user.MarkAsVerified();
+        user.Activate();
+
+        await SeedAsync<IdentityDbContext>(context => context.Users.Add(user));
+        return user.Id;
+    }
+
+    /// <summary>
     /// Override to seed test data after the database has been reset.
     /// Called once per test method, after the well-known test users have been seeded.
     /// </summary>
