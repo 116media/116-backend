@@ -12,9 +12,9 @@ using _116.Tests.Fixtures.Factories.Identity;
 namespace _116.Integration.Tests.Workflows;
 
 /// <summary>
-/// End-to-end flows for the identity security reactions hosted by domain event handlers: password
-/// reset and role revocation invalidate sessions, and an email change produces the dual alert and
-/// confirmation emails.
+/// End-to-end flows for the identity security reactions: a password reset invalidates sessions, a
+/// role change bumps the target user's token version without killing sessions, and an email change
+/// produces the dual alert and confirmation emails while preserving the acting session.
 /// </summary>
 [Collection("Database")]
 public class IdentitySecurityEventFlowTests(PostgresFixture db) : BaseApiTest(db)
@@ -64,7 +64,7 @@ public class IdentitySecurityEventFlowTests(PostgresFixture db) : BaseApiTest(db
     }
 
     [Fact]
-    public async Task RemoveRoleFromUser_OverRealHttp_RevokesTheTargetUserSessions()
+    public async Task RemoveRoleFromUser_OverRealHttp_BumpsTheTokenVersionAndKeepsTheSession()
     {
         var sessionId = Guid.NewGuid();
         RoleEntity role = await SeedAsync<IdentityDbContext, RoleEntity>(context =>
@@ -84,9 +84,15 @@ public class IdentitySecurityEventFlowTests(PostgresFixture db) : BaseApiTest(db
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
+        // The revocation lands through the token-version bump, not a session kill.
         await using IdentityDbContext identityContext = CreateDbContext<IdentityDbContext>();
         SessionEntity session = await identityContext.Sessions.SingleAsync(s => s.Id == sessionId);
-        session.IsRevoked.Should().BeTrue();
+        session.IsRevoked.Should().BeFalse();
+
+        UserTokenStateEntity tokenState = await identityContext.UserTokenStates.SingleAsync(s =>
+            s.Id == TestUser.VisitorId
+        );
+        tokenState.TokenVersion.Should().Be(1);
 
         await using MailerDbContext mailerContext = CreateDbContext<MailerDbContext>();
         var outbox = await mailerContext
@@ -101,7 +107,7 @@ public class IdentitySecurityEventFlowTests(PostgresFixture db) : BaseApiTest(db
     }
 
     [Fact]
-    public async Task AssignRoleToUser_OverRealHttp_RevokesTheTargetUserSessions()
+    public async Task AssignRoleToUser_OverRealHttp_BumpsTheTokenVersionAndKeepsTheSession()
     {
         var sessionId = Guid.NewGuid();
         RoleEntity role = await SeedAsync<IdentityDbContext, RoleEntity>(context =>
@@ -121,9 +127,15 @@ public class IdentitySecurityEventFlowTests(PostgresFixture db) : BaseApiTest(db
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
+        // The grant lands through the token-version bump, not a session kill.
         await using IdentityDbContext identityContext = CreateDbContext<IdentityDbContext>();
         SessionEntity session = await identityContext.Sessions.SingleAsync(s => s.Id == sessionId);
-        session.IsRevoked.Should().BeTrue();
+        session.IsRevoked.Should().BeFalse();
+
+        UserTokenStateEntity tokenState = await identityContext.UserTokenStates.SingleAsync(s =>
+            s.Id == TestUser.VisitorId
+        );
+        tokenState.TokenVersion.Should().Be(1);
     }
 
     [Fact]
