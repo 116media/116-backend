@@ -109,6 +109,30 @@ sessions, locking the victim out).
 **Solution.** Add `ConsumeAsync`/`MarkAsConsumed` and call it between `ValidateUsedOtpAsync` and the
 password write, in the same transaction. Cut `OtpExpirationMinutes` to 10.
 
+**Addendum (verified while specifying Stage 5).** Two further defects on the same path make this
+worse than "replayable for 60 minutes" — together they turn `reset-password` into an unlimited
+code-guessing oracle:
+
+- **A superseded code satisfies the reset precondition.** `InvalidateExistingOtpsAsync` selects
+  unused rows (`OtpForInvalidationSpecification` = user ∧ purpose ∧ **not used**) and marks them
+  `IsUsed = true` — the exact predicate `ValidateUsedOtpAsync` searches for
+  (`OtpForUsedValidationSpecification` = user ∧ purpose ∧ **used**). `IsUsed` therefore conflates
+  "the owner verified this" with "a resend replaced this", so a code that was never verified is
+  accepted by reset. The integration test
+  `OtpRepositoryTests.InvalidateExistingOtpsAsync_ShouldMarkAllExistingOtpsAsUsed` pins this as
+  intended behaviour.
+- **The reset path counts nothing.** `ValidateOtpAsync` increments `AttemptCount` and enforces
+  `MaxOtpAttempts`; `ValidateUsedOtpAsync` throws `OtpNotYetVerified` on a mismatch without
+  incrementing anything. There is no per-row cap and (per S10) no per-account cap either.
+
+Chained with S5: `resend-otp` is anonymous, so anyone can force a victim's outstanding code into the
+`used` state and then guess 6-digit codes at `reset-password` with no attempt limit, no lockout and
+no alert — bounded only by the rate limiter. A hit resets the password and revokes every session.
+
+**Additional solution.** Make consumption a distinct one-way state (`ConsumedAt`) that invalidation
+also sets, so "superseded" can never satisfy the reset lookup; and meter `ValidateUsedOtpAsync`
+failures the way `ValidateOtpAsync` already meters its own.
+
 ---
 
 ## S5 — OTP attempt limiting is defeated by `resend-otp`; effective space is 3 guesses per resend
