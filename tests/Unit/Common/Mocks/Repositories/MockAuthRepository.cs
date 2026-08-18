@@ -399,6 +399,80 @@ public static class MockAuthRepository
     }
 
     /// <summary>
+    /// Sets up GetUserWithRolesAndPermissionsByCredentialsAsync to return the specified user for
+    /// any credentials.
+    /// </summary>
+    /// <param name="mock">The mock instance.</param>
+    /// <param name="user">The user to return.</param>
+    /// <returns>The mock instance for chaining.</returns>
+    public static Mock<IAuthRepository> SetupGetUserWithRolesByCredentialsAsync(
+        this Mock<IAuthRepository> mock,
+        UserEntity user
+    )
+    {
+        mock.Setup(x =>
+                x.GetUserWithRolesAndPermissionsByCredentialsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())
+            )
+            .ReturnsAsync(user);
+        return mock;
+    }
+
+    /// <summary>
+    /// Sets up GetUserWithRolesAndPermissionsByCredentialsAsync to report an unknown account, which
+    /// this lookup does by returning null rather than throwing.
+    /// </summary>
+    /// <param name="mock">The mock instance.</param>
+    /// <param name="credentials">The credentials that match no account.</param>
+    /// <returns>The mock instance for chaining.</returns>
+    public static Mock<IAuthRepository> SetupGetUserWithRolesByCredentialsAsyncReturnsNull(
+        this Mock<IAuthRepository> mock,
+        string credentials
+    )
+    {
+        mock.Setup(x => x.GetUserWithRolesAndPermissionsByCredentialsAsync(credentials, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((UserEntity?)null);
+        return mock;
+    }
+
+    /// <summary>
+    /// Sets up GetUserWithRolesAndPermissionsByEmailAsync to return the specified user for any email.
+    /// </summary>
+    /// <param name="mock">The mock instance.</param>
+    /// <param name="user">The user to return.</param>
+    /// <returns>The mock instance for chaining.</returns>
+    public static Mock<IAuthRepository> SetupGetUserWithRolesByEmailAsync(
+        this Mock<IAuthRepository> mock,
+        UserEntity user
+    )
+    {
+        mock.Setup(x => x.GetUserWithRolesAndPermissionsByEmailAsync(It.IsAny<Email>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(user);
+        return mock;
+    }
+
+    /// <summary>
+    /// Sets up GetUserWithRolesAndPermissionsByEmailAsync to report an unknown account, which this
+    /// lookup does by returning null rather than throwing.
+    /// </summary>
+    /// <param name="mock">The mock instance.</param>
+    /// <param name="email">The email that matches no account.</param>
+    /// <returns>The mock instance for chaining.</returns>
+    public static Mock<IAuthRepository> SetupGetUserWithRolesByEmailAsyncReturnsNull(
+        this Mock<IAuthRepository> mock,
+        Email email
+    )
+    {
+        mock.Setup(x =>
+                x.GetUserWithRolesAndPermissionsByEmailAsync(
+                    It.Is<Email>(e => e.Value == email.Value),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync((UserEntity?)null);
+        return mock;
+    }
+
+    /// <summary>
     /// Sets up IsUserAdmin to throw AuthorizationException.
     /// </summary>
     /// <param name="mock">The mock instance.</param>
