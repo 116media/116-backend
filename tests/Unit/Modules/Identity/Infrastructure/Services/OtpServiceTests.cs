@@ -2,8 +2,11 @@ using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Services;
+using _116.Tests.Fixtures.Constants;
+using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
 using Microsoft.Extensions.Time.Testing;
+using Moq;
 using Xunit;
 
 namespace _116.Unit.Tests.Modules.Identity.Infrastructure.Services;
@@ -19,15 +22,15 @@ public class OtpServiceTests
     /// </summary>
     private static readonly DateTime StartInstant = new(2026, 6, 30, 10, 0, 0, DateTimeKind.Utc);
 
-    private readonly PasswordService _passwordService;
+    private readonly Mock<IOtpHasher> _otpHasherMock;
     private readonly OtpService _sut;
 
     public OtpServiceTests()
     {
-        // The real hashing service: it has no dependencies, and the assertions below are about
-        // the hash the service actually stores.
-        _passwordService = new PasswordService();
-        _sut = new OtpService(_passwordService, new FakeTimeProvider(new DateTimeOffset(StartInstant)));
+        // The hasher is mocked because the real one is keyed with a deployment secret; what the
+        // service owes is that the stored hash is the one the hasher returned for the plain code.
+        _otpHasherMock = MockOtpHasher.Create();
+        _sut = new OtpService(_otpHasherMock.Object, new FakeTimeProvider(new DateTimeOffset(StartInstant)));
     }
 
     #region GenerateOtpCode Tests
@@ -127,13 +130,12 @@ public class OtpServiceTests
         OtpCreationResult result = _sut.CreateOtp(userId, purpose);
 
         // Assert
-        result.Otp.CodeHash.Should().StartWith("v1:");
         result.Otp.CodeHash.Should().NotBe(result.PlainCode);
         result.Otp.CodeHash.Length.Should().BeLessThanOrEqualTo(UserConstants.OtpCodeHashLength);
     }
 
     [Fact]
-    public void CreateOtp_ShouldStoreAHashThatVerifiesAgainstThePlainCode()
+    public void CreateOtp_ShouldStoreTheHashTheHasherDerivedFromThePlainCode()
     {
         // Arrange
         var userId = Guid.NewGuid();
@@ -143,26 +145,25 @@ public class OtpServiceTests
         OtpCreationResult result = _sut.CreateOtp(userId, purpose);
 
         // Assert
-        _passwordService.Verify(result.PlainCode, result.Otp.CodeHash).Should().BeTrue();
-        _passwordService
-            .Verify("000000" == result.PlainCode ? "111111" : "000000", result.Otp.CodeHash)
-            .Should()
-            .BeFalse();
+        _otpHasherMock.VerifyHashCalled(result.PlainCode);
+        result.Otp.CodeHash.Should().Be(TestConstants.Otp.DefaultCodeHash);
     }
 
     [Fact]
-    public void CreateOtp_CalledTwice_ShouldProduceDifferentHashes()
+    public void CreateOtp_CalledTwice_ShouldHashEachGeneratedCodeInTurn()
     {
         // Arrange
         var userId = Guid.NewGuid();
         var purpose = EnumOtpPurpose.EmailVerification;
 
-        // Act - the per-hash salt means even an identical code never yields an identical hash
+        // Act
         OtpCreationResult first = _sut.CreateOtp(userId, purpose);
         OtpCreationResult second = _sut.CreateOtp(userId, purpose);
 
         // Assert
-        first.Otp.CodeHash.Should().NotBe(second.Otp.CodeHash);
+        _otpHasherMock.Verify(x => x.Hash(first.PlainCode), Times.AtLeastOnce);
+        _otpHasherMock.Verify(x => x.Hash(second.PlainCode), Times.AtLeastOnce);
+        _otpHasherMock.Verify(x => x.Hash(It.IsAny<string>()), Times.Exactly(2));
     }
 
     [Fact]
