@@ -20,6 +20,7 @@ public class PublicUpdateOwnProfileEndpointV1Tests(PostgresFixture db) : BaseApi
     [Fact]
     public async Task PublicUpdateOwnProfile_AsVisitor_WithValidSession_UpdatesProfile()
     {
+        // Arrange
         var sessionId = Guid.NewGuid();
         await SeedAsync<IdentityDbContext>(context =>
         {
@@ -32,8 +33,10 @@ public class PublicUpdateOwnProfileEndpointV1Tests(PostgresFixture db) : BaseApi
         // valid default carries the full phone + country set to exercise the country update path.
         var request = new PublicUpdateOwnProfileRequestBuilder().Build();
 
+        // Act
         var response = await Client.PatchAsJsonAsync(Routes.Public.Me.Profile(), request);
 
+        // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         PublicUpdateOwnProfileResponse body = await response.ReadAsAsync<PublicUpdateOwnProfileResponse>();
@@ -51,6 +54,7 @@ public class PublicUpdateOwnProfileEndpointV1Tests(PostgresFixture db) : BaseApi
     [Fact]
     public async Task PublicUpdateOwnProfile_WithPhoneNumberHeldByAnotherUser_ReturnsConflict()
     {
+        // Arrange
         const string countryDialCode = "+1";
         const string partialPhoneNumber = "5550117788";
         const string fullPhoneNumber = $"{countryDialCode}{partialPhoneNumber}";
@@ -71,8 +75,10 @@ public class PublicUpdateOwnProfileEndpointV1Tests(PostgresFixture db) : BaseApi
             .WithCountryDialCode(countryDialCode)
             .Build();
 
+        // Act
         var response = await Client.PatchAsJsonAsync(Routes.Public.Me.Profile(), request);
 
+        // Assert
         await response.ShouldBeProblem<ConflictException>(
             HttpStatusCode.Conflict,
             Localized<ConflictErrorMessage>(
@@ -89,6 +95,7 @@ public class PublicUpdateOwnProfileEndpointV1Tests(PostgresFixture db) : BaseApi
     [Fact]
     public async Task PublicUpdateOwnProfile_ToASingleCharacterLocalPart_MasksTheWholeLocalPart()
     {
+        // Arrange
         var sessionId = Guid.NewGuid();
         await SeedAsync<IdentityDbContext>(context =>
         {
@@ -102,8 +109,10 @@ public class PublicUpdateOwnProfileEndpointV1Tests(PostgresFixture db) : BaseApi
 
         var request = new PublicUpdateOwnProfileRequestBuilder().WithEmail(newEmail).Build();
 
+        // Act
         var response = await Client.PatchAsJsonAsync(Routes.Public.Me.Profile(), request);
 
+        // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         await using MailerDbContext mailerContext = CreateDbContext<MailerDbContext>();
@@ -121,6 +130,7 @@ public class PublicUpdateOwnProfileEndpointV1Tests(PostgresFixture db) : BaseApi
     [Fact]
     public async Task PublicUpdateOwnProfile_AsVisitor_WithoutValidSession_ReturnsForbidden()
     {
+        // Arrange
         Client.AuthenticateAsVisitor();
         var request = new PublicUpdateOwnProfileRequest(
             Email: null,
@@ -131,8 +141,10 @@ public class PublicUpdateOwnProfileEndpointV1Tests(PostgresFixture db) : BaseApi
             CountryDialCode: null
         );
 
+        // Act
         var response = await Client.PatchAsJsonAsync(Routes.Public.Me.Profile(), request);
 
+        // Assert
         await response.ShouldBeProblem<RefreshTokenExpiryException>(
             HttpStatusCode.Forbidden,
             Localized<AuthenticationErrorMessage>(m => m.InvalidRefreshToken())
