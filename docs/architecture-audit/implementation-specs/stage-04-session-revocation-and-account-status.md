@@ -50,7 +50,7 @@ memory lookup, not a query.
 - [x] 4.7 — Interactions: claim-based `is_active` + `is_verified` (no per-request DB); freshness via §4.5
 - [x] 4.8 — Refresh re-reads current stamp/version into the new token; deactivated → refused; `AbsoluteExpiresAt` cap + config + migration
 - [x] 4.9 — Unit + integration tests
-- [ ] 4.10 — Verify (build 0/0, unit green; run integration locally)
+- [x] 4.10 — Verify (build 0/0, unit green; run integration locally)
 
 ---
 
