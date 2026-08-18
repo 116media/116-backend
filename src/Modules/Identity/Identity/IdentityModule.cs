@@ -153,10 +153,12 @@ public static class IdentityModule
         services.AddScoped<IPermissionRepository, PermissionRepository>();
         services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();
         services.AddScoped<IUserRoleRepository, UserRoleRepository>();
+        services.AddScoped<IOtpHasher>(_ => new OtpHasher(AppEnvironment.OtpPepper()));
         services.AddScoped<IOtpService, OtpService>();
         services.AddScoped<IOtpRepository, OtpRepository>();
         services.AddScoped<ISessionRepository, SessionRepository>();
         services.AddScoped<IUserTokenStateRepository, UserTokenStateRepository>();
+        services.AddScoped<IAccountLockoutRepository, AccountLockoutRepository>();
         services.AddScoped<ISessionMetadataService, SessionMetadataService>();
 
         services.AddSingleton<ISessionRevocationCache, SessionRevocationCache>();
