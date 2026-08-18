@@ -46,6 +46,36 @@ public static class MockPasswordService
     }
 
     /// <summary>
+    /// Sets up VerifyOrDummy to mirror Verify, so the constant-time login path behaves like the
+    /// real service: a real matching hash returns true, and a missing one returns false.
+    /// </summary>
+    /// <param name="mock">The mock instance.</param>
+    /// <param name="password">The password that should verify.</param>
+    /// <param name="hash">The stored hash to verify against.</param>
+    /// <returns>The mock instance for chaining.</returns>
+    public static Mock<IPasswordService> SetupVerifyOrDummySuccess(
+        this Mock<IPasswordService> mock,
+        string password,
+        string? hash
+    )
+    {
+        mock.Setup(x => x.VerifyOrDummy(password, hash)).Returns(hash is not null);
+        return mock;
+    }
+
+    /// <summary>
+    /// Sets up NeedsRehash to report whether the stored hash is behind the current work factor.
+    /// </summary>
+    /// <param name="mock">The mock instance.</param>
+    /// <param name="needsRehash">The value to report for any hash.</param>
+    /// <returns>The mock instance for chaining.</returns>
+    public static Mock<IPasswordService> SetupNeedsRehash(this Mock<IPasswordService> mock, bool needsRehash)
+    {
+        mock.Setup(x => x.NeedsRehash(It.IsAny<string?>())).Returns(needsRehash);
+        return mock;
+    }
+
+    /// <summary>
     /// Sets up Verify to return true for the specified password and hash.
     /// A null hash still verifies false, matching the real service: a user with no stored
     /// password hash can never authenticate, so the mock refuses to claim otherwise.
@@ -129,5 +159,10 @@ public static class MockPasswordService
         mock.Setup(x => x.Hash(It.IsAny<string>())).Returns(TestConstants.User.DefaultPasswordHash);
 
         mock.Setup(x => x.Verify(It.IsAny<string>(), It.IsAny<string?>())).Returns(false);
+
+        mock.Setup(x => x.VerifyOrDummy(It.IsAny<string>(), It.IsAny<string?>())).Returns(false);
+
+        // Fixture hashes are treated as current, so tests do not trip the re-hash path by accident.
+        mock.Setup(x => x.NeedsRehash(It.IsAny<string?>())).Returns(false);
     }
 }
