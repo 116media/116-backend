@@ -23,6 +23,7 @@ public class PublicVerifyOtpHandlerTests
 {
     private readonly Mock<IAuthRepository> _authRepositoryMock;
     private readonly Mock<IOtpRepository> _otpRepositoryMock;
+    private readonly Mock<IAccountLockoutRepository> _lockoutRepositoryMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
     private readonly PublicVerifyOtpHandler _handler;
 
@@ -30,11 +31,13 @@ public class PublicVerifyOtpHandlerTests
     {
         _authRepositoryMock = MockAuthRepository.Create();
         _otpRepositoryMock = MockOtpRepository.Create();
+        _lockoutRepositoryMock = new Mock<IAccountLockoutRepository>();
         _unitOfWorkMock = MockIdentityUnitOfWork.Create();
 
         _handler = new PublicVerifyOtpHandler(
             _authRepositoryMock.Object,
             _otpRepositoryMock.Object,
+            _lockoutRepositoryMock.Object,
             _unitOfWorkMock.Object,
             TestErrorsFactory.CreateIdentityI18n()
         );
@@ -87,11 +90,56 @@ public class PublicVerifyOtpHandlerTests
     }
 
     [Fact]
+    public async Task Handle_WithAPasswordResetPurpose_ShouldNotMarkUserAsVerified()
+    {
+        // Arrange
+        string code = "123456";
+        string email = "user@example.com";
+        UserEntity user = UserFactory.CreateUnverified();
+        string purpose = EnumOtpPurpose.PasswordReset.ToString();
+        OtpEntity otp = OtpFactory.Create(user.Id, code, EnumOtpPurpose.PasswordReset);
+
+        PublicVerifyOtpCommand command = new(Email: email, Code: code, Purpose: purpose);
+
+        _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
+        _otpRepositoryMock.SetupValidateOtp(otp);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        user.IsVerified.Should().BeFalse();
+        otp.IsUsed.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Handle_ShouldClearTheAccountOtpFailureCounter()
+    {
+        // Arrange
+        string code = "123456";
+        string email = "user@example.com";
+        string purpose = EnumOtpPurpose.EmailVerification.ToString();
+        UserEntity user = UserFactory.CreateUnverified();
+        OtpEntity otp = OtpFactory.Create(user.Id, code);
+
+        PublicVerifyOtpCommand command = new(Email: email, Code: code, Purpose: purpose);
+
+        _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
+        _otpRepositoryMock.SetupValidateOtp(otp);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        _lockoutRepositoryMock.Verify(x => x.ClearFailedOtpAsync(user.Id, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
     public async Task Handle_ShouldInvalidateExistingOtps()
     {
         // Arrange
-        string email = "user@example.com";
         string code = "123456";
+        string email = "user@example.com";
         string purpose = EnumOtpPurpose.EmailVerification.ToString();
         UserEntity user = UserFactory.CreateUnverified();
         OtpEntity otp = OtpFactory.Create(user.Id, code);
@@ -106,7 +154,13 @@ public class PublicVerifyOtpHandlerTests
 
         // Assert
         _otpRepositoryMock.Verify(
-            x => x.InvalidateExistingOtpsAsync(user.Id, It.IsAny<EnumOtpPurpose>(), It.IsAny<CancellationToken>()),
+            x =>
+                x.InvalidateExistingOtpsAsync(
+                    user.Id,
+                    It.IsAny<EnumOtpPurpose>(),
+                    It.IsAny<Guid?>(),
+                    It.IsAny<CancellationToken>()
+                ),
             Times.Once
         );
     }
@@ -115,8 +169,8 @@ public class PublicVerifyOtpHandlerTests
     public async Task Handle_ShouldCommitUnitOfWork()
     {
         // Arrange
-        string email = "user@example.com";
         string code = "123456";
+        string email = "user@example.com";
         string purpose = EnumOtpPurpose.EmailVerification.ToString();
         UserEntity user = UserFactory.CreateUnverified();
         OtpEntity otp = OtpFactory.Create(user.Id, code);
@@ -157,8 +211,8 @@ public class PublicVerifyOtpHandlerTests
     public async Task Handle_WhenUserAlreadyVerified_ShouldThrowConflictException()
     {
         // Arrange
-        string email = "user@example.com";
         string code = "123456";
+        string email = "user@example.com";
         string purpose = EnumOtpPurpose.EmailVerification.ToString();
         UserEntity user = UserFactory.CreateVerifiedActive();
 
@@ -177,8 +231,8 @@ public class PublicVerifyOtpHandlerTests
     public async Task Handle_WhenOtpInvalid_ShouldThrowBadRequestException()
     {
         // Arrange
-        string email = "user@example.com";
         string code = "wrong-code";
+        string email = "user@example.com";
         string purpose = EnumOtpPurpose.EmailVerification.ToString();
         UserEntity user = UserFactory.CreateUnverified();
 
@@ -198,8 +252,8 @@ public class PublicVerifyOtpHandlerTests
     public async Task Handle_WhenOtpExpired_ShouldThrowAuthenticationException()
     {
         // Arrange
-        string email = "user@example.com";
         string code = "123456";
+        string email = "user@example.com";
         string purpose = EnumOtpPurpose.EmailVerification.ToString();
         UserEntity user = UserFactory.CreateUnverified();
 
@@ -223,8 +277,8 @@ public class PublicVerifyOtpHandlerTests
     public async Task Handle_WithCancellationToken_ShouldPassToAuthRepository()
     {
         // Arrange
-        string email = "user@example.com";
         string code = "123456";
+        string email = "user@example.com";
         string purpose = EnumOtpPurpose.EmailVerification.ToString();
         UserEntity user = UserFactory.CreateUnverified();
         OtpEntity otp = OtpFactory.Create(user.Id, code);
@@ -246,8 +300,8 @@ public class PublicVerifyOtpHandlerTests
     public async Task Handle_WithCancellationToken_ShouldPassToUnitOfWork()
     {
         // Arrange
-        string email = "user@example.com";
         string code = "123456";
+        string email = "user@example.com";
         string purpose = EnumOtpPurpose.EmailVerification.ToString();
         UserEntity user = UserFactory.CreateUnverified();
         OtpEntity otp = OtpFactory.Create(user.Id, code);
