@@ -107,6 +107,30 @@ public interface IAuthRepository : IRepository<UserEntity>, IClaimsProvider
     );
 
     /// <summary>
+    /// Loads a user by email or username without throwing when none matches, so the caller can
+    /// spend the same work on a missing account as on a real one.
+    /// </summary>
+    /// <param name="credentials">The email or username supplied by the caller.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>The matching user with roles and permissions, or null.</returns>
+    Task<UserEntity?> GetUserWithRolesAndPermissionsByCredentialsAsync(
+        string credentials,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Loads a user by email without throwing when none matches, so the caller can spend the same
+    /// work on a missing account as on a real one.
+    /// </summary>
+    /// <param name="email">The email supplied by the caller.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>The matching user with roles and permissions, or null.</returns>
+    Task<UserEntity?> GetUserWithRolesAndPermissionsByEmailAsync(
+        Email email,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
     /// Checks if a user exists with the specified email address.
     /// </summary>
     /// <param name="email">The email address to check for existence.</param>
