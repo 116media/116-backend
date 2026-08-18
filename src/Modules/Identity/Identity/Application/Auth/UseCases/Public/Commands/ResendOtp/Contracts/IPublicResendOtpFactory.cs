@@ -14,8 +14,8 @@ public interface IPublicResendOtpFactory
     /// <param name="userId">The user ID to create OTP for.</param>
     /// <param name="purpose">The purpose of the OTP.</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
-    /// <returns>
+    /// <returns>Null when the account is over its resend cap for the window; otherwise
     /// The newly persisted OTP entity together with the plaintext code the caller has to deliver.
     /// </returns>
-    Task<OtpCreationResult> ResendOtpAsync(Guid userId, OtpPurpose purpose, CancellationToken cancellationToken);
+    Task<OtpCreationResult?> ResendOtpAsync(Guid userId, OtpPurpose purpose, CancellationToken cancellationToken);
 }
