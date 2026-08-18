@@ -57,16 +57,16 @@ public class AdminLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
     }
 
     [Fact]
-    public async Task Login_WithNonExistentEmail_ReturnsNotFound()
+    public async Task Login_WithNonExistentEmail_ReturnsInvalidCredentialsUnauthorized()
     {
         Client.ClearAuthentication();
         var request = new AdminLoginRequestBuilder().WithEmail("nobody@nowhere.com").Build();
 
         var response = await Client.PostAsJsonAsync(LoginUrl, request);
 
-        await response.ShouldBeProblem<NotFoundException>(
-            HttpStatusCode.NotFound,
-            Localized<SharedExceptionMessage>(m => m.EntityNotFound("User"))
+        await response.ShouldBeProblem<AuthenticationException>(
+            HttpStatusCode.Unauthorized,
+            Localized<AuthenticationErrorMessage>(m => m.InvalidCredentials())
         );
     }
 
