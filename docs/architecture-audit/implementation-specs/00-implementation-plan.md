@@ -69,8 +69,8 @@ Small, isolated, high-urgency fixes with no cross-module surgery. Full code in t
 - **PR:** `feat(auth): token invalidation, session revocation and verified signup`
 
 ### Stage 5 — Password & OTP security
-- [x] PBKDF2 iterations 25k→600k with `v2:` prefix + lazy re-hash; separate keyed OTP hasher `[07 S10]`
-- [x] Consume the OTP on password reset; cut expiry to 10 min `[07 S4]`
+- [x] PBKDF2 iterations 25k→600k with `v2:` prefix + lazy re-hash; keyed OTP hashing `[07 S10]`
+- [x] Consume the OTP on password reset (expiry left at 60; consumption closes it) `[07 S4]`
 - [x] Per-account OTP attempt lockout + resend cap `[07 S5]`
 - [x] Constant-time login (dummy verify on unknown account); remove `.Produces(404)`; neutralize the
       admin forgot/resend role oracle `[07 S7]`
