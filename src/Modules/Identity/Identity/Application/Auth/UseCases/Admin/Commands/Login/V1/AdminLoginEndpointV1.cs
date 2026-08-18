@@ -68,7 +68,6 @@ public class AdminLoginEndpointV1 : ICarterModule
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
             .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)
-            .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests)
-            .Produces(statusCode: StatusCodes.Status404NotFound);
+            .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
     }
 }
