@@ -54,6 +54,18 @@ public class UserEntity : Aggregate<Guid>
     /// </summary>
     public bool IsActive { get; private set; } = UserConstants.DefaultIsActive;
 
+    // Login brute-force counters. Moved by atomic SQL through IAccountLockoutRepository, never by
+    // a tracked mutation, so an increment survives the exception the failed attempt throws.
+    /// <summary>
+    /// Consecutive failed login attempts since the last success.
+    /// </summary>
+    public int FailedLoginAttempts { get; private set; }
+
+    /// <summary>
+    /// UTC instant until which login is refused, or null when the account is not locked.
+    /// </summary>
+    public DateTime? LockedUntil { get; private set; }
+
     // Profile Data
     /// <summary>
     /// ID of the uploaded avatar file, if any.
