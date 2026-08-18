@@ -42,7 +42,7 @@ public class PublicSignUpValidatorTests
         PublicSignUpCommand command = new(
             Email: "a@b.c",
             UserName: new string('a', UserConstants.MinUserNameLength),
-            Password: "Pass1234" // Min 8 chars with required patterns
+            Password: "Pass12345678"
         );
 
         // Act
