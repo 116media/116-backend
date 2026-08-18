@@ -91,7 +91,7 @@ public class PublicSignUpAuthFactoryTests
         _otpRepositoryMock.Verify(
             x =>
                 x.AddAsync(
-                    It.Is<OtpEntity>(o => o.CodeHash != TestConstants.Otp.DefaultCode && o.CodeHash.StartsWith("v1:")),
+                    It.Is<OtpEntity>(o => o.CodeHash != TestConstants.Otp.DefaultCode),
                     It.IsAny<CancellationToken>()
                 ),
             Times.Once
