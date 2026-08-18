@@ -1,6 +1,7 @@
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Services;
+using _116.Tests.Fixtures.Builders.Entities.Identity;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Identity;
 using AwesomeAssertions;
@@ -37,6 +38,7 @@ public class OtpEntityTests
         otp.ExpiresAt.Should().Be(expiresAt);
         otp.IsUsed.Should().BeFalse();
         otp.UsedAt.Should().BeNull();
+        otp.ConsumedAt.Should().BeNull();
         otp.AttemptCount.Should().Be(0);
     }
 
@@ -90,6 +92,98 @@ public class OtpEntityTests
         // Assert
         otp.IsUsed.Should().BeTrue();
         otp.UsedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+    }
+
+    #endregion
+
+    #region MarkAsConsumed Tests
+
+    [Fact]
+    public void MarkAsConsumed_ShouldSetConsumedAt()
+    {
+        // Arrange
+        OtpEntity otp = OtpFactory.Create();
+
+        // Act
+        otp.MarkAsConsumed();
+
+        // Assert
+        otp.ConsumedAt.Should().NotBeNull();
+        otp.ConsumedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+    }
+
+    [Fact]
+    public async Task MarkAsConsumed_WhenAlreadyConsumed_ShouldKeepTheFirstTimestamp()
+    {
+        // Arrange
+        OtpEntity otp = new OtpBuilder().AsConsumed().Build();
+        DateTime? firstConsumedAt = otp.ConsumedAt;
+
+        // The clock has to advance, otherwise a second stamp would be indistinguishable from the first.
+        await Task.Delay(TimeSpan.FromMilliseconds(20));
+
+        // Act
+        otp.MarkAsConsumed();
+
+        // Assert
+        otp.ConsumedAt.Should().Be(firstConsumedAt);
+    }
+
+    [Fact]
+    public void MarkAsConsumed_ShouldNotReportTheOtpAsVerifiedByItsOwner()
+    {
+        // Arrange
+        OtpEntity otp = OtpFactory.Create();
+
+        // Act
+        otp.MarkAsConsumed();
+
+        // Assert
+        otp.IsUsed.Should().BeFalse();
+        otp.UsedAt.Should().BeNull();
+    }
+
+    #endregion
+
+    #region IsConsumed Tests
+
+    [Fact]
+    public void IsConsumed_WhenNotConsumed_ShouldReturnFalse()
+    {
+        // Arrange
+        OtpEntity otp = OtpFactory.Create();
+
+        // Act
+        bool result = otp.IsConsumed();
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsConsumed_WhenConsumed_ShouldReturnTrue()
+    {
+        // Arrange
+        OtpEntity otp = new OtpBuilder().AsConsumed().Build();
+
+        // Act
+        bool result = otp.IsConsumed();
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsConsumed_WhenOnlyMarkedAsUsed_ShouldReturnFalse()
+    {
+        // Arrange
+        OtpEntity otp = OtpFactory.CreateUsed();
+
+        // Act
+        bool result = otp.IsConsumed();
+
+        // Assert
+        result.Should().BeFalse();
     }
 
     #endregion
