@@ -17,11 +17,13 @@ public class AppEnvironmentTests : IDisposable
     private const string FrontendBaseUrlEnvVar = "FRONTEND_BASE_URL";
     private const string TrustedProxyEnvVar = "TRUSTED_PROXY_NETWORKS";
     private const string SessionLifetimeEnvVar = "JWT_SESSION_ABSOLUTE_LIFETIME_IN_DAYS";
+    private const string OtpPepperEnvVar = "OTP_PEPPER";
     private readonly string? _originalDashboard;
     private readonly string? _originalWebApp;
     private readonly string? _originalFrontendBaseUrl;
     private readonly string? _originalTrustedProxy;
     private readonly string? _originalSessionLifetime;
+    private readonly string? _originalOtpPepper;
 
     public AppEnvironmentTests()
     {
@@ -30,6 +32,7 @@ public class AppEnvironmentTests : IDisposable
         _originalFrontendBaseUrl = Environment.GetEnvironmentVariable(FrontendBaseUrlEnvVar);
         _originalTrustedProxy = Environment.GetEnvironmentVariable(TrustedProxyEnvVar);
         _originalSessionLifetime = Environment.GetEnvironmentVariable(SessionLifetimeEnvVar);
+        _originalOtpPepper = Environment.GetEnvironmentVariable(OtpPepperEnvVar);
     }
 
     public void Dispose()
@@ -39,6 +42,7 @@ public class AppEnvironmentTests : IDisposable
         Environment.SetEnvironmentVariable(FrontendBaseUrlEnvVar, _originalFrontendBaseUrl);
         Environment.SetEnvironmentVariable(TrustedProxyEnvVar, _originalTrustedProxy);
         Environment.SetEnvironmentVariable(SessionLifetimeEnvVar, _originalSessionLifetime);
+        Environment.SetEnvironmentVariable(OtpPepperEnvVar, _originalOtpPepper);
         GC.SuppressFinalize(this);
     }
 
@@ -276,6 +280,36 @@ public class AppEnvironmentTests : IDisposable
 
         // Act
         string? result = AppEnvironment.FrontendBaseUrl();
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    #endregion
+
+    #region OtpPepper Tests
+
+    [Fact]
+    public void OtpPepper_WhenSet_ShouldReturnTheConfiguredValue()
+    {
+        // Arrange
+        Environment.SetEnvironmentVariable(OtpPepperEnvVar, "a-server-side-otp-key");
+
+        // Act
+        string? result = AppEnvironment.OtpPepper();
+
+        // Assert
+        result.Should().Be("a-server-side-otp-key");
+    }
+
+    [Fact]
+    public void OtpPepper_WhenNotSet_ShouldReturnNull()
+    {
+        // Arrange — the caller is what fails closed, so the accessor reports absence rather than throwing
+        Environment.SetEnvironmentVariable(OtpPepperEnvVar, null);
+
+        // Act
+        string? result = AppEnvironment.OtpPepper();
 
         // Assert
         result.Should().BeNull();
