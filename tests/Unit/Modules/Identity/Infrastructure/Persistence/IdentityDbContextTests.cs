@@ -118,6 +118,34 @@ public class IdentityDbContextTests
     }
 
     [Fact]
+    public void UserTokenStates_ShouldReturnDbSet()
+    {
+        // Arrange
+        DbContextOptions<IdentityDbContext> options = CreateOptions();
+        using var context = new IdentityDbContext(options);
+
+        // Act
+        DbSet<UserTokenStateEntity> result = context.UserTokenStates;
+
+        // Assert
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void UserOtpStates_ShouldReturnDbSet()
+    {
+        // Arrange
+        DbContextOptions<IdentityDbContext> options = CreateOptions();
+        using var context = new IdentityDbContext(options);
+
+        // Act
+        DbSet<UserOtpStateEntity> result = context.UserOtpStates;
+
+        // Assert
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
     public void OnModelCreating_ShouldApplyConfigurationsFromAssembly()
     {
         // Arrange
@@ -167,5 +195,7 @@ public class IdentityDbContextTests
         model.FindEntityType(typeof(RolePermissionEntity)).Should().NotBeNull();
         model.FindEntityType(typeof(OtpEntity)).Should().NotBeNull();
         model.FindEntityType(typeof(SessionEntity)).Should().NotBeNull();
+        model.FindEntityType(typeof(UserTokenStateEntity)).Should().NotBeNull();
+        model.FindEntityType(typeof(UserOtpStateEntity)).Should().NotBeNull();
     }
 }
