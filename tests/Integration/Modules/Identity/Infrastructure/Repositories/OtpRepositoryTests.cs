@@ -55,7 +55,7 @@ public class OtpRepositoryTests(PostgresFixture postgres) : BaseRepositoryTest(p
         var saved = await verifyContext.Otps.FindAsync(otp.Id);
 
         saved.Should().NotBeNull();
-        saved!.CodeHash.Should().StartWith("v1:");
+        saved!.CodeHash.Should().StartWith("h1:");
         saved.CodeHash.Should().NotBe(Otp.ValidCode);
         saved.Purpose.Should().Be(EnumOtpPurpose.PasswordReset);
     }
@@ -142,7 +142,7 @@ public class OtpRepositoryTests(PostgresFixture postgres) : BaseRepositoryTest(p
     }
 
     [Fact]
-    public async Task InvalidateExistingOtpsAsync_ShouldMarkAllExistingOtpsAsUsed()
+    public async Task InvalidateExistingOtpsAsync_ShouldConsumeAllExistingOtps()
     {
         await using var seedContext = CreateDbContext<IdentityDbContext>();
         var user = UserFactory.CreateVerifiedActive();
@@ -162,8 +162,12 @@ public class OtpRepositoryTests(PostgresFixture postgres) : BaseRepositoryTest(p
             .Otps.Where(o => o.UserId == user.Id && o.Purpose == EnumOtpPurpose.EmailVerification)
             .ToListAsync();
 
+        // Superseded codes are consumed, not marked used: "used" means the owner verified it, and
+        // the password-reset lookup accepts used codes. Conflating the two made a code nobody
+        // verified into a valid reset credential.
         otps.Should().HaveCount(2);
-        otps.Should().OnlyContain(o => o.IsUsed);
+        otps.Should().OnlyContain(o => o.ConsumedAt != null);
+        otps.Should().NotContain(o => o.IsUsed);
     }
 
     [Fact]
