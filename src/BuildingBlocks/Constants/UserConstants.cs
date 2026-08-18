@@ -18,7 +18,7 @@ public static class UserConstants
     /// <summary>
     /// Minimum allowed length for the password.
     /// </summary>
-    public const int MinPasswordLength = 12;
+    public const int MinPasswordLength = 6;
 
     /// <summary>
     /// Default verification status for new local authentication users.
@@ -90,7 +90,7 @@ public static class UserConstants
     /// <summary>
     /// OTP expiration time in minutes.
     /// </summary>
-    public const int OtpExpirationMinutes = 10;
+    public const int OtpExpirationMinutes = 60;
 
     /// <summary>
     /// Maximum number of OTP verification attempts against a single code.
