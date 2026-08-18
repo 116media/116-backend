@@ -16,8 +16,8 @@ shippable work. **Rules of engagement:**
 - [x] **Stage 1 — Critical security quick wins** → [`stage-01-critical-security-hardening.md`](stage-01-critical-security-hardening.md)
 - [x] **Stage 2 — Social-login verification & SSRF** → [`stage-02-social-login-and-ssrf.md`](stage-02-social-login-and-ssrf.md)
 - [x] **Stage 3 — Rate-limit partitioning & trusted proxies** → [`stage-03-rate-limits-and-proxies.md`](stage-03-rate-limits-and-proxies.md)
-- [ ] **Stage 4 — Session revocation, verified signup & account-status enforcement** → [`stage-04-session-revocation-and-account-status.md`](stage-04-session-revocation-and-account-status.md)
-- [ ] **Stage 5 — Password & OTP hardening**
+- [x] **Stage 4 — Session revocation, verified signup & account-status enforcement** → [`stage-04-session-revocation-and-account-status.md`](stage-04-session-revocation-and-account-status.md)
+- [ ] **Stage 5 — Password & OTP security** → [`stage-05-password-and-otp-security.md`](stage-05-password-and-otp-security.md)
 - [ ] **Stage 6 — Domain state-machine guards, order total & payment proof**
 - [ ] **Stage 7 — Atomic engagement counters & audit-trail integrity**
 - [ ] **Stage 8 — Query performance (split queries, no-tracking, indexes, soft-delete, N+1)**
@@ -68,11 +68,11 @@ Small, isolated, high-urgency fixes with no cross-module surgery. Full code in t
 - [x] Refresh re-checks account state; add `AbsoluteExpiresAt` cap `[07 S11]`
 - **PR:** `feat(auth): token invalidation, session revocation and verified signup`
 
-### Stage 5 — Password & OTP hardening
-- [ ] PBKDF2 iterations 25k→600k with `v2:` prefix + lazy re-hash; separate cheap OTP hasher `[07 S10]`
-- [ ] Consume the OTP on password reset; cut expiry to 10 min `[07 S4]`
-- [ ] Per-account OTP attempt lockout + resend cap `[07 S5]`
-- [ ] Constant-time login (dummy verify on unknown account); remove `.Produces(404)`; neutralize the
+### Stage 5 — Password & OTP security
+- [x] PBKDF2 iterations 25k→600k with `v2:` prefix + lazy re-hash; separate keyed OTP hasher `[07 S10]`
+- [x] Consume the OTP on password reset; cut expiry to 10 min `[07 S4]`
+- [x] Per-account OTP attempt lockout + resend cap `[07 S5]`
+- [x] Constant-time login (dummy verify on unknown account); remove `.Produces(404)`; neutralize the
       admin forgot/resend role oracle `[07 S7]`
 - **PR:** `fix(auth): strengthen password hashing, OTP consumption and account enumeration`
 
