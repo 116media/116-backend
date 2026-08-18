@@ -29,7 +29,7 @@ public class PasswordServiceTests
 
         // Assert
         hash.Should().NotBeNullOrEmpty();
-        hash.Should().StartWith("v1:");
+        hash.Should().StartWith("v2:");
     }
 
     [Fact]
@@ -57,7 +57,7 @@ public class PasswordServiceTests
 
         // Assert
         hash.Should().NotBeNullOrEmpty();
-        hash.Should().StartWith("v1:");
+        hash.Should().StartWith("v2:");
     }
 
     [Fact]
@@ -71,7 +71,7 @@ public class PasswordServiceTests
 
         // Assert
         hash.Should().NotBeNullOrEmpty();
-        hash.Should().StartWith("v1:");
+        hash.Should().StartWith("v2:");
     }
 
     [Fact]
@@ -85,7 +85,7 @@ public class PasswordServiceTests
 
         // Assert
         hash.Should().NotBeNullOrEmpty();
-        hash.Should().StartWith("v1:");
+        hash.Should().StartWith("v2:");
     }
 
     [Fact]
@@ -99,7 +99,7 @@ public class PasswordServiceTests
 
         // Assert
         hash.Should().NotBeNullOrEmpty();
-        hash.Should().StartWith("v1:");
+        hash.Should().StartWith("v2:");
     }
 
     #endregion
@@ -284,7 +284,7 @@ public class PasswordServiceTests
         // Arrange
         string password = "TestPassword123!";
         string hash = _sut.Hash(password);
-        string wrongVersionHash = "v2:" + hash[3..];
+        string wrongVersionHash = "v9:" + hash[3..];
 
         // Act
         bool result = _sut.Verify(password, wrongVersionHash);
