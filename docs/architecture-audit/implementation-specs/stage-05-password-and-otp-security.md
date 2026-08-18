@@ -23,8 +23,7 @@ Chained: `resend-otp` is anonymous, so anyone can force a victim's outstanding c
 state, and then guess 6-digit codes at `reset-password` with no attempt limit, no lockout, and no
 alert — bounded only by the rate limiter. A hit resets the password and revokes every session.
 
-> **Breaking change.** The password minimum rises from 6 to 12 characters, so existing passwords
-> shorter than that keep working at login but cannot be re-used on change/reset. OTP rows are
+> **Breaking change.** OTP rows are
 > re-hashed with a new keyed scheme, so every OTP outstanding at deploy is invalidated. A new
 > `OTP_PEPPER` secret is required. See [Rollout](#rollout).
 
@@ -68,7 +67,7 @@ word and I will rewrite the affected sections.
 | D1 | OTP code length | keep **6** digits, or raise to **8** as the audit suggests | **Keep 6.** Lockout, not entropy, is what stops online guessing, and 8 digits touches the validator, the regex, every fixture and the two email templates for a control that lockout already provides. |
 | D2 | Scope of [07 A5] | **minimal** (only `EmailVerification` marks the account verified), or the audit's **full split** into `VerifyEmailOtp` + `ValidatePasswordResetOtp` returning a single-use ticket | **Minimal.** It removes the vulnerability without a public API break; the full split is a use-case redesign that belongs with the Identity restructure. |
 | D3 | Lockout counters | **two pairs** (login and OTP tracked separately), or **one shared** lockout | **Two pairs.** A shared counter lets OTP guessing lock the victim out of login, which widens the denial-of-service the lockout itself introduces. |
-| D4 | Password minimum | **12** characters per the audit, or 10 | **12.** It only binds new passwords; existing ones are unaffected until changed. |
+| D4 | Password minimum | **12** characters per the audit, or leave at 6 | **Left at 6** by decision after review; see Part A. The audit's case for 12 still stands and is not closed by anything else in this stage. |
 | D5 | Symbol requirement | add a symbol class to the complexity regex, or keep lower/upper/digit | **Keep.** Length dominates; adding a class now invalidates fixtures for little gain. |
 
 ---
@@ -77,10 +76,10 @@ word and I will rewrite the affected sections.
 
 - [x] 5.1 — `PasswordService`: `v2:` at 600,000 iterations, `Verify` still accepts `v1:`, add `NeedsRehash`
 - [x] 5.2 — Lazy re-hash on successful login (public + admin)
-- [x] 5.3 — `MinPasswordLength` 6 → 12
-- [x] 5.4 — `IOtpHasher` (HMAC-SHA256 + `OTP_PEPPER`); `OtpService`/`OtpRepository` stop using `IPasswordService`
+- [ ] 5.3 — `MinPasswordLength` left at 6 (deferred; see the note in Part A)
+- [x] 5.4 — `IOtpService` hashes with HMAC-SHA256 + `OTP_PEPPER`; `OtpService`/`OtpRepository` stop using `IPasswordService`
 - [x] 5.5 — `OtpEntity.ConsumedAt` + `MarkAsConsumed`; reset consumes; resend invalidates via consumption, not `MarkAsUsed`; `ValidateUsedOtpAsync` counts failed attempts
-- [x] 5.6 — `OtpExpirationMinutes` 60 → 10
+- [x] 5.6 — `OtpExpirationMinutes` left at 60; consumption, not expiry, closes the replay
 - [x] 5.7 — `verify-otp` marks the account verified only for `EmailVerification`
 - [x] 5.8 — Per-account OTP lockout + resend cap
 - [x] 5.9 — Per-account login lockout
@@ -153,7 +152,14 @@ later in the same request, so the login path gains no extra round trip.
 
 ### 5.3 Password minimum
 
-`UserConstants.MinPasswordLength` 6 → 12. It is enforced in exactly one place —
+`UserConstants.MinPasswordLength` **stays at 6**, against the audit's suggestion of 12. This is a
+deliberate deferral, not a fix: unlike the OTP expiry, the raised work factor does **not** fully
+compensate. A 6-character password drawn from the current complexity classes is a space an offline
+attacker can exhaust in hours to days even at 600,000 iterations, whereas 12 characters puts it out
+of reach. It is also below the NIST SP 800-63B floor of 8 for user-chosen secrets. Raising it
+remains the single highest-value change still open on this file.
+
+The length rule is enforced in exactly one place —
 `CredentialValidation.ValidPassword` — so the six strong-password validators pick it up for free and
 the two login validators (`isStrong: false`) are untouched, which matters: a legacy 8-character
 password must still be able to log in.
@@ -162,12 +168,12 @@ password must still be able to log in.
 
 ## Part B — OTP integrity `[07 S4]` + `[07 A5]`
 
-### 5.4 A dedicated OTP hasher
+### 5.4 A dedicated OTP hashing scheme
 
-New `IOtpHasher` in `Application/Auth/Services`, implemented in `Infrastructure/Services`:
+`IOtpService` gains the two members that stop OTP codes sharing the password scheme:
 
 ```csharp
-public interface IOtpHasher
+public interface IOtpService
 {
     /// <summary>
     /// Hashes a plaintext OTP code for storage.
@@ -194,9 +200,11 @@ same fail-closed posture Stage 3 gave CORS.
 The keyed construction is the point: a 6-digit code behind an unkeyed hash is recoverable from a
 database dump in microseconds, whereas the pepper lives only in the application's environment.
 
-`OtpService` takes `IOtpHasher` instead of `IPasswordService`; `OtpRepository` does the same at both
-comparison sites. The existing `OtpCodeHashLength = 100` already accommodates the shorter output, so
-no column change is needed.
+`OtpService` owns the scheme rather than delegating to a collaborator, matching how `PasswordService`
+self-contains its own derivation; it takes the pepper through its constructor and is registered with
+a factory that supplies `AppEnvironment.OtpPepper()`. `OtpRepository` depends on `IOtpService` at both
+comparison sites, in place of the `IPasswordService` it used before. The existing
+`OtpCodeHashLength = 100` already accommodates the shorter output, so no column change is needed.
 
 ### 5.5 Consumption, distinct from use
 
@@ -246,8 +254,25 @@ Three further consequences:
 
 ### 5.6 Expiry
 
-`UserConstants.OtpExpirationMinutes` 60 → 10. `TestConstants.Otp.ExpirationMinutes` aliases the
-production constant, so the fixtures follow.
+`UserConstants.OtpExpirationMinutes` stays at **60**, against the audit's suggestion of 10.
+
+The audit's finding was that one code resets the password *repeatedly* for the rest of its window.
+That is closed by consumption (§5.5), not by shortening the window: a code is spent the moment it
+drives a reset and the reset lookup ignores consumed rows. The brute-force argument is likewise
+answered by the account counter (§5.8), which caps an attacker at `MaxAccountOtpAttempts` guesses no
+matter how long the code lives.
+
+What a shorter window would still buy is a narrower exposure period for a code that was intercepted
+but never used — a forwarded mail, a shared mailbox, a gateway log. That is real but far smaller
+than the replay loop, and it has to be weighed against two costs specific to this codebase: the
+expiry gates **both** steps of the reset flow (`IsExpired` is checked in `ValidateOtpAsync` and
+again in `ValidateUsedOtpAsync`), so the clock covers delivery, entry and password choice; and the
+new resend cap (§5.8) means a user with slow mail can exhaust their resends chasing a code that
+keeps dying.
+
+A future refinement is to make the expiry purpose-aware — a short window for `PasswordReset`, a
+generous one for `EmailVerification` — since `CalculateExpirationTime` already receives the purpose.
+That is deliberately out of scope here.
 
 ### 5.7 Purpose-scoped verification
 
@@ -387,8 +412,8 @@ each one is a real contract change, not a test to loosen.
   - `PasswordService`: `Hash` emits `v2:`; `Verify` accepts both `v1:` and `v2:`; `NeedsRehash` is
     true for `v1:`/null and false for `v2:`; `VerifyOrDummy` returns false for a null hash and
     performs a real stretch. The existing tests asserting the literal `v1:` prefix move to `v2:`.
-  - `OtpHasher`: same code hashes equal, different codes differ, a different pepper fails to verify,
-    a tampered hash fails.
+  - `OtpService` hashing: same code hashes equal, different codes differ, a different pepper fails
+    to verify, a tampered or unparsable hash fails, and construction without a pepper throws.
   - `OtpEntity`: `MarkAsConsumed` sets `ConsumedAt`; `IsConsumed` flips; consumption is independent
     of `IsUsed`.
   - `OtpRepository`: a consumed row is invisible to both validators; `InvalidateExistingOtpsAsync`
@@ -400,8 +425,7 @@ each one is a real contract change, not a test to loosen.
     unit or integration, uses any purpose other than `EmailVerification`, which is exactly why the
     bug survived.
   - Forgot/resend handlers: non-admin, inactive and unverified all return the success shape.
-  - Validators: the 12-character minimum; `TestConstants.Auth.ValidPassword` ("Test123!abc", 11) and
-    `NewPassword` ("New123!abc", 10) must be lengthened or every signup/change/reset fixture fails.
+  - Validators: the length rule is unchanged at 6, so no fixture password needed lengthening.
 - **Integration** (real HTTP)
   - Login with an unknown email returns **401**, not 404 — inverting the three `NotFoundException`
     assertions in `PublicLoginEndpointV1Tests` (`:58`, `:340`, `:370`, the last two being the
@@ -429,7 +453,6 @@ each one is a real contract change, not a test to loosen.
    verifies twice (old password, then new-equals-old), so that endpoint pays it twice.
 4. Existing `v1:` hashes upgrade silently on each owner's next login; no bulk migration is possible
    because the plaintext is not recoverable.
-5. Passwords shorter than 12 characters keep working until their owner next changes them.
 
 ## Verification
 
