@@ -37,7 +37,7 @@ public class AdminForgotPasswordEndpointV1Tests(PostgresFixture db) : BaseApiTes
     }
 
     [Fact]
-    public async Task ForgotPassword_ForNonAdminUser_ReturnsForbidden()
+    public async Task ForgotPassword_ForNonAdminUser_ReturnsTheSameNeutralSuccess()
     {
         await using var seedContext = CreateDbContext<IdentityDbContext>();
         var visitorUser = UserFactory.CreateVerifiedActive();
@@ -49,10 +49,12 @@ public class AdminForgotPasswordEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.PostAsJsonAsync(ForgotPasswordUrl, request);
 
-        await response.ShouldBeProblem<AccessDeniedException>(
-            HttpStatusCode.Forbidden,
-            Localized<AuthenticationErrorMessage>(m => m.InsufficientPermissions())
-        );
+        // A role oracle would let an attacker enumerate privileged accounts, so a known
+        // non-admin answers exactly like an address that does not exist.
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        AdminForgotPasswordResponse body = await response.ReadAsAsync<AdminForgotPasswordResponse>();
+        body.IsSuccess.Should().BeTrue();
     }
 
     [Fact]
