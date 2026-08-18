@@ -1,15 +1,20 @@
 using _116.Identity.Application.Auth.Exceptions;
+using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Shared.Errors;
+using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Repositories;
-using _116.Identity.Infrastructure.Services;
 using _116.Shared.Application.Exceptions;
+using _116.Tests.Fixtures.Builders.Entities.Identity;
+using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Identity;
 using _116.Tests.Fixtures.Helpers;
+using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
+using Moq;
 using Xunit;
 
 namespace _116.Unit.Tests.Modules.Identity.Infrastructure.Repositories;
@@ -20,6 +25,8 @@ namespace _116.Unit.Tests.Modules.Identity.Infrastructure.Repositories;
 public class OtpRepositoryTests : IDisposable
 {
     private readonly IdentityDbContext _context;
+    private readonly Mock<IOtpHasher> _otpHasherMock;
+    private readonly Mock<IAccountLockoutRepository> _lockoutRepositoryMock;
     private readonly OtpRepository _repository;
 
     public OtpRepositoryTests()
@@ -32,8 +39,12 @@ public class OtpRepositoryTests : IDisposable
 
         UserErrors userErrors = TestErrorsFactory.CreateUserErrors();
 
-        // The real hashing service: verification compares against the hash the fixtures store.
-        _repository = new OtpRepository(_context, userErrors, new PasswordService());
+        // The hasher is mocked because the real one is keyed with a deployment secret; a test that
+        // needs a code accepted names that code through the mock.
+        _otpHasherMock = MockOtpHasher.Create();
+        _lockoutRepositoryMock = new Mock<IAccountLockoutRepository>();
+
+        _repository = new OtpRepository(_context, userErrors, _otpHasherMock.Object, _lockoutRepositoryMock.Object);
     }
 
     public void Dispose()
@@ -87,6 +98,8 @@ public class OtpRepositoryTests : IDisposable
 
         _context.Otps.Add(otp);
         await _context.SaveChangesAsync();
+
+        _otpHasherMock.SetupVerifySuccess(code);
 
         // Act
         OtpEntity result = await _repository.ValidateOtpAsync(userId, code, purpose);
@@ -160,6 +173,29 @@ public class OtpRepositoryTests : IDisposable
 
         OtpEntity? updatedOtp = await _context.Otps.FirstOrDefaultAsync(o => o.Id == otp.Id);
         updatedOtp!.AttemptCount.Should().Be(initialAttemptCount + 1);
+    }
+
+    [Fact]
+    public async Task ValidateOtpAsync_WhenCodeIsInvalid_ShouldRegisterTheFailureAgainstTheAccount()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        string correctCode = "123456";
+        string wrongCode = "654321";
+        var purpose = EnumOtpPurpose.EmailVerification;
+
+        OtpEntity otp = CreateOtpWithCreatedAt(OtpFactory.Create(userId, correctCode, purpose));
+
+        _context.Otps.Add(otp);
+        await _context.SaveChangesAsync();
+
+        // Act
+        Func<Task> act = async () => await _repository.ValidateOtpAsync(userId, wrongCode, purpose);
+
+        // Assert
+        await act.Should().ThrowAsync<BadRequestException>();
+
+        _lockoutRepositoryMock.Verify(x => x.RegisterFailedOtpAsync(userId, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -308,6 +344,8 @@ public class OtpRepositoryTests : IDisposable
         _context.Otps.AddRange(olderOtp, newerOtp);
         await _context.SaveChangesAsync();
 
+        _otpHasherMock.SetupVerifySuccess(code);
+
         // Act
         OtpEntity result = await _repository.ValidateOtpAsync(userId, code, purpose);
 
@@ -331,6 +369,8 @@ public class OtpRepositoryTests : IDisposable
 
         _context.Otps.Add(otp);
         await _context.SaveChangesAsync();
+
+        _otpHasherMock.SetupVerifySuccess(code);
 
         // Act
         OtpEntity result = await _repository.ValidateUsedOtpAsync(userId, code, purpose);
@@ -356,6 +396,47 @@ public class OtpRepositoryTests : IDisposable
     }
 
     [Fact]
+    public async Task ValidateUsedOtpAsync_WhenNoUsedOtpExists_ShouldRegisterTheFailureAgainstTheAccount()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        string code = "123456";
+        var purpose = EnumOtpPurpose.EmailVerification;
+
+        // Act
+        Func<Task> act = async () => await _repository.ValidateUsedOtpAsync(userId, code, purpose);
+
+        // Assert
+        await act.Should().ThrowAsync<BadRequestException>();
+
+        _lockoutRepositoryMock.Verify(x => x.RegisterFailedOtpAsync(userId, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ValidateUsedOtpAsync_WhenTheUsedOtpWasConsumed_ShouldThrowBadRequestException()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        string code = "123456";
+        var purpose = EnumOtpPurpose.PasswordReset;
+
+        OtpEntity otp = CreateOtpWithCreatedAt(
+            new OtpBuilder().WithUserId(userId).WithCode(code).WithPurpose(purpose).AsUsed().AsConsumed().Build()
+        );
+
+        _context.Otps.Add(otp);
+        await _context.SaveChangesAsync();
+
+        _otpHasherMock.SetupVerifySuccess(code);
+
+        // Act
+        Func<Task> act = async () => await _repository.ValidateUsedOtpAsync(userId, code, purpose);
+
+        // Assert
+        await act.Should().ThrowAsync<BadRequestException>();
+    }
+
+    [Fact]
     public async Task ValidateUsedOtpAsync_WhenOtpIsExpired_ShouldThrowOtpExpirationException()
     {
         // Arrange
@@ -368,6 +449,8 @@ public class OtpRepositoryTests : IDisposable
         _context.Otps.Add(otp);
         await _context.SaveChangesAsync();
 
+        _otpHasherMock.SetupVerifySuccess(code);
+
         // Act
         Func<Task> act = async () => await _repository.ValidateUsedOtpAsync(userId, code, purpose);
 
@@ -379,8 +462,8 @@ public class OtpRepositoryTests : IDisposable
     public async Task ValidateUsedOtpAsync_ShouldReturnMostRecentUsedOtp()
     {
         // Arrange
-        var userId = Guid.NewGuid();
         string code = "123456";
+        var userId = Guid.NewGuid();
         var purpose = EnumOtpPurpose.EmailVerification;
 
         OtpEntity olderOtp = CreateOtpWithCreatedAt(
@@ -392,6 +475,8 @@ public class OtpRepositoryTests : IDisposable
 
         _context.Otps.AddRange(olderOtp, newerOtp);
         await _context.SaveChangesAsync();
+
+        _otpHasherMock.SetupVerifySuccess(code);
 
         // Act
         OtpEntity result = await _repository.ValidateUsedOtpAsync(userId, code, purpose);
@@ -405,7 +490,7 @@ public class OtpRepositoryTests : IDisposable
     #region InvalidateExistingOtpsAsync Tests
 
     [Fact]
-    public async Task InvalidateExistingOtpsAsync_WhenOtpsExist_ShouldMarkThemAsUsed()
+    public async Task InvalidateExistingOtpsAsync_WhenOtpsExist_ShouldMarkThemAsConsumed()
     {
         // Arrange
         var userId = Guid.NewGuid();
@@ -426,13 +511,35 @@ public class OtpRepositoryTests : IDisposable
 
         // Assert
         OtpEntity? updatedOtp1 = await _context.Otps.FirstOrDefaultAsync(o => o.Id == otp1.Id);
-        updatedOtp1!.IsUsed.Should().BeTrue();
+        updatedOtp1!.IsConsumed().Should().BeTrue();
 
         OtpEntity? updatedOtp2 = await _context.Otps.FirstOrDefaultAsync(o => o.Id == otp2.Id);
-        updatedOtp2!.IsUsed.Should().BeTrue();
+        updatedOtp2!.IsConsumed().Should().BeTrue();
 
         OtpEntity? updatedOtherUserOtp = await _context.Otps.FirstOrDefaultAsync(o => o.Id == otherUserOtp.Id);
-        updatedOtherUserOtp!.IsUsed.Should().BeFalse();
+        updatedOtherUserOtp!.IsConsumed().Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task InvalidateExistingOtpsAsync_ShouldNotReportTheSupersededOtpsAsVerified()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var purpose = EnumOtpPurpose.PasswordReset;
+
+        OtpEntity otp = CreateOtpWithCreatedAt(OtpFactory.Create(userId, purpose));
+
+        _context.Otps.Add(otp);
+        await _context.SaveChangesAsync();
+
+        // Act
+        await _repository.InvalidateExistingOtpsAsync(userId, purpose);
+        await _context.SaveChangesAsync();
+
+        // Assert
+        OtpEntity? updatedOtp = await _context.Otps.FirstOrDefaultAsync(o => o.Id == otp.Id);
+        updatedOtp!.ConsumedAt.Should().NotBeNull();
+        updatedOtp.IsUsed.Should().BeFalse();
     }
 
     [Fact]
@@ -470,10 +577,99 @@ public class OtpRepositoryTests : IDisposable
 
         // Assert
         OtpEntity? updatedEmailOtp = await _context.Otps.FirstOrDefaultAsync(o => o.Id == emailVerificationOtp.Id);
-        updatedEmailOtp!.IsUsed.Should().BeTrue();
+        updatedEmailOtp!.IsConsumed().Should().BeTrue();
 
         OtpEntity? updatedPasswordOtp = await _context.Otps.FirstOrDefaultAsync(o => o.Id == passwordResetOtp.Id);
-        updatedPasswordOtp!.IsUsed.Should().BeFalse();
+        updatedPasswordOtp!.IsConsumed().Should().BeFalse();
+    }
+
+    #endregion
+
+    #region CountRecentOtpsAsync Tests
+
+    [Fact]
+    public async Task CountRecentOtpsAsync_ShouldCountTheCodesIssuedInsideTheWindow()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var purpose = EnumOtpPurpose.EmailVerification;
+
+        _context.Otps.AddRange(
+            CreateOtpWithCreatedAt(OtpFactory.Create(userId, purpose), DateTime.UtcNow),
+            CreateOtpWithCreatedAt(OtpFactory.Create(userId, purpose), DateTime.UtcNow.AddMinutes(-1))
+        );
+        await _context.SaveChangesAsync();
+
+        // Act
+        int count = await _repository.CountRecentOtpsAsync(userId, purpose);
+
+        // Assert
+        count.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task CountRecentOtpsAsync_ShouldIgnoreCodesIssuedBeforeTheWindow()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var purpose = EnumOtpPurpose.EmailVerification;
+
+        _context.Otps.Add(
+            CreateOtpWithCreatedAt(
+                OtpFactory.Create(userId, purpose),
+                DateTime.UtcNow.AddMinutes(-TestConstants.Otp.ResendWindowMinutes - 1)
+            )
+        );
+        await _context.SaveChangesAsync();
+
+        // Act
+        int count = await _repository.CountRecentOtpsAsync(userId, purpose);
+
+        // Assert
+        count.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task CountRecentOtpsAsync_ShouldIgnoreOtherUsersAndOtherPurposes()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var purpose = EnumOtpPurpose.EmailVerification;
+
+        _context.Otps.AddRange(
+            CreateOtpWithCreatedAt(OtpFactory.Create(userId, purpose), DateTime.UtcNow),
+            CreateOtpWithCreatedAt(OtpFactory.Create(userId, EnumOtpPurpose.PasswordReset), DateTime.UtcNow),
+            CreateOtpWithCreatedAt(OtpFactory.Create(Guid.NewGuid(), purpose), DateTime.UtcNow)
+        );
+        await _context.SaveChangesAsync();
+
+        // Act
+        int count = await _repository.CountRecentOtpsAsync(userId, purpose);
+
+        // Assert
+        count.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task CountRecentOtpsAsync_ShouldCountConsumedCodesToo()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var purpose = EnumOtpPurpose.EmailVerification;
+
+        _context.Otps.Add(
+            CreateOtpWithCreatedAt(
+                new OtpBuilder().WithUserId(userId).WithPurpose(purpose).AsConsumed().Build(),
+                DateTime.UtcNow
+            )
+        );
+        await _context.SaveChangesAsync();
+
+        // Act
+        int count = await _repository.CountRecentOtpsAsync(userId, purpose);
+
+        // Assert
+        count.Should().Be(1);
     }
 
     #endregion
