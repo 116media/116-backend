@@ -9,6 +9,7 @@ using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Identity;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -20,6 +21,7 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Auth.UseCases.Public.Comm
 public class PublicForgotPasswordHandlerTests
 {
     private readonly Mock<IMailer> _mailerMock = new();
+    private readonly Mock<ILogger<PublicForgotPasswordHandler>> _loggerMock = new();
     private readonly Mock<IPublicForgotPasswordOtpFactory> _otpFactoryMock;
     private readonly Mock<IAuthRepository> _authRepositoryMock;
     private readonly PublicForgotPasswordHandler _handler;
@@ -32,7 +34,8 @@ public class PublicForgotPasswordHandlerTests
         _handler = new PublicForgotPasswordHandler(
             _otpFactoryMock.Object,
             _authRepositoryMock.Object,
-            _mailerMock.Object
+            _mailerMock.Object,
+            _loggerMock.Object
         );
     }
 
@@ -49,8 +52,6 @@ public class PublicForgotPasswordHandlerTests
 
         _authRepositoryMock.SetupExistsByEmail(new Email(email), true);
         _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
-        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
-        _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
         _otpFactoryMock
             .Setup(x => x.CreatePasswordResetOtpAsync(user.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new OtpCreationResult(otp, TestConstants.Otp.DefaultCode));
@@ -85,8 +86,6 @@ public class PublicForgotPasswordHandlerTests
 
         _authRepositoryMock.SetupExistsByEmail(new Email(email), true);
         _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
-        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
-        _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
         _otpFactoryMock
             .Setup(x => x.CreatePasswordResetOtpAsync(user.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(
@@ -97,6 +96,7 @@ public class PublicForgotPasswordHandlerTests
         PublicForgotPasswordResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        result.IsSuccess.Should().BeTrue();
         result.Email.Should().Be(email);
     }
 
@@ -110,8 +110,6 @@ public class PublicForgotPasswordHandlerTests
 
         _authRepositoryMock.SetupExistsByEmail(new Email(email), true);
         _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
-        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
-        _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
         _otpFactoryMock
             .Setup(x => x.CreatePasswordResetOtpAsync(user.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(
@@ -138,6 +136,7 @@ public class PublicForgotPasswordHandlerTests
         PublicForgotPasswordResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        result.IsSuccess.Should().BeTrue();
         result.Email.Should().Be(email);
     }
 
@@ -179,54 +178,116 @@ public class PublicForgotPasswordHandlerTests
         );
     }
 
+    #endregion
+
+    #region Ineligible Account Cases
+
     [Fact]
-    public async Task Handle_ShouldValidateUserAccountIsActive()
+    public async Task Handle_WhenAccountIsInactive_ShouldReturnTheSameNeutralResult()
     {
         // Arrange
-        string email = "user@example.com";
-        UserEntity user = UserFactory.CreateVerifiedActive();
+        string email = "inactive@example.com";
+        UserEntity user = UserFactory.CreateInactive();
         PublicForgotPasswordCommand command = new(Email: email);
 
         _authRepositoryMock.SetupExistsByEmail(new Email(email), true);
         _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
-        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
-        _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
-        _otpFactoryMock
-            .Setup(x => x.CreatePasswordResetOtpAsync(user.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(
-                new OtpCreationResult(OtpFactory.CreateForPasswordReset(user.Id), TestConstants.Otp.DefaultCode)
-            );
 
         // Act
-        await _handler.Handle(command, CancellationToken.None);
+        PublicForgotPasswordResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _authRepositoryMock.Verify(x => x.IsUserAccountActive(It.IsAny<UserEntity>()), Times.Once);
+        result.IsSuccess.Should().BeTrue();
+        result.Email.Should().Be(email);
     }
 
     [Fact]
-    public async Task Handle_ShouldValidateUserAccountIsVerified()
+    public async Task Handle_WhenAccountIsInactive_ShouldNotCreateOtp()
     {
         // Arrange
-        string email = "user@example.com";
-        UserEntity user = UserFactory.CreateVerifiedActive();
+        string email = "inactive@example.com";
+        UserEntity user = UserFactory.CreateInactive();
         PublicForgotPasswordCommand command = new(Email: email);
 
         _authRepositoryMock.SetupExistsByEmail(new Email(email), true);
         _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
-        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
-        _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
-        _otpFactoryMock
-            .Setup(x => x.CreatePasswordResetOtpAsync(user.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(
-                new OtpCreationResult(OtpFactory.CreateForPasswordReset(user.Id), TestConstants.Otp.DefaultCode)
-            );
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _authRepositoryMock.Verify(x => x.IsUserAccountVerified(It.IsAny<UserEntity>()), Times.Once);
+        _otpFactoryMock.Verify(
+            x => x.CreatePasswordResetOtpAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
+    }
+
+    [Fact]
+    public async Task Handle_WhenAccountIsInactive_ShouldNotEnqueueMail()
+    {
+        // Arrange
+        string email = "inactive@example.com";
+        UserEntity user = UserFactory.CreateInactive();
+        PublicForgotPasswordCommand command = new(Email: email);
+
+        _authRepositoryMock.SetupExistsByEmail(new Email(email), true);
+        _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        _mailerMock.Verify(
+            x =>
+                x.EnqueueAsync(
+                    It.IsAny<EnumEmailTemplate>(),
+                    It.IsAny<EmailRecipient>(),
+                    It.IsAny<IReadOnlyDictionary<string, string>>(),
+                    It.IsAny<string>(),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Never
+        );
+    }
+
+    [Fact]
+    public async Task Handle_WhenAccountIsUnverified_ShouldReturnTheSameNeutralResult()
+    {
+        // Arrange
+        string email = "unverified@example.com";
+        UserEntity user = UserFactory.CreateUnverified();
+        PublicForgotPasswordCommand command = new(Email: email);
+
+        _authRepositoryMock.SetupExistsByEmail(new Email(email), true);
+        _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
+
+        // Act
+        PublicForgotPasswordResult result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Email.Should().Be(email);
+    }
+
+    [Fact]
+    public async Task Handle_WhenAccountIsUnverified_ShouldNotCreateOtp()
+    {
+        // Arrange
+        string email = "unverified@example.com";
+        UserEntity user = UserFactory.CreateUnverified();
+        PublicForgotPasswordCommand command = new(Email: email);
+
+        _authRepositoryMock.SetupExistsByEmail(new Email(email), true);
+        _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        _otpFactoryMock.Verify(
+            x => x.CreatePasswordResetOtpAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
     }
 
     #endregion
@@ -261,8 +322,6 @@ public class PublicForgotPasswordHandlerTests
 
         _authRepositoryMock.SetupExistsByEmail(new Email(email), true);
         _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
-        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
-        _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
         _otpFactoryMock
             .Setup(x => x.CreatePasswordResetOtpAsync(user.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(
