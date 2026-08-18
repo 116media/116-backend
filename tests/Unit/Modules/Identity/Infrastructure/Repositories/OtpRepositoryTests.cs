@@ -25,7 +25,7 @@ namespace _116.Unit.Tests.Modules.Identity.Infrastructure.Repositories;
 public class OtpRepositoryTests : IDisposable
 {
     private readonly IdentityDbContext _context;
-    private readonly Mock<IOtpHasher> _otpHasherMock;
+    private readonly Mock<IOtpService> _otpServiceMock;
     private readonly Mock<IAccountLockoutRepository> _lockoutRepositoryMock;
     private readonly OtpRepository _repository;
 
@@ -41,10 +41,10 @@ public class OtpRepositoryTests : IDisposable
 
         // The hasher is mocked because the real one is keyed with a deployment secret; a test that
         // needs a code accepted names that code through the mock.
-        _otpHasherMock = MockOtpHasher.Create();
+        _otpServiceMock = MockOtpService.Create();
         _lockoutRepositoryMock = new Mock<IAccountLockoutRepository>();
 
-        _repository = new OtpRepository(_context, userErrors, _otpHasherMock.Object, _lockoutRepositoryMock.Object);
+        _repository = new OtpRepository(_context, userErrors, _otpServiceMock.Object, _lockoutRepositoryMock.Object);
     }
 
     public void Dispose()
@@ -99,7 +99,7 @@ public class OtpRepositoryTests : IDisposable
         _context.Otps.Add(otp);
         await _context.SaveChangesAsync();
 
-        _otpHasherMock.SetupVerifySuccess(code);
+        _otpServiceMock.SetupVerifySuccess(code);
 
         // Act
         OtpEntity result = await _repository.ValidateOtpAsync(userId, code, purpose);
@@ -344,7 +344,7 @@ public class OtpRepositoryTests : IDisposable
         _context.Otps.AddRange(olderOtp, newerOtp);
         await _context.SaveChangesAsync();
 
-        _otpHasherMock.SetupVerifySuccess(code);
+        _otpServiceMock.SetupVerifySuccess(code);
 
         // Act
         OtpEntity result = await _repository.ValidateOtpAsync(userId, code, purpose);
@@ -370,7 +370,7 @@ public class OtpRepositoryTests : IDisposable
         _context.Otps.Add(otp);
         await _context.SaveChangesAsync();
 
-        _otpHasherMock.SetupVerifySuccess(code);
+        _otpServiceMock.SetupVerifySuccess(code);
 
         // Act
         OtpEntity result = await _repository.ValidateUsedOtpAsync(userId, code, purpose);
@@ -427,7 +427,7 @@ public class OtpRepositoryTests : IDisposable
         _context.Otps.Add(otp);
         await _context.SaveChangesAsync();
 
-        _otpHasherMock.SetupVerifySuccess(code);
+        _otpServiceMock.SetupVerifySuccess(code);
 
         // Act
         Func<Task> act = async () => await _repository.ValidateUsedOtpAsync(userId, code, purpose);
@@ -449,7 +449,7 @@ public class OtpRepositoryTests : IDisposable
         _context.Otps.Add(otp);
         await _context.SaveChangesAsync();
 
-        _otpHasherMock.SetupVerifySuccess(code);
+        _otpServiceMock.SetupVerifySuccess(code);
 
         // Act
         Func<Task> act = async () => await _repository.ValidateUsedOtpAsync(userId, code, purpose);
@@ -476,7 +476,7 @@ public class OtpRepositoryTests : IDisposable
         _context.Otps.AddRange(olderOtp, newerOtp);
         await _context.SaveChangesAsync();
 
-        _otpHasherMock.SetupVerifySuccess(code);
+        _otpServiceMock.SetupVerifySuccess(code);
 
         // Act
         OtpEntity result = await _repository.ValidateUsedOtpAsync(userId, code, purpose);
