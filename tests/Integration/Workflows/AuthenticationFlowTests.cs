@@ -2,6 +2,7 @@ using System.Net.Http.Headers;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.Login.V1;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp.V1;
 using _116.Identity.Application.Shared.Errors.Messages;
+using _116.Identity.Application.Shared.Exceptions;
 using _116.Identity.Application.User.UseCases.Public.Queries.GetOwnProfile.V1;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
@@ -153,7 +154,7 @@ public class AuthenticationFlowTests(PostgresFixture db) : BaseApiTest(db)
     }
 
     [Fact]
-    public async Task Login_WithInvalidCredentials_ShouldReturnError()
+    public async Task Login_WithInvalidCredentials_ReturnsInvalidCredentialsUnauthorized()
     {
         Client.ClearAuthentication();
 
@@ -161,9 +162,9 @@ public class AuthenticationFlowTests(PostgresFixture db) : BaseApiTest(db)
 
         HttpResponseMessage response = await Client.PostAsJsonAsync(Routes.Public.Auth.Login(), request);
 
-        await response.ShouldBeProblem<NotFoundException>(
-            HttpStatusCode.NotFound,
-            Localized<SharedExceptionMessage>(m => m.EntityNotFound("User"))
+        await response.ShouldBeProblem<AuthenticationException>(
+            HttpStatusCode.Unauthorized,
+            Localized<AuthenticationErrorMessage>(m => m.InvalidCredentials())
         );
     }
 }
