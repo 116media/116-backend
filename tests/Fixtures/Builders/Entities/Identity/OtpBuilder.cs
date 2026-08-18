@@ -1,3 +1,4 @@
+using _116.Identity.Application.Auth.Services;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Services;
@@ -15,10 +16,10 @@ namespace _116.Tests.Fixtures.Builders.Entities.Identity;
 public class OtpBuilder
 {
     /// <summary>
-    /// The production hashing service, so a built OTP stores its code exactly the way the
-    /// application does and the real verification path accepts the plaintext handed to the builder.
+    /// The production OTP service, so a built OTP stores its code exactly the way the application
+    /// does and the real verification path accepts the plaintext handed to the builder.
     /// </summary>
-    private static readonly OtpHasher Hasher = new(TestConstants.Otp.Pepper);
+    private static readonly IOtpService Hasher = new OtpService(TestConstants.Otp.Pepper, TimeProvider.System);
 
     private readonly Faker _faker = TestFaker.Create();
 
