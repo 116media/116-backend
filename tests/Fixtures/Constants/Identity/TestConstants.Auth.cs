@@ -10,12 +10,12 @@ public static partial class TestConstants
     {
         public const string PublicLoginEmail = "user@example.com";
         public const string PublicLoginUserName = "testuser";
-        public const string ValidPassword = "Test123!abc";
+        public const string ValidPassword = "Test123!abcdef";
         public const string PublicLoginPassword = "Password123!";
         public const string PublicLoginInvalidPassword = "WrongPassword!";
 
         public const string OldPassword = "Old123!abc";
-        public const string NewPassword = "New123!abc";
+        public const string NewPassword = "New123!abcdef";
         public const string ChangedPassword = "NewPass123!abc";
         public const string IncorrectCurrentPassword = "WrongPassword123!";
         public const string SocialAccountPassword = "AnyPass123!";
