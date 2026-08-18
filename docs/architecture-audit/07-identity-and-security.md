@@ -133,6 +133,13 @@ no alert — bounded only by the rate limiter. A hit resets the password and rev
 also sets, so "superseded" can never satisfy the reset lookup; and meter `ValidateUsedOtpAsync`
 failures the way `ValidateOtpAsync` already meters its own.
 
+**Shipped in Stage 5, with one deviation.** Consumption and metering landed; `OtpExpirationMinutes`
+was **left at 60**. Consumption closes the replay this finding names, and the account attempt cap
+closes the guessing, so the expiry was doing little of the work. A shorter window would only narrow
+the exposure of an intercepted-but-unused code, at a cost specific to this codebase: the expiry
+gates both the verify and the reset step, and the new resend cap can strand a user whose mail is
+slow. Making the expiry purpose-aware is the better refinement and remains open.
+
 ---
 
 ## S5 — OTP attempt limiting is defeated by `resend-otp`; effective space is 3 guesses per resend
@@ -241,9 +248,16 @@ table ~24× faster than it should. With a 6-char floor, a large share is recover
 correct guess is never slowed by the account locking — only by the shared global bucket.
 
 **Solution.** Raise to 600,000 with a `v2:` prefix and lazy re-hash on next login (keep `v1:` at
-25k for existing hashes). Give OTPs a separate cheap `IOtpHasher` (HMAC + pepper) so a 600k×2 cost
+25k for existing hashes). Give OTPs their own cheap keyed scheme (HMAC + pepper) so a 600k×2 cost
 isn't paid per OTP check. Raise the minimum to 12 chars. Add `FailedLoginAttempts`/`LockedUntil` to
 `UserEntity` (the same fields S5 needs).
+
+**Partially shipped in Stage 5.** The 600,000-iteration `v2:` scheme with lazy re-hash, the keyed
+OTP hashing scheme, and the lockout counters all landed. `MinPasswordLength` was **left at 6** by
+decision. This part of the finding is therefore still open, and is not compensated by the higher
+work factor: a 6-character password within the current complexity classes stays exhaustible offline
+in hours to days at 600k iterations, and 6 is below the NIST SP 800-63B floor of 8 for user-chosen
+secrets.
 
 ---
 
