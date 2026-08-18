@@ -1,5 +1,6 @@
 using _116.Identity.Application.Auth.Repositories;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.ResetPassword.Contracts;
+using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Contracts.Application.CQRS;
@@ -36,12 +37,16 @@ public class PublicResetPasswordHandler(IPublicResetPasswordAuthFactory authFact
             cancellationToken: cancellationToken
         );
 
-        await otpRepository.ValidateUsedOtpAsync(
+        OtpEntity verifiedOtp = await otpRepository.ValidateUsedOtpAsync(
             code: command.Code,
             userId: authData.User.Id,
             purpose: EnumOtpPurpose.PasswordReset,
             cancellationToken: cancellationToken
         );
+
+        // Spend the code in the same unit of work as the new password, so it cannot be
+        // replayed against a second reset.
+        verifiedOtp.MarkAsConsumed();
 
         await authFactory.ResetPasswordAsync(
             user: authData.User,
