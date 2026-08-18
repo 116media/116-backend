@@ -104,6 +104,42 @@ public class AdminResendOtpHandlerTests
     }
 
     [Fact]
+    public async Task Handle_WhenTheFactoryMintsNothing_ShouldSucceedWithoutMailing()
+    {
+        // Arrange
+        string email = "admin@example.com";
+        string purpose = EnumOtpPurpose.EmailVerification.ToString();
+        UserEntity user = UserFactory.CreateVerifiedActive();
+
+        AdminResendOtpCommand command = new(Email: email, Purpose: purpose);
+
+        _authRepositoryMock.SetupExistsByEmail(new Email(email), true);
+        _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
+        _authRepositoryMock.SetupIsUserAdminReturnsTrue();
+        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
+        _otpFactoryMock
+            .Setup(x => x.ResendOtpAsync(user.Id, It.IsAny<OtpPurpose>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((OtpCreationResult?)null);
+
+        // Act
+        AdminResendOtpResult result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        _mailerMock.Verify(
+            x =>
+                x.EnqueueAsync(
+                    It.IsAny<EnumEmailTemplate>(),
+                    It.IsAny<EmailRecipient>(),
+                    It.IsAny<IReadOnlyDictionary<string, string>>(),
+                    It.IsAny<string>(),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Never
+        );
+    }
+
+    [Fact]
     public async Task Handle_WhenUserDoesNotExist_ShouldNotCallOtpFactory()
     {
         // Arrange
