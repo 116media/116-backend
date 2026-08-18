@@ -1,6 +1,7 @@
 using _116.Identity.Application.Auth.Specifications;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
+using _116.Tests.Fixtures.Builders.Entities.Identity;
 using _116.Tests.Fixtures.Factories.Identity;
 using AwesomeAssertions;
 using Xunit;
@@ -142,6 +143,38 @@ public class OtpSpecificationsTests
 
     #endregion
 
+    #region OtpIsNotConsumedSpecification Tests
+
+    [Fact]
+    public void OtpIsNotConsumedSpecification_WithOutstandingOtp_ShouldReturnTrue()
+    {
+        // Arrange
+        OtpEntity otp = OtpFactory.Create();
+        OtpIsNotConsumedSpecification spec = new();
+
+        // Act
+        bool result = spec.IsSatisfiedBy(otp);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public void OtpIsNotConsumedSpecification_WithConsumedOtp_ShouldReturnFalse()
+    {
+        // Arrange
+        OtpEntity otp = new OtpBuilder().AsConsumed().Build();
+        OtpIsNotConsumedSpecification spec = new();
+
+        // Act
+        bool result = spec.IsSatisfiedBy(otp);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    #endregion
+
     #region OtpIsExpiredSpecification Tests
 
     [Fact]
@@ -210,6 +243,22 @@ public class OtpSpecificationsTests
     }
 
     [Fact]
+    public void OtpForValidationSpecification_WithConsumedOtp_ShouldReturnFalse()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var purpose = EnumOtpPurpose.EmailVerification;
+        OtpEntity otp = new OtpBuilder().WithUserId(userId).WithPurpose(purpose).AsConsumed().Build();
+        OtpForValidationSpecification spec = new(userId, purpose);
+
+        // Act
+        bool result = spec.IsSatisfiedBy(otp);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Fact]
     public void OtpForValidationSpecification_WithADifferentUser_ShouldReturnFalse()
     {
         // Arrange
@@ -261,6 +310,22 @@ public class OtpSpecificationsTests
         result.Should().BeFalse();
     }
 
+    [Fact]
+    public void OtpForInvalidationSpecification_WithConsumedOtp_ShouldReturnFalse()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var purpose = EnumOtpPurpose.PasswordReset;
+        OtpEntity otp = new OtpBuilder().WithUserId(userId).WithPurpose(purpose).AsConsumed().Build();
+        OtpForInvalidationSpecification spec = new(userId, purpose);
+
+        // Act
+        bool result = spec.IsSatisfiedBy(otp);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
     #endregion
 
     #region OtpForUsedValidationSpecification Tests
@@ -280,6 +345,22 @@ public class OtpSpecificationsTests
 
         // Assert
         result.Should().BeTrue();
+    }
+
+    [Fact]
+    public void OtpForUsedValidationSpecification_WithConsumedOtp_ShouldReturnFalse()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var purpose = EnumOtpPurpose.PasswordReset;
+        OtpEntity otp = new OtpBuilder().WithUserId(userId).WithPurpose(purpose).AsUsed().AsConsumed().Build();
+        OtpForUsedValidationSpecification spec = new(userId, purpose);
+
+        // Act
+        bool result = spec.IsSatisfiedBy(otp);
+
+        // Assert
+        result.Should().BeFalse();
     }
 
     [Fact]
