@@ -17,15 +17,15 @@ namespace _116.Identity.Infrastructure.Repositories;
 /// </summary>
 /// <param name="context">The identity database context.</param>
 /// <param name="userErrors">User domain error factory for generating localized domain exceptions.</param>
-/// <param name="otpHasher">
-/// Keyed hasher used to compare a supplied code against the stored hash. The pepper cannot be
-/// pushed into the query, so the comparison happens once a candidate row is loaded.
+/// <param name="otpService">
+/// Service whose keyed hashing compares a supplied code against the stored hash. The pepper cannot
+/// be pushed into the query, so the comparison happens once a candidate row is loaded.
 /// </param>
 /// <param name="lockoutRepository">Repository recording failed OTP attempts against the account.</param>
 public class OtpRepository(
     IdentityDbContext context,
     UserErrors userErrors,
-    IOtpHasher otpHasher,
+    IOtpService otpService,
     IAccountLockoutRepository lockoutRepository
 ) : IOtpRepository
 {
@@ -69,7 +69,7 @@ public class OtpRepository(
         }
 
         // Then compare the supplied code against the stored hash
-        if (otpHasher.Verify(code: code, hash: candidateOtp.CodeHash))
+        if (otpService.Verify(code: code, hash: candidateOtp.CodeHash))
         {
             return candidateOtp;
         }
@@ -107,7 +107,7 @@ public class OtpRepository(
 
         // Check if a verified OTP exists and that it is the one the caller presented. A miss is
         // metered against the account, so guessing here costs the same as guessing at verify-otp.
-        if (matchingOtp == null || !otpHasher.Verify(code: code, hash: matchingOtp.CodeHash))
+        if (matchingOtp == null || !otpService.Verify(code: code, hash: matchingOtp.CodeHash))
         {
             await lockoutRepository.RegisterFailedOtpAsync(userId: userId, cancellationToken: cancellationToken);
             throw userErrors.OtpNotYetVerified();
