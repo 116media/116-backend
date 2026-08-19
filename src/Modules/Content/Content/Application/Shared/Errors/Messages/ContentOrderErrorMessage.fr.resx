@@ -84,4 +84,7 @@
   <data name="TierIdInvalid" xml:space="preserve">
     <value>L'identifiant du niveau est invalide.</value>
   </data>
+  <data name="PaymentAlreadyDecided" xml:space="preserve">
+    <value>La preuve de paiement ne peut plus être modifiée une fois le paiement décidé.</value>
+  </data>
 </root>
