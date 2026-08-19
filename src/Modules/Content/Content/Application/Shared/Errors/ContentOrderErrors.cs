@@ -119,6 +119,24 @@ public class ContentOrderErrors(ContentOrderErrorMessage i18n)
     }
 
     /// <summary>
+    /// Throws when a payment is verified without an attached proof and method.
+    /// </summary>
+    /// <returns>A <see cref="BadRequestException" /> with a localized message.</returns>
+    public BadRequestException PaymentProofRequired()
+    {
+        return new BadRequestException(i18n.PaymentProofRequired());
+    }
+
+    /// <summary>
+    /// Throws when proof is attached to a payment that is no longer pending.
+    /// </summary>
+    /// <returns>A <see cref="ConflictException" /> with a localized message.</returns>
+    public ConflictException PaymentAlreadyDecided()
+    {
+        return new ConflictException(i18n.PaymentAlreadyDecided());
+    }
+
+    /// <summary>
     /// Throws when the promotion duration of a level purchased by an order item
     /// cannot be resolved, so the item's promotion window cannot be computed.
     /// </summary>
