@@ -129,25 +129,6 @@ public class CategoryRepositoryTests : IDisposable
 
     #region GetBySlugAsync Tests
 
-    [Fact(
-        Skip = "CategoryBySlugSpecification uses EF.Functions.ILike which is not supported by InMemoryDatabase — tested in integration tests"
-    )]
-    public async Task GetBySlugAsync_WhenFound_ShouldReturnEntity()
-    {
-        // Arrange
-        ContentTypeEntity contentType = await AddContentTypeAsync();
-        CategoryEntity category = CategoryFactory.Create(contentType.Id, "Artist Profile", "artist-profile");
-        _context.Categories.Add(category);
-        await _context.SaveChangesAsync();
-
-        // Act
-        CategoryEntity? result = await _repository.GetBySlugAsync("artist-profile");
-
-        // Assert
-        result.Should().NotBeNull();
-        result.Slug.Should().Be("artist-profile");
-    }
-
     [Fact]
     public async Task GetBySlugAsync_WhenNotFound_ShouldReturnNull()
     {
