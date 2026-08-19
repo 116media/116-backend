@@ -36,7 +36,7 @@ concrete holes today:
 - `Submit()` on a `Published` article moves it back to `PendingPayment` and raises **no**
   unpublished event — unlike `Reject` and `Archive`, which both raise `ArticleUnpublishedEvent`
   when they leave the published state. The homepage cache and search index keep serving a page
-  that is no longer published.
+  that is no longer published. The transition table refuses the move outright, which is the fix.
 - An `Archived` article can be republished with a fresh `PublishedAt`, silently losing its
   original publication date.
 
@@ -85,7 +85,7 @@ stage the home of **[03 §3.6]**'s mechanism; the follow-up stage applies it to 
 
 - [x] 6.1 — `ContentPublicationState` table + `EnsureCanMove` + `DomainRuleException` + `ContentRuleCodes` + the translating strategy ([03 §3.6]'s mechanism, delivered here)
 - [x] 6.2 — Route `Article`/`Video`/`Lyrics` `Submit`/`Approve`/`Publish`/`Reject`/`Archive` through it; drop `VideoEntity.Publish`'s `errors` parameter
-- [x] 6.3 — Raise the missing unpublished event when `Submit` leaves `Published`
+- [x] 6.3 — Close the missing-unpublished-event hole by refusing `Published` → `PendingPayment`
 - [x] 6.4 — Delete the duplicated source-state guards from the 11 Admin handlers
 - [x] 6.5 — `AdminAddOrderItemFactory` recalculates the total before committing
 - [x] 6.6 — `RecalculateTotalFromItems` becomes private behind `AddItem`/`RemoveItem`
@@ -334,9 +334,12 @@ instead of silently succeeding.
 ### 6.3 The missing unpublished event
 
 `Submit` on a `Published` article is illegal under the table (`Published` → `PendingPayment` is not
-listed), so 6.2 closes the hole by refusal. The event asymmetry is still worth fixing for the paths
-that remain legal, so `Submit` gets the same `wasPublished` treatment `Reject` and `Archive`
-already have — cheap, and it removes a trap for whoever edits the table next.
+listed), so 6.2 closes this hole by refusal alone and nothing further is needed.
+
+An earlier revision of this spec also gave `Submit` the `wasPublished` treatment `Reject` and
+`Archive` carry, as defence in depth. That was wrong: `EnsureCanMove` runs before the flag is read,
+so the branch is unreachable by construction and shipped as dead code. `Reject` and `Archive` keep
+theirs because `Published` → `Rejected` and `Published` → `Archived` are both legal moves.
 
 ### 6.4 Deleting the duplicated guards
 
@@ -621,3 +624,5 @@ known about rather than discovered later.
 3. `dotnet test tests/Unit` — green.
 4. `dotnet test tests/Integration` — green (run locally).
 5. Confirm the guard actually moved: `grep -rn "InvalidStatusTransition" src/Modules/Content/Content/Application/` should return only the error-factory and message files, no handlers.
+
+**PR:** `fix(content): guard publication state, order totals and payments`
