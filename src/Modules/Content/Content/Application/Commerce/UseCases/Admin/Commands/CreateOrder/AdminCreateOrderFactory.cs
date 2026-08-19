@@ -7,7 +7,7 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.CreateOrder;
 
 /// <summary>
 /// Factory that populates a draft order with items and tiers from a package's slots.
-/// Batch-fetches category pricing upfront to avoid nested async loops.
+/// Every category is priced in a single query, so slot count never drives round-trips.
 /// </summary>
 /// <param name="categoryRepository">Repository for category data access operations.</param>
 public class AdminCreateOrderFactory(ICategoryRepository categoryRepository) : ICreateOrderFactory
@@ -19,70 +19,99 @@ public class AdminCreateOrderFactory(ICategoryRepository categoryRepository) : I
         CancellationToken ct
     )
     {
-        IEnumerable<PackageSlotEntity> slotsWithCategory = package.Slots.Where(s => s.CategoryId.HasValue);
+        List<PackageSlotEntity> slotsWithCategory = [.. package.Slots.Where(s => s.CategoryId.HasValue)];
+        Guid[] categoryIds = [.. slotsWithCategory.Select(s => s.CategoryId!.Value).Distinct()];
 
-        IEnumerable<Guid> distinctCategoryIds = slotsWithCategory.Select(s => s.CategoryId!.Value).Distinct();
+        List<CategoryPricingEntity> pricingRows =
+        [
+            .. await categoryRepository.GetPricingByCategoriesAsync(categoryIds: categoryIds, cancellationToken: ct),
+        ];
 
-        Dictionary<Guid, IReadOnlyList<CategoryPricingEntity>> pricingByCategory = new();
+        Dictionary<Guid, List<CategoryPricingEntity>> pricingByCategory = pricingRows
+            .GroupBy(p => p.CategoryId)
+            .ToDictionary(g => g.Key, g => g.ToList());
 
-        foreach (Guid categoryId in distinctCategoryIds)
+        List<ContentOrderItemEntity> items =
+        [
+            .. slotsWithCategory
+                .Select(slot =>
+                    (
+                        Slot: slot,
+                        ContentKind: ResolveContentKind(slot),
+                        Pricing: pricingByCategory.GetValueOrDefault(slot.CategoryId!.Value) ?? []
+                    )
+                )
+                .SelectMany(resolved =>
+                    Enumerable
+                        .Range(0, resolved.Slot.Quantity)
+                        .Select(_ =>
+                            CreateItem(
+                                orderId: order.Id,
+                                slot: resolved.Slot,
+                                contentKind: resolved.ContentKind,
+                                pricing: resolved.Pricing
+                            )
+                        )
+                ),
+        ];
+
+        order.AddItems(items);
+        return items.Count;
+    }
+
+    /// <summary>
+    /// Maps a slot's content-type name onto the content-kind enum, falling back to
+    /// <see cref="EnumCoreContentType.Custom" /> for a name the enum does not declare.
+    /// </summary>
+    /// <param name="slot">The package slot being filled.</param>
+    /// <returns>The resolved content kind.</returns>
+    private static EnumCoreContentType ResolveContentKind(PackageSlotEntity slot)
+    {
+        string contentTypeName = slot.Category!.ContentType.Name;
+
+        return Enum.TryParse(contentTypeName, ignoreCase: true, out EnumCoreContentType contentKind)
+            ? contentKind
+            : EnumCoreContentType.Custom;
+    }
+
+    /// <summary>
+    /// Builds one order item for a slot, with a tier snapshotting each of its category's prices.
+    /// </summary>
+    /// <param name="orderId">The order the item belongs to.</param>
+    /// <param name="slot">The slot being filled; a non-required slot yields a bonus item.</param>
+    /// <param name="contentKind">The resolved content kind.</param>
+    /// <param name="pricing">The category's pricing rows to snapshot.</param>
+    /// <returns>The item, with its tiers attached.</returns>
+    private static ContentOrderItemEntity CreateItem(
+        Guid orderId,
+        PackageSlotEntity slot,
+        EnumCoreContentType contentKind,
+        IReadOnlyList<CategoryPricingEntity> pricing
+    )
+    {
+        var item = ContentOrderItemEntity.Create(
+            id: Guid.NewGuid(),
+            orderId: orderId,
+            contentKind: contentKind,
+            categoryId: slot.CategoryId!.Value,
+            promotionLevelId: null,
+            promoPriceSnapshotUsd: null,
+            socialBoost: false,
+            isBonus: !slot.IsRequired
+        );
+
+        foreach (CategoryPricingEntity price in pricing)
         {
-            IReadOnlyList<CategoryPricingEntity> pricing = await categoryRepository.GetPricingByCategoryAsync(
-                categoryId: categoryId,
-                cancellationToken: ct
-            );
-            pricingByCategory[categoryId] = pricing;
-        }
-
-        List<(ContentOrderItemEntity Item, IReadOnlyList<CategoryPricingEntity> Pricing)> itemsToCreate = [];
-
-        foreach (PackageSlotEntity slot in slotsWithCategory)
-        {
-            Guid categoryId = slot.CategoryId!.Value;
-            IReadOnlyList<CategoryPricingEntity> pricing = pricingByCategory.GetValueOrDefault(categoryId) ?? [];
-
-            string contentTypeName = slot.Category!.ContentType.Name;
-            if (!Enum.TryParse(contentTypeName, ignoreCase: true, out EnumCoreContentType contentKind))
-            {
-                contentKind = EnumCoreContentType.Custom;
-            }
-
-            for (int i = 0; i < slot.Quantity; i++)
-            {
-                var item = ContentOrderItemEntity.Create(
-                    id: Guid.NewGuid(),
-                    orderId: order.Id,
-                    contentKind: contentKind,
-                    categoryId: categoryId,
-                    promotionLevelId: null,
-                    promoPriceSnapshotUsd: null,
-                    socialBoost: false,
-                    isBonus: !slot.IsRequired
-                );
-
-                itemsToCreate.Add((item, pricing));
-            }
-        }
-
-        foreach ((ContentOrderItemEntity item, IReadOnlyList<CategoryPricingEntity> pricing) in itemsToCreate)
-        {
-            foreach (CategoryPricingEntity p in pricing)
-            {
-                var tier = ContentItemTierEntity.Create(
+            item.Tiers.Add(
+                ContentItemTierEntity.Create(
                     id: Guid.NewGuid(),
                     orderItemId: item.Id,
-                    pricingTierId: p.PricingTierId,
-                    priceSnapshotUsd: p.PriceUsd
-                );
-
-                item.Tiers.Add(tier);
-            }
-
-            order.Items.Add(item);
+                    pricingTierId: price.PricingTierId,
+                    priceSnapshotUsd: price.PriceUsd
+                )
+            );
         }
 
-        order.RecalculateTotalFromItems();
-
-        return itemsToCreate.Count;
+        return item;
     }
 }
