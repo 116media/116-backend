@@ -59,6 +59,8 @@ public class PublicGetLyricsBySlugHandlerTests : BaseContentHandlerTest
         // Arrange
         string slug = TestConstants.Lyrics.ValidSlug;
         LyricsEntity lyrics = LyricsFactory.CreateWithSlug(CategoryId, slug);
+        lyrics.MarkPendingReview();
+        lyrics.Approve();
         lyrics.Publish();
         var query = new PublicGetLyricsBySlugQuery(Slug: slug);
 
@@ -78,6 +80,8 @@ public class PublicGetLyricsBySlugHandlerTests : BaseContentHandlerTest
         string slug = TestConstants.Lyrics.ValidSlug;
         Guid videoId = Guid.NewGuid();
         LyricsEntity lyrics = LyricsFactory.CreateForVideo(CategoryId, videoId);
+        lyrics.MarkPendingReview();
+        lyrics.Approve();
         lyrics.Publish();
         VideoEntity video = VideoFactory.CreateWithSlug(CategoryId, "linked-video-slug");
         var query = new PublicGetLyricsBySlugQuery(Slug: slug);
@@ -99,6 +103,8 @@ public class PublicGetLyricsBySlugHandlerTests : BaseContentHandlerTest
         string slug = TestConstants.Lyrics.ValidSlug;
         Guid videoId = Guid.NewGuid();
         LyricsEntity lyrics = LyricsFactory.CreateForVideo(CategoryId, videoId);
+        lyrics.MarkPendingReview();
+        lyrics.Approve();
         lyrics.Publish();
         var query = new PublicGetLyricsBySlugQuery(Slug: slug);
 
@@ -118,6 +124,8 @@ public class PublicGetLyricsBySlugHandlerTests : BaseContentHandlerTest
         // Arrange
         string slug = TestConstants.Lyrics.ValidSlug;
         LyricsEntity lyrics = LyricsFactory.CreateWithSlug(CategoryId, slug);
+        lyrics.MarkPendingReview();
+        lyrics.Approve();
         lyrics.Publish();
         var query = new PublicGetLyricsBySlugQuery(Slug: slug);
 
@@ -136,6 +144,8 @@ public class PublicGetLyricsBySlugHandlerTests : BaseContentHandlerTest
         // Arrange
         string slug = TestConstants.Lyrics.ValidSlug;
         LyricsEntity lyrics = LyricsFactory.CreateWithSlug(CategoryId, slug);
+        lyrics.MarkPendingReview();
+        lyrics.Approve();
         lyrics.Publish();
         ArtistEntity artist = ArtistFactory.CreateWithSlug("linked-artist-slug");
         lyrics.LinkArtist(artist.Id);
@@ -157,6 +167,8 @@ public class PublicGetLyricsBySlugHandlerTests : BaseContentHandlerTest
         // Arrange
         string slug = TestConstants.Lyrics.ValidSlug;
         LyricsEntity lyrics = LyricsFactory.CreateWithSlug(CategoryId, slug);
+        lyrics.MarkPendingReview();
+        lyrics.Approve();
         lyrics.Publish();
         Guid artistId = Guid.NewGuid();
         lyrics.LinkArtist(artistId);
@@ -178,6 +190,8 @@ public class PublicGetLyricsBySlugHandlerTests : BaseContentHandlerTest
         // Arrange
         string slug = TestConstants.Lyrics.ValidSlug;
         LyricsEntity lyrics = LyricsFactory.CreateWithSlug(CategoryId, slug);
+        lyrics.MarkPendingReview();
+        lyrics.Approve();
         lyrics.Publish();
         var query = new PublicGetLyricsBySlugQuery(Slug: slug);
 
@@ -231,6 +245,8 @@ public class PublicGetLyricsBySlugHandlerTests : BaseContentHandlerTest
         Guid albumId = Guid.NewGuid();
         LyricsEntity lyrics = LyricsFactory.CreateWithSlug(CategoryId, slug);
         lyrics.LinkAlbum(albumId);
+        lyrics.MarkPendingReview();
+        lyrics.Approve();
         lyrics.Publish();
         var query = new PublicGetLyricsBySlugQuery(Slug: slug);
 
@@ -258,6 +274,8 @@ public class PublicGetLyricsBySlugHandlerTests : BaseContentHandlerTest
         // Arrange
         string slug = TestConstants.Lyrics.ValidSlug;
         LyricsEntity lyrics = LyricsFactory.CreateWithSlug(CategoryId, slug);
+        lyrics.MarkPendingReview();
+        lyrics.Approve();
         lyrics.Publish();
         var query = new PublicGetLyricsBySlugQuery(Slug: slug);
 
@@ -278,6 +296,8 @@ public class PublicGetLyricsBySlugHandlerTests : BaseContentHandlerTest
         Guid albumId = Guid.NewGuid();
         LyricsEntity lyrics = LyricsFactory.CreateWithSlug(CategoryId, slug);
         lyrics.LinkAlbum(albumId);
+        lyrics.MarkPendingReview();
+        lyrics.Approve();
         lyrics.Publish();
         var query = new PublicGetLyricsBySlugQuery(Slug: slug);
 
@@ -296,6 +316,8 @@ public class PublicGetLyricsBySlugHandlerTests : BaseContentHandlerTest
         // Arrange
         string slug = TestConstants.Lyrics.ValidSlug;
         LyricsEntity lyrics = LyricsFactory.CreateWithSlug(CategoryId, slug);
+        lyrics.MarkPendingReview();
+        lyrics.Approve();
         lyrics.Publish();
         var query = new PublicGetLyricsBySlugQuery(Slug: slug);
 
@@ -314,6 +336,8 @@ public class PublicGetLyricsBySlugHandlerTests : BaseContentHandlerTest
         // Arrange
         string slug = TestConstants.Lyrics.ValidSlug;
         LyricsEntity lyrics = LyricsFactory.CreateWithSlug(CategoryId, slug);
+        lyrics.MarkPendingReview();
+        lyrics.Approve();
         lyrics.Publish();
         var query = new PublicGetLyricsBySlugQuery(Slug: slug);
         const string curatedUrl = "https://open.spotify.com/track/curated-abc123";
@@ -337,6 +361,8 @@ public class PublicGetLyricsBySlugHandlerTests : BaseContentHandlerTest
         // Arrange
         string slug = TestConstants.Lyrics.ValidSlug;
         LyricsEntity lyrics = LyricsFactory.CreateWithSlug(CategoryId, slug);
+        lyrics.MarkPendingReview();
+        lyrics.Approve();
         lyrics.Publish();
         Guid currentUserId = Guid.NewGuid();
         var query = new PublicGetLyricsBySlugQuery(Slug: slug, CurrentUserId: currentUserId);
@@ -357,6 +383,8 @@ public class PublicGetLyricsBySlugHandlerTests : BaseContentHandlerTest
         // Arrange
         string slug = TestConstants.Lyrics.ValidSlug;
         LyricsEntity lyrics = LyricsFactory.CreateWithSlug(CategoryId, slug);
+        lyrics.MarkPendingReview();
+        lyrics.Approve();
         lyrics.Publish();
         Guid currentUserId = Guid.NewGuid();
         var query = new PublicGetLyricsBySlugQuery(Slug: slug, CurrentUserId: currentUserId);
@@ -377,6 +405,8 @@ public class PublicGetLyricsBySlugHandlerTests : BaseContentHandlerTest
         // Arrange
         string slug = TestConstants.Lyrics.ValidSlug;
         LyricsEntity lyrics = LyricsFactory.CreateWithSlug(CategoryId, slug);
+        lyrics.MarkPendingReview();
+        lyrics.Approve();
         lyrics.Publish();
         var query = new PublicGetLyricsBySlugQuery(Slug: slug, CurrentUserId: null);
 
@@ -396,6 +426,8 @@ public class PublicGetLyricsBySlugHandlerTests : BaseContentHandlerTest
         // Arrange
         string slug = TestConstants.Lyrics.ValidSlug;
         LyricsEntity lyrics = LyricsFactory.CreateWithSlug(CategoryId, slug);
+        lyrics.MarkPendingReview();
+        lyrics.Approve();
         lyrics.Publish();
         lyrics.IncrementViewCount();
         lyrics.IncrementViewCount();
