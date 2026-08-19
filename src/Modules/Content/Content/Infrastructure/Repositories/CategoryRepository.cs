@@ -129,6 +129,24 @@ public class CategoryRepository(ContentDbContext context) : ICategoryRepository
     }
 
     /// <inheritdoc />
+    public async Task<IReadOnlyList<CategoryPricingEntity>> GetPricingByCategoriesAsync(
+        IReadOnlyCollection<Guid> categoryIds,
+        CancellationToken cancellationToken = default
+    )
+    {
+        if (categoryIds.Count == 0)
+        {
+            return [];
+        }
+
+        var specification = new CategoryPricingByCategoriesSpecification(categoryIds: categoryIds);
+        return await context
+            .CategoryPricing.ApplySpecification(specification: specification)
+            .Include(p => p.PricingTier)
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
     public async Task<CategoryPricingEntity?> GetPricingAsync(
         Guid categoryId,
         Guid pricingTierId,
