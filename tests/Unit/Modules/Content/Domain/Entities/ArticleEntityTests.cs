@@ -487,6 +487,7 @@ public class ArticleEntityTests
             TestErrorsFactory.CreateArticleErrors()
         );
         const string reason = TestConstants.Article.ValidRejectionReason;
+        article.MarkPendingReview();
 
         // Act
         bool result = article.Reject(reason);
@@ -509,6 +510,7 @@ public class ArticleEntityTests
             AuthorId,
             TestErrorsFactory.CreateArticleErrors()
         );
+        article.MarkPendingReview();
         article.Reject(TestConstants.Article.ValidRejectionReason);
 
         // Act
@@ -531,6 +533,7 @@ public class ArticleEntityTests
             TestErrorsFactory.CreateArticleErrors()
         );
         const string reason = TestConstants.Article.ValidRejectionReason;
+        article.MarkPendingReview();
 
         // Act
         article.Reject(reason);
@@ -1138,6 +1141,7 @@ public class ArticleEntityTests
         article.Approve();
         article.Publish();
         article.ClearDomainEvents();
+        article.MarkPendingReview();
 
         // Act
         article.Reject("not suitable anymore");
@@ -1165,6 +1169,7 @@ public class ArticleEntityTests
         );
         article.MarkPendingReview();
         article.ClearDomainEvents();
+        article.MarkPendingReview();
 
         // Act
         article.Reject("not suitable");
@@ -1215,6 +1220,8 @@ public class ArticleEntityTests
             TestErrorsFactory.CreateArticleErrors()
         );
         article.ClearDomainEvents();
+        article.MarkPendingReview();
+        article.Approve();
 
         // Act
         article.Archive();
