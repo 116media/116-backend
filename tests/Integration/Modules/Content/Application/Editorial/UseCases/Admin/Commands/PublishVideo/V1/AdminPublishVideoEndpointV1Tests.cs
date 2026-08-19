@@ -5,6 +5,7 @@ using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Exceptions.Messages;
+using _116.Shared.Domain.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.PublishVideo.V1;
@@ -120,7 +121,7 @@ public class AdminPublishVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(
             null
         );
 
-        await response.ShouldBeProblem<BadRequestException>(
+        await response.ShouldBeProblem<DomainRuleException>(
             HttpStatusCode.BadRequest,
             Localized<VideoErrorMessage>(m =>
                 m.InvalidStatusTransition(
@@ -161,7 +162,7 @@ public class AdminPublishVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(
             null
         );
 
-        await response.ShouldBeProblem<BadRequestException>(
+        await response.ShouldBeProblem<DomainRuleException>(
             HttpStatusCode.BadRequest,
             Localized<VideoErrorMessage>(m => m.CannotPublishWithoutYoutubeUrl())
         );
