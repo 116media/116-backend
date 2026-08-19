@@ -47,7 +47,7 @@ public class AdminVerifyPaymentFactoryTests
     {
         // Arrange
         ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
-        ContentPaymentEntity payment = ContentPaymentFactory.Create(order.Id);
+        ContentPaymentEntity payment = ContentPaymentFactory.CreateWithProof(order.Id, Guid.NewGuid());
 
         // Act
         await _factory.VerifyAsync(order, payment, AdminUserId, ReceiptUrl, CancellationToken.None);
@@ -69,7 +69,7 @@ public class AdminVerifyPaymentFactoryTests
         // Arrange
         ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
         order.ClearDomainEvents();
-        ContentPaymentEntity payment = ContentPaymentFactory.Create(order.Id);
+        ContentPaymentEntity payment = ContentPaymentFactory.CreateWithProof(order.Id, Guid.NewGuid());
 
         // Act
         await _factory.VerifyAsync(order, payment, AdminUserId, ReceiptUrl, CancellationToken.None);
@@ -95,7 +95,7 @@ public class AdminVerifyPaymentFactoryTests
             promoLevel.PriceUsd
         );
         order.Items.Add(item);
-        ContentPaymentEntity payment = ContentPaymentFactory.Create(order.Id);
+        ContentPaymentEntity payment = ContentPaymentFactory.CreateWithProof(order.Id, Guid.NewGuid());
         _lookupRepositoryMock.SetupGetPromotionLevelByIdOrThrow(promoLevel);
 
         // Act
@@ -121,7 +121,7 @@ public class AdminVerifyPaymentFactoryTests
         ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
         ContentOrderItemEntity item = ContentOrderItemFactory.CreateSocialBoost(order.Id, Guid.NewGuid());
         order.Items.Add(item);
-        ContentPaymentEntity payment = ContentPaymentFactory.Create(order.Id);
+        ContentPaymentEntity payment = ContentPaymentFactory.CreateWithProof(order.Id, Guid.NewGuid());
 
         // Act
         await _factory.VerifyAsync(order, payment, AdminUserId, ReceiptUrl, CancellationToken.None);
@@ -179,7 +179,7 @@ public class AdminVerifyPaymentFactoryTests
         // Arrange
         ContentOrderEntity order = ContentOrderFactory.CreatePaid();
         order.ClearDomainEvents();
-        ContentPaymentEntity payment = ContentPaymentFactory.Create(order.Id);
+        ContentPaymentEntity payment = ContentPaymentFactory.CreateWithProof(order.Id, Guid.NewGuid());
 
         // Act
         Func<Task> act = () => _factory.VerifyAsync(order, payment, AdminUserId, ReceiptUrl, CancellationToken.None);
