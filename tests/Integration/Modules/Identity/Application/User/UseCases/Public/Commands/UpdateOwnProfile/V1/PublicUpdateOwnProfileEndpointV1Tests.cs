@@ -128,6 +128,35 @@ public class PublicUpdateOwnProfileEndpointV1Tests(PostgresFixture db) : BaseApi
     }
 
     [Fact]
+    public async Task PublicUpdateOwnProfile_WithAWhitespaceOnlyEmail_IgnoresItInsteadOfFailing()
+    {
+        // Arrange
+        var sessionId = Guid.NewGuid();
+        await SeedAsync<IdentityDbContext>(context =>
+        {
+            context.Sessions.Add(SessionFactory.CreateWithId(sessionId, TestUser.VisitorId));
+        });
+
+        Client.AuthenticateAs(TestUser.VisitorId, "Visitor", sessionId);
+
+        var request = new PublicUpdateOwnProfileRequestBuilder()
+            .WithEmail("   ")
+            .WithUserName(null)
+            .WithPartialPhoneNumber(null)
+            .Build();
+
+        // Act
+        var response = await Client.PatchAsJsonAsync(Routes.Public.Me.Profile(), request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        await using var verifyContext = CreateDbContext<IdentityDbContext>();
+        UserEntity? caller = await verifyContext.Users.FindAsync(TestUser.VisitorId);
+        caller!.Email.Should().Be(TestUser.VisitorEmail);
+    }
+
+    [Fact]
     public async Task PublicUpdateOwnProfile_AsVisitor_WithoutValidSession_ReturnsForbidden()
     {
         // Arrange
