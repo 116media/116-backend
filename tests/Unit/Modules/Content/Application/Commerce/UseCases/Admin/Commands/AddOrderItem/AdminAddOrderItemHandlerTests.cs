@@ -5,6 +5,7 @@ using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common.Mocks.Factories;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
@@ -26,7 +27,11 @@ public class AdminAddOrderItemHandlerTests
     {
         _orderRepositoryMock = MockContentOrderRepository.Create();
         _factoryMock = MockAddOrderItemFactory.Create();
-        _handler = new AdminAddOrderItemHandler(_orderRepositoryMock.Object, _factoryMock.Object);
+        _handler = new AdminAddOrderItemHandler(
+            _orderRepositoryMock.Object,
+            _factoryMock.Object,
+            TestErrorsFactory.CreateContentI18n()
+        );
     }
 
     #region Success Cases
@@ -40,7 +45,7 @@ public class AdminAddOrderItemHandlerTests
         ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, categoryId);
         const string categoryName = "Artist Profile";
 
-        _orderRepositoryMock.SetupGetByIdOrThrow(order);
+        _orderRepositoryMock.SetupGetByIdWithItems(order);
         _factoryMock.SetupCreateItemAsync((item, categoryName, null));
 
         var command = new AdminAddOrderItemCommand(
