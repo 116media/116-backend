@@ -7,6 +7,7 @@ using _116.Content.Domain.Events;
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
 using _116.Shared.Application.Exceptions;
+using _116.Shared.Domain.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Factories.Core;
@@ -161,7 +162,7 @@ public class AdminUpdateArticleHandlerTests : BaseContentHandlerTest
     }
 
     [Fact]
-    public async Task Handle_WhenArticleIsApproved_ShouldThrowBadRequestException()
+    public async Task Handle_WhenArticleIsApproved_ShouldThrowDomainRuleException()
     {
         // Arrange
         ArticleEntity article = ArticleFactory.CreateApproved(CategoryId);
@@ -174,7 +175,7 @@ public class AdminUpdateArticleHandlerTests : BaseContentHandlerTest
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        await act.Should().ThrowAsync<BadRequestException>();
+        await act.Should().ThrowAsync<DomainRuleException>();
         article.Status.Should().Be(EnumContentStatus.Approved);
         article.Title.Should().Be(originalTitle);
         article.DomainEvents.Should().BeEmpty();
