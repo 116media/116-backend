@@ -265,6 +265,7 @@ public class LyricsBuilder
                 entity.Publish();
                 break;
             case EnumContentStatus.Rejected:
+                entity.MarkPendingReview();
                 entity.Reject(_rejectionReason ?? TestConstants.Lyrics.ValidRejectionReason);
                 break;
             case EnumContentStatus.Archived:
