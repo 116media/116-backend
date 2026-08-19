@@ -2,9 +2,11 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArticle.V
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Constants;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Exceptions.Messages;
+using _116.Shared.Domain.Exceptions;
 using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Factories.Content;
 using FluentValidation;
@@ -20,6 +22,12 @@ public class AdminUpdateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
 {
     private static string ValidationDetail(string property, string message) =>
         new ValidationException([new ValidationFailure(property, message)]).Message;
+
+    /// <summary>
+    /// The target-state label <c>DomainRuleExceptionStrategy</c> phrases a NotEditable refusal
+    /// with. It reaches the client verbatim, so the literal belongs in the assertion.
+    /// </summary>
+    private const string EditableStatesLabel = "Draft/PendingPayment/PendingReview/Rejected (editable)";
 
     [Fact]
     public async Task UpdateArticle_WithNoAuth_ReturnsUnauthorized()
@@ -280,5 +288,41 @@ public class AdminUpdateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
             HttpStatusCode.BadRequest,
             ValidationDetail("Body", Localized<ArticleErrorMessage>(m => m.BodyRequired()))
         );
+    }
+
+    [Fact]
+    public async Task UpdateArticle_WhenPublished_ReturnsBadRequestAndLeavesItUnchanged()
+    {
+        ArticleEntity article = await SeedAsync<ContentDbContext, ArticleEntity>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            CategoryEntity category = CategoryFactory.Create(contentType.Id);
+            ArticleEntity published = ArticleFactory.CreatePublished(category.Id);
+            ctx.ContentTypes.Add(contentType);
+            ctx.Categories.Add(category);
+            ctx.Articles.Add(published);
+            return published;
+        });
+
+        Client.AuthenticateAsSuperAdmin();
+        AdminUpdateArticleRequest request = new AdminUpdateArticleRequestBuilder()
+            .WithCategoryId(article.CategoryId)
+            .WithTitle("Edited After Publication")
+            .WithSlug(article.Slug)
+            .Build();
+
+        var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Articles}/{article.Id}", request);
+
+        await response.ShouldBeProblem<DomainRuleException>(
+            HttpStatusCode.BadRequest,
+            Localized<ArticleErrorMessage>(m =>
+                m.InvalidStatusTransition(from: nameof(EnumContentStatus.Published), to: EditableStatesLabel)
+            )
+        );
+
+        await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
+        ArticleEntity? persisted = await ctx.Articles.FindAsync(article.Id);
+        persisted!.Title.Should().Be(article.Title);
+        persisted.Status.Should().Be(EnumContentStatus.Published);
     }
 }
