@@ -756,8 +756,9 @@ public class LyricsRepositoryTests(PostgresFixture postgres) : BaseRepositoryTes
         source.Tags.Add(LyricsTagEntity.Create(Guid.NewGuid(), source.Id, sharedTag.Id));
 
         var tagMatch = LyricsFactory.CreateWithTags(category.Id, sharedTag.Id);
+        tagMatch.MarkPendingReview();
+        tagMatch.Approve();
         tagMatch.Publish();
-
         context.Lyrics.AddRange(source, tagMatch);
         await context.SaveChangesAsync();
 
