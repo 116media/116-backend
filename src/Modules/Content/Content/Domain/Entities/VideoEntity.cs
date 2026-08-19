@@ -421,14 +421,7 @@ public class VideoEntity : Aggregate<Guid>
             contentType: EnumCoreContentType.Video
         );
 
-        bool wasPublished = Status == EnumContentStatus.Published;
-
         Status = EnumContentStatus.PendingPayment;
-
-        if (wasPublished)
-        {
-            AddDomainEvent(new VideoUnpublishedEvent(VideoId: Id));
-        }
 
         return true;
     }
