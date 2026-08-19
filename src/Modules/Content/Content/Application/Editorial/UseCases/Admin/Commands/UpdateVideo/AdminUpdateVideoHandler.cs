@@ -40,14 +40,6 @@ public class AdminUpdateVideoHandler(
 
         VideoEntity video = await videoRepository.GetByIdOrThrowAsync(id: id, cancellationToken: cancellationToken);
 
-        if (video.Status is EnumContentStatus.Approved or EnumContentStatus.Published or EnumContentStatus.Archived)
-        {
-            throw i18n.Video.InvalidStatusTransition(
-                from: video.Status.ToString(),
-                to: "Draft/PendingPayment/PendingReview/Rejected (editable)"
-            );
-        }
-
         await categoryRepository.GetByIdOrThrowAsync(id: command.CategoryId, cancellationToken: cancellationToken);
 
         if (command.Slug != video.Slug)
