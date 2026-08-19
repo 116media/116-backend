@@ -88,7 +88,7 @@ stage the home of **[03 §3.6]**'s mechanism; the follow-up stage applies it to 
 - [x] 6.3 — Close the missing-unpublished-event hole by refusing `Published` → `PendingPayment`
 - [x] 6.4 — Delete the duplicated source-state guards from the 11 Admin handlers
 - [x] 6.5 — `AdminAddOrderItemFactory` recalculates the total before committing
-- [x] 6.6 — `RecalculateTotalFromItems` becomes private behind `AddItem`/`RemoveItem`
+- [x] 6.6 — Item add/remove recalculates inside `AddItem`/`AddItems`/`RemoveItem`; the tier callers keep the public seam
 - [x] 6.7 — `AdminSubmitOrderFactory` guard tightened from `Any` to `All`
 - [x] 6.8 — `ContentPaymentEntity.Verify` requires proof and method
 - [x] 6.9 — `ContentPaymentEntity.AttachProof` refuses a decided payment
@@ -397,8 +397,8 @@ payment freezes a total missing B's promotion price. The customer is invoiced sh
 
 ### 6.6 Making the omission impossible
 
-The two-line fix leaves the next caller free to forget. `RecalculateTotalFromItems` becomes
-`private`, and the two mutations that need it move onto the aggregate:
+The two-line fix leaves the next caller free to forget. The two mutations that can move onto the
+aggregate do, so item add and remove can no longer be written without their recalculation:
 
 ```csharp
 public void AddItem(ContentOrderItemEntity item)
@@ -414,13 +414,16 @@ public void RemoveItem(ContentOrderItemEntity item)
 }
 ```
 
-The five existing callers of the public method become calls to `AddItem`/`RemoveItem`, or keep a
-direct recalculation where they mutate tiers rather than items — `AdminAddItemTierFactory`,
-`AdminRemoveItemTierHandler` and `AdminEditOrderItemHandler` change an item's tiers in place, so
-they need a public `RecalculateTotals()` seam or the tier mutation itself moves onto the aggregate.
-**The tier-level move is the larger change and is not in this stage**; the seam is, so the method
-stays reachable for those three and private for item add/remove. Full aggregate ownership of items
-and tiers is **[03 §3.1]**, scheduled for the restructure stages.
+`AdminCreateOrderFactory` bulk-adds through `AddItems`, which recalculates once rather than per
+item. Three callers keep calling `RecalculateTotalFromItems` directly, because they mutate tiers
+and item fields rather than the item list: `AdminAddItemTierFactory` and `AdminRemoveItemTierHandler`
+add and remove the tier through the repository and then re-read the order, and
+`AdminEditOrderItemHandler` changes an item's promo price and bonus flag in place. None of those
+mutations pass through the aggregate, so the method stays `public` as their seam.
+
+**Making it private is therefore not in this stage** — it needs `AddTierToItem`,
+`RemoveTierFromItem` and `UpdateItem` on the aggregate first. Full aggregate ownership of items and
+tiers is **[03 §3.1]**, scheduled for the restructure stages.
 
 ### 6.7 Submit guard
 
