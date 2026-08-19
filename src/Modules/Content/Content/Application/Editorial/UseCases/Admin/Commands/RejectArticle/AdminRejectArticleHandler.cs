@@ -37,14 +37,6 @@ public class AdminRejectArticleHandler(
             throw i18n.Article.AlreadyRejected();
         }
 
-        if (article.Status != EnumContentStatus.PendingReview)
-        {
-            throw i18n.Article.InvalidStatusTransition(
-                from: article.Status.ToString(),
-                to: nameof(EnumContentStatus.Rejected)
-            );
-        }
-
         article.Reject(reason: command.Reason);
         articleRepository.Update(article: article);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
