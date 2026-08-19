@@ -153,4 +153,23 @@ public class AdminRejectVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
         persisted.Status.Should().Be(EnumContentStatus.Rejected);
         persisted.RejectionReason.Should().Be(request.Reason);
     }
+
+    [Fact]
+    public async Task RejectVideo_AsSuperAdmin_PublishedVideo_UnpublishesIt()
+    {
+        VideoEntity video = await SeedVideoAsync(VideoFactory.CreatePublished);
+        Client.AuthenticateAsSuperAdmin();
+        AdminRejectVideoRequest request = new AdminRejectVideoRequestBuilder().Build();
+
+        var response = await Client.PatchAsJsonAsync(
+            Routes.Admin.Editorial.Reject(EditorialRouteConstants.Videos, video.Id),
+            request
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        VideoEntity persisted = await GetVideoAsync(video.Id);
+        persisted.Status.Should().Be(EnumContentStatus.Rejected);
+        persisted.RejectionReason.Should().Be(request.Reason);
+    }
 }
