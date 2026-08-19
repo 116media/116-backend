@@ -105,6 +105,8 @@ public class PublicGetPublishedLyricsEndpointV1Tests(PostgresFixture db) : BaseA
             LyricsEntity entity = LyricsFactory.Create(categoryId, "UniquePublicSearchTerm Song", "Test Artist");
             entity.MarkPendingReview();
             entity.Approve();
+            entity.MarkPendingReview();
+            entity.Approve();
             entity.Publish();
             ctx.Lyrics.Add(entity);
             return entity;
