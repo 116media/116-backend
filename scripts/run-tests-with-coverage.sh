@@ -43,14 +43,16 @@ cleanup() {
 
 run_unit_tests() {
     print_header "Running Unit Tests"
-    # Using coverlet.msbuild for accurate coverage with C# 12 primary constructors
+    # Using coverlet.msbuild for accurate coverage with C# 12 primary constructors.
+    # Endpoint classes are excluded from the unit accounting: routing is owned by
+    # the integration suite, which keeps counting them.
     dotnet test "$PROJECT_ROOT/tests/Unit" \
         --configuration Release \
         --logger "console;verbosity=normal" \
         /p:CollectCoverage=true \
         /p:CoverletOutputFormat=opencover \
         /p:CoverletOutput="$COVERAGE_DIR/unit/coverage.opencover.xml" \
-        /p:ExcludeByFile="\"**/Migrations/**,**/obj/**/*.g.cs,**/*.Designer.cs\"" \
+        /p:ExcludeByFile="\"**/Migrations/**,**/obj/**/*.g.cs,**/*.Designer.cs,**/*EndpointV1.cs\"" \
         /p:ExcludeByAttribute="\"GeneratedCodeAttribute,CompilerGeneratedAttribute\""
 }
 
