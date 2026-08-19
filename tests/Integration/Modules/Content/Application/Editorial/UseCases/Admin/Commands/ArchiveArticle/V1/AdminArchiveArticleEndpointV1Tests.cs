@@ -6,6 +6,7 @@ using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Exceptions.Messages;
+using _116.Shared.Domain.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.ArchiveArticle.V1;
@@ -108,6 +109,29 @@ public class AdminArchiveArticleEndpointV1Tests(PostgresFixture db) : BaseApiTes
             Localized<ArticleErrorMessage>(m => m.AlreadyArchived())
         );
         (await GetArticleStatusAsync(article.Id)).Should().Be(EnumContentStatus.Archived);
+    }
+
+    [Fact]
+    public async Task ArchiveArticle_WhenDraft_ReturnsBadRequest()
+    {
+        // Arrange — archiving something never reviewed used to silently succeed
+        ArticleEntity article = await SeedArticleAsync(ArticleFactory.Create);
+        Client.AuthenticateAsSuperAdmin();
+
+        // Act
+        var response = await Client.PatchAsync(
+            Routes.Admin.Editorial.Archive(EditorialRouteConstants.Articles, article.Id),
+            null
+        );
+
+        // Assert
+        await response.ShouldBeProblem<DomainRuleException>(
+            HttpStatusCode.BadRequest,
+            Localized<ArticleErrorMessage>(m =>
+                m.InvalidStatusTransition(from: nameof(EnumContentStatus.Draft), to: nameof(EnumContentStatus.Archived))
+            )
+        );
+        (await GetArticleStatusAsync(article.Id)).Should().Be(EnumContentStatus.Draft);
     }
 
     [Fact]
