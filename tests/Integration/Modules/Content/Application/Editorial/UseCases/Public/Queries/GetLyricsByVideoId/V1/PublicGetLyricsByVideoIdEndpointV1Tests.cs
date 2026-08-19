@@ -37,6 +37,8 @@ public class PublicGetLyricsByVideoIdEndpointV1Tests(PostgresFixture db) : BaseA
         LyricsEntity lyrics = await SeedAsync<ContentDbContext, LyricsEntity>(ctx =>
         {
             LyricsEntity entity = LyricsFactory.CreateForVideo(categoryId, video.Id);
+            entity.MarkPendingReview();
+            entity.Approve();
             entity.Publish();
             ctx.Lyrics.Add(entity);
             return entity;
@@ -129,6 +131,8 @@ public class PublicGetLyricsByVideoIdEndpointV1Tests(PostgresFixture db) : BaseA
         LyricsEntity lyrics = await SeedAsync<ContentDbContext, LyricsEntity>(ctx =>
         {
             LyricsEntity entity = LyricsFactory.CreateForVideo(categoryId, video.Id);
+            entity.MarkPendingReview();
+            entity.Approve();
             entity.Publish();
             entity.IncrementViewCount();
             entity.IncrementShareCount();
@@ -174,6 +178,8 @@ public class PublicGetLyricsByVideoIdEndpointV1Tests(PostgresFixture db) : BaseA
         LyricsEntity lyrics = await SeedAsync<ContentDbContext, LyricsEntity>(ctx =>
         {
             LyricsEntity entity = LyricsFactory.CreateForVideo(categoryId, video.Id);
+            entity.MarkPendingReview();
+            entity.Approve();
             entity.Publish();
             ctx.Lyrics.Add(entity);
             return entity;
