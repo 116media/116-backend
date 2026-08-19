@@ -85,6 +85,15 @@ public class ContentOrderErrorMessage(IStringLocalizer<ContentOrderErrorMessage>
     }
 
     /// <summary>
+    /// Gets an error message for attaching proof to an already decided payment.
+    /// </summary>
+    /// <returns>An error message indicating that the payment has already been decided.</returns>
+    public string PaymentAlreadyDecided()
+    {
+        return localizer["PaymentAlreadyDecided"];
+    }
+
+    /// <summary>
     /// Gets an error message for when the promotion duration of a purchased level cannot be resolved.
     /// </summary>
     /// <returns>
