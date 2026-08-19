@@ -208,6 +208,11 @@ dead code ships.
 | Cross-module flows | ❌ | ✅ own it |
 | **Proving code is reachable at all** | ❌ | ✅ own it |
 
+Because endpoints belong to integration, `*EndpointV1.cs` files are excluded from the
+**unit** suite's coverage accounting (`tests/coverage.unit.runsettings` and the unit flags in
+`scripts/run-tests-with-coverage.sh`). The integration suite keeps counting them, so an
+unreached endpoint still shows up where it is actually a defect.
+
 ---
 
 ## 7. Review checklist
