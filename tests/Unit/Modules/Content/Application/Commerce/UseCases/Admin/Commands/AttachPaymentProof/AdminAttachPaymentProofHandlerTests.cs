@@ -9,6 +9,7 @@ using _116.Core.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Factories.Core;
+using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Factories;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
@@ -42,7 +43,8 @@ public class AdminAttachPaymentProofHandlerTests : BaseContentHandlerTest
             _fileRepositoryMock.Object,
             _orderRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            Mapper
+            Mapper,
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 
