@@ -402,14 +402,7 @@ public class ArticleEntity : Aggregate<Guid>
             contentType: EnumCoreContentType.Article
         );
 
-        bool wasPublished = Status == EnumContentStatus.Published;
-
         Status = EnumContentStatus.PendingPayment;
-
-        if (wasPublished)
-        {
-            AddDomainEvent(new ArticleUnpublishedEvent(ArticleId: Id));
-        }
 
         return true;
     }
