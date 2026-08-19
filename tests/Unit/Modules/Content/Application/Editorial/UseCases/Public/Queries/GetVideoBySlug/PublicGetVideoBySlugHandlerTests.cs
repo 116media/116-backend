@@ -53,7 +53,7 @@ public class PublicGetVideoBySlugHandlerTests : BaseContentHandlerTest
         video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl, _videoErrors);
         video.MarkPendingReview();
         video.Approve();
-        video.Publish(_videoErrors);
+        video.Publish();
 
         string slug = video.Slug;
         var query = new PublicGetVideoBySlugQuery(Slug: slug);
@@ -77,7 +77,7 @@ public class PublicGetVideoBySlugHandlerTests : BaseContentHandlerTest
         video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl, _videoErrors);
         video.MarkPendingReview();
         video.Approve();
-        video.Publish(_videoErrors);
+        video.Publish();
 
         _videoRepositoryMock.SetupGetBySlug(video.Slug, video);
 
@@ -100,7 +100,7 @@ public class PublicGetVideoBySlugHandlerTests : BaseContentHandlerTest
         video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl, _videoErrors);
         video.MarkPendingReview();
         video.Approve();
-        video.Publish(_videoErrors);
+        video.Publish();
 
         ArtistEntity artist = ArtistFactory.CreateWithSlug($"linked-{Guid.NewGuid():N}");
         video.LinkArtist(artist.Id);
