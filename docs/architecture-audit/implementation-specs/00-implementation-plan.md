@@ -18,15 +18,15 @@ shippable work. **Rules of engagement:**
 - [x] **Stage 3 — Rate-limit partitioning & trusted proxies** → [`stage-03-rate-limits-and-proxies.md`](stage-03-rate-limits-and-proxies.md)
 - [x] **Stage 4 — Session revocation, verified signup & account-status enforcement** → [`stage-04-session-revocation-and-account-status.md`](stage-04-session-revocation-and-account-status.md)
 - [ ] **Stage 5 — Password & OTP security** → [`stage-05-password-and-otp-security.md`](stage-05-password-and-otp-security.md)
-- [ ] **Stage 6 — Domain state-machine guards, order total & payment proof**
-- [ ] **Stage 7 — Atomic engagement counters & audit-trail integrity**
-- [ ] **Stage 8 — Query performance (split queries, no-tracking, indexes, soft-delete, N+1)**
-- [ ] **Stage 9 — Multi-instance readiness (distributed cache, clustered jobs, seeding, migrations)**
-- [ ] **Stage 10 — CancellationToken, typed configuration & observability**
-- [ ] **Stage 11 — Public/Admin DTO split & staff-data leak fixes**
-- [ ] **Stage 12 — Domain-event durability (identity + outbox + transaction boundary)**
-- [ ] **Stage 13 — Core→Storage contracts, architecture tests & packaging (CPM)**
-- [ ] **Stage 14 — Invert localization-in-domain (DomainException)**
+- [ ] **Stage 6 — Domain state-machine guards, order total & payment proof** → [`stage-06-publication-state-and-order-integrity.md`](stage-06-publication-state-and-order-integrity.md)
+- [ ] **Stage 7 — Invert localization-in-domain (DomainRuleException sweep)**
+- [ ] **Stage 8 — Atomic engagement counters & audit-trail integrity**
+- [ ] **Stage 9 — Query performance (split queries, no-tracking, indexes, soft-delete, N+1)**
+- [ ] **Stage 10 — Multi-instance readiness (distributed cache, clustered jobs, seeding, migrations)**
+- [ ] **Stage 11 — CancellationToken, typed configuration & observability**
+- [ ] **Stage 12 — Public/Admin DTO split & staff-data leak fixes**
+- [ ] **Stage 13 — Domain-event durability (identity + outbox + transaction boundary)**
+- [ ] **Stage 14 — Core→Storage contracts, architecture tests & packaging (CPM)**
 - [ ] **Stage 15 — Project restructure (SharedKernel/BuildingBlocks, layer projects, entity/behavior split)**
 - [ ] **Stage 16 — Documentation restructure**
 
@@ -85,12 +85,25 @@ Small, isolated, high-urgency fixes with no cross-module surgery. Full code in t
 - [ ] `DbUpdateException` → 409 strategy (fixes the like/unlike race 500) `[06 §15]`
 - **PR:** `fix(content): guard publication state, order totals and payment verification`
 
-### Stage 7 — Atomic engagement counters & audit-trail integrity
+### Stage 7 — Invert localization-in-domain (full sweep)
+- [ ] Drop the `errors` parameter from every remaining domain signature — ~50 across 17 Content
+      files, ~25 across 4 Identity files — replacing each guard with a coded
+      `DomainRuleException` and a strategy arm `[03 §6 / 08 §9]`
+- [ ] Delete the `using _116.*.Application.Shared.Errors` imports from all domain files (Core's
+      single import included)
+- The mechanism itself — `DomainRuleException` (code + args), the rule-code convention, and
+  the strategy that translates codes through the existing `*ErrorMessage` classes — **ships in
+  Stage 6**, which applies it to the publication state machine. The `.resx` keys stay live because
+  the strategies keep formatting through them; only `*Errors` factory methods left with no callers
+  are retired.
+- **PR:** `refactor(domain): remove i18n from the domain via coded domain exceptions`
+
+### Stage 8 — Atomic engagement counters & audit-trail integrity
 - [ ] Replace load-mutate-save counters with `ExecuteUpdateAsync` deltas across the 5 engagement
       handlers; clamp in SQL `[04 §1]` (also fixes the audit-trail overwrite `[04 §15]`)
 - **PR:** `fix(content): make engagement counters atomic and stop clobbering the audit trail`
 
-### Stage 8 — Query performance
+### Stage 9 — Query performance
 - [ ] `.AsSplitQuery()` on the multi-collection includes; `Exists` check on the interaction paths
       `[04 §2]`
 - [ ] Default `NoTracking`; `.AsTracking()` on the ~25 write paths `[04 §5]`
@@ -99,7 +112,7 @@ Small, isolated, high-urgency fixes with no cross-module surgery. Full code in t
 - [ ] Batch the N+1 mapper/file lookups `[04 §13 / 06 §4]`
 - **PR:** `perf(content): split queries, no-tracking reads, read indexes and batch lookups`
 
-### Stage 9 — Multi-instance readiness
+### Stage 10 — Multi-instance readiness
 - [ ] Redis distributed cache + version-key invalidation `[04 §8]`
 - [ ] Quartz clustering / advisory-lock jobs `[04 §8]`
 - [ ] Idempotent, advisory-locked seeders (fixes the missing `Lyrics` content type) `[04 §9]`
@@ -107,7 +120,7 @@ Small, isolated, high-urgency fixes with no cross-module surgery. Full code in t
 - [ ] EF resilience: `EnableRetryOnFailure` + `CommandTimeout` + pool size `[04 §14]`
 - **PR:** `fix(infra): make the app safe to run on more than one instance`
 
-### Stage 10 — CancellationToken, typed configuration & observability
+### Stage 11 — CancellationToken, typed configuration & observability
 - [ ] Thread `CancellationToken` through all 293 endpoints; drop the `= default` on `IDispatcher.Send`
       `[06 §1]`
 - [ ] Typed `IOptions` with `ValidateOnStart` for DB/JWT/Cloudinary/CORS/SMTP/Resend `[08 §10 / 01 §1.10]`
@@ -115,19 +128,19 @@ Small, isolated, high-urgency fixes with no cross-module surgery. Full code in t
 - [ ] Kestrel/form body limits for uploads; gate Swagger + security headers + HSTS `[08 §4 / §7]`
 - **PR:** `feat(platform): cancellation tokens, validated config, health checks and headers`
 
-### Stage 11 — Public/Admin DTO split & staff-data leak fixes
+### Stage 12 — Public/Admin DTO split & staff-data leak fixes
 - [ ] `Public*Dto` records (no `AuditableDto`) + mappers for the 27 leaking public endpoints `[06 §6]`
 - [ ] Drop `Email` from `AuthorInfo`/content `AuthorDto`; mail handlers fetch it separately `[07 S9]`
 - **PR:** `fix(content): stop leaking admin/commercial fields on public endpoints`
 
-### Stage 12 — Domain-event durability
+### Stage 13 — Domain-event durability
 - [ ] Stable `IDomainEvent.EventId`/`OccurredOn`; `DomainEvent` base stamped in `AddDomainEvent`
       `[01 §1.8]`
 - [ ] Per-module domain-event outbox written in `SaveChanges`; replay job `[01 §1.7]`
 - [ ] `ExecuteInTransactionAsync` unit-of-work; collapse the multi-commit handlers `[04 §7]`
 - **PR:** `feat(platform): durable domain events via transactional outbox`
 
-### Stage 13 — Core→Storage contracts, architecture tests & packaging
+### Stage 14 — Core→Storage contracts, architecture tests & packaging
 - [ ] `Central Package Management` + `Directory.Build.props` `[study 04]`
 - [ ] `Core.Contracts` (`IFileStore`/`FileRef`); migrate Identity then Content off `Core.csproj`
       `[02 §1 / 05 §6]`; rename Core→Storage `[13]`
@@ -135,10 +148,6 @@ Small, isolated, high-urgency fixes with no cross-module surgery. Full code in t
 - [ ] `tests/Architecture` NetArchTest rules (boundaries + layers) `[02 §3 / study 02]`
 - **PR:** `refactor(core): extract Storage contracts and enforce module boundaries`
 
-### Stage 14 — Invert localization-in-domain
-- [ ] `DomainException` (code-only) + strategy; drop the `errors` parameter from the ~50 domain
-      signatures; re-key `.resx` by code `[03 §6 / 08 §9]`
-- **PR:** `refactor(domain): remove i18n from the domain via coded domain exceptions`
 
 ### Stage 15 — Project restructure
 - [ ] Split `Shared` into `SharedKernel` + `BuildingBlocks.{Domain,Application,Infrastructure,Presentation}`
