@@ -133,4 +133,25 @@ public class AdminRejectArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
         persisted.Status.Should().Be(EnumContentStatus.Rejected);
         persisted.RejectionReason.Should().Be(request.Reason);
     }
+
+    [Fact]
+    public async Task RejectArticle_AsSuperAdmin_PublishedArticle_UnpublishesIt()
+    {
+        ArticleEntity article = await SeedArticleAsync(ArticleFactory.CreatePublished);
+        Client.AuthenticateAsSuperAdmin();
+        AdminRejectArticleRequest request = new AdminRejectArticleRequestBuilder().Build();
+
+        var response = await Client.PatchAsJsonAsync(
+            Routes.Admin.Editorial.Reject(EditorialRouteConstants.Articles, article.Id),
+            request
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.ReadAsAsync<AdminRejectArticleResponse>();
+        body.IsSuccess.Should().BeTrue();
+
+        ArticleEntity persisted = await GetArticleAsync(article.Id);
+        persisted.Status.Should().Be(EnumContentStatus.Rejected);
+        persisted.RejectionReason.Should().Be(request.Reason);
+    }
 }
