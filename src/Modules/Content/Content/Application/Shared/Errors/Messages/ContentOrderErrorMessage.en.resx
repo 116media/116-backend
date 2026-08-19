@@ -84,4 +84,7 @@
   <data name="TierIdInvalid" xml:space="preserve">
     <value>Tier ID is invalid.</value>
   </data>
+  <data name="PaymentAlreadyDecided" xml:space="preserve">
+    <value>Payment proof can no longer be changed once the payment has been decided.</value>
+  </data>
 </root>
