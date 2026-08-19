@@ -1,4 +1,5 @@
 using _116.Content.Domain.Enums;
+using _116.Content.Domain.Events;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -102,6 +103,8 @@ public class LyricsSubmissionEntity : Aggregate<Guid>
         Status = EnumSubmissionStatus.Approved;
         ReviewedByUserId = reviewedByUserId;
         PublishedLyricsId = publishedLyricsId;
+
+        RaiseDecidedEvent();
     }
 
     /// <summary>
@@ -114,6 +117,8 @@ public class LyricsSubmissionEntity : Aggregate<Guid>
         Status = EnumSubmissionStatus.Rejected;
         ReviewedByUserId = reviewedByUserId;
         ReviewNote = note;
+
+        RaiseDecidedEvent();
     }
 
     /// <summary>
@@ -126,5 +131,26 @@ public class LyricsSubmissionEntity : Aggregate<Guid>
         Status = EnumSubmissionStatus.NeedsRevision;
         ReviewedByUserId = reviewedByUserId;
         ReviewNote = note;
+
+        RaiseDecidedEvent();
+    }
+
+    /// <summary>
+    /// Raises the decision fact from the state the transition just wrote, so
+    /// every decision path carries the same payload shape: the review note for
+    /// rejections and revision requests, the published lyrics record for
+    /// approvals.
+    /// </summary>
+    private void RaiseDecidedEvent()
+    {
+        AddDomainEvent(
+            new LyricsSubmissionDecidedEvent(
+                SubmissionId: Id,
+                SubmittedByUserId: SubmittedByUserId,
+                Outcome: Status,
+                ReviewNote: ReviewNote,
+                PublishedLyricsId: PublishedLyricsId
+            )
+        );
     }
 }

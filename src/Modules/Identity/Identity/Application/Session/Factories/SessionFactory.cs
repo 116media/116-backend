@@ -75,6 +75,8 @@ public class SessionFactory(
             ClientOriginInfo clientOrigin = sessionMetadataService.GetClientOriginInfo();
             EnumClient clientApp = sessionMetadataService.ExtractClientApp();
 
+            // The reuse-or-create decision is made here: no session row exists
+            // for this device, so the created session records a new device.
             var session = SessionEntity.Create(
                 id: sessionId,
                 userId: user.Id,
@@ -86,7 +88,8 @@ public class SessionFactory(
                 platform: clientOrigin.Platform,
                 client: clientApp,
                 ipAddress: ipAddress,
-                userAgent: userAgent
+                userAgent: userAgent,
+                isNewDevice: true
             );
 
             await sessionRepository.CreateAsync(session: session, cancellationToken: cancellationToken);

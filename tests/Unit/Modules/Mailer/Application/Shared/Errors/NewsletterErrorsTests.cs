@@ -1,0 +1,48 @@
+using _116.Mailer.Application.Shared.Errors;
+using _116.Mailer.Application.Shared.Errors.Messages;
+using _116.Shared.Application.Exceptions;
+using _116.Tests.Fixtures.Helpers;
+using AwesomeAssertions;
+using Xunit;
+
+namespace _116.Unit.Tests.Modules.Mailer.Application.Shared.Errors;
+
+/// <summary>
+/// Unit tests for <see cref="NewsletterErrors" /> factory methods and the
+/// <see cref="NewsletterErrorMessage" /> localized strings backing them.
+/// </summary>
+public class NewsletterErrorsTests
+{
+    private readonly NewsletterErrors _errors = new(LocalizerFactory.CreateMessage<NewsletterErrorMessage>("en"));
+    private readonly NewsletterErrorMessage _message = LocalizerFactory.CreateMessage<NewsletterErrorMessage>("en");
+
+    /// <summary>
+    /// Verifies that the factory exposes the message provider the validators
+    /// read their copy from.
+    /// </summary>
+    [Fact]
+    public void Msg_ShouldExposeUsableMessageProvider()
+    {
+        // Arrange & Act
+        NewsletterErrorMessage msg = _errors.Msg;
+
+        // Assert
+        msg.Should().NotBeNull();
+        msg.TokenInvalid().Should().NotBeNullOrWhiteSpace();
+    }
+
+    /// <summary>
+    /// Verifies that a stale, tampered, or rotated confirmation or unsubscribe
+    /// link produces a not-found carrying the localized message.
+    /// </summary>
+    [Fact]
+    public void TokenNotFound_ShouldReturnNotFoundExceptionWithLocalizedMessage()
+    {
+        // Arrange & Act
+        NotFoundException ex = _errors.TokenNotFound();
+
+        // Assert
+        ex.Should().BeOfType<NotFoundException>();
+        ex.Message.Should().NotBeNullOrWhiteSpace().And.Contain(_message.TokenInvalid());
+    }
+}

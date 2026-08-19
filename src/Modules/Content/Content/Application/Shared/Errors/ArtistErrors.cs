@@ -55,6 +55,15 @@ public class ArtistErrors(ArtistErrorMessage i18n)
     }
 
     /// <summary>
+    /// Throws when the requesting account has already filed an ownership claim for the same
+    /// artist profile.
+    /// </summary>
+    public ConflictException ClaimRequestAlreadyExists()
+    {
+        return new ConflictException(i18n.ClaimRequestAlreadyExists());
+    }
+
+    /// <summary>
     /// Throws when an artist profile carries more alternate names than the identity block
     /// can render.
     /// </summary>

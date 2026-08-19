@@ -1,4 +1,3 @@
-using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -13,12 +12,10 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.PublishArti
 /// </summary>
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="cacheInvalidator">Invalidates the popular-articles cache when the article enters the published set.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminPublishArticleHandler(
     IArticleRepository articleRepository,
     IContentUnitOfWork unitOfWork,
-    IPopularArticlesCacheInvalidator cacheInvalidator,
     ContentI18n i18n
 ) : ICommandHandler<AdminPublishArticleCommand, AdminPublishArticleResult>
 {
@@ -51,8 +48,6 @@ public class AdminPublishArticleHandler(
         article.Publish();
         articleRepository.Update(article: article);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-
-        cacheInvalidator.Invalidate();
 
         return new AdminPublishArticleResult(IsSuccess: true);
     }

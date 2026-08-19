@@ -12,6 +12,8 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.VerifyOtp;
 
 /// <summary>
 /// Handles the <see cref="PublicVerifyOtpCommand" /> to verify OTP codes for user account verification.
+/// The welcome email reacts to the domain event the user aggregate raises when it transitions to
+/// verified.
 /// </summary>
 /// <param name="authRepository">Repository for user data access operations.</param>
 /// <param name="otpRepository">Repository for OTP data access operations.</param>

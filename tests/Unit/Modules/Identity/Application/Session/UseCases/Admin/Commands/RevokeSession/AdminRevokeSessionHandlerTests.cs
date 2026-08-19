@@ -3,6 +3,7 @@ using _116.Identity.Application.Session.UseCases.Admin.Commands.RevokeSession;
 using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.Enums;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Identity;
 using _116.Tests.Fixtures.Helpers;
@@ -147,7 +148,10 @@ public class AdminRevokeSessionHandlerTests
         }
 
         // Assert
-        _sessionRepositoryMock.Verify(x => x.RevokeAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+        _sessionRepositoryMock.Verify(
+            x => x.RevokeAsync(It.IsAny<Guid>(), It.IsAny<EnumSessionRevokeReason>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
     }
 
     [Fact]
@@ -225,7 +229,10 @@ public class AdminRevokeSessionHandlerTests
         await _handler.Handle(command, cts.Token);
 
         // Assert
-        _sessionRepositoryMock.Verify(x => x.RevokeAsync(session.Id, cts.Token), Times.Once);
+        _sessionRepositoryMock.Verify(
+            x => x.RevokeAsync(session.Id, It.IsAny<EnumSessionRevokeReason>(), cts.Token),
+            Times.Once
+        );
     }
 
     [Fact]

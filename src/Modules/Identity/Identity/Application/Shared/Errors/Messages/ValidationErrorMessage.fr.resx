@@ -138,9 +138,6 @@
   <data name="RoleDescriptionTooLong" xml:space="preserve">
     <value>La description du rôle ne peut pas dépasser {0} caractères.</value>
   </data>
-  <data name="CoreRoleCannotBeModified" xml:space="preserve">
-    <value>Le rôle système « {0} » ne peut pas être modifié.</value>
-  </data>
   <data name="CoreRoleCannotBeDeleted" xml:space="preserve">
     <value>Le rôle système « {0} » ne peut pas être supprimé.</value>
   </data>

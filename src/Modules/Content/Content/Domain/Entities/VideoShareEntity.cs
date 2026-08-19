@@ -1,4 +1,5 @@
 using _116.Content.Domain.Enums;
+using _116.Content.Domain.Events;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -42,7 +43,7 @@ public class VideoShareEntity : Aggregate<Guid>
     /// <returns>A new <see cref="VideoShareEntity" />.</returns>
     public static VideoShareEntity Create(Guid id, Guid? userId, Guid videoId, EnumShareChannel? shareChannel = null)
     {
-        return new VideoShareEntity
+        var share = new VideoShareEntity
         {
             Id = id,
             UserId = userId,
@@ -50,5 +51,9 @@ public class VideoShareEntity : Aggregate<Guid>
             ShareChannel = shareChannel,
             CreatedAt = DateTime.UtcNow,
         };
+
+        share.AddDomainEvent(new VideoEngagedEvent(VideoId: videoId, Kind: EnumEngagementKind.Share, Delta: 1));
+
+        return share;
     }
 }

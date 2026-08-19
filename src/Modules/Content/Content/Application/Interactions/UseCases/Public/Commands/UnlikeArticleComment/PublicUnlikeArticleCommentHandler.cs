@@ -53,9 +53,6 @@ public class PublicUnlikeArticleCommentHandler(
             cancellationToken: cancellationToken
         );
 
-        comment.DecrementLikeCount();
-        articleRepository.UpdateComment(comment: comment);
-
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new PublicUnlikeArticleCommentResult(IsSuccess: true);

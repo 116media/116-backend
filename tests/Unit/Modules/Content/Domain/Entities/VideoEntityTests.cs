@@ -1,5 +1,6 @@
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
+using _116.Content.Domain.Events;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Helpers;
@@ -293,6 +294,47 @@ public class VideoEntityTests
     }
 
     [Fact]
+    public void Publish_WithYoutubeUrl_ShouldRaiseCommissionedContentPublishedEvent()
+    {
+        // Arrange
+        VideoEntity video = VideoEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Content.Editorial.Video.ValidTitle,
+            TestConstants.Content.Editorial.Video.ValidSlug,
+            AuthorId,
+            Description,
+            TestErrorsFactory.CreateVideoErrors()
+        );
+        video.AttachYoutubeVideoUrl(
+            TestConstants.Content.Editorial.Video.ValidYoutubeVideoUrl,
+            TestErrorsFactory.CreateVideoErrors()
+        );
+        video.MarkPendingReview();
+        video.Approve();
+        video.ClearDomainEvents();
+
+        // Act
+        video.Publish(TestErrorsFactory.CreateVideoErrors());
+
+        // Assert
+        video
+            .DomainEvents.OfType<CommissionedContentPublishedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(
+                new CommissionedContentPublishedEvent(
+                    video.Id,
+                    EnumCoreContentType.Video,
+                    video.CustomerId,
+                    video.Title,
+                    video.Slug
+                )
+            );
+    }
+
+    [Fact]
     public void Publish_WithoutYoutubeUrl_ShouldThrow()
     {
         // Arrange
@@ -365,6 +407,41 @@ public class VideoEntityTests
         result.Should().BeTrue();
         video.Status.Should().Be(EnumContentStatus.Rejected);
         video.RejectionReason.Should().Be(reason);
+    }
+
+    [Fact]
+    public void Reject_ShouldRaiseCommissionedContentRejectedEvent()
+    {
+        // Arrange
+        VideoEntity video = VideoEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Content.Editorial.Video.ValidTitle,
+            TestConstants.Content.Editorial.Video.ValidSlug,
+            AuthorId,
+            Description,
+            TestErrorsFactory.CreateVideoErrors()
+        );
+        const string reason = TestConstants.Content.Editorial.Video.ValidRejectionReason;
+
+        // Act
+        video.Reject(reason);
+
+        // Assert
+        video
+            .DomainEvents.OfType<CommissionedContentRejectedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(
+                new CommissionedContentRejectedEvent(
+                    video.Id,
+                    EnumCoreContentType.Video,
+                    video.CustomerId,
+                    video.Title,
+                    reason
+                )
+            );
     }
 
     [Fact]
@@ -474,6 +551,34 @@ public class VideoEntityTests
     }
 
     [Fact]
+    public void AttachYoutubeUrl_ShouldRaiseYoutubeUrlAttachedEventWithTheUrl()
+    {
+        // Arrange
+        VideoEntity video = VideoEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Content.Editorial.Video.ValidTitle,
+            TestConstants.Content.Editorial.Video.ValidSlug,
+            AuthorId,
+            Description,
+            TestErrorsFactory.CreateVideoErrors()
+        );
+        const string youtubeUrl = TestConstants.Content.Editorial.Video.ValidYoutubeVideoUrl;
+        video.ClearDomainEvents();
+
+        // Act
+        video.AttachYoutubeVideoUrl(youtubeUrl, TestErrorsFactory.CreateVideoErrors());
+
+        // Assert
+        video
+            .DomainEvents.OfType<VideoYoutubeUrlAttachedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(new VideoYoutubeUrlAttachedEvent(video.Id, youtubeUrl));
+    }
+
+    [Fact]
     public void AttachYoutubeUrl_WhenShootIsInThePast_ShouldSetYoutubeVideoUrl()
     {
         // Arrange
@@ -562,6 +667,33 @@ public class VideoEntityTests
 
         // Assert
         video.ShootingScheduledAt.Should().Be(scheduledAt);
+    }
+
+    [Fact]
+    public void ScheduleShoot_ShouldRaiseVideoShootScheduledEvent()
+    {
+        // Arrange
+        VideoEntity video = VideoEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Content.Editorial.Video.ValidTitle,
+            TestConstants.Content.Editorial.Video.ValidSlug,
+            AuthorId,
+            Description,
+            TestErrorsFactory.CreateVideoErrors()
+        );
+        DateTimeOffset scheduledAt = DateTimeOffset.UtcNow.AddDays(14);
+
+        // Act
+        video.ScheduleShoot(scheduledAt);
+
+        // Assert
+        video
+            .DomainEvents.OfType<VideoShootScheduledEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(new VideoShootScheduledEvent(video.Id, video.CustomerId, video.Title, scheduledAt));
     }
 
     [Fact]
@@ -677,10 +809,48 @@ public class VideoEntityTests
         // Assert
         video.IsPromoted.Should().BeFalse();
         video.PromotedUntil.Should().BeNull();
+        video.PromotionLevelId.Should().BeNull();
         video.UnpromotedBy.Should().Be(superAdminId);
         video.UnpromotedReason.Should().Be(reason);
         video.UnpromotedAt.Should().NotBeNull();
         video.UnpromotedAt!.Value.Should().BeCloseTo(before, TimeSpan.FromSeconds(1));
+    }
+
+    [Fact]
+    public void ForceUnpromote_ShouldRaiseContentPromotionRemovedEvent()
+    {
+        // Arrange
+        const string reason = "policy violation";
+        VideoEntity video = VideoEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Content.Editorial.Video.ValidTitle,
+            TestConstants.Content.Editorial.Video.ValidSlug,
+            AuthorId,
+            Description,
+            TestErrorsFactory.CreateVideoErrors()
+        );
+        video.StampPromotion(Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(7));
+        video.ClearDomainEvents();
+
+        // Act
+        video.ForceUnpromote("super-admin-uuid", reason);
+
+        // Assert
+        video
+            .DomainEvents.OfType<ContentPromotionRemovedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(
+                new ContentPromotionRemovedEvent(
+                    video.Id,
+                    EnumCoreContentType.Video,
+                    video.CustomerId,
+                    video.Title,
+                    reason
+                )
+            );
     }
 
     [Fact]
@@ -896,6 +1066,55 @@ public class VideoEntityTests
     }
 
     [Fact]
+    public void MarkPendingReview_WhenAlreadyApproved_ShouldReturnFalseAndKeepApprovedStatus()
+    {
+        // Arrange — a replayed paid-effects dispatch must not pull approved
+        // content back into the review queue.
+        VideoEntity video = VideoEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Content.Editorial.Video.ValidTitle,
+            TestConstants.Content.Editorial.Video.ValidSlug,
+            AuthorId,
+            Description,
+            TestErrorsFactory.CreateVideoErrors()
+        );
+        video.MarkPendingReview();
+        video.Approve();
+
+        // Act
+        bool result = video.MarkPendingReview();
+
+        // Assert
+        result.Should().BeFalse();
+        video.Status.Should().Be(EnumContentStatus.Approved);
+    }
+
+    [Fact]
+    public void MarkPendingReview_WhenRejected_ShouldReturnTrueSoTheContentCanBeResubmitted()
+    {
+        // Arrange
+        VideoEntity video = VideoEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Content.Editorial.Video.ValidTitle,
+            TestConstants.Content.Editorial.Video.ValidSlug,
+            AuthorId,
+            Description,
+            TestErrorsFactory.CreateVideoErrors()
+        );
+        video.MarkPendingReview();
+        video.Reject("needs a better cut");
+
+        // Act
+        bool result = video.MarkPendingReview();
+
+        // Assert
+        result.Should().BeTrue();
+        video.Status.Should().Be(EnumContentStatus.PendingReview);
+    }
+
+    [Fact]
     public void LinkArtist_ShouldSetArtistId()
     {
         // Arrange
@@ -963,4 +1182,179 @@ public class VideoEntityTests
     }
 
     #endregion
+
+    [Fact]
+    public void Publish_ShouldRaiseVideoPublishedEvent()
+    {
+        // Arrange
+        VideoEntity video = VideoEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Content.Editorial.Video.ValidTitle,
+            TestConstants.Content.Editorial.Video.ValidSlug,
+            AuthorId,
+            Description,
+            TestErrorsFactory.CreateVideoErrors()
+        );
+        video.AttachYoutubeVideoUrl(
+            TestConstants.Content.Editorial.Video.ValidYoutubeVideoUrl,
+            TestErrorsFactory.CreateVideoErrors()
+        );
+        video.MarkPendingReview();
+        video.Approve();
+        video.ClearDomainEvents();
+
+        // Act
+        video.Publish(TestErrorsFactory.CreateVideoErrors());
+
+        // Assert
+        video
+            .DomainEvents.OfType<VideoPublishedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(new VideoPublishedEvent(video.Id));
+    }
+
+    [Fact]
+    public void Reject_WhenPublished_ShouldRaiseVideoUnpublishedEvent()
+    {
+        // Arrange
+        VideoEntity video = VideoEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Content.Editorial.Video.ValidTitle,
+            TestConstants.Content.Editorial.Video.ValidSlug,
+            AuthorId,
+            Description,
+            TestErrorsFactory.CreateVideoErrors()
+        );
+        video.AttachYoutubeVideoUrl(
+            TestConstants.Content.Editorial.Video.ValidYoutubeVideoUrl,
+            TestErrorsFactory.CreateVideoErrors()
+        );
+        video.MarkPendingReview();
+        video.Approve();
+        video.Publish(TestErrorsFactory.CreateVideoErrors());
+        video.ClearDomainEvents();
+
+        // Act
+        video.Reject("not suitable anymore");
+
+        // Assert
+        video
+            .DomainEvents.OfType<VideoUnpublishedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(new VideoUnpublishedEvent(video.Id));
+    }
+
+    [Fact]
+    public void Reject_WhenNotPublished_ShouldNotRaiseVideoUnpublishedEvent()
+    {
+        // Arrange
+        VideoEntity video = VideoEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Content.Editorial.Video.ValidTitle,
+            TestConstants.Content.Editorial.Video.ValidSlug,
+            AuthorId,
+            Description,
+            TestErrorsFactory.CreateVideoErrors()
+        );
+        video.MarkPendingReview();
+        video.ClearDomainEvents();
+
+        // Act
+        video.Reject("not suitable");
+
+        // Assert
+        video.DomainEvents.OfType<VideoUnpublishedEvent>().Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Archive_WhenPublished_ShouldRaiseVideoUnpublishedEvent()
+    {
+        // Arrange
+        VideoEntity video = VideoEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Content.Editorial.Video.ValidTitle,
+            TestConstants.Content.Editorial.Video.ValidSlug,
+            AuthorId,
+            Description,
+            TestErrorsFactory.CreateVideoErrors()
+        );
+        video.AttachYoutubeVideoUrl(
+            TestConstants.Content.Editorial.Video.ValidYoutubeVideoUrl,
+            TestErrorsFactory.CreateVideoErrors()
+        );
+        video.MarkPendingReview();
+        video.Approve();
+        video.Publish(TestErrorsFactory.CreateVideoErrors());
+        video.ClearDomainEvents();
+
+        // Act
+        video.Archive();
+
+        // Assert
+        video
+            .DomainEvents.OfType<VideoUnpublishedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(new VideoUnpublishedEvent(video.Id));
+    }
+
+    [Fact]
+    public void Archive_WhenNotPublished_ShouldNotRaiseVideoUnpublishedEvent()
+    {
+        // Arrange
+        VideoEntity video = VideoEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Content.Editorial.Video.ValidTitle,
+            TestConstants.Content.Editorial.Video.ValidSlug,
+            AuthorId,
+            Description,
+            TestErrorsFactory.CreateVideoErrors()
+        );
+        video.ClearDomainEvents();
+
+        // Act
+        video.Archive();
+
+        // Assert
+        video.DomainEvents.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void MarkDeleted_ShouldRaiseVideoDeletedEventWithCapturedThumbnail()
+    {
+        // Arrange
+        var thumbnailFileId = Guid.NewGuid();
+        VideoEntity video = VideoEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Content.Editorial.Video.ValidTitle,
+            TestConstants.Content.Editorial.Video.ValidSlug,
+            AuthorId,
+            Description,
+            TestErrorsFactory.CreateVideoErrors()
+        );
+        video.SetThumbnailFileId(thumbnailFileId);
+        video.ClearDomainEvents();
+
+        // Act
+        video.MarkDeleted();
+
+        // Assert
+        video
+            .DomainEvents.OfType<VideoDeletedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(new VideoDeletedEvent(video.Id, thumbnailFileId));
+    }
 }

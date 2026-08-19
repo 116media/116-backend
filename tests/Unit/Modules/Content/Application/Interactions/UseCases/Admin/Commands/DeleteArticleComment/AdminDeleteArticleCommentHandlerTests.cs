@@ -38,7 +38,7 @@ public class AdminDeleteArticleCommentHandlerTests
     #region Success Cases
 
     [Fact]
-    public async Task Handle_WhenCommentExists_ShouldSoftDeleteDecrementAndCommit()
+    public async Task Handle_WhenCommentExists_ShouldSoftDeleteAndCommit()
     {
         // Arrange
         ArticleEntity article = ArticleFactory.CreatePublished(CategoryId);
@@ -54,8 +54,30 @@ public class AdminDeleteArticleCommentHandlerTests
         // Assert
         result.IsSuccess.Should().BeTrue();
         _articleRepositoryMock.VerifyUpdateCommentCalled();
-        _articleRepositoryMock.VerifyUpdateCalled();
         _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    [Fact]
+    public async Task Handle_WhenCommentAlreadyDeleted_ShouldReportSuccessWithoutCommitting()
+    {
+        // Arrange — moderating a comment its owner already deleted must not
+        // decrement the article's cached comment count a second time.
+        ArticleEntity article = ArticleFactory.CreatePublished(CategoryId);
+        ArticleCommentEntity comment = ArticleCommentFactory.Create(article.Id, Guid.NewGuid());
+        comment.SoftDelete();
+        comment.ClearDomainEvents();
+        var command = new AdminDeleteArticleCommentCommand(ArticleId: article.Id, CommentId: comment.Id);
+        _articleRepositoryMock.SetupGetCommentByIdAsync(comment);
+        _articleRepositoryMock.SetupGetByIdOrThrow(article);
+
+        // Act
+        AdminDeleteArticleCommentResult result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        comment.DomainEvents.Should().BeEmpty();
+        _articleRepositoryMock.Verify(x => x.UpdateComment(It.IsAny<ArticleCommentEntity>()), Times.Never);
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     #endregion

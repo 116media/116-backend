@@ -18,7 +18,6 @@ namespace _116.Unit.Tests.Modules.Core.Infrastructure.Repositories;
 /// </summary>
 public class FileRepositoryTests : IDisposable
 {
-    private readonly CoreI18n _coreErrors = TestErrorsFactory.CreateCoreI18n();
     private readonly CoreDbContext _context;
     private readonly Mock<IFileService> _mockFileService;
     private readonly Mock<IImageColorService> _mockImageColorService;
@@ -125,8 +124,7 @@ public class FileRepositoryTests : IDisposable
         _context.Files.Add(file);
         await _context.SaveChangesAsync();
 
-        const string newUrl = "https://new-storage-url.com/file.jpg";
-        file.UpdateStorageUrl(newUrl, _coreErrors);
+        file.Delete();
 
         // Act
         await _repository.UpdateAsync(file);
@@ -135,7 +133,7 @@ public class FileRepositoryTests : IDisposable
         // Assert
         FileEntity? updatedFile = await _context.Files.FirstOrDefaultAsync(f => f.Id == file.Id);
         updatedFile.Should().NotBeNull();
-        updatedFile.StorageUrl.Should().Be(newUrl);
+        updatedFile.IsDeleted.Should().BeTrue();
     }
 
     #endregion
@@ -376,7 +374,7 @@ public class FileRepositoryTests : IDisposable
     }
 
     [Fact]
-    public async Task UpdateAvatarFromUrlAsync_WhenCurrentAvatarHasDifferentUrl_ShouldDeleteOldAndDownloadNew()
+    public async Task UpdateAvatarFromUrlAsync_WhenCurrentAvatarHasDifferentUrl_ShouldSoftDeleteOldAndDownloadNew()
     {
         // Arrange
         string userId = Guid.NewGuid().ToString();
@@ -408,8 +406,9 @@ public class FileRepositoryTests : IDisposable
         result.Id.Should().Be(downloadResult.FileId);
         result.StorageUrl.Should().Be(newAvatarUrl);
 
-        FileEntity? deletedFile = await _context.Files.FirstOrDefaultAsync(f => f.Id == oldFile.Id);
-        deletedFile.Should().BeNull();
+        FileEntity? replacedFile = await _context.Files.FirstOrDefaultAsync(f => f.Id == oldFile.Id);
+        replacedFile.Should().NotBeNull();
+        replacedFile.IsDeleted.Should().BeTrue();
 
         _mockFileService.Verify(s => s.DownloadFileAsync(newAvatarUrl, It.IsAny<CancellationToken>()), Times.Once);
     }
@@ -493,7 +492,7 @@ public class FileRepositoryTests : IDisposable
     }
 
     [Fact]
-    public async Task UpdateAvatarFromFileAsync_WhenCurrentAvatarExists_ShouldDeleteOldAndUploadNew()
+    public async Task UpdateAvatarFromFileAsync_WhenCurrentAvatarExists_ShouldSoftDeleteOldAndUploadNew()
     {
         // Arrange
         FileEntity oldFile = FileFactory.Create();
@@ -532,8 +531,9 @@ public class FileRepositoryTests : IDisposable
         result.Should().NotBeNull();
         result.Id.Should().Be(uploadResult.FileId);
 
-        FileEntity? deletedFile = await _context.Files.FirstOrDefaultAsync(f => f.Id == oldFile.Id);
-        deletedFile.Should().BeNull();
+        FileEntity? replacedFile = await _context.Files.FirstOrDefaultAsync(f => f.Id == oldFile.Id);
+        replacedFile.Should().NotBeNull();
+        replacedFile.IsDeleted.Should().BeTrue();
 
         _mockFileService.Verify(
             s => s.UploadFileAsync(mockFormFile.Object, userId, "avatars", It.IsAny<CancellationToken>()),

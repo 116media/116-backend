@@ -1,5 +1,4 @@
 using _116.Content.Application.Interactions.UseCases.Public.Commands.AddCommentReply;
-using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -26,7 +25,6 @@ public class PublicAddCommentReplyHandlerTests : BaseContentHandlerTest
 
     private readonly Mock<IArticleRepository> _articleRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
-    private readonly Mock<IPopularArticlesCacheInvalidator> _cacheInvalidatorMock;
     private readonly Mock<IUserLookupService> _userLookupMock;
     private readonly Mock<IFileRepository> _fileRepositoryMock;
     private readonly PublicAddCommentReplyHandler _handler;
@@ -35,13 +33,11 @@ public class PublicAddCommentReplyHandlerTests : BaseContentHandlerTest
     {
         _articleRepositoryMock = MockArticleRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _cacheInvalidatorMock = MockPopularArticlesCacheInvalidator.Create();
         _userLookupMock = new Mock<IUserLookupService>();
         _fileRepositoryMock = new Mock<IFileRepository>();
         _handler = new PublicAddCommentReplyHandler(
             _articleRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            _cacheInvalidatorMock.Object,
             _userLookupMock.Object,
             _fileRepositoryMock.Object,
             Mapper,
@@ -50,7 +46,7 @@ public class PublicAddCommentReplyHandlerTests : BaseContentHandlerTest
     }
 
     [Fact]
-    public async Task Handle_WhenParentIsTopLevel_ShouldCreateReplyIncrementCountAndReturnAuthor()
+    public async Task Handle_WhenParentIsTopLevel_ShouldCreateReplyAndReturnAuthor()
     {
         // Arrange
         ArticleEntity article = ArticleFactory.CreatePublished(CategoryId);

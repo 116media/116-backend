@@ -18,24 +18,9 @@ public class UserErrors(
 )
 {
     /// <summary>
-    /// Exposes the conflict message provider for use in validator extensions.
-    /// </summary>
-    public ConflictErrorMessage Conflict => conflict;
-
-    /// <summary>
     /// Exposes the validation message provider for use in validator extensions.
     /// </summary>
     public ValidationErrorMessage Validation => validation;
-
-    /// <summary>
-    /// Exposes the authentication message provider for use in validator extensions.
-    /// </summary>
-    public AuthenticationErrorMessage Authentication => authentication;
-
-    /// <summary>
-    /// Exposes the authorization message provider for use in validator extensions.
-    /// </summary>
-    public AuthorizationErrorMessage Authorization => authorization;
 
     /// <summary>
     /// Throws when a user already exists during registration.
@@ -163,14 +148,6 @@ public class UserErrors(
     public ConflictException PermissionNotDeleted()
     {
         return new ConflictException(conflict.PermissionNotDeleted());
-    }
-
-    /// <summary>
-    /// Throws when a core role cannot be modified.
-    /// </summary>
-    public BadRequestException CoreRoleCannotBeModified(string roleName)
-    {
-        return new BadRequestException(validation.CoreRoleCannotBeModified(roleName));
     }
 
     /// <summary>
@@ -315,14 +292,6 @@ public class UserErrors(
     public BadRequestException RoleDescriptionRequired()
     {
         return new BadRequestException(validation.RoleDescriptionRequired());
-    }
-
-    /// <summary>
-    /// Throws a generic bad request exception with a custom message.
-    /// </summary>
-    public BadRequestException BadRequest(string message)
-    {
-        return new BadRequestException(message: message);
     }
 
     /// <summary>

@@ -1,4 +1,3 @@
-using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
@@ -18,10 +17,10 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.AddComm
 /// top-level article comment. Enforces that the parent exists, belongs to the given article,
 /// and is itself a top-level comment (replies to replies are rejected). The created reply is
 /// returned with its author resolved through the same cross-module mechanism used elsewhere.
+/// Notifying the parent comment's author happens post-commit, behind the reply's domain event.
 /// </summary>
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="cacheInvalidator">Invalidates the popular-articles cache after the comment count changes.</param>
 /// <param name="userLookup">Cross-module service for resolving the replier's profile.</param>
 /// <param name="fileRepository">Repository for resolving the replier's avatar URL.</param>
 /// <param name="mapper">The mapper used to project entities to DTOs.</param>
@@ -29,7 +28,6 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.AddComm
 public class PublicAddCommentReplyHandler(
     IArticleRepository articleRepository,
     IContentUnitOfWork unitOfWork,
-    IPopularArticlesCacheInvalidator cacheInvalidator,
     IUserLookupService userLookup,
     IFileRepository fileRepository,
     IMapper mapper,
@@ -42,10 +40,7 @@ public class PublicAddCommentReplyHandler(
         CancellationToken cancellationToken
     )
     {
-        ArticleEntity article = await articleRepository.GetByIdOrThrowAsync(
-            id: command.ArticleId,
-            cancellationToken: cancellationToken
-        );
+        await articleRepository.GetByIdOrThrowAsync(id: command.ArticleId, cancellationToken: cancellationToken);
 
         ArticleCommentEntity? parent = await articleRepository.GetCommentByIdAsync(
             commentId: command.ParentCommentId,
@@ -72,12 +67,7 @@ public class PublicAddCommentReplyHandler(
 
         await articleRepository.AddCommentAsync(comment: reply, cancellationToken: cancellationToken);
 
-        article.IncrementCommentCount();
-        articleRepository.Update(article: article);
-
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-
-        cacheInvalidator.Invalidate();
 
         AuthorDto? author = await ResolveAuthorAsync(command.UserId, cancellationToken);
         ArticleCommentDto dto = reply.ToArticleCommentDto(mapper) with { Author = author };

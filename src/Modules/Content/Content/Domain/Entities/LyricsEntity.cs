@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using _116.Content.Application.Shared.Errors;
 using _116.Content.Domain.Constants;
 using _116.Content.Domain.Enums;
+using _116.Content.Domain.Events;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Domain;
 
@@ -482,17 +483,21 @@ public class LyricsEntity : Aggregate<Guid>
     /// <summary>
     /// Transitions a free lyrics page from <c>Draft</c> → <c>PendingReview</c>,
     /// or a paid lyrics page from <c>PendingPayment</c> → <c>PendingReview</c> after payment is verified.
-    /// A no-op when the page is already <c>PendingReview</c> or already <c>Published</c> — the
-    /// latter is what makes retroactive promotion safe: buying promoted placement on an
-    /// already-live page (spec 12) must stamp <see cref="StampPromotion" /> without silently
-    /// un-publishing it back into the review queue.
+    /// Only <c>Draft</c>, <c>PendingPayment</c> and <c>Rejected</c> advance: a page whose
+    /// editorial state already moved past review (<c>PendingReview</c>, <c>Approved</c>,
+    /// <c>Published</c>, <c>Archived</c>) is left untouched, so a replayed payment effect never
+    /// pulls approved or live content back into the review queue and retroactive promotion on an
+    /// already-live page stamps <see cref="StampPromotion" /> without un-publishing it.
+    /// <c>Rejected</c> advances by design: the revise-and-resubmit flow is how rejected content
+    /// re-enters review.
     /// </summary>
     /// <returns>
-    /// <c>true</c> if moved to pending review; <c>false</c> if already pending review or already published.
+    /// <c>true</c> if moved to pending review; <c>false</c> when the editorial state is already
+    /// at or past review.
     /// </returns>
     public bool MarkPendingReview()
     {
-        if (Status is EnumContentStatus.PendingReview or EnumContentStatus.Published)
+        if (Status is not (EnumContentStatus.Draft or EnumContentStatus.PendingPayment or EnumContentStatus.Rejected))
         {
             return false;
         }
@@ -529,6 +534,17 @@ public class LyricsEntity : Aggregate<Guid>
 
         Status = EnumContentStatus.Published;
         PublishedAt = DateTimeOffset.UtcNow;
+
+        AddDomainEvent(
+            new CommissionedContentPublishedEvent(
+                ContentId: Id,
+                ContentType: EnumCoreContentType.Lyrics,
+                CustomerId: CustomerId,
+                Title: SongTitle,
+                Slug: Slug
+            )
+        );
+
         return true;
     }
 
@@ -547,6 +563,17 @@ public class LyricsEntity : Aggregate<Guid>
 
         Status = EnumContentStatus.Rejected;
         RejectionReason = reason;
+
+        AddDomainEvent(
+            new CommissionedContentRejectedEvent(
+                ContentId: Id,
+                ContentType: EnumCoreContentType.Lyrics,
+                CustomerId: CustomerId,
+                Title: SongTitle,
+                Reason: reason
+            )
+        );
+
         return true;
     }
 
@@ -597,12 +624,14 @@ public class LyricsEntity : Aggregate<Guid>
     /// </summary>
     /// <param name="promotionLevelId">
     /// The promotion level purchased. Accepted for signature parity with the Commerce
-    /// verification call site — not persisted on the entity, mirroring
-    /// <see cref="ArticleEntity.StampPromotion" />; the purchased level lives on
-    /// <see cref="ContentOrderItemEntity" /> and is consulted at verification time only.
+    /// verification call site — a lyrics page carries no promotion level column, unlike
+    /// <see cref="ArticleEntity" /> and <see cref="VideoEntity" />, which persist it; the
+    /// purchased level lives on <see cref="ContentOrderItemEntity" /> and is consulted at
+    /// verification time only.
     /// </param>
     /// <param name="until">
-    /// When the promotion expires (<c>payment.verified_at + promotion_level.duration_days</c>).
+    /// When the promotion expires (<c>payment.verified_at + promotion_level.duration_days</c>,
+    /// the verification instant truncated to whole milliseconds).
     /// </param>
     public void StampPromotion(Guid promotionLevelId, DateTimeOffset until)
     {
@@ -635,6 +664,16 @@ public class LyricsEntity : Aggregate<Guid>
         UnpromotedAt = DateTimeOffset.UtcNow;
         UnpromotedBy = unpromotedBy;
         UnpromotedReason = reason;
+
+        AddDomainEvent(
+            new ContentPromotionRemovedEvent(
+                ContentId: Id,
+                ContentType: EnumCoreContentType.Lyrics,
+                CustomerId: CustomerId,
+                Title: SongTitle,
+                Reason: reason
+            )
+        );
     }
 
     /// <summary>

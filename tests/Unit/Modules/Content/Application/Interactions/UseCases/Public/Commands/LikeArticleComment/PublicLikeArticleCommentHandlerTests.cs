@@ -35,7 +35,7 @@ public class PublicLikeArticleCommentHandlerTests : BaseContentHandlerTest
     }
 
     [Fact]
-    public async Task Handle_WhenNotYetLiked_ShouldAddLikeIncrementCountAndCommit()
+    public async Task Handle_WhenNotYetLiked_ShouldAddLikeAndCommit()
     {
         ArticleCommentEntity comment = ArticleCommentFactory.Create(Guid.NewGuid(), Guid.NewGuid());
         _articleRepositoryMock.SetupGetCommentByIdAsync(comment);
@@ -46,7 +46,6 @@ public class PublicLikeArticleCommentHandlerTests : BaseContentHandlerTest
         PublicLikeArticleCommentResult result = await _handler.Handle(command, CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
-        comment.LikeCount.Should().Be(1);
         _articleRepositoryMock.VerifyAddCommentLikeCalled(Times.Once());
         _unitOfWorkMock.VerifyCommitCalled();
     }

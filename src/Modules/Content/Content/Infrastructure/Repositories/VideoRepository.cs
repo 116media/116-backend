@@ -171,6 +171,7 @@ public class VideoRepository(ContentDbContext context) : IVideoRepository
     /// <inheritdoc />
     public void RemoveTag(VideoTagEntity tag)
     {
+        tag.MarkRemoved();
         context.VideoTags.Remove(tag);
     }
 

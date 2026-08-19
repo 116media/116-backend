@@ -1,7 +1,10 @@
+using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.Login.V1;
+using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Builders.Requests.Identity;
 using _116.Tests.Fixtures.Factories.Identity;
+using _116.Tests.Fixtures.Helpers;
 using Microsoft.AspNetCore.Mvc;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.Auth.UseCases.Public.Commands.Login.V1;
@@ -210,6 +213,43 @@ public class PublicLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
         var response = await Client.PostAsJsonAsync(Routes.Public.Auth.Login(), loginRequest);
 
         await response.ShouldBeProblem(HttpStatusCode.Forbidden);
+    }
+
+    /// <summary>
+    /// Verifies that a known account rejected on its password reaches
+    /// <c>PublicLoginAuthFactory</c>'s <c>InvalidCredentials</c> branch: the credentials lookup
+    /// succeeds, <c>IPasswordService.Verify</c> fails, and the response is a 401 carrying the
+    /// neutral credential message — distinct from the 404 a nonexistent account produces.
+    /// </summary>
+    [Fact]
+    public async Task Login_WithKnownEmailAndWrongPassword_ReturnsInvalidCredentialsUnauthorized()
+    {
+        var passwordService = Api.Services.GetRequiredService<IPasswordService>();
+        UserErrors errors = TestErrorsFactory.CreateUserErrors();
+
+        var email = $"wrong-password-{Guid.NewGuid():N}@test.com";
+        var user = UserFactory.Create(email);
+        user.MarkAsVerified();
+        user.Activate();
+        user.InitializePasswordHash(passwordService.Hash(TestAuth.ValidPassword), errors);
+
+        await SeedAsync<IdentityDbContext>(context => context.Users.Add(user));
+
+        Client.ClearAuthentication();
+        Client.DefaultRequestHeaders.Add("X-Device-Id", Guid.NewGuid().ToString());
+        Client.DefaultRequestHeaders.Add("Accept-Language", "en");
+
+        var request = new PublicLoginRequestBuilder()
+            .WithCredentials(email)
+            .WithPassword($"{TestAuth.ValidPassword}-not-it")
+            .Build();
+
+        var response = await Client.PostAsJsonAsync(Routes.Public.Auth.Login(), request);
+
+        await response.ShouldBeProblem(HttpStatusCode.Unauthorized, "Invalid email or password.");
+
+        ProblemDetails problem = await response.ReadAsAsync<ProblemDetails>();
+        problem.Detail.Should().NotContain("user account");
     }
 
     /// <summary>

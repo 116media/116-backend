@@ -24,33 +24,9 @@ public class UserErrorsTests
         LocalizerFactory.CreateMessage<AuthorizationErrorMessage>("en");
 
     [Fact]
-    public void Conflict_ShouldReturnConflictErrorMessage()
-    {
-        ConflictErrorMessage result = _errors.Conflict;
-
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
     public void Validation_ShouldReturnValidationErrorMessage()
     {
         ValidationErrorMessage result = _errors.Validation;
-
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void Authentication_ShouldReturnAuthenticationErrorMessage()
-    {
-        AuthenticationErrorMessage result = _errors.Authentication;
-
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void Authorization_ShouldReturnAuthorizationErrorMessage()
-    {
-        AuthorizationErrorMessage result = _errors.Authorization;
 
         result.Should().NotBeNull();
     }
@@ -250,20 +226,6 @@ public class UserErrorsTests
     }
 
     [Fact]
-    public void CoreRoleCannotBeModified_ShouldReturnBadRequestException()
-    {
-        // Arrange
-        const string roleName = "SuperAdmin";
-
-        // Act
-        BadRequestException exception = _errors.CoreRoleCannotBeModified(roleName);
-
-        // Assert
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().Be(_validation.CoreRoleCannotBeModified(roleName));
-    }
-
-    [Fact]
     public void CoreRoleCannotBeDeleted_ShouldReturnBadRequestException()
     {
         // Arrange
@@ -388,20 +350,6 @@ public class UserErrorsTests
 
         exception.Should().BeOfType<BadRequestException>();
         exception.Message.Should().Be(_validation.RoleDescriptionRequired());
-    }
-
-    [Fact]
-    public void BadRequest_WithCustomMessage_ShouldReturnBadRequestException()
-    {
-        // Arrange
-        const string message = "custom error";
-
-        // Act
-        BadRequestException exception = _errors.BadRequest(message);
-
-        // Assert
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().Be(message);
     }
 
     [Fact]

@@ -113,7 +113,8 @@ public interface IFileRepository : IRepository<FileEntity>
     /// <summary>
     /// Updates user avatar from URL if the URL has changed.
     /// Checks if the user already has an avatar with the same URL to avoid redundant downloads.
-    /// If the URL is different, deletes the old avatar file entity and downloads the new one.
+    /// If the URL is different, marks the old avatar file entity as replaced (soft delete)
+    /// and downloads the new one.
     /// </summary>
     /// <param name="currentAvatarFileId">The current avatar file ID from the user entity (may be null).</param>
     /// <param name="newAvatarUrl">The new avatar URL from social provider.</param>
@@ -133,7 +134,8 @@ public interface IFileRepository : IRepository<FileEntity>
 
     /// <summary>
     /// Updates user avatar from the uploaded file.
-    /// Deletes the old avatar file entity if it exists, then uploads and stores the new avatar.
+    /// Marks the old avatar file entity as replaced (soft delete) if it exists,
+    /// then uploads and stores the new avatar.
     /// </summary>
     /// <param name="currentAvatarFileId">The current avatar file ID from the user entity (may be null).</param>
     /// <param name="avatarFile">The new avatar file to upload.</param>
@@ -143,7 +145,7 @@ public interface IFileRepository : IRepository<FileEntity>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The newly created file entity after upload.</returns>
     /// <remarks>
-    /// This method always uploads a new avatar and deletes the old one if it exists.
+    /// This method always uploads a new avatar and soft-deletes the old row if it exists.
     /// </remarks>
     Task<FileEntity> UpdateAvatarFromFileAsync(
         Guid? currentAvatarFileId,

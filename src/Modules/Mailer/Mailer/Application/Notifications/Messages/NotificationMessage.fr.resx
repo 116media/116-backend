@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PasswordChangedTitle" xml:space="preserve">
+    <value>Mot de passe modifié</value>
+  </data>
+  <data name="PasswordChangedBody" xml:space="preserve">
+    <value>Votre mot de passe a été modifié. Si ce n'était pas vous, sécurisez votre compte immédiatement.</value>
+  </data>
+  <data name="PasswordResetCompletedTitle" xml:space="preserve">
+    <value>Réinitialisation du mot de passe effectuée</value>
+  </data>
+  <data name="PasswordResetCompletedBody" xml:space="preserve">
+    <value>Votre mot de passe a été réinitialisé. Si ce n'était pas vous, contactez le support immédiatement.</value>
+  </data>
+  <data name="LocalPasswordAddedTitle" xml:space="preserve">
+    <value>Mot de passe ajouté à votre compte</value>
+  </data>
+  <data name="LocalPasswordAddedBody" xml:space="preserve">
+    <value>Un mot de passe a été ajouté à votre compte. Vous pouvez maintenant vous connecter avec votre e-mail et votre mot de passe.</value>
+  </data>
+  <data name="EmailChangedTitle" xml:space="preserve">
+    <value>Adresse e-mail modifiée</value>
+  </data>
+  <data name="EmailChangedBody" xml:space="preserve">
+    <value>L'adresse e-mail de votre compte a été remplacée par {{newEmailMasked}}. Si ce n'était pas vous, contactez le support immédiatement.</value>
+  </data>
+  <data name="SignedOutAllDevicesTitle" xml:space="preserve">
+    <value>Déconnexion de tous les appareils</value>
+  </data>
+  <data name="SignedOutAllDevicesBody" xml:space="preserve">
+    <value>Toutes vos sessions ont été déconnectées. Les appareils encore connectés seront déconnectés sous peu.</value>
+  </data>
+  <data name="AccountForceLoggedOutTitle" xml:space="preserve">
+    <value>Sessions fermées par un administrateur</value>
+  </data>
+  <data name="AccountForceLoggedOutBody" xml:space="preserve">
+    <value>Un administrateur vous a déconnecté de tous les appareils. Reconnectez-vous pour continuer.</value>
+  </data>
+  <data name="RoleChangedTitle" xml:space="preserve">
+    <value>Rôle du compte mis à jour</value>
+  </data>
+  <data name="RoleChangedBody" xml:space="preserve">
+    <value>Le rôle {{roleName}} a été {{action}} sur votre compte.</value>
+  </data>
+  <data name="CommentReplyTitle" xml:space="preserve">
+    <value>Nouvelle réponse à votre commentaire</value>
+  </data>
+  <data name="CommentReplyBody" xml:space="preserve">
+    <value>{{replierName}} a répondu à votre commentaire sur {{articleTitle}}.</value>
+  </data>
+  <data name="SubmissionDecidedTitle" xml:space="preserve">
+    <value>Votre soumission a été examinée</value>
+  </data>
+  <data name="SubmissionDecidedBody" xml:space="preserve">
+    <value>Votre soumission de paroles {{songTitle}} a été {{outcome}}.</value>
+  </data>
+  <data name="RevisionDecidedTitle" xml:space="preserve">
+    <value>Votre correction a été examinée</value>
+  </data>
+  <data name="RevisionDecidedBody" xml:space="preserve">
+    <value>Votre proposition de correction pour {{songTitle}} a été {{decision}}.</value>
+  </data>
+  <data name="ArtistVerifiedTitle" xml:space="preserve">
+    <value>Profil d'artiste vérifié</value>
+  </data>
+  <data name="ArtistVerifiedBody" xml:space="preserve">
+    <value>Vous êtes désormais le propriétaire vérifié de {{artistName}}.</value>
+  </data>
+</root>

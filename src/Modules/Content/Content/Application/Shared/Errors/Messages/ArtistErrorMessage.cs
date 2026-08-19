@@ -10,11 +10,6 @@ namespace _116.Content.Application.Shared.Errors.Messages;
 public class ArtistErrorMessage(IStringLocalizer<ArtistErrorMessage> localizer)
 {
     /// <summary>
-    /// Exposes the underlying localizer for shared validation extensions.
-    /// </summary>
-    public IStringLocalizer Localizer => localizer;
-
-    /// <summary>
     /// Gets an error message for when an artist name is required but not provided.
     /// </summary>
     /// <returns>
@@ -58,6 +53,18 @@ public class ArtistErrorMessage(IStringLocalizer<ArtistErrorMessage> localizer)
     public string AlreadyClaimed()
     {
         return localizer["AlreadyClaimed"];
+    }
+
+    /// <summary>
+    /// Gets an error message for when the requesting account has already filed an ownership
+    /// claim for the same artist profile.
+    /// </summary>
+    /// <returns>
+    /// An error message indicating that a claim request for this profile is already on file.
+    /// </returns>
+    public string ClaimRequestAlreadyExists()
+    {
+        return localizer["ClaimRequestAlreadyExists"];
     }
 
     /// <summary>

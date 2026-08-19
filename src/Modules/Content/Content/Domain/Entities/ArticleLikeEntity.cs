@@ -1,3 +1,5 @@
+using _116.Content.Domain.Enums;
+using _116.Content.Domain.Events;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -34,12 +36,26 @@ public class ArticleLikeEntity : Aggregate<Guid>
     /// <returns>A new <see cref="ArticleLikeEntity" />.</returns>
     public static ArticleLikeEntity Create(Guid id, Guid userId, Guid articleId)
     {
-        return new ArticleLikeEntity
+        var like = new ArticleLikeEntity
         {
             Id = id,
             UserId = userId,
             ArticleId = articleId,
             CreatedAt = DateTime.UtcNow,
         };
+
+        like.AddDomainEvent(new ArticleEngagedEvent(ArticleId: articleId, Kind: EnumEngagementKind.Like, Delta: 1));
+
+        return like;
+    }
+
+    /// <summary>
+    /// Declares this like's removal so the post-commit engagement consumer
+    /// can decrement the article's cached like count.
+    /// Called by the removal path immediately before the row is removed.
+    /// </summary>
+    public void MarkRemoved()
+    {
+        AddDomainEvent(new ArticleEngagedEvent(ArticleId: ArticleId, Kind: EnumEngagementKind.Like, Delta: -1));
     }
 }

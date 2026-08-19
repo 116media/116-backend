@@ -1,5 +1,4 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.PublishVideo;
-using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -21,7 +20,6 @@ public class AdminPublishVideoHandlerTests
 {
     private readonly Mock<IVideoRepository> _videoRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
-    private readonly Mock<IPopularVideosCacheInvalidator> _cacheInvalidatorMock;
     private readonly AdminPublishVideoHandler _handler;
 
     private static readonly Guid CategoryId = Guid.NewGuid();
@@ -30,12 +28,10 @@ public class AdminPublishVideoHandlerTests
     {
         _videoRepositoryMock = MockVideoRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _cacheInvalidatorMock = MockPopularVideosCacheInvalidator.Create();
         _handler = new AdminPublishVideoHandler(
             _videoRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateContentI18n(),
-            _cacheInvalidatorMock.Object
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 

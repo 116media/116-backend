@@ -1,8 +1,10 @@
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SetPassword;
+using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.Enums;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Identity;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
@@ -21,6 +23,7 @@ public class PublicSetPasswordHandlerTests
 {
     private readonly Mock<IAuthRepository> _authRepositoryMock;
     private readonly Mock<IPasswordService> _passwordServiceMock;
+    private readonly Mock<ISessionRepository> _sessionRepositoryMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
     private readonly PublicSetPasswordHandler _handler;
 
@@ -28,11 +31,13 @@ public class PublicSetPasswordHandlerTests
     {
         _authRepositoryMock = MockAuthRepository.Create();
         _passwordServiceMock = MockPasswordService.Create();
+        _sessionRepositoryMock = MockSessionRepository.Create();
         _unitOfWorkMock = MockIdentityUnitOfWork.Create();
 
         _handler = new PublicSetPasswordHandler(
             _authRepositoryMock.Object,
             _passwordServiceMock.Object,
+            _sessionRepositoryMock.Object,
             _unitOfWorkMock.Object
         );
     }
@@ -47,7 +52,7 @@ public class PublicSetPasswordHandlerTests
         string password = "NewPassword123!";
         string hashedPassword = "hashed-password";
 
-        PublicSetPasswordCommand command = new(UserId: user.Id, Password: password);
+        PublicSetPasswordCommand command = new(UserId: user.Id, SessionId: Guid.NewGuid(), Password: password);
 
         _authRepositoryMock.SetupFindUserByIdOrThrow(user);
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
@@ -69,7 +74,7 @@ public class PublicSetPasswordHandlerTests
         string password = "NewPassword123!";
         string hashedPassword = "hashed-password";
 
-        PublicSetPasswordCommand command = new(UserId: user.Id, Password: password);
+        PublicSetPasswordCommand command = new(UserId: user.Id, SessionId: Guid.NewGuid(), Password: password);
 
         _authRepositoryMock.SetupFindUserByIdOrThrow(user);
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
@@ -90,7 +95,7 @@ public class PublicSetPasswordHandlerTests
         string password = "NewPassword123!";
         string hashedPassword = "hashed-password";
 
-        PublicSetPasswordCommand command = new(UserId: user.Id, Password: password);
+        PublicSetPasswordCommand command = new(UserId: user.Id, SessionId: Guid.NewGuid(), Password: password);
 
         _authRepositoryMock.SetupFindUserByIdOrThrow(user);
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
@@ -111,7 +116,7 @@ public class PublicSetPasswordHandlerTests
         string password = "NewPassword123!";
         string hashedPassword = "hashed-password";
 
-        PublicSetPasswordCommand command = new(UserId: user.Id, Password: password);
+        PublicSetPasswordCommand command = new(UserId: user.Id, SessionId: Guid.NewGuid(), Password: password);
 
         _authRepositoryMock.SetupFindUserByIdOrThrow(user);
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
@@ -132,7 +137,7 @@ public class PublicSetPasswordHandlerTests
         string password = "NewPassword123!";
         string hashedPassword = "hashed-password";
 
-        PublicSetPasswordCommand command = new(UserId: user.Id, Password: password);
+        PublicSetPasswordCommand command = new(UserId: user.Id, SessionId: Guid.NewGuid(), Password: password);
 
         _authRepositoryMock.SetupFindUserByIdOrThrow(user);
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
@@ -154,7 +159,7 @@ public class PublicSetPasswordHandlerTests
     {
         // Arrange
         var userId = Guid.NewGuid();
-        PublicSetPasswordCommand command = new(UserId: userId, Password: "Password123!");
+        PublicSetPasswordCommand command = new(UserId: userId, SessionId: Guid.NewGuid(), Password: "Password123!");
 
         _authRepositoryMock.SetupFindUserByIdOrThrowNotFound(userId);
 
@@ -170,7 +175,7 @@ public class PublicSetPasswordHandlerTests
     {
         // Arrange
         var userId = Guid.NewGuid();
-        PublicSetPasswordCommand command = new(UserId: userId, Password: "Password123!");
+        PublicSetPasswordCommand command = new(UserId: userId, SessionId: Guid.NewGuid(), Password: "Password123!");
 
         _authRepositoryMock.SetupFindUserByIdOrThrowNotFound(userId);
 
@@ -201,7 +206,7 @@ public class PublicSetPasswordHandlerTests
         string hashedPassword = "hashed-password";
         using CancellationTokenSource cts = new();
 
-        PublicSetPasswordCommand command = new(UserId: user.Id, Password: password);
+        PublicSetPasswordCommand command = new(UserId: user.Id, SessionId: Guid.NewGuid(), Password: password);
 
         _authRepositoryMock.SetupFindUserByIdOrThrow(user);
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
@@ -223,7 +228,7 @@ public class PublicSetPasswordHandlerTests
         string hashedPassword = "hashed-password";
         using CancellationTokenSource cts = new();
 
-        PublicSetPasswordCommand command = new(UserId: user.Id, Password: password);
+        PublicSetPasswordCommand command = new(UserId: user.Id, SessionId: Guid.NewGuid(), Password: password);
 
         _authRepositoryMock.SetupFindUserByIdOrThrow(user);
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
@@ -234,6 +239,49 @@ public class PublicSetPasswordHandlerTests
 
         // Assert
         _unitOfWorkMock.Verify(x => x.CommitAsync(cts.Token), Times.Once);
+    }
+
+    #endregion
+
+    #region Session Invalidation
+
+    [Fact]
+    public async Task Handle_ShouldRevokeEverySessionExceptTheActingOneBeforeCommitting()
+    {
+        // Arrange
+        UserEntity user = UserFactory.CreateVerifiedActive();
+        var sessionId = Guid.NewGuid();
+        string password = "NewPassword123!";
+
+        PublicSetPasswordCommand command = new(UserId: user.Id, SessionId: sessionId, Password: password);
+
+        _authRepositoryMock.SetupFindUserByIdOrThrow(user);
+        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
+        _passwordServiceMock.Setup(x => x.Hash(password)).Returns("hashed-password");
+
+        var callOrder = new List<string>();
+        _sessionRepositoryMock
+            .Setup(x =>
+                x.DeleteAllByUserIdAsync(
+                    user.Id,
+                    EnumSessionRevokeReason.SecurityInvalidation,
+                    sessionId,
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .Callback(() => callOrder.Add("revoke"))
+            .Returns(Task.CompletedTask);
+
+        _unitOfWorkMock
+            .Setup(x => x.CommitAsync(It.IsAny<CancellationToken>()))
+            .Callback(() => callOrder.Add("commit"))
+            .ReturnsAsync(1);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        callOrder.Should().Equal("revoke", "commit");
     }
 
     #endregion

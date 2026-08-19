@@ -36,12 +36,11 @@ public class PublicUnlikeLyricsHandlerTests
     #region Success Cases
 
     [Fact]
-    public async Task Handle_WhenLyricsExistsAndLiked_ShouldRemoveLikeDecrementAndCommit()
+    public async Task Handle_WhenLyricsExistsAndLiked_ShouldRemoveLikeAndCommit()
     {
         // Arrange
         Guid userId = Guid.NewGuid();
         LyricsEntity lyrics = LyricsFactory.Create(Guid.NewGuid());
-        lyrics.IncrementLikeCount();
 
         _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
         _lyricsRepositoryMock.SetupHasLikedAsync(true);
@@ -53,9 +52,7 @@ public class PublicUnlikeLyricsHandlerTests
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        lyrics.LikeCount.Should().Be(0);
         _lyricsRepositoryMock.VerifyRemoveLikeCalled(userId, lyrics.Id);
-        _lyricsRepositoryMock.VerifyUpdateCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
 

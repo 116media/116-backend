@@ -1,3 +1,5 @@
+using _116.Content.Domain.Enums;
+using _116.Content.Domain.Events;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -34,12 +36,30 @@ public class ShortVideoBookmarkEntity : Aggregate<Guid>
     /// <returns>A new <see cref="ShortVideoBookmarkEntity" />.</returns>
     public static ShortVideoBookmarkEntity Create(Guid id, Guid userId, Guid shortVideoId)
     {
-        return new ShortVideoBookmarkEntity
+        var bookmark = new ShortVideoBookmarkEntity
         {
             Id = id,
             UserId = userId,
             ShortVideoId = shortVideoId,
             CreatedAt = DateTime.UtcNow,
         };
+
+        bookmark.AddDomainEvent(
+            new ShortVideoEngagedEvent(ShortVideoId: shortVideoId, Kind: EnumEngagementKind.Bookmark, Delta: 1)
+        );
+
+        return bookmark;
+    }
+
+    /// <summary>
+    /// Declares this bookmark's removal so the post-commit engagement consumer
+    /// can decrement the short video's cached bookmark count.
+    /// Called by the removal path immediately before the row is removed.
+    /// </summary>
+    public void MarkRemoved()
+    {
+        AddDomainEvent(
+            new ShortVideoEngagedEvent(ShortVideoId: ShortVideoId, Kind: EnumEngagementKind.Bookmark, Delta: -1)
+        );
     }
 }

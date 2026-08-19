@@ -1,4 +1,5 @@
 using _116.Content.Domain.Enums;
+using _116.Content.Domain.Events;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -42,7 +43,7 @@ public class LyricsShareEntity : Aggregate<Guid>
     /// <returns>A new <see cref="LyricsShareEntity" />.</returns>
     public static LyricsShareEntity Create(Guid id, Guid? userId, Guid lyricsId, EnumShareChannel? shareChannel = null)
     {
-        return new LyricsShareEntity
+        var share = new LyricsShareEntity
         {
             Id = id,
             UserId = userId,
@@ -50,5 +51,9 @@ public class LyricsShareEntity : Aggregate<Guid>
             ShareChannel = shareChannel,
             CreatedAt = DateTime.UtcNow,
         };
+
+        share.AddDomainEvent(new LyricsEngagedEvent(LyricsId: lyricsId, Kind: EnumEngagementKind.Share, Delta: 1));
+
+        return share;
     }
 }

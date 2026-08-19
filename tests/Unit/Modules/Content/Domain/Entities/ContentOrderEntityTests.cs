@@ -1,6 +1,7 @@
 using _116.Content.Application.Shared.Errors;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
+using _116.Content.Domain.Events;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
@@ -119,13 +120,30 @@ public class ContentOrderEntityTests
     }
 
     [Fact]
+    public void Submit_WhenDraft_ShouldRaiseOrderSubmittedEvent()
+    {
+        ContentOrderEntity order = ContentOrderFactory.Create();
+
+        order.Submit(_errors);
+
+        order
+            .DomainEvents.OfType<OrderSubmittedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(new OrderSubmittedEvent(order.Id));
+    }
+
+    [Fact]
     public void Submit_WhenNotDraft_ShouldThrowConflictException()
     {
         ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
+        order.ClearDomainEvents();
 
         Action act = () => order.Submit(_errors);
 
         act.Should().Throw<ConflictException>();
+        order.DomainEvents.Should().BeEmpty();
     }
 
     #endregion
@@ -137,19 +155,152 @@ public class ContentOrderEntityTests
     {
         ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
 
-        order.MarkPaid(_errors);
+        order.MarkPaid(
+            paymentId: Guid.NewGuid(),
+            verifiedAt: DateTimeOffset.UtcNow,
+            promotionDurationsByLevelId: new Dictionary<Guid, int>(),
+            errors: _errors
+        );
 
         order.Status.Should().Be(EnumOrderStatus.Paid);
     }
 
     [Fact]
-    public void MarkPaid_WhenNotPendingPayment_ShouldThrowConflictException()
+    public void MarkPaid_WhenPendingPayment_ShouldRaiseOrderPaidEventWithOneEffectPerItem()
+    {
+        ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
+        order.ClearDomainEvents();
+        Guid paymentId = Guid.NewGuid();
+        ContentOrderItemEntity plainItem = ContentOrderItemFactory.Create(order.Id, Guid.NewGuid());
+        ContentOrderItemEntity boostedItem = ContentOrderItemFactory.CreateSocialBoost(order.Id, Guid.NewGuid());
+        order.Items.Add(plainItem);
+        order.Items.Add(boostedItem);
+
+        order.MarkPaid(
+            paymentId: paymentId,
+            verifiedAt: DateTimeOffset.UtcNow,
+            promotionDurationsByLevelId: new Dictionary<Guid, int>(),
+            errors: _errors
+        );
+
+        OrderPaidEvent paidEvent = order.DomainEvents.OfType<OrderPaidEvent>().Should().ContainSingle().Which;
+        paidEvent.OrderId.Should().Be(order.Id);
+        paidEvent.PaymentId.Should().Be(paymentId);
+        paidEvent
+            .Items.Should()
+            .BeEquivalentTo(
+                new[]
+                {
+                    new PaidItemEffect(plainItem.Id, null, null, SocialBoost: false),
+                    new PaidItemEffect(boostedItem.Id, null, null, SocialBoost: true),
+                }
+            );
+    }
+
+    [Fact]
+    public void MarkPaid_WithPromotedItem_ShouldComputePromotionWindowFromDurationAtRaiseTime()
+    {
+        ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
+        order.ClearDomainEvents();
+        Guid promotionLevelId = Guid.NewGuid();
+        const int durationDays = 14;
+        ContentOrderItemEntity item = ContentOrderItemFactory.CreateWithPromo(
+            order.Id,
+            Guid.NewGuid(),
+            promotionLevelId,
+            50m
+        );
+        order.Items.Add(item);
+        DateTimeOffset verifiedAt = new(2026, 6, 30, 10, 15, 42, 123, TimeSpan.Zero);
+
+        order.MarkPaid(
+            paymentId: Guid.NewGuid(),
+            verifiedAt: verifiedAt,
+            promotionDurationsByLevelId: new Dictionary<Guid, int> { [promotionLevelId] = durationDays },
+            errors: _errors
+        );
+
+        OrderPaidEvent paidEvent = order.DomainEvents.OfType<OrderPaidEvent>().Should().ContainSingle().Which;
+        PaidItemEffect effect = paidEvent.Items.Should().ContainSingle().Which;
+        effect.OrderItemId.Should().Be(item.Id);
+        effect.PromotionLevelId.Should().Be(promotionLevelId);
+        effect.PromotionUntil.Should().Be(verifiedAt.AddDays(durationDays));
+    }
+
+    [Fact]
+    public void MarkPaid_ShouldTruncateThePaidInstantAndEveryWindowToWholeMilliseconds()
+    {
+        ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
+        order.ClearDomainEvents();
+        Guid promotionLevelId = Guid.NewGuid();
+        const int durationDays = 30;
+        ContentOrderItemEntity item = ContentOrderItemFactory.CreateWithPromo(
+            order.Id,
+            Guid.NewGuid(),
+            promotionLevelId,
+            50m
+        );
+        order.Items.Add(item);
+        DateTimeOffset verifiedAt = new DateTimeOffset(2026, 6, 30, 10, 15, 42, 123, TimeSpan.Zero).AddTicks(4567);
+        DateTimeOffset expectedPaidAt = new(2026, 6, 30, 10, 15, 42, 123, TimeSpan.Zero);
+
+        order.MarkPaid(
+            paymentId: Guid.NewGuid(),
+            verifiedAt: verifiedAt,
+            promotionDurationsByLevelId: new Dictionary<Guid, int> { [promotionLevelId] = durationDays },
+            errors: _errors
+        );
+
+        // The persisted timestamptz keeps microseconds, so a millisecond-aligned
+        // value round-trips unchanged and stays comparable to the payload.
+        OrderPaidEvent paidEvent = order.DomainEvents.OfType<OrderPaidEvent>().Should().ContainSingle().Which;
+        paidEvent.PaidAt.Should().Be(expectedPaidAt);
+        (paidEvent.PaidAt.Ticks % TimeSpan.TicksPerMillisecond).Should().Be(0);
+        PaidItemEffect effect = paidEvent.Items.Should().ContainSingle().Which;
+        effect.PromotionUntil.Should().Be(expectedPaidAt.AddDays(durationDays));
+        (effect.PromotionUntil!.Value.Ticks % TimeSpan.TicksPerMillisecond).Should().Be(0);
+    }
+
+    [Fact]
+    public void MarkPaid_WhenPromotionDurationMissing_ShouldThrowBadRequestException()
+    {
+        ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
+        order.ClearDomainEvents();
+        ContentOrderItemEntity item = ContentOrderItemFactory.CreateWithPromo(
+            order.Id,
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            50m
+        );
+        order.Items.Add(item);
+
+        Action act = () =>
+            order.MarkPaid(
+                paymentId: Guid.NewGuid(),
+                verifiedAt: DateTimeOffset.UtcNow,
+                promotionDurationsByLevelId: new Dictionary<Guid, int>(),
+                errors: _errors
+            );
+
+        act.Should().Throw<BadRequestException>();
+        order.DomainEvents.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void MarkPaid_WhenNotPendingPayment_ShouldThrowConflictExceptionAndRaiseNothing()
     {
         ContentOrderEntity order = ContentOrderFactory.Create();
 
-        Action act = () => order.MarkPaid(_errors);
+        Action act = () =>
+            order.MarkPaid(
+                paymentId: Guid.NewGuid(),
+                verifiedAt: DateTimeOffset.UtcNow,
+                promotionDurationsByLevelId: new Dictionary<Guid, int>(),
+                errors: _errors
+            );
 
         act.Should().Throw<ConflictException>();
+        order.DomainEvents.Should().BeEmpty();
     }
 
     #endregion
@@ -167,13 +318,30 @@ public class ContentOrderEntityTests
     }
 
     [Fact]
-    public void Cancel_WhenPaid_ShouldThrowBadRequestException()
+    public void Cancel_WhenDraft_ShouldRaiseOrderCancelledEvent()
+    {
+        ContentOrderEntity order = ContentOrderFactory.Create();
+
+        order.Cancel(_errors);
+
+        order
+            .DomainEvents.OfType<OrderCancelledEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(new OrderCancelledEvent(order.Id));
+    }
+
+    [Fact]
+    public void Cancel_WhenPaid_ShouldThrowBadRequestExceptionAndRaiseNothing()
     {
         ContentOrderEntity order = ContentOrderFactory.CreatePaid();
+        order.ClearDomainEvents();
 
         Action act = () => order.Cancel(_errors);
 
         act.Should().Throw<BadRequestException>();
+        order.DomainEvents.Should().BeEmpty();
     }
 
     [Fact]

@@ -19,10 +19,7 @@ public class PublicShareShortVideoHandler(IShortVideoRepository shortVideoReposi
         CancellationToken cancellationToken
     )
     {
-        ShortVideoEntity shortVideo = await shortVideoRepository.GetByIdOrThrowAsync(
-            id: command.ShortVideoId,
-            cancellationToken: cancellationToken
-        );
+        await shortVideoRepository.GetByIdOrThrowAsync(id: command.ShortVideoId, cancellationToken: cancellationToken);
 
         var share = ShortVideoShareEntity.Create(
             id: Guid.NewGuid(),
@@ -32,9 +29,6 @@ public class PublicShareShortVideoHandler(IShortVideoRepository shortVideoReposi
         );
 
         await shortVideoRepository.AddShareAsync(share: share, cancellationToken: cancellationToken);
-
-        shortVideo.IncrementShareCount();
-        shortVideoRepository.Update(shortVideo: shortVideo);
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 

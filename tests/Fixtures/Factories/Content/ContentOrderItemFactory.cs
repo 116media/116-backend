@@ -42,6 +42,13 @@ public static class ContentOrderItemFactory
         new ContentOrderItemBuilder().WithOrderId(orderId).WithCategoryId(categoryId).AsBonus().Build();
 
     /// <summary>
+    /// Creates an order item whose category navigation is populated, as loading
+    /// the item with its category included would.
+    /// </summary>
+    public static ContentOrderItemEntity CreateWithCategory(Guid orderId, CategoryEntity category) =>
+        new ContentOrderItemBuilder().WithOrderId(orderId).WithCategory(category).Build();
+
+    /// <summary>
     /// Creates a list of order items with the specified count.
     /// </summary>
     public static List<ContentOrderItemEntity> CreateMany(Guid orderId, Guid categoryId, int count) =>

@@ -1,9 +1,11 @@
+using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.Enums;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
 
@@ -11,15 +13,21 @@ namespace _116.Identity.Application.User.UseCases.Admin.Commands.AssignRoleToUse
 
 /// <summary>
 /// Handles the <see cref="AdminAssignRoleToUserCommand" /> to assign a role to a user.
+/// Roles are baked into the access token and never re-checked, so the grant and the revocation of
+/// the target user's sessions commit together and the new authorization takes effect on the next
+/// sign-in. The security email and in-app notification react to the domain event the association
+/// raises for the grant.
 /// </summary>
 /// <param name="roleRepository">Repository for role data access operations.</param>
 /// <param name="userRoleRepository">Repository for user-role data access operations.</param>
+/// <param name="sessionRepository">Repository revoking the target user's sessions.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 /// <param name="i18n">Single i18n entry point for the Identity module.</param>
 public class AdminAssignRoleToUserHandler(
     IRoleRepository roleRepository,
     IUserRoleRepository userRoleRepository,
+    ISessionRepository sessionRepository,
     IIdentityUnitOfWork unitOfWork,
     IMapper mapper,
     IdentityI18n i18n
@@ -44,16 +52,16 @@ public class AdminAssignRoleToUserHandler(
             cancellationToken: cancellationToken
         );
 
-        // Check if role is active
-        if (!role!.IsActive)
-        {
-            throw i18n.User.RoleIsInactive();
-        }
-
-        // Check if role is deleted
-        if (role.IsDeleted)
+        // Soft deletion also clears IsActive, so the deleted state is checked first to keep the
+        // more specific error reachable.
+        if (role!.IsDeleted)
         {
             throw i18n.User.RoleIsDeleted();
+        }
+
+        if (!role.IsActive)
+        {
+            throw i18n.User.RoleIsInactive();
         }
 
         // Check if role is already assigned to user
@@ -68,10 +76,25 @@ public class AdminAssignRoleToUserHandler(
             throw i18n.User.RoleAlreadyAssignedToUser();
         }
 
-        // Create the user-role association
-        var userRole = UserRoleEntity.Create(id: Guid.NewGuid(), userId: userId, roleId: command.RoleId);
+        // Create the user-role association; the role name rides the grant event
+        var userRole = UserRoleEntity.Create(
+            id: Guid.NewGuid(),
+            userId: userId,
+            roleId: command.RoleId,
+            roleName: role.Name
+        );
 
         await userRoleRepository.AddAsync(entity: userRole, cancellationToken: cancellationToken);
+
+        // An authorization change is administrative: every session of the target user is revoked,
+        // closing the window in which a stale token still carries the old role set.
+        await sessionRepository.DeleteAllByUserIdAsync(
+            userId: userId,
+            reason: EnumSessionRevokeReason.SecurityInvalidation,
+            exemptSessionId: null,
+            cancellationToken: cancellationToken
+        );
+
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         // Get updated user roles

@@ -36,7 +36,7 @@ public class PublicUnlikeShortVideoHandlerTests
     #region Success Cases
 
     [Fact]
-    public async Task Handle_WhenShortVideoExistsAndLiked_ShouldRemoveLikeDecrementAndCommit()
+    public async Task Handle_WhenShortVideoExistsAndLiked_ShouldRemoveLikeAndCommit()
     {
         // Arrange
         Guid userId = Guid.NewGuid();
@@ -53,7 +53,6 @@ public class PublicUnlikeShortVideoHandlerTests
         // Assert
         result.IsSuccess.Should().BeTrue();
         _shortVideoRepositoryMock.VerifyRemoveLikeCalled(userId, shortVideo.Id);
-        _shortVideoRepositoryMock.VerifyUpdateCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
 

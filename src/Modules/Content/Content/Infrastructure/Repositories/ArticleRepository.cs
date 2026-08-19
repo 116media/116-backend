@@ -198,6 +198,7 @@ public class ArticleRepository(ContentDbContext context) : IArticleRepository
     /// <inheritdoc />
     public void RemoveTag(ArticleTagEntity tag)
     {
+        tag.MarkRemoved();
         context.ArticleTags.Remove(tag);
     }
 
@@ -300,6 +301,7 @@ public class ArticleRepository(ContentDbContext context) : IArticleRepository
 
         if (like is not null)
         {
+            like.MarkRemoved();
             context.ArticleLikes.Remove(like);
         }
     }
@@ -333,6 +335,7 @@ public class ArticleRepository(ContentDbContext context) : IArticleRepository
 
         if (bookmark is not null)
         {
+            bookmark.MarkRemoved();
             context.ArticleBookmarks.Remove(bookmark);
         }
     }
@@ -491,6 +494,7 @@ public class ArticleRepository(ContentDbContext context) : IArticleRepository
 
         if (like is not null)
         {
+            like.MarkRemoved();
             context.ArticleCommentLikes.Remove(like);
         }
     }

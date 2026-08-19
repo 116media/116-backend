@@ -6,7 +6,6 @@ using _116.Core.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Errors.Messages;
-using CoreConflictMsg = _116.Core.Application.Shared.Errors.Messages.ConflictErrorMessage;
 using CoreInternalServerMsg = _116.Core.Application.Shared.Errors.Messages.InternalServerErrorMessage;
 using CoreValidationMsg = _116.Core.Application.Shared.Errors.Messages.ValidationErrorMessage;
 using IdentityConflictMsg = _116.Identity.Application.Shared.Errors.Messages.ConflictErrorMessage;
@@ -219,7 +218,6 @@ public static class TestErrorsFactory
     public static FileErrors CreateFileErrors()
     {
         return new FileErrors(
-            LocalizerFactory.CreateMessage<CoreConflictMsg>(),
             LocalizerFactory.CreateMessage<CoreValidationMsg>(),
             LocalizerFactory.CreateMessage<CoreInternalServerMsg>()
         );

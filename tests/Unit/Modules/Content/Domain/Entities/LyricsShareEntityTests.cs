@@ -1,5 +1,6 @@
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
+using _116.Content.Domain.Events;
 using AwesomeAssertions;
 using Xunit;
 
@@ -64,5 +65,23 @@ public class LyricsShareEntityTests
         // Assert
         share.CreatedAt.Should().BeOnOrAfter(before);
         share.CreatedAt.Should().BeOnOrBefore(DateTime.UtcNow);
+    }
+
+    [Fact]
+    public void Create_ShouldRaisePositiveShareEngagementEvent()
+    {
+        // Arrange
+        var lyricsId = Guid.NewGuid();
+
+        // Act
+        LyricsShareEntity share = LyricsShareEntity.Create(Guid.NewGuid(), Guid.NewGuid(), lyricsId);
+
+        // Assert
+        share
+            .DomainEvents.OfType<LyricsEngagedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(new LyricsEngagedEvent(lyricsId, EnumEngagementKind.Share, 1));
     }
 }

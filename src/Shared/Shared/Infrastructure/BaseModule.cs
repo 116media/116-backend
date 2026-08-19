@@ -38,8 +38,7 @@ public static class BaseModule
     )
         where TDbContext : DbContext
     {
-        // Get connection string - use custom or default
-        string? connectionString = options.ConnectionString ?? GetDefaultConnectionString();
+        string connectionString = GetDefaultConnectionString();
 
         // Register EF Core interceptors if not already registered
         RegisterInterceptorsIfNotExists(services);
@@ -50,7 +49,7 @@ public static class BaseModule
             services.AddDbContextPool<TDbContext>(
                 (serviceProvider, dbOptions) =>
                 {
-                    ConfigureDbContextOptions(serviceProvider, dbOptions, connectionString, options);
+                    ConfigureDbContextOptions(serviceProvider, dbOptions, connectionString);
                 }
             );
         }
@@ -59,7 +58,7 @@ public static class BaseModule
             services.AddDbContext<TDbContext>(
                 (serviceProvider, dbOptions) =>
                 {
-                    ConfigureDbContextOptions(serviceProvider, dbOptions, connectionString, options);
+                    ConfigureDbContextOptions(serviceProvider, dbOptions, connectionString);
                 }
             );
         }
@@ -119,6 +118,10 @@ public static class BaseModule
         services.AddHttpContextAccessor();
         services.TryAddSingleton<ICurrentActor, HttpCurrentActor>();
 
+        // The dispatch interceptor logs the post-commit failures it swallows, so the logging
+        // services must be present wherever a module database is registered.
+        services.AddLogging();
+
         // Check if interceptors are already registered to avoid duplicates
         bool auditInterceptorExists = services.Any(s =>
             s.ServiceType == typeof(ISaveChangesInterceptor)
@@ -144,26 +147,19 @@ public static class BaseModule
     /// <summary>
     /// Configures the DbContext options with interceptors and database provider.
     /// </summary>
-    /// <typeparam name="TDbContext">The DbContext type</typeparam>
     /// <param name="serviceProvider">The service provider</param>
     /// <param name="options">The DbContext options builder</param>
     /// <param name="connectionString">The database connection string</param>
-    /// <param name="moduleOptions">The module configuration options</param>
-    private static void ConfigureDbContextOptions<TDbContext>(
+    private static void ConfigureDbContextOptions(
         IServiceProvider serviceProvider,
         DbContextOptionsBuilder options,
-        string connectionString,
-        ModuleOptions<TDbContext> moduleOptions
+        string connectionString
     )
-        where TDbContext : DbContext
     {
         // Add interceptors
         options.AddInterceptors(serviceProvider.GetServices<ISaveChangesInterceptor>());
 
         // Configure PostgreSQL with snake_case naming
         options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention();
-
-        // Apply custom configuration if provided
-        moduleOptions.ConfigureDbContext?.Invoke(options);
     }
 }

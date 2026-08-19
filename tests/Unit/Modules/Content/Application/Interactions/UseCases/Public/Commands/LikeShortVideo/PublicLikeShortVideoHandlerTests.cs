@@ -36,7 +36,7 @@ public class PublicLikeShortVideoHandlerTests
     #region Success Cases
 
     [Fact]
-    public async Task Handle_WhenShortVideoExistsAndNotLiked_ShouldAddLikeIncrementAndCommit()
+    public async Task Handle_WhenShortVideoExistsAndNotLiked_ShouldAddLikeAndCommit()
     {
         // Arrange
         ShortVideoEntity shortVideo = ShortVideoFactory.Create();
@@ -52,7 +52,6 @@ public class PublicLikeShortVideoHandlerTests
         // Assert
         result.IsSuccess.Should().BeTrue();
         _shortVideoRepositoryMock.VerifyAddLikeCalled();
-        _shortVideoRepositoryMock.VerifyUpdateCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
 

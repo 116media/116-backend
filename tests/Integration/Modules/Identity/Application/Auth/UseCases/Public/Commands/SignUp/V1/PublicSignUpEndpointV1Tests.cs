@@ -54,6 +54,35 @@ public class PublicSignUpEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
         await response.ShouldBeProblem(HttpStatusCode.Conflict);
     }
 
+    /// <summary>
+    /// Verifies that a fresh email paired with a taken username returns the
+    /// <c>UsernameAlreadyExists</c> 409. The email uniqueness check in
+    /// <c>AuthRepository.EnsureUserDoesNotExistAsync</c> runs first, so a novel email is required
+    /// for the username branch to be the one that fires.
+    /// </summary>
+    [Fact]
+    public async Task SignUp_WithDuplicateUserName_ReturnsConflict()
+    {
+        var takenUserName = $"taken{Guid.NewGuid():N}"[..12];
+        await SeedAsync<IdentityDbContext>(context =>
+            context.Users.Add(UserFactory.Create($"holder-{Guid.NewGuid():N}@test.com", takenUserName))
+        );
+
+        Client.ClearAuthentication();
+        Client.DefaultRequestHeaders.Add("Accept-Language", "en");
+        var request = new PublicSignUpRequestBuilder()
+            .WithEmail($"fresh-{Guid.NewGuid():N}@test.com")
+            .WithUserName(takenUserName)
+            .Build();
+
+        var response = await Client.PostAsJsonAsync(Routes.Public.Auth.SignUp(), request);
+
+        await response.ShouldBeProblem(HttpStatusCode.Conflict, $"Username '{takenUserName}' is already taken.");
+
+        await using var verifyContext = CreateDbContext<IdentityDbContext>();
+        (await verifyContext.Users.CountAsync(u => u.UserName == takenUserName)).Should().Be(1);
+    }
+
     [Fact]
     public async Task SignUp_WithEmptyEmail_ReturnsValidationError()
     {

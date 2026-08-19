@@ -13,137 +13,9 @@ namespace _116.Unit.Tests.Modules.Core.Application.Shared.Errors;
 public class CoreErrorsTests
 {
     private readonly FileErrors _errors = TestErrorsFactory.CreateFileErrors();
-    private readonly ConflictErrorMessage _conflict = LocalizerFactory.CreateMessage<ConflictErrorMessage>("en");
     private readonly ValidationErrorMessage _i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>("en");
     private readonly InternalServerErrorMessage _internalServer =
         LocalizerFactory.CreateMessage<InternalServerErrorMessage>("en");
-
-    [Fact]
-    public void FileUploadFailed_WithFileNameAndReason_ShouldReturnConflictException()
-    {
-        // Arrange
-        string fileName = "avatar.jpg";
-        string reason = "Network timeout";
-
-        // Act
-        ConflictException exception = _errors.FileUploadFailed(fileName, reason);
-
-        // Assert
-        exception.Should().BeOfType<ConflictException>();
-        exception.Message.Should().Be(_conflict.FileUploadFailed(fileName, reason));
-    }
-
-    [Fact]
-    public void UnsupportedFileType_WithFileTypeAndAllowedTypes_ShouldReturnBadRequestException()
-    {
-        // Arrange
-        string fileType = "application/exe";
-        string[] allowedTypes = ["image/jpeg", "image/png"];
-
-        // Act
-        BadRequestException exception = _errors.UnsupportedFileType(fileType, allowedTypes);
-
-        // Assert
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().Contain(fileType);
-    }
-
-    [Fact]
-    public void FileTooLarge_WithFileSizeAndMaxSize_ShouldReturnBadRequestException()
-    {
-        // Arrange
-        long fileSize = 10485760;
-        long maxSize = 5242880;
-
-        // Act
-        BadRequestException exception = _errors.FileTooLarge(fileSize, maxSize);
-
-        // Assert
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().Contain(fileSize.ToString());
-        exception.Message.Should().Contain(maxSize.ToString());
-    }
-
-    [Fact]
-    public void CorruptedFile_WithFileName_ShouldReturnBadRequestException()
-    {
-        // Arrange
-        string fileName = "corrupted.pdf";
-
-        // Act
-        BadRequestException exception = _errors.CorruptedFile(fileName);
-
-        // Assert
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().Contain(fileName);
-    }
-
-    [Fact]
-    public void FileNotFound_WithFileId_ShouldReturnNotFoundException()
-    {
-        // Arrange
-        int fileId = 123;
-
-        // Act
-        NotFoundException exception = _errors.FileNotFound(fileId);
-
-        // Assert
-        exception.Should().BeOfType<NotFoundException>();
-        exception.Message.Should().Contain("File");
-        exception.Message.Should().Contain(fileId.ToString());
-    }
-
-    [Fact]
-    public void FileNotFoundByName_WithFileName_ShouldReturnNotFoundException()
-    {
-        // Arrange
-        string fileName = "missing.jpg";
-
-        // Act
-        NotFoundException exception = _errors.FileNotFoundByName(fileName);
-
-        // Assert
-        exception.Should().BeOfType<NotFoundException>();
-        exception.Message.Should().Contain("File");
-        exception.Message.Should().Contain(fileName);
-    }
-
-    [Fact]
-    public void InvalidConfiguration_WithConfigKey_ShouldReturnBadRequestException()
-    {
-        // Arrange
-        string configKey = "Cloudinary:ApiKey";
-
-        // Act
-        BadRequestException exception = _errors.InvalidConfiguration(configKey);
-
-        // Assert
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().Contain(configKey);
-    }
-
-    [Fact]
-    public void ServiceUnavailable_WithServiceName_ShouldReturnInternalServerException()
-    {
-        // Arrange
-        string serviceName = "Cloudinary";
-
-        // Act
-        InternalServerException exception = _errors.ServiceUnavailable(serviceName);
-
-        // Assert
-        exception.Should().BeOfType<InternalServerException>();
-        exception.Message.Should().Contain(serviceName);
-    }
-
-    [Fact]
-    public void DatabaseConnectionFailed_ShouldReturnInternalServerException()
-    {
-        InternalServerException exception = _errors.DatabaseConnectionFailed();
-
-        exception.Should().BeOfType<InternalServerException>();
-        exception.Message.Should().Be(_internalServer.DatabaseConnectionFailed());
-    }
 
     [Fact]
     public void FileNameRequired_ShouldReturnBadRequestException()
@@ -244,20 +116,6 @@ public class CoreErrorsTests
     }
 
     [Fact]
-    public void BadRequest_WithCustomMessage_ShouldReturnBadRequestException()
-    {
-        // Arrange
-        string message = "Custom error message";
-
-        // Act
-        BadRequestException exception = _errors.BadRequest(message);
-
-        // Assert
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().Be(message);
-    }
-
-    [Fact]
     public void FileRequired_ShouldReturnBadRequestException()
     {
         BadRequestException exception = _errors.FileRequired();
@@ -335,20 +193,14 @@ public class CoreErrorsTests
     }
 
     [Fact]
-    public void ConflictErrorMessage_Localizer_FileUploadFailed_ShouldReturnLocalizedString()
+    public void InternalServerErrorMessage_Localizer_FileDownloadFailed_ShouldReturnLocalizedString()
     {
-        _conflict.Localizer["FileUploadFailed"].Value.Should().NotBeNullOrEmpty();
+        _internalServer.Localizer["FileDownloadFailed"].Value.Should().NotBeNullOrEmpty();
     }
 
     [Fact]
-    public void InternalServerErrorMessage_Localizer_ServiceUnavailable_ShouldReturnLocalizedString()
+    public void ValidationErrorMessage_Localizer_FileNameRequired_ShouldReturnLocalizedString()
     {
-        _internalServer.Localizer["ServiceUnavailable"].Value.Should().NotBeNullOrEmpty();
-    }
-
-    [Fact]
-    public void ValidationErrorMessage_Localizer_UnsupportedFileType_ShouldReturnLocalizedString()
-    {
-        _i18n.Localizer["UnsupportedFileType"].Value.Should().NotBeNullOrEmpty();
+        _i18n.Localizer["FileNameRequired"].Value.Should().NotBeNullOrEmpty();
     }
 }

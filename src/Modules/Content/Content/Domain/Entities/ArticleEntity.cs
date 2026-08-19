@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using _116.Content.Application.Shared.Errors;
 using _116.Content.Domain.Constants;
 using _116.Content.Domain.Enums;
+using _116.Content.Domain.Events;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Domain;
 
@@ -321,6 +322,11 @@ public class ArticleEntity : Aggregate<Guid>
     /// <param name="socialBoost">Whether this article is flagged for social media promotion.</param>
     /// <param name="metaTitle">Optional SEO meta title (max 70 chars). Falls back to <c>Title</c> if null.</param>
     /// <param name="metaDescription">Optional SEO meta description (max 160 chars).</param>
+    /// <param name="orphanedBodyImageStorageKeys">
+    /// Storage keys of body images that drop out of the new body, computed by the handler
+    /// against the pre-update image set. When non-empty the update declares the orphaning
+    /// so post-commit consumers can remove the rows and the remote assets.
+    /// </param>
     public void Update(
         Guid categoryId,
         string title,
@@ -331,7 +337,8 @@ public class ArticleEntity : Aggregate<Guid>
         Guid? orderItemId,
         bool socialBoost,
         string? metaTitle,
-        string? metaDescription
+        string? metaDescription,
+        IReadOnlyList<string>? orphanedBodyImageStorageKeys = null
     )
     {
         CategoryId = categoryId;
@@ -344,6 +351,13 @@ public class ArticleEntity : Aggregate<Guid>
         SocialBoost = socialBoost;
         MetaTitle = metaTitle;
         MetaDescription = metaDescription;
+
+        if (orphanedBodyImageStorageKeys is { Count: > 0 })
+        {
+            AddDomainEvent(
+                new ArticleBodyImagesOrphanedEvent(ArticleId: Id, StorageKeys: orphanedBodyImageStorageKeys)
+            );
+        }
     }
 
     /// <summary>
@@ -386,17 +400,21 @@ public class ArticleEntity : Aggregate<Guid>
     /// <summary>
     /// Transitions a free article from <c>Draft</c> → <c>PendingReview</c>,
     /// or a paid article from <c>PendingPayment</c> → <c>PendingReview</c> after payment is verified.
-    /// A no-op when the article is already <c>PendingReview</c> or already <c>Published</c> — the
-    /// latter is what makes retroactive promotion safe: buying promoted placement on an
-    /// already-live article must stamp <see cref="StampPromotion" /> without silently
-    /// un-publishing it back into the review queue.
+    /// Only <c>Draft</c>, <c>PendingPayment</c> and <c>Rejected</c> advance: an article whose
+    /// editorial state already moved past review (<c>PendingReview</c>, <c>Approved</c>,
+    /// <c>Published</c>, <c>Archived</c>) is left untouched, so a replayed payment effect never
+    /// pulls approved or live content back into the review queue and retroactive promotion on an
+    /// already-live article stamps <see cref="StampPromotion" /> without un-publishing it.
+    /// <c>Rejected</c> advances by design: the revise-and-resubmit flow is how rejected content
+    /// re-enters review.
     /// </summary>
     /// <returns>
-    /// <c>true</c> if moved to pending review; <c>false</c> if already pending review or already published.
+    /// <c>true</c> if moved to pending review; <c>false</c> when the editorial state is already
+    /// at or past review.
     /// </returns>
     public bool MarkPendingReview()
     {
-        if (Status is EnumContentStatus.PendingReview or EnumContentStatus.Published)
+        if (Status is not (EnumContentStatus.Draft or EnumContentStatus.PendingPayment or EnumContentStatus.Rejected))
         {
             return false;
         }
@@ -433,6 +451,18 @@ public class ArticleEntity : Aggregate<Guid>
 
         Status = EnumContentStatus.Published;
         PublishedAt = DateTimeOffset.UtcNow;
+
+        AddDomainEvent(
+            new CommissionedContentPublishedEvent(
+                ContentId: Id,
+                ContentType: EnumCoreContentType.Article,
+                CustomerId: CustomerId,
+                Title: Title,
+                Slug: Slug
+            )
+        );
+        AddDomainEvent(new ArticlePublishedEvent(ArticleId: Id));
+
         return true;
     }
 
@@ -449,8 +479,26 @@ public class ArticleEntity : Aggregate<Guid>
             return false;
         }
 
+        bool wasPublished = Status == EnumContentStatus.Published;
+
         Status = EnumContentStatus.Rejected;
         RejectionReason = reason;
+
+        AddDomainEvent(
+            new CommissionedContentRejectedEvent(
+                ContentId: Id,
+                ContentType: EnumCoreContentType.Article,
+                CustomerId: CustomerId,
+                Title: Title,
+                Reason: reason
+            )
+        );
+
+        if (wasPublished)
+        {
+            AddDomainEvent(new ArticleUnpublishedEvent(ArticleId: Id));
+        }
+
         return true;
     }
 
@@ -466,8 +514,35 @@ public class ArticleEntity : Aggregate<Guid>
             return false;
         }
 
+        bool wasPublished = Status == EnumContentStatus.Published;
+
         Status = EnumContentStatus.Archived;
+
+        if (wasPublished)
+        {
+            AddDomainEvent(new ArticleUnpublishedEvent(ArticleId: Id));
+        }
+
         return true;
+    }
+
+    /// <summary>
+    /// Declares the article's removal, capturing the cover file id and the
+    /// body-image storage keys before the row disappears so post-commit
+    /// consumers (cache invalidation, remote-asset cleanup) can act without
+    /// re-querying deleted rows. Called by the delete flow immediately
+    /// before the repository removal.
+    /// </summary>
+    /// <param name="bodyImageStorageKeys">The storage keys of the article's body images.</param>
+    public void MarkDeleted(IReadOnlyList<string> bodyImageStorageKeys)
+    {
+        AddDomainEvent(
+            new ArticleDeletedEvent(
+                ArticleId: Id,
+                CoverFileId: CoverImageFileId,
+                BodyImageStorageKeys: bodyImageStorageKeys
+            )
+        );
     }
 
     /// <summary>
@@ -484,7 +559,8 @@ public class ArticleEntity : Aggregate<Guid>
     /// The promotion level purchased, used to determine the homepage grid spot.
     /// </param>
     /// <param name="until">
-    /// When the promotion expires (<c>payment.verified_at + promotion_level.duration_days</c>).
+    /// When the promotion expires (<c>payment.verified_at + promotion_level.duration_days</c>,
+    /// the verification instant truncated to whole milliseconds).
     /// </param>
     public void StampPromotion(Guid promotionLevelId, DateTimeOffset until)
     {
@@ -495,7 +571,9 @@ public class ArticleEntity : Aggregate<Guid>
 
     /// <summary>
     /// Force-removes the active paid promotion. SuperAdmin only.
-    /// Records the audit trail needed for future pro-rata refund calculation.
+    /// Clears the purchased level alongside the window so no stale placement
+    /// data outlives the promotion, and records the audit trail needed for
+    /// future pro-rata refund calculation.
     /// </summary>
     /// <param name="unpromotedBy">
     /// Identity of the SuperAdmin performing the force-unpromote, read from JWT claims.
@@ -515,9 +593,20 @@ public class ArticleEntity : Aggregate<Guid>
 
         IsPromoted = false;
         PromotedUntil = null;
+        PromotionLevelId = null;
         UnpromotedAt = DateTimeOffset.UtcNow;
         UnpromotedBy = unpromotedBy;
         UnpromotedReason = reason;
+
+        AddDomainEvent(
+            new ContentPromotionRemovedEvent(
+                ContentId: Id,
+                ContentType: EnumCoreContentType.Article,
+                CustomerId: CustomerId,
+                Title: Title,
+                Reason: reason
+            )
+        );
     }
 
     /// <summary>

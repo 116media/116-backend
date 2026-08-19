@@ -29,10 +29,7 @@ public class PublicRecordShortVideoViewHandler(
         CancellationToken cancellationToken
     )
     {
-        ShortVideoEntity shortVideo = await shortVideoRepository.GetByIdOrThrowAsync(
-            id: command.ShortVideoId,
-            cancellationToken: cancellationToken
-        );
+        await shortVideoRepository.GetByIdOrThrowAsync(id: command.ShortVideoId, cancellationToken: cancellationToken);
 
         string dedupKey = ResolveDedupKey(command: command);
 
@@ -62,12 +59,6 @@ public class PublicRecordShortVideoViewHandler(
         );
 
         await shortVideoRepository.AddViewEventAsync(viewEvent: viewEvent, cancellationToken: cancellationToken);
-
-        if (isCounted)
-        {
-            shortVideo.IncrementViewCount();
-            shortVideoRepository.Update(shortVideo: shortVideo);
-        }
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 

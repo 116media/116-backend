@@ -12,12 +12,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ServiceUnavailable" xml:space="preserve">
-    <value>Le service « {0} » est actuellement indisponible.</value>
-  </data>
-  <data name="DatabaseConnectionFailed" xml:space="preserve">
-    <value>Impossible de se connecter à la base de données.</value>
-  </data>
   <data name="FileDownloadFailed" xml:space="preserve">
     <value>Échec du téléchargement du fichier depuis « {0} » : {1}.</value>
   </data>

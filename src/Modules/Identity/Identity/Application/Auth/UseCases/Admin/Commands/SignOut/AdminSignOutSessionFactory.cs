@@ -3,6 +3,7 @@ using _116.Identity.Application.Auth.UseCases.Admin.Commands.SignOut.Contracts;
 using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.Enums;
 
 namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.SignOut;
 
@@ -31,7 +32,11 @@ public class AdminSignOutSessionFactory(
 
         if (session != null)
         {
-            await sessionRepository.RevokeAsync(sessionId: session.Id, cancellationToken: cancellationToken);
+            await sessionRepository.RevokeAsync(
+                sessionId: session.Id,
+                reason: EnumSessionRevokeReason.SelfSignOut,
+                cancellationToken: cancellationToken
+            );
             await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
         }
     }

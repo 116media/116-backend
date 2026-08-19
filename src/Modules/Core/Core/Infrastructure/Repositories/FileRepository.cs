@@ -184,15 +184,11 @@ public class FileRepository(
             return null;
         }
 
-        // Delete old avatar file entity if it exists
+        // Mark the old avatar row replaced (soft delete); the remote asset,
+        // when one exists, is cleaned post-commit by the file lifecycle handler.
         if (currentAvatarFileId.HasValue)
         {
-            FileEntity? oldFile = await GetByIdAsync(currentAvatarFileId.Value, cancellationToken);
-            if (oldFile != null)
-            {
-                Remove(oldFile);
-                await SaveChangesAsync(cancellationToken);
-            }
+            await MarkReplacedByIdAsync(currentAvatarFileId.Value, cancellationToken);
         }
 
         // Download and store new avatar from URL
@@ -215,15 +211,11 @@ public class FileRepository(
         CancellationToken cancellationToken = default
     )
     {
-        // Delete old avatar file entity if it exists
+        // Mark the old avatar row replaced (soft delete); the remote asset,
+        // when one exists, is cleaned post-commit by the file lifecycle handler.
         if (currentAvatarFileId.HasValue)
         {
-            FileEntity? oldFile = await GetByIdAsync(currentAvatarFileId.Value, cancellationToken);
-            if (oldFile != null)
-            {
-                Remove(oldFile);
-                await SaveChangesAsync(cancellationToken);
-            }
+            await MarkReplacedByIdAsync(currentAvatarFileId.Value, cancellationToken);
         }
 
         // Upload and store new avatar
@@ -378,13 +370,7 @@ public class FileRepository(
     {
         if (currentFileId.HasValue)
         {
-            FileEntity? oldFile = await GetByIdAsync(currentFileId.Value, cancellationToken);
-            if (oldFile?.StorageKey is not null)
-            {
-                await fileService.DeleteFileAsync(oldFile.StorageKey, cancellationToken);
-            }
-
-            await SoftDeleteByIdAsync(currentFileId.Value, cancellationToken);
+            await MarkReplacedByIdAsync(currentFileId.Value, cancellationToken);
         }
 
         return await UploadAndStoreImageFileAsync(
@@ -410,13 +396,7 @@ public class FileRepository(
     {
         if (currentFileId.HasValue)
         {
-            FileEntity? oldFile = await GetByIdAsync(currentFileId.Value, cancellationToken);
-            if (oldFile?.StorageKey is not null)
-            {
-                await fileService.DeleteFileAsync(oldFile.StorageKey, cancellationToken);
-            }
-
-            await SoftDeleteByIdAsync(currentFileId.Value, cancellationToken);
+            await MarkReplacedByIdAsync(currentFileId.Value, cancellationToken);
         }
 
         return await UploadAndStoreVideoFileAsync(
@@ -446,5 +426,31 @@ public class FileRepository(
         }
 
         return deleted;
+    }
+
+    /// <summary>
+    /// Marks a file row as replaced (soft delete with replacement semantics)
+    /// and commits, so the raised replacement fact dispatches with the old
+    /// storage key captured before the new upload lands.
+    /// </summary>
+    /// <param name="fileId">The unique identifier of the file being replaced.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>True if the row was marked replaced; false when missing or already deleted.</returns>
+    private async Task<bool> MarkReplacedByIdAsync(Guid fileId, CancellationToken cancellationToken)
+    {
+        FileEntity? file = await GetByIdAsync(fileId, cancellationToken);
+        if (file is null)
+        {
+            return false;
+        }
+
+        bool replaced = file.MarkReplaced();
+        if (replaced)
+        {
+            await UpdateAsync(file, cancellationToken);
+            await SaveChangesAsync(cancellationToken);
+        }
+
+        return replaced;
     }
 }

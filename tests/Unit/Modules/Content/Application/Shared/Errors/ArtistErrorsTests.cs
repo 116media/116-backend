@@ -90,20 +90,20 @@ public class ArtistErrorsTests
         ex.Message.Should().NotBeNullOrWhiteSpace().And.Contain(_message.AlreadyClaimed());
     }
 
+    [Fact]
+    public void ClaimRequestAlreadyExists_ShouldReturnConflictExceptionWithLocalizedMessage()
+    {
+        // Arrange & Act
+        ConflictException ex = _errors.ClaimRequestAlreadyExists();
+
+        // Assert
+        ex.Should().BeOfType<ConflictException>();
+        ex.Message.Should().NotBeNullOrWhiteSpace().And.Contain(_message.ClaimRequestAlreadyExists());
+    }
+
     #endregion
 
     #region ArtistErrorMessage
-
-    [Fact]
-    public void Localizer_ShouldBeUsableForValidationExtensions()
-    {
-        // Arrange & Act
-        string resolved = _message.Localizer["NameRequired"];
-
-        // Assert
-        _message.Localizer.Should().NotBeNull();
-        resolved.Should().NotBeNullOrWhiteSpace().And.NotBe("NameRequired");
-    }
 
     [Fact]
     public void NameRequiredMessage_ShouldResolveToLocalizedTextNotTheResourceKey()
@@ -144,6 +144,16 @@ public class ArtistErrorsTests
 
         // Assert
         result.Should().NotBeNullOrWhiteSpace().And.NotBe("AlreadyClaimed");
+    }
+
+    [Fact]
+    public void ClaimRequestAlreadyExistsMessage_ShouldResolveToLocalizedTextNotTheResourceKey()
+    {
+        // Arrange & Act
+        string result = _message.ClaimRequestAlreadyExists();
+
+        // Assert
+        result.Should().NotBeNullOrWhiteSpace().And.NotBe("ClaimRequestAlreadyExists");
     }
 
     #endregion

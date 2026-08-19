@@ -3,6 +3,7 @@ using _116.Identity.Application.Auth.UseCases.Public.Commands.SignOut;
 using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.Enums;
 using _116.Tests.Fixtures.Factories.Identity;
 using Moq;
 using Xunit;
@@ -48,7 +49,7 @@ public class PublicSignOutSessionFactoryTests
             .ReturnsAsync(session);
 
         _sessionRepositoryMock
-            .Setup(x => x.RevokeAsync(session.Id, It.IsAny<CancellationToken>()))
+            .Setup(x => x.RevokeAsync(session.Id, It.IsAny<EnumSessionRevokeReason>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
@@ -57,7 +58,10 @@ public class PublicSignOutSessionFactoryTests
         await _factory.SignOutAsync(refreshToken, CancellationToken.None);
 
         // Assert
-        _sessionRepositoryMock.Verify(x => x.RevokeAsync(session.Id, It.IsAny<CancellationToken>()), Times.Once);
+        _sessionRepositoryMock.Verify(
+            x => x.RevokeAsync(session.Id, It.IsAny<EnumSessionRevokeReason>(), It.IsAny<CancellationToken>()),
+            Times.Once
+        );
     }
 
     [Fact]
@@ -75,7 +79,7 @@ public class PublicSignOutSessionFactoryTests
             .ReturnsAsync(session);
 
         _sessionRepositoryMock
-            .Setup(x => x.RevokeAsync(session.Id, It.IsAny<CancellationToken>()))
+            .Setup(x => x.RevokeAsync(session.Id, It.IsAny<EnumSessionRevokeReason>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
@@ -104,7 +108,10 @@ public class PublicSignOutSessionFactoryTests
         await _factory.SignOutAsync(refreshToken, CancellationToken.None);
 
         // Assert
-        _sessionRepositoryMock.Verify(x => x.RevokeAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+        _sessionRepositoryMock.Verify(
+            x => x.RevokeAsync(It.IsAny<Guid>(), It.IsAny<EnumSessionRevokeReason>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
     }
 
     [Fact]
@@ -185,7 +192,9 @@ public class PublicSignOutSessionFactoryTests
             .Setup(x => x.GetByRefreshTokenHashAsync(refreshTokenHash, cancellationToken))
             .ReturnsAsync(session);
 
-        _sessionRepositoryMock.Setup(x => x.RevokeAsync(session.Id, cancellationToken)).Returns(Task.CompletedTask);
+        _sessionRepositoryMock
+            .Setup(x => x.RevokeAsync(session.Id, It.IsAny<EnumSessionRevokeReason>(), cancellationToken))
+            .Returns(Task.CompletedTask);
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(cancellationToken)).ReturnsAsync(1);
 
@@ -197,7 +206,10 @@ public class PublicSignOutSessionFactoryTests
             x => x.GetByRefreshTokenHashAsync(refreshTokenHash, cancellationToken),
             Times.Once
         );
-        _sessionRepositoryMock.Verify(x => x.RevokeAsync(session.Id, cancellationToken), Times.Once);
+        _sessionRepositoryMock.Verify(
+            x => x.RevokeAsync(session.Id, It.IsAny<EnumSessionRevokeReason>(), cancellationToken),
+            Times.Once
+        );
         _unitOfWorkMock.Verify(x => x.CommitAsync(cancellationToken), Times.Once);
     }
 

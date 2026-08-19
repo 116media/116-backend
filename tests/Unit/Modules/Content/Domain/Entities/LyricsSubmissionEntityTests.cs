@@ -1,5 +1,6 @@
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
+using _116.Content.Domain.Events;
 using AwesomeAssertions;
 using Xunit;
 
@@ -83,6 +84,33 @@ public class LyricsSubmissionEntityTests
         submission.PublishedLyricsId.Should().Be(publishedLyricsId);
     }
 
+    [Fact]
+    public void Approve_ShouldRaiseDecidedEventCarryingThePublishedLyricsId()
+    {
+        // Arrange
+        LyricsSubmissionEntity submission = CreatePendingSubmission();
+        var publishedLyricsId = Guid.NewGuid();
+
+        // Act
+        submission.Approve(Guid.NewGuid(), publishedLyricsId);
+
+        // Assert
+        submission
+            .DomainEvents.OfType<LyricsSubmissionDecidedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(
+                new LyricsSubmissionDecidedEvent(
+                    submission.Id,
+                    submission.SubmittedByUserId,
+                    EnumSubmissionStatus.Approved,
+                    null,
+                    publishedLyricsId
+                )
+            );
+    }
+
     #endregion
 
     #region Reject Tests
@@ -105,6 +133,33 @@ public class LyricsSubmissionEntityTests
         submission.PublishedLyricsId.Should().BeNull();
     }
 
+    [Fact]
+    public void Reject_ShouldRaiseDecidedEventCarryingTheModeratorNote()
+    {
+        // Arrange
+        LyricsSubmissionEntity submission = CreatePendingSubmission();
+        const string note = "Duplicate of an existing song.";
+
+        // Act
+        submission.Reject(Guid.NewGuid(), note);
+
+        // Assert
+        submission
+            .DomainEvents.OfType<LyricsSubmissionDecidedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(
+                new LyricsSubmissionDecidedEvent(
+                    submission.Id,
+                    submission.SubmittedByUserId,
+                    EnumSubmissionStatus.Rejected,
+                    note,
+                    null
+                )
+            );
+    }
+
     #endregion
 
     #region RequestRevision Tests
@@ -125,6 +180,33 @@ public class LyricsSubmissionEntityTests
         submission.ReviewedByUserId.Should().Be(reviewerId);
         submission.ReviewNote.Should().Be(note);
         submission.PublishedLyricsId.Should().BeNull();
+    }
+
+    [Fact]
+    public void RequestRevision_ShouldRaiseDecidedEventCarryingTheModeratorNote()
+    {
+        // Arrange
+        LyricsSubmissionEntity submission = CreatePendingSubmission();
+        const string note = "Please fix the formatting before resubmitting.";
+
+        // Act
+        submission.RequestRevision(Guid.NewGuid(), note);
+
+        // Assert
+        submission
+            .DomainEvents.OfType<LyricsSubmissionDecidedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(
+                new LyricsSubmissionDecidedEvent(
+                    submission.Id,
+                    submission.SubmittedByUserId,
+                    EnumSubmissionStatus.NeedsRevision,
+                    note,
+                    null
+                )
+            );
     }
 
     #endregion

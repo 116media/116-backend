@@ -56,6 +56,37 @@ public class PublicRequestArtistClaimEndpointV1Tests(PostgresFixture db) : BaseA
     }
 
     /// <summary>
+    /// Verifies that a second claim on the same unclaimed profile by the same account returns the
+    /// <c>ClaimRequestAlreadyExists</c> 409 raised by <c>PublicRequestArtistClaimHandler</c> after
+    /// <c>IArtistClaimRequestRepository.ExistsForArtistAndUserAsync</c> finds the first request.
+    /// Exactly one <c>ArtistClaimRequestEntity</c> row survives, so the queue holds requests worth
+    /// reviewing rather than a submit count.
+    /// </summary>
+    [Fact]
+    public async Task RequestArtistClaim_SubmittedTwiceByTheSameVisitor_ReturnsConflictAndPersistsOneRequest()
+    {
+        ArtistEntity artist = await SeedArtistAsync();
+        Client.AuthenticateAsVisitor();
+        Client.DefaultRequestHeaders.Add("Accept-Language", "en");
+
+        var firstResponse = await Client.PostAsJsonAsync(Routes.Public.Artists.Claim(artist.Id), new { });
+        firstResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var secondResponse = await Client.PostAsJsonAsync(Routes.Public.Artists.Claim(artist.Id), new { });
+
+        await secondResponse.ShouldBeProblem(
+            HttpStatusCode.Conflict,
+            "A claim request for this artist profile is already on file for your account."
+        );
+
+        await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
+        List<ArtistClaimRequestEntity> requests = await ctx
+            .ArtistClaimRequests.Where(request => request.ArtistId == artist.Id)
+            .ToListAsync();
+        requests.Should().ContainSingle().Which.UserId.Should().Be(TestUser.VisitorId);
+    }
+
+    /// <summary>
     /// Requesting a claim is purely a logged audit signal for this phase — it must never mutate
     /// <see cref="ArtistEntity.UserId"/> or <see cref="ArtistEntity.VerifiedAt"/>. Only the
     /// separate admin verify-owner action does that.

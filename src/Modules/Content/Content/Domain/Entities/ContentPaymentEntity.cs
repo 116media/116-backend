@@ -1,5 +1,6 @@
 using _116.Content.Application.Shared.Errors;
 using _116.Content.Domain.Enums;
+using _116.Content.Domain.Events;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -154,5 +155,6 @@ public class ContentPaymentEntity : Aggregate<Guid>
 
         Status = EnumPaymentStatus.Rejected;
         Notes = notes;
+        AddDomainEvent(new PaymentRejectedEvent(OrderId: OrderId, PaymentId: Id, Notes: notes));
     }
 }

@@ -1,8 +1,10 @@
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.ChangePassword;
+using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.Enums;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Identity;
 using _116.Tests.Fixtures.Helpers;
@@ -22,6 +24,7 @@ public class AdminChangePasswordHandlerTests
 {
     private readonly Mock<IAuthRepository> _authRepositoryMock;
     private readonly Mock<IPasswordService> _passwordServiceMock;
+    private readonly Mock<ISessionRepository> _sessionRepositoryMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
     private readonly AdminChangePasswordHandler _handler;
 
@@ -29,11 +32,13 @@ public class AdminChangePasswordHandlerTests
     {
         _authRepositoryMock = MockAuthRepository.Create();
         _passwordServiceMock = MockPasswordService.Create();
+        _sessionRepositoryMock = MockSessionRepository.Create();
         _unitOfWorkMock = MockIdentityUnitOfWork.Create();
 
         _handler = new AdminChangePasswordHandler(
             _authRepositoryMock.Object,
             _passwordServiceMock.Object,
+            _sessionRepositoryMock.Object,
             _unitOfWorkMock.Object,
             TestErrorsFactory.CreateIdentityI18n()
         );
@@ -338,6 +343,53 @@ public class AdminChangePasswordHandlerTests
         _passwordServiceMock.Setup(x => x.Verify(oldPassword, user.PasswordHash)).Returns(true);
         _passwordServiceMock.Setup(x => x.Verify(newPassword, user.PasswordHash)).Returns(false);
         _passwordServiceMock.Setup(x => x.Hash(newPassword)).Returns("new-hashed-password");
+    }
+
+    #endregion
+
+    #region Session Invalidation
+
+    [Fact]
+    public async Task Handle_ShouldRevokeEverySessionExceptTheActingOneBeforeCommitting()
+    {
+        // Arrange
+        UserEntity user = UserFactory.CreateVerifiedActive();
+        var sessionId = Guid.NewGuid();
+        string oldPassword = "OldPassword123!";
+        string newPassword = "NewPassword456!";
+
+        AdminChangePasswordCommand command = new(
+            UserId: user.Id,
+            SessionId: sessionId,
+            OldPassword: oldPassword,
+            NewPassword: newPassword
+        );
+
+        SetupSuccessfulChangePassword(user, sessionId, oldPassword, newPassword);
+
+        var callOrder = new List<string>();
+        _sessionRepositoryMock
+            .Setup(x =>
+                x.DeleteAllByUserIdAsync(
+                    user.Id,
+                    EnumSessionRevokeReason.SecurityInvalidation,
+                    sessionId,
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .Callback(() => callOrder.Add("revoke"))
+            .Returns(Task.CompletedTask);
+
+        _unitOfWorkMock
+            .Setup(x => x.CommitAsync(It.IsAny<CancellationToken>()))
+            .Callback(() => callOrder.Add("commit"))
+            .ReturnsAsync(1);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        callOrder.Should().Equal("revoke", "commit");
     }
 
     #endregion

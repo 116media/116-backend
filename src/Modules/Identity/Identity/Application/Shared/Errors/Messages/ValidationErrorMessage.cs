@@ -397,18 +397,6 @@ public class ValidationErrorMessage(IStringLocalizer<ValidationErrorMessage> loc
     }
 
     /// <summary>
-    /// Gets an error message for when a core role cannot be modified.
-    /// </summary>
-    /// <param name="roleName">The name of the core role.</param>
-    /// <returns>
-    /// A formatted error message indicating that the core role cannot be modified.
-    /// </returns>
-    public string CoreRoleCannotBeModified(string roleName)
-    {
-        return string.Format(localizer["CoreRoleCannotBeModified"], roleName);
-    }
-
-    /// <summary>
     /// Gets an error message for when a core role cannot be deleted.
     /// </summary>
     /// <param name="roleName">The name of the core role.</param>

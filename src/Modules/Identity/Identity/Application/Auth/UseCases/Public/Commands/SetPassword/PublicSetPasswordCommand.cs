@@ -6,11 +6,15 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SetPassword;
 /// Command for setting a password for a public user who authenticated via Google/Facebook.
 /// </summary>
 /// <param name="UserId">The unique identifier of the user setting their password.</param>
+/// <param name="SessionId">
+/// The acting session, exempted from the session revocation that commits with the change.
+/// </param>
 /// <param name="Password">The password to set for the user.</param>
 /// <remarks>
 /// This command allows authenticated users who signed up via external providers to set a password.
 /// </remarks>
-public record PublicSetPasswordCommand(Guid UserId, string Password) : ICommand<PublicSetPasswordResult>;
+public record PublicSetPasswordCommand(Guid UserId, Guid SessionId, string Password)
+    : ICommand<PublicSetPasswordResult>;
 
 /// <summary>
 /// Result of the <see cref="PublicSetPasswordCommand" /> containing set status.

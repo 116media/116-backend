@@ -1,6 +1,7 @@
 using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Session.UseCases.Admin.Commands.ForceLogoutUser;
 using _116.Identity.Application.Shared.Persistence;
+using _116.Identity.Domain.Enums;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
@@ -22,7 +23,11 @@ public class AdminForceLogoutUserHandlerTests
     {
         _sessionRepositoryMock = MockSessionRepository.Create();
         _unitOfWorkMock = MockIdentityUnitOfWork.Create();
-        _handler = new AdminForceLogoutUserHandler(_sessionRepositoryMock.Object, _unitOfWorkMock.Object);
+        _handler = new AdminForceLogoutUserHandler(
+            _sessionRepositoryMock.Object,
+            _unitOfWorkMock.Object,
+            MockAuthRepository.Create().Object
+        );
     }
 
     #region Success Cases
@@ -81,7 +86,14 @@ public class AdminForceLogoutUserHandlerTests
         int commitCallOrder = 0;
 
         _sessionRepositoryMock
-            .Setup(x => x.DeleteAllByUserIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .Setup(x =>
+                x.DeleteAllByUserIdAsync(
+                    It.IsAny<Guid>(),
+                    It.IsAny<EnumSessionRevokeReason>(),
+                    It.IsAny<Guid?>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
             .Callback(() => deleteCallOrder = ++callOrder)
             .Returns(Task.CompletedTask);
 
@@ -144,7 +156,10 @@ public class AdminForceLogoutUserHandlerTests
         await _handler.Handle(command, cts.Token);
 
         // Assert
-        _sessionRepositoryMock.Verify(x => x.DeleteAllByUserIdAsync(userId, cts.Token), Times.Once);
+        _sessionRepositoryMock.Verify(
+            x => x.DeleteAllByUserIdAsync(userId, It.IsAny<EnumSessionRevokeReason>(), It.IsAny<Guid?>(), cts.Token),
+            Times.Once
+        );
     }
 
     [Fact]

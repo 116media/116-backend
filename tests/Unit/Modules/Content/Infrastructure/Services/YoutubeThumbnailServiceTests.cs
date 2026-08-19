@@ -162,4 +162,40 @@ public class YoutubeThumbnailServiceTests
     }
 
     #endregion
+
+    #region DownloadThumbnailAsync — cancellation is not retried
+
+    /// <summary>
+    /// The fallback exists for a missing maxres rendition, not for a fetch that ran out of time.
+    /// A cancelled or timed-out attempt propagates so the caller waits one client timeout at
+    /// most rather than two.
+    /// </summary>
+    [Fact]
+    public async Task DownloadThumbnailAsync_WhenTheFetchIsCancelled_ShouldNotAttemptTheFallback()
+    {
+        // Arrange
+        Mock<HttpMessageHandler> handlerMock = new();
+        handlerMock
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>()
+            )
+            .ThrowsAsync(new TaskCanceledException());
+
+        var httpClient = new HttpClient(handlerMock.Object);
+        var service = new YoutubeThumbnailService(httpClient);
+
+        // Act
+        Func<Task> act = async () => await service.DownloadThumbnailAsync(YoutubeVideoId);
+
+        // Assert
+        await act.Should().ThrowAsync<OperationCanceledException>();
+        handlerMock
+            .Protected()
+            .Verify("SendAsync", Times.Once(), ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>());
+    }
+
+    #endregion
 }

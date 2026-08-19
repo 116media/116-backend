@@ -3,6 +3,8 @@ using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
+using _116.Content.Domain.Events;
+using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
@@ -19,9 +21,6 @@ namespace _116.Unit.Tests.Modules.Content.Application.Commerce.UseCases.Admin.Co
 /// </summary>
 public class AdminVerifyPaymentFactoryTests
 {
-    private readonly Mock<IArticleRepository> _articleRepositoryMock;
-    private readonly Mock<IVideoRepository> _videoRepositoryMock;
-    private readonly Mock<ILyricsRepository> _lyricsRepositoryMock;
     private readonly Mock<ILookupRepository> _lookupRepositoryMock;
     private readonly Mock<IContentOrderRepository> _orderRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
@@ -32,16 +31,10 @@ public class AdminVerifyPaymentFactoryTests
 
     public AdminVerifyPaymentFactoryTests()
     {
-        _articleRepositoryMock = MockArticleRepository.Create();
-        _videoRepositoryMock = MockVideoRepository.Create();
-        _lyricsRepositoryMock = MockLyricsRepository.Create();
         _lookupRepositoryMock = MockLookupRepository.Create();
         _orderRepositoryMock = MockContentOrderRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _factory = new AdminVerifyPaymentFactory(
-            _articleRepositoryMock.Object,
-            _videoRepositoryMock.Object,
-            _lyricsRepositoryMock.Object,
             _lookupRepositoryMock.Object,
             _orderRepositoryMock.Object,
             _unitOfWorkMock.Object,
@@ -49,10 +42,8 @@ public class AdminVerifyPaymentFactoryTests
         );
     }
 
-    #region Success Cases
-
     [Fact]
-    public async Task VerifyAsync_WhenOrderHasNoItems_ShouldVerifyAndCommit()
+    public async Task VerifyAsync_ShouldVerifyPaymentMarkOrderPaidAndCommit()
     {
         // Arrange
         ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
@@ -62,308 +53,97 @@ public class AdminVerifyPaymentFactoryTests
         await _factory.VerifyAsync(order, payment, AdminUserId, ReceiptUrl, CancellationToken.None);
 
         // Assert
+        payment.Status.Should().Be(EnumPaymentStatus.Verified);
+        order.Status.Should().Be(EnumOrderStatus.Paid);
         _orderRepositoryMock.VerifyUpdatePaymentCalled();
         _orderRepositoryMock.VerifyUpdateCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
     [Fact]
-    public async Task VerifyAsync_WithSocialBoostItem_WhenArticleFound_ShouldUpdateArticle()
+    public async Task VerifyAsync_ShouldRaiseOrderPaidEventWithPaymentId()
     {
         // Arrange
         ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
-        Guid categoryId = Guid.NewGuid();
-        ContentOrderItemEntity item = ContentOrderItemFactory.CreateSocialBoost(order.Id, categoryId);
-        order.Items.Add(item);
+        order.ClearDomainEvents();
         ContentPaymentEntity payment = ContentPaymentFactory.Create(order.Id);
-
-        ArticleEntity article = ArticleFactory.Create(categoryId);
-        _articleRepositoryMock.SetupGetByOrderItemIdAsync(item.Id, article);
 
         // Act
         await _factory.VerifyAsync(order, payment, AdminUserId, ReceiptUrl, CancellationToken.None);
 
         // Assert
-        _articleRepositoryMock.VerifyUpdateCalled();
-        _unitOfWorkMock.VerifyCommitCalled();
+        OrderPaidEvent paidEvent = order.DomainEvents.OfType<OrderPaidEvent>().Should().ContainSingle().Which;
+        paidEvent.OrderId.Should().Be(order.Id);
+        paidEvent.PaymentId.Should().Be(payment.Id);
     }
 
     [Fact]
-    public async Task VerifyAsync_WithPromotionLevelItem_WhenArticleFound_ShouldUpdateArticle()
+    public async Task VerifyAsync_WithPromotedItem_ShouldResolveDurationAndComputeWindowOnEventPayload()
     {
         // Arrange
         ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
-        Guid categoryId = Guid.NewGuid();
+        order.ClearDomainEvents();
         PromotionLevelEntity promoLevel = PromotionLevelFactory.CreateDefault();
         ContentOrderItemEntity item = ContentOrderItemFactory.CreateWithPromo(
             order.Id,
-            categoryId,
+            Guid.NewGuid(),
             promoLevel.Id,
             promoLevel.PriceUsd
         );
         order.Items.Add(item);
         ContentPaymentEntity payment = ContentPaymentFactory.Create(order.Id);
-
-        ArticleEntity article = ArticleFactory.Create(categoryId);
-        _articleRepositoryMock.SetupGetByOrderItemIdAsync(item.Id, article);
         _lookupRepositoryMock.SetupGetPromotionLevelByIdOrThrow(promoLevel);
 
         // Act
         await _factory.VerifyAsync(order, payment, AdminUserId, ReceiptUrl, CancellationToken.None);
 
-        // Assert
-        _articleRepositoryMock.VerifyUpdateCalled();
-        _unitOfWorkMock.VerifyCommitCalled();
+        // Assert — the window runs from the payment's own verification instant,
+        // truncated to whole milliseconds.
+        payment.VerifiedAt.Should().NotBeNull();
+        DateTimeOffset verifiedAt = payment.VerifiedAt!.Value;
+        DateTimeOffset expectedPaidAt = verifiedAt.AddTicks(-(verifiedAt.Ticks % TimeSpan.TicksPerMillisecond));
+        OrderPaidEvent paidEvent = order.DomainEvents.OfType<OrderPaidEvent>().Should().ContainSingle().Which;
+        paidEvent.PaidAt.Should().Be(expectedPaidAt);
+        PaidItemEffect effect = paidEvent.Items.Should().ContainSingle().Which;
+        effect.OrderItemId.Should().Be(item.Id);
+        effect.PromotionLevelId.Should().Be(promoLevel.Id);
+        effect.PromotionUntil.Should().Be(expectedPaidAt.AddDays(promoLevel.DurationDays));
     }
 
     [Fact]
-    public async Task VerifyAsync_WhenNoArticleOrVideoForItem_ShouldStillCommit()
+    public async Task VerifyAsync_WithoutPromotedItems_ShouldNotQueryPromotionLevels()
     {
         // Arrange
         ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
-        Guid categoryId = Guid.NewGuid();
-        ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, categoryId);
+        ContentOrderItemEntity item = ContentOrderItemFactory.CreateSocialBoost(order.Id, Guid.NewGuid());
         order.Items.Add(item);
         ContentPaymentEntity payment = ContentPaymentFactory.Create(order.Id);
-
-        // Both repositories return null (default setup)
 
         // Act
         await _factory.VerifyAsync(order, payment, AdminUserId, ReceiptUrl, CancellationToken.None);
 
         // Assert
-        _unitOfWorkMock.VerifyCommitCalled();
-    }
-
-    [Fact]
-    public async Task VerifyAsync_WithSocialBoostItem_WhenVideoFound_ShouldUpdateVideo()
-    {
-        // Arrange — article returns null so factory tries video
-        ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
-        Guid categoryId = Guid.NewGuid();
-        ContentOrderItemEntity item = ContentOrderItemFactory.CreateSocialBoost(order.Id, categoryId);
-        order.Items.Add(item);
-        ContentPaymentEntity payment = ContentPaymentFactory.Create(order.Id);
-
-        VideoEntity video = VideoFactory.Create(categoryId);
-        _articleRepositoryMock.SetupGetByOrderItemIdAsync(item.Id, null);
-        _videoRepositoryMock.SetupGetByOrderItemIdAsync(item.Id, video);
-
-        // Act
-        await _factory.VerifyAsync(order, payment, AdminUserId, ReceiptUrl, CancellationToken.None);
-
-        // Assert
-        _videoRepositoryMock.VerifyUpdateCalled();
-        _unitOfWorkMock.VerifyCommitCalled();
-    }
-
-    [Fact]
-    public async Task VerifyAsync_WithPromotionLevelItem_WhenVideoFound_ShouldUpdateVideo()
-    {
-        // Arrange — article returns null so factory tries video
-        ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
-        Guid categoryId = Guid.NewGuid();
-        PromotionLevelEntity promoLevel = PromotionLevelFactory.CreateDefault();
-        ContentOrderItemEntity item = ContentOrderItemFactory.CreateWithPromo(
-            order.Id,
-            categoryId,
-            promoLevel.Id,
-            promoLevel.PriceUsd
-        );
-        order.Items.Add(item);
-        ContentPaymentEntity payment = ContentPaymentFactory.Create(order.Id);
-
-        VideoEntity video = VideoFactory.Create(categoryId);
-        _articleRepositoryMock.SetupGetByOrderItemIdAsync(item.Id, null);
-        _videoRepositoryMock.SetupGetByOrderItemIdAsync(item.Id, video);
-        _lookupRepositoryMock.SetupGetPromotionLevelByIdOrThrow(promoLevel);
-
-        // Act
-        await _factory.VerifyAsync(order, payment, AdminUserId, ReceiptUrl, CancellationToken.None);
-
-        // Assert
-        _videoRepositoryMock.VerifyUpdateCalled();
-        _unitOfWorkMock.VerifyCommitCalled();
-    }
-
-    [Fact]
-    public async Task VerifyAsync_WhenArticleInPendingPayment_ShouldTransitionToPendingReview()
-    {
-        // Arrange
-        ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
-        Guid categoryId = Guid.NewGuid();
-        Guid customerId = Guid.NewGuid();
-        ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, categoryId);
-        order.Items.Add(item);
-        ContentPaymentEntity payment = ContentPaymentFactory.Create(order.Id);
-
-        ArticleEntity article = ArticleFactory.CreatePendingPayment(categoryId, customerId, item.Id);
-        _articleRepositoryMock.SetupGetByOrderItemIdAsync(item.Id, article);
-
-        // Act
-        await _factory.VerifyAsync(order, payment, AdminUserId, ReceiptUrl, CancellationToken.None);
-
-        // Assert
-        article.Status.Should().Be(EnumContentStatus.PendingReview);
-        _articleRepositoryMock.VerifyUpdateCalled();
-        _unitOfWorkMock.VerifyCommitCalled();
-    }
-
-    [Fact]
-    public async Task VerifyAsync_WhenVideoInPendingPayment_ShouldTransitionToPendingReview()
-    {
-        // Arrange — article returns null so factory tries video
-        ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
-        Guid categoryId = Guid.NewGuid();
-        Guid customerId = Guid.NewGuid();
-        ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, categoryId);
-        order.Items.Add(item);
-        ContentPaymentEntity payment = ContentPaymentFactory.Create(order.Id);
-
-        VideoEntity video = VideoFactory.CreatePendingPayment(categoryId, customerId, item.Id);
-        _articleRepositoryMock.SetupGetByOrderItemIdAsync(item.Id, null);
-        _videoRepositoryMock.SetupGetByOrderItemIdAsync(item.Id, video);
-
-        // Act
-        await _factory.VerifyAsync(order, payment, AdminUserId, ReceiptUrl, CancellationToken.None);
-
-        // Assert
-        video.Status.Should().Be(EnumContentStatus.PendingReview);
-        _videoRepositoryMock.VerifyUpdateCalled();
-        _unitOfWorkMock.VerifyCommitCalled();
-    }
-
-    /// <summary>
-    /// When neither an article nor a video resolves for an order item's promoted purchase,
-    /// the factory falls through to lyrics — stamping promotion (no SocialBoost, per spec 12's
-    /// explicit scoping) and moving it to <c>PendingReview</c>.
-    /// </summary>
-    [Fact]
-    public async Task VerifyAsync_WithPromotionLevelItem_WhenLyricsFound_ShouldStampPromotionAndUpdateLyrics()
-    {
-        // Arrange — article and video both return null so factory falls through to lyrics
-        ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
-        Guid categoryId = Guid.NewGuid();
-        Guid customerId = Guid.NewGuid();
-        PromotionLevelEntity promoLevel = PromotionLevelFactory.CreateDefault();
-        ContentOrderItemEntity item = ContentOrderItemFactory.CreateWithPromo(
-            order.Id,
-            categoryId,
-            promoLevel.Id,
-            promoLevel.PriceUsd
-        );
-        order.Items.Add(item);
-        ContentPaymentEntity payment = ContentPaymentFactory.Create(order.Id);
-
-        LyricsEntity lyrics = LyricsFactory.CreatePendingPayment(categoryId, customerId, item.Id);
-        _articleRepositoryMock.SetupGetByOrderItemIdAsync(item.Id, null);
-        _videoRepositoryMock.SetupGetByOrderItemIdAsync(item.Id, null);
-        _lyricsRepositoryMock.SetupGetByOrderItemIdAsync(item.Id, lyrics);
-        _lookupRepositoryMock.SetupGetPromotionLevelByIdOrThrow(promoLevel);
-
-        // Act
-        await _factory.VerifyAsync(order, payment, AdminUserId, ReceiptUrl, CancellationToken.None);
-
-        // Assert
-        lyrics.IsPromoted.Should().BeTrue();
-        lyrics.PromotedUntil.Should().NotBeNull();
-        lyrics.Status.Should().Be(EnumContentStatus.PendingReview);
-        _lyricsRepositoryMock.VerifyUpdateCalled();
-        _unitOfWorkMock.VerifyCommitCalled();
-    }
-
-    /// <summary>
-    /// A lyrics item with no promotion purchased still transitions Draft/PendingPayment →
-    /// PendingReview via <c>MarkPendingReview()</c>, mirroring the article/video branches, but
-    /// leaves <c>IsPromoted</c> untouched.
-    /// </summary>
-    [Fact]
-    public async Task VerifyAsync_WithoutPromotionLevelItem_WhenLyricsFound_ShouldTransitionToPendingReviewWithoutPromoting()
-    {
-        // Arrange
-        ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
-        Guid categoryId = Guid.NewGuid();
-        Guid customerId = Guid.NewGuid();
-        ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, categoryId);
-        order.Items.Add(item);
-        ContentPaymentEntity payment = ContentPaymentFactory.Create(order.Id);
-
-        LyricsEntity lyrics = LyricsFactory.CreatePendingPayment(categoryId, customerId, item.Id);
-        _articleRepositoryMock.SetupGetByOrderItemIdAsync(item.Id, null);
-        _videoRepositoryMock.SetupGetByOrderItemIdAsync(item.Id, null);
-        _lyricsRepositoryMock.SetupGetByOrderItemIdAsync(item.Id, lyrics);
-
-        // Act
-        await _factory.VerifyAsync(order, payment, AdminUserId, ReceiptUrl, CancellationToken.None);
-
-        // Assert
-        lyrics.IsPromoted.Should().BeFalse();
-        lyrics.Status.Should().Be(EnumContentStatus.PendingReview);
-        _lyricsRepositoryMock.VerifyUpdateCalled();
-        _unitOfWorkMock.VerifyCommitCalled();
-    }
-
-    /// <summary>
-    /// An order item is fulfilled by exactly one content type, so resolving an article must stop
-    /// the search: the video and lyrics repositories are never queried for that item.
-    /// </summary>
-    [Fact]
-    public async Task VerifyAsync_WhenArticleFound_ShouldNotQueryVideoOrLyrics()
-    {
-        // Arrange
-        ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
-        Guid categoryId = Guid.NewGuid();
-        ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, categoryId);
-        order.Items.Add(item);
-        ContentPaymentEntity payment = ContentPaymentFactory.Create(order.Id);
-
-        ArticleEntity article = ArticleFactory.Create(categoryId);
-        _articleRepositoryMock.SetupGetByOrderItemIdAsync(item.Id, article);
-
-        // Act
-        await _factory.VerifyAsync(order, payment, AdminUserId, ReceiptUrl, CancellationToken.None);
-
-        // Assert
-        _videoRepositoryMock.Verify(
-            x => x.GetByOrderItemIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+        _lookupRepositoryMock.Verify(
+            x => x.GetPromotionLevelByIdOrThrowAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
             Times.Never
         );
-        _lyricsRepositoryMock.Verify(
-            x => x.GetByOrderItemIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
-            Times.Never
-        );
-        _articleRepositoryMock.VerifyUpdateCalled();
-    }
-
-    /// <summary>
-    /// A lyrics page has no social boost concept, so a social-boost item that resolves to lyrics
-    /// still transitions to PendingReview but stamps nothing extra.
-    /// </summary>
-    [Fact]
-    public async Task VerifyAsync_WithSocialBoostItem_WhenLyricsFound_ShouldNotStampSocialBoost()
-    {
-        // Arrange
-        ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
-        Guid categoryId = Guid.NewGuid();
-        Guid customerId = Guid.NewGuid();
-        ContentOrderItemEntity item = ContentOrderItemFactory.CreateSocialBoost(order.Id, categoryId);
-        order.Items.Add(item);
-        ContentPaymentEntity payment = ContentPaymentFactory.Create(order.Id);
-
-        LyricsEntity lyrics = LyricsFactory.CreatePendingPayment(categoryId, customerId, item.Id);
-        _articleRepositoryMock.SetupGetByOrderItemIdAsync(item.Id, null);
-        _videoRepositoryMock.SetupGetByOrderItemIdAsync(item.Id, null);
-        _lyricsRepositoryMock.SetupGetByOrderItemIdAsync(item.Id, lyrics);
-
-        // Act
-        await _factory.VerifyAsync(order, payment, AdminUserId, ReceiptUrl, CancellationToken.None);
-
-        // Assert
-        lyrics.Status.Should().Be(EnumContentStatus.PendingReview);
-        lyrics.IsPromoted.Should().BeFalse();
-        _lyricsRepositoryMock.VerifyUpdateCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
-    #endregion
+    [Fact]
+    public async Task VerifyAsync_WhenPaymentAlreadyVerified_ShouldThrowConflictAndNotCommit()
+    {
+        // Arrange
+        ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
+        order.ClearDomainEvents();
+        ContentPaymentEntity payment = ContentPaymentFactory.CreateVerified(order.Id);
+
+        // Act
+        Func<Task> act = () => _factory.VerifyAsync(order, payment, AdminUserId, ReceiptUrl, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<ConflictException>();
+        order.DomainEvents.Should().BeEmpty();
+        _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
 }

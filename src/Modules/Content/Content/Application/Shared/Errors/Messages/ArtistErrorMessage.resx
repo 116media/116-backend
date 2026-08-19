@@ -24,6 +24,9 @@
   <data name="AlreadyClaimed" xml:space="preserve">
     <value>This artist profile has already been claimed.</value>
   </data>
+  <data name="ClaimRequestAlreadyExists" xml:space="preserve">
+    <value>A claim request for this artist profile is already on file for your account.</value>
+  </data>
   <data name="TooManyAliases" xml:space="preserve">
     <value>An artist can have at most {0} aliases.</value>
   </data>

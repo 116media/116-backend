@@ -172,7 +172,10 @@ public class AdminAssignPermissionToRoleEndpointV1Tests(PostgresFixture db) : Ba
     }
 
     /// <summary>
-    /// Verifies that assigning a soft-deleted permission to a role returns a 400 Bad Request.
+    /// Verifies that assigning a soft-deleted permission to a role returns a 400 Bad Request
+    /// carrying the deleted-permission message rather than the inactive-permission one, since a
+    /// soft delete also clears <c>IsActive</c> and both states would otherwise be
+    /// indistinguishable.
     /// </summary>
     [Fact]
     public async Task AssignPermission_WhenPermissionDeleted_ReturnsBadRequest()
@@ -192,8 +195,14 @@ public class AdminAssignPermissionToRoleEndpointV1Tests(PostgresFixture db) : Ba
             .WithPermissionId(permission.Id)
             .Build();
 
-        var response = await Client.PostAsJsonAsync(Routes.Admin.Roles.Permissions(roleId), request);
+        var httpRequest = new HttpRequestMessage(HttpMethod.Post, Routes.Admin.Roles.Permissions(roleId))
+        {
+            Content = JsonContent.Create(request),
+        };
+        httpRequest.Headers.Add("Accept-Language", "en");
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        var response = await Client.SendAsync(httpRequest);
+
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest, "Cannot use a deleted permission.");
     }
 }

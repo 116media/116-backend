@@ -1,5 +1,6 @@
 using System.Text;
 using _116.Identity.Application.Adapters.Wangkanai.Detection;
+using _116.Identity.Application.Auth.EventHandlers;
 using _116.Identity.Application.Auth.Exceptions.Handlers;
 using _116.Identity.Application.Auth.Repositories;
 using _116.Identity.Application.Auth.Services;
@@ -27,6 +28,7 @@ using _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp.Contracts;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin.Contracts;
+using _116.Identity.Application.Session.EventHandlers;
 using _116.Identity.Application.Session.Factories;
 using _116.Identity.Application.Session.Factories.Contracts;
 using _116.Identity.Application.Session.Repositories;
@@ -39,6 +41,7 @@ using _116.Identity.Application.Shared.Exceptions.Handlers;
 using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
+using _116.Identity.Application.User.EventHandlers;
 using _116.Identity.Application.User.UseCases.Admin.Commands.UpdateAvatar;
 using _116.Identity.Application.User.UseCases.Admin.Commands.UpdateAvatar.Contracts;
 using _116.Identity.Application.User.UseCases.Admin.Commands.UpdateOwnProfile;
@@ -49,6 +52,7 @@ using _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfile;
 using _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfile.Contracts;
 using _116.Identity.Contracts.Application;
 using _116.Identity.Domain.Constants;
+using _116.Identity.Domain.Events;
 using _116.Identity.Infrastructure.Adapters.Wangkanai.Detection;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
@@ -57,6 +61,7 @@ using _116.Identity.Infrastructure.Repositories;
 using _116.Identity.Infrastructure.Services;
 using _116.Shared.Application.Configurations;
 using _116.Shared.Application.Exceptions.Handlers.Contracts;
+using _116.Shared.Application.Services;
 using _116.Shared.Infrastructure;
 using Mapster;
 using MapsterMapper;
@@ -120,8 +125,7 @@ public static class IdentityModule
         services.AddScoped<IdentityI18n>();
 
         // Register Mapster configuration and IMapper (thread-safe, no global state)
-        TypeAdapterConfig mappingConfig = MappingRegistration.CreateConfiguration();
-        services.AddSingleton(mappingConfig);
+        services.AddSingleton(MappingRegistration.CreateConfiguration());
         services.AddScoped<IMapper>(sp => new Mapper(sp.GetRequiredService<TypeAdapterConfig>()));
 
         services.AddHttpContextAccessor();
@@ -171,6 +175,23 @@ public static class IdentityModule
 
         services.AddScoped<SuperAdminSeeder>();
         services.AddScoped<VisitorRoleSeeder>();
+
+        // Register domain event handlers: welcome and security notifications
+        services.AddScoped<IDomainEventHandler<UserVerifiedEvent>, UserVerifiedWelcomeEmailHandler>();
+        services.AddScoped<IDomainEventHandler<UserPasswordChangedEvent>, UserPasswordChangedNotificationsHandler>();
+        services.AddScoped<IDomainEventHandler<UserEmailChangedEvent>, UserEmailChangedNotificationsHandler>();
+        services.AddScoped<IDomainEventHandler<UserRoleGrantedEvent>, UserRoleGrantedNotificationsHandler>();
+        services.AddScoped<IDomainEventHandler<UserRoleRevokedEvent>, UserRoleRevokedNotificationsHandler>();
+        services.AddScoped<
+            IDomainEventHandler<UserSignedOutAllDevicesEvent>,
+            UserSignedOutAllDevicesNotificationsHandler
+        >();
+
+        // Register domain event handlers: refresh token replay response
+        services.AddScoped<IDomainEventHandler<RefreshTokenReplayDetectedEvent>, RefreshTokenReplaySecurityHandler>();
+
+        // Register domain event handlers: session revocation audit slot
+        services.AddScoped<IDomainEventHandler<SessionRevokedEvent>, SessionRevokedLogHandler>();
 
         var (secret, issuer, audience, _, _) = AppEnvironment.Jwt();
         services

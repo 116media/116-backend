@@ -12,6 +12,7 @@
     <ItemGroup>
         <ProjectReference Include="../Modules/Identity/Identity/Identity.csproj" />
         <ProjectReference Include="../Modules/Content/Content/Content.csproj" />
+        <ProjectReference Include="../Modules/Mailer/Mailer/Mailer.csproj" />
     </ItemGroup>
 
     <ItemGroup>

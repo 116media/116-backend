@@ -5,9 +5,11 @@ using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Application.Shared.Exceptions;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.Events;
 using _116.Tests.Fixtures.Factories.Identity;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 using RefreshTokenFactory = _116.Identity.Application.Session.Factories.RefreshTokenFactory;
@@ -38,7 +40,8 @@ public class RefreshTokenFactoryTests
             _sessionRepositoryMock.Object,
             _refreshTokenServiceMock.Object,
             _unitOfWorkMock.Object,
-            sessionErrors
+            sessionErrors,
+            NullLogger<RefreshTokenFactory>.Instance
         );
     }
 
@@ -374,6 +377,68 @@ public class RefreshTokenFactoryTests
             Times.Once
         );
         _unitOfWorkMock.Verify(x => x.CommitAsync(cancellationToken), Times.Once);
+    }
+
+    #endregion
+
+    #region Replay Detection Tests
+
+    [Fact]
+    public async Task RefreshTokenAsync_WhenTokenMatchesARevokedSession_ShouldRecordTheReplayAndCommit()
+    {
+        // Arrange
+        string refreshToken = "replayed_refresh_token";
+        string refreshTokenHash = "replayed_hashed_refresh_token";
+        SessionEntity revokedSession = SessionFactory.CreateRevoked();
+        revokedSession.ClearDomainEvents();
+
+        _refreshTokenServiceMock.Setup(x => x.HashRefreshToken(refreshToken)).Returns(refreshTokenHash);
+
+        _sessionRepositoryMock
+            .Setup(x => x.GetByRefreshTokenHashAsync(refreshTokenHash, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((SessionEntity?)null);
+
+        _sessionRepositoryMock
+            .Setup(x => x.GetRevokedSessionByRefreshTokenHashAsync(refreshTokenHash, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(revokedSession);
+
+        // Act
+        Func<Task> act = async () => await _factory.RefreshTokenAsync(refreshToken, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowExactlyAsync<RefreshTokenExpiryException>();
+
+        RefreshTokenReplayDetectedEvent raised = revokedSession
+            .DomainEvents.OfType<RefreshTokenReplayDetectedEvent>()
+            .Single();
+        raised.SessionId.Should().Be(revokedSession.Id);
+        raised.UserId.Should().Be(revokedSession.UserId);
+        _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task RefreshTokenAsync_WhenTokenMatchesNoSessionAtAll_ShouldNotCommitAnything()
+    {
+        // Arrange
+        string refreshToken = "unknown_refresh_token";
+        string refreshTokenHash = "unknown_hashed_refresh_token";
+
+        _refreshTokenServiceMock.Setup(x => x.HashRefreshToken(refreshToken)).Returns(refreshTokenHash);
+
+        _sessionRepositoryMock
+            .Setup(x => x.GetByRefreshTokenHashAsync(refreshTokenHash, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((SessionEntity?)null);
+
+        _sessionRepositoryMock
+            .Setup(x => x.GetRevokedSessionByRefreshTokenHashAsync(refreshTokenHash, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((SessionEntity?)null);
+
+        // Act
+        Func<Task> act = async () => await _factory.RefreshTokenAsync(refreshToken, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowExactlyAsync<RefreshTokenExpiryException>();
+        _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
 
     #endregion

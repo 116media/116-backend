@@ -1,20 +1,27 @@
+using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfile.Contracts;
 using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.ValueObjects;
 
 namespace _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfile;
 
 /// <summary>
-/// Factory implementation for handling user profile update logic.
+/// Factory implementation for handling user profile update logic. An email change revokes the
+/// account's other sessions in the same transaction as the new address, keeping the acting
+/// session alive. The dual email-change notification and the in-app notification react to the
+/// domain event the aggregate raises when the email changes.
 /// </summary>
 /// <param name="authRepository">Repository for user data access operations.</param>
+/// <param name="sessionRepository">Repository revoking the user's sessions.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="userErrors">User domain error factory for generating domain exceptions.</param>
 public class PublicUpdateProfileAuthFactory(
     IAuthRepository authRepository,
+    ISessionRepository sessionRepository,
     IIdentityUnitOfWork unitOfWork,
     UserErrors userErrors
 ) : IPublicUpdateProfileAuthFactory
@@ -51,6 +58,15 @@ public class PublicUpdateProfileAuthFactory(
         {
             await EnsureEmailUnique(email!, cancellationToken: cancellationToken);
             user!.UpdateEmail(newEmail: email!, errors: userErrors);
+
+            // The acting session survives the change it performed; the account's other sessions
+            // are revoked in the same transaction as the new address.
+            await sessionRepository.DeleteAllByUserIdAsync(
+                userId: user.Id,
+                reason: EnumSessionRevokeReason.SecurityInvalidation,
+                exemptSessionId: sessionId,
+                cancellationToken: cancellationToken
+            );
         }
 
         if (isUsernameUpdated)

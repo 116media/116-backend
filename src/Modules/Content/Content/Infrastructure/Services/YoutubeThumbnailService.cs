@@ -6,6 +6,8 @@ namespace _116.Content.Infrastructure.Services;
 /// <summary>
 /// Downloads YouTube video thumbnails via HTTP.
 /// Tries <c>maxresdefault.jpg</c> first; falls back to <c>hqdefault.jpg</c> if unavailable.
+/// The fallback covers missing-resolution responses only: a cancelled or timed-out fetch
+/// propagates instead of being retried, bounding the caller's wait to a single client timeout.
 /// </summary>
 /// <param name="httpClient">The HTTP client used to fetch thumbnail images.</param>
 public class YoutubeThumbnailService(HttpClient httpClient) : IYoutubeThumbnailService
@@ -24,7 +26,7 @@ public class YoutubeThumbnailService(HttpClient httpClient) : IYoutubeThumbnailS
         {
             imageBytes = await httpClient.GetByteArrayAsync(thumbUrl, cancellationToken);
         }
-        catch
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             string fallbackUrl = $"https://img.youtube.com/vi/{youtubeVideoId}/hqdefault.jpg";
             imageBytes = await httpClient.GetByteArrayAsync(fallbackUrl, cancellationToken);

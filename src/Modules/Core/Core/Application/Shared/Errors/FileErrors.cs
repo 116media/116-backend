@@ -5,64 +5,10 @@ namespace _116.Core.Application.Shared.Errors;
 
 /// <summary>
 /// File domain error factory providing simple, readable exception creation.
-/// Usage: fileErrors.FileUploadFailed(fileName, reason) or fileErrors.FileNotFound(fileId)
+/// Usage: fileErrors.FileUploadFailed(reason) or fileErrors.FileNameRequired()
 /// </summary>
-public class FileErrors(
-    ConflictErrorMessage conflict,
-    ValidationErrorMessage validation,
-    InternalServerErrorMessage internalServer
-)
+public class FileErrors(ValidationErrorMessage validation, InternalServerErrorMessage internalServer)
 {
-    /// <summary>
-    /// Throws when file upload fails.
-    /// </summary>
-    public ConflictException FileUploadFailed(string fileName, string reason) =>
-        new(conflict.FileUploadFailed(fileName, reason));
-
-    /// <summary>
-    /// Throws when the file type is not supported.
-    /// </summary>
-    public BadRequestException UnsupportedFileType(string fileType, string[] allowedTypes) =>
-        new(validation.UnsupportedFileType(fileType, allowedTypes));
-
-    /// <summary>
-    /// Throws when file size exceeds the limit.
-    /// </summary>
-    public BadRequestException FileTooLarge(long fileSize, long maxSize) =>
-        new(validation.FileTooLarge(fileSize, maxSize));
-
-    /// <summary>
-    /// Throws when the file is corrupted.
-    /// </summary>
-    public BadRequestException CorruptedFile(string fileName) => new(validation.CorruptedFile(fileName));
-
-    /// <summary>
-    /// Throws when a file is not found.
-    /// </summary>
-    public NotFoundException FileNotFound(int fileId) => new("File", fileId);
-
-    /// <summary>
-    /// Throws when a file is not found using name.
-    /// </summary>
-    public NotFoundException FileNotFoundByName(string fileName) => new("File", "name", fileName);
-
-    /// <summary>
-    /// Throws when configuration is invalid.
-    /// </summary>
-    public BadRequestException InvalidConfiguration(string configKey) =>
-        new(validation.InvalidConfiguration(configKey));
-
-    /// <summary>
-    /// Throws when external service is unavailable.
-    /// </summary>
-    public InternalServerException ServiceUnavailable(string serviceName) =>
-        new(internalServer.ServiceUnavailable(serviceName));
-
-    /// <summary>
-    /// Throws when database connection fails.
-    /// </summary>
-    public InternalServerException DatabaseConnectionFailed() => new(internalServer.DatabaseConnectionFailed());
-
     /// <summary>
     /// Throws when file name is required.
     /// </summary>
@@ -108,11 +54,6 @@ public class FileErrors(
     /// Throws when file URL is required.
     /// </summary>
     public BadRequestException FileUrlRequired() => new(validation.FileUrlRequired());
-
-    /// <summary>
-    /// Throws a generic bad request exception with the custom message.
-    /// </summary>
-    public BadRequestException BadRequest(string message) => new(message);
 
     /// <summary>
     /// Throws when no file is provided in the upload request.

@@ -1,9 +1,11 @@
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.ResetPassword;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.ResetPassword.Contracts;
+using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.ValueObjects;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Identity;
@@ -21,6 +23,7 @@ public class PublicResetPasswordAuthFactoryTests
 {
     private readonly Mock<IAuthRepository> _authRepositoryMock;
     private readonly Mock<IPasswordService> _passwordServiceMock;
+    private readonly Mock<ISessionRepository> _sessionRepositoryMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
     private readonly PublicResetPasswordAuthFactory _factory;
 
@@ -28,10 +31,12 @@ public class PublicResetPasswordAuthFactoryTests
     {
         _authRepositoryMock = new Mock<IAuthRepository>();
         _passwordServiceMock = new Mock<IPasswordService>();
+        _sessionRepositoryMock = new Mock<ISessionRepository>();
         _unitOfWorkMock = new Mock<IIdentityUnitOfWork>();
         _factory = new PublicResetPasswordAuthFactory(
             _authRepositoryMock.Object,
             _passwordServiceMock.Object,
+            _sessionRepositoryMock.Object,
             _unitOfWorkMock.Object,
             TestErrorsFactory.CreateUserErrors()
         );
@@ -283,6 +288,45 @@ public class PublicResetPasswordAuthFactoryTests
 
         // Assert
         _unitOfWorkMock.Verify(x => x.CommitAsync(cancellationToken), Times.Once);
+    }
+
+    #endregion
+
+    #region Session Invalidation
+
+    [Fact]
+    public async Task ResetPasswordAsync_ShouldRevokeEverySessionBeforeCommitting()
+    {
+        // Arrange
+        string newPassword = "NewPassword123!";
+        UserEntity user = UserFactory.Create();
+
+        _passwordServiceMock.Setup(x => x.Verify(newPassword, user.PasswordHash)).Returns(false);
+        _passwordServiceMock.Setup(x => x.Hash(newPassword)).Returns("hashed_new_password");
+
+        var callOrder = new List<string>();
+        _sessionRepositoryMock
+            .Setup(x =>
+                x.DeleteAllByUserIdAsync(
+                    user.Id,
+                    EnumSessionRevokeReason.SecurityInvalidation,
+                    null,
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .Callback(() => callOrder.Add("revoke"))
+            .Returns(Task.CompletedTask);
+
+        _unitOfWorkMock
+            .Setup(x => x.CommitAsync(It.IsAny<CancellationToken>()))
+            .Callback(() => callOrder.Add("commit"))
+            .ReturnsAsync(1);
+
+        // Act
+        await _factory.ResetPasswordAsync(user, newPassword, CancellationToken.None);
+
+        // Assert
+        callOrder.Should().Equal("revoke", "commit");
     }
 
     #endregion

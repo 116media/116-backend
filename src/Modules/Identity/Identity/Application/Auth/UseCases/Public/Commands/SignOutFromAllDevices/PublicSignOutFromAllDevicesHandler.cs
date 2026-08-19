@@ -2,12 +2,15 @@ using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.Enums;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SignOutFromAllDevices;
 
 /// <summary>
 /// Handles the <see cref="PublicSignOutFromAllDevicesCommand" /> to sign out a user from all devices.
+/// The security email and in-app notification react to the domain event the user aggregate raises
+/// for the mass sign-out.
 /// </summary>
 public class PublicSignOutFromAllDevicesHandler(
     IAuthRepository authRepository,
@@ -31,7 +34,12 @@ public class PublicSignOutFromAllDevicesHandler(
         // Validate user account status
         authRepository.IsUserAccountActive(user!);
 
-        await sessionRepository.DeleteAllByUserIdAsync(userId: user!.Id, cancellationToken: cancellationToken);
+        user!.RecordMassSignOut(byAdmin: false);
+        await sessionRepository.DeleteAllByUserIdAsync(
+            userId: user.Id,
+            reason: EnumSessionRevokeReason.SelfSignOut,
+            cancellationToken: cancellationToken
+        );
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new PublicSignOutFromAllDevicesResult(IsSuccess: true);

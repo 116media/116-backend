@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using _116.Content.Application.Shared.Errors;
 using _116.Content.Domain.Constants;
+using _116.Content.Domain.Events;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -49,12 +50,16 @@ public class TagEntity : Aggregate<Guid>
             throw errors.SlugRequired();
         }
 
-        return new TagEntity
+        var tag = new TagEntity
         {
             Id = id,
             Name = name,
             Slug = slug,
         };
+
+        tag.AddDomainEvent(new TagGraphChangedEvent(TagId: tag.Id));
+
+        return tag;
     }
 
     /// <summary>
@@ -78,5 +83,17 @@ public class TagEntity : Aggregate<Guid>
 
         Name = name;
         Slug = slug;
+
+        AddDomainEvent(new TagGraphChangedEvent(TagId: Id));
+    }
+
+    /// <summary>
+    /// Declares the tag's removal so post-commit consumers (the tags cache
+    /// invalidation) can act on the change. Called by the delete flow
+    /// immediately before the repository removal.
+    /// </summary>
+    public void MarkDeleted()
+    {
+        AddDomainEvent(new TagGraphChangedEvent(TagId: Id));
     }
 }

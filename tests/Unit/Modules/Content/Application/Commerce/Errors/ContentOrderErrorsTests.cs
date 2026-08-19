@@ -119,4 +119,13 @@ public class ContentOrderErrorsTests
         ex.Should().NotBeNull();
         ex.Message.Should().Contain(_message.PaymentAlreadyRejected());
     }
+
+    [Fact]
+    public void PromotionDurationUnavailable_ShouldReturnBadRequestException()
+    {
+        BadRequestException ex = _errors.PromotionDurationUnavailable();
+
+        ex.Should().NotBeNull();
+        ex.Message.Should().Contain(_message.PromotionDurationUnavailable());
+    }
 }

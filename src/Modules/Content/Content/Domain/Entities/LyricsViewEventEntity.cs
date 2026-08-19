@@ -1,3 +1,5 @@
+using _116.Content.Domain.Enums;
+using _116.Content.Domain.Events;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -94,7 +96,7 @@ public class LyricsViewEventEntity : Aggregate<Guid>
         double scrollDepthRatio
     )
     {
-        return new LyricsViewEventEntity
+        var viewEvent = new LyricsViewEventEntity
         {
             Id = id,
             LyricsId = lyricsId,
@@ -107,5 +109,14 @@ public class LyricsViewEventEntity : Aggregate<Guid>
             ScrollDepthRatio = scrollDepthRatio,
             CreatedAt = DateTime.UtcNow,
         };
+
+        if (isCounted)
+        {
+            viewEvent.AddDomainEvent(
+                new LyricsEngagedEvent(LyricsId: lyricsId, Kind: EnumEngagementKind.View, Delta: 1)
+            );
+        }
+
+        return viewEvent;
     }
 }

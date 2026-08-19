@@ -74,26 +74,49 @@ public class AdminSubmitOrderEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
+    /// <summary>
+    /// Verifies that resubmitting an order that is already past <c>Draft</c> reaches
+    /// <c>ContentOrderEntity.Submit</c> and returns its <c>AlreadySubmitted</c> conflict.
+    /// The order carries one item with one pricing tier so the earlier
+    /// <c>MustHaveAtLeastOneItemWithTier</c> guard in <c>AdminSubmitOrderFactory</c> passes and
+    /// the status guard is the only remaining failure, making the assertion specific to it.
+    /// </summary>
     [Fact]
-    public async Task SubmitOrder_AsSuperAdmin_AlreadySubmitted_ReturnsError()
+    public async Task SubmitOrder_AsSuperAdmin_WhenPendingPaymentWithPricedItem_ReturnsAlreadySubmittedConflict()
     {
         ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
         CustomerEntity customer = CustomerFactory.CreateWithId(order.CustomerId);
+        ContentTypeEntity contentType = ContentTypeFactory.Create();
+        CategoryEntity category = CategoryFactory.Create(contentType.Id);
+        PricingTierEntity pricingTier = PricingTierFactory.Create();
+        ContentOrderItemEntity orderItem = ContentOrderItemFactory.Create(order.Id, category.Id);
+        ContentItemTierEntity itemTier = ContentItemTierFactory.Create(orderItem.Id, pricingTier.Id, 9.99m);
         await SeedAsync<ContentDbContext>(ctx =>
         {
             ctx.Customers.Add(customer);
+            ctx.ContentTypes.Add(contentType);
+            ctx.Categories.Add(category);
+            ctx.PricingTiers.Add(pricingTier);
             ctx.ContentOrders.Add(order);
+            ctx.ContentOrderItems.Add(orderItem);
+            ctx.ContentItemTiers.Add(itemTier);
         });
 
         Client.AuthenticateAsSuperAdmin();
+        Client.DefaultRequestHeaders.Add("Accept-Language", "en");
 
         var response = await Client.PatchAsync(Routes.Admin.Orders.Submit(order.Id), null);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem(HttpStatusCode.Conflict, "Order has already been submitted.");
 
         await using ContentDbContext db = CreateDbContext<ContentDbContext>();
         ContentOrderEntity? persisted = await db.ContentOrders.FindAsync(order.Id);
         persisted!.Status.Should().Be(EnumOrderStatus.PendingPayment);
+
+        // No second payment record is created when the status guard rejects the resubmission.
+        (await db.ContentPayments.CountAsync(p => p.OrderId == order.Id))
+            .Should()
+            .Be(0);
     }
 
     /// <summary>

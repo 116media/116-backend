@@ -14,25 +14,6 @@ public class InternalServerErrorMessage(IStringLocalizer<InternalServerErrorMess
     public IStringLocalizer Localizer => localizer;
 
     /// <summary>
-    /// Gets the error message for service unavailable.
-    /// </summary>
-    /// <param name="serviceName">The name of the unavailable service.</param>
-    /// <returns>A formatted error message indicating the service is unavailable.</returns>
-    public string ServiceUnavailable(string serviceName)
-    {
-        return string.Format(localizer["ServiceUnavailable"], serviceName);
-    }
-
-    /// <summary>
-    /// Error message for database connection failure.
-    /// </summary>
-    /// <returns>A formatted error message indicating database connection failed.</returns>
-    public string DatabaseConnectionFailed()
-    {
-        return localizer["DatabaseConnectionFailed"];
-    }
-
-    /// <summary>
     /// Gets the error message for file download failure.
     /// </summary>
     /// <param name="fileUrl">The URL that failed to download.</param>

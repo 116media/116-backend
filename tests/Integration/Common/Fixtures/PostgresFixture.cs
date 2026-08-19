@@ -1,6 +1,7 @@
 using _116.Content.Infrastructure.Persistence;
 using _116.Core.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Mailer.Infrastructure.Persistence;
 using Npgsql;
 using Respawn;
 using Testcontainers.PostgreSql;
@@ -106,6 +107,13 @@ public class PostgresFixture : IAsyncLifetime
             .Options;
         await using var contentContext = new ContentDbContext(contentOptions);
         await contentContext.Database.MigrateAsync();
+
+        var mailerOptions = new DbContextOptionsBuilder<MailerDbContext>()
+            .UseNpgsql(ConnectionString)
+            .UseSnakeCaseNamingConvention()
+            .Options;
+        await using var mailerContext = new MailerDbContext(mailerOptions);
+        await mailerContext.Database.MigrateAsync();
     }
 
     /// <summary>
@@ -117,7 +125,11 @@ public class PostgresFixture : IAsyncLifetime
         await connection.OpenAsync();
         _respawner = await Respawner.CreateAsync(
             connection,
-            new RespawnerOptions { DbAdapter = DbAdapter.Postgres, SchemasToInclude = ["identity", "core", "content"] }
+            new RespawnerOptions
+            {
+                DbAdapter = DbAdapter.Postgres,
+                SchemasToInclude = ["identity", "core", "content", "mailer"],
+            }
         );
     }
 }

@@ -1,6 +1,8 @@
 using _116.Content.Application.Shared.Cache;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Shared.Domain;
 using _116.Tests.Fixtures.Factories.Identity;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace _116.Integration.Tests.Common.Base;
@@ -62,7 +64,7 @@ public abstract class BaseApiTest : IAsyncLifetime
     {
         await using var context = CreateDbContext<TDbContext>();
         seed(context);
-        await context.SaveChangesAsync();
+        await SaveSeededAsync(context);
     }
 
     /// <summary>
@@ -78,8 +80,32 @@ public abstract class BaseApiTest : IAsyncLifetime
     {
         await using var context = CreateDbContext<TDbContext>();
         TEntity entity = seed(context);
-        await context.SaveChangesAsync();
+        await SaveSeededAsync(context);
         return entity;
+    }
+
+    /// <summary>
+    /// Saves seeded aggregates as reconstituted state rather than as behavior.
+    /// Builders reach the state a test needs by calling real domain methods, which raise the
+    /// domain events those methods own. The contexts returned by
+    /// <see cref="CreateDbContext{TDbContext}" /> come from the application container, so the
+    /// dispatch interceptor is attached and those events would fire their production handlers —
+    /// welcome emails, notification rows, promotion stamps — against the arrangement of every
+    /// test. Discarding the pending events immediately before the save makes seeding equivalent
+    /// to loading rows that already existed, which is what an arrangement means.
+    /// </summary>
+    /// <param name="context">The context holding the seeded, not-yet-saved aggregates.</param>
+    /// <returns>A task that completes once the seeded rows are persisted.</returns>
+    private static async Task SaveSeededAsync(DbContext context)
+    {
+        context.ChangeTracker.DetectChanges();
+
+        foreach (EntityEntry<IAggregate> entry in context.ChangeTracker.Entries<IAggregate>())
+        {
+            entry.Entity.ClearDomainEvents();
+        }
+
+        await context.SaveChangesAsync();
     }
 
     /// <summary>
@@ -169,6 +195,6 @@ public abstract class BaseApiTest : IAsyncLifetime
         visitor.Activate();
 
         context.Users.AddRange(superAdmin, admin, visitor);
-        await context.SaveChangesAsync();
+        await SaveSeededAsync(context);
     }
 }

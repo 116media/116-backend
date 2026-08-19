@@ -1,6 +1,7 @@
 using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
+using _116.Identity.Domain.Events;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Identity;
@@ -221,17 +222,17 @@ public class UserEntityTests
 
     #endregion
 
-    #region UpdatePassword Tests
+    #region InitializePasswordHash Tests
 
     [Fact]
-    public void UpdatePassword_WithValidHash_ShouldUpdatePassword()
+    public void InitializePasswordHash_WithValidHash_ShouldUpdatePassword()
     {
         // Arrange
         UserEntity user = UserFactory.Create();
         string newPasswordHash = "new_hashed_password_value";
 
         // Act
-        user.UpdatePassword(newPasswordHash, _userErrors);
+        user.InitializePasswordHash(newPasswordHash, _userErrors);
 
         // Assert
         user.PasswordHash.Should().Be(newPasswordHash);
@@ -241,20 +242,20 @@ public class UserEntityTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
-    public void UpdatePassword_WithInvalidHash_ShouldThrowException(string? invalidHash)
+    public void InitializePasswordHash_WithInvalidHash_ShouldThrowException(string? invalidHash)
     {
         // Arrange
         UserEntity user = UserFactory.Create();
 
         // Act
-        Action act = () => user.UpdatePassword(invalidHash!, _userErrors);
+        Action act = () => user.InitializePasswordHash(invalidHash!, _userErrors);
 
         // Assert
         act.Should().Throw<Exception>();
     }
 
     [Fact]
-    public void UpdatePassword_WhenNonLocalUserWithoutEmail_ShouldThrowException()
+    public void InitializePasswordHash_WhenNonLocalUserWithoutEmail_ShouldThrowException()
     {
         // Arrange
         UserEntity user = UserFactory.CreateExternal(EnumAuthProvider.Google);
@@ -263,10 +264,10 @@ public class UserEntityTests
         typeof(UserEntity).GetProperty(nameof(UserEntity.Email))!.SetValue(user, null);
 
         // Act
-        Action act = () => user.UpdatePassword("new_password_hash", _userErrors);
+        Action act = () => user.InitializePasswordHash("new_password_hash", _userErrors);
 
         // Assert
-        act.Should().Throw<BadRequestException>().WithMessage("Cannot update password for a user without email.");
+        act.Should().Throw<BadRequestException>().WithMessage("An email address is required to set a password.");
     }
 
     #endregion
@@ -512,36 +513,6 @@ public class UserEntityTests
         act.Should().Throw<Exception>();
     }
 
-    [Fact]
-    public void RemoveRole_WhenRoleAssigned_ShouldRemoveAndReturnTrue()
-    {
-        // Arrange
-        var roleId = Guid.NewGuid();
-        UserRoleEntity userRole = UserRoleFactory.CreateWithRoleId(roleId);
-        UserEntity user = UserFactory.Create();
-        user.AssignRole(userRole, TestErrorsFactory.CreateUserErrors());
-
-        // Act
-        bool result = user.RemoveRole(roleId);
-
-        // Assert
-        result.Should().BeTrue();
-        user.HasRole(roleId).Should().BeFalse();
-    }
-
-    [Fact]
-    public void RemoveRole_WhenRoleNotAssigned_ShouldReturnFalse()
-    {
-        // Arrange
-        UserEntity user = UserFactory.Create();
-
-        // Act
-        bool result = user.RemoveRole(Guid.NewGuid());
-
-        // Assert
-        result.Should().BeFalse();
-    }
-
     #endregion
 
     #region UpdateAvatar Tests
@@ -619,6 +590,132 @@ public class UserEntityTests
         user.CountryDialCode.Should().BeNull();
         user.FullPhoneNumber.Should().BeNull();
         user.PartialPhoneNumber.Should().BeNull();
+    }
+
+    #endregion
+
+    #region Domain Event Tests
+
+    [Fact]
+    public void MarkAsVerified_WhenNotVerified_ShouldRaiseUserVerifiedEvent()
+    {
+        // Arrange
+        UserEntity user = UserFactory.Create();
+
+        // Act
+        user.MarkAsVerified();
+
+        // Assert
+        user.DomainEvents.Should().ContainSingle(e => e is UserVerifiedEvent);
+        user.DomainEvents.OfType<UserVerifiedEvent>().Single().UserId.Should().Be(user.Id);
+    }
+
+    [Fact]
+    public void MarkAsVerified_WhenAlreadyVerified_ShouldNotRaiseEvent()
+    {
+        // Arrange
+        UserEntity user = UserFactory.Create();
+        user.MarkAsVerified();
+        user.ClearDomainEvents();
+
+        // Act
+        user.MarkAsVerified();
+
+        // Assert
+        user.IsVerified.Should().BeTrue();
+        user.DomainEvents.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void UpdatePassword_WithOrigin_ShouldRaiseUserPasswordChangedEvent()
+    {
+        // Arrange
+        UserEntity user = UserFactory.Create();
+
+        // Act
+        user.UpdatePassword("new_hashed_password_value", _userErrors, EnumPasswordChangeOrigin.Changed);
+
+        // Assert
+        UserPasswordChangedEvent raised = user.DomainEvents.OfType<UserPasswordChangedEvent>().Single();
+        raised.UserId.Should().Be(user.Id);
+        raised.Origin.Should().Be(EnumPasswordChangeOrigin.Changed);
+    }
+
+    [Fact]
+    public void UpdatePassword_WithResetOrigin_ShouldRaiseEventCarryingTheResetOrigin()
+    {
+        // Arrange
+        UserEntity user = UserFactory.Create();
+
+        // Act
+        user.UpdatePassword("new_hashed_password_value", _userErrors, EnumPasswordChangeOrigin.Reset);
+
+        // Assert
+        UserPasswordChangedEvent raised = user.DomainEvents.OfType<UserPasswordChangedEvent>().Single();
+        raised.Origin.Should().Be(EnumPasswordChangeOrigin.Reset);
+    }
+
+    [Fact]
+    public void InitializePasswordHash_ShouldNotRaiseEvent()
+    {
+        // Arrange
+        UserEntity user = UserFactory.Create();
+
+        // Act
+        user.InitializePasswordHash("new_hashed_password_value", _userErrors);
+
+        // Assert
+        user.PasswordHash.Should().Be("new_hashed_password_value");
+        user.DomainEvents.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void SetPasswordAndChangeToLocal_ShouldRaiseUserPasswordChangedEventWithSetLocalOrigin()
+    {
+        // Arrange
+        UserEntity user = UserFactory.CreateExternal(EnumAuthProvider.Google);
+
+        // Act
+        user.SetPasswordAndChangeToLocal("hashed_password_value", _userErrors);
+
+        // Assert
+        UserPasswordChangedEvent raised = user.DomainEvents.OfType<UserPasswordChangedEvent>().Single();
+        raised.UserId.Should().Be(user.Id);
+        raised.Origin.Should().Be(EnumPasswordChangeOrigin.SetLocal);
+    }
+
+    [Fact]
+    public void UpdateEmail_ShouldRaiseUserEmailChangedEventWithOldAndNewAddresses()
+    {
+        // Arrange
+        UserEntity user = UserFactory.Create();
+        string? oldEmail = user.Email;
+
+        // Act
+        user.UpdateEmail("changed@example.com", _userErrors);
+
+        // Assert
+        UserEmailChangedEvent raised = user.DomainEvents.OfType<UserEmailChangedEvent>().Single();
+        raised.UserId.Should().Be(user.Id);
+        raised.OldEmail.Should().Be(oldEmail);
+        raised.NewEmail.Should().Be("changed@example.com");
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void RecordMassSignOut_ShouldRaiseUserSignedOutAllDevicesEvent(bool byAdmin)
+    {
+        // Arrange
+        UserEntity user = UserFactory.Create();
+
+        // Act
+        user.RecordMassSignOut(byAdmin);
+
+        // Assert
+        UserSignedOutAllDevicesEvent raised = user.DomainEvents.OfType<UserSignedOutAllDevicesEvent>().Single();
+        raised.UserId.Should().Be(user.Id);
+        raised.ByAdmin.Should().Be(byAdmin);
     }
 
     #endregion

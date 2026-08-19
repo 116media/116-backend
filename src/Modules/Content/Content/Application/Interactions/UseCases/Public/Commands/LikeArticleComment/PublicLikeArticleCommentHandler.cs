@@ -55,9 +55,6 @@ public class PublicLikeArticleCommentHandler(
 
         await articleRepository.AddCommentLikeAsync(like: like, cancellationToken: cancellationToken);
 
-        comment.IncrementLikeCount();
-        articleRepository.UpdateComment(comment: comment);
-
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new PublicLikeArticleCommentResult(IsSuccess: true);

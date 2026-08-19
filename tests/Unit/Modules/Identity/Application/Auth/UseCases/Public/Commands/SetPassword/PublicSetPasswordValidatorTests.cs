@@ -32,7 +32,11 @@ public class PublicSetPasswordValidatorTests
     public async Task Validate_WithValidCommand_ShouldNotHaveErrors()
     {
         // Arrange
-        PublicSetPasswordCommand command = new(UserId: Guid.NewGuid(), Password: TestConstants.User.ValidPassword);
+        PublicSetPasswordCommand command = new(
+            UserId: Guid.NewGuid(),
+            SessionId: Guid.NewGuid(),
+            Password: TestConstants.User.ValidPassword
+        );
 
         // Act
         TestValidationResult<PublicSetPasswordCommand>? result = await _validator.TestValidateAsync(command);
@@ -50,7 +54,7 @@ public class PublicSetPasswordValidatorTests
     public async Task Validate_WithNullPassword_ShouldHaveError()
     {
         // Arrange
-        PublicSetPasswordCommand command = new(UserId: Guid.NewGuid(), Password: null!);
+        PublicSetPasswordCommand command = new(UserId: Guid.NewGuid(), SessionId: Guid.NewGuid(), Password: null!);
 
         // Act
         TestValidationResult<PublicSetPasswordCommand>? result = await _validator.TestValidateAsync(command);
@@ -64,7 +68,11 @@ public class PublicSetPasswordValidatorTests
     public async Task Validate_WithEmptyPassword_ShouldHaveError()
     {
         // Arrange
-        PublicSetPasswordCommand command = new(UserId: Guid.NewGuid(), Password: string.Empty);
+        PublicSetPasswordCommand command = new(
+            UserId: Guid.NewGuid(),
+            SessionId: Guid.NewGuid(),
+            Password: string.Empty
+        );
 
         // Act
         TestValidationResult<PublicSetPasswordCommand>? result = await _validator.TestValidateAsync(command);
@@ -78,7 +86,7 @@ public class PublicSetPasswordValidatorTests
     public async Task Validate_WithTooShortPassword_ShouldHaveError()
     {
         // Arrange
-        PublicSetPasswordCommand command = new(UserId: Guid.NewGuid(), Password: "Pass1");
+        PublicSetPasswordCommand command = new(UserId: Guid.NewGuid(), SessionId: Guid.NewGuid(), Password: "Pass1");
 
         // Act
         TestValidationResult<PublicSetPasswordCommand>? result = await _validator.TestValidateAsync(command);
@@ -94,7 +102,11 @@ public class PublicSetPasswordValidatorTests
     public async Task Validate_WithPasswordMissingLowercase_ShouldHaveError()
     {
         // Arrange
-        PublicSetPasswordCommand command = new(UserId: Guid.NewGuid(), Password: "PASSWORD123");
+        PublicSetPasswordCommand command = new(
+            UserId: Guid.NewGuid(),
+            SessionId: Guid.NewGuid(),
+            Password: "PASSWORD123"
+        );
 
         // Act
         TestValidationResult<PublicSetPasswordCommand>? result = await _validator.TestValidateAsync(command);
@@ -108,7 +120,11 @@ public class PublicSetPasswordValidatorTests
     public async Task Validate_WithPasswordMissingUppercase_ShouldHaveError()
     {
         // Arrange
-        PublicSetPasswordCommand command = new(UserId: Guid.NewGuid(), Password: "password123");
+        PublicSetPasswordCommand command = new(
+            UserId: Guid.NewGuid(),
+            SessionId: Guid.NewGuid(),
+            Password: "password123"
+        );
 
         // Act
         TestValidationResult<PublicSetPasswordCommand>? result = await _validator.TestValidateAsync(command);
@@ -122,7 +138,11 @@ public class PublicSetPasswordValidatorTests
     public async Task Validate_WithPasswordMissingNumber_ShouldHaveError()
     {
         // Arrange
-        PublicSetPasswordCommand command = new(UserId: Guid.NewGuid(), Password: "PasswordOnly");
+        PublicSetPasswordCommand command = new(
+            UserId: Guid.NewGuid(),
+            SessionId: Guid.NewGuid(),
+            Password: "PasswordOnly"
+        );
 
         // Act
         TestValidationResult<PublicSetPasswordCommand>? result = await _validator.TestValidateAsync(command);
@@ -146,7 +166,7 @@ public class PublicSetPasswordValidatorTests
         Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
         var i18n = TestErrorsFactory.CreateIdentityI18n();
         var validator = new PublicSetPasswordValidator(i18n);
-        var command = new PublicSetPasswordCommand(UserId: Guid.NewGuid(), Password: null!);
+        var command = new PublicSetPasswordCommand(UserId: Guid.NewGuid(), SessionId: Guid.NewGuid(), Password: null!);
 
         // Act
         TestValidationResult<PublicSetPasswordCommand>? result = await validator.TestValidateAsync(command);

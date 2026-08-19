@@ -138,6 +138,16 @@ public static class SessionFactory
         new SessionBuilder().WithUserId(userId).WithRefreshTokenHash(refreshTokenHash).Build();
 
     /// <summary>
+    /// Creates an already-revoked session still carrying the hash of a refresh token, which is
+    /// the state a stolen credential is presented against once the owner has signed out.
+    /// </summary>
+    /// <param name="userId">The user identifier.</param>
+    /// <param name="refreshTokenHash">The refresh token hash the revoked session was issued with.</param>
+    /// <returns>A new revoked SessionEntity with the specified values.</returns>
+    public static SessionEntity CreateRevokedWithRefreshTokenHash(Guid userId, string refreshTokenHash) =>
+        new SessionBuilder().WithUserId(userId).WithRefreshTokenHash(refreshTokenHash).AsRevoked().Build();
+
+    /// <summary>
     /// Creates a session with a specific IP address.
     /// </summary>
     /// <param name="ipAddress">The IP address.</param>

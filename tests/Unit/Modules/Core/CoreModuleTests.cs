@@ -6,8 +6,11 @@ using _116.Core.Infrastructure.Persistence;
 using _116.Core.Infrastructure.Repositories;
 using _116.Core.Infrastructure.Services;
 using _116.Shared.Application.Configurations;
+using _116.Unit.Tests.Common;
 using AwesomeAssertions;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -207,6 +210,37 @@ public class CoreModuleTests : IDisposable
 
         HttpClient httpClient = httpClientFactory.CreateClient(nameof(FileService));
         httpClient.Should().NotBeNull();
+    }
+
+    /// <summary>
+    /// Verifies that the pipeline configuration runs the module's migration
+    /// step — the Core options always enable it — and hands the builder back
+    /// for chaining.
+    /// </summary>
+    [Fact]
+    public void UseCoreModule_ShouldRunTheMigrationStepAndReturnAppBuilder()
+    {
+        // Arrange — the migrator is replaced so the startup migration completes
+        // without a database while the rest of the pipeline runs for real.
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddLocalization();
+        services.AddSingleton(_cloudinarySettings);
+        services.AddDbContext<CoreDbContext>(options =>
+            options
+                .UseNpgsql("Host=localhost;Port=5432;Database=unit;Username=unit;Password=unit")
+                .ReplaceService<IMigrator, NoOpMigrator>()
+        );
+        services.AddCoreModule();
+
+        ServiceProvider serviceProvider = services.BuildServiceProvider();
+        var app = new ApplicationBuilder(serviceProvider);
+
+        // Act
+        IApplicationBuilder result = app.UseCoreModule();
+
+        // Assert
+        result.Should().BeSameAs(app);
     }
 
     [Fact]

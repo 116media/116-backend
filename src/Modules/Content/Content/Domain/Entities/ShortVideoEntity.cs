@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using _116.Content.Application.Shared.Errors;
 using _116.Content.Domain.Constants;
+using _116.Content.Domain.Events;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -261,6 +262,19 @@ public class ShortVideoEntity : Aggregate<Guid>
 
         IsActive = false;
         return true;
+    }
+
+    /// <summary>
+    /// Declares the short video's removal, capturing the video and thumbnail
+    /// file ids before the row disappears so post-commit consumers can clean
+    /// the remote assets without re-querying deleted rows. Called by the
+    /// delete flow immediately before the repository removal.
+    /// </summary>
+    public void MarkDeleted()
+    {
+        AddDomainEvent(
+            new ShortVideoDeletedEvent(ShortVideoId: Id, VideoFileId: VideoFileId, ThumbnailFileId: ThumbnailFileId)
+        );
     }
 
     /// <summary>

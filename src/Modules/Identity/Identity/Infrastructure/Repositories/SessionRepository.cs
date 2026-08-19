@@ -39,7 +39,11 @@ public class SessionRepository(IdentityDbContext context) : ISessionRepository
     }
 
     /// <inheritdoc />
-    public async Task RevokeAsync(Guid sessionId, CancellationToken cancellationToken = default)
+    public async Task RevokeAsync(
+        Guid sessionId,
+        EnumSessionRevokeReason reason = EnumSessionRevokeReason.SelfSignOut,
+        CancellationToken cancellationToken = default
+    )
     {
         var idSpec = new SessionByIdSpecification(sessionId: sessionId);
         var notRevokedSpec = new SessionIsNotRevokedSpecification();
@@ -49,11 +53,16 @@ public class SessionRepository(IdentityDbContext context) : ISessionRepository
             .Sessions.Where(spec.ToExpression())
             .FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
-        session?.Revoke();
+        session?.Revoke(reason: reason);
     }
 
     /// <inheritdoc />
-    public async Task DeleteAllByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    public async Task DeleteAllByUserIdAsync(
+        Guid userId,
+        EnumSessionRevokeReason reason = EnumSessionRevokeReason.SelfSignOut,
+        Guid? exemptSessionId = null,
+        CancellationToken cancellationToken = default
+    )
     {
         var spec = new ActiveSessionsByUserIdSpecification(userId: userId);
         List<SessionEntity> sessions = await context
@@ -62,8 +71,26 @@ public class SessionRepository(IdentityDbContext context) : ISessionRepository
 
         foreach (SessionEntity session in sessions)
         {
-            session.Revoke();
+            if (exemptSessionId.HasValue && session.Id == exemptSessionId.Value)
+            {
+                continue;
+            }
+
+            session.Revoke(reason: reason);
         }
+    }
+
+    /// <inheritdoc />
+    public async Task<SessionEntity?> GetRevokedSessionByRefreshTokenHashAsync(
+        string refreshTokenHash,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var hashSpec = new SessionByRefreshTokenHashSpecification(refreshTokenHash: refreshTokenHash);
+        var revokedSpec = new SessionIsRevokedSpecification();
+        Specification<SessionEntity> spec = hashSpec.And(other: revokedSpec);
+
+        return await context.Sessions.Where(spec.ToExpression()).FirstOrDefaultAsync(cancellationToken);
     }
 
     /// <inheritdoc />
@@ -79,7 +106,7 @@ public class SessionRepository(IdentityDbContext context) : ISessionRepository
 
         foreach (SessionEntity session in expiredSessions)
         {
-            session.Revoke();
+            session.Revoke(reason: EnumSessionRevokeReason.Expiry);
         }
 
         return expiredSessions.Count;

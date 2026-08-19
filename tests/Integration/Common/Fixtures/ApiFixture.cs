@@ -8,6 +8,8 @@ using _116.Core.Application.Shared.Services;
 using _116.Core.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Integration.Tests.Common.Stubs;
+using _116.Mailer.Application.Shared.Services;
+using _116.Mailer.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -83,6 +85,11 @@ public class ApiFixture(PostgresFixture db) : WebApplicationFactory<Program>
         Environment.SetEnvironmentVariable("CLOUDINARY_CLOUD_NAME", "test-cloud");
         Environment.SetEnvironmentVariable("CLOUDINARY_API_KEY", "test-api-key");
         Environment.SetEnvironmentVariable("CLOUDINARY_API_SECRET", "test-api-secret");
+
+        Environment.SetEnvironmentVariable("EMAIL_PROVIDER", "smtp");
+        Environment.SetEnvironmentVariable("EMAIL_FROM_ADDRESS", "no-reply@test.116");
+        Environment.SetEnvironmentVariable("EMAIL_FROM_NAME", "116 Tests");
+        Environment.SetEnvironmentVariable("FRONTEND_BASE_URL", "http://localhost:3000");
     }
 
     /// <summary>
@@ -93,6 +100,7 @@ public class ApiFixture(PostgresFixture db) : WebApplicationFactory<Program>
         ReplaceDbContext<IdentityDbContext>(services);
         ReplaceDbContext<CoreDbContext>(services);
         ReplaceDbContext<ContentDbContext>(services);
+        ReplaceDbContext<MailerDbContext>(services);
     }
 
     /// <summary>
@@ -200,9 +208,43 @@ public class ApiFixture(PostgresFixture db) : WebApplicationFactory<Program>
     /// </summary>
     private static void StubExternalServices(IServiceCollection services)
     {
-        Replace<ICloudinaryService, StubCloudinaryService>(services);
+        ReplaceCloudinaryService(services);
         Replace<IYoutubeThumbnailService, StubYoutubeThumbnailService>(services);
         Replace<IStreamingLinkResolutionService, StubStreamingLinkResolutionService>(services);
+        ReplaceEmailSender(services);
+    }
+
+    /// <summary>
+    /// Replaces the Cloudinary adapter with the stub, registered as a
+    /// singleton so failure-injection tests can queue a delete failure on the
+    /// same instance the request pipeline resolves.
+    /// </summary>
+    private static void ReplaceCloudinaryService(IServiceCollection services)
+    {
+        var descriptors = services.Where(d => d.ServiceType == typeof(ICloudinaryService)).ToList();
+        foreach (var d in descriptors)
+        {
+            services.Remove(d);
+        }
+
+        services.AddSingleton<StubCloudinaryService>();
+        services.AddSingleton<ICloudinaryService>(sp => sp.GetRequiredService<StubCloudinaryService>());
+    }
+
+    /// <summary>
+    /// Replaces the SMTP adapter with the recording stub, registered as a
+    /// singleton so dispatcher tests can observe deliveries across scopes.
+    /// </summary>
+    private static void ReplaceEmailSender(IServiceCollection services)
+    {
+        var descriptors = services.Where(d => d.ServiceType == typeof(IEmailSender)).ToList();
+        foreach (var d in descriptors)
+        {
+            services.Remove(d);
+        }
+
+        services.AddSingleton<StubEmailSender>();
+        services.AddSingleton<IEmailSender>(sp => sp.GetRequiredService<StubEmailSender>());
     }
 
     /// <summary>

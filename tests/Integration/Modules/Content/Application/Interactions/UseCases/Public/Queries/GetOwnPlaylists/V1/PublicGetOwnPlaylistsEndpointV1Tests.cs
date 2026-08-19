@@ -62,39 +62,37 @@ public class PublicGetOwnPlaylistsEndpointV1Tests(PostgresFixture db) : BaseApiT
     [Fact]
     public async Task GetOwnPlaylists_ReturnsFirstFourNullableThumbnailSlotsInPlaylistOrder()
     {
-        PlaylistEntity playlist;
-        VideoEntity[] videos;
         FileEntity firstThumbnail = FileFactory.Create();
         FileEntity thirdThumbnail = FileFactory.Create();
         FileEntity fifthThumbnail = FileFactory.Create();
-        await using (ContentDbContext context = CreateDbContext<ContentDbContext>())
+
+        ContentTypeEntity contentType = ContentTypeFactory.Create();
+        await SeedAsync<ContentDbContext>(ctx => ctx.ContentTypes.Add(contentType));
+
+        CategoryEntity category = CategoryFactory.Create(contentType.Id);
+        await SeedAsync<ContentDbContext>(ctx => ctx.Categories.Add(category));
+
+        VideoEntity[] videos = VideoFactory.CreateManyPublished(category.Id, 5).ToArray();
+        videos[0].SetThumbnailFileId(firstThumbnail.Id);
+        videos[2].SetThumbnailFileId(thirdThumbnail.Id);
+        videos[4].SetThumbnailFileId(fifthThumbnail.Id);
+        PlaylistEntity playlist = PlaylistFactory.Create(TestUser.VisitorId);
+        await SeedAsync<ContentDbContext>(ctx =>
         {
-            ContentTypeEntity contentType = ContentTypeFactory.Create();
-            context.ContentTypes.Add(contentType);
-            await context.SaveChangesAsync();
-            CategoryEntity category = CategoryFactory.Create(contentType.Id);
-            context.Categories.Add(category);
-            await context.SaveChangesAsync();
-            videos = VideoFactory.CreateManyPublished(category.Id, 5).ToArray();
-            videos[0].SetThumbnailFileId(firstThumbnail.Id);
-            videos[2].SetThumbnailFileId(thirdThumbnail.Id);
-            videos[4].SetThumbnailFileId(fifthThumbnail.Id);
-            context.Videos.AddRange(videos);
-            playlist = PlaylistFactory.Create(TestUser.VisitorId);
-            context.Playlists.Add(playlist);
-            await context.SaveChangesAsync();
-            context.PlaylistVideos.AddRange(
+            ctx.Videos.AddRange(videos);
+            ctx.Playlists.Add(playlist);
+        });
+
+        await SeedAsync<ContentDbContext>(ctx =>
+            ctx.PlaylistVideos.AddRange(
                 videos.Select(
                     (video, index) => PlaylistVideoEntity.Create(Guid.NewGuid(), playlist.Id, video.Id, index)
                 )
-            );
-            await context.SaveChangesAsync();
-        }
-        await using (CoreDbContext context = CreateDbContext<CoreDbContext>())
-        {
-            context.Files.AddRange(firstThumbnail, thirdThumbnail, fifthThumbnail);
-            await context.SaveChangesAsync();
-        }
+            )
+        );
+
+        await SeedAsync<CoreDbContext>(ctx => ctx.Files.AddRange(firstThumbnail, thirdThumbnail, fifthThumbnail));
+
         Client.AuthenticateAsVisitor();
 
         HttpResponseMessage response = await Client.GetAsync(ApiRoutes.Public.Playlists);

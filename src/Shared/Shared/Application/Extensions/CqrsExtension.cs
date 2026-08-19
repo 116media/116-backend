@@ -14,7 +14,10 @@ public static class CqrsExtension
 {
     /// <summary>
     /// Registers CQRS services including dispatcher, handlers, domain event publisher and validators.
-    /// Scans the provided assemblies to automatically register all command handlers, query handlers, and domain event handlers.
+    /// Scans the provided assemblies to automatically register all command handlers and query handlers.
+    /// Domain event handlers are excluded from scanning by design: each module registers its
+    /// <see cref="IDomainEventHandler{TDomainEvent}"/> implementations explicitly so the module
+    /// file remains the single readable registry of every reaction in the module.
     /// </summary>
     /// <param name="services">The service collection to register services with.</param>
     /// <param name="assemblies">The assemblies to scan for handlers and validators.</param>
@@ -29,6 +32,11 @@ public static class CqrsExtension
 
         // Register domain event publisher
         services.AddScoped<IDomainEventPublisher, DomainEventPublisher>();
+
+        // The registry reads the handler registrations from this collection. It is built on first
+        // resolution, by which time every module has contributed its handlers, so the registration
+        // order of the modules relative to this call does not matter.
+        services.AddSingleton<IDomainEventHandlerRegistry>(_ => new DomainEventHandlerRegistry(services));
 
         // Register all handlers (command handlers, query handlers, etc.)
         services.Scan(scan =>
@@ -52,14 +60,6 @@ public static class CqrsExtension
         // Decorate handlers with return values (all our current handlers use this)
         services.Decorate(typeof(IRequestHandler<,>), typeof(ValidationDecorator<,>));
         services.Decorate(typeof(IRequestHandler<,>), typeof(LoggingDecorator<,>));
-
-        // Register domain event handlers
-        services.Scan(scan =>
-            scan.FromAssemblies(assemblies)
-                .AddClasses(classes => classes.AssignableToAny(typeof(IDomainEventHandler<>)))
-                .AsImplementedInterfaces()
-                .WithScopedLifetime()
-        );
 
         // Register FluentValidation validators
         services.AddValidatorsFromAssemblies(assemblies, includeInternalTypes: true);

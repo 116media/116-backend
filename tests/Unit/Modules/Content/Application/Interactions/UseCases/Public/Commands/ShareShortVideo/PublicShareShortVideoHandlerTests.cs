@@ -31,7 +31,7 @@ public class PublicShareShortVideoHandlerTests
     #region Success Cases
 
     [Fact]
-    public async Task Handle_WhenShortVideoExistsAndAnonymous_ShouldAddShareIncrementAndCommit()
+    public async Task Handle_WhenShortVideoExistsAndAnonymous_ShouldAddShareAndCommit()
     {
         // Arrange
         ShortVideoEntity shortVideo = ShortVideoFactory.Create();
@@ -46,7 +46,6 @@ public class PublicShareShortVideoHandlerTests
         // Assert
         result.IsSuccess.Should().BeTrue();
         _shortVideoRepositoryMock.VerifyAddShareCalled();
-        _shortVideoRepositoryMock.VerifyUpdateCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
 

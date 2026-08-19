@@ -1,10 +1,12 @@
 using _116.Shared.Infrastructure;
 using _116.Shared.Infrastructure.interceptors;
+using _116.Shared.Infrastructure.Seed;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace _116.Unit.Tests.Shared.Infrastructure;
@@ -18,6 +20,21 @@ public class BaseModuleTests
     {
         public TestDbContext(DbContextOptions<TestDbContext> options)
             : base(options) { }
+    }
+
+    /// <summary>
+    /// Seeder recording whether the pipeline executed it, standing in for a
+    /// module's real seeders.
+    /// </summary>
+    private sealed class RecordingSeeder : IDataSeeder
+    {
+        public bool WasExecuted { get; private set; }
+
+        public Task SeedAllAsync()
+        {
+            WasExecuted = true;
+            return Task.CompletedTask;
+        }
     }
 
     [Fact]
@@ -37,17 +54,11 @@ public class BaseModuleTests
     }
 
     [Fact]
-    public void AddModuleDatabase_WithCustomConnectionString_ShouldUseProvidedConnectionString()
+    public void AddModuleDatabase_ShouldResolveDbContextFromTheDefaultConnectionString()
     {
         // Arrange
         var services = new ServiceCollection();
-        string customConnectionString =
-            "Host=custom;Port=5433;Database=custom_db;Username=custom_user;Password=custom_pass;";
-        var options = new ModuleOptions<TestDbContext>
-        {
-            ModuleName = "Test",
-            ConnectionString = customConnectionString,
-        };
+        var options = new ModuleOptions<TestDbContext> { ModuleName = "Test" };
 
         // Act
         services.AddModuleDatabase(options);
@@ -63,12 +74,7 @@ public class BaseModuleTests
     {
         // Arrange
         var services = new ServiceCollection();
-        var options = new ModuleOptions<TestDbContext>
-        {
-            ModuleName = "Test",
-            UseConnectionPooling = true,
-            ConnectionString = "Host=localhost;Port=5432;Database=test;Username=test;Password=test;",
-        };
+        var options = new ModuleOptions<TestDbContext> { ModuleName = "Test", UseConnectionPooling = true };
 
         // Act
         services.AddModuleDatabase(options);
@@ -83,12 +89,7 @@ public class BaseModuleTests
     {
         // Arrange
         var services = new ServiceCollection();
-        var options = new ModuleOptions<TestDbContext>
-        {
-            ModuleName = "Test",
-            UseConnectionPooling = false,
-            ConnectionString = "Host=localhost;Port=5432;Database=test;Username=test;Password=test;",
-        };
+        var options = new ModuleOptions<TestDbContext> { ModuleName = "Test", UseConnectionPooling = false };
 
         // Act
         services.AddModuleDatabase(options);
@@ -104,11 +105,7 @@ public class BaseModuleTests
     {
         // Arrange
         var services = new ServiceCollection();
-        var options = new ModuleOptions<TestDbContext>
-        {
-            ModuleName = "Test",
-            ConnectionString = "Host=localhost;Port=5432;Database=test;Username=test;Password=test;",
-        };
+        var options = new ModuleOptions<TestDbContext> { ModuleName = "Test" };
 
         // Act
         services.AddModuleDatabase(options);
@@ -134,14 +131,11 @@ public class BaseModuleTests
         var services = new ServiceCollection();
         services.AddSingleton<ISaveChangesInterceptor, AuditableEntityInterceptor>();
         services.AddSingleton<ISaveChangesInterceptor>(sp => new DispatchDomainEventsInterceptor(
-            sp.GetRequiredService<IServiceScopeFactory>()
+            sp.GetRequiredService<IServiceScopeFactory>(),
+            NullLogger<DispatchDomainEventsInterceptor>.Instance
         ));
 
-        var options = new ModuleOptions<TestDbContext>
-        {
-            ModuleName = "Test",
-            ConnectionString = "Host=localhost;Port=5432;Database=test;Username=test;Password=test;",
-        };
+        var options = new ModuleOptions<TestDbContext> { ModuleName = "Test" };
 
         // Act
         services.AddModuleDatabase(options);
@@ -157,41 +151,11 @@ public class BaseModuleTests
     }
 
     [Fact]
-    public void AddModuleDatabase_WithCustomConfiguration_ShouldApplyConfiguration()
-    {
-        // Arrange
-        var services = new ServiceCollection();
-        bool configurationApplied = false;
-        var options = new ModuleOptions<TestDbContext>
-        {
-            ModuleName = "Test",
-            ConnectionString = "Host=localhost;Port=5432;Database=test;Username=test;Password=test;",
-            ConfigureDbContext = optionsBuilder =>
-            {
-                configurationApplied = true;
-            },
-        };
-
-        // Act
-        services.AddModuleDatabase(options);
-        ServiceProvider serviceProvider = services.BuildServiceProvider();
-        var dbContext = serviceProvider.GetRequiredService<TestDbContext>();
-
-        // Assert
-        dbContext.Should().NotBeNull();
-        configurationApplied.Should().BeTrue("custom configuration should be applied");
-    }
-
-    [Fact]
     public void AddModuleDatabase_ShouldReturnServiceCollection()
     {
         // Arrange
         var services = new ServiceCollection();
-        var options = new ModuleOptions<TestDbContext>
-        {
-            ModuleName = "Test",
-            ConnectionString = "Host=localhost;Port=5432;Database=test;Username=test;Password=test;",
-        };
+        var options = new ModuleOptions<TestDbContext> { ModuleName = "Test" };
 
         // Act
         IServiceCollection result = services.AddModuleDatabase(options);
@@ -222,6 +186,66 @@ public class BaseModuleTests
 
         // Assert
         result.Should().BeSameAs(app, "method should return the app builder for chaining");
+    }
+
+    /// <summary>
+    /// Verifies that migrations enabled on the options run the module's
+    /// migration step against the registered context and still hand the builder
+    /// back for chaining.
+    /// </summary>
+    [Fact]
+    public void UseModuleDatabase_WithMigrationsEnabled_ShouldMigrateAndReturnAppBuilder()
+    {
+        // Arrange — a relational provider, so the migration step is the real one.
+        var services = new ServiceCollection();
+        services.AddDbContext<TestDbContext>(options => options.UseSqlite("DataSource=:memory:"));
+
+        ServiceProvider serviceProvider = services.BuildServiceProvider();
+        var app = new ApplicationBuilder(serviceProvider);
+
+        var options = new ModuleOptions<TestDbContext>
+        {
+            ModuleName = "Test",
+            EnableMigrations = true,
+            EnableSeeding = false,
+        };
+
+        // Act
+        IApplicationBuilder result = app.UseModuleDatabase(options);
+
+        // Assert
+        result.Should().BeSameAs(app);
+    }
+
+    /// <summary>
+    /// Verifies that seeding enabled on the options executes every registered
+    /// seeder.
+    /// </summary>
+    [Fact]
+    public void UseModuleDatabase_WithSeedingEnabled_ShouldRunTheRegisteredSeeders()
+    {
+        // Arrange
+        var seeder = new RecordingSeeder();
+        var services = new ServiceCollection();
+        services.AddDbContext<TestDbContext>(options => options.UseInMemoryDatabase(Guid.NewGuid().ToString()));
+        services.AddScoped<IDataSeeder>(_ => seeder);
+
+        ServiceProvider serviceProvider = services.BuildServiceProvider();
+        var app = new ApplicationBuilder(serviceProvider);
+
+        var options = new ModuleOptions<TestDbContext>
+        {
+            ModuleName = "Test",
+            EnableMigrations = false,
+            EnableSeeding = true,
+        };
+
+        // Act
+        IApplicationBuilder result = app.UseModuleDatabase(options);
+
+        // Assert
+        seeder.WasExecuted.Should().BeTrue();
+        result.Should().BeSameAs(app);
     }
 
     [Fact]

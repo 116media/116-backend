@@ -1,3 +1,4 @@
+using _116.Content.Domain.Events;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -38,12 +39,26 @@ public class ArticleTagEntity : Aggregate<Guid>
     /// <returns>A new <see cref="ArticleTagEntity" />.</returns>
     public static ArticleTagEntity Create(Guid id, Guid articleId, Guid tagId)
     {
-        return new ArticleTagEntity
+        var association = new ArticleTagEntity
         {
             Id = id,
             ArticleId = articleId,
             TagId = tagId,
             CreatedAt = DateTime.UtcNow,
         };
+
+        association.AddDomainEvent(new TagGraphChangedEvent(TagId: tagId));
+
+        return association;
+    }
+
+    /// <summary>
+    /// Declares this association's removal so the post-commit tags cache
+    /// consumer can evict the cached tag projections.
+    /// Called by the removal path immediately before the row is removed.
+    /// </summary>
+    public void MarkRemoved()
+    {
+        AddDomainEvent(new TagGraphChangedEvent(TagId: TagId));
     }
 }

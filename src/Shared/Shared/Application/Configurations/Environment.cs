@@ -108,8 +108,8 @@ public class AppEnvironment
     /// </returns>
     public static (string? cloudName, string? apiKey, string? apiSecret) Cloudinary()
     {
-        string? cloudName = Environment.GetEnvironmentVariable("CLOUDINARY_CLOUD_NAME");
         string? apiKey = Environment.GetEnvironmentVariable("CLOUDINARY_API_KEY");
+        string? cloudName = Environment.GetEnvironmentVariable("CLOUDINARY_CLOUD_NAME");
         string? apiSecret = Environment.GetEnvironmentVariable("CLOUDINARY_API_SECRET");
 
         return (cloudName, apiKey, apiSecret);
@@ -137,5 +137,40 @@ public class AppEnvironment
                 .Where(o => !string.IsNullOrWhiteSpace(o))
                 .SelectMany(o => o!.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)),
         ];
+    }
+
+    /// <summary>
+    /// Retrieves the configured email provider name.
+    /// </summary>
+    /// <remarks>
+    /// The value is fetched from the <c>EMAIL_PROVIDER</c> environment variable.
+    /// Accepted values are defined by the Mailer module's provider constants;
+    /// an absent value lets the module fall back to its SMTP default so local
+    /// development works against Mailpit with no configuration.
+    /// </remarks>
+    /// <returns>
+    /// The provider name, or <c>null</c> if the environment variable is not set.
+    /// </returns>
+    public static string? EmailProvider()
+    {
+        string? provider = Environment.GetEnvironmentVariable("EMAIL_PROVIDER");
+        return provider;
+    }
+
+    /// <summary>
+    /// Retrieves the public frontend base URL used to build links embedded in
+    /// emails (newsletter confirmation, unsubscribe, article links).
+    /// </summary>
+    /// <remarks>
+    /// The value is fetched from the <c>FRONTEND_BASE_URL</c> environment variable.
+    /// </remarks>
+    /// <returns>
+    /// The base URL without a trailing slash, or <c>null</c> if the environment
+    /// variable is not set.
+    /// </returns>
+    public static string? FrontendBaseUrl()
+    {
+        string? baseUrl = Environment.GetEnvironmentVariable("FRONTEND_BASE_URL");
+        return baseUrl?.TrimEnd('/');
     }
 }

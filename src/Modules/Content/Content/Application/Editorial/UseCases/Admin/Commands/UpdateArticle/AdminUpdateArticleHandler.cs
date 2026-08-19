@@ -6,7 +6,6 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Core.Application.Shared.Repositories;
-using _116.Core.Application.Shared.Services;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
 
@@ -15,13 +14,13 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArtic
 /// <summary>
 /// Handles the <see cref="AdminUpdateArticleCommand" /> to update all editable article fields.
 /// Allowed when the article status is <c>Draft</c>, <c>PendingPayment</c>, <c>PendingReview</c>,
-/// or <c>Rejected</c>. Computes an image diff against the previous body and cleans up removed
-/// Cloudinary assets after commit.
+/// or <c>Rejected</c>. Computes an image diff against the previous body and hands the orphaned
+/// storage keys to the aggregate, so row removal and remote-asset cleanup run post-commit in
+/// one place with one retry story.
 /// </summary>
 /// <param name="categoryRepository">Repository for category data access operations.</param>
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="cloudinaryService">Service for deleting Cloudinary image assets.</param>
 /// <param name="fileRepository">Repository for resolving file URLs.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
@@ -29,7 +28,6 @@ public partial class AdminUpdateArticleHandler(
     ICategoryRepository categoryRepository,
     IArticleRepository articleRepository,
     IContentUnitOfWork unitOfWork,
-    ICloudinaryService cloudinaryService,
     IFileRepository fileRepository,
     IMapper mapper,
     ContentI18n i18n
@@ -83,8 +81,9 @@ public partial class AdminUpdateArticleHandler(
             .Select(m => m.Value)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-        List<ArticleImageEntity> imagesToRemove = existingImages
+        List<string> orphanedStorageKeys = existingImages
             .Where(img => img.ImageType == EnumArticleImageType.Body && !newBodyUrls.Contains(img.Url))
+            .Select(img => img.StorageKey)
             .ToList();
 
         article.Update(
@@ -97,20 +96,12 @@ public partial class AdminUpdateArticleHandler(
             orderItemId: command.OrderItemId,
             socialBoost: command.SocialBoost,
             metaTitle: command.MetaTitle,
-            metaDescription: command.MetaDescription
+            metaDescription: command.MetaDescription,
+            orphanedBodyImageStorageKeys: orphanedStorageKeys
         );
 
         articleRepository.Update(article: article);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-
-        if (imagesToRemove.Count > 0)
-        {
-            IEnumerable<string> storageKeys = imagesToRemove.Select(img => img.StorageKey);
-            await cloudinaryService.DeleteImagesAsync(publicIds: storageKeys, cancellationToken: cancellationToken);
-
-            articleRepository.RemoveImages(images: imagesToRemove);
-            await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-        }
 
         ArticleEntity updated = await articleRepository.GetByIdOrThrowAsync(
             id: article.Id,

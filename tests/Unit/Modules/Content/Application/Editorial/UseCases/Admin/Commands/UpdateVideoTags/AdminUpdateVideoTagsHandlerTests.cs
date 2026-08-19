@@ -1,5 +1,4 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateVideoTags;
-using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -22,7 +21,6 @@ public class AdminUpdateVideoTagsHandlerTests
     private readonly Mock<IVideoRepository> _videoRepositoryMock;
     private readonly Mock<ILookupRepository> _lookupRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
-    private readonly Mock<IPopularTagsCacheInvalidator> _cacheInvalidatorMock;
     private readonly AdminUpdateVideoTagsHandler _handler;
 
     private static readonly Guid CategoryId = Guid.NewGuid();
@@ -32,12 +30,10 @@ public class AdminUpdateVideoTagsHandlerTests
         _videoRepositoryMock = MockVideoRepository.Create();
         _lookupRepositoryMock = MockLookupRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _cacheInvalidatorMock = MockPopularTagsCacheInvalidator.Create();
         _handler = new AdminUpdateVideoTagsHandler(
             _videoRepositoryMock.Object,
             _lookupRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            _cacheInvalidatorMock.Object,
             TestErrorsFactory.CreateContentI18n()
         );
     }
@@ -68,7 +64,6 @@ public class AdminUpdateVideoTagsHandlerTests
         result.IsSuccess.Should().BeTrue();
         _videoRepositoryMock.VerifyRemoveTagCalled();
         _unitOfWorkMock.VerifyCommitCalled();
-        _cacheInvalidatorMock.VerifyInvalidateCalled();
     }
 
     [Fact]
@@ -97,7 +92,6 @@ public class AdminUpdateVideoTagsHandlerTests
         _lookupRepositoryMock.VerifyAddTagNotCalled();
         _videoRepositoryMock.VerifyAddTagCalled();
         _unitOfWorkMock.VerifyCommitCalled();
-        _cacheInvalidatorMock.VerifyInvalidateCalled();
     }
 
     [Fact]
@@ -127,7 +121,6 @@ public class AdminUpdateVideoTagsHandlerTests
         );
         _videoRepositoryMock.VerifyAddTagCalled();
         _unitOfWorkMock.VerifyCommitCalled();
-        _cacheInvalidatorMock.VerifyInvalidateCalled();
     }
 
     [Fact]
@@ -157,7 +150,6 @@ public class AdminUpdateVideoTagsHandlerTests
             Times.Once
         );
         _unitOfWorkMock.VerifyCommitCalled();
-        _cacheInvalidatorMock.VerifyInvalidateCalled();
     }
 
     [Fact]
@@ -217,7 +209,6 @@ public class AdminUpdateVideoTagsHandlerTests
         _videoRepositoryMock.VerifyRemoveTagCalled();
         _videoRepositoryMock.VerifyAddTagCalled();
         _unitOfWorkMock.VerifyCommitCalled();
-        _cacheInvalidatorMock.VerifyInvalidateCalled();
     }
 
     #endregion
@@ -258,7 +249,6 @@ public class AdminUpdateVideoTagsHandlerTests
         }
 
         // Assert
-        _cacheInvalidatorMock.VerifyInvalidateNotCalled();
     }
 
     #endregion

@@ -31,7 +31,7 @@ public class PublicRecordShortVideoViewHandlerTests
     #region Success Cases
 
     [Fact]
-    public async Task Handle_WhenShortVideoExists_ShouldIncrementViewCountAndCommit()
+    public async Task Handle_WhenShortVideoExists_ShouldRecordCountedViewAndCommit()
     {
         // Arrange
         ShortVideoEntity shortVideo = ShortVideoFactory.Create();
@@ -45,7 +45,6 @@ public class PublicRecordShortVideoViewHandlerTests
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        _shortVideoRepositoryMock.VerifyUpdateCalled();
         _shortVideoRepositoryMock.VerifyAddViewEventCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -173,7 +172,6 @@ public class PublicRecordShortVideoViewHandlerTests
 
         // The shared "unknown" bucket is never deduplicated, so the window is not queried.
         _shortVideoRepositoryMock.VerifyHasCountedViewSinceNotCalled();
-        _shortVideoRepositoryMock.VerifyUpdateCalled();
     }
 
     #endregion
@@ -181,7 +179,7 @@ public class PublicRecordShortVideoViewHandlerTests
     #region Dedup Counting
 
     [Fact]
-    public async Task Handle_WhenIdentityAlreadyCountedInWindow_ShouldRecordUncountedEventWithoutIncrement()
+    public async Task Handle_WhenIdentityAlreadyCountedInWindow_ShouldRecordUncountedEvent()
     {
         // Arrange
         ShortVideoEntity shortVideo = ShortVideoFactory.Create();
@@ -209,7 +207,7 @@ public class PublicRecordShortVideoViewHandlerTests
     }
 
     [Fact]
-    public async Task Handle_WhenIdentityNotYetCounted_ShouldRecordCountedEventAndIncrement()
+    public async Task Handle_WhenIdentityNotYetCounted_ShouldRecordCountedEvent()
     {
         // Arrange
         ShortVideoEntity shortVideo = ShortVideoFactory.Create();
@@ -229,7 +227,6 @@ public class PublicRecordShortVideoViewHandlerTests
         recorded.Should().NotBeNull();
         recorded!.IsCounted.Should().BeTrue();
         _shortVideoRepositoryMock.VerifyAddViewEventCalled();
-        _shortVideoRepositoryMock.VerifyUpdateCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
