@@ -52,6 +52,41 @@ public class AdminVerifyPaymentEndpointV1Tests(PostgresFixture db) : BaseApiTest
     }
 
     [Fact]
+    public async Task VerifyPayment_WithoutProofAttached_ReturnsBadRequestAndLeavesTheOrderUnpaid()
+    {
+        // Arrange — an unevidenced payment must not flip the order to paid
+        ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
+        CustomerEntity customer = CustomerFactory.CreateWithId(order.CustomerId);
+        ContentPaymentEntity payment = ContentPaymentFactory.Create(order.Id);
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            ctx.Customers.Add(customer);
+            ctx.ContentOrders.Add(order);
+            ctx.ContentPayments.Add(payment);
+        });
+
+        Client.AuthenticateAsSuperAdmin();
+        var request = new { ReceiptUrl = TestConstants.Commerce.ValidReceiptUrl };
+        var msg = new HttpRequestMessage(HttpMethod.Patch, Routes.Admin.Orders.VerifyPayment(order.Id))
+        {
+            Content = JsonContent.Create(request),
+        };
+
+        // Act
+        var response = await Client.SendAsync(msg);
+
+        // Assert
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<ContentOrderErrorMessage>(m => m.PaymentProofRequired())
+        );
+
+        await using ContentDbContext verifyDb = CreateDbContext<ContentDbContext>();
+        (await verifyDb.ContentPayments.FindAsync(payment.Id))!.Status.Should().Be(EnumPaymentStatus.Pending);
+        (await verifyDb.ContentOrders.FindAsync(order.Id))!.Status.Should().Be(EnumOrderStatus.PendingPayment);
+    }
+
+    [Fact]
     public async Task VerifyPayment_NonExistentOrder_ReturnsNotFound()
     {
         Client.AuthenticateAsSuperAdmin();
