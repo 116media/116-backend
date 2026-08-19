@@ -126,13 +126,4 @@ public class OtpEntity : Aggregate<Guid>
     {
         ConsumedAt ??= DateTime.UtcNow;
     }
-
-    /// <summary>
-    /// Checks whether the code has already been spent or superseded.
-    /// </summary>
-    /// <returns>True once consumed, otherwise false.</returns>
-    public bool IsConsumed()
-    {
-        return ConsumedAt is not null;
-    }
 }
