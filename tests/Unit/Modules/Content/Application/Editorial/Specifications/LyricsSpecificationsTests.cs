@@ -381,6 +381,8 @@ public class LyricsSpecificationsTests
         // Arrange
         Guid tagId = Guid.NewGuid();
         LyricsEntity lyrics = LyricsFactory.CreateWithTags(CategoryId, tagId);
+        lyrics.MarkPendingReview();
+        lyrics.Approve();
         lyrics.Publish();
         var spec = new LyricsBySharedTagsSpecification([tagId], Guid.NewGuid());
 
@@ -396,6 +398,8 @@ public class LyricsSpecificationsTests
     {
         // Arrange
         LyricsEntity lyrics = LyricsFactory.CreateWithTags(CategoryId, Guid.NewGuid());
+        lyrics.MarkPendingReview();
+        lyrics.Approve();
         lyrics.Publish();
         var spec = new LyricsBySharedTagsSpecification([Guid.NewGuid()], Guid.NewGuid());
 
