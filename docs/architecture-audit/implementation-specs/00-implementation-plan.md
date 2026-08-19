@@ -83,7 +83,7 @@ Small, isolated, high-urgency fixes with no cross-module surgery. Full code in t
       tighten submit guard to `All` `[03 §4]`
 - [ ] `ContentPaymentEntity.Verify` requires proof; `AttachProof` guards status `[03 §5]`
 - [ ] `DbUpdateException` → 409 strategy (fixes the like/unlike race 500) `[06 §15]`
-- **PR:** `fix(content): guard publication state, order totals and payment verification`
+- **PR:** `fix(content): guard publication state, order totals and payments`
 
 ### Stage 7 — Invert localization-in-domain (full sweep)
 - [ ] Drop the `errors` parameter from every remaining domain signature — ~50 across 17 Content
@@ -96,7 +96,7 @@ Small, isolated, high-urgency fixes with no cross-module surgery. Full code in t
   Stage 6**, which applies it to the publication state machine. The `.resx` keys stay live because
   the strategies keep formatting through them; only `*Errors` factory methods left with no callers
   are retired.
-- **PR:** `refactor(domain): remove i18n from the domain via coded domain exceptions`
+- **PR:** `refactor(domain): remove i18n from the domain via coded exceptions`
 
 ### Stage 8 — Atomic engagement counters & audit-trail integrity
 - [ ] Replace load-mutate-save counters with `ExecuteUpdateAsync` deltas across the 5 engagement
