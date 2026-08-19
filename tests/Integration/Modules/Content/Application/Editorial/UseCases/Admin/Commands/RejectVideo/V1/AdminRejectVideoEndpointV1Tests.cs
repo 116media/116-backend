@@ -6,6 +6,7 @@ using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Exceptions.Messages;
+using _116.Shared.Domain.Exceptions;
 using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -125,7 +126,7 @@ public class AdminRejectVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
             request
         );
 
-        await response.ShouldBeProblem<BadRequestException>(
+        await response.ShouldBeProblem<DomainRuleException>(
             HttpStatusCode.BadRequest,
             Localized<VideoErrorMessage>(m =>
                 m.InvalidStatusTransition(from: nameof(EnumContentStatus.Draft), to: nameof(EnumContentStatus.Rejected))
