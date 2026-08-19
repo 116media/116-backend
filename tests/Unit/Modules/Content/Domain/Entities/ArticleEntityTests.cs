@@ -1,7 +1,9 @@
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Domain.Events;
+using _116.Content.Domain.StateMachines;
 using _116.Shared.Application.Exceptions;
+using _116.Shared.Domain.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
@@ -208,6 +210,30 @@ public class ArticleEntityTests
         // Assert
         result.Should().BeFalse();
         article.Status.Should().Be(EnumContentStatus.PendingPayment);
+    }
+
+    [Fact]
+    public void Submit_WhenPublished_ShouldThrow()
+    {
+        // Arrange
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
+            AuthorId,
+            TestErrorsFactory.CreateArticleErrors()
+        );
+        article.MarkPendingReview();
+        article.Approve();
+        article.Publish();
+
+        // Act
+        Action act = () => article.Submit();
+
+        // Assert
+        act.Should().Throw<DomainRuleException>().Which.Code.Should().Be(ContentRuleCodes.InvalidStatusTransition);
+        article.Status.Should().Be(EnumContentStatus.Published);
     }
 
     [Fact]
