@@ -69,9 +69,39 @@ may see a brief "my code does not work" blip right after rollout.
 
 ## Checklist
 
-- [ ] Unit suite green, new `OtpService`/factory assertions included
-- [ ] Integration: verify/reset/resend round trips green via extracted codes
-- [ ] Integration: plaintext-absence assertion on the `otps` row
-- [ ] Grep invariants all clean
-- [ ] `dotnet build` clean; `dotnet csharpier .` no diff
-- [ ] Deploy note acknowledged in the PR description
+- [x] Unit suite green, new `OtpService`/factory assertions included
+- [x] Integration: verify/reset/resend round trips green via extracted codes
+- [x] Integration: plaintext-absence assertion on the `otps` row
+- [x] Grep invariants all clean
+- [x] `dotnet build` clean; `dotnet csharpier .` no diff
+- [x] Deploy note acknowledged in the PR description
+
+## Implementation notes
+
+### The OTP test fixtures hash the code they are given
+
+`OtpBuilder` and `OtpFactory` still take a plaintext code, and now hash it with the production
+`PasswordService` before handing it to `OtpEntity.Create`. Seeded OTPs therefore behave exactly
+like ones the application issued: the same plaintext the test seeds is the plaintext the real
+verify path accepts. That is what kept the existing verify, reset and resend endpoint tests
+meaningful without rewriting them — they seed a known code and post that code, and the change
+under test is invisible to them, which is the right outcome for a fix that must not alter the API.
+
+### Pre-existing files modified, and why
+
+| File | Change |
+| --- | --- |
+| `tests/Integration/Workflows/EmailDeliveryFlowTests.cs` | The signup assertion read the code out of the `otps` row and looked for it in the outbox body. That direction is now impossible by design, so it is inverted: the code is extracted from the outbox body and driven through the real verify endpoint, and the row is asserted to hold a `v1:` hash that is not that code. Three round-trip tests were added alongside it. |
+| `tests/Integration/Modules/Identity/Infrastructure/Repositories/OtpRepositoryTests.cs` | `AddAsync_ShouldStoreOtpCodeCorrectly` asserted `saved.Code == ValidCode` — the exact behaviour this change removes. It now asserts the stored hash, and a wrong-code attempt-consumption test was added. |
+| `tests/Unit/.../OtpServiceTests.cs`, `OtpEntityTests.cs`, `OtpRepositoryTests.cs`, `OtpSpecificationsTests.cs`, the five factory/handler test classes, `MockOtpService`, `MockOtpRepository`, `OtpBuilder`, `OtpFactory` | Adapted to the renamed property, the `OtpCreationResult` return, and the injected `IPasswordService`. |
+| `tests/Unit/.../EntityConfigurationsTests.cs` | `OtpConfiguration_CodeProperty_ShouldBeRequired` pinned a column that no longer exists; it now pins `CodeHash`, its width, and the absence of the old one. |
+
+Two unit tests changed meaning rather than shape, both following the repository inversion recorded
+in spec 01: the expired-row case now reports expiry regardless of whether the submitted code
+matched, and the old "no matching OTP, fall back to the latest valid one" test is now simply
+"the code did not match the stored hash".
+
+### Deploy note
+
+Acknowledged. The migration clears `identity.otps`, so any code emailed before the deploy stops
+working; users in mid-flow recover through resend or by re-requesting the reset.

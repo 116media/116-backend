@@ -35,8 +35,9 @@ public interface IOtpRepository : IRepository<OtpEntity>
     /// <exception cref="AuthenticationException">Thrown when OTP is expired.</exception>
     /// <exception cref="AuthorizationException">Thrown when max attempts are reached.</exception>
     /// <remarks>
-    /// This method finds an OTP that matches the code, user, and purpose, validates it,
-    /// and throws appropriate exceptions for different failure scenarios.
+    /// This method loads the outstanding OTP for the user and purpose, compares the supplied code
+    /// against the stored hash, and throws appropriate exceptions for different failure scenarios.
+    /// A failed comparison consumes one of the allowed attempts.
     /// </remarks>
     Task<OtpEntity> ValidateOtpAsync(
         Guid userId,
@@ -57,7 +58,8 @@ public interface IOtpRepository : IRepository<OtpEntity>
     /// <exception cref="BadRequestException">Thrown when OTP code is invalid or not yet used.</exception>
     /// <exception cref="AuthenticationException">Thrown when OTP is expired.</exception>
     /// <remarks>
-    /// This method verifies that an OTP was already successfully used by the user.
+    /// This method loads the most recently consumed OTP for the user and purpose and compares the
+    /// supplied code against the stored hash, confirming that the OTP was already successfully used.
     /// Useful for operations that require prior OTP verification (e.g., password reset after OTP verification).
     /// </remarks>
     Task<OtpEntity> ValidateUsedOtpAsync(

@@ -1,4 +1,5 @@
 using _116.BuildingBlocks.Constants;
+using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.ResendOtp.Contracts;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
@@ -43,7 +44,7 @@ public class AdminResendOtpHandler(IAdminResendOtpFactory otpFactory, IAuthRepos
         authRepository.IsUserAdmin(user!);
         authRepository.IsUserAccountActive(user!);
 
-        OtpEntity resentOtp = await otpFactory.ResendOtpAsync(
+        OtpCreationResult resentOtp = await otpFactory.ResendOtpAsync(
             userId: user!.Id,
             purpose: purpose,
             cancellationToken: cancellationToken
@@ -66,7 +67,7 @@ public class AdminResendOtpHandler(IAdminResendOtpFactory otpFactory, IAuthRepos
                 tokens: new Dictionary<string, string>
                 {
                     ["userName"] = user.UserName,
-                    ["otpCode"] = resentOtp.Code,
+                    ["otpCode"] = resentOtp.PlainCode,
                     ["expiryMinutes"] = UserConstants.OtpExpirationMinutes.ToString(),
                 },
                 culture: EmailCulture.Current(),

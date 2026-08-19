@@ -9,6 +9,7 @@ using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.ValueObjects;
 using _116.Mailer.Contracts.Application;
 using _116.Shared.Application.Exceptions;
+using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Identity;
 using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
@@ -30,6 +31,7 @@ public class PublicSignUpAuthFactoryTests
     private readonly Mock<IPasswordService> _passwordServiceMock;
     private readonly Mock<IOtpService> _otpServiceMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
+    private readonly Mock<IMailer> _mailerMock = new();
     private readonly PublicSignUpAuthFactory _factory;
 
     public PublicSignUpAuthFactoryTests()
@@ -47,11 +49,56 @@ public class PublicSignUpAuthFactoryTests
             _otpServiceMock.Object,
             _unitOfWorkMock.Object,
             TestErrorsFactory.CreateUserErrors(),
-            new Mock<IMailer>().Object
+            _mailerMock.Object
         );
     }
 
     #region Success Cases
+
+    /// <summary>
+    /// Verifies that the verification email carries the plaintext code from the creation result
+    /// while the entity handed to the OTP repository carries only its hash. This is the assertion
+    /// that would fail if the plaintext ever leaked into the persisted row.
+    /// </summary>
+    [Fact]
+    public async Task RegisterAsync_ShouldMailThePlainCodeWhilePersistingOnlyItsHash()
+    {
+        // Arrange
+        string email = "newuser@example.com";
+        string userName = "newuser";
+        string password = "ValidPassword123!";
+        UserEntity user = UserFactory.CreateVerifiedActive();
+        OtpEntity otp = OtpFactory.CreateForEmailVerification(Guid.NewGuid());
+
+        _authRepositoryMock.SetupValidateUniqueCredentialsSuccess();
+        _passwordServiceMock.SetupHashReturns("hashed");
+        _otpServiceMock.SetupCreateOtpReturns(otp, TestConstants.Otp.DefaultCode);
+        _authRepositoryMock.SetupGetUserWithRolesByCredentials(user);
+
+        // Act
+        await _factory.RegisterAsync(email, userName, password, CancellationToken.None);
+
+        // Assert
+        _mailerMock.Verify(
+            x =>
+                x.EnqueueAsync(
+                    EnumEmailTemplate.EmailVerificationOtp,
+                    It.IsAny<EmailRecipient>(),
+                    It.Is<IReadOnlyDictionary<string, string>>(t => t["otpCode"] == TestConstants.Otp.DefaultCode),
+                    It.IsAny<string>(),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Once
+        );
+        _otpRepositoryMock.Verify(
+            x =>
+                x.AddAsync(
+                    It.Is<OtpEntity>(o => o.CodeHash != TestConstants.Otp.DefaultCode && o.CodeHash.StartsWith("v1:")),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Once
+        );
+    }
 
     [Fact]
     public async Task RegisterAsync_WithValidData_ShouldReturnAuthData()

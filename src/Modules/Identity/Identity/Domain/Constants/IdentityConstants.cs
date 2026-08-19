@@ -36,4 +36,11 @@ public static class IdentityConstants
     /// Used to construct "own resource" API routes (e.g., /api/v1/public/me/profile).
     /// </summary>
     public const string Me = "me";
+
+    /// <summary>
+    /// Quartz cron expression for the expired-OTP purge: at the top of every hour.
+    /// Expired OTPs are low volume and carry no value once past their expiry, so an hourly
+    /// sweep keeps the table small without competing with request traffic.
+    /// </summary>
+    public const string ExpiredOtpCleanupCron = "0 0 * * * ?";
 }

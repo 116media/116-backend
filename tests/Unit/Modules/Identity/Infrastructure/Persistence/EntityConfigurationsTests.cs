@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using AwesomeAssertions;
@@ -209,7 +210,7 @@ public class EntityConfigurationsTests
     }
 
     [Fact]
-    public void OtpConfiguration_CodeProperty_ShouldBeRequired()
+    public void OtpConfiguration_CodeHashProperty_ShouldBeRequiredAndWideEnoughForTheHash()
     {
         // Arrange
         DbContextOptions<IdentityDbContext> options = CreateOptions();
@@ -217,11 +218,13 @@ public class EntityConfigurationsTests
 
         // Act
         IEntityType? entityType = context.Model.FindEntityType(typeof(OtpEntity));
-        IProperty? codeProperty = entityType?.FindProperty("Code");
+        IProperty? codeHashProperty = entityType?.FindProperty("CodeHash");
 
         // Assert
-        codeProperty.Should().NotBeNull();
-        codeProperty.IsNullable.Should().BeFalse();
+        codeHashProperty.Should().NotBeNull();
+        codeHashProperty.IsNullable.Should().BeFalse();
+        codeHashProperty.GetMaxLength().Should().Be(UserConstants.OtpCodeHashLength);
+        entityType!.FindProperty("Code").Should().BeNull("the plaintext column no longer exists");
     }
 
     #endregion

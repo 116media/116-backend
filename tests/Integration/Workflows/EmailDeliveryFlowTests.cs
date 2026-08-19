@@ -1,5 +1,12 @@
+using System.Text.RegularExpressions;
+using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.ForgotPassword.V1;
+using _116.Identity.Application.Auth.UseCases.Public.Commands.ResendOtp.V1;
+using _116.Identity.Application.Auth.UseCases.Public.Commands.ResetPassword.V1;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp.V1;
+using _116.Identity.Application.Auth.UseCases.Public.Commands.VerifyOtp.V1;
+using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Integration.Tests.Common.Stubs;
 using _116.Mailer.Application.Shared.Exceptions;
@@ -22,8 +29,15 @@ namespace _116.Integration.Tests.Workflows;
 [Collection("Database")]
 public class EmailDeliveryFlowTests(PostgresFixture db) : BaseApiTest(db)
 {
+    /// <summary>
+    /// Verifies the signup delivery path end to end. The row now stores only a hash, so the code
+    /// cannot be read back out of the database and compared against the email; the flow runs the
+    /// other way round instead — the delivered code is taken from the outbox body, which is the
+    /// only place the plaintext legitimately survives, and is then driven through the real verify
+    /// endpoint. The OTP row is asserted to hold a hash that is not that code.
+    /// </summary>
     [Fact]
-    public async Task SignUp_OverRealHttp_EnqueuesTheVerificationOtpEmail()
+    public async Task SignUp_OverRealHttp_EnqueuesAVerificationCodeThatVerifiesWhileTheRowStaysHashed()
     {
         await SeedAsync<IdentityDbContext>(context =>
             context.Roles.Add(RoleFactory.CreateWithId(Guid.NewGuid(), "Visitor"))
@@ -43,15 +57,214 @@ public class EmailDeliveryFlowTests(PostgresFixture db) : BaseApiTest(db)
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
+        await using (MailerDbContext mailerContext = CreateDbContext<MailerDbContext>())
+        {
+            var outbox = await mailerContext.OutboxEmails.Where(o => o.RecipientAddress == email).ToListAsync();
+            outbox.Should().ContainSingle(o => o.Template == "EmailVerificationOtp");
+        }
+
+        string deliveredCode = await ExtractLatestOtpCodeAsync(email);
+
+        // The persisted row holds the hash of the delivered code, never the code.
+        await using (IdentityDbContext identityContext = CreateDbContext<IdentityDbContext>())
+        {
+            string codeHash = await identityContext
+                .Otps.Where(o => o.User.Email == email)
+                .Select(o => o.CodeHash)
+                .SingleAsync();
+            codeHash.Should().StartWith("v1:");
+            codeHash.Should().NotBe(deliveredCode);
+        }
+
+        // The delivered code still verifies through the real endpoint.
+        var verifyResponse = await Client.PostAsJsonAsync(
+            Routes.Public.Auth.VerifyOtp(),
+            new PublicVerifyOtpRequest(
+                Email: email,
+                Code: deliveredCode,
+                Purpose: nameof(EnumOtpPurpose.EmailVerification)
+            )
+        );
+
+        verifyResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        await using IdentityDbContext verifyContext = CreateDbContext<IdentityDbContext>();
+        UserEntity verifiedUser = await verifyContext.Users.SingleAsync(u => u.Email == email);
+        verifiedUser.IsVerified.Should().BeTrue();
+    }
+
+    /// <summary>
+    /// Verifies that a wrong code is rejected with the invalid-code error and burns one of the
+    /// allowed attempts, and that the third wrong code switches the response to the
+    /// attempts-limit error. Exercises the in-memory hash comparison in <c>OtpRepository</c> over
+    /// real HTTP.
+    /// </summary>
+    [Fact]
+    public async Task VerifyOtp_WithAWrongCode_ConsumesAnAttemptAndEventuallyLocksOut()
+    {
+        await SeedAsync<IdentityDbContext>(context =>
+            context.Roles.Add(RoleFactory.CreateWithId(Guid.NewGuid(), "Visitor"))
+        );
+        Client.ClearAuthentication();
+        Client.DefaultRequestHeaders.Add("X-Device-Id", Guid.NewGuid().ToString());
+
+        string email = $"wrong-{Guid.NewGuid():N}@test.com";
+        await SignUpAsync(email);
+
+        string deliveredCode = await ExtractLatestOtpCodeAsync(email);
+        string wrongCode = deliveredCode == "000000" ? "111111" : "000000";
+
+        var firstAttempt = await PostVerifyOtpAsync(email, wrongCode);
+        await firstAttempt.ShouldBeProblem(HttpStatusCode.BadRequest);
+
+        await using (IdentityDbContext afterFirst = CreateDbContext<IdentityDbContext>())
+        {
+            OtpEntity row = await afterFirst.Otps.SingleAsync(o => o.User.Email == email);
+            row.AttemptCount.Should().Be(1);
+        }
+
+        var secondAttempt = await PostVerifyOtpAsync(email, wrongCode);
+        await secondAttempt.ShouldBeProblem(HttpStatusCode.BadRequest);
+
+        // The third wrong code exhausts the allowance and changes the failure shape.
+        var thirdAttempt = await PostVerifyOtpAsync(email, wrongCode);
+        await thirdAttempt.ShouldBeProblem(HttpStatusCode.TooManyRequests);
+
+        await using IdentityDbContext verifyContext = CreateDbContext<IdentityDbContext>();
+        OtpEntity exhausted = await verifyContext.Otps.SingleAsync(o => o.User.Email == email);
+        exhausted.AttemptCount.Should().Be(3);
+    }
+
+    /// <summary>
+    /// Verifies the whole password-reset round trip against hashed rows: forgot password delivers
+    /// a code, the code verifies, and reset password then re-validates the same code against the
+    /// consumed row. This is the path that proves <c>ValidateUsedOtpAsync</c> matches by hash.
+    /// </summary>
+    [Fact]
+    public async Task PasswordReset_ForgotThenVerifyThenReset_CompletesAgainstHashedRows()
+    {
+        await SeedAsync<IdentityDbContext>(context =>
+            context.Roles.Add(RoleFactory.CreateWithId(Guid.NewGuid(), "Visitor"))
+        );
+        Client.ClearAuthentication();
+        Client.DefaultRequestHeaders.Add("X-Device-Id", Guid.NewGuid().ToString());
+
+        string email = $"reset-{Guid.NewGuid():N}@test.com";
+        await SignUpAsync(email);
+
+        string verificationCode = await ExtractLatestOtpCodeAsync(email);
+        var verified = await PostVerifyOtpAsync(email, verificationCode);
+        verified.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var forgotResponse = await Client.PostAsJsonAsync(
+            Routes.Public.Auth.ForgotPassword(),
+            new PublicForgotPasswordRequest(email)
+        );
+        forgotResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        string resetCode = await ExtractLatestOtpCodeAsync(email, "PasswordResetOtp");
+
+        var verifyResetCode = await Client.PostAsJsonAsync(
+            Routes.Public.Auth.VerifyOtp(),
+            new PublicVerifyOtpRequest(Email: email, Code: resetCode, Purpose: nameof(EnumOtpPurpose.PasswordReset))
+        );
+        verifyResetCode.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var resetResponse = await Client.PostAsJsonAsync(
+            Routes.Public.Auth.ResetPassword(),
+            new PublicResetPasswordRequest(Email: email, Code: resetCode, NewPassword: TestAuth.ResetNewPassword)
+        );
+
+        resetResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var passwordService = Api.Services.GetRequiredService<IPasswordService>();
+        await using IdentityDbContext verifyContext = CreateDbContext<IdentityDbContext>();
+        UserEntity updated = await verifyContext.Users.SingleAsync(u => u.Email == email);
+        passwordService.Verify(TestAuth.ResetNewPassword, updated.PasswordHash).Should().BeTrue();
+    }
+
+    /// <summary>
+    /// Verifies that resending rotates the credential: the code delivered first stops working the
+    /// moment a new one is issued, and only the newest delivered code verifies.
+    /// </summary>
+    [Fact]
+    public async Task ResendOtp_InvalidatesThePreviouslyDeliveredCode()
+    {
+        await SeedAsync<IdentityDbContext>(context =>
+            context.Roles.Add(RoleFactory.CreateWithId(Guid.NewGuid(), "Visitor"))
+        );
+        Client.ClearAuthentication();
+        Client.DefaultRequestHeaders.Add("X-Device-Id", Guid.NewGuid().ToString());
+
+        string email = $"resend-{Guid.NewGuid():N}@test.com";
+        await SignUpAsync(email);
+
+        string firstCode = await ExtractLatestOtpCodeAsync(email);
+
+        var resendResponse = await Client.PostAsJsonAsync(
+            Routes.Public.Auth.ResendOtp(),
+            new PublicResendOtpRequest(Email: email, Purpose: nameof(EnumOtpPurpose.EmailVerification))
+        );
+        resendResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        string secondCode = await ExtractLatestOtpCodeAsync(email);
+        secondCode.Should().NotBe(firstCode);
+
+        var staleAttempt = await PostVerifyOtpAsync(email, firstCode);
+        await staleAttempt.ShouldBeProblem(HttpStatusCode.BadRequest);
+
+        var freshAttempt = await PostVerifyOtpAsync(email, secondCode);
+        freshAttempt.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        await using IdentityDbContext verifyContext = CreateDbContext<IdentityDbContext>();
+        UserEntity verifiedUser = await verifyContext.Users.SingleAsync(u => u.Email == email);
+        verifiedUser.IsVerified.Should().BeTrue();
+    }
+
+    /// <summary>
+    /// Registers a user over real HTTP so the flow under test starts from a genuine signup.
+    /// </summary>
+    private async Task SignUpAsync(string email)
+    {
+        var response = await Client.PostAsJsonAsync(
+            Routes.Public.Auth.SignUp(),
+            new PublicSignUpRequest(
+                Email: email,
+                UserName: $"m{Guid.NewGuid():N}"[..10],
+                Password: TestAuth.ValidPassword
+            )
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+    }
+
+    /// <summary>
+    /// Reads the most recently enqueued OTP email for a recipient and pulls the six-digit code out
+    /// of its rendered text body. The outbox body is the only remaining place the plaintext exists,
+    /// which is precisely why a test that needs the code has to read it from here.
+    /// </summary>
+    private async Task<string> ExtractLatestOtpCodeAsync(string email, string template = "EmailVerificationOtp")
+    {
         await using MailerDbContext mailerContext = CreateDbContext<MailerDbContext>();
-        await using IdentityDbContext identityContext = CreateDbContext<IdentityDbContext>();
+        OutboxEmailEntity latest = await mailerContext
+            .OutboxEmails.Where(o => o.RecipientAddress == email && o.Template == template)
+            .OrderByDescending(o => o.CreatedAt)
+            .FirstAsync();
 
-        var outbox = await mailerContext.OutboxEmails.Where(o => o.RecipientAddress == email).ToListAsync();
-        outbox.Should().ContainSingle(o => o.Template == "EmailVerificationOtp");
+        MatchCollection matches = Regex.Matches(latest.TextBody, @"\b\d{6}\b");
+        matches.Should().ContainSingle("the OTP email body should carry exactly one six-digit code");
+        return matches[0].Value;
+    }
 
-        // The email carries the exact code that was persisted for the user.
-        string otpCode = await identityContext.Otps.Where(o => o.User.Email == email).Select(o => o.Code).SingleAsync();
-        outbox[0].TextBody.Should().Contain(otpCode);
+    /// <summary>
+    /// Submits a code to the public email-verification endpoint.
+    /// </summary>
+    private Task<HttpResponseMessage> PostVerifyOtpAsync(string email, string code)
+    {
+        return Client.PostAsJsonAsync(
+            Routes.Public.Auth.VerifyOtp(),
+            new PublicVerifyOtpRequest(Email: email, Code: code, Purpose: nameof(EnumOtpPurpose.EmailVerification))
+        );
     }
 
     [Fact]

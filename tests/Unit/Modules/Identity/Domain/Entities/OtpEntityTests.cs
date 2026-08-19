@@ -1,5 +1,6 @@
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
+using _116.Identity.Infrastructure.Services;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Identity;
 using AwesomeAssertions;
@@ -20,17 +21,18 @@ public class OtpEntityTests
         // Arrange
         var id = Guid.NewGuid();
         var userId = Guid.NewGuid();
-        string code = TestConstants.Otp.ValidCode;
+        string codeHash = new PasswordService().Hash(TestConstants.Otp.ValidCode);
         var purpose = EnumOtpPurpose.EmailVerification;
         DateTime expiresAt = DateTime.UtcNow.AddMinutes(TestConstants.Otp.ExpirationMinutes);
 
         // Act
-        var otp = OtpEntity.Create(id, userId, code, purpose, expiresAt);
+        var otp = OtpEntity.Create(id, userId, codeHash, purpose, expiresAt);
 
         // Assert
         otp.Id.Should().Be(id);
         otp.UserId.Should().Be(userId);
-        otp.Code.Should().Be(code);
+        otp.CodeHash.Should().Be(codeHash);
+        otp.CodeHash.Should().NotBe(TestConstants.Otp.ValidCode);
         otp.Purpose.Should().Be(purpose);
         otp.ExpiresAt.Should().Be(expiresAt);
         otp.IsUsed.Should().BeFalse();
@@ -46,11 +48,11 @@ public class OtpEntityTests
         // Arrange
         var id = Guid.NewGuid();
         var userId = Guid.NewGuid();
-        string code = TestConstants.Otp.ValidCode;
+        string codeHash = new PasswordService().Hash(TestConstants.Otp.ValidCode);
         DateTime expiresAt = DateTime.UtcNow.AddMinutes(10);
 
         // Act
-        var otp = OtpEntity.Create(id, userId, code, purpose, expiresAt);
+        var otp = OtpEntity.Create(id, userId, codeHash, purpose, expiresAt);
 
         // Assert
         otp.Purpose.Should().Be(purpose);
@@ -121,62 +123,6 @@ public class OtpEntityTests
 
         // Assert
         otp.AttemptCount.Should().Be(3);
-    }
-
-    #endregion
-
-    #region IsValid Tests
-
-    [Fact]
-    public void IsValid_WhenNotUsedNotExpiredAndBelowMaxAttempts_ShouldReturnTrue()
-    {
-        // Arrange
-        OtpEntity otp = OtpFactory.Create();
-
-        // Act
-        bool result = otp.IsValid();
-
-        // Assert
-        result.Should().BeTrue();
-    }
-
-    [Fact]
-    public void IsValid_WhenUsed_ShouldReturnFalse()
-    {
-        // Arrange
-        OtpEntity otp = OtpFactory.CreateUsed();
-
-        // Act
-        bool result = otp.IsValid();
-
-        // Assert
-        result.Should().BeFalse();
-    }
-
-    [Fact]
-    public void IsValid_WhenExpired_ShouldReturnFalse()
-    {
-        // Arrange
-        OtpEntity otp = OtpFactory.CreateExpired();
-
-        // Act
-        bool result = otp.IsValid();
-
-        // Assert
-        result.Should().BeFalse();
-    }
-
-    [Fact]
-    public void IsValid_WhenMaxAttemptsReached_ShouldReturnFalse()
-    {
-        // Arrange
-        OtpEntity otp = OtpFactory.CreateMaxAttemptsReached();
-
-        // Act
-        bool result = otp.IsValid();
-
-        // Assert
-        result.Should().BeFalse();
     }
 
     #endregion

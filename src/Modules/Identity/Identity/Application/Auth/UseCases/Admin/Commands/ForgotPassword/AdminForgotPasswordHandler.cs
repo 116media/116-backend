@@ -1,4 +1,5 @@
 using _116.BuildingBlocks.Constants;
+using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.ForgotPassword.Contracts;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
@@ -43,7 +44,7 @@ public class AdminForgotPasswordHandler(
         authRepository.IsUserAdmin(user!);
         authRepository.IsUserAccountActive(user!);
 
-        OtpEntity passwordResetOtp = await otpFactory.CreatePasswordResetOtpAsync(
+        OtpCreationResult passwordResetOtp = await otpFactory.CreatePasswordResetOtpAsync(
             userId: user!.Id,
             cancellationToken: cancellationToken
         );
@@ -56,7 +57,7 @@ public class AdminForgotPasswordHandler(
                 tokens: new Dictionary<string, string>
                 {
                     ["userName"] = user.UserName,
-                    ["otpCode"] = passwordResetOtp.Code,
+                    ["otpCode"] = passwordResetOtp.PlainCode,
                     ["expiryMinutes"] = UserConstants.OtpExpirationMinutes.ToString(),
                 },
                 culture: EmailCulture.Current(),

@@ -22,7 +22,7 @@ public class OtpConfiguration : IEntityTypeConfiguration<OtpEntity>
 
         // Properties configuration
         builder.Property(o => o.UserId).IsRequired();
-        builder.Property(o => o.Code).HasMaxLength(maxLength: UserConstants.OtpCodeLength).IsRequired();
+        builder.Property(o => o.CodeHash).HasMaxLength(maxLength: UserConstants.OtpCodeHashLength).IsRequired();
         builder.Property(o => o.Purpose).HasConversion<string>().IsRequired();
         builder.Property(o => o.ExpiresAt).IsRequired();
         builder.Property(o => o.AttemptCount).HasDefaultValue(0).IsRequired();
@@ -35,16 +35,9 @@ public class OtpConfiguration : IEntityTypeConfiguration<OtpEntity>
             .HasForeignKey(o => o.UserId)
             .OnDelete(deleteBehavior: DeleteBehavior.Cascade);
 
-        // Indexes for performance
+        // Indexes for performance. Lookups run on user and purpose only: the stored hash is
+        // salted and can never appear in a predicate, so it carries no index.
         builder.HasIndex(o => new { o.UserId, o.Purpose }).HasDatabaseName("IX_Otps_UserId_Purpose");
-        builder
-            .HasIndex(o => new
-            {
-                o.UserId,
-                o.Code,
-                o.Purpose,
-            })
-            .HasDatabaseName("IX_Otps_UserId_Code_Purpose");
         builder.HasIndex(o => o.ExpiresAt).HasDatabaseName("IX_Otps_ExpiresAt");
         builder.HasIndex(o => new { o.Purpose, o.ExpiresAt }).HasDatabaseName("IX_Otps_Purpose_ExpiresAt");
     }

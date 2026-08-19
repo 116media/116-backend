@@ -4,6 +4,7 @@ using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Repositories;
+using _116.Identity.Infrastructure.Services;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Identity;
 using _116.Tests.Fixtures.Helpers;
@@ -31,7 +32,8 @@ public class OtpRepositoryTests : IDisposable
 
         UserErrors userErrors = TestErrorsFactory.CreateUserErrors();
 
-        _repository = new OtpRepository(_context, userErrors);
+        // The real hashing service: verification compares against the hash the fixtures store.
+        _repository = new OtpRepository(_context, userErrors, new PasswordService());
     }
 
     public void Dispose()
@@ -179,7 +181,7 @@ public class OtpRepositoryTests : IDisposable
     }
 
     [Fact]
-    public async Task ValidateOtpAsync_WhenNoMatchingOtpFound_ShouldCheckLatestValidOtp()
+    public async Task ValidateOtpAsync_WhenTheCodeDoesNotMatchTheStoredHash_ShouldConsumeAnAttempt()
     {
         // Arrange
         var userId = Guid.NewGuid();
@@ -203,7 +205,7 @@ public class OtpRepositoryTests : IDisposable
     }
 
     [Fact]
-    public async Task ValidateOtpAsync_WhenLatestOtpIsExpired_ShouldThrowNotFoundException()
+    public async Task ValidateOtpAsync_WhenTheOutstandingOtpIsExpired_ShouldThrowOtpExpirationExceptionEvenForAWrongCode()
     {
         // Arrange
         var userId = Guid.NewGuid();
@@ -216,15 +218,15 @@ public class OtpRepositoryTests : IDisposable
         _context.Otps.Add(latestOtp);
         await _context.SaveChangesAsync();
 
-        // Act - Expired OTPs are filtered out by specification, so no valid OTP is found
+        // Act - expiry is settled on the loaded row before the code is ever compared
         Func<Task> act = async () => await _repository.ValidateOtpAsync(userId, wrongCode, purpose);
 
         // Assert
-        await act.Should().ThrowAsync<NotFoundException>();
+        await act.Should().ThrowAsync<OtpExpirationException>();
     }
 
     [Fact]
-    public async Task ValidateOtpAsync_WhenLatestOtpHasMaxAttempts_ShouldThrowOtpAttemptsLimitException()
+    public async Task ValidateOtpAsync_WhenTheOutstandingOtpHasMaxAttempts_ShouldThrowOtpAttemptsLimitException()
     {
         // Arrange
         var userId = Guid.NewGuid();
@@ -260,7 +262,7 @@ public class OtpRepositoryTests : IDisposable
     }
 
     [Fact]
-    public async Task ValidateOtpAsync_WhenLatestOtpWrongCodeReachesMaxAttempts_ShouldThrowOtpAttemptsLimitException()
+    public async Task ValidateOtpAsync_WhenAWrongCodeConsumesTheLastAttempt_ShouldThrowOtpAttemptsLimitException()
     {
         // Arrange
         var userId = Guid.NewGuid();
@@ -286,7 +288,7 @@ public class OtpRepositoryTests : IDisposable
     }
 
     [Fact]
-    public async Task ValidateOtpAsync_ShouldReturnMostRecentMatchingOtp()
+    public async Task ValidateOtpAsync_ShouldReturnTheMostRecentOutstandingOtp()
     {
         // Arrange
         var userId = Guid.NewGuid();
@@ -335,7 +337,7 @@ public class OtpRepositoryTests : IDisposable
     }
 
     [Fact]
-    public async Task ValidateUsedOtpAsync_WhenOtpDoesNotExist_ShouldThrowBadRequestException()
+    public async Task ValidateUsedOtpAsync_WhenNoUsedOtpExists_ShouldThrowBadRequestException()
     {
         // Arrange
         var userId = Guid.NewGuid();

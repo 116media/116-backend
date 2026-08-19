@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Domain.Entities;
@@ -8,26 +9,38 @@ namespace _116.Identity.Infrastructure.Services;
 /// <summary>
 /// Implementation of <see cref="IOtpService" /> for OTP generation and management operations.
 /// </summary>
-public class OtpService : IOtpService
+/// <param name="passwordService">Hashing service used to derive the stored OTP code hash.</param>
+public class OtpService(IPasswordService passwordService) : IOtpService
 {
-    private readonly Random _random = new();
+    /// <summary>
+    /// Exclusive upper bound of the generated code range, derived from the configured code length.
+    /// </summary>
+    private static readonly int CodeUpperBound = (int)Math.Pow(10, y: UserConstants.OtpCodeLength);
 
     /// <inheritdoc />
     public string GenerateOtpCode()
     {
-        // Generate a random numeric OTP code
-        string code = _random
-            .Next(0, (int)Math.Pow(10, y: UserConstants.OtpCodeLength))
+        return RandomNumberGenerator
+            .GetInt32(0, toExclusive: CodeUpperBound)
             .ToString($"D{UserConstants.OtpCodeLength}");
-        return code;
     }
 
     /// <inheritdoc />
-    public OtpEntity CreateOtp(Guid userId, EnumOtpPurpose purpose)
+    public OtpCreationResult CreateOtp(Guid userId, EnumOtpPurpose purpose)
     {
-        string code = GenerateOtpCode();
+        string plainCode = GenerateOtpCode();
+        string codeHash = passwordService.Hash(password: plainCode);
         DateTime expiresAt = CalculateExpirationTime();
-        return OtpEntity.Create(Guid.NewGuid(), userId: userId, code: code, purpose: purpose, expiresAt: expiresAt);
+
+        OtpEntity otp = OtpEntity.Create(
+            Guid.NewGuid(),
+            userId: userId,
+            codeHash: codeHash,
+            purpose: purpose,
+            expiresAt: expiresAt
+        );
+
+        return new OtpCreationResult(Otp: otp, PlainCode: plainCode);
     }
 
     /// <inheritdoc />

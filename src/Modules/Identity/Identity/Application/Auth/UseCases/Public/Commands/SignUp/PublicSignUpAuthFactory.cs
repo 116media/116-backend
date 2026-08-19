@@ -61,9 +61,12 @@ public class PublicSignUpAuthFactory(
         await authRepository.AddAsync(user: newUser, cancellationToken: cancellationToken);
         await authRepository.AssignVisitorRoleAsync(userId: newUser.Id, cancellationToken: cancellationToken);
 
-        OtpEntity verificationOtp = otpService.CreateOtp(userId: newUser.Id, purpose: EnumOtpPurpose.EmailVerification);
+        OtpCreationResult verificationOtp = otpService.CreateOtp(
+            userId: newUser.Id,
+            purpose: EnumOtpPurpose.EmailVerification
+        );
 
-        await otpRepository.AddAsync(otp: verificationOtp, cancellationToken: cancellationToken);
+        await otpRepository.AddAsync(otp: verificationOtp.Otp, cancellationToken: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         await mailer.EnqueueAsync(
@@ -72,7 +75,7 @@ public class PublicSignUpAuthFactory(
             tokens: new Dictionary<string, string>
             {
                 ["userName"] = userName,
-                ["otpCode"] = verificationOtp.Code,
+                ["otpCode"] = verificationOtp.PlainCode,
                 ["expiryMinutes"] = UserConstants.OtpExpirationMinutes.ToString(),
             },
             culture: EmailCulture.Current(),
