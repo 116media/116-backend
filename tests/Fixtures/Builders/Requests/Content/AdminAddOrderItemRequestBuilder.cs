@@ -58,6 +58,17 @@ public class AdminAddOrderItemRequestBuilder
     /// </summary>
     /// <param name="socialBoost">True to request social media promotion.</param>
     /// <returns>The builder instance for chaining.</returns>
+    public AdminAddOrderItemRequestBuilder WithPromotionLevelId(Guid promotionLevelId)
+    {
+        _promotionLevelId = promotionLevelId;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets whether the item carries a social boost.
+    /// </summary>
+    /// <param name="socialBoost">The social boost flag.</param>
+    /// <returns>The builder instance for chaining.</returns>
     public AdminAddOrderItemRequestBuilder WithSocialBoost(bool socialBoost)
     {
         _socialBoost = socialBoost;
