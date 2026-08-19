@@ -3,6 +3,7 @@ using _116.Content.Application.Shared.Errors;
 using _116.Content.Domain.Constants;
 using _116.Content.Domain.Enums;
 using _116.Content.Domain.Events;
+using _116.Content.Domain.StateMachines;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Domain;
 
@@ -476,6 +477,12 @@ public class LyricsEntity : Aggregate<Guid>
             return false;
         }
 
+        ContentPublicationState.EnsureCanMove(
+            from: Status,
+            to: EnumContentStatus.PendingPayment,
+            contentType: EnumCoreContentType.Lyrics
+        );
+
         Status = EnumContentStatus.PendingPayment;
         return true;
     }
@@ -517,6 +524,12 @@ public class LyricsEntity : Aggregate<Guid>
             return false;
         }
 
+        ContentPublicationState.EnsureCanMove(
+            from: Status,
+            to: EnumContentStatus.Approved,
+            contentType: EnumCoreContentType.Lyrics
+        );
+
         Status = EnumContentStatus.Approved;
         return true;
     }
@@ -531,6 +544,12 @@ public class LyricsEntity : Aggregate<Guid>
         {
             return false;
         }
+
+        ContentPublicationState.EnsureCanMove(
+            from: Status,
+            to: EnumContentStatus.Published,
+            contentType: EnumCoreContentType.Lyrics
+        );
 
         Status = EnumContentStatus.Published;
         PublishedAt = DateTimeOffset.UtcNow;
@@ -561,6 +580,12 @@ public class LyricsEntity : Aggregate<Guid>
             return false;
         }
 
+        ContentPublicationState.EnsureCanMove(
+            from: Status,
+            to: EnumContentStatus.Rejected,
+            contentType: EnumCoreContentType.Lyrics
+        );
+
         Status = EnumContentStatus.Rejected;
         RejectionReason = reason;
 
@@ -588,6 +613,12 @@ public class LyricsEntity : Aggregate<Guid>
         {
             return false;
         }
+
+        ContentPublicationState.EnsureCanMove(
+            from: Status,
+            to: EnumContentStatus.Archived,
+            contentType: EnumCoreContentType.Lyrics
+        );
 
         Status = EnumContentStatus.Archived;
         return true;
