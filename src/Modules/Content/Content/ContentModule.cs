@@ -103,6 +103,7 @@ public static class ContentModule
         services.AddScoped<LyricsRevisionErrorMessage>();
         services.AddScoped<StreamingLinkErrorMessage>();
         services.AddSingleton<IExceptionStrategy, StreamingLinkResolutionExceptionHandler>();
+        services.AddSingleton<IExceptionStrategy, DomainRuleExceptionStrategy>();
 
         // Register error factory classes
         services.AddScoped<ArticleErrors>();
