@@ -221,6 +221,32 @@ public class VideoEntityTests
     }
 
     [Fact]
+    public void Submit_WhenPublished_ShouldThrow()
+    {
+        // Arrange
+        VideoEntity video = VideoEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Video.ValidTitle,
+            TestConstants.Video.ValidSlug,
+            AuthorId,
+            Description,
+            TestErrorsFactory.CreateVideoErrors()
+        );
+        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl, TestErrorsFactory.CreateVideoErrors());
+        video.MarkPendingReview();
+        video.Approve();
+        video.Publish();
+
+        // Act
+        Action act = () => video.Submit();
+
+        // Assert
+        act.Should().Throw<DomainRuleException>().Which.Code.Should().Be(ContentRuleCodes.InvalidStatusTransition);
+        video.Status.Should().Be(EnumContentStatus.Published);
+    }
+
+    [Fact]
     public void Approve_ShouldTransitionToApproved()
     {
         // Arrange
