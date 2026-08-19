@@ -17,6 +17,19 @@ public class CategoryPricingByCategorySpecification(Guid categoryId) : Specifica
 }
 
 /// <summary>
+/// Specification that matches every pricing row belonging to any of the given categories.
+/// </summary>
+public class CategoryPricingByCategoriesSpecification(IReadOnlyCollection<Guid> categoryIds)
+    : Specification<CategoryPricingEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<CategoryPricingEntity, bool>> ToExpression()
+    {
+        return pricing => categoryIds.Contains(pricing.CategoryId);
+    }
+}
+
+/// <summary>
 /// Specification that matches a specific pricing row by category and pricing tier identifiers.
 /// </summary>
 public class CategoryPricingByIdsSpecification(Guid categoryId, Guid pricingTierId)
