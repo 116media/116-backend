@@ -80,6 +80,17 @@ public interface ICategoryRepository : IRepository<CategoryEntity>
     );
 
     /// <summary>
+    /// Retrieves the pricing rows for several categories in one round-trip.
+    /// </summary>
+    /// <param name="categoryIds">The identifiers of the categories to price.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>The pricing rows across every requested category, in no particular order.</returns>
+    Task<IReadOnlyList<CategoryPricingEntity>> GetPricingByCategoriesAsync(
+        IReadOnlyCollection<Guid> categoryIds,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
     /// Retrieves a specific pricing row by category and tier identifiers.
     /// Returns null if not found.
     /// </summary>
