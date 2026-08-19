@@ -174,6 +174,38 @@ public class AdminVerifyPaymentEndpointV1Tests(PostgresFixture db) : BaseApiTest
     }
 
     [Fact]
+    public async Task VerifyPayment_WhenAlreadyRejected_ReturnsConflictAndLeavesTheOrderUnpaid()
+    {
+        ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
+        CustomerEntity customer = CustomerFactory.CreateWithId(order.CustomerId);
+        ContentPaymentEntity payment = ContentPaymentFactory.CreateRejected(order.Id);
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            ctx.Customers.Add(customer);
+            ctx.ContentOrders.Add(order);
+            ctx.ContentPayments.Add(payment);
+        });
+
+        Client.AuthenticateAsSuperAdmin();
+        var request = new { ReceiptUrl = TestConstants.Commerce.ValidReceiptUrl };
+        var msg = new HttpRequestMessage(HttpMethod.Patch, Routes.Admin.Orders.VerifyPayment(order.Id))
+        {
+            Content = JsonContent.Create(request),
+        };
+
+        var response = await Client.SendAsync(msg);
+
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<ContentOrderErrorMessage>(m => m.PaymentAlreadyRejected())
+        );
+
+        await using ContentDbContext db = CreateDbContext<ContentDbContext>();
+        (await db.ContentPayments.FindAsync(payment.Id))!.Status.Should().Be(EnumPaymentStatus.Rejected);
+        (await db.ContentOrders.FindAsync(order.Id))!.Status.Should().Be(EnumOrderStatus.PendingPayment);
+    }
+
+    [Fact]
     public async Task VerifyPayment_WhenOrderWasCancelled_ReturnsAlreadyPaidConflictAndLeavesOrderCancelled()
     {
         ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
