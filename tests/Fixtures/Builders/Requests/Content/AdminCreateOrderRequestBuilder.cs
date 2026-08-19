@@ -36,6 +36,17 @@ public class AdminCreateOrderRequestBuilder
     }
 
     /// <summary>
+    /// Sets the package whose slots pre-populate the order's items and tiers.
+    /// </summary>
+    /// <param name="packageId">The package identifier, or null for an empty order.</param>
+    /// <returns>The builder instance for chaining.</returns>
+    public AdminCreateOrderRequestBuilder WithPackageId(Guid? packageId)
+    {
+        _packageId = packageId;
+        return this;
+    }
+
+    /// <summary>
     /// Builds the <see cref="AdminCreateOrderRequest"/> instance.
     /// </summary>
     /// <returns>A configured AdminCreateOrderRequest instance.</returns>
