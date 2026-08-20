@@ -249,4 +249,7 @@
   <data name="UnsupportedProvider" xml:space="preserve">
     <value>Le fournisseur social « {0} » n'est pas pris en charge.</value>
   </data>
+  <data name="ClientPlatformInvalid" xml:space="preserve">
+    <value>La plateforme cliente « {0} » n'est pas une plateforme connue.</value>
+  </data>
 </root>
