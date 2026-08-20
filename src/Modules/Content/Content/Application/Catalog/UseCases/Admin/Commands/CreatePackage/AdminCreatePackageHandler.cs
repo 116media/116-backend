@@ -28,12 +28,7 @@ public class AdminCreatePackageHandler(
         CancellationToken cancellationToken
     )
     {
-        var package = PackageEntity.Create(
-            id: Guid.NewGuid(),
-            name: command.Name,
-            description: command.Description,
-            errors: i18n.Package
-        );
+        var package = PackageEntity.Create(id: Guid.NewGuid(), name: command.Name, description: command.Description);
 
         await packageRepository.AddAsync(package: package, cancellationToken: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
