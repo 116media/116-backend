@@ -1,5 +1,7 @@
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
+using _116.Content.Domain.Exceptions;
+using _116.Content.Domain.StateMachines;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Helpers;
@@ -25,16 +27,7 @@ public class AlbumEntityTests
         const string label = TestConstants.Album.ValidLabel;
 
         // Act
-        AlbumEntity album = AlbumEntity.Create(
-            id,
-            name,
-            null,
-            null,
-            releaseYear,
-            label,
-            EnumReleaseType.Album,
-            TestErrorsFactory.CreateAlbumErrors()
-        );
+        AlbumEntity album = AlbumEntity.Create(id, name, null, null, releaseYear, label, EnumReleaseType.Album);
 
         // Assert
         album.Id.Should().Be(id);
@@ -59,8 +52,7 @@ public class AlbumEntityTests
             null,
             null,
             null,
-            EnumReleaseType.Album,
-            TestErrorsFactory.CreateAlbumErrors()
+            EnumReleaseType.Album
         );
 
         // Assert
@@ -81,8 +73,7 @@ public class AlbumEntityTests
             coverImageFileId,
             null,
             null,
-            EnumReleaseType.Album,
-            TestErrorsFactory.CreateAlbumErrors()
+            EnumReleaseType.Album
         );
 
         // Assert
@@ -100,8 +91,7 @@ public class AlbumEntityTests
             null,
             null,
             null,
-            EnumReleaseType.Album,
-            TestErrorsFactory.CreateAlbumErrors()
+            EnumReleaseType.Album
         );
 
         // Assert
@@ -119,19 +109,10 @@ public class AlbumEntityTests
     {
         // Act
         Action act = () =>
-            AlbumEntity.Create(
-                Guid.NewGuid(),
-                invalidName!,
-                null,
-                null,
-                null,
-                null,
-                EnumReleaseType.Album,
-                TestErrorsFactory.CreateAlbumErrors()
-            );
+            AlbumEntity.Create(Guid.NewGuid(), invalidName!, null, null, null, null, EnumReleaseType.Album);
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.AlbumNameRequired);
     }
 
     #endregion
@@ -146,14 +127,7 @@ public class AlbumEntityTests
         Guid newCoverImageFileId = Guid.NewGuid();
 
         // Act
-        album.Update(
-            "Updated Name",
-            newCoverImageFileId,
-            1999,
-            "Updated Label",
-            EnumReleaseType.Album,
-            TestErrorsFactory.CreateAlbumErrors()
-        );
+        album.Update("Updated Name", newCoverImageFileId, 1999, "Updated Label", EnumReleaseType.Album);
 
         // Assert
         album.Name.Should().Be("Updated Name");
@@ -167,17 +141,10 @@ public class AlbumEntityTests
     {
         // Arrange
         AlbumEntity album = CreateAlbum();
-        album.Update(
-            "Name",
-            Guid.NewGuid(),
-            1990,
-            "Label",
-            EnumReleaseType.Album,
-            TestErrorsFactory.CreateAlbumErrors()
-        );
+        album.Update("Name", Guid.NewGuid(), 1990, "Label", EnumReleaseType.Album);
 
         // Act
-        album.Update("Name", null, 1990, "Label", EnumReleaseType.Album, TestErrorsFactory.CreateAlbumErrors());
+        album.Update("Name", null, 1990, "Label", EnumReleaseType.Album);
 
         // Assert
         album.CoverImageFileId.Should().BeNull();
@@ -191,24 +158,10 @@ public class AlbumEntityTests
         // Arrange
         AlbumEntity album = CreateAlbum();
         Guid coverImageFileId = Guid.NewGuid();
-        album.Update(
-            "Name",
-            coverImageFileId,
-            1990,
-            "Label",
-            EnumReleaseType.Album,
-            TestErrorsFactory.CreateAlbumErrors()
-        );
+        album.Update("Name", coverImageFileId, 1990, "Label", EnumReleaseType.Album);
 
         // Act
-        album.Update(
-            "Name",
-            coverImageFileId,
-            null,
-            "Label",
-            EnumReleaseType.Album,
-            TestErrorsFactory.CreateAlbumErrors()
-        );
+        album.Update("Name", coverImageFileId, null, "Label", EnumReleaseType.Album);
 
         // Assert
         album.ReleaseYear.Should().BeNull();
@@ -222,24 +175,10 @@ public class AlbumEntityTests
         // Arrange
         AlbumEntity album = CreateAlbum();
         Guid coverImageFileId = Guid.NewGuid();
-        album.Update(
-            "Name",
-            coverImageFileId,
-            1990,
-            "Label",
-            EnumReleaseType.Album,
-            TestErrorsFactory.CreateAlbumErrors()
-        );
+        album.Update("Name", coverImageFileId, 1990, "Label", EnumReleaseType.Album);
 
         // Act
-        album.Update(
-            "Name",
-            coverImageFileId,
-            1990,
-            null,
-            EnumReleaseType.Album,
-            TestErrorsFactory.CreateAlbumErrors()
-        );
+        album.Update("Name", coverImageFileId, 1990, null, EnumReleaseType.Album);
 
         // Assert
         album.Label.Should().BeNull();
@@ -258,13 +197,12 @@ public class AlbumEntityTests
             null,
             null,
             null,
-            EnumReleaseType.Album,
-            TestErrorsFactory.CreateAlbumErrors()
+            EnumReleaseType.Album
         );
         Guid originalArtistId = album.ArtistId!.Value;
 
         // Act
-        album.Update("Updated Name", null, null, null, EnumReleaseType.Album, TestErrorsFactory.CreateAlbumErrors());
+        album.Update("Updated Name", null, null, null, EnumReleaseType.Album);
 
         // Assert
         album.ArtistId.Should().Be(originalArtistId);
@@ -280,11 +218,10 @@ public class AlbumEntityTests
         AlbumEntity album = CreateAlbum();
 
         // Act
-        Action act = () =>
-            album.Update(invalidName!, null, null, null, EnumReleaseType.Album, TestErrorsFactory.CreateAlbumErrors());
+        Action act = () => album.Update(invalidName!, null, null, null, EnumReleaseType.Album);
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.AlbumNameRequired);
     }
 
     #endregion
@@ -298,8 +235,7 @@ public class AlbumEntityTests
             null,
             TestConstants.Album.ValidReleaseYear,
             TestConstants.Album.ValidLabel,
-            EnumReleaseType.Album,
-            TestErrorsFactory.CreateAlbumErrors()
+            EnumReleaseType.Album
         );
     }
 
@@ -316,8 +252,7 @@ public class AlbumEntityTests
             null,
             null,
             null,
-            EnumReleaseType.Mixtape,
-            TestErrorsFactory.CreateAlbumErrors()
+            EnumReleaseType.Mixtape
         );
 
         // Assert
@@ -335,19 +270,11 @@ public class AlbumEntityTests
             null,
             2020,
             "Label",
-            EnumReleaseType.Album,
-            TestErrorsFactory.CreateAlbumErrors()
+            EnumReleaseType.Album
         );
 
         // Act
-        album.Update(
-            album.Name,
-            album.CoverImageFileId,
-            album.ReleaseYear,
-            album.Label,
-            EnumReleaseType.EP,
-            TestErrorsFactory.CreateAlbumErrors()
-        );
+        album.Update(album.Name, album.CoverImageFileId, album.ReleaseYear, album.Label, EnumReleaseType.EP);
 
         // Assert
         album.ReleaseType.Should().Be(EnumReleaseType.EP);
@@ -366,12 +293,11 @@ public class AlbumEntityTests
             null,
             null,
             null,
-            EnumReleaseType.Mixtape,
-            TestErrorsFactory.CreateAlbumErrors()
+            EnumReleaseType.Mixtape
         );
 
         // Act — a metadata edit re-supplying the current type must not change it.
-        album.Update("New Name", null, null, null, album.ReleaseType, TestErrorsFactory.CreateAlbumErrors());
+        album.Update("New Name", null, null, null, album.ReleaseType);
 
         // Assert
         album.ReleaseType.Should().Be(EnumReleaseType.Mixtape);
