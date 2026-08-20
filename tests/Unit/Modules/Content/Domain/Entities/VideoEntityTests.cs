@@ -1,6 +1,7 @@
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Domain.Events;
+using _116.Content.Domain.Exceptions;
 using _116.Content.Domain.StateMachines;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Domain.Exceptions;
@@ -31,15 +32,7 @@ public class VideoEntityTests
         const string slug = TestConstants.Video.ValidSlug;
 
         // Act
-        VideoEntity video = VideoEntity.CreateFree(
-            id,
-            CategoryId,
-            title,
-            slug,
-            AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
-        );
+        VideoEntity video = VideoEntity.CreateFree(id, CategoryId, title, slug, AuthorId, Description);
 
         // Assert
         video.Id.Should().Be(id);
@@ -66,12 +59,11 @@ public class VideoEntityTests
                 invalidTitle!,
                 TestConstants.Video.ValidSlug,
                 AuthorId,
-                Description,
-                TestErrorsFactory.CreateVideoErrors()
+                Description
             );
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.VideoTitleRequired);
     }
 
     [Theory]
@@ -88,12 +80,11 @@ public class VideoEntityTests
                 TestConstants.Video.ValidTitle,
                 invalidSlug!,
                 AuthorId,
-                Description,
-                TestErrorsFactory.CreateVideoErrors()
+                Description
             );
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.VideoSlugRequired);
     }
 
     #endregion
@@ -116,8 +107,7 @@ public class VideoEntityTests
             TestConstants.Video.ValidTitle,
             TestConstants.Video.ValidSlug,
             AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
+            Description
         );
 
         // Assert
@@ -141,12 +131,11 @@ public class VideoEntityTests
                 invalidTitle!,
                 TestConstants.Video.ValidSlug,
                 AuthorId,
-                Description,
-                TestErrorsFactory.CreateVideoErrors()
+                Description
             );
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.VideoTitleRequired);
     }
 
     [Theory]
@@ -164,12 +153,11 @@ public class VideoEntityTests
                 TestConstants.Video.ValidTitle,
                 invalidSlug!,
                 AuthorId,
-                Description,
-                TestErrorsFactory.CreateVideoErrors()
+                Description
             );
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.VideoSlugRequired);
     }
 
     #endregion
@@ -186,8 +174,7 @@ public class VideoEntityTests
             TestConstants.Video.ValidTitle,
             TestConstants.Video.ValidSlug,
             AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
+            Description
         );
 
         // Act
@@ -208,8 +195,7 @@ public class VideoEntityTests
             TestConstants.Video.ValidTitle,
             TestConstants.Video.ValidSlug,
             AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
+            Description
         );
         video.Submit();
 
@@ -230,10 +216,9 @@ public class VideoEntityTests
             TestConstants.Video.ValidTitle,
             TestConstants.Video.ValidSlug,
             AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
+            Description
         );
-        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl, TestErrorsFactory.CreateVideoErrors());
+        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl);
         video.MarkPendingReview();
         video.Approve();
         video.Publish();
@@ -256,8 +241,7 @@ public class VideoEntityTests
             TestConstants.Video.ValidTitle,
             TestConstants.Video.ValidSlug,
             AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
+            Description
         );
         video.MarkPendingReview();
 
@@ -279,8 +263,7 @@ public class VideoEntityTests
             TestConstants.Video.ValidTitle,
             TestConstants.Video.ValidSlug,
             AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
+            Description
         );
         video.MarkPendingReview();
         video.Approve();
@@ -302,10 +285,9 @@ public class VideoEntityTests
             TestConstants.Video.ValidTitle,
             TestConstants.Video.ValidSlug,
             AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
+            Description
         );
-        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl, TestErrorsFactory.CreateVideoErrors());
+        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl);
         video.MarkPendingReview();
         video.Approve();
 
@@ -328,10 +310,9 @@ public class VideoEntityTests
             TestConstants.Video.ValidTitle,
             TestConstants.Video.ValidSlug,
             AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
+            Description
         );
-        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl, TestErrorsFactory.CreateVideoErrors());
+        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl);
         video.MarkPendingReview();
         video.Approve();
         video.ClearDomainEvents();
@@ -366,8 +347,7 @@ public class VideoEntityTests
             TestConstants.Video.ValidTitle,
             TestConstants.Video.ValidSlug,
             AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
+            Description
         );
         video.MarkPendingReview();
         video.Approve();
@@ -392,10 +372,9 @@ public class VideoEntityTests
             TestConstants.Video.ValidTitle,
             TestConstants.Video.ValidSlug,
             AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
+            Description
         );
-        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl, TestErrorsFactory.CreateVideoErrors());
+        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl);
         video.MarkPendingReview();
         video.Approve();
         video.Publish();
@@ -417,8 +396,7 @@ public class VideoEntityTests
             TestConstants.Video.ValidTitle,
             TestConstants.Video.ValidSlug,
             AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
+            Description
         );
         const string reason = TestConstants.Video.ValidRejectionReason;
         video.MarkPendingReview();
@@ -442,8 +420,7 @@ public class VideoEntityTests
             TestConstants.Video.ValidTitle,
             TestConstants.Video.ValidSlug,
             AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
+            Description
         );
         const string reason = TestConstants.Video.ValidRejectionReason;
         video.MarkPendingReview();
@@ -478,8 +455,7 @@ public class VideoEntityTests
             TestConstants.Video.ValidTitle,
             TestConstants.Video.ValidSlug,
             AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
+            Description
         );
         video.MarkPendingReview();
         video.Reject(TestConstants.Video.ValidRejectionReason);
@@ -501,10 +477,9 @@ public class VideoEntityTests
             TestConstants.Video.ValidTitle,
             TestConstants.Video.ValidSlug,
             AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
+            Description
         );
-        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl, TestErrorsFactory.CreateVideoErrors());
+        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl);
         video.MarkPendingReview();
         video.Approve();
         video.Publish();
@@ -527,10 +502,9 @@ public class VideoEntityTests
             TestConstants.Video.ValidTitle,
             TestConstants.Video.ValidSlug,
             AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
+            Description
         );
-        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl, TestErrorsFactory.CreateVideoErrors());
+        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl);
         video.MarkPendingReview();
         video.Approve();
         video.Publish();
@@ -557,13 +531,12 @@ public class VideoEntityTests
             TestConstants.Video.ValidTitle,
             TestConstants.Video.ValidSlug,
             AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
+            Description
         );
         const string youtubeId = TestConstants.Video.ValidYoutubeVideoUrl;
 
         // Act
-        video.AttachYoutubeVideoUrl(youtubeId, TestErrorsFactory.CreateVideoErrors());
+        video.AttachYoutubeVideoUrl(youtubeId);
 
         // Assert
         video.YoutubeVideoUrl.Should().Be(youtubeId);
@@ -579,14 +552,13 @@ public class VideoEntityTests
             TestConstants.Video.ValidTitle,
             TestConstants.Video.ValidSlug,
             AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
+            Description
         );
         const string youtubeUrl = TestConstants.Video.ValidYoutubeVideoUrl;
         video.ClearDomainEvents();
 
         // Act
-        video.AttachYoutubeVideoUrl(youtubeUrl, TestErrorsFactory.CreateVideoErrors());
+        video.AttachYoutubeVideoUrl(youtubeUrl);
 
         // Assert
         video
@@ -607,14 +579,13 @@ public class VideoEntityTests
             TestConstants.Video.ValidTitle,
             TestConstants.Video.ValidSlug,
             AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
+            Description
         );
         video.ScheduleShoot(DateTimeOffset.UtcNow.AddDays(-7));
         const string youtubeId = TestConstants.Video.ValidYoutubeVideoUrl;
 
         // Act
-        video.AttachYoutubeVideoUrl(youtubeId, TestErrorsFactory.CreateVideoErrors());
+        video.AttachYoutubeVideoUrl(youtubeId);
 
         // Assert
         video.YoutubeVideoUrl.Should().Be(youtubeId);
@@ -630,18 +601,20 @@ public class VideoEntityTests
             TestConstants.Video.ValidTitle,
             TestConstants.Video.ValidSlug,
             AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
+            Description
         );
         DateTimeOffset futureShoot = DateTimeOffset.UtcNow.AddDays(30);
         video.ScheduleShoot(futureShoot);
         const string youtubeId = TestConstants.Video.ValidYoutubeVideoUrl;
 
         // Act
-        Action act = () => video.AttachYoutubeVideoUrl(youtubeId, TestErrorsFactory.CreateVideoErrors());
+        Action act = () => video.AttachYoutubeVideoUrl(youtubeId);
 
         // Assert
-        act.Should().Throw<BadRequestException>().WithMessage($"*{futureShoot:yyyy-MM-dd}*");
+        act.Should()
+            .Throw<ContentRuleException>()
+            .Which.Code.Should()
+            .Be(ContentRuleCodes.CannotAttachYoutubeUrlBeforeShoot);
     }
 
     [Fact]
@@ -654,8 +627,7 @@ public class VideoEntityTests
             TestConstants.Video.ValidTitle,
             TestConstants.Video.ValidSlug,
             AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
+            Description
         );
         Guid fileId = Guid.NewGuid();
 
@@ -676,8 +648,7 @@ public class VideoEntityTests
             TestConstants.Video.ValidTitle,
             TestConstants.Video.ValidSlug,
             AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
+            Description
         );
         DateTimeOffset scheduledAt = DateTimeOffset.UtcNow.AddDays(14);
 
@@ -698,8 +669,7 @@ public class VideoEntityTests
             TestConstants.Video.ValidTitle,
             TestConstants.Video.ValidSlug,
             AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
+            Description
         );
         DateTimeOffset scheduledAt = DateTimeOffset.UtcNow.AddDays(14);
 
@@ -725,8 +695,7 @@ public class VideoEntityTests
             TestConstants.Video.ValidTitle,
             TestConstants.Video.ValidSlug,
             AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
+            Description
         );
 
         // Act
@@ -746,8 +715,7 @@ public class VideoEntityTests
             TestConstants.Video.ValidTitle,
             TestConstants.Video.ValidSlug,
             AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
+            Description
         );
 
         // Act
@@ -768,8 +736,7 @@ public class VideoEntityTests
             TestConstants.Video.ValidTitle,
             TestConstants.Video.ValidSlug,
             AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
+            Description
         );
 
         // Act
@@ -789,8 +756,7 @@ public class VideoEntityTests
             TestConstants.Video.ValidTitle,
             TestConstants.Video.ValidSlug,
             AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
+            Description
         );
         DateTimeOffset until = DateTimeOffset.UtcNow.AddDays(7);
 
@@ -815,15 +781,14 @@ public class VideoEntityTests
             TestConstants.Video.ValidTitle,
             TestConstants.Video.ValidSlug,
             AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
+            Description
         );
         video.StampPromotion(Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(7));
 
         DateTimeOffset before = DateTimeOffset.UtcNow;
 
         // Act
-        video.ForceUnpromote(superAdminId, reason, TestErrorsFactory.CreateVideoErrors());
+        video.ForceUnpromote(superAdminId, reason);
 
         // Assert
         video.IsPromoted.Should().BeFalse();
@@ -846,14 +811,13 @@ public class VideoEntityTests
             TestConstants.Video.ValidTitle,
             TestConstants.Video.ValidSlug,
             AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
+            Description
         );
         video.StampPromotion(Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(7));
         video.ClearDomainEvents();
 
         // Act
-        video.ForceUnpromote("super-admin-uuid", reason, TestErrorsFactory.CreateVideoErrors());
+        video.ForceUnpromote("super-admin-uuid", reason);
 
         // Assert
         video
@@ -882,15 +846,14 @@ public class VideoEntityTests
             TestConstants.Video.ValidTitle,
             TestConstants.Video.ValidSlug,
             AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
+            Description
         );
 
         // Act
-        Action act = () => video.ForceUnpromote("super-admin-uuid", "reason", TestErrorsFactory.CreateVideoErrors());
+        Action act = () => video.ForceUnpromote("super-admin-uuid", "reason");
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.VideoNotPromoted);
     }
 
     [Fact]
@@ -903,10 +866,9 @@ public class VideoEntityTests
             TestConstants.Video.ValidTitle,
             TestConstants.Video.ValidSlug,
             AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
+            Description
         );
-        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl, TestErrorsFactory.CreateVideoErrors());
+        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl);
         video.MarkPendingReview();
         video.Approve();
         video.Publish();
@@ -914,7 +876,7 @@ public class VideoEntityTests
         video.StampPromotion(Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(7));
 
         // Act
-        video.ForceUnpromote("super-admin-uuid", "reason", TestErrorsFactory.CreateVideoErrors());
+        video.ForceUnpromote("super-admin-uuid", "reason");
 
         // Assert
         video.Status.Should().Be(EnumContentStatus.Published);
@@ -933,8 +895,7 @@ public class VideoEntityTests
             TestConstants.Video.ValidTitle,
             TestConstants.Video.ValidSlug,
             AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
+            Description
         );
         Guid newCategoryId = Guid.NewGuid();
         Guid customerId = Guid.NewGuid();
@@ -975,8 +936,7 @@ public class VideoEntityTests
             TestConstants.Video.ValidTitle,
             TestConstants.Video.ValidSlug,
             AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
+            Description
         );
 
         // Act
@@ -997,8 +957,7 @@ public class VideoEntityTests
             TestConstants.Video.ValidTitle,
             TestConstants.Video.ValidSlug,
             AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
+            Description
         );
 
         // Act
@@ -1018,8 +977,7 @@ public class VideoEntityTests
             TestConstants.Video.ValidTitle,
             TestConstants.Video.ValidSlug,
             AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
+            Description
         );
 
         // Act
@@ -1040,8 +998,7 @@ public class VideoEntityTests
             TestConstants.Video.ValidTitle,
             TestConstants.Video.ValidSlug,
             AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
+            Description
         );
         video.MarkPendingReview();
 
@@ -1062,10 +1019,9 @@ public class VideoEntityTests
             TestConstants.Video.ValidTitle,
             TestConstants.Video.ValidSlug,
             AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
+            Description
         );
-        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl, TestErrorsFactory.CreateVideoErrors());
+        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl);
         video.MarkPendingReview();
         video.Approve();
         video.Publish();
@@ -1089,8 +1045,7 @@ public class VideoEntityTests
             TestConstants.Video.ValidTitle,
             TestConstants.Video.ValidSlug,
             AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
+            Description
         );
         video.MarkPendingReview();
         video.Approve();
@@ -1113,8 +1068,7 @@ public class VideoEntityTests
             TestConstants.Video.ValidTitle,
             TestConstants.Video.ValidSlug,
             AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
+            Description
         );
         video.MarkPendingReview();
         video.Reject("needs a better cut");
@@ -1137,8 +1091,7 @@ public class VideoEntityTests
             TestConstants.Video.ValidTitle,
             TestConstants.Video.ValidSlug,
             AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
+            Description
         );
         Guid artistId = Guid.NewGuid();
 
@@ -1159,8 +1112,7 @@ public class VideoEntityTests
             TestConstants.Video.ValidTitle,
             TestConstants.Video.ValidSlug,
             AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
+            Description
         );
         video.LinkArtist(Guid.NewGuid());
 
@@ -1181,8 +1133,7 @@ public class VideoEntityTests
             TestConstants.Video.ValidTitle,
             TestConstants.Video.ValidSlug,
             AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
+            Description
         );
         video.LinkArtist(Guid.NewGuid());
 
@@ -1206,10 +1157,9 @@ public class VideoEntityTests
             TestConstants.Video.ValidTitle,
             TestConstants.Video.ValidSlug,
             AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
+            Description
         );
-        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl, TestErrorsFactory.CreateVideoErrors());
+        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl);
         video.MarkPendingReview();
         video.Approve();
         video.ClearDomainEvents();
@@ -1236,10 +1186,9 @@ public class VideoEntityTests
             TestConstants.Video.ValidTitle,
             TestConstants.Video.ValidSlug,
             AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
+            Description
         );
-        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl, TestErrorsFactory.CreateVideoErrors());
+        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl);
         video.MarkPendingReview();
         video.Approve();
         video.Publish();
@@ -1268,8 +1217,7 @@ public class VideoEntityTests
             TestConstants.Video.ValidTitle,
             TestConstants.Video.ValidSlug,
             AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
+            Description
         );
         video.MarkPendingReview();
         video.ClearDomainEvents();
@@ -1292,10 +1240,9 @@ public class VideoEntityTests
             TestConstants.Video.ValidTitle,
             TestConstants.Video.ValidSlug,
             AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
+            Description
         );
-        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl, TestErrorsFactory.CreateVideoErrors());
+        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl);
         video.MarkPendingReview();
         video.Approve();
         video.Publish();
@@ -1323,8 +1270,7 @@ public class VideoEntityTests
             TestConstants.Video.ValidTitle,
             TestConstants.Video.ValidSlug,
             AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
+            Description
         );
         video.ClearDomainEvents();
         video.MarkPendingReview();
@@ -1348,8 +1294,7 @@ public class VideoEntityTests
             TestConstants.Video.ValidTitle,
             TestConstants.Video.ValidSlug,
             AuthorId,
-            Description,
-            TestErrorsFactory.CreateVideoErrors()
+            Description
         );
         video.SetThumbnailFileId(thumbnailFileId);
         video.ClearDomainEvents();
