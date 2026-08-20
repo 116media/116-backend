@@ -23,38 +23,6 @@ public class LyricsErrors(LyricsErrorMessage i18n)
     }
 
     /// <summary>
-    /// Throws when a song title is required but not provided.
-    /// </summary>
-    public BadRequestException SongTitleRequired()
-    {
-        return new BadRequestException(i18n.SongTitleRequired());
-    }
-
-    /// <summary>
-    /// Throws when an artist name is required but not provided.
-    /// </summary>
-    public BadRequestException ArtistNameRequired()
-    {
-        return new BadRequestException(i18n.ArtistNameRequired());
-    }
-
-    /// <summary>
-    /// Throws when lyrics text is required but not provided.
-    /// </summary>
-    public BadRequestException LyricsTextRequired()
-    {
-        return new BadRequestException(i18n.LyricsTextRequired());
-    }
-
-    /// <summary>
-    /// Throws when a lyrics slug is required but not provided.
-    /// </summary>
-    public BadRequestException SlugRequired()
-    {
-        return new BadRequestException(i18n.SlugRequired());
-    }
-
-    /// <summary>
     /// Throws when a lyrics page with the given slug already exists.
     /// </summary>
     public ConflictException SlugAlreadyExists(string slug)
@@ -129,10 +97,18 @@ public class LyricsErrors(LyricsErrorMessage i18n)
     }
 
     /// <summary>
-    /// Throws when a lyrics page carries no active promotion.
+    /// Throws when an artist name is required but not provided.
     /// </summary>
-    public BadRequestException NotPromoted()
+    public BadRequestException ArtistNameRequired()
     {
-        return new BadRequestException(i18n.NotPromoted());
+        return new BadRequestException(i18n.ArtistNameRequired());
+    }
+
+    /// <summary>
+    /// Throws when a lyrics slug is required but not provided.
+    /// </summary>
+    public BadRequestException SlugRequired()
+    {
+        return new BadRequestException(i18n.SlugRequired());
     }
 }
