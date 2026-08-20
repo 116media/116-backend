@@ -55,14 +55,6 @@ public class UserErrors(
     }
 
     /// <summary>
-    /// Throws when a role is already assigned to a user.
-    /// </summary>
-    public ConflictException RoleAlreadyAssignedToUser()
-    {
-        return new ConflictException(conflict.RoleAlreadyAssignedToUser());
-    }
-
-    /// <summary>
     /// Throws when a role is not found using the name.
     /// </summary>
     public NotFoundException RoleNotFoundByName(string roleName)
@@ -207,22 +199,6 @@ public class UserErrors(
     }
 
     /// <summary>
-    /// Throws when the account is inactive.
-    /// </summary>
-    public AccountInactiveException AccountInactive(string email)
-    {
-        return new AccountInactiveException(authorization.AccountInactive(email: email));
-    }
-
-    /// <summary>
-    /// Throws when the account is not verified.
-    /// </summary>
-    public AccountNotVerifiedException AccountNotVerified(string email)
-    {
-        return new AccountNotVerifiedException(authorization.AccountNotVerified(email: email));
-    }
-
-    /// <summary>
     /// Throws when password is invalid.
     /// </summary>
     public AuthenticationException InvalidCredentials()
@@ -236,78 +212,6 @@ public class UserErrors(
     public AccountNotVerifiedException ProviderEmailNotVerified()
     {
         return new AccountNotVerifiedException(authorization.ProviderEmailNotVerified());
-    }
-
-    /// <summary>
-    /// Throws when an account is linked to a different social identity than the token presents.
-    /// </summary>
-    public ConflictException ProviderMismatch()
-    {
-        return new ConflictException(conflict.ProviderMismatch());
-    }
-
-    /// <summary>
-    /// Throws when the email format is invalid.
-    /// </summary>
-    public AuthenticationException InvalidEmailFormat(string email)
-    {
-        return new AuthenticationException(validation.InvalidEmailFormat(email: email));
-    }
-
-    /// <summary>
-    /// Throws when the password format is invalid.
-    /// </summary>
-    public AuthenticationException InvalidPasswordFormat()
-    {
-        return new AuthenticationException(validation.InvalidPasswordFormat());
-    }
-
-    /// <summary>
-    /// Throws when the userName format is invalid.
-    /// </summary>
-    public BadRequestException InvalidUsernameFormat(string username)
-    {
-        return new BadRequestException(validation.InvalidUsernameFormat(userName: username));
-    }
-
-    /// <summary>
-    /// Throws when permission resource is required.
-    /// </summary>
-    public BadRequestException PermissionResourceRequired()
-    {
-        return new BadRequestException(validation.PermissionResourceRequired());
-    }
-
-    /// <summary>
-    /// Throws when permission action is required.
-    /// </summary>
-    public BadRequestException PermissionActionRequired()
-    {
-        return new BadRequestException(validation.PermissionActionRequired());
-    }
-
-    /// <summary>
-    /// Throws when permission description is required.
-    /// </summary>
-    public BadRequestException PermissionDescriptionRequired()
-    {
-        return new BadRequestException(validation.PermissionDescriptionRequired());
-    }
-
-    /// <summary>
-    /// Throws when role name is required.
-    /// </summary>
-    public BadRequestException RoleNameRequired()
-    {
-        return new BadRequestException(validation.RoleNameRequired());
-    }
-
-    /// <summary>
-    /// Throws when role description is required.
-    /// </summary>
-    public BadRequestException RoleDescriptionRequired()
-    {
-        return new BadRequestException(validation.RoleDescriptionRequired());
     }
 
     /// <summary>
@@ -400,6 +304,30 @@ public class UserErrors(
     }
 
     /// <summary>
+    /// Throws when setting password is only allowed for external auth users (Google/Facebook).
+    /// </summary>
+    public BadRequestException PasswordOnlyForExternalAuth()
+    {
+        return new BadRequestException(validation.PasswordOnlyForExternalAuth());
+    }
+
+    /// <summary>
+    /// Throws when the account is inactive.
+    /// </summary>
+    public AccountInactiveException AccountInactive(string email)
+    {
+        return new AccountInactiveException(authorization.AccountInactive(email: email));
+    }
+
+    /// <summary>
+    /// Throws when the account is not verified.
+    /// </summary>
+    public AccountNotVerifiedException AccountNotVerified(string email)
+    {
+        return new AccountNotVerifiedException(authorization.AccountNotVerified(email: email));
+    }
+
+    /// <summary>
     /// Throws when an email address is required to set a password.
     /// </summary>
     public BadRequestException EmailRequiredToSetPassword()
@@ -408,10 +336,10 @@ public class UserErrors(
     }
 
     /// <summary>
-    /// Throws when setting password is only allowed for external auth users (Google/Facebook).
+    /// Throws when a role is already assigned to a user.
     /// </summary>
-    public BadRequestException PasswordOnlyForExternalAuth()
+    public ConflictException RoleAlreadyAssignedToUser()
     {
-        return new BadRequestException(validation.PasswordOnlyForExternalAuth());
+        return new ConflictException(conflict.RoleAlreadyAssignedToUser());
     }
 }
