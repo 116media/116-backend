@@ -2,6 +2,7 @@ using _116.Core.Application.Shared.Errors;
 using _116.Core.Application.Shared.Errors.Facade;
 using _116.Core.Application.Shared.Errors.Messages;
 using _116.Core.Application.Shared.EventHandlers;
+using _116.Core.Application.Shared.Exceptions.Handlers;
 using _116.Core.Application.Shared.Persistence;
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Application.Shared.Services;
@@ -10,6 +11,7 @@ using _116.Core.Domain.Events;
 using _116.Core.Infrastructure.Persistence;
 using _116.Core.Infrastructure.Repositories;
 using _116.Core.Infrastructure.Services;
+using _116.Shared.Application.Exceptions.Handlers.Contracts;
 using _116.Shared.Application.Services;
 using _116.Shared.Infrastructure;
 using Microsoft.AspNetCore.Builder;
@@ -57,6 +59,8 @@ public static class CoreModule
         // Register error message classes (IStringLocalizer-backed)
         services.AddScoped<ValidationErrorMessage>();
         services.AddScoped<InternalServerErrorMessage>();
+
+        services.AddSingleton<IExceptionStrategy, DomainRuleExceptionStrategy>();
 
         // Register error factory classes
         services.AddScoped<FileErrors>();
