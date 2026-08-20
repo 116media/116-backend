@@ -2,9 +2,10 @@ using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
-using _116.Content.Application.Shared.Errors;
 using _116.Content.Domain.Constants;
 using _116.Content.Domain.Events;
+using _116.Content.Domain.Exceptions;
+using _116.Content.Domain.StateMachines;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -124,7 +125,6 @@ public class ArtistEntity : Aggregate<Guid>
     /// <param name="aliases">Alternate names, or null for none.</param>
     /// <param name="birthdate">The artist's date of birth, or null when unknown.</param>
     /// <param name="hometown">Where the artist is from, or null when unknown.</param>
-    /// <param name="errors">The errors factory instance.</param>
     /// <returns>A new, unclaimed <see cref="ArtistEntity" />.</returns>
     public static ArtistEntity Create(
         Guid id,
@@ -134,21 +134,20 @@ public class ArtistEntity : Aggregate<Guid>
         string? realName,
         IReadOnlyList<string>? aliases,
         DateOnly? birthdate,
-        string? hometown,
-        ArtistErrors errors
+        string? hometown
     )
     {
         if (string.IsNullOrWhiteSpace(value: name))
         {
-            throw errors.NameRequired();
+            throw new ContentRuleException(ContentRuleCodes.ArtistNameRequired);
         }
 
         if (string.IsNullOrWhiteSpace(value: slug))
         {
-            throw errors.SlugRequired();
+            throw new ContentRuleException(ContentRuleCodes.ArtistSlugRequired);
         }
 
-        GuardBirthdate(birthdate: birthdate, errors: errors);
+        GuardBirthdate(birthdate: birthdate);
 
         var artist = new ArtistEntity
         {
@@ -161,7 +160,7 @@ public class ArtistEntity : Aggregate<Guid>
             Hometown = hometown,
         };
 
-        artist.ReplaceAliases(aliases: aliases, errors: errors);
+        artist.ReplaceAliases(aliases: aliases);
         artist.RecomputeNameIndexes();
 
         return artist;
@@ -177,24 +176,22 @@ public class ArtistEntity : Aggregate<Guid>
     /// <param name="aliases">Alternate names, or null to clear them.</param>
     /// <param name="birthdate">The artist's date of birth, or null to clear it.</param>
     /// <param name="hometown">Where the artist is from, or null to clear it.</param>
-    /// <param name="errors">The errors factory instance.</param>
     public void Update(
         string name,
         string? bio,
         string? realName,
         IReadOnlyList<string>? aliases,
         DateOnly? birthdate,
-        string? hometown,
-        ArtistErrors errors
+        string? hometown
     )
     {
         if (string.IsNullOrWhiteSpace(value: name))
         {
-            throw errors.NameRequired();
+            throw new ContentRuleException(ContentRuleCodes.ArtistNameRequired);
         }
 
-        GuardBirthdate(birthdate: birthdate, errors: errors);
-        ReplaceAliases(aliases: aliases, errors: errors);
+        GuardBirthdate(birthdate: birthdate);
+        ReplaceAliases(aliases: aliases);
 
         Name = name;
         Bio = bio;
@@ -211,8 +208,7 @@ public class ArtistEntity : Aggregate<Guid>
     /// a validator means the invariant holds for every writer, including seeds.
     /// </summary>
     /// <param name="aliases">The incoming aliases, or null for none.</param>
-    /// <param name="errors">The errors factory instance.</param>
-    private void ReplaceAliases(IReadOnlyList<string>? aliases, ArtistErrors errors)
+    private void ReplaceAliases(IReadOnlyList<string>? aliases)
     {
         _aliases.Clear();
 
@@ -234,7 +230,7 @@ public class ArtistEntity : Aggregate<Guid>
 
             if (trimmed.Length > ContentConstants.MaxArtistNameLength)
             {
-                throw errors.AliasTooLong();
+                throw new ContentRuleException(ContentRuleCodes.ArtistAliasTooLong);
             }
 
             _aliases.Add(item: trimmed);
@@ -242,7 +238,7 @@ public class ArtistEntity : Aggregate<Guid>
 
         if (_aliases.Count > ContentConstants.MaxArtistAliasCount)
         {
-            throw errors.TooManyAliases();
+            throw new ContentRuleException(ContentRuleCodes.ArtistTooManyAliases);
         }
     }
 
@@ -251,12 +247,11 @@ public class ArtistEntity : Aggregate<Guid>
     /// not a value the profile should render with a negative age.
     /// </summary>
     /// <param name="birthdate">The birthdate to validate, or null.</param>
-    /// <param name="errors">The errors factory instance.</param>
-    private static void GuardBirthdate(DateOnly? birthdate, ArtistErrors errors)
+    private static void GuardBirthdate(DateOnly? birthdate)
     {
         if (birthdate is not null && birthdate.Value >= DateOnly.FromDateTime(dateTime: DateTime.UtcNow))
         {
-            throw errors.BirthdateInFuture();
+            throw new ContentRuleException(ContentRuleCodes.ArtistBirthdateInFuture);
         }
     }
 
@@ -315,15 +310,14 @@ public class ArtistEntity : Aggregate<Guid>
     /// <c>UserId</c>.
     /// </summary>
     /// <param name="userId">The identity user UUID claiming this profile.</param>
-    /// <param name="errors">The errors factory instance.</param>
-    /// <exception cref="_116.Shared.Application.Exceptions.ConflictException">
+    /// <exception cref="ContentRuleException">
     /// Thrown if the profile is already claimed.
     /// </exception>
-    public void ClaimOwnership(Guid userId, ArtistErrors errors)
+    public void ClaimOwnership(Guid userId)
     {
         if (UserId.HasValue)
         {
-            throw errors.AlreadyClaimed();
+            throw new ContentRuleException(ContentRuleCodes.ArtistAlreadyClaimed);
         }
 
         UserId = userId;
