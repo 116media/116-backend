@@ -1,4 +1,6 @@
 using _116.Identity.Domain.Enums;
+using _116.Identity.Domain.Exceptions;
+using _116.Identity.Domain.StateMachines;
 
 namespace _116.Identity.Domain.ValueObjects;
 
@@ -12,12 +14,12 @@ public record OtpPurpose
     /// Initializes a new <see cref="OtpPurpose" /> from an <see cref="EnumOtpPurpose" /> enum value.
     /// </summary>
     /// <param name="value">The <see cref="EnumOtpPurpose" /> to wrap.</param>
-    /// <exception cref="ArgumentException">Thrown when the provided enum value is not defined.</exception>
+    /// <exception cref="IdentityRuleException">Thrown when the provided enum value is not defined.</exception>
     public OtpPurpose(EnumOtpPurpose value)
     {
         if (!Enum.IsDefined(value: value))
         {
-            throw new ArgumentException($"Invalid OTP purpose: {value}");
+            throw new IdentityRuleException(IdentityRuleCodes.InvalidOtpPurpose, value.ToString());
         }
 
         Value = value;
@@ -27,12 +29,12 @@ public record OtpPurpose
     /// Initializes a new <see cref="OtpPurpose" /> from a string representation.
     /// </summary>
     /// <param name="value">The string to parse into an <see cref="EnumOtpPurpose" />.</param>
-    /// <exception cref="ArgumentException">Thrown when the provided string cannot be parsed or is invalid.</exception>
+    /// <exception cref="IdentityRuleException">Thrown when the provided string cannot be parsed or is invalid.</exception>
     public OtpPurpose(string value)
     {
         if (!Enum.TryParse(value: value, true, out EnumOtpPurpose parsed) || !Enum.IsDefined(value: parsed))
         {
-            throw new ArgumentException($"Invalid OTP purpose: {value}");
+            throw new IdentityRuleException(IdentityRuleCodes.InvalidOtpPurpose, value ?? string.Empty);
         }
 
         Value = parsed;
