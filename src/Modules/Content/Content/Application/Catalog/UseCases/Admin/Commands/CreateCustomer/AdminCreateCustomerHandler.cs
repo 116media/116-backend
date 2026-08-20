@@ -44,8 +44,7 @@ public class AdminCreateCustomerHandler(
             email: command.Email,
             phone: command.Phone,
             company: command.Company,
-            notes: command.Notes,
-            errors: i18n.Customer
+            notes: command.Notes
         );
 
         await customerRepository.AddAsync(customer: customer, cancellationToken: cancellationToken);
