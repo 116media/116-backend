@@ -1,6 +1,8 @@
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Domain.Events;
+using _116.Content.Domain.Exceptions;
+using _116.Content.Domain.StateMachines;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Helpers;
@@ -40,8 +42,7 @@ public class LyricsEntityTests
             lyricsText,
             language,
             slug,
-            AuthorId,
-            TestErrorsFactory.CreateLyricsErrors()
+            AuthorId
         );
 
         // Assert
@@ -75,8 +76,7 @@ public class LyricsEntityTests
             TestConstants.Lyrics.ValidLyricsText,
             TestConstants.Lyrics.ValidLanguage,
             TestConstants.Lyrics.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateLyricsErrors()
+            AuthorId
         );
 
         // Assert
@@ -100,12 +100,11 @@ public class LyricsEntityTests
                 TestConstants.Lyrics.ValidLyricsText,
                 TestConstants.Lyrics.ValidLanguage,
                 TestConstants.Lyrics.ValidSlug,
-                AuthorId,
-                TestErrorsFactory.CreateLyricsErrors()
+                AuthorId
             );
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.SongTitleRequired);
     }
 
     [Theory]
@@ -125,12 +124,11 @@ public class LyricsEntityTests
                 TestConstants.Lyrics.ValidLyricsText,
                 TestConstants.Lyrics.ValidLanguage,
                 TestConstants.Lyrics.ValidSlug,
-                AuthorId,
-                TestErrorsFactory.CreateLyricsErrors()
+                AuthorId
             );
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.LyricsArtistNameRequired);
     }
 
     [Theory]
@@ -150,12 +148,11 @@ public class LyricsEntityTests
                 invalidLyricsText!,
                 TestConstants.Lyrics.ValidLanguage,
                 TestConstants.Lyrics.ValidSlug,
-                AuthorId,
-                TestErrorsFactory.CreateLyricsErrors()
+                AuthorId
             );
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.LyricsTextRequired);
     }
 
     [Theory]
@@ -175,12 +172,11 @@ public class LyricsEntityTests
                 TestConstants.Lyrics.ValidLyricsText,
                 TestConstants.Lyrics.ValidLanguage,
                 invalidSlug!,
-                AuthorId,
-                TestErrorsFactory.CreateLyricsErrors()
+                AuthorId
             );
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.LyricsSlugRequired);
     }
 
     #endregion
@@ -206,8 +202,7 @@ public class LyricsEntityTests
             TestConstants.Lyrics.ValidLyricsText,
             TestConstants.Lyrics.ValidLanguage,
             TestConstants.Lyrics.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateLyricsErrors()
+            AuthorId
         );
 
         // Assert
@@ -234,12 +229,11 @@ public class LyricsEntityTests
                 TestConstants.Lyrics.ValidLyricsText,
                 TestConstants.Lyrics.ValidLanguage,
                 TestConstants.Lyrics.ValidSlug,
-                AuthorId,
-                TestErrorsFactory.CreateLyricsErrors()
+                AuthorId
             );
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.SongTitleRequired);
     }
 
     [Theory]
@@ -260,12 +254,11 @@ public class LyricsEntityTests
                 TestConstants.Lyrics.ValidLyricsText,
                 TestConstants.Lyrics.ValidLanguage,
                 TestConstants.Lyrics.ValidSlug,
-                AuthorId,
-                TestErrorsFactory.CreateLyricsErrors()
+                AuthorId
             );
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.LyricsArtistNameRequired);
     }
 
     [Theory]
@@ -286,12 +279,11 @@ public class LyricsEntityTests
                 invalidLyricsText!,
                 TestConstants.Lyrics.ValidLanguage,
                 TestConstants.Lyrics.ValidSlug,
-                AuthorId,
-                TestErrorsFactory.CreateLyricsErrors()
+                AuthorId
             );
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.LyricsTextRequired);
     }
 
     [Theory]
@@ -312,12 +304,11 @@ public class LyricsEntityTests
                 TestConstants.Lyrics.ValidLyricsText,
                 TestConstants.Lyrics.ValidLanguage,
                 invalidSlug!,
-                AuthorId,
-                TestErrorsFactory.CreateLyricsErrors()
+                AuthorId
             );
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.LyricsSlugRequired);
     }
 
     #endregion
@@ -639,8 +630,7 @@ public class LyricsEntityTests
             language: "en",
             videoId: newVideoId,
             customerId: customerId,
-            orderItemId: orderItemId,
-            errors: TestErrorsFactory.CreateLyricsErrors()
+            orderItemId: orderItemId
         );
 
         // Assert
@@ -675,12 +665,11 @@ public class LyricsEntityTests
                 language: TestConstants.Lyrics.ValidLanguage,
                 videoId: null,
                 customerId: null,
-                orderItemId: null,
-                errors: TestErrorsFactory.CreateLyricsErrors()
+                orderItemId: null
             );
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.LyricsSlugRequired);
     }
 
     #endregion
@@ -1021,7 +1010,7 @@ public class LyricsEntityTests
         const string reason = "Government takedown request.";
 
         // Act
-        lyrics.ForceUnpromote(unpromotedBy, reason, TestErrorsFactory.CreateLyricsErrors());
+        lyrics.ForceUnpromote(unpromotedBy, reason);
 
         // Assert
         lyrics.IsPromoted.Should().BeFalse();
@@ -1041,7 +1030,7 @@ public class LyricsEntityTests
         const string reason = "Government takedown request.";
 
         // Act
-        lyrics.ForceUnpromote("super-admin-user-id", reason, TestErrorsFactory.CreateLyricsErrors());
+        lyrics.ForceUnpromote("super-admin-user-id", reason);
 
         // Assert
         lyrics
@@ -1067,15 +1056,10 @@ public class LyricsEntityTests
         LyricsEntity lyrics = CreateFreeLyrics();
 
         // Act
-        Action act = () =>
-            lyrics.ForceUnpromote(
-                "super-admin-user-id",
-                "Government takedown request.",
-                TestErrorsFactory.CreateLyricsErrors()
-            );
+        Action act = () => lyrics.ForceUnpromote("super-admin-user-id", "Government takedown request.");
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.LyricsNotPromoted);
     }
 
     #endregion
@@ -1252,8 +1236,7 @@ public class LyricsEntityTests
             TestConstants.Lyrics.ValidLyricsText,
             TestConstants.Lyrics.ValidLanguage,
             TestConstants.Lyrics.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateLyricsErrors()
+            AuthorId
         );
     }
 }
