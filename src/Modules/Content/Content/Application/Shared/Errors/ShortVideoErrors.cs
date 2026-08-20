@@ -39,26 +39,10 @@ public class ShortVideoErrors(ShortVideoErrorMessage i18n)
     }
 
     /// <summary>
-    /// Throws when a short video title is required but not provided.
-    /// </summary>
-    public BadRequestException TitleRequired()
-    {
-        return new BadRequestException(i18n.TitleRequired());
-    }
-
-    /// <summary>
     /// Throws when a short video with the given slug already exists.
     /// </summary>
     public ConflictException SlugAlreadyExists(string slug)
     {
         return new ConflictException(i18n.SlugAlreadyExists(slug: slug));
-    }
-
-    /// <summary>
-    /// Throws when activating a short video that has no uploaded video file yet.
-    /// </summary>
-    public BadRequestException VideoFileRequired()
-    {
-        return new BadRequestException(i18n.VideoFileRequired());
     }
 }
