@@ -1,52 +1,78 @@
-using _116.Content.Application.Shared.Errors.Messages;
-using _116.Content.Domain.Enums;
-using _116.Content.Domain.StateMachines;
+using _116.Content.Application.Shared.Exceptions.Problems;
+using _116.Content.Domain.Exceptions;
 using _116.Shared.Application.Exceptions.Handlers.Contracts;
+using _116.Shared.Application.Exceptions.Problems;
 using _116.Shared.Domain.Exceptions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace _116.Content.Application.Shared.Exceptions.Handlers;
 
 /// <summary>
-/// Strategy translating <see cref="DomainRuleException" /> for the client: the domain
-/// throws a culture-free code, and this is the one place that phrases it. The response also
-/// carries the code and args as extensions, so clients can branch without parsing the sentence.
+/// Strategy translating <see cref="ContentRuleException" /> for the client: the domain throws a
+/// culture-free code, and the per-aggregate catalogs under <c>Problems/</c> own each rule's
+/// status, title and phrasing. The response also carries the code and args as extensions.
 /// </summary>
-public sealed class DomainRuleExceptionStrategy : BaseExceptionStrategy<DomainRuleException>
+public sealed class DomainRuleExceptionStrategy : BaseExceptionStrategy<ContentRuleException>
 {
     /// <summary>
-    /// The editable-states label the update guards historically reported as their target.
+    /// The module's problem catalog, merged from one catalog per aggregate. A duplicate code
+    /// across catalogs throws at first use rather than silently shadowing an entry.
     /// </summary>
-    private const string EditableStatesLabel = "Draft/PendingPayment/PendingReview/Rejected (editable)";
+    private static readonly Dictionary<string, RuleProblem> Problems = RuleProblemCatalog.Merge(
+        new PublicationRuleProblems(),
+        new ArticleRuleProblems(),
+        new VideoRuleProblems(),
+        new LyricsRuleProblems(),
+        new ShortVideoRuleProblems(),
+        new AlbumRuleProblems(),
+        new ArtistRuleProblems(),
+        new CategoryRuleProblems(),
+        new ContentTypeRuleProblems(),
+        new CustomerRuleProblems(),
+        new PackageRuleProblems(),
+        new PricingTierRuleProblems(),
+        new PromotionLevelRuleProblems(),
+        new OrderRuleProblems(),
+        new PaymentRuleProblems(),
+        new TagRuleProblems(),
+        new ShareRuleProblems()
+    );
+
+    /// <summary>
+    /// Reports whether a rule code has a declared problem; the completeness guard asserts this
+    /// for every constant on <see cref="Domain.StateMachines.ContentRuleCodes" />.
+    /// </summary>
+    /// <param name="code">The rule code.</param>
+    /// <returns>True when a catalog declares a problem.</returns>
+    public static bool Handles(string code)
+    {
+        return Problems.ContainsKey(code);
+    }
 
     /// <inheritdoc />
-    public override ProblemDetails CreateProblemDetails(DomainRuleException exception, HttpContext context)
+    public override ProblemDetails CreateProblemDetails(ContentRuleException exception, HttpContext context)
     {
-        // An unmapped code degrades to the code string — a translation gap, never a 500.
-        string detail = exception.Code switch
+        RuleProblem ruleProblem;
+
+        if (Problems.TryGetValue(exception.Code, out RuleProblem? mapped))
         {
-            ContentRuleCodes.InvalidStatusTransition => ResolveTransitionMessage(
-                exception: exception,
-                context: context,
-                to: exception.Args[2]
-            ),
-            ContentRuleCodes.NotEditable => ResolveTransitionMessage(
-                exception: exception,
-                context: context,
-                to: EditableStatesLabel
-            ),
-            ContentRuleCodes.PublicationRequiresYoutubeUrl => context
-                .RequestServices.GetRequiredService<VideoErrorMessage>()
-                .CannotPublishWithoutYoutubeUrl(),
-            _ => exception.Code,
-        };
+            ruleProblem = mapped;
+        }
+        else
+        {
+            // An unmapped code degrades to the code string — a catalog gap, never a 500.
+            ruleProblem = new RuleProblem(
+                StatusCodes.Status400BadRequest,
+                nameof(DomainRuleException),
+                (_, _) => exception.Code
+            );
+        }
 
         ProblemDetails problem = CreateStandardProblemDetails(
-            title: nameof(DomainRuleException),
-            detail: detail,
-            statusCode: StatusCodes.Status400BadRequest,
+            title: ruleProblem.Title,
+            detail: ruleProblem.Detail(context, exception.Args),
+            statusCode: ruleProblem.Status,
             context: context
         );
 
@@ -54,30 +80,5 @@ public sealed class DomainRuleExceptionStrategy : BaseExceptionStrategy<DomainRu
         problem.Extensions["args"] = exception.Args;
 
         return problem;
-    }
-
-    /// <summary>
-    /// Phrases a status-rule violation through the localizer of the content type that threw it.
-    /// </summary>
-    /// <param name="exception">The thrown rule violation; Args[0] is the content type, Args[1] the source status.</param>
-    /// <param name="context">The HTTP context the localizers are resolved from.</param>
-    /// <param name="to">The target-state label for the message.</param>
-    /// <returns>The localized message.</returns>
-    private static string ResolveTransitionMessage(DomainRuleException exception, HttpContext context, string to)
-    {
-        string from = exception.Args[1];
-
-        return Enum.Parse<EnumCoreContentType>(exception.Args[0]) switch
-        {
-            EnumCoreContentType.Video => context
-                .RequestServices.GetRequiredService<VideoErrorMessage>()
-                .InvalidStatusTransition(from: from, to: to),
-            EnumCoreContentType.Lyrics => context
-                .RequestServices.GetRequiredService<LyricsErrorMessage>()
-                .InvalidStatusTransition(from: from, to: to),
-            _ => context
-                .RequestServices.GetRequiredService<ArticleErrorMessage>()
-                .InvalidStatusTransition(from: from, to: to),
-        };
     }
 }
