@@ -1,4 +1,6 @@
 using _116.Content.Domain.Enums;
+using _116.Content.Domain.Exceptions;
+using _116.Content.Domain.StateMachines;
 using _116.Content.Domain.ValueObjects;
 using AwesomeAssertions;
 using AwesomeAssertions.Specialized;
@@ -37,8 +39,7 @@ public class ShareChannelTests
 
         // Act & Assert
         Action act = () => new ShareChannel(invalid);
-        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
-        exception.Which.Message.Should().Contain("Invalid share channel");
+        act.Should().ThrowExactly<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.InvalidShareChannel);
     }
 
     #endregion
@@ -73,8 +74,7 @@ public class ShareChannelTests
     {
         // Act & Assert
         Action act = () => new ShareChannel(input);
-        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
-        exception.Which.Message.Should().Contain("Invalid share channel");
+        act.Should().ThrowExactly<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.InvalidShareChannel);
     }
 
     #endregion
