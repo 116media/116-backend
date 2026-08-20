@@ -10,31 +10,6 @@ namespace _116.Core.Application.Shared.Errors;
 public class FileErrors(ValidationErrorMessage validation, InternalServerErrorMessage internalServer)
 {
     /// <summary>
-    /// Throws when file name is required.
-    /// </summary>
-    public BadRequestException FileNameRequired() => new(validation.FileNameRequired());
-
-    /// <summary>
-    /// Throws when original file name is required.
-    /// </summary>
-    public BadRequestException OriginalFileNameRequired() => new(validation.OriginalFileNameRequired());
-
-    /// <summary>
-    /// Throws when MIME type is required.
-    /// </summary>
-    public BadRequestException MimeTypeRequired() => new(validation.MimeTypeRequired());
-
-    /// <summary>
-    /// Throws when storage URL is required.
-    /// </summary>
-    public BadRequestException StorageUrlRequired() => new(validation.StorageUrlRequired());
-
-    /// <summary>
-    /// Throws when file size must be greater than zero.
-    /// </summary>
-    public BadRequestException FileSizeMustBeGreaterThanZero() => new(validation.FileSizeMustBeGreaterThanZero());
-
-    /// <summary>
     /// Throws when a file download fails from external URL.
     /// </summary>
     public InternalServerException FileDownloadFailed(string fileUrl, string reason) =>
