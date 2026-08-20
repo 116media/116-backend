@@ -1,4 +1,6 @@
 using _116.Content.Domain.Enums;
+using _116.Content.Domain.Exceptions;
+using _116.Content.Domain.StateMachines;
 
 namespace _116.Content.Domain.ValueObjects;
 
@@ -12,12 +14,12 @@ public record ShareChannel
     /// Initializes a new <see cref="ShareChannel" /> from an <see cref="EnumShareChannel" /> value.
     /// </summary>
     /// <param name="value">The <see cref="EnumShareChannel" /> to wrap.</param>
-    /// <exception cref="ArgumentException">Thrown when the provided enum value is not defined.</exception>
+    /// <exception cref="ContentRuleException">Thrown when the provided enum value is not defined.</exception>
     public ShareChannel(EnumShareChannel value)
     {
         if (!Enum.IsDefined(value: value))
         {
-            throw new ArgumentException($"Invalid share channel: {value}");
+            throw new ContentRuleException(ContentRuleCodes.InvalidShareChannel, value.ToString());
         }
 
         Value = value;
@@ -27,12 +29,12 @@ public record ShareChannel
     /// Initializes a new <see cref="ShareChannel" /> from a string representation.
     /// </summary>
     /// <param name="value">The string to parse into an <see cref="EnumShareChannel" />.</param>
-    /// <exception cref="ArgumentException">Thrown when the provided string cannot be parsed or is invalid.</exception>
+    /// <exception cref="ContentRuleException">Thrown when the provided string cannot be parsed or is invalid.</exception>
     public ShareChannel(string value)
     {
         if (!Enum.TryParse(value: value, true, out EnumShareChannel parsed) || !Enum.IsDefined(value: parsed))
         {
-            throw new ArgumentException($"Invalid share channel: {value}");
+            throw new ContentRuleException(ContentRuleCodes.InvalidShareChannel, value ?? string.Empty);
         }
 
         Value = parsed;
