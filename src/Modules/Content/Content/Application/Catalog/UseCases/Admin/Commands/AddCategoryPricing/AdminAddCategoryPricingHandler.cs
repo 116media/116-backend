@@ -59,8 +59,7 @@ public class AdminAddCategoryPricingHandler(
             id: Guid.NewGuid(),
             categoryId: categoryId,
             pricingTierId: command.PricingTierId,
-            priceUsd: command.PriceUsd,
-            errors: i18n.Category
+            priceUsd: command.PriceUsd
         );
 
         await categoryRepository.AddPricingAsync(pricing: pricing, cancellationToken: cancellationToken);
