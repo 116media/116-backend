@@ -1,6 +1,8 @@
 using _116.Core.Application.Shared.Errors.Facade;
 using _116.Core.Domain.Entities;
 using _116.Core.Domain.Events;
+using _116.Core.Domain.Exceptions;
+using _116.Core.Domain.StateMachines;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Core;
@@ -31,7 +33,7 @@ public class FileEntityTests
         long sizeInBytes = TestConstants.File.ValidSizeInBytes;
 
         // Act
-        var file = FileEntity.Create(id, fileName, originalFileName, mimeType, storageUrl, sizeInBytes, _coreErrors);
+        var file = FileEntity.Create(id, fileName, originalFileName, mimeType, storageUrl, sizeInBytes);
 
         // Assert
         file.Id.Should().Be(id);
@@ -54,8 +56,7 @@ public class FileEntityTests
             TestConstants.File.ValidOriginalFileName,
             TestConstants.File.ValidMimeType,
             TestConstants.File.ValidStorageUrl,
-            TestConstants.File.ValidSizeInBytes,
-            _coreErrors
+            TestConstants.File.ValidSizeInBytes
         );
 
         // Assert
@@ -74,7 +75,6 @@ public class FileEntityTests
             TestConstants.File.ValidMimeType,
             TestConstants.File.ValidStorageUrl,
             TestConstants.File.ValidSizeInBytes,
-            _coreErrors,
             storageKey: TestConstants.File.ValidStorageKey,
             dominantColorHex: "#FFEB3B",
             foregroundColorHex: "#000000"
@@ -102,12 +102,11 @@ public class FileEntityTests
                 TestConstants.File.ValidOriginalFileName,
                 TestConstants.File.ValidMimeType,
                 TestConstants.File.ValidStorageUrl,
-                TestConstants.File.ValidSizeInBytes,
-                _coreErrors
+                TestConstants.File.ValidSizeInBytes
             );
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<CoreRuleException>().Which.Code.Should().Be(CoreRuleCodes.FileNameRequired);
     }
 
     [Theory]
@@ -127,12 +126,11 @@ public class FileEntityTests
                 invalidOriginalFileName!,
                 TestConstants.File.ValidMimeType,
                 TestConstants.File.ValidStorageUrl,
-                TestConstants.File.ValidSizeInBytes,
-                _coreErrors
+                TestConstants.File.ValidSizeInBytes
             );
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<CoreRuleException>().Which.Code.Should().Be(CoreRuleCodes.OriginalFileNameRequired);
     }
 
     [Theory]
@@ -152,12 +150,11 @@ public class FileEntityTests
                 TestConstants.File.ValidOriginalFileName,
                 invalidMimeType!,
                 TestConstants.File.ValidStorageUrl,
-                TestConstants.File.ValidSizeInBytes,
-                _coreErrors
+                TestConstants.File.ValidSizeInBytes
             );
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<CoreRuleException>().Which.Code.Should().Be(CoreRuleCodes.MimeTypeRequired);
     }
 
     [Theory]
@@ -177,12 +174,11 @@ public class FileEntityTests
                 TestConstants.File.ValidOriginalFileName,
                 TestConstants.File.ValidMimeType,
                 invalidStorageUrl!,
-                TestConstants.File.ValidSizeInBytes,
-                _coreErrors
+                TestConstants.File.ValidSizeInBytes
             );
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<CoreRuleException>().Which.Code.Should().Be(CoreRuleCodes.StorageUrlRequired);
     }
 
     [Theory]
@@ -202,12 +198,11 @@ public class FileEntityTests
                 TestConstants.File.ValidOriginalFileName,
                 TestConstants.File.ValidMimeType,
                 TestConstants.File.ValidStorageUrl,
-                invalidSize,
-                _coreErrors
+                invalidSize
             );
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<CoreRuleException>().Which.Code.Should().Be(CoreRuleCodes.FileSizeMustBePositive);
     }
 
     #endregion
