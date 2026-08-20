@@ -1,5 +1,7 @@
 using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.Exceptions;
+using _116.Identity.Domain.StateMachines;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Identity;
@@ -28,13 +30,7 @@ public class PermissionEntityTests
         string description = TestConstants.Permission.ValidDescription;
 
         // Act
-        var permission = PermissionEntity.Create(
-            id,
-            resource,
-            action,
-            description,
-            TestErrorsFactory.CreateUserErrors()
-        );
+        var permission = PermissionEntity.Create(id, resource, action, description);
 
         // Assert
         permission.Id.Should().Be(id);
@@ -61,12 +57,14 @@ public class PermissionEntityTests
                 id,
                 invalidResource!,
                 TestConstants.Permission.ValidAction,
-                TestConstants.Permission.ValidDescription,
-                TestErrorsFactory.CreateUserErrors()
+                TestConstants.Permission.ValidDescription
             );
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should()
+            .Throw<IdentityRuleException>()
+            .Which.Code.Should()
+            .Be(IdentityRuleCodes.PermissionResourceRequired);
     }
 
     [Theory]
@@ -84,12 +82,11 @@ public class PermissionEntityTests
                 id,
                 TestConstants.Permission.ValidResource,
                 invalidAction!,
-                TestConstants.Permission.ValidDescription,
-                TestErrorsFactory.CreateUserErrors()
+                TestConstants.Permission.ValidDescription
             );
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<IdentityRuleException>().Which.Code.Should().Be(IdentityRuleCodes.PermissionActionRequired);
     }
 
     [Theory]
@@ -107,12 +104,14 @@ public class PermissionEntityTests
                 id,
                 TestConstants.Permission.ValidResource,
                 TestConstants.Permission.ValidAction,
-                invalidDescription!,
-                TestErrorsFactory.CreateUserErrors()
+                invalidDescription!
             );
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should()
+            .Throw<IdentityRuleException>()
+            .Which.Code.Should()
+            .Be(IdentityRuleCodes.PermissionDescriptionRequired);
     }
 
     #endregion
@@ -129,7 +128,7 @@ public class PermissionEntityTests
         string newDescription = "Updated permission description for testing.";
 
         // Act
-        permission.Update(newResource, newAction, newDescription, _userErrors);
+        permission.Update(newResource, newAction, newDescription);
 
         // Assert
         permission.Resource.Should().Be(newResource);
@@ -151,12 +150,14 @@ public class PermissionEntityTests
             permission.Update(
                 invalidResource!,
                 TestConstants.Permission.ValidAction,
-                TestConstants.Permission.ValidDescription,
-                _userErrors
+                TestConstants.Permission.ValidDescription
             );
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should()
+            .Throw<IdentityRuleException>()
+            .Which.Code.Should()
+            .Be(IdentityRuleCodes.PermissionResourceRequired);
     }
 
     [Theory]
@@ -173,12 +174,11 @@ public class PermissionEntityTests
             permission.Update(
                 TestConstants.Permission.ValidResource,
                 invalidAction!,
-                TestConstants.Permission.ValidDescription,
-                _userErrors
+                TestConstants.Permission.ValidDescription
             );
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<IdentityRuleException>().Which.Code.Should().Be(IdentityRuleCodes.PermissionActionRequired);
     }
 
     [Theory]
@@ -195,12 +195,14 @@ public class PermissionEntityTests
             permission.Update(
                 TestConstants.Permission.ValidResource,
                 TestConstants.Permission.ValidAction,
-                invalidDescription!,
-                _userErrors
+                invalidDescription!
             );
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should()
+            .Throw<IdentityRuleException>()
+            .Which.Code.Should()
+            .Be(IdentityRuleCodes.PermissionDescriptionRequired);
     }
 
     #endregion
