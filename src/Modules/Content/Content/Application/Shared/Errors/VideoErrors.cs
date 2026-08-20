@@ -31,30 +31,6 @@ public class VideoErrors(VideoErrorMessage i18n)
     }
 
     /// <summary>
-    /// Throws when a video title is required but not provided.
-    /// </summary>
-    public BadRequestException TitleRequired()
-    {
-        return new BadRequestException(i18n.TitleRequired());
-    }
-
-    /// <summary>
-    /// Throws when a video slug is required but not provided.
-    /// </summary>
-    public BadRequestException SlugRequired()
-    {
-        return new BadRequestException(i18n.SlugRequired());
-    }
-
-    /// <summary>
-    /// Throws when a video cannot be published because no YouTube URL has been attached.
-    /// </summary>
-    public BadRequestException CannotPublishWithoutYoutubeUrl()
-    {
-        return new BadRequestException(i18n.CannotPublishWithoutYoutubeUrl());
-    }
-
-    /// <summary>
     /// Throws when a hard delete is attempted on a published or approved video.
     /// </summary>
     public BadRequestException CannotDeletePublishedVideo()
@@ -116,23 +92,5 @@ public class VideoErrors(VideoErrorMessage i18n)
     public BadRequestException InvalidStatusTransition(string from, string to)
     {
         return new BadRequestException(i18n.InvalidStatusTransition(from: from, to: to));
-    }
-
-    /// <summary>
-    /// Throws when a YouTube URL is attached before the scheduled shooting date has passed.
-    /// </summary>
-    public BadRequestException CannotAttachYoutubeUrlBeforeShoot(DateTimeOffset shootingScheduledAt)
-    {
-        return new BadRequestException(
-            i18n.CannotAttachYoutubeUrlBeforeShoot(shootingScheduledAt: shootingScheduledAt)
-        );
-    }
-
-    /// <summary>
-    /// Throws when a video carries no active promotion.
-    /// </summary>
-    public BadRequestException NotPromoted()
-    {
-        return new BadRequestException(i18n.NotPromoted());
     }
 }
