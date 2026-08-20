@@ -45,12 +45,4 @@ public class ContentTypeErrors(ContentTypeErrorMessage i18n)
     {
         return new ConflictException(i18n.AlreadyInactive());
     }
-
-    /// <summary>
-    /// Throws when a content type name is required but not provided.
-    /// </summary>
-    public BadRequestException NameRequired()
-    {
-        return new BadRequestException(i18n.NameRequired());
-    }
 }
