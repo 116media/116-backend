@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
-using _116.Content.Application.Shared.Errors;
 using _116.Content.Domain.Constants;
+using _116.Content.Domain.Exceptions;
+using _116.Content.Domain.StateMachines;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -33,12 +34,12 @@ public class ContentTypeEntity : Aggregate<Guid>
     /// <param name="id">The unique identifier for the content type.</param>
     /// <param name="name">The display name of the content type.</param>
     /// <returns>A new <see cref="ContentTypeEntity" /> instance.</returns>
-    /// <exception cref="ArgumentException">Thrown when name is empty or whitespace.</exception>
-    public static ContentTypeEntity Create(Guid id, string name, ContentTypeErrors errors)
+    /// <exception cref="ContentRuleException">Thrown when name is empty or whitespace.</exception>
+    public static ContentTypeEntity Create(Guid id, string name)
     {
         if (string.IsNullOrWhiteSpace(value: name))
         {
-            throw errors.NameRequired();
+            throw new ContentRuleException(ContentRuleCodes.ContentTypeNameRequired);
         }
 
         return new ContentTypeEntity { Id = id, Name = name };
@@ -48,13 +49,12 @@ public class ContentTypeEntity : Aggregate<Guid>
     /// Updates the content type name.
     /// </summary>
     /// <param name="name">The new display name of the content type.</param>
-    /// <param name="errors">The errors factory instance.</param>
-    /// <exception cref="ArgumentException">Thrown when name is empty or whitespace.</exception>
-    public void Update(string name, ContentTypeErrors errors)
+    /// <exception cref="ContentRuleException">Thrown when name is empty or whitespace.</exception>
+    public void Update(string name)
     {
         if (string.IsNullOrWhiteSpace(value: name))
         {
-            throw errors.NameRequired();
+            throw new ContentRuleException(ContentRuleCodes.ContentTypeNameRequired);
         }
 
         Name = name;
