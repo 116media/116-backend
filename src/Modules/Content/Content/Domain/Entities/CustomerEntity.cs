@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
-using _116.Content.Application.Shared.Errors;
 using _116.Content.Domain.Constants;
+using _116.Content.Domain.Exceptions;
+using _116.Content.Domain.StateMachines;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -63,18 +64,17 @@ public class CustomerEntity : Aggregate<Guid>
         string email,
         string? phone,
         string? company,
-        string? notes,
-        CustomerErrors errors
+        string? notes
     )
     {
         if (string.IsNullOrWhiteSpace(value: fullName))
         {
-            throw errors.FullNameRequired();
+            throw new ContentRuleException(ContentRuleCodes.CustomerFullNameRequired);
         }
 
         if (string.IsNullOrWhiteSpace(value: email))
         {
-            throw errors.EmailRequired();
+            throw new ContentRuleException(ContentRuleCodes.CustomerEmailRequired);
         }
 
         return new CustomerEntity
@@ -96,24 +96,16 @@ public class CustomerEntity : Aggregate<Guid>
     /// <param name="phone">The new optional phone number.</param>
     /// <param name="company">The new optional company name.</param>
     /// <param name="notes">The new optional internal notes.</param>
-    /// <param name="errors">The errors factory instance.</param>
-    public void Update(
-        string fullName,
-        string email,
-        string? phone,
-        string? company,
-        string? notes,
-        CustomerErrors errors
-    )
+    public void Update(string fullName, string email, string? phone, string? company, string? notes)
     {
         if (string.IsNullOrWhiteSpace(value: fullName))
         {
-            throw errors.FullNameRequired();
+            throw new ContentRuleException(ContentRuleCodes.CustomerFullNameRequired);
         }
 
         if (string.IsNullOrWhiteSpace(value: email))
         {
-            throw errors.EmailRequired();
+            throw new ContentRuleException(ContentRuleCodes.CustomerEmailRequired);
         }
 
         FullName = fullName;
