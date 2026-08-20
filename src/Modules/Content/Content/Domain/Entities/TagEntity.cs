@@ -1,7 +1,8 @@
 using System.ComponentModel.DataAnnotations;
-using _116.Content.Application.Shared.Errors;
 using _116.Content.Domain.Constants;
 using _116.Content.Domain.Events;
+using _116.Content.Domain.Exceptions;
+using _116.Content.Domain.StateMachines;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -37,17 +38,17 @@ public class TagEntity : Aggregate<Guid>
     /// <param name="name">The display name of the tag.</param>
     /// <param name="slug">The URL-safe slug for the tag (lowercase, hyphens only).</param>
     /// <returns>A new <see cref="TagEntity" /> instance.</returns>
-    /// <exception cref="ArgumentException">Thrown when name or slug are empty or whitespace.</exception>
-    public static TagEntity Create(Guid id, string name, string slug, TagErrors errors)
+    /// <exception cref="ContentRuleException">Thrown when name or slug are empty or whitespace.</exception>
+    public static TagEntity Create(Guid id, string name, string slug)
     {
         if (string.IsNullOrWhiteSpace(value: name))
         {
-            throw errors.NameRequired();
+            throw new ContentRuleException(ContentRuleCodes.TagNameRequired);
         }
 
         if (string.IsNullOrWhiteSpace(value: slug))
         {
-            throw errors.SlugRequired();
+            throw new ContentRuleException(ContentRuleCodes.TagSlugRequired);
         }
 
         var tag = new TagEntity
@@ -67,18 +68,17 @@ public class TagEntity : Aggregate<Guid>
     /// </summary>
     /// <param name="name">The new display name for the tag.</param>
     /// <param name="slug">The new URL-safe slug for the tag.</param>
-    /// <param name="errors">The errors factory instance.</param>
-    /// <exception cref="BadRequestException">Thrown when name or slug are empty or whitespace.</exception>
-    public void Update(string name, string slug, TagErrors errors)
+    /// <exception cref="ContentRuleException">Thrown when name or slug are empty or whitespace.</exception>
+    public void Update(string name, string slug)
     {
         if (string.IsNullOrWhiteSpace(value: name))
         {
-            throw errors.NameRequired();
+            throw new ContentRuleException(ContentRuleCodes.TagNameRequired);
         }
 
         if (string.IsNullOrWhiteSpace(value: slug))
         {
-            throw errors.SlugRequired();
+            throw new ContentRuleException(ContentRuleCodes.TagSlugRequired);
         }
 
         Name = name;
