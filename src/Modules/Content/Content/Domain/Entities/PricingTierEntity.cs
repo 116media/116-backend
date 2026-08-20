@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
-using _116.Content.Application.Shared.Errors;
 using _116.Content.Domain.Constants;
+using _116.Content.Domain.Exceptions;
+using _116.Content.Domain.StateMachines;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -40,12 +41,12 @@ public class PricingTierEntity : Aggregate<Guid>
     /// <param name="name">The name of the pricing tier.</param>
     /// <param name="description">A description of what this tier covers.</param>
     /// <returns>A new <see cref="PricingTierEntity" /> instance.</returns>
-    /// <exception cref="ArgumentException">Thrown when name is empty or whitespace.</exception>
-    public static PricingTierEntity Create(Guid id, string name, string description, PricingTierErrors errors)
+    /// <exception cref="ContentRuleException">Thrown when name is empty or whitespace.</exception>
+    public static PricingTierEntity Create(Guid id, string name, string description)
     {
         if (string.IsNullOrWhiteSpace(value: name))
         {
-            throw errors.NameRequired();
+            throw new ContentRuleException(ContentRuleCodes.PricingTierNameRequired);
         }
 
         return new PricingTierEntity
@@ -61,12 +62,11 @@ public class PricingTierEntity : Aggregate<Guid>
     /// </summary>
     /// <param name="name">The new name for the pricing tier.</param>
     /// <param name="description">The new description for the pricing tier.</param>
-    /// <param name="errors">The errors factory instance.</param>
-    public void Update(string name, string description, PricingTierErrors errors)
+    public void Update(string name, string description)
     {
         if (string.IsNullOrWhiteSpace(value: name))
         {
-            throw errors.NameRequired();
+            throw new ContentRuleException(ContentRuleCodes.PricingTierNameRequired);
         }
 
         Name = name;
