@@ -1,4 +1,6 @@
 using _116.Identity.Domain.Enums;
+using _116.Identity.Domain.Exceptions;
+using _116.Identity.Domain.StateMachines;
 using _116.Identity.Domain.ValueObjects;
 using AwesomeAssertions;
 using AwesomeAssertions.Specialized;
@@ -48,8 +50,7 @@ public class OtpPurposeTests
 
         // Act & Assert
         Action act = () => new OtpPurpose(invalidEnum);
-        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
-        exception.Which.Message.Should().Contain("Invalid OTP purpose");
+        act.Should().ThrowExactly<IdentityRuleException>().Which.Code.Should().Be(IdentityRuleCodes.InvalidOtpPurpose);
     }
 
     #endregion
@@ -100,8 +101,7 @@ public class OtpPurposeTests
     {
         // Act & Assert
         Action act = () => new OtpPurpose("InvalidPurpose");
-        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
-        exception.Which.Message.Should().Contain("Invalid OTP purpose");
+        act.Should().ThrowExactly<IdentityRuleException>().Which.Code.Should().Be(IdentityRuleCodes.InvalidOtpPurpose);
     }
 
     [Fact]
@@ -109,8 +109,7 @@ public class OtpPurposeTests
     {
         // Act & Assert
         Action act = () => new OtpPurpose(string.Empty);
-        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
-        exception.Which.Message.Should().Contain("Invalid OTP purpose");
+        act.Should().ThrowExactly<IdentityRuleException>().Which.Code.Should().Be(IdentityRuleCodes.InvalidOtpPurpose);
     }
 
     [Fact]
@@ -118,8 +117,7 @@ public class OtpPurposeTests
     {
         // Act & Assert
         Action act = () => new OtpPurpose((string)null!);
-        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
-        exception.Which.Message.Should().Contain("Invalid OTP purpose");
+        act.Should().ThrowExactly<IdentityRuleException>().Which.Code.Should().Be(IdentityRuleCodes.InvalidOtpPurpose);
     }
 
     #endregion
@@ -191,7 +189,7 @@ public class OtpPurposeTests
         {
             OtpPurpose purpose = invalidPurpose;
         };
-        act.Should().ThrowExactly<ArgumentException>();
+        act.Should().ThrowExactly<IdentityRuleException>().Which.Code.Should().Be(IdentityRuleCodes.InvalidOtpPurpose);
     }
 
     #endregion
