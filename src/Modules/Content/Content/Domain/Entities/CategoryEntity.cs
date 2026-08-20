@@ -1,7 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using _116.Content.Application.Shared.Errors;
 using _116.Content.Domain.Constants;
+using _116.Content.Domain.Exceptions;
+using _116.Content.Domain.StateMachines;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -137,7 +138,6 @@ public class CategoryEntity : Aggregate<Guid>
         string slug,
         string description,
         bool isFree,
-        CategoryErrors errors,
         bool isGossip = false,
         bool isExclusive = false,
         bool isDefaultForLyrics = false
@@ -145,12 +145,12 @@ public class CategoryEntity : Aggregate<Guid>
     {
         if (string.IsNullOrWhiteSpace(value: name))
         {
-            throw errors.NameRequired();
+            throw new ContentRuleException(ContentRuleCodes.CategoryNameRequired);
         }
 
         if (string.IsNullOrWhiteSpace(value: slug))
         {
-            throw errors.SlugRequired();
+            throw new ContentRuleException(ContentRuleCodes.CategorySlugRequired);
         }
 
         return new CategoryEntity
@@ -181,25 +181,23 @@ public class CategoryEntity : Aggregate<Guid>
     /// optional, because a defaulted value here silently clears a persisted flag at every call site
     /// that omits it. Callers must pass the intended value explicitly.
     /// </param>
-    /// <param name="errors">The errors factory instance.</param>
     public void Update(
         string name,
         string slug,
         string description,
         bool isGossip,
         bool isExclusive,
-        bool isDefaultForLyrics,
-        CategoryErrors errors
+        bool isDefaultForLyrics
     )
     {
         if (string.IsNullOrWhiteSpace(value: name))
         {
-            throw errors.NameRequired();
+            throw new ContentRuleException(ContentRuleCodes.CategoryNameRequired);
         }
 
         if (string.IsNullOrWhiteSpace(value: slug))
         {
-            throw errors.SlugRequired();
+            throw new ContentRuleException(ContentRuleCodes.CategorySlugRequired);
         }
 
         Name = name;
@@ -233,15 +231,14 @@ public class CategoryEntity : Aggregate<Guid>
     /// Guards that this category is eligible for use on a commissioned order item.
     /// A category is commissionable when it is active and not free.
     /// </summary>
-    /// <param name="errors">The errors factory instance.</param>
-    /// <exception cref="_116.Shared.Application.Exceptions.NotFoundException">
+    /// <exception cref="ContentRuleException">
     /// Thrown when the category is inactive or free, surfaced as a not-found error to avoid leaking state.
     /// </exception>
-    public void EnsureCommissionable(CategoryErrors errors)
+    public void EnsureCommissionable()
     {
         if (!IsActive || IsFree)
         {
-            throw errors.NotFound(id: Id);
+            throw new ContentRuleException(ContentRuleCodes.CategoryNotFound, Id.ToString());
         }
     }
 
