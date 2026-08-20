@@ -1,4 +1,4 @@
-using _116.Mailer.Contracts.Application;
+using _116.Mailer.Contracts.Domain;
 using _116.Mailer.Domain.Entities;
 using AwesomeAssertions;
 using Xunit;
