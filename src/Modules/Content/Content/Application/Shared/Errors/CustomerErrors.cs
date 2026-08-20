@@ -29,20 +29,4 @@ public class CustomerErrors(CustomerErrorMessage i18n)
     {
         return new NotFoundException("Customer", "id", keyValue: id);
     }
-
-    /// <summary>
-    /// Throws when a customer full name is required but not provided.
-    /// </summary>
-    public BadRequestException FullNameRequired()
-    {
-        return new BadRequestException(i18n.FullNameRequired());
-    }
-
-    /// <summary>
-    /// Throws when a customer email is required but not provided.
-    /// </summary>
-    public BadRequestException EmailRequired()
-    {
-        return new BadRequestException(i18n.EmailRequired());
-    }
 }
