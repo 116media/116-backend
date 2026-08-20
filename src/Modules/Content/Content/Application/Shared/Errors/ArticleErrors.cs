@@ -31,22 +31,6 @@ public class ArticleErrors(ArticleErrorMessage i18n)
     }
 
     /// <summary>
-    /// Throws when an article title is required but not provided.
-    /// </summary>
-    public BadRequestException TitleRequired()
-    {
-        return new BadRequestException(i18n.TitleRequired());
-    }
-
-    /// <summary>
-    /// Throws when an article slug is required but not provided.
-    /// </summary>
-    public BadRequestException SlugRequired()
-    {
-        return new BadRequestException(i18n.SlugRequired());
-    }
-
-    /// <summary>
     /// Throws when an article is already pending payment.
     /// </summary>
     public ConflictException AlreadySubmitted()
@@ -108,13 +92,5 @@ public class ArticleErrors(ArticleErrorMessage i18n)
     public BadRequestException CannotDeletePublishedArticle()
     {
         return new BadRequestException(i18n.CannotDeletePublishedArticle());
-    }
-
-    /// <summary>
-    /// Throws when an article carries no active promotion.
-    /// </summary>
-    public BadRequestException NotPromoted()
-    {
-        return new BadRequestException(i18n.NotPromoted());
     }
 }
