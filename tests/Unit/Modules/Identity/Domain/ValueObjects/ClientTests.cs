@@ -1,4 +1,6 @@
 using _116.Identity.Domain.Enums;
+using _116.Identity.Domain.Exceptions;
+using _116.Identity.Domain.StateMachines;
 using _116.Identity.Domain.ValueObjects;
 using AwesomeAssertions;
 using AwesomeAssertions.Specialized;
@@ -48,8 +50,10 @@ public class ClientTests
 
         // Act & Assert
         Action act = () => new Client(invalidEnum);
-        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
-        exception.Which.Message.Should().Contain("Invalid client platform");
+        act.Should()
+            .ThrowExactly<IdentityRuleException>()
+            .Which.Code.Should()
+            .Be(IdentityRuleCodes.InvalidClientPlatform);
     }
 
     #endregion
@@ -100,8 +104,10 @@ public class ClientTests
     {
         // Act & Assert
         Action act = () => new Client("InvalidClient");
-        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
-        exception.Which.Message.Should().Contain("Invalid client platform");
+        act.Should()
+            .ThrowExactly<IdentityRuleException>()
+            .Which.Code.Should()
+            .Be(IdentityRuleCodes.InvalidClientPlatform);
     }
 
     [Fact]
@@ -109,8 +115,10 @@ public class ClientTests
     {
         // Act & Assert
         Action act = () => new Client(string.Empty);
-        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
-        exception.Which.Message.Should().Contain("Invalid client platform");
+        act.Should()
+            .ThrowExactly<IdentityRuleException>()
+            .Which.Code.Should()
+            .Be(IdentityRuleCodes.InvalidClientPlatform);
     }
 
     [Fact]
@@ -118,8 +126,10 @@ public class ClientTests
     {
         // Act & Assert
         Action act = () => new Client((string)null!);
-        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
-        exception.Which.Message.Should().Contain("Invalid client platform");
+        act.Should()
+            .ThrowExactly<IdentityRuleException>()
+            .Which.Code.Should()
+            .Be(IdentityRuleCodes.InvalidClientPlatform);
     }
 
     #endregion
@@ -191,7 +201,10 @@ public class ClientTests
         {
             Client client = invalidClient;
         };
-        act.Should().ThrowExactly<ArgumentException>();
+        act.Should()
+            .ThrowExactly<IdentityRuleException>()
+            .Which.Code.Should()
+            .Be(IdentityRuleCodes.InvalidClientPlatform);
     }
 
     #endregion
