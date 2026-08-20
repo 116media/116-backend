@@ -156,6 +156,11 @@ public static class ContentConstants
     public const int MaxRejectionReasonLength = 500;
 
     /// <summary>
+    /// Maximum allowed length for a force-unpromote justification.
+    /// </summary>
+    public const int MaxUnpromotedReasonLength = 500;
+
+    /// <summary>
     /// Minimum allowed length for the SEO meta title.
     /// </summary>
     public const int MinMetaTitleLength = 10;
