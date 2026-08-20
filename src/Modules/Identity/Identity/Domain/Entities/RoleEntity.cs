@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using _116.BuildingBlocks.Constants;
-using _116.Identity.Application.Shared.Errors;
+using _116.Identity.Domain.Exceptions;
+using _116.Identity.Domain.StateMachines;
 using _116.Shared.Domain;
 
 namespace _116.Identity.Domain.Entities;
@@ -56,17 +57,17 @@ public class RoleEntity : Aggregate<Guid>
     /// <param name="name">The name of the role.</param>
     /// <param name="description">The description of the role's purpose.</param>
     /// <returns>A new <see cref="RoleEntity" /> instance.</returns>
-    /// <exception cref="ArgumentException">Thrown when name or description are empty.</exception>
-    public static RoleEntity Create(Guid id, string name, string description, UserErrors errors)
+    /// <exception cref="IdentityRuleException">Thrown when name or description are empty.</exception>
+    public static RoleEntity Create(Guid id, string name, string description)
     {
         if (string.IsNullOrWhiteSpace(value: name))
         {
-            throw errors.RoleNameRequired();
+            throw new IdentityRuleException(IdentityRuleCodes.RoleNameRequired);
         }
 
         if (string.IsNullOrWhiteSpace(value: description))
         {
-            throw errors.RoleDescriptionRequired();
+            throw new IdentityRuleException(IdentityRuleCodes.RoleDescriptionRequired);
         }
 
         return new RoleEntity
@@ -82,17 +83,16 @@ public class RoleEntity : Aggregate<Guid>
     /// </summary>
     /// <param name="name">The new name for the role.</param>
     /// <param name="description">The new description for the role.</param>
-    /// <param name="errors">The errors factory instance.</param>
-    public void Update(string name, string description, UserErrors errors)
+    public void Update(string name, string description)
     {
         if (string.IsNullOrWhiteSpace(value: name))
         {
-            throw errors.RoleNameRequired();
+            throw new IdentityRuleException(IdentityRuleCodes.RoleNameRequired);
         }
 
         if (string.IsNullOrWhiteSpace(value: description))
         {
-            throw errors.RoleDescriptionRequired();
+            throw new IdentityRuleException(IdentityRuleCodes.RoleDescriptionRequired);
         }
 
         Name = name;
