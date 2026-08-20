@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
-using _116.Content.Application.Shared.Errors;
 using _116.Content.Domain.Constants;
+using _116.Content.Domain.Exceptions;
+using _116.Content.Domain.StateMachines;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -52,34 +53,33 @@ public class PromotionLevelEntity : Aggregate<Guid>
     /// <param name="durationDays">The placement duration in days (must be greater than zero).</param>
     /// <param name="priceUsd">The price in USD (must be zero or greater).</param>
     /// <returns>A new <see cref="PromotionLevelEntity" /> instance.</returns>
-    /// <exception cref="ArgumentException">Thrown when name is empty or constraints are violated.</exception>
+    /// <exception cref="ContentRuleException">Thrown when name is empty or constraints are violated.</exception>
     public static PromotionLevelEntity Create(
         Guid id,
         string name,
         int durationDays,
         decimal priceUsd,
-        int? spotPriority,
-        PromotionLevelErrors errors
+        int? spotPriority
     )
     {
         if (string.IsNullOrWhiteSpace(value: name))
         {
-            throw errors.NameRequired();
+            throw new ContentRuleException(ContentRuleCodes.PromotionLevelNameRequired);
         }
 
         if (durationDays <= 0)
         {
-            throw errors.DurationMustBePositive();
+            throw new ContentRuleException(ContentRuleCodes.PromotionLevelDurationMustBePositive);
         }
 
         if (priceUsd < 0)
         {
-            throw errors.PriceMustBeNonNegative();
+            throw new ContentRuleException(ContentRuleCodes.PromotionLevelPriceMustBeNonNegative);
         }
 
         if (spotPriority is < 1 or > 3)
         {
-            throw errors.InvalidSpotPriority();
+            throw new ContentRuleException(ContentRuleCodes.PromotionLevelInvalidSpotPriority);
         }
 
         return new PromotionLevelEntity
@@ -98,26 +98,26 @@ public class PromotionLevelEntity : Aggregate<Guid>
     /// <param name="name">The new display name.</param>
     /// <param name="durationDays">The new placement duration in days.</param>
     /// <param name="priceUsd">The new price in USD.</param>
-    public void Update(string name, int durationDays, decimal priceUsd, int? spotPriority, PromotionLevelErrors errors)
+    public void Update(string name, int durationDays, decimal priceUsd, int? spotPriority)
     {
         if (string.IsNullOrWhiteSpace(value: name))
         {
-            throw errors.NameRequired();
+            throw new ContentRuleException(ContentRuleCodes.PromotionLevelNameRequired);
         }
 
         if (durationDays <= 0)
         {
-            throw errors.DurationMustBePositive();
+            throw new ContentRuleException(ContentRuleCodes.PromotionLevelDurationMustBePositive);
         }
 
         if (priceUsd < 0)
         {
-            throw errors.PriceMustBeNonNegative();
+            throw new ContentRuleException(ContentRuleCodes.PromotionLevelPriceMustBeNonNegative);
         }
 
         if (spotPriority is < 1 or > 3)
         {
-            throw errors.InvalidSpotPriority();
+            throw new ContentRuleException(ContentRuleCodes.PromotionLevelInvalidSpotPriority);
         }
 
         Name = name;
@@ -129,14 +129,14 @@ public class PromotionLevelEntity : Aggregate<Guid>
     /// <summary>
     /// Guards that this promotion level is active and available for selection on new orders.
     /// </summary>
-    /// <exception cref="_116.Shared.Application.Exceptions.NotFoundException">
+    /// <exception cref="ContentRuleException">
     /// Thrown when the promotion level is inactive, surfaced as a not-found error to avoid leaking state.
     /// </exception>
-    public void EnsureActive(PromotionLevelErrors errors)
+    public void EnsureActive()
     {
         if (!IsActive)
         {
-            throw errors.NotFound(id: Id);
+            throw new ContentRuleException(ContentRuleCodes.PromotionLevelNotFound, Id.ToString());
         }
     }
 
