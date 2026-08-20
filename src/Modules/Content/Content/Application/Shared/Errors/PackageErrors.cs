@@ -39,27 +39,11 @@ public class PackageErrors(PackageErrorMessage i18n)
     }
 
     /// <summary>
-    /// Throws when a package name is required but not provided.
-    /// </summary>
-    public BadRequestException NameRequired()
-    {
-        return new BadRequestException(i18n.NameRequired());
-    }
-
-    /// <summary>
     /// Throws when a package price is negative.
     /// </summary>
     public BadRequestException PriceMustBeNonNegative()
     {
         return new BadRequestException(i18n.PriceMustBeNonNegative());
-    }
-
-    /// <summary>
-    /// Throws when a slot quantity is not greater than zero.
-    /// </summary>
-    public BadRequestException SlotQuantityMustBePositive()
-    {
-        return new BadRequestException(i18n.SlotQuantityMustBePositive());
     }
 
     /// <summary>
