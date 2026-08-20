@@ -488,4 +488,10 @@ public class ValidationErrorMessage(IStringLocalizer<ValidationErrorMessage> loc
     /// Error message indicating that ToDate must be greater than or equal to FromDate.
     /// </summary>
     public string ExportDateRangeInvalid() => localizer["ExportDateRangeInvalid"];
+
+    /// <summary>
+    /// Error message indicating that a client platform value is not a known platform.
+    /// </summary>
+    /// <param name="platform">The rejected platform value.</param>
+    public string ClientPlatformInvalid(string platform) => string.Format(localizer["ClientPlatformInvalid"], platform);
 }
