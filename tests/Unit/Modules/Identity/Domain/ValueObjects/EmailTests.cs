@@ -1,3 +1,5 @@
+using _116.Identity.Domain.Exceptions;
+using _116.Identity.Domain.StateMachines;
 using _116.Identity.Domain.ValueObjects;
 using AwesomeAssertions;
 using AwesomeAssertions.Specialized;
@@ -44,8 +46,7 @@ public class EmailTests
     {
         // Act & Assert
         Action act = () => new Email(null!);
-        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
-        exception.Which.Message.Should().Contain("Email cannot be empty");
+        act.Should().ThrowExactly<IdentityRuleException>().Which.Code.Should().Be(IdentityRuleCodes.InvalidEmail);
     }
 
     [Fact]
@@ -53,8 +54,7 @@ public class EmailTests
     {
         // Act & Assert
         Action act = () => new Email(string.Empty);
-        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
-        exception.Which.Message.Should().Contain("Email cannot be empty");
+        act.Should().ThrowExactly<IdentityRuleException>().Which.Code.Should().Be(IdentityRuleCodes.InvalidEmail);
     }
 
     [Fact]
@@ -62,8 +62,7 @@ public class EmailTests
     {
         // Act & Assert
         Action act = () => new Email("   ");
-        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
-        exception.Which.Message.Should().Contain("Email cannot be empty");
+        act.Should().ThrowExactly<IdentityRuleException>().Which.Code.Should().Be(IdentityRuleCodes.InvalidEmail);
     }
 
     [Fact]
@@ -71,8 +70,7 @@ public class EmailTests
     {
         // Act & Assert
         Action act = () => new Email("not-an-email");
-        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
-        exception.Which.Message.Should().Contain("Invalid email format");
+        act.Should().ThrowExactly<IdentityRuleException>().Which.Code.Should().Be(IdentityRuleCodes.InvalidEmail);
     }
 
     [Fact]
@@ -80,8 +78,7 @@ public class EmailTests
     {
         // Act & Assert
         Action act = () => new Email("testexample.com");
-        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
-        exception.Which.Message.Should().Contain("Invalid email format");
+        act.Should().ThrowExactly<IdentityRuleException>().Which.Code.Should().Be(IdentityRuleCodes.InvalidEmail);
     }
 
     [Fact]
@@ -89,8 +86,7 @@ public class EmailTests
     {
         // Act & Assert
         Action act = () => new Email("test@");
-        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
-        exception.Which.Message.Should().Contain("Invalid email format");
+        act.Should().ThrowExactly<IdentityRuleException>().Which.Code.Should().Be(IdentityRuleCodes.InvalidEmail);
     }
 
     [Theory]
@@ -150,7 +146,7 @@ public class EmailTests
         {
             Email email = invalidEmail;
         };
-        act.Should().ThrowExactly<ArgumentException>();
+        act.Should().ThrowExactly<IdentityRuleException>().Which.Code.Should().Be(IdentityRuleCodes.InvalidEmail);
     }
 
     #endregion
