@@ -52,8 +52,7 @@ public class AdminAddPackageSlotHandler(
             packageId: packageId,
             categoryId: command.CategoryId,
             isRequired: command.IsRequired,
-            quantity: command.Quantity,
-            errors: i18n.Package
+            quantity: command.Quantity
         );
 
         await packageRepository.AddSlotAsync(slot: slot, cancellationToken: cancellationToken);
