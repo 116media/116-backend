@@ -1,8 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 using _116.BuildingBlocks.Constants;
-using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.Events;
+using _116.Identity.Domain.Exceptions;
+using _116.Identity.Domain.StateMachines;
 using _116.Shared.Domain;
 
 namespace _116.Identity.Domain.Entities;
@@ -122,14 +123,19 @@ public class UserEntity : Aggregate<Guid>
     /// <summary>
     /// Creates a new user with local authentication (email + password).
     /// </summary>
-    public static UserEntity Create(Guid id, string email, string userName, string passwordHash, UserErrors errors)
+    public static UserEntity Create(Guid id, string email, string userName, string passwordHash)
     {
         Exception? error = (email, userName, passwordHash) switch
         {
-            var (e, _, _) when string.IsNullOrWhiteSpace(value: e) => errors.InvalidEmailFormat(email: e),
+            var (e, _, _) when string.IsNullOrWhiteSpace(value: e) => new IdentityRuleException(
+                IdentityRuleCodes.InvalidEmailFormat,
+                e
+            ),
             var (_, u, _) when string.IsNullOrWhiteSpace(value: u) || u.Length > UserConstants.MaxUserNameLength =>
-                errors.InvalidUsernameFormat(username: u),
-            var (_, _, p) when string.IsNullOrWhiteSpace(value: p) => errors.InvalidPasswordFormat(),
+                new IdentityRuleException(IdentityRuleCodes.InvalidUsernameFormat, u),
+            var (_, _, p) when string.IsNullOrWhiteSpace(value: p) => new IdentityRuleException(
+                IdentityRuleCodes.InvalidPasswordFormat
+            ),
             _ => null,
         };
         if (error is not null)
@@ -156,13 +162,12 @@ public class UserEntity : Aggregate<Guid>
         string userName,
         EnumAuthProvider authProvider,
         string providerSubjectId,
-        UserErrors errors,
         string? email = null
     )
     {
         if (string.IsNullOrWhiteSpace(value: userName))
         {
-            throw errors.InvalidUsernameFormat(username: userName);
+            throw new IdentityRuleException(IdentityRuleCodes.InvalidUsernameFormat, userName);
         }
 
         return new UserEntity
@@ -181,12 +186,11 @@ public class UserEntity : Aggregate<Guid>
     /// Refuses to rebind an account already tied to a different subject — that is a mismatched token.
     /// </summary>
     /// <param name="providerSubjectId">The verified provider subject id to link.</param>
-    /// <param name="errors">User domain error factory for generating domain exceptions.</param>
-    public void LinkProviderSubject(string providerSubjectId, UserErrors errors)
+    public void LinkProviderSubject(string providerSubjectId)
     {
         if (!string.IsNullOrWhiteSpace(value: ProviderSubjectId) && ProviderSubjectId != providerSubjectId)
         {
-            throw errors.ProviderMismatch();
+            throw new IdentityRuleException(IdentityRuleCodes.ProviderMismatch);
         }
 
         ProviderSubjectId = providerSubjectId;
@@ -198,12 +202,11 @@ public class UserEntity : Aggregate<Guid>
     /// Raises <see cref="UserEmailChangedEvent" /> carrying both addresses.
     /// </summary>
     /// <param name="newEmail">The new email address.</param>
-    /// <param name="errors">User domain error factory for generating domain exceptions.</param>
-    public void UpdateEmail(string newEmail, UserErrors errors)
+    public void UpdateEmail(string newEmail)
     {
         if (string.IsNullOrWhiteSpace(value: newEmail))
         {
-            throw errors.InvalidEmailFormat(email: newEmail);
+            throw new IdentityRuleException(IdentityRuleCodes.InvalidEmailFormat, newEmail);
         }
 
         string? oldEmail = Email;
@@ -220,17 +223,16 @@ public class UserEntity : Aggregate<Guid>
     /// out to its notification reactions.
     /// </summary>
     /// <param name="newPasswordHash">The new hashed password.</param>
-    /// <param name="errors">User domain error factory for generating domain exceptions.</param>
-    public void InitializePasswordHash(string newPasswordHash, UserErrors errors)
+    public void InitializePasswordHash(string newPasswordHash)
     {
         if (string.IsNullOrWhiteSpace(value: newPasswordHash))
         {
-            throw errors.InvalidPasswordFormat();
+            throw new IdentityRuleException(IdentityRuleCodes.InvalidPasswordFormat);
         }
 
         if (AuthProvider != EnumAuthProvider.Local && string.IsNullOrEmpty(value: Email))
         {
-            throw errors.EmailRequiredToSetPassword();
+            throw new IdentityRuleException(IdentityRuleCodes.EmailRequiredToSetPassword);
         }
 
         PasswordHash = newPasswordHash;
@@ -241,11 +243,10 @@ public class UserEntity : Aggregate<Guid>
     /// Raises <see cref="UserPasswordChangedEvent" /> with the flow that replaced the password.
     /// </summary>
     /// <param name="newPasswordHash">The new hashed password.</param>
-    /// <param name="errors">User domain error factory for generating domain exceptions.</param>
     /// <param name="origin">The flow that replaced the password.</param>
-    public void UpdatePassword(string newPasswordHash, UserErrors errors, EnumPasswordChangeOrigin origin)
+    public void UpdatePassword(string newPasswordHash, EnumPasswordChangeOrigin origin)
     {
-        InitializePasswordHash(newPasswordHash: newPasswordHash, errors: errors);
+        InitializePasswordHash(newPasswordHash: newPasswordHash);
 
         AddDomainEvent(new UserPasswordChangedEvent(UserId: Id, Origin: origin));
     }
@@ -256,17 +257,16 @@ public class UserEntity : Aggregate<Guid>
     /// Raises <see cref="UserPasswordChangedEvent" /> with the set-local origin.
     /// </summary>
     /// <param name="passwordHash">The hashed password to set.</param>
-    /// <param name="errors">User domain error factory for generating domain exceptions.</param>
-    public void SetPasswordAndChangeToLocal(string passwordHash, UserErrors errors)
+    public void SetPasswordAndChangeToLocal(string passwordHash)
     {
         if (string.IsNullOrWhiteSpace(value: passwordHash))
         {
-            throw errors.InvalidPasswordFormat();
+            throw new IdentityRuleException(IdentityRuleCodes.InvalidPasswordFormat);
         }
 
         if (string.IsNullOrEmpty(value: Email))
         {
-            throw errors.EmailRequiredToSetPassword();
+            throw new IdentityRuleException(IdentityRuleCodes.EmailRequiredToSetPassword);
         }
 
         PasswordHash = passwordHash;
@@ -278,11 +278,11 @@ public class UserEntity : Aggregate<Guid>
     /// <summary>
     /// Updates the username. Must still be unique across all users.
     /// </summary>
-    public void UpdateUserName(string newUserName, UserErrors errors)
+    public void UpdateUserName(string newUserName)
     {
         if (string.IsNullOrWhiteSpace(value: newUserName) || newUserName.Length > UserConstants.MaxUserNameLength)
         {
-            throw errors.InvalidUsernameFormat(username: newUserName);
+            throw new IdentityRuleException(IdentityRuleCodes.InvalidUsernameFormat, newUserName);
         }
 
         UserName = newUserName;
@@ -337,16 +337,16 @@ public class UserEntity : Aggregate<Guid>
     /// Checks if this user can log in. Throws an exception if not.
     /// Call this before creating a new session.
     /// </summary>
-    public void ValidateCanLogin(UserErrors errors)
+    public void ValidateCanLogin()
     {
         if (!IsActive)
         {
-            throw errors.AccountInactive(Email!);
+            throw new IdentityRuleException(IdentityRuleCodes.AccountInactive, Email!);
         }
 
         if (AuthProvider == EnumAuthProvider.Local && !IsVerified)
         {
-            throw errors.AccountNotVerified(Email!);
+            throw new IdentityRuleException(IdentityRuleCodes.AccountNotVerified, Email!);
         }
     }
 
@@ -383,12 +383,12 @@ public class UserEntity : Aggregate<Guid>
     /// <summary>
     /// Assigns a role to this user. Throws if the role is already assigned.
     /// </summary>
-    public void AssignRole(UserRoleEntity userRole, UserErrors errors)
+    public void AssignRole(UserRoleEntity userRole)
     {
         ArgumentNullException.ThrowIfNull(argument: userRole);
         if (HasRole(roleId: userRole.RoleId))
         {
-            throw errors.RoleAlreadyAssignedToUser();
+            throw new IdentityRuleException(IdentityRuleCodes.RoleAlreadyAssignedToUser);
         }
 
         UserRoles.Add(item: userRole);
