@@ -63,7 +63,7 @@ public class AdminLoginAuthFactory(
             throw userErrors.InvalidCredentials();
         }
 
-        user.ValidateCanLogin(errors: userErrors);
+        user.ValidateCanLogin();
         authRepository.IsUserAdmin(user: user);
         await lockoutRepository.ClearFailedLoginsAsync(userId: user.Id, cancellationToken: cancellationToken);
 
@@ -71,7 +71,7 @@ public class AdminLoginAuthFactory(
         // used rather than UpdatePassword so the upgrade raises no password-changed notification.
         if (passwordService.NeedsRehash(hash: user.PasswordHash))
         {
-            user.InitializePasswordHash(newPasswordHash: passwordService.Hash(password: password), errors: userErrors);
+            user.InitializePasswordHash(newPasswordHash: passwordService.Hash(password: password));
         }
 
         List<RolePermissionEntity> userPermissions = user.UserRoles.SelectMany(ur => ur.Role.RolePermissions).ToList();
