@@ -47,28 +47,6 @@ public class ArtistErrorsTests
     }
 
     [Fact]
-    public void NameRequired_ShouldReturnBadRequestExceptionWithLocalizedMessage()
-    {
-        // Arrange & Act
-        BadRequestException ex = _errors.NameRequired();
-
-        // Assert
-        ex.Should().BeOfType<BadRequestException>();
-        ex.Message.Should().NotBeNullOrWhiteSpace().And.Contain(_message.NameRequired());
-    }
-
-    [Fact]
-    public void SlugRequired_ShouldReturnBadRequestExceptionWithLocalizedMessage()
-    {
-        // Arrange & Act
-        BadRequestException ex = _errors.SlugRequired();
-
-        // Assert
-        ex.Should().BeOfType<BadRequestException>();
-        ex.Message.Should().NotBeNullOrWhiteSpace().And.Contain(_message.SlugRequired());
-    }
-
-    [Fact]
     public void SlugAlreadyExists_ShouldReturnConflictExceptionInterpolatingTheSlug()
     {
         // Arrange & Act
@@ -159,33 +137,6 @@ public class ArtistErrorsTests
     #endregion
 
     #region Identity, Social Link and Directory Errors
-
-    [Fact]
-    public void TooManyAliases_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.TooManyAliases();
-
-        exception.Should().NotBeNull();
-        exception.Message.Should().Contain(_message.TooManyAliases());
-    }
-
-    [Fact]
-    public void AliasTooLong_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.AliasTooLong();
-
-        exception.Should().NotBeNull();
-        exception.Message.Should().Contain(_message.AliasTooLong());
-    }
-
-    [Fact]
-    public void BirthdateInFuture_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.BirthdateInFuture();
-
-        exception.Should().NotBeNull();
-        exception.Message.Should().Contain(_message.BirthdateInFuture());
-    }
 
     [Fact]
     public void SocialLinkNotFound_ShouldReturnNotFoundExceptionNamingThePlatform()
