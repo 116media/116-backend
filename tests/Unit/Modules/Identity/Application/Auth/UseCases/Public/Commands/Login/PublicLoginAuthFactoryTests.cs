@@ -168,7 +168,7 @@ public class PublicLoginAuthFactoryTests
         string credentials = "user@example.com";
         string password = "ValidPassword123!";
         UserEntity user = UserFactory.CreateVerifiedActive();
-        user.InitializePasswordHash(newPasswordHash: LegacyPasswordHash, errors: _userErrors);
+        user.InitializePasswordHash(newPasswordHash: LegacyPasswordHash);
 
         _authRepositoryMock.SetupGetUserWithRolesByCredentialsAsync(user);
         _passwordServiceMock.SetupVerifyOrDummySuccess(password, user.PasswordHash);
@@ -190,7 +190,7 @@ public class PublicLoginAuthFactoryTests
         string credentials = "user@example.com";
         string password = "ValidPassword123!";
         UserEntity user = UserFactory.CreateVerifiedActive();
-        user.InitializePasswordHash(newPasswordHash: CurrentPasswordHash, errors: _userErrors);
+        user.InitializePasswordHash(newPasswordHash: CurrentPasswordHash);
 
         _authRepositoryMock.SetupGetUserWithRolesByCredentialsAsync(user);
         _passwordServiceMock.SetupVerifyOrDummySuccess(password, user.PasswordHash);
