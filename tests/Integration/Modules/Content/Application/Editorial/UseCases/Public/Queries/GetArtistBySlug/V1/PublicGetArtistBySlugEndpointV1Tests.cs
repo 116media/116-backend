@@ -213,10 +213,9 @@ public class PublicGetArtistBySlugEndpointV1Tests(PostgresFixture db) : BaseApiT
                 artist.RealName,
                 artist.Aliases,
                 artist.Birthdate,
-                artist.Hometown,
-                TestErrorsFactory.CreateArtistErrors()
+                artist.Hometown
             );
-            artist.ClaimOwnership(Guid.NewGuid(), TestErrorsFactory.CreateArtistErrors());
+            artist.ClaimOwnership(Guid.NewGuid());
 
             LyricsEntity lyrics = LyricsFactory.CreatePublishedForArtist(category.Id, artist.Id);
             ArtistSocialLinkEntity link = ArtistSocialLinkEntity.Create(
