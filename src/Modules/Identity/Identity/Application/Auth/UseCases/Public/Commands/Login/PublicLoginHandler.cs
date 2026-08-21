@@ -2,8 +2,8 @@ using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.Login.Contracts;
 using _116.Identity.Application.Session.Factories.Contracts;
+using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Mappers;
-using _116.Identity.Domain.Results;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
@@ -65,7 +65,7 @@ public class PublicLoginHandler(
             avatar: avatarDto
         );
 
-        var authResult = new AuthenticationResult(
+        var authResult = new AuthenticationDto(
             User: userDto,
             AccessToken: sessionData.AccessToken,
             AccessTokenExpiresAt: sessionData.AccessTokenExpiresAt,
@@ -73,6 +73,6 @@ public class PublicLoginHandler(
             RefreshTokenExpiresAt: sessionData.RefreshTokenExpiresAt
         );
 
-        return new PublicLoginResult(AuthenticationResult: authResult);
+        return new PublicLoginResult(Authentication: authResult);
     }
 }
