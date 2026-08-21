@@ -39,8 +39,7 @@ public class AdminUpdateArtistHandler(
             realName: command.RealName,
             aliases: command.Aliases,
             birthdate: command.Birthdate,
-            hometown: command.Hometown,
-            errors: i18n.Artist
+            hometown: command.Hometown
         );
 
         artistRepository.Update(artist: artist);
