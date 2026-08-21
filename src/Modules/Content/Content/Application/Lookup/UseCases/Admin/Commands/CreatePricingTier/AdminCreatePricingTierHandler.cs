@@ -41,8 +41,7 @@ public class AdminCreatePricingTierHandler(
         var pricingTier = PricingTierEntity.Create(
             id: Guid.NewGuid(),
             name: command.Name,
-            description: command.Description,
-            errors: i18n.PricingTier
+            description: command.Description
         );
 
         await lookupRepository.AddPricingTierAsync(pricingTier: pricingTier, cancellationToken: cancellationToken);
