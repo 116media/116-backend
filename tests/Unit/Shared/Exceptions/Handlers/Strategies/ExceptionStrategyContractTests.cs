@@ -4,6 +4,8 @@ using _116.Identity.Application.Auth.Exceptions.Handlers;
 using _116.Identity.Application.Shared.Exceptions;
 using _116.Identity.Application.Shared.Exceptions.Handlers;
 using _116.Identity.Domain.Enums;
+using _116.Identity.Domain.Exceptions;
+using _116.Identity.Domain.StateMachines;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Exceptions.Handlers.Contracts;
 using _116.Shared.Application.Exceptions.Handlers.Strategies;
@@ -37,7 +39,7 @@ public class ExceptionStrategyContractTests
     /// deliberately when a strategy is added; the failure is the notification that the new strategy
     /// needs a contract entry.
     /// </summary>
-    private const int ExpectedStrategyCount = 24;
+    private const int ExpectedStrategyCount = 25;
 
     /// <summary>
     /// The production assemblies scanned for strategy implementations, each anchored on a type rather
@@ -192,6 +194,13 @@ public class ExceptionStrategyContractTests
             nameof(RateLimitExceededException),
             CarriesTraceExtensions: true
         ),
+        [typeof(DomainRuleExceptionStrategy)] = new StrategyContract(
+            typeof(IdentityRuleException),
+            () => new IdentityRuleException(IdentityRuleCodes.RoleNameRequired),
+            StatusCodes.Status400BadRequest,
+            nameof(BadRequestException),
+            CarriesTraceExtensions: true
+        ),
         [typeof(RefreshTokenExpiryExceptionHandler)] = new StrategyContract(
             typeof(RefreshTokenExpiryException),
             () => new RefreshTokenExpiryException("Refresh token expired"),
@@ -312,7 +321,7 @@ public class ExceptionStrategyContractTests
             .Should()
             .HaveCount(
                 ExpectedStrategyCount,
-                "the Shared assembly declares 15 strategies and the Identity module adds 9"
+                "the Shared assembly declares 15 strategies and the Identity module adds 10"
             );
     }
 
