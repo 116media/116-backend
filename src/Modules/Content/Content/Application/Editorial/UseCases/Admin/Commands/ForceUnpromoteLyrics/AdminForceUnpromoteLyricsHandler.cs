@@ -34,7 +34,7 @@ public class AdminForceUnpromoteLyricsHandler(
             cancellationToken: cancellationToken
         );
 
-        lyrics.ForceUnpromote(unpromotedBy: currentActor.UserId!, reason: command.Reason, errors: i18n.Lyrics);
+        lyrics.ForceUnpromote(unpromotedBy: currentActor.UserId!, reason: command.Reason);
 
         lyricsRepository.Update(lyrics: lyrics);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
