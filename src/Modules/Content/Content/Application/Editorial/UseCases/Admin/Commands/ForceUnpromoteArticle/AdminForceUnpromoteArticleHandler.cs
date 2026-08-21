@@ -39,7 +39,7 @@ public class AdminForceUnpromoteArticleHandler(
             throw i18n.Article.NotFound(Guid.Empty);
         }
 
-        article.ForceUnpromote(unpromotedBy: currentActor.UserId!, reason: command.Reason, errors: i18n.Article);
+        article.ForceUnpromote(unpromotedBy: currentActor.UserId!, reason: command.Reason);
 
         articleRepository.Update(article: article);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
