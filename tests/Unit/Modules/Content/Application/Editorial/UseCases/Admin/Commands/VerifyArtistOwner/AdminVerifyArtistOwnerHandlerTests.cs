@@ -3,6 +3,8 @@ using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Events;
+using _116.Content.Domain.Exceptions;
+using _116.Content.Domain.StateMachines;
 using _116.Core.Application.Shared.Repositories;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
@@ -93,7 +95,9 @@ public class AdminVerifyArtistOwnerHandlerTests
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        await act.Should().ThrowAsync<ConflictException>();
+        (await act.Should().ThrowAsync<ContentRuleException>())
+            .Which.Code.Should()
+            .Be(ContentRuleCodes.ArtistAlreadyClaimed);
         artist.UserId.Should().Be(originalOwnerId);
         artist.DomainEvents.Should().BeEmpty();
         _unitOfWorkMock.VerifyCommitNotCalled();
