@@ -176,36 +176,6 @@ public class UserErrorsTests
             e => e.RoleNotAssignedToUser(),
             t => t._validation.RoleNotAssignedToUser()
         ),
-        [nameof(UserErrors.InvalidUsernameFormat)] = new(
-            typeof(BadRequestException),
-            e => e.InvalidUsernameFormat(MalformedUsername),
-            t => t._validation.InvalidUsernameFormat(MalformedUsername)
-        ),
-        [nameof(UserErrors.PermissionResourceRequired)] = new(
-            typeof(BadRequestException),
-            e => e.PermissionResourceRequired(),
-            t => t._validation.PermissionResourceRequired()
-        ),
-        [nameof(UserErrors.PermissionActionRequired)] = new(
-            typeof(BadRequestException),
-            e => e.PermissionActionRequired(),
-            t => t._validation.PermissionActionRequired()
-        ),
-        [nameof(UserErrors.PermissionDescriptionRequired)] = new(
-            typeof(BadRequestException),
-            e => e.PermissionDescriptionRequired(),
-            t => t._validation.PermissionDescriptionRequired()
-        ),
-        [nameof(UserErrors.RoleNameRequired)] = new(
-            typeof(BadRequestException),
-            e => e.RoleNameRequired(),
-            t => t._validation.RoleNameRequired()
-        ),
-        [nameof(UserErrors.RoleDescriptionRequired)] = new(
-            typeof(BadRequestException),
-            e => e.RoleDescriptionRequired(),
-            t => t._validation.RoleDescriptionRequired()
-        ),
         [nameof(UserErrors.InvalidOtpCode)] = new(
             typeof(BadRequestException),
             e => e.InvalidOtpCode(),
@@ -255,21 +225,6 @@ public class UserErrorsTests
             typeof(AccountNotVerifiedException),
             e => e.ProviderEmailNotVerified(),
             t => t._authorization.ProviderEmailNotVerified()
-        ),
-        [nameof(UserErrors.ProviderMismatch)] = new(
-            typeof(ConflictException),
-            e => e.ProviderMismatch(),
-            t => t._conflict.ProviderMismatch()
-        ),
-        [nameof(UserErrors.InvalidEmailFormat)] = new(
-            typeof(AuthenticationException),
-            e => e.InvalidEmailFormat(MalformedEmail),
-            t => t._validation.InvalidEmailFormat(MalformedEmail)
-        ),
-        [nameof(UserErrors.InvalidPasswordFormat)] = new(
-            typeof(AuthenticationException),
-            e => e.InvalidPasswordFormat(),
-            t => t._validation.InvalidPasswordFormat()
         ),
         [nameof(UserErrors.InvalidUserAuthentication)] = new(
             typeof(AuthenticationException),
