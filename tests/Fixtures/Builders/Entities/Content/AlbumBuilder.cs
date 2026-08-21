@@ -86,8 +86,7 @@ public class AlbumBuilder
             coverImageFileId: _coverImageFileId,
             releaseYear: _releaseYear,
             label: _label,
-            releaseType: _releaseType,
-            errors: TestErrorsFactory.CreateAlbumErrors()
+            releaseType: _releaseType
         );
 
         entity.CreatedAt = DateTime.UtcNow;
