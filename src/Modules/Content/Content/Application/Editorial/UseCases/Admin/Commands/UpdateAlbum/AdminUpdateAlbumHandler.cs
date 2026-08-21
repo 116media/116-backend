@@ -14,12 +14,10 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateAlbum
 /// <param name="albumRepository">Repository for album data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="fileRepository">Repository for resolving cover image URLs.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminUpdateAlbumHandler(
     IAlbumRepository albumRepository,
     IContentUnitOfWork unitOfWork,
-    IFileRepository fileRepository,
-    ContentI18n i18n
+    IFileRepository fileRepository
 ) : ICommandHandler<AdminUpdateAlbumCommand, AdminUpdateAlbumResult>
 {
     /// <inheritdoc />
