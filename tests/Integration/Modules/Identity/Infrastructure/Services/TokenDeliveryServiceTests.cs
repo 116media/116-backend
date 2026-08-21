@@ -1,7 +1,6 @@
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Enums;
-using _116.Identity.Domain.Results;
 
 namespace _116.Integration.Tests.Modules.Identity.Infrastructure.Services;
 
@@ -13,7 +12,7 @@ namespace _116.Integration.Tests.Modules.Identity.Infrastructure.Services;
 [Collection("Database")]
 public class TokenDeliveryServiceTests(PostgresFixture postgres) : BaseRepositoryTest(postgres)
 {
-    private static AuthenticationResult CreateDummyAuthResult()
+    private static AuthenticationDto CreateDummyAuthResult()
     {
         var userDto = new UserResponseDto(
             Id: Guid.NewGuid(),
@@ -32,7 +31,7 @@ public class TokenDeliveryServiceTests(PostgresFixture postgres) : BaseRepositor
             FullPhoneNumber: null
         );
 
-        return new AuthenticationResult(
+        return new AuthenticationDto(
             User: userDto,
             AccessToken: "test-access-token",
             AccessTokenExpiresAt: DateTime.UtcNow.AddHours(1),
