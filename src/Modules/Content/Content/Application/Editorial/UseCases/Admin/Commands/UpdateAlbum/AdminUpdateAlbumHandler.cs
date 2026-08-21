@@ -38,8 +38,7 @@ public class AdminUpdateAlbumHandler(
             coverImageFileId: album.CoverImageFileId,
             releaseYear: command.ReleaseYear,
             label: command.Label,
-            releaseType: command.ReleaseType,
-            errors: i18n.Album
+            releaseType: command.ReleaseType
         );
 
         albumRepository.Update(album: album);
