@@ -75,8 +75,7 @@ public class AdminApproveLyricsSubmissionHandler(
             lyricsText: submission.LyricsText,
             language: submission.Language,
             slug: command.Slug,
-            authorId: command.ReviewerId,
-            errors: i18n.Lyrics
+            authorId: command.ReviewerId
         );
 
         await lyricsRepository.AddAsync(lyrics: lyrics, cancellationToken: cancellationToken);
