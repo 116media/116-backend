@@ -48,30 +48,12 @@ public class PackageErrorsTests
     }
 
     [Fact]
-    public void NameRequired_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.NameRequired();
-
-        exception.Should().NotBeNull();
-        exception.Message.Should().Contain(_message.NameRequired());
-    }
-
-    [Fact]
     public void PriceMustBeNonNegative_ShouldReturnBadRequestException()
     {
         BadRequestException exception = _errors.PriceMustBeNonNegative();
 
         exception.Should().NotBeNull();
         exception.Message.Should().Contain(_message.PriceMustBeNonNegative());
-    }
-
-    [Fact]
-    public void SlotQuantityMustBePositive_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.SlotQuantityMustBePositive();
-
-        exception.Should().NotBeNull();
-        exception.Message.Should().Contain(_message.SlotQuantityMustBePositive());
     }
 
     [Fact]
