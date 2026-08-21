@@ -113,7 +113,7 @@ public class SuperAdminSeedingStrategyTests : IDisposable
         await using var context = new IdentityDbContext(options);
 
         // Pre-seed permission
-        var existingPermission = PermissionEntity.Create(Guid.NewGuid(), "system", "all", "Existing", _userErrors);
+        var existingPermission = PermissionEntity.Create(Guid.NewGuid(), "system", "all", "Existing");
         await context.Permissions.AddAsync(existingPermission);
         await context.SaveChangesAsync();
 
@@ -158,7 +158,7 @@ public class SuperAdminSeedingStrategyTests : IDisposable
         await using var context = new IdentityDbContext(options);
 
         // Pre-seed role
-        var existingRole = RoleEntity.Create(Guid.NewGuid(), "SuperAdmin", "Existing", _userErrors);
+        var existingRole = RoleEntity.Create(Guid.NewGuid(), "SuperAdmin", "Existing");
         await context.Roles.AddAsync(existingRole);
         await context.SaveChangesAsync();
 
@@ -203,8 +203,8 @@ public class SuperAdminSeedingStrategyTests : IDisposable
         await using var context = new IdentityDbContext(options);
 
         // Pre-seed everything
-        var permission = PermissionEntity.Create(Guid.NewGuid(), "system", "all", "Test", _userErrors);
-        var role = RoleEntity.Create(Guid.NewGuid(), "SuperAdmin", "Test", _userErrors);
+        var permission = PermissionEntity.Create(Guid.NewGuid(), "system", "all", "Test");
+        var role = RoleEntity.Create(Guid.NewGuid(), "SuperAdmin", "Test");
         var rolePermission = RolePermissionEntity.Create(Guid.NewGuid(), role.Id, permission.Id);
         await context.Permissions.AddAsync(permission);
         await context.Roles.AddAsync(role);
