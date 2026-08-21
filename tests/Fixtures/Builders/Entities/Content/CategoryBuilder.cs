@@ -155,7 +155,6 @@ public class CategoryBuilder
             _slug,
             _description,
             _isFree,
-            TestErrorsFactory.CreateCategoryErrors(),
             isGossip: _isGossip,
             isExclusive: _isExclusive,
             isDefaultForLyrics: _isDefaultForLyrics
