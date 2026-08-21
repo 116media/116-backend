@@ -53,7 +53,7 @@ public class ContentTypeBuilder
     /// </summary>
     public ContentTypeEntity Build()
     {
-        var entity = ContentTypeEntity.Create(_id, _name, TestErrorsFactory.CreateContentTypeErrors());
+        var entity = ContentTypeEntity.Create(_id, _name);
 
         if (!_isActive)
         {
