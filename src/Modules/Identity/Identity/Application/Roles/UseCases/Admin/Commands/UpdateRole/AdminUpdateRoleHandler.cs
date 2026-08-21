@@ -53,7 +53,7 @@ public class AdminUpdateRoleHandler(
             string newName = isNameUpdated ? name! : role!.Name;
             string newDescription = isDescriptionUpdated ? description! : role!.Description;
 
-            role!.Update(name: newName, description: newDescription, errors: i18n.User);
+            role!.Update(name: newName, description: newDescription);
             await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
         }
 
