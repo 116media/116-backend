@@ -2,8 +2,8 @@ using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Session.Factories.Contracts;
+using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Mappers;
-using _116.Identity.Domain.Results;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
 
@@ -39,7 +39,7 @@ public class PublicRefreshTokenHandler(
             cancellationToken: cancellationToken
         );
 
-        JwtGenerationResult jwtResult = jwtService.GenerateToken(
+        JwtGenerationDto jwtResult = jwtService.GenerateToken(
             userId: authData.User.Id,
             sessionId: authData.Session.Id,
             email: authData.User.Email!,
@@ -66,7 +66,7 @@ public class PublicRefreshTokenHandler(
             avatar: avatarDto
         );
 
-        var authResult = new AuthenticationResult(
+        var authResult = new AuthenticationDto(
             User: userDto,
             AccessToken: jwtResult.Token,
             AccessTokenExpiresAt: jwtResult.ExpiresAt,
@@ -74,6 +74,6 @@ public class PublicRefreshTokenHandler(
             RefreshTokenExpiresAt: authData.Session.ExpiresAt
         );
 
-        return new PublicRefreshTokenResult(AuthenticationResult: authResult);
+        return new PublicRefreshTokenResult(Authentication: authResult);
     }
 }
