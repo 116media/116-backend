@@ -106,7 +106,7 @@ public class RoleBuilder
     /// <returns>A configured RoleEntity instance.</returns>
     public RoleEntity Build()
     {
-        var role = RoleEntity.Create(_id, _name, _description, TestErrorsFactory.CreateUserErrors());
+        var role = RoleEntity.Create(_id, _name, _description);
 
         if (!_isActive)
         {
