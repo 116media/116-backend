@@ -2,6 +2,8 @@ using _116.Content.Application.Commerce.UseCases.Admin.Commands.EditOrderItem;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Exceptions;
+using _116.Content.Domain.StateMachines;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Builders.Entities.Content;
 using _116.Tests.Fixtures.Factories.Content;
@@ -142,7 +144,9 @@ public class AdminEditOrderItemHandlerTests : BaseContentHandlerTest
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        await act.Should().ThrowAsync<BadRequestException>();
+        (await act.Should().ThrowAsync<ContentRuleException>())
+            .Which.Code.Should()
+            .Be(ContentRuleCodes.CannotAddItemToNonDraftOrder);
         _orderRepositoryMock.Verify(
             x => x.GetItemByIdOrThrowAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
             Times.Never
