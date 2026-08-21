@@ -189,7 +189,6 @@ public class FileBuilder
             _mimeType,
             _storageUrl,
             _sizeInBytes,
-            TestErrorsFactory.CreateCoreI18n(),
             _storageKey,
             _dominantColorHex,
             _foregroundColorHex
