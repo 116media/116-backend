@@ -101,8 +101,7 @@ public class AdminUpdateCategoryHandler(
             description: command.Description,
             isGossip: command.IsGossip,
             isExclusive: command.IsExclusive,
-            isDefaultForLyrics: command.IsDefaultForLyrics,
-            errors: i18n.Category
+            isDefaultForLyrics: command.IsDefaultForLyrics
         );
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
