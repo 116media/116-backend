@@ -52,11 +52,10 @@ public class VisitorRoleSeeder(IdentityDbContext context, ILogger<VisitorRoleSee
         var visitorRole = RoleEntity.Create(
             Guid.NewGuid(),
             nameof(EnumCoreUserRole.Visitor),
-            "Standard public/visitor user with content access and interaction permissions",
-            userErrors
+            "Standard public/visitor user with content access and interaction permissions"
         );
         // Get all visitor permissions from the typed permissions class
-        PermissionEntity[] visitorPermissions = VisitorPermissions.GetAllPermissions(userErrors);
+        PermissionEntity[] visitorPermissions = VisitorPermissions.GetAllPermissions();
         // Prepare role-permission associations
         RolePermissionEntity[] rolePermissions = visitorPermissions
             .Select(p => RolePermissionEntity.Create(Guid.NewGuid(), roleId: visitorRole.Id, permissionId: p.Id))
