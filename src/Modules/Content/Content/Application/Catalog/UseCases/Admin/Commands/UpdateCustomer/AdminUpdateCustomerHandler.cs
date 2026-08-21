@@ -40,8 +40,7 @@ public class AdminUpdateCustomerHandler(
             email: command.Email,
             phone: command.Phone,
             company: command.Company,
-            notes: command.Notes,
-            errors: i18n.Customer
+            notes: command.Notes
         );
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
