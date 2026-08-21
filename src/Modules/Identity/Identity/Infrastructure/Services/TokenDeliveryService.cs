@@ -2,9 +2,9 @@ using System.Text.RegularExpressions;
 using _116.Identity.Application.Auth.Constants;
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Session.Services;
+using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Constants;
 using _116.Identity.Domain.Enums;
-using _116.Identity.Domain.Results;
 using Microsoft.AspNetCore.Http;
 
 namespace _116.Identity.Infrastructure.Services;
@@ -44,7 +44,7 @@ public class TokenDeliveryService(
     }
 
     /// <inheritdoc />
-    public void SetTokenCookies(AuthenticationResult authResult)
+    public void SetTokenCookies(AuthenticationDto authResult)
     {
         HttpContext? httpContext = httpContextAccessor.HttpContext;
         if (httpContext is null)
