@@ -186,8 +186,6 @@ public class AdminCreateOrderFactoryTests
     /// </summary>
     private static CategoryEntity CreateCategoryWithContentType(Guid contentTypeId, string contentTypeName) =>
         new CategoryBuilder(contentTypeId)
-            .WithContentType(
-                ContentTypeEntity.Create(contentTypeId, contentTypeName, TestErrorsFactory.CreateContentTypeErrors())
-            )
+            .WithContentType(ContentTypeEntity.Create(contentTypeId, contentTypeName))
             .Build();
 }
