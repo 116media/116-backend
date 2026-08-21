@@ -27,7 +27,7 @@ public class AdminSubmitOrderFactory(
             throw contentOrderErrors.MustHaveAtLeastOneItemWithTier();
         }
 
-        order.Submit(contentOrderErrors);
+        order.Submit();
 
         var payment = ContentPaymentEntity.Create(
             id: Guid.NewGuid(),
