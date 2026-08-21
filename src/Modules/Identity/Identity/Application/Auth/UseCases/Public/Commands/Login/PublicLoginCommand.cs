@@ -1,5 +1,5 @@
 using _116.BuildingBlocks.Constants.RateLimit;
-using _116.Identity.Domain.Results;
+using _116.Identity.Application.Shared.DTOs;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Identity.Application.Auth.UseCases.Public.Commands.Login;
@@ -27,8 +27,8 @@ public record PublicLoginCommand(string Credentials, string Password) : ICommand
 /// <summary>
 /// The result of executing a <see cref="PublicLoginCommand" />.
 /// </summary>
-/// <param name="AuthenticationResult">The authentication result with user info and JWT token.</param>
+/// <param name="Authentication">The authenticated user with user info and JWT token.</param>
 /// <remarks>
 /// Provides authentication information relevant to public users.
 /// </remarks>
-public record PublicLoginResult(AuthenticationResult AuthenticationResult);
+public record PublicLoginResult(AuthenticationDto Authentication);
