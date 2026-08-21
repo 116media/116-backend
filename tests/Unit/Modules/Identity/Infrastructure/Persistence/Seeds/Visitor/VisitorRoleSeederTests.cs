@@ -126,12 +126,7 @@ public class VisitorRoleSeederTests
         await using var context = new IdentityDbContext(options);
 
         // Pre-seed visitor role
-        var existingRole = RoleEntity.Create(
-            Guid.NewGuid(),
-            nameof(EnumCoreUserRole.Visitor),
-            "Existing role",
-            _userErrors
-        );
+        var existingRole = RoleEntity.Create(Guid.NewGuid(), nameof(EnumCoreUserRole.Visitor), "Existing role");
         await context.Roles.AddAsync(existingRole);
         await context.SaveChangesAsync();
 
@@ -153,12 +148,7 @@ public class VisitorRoleSeederTests
         await using var context = new IdentityDbContext(options);
 
         // Pre-seed visitor role
-        var existingRole = RoleEntity.Create(
-            Guid.NewGuid(),
-            nameof(EnumCoreUserRole.Visitor),
-            "Existing role",
-            _userErrors
-        );
+        var existingRole = RoleEntity.Create(Guid.NewGuid(), nameof(EnumCoreUserRole.Visitor), "Existing role");
         await context.Roles.AddAsync(existingRole);
         await context.SaveChangesAsync();
 
@@ -180,12 +170,7 @@ public class VisitorRoleSeederTests
         await using var context = new IdentityDbContext(options);
 
         // Pre-seed visitor role
-        var existingRole = RoleEntity.Create(
-            Guid.NewGuid(),
-            nameof(EnumCoreUserRole.Visitor),
-            "Existing role",
-            _userErrors
-        );
+        var existingRole = RoleEntity.Create(Guid.NewGuid(), nameof(EnumCoreUserRole.Visitor), "Existing role");
         await context.Roles.AddAsync(existingRole);
         await context.SaveChangesAsync();
 
