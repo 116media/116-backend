@@ -15,13 +15,11 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateAlbum
 /// <param name="artistRepository">Repository for artist profile data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="fileRepository">Repository for resolving cover image URLs.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminCreateAlbumHandler(
     IAlbumRepository albumRepository,
     IArtistRepository artistRepository,
     IContentUnitOfWork unitOfWork,
-    IFileRepository fileRepository,
-    ContentI18n i18n
+    IFileRepository fileRepository
 ) : ICommandHandler<AdminCreateAlbumCommand, AdminCreateAlbumResult>
 {
     /// <inheritdoc />
