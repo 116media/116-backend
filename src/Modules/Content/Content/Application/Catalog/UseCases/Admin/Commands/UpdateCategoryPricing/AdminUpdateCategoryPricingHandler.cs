@@ -41,7 +41,7 @@ public class AdminUpdateCategoryPricingHandler(
 
         if (pricing is not null)
         {
-            pricing.UpdatePrice(priceUsd: command.PriceUsd, errors: i18n.Category);
+            pricing.UpdatePrice(priceUsd: command.PriceUsd);
 
             await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
