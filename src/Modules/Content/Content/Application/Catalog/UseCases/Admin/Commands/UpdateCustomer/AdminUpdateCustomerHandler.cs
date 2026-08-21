@@ -14,12 +14,10 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCustome
 /// <param name="customerRepository">Repository for customer data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminUpdateCustomerHandler(
     ICustomerRepository customerRepository,
     IContentUnitOfWork unitOfWork,
-    IMapper mapper,
-    ContentI18n i18n
+    IMapper mapper
 ) : ICommandHandler<AdminUpdateCustomerCommand, AdminUpdateCustomerResult>
 {
     /// <inheritdoc />
