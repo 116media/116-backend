@@ -63,7 +63,7 @@ public class PricingTierBuilder
     /// </summary>
     public PricingTierEntity Build()
     {
-        var entity = PricingTierEntity.Create(_id, _name, _description, TestErrorsFactory.CreatePricingTierErrors());
+        var entity = PricingTierEntity.Create(_id, _name, _description);
 
         if (!_isActive)
         {
