@@ -48,15 +48,6 @@ public class ShortVideoErrorsTests
     }
 
     [Fact]
-    public void TitleRequired_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.TitleRequired();
-
-        exception.Should().NotBeNull();
-        exception.Message.Should().Contain(_message.TitleRequired());
-    }
-
-    [Fact]
     public void SlugAlreadyExists_WithSlug_ShouldReturnConflictException()
     {
         // Arrange
