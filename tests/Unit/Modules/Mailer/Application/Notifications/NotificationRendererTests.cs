@@ -1,7 +1,7 @@
 using _116.Mailer.Application.Notifications;
 using _116.Mailer.Application.Notifications.Messages;
 using _116.Mailer.Application.Shared.Services;
-using _116.Mailer.Contracts.Application;
+using _116.Mailer.Contracts.Domain;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Xunit;
