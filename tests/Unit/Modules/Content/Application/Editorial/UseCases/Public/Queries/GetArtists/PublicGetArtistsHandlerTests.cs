@@ -94,7 +94,7 @@ public class PublicGetArtistsHandlerTests
     {
         // Arrange — the verified badge is identity-based: a claimed, verified profile earns it
         ArtistEntity artist = ArtistFactory.Create();
-        artist.ClaimOwnership(Guid.NewGuid(), TestErrorsFactory.CreateArtistErrors());
+        artist.ClaimOwnership(Guid.NewGuid());
         SetupDirectory(1, [], new ArtistDirectoryRow(artist, ContentCount: 0));
 
         var query = new PublicGetArtistsQuery(new PaginatedRequest(0, 10), Letter: null, Search: null);
