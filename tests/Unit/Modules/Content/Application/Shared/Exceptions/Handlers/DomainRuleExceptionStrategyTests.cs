@@ -1,5 +1,6 @@
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Exceptions.Handlers;
+using _116.Content.Domain.Exceptions;
 using _116.Content.Domain.StateMachines;
 using _116.Shared.Domain.Exceptions;
 using AwesomeAssertions;
@@ -38,10 +39,10 @@ public class DomainRuleExceptionStrategyTests
     }
 
     [Fact]
-    public void ExceptionType_ShouldReturnDomainRuleExceptionType()
+    public void ExceptionType_ShouldReturnContentRuleExceptionType()
     {
         // Act & Assert
-        _strategy.ExceptionType.Should().Be(typeof(DomainRuleException));
+        _strategy.ExceptionType.Should().Be(typeof(ContentRuleException));
     }
 
     [Theory]
@@ -66,7 +67,7 @@ public class DomainRuleExceptionStrategyTests
                 .RequestServices.GetRequiredService<ArticleErrorMessage>()
                 .InvalidStatusTransition("Draft", "Published"),
         };
-        var exception = new DomainRuleException(
+        var exception = new ContentRuleException(
             ContentRuleCodes.InvalidStatusTransition,
             contentType,
             "Draft",
@@ -91,7 +92,7 @@ public class DomainRuleExceptionStrategyTests
         string expected = context
             .RequestServices.GetRequiredService<ArticleErrorMessage>()
             .InvalidStatusTransition("Published", "Draft/PendingPayment/PendingReview/Rejected (editable)");
-        var exception = new DomainRuleException(ContentRuleCodes.NotEditable, "Article", "Published");
+        var exception = new ContentRuleException(ContentRuleCodes.NotEditable, "Article", "Published");
 
         // Act
         ProblemDetails problem = _strategy.CreateProblemDetails(exception, context);
@@ -109,7 +110,7 @@ public class DomainRuleExceptionStrategyTests
         string expected = context
             .RequestServices.GetRequiredService<VideoErrorMessage>()
             .CannotPublishWithoutYoutubeUrl();
-        var exception = new DomainRuleException(ContentRuleCodes.PublicationRequiresYoutubeUrl);
+        var exception = new ContentRuleException(ContentRuleCodes.PublicationRequiresYoutubeUrl);
 
         // Act
         ProblemDetails problem = _strategy.CreateProblemDetails(exception, context);
@@ -124,7 +125,7 @@ public class DomainRuleExceptionStrategyTests
     {
         // Arrange — a rule added before its strategy arm must stay a refusal, never a 500
         DefaultHttpContext context = CreateContext();
-        var exception = new DomainRuleException("content.some-future-rule", "x");
+        var exception = new ContentRuleException("content.some-future-rule", "x");
 
         // Act
         ProblemDetails problem = _strategy.CreateProblemDetails(exception, context);
