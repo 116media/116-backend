@@ -59,7 +59,7 @@ public class PublicUpdateProfileAuthFactory(
         if (isEmailUpdated)
         {
             await EnsureEmailUnique(email!, cancellationToken: cancellationToken);
-            user!.UpdateEmail(newEmail: email!, errors: userErrors);
+            user!.UpdateEmail(newEmail: email!);
 
             // The acting session survives the change it performed; the account's other sessions
             // are revoked in the same transaction as the new address.
@@ -74,7 +74,7 @@ public class PublicUpdateProfileAuthFactory(
         if (isUsernameUpdated)
         {
             await EnsureUsernameUnique(userName!, cancellationToken: cancellationToken);
-            user!.UpdateUserName(newUserName: userName!, errors: userErrors);
+            user!.UpdateUserName(newUserName: userName!);
         }
 
         if (isPhoneUpdated)
