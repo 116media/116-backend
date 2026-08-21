@@ -48,7 +48,7 @@ public class AdminUpdateProfileAuthFactory(
         if (isUsernameUpdated)
         {
             await EnsureUsernameUnique(userName!, cancellationToken: cancellationToken);
-            user!.UpdateUserName(newUserName: userName!, errors: userErrors);
+            user!.UpdateUserName(newUserName: userName!);
         }
 
         if (isPhoneUpdated)
