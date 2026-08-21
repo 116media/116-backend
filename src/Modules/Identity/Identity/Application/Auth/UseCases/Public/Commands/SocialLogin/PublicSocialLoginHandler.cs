@@ -3,10 +3,10 @@ using _116.Core.Domain.Entities;
 using _116.Identity.Application.Adapters.SocialAuth;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin.Contracts;
 using _116.Identity.Application.Session.Factories.Contracts;
+using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Domain.Enums;
-using _116.Identity.Domain.Results;
 using _116.Identity.Domain.ValueObjects;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
@@ -88,7 +88,7 @@ public class PublicSocialLoginHandler(
             avatar: avatarDto
         );
 
-        var authResult = new AuthenticationResult(
+        var authResult = new AuthenticationDto(
             User: userDto,
             AccessToken: sessionData.AccessToken,
             AccessTokenExpiresAt: sessionData.AccessTokenExpiresAt,
@@ -96,6 +96,6 @@ public class PublicSocialLoginHandler(
             RefreshTokenExpiresAt: sessionData.RefreshTokenExpiresAt
         );
 
-        return new PublicSocialLoginResult(AuthenticationResult: authResult);
+        return new PublicSocialLoginResult(Authentication: authResult);
     }
 }
