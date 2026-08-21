@@ -36,7 +36,7 @@ public class AdminRejectPaymentHandler(
             ct: cancellationToken
         );
 
-        payment.Reject(notes: command.Notes, errors: i18n.ContentOrder);
+        payment.Reject(notes: command.Notes);
 
         await contentOrderRepository.UpdatePaymentAsync(payment: payment, ct: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
