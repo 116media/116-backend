@@ -34,7 +34,7 @@ public class AdminVerifyArtistOwnerHandler(
             cancellationToken: cancellationToken
         );
 
-        artist.ClaimOwnership(userId: command.UserId, errors: i18n.Artist);
+        artist.ClaimOwnership(userId: command.UserId);
 
         artistRepository.Update(artist: artist);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
