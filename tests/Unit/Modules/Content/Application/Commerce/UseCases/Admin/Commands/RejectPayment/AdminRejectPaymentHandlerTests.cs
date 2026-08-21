@@ -5,6 +5,8 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Domain.Events;
+using _116.Content.Domain.Exceptions;
+using _116.Content.Domain.StateMachines;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
@@ -158,7 +160,9 @@ public class AdminRejectPaymentHandlerTests
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        await act.Should().ThrowAsync<ConflictException>();
+        (await act.Should().ThrowAsync<ContentRuleException>())
+            .Which.Code.Should()
+            .Be(ContentRuleCodes.PaymentAlreadyVerified);
         payment.Status.Should().Be(EnumPaymentStatus.Verified);
         payment.Notes.Should().BeNull();
         payment.DomainEvents.Should().BeEmpty();
@@ -180,7 +184,9 @@ public class AdminRejectPaymentHandlerTests
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        await act.Should().ThrowAsync<ConflictException>();
+        (await act.Should().ThrowAsync<ContentRuleException>())
+            .Which.Code.Should()
+            .Be(ContentRuleCodes.PaymentAlreadyRejected);
         payment.Status.Should().Be(EnumPaymentStatus.Rejected);
         payment.Notes.Should().Be(TestConstants.Commerce.ValidRejectionNotes);
         payment.DomainEvents.Should().BeEmpty();
