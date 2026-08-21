@@ -189,7 +189,6 @@ public class LyricsBuilder
     /// </summary>
     public LyricsEntity Build()
     {
-        var errors = TestErrorsFactory.CreateLyricsErrors();
         LyricsEntity entity = _customerId.HasValue
             ? LyricsEntity.CreatePaid(
                 id: _id,
@@ -202,8 +201,7 @@ public class LyricsBuilder
                 lyricsText: _lyricsText,
                 language: _language,
                 slug: _slug,
-                authorId: _authorId,
-                errors: errors
+                authorId: _authorId
             )
             : LyricsEntity.CreateFree(
                 id: _id,
@@ -214,8 +212,7 @@ public class LyricsBuilder
                 lyricsText: _lyricsText,
                 language: _language,
                 slug: _slug,
-                authorId: _authorId,
-                errors: errors
+                authorId: _authorId
             );
 
         ApplyStatusTransition(entity);
