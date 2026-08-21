@@ -17,17 +17,13 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.AddOrderItem
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="categoryErrors">Category domain error factory.</param>
-/// <param name="contentOrderErrors">Content order domain error factory.</param>
-/// <param name="promotionLevelErrors">Promotion level domain error factory.</param>
 public class AdminAddOrderItemFactory(
     ICategoryRepository categoryRepository,
     ILookupRepository lookupRepository,
     IPackageRepository packageRepository,
     IContentOrderRepository contentOrderRepository,
     IContentUnitOfWork unitOfWork,
-    CategoryErrors categoryErrors,
-    ContentOrderErrors contentOrderErrors,
-    PromotionLevelErrors promotionLevelErrors
+    CategoryErrors categoryErrors
 ) : IAddOrderItemFactory
 {
     /// <inheritdoc />
