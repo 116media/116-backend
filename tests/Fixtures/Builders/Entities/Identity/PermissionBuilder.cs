@@ -97,13 +97,7 @@ public class PermissionBuilder
     /// <returns>A configured PermissionEntity instance.</returns>
     public PermissionEntity Build()
     {
-        var permission = PermissionEntity.Create(
-            _id,
-            _resource,
-            _action,
-            _description,
-            TestErrorsFactory.CreateUserErrors()
-        );
+        var permission = PermissionEntity.Create(_id, _resource, _action, _description);
 
         if (!_isActive)
         {
