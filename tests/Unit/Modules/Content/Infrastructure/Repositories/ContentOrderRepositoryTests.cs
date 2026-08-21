@@ -155,7 +155,7 @@ public class ContentOrderRepositoryTests : IDisposable
         ContentOrderEntity order = await SeedOrderAsync();
 
         // Act
-        order.Submit(_errors);
+        order.Submit();
         await _repository.UpdateAsync(order);
         await _context.SaveChangesAsync();
 
@@ -173,20 +173,16 @@ public class ContentOrderRepositoryTests : IDisposable
     {
         // Arrange
         ContentOrderEntity order = await SeedOrderAsync();
-        order.Submit(_errors);
+        order.Submit();
         await _context.SaveChangesAsync();
 
         ContentPaymentEntity payment = ContentPaymentFactory.Create(order.Id);
-        payment.AttachProof(Guid.NewGuid(), EnumPaymentMethod.BankTransfer, _errors);
+        payment.AttachProof(Guid.NewGuid(), EnumPaymentMethod.BankTransfer);
         await _repository.AddPaymentAsync(payment);
         await _context.SaveChangesAsync();
 
         // Act
-        payment.Verify(
-            adminUserId: Guid.NewGuid(),
-            receiptUrl: "https://receipts.example.com/test.pdf",
-            errors: _errors
-        );
+        payment.Verify(adminUserId: Guid.NewGuid(), receiptUrl: "https://receipts.example.com/test.pdf");
         await _repository.UpdatePaymentAsync(payment);
         await _context.SaveChangesAsync();
 
@@ -281,7 +277,7 @@ public class ContentOrderRepositoryTests : IDisposable
         // Arrange
         ContentOrderEntity draftOrder = await SeedOrderAsync();
         ContentOrderEntity submittedOrder = await SeedOrderAsync();
-        submittedOrder.Submit(_errors);
+        submittedOrder.Submit();
         await _repository.UpdateAsync(submittedOrder);
         await _context.SaveChangesAsync();
 
