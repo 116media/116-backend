@@ -115,7 +115,7 @@ public class PublicRequestArtistClaimHandlerTests
     {
         // Arrange
         ArtistEntity artist = ArtistFactory.Create();
-        artist.ClaimOwnership(Guid.NewGuid(), TestErrorsFactory.CreateArtistErrors());
+        artist.ClaimOwnership(Guid.NewGuid());
         _artistRepositoryMock.SetupGetByIdOrThrow(artist);
         var command = new PublicRequestArtistClaimCommand(artist.Id, Guid.NewGuid());
 
