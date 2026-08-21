@@ -72,14 +72,7 @@ public class PackageSlotBuilder
     /// </summary>
     public PackageSlotEntity Build()
     {
-        PackageSlotEntity slot = PackageSlotEntity.Create(
-            _id,
-            _packageId,
-            _categoryId,
-            _isRequired,
-            _quantity,
-            TestErrorsFactory.CreatePackageErrors()
-        );
+        PackageSlotEntity slot = PackageSlotEntity.Create(_id, _packageId, _categoryId, _isRequired, _quantity);
 
         if (_category is not null)
         {
