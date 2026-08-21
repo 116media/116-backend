@@ -48,8 +48,7 @@ public class AdminCreatePermissionHandler(
             id: Guid.NewGuid(),
             action: command.Action,
             resource: command.Resource,
-            description: command.Description,
-            errors: i18n.User
+            description: command.Description
         );
 
         await permissionRepository.AddAsync(permission: permission, cancellationToken: cancellationToken);
