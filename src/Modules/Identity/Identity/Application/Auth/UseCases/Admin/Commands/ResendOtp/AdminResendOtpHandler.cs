@@ -6,6 +6,8 @@ using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.ValueObjects;
 using _116.Mailer.Contracts.Application;
+using _116.Mailer.Contracts.Domain;
+using _116.Shared.Application.Localization;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.ResendOtp;
