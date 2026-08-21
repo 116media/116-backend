@@ -42,7 +42,7 @@ public class PublicLoginHandlerTests : BaseHandlerTest
     #region Success Cases
 
     [Fact]
-    public async Task Handle_WithValidCredentials_ShouldReturnAuthenticationResult()
+    public async Task Handle_WithValidCredentials_ShouldReturnAuthenticationDto()
     {
         // Arrange
         string credentials = TestConstants.Auth.PublicLoginEmail;
@@ -66,8 +66,8 @@ public class PublicLoginHandlerTests : BaseHandlerTest
         PublicLoginResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.AuthenticationResult.AccessToken.Should().Be("access-token");
-        result.AuthenticationResult.RefreshToken.Should().Be("refresh-token");
+        result.Authentication.AccessToken.Should().Be("access-token");
+        result.Authentication.RefreshToken.Should().Be("refresh-token");
     }
 
     [Fact]
