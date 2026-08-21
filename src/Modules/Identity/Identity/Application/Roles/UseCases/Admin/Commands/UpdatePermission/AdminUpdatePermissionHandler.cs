@@ -67,12 +67,7 @@ public class AdminUpdatePermissionHandler(
             string newResource = isResourceUpdated ? resource! : permission!.Resource;
             string newDescription = isDescriptionUpdated ? description! : permission!.Description;
 
-            permission!.Update(
-                resource: newResource,
-                action: newAction,
-                description: newDescription,
-                errors: i18n.User
-            );
+            permission!.Update(resource: newResource, action: newAction, description: newDescription);
             await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
         }
 
