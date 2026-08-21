@@ -59,7 +59,7 @@ public class ContentTypeSeeder(
     private async Task ExecuteSeedingAsync()
     {
         ContentTypeEntity[] contentTypes = ContentTypeNames
-            .Select(name => ContentTypeEntity.Create(id: Guid.NewGuid(), name: name, errors: contentTypeErrors))
+            .Select(name => ContentTypeEntity.Create(id: Guid.NewGuid(), name: name))
             .ToArray();
 
         await context.ContentTypes.AddRangeAsync(contentTypes);
