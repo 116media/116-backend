@@ -86,14 +86,7 @@ public class PromotionLevelBuilder
     /// </summary>
     public PromotionLevelEntity Build()
     {
-        var entity = PromotionLevelEntity.Create(
-            _id,
-            _name,
-            _durationDays,
-            _priceUsd,
-            _spotPriority,
-            TestErrorsFactory.CreatePromotionLevelErrors()
-        );
+        var entity = PromotionLevelEntity.Create(_id, _name, _durationDays, _priceUsd, _spotPriority);
 
         if (!_isActive)
         {
