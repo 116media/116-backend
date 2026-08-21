@@ -89,23 +89,15 @@ public class ShortVideoBuilder
     /// </summary>
     public ShortVideoEntity Build()
     {
-        var errors = TestErrorsFactory.CreateShortVideoErrors();
         ShortVideoEntity entity = _videoId.HasValue
             ? ShortVideoEntity.CreateTeaser(
                 id: _id,
                 title: _title,
                 slug: _slug,
                 videoId: _videoId.Value,
-                authorId: _authorId,
-                errors: errors
+                authorId: _authorId
             )
-            : ShortVideoEntity.CreateStandalone(
-                id: _id,
-                title: _title,
-                slug: _slug,
-                authorId: _authorId,
-                errors: errors
-            );
+            : ShortVideoEntity.CreateStandalone(id: _id, title: _title, slug: _slug, authorId: _authorId);
 
         if (_videoFileId.HasValue)
         {
@@ -119,7 +111,7 @@ public class ShortVideoBuilder
 
         if (!_isInactive && _videoFileId.HasValue)
         {
-            entity.Activate(errors);
+            entity.Activate();
         }
 
         return entity;
