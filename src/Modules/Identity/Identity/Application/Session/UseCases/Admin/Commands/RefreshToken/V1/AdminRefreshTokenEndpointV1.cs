@@ -51,9 +51,9 @@ public class AdminRefreshTokenEndpointV1 : ICarterModule
                     var command = new AdminRefreshTokenCommand(RefreshToken: refreshToken);
                     AdminRefreshTokenResult result = await dispatcher.Send(request: command);
 
-                    tokenDelivery.SetTokenCookies(authResult: result.AuthenticationResult);
+                    tokenDelivery.SetTokenCookies(authResult: result.Authentication);
 
-                    var response = new AdminRefreshTokenResponse(User: result.AuthenticationResult.User);
+                    var response = new AdminRefreshTokenResponse(User: result.Authentication.User);
 
                     return Results.Ok(value: response);
                 }
