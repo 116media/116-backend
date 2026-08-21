@@ -39,7 +39,7 @@ public class AdminUpdateTagHandler(
             throw i18n.Tag.SlugAlreadyExists(slug: command.Slug);
         }
 
-        tag.Update(name: command.Name, slug: command.Slug, errors: i18n.Tag);
+        tag.Update(name: command.Name, slug: command.Slug);
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
