@@ -45,7 +45,7 @@ public class AdminUpdateArticleTagsHandler(
             if (existing is null)
             {
                 string uniqueSlug = SlugHelper.ToUniqueSlug(name);
-                existing = TagEntity.Create(id: Guid.NewGuid(), name: name, slug: uniqueSlug, errors: i18n.Tag);
+                existing = TagEntity.Create(id: Guid.NewGuid(), name: name, slug: uniqueSlug);
                 await lookupRepository.AddTagAsync(tag: existing, cancellationToken: cancellationToken);
             }
 
