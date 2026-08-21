@@ -4,6 +4,7 @@ using _116.Content.Domain.Entities;
 using _116.Content.Domain.Events;
 using _116.Identity.Contracts.Application;
 using _116.Mailer.Contracts.Application;
+using _116.Mailer.Contracts.Domain;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using Microsoft.Extensions.Logging.Abstractions;
