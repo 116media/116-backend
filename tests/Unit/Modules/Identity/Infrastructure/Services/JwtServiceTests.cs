@@ -2,9 +2,9 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using _116.BuildingBlocks.Constants;
+using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
-using _116.Identity.Domain.Results;
 using _116.Identity.Infrastructure.Services;
 using _116.Tests.Fixtures.Factories.Identity;
 using AwesomeAssertions;
@@ -60,7 +60,7 @@ public class JwtServiceTests : IDisposable
     #region GenerateToken Success Tests
 
     [Fact]
-    public void GenerateToken_WithValidParameters_ShouldReturnJwtGenerationResult()
+    public void GenerateToken_WithValidParameters_ShouldReturnJwtGenerationDto()
     {
         // Arrange
         var userId = Guid.NewGuid();
@@ -71,7 +71,7 @@ public class JwtServiceTests : IDisposable
         ICollection<RolePermissionEntity> userPermissions = [];
 
         // Act
-        JwtGenerationResult result = _sut.GenerateToken(
+        JwtGenerationDto result = _sut.GenerateToken(
             userId,
             sessionId,
             email,
@@ -103,7 +103,7 @@ public class JwtServiceTests : IDisposable
         ICollection<RolePermissionEntity> userPermissions = [];
 
         // Act
-        JwtGenerationResult result = _sut.GenerateToken(
+        JwtGenerationDto result = _sut.GenerateToken(
             userId,
             sessionId,
             email,
@@ -133,7 +133,7 @@ public class JwtServiceTests : IDisposable
         string userName = "testuser";
 
         // Act
-        JwtGenerationResult result = _sut.GenerateToken(
+        JwtGenerationDto result = _sut.GenerateToken(
             userId,
             sessionId,
             email,
@@ -165,7 +165,7 @@ public class JwtServiceTests : IDisposable
         string userName = "testuser";
 
         // Act
-        JwtGenerationResult result = _sut.GenerateToken(
+        JwtGenerationDto result = _sut.GenerateToken(
             userId,
             sessionId,
             email,
@@ -197,7 +197,7 @@ public class JwtServiceTests : IDisposable
         string userName = "testuser";
 
         // Act
-        JwtGenerationResult result = _sut.GenerateToken(
+        JwtGenerationDto result = _sut.GenerateToken(
             userId,
             sessionId,
             email,
@@ -229,7 +229,7 @@ public class JwtServiceTests : IDisposable
         string userName = "testuser";
 
         // Act
-        JwtGenerationResult result = _sut.GenerateToken(
+        JwtGenerationDto result = _sut.GenerateToken(
             userId,
             sessionId,
             email,
@@ -260,7 +260,7 @@ public class JwtServiceTests : IDisposable
         long tokenVersion = 42;
 
         // Act
-        JwtGenerationResult result = _sut.GenerateToken(
+        JwtGenerationDto result = _sut.GenerateToken(
             userId,
             sessionId,
             "test@example.com",
@@ -294,7 +294,7 @@ public class JwtServiceTests : IDisposable
         var authProvider = EnumAuthProvider.Google;
 
         // Act
-        JwtGenerationResult result = _sut.GenerateToken(
+        JwtGenerationDto result = _sut.GenerateToken(
             userId,
             sessionId,
             "test@example.com",
@@ -327,7 +327,7 @@ public class JwtServiceTests : IDisposable
         var sessionId = Guid.NewGuid();
 
         // Act
-        JwtGenerationResult result = _sut.GenerateToken(
+        JwtGenerationDto result = _sut.GenerateToken(
             userId,
             sessionId,
             "test@example.com",
@@ -360,7 +360,7 @@ public class JwtServiceTests : IDisposable
         var sessionId = Guid.NewGuid();
 
         // Act
-        JwtGenerationResult result = _sut.GenerateToken(
+        JwtGenerationDto result = _sut.GenerateToken(
             userId,
             sessionId,
             "test@example.com",
@@ -390,7 +390,7 @@ public class JwtServiceTests : IDisposable
         var sessionId = Guid.NewGuid();
 
         // Act
-        JwtGenerationResult result = _sut.GenerateToken(
+        JwtGenerationDto result = _sut.GenerateToken(
             userId,
             sessionId,
             "test@example.com",
@@ -433,7 +433,7 @@ public class JwtServiceTests : IDisposable
         };
 
         // Act
-        JwtGenerationResult result = _sut.GenerateToken(
+        JwtGenerationDto result = _sut.GenerateToken(
             userId,
             sessionId,
             "test@example.com",
@@ -484,7 +484,7 @@ public class JwtServiceTests : IDisposable
         };
 
         // Act
-        JwtGenerationResult result = _sut.GenerateToken(
+        JwtGenerationDto result = _sut.GenerateToken(
             userId,
             sessionId,
             "test@example.com",
@@ -523,7 +523,7 @@ public class JwtServiceTests : IDisposable
         DateTime beforeGeneration = DateTime.UtcNow;
 
         // Act
-        JwtGenerationResult result = _sut.GenerateToken(
+        JwtGenerationDto result = _sut.GenerateToken(
             userId,
             sessionId,
             "test@example.com",
@@ -550,7 +550,7 @@ public class JwtServiceTests : IDisposable
         var sessionId = Guid.NewGuid();
 
         // Act
-        JwtGenerationResult result = _sut.GenerateToken(
+        JwtGenerationDto result = _sut.GenerateToken(
             userId,
             sessionId,
             "test@example.com",
@@ -578,7 +578,7 @@ public class JwtServiceTests : IDisposable
         var sessionId = Guid.NewGuid();
 
         // Act
-        JwtGenerationResult result = _sut.GenerateToken(
+        JwtGenerationDto result = _sut.GenerateToken(
             userId,
             sessionId,
             "test@example.com",
@@ -606,7 +606,7 @@ public class JwtServiceTests : IDisposable
         var sessionId = Guid.NewGuid();
 
         // Act
-        JwtGenerationResult result = _sut.GenerateToken(
+        JwtGenerationDto result = _sut.GenerateToken(
             userId,
             sessionId,
             "test@example.com",
@@ -653,7 +653,7 @@ public class JwtServiceTests : IDisposable
         DateTime beforeGeneration = DateTime.UtcNow;
 
         // Act
-        JwtGenerationResult result = service.GenerateToken(
+        JwtGenerationDto result = service.GenerateToken(
             userId,
             sessionId,
             "test@example.com",
@@ -686,7 +686,7 @@ public class JwtServiceTests : IDisposable
         DateTime beforeGeneration = DateTime.UtcNow;
 
         // Act
-        JwtGenerationResult result = service.GenerateToken(
+        JwtGenerationDto result = service.GenerateToken(
             userId,
             sessionId,
             "test@example.com",
@@ -717,7 +717,7 @@ public class JwtServiceTests : IDisposable
         var authProvider = EnumAuthProvider.Facebook;
 
         // Act
-        JwtGenerationResult result = _sut.GenerateToken(
+        JwtGenerationDto result = _sut.GenerateToken(
             userId,
             sessionId,
             "test@example.com",
