@@ -81,7 +81,7 @@ public class ResourceCompletenessTests
     [Fact]
     public void Catalogues_ShouldDiscoverEveryShippedResourceFamily()
     {
-        Catalogues().Should().HaveCount(33);
+        Catalogues().Should().HaveCount(34);
     }
 
     [Theory]
