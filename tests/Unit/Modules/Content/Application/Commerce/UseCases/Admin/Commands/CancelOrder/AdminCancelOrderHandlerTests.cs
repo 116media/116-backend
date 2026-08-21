@@ -4,6 +4,8 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Domain.Events;
+using _116.Content.Domain.Exceptions;
+using _116.Content.Domain.StateMachines;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
@@ -130,7 +132,9 @@ public class AdminCancelOrderHandlerTests
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        await act.Should().ThrowAsync<BadRequestException>();
+        (await act.Should().ThrowAsync<ContentRuleException>())
+            .Which.Code.Should()
+            .Be(ContentRuleCodes.CannotCancelPaidOrder);
         order.Status.Should().Be(EnumOrderStatus.Paid);
         order.DomainEvents.Should().BeEmpty();
         _unitOfWorkMock.VerifyCommitNotCalled();
@@ -150,7 +154,9 @@ public class AdminCancelOrderHandlerTests
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        await act.Should().ThrowAsync<ConflictException>();
+        (await act.Should().ThrowAsync<ContentRuleException>())
+            .Which.Code.Should()
+            .Be(ContentRuleCodes.OrderAlreadyCancelled);
         order.Status.Should().Be(EnumOrderStatus.Cancelled);
         order.DomainEvents.Should().BeEmpty();
         _unitOfWorkMock.VerifyCommitNotCalled();
