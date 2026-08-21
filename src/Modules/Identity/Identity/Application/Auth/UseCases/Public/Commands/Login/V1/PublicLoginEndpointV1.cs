@@ -71,18 +71,18 @@ public class PublicLoginEndpointV1 : ICarterModule
 
                     if (tokenDelivery.IsWebClient())
                     {
-                        tokenDelivery.SetTokenCookies(authResult: result.AuthenticationResult);
-                        var webResponse = new PublicLoginWebResponse(User: result.AuthenticationResult.User);
+                        tokenDelivery.SetTokenCookies(authResult: result.Authentication);
+                        var webResponse = new PublicLoginWebResponse(User: result.Authentication.User);
                         return Results.Ok(value: webResponse);
                     }
 
                     var mobileResponse = new PublicLoginMobileResponse(
-                        User: result.AuthenticationResult.User,
-                        AccessToken: result.AuthenticationResult.AccessToken,
-                        AccessTokenExpiresAt: result.AuthenticationResult.AccessTokenExpiresAt,
-                        RefreshToken: result.AuthenticationResult.RefreshToken,
-                        RefreshTokenExpiresAt: result.AuthenticationResult.RefreshTokenExpiresAt,
-                        TokenType: result.AuthenticationResult.TokenType
+                        User: result.Authentication.User,
+                        AccessToken: result.Authentication.AccessToken,
+                        AccessTokenExpiresAt: result.Authentication.AccessTokenExpiresAt,
+                        RefreshToken: result.Authentication.RefreshToken,
+                        RefreshTokenExpiresAt: result.Authentication.RefreshTokenExpiresAt,
+                        TokenType: result.Authentication.TokenType
                     );
 
                     return Results.Ok(value: mobileResponse);
