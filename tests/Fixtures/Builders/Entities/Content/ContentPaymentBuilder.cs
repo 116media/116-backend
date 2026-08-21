@@ -78,7 +78,6 @@ public class ContentPaymentBuilder
 
     public ContentPaymentEntity Build()
     {
-        var errors = TestErrorsFactory.CreateContentOrderErrors();
         var payment = ContentPaymentEntity.Create(_id, _orderId, _amountUsd);
 
         // A decided payment must carry proof, so a builder asked for one without explicit
@@ -91,17 +90,17 @@ public class ContentPaymentBuilder
 
         if (_proofFileId.HasValue && _paymentMethod.HasValue)
         {
-            payment.AttachProof(_proofFileId.Value, _paymentMethod.Value, errors);
+            payment.AttachProof(_proofFileId.Value, _paymentMethod.Value);
         }
 
         if (_verified)
         {
-            payment.Verify(_verifiedByAdminId, _receiptUrl, errors);
+            payment.Verify(_verifiedByAdminId, _receiptUrl);
         }
 
         if (_rejected)
         {
-            payment.Reject(_rejectionNotes, errors);
+            payment.Reject(_rejectionNotes);
         }
 
         if (_order is not null)
