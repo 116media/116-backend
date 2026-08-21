@@ -41,7 +41,7 @@ public class AdminAddOrderItemFactory(
         CancellationToken cancellationToken
     )
     {
-        order.EnsureDraft(contentOrderErrors);
+        order.EnsureDraft();
 
         CategoryEntity? category = await categoryRepository.GetByIdAsync(
             id: categoryId,
@@ -50,7 +50,7 @@ public class AdminAddOrderItemFactory(
 
         if (category is not null)
         {
-            category.EnsureCommissionable(categoryErrors);
+            category.EnsureCommissionable();
 
             decimal? promoPriceSnapshot = null;
             PromotionLevelEntity? promoLevel = null;
@@ -62,7 +62,7 @@ public class AdminAddOrderItemFactory(
                     cancellationToken: cancellationToken
                 );
 
-                promoLevel.EnsureActive(promotionLevelErrors);
+                promoLevel.EnsureActive();
                 promoPriceSnapshot = promoLevel.PriceUsd;
             }
 
