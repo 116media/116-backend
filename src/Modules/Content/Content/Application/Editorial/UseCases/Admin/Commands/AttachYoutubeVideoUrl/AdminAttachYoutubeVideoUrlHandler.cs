@@ -51,7 +51,7 @@ public class AdminAttachYoutubeVideoUrlHandler(
             cancellationToken: cancellationToken
         );
 
-        video.AttachYoutubeVideoUrl(youtubeVideoUrl: command.YoutubeVideoUrl, errors: i18n.Video);
+        video.AttachYoutubeVideoUrl(youtubeVideoUrl: command.YoutubeVideoUrl);
 
         videoRepository.Update(video: video);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
