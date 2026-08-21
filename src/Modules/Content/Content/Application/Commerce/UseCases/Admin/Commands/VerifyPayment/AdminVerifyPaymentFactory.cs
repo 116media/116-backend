@@ -16,12 +16,10 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPaymen
 /// <param name="lookupRepository">Repository for lookup data access operations.</param>
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="contentOrderErrors">Content order domain error factory.</param>
 public class AdminVerifyPaymentFactory(
     ILookupRepository lookupRepository,
     IContentOrderRepository contentOrderRepository,
-    IContentUnitOfWork unitOfWork,
-    ContentOrderErrors contentOrderErrors
+    IContentUnitOfWork unitOfWork
 ) : IVerifyPaymentFactory
 {
     /// <inheritdoc />
