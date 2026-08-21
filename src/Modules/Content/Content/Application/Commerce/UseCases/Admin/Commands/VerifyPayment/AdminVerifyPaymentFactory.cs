@@ -33,7 +33,7 @@ public class AdminVerifyPaymentFactory(
         CancellationToken cancellationToken
     )
     {
-        payment.Verify(adminUserId: adminUserId, receiptUrl: receiptUrl, errors: contentOrderErrors);
+        payment.Verify(adminUserId: adminUserId, receiptUrl: receiptUrl);
 
         IReadOnlyDictionary<Guid, int> promotionDurations = await ResolvePromotionDurationsAsync(
             order: order,
@@ -43,8 +43,7 @@ public class AdminVerifyPaymentFactory(
         order.MarkPaid(
             paymentId: payment.Id,
             verifiedAt: payment.VerifiedAt!.Value,
-            promotionDurationsByLevelId: promotionDurations,
-            errors: contentOrderErrors
+            promotionDurationsByLevelId: promotionDurations
         );
 
         await contentOrderRepository.UpdatePaymentAsync(payment: payment, ct: cancellationToken);
