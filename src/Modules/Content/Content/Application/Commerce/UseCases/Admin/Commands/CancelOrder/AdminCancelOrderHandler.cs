@@ -11,12 +11,8 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.CancelOrder;
 /// </summary>
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
-public class AdminCancelOrderHandler(
-    IContentOrderRepository contentOrderRepository,
-    IContentUnitOfWork unitOfWork,
-    ContentI18n i18n
-) : ICommandHandler<AdminCancelOrderCommand, AdminCancelOrderResult>
+public class AdminCancelOrderHandler(IContentOrderRepository contentOrderRepository, IContentUnitOfWork unitOfWork)
+    : ICommandHandler<AdminCancelOrderCommand, AdminCancelOrderResult>
 {
     /// <inheritdoc />
     public async Task<AdminCancelOrderResult> Handle(
