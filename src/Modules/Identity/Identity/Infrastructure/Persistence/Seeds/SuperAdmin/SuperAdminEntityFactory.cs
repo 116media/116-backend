@@ -23,8 +23,7 @@ public class SuperAdminEntityFactory(IPasswordService passwordService, UserError
             Guid.NewGuid(),
             email: SuperAdminConfiguration.Email,
             userName: SuperAdminConfiguration.Username,
-            passwordHash: hashedPassword,
-            errors: userErrors
+            passwordHash: hashedPassword
         );
 
         superAdminUser.MarkAsVerified();
@@ -41,8 +40,7 @@ public class SuperAdminEntityFactory(IPasswordService passwordService, UserError
         return RoleEntity.Create(
             Guid.NewGuid(),
             name: SuperAdminConfiguration.RoleName,
-            description: SuperAdminConfiguration.RoleDescription,
-            errors: userErrors
+            description: SuperAdminConfiguration.RoleDescription
         );
     }
 
@@ -56,8 +54,7 @@ public class SuperAdminEntityFactory(IPasswordService passwordService, UserError
             Guid.NewGuid(),
             resource: SuperAdminConfiguration.PermissionResource,
             action: SuperAdminConfiguration.PermissionAction,
-            description: SuperAdminConfiguration.PermissionDescription,
-            errors: userErrors
+            description: SuperAdminConfiguration.PermissionDescription
         );
     }
 
