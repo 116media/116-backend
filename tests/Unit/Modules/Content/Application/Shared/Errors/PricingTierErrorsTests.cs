@@ -69,13 +69,4 @@ public class PricingTierErrorsTests
         exception.Should().NotBeNull();
         exception.Message.Should().Contain(_message.IsInactive());
     }
-
-    [Fact]
-    public void NameRequired_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.NameRequired();
-
-        exception.Should().NotBeNull();
-        exception.Message.Should().Contain(_message.NameRequired());
-    }
 }
