@@ -38,7 +38,7 @@ public class AdminCreateContentTypeHandler(
             throw i18n.ContentType.AlreadyExists(name: command.Name);
         }
 
-        var contentType = ContentTypeEntity.Create(id: Guid.NewGuid(), name: command.Name, errors: i18n.ContentType);
+        var contentType = ContentTypeEntity.Create(id: Guid.NewGuid(), name: command.Name);
 
         await lookupRepository.AddContentTypeAsync(contentType: contentType, cancellationToken: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
