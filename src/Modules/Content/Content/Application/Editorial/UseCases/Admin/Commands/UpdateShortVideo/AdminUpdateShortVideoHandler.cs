@@ -39,7 +39,7 @@ public class AdminUpdateShortVideoHandler(
             cancellationToken: cancellationToken
         );
 
-        shortVideo.Update(title: command.Title, videoId: command.VideoId, errors: i18n.ShortVideo);
+        shortVideo.Update(title: command.Title, videoId: command.VideoId);
 
         shortVideoRepository.Update(shortVideo);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
