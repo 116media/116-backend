@@ -195,8 +195,7 @@ public class SuperAdminSeederTests : IDisposable
             Guid.NewGuid(),
             SuperAdminConfiguration.Email,
             "existingadmin",
-            "hashedPassword",
-            _userErrors
+            "hashedPassword"
         );
         await context.Users.AddAsync(existingUser);
         await context.SaveChangesAsync();
@@ -224,8 +223,7 @@ public class SuperAdminSeederTests : IDisposable
             Guid.NewGuid(),
             SuperAdminConfiguration.Email,
             "existingadmin",
-            "hashedPassword",
-            _userErrors
+            "hashedPassword"
         );
         await context.Users.AddAsync(existingUser);
         await context.SaveChangesAsync();
