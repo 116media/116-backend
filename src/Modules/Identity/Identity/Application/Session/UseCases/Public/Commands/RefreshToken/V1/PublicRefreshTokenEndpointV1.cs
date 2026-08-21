@@ -82,18 +82,18 @@ public class PublicRefreshTokenEndpointV1 : ICarterModule
 
                     if (tokenDelivery.IsWebClient())
                     {
-                        tokenDelivery.SetTokenCookies(authResult: result.AuthenticationResult);
-                        var webResponse = new PublicRefreshTokenWebResponse(User: result.AuthenticationResult.User);
+                        tokenDelivery.SetTokenCookies(authResult: result.Authentication);
+                        var webResponse = new PublicRefreshTokenWebResponse(User: result.Authentication.User);
                         return Results.Ok(value: webResponse);
                     }
 
                     var mobileResponse = new PublicRefreshTokenMobileResponse(
-                        User: result.AuthenticationResult.User,
-                        TokenType: result.AuthenticationResult.TokenType,
-                        AccessToken: result.AuthenticationResult.AccessToken,
-                        RefreshToken: result.AuthenticationResult.RefreshToken,
-                        AccessTokenExpiresAt: result.AuthenticationResult.AccessTokenExpiresAt,
-                        RefreshTokenExpiresAt: result.AuthenticationResult.RefreshTokenExpiresAt
+                        User: result.Authentication.User,
+                        TokenType: result.Authentication.TokenType,
+                        AccessToken: result.Authentication.AccessToken,
+                        RefreshToken: result.Authentication.RefreshToken,
+                        AccessTokenExpiresAt: result.Authentication.AccessTokenExpiresAt,
+                        RefreshTokenExpiresAt: result.Authentication.RefreshTokenExpiresAt
                     );
 
                     return Results.Ok(value: mobileResponse);
