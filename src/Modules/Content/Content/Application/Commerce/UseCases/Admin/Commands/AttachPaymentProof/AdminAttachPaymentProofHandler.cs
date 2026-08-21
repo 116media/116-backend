@@ -60,7 +60,7 @@ public class AdminAttachPaymentProofHandler(
             cancellationToken: cancellationToken
         );
 
-        payment.AttachProof(proofFileId: proofFile.Id, paymentMethod: command.PaymentMethod, errors: i18n.ContentOrder);
+        payment.AttachProof(proofFileId: proofFile.Id, paymentMethod: command.PaymentMethod);
 
         await contentOrderRepository.UpdatePaymentAsync(payment: payment, ct: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
