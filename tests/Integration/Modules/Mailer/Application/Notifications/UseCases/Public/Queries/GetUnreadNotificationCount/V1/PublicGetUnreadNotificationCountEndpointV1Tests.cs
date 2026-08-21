@@ -1,5 +1,5 @@
 using _116.Mailer.Application.Notifications.UseCases.Public.Queries.GetUnreadNotificationCount.V1;
-using _116.Mailer.Contracts.Application;
+using _116.Mailer.Contracts.Domain;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Infrastructure.Persistence;
 
