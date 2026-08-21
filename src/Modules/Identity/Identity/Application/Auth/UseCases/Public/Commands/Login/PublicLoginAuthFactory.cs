@@ -62,14 +62,14 @@ public class PublicLoginAuthFactory(
             throw userErrors.InvalidCredentials();
         }
 
-        user.ValidateCanLogin(errors: userErrors);
+        user.ValidateCanLogin();
         await lockoutRepository.ClearFailedLoginsAsync(userId: user.Id, cancellationToken: cancellationToken);
 
         // A hash written at the old work factor is upgraded in place. InitializePasswordHash is
         // used rather than UpdatePassword so the upgrade raises no password-changed notification.
         if (passwordService.NeedsRehash(hash: user.PasswordHash))
         {
-            user.InitializePasswordHash(newPasswordHash: passwordService.Hash(password: password), errors: userErrors);
+            user.InitializePasswordHash(newPasswordHash: passwordService.Hash(password: password));
         }
 
         List<RolePermissionEntity> userPermissions = user.UserRoles.SelectMany(ur => ur.Role.RolePermissions).ToList();
