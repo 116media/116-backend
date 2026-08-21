@@ -101,7 +101,7 @@ public class PublicSubmitLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest
             ContentTypeEntity contentType = ContentTypeFactory.Create();
             CategoryEntity category = CategoryFactory.CreateDefaultForLyrics(contentType.Id);
             ArtistEntity artist = ArtistFactory.Create("Fally Ipupa", "fally-ipupa-real");
-            artist.ClaimOwnership(userId, TestErrorsFactory.CreateArtistErrors());
+            artist.ClaimOwnership(userId);
             ctx.ContentTypes.Add(contentType);
             ctx.Categories.Add(category);
             ctx.Artists.Add(artist);
