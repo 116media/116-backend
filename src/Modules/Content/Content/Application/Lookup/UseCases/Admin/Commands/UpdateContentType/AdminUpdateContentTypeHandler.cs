@@ -45,7 +45,7 @@ public class AdminUpdateContentTypeHandler(
             throw i18n.ContentType.AlreadyExists(name: command.Name);
         }
 
-        contentType.Update(name: command.Name, errors: i18n.ContentType);
+        contentType.Update(name: command.Name);
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
