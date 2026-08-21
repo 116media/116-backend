@@ -295,7 +295,7 @@ public class PublicLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
         var user = UserFactory.Create(email);
         user.MarkAsVerified();
         user.Activate();
-        user.InitializePasswordHash(passwordService.Hash(TestAuth.ValidPassword), errors);
+        user.InitializePasswordHash(passwordService.Hash(TestAuth.ValidPassword));
 
         await SeedAsync<IdentityDbContext>(context => context.Users.Add(user));
 
