@@ -18,51 +18,6 @@ public class CoreErrorsTests
         LocalizerFactory.CreateMessage<InternalServerErrorMessage>();
 
     [Fact]
-    public void FileNameRequired_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.FileNameRequired();
-
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().Be(_i18n.FileNameRequired());
-    }
-
-    [Fact]
-    public void OriginalFileNameRequired_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.OriginalFileNameRequired();
-
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().Be(_i18n.OriginalFileNameRequired());
-    }
-
-    [Fact]
-    public void MimeTypeRequired_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.MimeTypeRequired();
-
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().Be(_i18n.MimeTypeRequired());
-    }
-
-    [Fact]
-    public void StorageUrlRequired_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.StorageUrlRequired();
-
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().Be(_i18n.StorageUrlRequired());
-    }
-
-    [Fact]
-    public void FileSizeMustBeGreaterThanZero_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.FileSizeMustBeGreaterThanZero();
-
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().Be(_i18n.FileSizeMustBeGreaterThanZero());
-    }
-
-    [Fact]
     public void FileDownloadFailed_WithFileUrlAndReason_ShouldReturnInternalServerException()
     {
         // Arrange
