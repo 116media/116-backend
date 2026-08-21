@@ -9,6 +9,8 @@ using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.ValueObjects;
 using _116.Mailer.Contracts.Application;
+using _116.Mailer.Contracts.Domain;
+using _116.Shared.Application.Localization;
 
 namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp;
 
@@ -52,13 +54,7 @@ public class PublicSignUpAuthFactory(
 
         string hashedPassword = passwordService.Hash(password: password);
 
-        var newUser = UserEntity.Create(
-            Guid.NewGuid(),
-            userName: userName,
-            passwordHash: hashedPassword,
-            email: email,
-            errors: userErrors
-        );
+        var newUser = UserEntity.Create(Guid.NewGuid(), userName: userName, passwordHash: hashedPassword, email: email);
 
         await authRepository.AddAsync(user: newUser, cancellationToken: cancellationToken);
         await authRepository.AssignVisitorRoleAsync(userId: newUser.Id, cancellationToken: cancellationToken);
