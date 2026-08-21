@@ -30,7 +30,7 @@ public class AdminRemoveItemTierHandler(
 
         ContentOrderEntity order = await contentOrderRepository.GetByIdOrThrowAsync(id: orderId, ct: cancellationToken);
 
-        order.EnsureDraft(i18n.ContentOrder);
+        order.EnsureDraft();
 
         ContentOrderItemEntity item = await contentOrderRepository.GetItemByIdOrThrowAsync(
             orderId: orderId,
