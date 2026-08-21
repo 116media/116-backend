@@ -1,8 +1,8 @@
 using _116.Identity.Application.Auth.Constants;
 using _116.Identity.Application.Session.Services;
+using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Constants;
 using _116.Identity.Domain.Enums;
-using _116.Identity.Domain.Results;
 using _116.Identity.Infrastructure.Services;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
@@ -81,7 +81,7 @@ public class TokenDeliveryServiceTests : IDisposable
         // Arrange
         DefaultHttpContext httpContext = CreateHttpContext("/api/v1/admin/auth/login");
         SetupHttpContext(httpContext, EnumClient.Dashboard);
-        AuthenticationResult authResult = CreateAuthResult();
+        AuthenticationDto authResult = CreateAuthResult();
 
         // Act
         _sut.SetTokenCookies(authResult);
@@ -96,7 +96,7 @@ public class TokenDeliveryServiceTests : IDisposable
         // Arrange
         DefaultHttpContext httpContext = CreateHttpContext("/api/v1/admin/auth/login");
         SetupHttpContext(httpContext, EnumClient.Dashboard);
-        AuthenticationResult authResult = CreateAuthResult();
+        AuthenticationDto authResult = CreateAuthResult();
 
         // Act
         _sut.SetTokenCookies(authResult);
@@ -110,7 +110,7 @@ public class TokenDeliveryServiceTests : IDisposable
     {
         // Arrange
         _httpContextAccessorMock.Setup(x => x.HttpContext).Returns((HttpContext?)null);
-        AuthenticationResult authResult = CreateAuthResult();
+        AuthenticationDto authResult = CreateAuthResult();
 
         // Act
         Action act = () => _sut.SetTokenCookies(authResult);
@@ -125,7 +125,7 @@ public class TokenDeliveryServiceTests : IDisposable
         // Arrange
         DefaultHttpContext httpContext = CreateHttpContext("/api/v1/admin/auth/login");
         SetupHttpContext(httpContext, EnumClient.Dashboard);
-        AuthenticationResult authResult = CreateAuthResult();
+        AuthenticationDto authResult = CreateAuthResult();
 
         // Act
         _sut.SetTokenCookies(authResult);
@@ -141,7 +141,7 @@ public class TokenDeliveryServiceTests : IDisposable
         // Arrange
         DefaultHttpContext httpContext = CreateHttpContext("/api/v1/admin/auth/login");
         SetupHttpContext(httpContext, EnumClient.Dashboard);
-        AuthenticationResult authResult = CreateAuthResult();
+        AuthenticationDto authResult = CreateAuthResult();
 
         // Act
         _sut.SetTokenCookies(authResult);
@@ -157,7 +157,7 @@ public class TokenDeliveryServiceTests : IDisposable
         // Arrange
         DefaultHttpContext httpContext = CreateHttpContext("/api/v1/admin/auth/login");
         SetupHttpContext(httpContext, EnumClient.Dashboard);
-        AuthenticationResult authResult = CreateAuthResult();
+        AuthenticationDto authResult = CreateAuthResult();
 
         // Act
         _sut.SetTokenCookies(authResult);
@@ -174,7 +174,7 @@ public class TokenDeliveryServiceTests : IDisposable
         // Arrange
         DefaultHttpContext httpContext = CreateHttpContext("/api/v1/public/auth/login");
         SetupHttpContext(httpContext, EnumClient.WebApp);
-        AuthenticationResult authResult = CreateAuthResult();
+        AuthenticationDto authResult = CreateAuthResult();
 
         // Act
         _sut.SetTokenCookies(authResult);
@@ -191,7 +191,7 @@ public class TokenDeliveryServiceTests : IDisposable
         // Arrange
         DefaultHttpContext httpContext = CreateHttpContext("/api/v1/admin/auth/login");
         SetupHttpContext(httpContext, EnumClient.Dashboard);
-        AuthenticationResult authResult = CreateAuthResult();
+        AuthenticationDto authResult = CreateAuthResult();
 
         // Act
         _sut.SetTokenCookies(authResult);
@@ -207,7 +207,7 @@ public class TokenDeliveryServiceTests : IDisposable
         // Arrange
         DefaultHttpContext httpContext = CreateHttpContext("/api/v1/admin/auth/login");
         SetupHttpContext(httpContext, EnumClient.Dashboard);
-        AuthenticationResult authResult = CreateAuthResult();
+        AuthenticationDto authResult = CreateAuthResult();
 
         // Act
         _sut.SetTokenCookies(authResult);
@@ -223,7 +223,7 @@ public class TokenDeliveryServiceTests : IDisposable
         // Arrange
         DefaultHttpContext httpContext = CreateHttpContext("/api/v1/admin/auth/login");
         SetupHttpContext(httpContext, EnumClient.Dashboard);
-        AuthenticationResult authResult = CreateAuthResult();
+        AuthenticationDto authResult = CreateAuthResult();
 
         // Act
         _sut.SetTokenCookies(authResult);
@@ -240,7 +240,7 @@ public class TokenDeliveryServiceTests : IDisposable
         Environment.SetEnvironmentVariable(AspNetCoreEnvVar, "Development");
         DefaultHttpContext httpContext = CreateHttpContext("/api/v1/admin/auth/login");
         SetupHttpContext(httpContext, EnumClient.Dashboard);
-        AuthenticationResult authResult = CreateAuthResult();
+        AuthenticationDto authResult = CreateAuthResult();
 
         // Act
         _sut.SetTokenCookies(authResult);
@@ -257,7 +257,7 @@ public class TokenDeliveryServiceTests : IDisposable
         Environment.SetEnvironmentVariable(AspNetCoreEnvVar, "Development");
         DefaultHttpContext httpContext = CreateHttpContext("/api/v1/admin/auth/login");
         SetupHttpContext(httpContext, EnumClient.Dashboard);
-        AuthenticationResult authResult = CreateAuthResult();
+        AuthenticationDto authResult = CreateAuthResult();
 
         // Act
         _sut.SetTokenCookies(authResult);
@@ -274,7 +274,7 @@ public class TokenDeliveryServiceTests : IDisposable
         Environment.SetEnvironmentVariable(AspNetCoreEnvVar, "Production");
         DefaultHttpContext httpContext = CreateHttpContext("/api/v1/admin/auth/login");
         SetupHttpContext(httpContext, EnumClient.Dashboard);
-        AuthenticationResult authResult = CreateAuthResult();
+        AuthenticationDto authResult = CreateAuthResult();
 
         // Act
         _sut.SetTokenCookies(authResult);
@@ -291,7 +291,7 @@ public class TokenDeliveryServiceTests : IDisposable
         Environment.SetEnvironmentVariable(AspNetCoreEnvVar, "Production");
         DefaultHttpContext httpContext = CreateHttpContext("/api/v1/admin/auth/login");
         SetupHttpContext(httpContext, EnumClient.Dashboard);
-        AuthenticationResult authResult = CreateAuthResult();
+        AuthenticationDto authResult = CreateAuthResult();
 
         // Act
         _sut.SetTokenCookies(authResult);
@@ -308,7 +308,7 @@ public class TokenDeliveryServiceTests : IDisposable
         Environment.SetEnvironmentVariable(AspNetCoreEnvVar, null);
         DefaultHttpContext httpContext = CreateHttpContext("/api/v1/admin/auth/login");
         SetupHttpContext(httpContext, EnumClient.Dashboard);
-        AuthenticationResult authResult = CreateAuthResult();
+        AuthenticationDto authResult = CreateAuthResult();
 
         // Act
         _sut.SetTokenCookies(authResult);
@@ -325,7 +325,7 @@ public class TokenDeliveryServiceTests : IDisposable
         // Arrange
         DefaultHttpContext httpContext = CreateHttpContext("/api/v1/admin/auth/login");
         SetupHttpContext(httpContext, EnumClient.Dashboard);
-        AuthenticationResult authResult = CreateAuthResult();
+        AuthenticationDto authResult = CreateAuthResult();
 
         // Act
         _sut.SetTokenCookies(authResult);
@@ -619,7 +619,7 @@ public class TokenDeliveryServiceTests : IDisposable
         // Arrange
         DefaultHttpContext httpContext = CreateHttpContext("/api/v2/admin/auth/login");
         SetupHttpContext(httpContext, EnumClient.Dashboard);
-        AuthenticationResult authResult = CreateAuthResult();
+        AuthenticationDto authResult = CreateAuthResult();
 
         // Act
         _sut.SetTokenCookies(authResult);
@@ -636,7 +636,7 @@ public class TokenDeliveryServiceTests : IDisposable
         // Arrange
         DefaultHttpContext httpContext = CreateHttpContext("/some/other/path");
         SetupHttpContext(httpContext, EnumClient.Dashboard);
-        AuthenticationResult authResult = CreateAuthResult();
+        AuthenticationDto authResult = CreateAuthResult();
 
         // Act
         _sut.SetTokenCookies(authResult);
@@ -653,7 +653,7 @@ public class TokenDeliveryServiceTests : IDisposable
         // Arrange
         DefaultHttpContext httpContext = new();
         SetupHttpContext(httpContext, EnumClient.Dashboard);
-        AuthenticationResult authResult = CreateAuthResult();
+        AuthenticationDto authResult = CreateAuthResult();
 
         // Act
         _sut.SetTokenCookies(authResult);
@@ -686,7 +686,7 @@ public class TokenDeliveryServiceTests : IDisposable
         // Arrange — a public (web) login, exactly the reported sign-out scenario
         DefaultHttpContext httpContext = CreateHttpContext("/api/v1/public/auth/login");
         SetupHttpContext(httpContext, EnumClient.WebApp);
-        AuthenticationResult authResult = CreateAuthResult();
+        AuthenticationDto authResult = CreateAuthResult();
 
         // Act
         _sut.SetTokenCookies(authResult);
@@ -725,9 +725,9 @@ public class TokenDeliveryServiceTests : IDisposable
         _sessionMetadataServiceMock.Setup(x => x.ExtractClientApp()).Returns(clientApp);
     }
 
-    private static AuthenticationResult CreateAuthResult()
+    private static AuthenticationDto CreateAuthResult()
     {
-        return new AuthenticationResult(
+        return new AuthenticationDto(
             User: null!,
             AccessToken: "test-access-token",
             AccessTokenExpiresAt: DateTime.UtcNow.AddHours(1),
