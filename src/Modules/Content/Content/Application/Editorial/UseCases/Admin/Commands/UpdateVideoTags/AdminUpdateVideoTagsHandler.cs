@@ -15,12 +15,10 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateVideo
 /// <param name="videoRepository">Repository for video data access operations.</param>
 /// <param name="lookupRepository">Repository for lookup entities including tags.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminUpdateVideoTagsHandler(
     IVideoRepository videoRepository,
     ILookupRepository lookupRepository,
-    IContentUnitOfWork unitOfWork,
-    ContentI18n i18n
+    IContentUnitOfWork unitOfWork
 ) : ICommandHandler<AdminUpdateVideoTagsCommand, AdminUpdateVideoTagsResult>
 {
     /// <inheritdoc />
