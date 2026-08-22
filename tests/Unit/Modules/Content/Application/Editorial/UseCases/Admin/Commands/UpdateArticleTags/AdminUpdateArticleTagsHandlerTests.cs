@@ -33,8 +33,7 @@ public class AdminUpdateArticleTagsHandlerTests
         _handler = new AdminUpdateArticleTagsHandler(
             _articleRepositoryMock.Object,
             _lookupRepositoryMock.Object,
-            _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateContentI18n()
+            _unitOfWorkMock.Object
         );
     }
 
