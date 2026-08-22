@@ -43,8 +43,7 @@ public class AdminAttachPaymentProofHandlerTests : BaseContentHandlerTest
             _fileRepositoryMock.Object,
             _orderRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            Mapper,
-            TestErrorsFactory.CreateContentI18n()
+            Mapper
         );
     }
 
