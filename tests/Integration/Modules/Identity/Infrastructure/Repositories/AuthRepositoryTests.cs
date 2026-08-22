@@ -1,5 +1,7 @@
 using _116.Identity.Application.Shared.Exceptions;
 using _116.Identity.Application.Shared.Repositories;
+using _116.Identity.Domain.Exceptions;
+using _116.Identity.Domain.StateMachines;
 using _116.Identity.Domain.ValueObjects;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Shared.Application.Exceptions;
@@ -233,7 +235,7 @@ public class AuthRepositoryTests(PostgresFixture postgres) : BaseRepositoryTest(
     }
 
     [Fact]
-    public async Task AssignVisitorRoleAsync_CalledTwiceInOneScope_ShouldThrowConflictException()
+    public async Task AssignVisitorRoleAsync_CalledTwiceInOneScope_ShouldThrowTheRoleAlreadyAssignedRule()
     {
         // Arrange
         await using var seedContext = CreateDbContext<IdentityDbContext>();
@@ -250,8 +252,10 @@ public class AuthRepositoryTests(PostgresFixture postgres) : BaseRepositoryTest(
         // Act
         var act = () => repo.AssignVisitorRoleAsync(user.Id);
 
-        // Assert
-        await act.Should().ThrowAsync<ConflictException>();
+        // Assert — the repository surfaces the domain rule; the strategy titles it a conflict
+        (await act.Should().ThrowAsync<IdentityRuleException>())
+            .Which.Code.Should()
+            .Be(IdentityRuleCodes.RoleAlreadyAssignedToUser);
     }
 
     [Fact]
