@@ -5,6 +5,7 @@ using _116.Core.Application.Shared.Repositories;
 using _116.Shared.Application.DTOs;
 using _116.Tests.Fixtures.Builders.Entities.Content;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
 using AwesomeAssertions;
 using Moq;
@@ -460,8 +461,7 @@ public class VideoMapperTests : BaseContentHandlerTest
     {
         // Arrange
         VideoEntity video = VideoFactory.Create(CategoryId);
-        video.IncrementShareCount();
-        video.IncrementShareCount();
+        video.WithShareCount(2);
         video.UpdateRating(4.5m, 10);
 
         // Act
@@ -505,7 +505,7 @@ public class VideoMapperTests : BaseContentHandlerTest
     {
         // Arrange
         VideoEntity video = VideoFactory.Create(CategoryId);
-        video.IncrementShareCount();
+        video.WithShareCount(1);
         video.UpdateRating(3.8m, 5);
 
         // Act
