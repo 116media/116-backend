@@ -1,7 +1,4 @@
-using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
-using _116.Content.Domain.Entities;
-using _116.Content.Domain.Enums;
 using _116.Content.Domain.Events;
 using _116.Shared.Application.Services;
 using Microsoft.Extensions.Logging;
@@ -18,57 +15,30 @@ namespace _116.Content.Application.Interactions.EventHandlers;
 /// counter dies with the row.
 /// </summary>
 /// <param name="shortVideoRepository">Repository for short video data access operations.</param>
-/// <param name="unitOfWork">Unit of Work committing the counter mutation.</param>
 /// <param name="logger">Logger recording events whose short video no longer exists.</param>
 public class ShortVideoEngagementHandler(
     IShortVideoRepository shortVideoRepository,
-    IContentUnitOfWork unitOfWork,
     ILogger<ShortVideoEngagementHandler> logger
 ) : IDomainEventHandler<ShortVideoEngagedEvent>
 {
     /// <inheritdoc />
     public async Task Handle(ShortVideoEngagedEvent domainEvent, CancellationToken cancellationToken = default)
     {
-        ShortVideoEntity? shortVideo = await shortVideoRepository.GetByIdAsync(
-            id: domainEvent.ShortVideoId,
+        int? updated = await shortVideoRepository.ApplyEngagementDeltaAsync(
+            shortVideoId: domainEvent.ShortVideoId,
+            kind: domainEvent.Kind,
+            delta: domainEvent.Delta,
             cancellationToken: cancellationToken
         );
 
-        if (shortVideo is null)
+        // null means this entity carries no counter for the kind, which is routine; 0 means the
+        // row was deleted between the interaction commit and this post-commit dispatch.
+        if (updated == 0)
         {
             logger.LogDebug(
                 "Engagement counter skipped for short video {ShortVideoId}: the short video no longer exists.",
                 domainEvent.ShortVideoId
             );
-
-            return;
         }
-
-        switch (domainEvent.Kind, domainEvent.Delta)
-        {
-            case (EnumEngagementKind.Like, > 0):
-                shortVideo.IncrementLikeCount();
-                break;
-            case (EnumEngagementKind.Like, < 0):
-                shortVideo.DecrementLikeCount();
-                break;
-            case (EnumEngagementKind.Bookmark, > 0):
-                shortVideo.IncrementBookmarkCount();
-                break;
-            case (EnumEngagementKind.Bookmark, < 0):
-                shortVideo.DecrementBookmarkCount();
-                break;
-            case (EnumEngagementKind.Share, > 0):
-                shortVideo.IncrementShareCount();
-                break;
-            case (EnumEngagementKind.View, > 0):
-                shortVideo.IncrementViewCount();
-                break;
-            default:
-                return;
-        }
-
-        shortVideoRepository.Update(shortVideo: shortVideo);
-        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
     }
 }
