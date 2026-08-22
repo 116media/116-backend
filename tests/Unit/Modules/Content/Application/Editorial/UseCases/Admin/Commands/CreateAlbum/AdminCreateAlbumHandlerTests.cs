@@ -36,8 +36,7 @@ public class AdminCreateAlbumHandlerTests
             _albumRepositoryMock.Object,
             _artistRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            fileRepositoryMock.Object,
-            TestErrorsFactory.CreateContentI18n()
+            fileRepositoryMock.Object
         );
     }
 
