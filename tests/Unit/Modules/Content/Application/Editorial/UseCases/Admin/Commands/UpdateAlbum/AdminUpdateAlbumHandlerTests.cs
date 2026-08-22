@@ -32,8 +32,7 @@ public class AdminUpdateAlbumHandlerTests
         _handler = new AdminUpdateAlbumHandler(
             _albumRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            fileRepositoryMock.Object,
-            TestErrorsFactory.CreateContentI18n()
+            fileRepositoryMock.Object
         );
     }
 
