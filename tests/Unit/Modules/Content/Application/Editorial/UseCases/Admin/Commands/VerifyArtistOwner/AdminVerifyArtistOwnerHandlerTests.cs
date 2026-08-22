@@ -34,8 +34,7 @@ public class AdminVerifyArtistOwnerHandlerTests
         _handler = new AdminVerifyArtistOwnerHandler(
             _artistRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            fileRepositoryMock.Object,
-            TestErrorsFactory.CreateContentI18n()
+            fileRepositoryMock.Object
         );
     }
 
