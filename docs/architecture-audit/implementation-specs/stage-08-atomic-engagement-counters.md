@@ -204,7 +204,9 @@ The `Count` properties keep their private setters for EF materialization.
   - **§4.1:** fire N concurrent likes from N distinct users at one article and assert
     `like_count == N`. Drive it **over HTTP**, one client per visitor — calling the new repository
     method directly can only ever prove Postgres works, since the method does not exist on `main`.
-    Pick N high enough (≥ 20) that the old read-modify-write fails reliably.
+    Each visitor must be a **seeded account with its own session**: a hand-minted token for an
+    unseeded user has no matching token-state row and is rejected with 401 before the endpoint
+    runs. Pick N high enough (≥ 20) that the old read-modify-write fails reliably.
   - Unlike-below-zero: like once, unlike twice, assert the counter is `0` and not negative — the
     SQL clamp, which is where the clamp now lives.
 - **Integration — the column-mapping matrix (8.11).** Every kind on every one of the five
