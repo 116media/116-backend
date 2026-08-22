@@ -1,7 +1,9 @@
+using System.Reflection;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Exceptions.Handlers;
 using _116.Content.Domain.Exceptions;
 using _116.Content.Domain.StateMachines;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Shared.Domain.Exceptions;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
@@ -28,6 +30,19 @@ public class DomainRuleExceptionStrategyTests
             .AddScoped<ArticleErrorMessage>()
             .AddScoped<VideoErrorMessage>()
             .AddScoped<LyricsErrorMessage>()
+            .AddScoped<ShortVideoErrorMessage>()
+            .AddScoped<AlbumErrorMessage>()
+            .AddScoped<ArtistErrorMessage>()
+            .AddScoped<CategoryErrorMessage>()
+            .AddScoped<ContentTypeErrorMessage>()
+            .AddScoped<CustomerErrorMessage>()
+            .AddScoped<PackageErrorMessage>()
+            .AddScoped<PricingTierErrorMessage>()
+            .AddScoped<PromotionLevelErrorMessage>()
+            .AddScoped<ContentOrderErrorMessage>()
+            .AddScoped<TagErrorMessage>()
+            .AddScoped<ShareErrorMessage>()
+            .AddScoped<SharedExceptionMessage>()
             .BuildServiceProvider();
 
         return new DefaultHttpContext
@@ -133,5 +148,53 @@ public class DomainRuleExceptionStrategyTests
         // Assert
         problem.Status.Should().Be(StatusCodes.Status400BadRequest);
         problem.Detail.Should().Be("content.some-future-rule");
+    }
+
+    /// <summary>
+    /// Every rule code declared by the module, so the theory below cannot miss a new one.
+    /// </summary>
+    public static TheoryData<string> DeclaredCodes()
+    {
+        TheoryData<string> data = [];
+
+        foreach (FieldInfo field in typeof(ContentRuleCodes).GetFields(BindingFlags.Public | BindingFlags.Static))
+        {
+            if (field is { IsLiteral: true } && field.FieldType == typeof(string))
+            {
+                data.Add((string)field.GetRawConstantValue()!);
+            }
+        }
+
+        return data;
+    }
+
+    /// <summary>
+    /// Args that satisfy the arms which parse them; every other arm ignores what it is given.
+    /// </summary>
+    private static string[] ArgsFor(string code) =>
+        code switch
+        {
+            ContentRuleCodes.InvalidStatusTransition => ["Article", "Draft", "Published"],
+            ContentRuleCodes.NotEditable => ["Article", "Published"],
+            ContentRuleCodes.CannotAttachYoutubeUrlBeforeShoot => ["2026-09-01T00:00:00.0000000+00:00"],
+            _ => ["value", "value", "value"],
+        };
+
+    [Theory]
+    [MemberData(nameof(DeclaredCodes))]
+    public void CreateProblemDetails_ForEveryDeclaredCode_ShouldResolveALocalizedDetail(string code)
+    {
+        // Arrange
+        DefaultHttpContext context = CreateContext();
+        var exception = new ContentRuleException(code, ArgsFor(code));
+
+        // Act
+        ProblemDetails problem = _strategy.CreateProblemDetails(exception, context);
+
+        // Assert — a code that reaches the fallback would come back as the code itself
+        problem.Detail.Should().NotBeNullOrWhiteSpace(code);
+        problem.Detail.Should().NotBe(code, "the catalog must phrase the rule, not echo its code");
+        problem.Title.Should().NotBeNullOrWhiteSpace(code);
+        problem.Status.Should().BeGreaterThan(0, code);
     }
 }
