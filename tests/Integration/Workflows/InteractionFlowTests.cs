@@ -6,6 +6,7 @@ using _116.Content.Application.Interactions.UseCases.Public.Commands.ShareArticl
 using _116.Content.Application.Interactions.UseCases.Public.Commands.UnlikeArticle.V1;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Identity.Domain.Enums;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Workflows;
@@ -45,6 +46,76 @@ public class InteractionFlowTests(PostgresFixture db) : BaseApiTest(db)
         await using (ContentDbContext unlikeContext = CreateDbContext<ContentDbContext>())
         {
             (await unlikeContext.ArticleLikes.CountAsync(l => l.ArticleId == articleId)).Should().Be(0);
+        }
+    }
+
+    [Fact]
+    public async Task LikeArticle_ShouldRaiseTheCounterWithoutTouchingTheAuditTrail()
+    {
+        Guid articleId = await SeedPublishedArticleAsync();
+
+        // Stamp the audit trail as the last editor left it. Set-based, because a tracked
+        // SaveChanges would be re-stamped by the interceptor before the test even begins.
+        const string editor = "editor-under-test";
+        DateTime editedAt = DateTime.UtcNow.AddDays(-3);
+        await using (ContentDbContext stamp = CreateDbContext<ContentDbContext>())
+        {
+            await stamp
+                .Articles.Where(a => a.Id == articleId)
+                .ExecuteUpdateAsync(setters =>
+                    setters.SetProperty(a => a.UpdatedBy, editor).SetProperty(a => a.UpdatedAt, editedAt)
+                );
+        }
+
+        Client.AuthenticateAsVisitor();
+
+        HttpResponseMessage likeResponse = await Client.PostAsync(Routes.Public.Articles.Likes(articleId), null);
+        likeResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        await using ContentDbContext verify = CreateDbContext<ContentDbContext>();
+        ArticleEntity persisted = (await verify.Articles.FindAsync(articleId))!;
+
+        // The counter moved, but "who last edited this article" is still the editor — a visitor
+        // tapping the heart must not be recorded as the last person to modify the content.
+        persisted.LikeCount.Should().Be(1);
+        persisted.UpdatedBy.Should().Be(editor);
+        persisted.UpdatedAt.Should().BeCloseTo(editedAt, TimeSpan.FromSeconds(1));
+    }
+
+    [Fact]
+    public async Task LikeArticle_FromManyVisitorsAtOnce_ShouldNotLoseAnyCount()
+    {
+        const int visitors = 20;
+        Guid articleId = await SeedPublishedArticleAsync();
+
+        // A client per visitor: the auth header lives on the client, and one visitor can only
+        // like an article once, so a shared client would collapse this to a single like.
+        List<HttpClient> clients = Enumerable
+            .Range(0, visitors)
+            .Select(_ =>
+            {
+                HttpClient client = Api.CreateClient();
+                client.AuthenticateAs(Guid.NewGuid(), nameof(EnumCoreUserRole.Visitor));
+                return client;
+            })
+            .ToList();
+
+        try
+        {
+            HttpResponseMessage[] responses = await Task.WhenAll(
+                clients.Select(client => client.PostAsync(Routes.Public.Articles.Likes(articleId), null))
+            );
+
+            responses.Should().OnlyContain(r => r.StatusCode == HttpStatusCode.OK);
+
+            // Read-modify-write loses writes here; the SQL delta cannot.
+            await using ContentDbContext verify = CreateDbContext<ContentDbContext>();
+            (await verify.ArticleLikes.CountAsync(l => l.ArticleId == articleId)).Should().Be(visitors);
+            (await verify.Articles.FindAsync(articleId))!.LikeCount.Should().Be(visitors);
+        }
+        finally
+        {
+            clients.ForEach(client => client.Dispose());
         }
     }
 
