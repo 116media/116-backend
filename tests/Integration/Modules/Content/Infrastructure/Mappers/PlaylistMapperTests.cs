@@ -4,6 +4,7 @@ using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Core.Application.Shared.Repositories;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Helpers;
 using MapsterMapper;
 using ContentMappingRegistration = _116.Content.Application.Shared.Mappers.MappingRegistration;
 
@@ -52,7 +53,7 @@ public class PlaylistMapperTests(PostgresFixture postgres) : BaseRepositoryTest(
         await seedContext.SaveChangesAsync();
 
         var video = VideoFactory.Create(category.Id);
-        video.IncrementShareCount();
+        video.WithShareCount(1);
         seedContext.Videos.Add(video);
         await seedContext.SaveChangesAsync();
 
