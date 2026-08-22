@@ -3,6 +3,7 @@ using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Helpers;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Public.Queries.GetPopularVideos.V1;
 
@@ -48,10 +49,7 @@ public class PublicGetPopularVideosEndpointV1Tests(PostgresFixture db) : BaseApi
                 video.UpdateRating(average: ratingAverage, count: ratingCount);
             }
 
-            for (int i = 0; i < shares; i++)
-            {
-                video.IncrementShareCount();
-            }
+            video.WithShareCount(shares);
 
             ctx.Videos.Add(video);
             return video;
@@ -146,10 +144,7 @@ public class PublicGetPopularVideosEndpointV1Tests(PostgresFixture db) : BaseApi
         {
             VideoEntity video = VideoFactory.Create(categoryId);
 
-            for (int i = 0; i < 50; i++)
-            {
-                video.IncrementShareCount();
-            }
+            video.WithShareCount(50);
 
             ctx.Videos.Add(video);
             return video;
