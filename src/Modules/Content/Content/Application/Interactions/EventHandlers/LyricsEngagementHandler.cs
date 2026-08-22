@@ -1,7 +1,4 @@
-using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
-using _116.Content.Domain.Entities;
-using _116.Content.Domain.Enums;
 using _116.Content.Domain.Events;
 using _116.Shared.Application.Services;
 using Microsoft.Extensions.Logging;
@@ -18,51 +15,28 @@ namespace _116.Content.Application.Interactions.EventHandlers;
 /// dispatch is skipped: the counter dies with the row.
 /// </summary>
 /// <param name="lyricsRepository">Repository for lyrics data access operations.</param>
-/// <param name="unitOfWork">Unit of Work committing the counter mutation.</param>
 /// <param name="logger">Logger recording events whose lyrics page no longer exists.</param>
-public class LyricsEngagementHandler(
-    ILyricsRepository lyricsRepository,
-    IContentUnitOfWork unitOfWork,
-    ILogger<LyricsEngagementHandler> logger
-) : IDomainEventHandler<LyricsEngagedEvent>
+public class LyricsEngagementHandler(ILyricsRepository lyricsRepository, ILogger<LyricsEngagementHandler> logger)
+    : IDomainEventHandler<LyricsEngagedEvent>
 {
     /// <inheritdoc />
     public async Task Handle(LyricsEngagedEvent domainEvent, CancellationToken cancellationToken = default)
     {
-        LyricsEntity? lyrics = await lyricsRepository.GetByIdAsync(
-            id: domainEvent.LyricsId,
+        int? updated = await lyricsRepository.ApplyEngagementDeltaAsync(
+            lyricsId: domainEvent.LyricsId,
+            kind: domainEvent.Kind,
+            delta: domainEvent.Delta,
             cancellationToken: cancellationToken
         );
 
-        if (lyrics is null)
+        // null means this entity carries no counter for the kind, which is routine; 0 means the
+        // row was deleted between the interaction commit and this post-commit dispatch.
+        if (updated == 0)
         {
             logger.LogDebug(
-                "Engagement counter skipped for lyrics {LyricsId}: the lyrics page no longer exists.",
+                "Engagement counter skipped for lyrics page {LyricsId}: the lyrics page no longer exists.",
                 domainEvent.LyricsId
             );
-
-            return;
         }
-
-        switch (domainEvent.Kind, domainEvent.Delta)
-        {
-            case (EnumEngagementKind.Like, > 0):
-                lyrics.IncrementLikeCount();
-                break;
-            case (EnumEngagementKind.Like, < 0):
-                lyrics.DecrementLikeCount();
-                break;
-            case (EnumEngagementKind.Share, > 0):
-                lyrics.IncrementShareCount();
-                break;
-            case (EnumEngagementKind.View, > 0):
-                lyrics.IncrementViewCount();
-                break;
-            default:
-                return;
-        }
-
-        lyricsRepository.Update(lyrics: lyrics);
-        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
     }
 }
