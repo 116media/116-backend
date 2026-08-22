@@ -99,33 +99,14 @@ public class ClientTests
         client.Value.Should().Be(EnumClient.WebApp);
     }
 
-    [Fact]
-    public void Constructor_WithInvalidStringValue_ShouldThrowArgumentException()
+    [Theory]
+    [InlineData("InvalidClient")]
+    [InlineData("")]
+    [InlineData(null)]
+    public void Constructor_WithInvalidStringValue_ShouldThrowTheInvalidPlatformRule(string? invalid)
     {
         // Act & Assert
-        Action act = () => new Client("InvalidClient");
-        act.Should()
-            .ThrowExactly<IdentityRuleException>()
-            .Which.Code.Should()
-            .Be(IdentityRuleCodes.InvalidClientPlatform);
-    }
-
-    [Fact]
-    public void Constructor_WithEmptyString_ShouldThrowArgumentException()
-    {
-        // Act & Assert
-        Action act = () => new Client(string.Empty);
-        act.Should()
-            .ThrowExactly<IdentityRuleException>()
-            .Which.Code.Should()
-            .Be(IdentityRuleCodes.InvalidClientPlatform);
-    }
-
-    [Fact]
-    public void Constructor_WithNullString_ShouldThrowArgumentException()
-    {
-        // Act & Assert
-        Action act = () => new Client((string)null!);
+        Action act = () => new Client(invalid!);
         act.Should()
             .ThrowExactly<IdentityRuleException>()
             .Which.Code.Should()
@@ -191,7 +172,7 @@ public class ClientTests
     }
 
     [Fact]
-    public void ImplicitConversionFromString_WithInvalidValue_ShouldThrowArgumentException()
+    public void ImplicitConversionFromString_WithInvalidValue_ShouldThrowTheInvalidPlatformRule()
     {
         // Arrange
         string invalidClient = "InvalidClient";
@@ -246,6 +227,35 @@ public class ClientTests
 
         // Assert
         hash1.Should().Be(hash2);
+    }
+
+    #endregion
+
+    #region TryFrom (untrusted boundary)
+
+    [Theory]
+    [InlineData("MobileApp", EnumClient.MobileApp)]
+    [InlineData("webapp", EnumClient.WebApp)]
+    [InlineData("Dashboard", EnumClient.Dashboard)]
+    public void TryFrom_WithKnownLabel_ShouldReturnThePlatform(string label, EnumClient expected)
+    {
+        // Act
+        Client? client = Client.TryFrom(label);
+
+        // Assert
+        client.Should().NotBeNull();
+        client!.Value.Should().Be(expected);
+    }
+
+    [Theory]
+    [InlineData("InvalidClient")]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData(null)]
+    public void TryFrom_WhenMissingOrUnknown_ShouldReturnNull(string? label)
+    {
+        // Act & Assert — the header is optional and untrusted, so it never rejects
+        Client.TryFrom(label).Should().BeNull();
     }
 
     #endregion
