@@ -664,11 +664,6 @@ public class VideoEntity : Aggregate<Guid>
     }
 
     /// <summary>
-    /// Increments the cached share count.
-    /// </summary>
-    public void IncrementShareCount() => ShareCount++;
-
-    /// <summary>
     /// Links this video to a claimed artist profile.
     /// </summary>
     /// <param name="artistId">The <see cref="ArtistEntity" /> ID to link.</param>
