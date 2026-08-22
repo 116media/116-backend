@@ -4,6 +4,7 @@ using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
 using _116.Tests.Fixtures.Builders.Entities.Content;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
 using AwesomeAssertions;
 using Moq;
@@ -53,7 +54,7 @@ public class PlaylistMapperTests : BaseContentHandlerTest
         var userId = Guid.NewGuid();
         VideoEntity video = VideoFactory.Create(CategoryId);
         video.UpdateRating(average: 4.5m, count: 20);
-        video.IncrementShareCount();
+        video.WithShareCount(1);
 
         PlaylistEntity playlist = PlaylistFactory.Create(userId);
         playlist.Videos.Add(LinkVideo(playlist.Id, video, sortOrder: 1));
