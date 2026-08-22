@@ -41,9 +41,7 @@ public class AdminAddOrderItemFactoryTests
             _packageRepositoryMock.Object,
             _orderRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateCategoryErrors(),
-            TestErrorsFactory.CreateContentOrderErrors(),
-            TestErrorsFactory.CreatePromotionLevelErrors()
+            TestErrorsFactory.CreateCategoryErrors()
         );
     }
 
