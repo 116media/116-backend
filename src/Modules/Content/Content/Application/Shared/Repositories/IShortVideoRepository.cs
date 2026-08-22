@@ -1,4 +1,5 @@
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Shared.Domain;
 
 namespace _116.Content.Application.Shared.Repositories;
@@ -195,4 +196,25 @@ public interface IShortVideoRepository : IRepository<ShortVideoEntity>
     /// Returns the number of rows removed.
     /// </summary>
     Task<int> PruneUncountedViewEventsAsync(DateTime cutoff, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Applies a signed delta to one engagement counter in a single statement, clamped at zero.
+    /// Set-based by design: two concurrent likes cannot both read the same value and write the
+    /// same increment, and the change tracker never sees the row, so the audit columns keep
+    /// whatever the last editorial write set them to.
+    /// </summary>
+    /// <param name="shortVideoId">The short video whose counter moves.</param>
+    /// <param name="kind">The engagement whose counter to move.</param>
+    /// <param name="delta">The signed amount to apply.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>
+    /// Rows updated, <c>0</c> when the row no longer exists, or <c>null</c> when this entity
+    /// carries no counter for the kind — a normal event, not a missing row.
+    /// </returns>
+    Task<int?> ApplyEngagementDeltaAsync(
+        Guid shortVideoId,
+        EnumEngagementKind kind,
+        int delta,
+        CancellationToken cancellationToken = default
+    );
 }
