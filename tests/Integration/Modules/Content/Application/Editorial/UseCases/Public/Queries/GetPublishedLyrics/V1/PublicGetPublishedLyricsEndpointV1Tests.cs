@@ -3,6 +3,7 @@ using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Helpers;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Public.Queries.GetPublishedLyrics.V1;
 
@@ -191,9 +192,7 @@ public class PublicGetPublishedLyricsEndpointV1Tests(PostgresFixture db) : BaseA
         LyricsEntity likedLyrics = await SeedAsync<ContentDbContext, LyricsEntity>(ctx =>
         {
             LyricsEntity entity = LyricsFactory.CreatePublished(categoryId);
-            entity.IncrementViewCount();
-            entity.IncrementViewCount();
-            entity.IncrementViewCount();
+            entity.WithViewCount(3);
             ctx.Lyrics.Add(entity);
             return entity;
         });
