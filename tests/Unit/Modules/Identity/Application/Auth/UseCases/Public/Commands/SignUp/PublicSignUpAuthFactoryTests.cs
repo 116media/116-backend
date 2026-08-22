@@ -52,7 +52,6 @@ public class PublicSignUpAuthFactoryTests
             _otpServiceMock.Object,
             _tokenStateRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateUserErrors(),
             _mailerMock.Object
         );
     }
