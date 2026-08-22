@@ -13,12 +13,8 @@ namespace _116.Core.Infrastructure.Repositories;
 /// <summary>
 /// Implementation of <see cref="IFileRepository"/> using Entity Framework Core.
 /// </summary>
-public class FileRepository(
-    CoreDbContext context,
-    IFileService fileService,
-    IImageColorService imageColorService,
-    CoreI18n i18n
-) : IFileRepository
+public class FileRepository(CoreDbContext context, IFileService fileService, IImageColorService imageColorService)
+    : IFileRepository
 {
     /// <inheritdoc />
     public async Task<FileEntity?> GetByIdAsync(Guid fileId, CancellationToken cancellationToken = default)
