@@ -241,8 +241,7 @@ public class ContentModuleTests : IDisposable
         services.AddContentModule(HostEnvironment("Development"));
         services.AddScoped(serviceProvider => new ContentTypeSeeder(
             seedContext,
-            serviceProvider.GetRequiredService<ILogger<ContentTypeSeeder>>(),
-            serviceProvider.GetRequiredService<ContentTypeErrors>()
+            serviceProvider.GetRequiredService<ILogger<ContentTypeSeeder>>()
         ));
 
         ServiceProvider provider = services.BuildServiceProvider();
