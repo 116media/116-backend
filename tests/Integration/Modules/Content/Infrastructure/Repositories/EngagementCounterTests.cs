@@ -213,6 +213,24 @@ public class EngagementCounterTests(PostgresFixture postgres) : BaseRepositoryTe
         (v.LikeCount + v.BookmarkCount + v.ShareCount + v.ViewCount).Should().Be(1, "no sibling counter moves");
     }
 
+    [Theory]
+    [InlineData(EnumEngagementKind.Comment)]
+    [InlineData(EnumEngagementKind.Rating)]
+    public async Task ShortVideo_ForAKindItDoesNotCount_ShouldReportNoCounter(EnumEngagementKind kind)
+    {
+        ShortVideoEntity shortVideo = ShortVideoFactory.Create();
+        await using (ContentDbContext seed = CreateDbContext<ContentDbContext>())
+        {
+            seed.ShortVideos.Add(shortVideo);
+            await seed.SaveChangesAsync();
+        }
+
+        int? updated = await Resolve<IShortVideoRepository>()
+            .ApplyEngagementDeltaAsync(shortVideo.Id, kind, 1, CancellationToken.None);
+
+        updated.Should().BeNull("short videos are neither commented on nor rated");
+    }
+
     #endregion
 
     #region Video
