@@ -6,8 +6,11 @@ using _116.Content.Application.Interactions.UseCases.Public.Commands.ShareArticl
 using _116.Content.Application.Interactions.UseCases.Public.Commands.UnlikeArticle.V1;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
+using _116.Identity.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Factories.Identity;
 
 namespace _116.Integration.Tests.Workflows;
 
@@ -88,14 +91,31 @@ public class InteractionFlowTests(PostgresFixture db) : BaseApiTest(db)
         const int visitors = 20;
         Guid articleId = await SeedPublishedArticleAsync();
 
+        List<(Guid UserId, Guid SessionId)> accounts = Enumerable
+            .Range(0, visitors)
+            .Select(_ => (UserId: Guid.NewGuid(), SessionId: Guid.NewGuid()))
+            .ToList();
+
+        await SeedAsync<IdentityDbContext>(context =>
+        {
+            foreach ((Guid userId, Guid sessionId) in accounts)
+            {
+                UserEntity user = UserFactory.CreateWithId(userId, $"concurrent-like-{userId:N}@test.com");
+                user.MarkAsVerified();
+                user.Activate();
+
+                context.Users.Add(user);
+                context.Sessions.Add(SessionFactory.CreateWithId(sessionId, userId));
+            }
+        });
+
         // A client per visitor: the auth header lives on the client, and one visitor can only
         // like an article once, so a shared client would collapse this to a single like.
-        List<HttpClient> clients = Enumerable
-            .Range(0, visitors)
-            .Select(_ =>
+        List<HttpClient> clients = accounts
+            .Select(account =>
             {
                 HttpClient client = Api.CreateClient();
-                client.AuthenticateAs(Guid.NewGuid(), nameof(EnumCoreUserRole.Visitor));
+                client.AuthenticateAs(account.UserId, nameof(EnumCoreUserRole.Visitor), account.SessionId);
                 return client;
             })
             .ToList();
