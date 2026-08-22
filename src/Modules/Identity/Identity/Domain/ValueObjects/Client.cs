@@ -46,6 +46,26 @@ public record Client
     public EnumClient Value { get; init; }
 
     /// <summary>
+    /// Parses a client label into a <see cref="Client" /> without throwing, returning null when
+    /// the label is absent or does not match a known platform. Use at untrusted boundaries
+    /// (e.g. the <c>Client-App</c> header) where an unrecognized platform is ignored rather
+    /// than rejected.
+    /// </summary>
+    /// <param name="value">The client label, or null when unreported.</param>
+    /// <returns>The matched platform, or null when absent or unrecognized.</returns>
+    public static Client? TryFrom(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        return Enum.TryParse(value: value, true, out EnumClient parsed) && Enum.IsDefined(value: parsed)
+            ? new Client(parsed)
+            : null;
+    }
+
+    /// <summary>
     /// Implicit conversion from <see cref="Client" /> to <see cref="EnumClient" />.
     /// </summary>
     public static implicit operator EnumClient(Client clientPlatform)
