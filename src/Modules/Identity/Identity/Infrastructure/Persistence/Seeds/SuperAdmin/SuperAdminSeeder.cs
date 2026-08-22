@@ -28,7 +28,7 @@ public class SuperAdminSeeder : IDataSeeder
     {
         _logger = logger;
         _repositoryManager = new SuperAdminRepositoryManager(context: context, logger: repositoryLogger);
-        var entityFactory = new SuperAdminEntityFactory(passwordService: passwordService, userErrors: userErrors);
+        var entityFactory = new SuperAdminEntityFactory(passwordService: passwordService);
         _seedingStrategy = new SuperAdminSeedingStrategy(
             entityFactory: entityFactory,
             repositoryManager: _repositoryManager,
