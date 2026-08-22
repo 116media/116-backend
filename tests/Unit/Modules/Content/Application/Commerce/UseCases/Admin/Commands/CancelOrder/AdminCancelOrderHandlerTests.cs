@@ -30,11 +30,7 @@ public class AdminCancelOrderHandlerTests
     {
         _orderRepositoryMock = MockContentOrderRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _handler = new AdminCancelOrderHandler(
-            _orderRepositoryMock.Object,
-            _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateContentI18n()
-        );
+        _handler = new AdminCancelOrderHandler(_orderRepositoryMock.Object, _unitOfWorkMock.Object);
     }
 
     #region Success Cases
