@@ -31,8 +31,7 @@ public class AdminUpdateArtistHandlerTests
         _handler = new AdminUpdateArtistHandler(
             _artistRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            fileRepositoryMock.Object,
-            TestErrorsFactory.CreateContentI18n()
+            fileRepositoryMock.Object
         );
     }
 
