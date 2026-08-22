@@ -15,11 +15,7 @@ namespace _116.Content.Infrastructure.Persistence.Seeds.ContentTypes;
 /// Every category and content item must belong to one of these types.
 /// This seeder is idempotent — it skips execution if any content types already exist.
 /// </remarks>
-public class ContentTypeSeeder(
-    ContentDbContext context,
-    ILogger<ContentTypeSeeder> logger,
-    ContentTypeErrors contentTypeErrors
-) : IDataSeeder
+public class ContentTypeSeeder(ContentDbContext context, ILogger<ContentTypeSeeder> logger) : IDataSeeder
 {
     private static readonly string[] ContentTypeNames =
     [
