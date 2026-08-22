@@ -429,12 +429,9 @@ public class PublicGetLyricsBySlugHandlerTests : BaseContentHandlerTest
         lyrics.MarkPendingReview();
         lyrics.Approve();
         lyrics.Publish();
-        lyrics.IncrementViewCount();
-        lyrics.IncrementViewCount();
-        lyrics.IncrementLikeCount();
-        lyrics.IncrementShareCount();
-        lyrics.IncrementShareCount();
-        lyrics.IncrementShareCount();
+        lyrics.WithViewCount(2);
+        lyrics.WithLikeCount(1);
+        lyrics.WithShareCount(3);
         var query = new PublicGetLyricsBySlugQuery(Slug: slug);
 
         _lyricsRepositoryMock.SetupGetBySlug(slug, lyrics);
