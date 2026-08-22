@@ -33,8 +33,7 @@ public class AdminUpdateVideoTagsHandlerTests
         _handler = new AdminUpdateVideoTagsHandler(
             _videoRepositoryMock.Object,
             _lookupRepositoryMock.Object,
-            _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateContentI18n()
+            _unitOfWorkMock.Object
         );
     }
 
