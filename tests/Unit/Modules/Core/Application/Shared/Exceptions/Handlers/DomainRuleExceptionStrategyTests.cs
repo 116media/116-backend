@@ -1,3 +1,4 @@
+using System.Reflection;
 using _116.Core.Application.Shared.Errors.Messages;
 using _116.Core.Application.Shared.Exceptions.Handlers;
 using _116.Core.Domain.Exceptions;
@@ -74,5 +75,41 @@ public class DomainRuleExceptionStrategyTests
         // Assert
         problem.Status.Should().Be(StatusCodes.Status400BadRequest);
         problem.Detail.Should().Be("core.some-future-rule");
+    }
+
+    /// <summary>
+    /// Every rule code declared by the module, so the theory below cannot miss a new one.
+    /// </summary>
+    public static TheoryData<string> DeclaredCodes()
+    {
+        TheoryData<string> data = [];
+
+        foreach (FieldInfo field in typeof(CoreRuleCodes).GetFields(BindingFlags.Public | BindingFlags.Static))
+        {
+            if (field is { IsLiteral: true } && field.FieldType == typeof(string))
+            {
+                data.Add((string)field.GetRawConstantValue()!);
+            }
+        }
+
+        return data;
+    }
+
+    [Theory]
+    [MemberData(nameof(DeclaredCodes))]
+    public void CreateProblemDetails_ForEveryDeclaredCode_ShouldResolveALocalizedDetail(string code)
+    {
+        // Arrange — every arm ignores its args
+        DefaultHttpContext context = CreateContext();
+        var exception = new CoreRuleException(code, "value");
+
+        // Act
+        ProblemDetails problem = _strategy.CreateProblemDetails(exception, context);
+
+        // Assert — a code that reaches the fallback would come back as the code itself
+        problem.Detail.Should().NotBeNullOrWhiteSpace(code);
+        problem.Detail.Should().NotBe(code, "the catalog must phrase the rule, not echo its code");
+        problem.Title.Should().NotBeNullOrWhiteSpace(code);
+        problem.Status.Should().BeGreaterThan(0, code);
     }
 }
