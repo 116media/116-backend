@@ -3,6 +3,7 @@ using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Helpers;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Public.Queries.GetPopularArticles.V1;
 
@@ -48,25 +49,13 @@ public class PublicGetPopularArticlesEndpointV1Tests(PostgresFixture db) : BaseA
                 ? ArticleFactory.CreatePublishedAt(categoryId, publishedAt.Value)
                 : ArticleFactory.CreatePublished(categoryId);
 
-            for (int i = 0; i < likes; i++)
-            {
-                article.IncrementLikeCount();
-            }
+            article.WithLikeCount(likes);
 
-            for (int i = 0; i < comments; i++)
-            {
-                article.IncrementCommentCount();
-            }
+            article.WithCommentCount(comments);
 
-            for (int i = 0; i < shares; i++)
-            {
-                article.IncrementShareCount();
-            }
+            article.WithShareCount(shares);
 
-            for (int i = 0; i < bookmarks; i++)
-            {
-                article.IncrementBookmarkCount();
-            }
+            article.WithBookmarkCount(bookmarks);
 
             ctx.Articles.Add(article);
 
@@ -161,10 +150,7 @@ public class PublicGetPopularArticlesEndpointV1Tests(PostgresFixture db) : BaseA
         {
             ArticleEntity article = ArticleFactory.Create(categoryId);
 
-            for (int i = 0; i < 50; i++)
-            {
-                article.IncrementShareCount();
-            }
+            article.WithShareCount(50);
 
             ctx.Articles.Add(article);
             return article;
