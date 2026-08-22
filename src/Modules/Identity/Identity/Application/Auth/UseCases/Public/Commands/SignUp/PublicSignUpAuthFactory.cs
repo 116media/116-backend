@@ -23,7 +23,6 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp;
 /// <param name="otpService">Service for generating OTP codes.</param>
 /// <param name="tokenStateRepository">Repository creating the user's token-invalidation record.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="userErrors">User domain error factory for generating domain exceptions.</param>
 /// <param name="mailer">Outbox mailer delivering the verification code.</param>
 public class PublicSignUpAuthFactory(
     IAuthRepository authRepository,
@@ -32,7 +31,6 @@ public class PublicSignUpAuthFactory(
     IOtpService otpService,
     IUserTokenStateRepository tokenStateRepository,
     IIdentityUnitOfWork unitOfWork,
-    UserErrors userErrors,
     IMailer mailer
 ) : IPublicSignUpAuthFactory
 {
