@@ -27,12 +27,7 @@ public class AdminCreatePackageHandlerTests : BaseContentHandlerTest
     {
         _packageRepositoryMock = MockPackageRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _handler = new AdminCreatePackageHandler(
-            _packageRepositoryMock.Object,
-            _unitOfWorkMock.Object,
-            Mapper,
-            TestErrorsFactory.CreateContentI18n()
-        );
+        _handler = new AdminCreatePackageHandler(_packageRepositoryMock.Object, _unitOfWorkMock.Object, Mapper);
     }
 
     #region Success Cases
