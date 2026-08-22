@@ -39,8 +39,7 @@ public class AdminVerifyPaymentFactoryTests
         _factory = new AdminVerifyPaymentFactory(
             _lookupRepositoryMock.Object,
             _orderRepositoryMock.Object,
-            _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateContentOrderErrors()
+            _unitOfWorkMock.Object
         );
     }
 
