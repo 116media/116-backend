@@ -7,6 +7,7 @@ using _116.Shared.Application.DTOs;
 using _116.Tests.Fixtures.Builders.Entities.Content;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Factories.Core;
+using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
@@ -640,13 +641,10 @@ public class ArticleMapperTests : BaseContentHandlerTest
     {
         // Arrange
         ArticleEntity article = ArticleFactory.Create(CategoryId);
-        article.IncrementLikeCount();
-        article.IncrementLikeCount();
-        article.IncrementCommentCount();
-        article.IncrementShareCount();
-        article.IncrementBookmarkCount();
-        article.IncrementBookmarkCount();
-        article.IncrementBookmarkCount();
+        article.WithLikeCount(2);
+        article.WithCommentCount(1);
+        article.WithShareCount(1);
+        article.WithBookmarkCount(3);
 
         // Act
         ArticleSummaryDto dto = await article.ToArticleSummaryDtoAsync(
@@ -691,13 +689,10 @@ public class ArticleMapperTests : BaseContentHandlerTest
     {
         // Arrange
         ArticleEntity article = ArticleFactory.Create(CategoryId);
-        article.IncrementLikeCount();
-        article.IncrementCommentCount();
-        article.IncrementCommentCount();
-        article.IncrementShareCount();
-        article.IncrementShareCount();
-        article.IncrementShareCount();
-        article.IncrementBookmarkCount();
+        article.WithLikeCount(1);
+        article.WithCommentCount(2);
+        article.WithShareCount(3);
+        article.WithBookmarkCount(1);
 
         // Act
         ArticleDetailDto dto = await article.ToArticleDetailDtoAsync(
@@ -738,7 +733,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
     {
         // Arrange
         ArticleEntity article = ArticleFactory.Create(CategoryId);
-        article.DecrementLikeCount();
+        article.WithLikeCount(0);
 
         // Act
         ArticleDetailDto dto = await article.ToArticleDetailDtoAsync(
