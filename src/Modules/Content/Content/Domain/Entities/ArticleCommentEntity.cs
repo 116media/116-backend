@@ -130,16 +130,6 @@ public class ArticleCommentEntity : Aggregate<Guid>
     public void Edit(string body) => Body = body;
 
     /// <summary>
-    /// Increments the cached like count.
-    /// </summary>
-    public void IncrementLikeCount() => LikeCount++;
-
-    /// <summary>
-    /// Decrements the cached like count, never below zero.
-    /// </summary>
-    public void DecrementLikeCount() => LikeCount = Math.Max(0, LikeCount - 1);
-
-    /// <summary>
     /// Soft-deletes this comment, hiding its body from public view. Raises
     /// the engagement event so the post-commit consumer decrements the
     /// article's cached comment count.
