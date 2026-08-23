@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using Moq;
@@ -9,6 +10,15 @@ namespace _116.Unit.Tests.Common.Mocks.Repositories;
 /// </summary>
 public static class MockRolePermissionRepository
 {
+    /// <summary>
+    /// Associations registered through <see cref="SetupGetByRoleAndPermission" />, per mock
+    /// instance, so the batch lookup serves the same arrangement as the single one.
+    /// </summary>
+    private static readonly ConditionalWeakTable<
+        Mock<IRolePermissionRepository>,
+        List<RolePermissionEntity>
+    > KnownAssociations = new();
+
     /// <summary>
     /// Creates a new mock instance of IRolePermissionRepository.
     /// </summary>
@@ -71,6 +81,7 @@ public static class MockRolePermissionRepository
                 x.GetByRoleAndPermissionAsync(entity.RoleId, entity.PermissionId, It.IsAny<CancellationToken>())
             )
             .ReturnsAsync(entity);
+        KnownAssociations.GetOrCreateValue(mock).Add(entity);
         return mock;
     }
 
@@ -160,6 +171,20 @@ public static class MockRolePermissionRepository
     /// <param name="mock">The repository mock to configure.</param>
     private static void SetupDefaults(Mock<IRolePermissionRepository> mock)
     {
+        List<RolePermissionEntity> known = KnownAssociations.GetOrCreateValue(mock);
+
+        mock.Setup(x =>
+                x.GetByRoleAndPermissionIdsAsync(
+                    It.IsAny<Guid>(),
+                    It.IsAny<IReadOnlyCollection<Guid>>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync(
+                (Guid roleId, IReadOnlyCollection<Guid> ids, CancellationToken _) =>
+                    known.Where(rp => rp.RoleId == roleId && ids.Contains(rp.PermissionId)).ToList()
+            );
+
         mock.Setup(x => x.AddAsync(It.IsAny<RolePermissionEntity>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
     }
