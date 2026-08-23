@@ -36,4 +36,10 @@ public class ModuleOptions<TDbContext>
     /// Default is true.
     /// </summary>
     public bool UseConnectionPooling { get; init; } = true;
+
+    /// <summary>
+    /// Whether queries default to no-tracking for this module's DbContext.
+    /// Write-path repository methods opt back in with AsTracking. Default is false.
+    /// </summary>
+    public bool UseNoTrackingByDefault { get; init; }
 }
