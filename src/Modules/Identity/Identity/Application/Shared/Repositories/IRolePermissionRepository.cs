@@ -56,4 +56,18 @@ public interface IRolePermissionRepository : IRepository<RolePermissionEntity>
     /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
     /// <returns>List of permission IDs assigned to the role.</returns>
     Task<List<Guid>> GetPermissionIdsByRoleIdAsync(Guid roleId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves the role-permission associations for a role limited to the given permission
+    /// ids, in one query.
+    /// </summary>
+    /// <param name="roleId">The role identifier.</param>
+    /// <param name="permissionIds">The permission identifiers to match.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>The matching associations; unmatched ids are simply absent.</returns>
+    Task<List<RolePermissionEntity>> GetByRoleAndPermissionIdsAsync(
+        Guid roleId,
+        IReadOnlyCollection<Guid> permissionIds,
+        CancellationToken cancellationToken = default
+    );
 }
