@@ -278,7 +278,7 @@ public class AdminBulkUpdateRolePermissionsHandlerTests : BaseHandlerTest
         await _handler.Handle(command, cts.Token);
 
         // Assert
-        _roleRepositoryMock.Verify(x => x.ExistsByIdAsync(role.Id, cts.Token), Times.Once);
+        _roleRepositoryMock.Verify(x => x.ExistsByIdOrThrowAsync(role.Id, cts.Token), Times.Once);
         _roleRepositoryMock.Verify(x => x.GetRoleByIdWithPermissionsOrThrowAsync(role.Id, cts.Token), Times.Once);
     }
 
