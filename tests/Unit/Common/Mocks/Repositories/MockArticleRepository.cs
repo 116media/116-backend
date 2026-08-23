@@ -24,6 +24,7 @@ public static class MockArticleRepository
     public static Mock<IArticleRepository> SetupGetByIdOrThrow(this Mock<IArticleRepository> mock, ArticleEntity entity)
     {
         mock.Setup(x => x.GetByIdOrThrowAsync(entity.Id, It.IsAny<CancellationToken>())).ReturnsAsync(entity);
+        mock.Setup(x => x.ExistsAsync(entity.Id, It.IsAny<CancellationToken>())).ReturnsAsync(true);
         return mock;
     }
 
@@ -31,6 +32,7 @@ public static class MockArticleRepository
     {
         mock.Setup(x => x.GetByIdOrThrowAsync(id, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new NotFoundException($"Article with id '{id}' was not found."));
+        mock.Setup(x => x.ExistsAsync(id, It.IsAny<CancellationToken>())).ReturnsAsync(false);
         return mock;
     }
 
