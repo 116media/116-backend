@@ -41,6 +41,8 @@ public class AdminUpdateTagHandler(
 
         tag.Update(name: command.Name, slug: command.Slug);
 
+        lookupRepository.UpdateTag(tag: tag);
+
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         var dto = tag.ToTagDto(mapper);
