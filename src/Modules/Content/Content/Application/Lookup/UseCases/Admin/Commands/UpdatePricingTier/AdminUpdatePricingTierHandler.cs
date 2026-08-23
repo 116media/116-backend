@@ -47,6 +47,8 @@ public class AdminUpdatePricingTierHandler(
 
         pricingTier.Update(name: command.Name, description: command.Description);
 
+        lookupRepository.UpdatePricingTier(pricingTier: pricingTier);
+
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         var dto = pricingTier.ToPricingTierDto(mapper);
