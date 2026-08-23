@@ -4,6 +4,7 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Specifications;
 using _116.Shared.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
@@ -781,9 +782,14 @@ public class ArticleRepository(ContentDbContext context) : IArticleRepository
     }
 
     /// <inheritdoc />
-    public Task<bool> ExistsAsync(Guid articleId, CancellationToken cancellationToken = default)
+    public async Task ExistsOrThrowAsync(Guid articleId, CancellationToken cancellationToken = default)
     {
-        return context.Articles.AnyAsync(a => a.Id == articleId, cancellationToken);
+        bool exists = await context.Articles.AnyAsync(a => a.Id == articleId, cancellationToken);
+
+        if (!exists)
+        {
+            throw new NotFoundException(nameof(ArticleEntity), articleId);
+        }
     }
 
     /// <inheritdoc />
