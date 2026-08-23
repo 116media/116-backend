@@ -24,6 +24,19 @@ public static class ArtistMapper
     {
         string? avatarUrl = await ResolveAvatarUrlAsync(entity, fileRepository, ct);
 
+        return entity.ToArtistDto(avatarUrl: avatarUrl, socialLinks: socialLinks);
+    }
+
+    /// <summary>
+    /// Maps an <see cref="ArtistEntity" /> to an <see cref="ArtistDto" /> from an already
+    /// resolved avatar URL. Performs no IO — the batch list mapping resolves files up front.
+    /// </summary>
+    public static ArtistDto ToArtistDto(
+        this ArtistEntity entity,
+        string? avatarUrl,
+        IReadOnlyList<ArtistSocialLinkEntity>? socialLinks = null
+    )
+    {
         return new ArtistDto(
             Id: entity.Id,
             Name: entity.Name,
@@ -49,12 +62,20 @@ public static class ArtistMapper
         CancellationToken ct = default
     )
     {
-        var results = new List<ArtistDto>(entities.Count);
-        foreach (ArtistEntity entity in entities)
-        {
-            results.Add(await entity.ToArtistDtoAsync(fileRepository, ct));
-        }
-        return results;
+        IReadOnlyDictionary<Guid, FileEntity> files = await fileRepository.GetByIdsAsync(
+            entities.Where(e => e.AvatarFileId.HasValue).Select(e => e.AvatarFileId!.Value).Distinct().ToList(),
+            ct
+        );
+
+        return entities
+            .Select(entity =>
+                entity.ToArtistDto(
+                    avatarUrl: entity.AvatarFileId.HasValue
+                        ? files.GetValueOrDefault(entity.AvatarFileId.Value)?.StorageUrl
+                        : null
+                )
+            )
+            .ToList();
     }
 
     /// <summary>
