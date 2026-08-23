@@ -24,6 +24,7 @@ public static class MockVideoRepository
     public static Mock<IVideoRepository> SetupGetByIdOrThrow(this Mock<IVideoRepository> mock, VideoEntity entity)
     {
         mock.Setup(x => x.GetByIdOrThrowAsync(entity.Id, It.IsAny<CancellationToken>())).ReturnsAsync(entity);
+        mock.Setup(x => x.ExistsAsync(entity.Id, It.IsAny<CancellationToken>())).ReturnsAsync(true);
         return mock;
     }
 
@@ -31,6 +32,7 @@ public static class MockVideoRepository
     {
         mock.Setup(x => x.GetByIdOrThrowAsync(id, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new NotFoundException($"Video with id '{id}' was not found."));
+        mock.Setup(x => x.ExistsAsync(id, It.IsAny<CancellationToken>())).ReturnsAsync(false);
         return mock;
     }
 
