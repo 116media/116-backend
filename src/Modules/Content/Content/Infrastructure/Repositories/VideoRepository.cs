@@ -4,6 +4,7 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Specifications;
 using _116.Shared.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
@@ -414,9 +415,14 @@ public class VideoRepository(ContentDbContext context) : IVideoRepository
     }
 
     /// <inheritdoc />
-    public Task<bool> ExistsAsync(Guid videoId, CancellationToken cancellationToken = default)
+    public async Task ExistsOrThrowAsync(Guid videoId, CancellationToken cancellationToken = default)
     {
-        return context.Videos.AnyAsync(v => v.Id == videoId, cancellationToken);
+        bool exists = await context.Videos.AnyAsync(v => v.Id == videoId, cancellationToken);
+
+        if (!exists)
+        {
+            throw new NotFoundException(nameof(VideoEntity), videoId);
+        }
     }
 
     /// <inheritdoc />
