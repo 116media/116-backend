@@ -3,7 +3,6 @@ using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
-using _116.Shared.Application.Exceptions;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
 
@@ -42,12 +41,7 @@ public class AdminRemovePermissionFromRoleHandler(
         Guid roleId = Guid.Parse(input: command.RoleId);
         Guid permissionId = Guid.Parse(input: command.PermissionId);
 
-        bool roleExists = await roleRepository.ExistsByIdAsync(roleId: roleId, cancellationToken: cancellationToken);
-
-        if (!roleExists)
-        {
-            throw new NotFoundException(nameof(RoleEntity), roleId);
-        }
+        await roleRepository.ExistsByIdOrThrowAsync(roleId: roleId, cancellationToken: cancellationToken);
 
         // Get the role-permission association
         RolePermissionEntity? rolePermission = await rolePermissionRepository.GetByRoleAndPermissionAsync(
