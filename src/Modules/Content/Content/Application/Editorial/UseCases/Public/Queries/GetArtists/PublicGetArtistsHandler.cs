@@ -32,20 +32,18 @@ public class PublicGetArtistsHandler(IArtistRepository artistRepository, IFileRe
             cancellationToken: cancellationToken
         );
 
+        IReadOnlyDictionary<Guid, string> avatarUrls = await fileRepository.GetStorageUrlsByIdsAsync(
+            rows.Where(r => r.Artist.AvatarFileId.HasValue).Select(r => r.Artist.AvatarFileId!.Value).ToHashSet(),
+            cancellationToken
+        );
+
         var cards = new List<ArtistSummaryDto>(capacity: rows.Count);
 
         foreach (ArtistDirectoryRow row in rows)
         {
-            string? avatarUrl = null;
-
-            if (row.Artist.AvatarFileId.HasValue)
-            {
-                FileEntity? avatarFile = await fileRepository.GetByIdAsync(
-                    row.Artist.AvatarFileId.Value,
-                    cancellationToken
-                );
-                avatarUrl = avatarFile?.StorageUrl;
-            }
+            string? avatarUrl = row.Artist.AvatarFileId.HasValue
+                ? avatarUrls.GetValueOrDefault(row.Artist.AvatarFileId.Value)
+                : null;
 
             cards.Add(
                 new ArtistSummaryDto(
