@@ -42,6 +42,8 @@ public class AdminActivatePromotionLevelHandler(
             throw i18n.PromotionLevel.AlreadyActive();
         }
 
+        lookupRepository.UpdatePromotionLevel(promotionLevel: promotionLevel);
+
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         var dto = promotionLevel.ToPromotionLevelDto(mapper);
