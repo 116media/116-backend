@@ -2,7 +2,6 @@ using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Shared.Application.Exceptions;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Content.Application.Interactions.UseCases.Public.Commands.LikeShortVideo;
@@ -25,15 +24,10 @@ public class PublicLikeShortVideoHandler(
         CancellationToken cancellationToken
     )
     {
-        bool exists = await shortVideoRepository.ExistsAsync(
+        await shortVideoRepository.ExistsOrThrowAsync(
             shortVideoId: command.ShortVideoId,
             cancellationToken: cancellationToken
         );
-
-        if (!exists)
-        {
-            throw new NotFoundException(nameof(ShortVideoEntity), command.ShortVideoId);
-        }
 
         bool alreadyLiked = await shortVideoRepository.HasLikedAsync(
             userId: command.UserId,
