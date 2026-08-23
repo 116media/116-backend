@@ -62,7 +62,8 @@ public class ContentOrderRepository(ContentDbContext context, ContentOrderErrors
     {
         var specification = new ContentOrderByIdSpecification(id: id);
         return await context
-            .ContentOrders.ApplySpecification(specification: specification)
+            .ContentOrders.AsTracking()
+            .ApplySpecification(specification: specification)
             .Include(o => o.Customer)
             .Include(o => o.Items)
                 .ThenInclude(i => i.Category)
@@ -72,6 +73,7 @@ public class ContentOrderRepository(ContentDbContext context, ContentOrderErrors
                 .ThenInclude(i => i.Tiers)
                     .ThenInclude(t => t.PricingTier)
             .Include(o => o.Payment)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(ct);
     }
 
@@ -80,7 +82,8 @@ public class ContentOrderRepository(ContentDbContext context, ContentOrderErrors
     {
         var specification = new ContentOrderByIdSpecification(id: id);
         return await context
-            .ContentOrders.ApplySpecification(specification: specification)
+            .ContentOrders.AsTracking()
+            .ApplySpecification(specification: specification)
             .FirstDefaultOrThrowAsync(keyValue: id, cancellationToken: ct);
     }
 
@@ -152,7 +155,10 @@ public class ContentOrderRepository(ContentDbContext context, ContentOrderErrors
     public async Task<ContentPaymentEntity?> GetPaymentByOrderIdAsync(Guid orderId, CancellationToken ct = default)
     {
         var specification = new ContentPaymentByOrderIdSpecification(orderId: orderId);
-        return await context.ContentPayments.ApplySpecification(specification: specification).FirstOrDefaultAsync(ct);
+        return await context
+            .ContentPayments.AsTracking()
+            .ApplySpecification(specification: specification)
+            .FirstOrDefaultAsync(ct);
     }
 
     /// <inheritdoc />
@@ -163,7 +169,12 @@ public class ContentOrderRepository(ContentDbContext context, ContentOrderErrors
     )
     {
         var specification = new ContentOrderItemByIdAndOrderIdSpecification(orderId: orderId, itemId: itemId);
-        return await context.ContentOrderItems.ApplySpecification(specification: specification).FirstOrDefaultAsync(ct);
+
+        // Tracked so the identity map fixes up Tiers from the caller's earlier order load.
+        return await context
+            .ContentOrderItems.AsTracking()
+            .ApplySpecification(specification: specification)
+            .FirstOrDefaultAsync(ct);
     }
 
     /// <inheritdoc />
@@ -174,7 +185,10 @@ public class ContentOrderRepository(ContentDbContext context, ContentOrderErrors
     )
     {
         var specification = new ContentOrderItemByIdAndOrderIdSpecification(orderId: orderId, itemId: itemId);
-        return await context.ContentOrderItems.ApplySpecification(specification: specification).FirstOrDefaultAsync(ct)
+        return await context
+                .ContentOrderItems.AsTracking()
+                .ApplySpecification(specification: specification)
+                .FirstOrDefaultAsync(ct)
             ?? throw contentOrderErrors.ItemNotFound(itemId: itemId);
     }
 
@@ -195,7 +209,9 @@ public class ContentOrderRepository(ContentDbContext context, ContentOrderErrors
         CancellationToken ct = default
     )
     {
-        return await context.ContentItemTiers.FirstOrDefaultAsync(t => t.OrderItemId == itemId && t.Id == tierId, ct)
+        return await context
+                .ContentItemTiers.AsTracking()
+                .FirstOrDefaultAsync(t => t.OrderItemId == itemId && t.Id == tierId, ct)
             ?? throw contentOrderErrors.ItemTierNotFound(tierId: tierId);
     }
 
