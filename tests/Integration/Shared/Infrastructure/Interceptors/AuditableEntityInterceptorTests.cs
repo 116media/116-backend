@@ -26,8 +26,10 @@ public class AuditableEntityInterceptorTests(PostgresFixture db) : BaseApiTest(d
 
         saved.Should().NotBeNull();
         saved!.CreatedAt.Should().NotBeNull();
-        saved.UpdatedAt.Should().NotBeNull();
-        saved.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+        saved.UpdatedAt.Should().Be(saved.CreatedAt, "one save reads the clock once");
+        saved
+            .CreatedAt.Should()
+            .BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5), "the host registers the system clock");
 
         saved.CreatedBy.Should().Be(nameof(EnumAuditActor.System), "non-HTTP saves are attributed to the system actor");
         saved.UpdatedBy.Should().Be(nameof(EnumAuditActor.System));
@@ -45,8 +47,6 @@ public class AuditableEntityInterceptorTests(PostgresFixture db) : BaseApiTest(d
         DateTime? originalCreatedAt = permission.CreatedAt;
         DateTime? originalUpdatedAt = permission.UpdatedAt;
 
-        await Task.Delay(50);
-
         permission.Activate();
         context.Permissions.Update(permission);
         await context.SaveChangesAsync();
@@ -56,7 +56,7 @@ public class AuditableEntityInterceptorTests(PostgresFixture db) : BaseApiTest(d
 
         updated.Should().NotBeNull();
         updated!.CreatedAt.Should().BeCloseTo(originalCreatedAt!.Value, TimeSpan.FromMicroseconds(1));
-        updated.UpdatedAt.Should().BeOnOrAfter(originalUpdatedAt!.Value);
+        updated.UpdatedAt.Should().BeAfter(originalUpdatedAt!.Value);
         updated.UpdatedBy.Should().Be(nameof(EnumAuditActor.System));
     }
 
@@ -75,7 +75,7 @@ public class AuditableEntityInterceptorTests(PostgresFixture db) : BaseApiTest(d
             }
         );
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.Created);
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
 
         await using var context = CreateDbContext<IdentityDbContext>();
         PermissionEntity? saved = await context.Permissions.FirstOrDefaultAsync(p =>

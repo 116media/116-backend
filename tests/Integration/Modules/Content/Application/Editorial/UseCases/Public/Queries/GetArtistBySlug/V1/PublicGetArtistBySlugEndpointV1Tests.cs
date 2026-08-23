@@ -2,6 +2,8 @@ using _116.Content.Application.Editorial.UseCases.Public.Queries.GetArtistBySlug
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
 
@@ -20,13 +22,12 @@ public class PublicGetArtistBySlugEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         var response = await Client.GetAsync(Routes.Public.Artists.BySlug("non-existent-artist"));
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Artist"))
+        );
     }
 
-    /// <summary>
-    /// Full round trip: an artist profile with a published lyrics page and a published video
-    /// linked to it must both appear in the artist's public page response.
-    /// </summary>
     [Fact]
     public async Task GetArtistBySlug_WithPublishedCatalog_ReturnsArtistLyricsAndVideos()
     {
@@ -65,10 +66,6 @@ public class PublicGetArtistBySlugEndpointV1Tests(PostgresFixture db) : BaseApiT
         body.Videos.Items.Should().ContainSingle(v => v.Id == video.Id);
     }
 
-    /// <summary>
-    /// An artist page must show only <c>Published</c> lyrics — a Draft lyrics page linked to
-    /// the same artist must never appear in the paginated result.
-    /// </summary>
     [Fact]
     public async Task GetArtistBySlug_WithDraftLyricsLinkedToArtist_ExcludesDraftFromResult()
     {
@@ -104,10 +101,6 @@ public class PublicGetArtistBySlugEndpointV1Tests(PostgresFixture db) : BaseApiT
         body.Lyrics.Items.Should().OnlyContain(l => l.Id == publishedLyrics.Id);
     }
 
-    /// <summary>
-    /// Symmetric to the lyrics case: a Draft video linked to the artist must never appear
-    /// among the artist page's published videos.
-    /// </summary>
     [Fact]
     public async Task GetArtistBySlug_WithDraftVideoLinkedToArtist_ExcludesDraftFromResult()
     {
@@ -145,10 +138,6 @@ public class PublicGetArtistBySlugEndpointV1Tests(PostgresFixture db) : BaseApiT
 
     #region Totals, 404 Rule and Verification
 
-    /// <summary>
-    /// An artist with zero items on every surface must 404 — a bio and an avatar are not
-    /// content, and a staff-curated stub must not become a crawlable page.
-    /// </summary>
     [Fact]
     public async Task GetArtistBySlug_WithZeroContentEverywhere_ReturnsNotFound()
     {
@@ -165,13 +154,12 @@ public class PublicGetArtistBySlugEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         var response = await Client.GetAsync(Routes.Public.Artists.BySlug(slug));
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Artist"))
+        );
     }
 
-    /// <summary>
-    /// An artist whose only content is a single album still renders — "content" means any of
-    /// the five surfaces, and the totals must say which one.
-    /// </summary>
     [Fact]
     public async Task GetArtistBySlug_WithOnlyAnAlbum_Returns200WithAlbumTotal()
     {
@@ -199,10 +187,6 @@ public class PublicGetArtistBySlugEndpointV1Tests(PostgresFixture db) : BaseApiT
         body.Totals.News.Should().Be(0);
     }
 
-    /// <summary>
-    /// The profile response carries the identity fields, the social links row, and the
-    /// derived verification flag — and never the claiming user's identity.
-    /// </summary>
     [Fact]
     public async Task GetArtistBySlug_ReturnsIdentitySocialLinksAndVerification()
     {

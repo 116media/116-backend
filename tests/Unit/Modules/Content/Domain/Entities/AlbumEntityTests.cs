@@ -20,9 +20,9 @@ public class AlbumEntityTests
     {
         // Arrange
         var id = Guid.NewGuid();
-        const string name = TestConstants.Content.Editorial.Album.ValidName;
-        const short releaseYear = TestConstants.Content.Editorial.Album.ValidReleaseYear;
-        const string label = TestConstants.Content.Editorial.Album.ValidLabel;
+        const string name = TestConstants.Album.ValidName;
+        const short releaseYear = TestConstants.Album.ValidReleaseYear;
+        const string label = TestConstants.Album.ValidLabel;
 
         // Act
         AlbumEntity album = AlbumEntity.Create(
@@ -54,7 +54,7 @@ public class AlbumEntityTests
         // Act
         AlbumEntity album = AlbumEntity.Create(
             Guid.NewGuid(),
-            TestConstants.Content.Editorial.Album.ValidName,
+            TestConstants.Album.ValidName,
             artistId,
             null,
             null,
@@ -76,7 +76,7 @@ public class AlbumEntityTests
         // Act
         AlbumEntity album = AlbumEntity.Create(
             Guid.NewGuid(),
-            TestConstants.Content.Editorial.Album.ValidName,
+            TestConstants.Album.ValidName,
             null,
             coverImageFileId,
             null,
@@ -95,7 +95,7 @@ public class AlbumEntityTests
         // Act
         AlbumEntity album = AlbumEntity.Create(
             Guid.NewGuid(),
-            TestConstants.Content.Editorial.Album.ValidName,
+            TestConstants.Album.ValidName,
             null,
             null,
             null,
@@ -253,7 +253,7 @@ public class AlbumEntityTests
         // Arrange — Update has no ArtistId parameter at all; linking is a separate concern.
         AlbumEntity album = AlbumEntity.Create(
             Guid.NewGuid(),
-            TestConstants.Content.Editorial.Album.ValidName,
+            TestConstants.Album.ValidName,
             Guid.NewGuid(),
             null,
             null,
@@ -293,11 +293,11 @@ public class AlbumEntityTests
     {
         return AlbumEntity.Create(
             Guid.NewGuid(),
-            TestConstants.Content.Editorial.Album.ValidName,
+            TestConstants.Album.ValidName,
             null,
             null,
-            TestConstants.Content.Editorial.Album.ValidReleaseYear,
-            TestConstants.Content.Editorial.Album.ValidLabel,
+            TestConstants.Album.ValidReleaseYear,
+            TestConstants.Album.ValidLabel,
             EnumReleaseType.Album,
             TestErrorsFactory.CreateAlbumErrors()
         );
@@ -311,7 +311,7 @@ public class AlbumEntityTests
         // Act
         AlbumEntity album = AlbumEntity.Create(
             Guid.NewGuid(),
-            TestConstants.Content.Editorial.Album.ValidName,
+            TestConstants.Album.ValidName,
             null,
             null,
             null,
@@ -330,7 +330,7 @@ public class AlbumEntityTests
         // Arrange
         AlbumEntity album = AlbumEntity.Create(
             Guid.NewGuid(),
-            TestConstants.Content.Editorial.Album.ValidName,
+            TestConstants.Album.ValidName,
             null,
             null,
             2020,
@@ -361,7 +361,7 @@ public class AlbumEntityTests
         // Arrange
         AlbumEntity album = AlbumEntity.Create(
             Guid.NewGuid(),
-            TestConstants.Content.Editorial.Album.ValidName,
+            TestConstants.Album.ValidName,
             null,
             null,
             null,

@@ -2,6 +2,7 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
+using _116.Tests.Fixtures.Builders.Entities.Content;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Unit.Tests.Common;
 using AwesomeAssertions;
@@ -20,15 +21,11 @@ public class PlaylistMapperTests : BaseContentHandlerTest
     private readonly Mock<IFileRepository> _fileRepositoryMock = new();
 
     /// <summary>
-    /// Builds a playlist link with the <c>Video</c> navigation populated via reflection,
-    /// so the mapper can read the video's title and rating without a database.
+    /// Builds a playlist link carrying the Video navigation EF Core would populate, so the mapper
+    /// can read the video's title and rating without a database.
     /// </summary>
-    private static PlaylistVideoEntity LinkVideo(Guid playlistId, VideoEntity video, int sortOrder)
-    {
-        PlaylistVideoEntity link = PlaylistVideoEntity.Create(Guid.NewGuid(), playlistId, video.Id, sortOrder);
-        link.GetType().GetProperty("Video")!.SetValue(link, video);
-        return link;
-    }
+    private static PlaylistVideoEntity LinkVideo(Guid playlistId, VideoEntity video, int sortOrder) =>
+        new PlaylistVideoBuilder().WithPlaylistId(playlistId).WithVideo(video).WithSortOrder(sortOrder).Build();
 
     [Fact]
     public async Task ToPlaylistDetailDtoAsync_ShouldMapPlaylistIdAndName()

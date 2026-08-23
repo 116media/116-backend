@@ -48,15 +48,16 @@ public class AdminUpdateCategoryPricingHandlerTests : BaseContentHandlerTest
         CategoryPricingEntity pricing = CategoryPricingFactory.Create(
             category.Id,
             pricingTier.Id,
-            TestConstants.Content.CategoryPricing.ValidPriceUsd
+            TestConstants.CategoryPricing.ValidPriceUsd
         );
 
         var command = new AdminUpdateCategoryPricingCommand(
             CategoryId: category.Id.ToString(),
             PricingTierId: pricingTier.Id.ToString(),
-            PriceUsd: TestConstants.Content.CategoryPricing.UpdatedPriceUsd
+            PriceUsd: TestConstants.CategoryPricing.UpdatedPriceUsd
         );
 
+        _categoryRepositoryMock.SetupGetByIdOrThrow(category);
         _categoryRepositoryMock.SetupGetPricing(category.Id, pricingTier.Id, pricing);
 
         // Act
@@ -76,22 +77,50 @@ public class AdminUpdateCategoryPricingHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenPricingNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        var categoryId = Guid.NewGuid();
+        ContentTypeEntity contentType = ContentTypeFactory.Create();
+        CategoryEntity category = CategoryFactory.Create(contentType.Id);
         var tierId = Guid.NewGuid();
 
         var command = new AdminUpdateCategoryPricingCommand(
-            CategoryId: categoryId.ToString(),
+            CategoryId: category.Id.ToString(),
             PricingTierId: tierId.ToString(),
-            PriceUsd: TestConstants.Content.CategoryPricing.ValidPriceUsd
+            PriceUsd: TestConstants.CategoryPricing.ValidPriceUsd
         );
 
-        _categoryRepositoryMock.SetupGetPricing(categoryId, tierId, null);
+        _categoryRepositoryMock.SetupGetByIdOrThrow(category);
+        _categoryRepositoryMock.SetupGetPricing(category.Id, tierId, null);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+    }
+
+    [Fact]
+    public async Task Handle_WhenCategoryNotFound_ShouldThrowNotFoundExceptionWithoutReadingPricing()
+    {
+        // Arrange
+        var categoryId = Guid.NewGuid();
+        var tierId = Guid.NewGuid();
+
+        var command = new AdminUpdateCategoryPricingCommand(
+            CategoryId: categoryId.ToString(),
+            PricingTierId: tierId.ToString(),
+            PriceUsd: TestConstants.CategoryPricing.ValidPriceUsd
+        );
+
+        _categoryRepositoryMock.SetupGetByIdOrThrowNotFound(categoryId);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
+        _categoryRepositoryMock.Verify(
+            x => x.GetPricingAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
     }
 
     #endregion

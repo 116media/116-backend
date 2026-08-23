@@ -16,7 +16,7 @@ public class ArtistErrorsTests
     private const string Slug = "fally-ipupa";
 
     private readonly ArtistErrors _errors = TestErrorsFactory.CreateArtistErrors();
-    private readonly ArtistErrorMessage _message = LocalizerFactory.CreateMessage<ArtistErrorMessage>("en");
+    private readonly ArtistErrorMessage _message = LocalizerFactory.CreateMessage<ArtistErrorMessage>();
 
     #region ArtistErrors
 

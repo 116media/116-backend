@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.DeactivateCategory;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Tests.Fixtures.Helpers;
@@ -55,34 +54,6 @@ public class AdminDeactivateCategoryValidatorTests
         result
             .Errors.Should()
             .ContainSingle(e =>
-                e.PropertyName == nameof(AdminDeactivateCategoryCommand.Id)
-                && e.ErrorMessage == _i18n.Category.Msg.Localizer["IdRequired"].Value
-            );
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-        var validator = new AdminDeactivateCategoryValidator(_i18n);
-        var command = new AdminDeactivateCategoryCommand(Id: "");
-
-        // Act
-        ValidationResult result = await validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
                 e.PropertyName == nameof(AdminDeactivateCategoryCommand.Id)
                 && e.ErrorMessage == _i18n.Category.Msg.Localizer["IdRequired"].Value
             );

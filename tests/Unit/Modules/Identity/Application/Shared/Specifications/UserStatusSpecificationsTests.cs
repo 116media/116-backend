@@ -1,6 +1,6 @@
 using _116.Identity.Application.Shared.Specifications;
 using _116.Identity.Domain.Entities;
-using _116.Tests.Fixtures.Factories.Identity;
+using _116.Tests.Fixtures.Builders.Entities.Identity;
 using AwesomeAssertions;
 using Xunit;
 
@@ -17,8 +17,7 @@ public class UserStatusSpecificationsTests
     public void UserIsActiveSpecification_WithActiveUser_ShouldReturnTrue()
     {
         // Arrange
-        UserEntity user = UserFactory.Create();
-        user.GetType().GetProperty("IsActive")!.SetValue(user, true);
+        UserEntity user = new UserBuilder().AsActive().Build();
         UserIsActiveSpecification spec = new();
 
         // Act
@@ -32,8 +31,7 @@ public class UserStatusSpecificationsTests
     public void UserIsActiveSpecification_WithInactiveUser_ShouldReturnFalse()
     {
         // Arrange
-        UserEntity user = UserFactory.Create();
-        user.GetType().GetProperty("IsActive")!.SetValue(user, false);
+        UserEntity user = new UserBuilder().AsInactive().Build();
         UserIsActiveSpecification spec = new();
 
         // Act
@@ -51,8 +49,7 @@ public class UserStatusSpecificationsTests
     public void UserIsVerifiedSpecification_WithVerifiedUser_ShouldReturnTrue()
     {
         // Arrange
-        UserEntity user = UserFactory.Create();
-        user.GetType().GetProperty("IsVerified")!.SetValue(user, true);
+        UserEntity user = new UserBuilder().AsVerified().Build();
         UserIsVerifiedSpecification spec = new();
 
         // Act
@@ -66,8 +63,7 @@ public class UserStatusSpecificationsTests
     public void UserIsVerifiedSpecification_WithUnverifiedUser_ShouldReturnFalse()
     {
         // Arrange
-        UserEntity user = UserFactory.Create();
-        user.GetType().GetProperty("IsVerified")!.SetValue(user, false);
+        UserEntity user = new UserBuilder().AsUnverified().Build();
         UserIsVerifiedSpecification spec = new();
 
         // Act
@@ -85,9 +81,7 @@ public class UserStatusSpecificationsTests
     public void UserIsActiveAndVerifiedSpecification_WithActiveAndVerifiedUser_ShouldReturnTrue()
     {
         // Arrange
-        UserEntity user = UserFactory.Create();
-        user.GetType().GetProperty("IsActive")!.SetValue(user, true);
-        user.GetType().GetProperty("IsVerified")!.SetValue(user, true);
+        UserEntity user = new UserBuilder().AsActive().AsVerified().Build();
         UserIsActiveAndVerifiedSpecification spec = new();
 
         // Act
@@ -101,9 +95,7 @@ public class UserStatusSpecificationsTests
     public void UserIsActiveAndVerifiedSpecification_WithInactiveUser_ShouldReturnFalse()
     {
         // Arrange
-        UserEntity user = UserFactory.Create();
-        user.GetType().GetProperty("IsActive")!.SetValue(user, false);
-        user.GetType().GetProperty("IsVerified")!.SetValue(user, true);
+        UserEntity user = new UserBuilder().AsInactive().AsVerified().Build();
         UserIsActiveAndVerifiedSpecification spec = new();
 
         // Act
@@ -117,9 +109,7 @@ public class UserStatusSpecificationsTests
     public void UserIsActiveAndVerifiedSpecification_WithUnverifiedUser_ShouldReturnFalse()
     {
         // Arrange
-        UserEntity user = UserFactory.Create();
-        user.GetType().GetProperty("IsActive")!.SetValue(user, true);
-        user.GetType().GetProperty("IsVerified")!.SetValue(user, false);
+        UserEntity user = new UserBuilder().AsActive().AsUnverified().Build();
         UserIsActiveAndVerifiedSpecification spec = new();
 
         // Act
@@ -133,9 +123,7 @@ public class UserStatusSpecificationsTests
     public void UserIsActiveAndVerifiedSpecification_WithInactiveAndUnverifiedUser_ShouldReturnFalse()
     {
         // Arrange
-        UserEntity user = UserFactory.Create();
-        user.GetType().GetProperty("IsActive")!.SetValue(user, false);
-        user.GetType().GetProperty("IsVerified")!.SetValue(user, false);
+        UserEntity user = new UserBuilder().AsInactive().AsUnverified().Build();
         UserIsActiveAndVerifiedSpecification spec = new();
 
         // Act
@@ -153,14 +141,9 @@ public class UserStatusSpecificationsTests
     public void UserIsActiveSpecification_WithLinq_ShouldFilterCorrectly()
     {
         // Arrange
-        UserEntity activeUser1 = UserFactory.Create();
-        activeUser1.GetType().GetProperty("IsActive")!.SetValue(activeUser1, true);
-
-        UserEntity activeUser2 = UserFactory.Create();
-        activeUser2.GetType().GetProperty("IsActive")!.SetValue(activeUser2, true);
-
-        UserEntity inactiveUser = UserFactory.Create();
-        inactiveUser.GetType().GetProperty("IsActive")!.SetValue(inactiveUser, false);
+        UserEntity activeUser1 = new UserBuilder().AsActive().Build();
+        UserEntity activeUser2 = new UserBuilder().AsActive().Build();
+        UserEntity inactiveUser = new UserBuilder().AsInactive().Build();
 
         List<UserEntity> users = [activeUser1, activeUser2, inactiveUser];
         UserIsActiveSpecification spec = new();
@@ -177,14 +160,9 @@ public class UserStatusSpecificationsTests
     public void UserIsVerifiedSpecification_WithLinq_ShouldFilterCorrectly()
     {
         // Arrange
-        UserEntity verifiedUser1 = UserFactory.Create();
-        verifiedUser1.GetType().GetProperty("IsVerified")!.SetValue(verifiedUser1, true);
-
-        UserEntity verifiedUser2 = UserFactory.Create();
-        verifiedUser2.GetType().GetProperty("IsVerified")!.SetValue(verifiedUser2, true);
-
-        UserEntity unverifiedUser = UserFactory.Create();
-        unverifiedUser.GetType().GetProperty("IsVerified")!.SetValue(unverifiedUser, false);
+        UserEntity verifiedUser1 = new UserBuilder().AsVerified().Build();
+        UserEntity verifiedUser2 = new UserBuilder().AsVerified().Build();
+        UserEntity unverifiedUser = new UserBuilder().AsUnverified().Build();
 
         List<UserEntity> users = [verifiedUser1, verifiedUser2, unverifiedUser];
         UserIsVerifiedSpecification spec = new();
@@ -201,21 +179,10 @@ public class UserStatusSpecificationsTests
     public void UserIsActiveAndVerifiedSpecification_WithLinq_ShouldFilterCorrectly()
     {
         // Arrange
-        UserEntity activeAndVerified = UserFactory.Create();
-        activeAndVerified.GetType().GetProperty("IsActive")!.SetValue(activeAndVerified, true);
-        activeAndVerified.GetType().GetProperty("IsVerified")!.SetValue(activeAndVerified, true);
-
-        UserEntity activeButUnverified = UserFactory.Create();
-        activeButUnverified.GetType().GetProperty("IsActive")!.SetValue(activeButUnverified, true);
-        activeButUnverified.GetType().GetProperty("IsVerified")!.SetValue(activeButUnverified, false);
-
-        UserEntity inactiveButVerified = UserFactory.Create();
-        inactiveButVerified.GetType().GetProperty("IsActive")!.SetValue(inactiveButVerified, false);
-        inactiveButVerified.GetType().GetProperty("IsVerified")!.SetValue(inactiveButVerified, true);
-
-        UserEntity inactiveAndUnverified = UserFactory.Create();
-        inactiveAndUnverified.GetType().GetProperty("IsActive")!.SetValue(inactiveAndUnverified, false);
-        inactiveAndUnverified.GetType().GetProperty("IsVerified")!.SetValue(inactiveAndUnverified, false);
+        UserEntity activeAndVerified = new UserBuilder().AsActive().AsVerified().Build();
+        UserEntity activeButUnverified = new UserBuilder().AsActive().AsUnverified().Build();
+        UserEntity inactiveButVerified = new UserBuilder().AsInactive().AsVerified().Build();
+        UserEntity inactiveAndUnverified = new UserBuilder().AsInactive().AsUnverified().Build();
 
         List<UserEntity> users = [activeAndVerified, activeButUnverified, inactiveButVerified, inactiveAndUnverified];
         UserIsActiveAndVerifiedSpecification spec = new();

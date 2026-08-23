@@ -127,4 +127,12 @@ public class VideoErrors(VideoErrorMessage i18n)
             i18n.CannotAttachYoutubeUrlBeforeShoot(shootingScheduledAt: shootingScheduledAt)
         );
     }
+
+    /// <summary>
+    /// Throws when a video carries no active promotion.
+    /// </summary>
+    public BadRequestException NotPromoted()
+    {
+        return new BadRequestException(i18n.NotPromoted());
+    }
 }

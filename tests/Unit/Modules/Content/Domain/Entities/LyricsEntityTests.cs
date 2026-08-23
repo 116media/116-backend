@@ -24,11 +24,11 @@ public class LyricsEntityTests
     {
         // Arrange
         var id = Guid.NewGuid();
-        const string songTitle = TestConstants.Content.Editorial.Lyrics.ValidSongTitle;
-        const string artistName = TestConstants.Content.Editorial.Lyrics.ValidArtistName;
-        const string lyricsText = TestConstants.Content.Editorial.Lyrics.ValidLyricsText;
-        const string language = TestConstants.Content.Editorial.Lyrics.ValidLanguage;
-        const string slug = TestConstants.Content.Editorial.Lyrics.ValidSlug;
+        const string songTitle = TestConstants.Lyrics.ValidSongTitle;
+        const string artistName = TestConstants.Lyrics.ValidArtistName;
+        const string lyricsText = TestConstants.Lyrics.ValidLyricsText;
+        const string language = TestConstants.Lyrics.ValidLanguage;
+        const string slug = TestConstants.Lyrics.ValidSlug;
 
         // Act
         LyricsEntity lyrics = LyricsEntity.CreateFree(
@@ -70,11 +70,11 @@ public class LyricsEntityTests
             Guid.NewGuid(),
             CategoryId,
             videoId,
-            TestConstants.Content.Editorial.Lyrics.ValidSongTitle,
-            TestConstants.Content.Editorial.Lyrics.ValidArtistName,
-            TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
-            TestConstants.Content.Editorial.Lyrics.ValidLanguage,
-            TestConstants.Content.Editorial.Lyrics.ValidSlug,
+            TestConstants.Lyrics.ValidSongTitle,
+            TestConstants.Lyrics.ValidArtistName,
+            TestConstants.Lyrics.ValidLyricsText,
+            TestConstants.Lyrics.ValidLanguage,
+            TestConstants.Lyrics.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateLyricsErrors()
         );
@@ -96,10 +96,10 @@ public class LyricsEntityTests
                 CategoryId,
                 null,
                 invalidSongTitle!,
-                TestConstants.Content.Editorial.Lyrics.ValidArtistName,
-                TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
-                TestConstants.Content.Editorial.Lyrics.ValidLanguage,
-                TestConstants.Content.Editorial.Lyrics.ValidSlug,
+                TestConstants.Lyrics.ValidArtistName,
+                TestConstants.Lyrics.ValidLyricsText,
+                TestConstants.Lyrics.ValidLanguage,
+                TestConstants.Lyrics.ValidSlug,
                 AuthorId,
                 TestErrorsFactory.CreateLyricsErrors()
             );
@@ -120,11 +120,11 @@ public class LyricsEntityTests
                 Guid.NewGuid(),
                 CategoryId,
                 null,
-                TestConstants.Content.Editorial.Lyrics.ValidSongTitle,
+                TestConstants.Lyrics.ValidSongTitle,
                 invalidArtistName!,
-                TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
-                TestConstants.Content.Editorial.Lyrics.ValidLanguage,
-                TestConstants.Content.Editorial.Lyrics.ValidSlug,
+                TestConstants.Lyrics.ValidLyricsText,
+                TestConstants.Lyrics.ValidLanguage,
+                TestConstants.Lyrics.ValidSlug,
                 AuthorId,
                 TestErrorsFactory.CreateLyricsErrors()
             );
@@ -145,11 +145,11 @@ public class LyricsEntityTests
                 Guid.NewGuid(),
                 CategoryId,
                 null,
-                TestConstants.Content.Editorial.Lyrics.ValidSongTitle,
-                TestConstants.Content.Editorial.Lyrics.ValidArtistName,
+                TestConstants.Lyrics.ValidSongTitle,
+                TestConstants.Lyrics.ValidArtistName,
                 invalidLyricsText!,
-                TestConstants.Content.Editorial.Lyrics.ValidLanguage,
-                TestConstants.Content.Editorial.Lyrics.ValidSlug,
+                TestConstants.Lyrics.ValidLanguage,
+                TestConstants.Lyrics.ValidSlug,
                 AuthorId,
                 TestErrorsFactory.CreateLyricsErrors()
             );
@@ -170,10 +170,10 @@ public class LyricsEntityTests
                 Guid.NewGuid(),
                 CategoryId,
                 null,
-                TestConstants.Content.Editorial.Lyrics.ValidSongTitle,
-                TestConstants.Content.Editorial.Lyrics.ValidArtistName,
-                TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
-                TestConstants.Content.Editorial.Lyrics.ValidLanguage,
+                TestConstants.Lyrics.ValidSongTitle,
+                TestConstants.Lyrics.ValidArtistName,
+                TestConstants.Lyrics.ValidLyricsText,
+                TestConstants.Lyrics.ValidLanguage,
                 invalidSlug!,
                 AuthorId,
                 TestErrorsFactory.CreateLyricsErrors()
@@ -201,11 +201,11 @@ public class LyricsEntityTests
             orderItemId,
             CategoryId,
             null,
-            TestConstants.Content.Editorial.Lyrics.ValidSongTitle,
-            TestConstants.Content.Editorial.Lyrics.ValidArtistName,
-            TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
-            TestConstants.Content.Editorial.Lyrics.ValidLanguage,
-            TestConstants.Content.Editorial.Lyrics.ValidSlug,
+            TestConstants.Lyrics.ValidSongTitle,
+            TestConstants.Lyrics.ValidArtistName,
+            TestConstants.Lyrics.ValidLyricsText,
+            TestConstants.Lyrics.ValidLanguage,
+            TestConstants.Lyrics.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateLyricsErrors()
         );
@@ -230,10 +230,10 @@ public class LyricsEntityTests
                 CategoryId,
                 null,
                 invalidSongTitle!,
-                TestConstants.Content.Editorial.Lyrics.ValidArtistName,
-                TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
-                TestConstants.Content.Editorial.Lyrics.ValidLanguage,
-                TestConstants.Content.Editorial.Lyrics.ValidSlug,
+                TestConstants.Lyrics.ValidArtistName,
+                TestConstants.Lyrics.ValidLyricsText,
+                TestConstants.Lyrics.ValidLanguage,
+                TestConstants.Lyrics.ValidSlug,
                 AuthorId,
                 TestErrorsFactory.CreateLyricsErrors()
             );
@@ -255,11 +255,11 @@ public class LyricsEntityTests
                 Guid.NewGuid(),
                 CategoryId,
                 null,
-                TestConstants.Content.Editorial.Lyrics.ValidSongTitle,
+                TestConstants.Lyrics.ValidSongTitle,
                 invalidArtistName!,
-                TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
-                TestConstants.Content.Editorial.Lyrics.ValidLanguage,
-                TestConstants.Content.Editorial.Lyrics.ValidSlug,
+                TestConstants.Lyrics.ValidLyricsText,
+                TestConstants.Lyrics.ValidLanguage,
+                TestConstants.Lyrics.ValidSlug,
                 AuthorId,
                 TestErrorsFactory.CreateLyricsErrors()
             );
@@ -281,11 +281,11 @@ public class LyricsEntityTests
                 Guid.NewGuid(),
                 CategoryId,
                 null,
-                TestConstants.Content.Editorial.Lyrics.ValidSongTitle,
-                TestConstants.Content.Editorial.Lyrics.ValidArtistName,
+                TestConstants.Lyrics.ValidSongTitle,
+                TestConstants.Lyrics.ValidArtistName,
                 invalidLyricsText!,
-                TestConstants.Content.Editorial.Lyrics.ValidLanguage,
-                TestConstants.Content.Editorial.Lyrics.ValidSlug,
+                TestConstants.Lyrics.ValidLanguage,
+                TestConstants.Lyrics.ValidSlug,
                 AuthorId,
                 TestErrorsFactory.CreateLyricsErrors()
             );
@@ -307,10 +307,10 @@ public class LyricsEntityTests
                 Guid.NewGuid(),
                 CategoryId,
                 null,
-                TestConstants.Content.Editorial.Lyrics.ValidSongTitle,
-                TestConstants.Content.Editorial.Lyrics.ValidArtistName,
-                TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
-                TestConstants.Content.Editorial.Lyrics.ValidLanguage,
+                TestConstants.Lyrics.ValidSongTitle,
+                TestConstants.Lyrics.ValidArtistName,
+                TestConstants.Lyrics.ValidLyricsText,
+                TestConstants.Lyrics.ValidLanguage,
                 invalidSlug!,
                 AuthorId,
                 TestErrorsFactory.CreateLyricsErrors()
@@ -511,7 +511,7 @@ public class LyricsEntityTests
     {
         // Arrange
         LyricsEntity lyrics = CreateFreeLyrics();
-        const string reason = TestConstants.Content.Editorial.Lyrics.ValidRejectionReason;
+        const string reason = TestConstants.Lyrics.ValidRejectionReason;
 
         // Act
         bool result = lyrics.Reject(reason);
@@ -527,7 +527,7 @@ public class LyricsEntityTests
     {
         // Arrange
         LyricsEntity lyrics = CreateFreeLyrics();
-        const string reason = TestConstants.Content.Editorial.Lyrics.ValidRejectionReason;
+        const string reason = TestConstants.Lyrics.ValidRejectionReason;
 
         // Act
         lyrics.Reject(reason);
@@ -554,10 +554,10 @@ public class LyricsEntityTests
     {
         // Arrange
         LyricsEntity lyrics = CreateFreeLyrics();
-        lyrics.Reject(TestConstants.Content.Editorial.Lyrics.ValidRejectionReason);
+        lyrics.Reject(TestConstants.Lyrics.ValidRejectionReason);
 
         // Act
-        bool result = lyrics.Reject(TestConstants.Content.Editorial.Lyrics.ValidRejectionReason);
+        bool result = lyrics.Reject(TestConstants.Lyrics.ValidRejectionReason);
 
         // Assert
         result.Should().BeFalse();
@@ -665,11 +665,11 @@ public class LyricsEntityTests
         Action act = () =>
             lyrics.Update(
                 categoryId: CategoryId,
-                songTitle: TestConstants.Content.Editorial.Lyrics.ValidSongTitle,
-                artistName: TestConstants.Content.Editorial.Lyrics.ValidArtistName,
+                songTitle: TestConstants.Lyrics.ValidSongTitle,
+                artistName: TestConstants.Lyrics.ValidArtistName,
                 slug: invalidSlug!,
-                lyricsText: TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
-                language: TestConstants.Content.Editorial.Lyrics.ValidLanguage,
+                lyricsText: TestConstants.Lyrics.ValidLyricsText,
+                language: TestConstants.Lyrics.ValidLanguage,
                 videoId: null,
                 customerId: null,
                 orderItemId: null,
@@ -1018,7 +1018,7 @@ public class LyricsEntityTests
         const string reason = "Government takedown request.";
 
         // Act
-        lyrics.ForceUnpromote(unpromotedBy, reason);
+        lyrics.ForceUnpromote(unpromotedBy, reason, TestErrorsFactory.CreateLyricsErrors());
 
         // Assert
         lyrics.IsPromoted.Should().BeFalse();
@@ -1038,7 +1038,7 @@ public class LyricsEntityTests
         const string reason = "Government takedown request.";
 
         // Act
-        lyrics.ForceUnpromote("super-admin-user-id", reason);
+        lyrics.ForceUnpromote("super-admin-user-id", reason, TestErrorsFactory.CreateLyricsErrors());
 
         // Assert
         lyrics
@@ -1064,7 +1064,12 @@ public class LyricsEntityTests
         LyricsEntity lyrics = CreateFreeLyrics();
 
         // Act
-        Action act = () => lyrics.ForceUnpromote("super-admin-user-id", "Government takedown request.");
+        Action act = () =>
+            lyrics.ForceUnpromote(
+                "super-admin-user-id",
+                "Government takedown request.",
+                TestErrorsFactory.CreateLyricsErrors()
+            );
 
         // Assert
         act.Should().Throw<BadRequestException>();
@@ -1239,11 +1244,11 @@ public class LyricsEntityTests
             Guid.NewGuid(),
             CategoryId,
             null,
-            TestConstants.Content.Editorial.Lyrics.ValidSongTitle,
-            TestConstants.Content.Editorial.Lyrics.ValidArtistName,
-            TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
-            TestConstants.Content.Editorial.Lyrics.ValidLanguage,
-            TestConstants.Content.Editorial.Lyrics.ValidSlug,
+            TestConstants.Lyrics.ValidSongTitle,
+            TestConstants.Lyrics.ValidArtistName,
+            TestConstants.Lyrics.ValidLyricsText,
+            TestConstants.Lyrics.ValidLanguage,
+            TestConstants.Lyrics.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateLyricsErrors()
         );

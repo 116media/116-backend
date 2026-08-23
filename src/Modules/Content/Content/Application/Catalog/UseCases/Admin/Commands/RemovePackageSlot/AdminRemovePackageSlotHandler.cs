@@ -35,23 +35,24 @@ public class AdminRemovePackageSlotHandler(
 
         PackageSlotEntity? slot = await packageRepository.GetSlotByIdAsync(
             slotId: slotId,
+            packageId: packageId,
             cancellationToken: cancellationToken
         );
 
-        if (slot is not null)
+        if (slot is null)
         {
-            packageRepository.RemoveSlot(slot: slot);
-            await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-
-            PackageEntity updatedPackage = await packageRepository.GetByIdWithSlotsOrThrowAsync(
-                id: packageId,
-                cancellationToken: cancellationToken
-            );
-
-            var dto = updatedPackage.ToPackageDto(mapper);
-            return new AdminRemovePackageSlotResult(Package: dto, IsSuccess: true);
+            throw i18n.Package.SlotNotFound(slotId: slotId);
         }
 
-        throw i18n.Package.SlotNotFound(slotId: slotId);
+        packageRepository.RemoveSlot(slot: slot);
+        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+        PackageEntity updatedPackage = await packageRepository.GetByIdWithSlotsOrThrowAsync(
+            id: packageId,
+            cancellationToken: cancellationToken
+        );
+
+        var dto = updatedPackage.ToPackageDto(mapper);
+        return new AdminRemovePackageSlotResult(Package: dto, IsSuccess: true);
     }
 }

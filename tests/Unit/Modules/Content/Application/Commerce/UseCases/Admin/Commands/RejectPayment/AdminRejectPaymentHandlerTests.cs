@@ -51,7 +51,7 @@ public class AdminRejectPaymentHandlerTests
 
         var command = new AdminRejectPaymentCommand(
             OrderId: orderId.ToString(),
-            Notes: TestConstants.Content.Commerce.ValidRejectionNotes
+            Notes: TestConstants.Commerce.ValidRejectionNotes
         );
 
         // Act
@@ -81,6 +81,26 @@ public class AdminRejectPaymentHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+    }
+
+    [Fact]
+    public async Task Handle_WhenOrderNotFound_ShouldThrowNotFoundExceptionWithoutResolvingPayment()
+    {
+        // Arrange
+        Guid orderId = Guid.NewGuid();
+        _orderRepositoryMock.SetupGetByIdOrThrowNotFound(orderId);
+
+        var command = new AdminRejectPaymentCommand(OrderId: orderId.ToString(), Notes: null);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
+        _orderPaymentFactoryMock.Verify(
+            x => x.GetByOrderIdOrThrowAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
     }
 
     #endregion

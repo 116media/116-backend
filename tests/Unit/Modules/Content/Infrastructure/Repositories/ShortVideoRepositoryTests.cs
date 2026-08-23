@@ -2,6 +2,7 @@ using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Content.Infrastructure.Repositories;
 using _116.Shared.Application.Exceptions;
+using _116.Shared.Domain;
 using _116.Tests.Fixtures.Factories.Content;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
@@ -566,8 +567,11 @@ public class ShortVideoRepositoryTests : IDisposable
         items[0].LastInteractedAt.Should().Be(latest);
     }
 
-    private static void SetCreatedAt(object entity, DateTime createdAt) =>
-        entity.GetType().GetProperty("CreatedAt")!.SetValue(entity, createdAt);
+    /// <summary>
+    /// Stamps the audit timestamp the persistence interceptor writes in production, which the
+    /// favourite-collection reads order on. <c>CreatedAt</c> is a public setter on <see cref="IEntity" />.
+    /// </summary>
+    private static void SetCreatedAt(IEntity entity, DateTime createdAt) => entity.CreatedAt = createdAt;
 
     #endregion
 }

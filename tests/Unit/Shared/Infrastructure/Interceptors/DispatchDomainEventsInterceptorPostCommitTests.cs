@@ -199,11 +199,6 @@ public class DispatchDomainEventsInterceptorPostCommitTests
         scopedPublishers.SelectMany(p => p.PublishedEvents).Should().BeEmpty();
     }
 
-    /// <summary>
-    /// Verifies that a save canceled after the events were collected discards
-    /// them, so the reactions to a change that never committed cannot ride
-    /// along with the next successful save on the same context.
-    /// </summary>
     [Fact]
     public async Task SaveChangesAsync_WhenCanceled_DiscardsTheCollectedEventsSoALaterSaveDispatchesNothing()
     {

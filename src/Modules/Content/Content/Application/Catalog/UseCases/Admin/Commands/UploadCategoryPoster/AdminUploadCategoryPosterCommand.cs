@@ -8,8 +8,8 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.UploadCategor
 /// Command for uploading or replacing a category's poster image.
 /// </summary>
 /// <param name="Id">The unique identifier of the category.</param>
-/// <param name="File">The poster image file to upload.</param>
-public record AdminUploadCategoryPosterCommand(string Id, IFormFile File) : ICommand<AdminUploadCategoryPosterResult>;
+/// <param name="File">The poster image file to upload. Null when the file part is missing.</param>
+public record AdminUploadCategoryPosterCommand(string Id, IFormFile? File) : ICommand<AdminUploadCategoryPosterResult>;
 
 /// <summary>
 /// Result of the <see cref="AdminUploadCategoryPosterCommand" /> containing the updated category.

@@ -29,22 +29,21 @@ public class AdminDeleteArticleCommentHandler(
     {
         ArticleCommentEntity? comment = await articleRepository.GetCommentByIdAsync(
             commentId: command.CommentId,
+            articleId: command.ArticleId,
             cancellationToken: cancellationToken
         );
 
-        if (comment is not null)
+        if (comment is null)
         {
-            await articleRepository.GetByIdOrThrowAsync(id: command.ArticleId, cancellationToken: cancellationToken);
-
-            if (comment.SoftDelete())
-            {
-                articleRepository.UpdateComment(comment: comment);
-                await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-            }
-
-            return new AdminDeleteArticleCommentResult(IsSuccess: true);
+            throw i18n.ArticleInteraction.CommentNotFound(commentId: command.CommentId);
         }
 
-        throw i18n.ArticleInteraction.CommentNotFound(commentId: command.CommentId);
+        if (comment.SoftDelete())
+        {
+            articleRepository.UpdateComment(comment: comment);
+            await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+        }
+
+        return new AdminDeleteArticleCommentResult(IsSuccess: true);
     }
 }

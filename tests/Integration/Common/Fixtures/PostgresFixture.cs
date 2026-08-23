@@ -1,49 +1,41 @@
-using _116.Content.Infrastructure.Persistence;
-using _116.Core.Infrastructure.Persistence;
-using _116.Identity.Infrastructure.Persistence;
-using _116.Mailer.Infrastructure.Persistence;
 using Npgsql;
 using Respawn;
-using Testcontainers.PostgreSql;
 
 namespace _116.Integration.Tests.Common.Fixtures;
 
 /// <summary>
-/// Manages a PostgreSQL Testcontainer and Respawn for database reset between tests.
-/// </summary>
-/// <summary>
-/// Provides a shared PostgreSQL container for integration tests.
-/// Starts a postgres:16-alpine container, applies EF migrations for all modules,
-/// exposes a Respawn-based reset for per-test cleanup, and creates a shared
-/// <see cref="ApiFixture" /> so the application is booted exactly once.
+/// Provides a migrated PostgreSQL database for an integration test collection.
+/// The database is leased from the assembly-wide container in
+/// <see cref="TestPostgresContainer" />, exposes a Respawn-based reset for per-test cleanup,
+/// and creates a shared <see cref="ApiFixture" /> so the application is booted exactly once.
 /// </summary>
 public class PostgresFixture : IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _container = new PostgreSqlBuilder("postgres:16-alpine")
-        .WithDatabase("test_116_db")
-        .WithUsername("test_user")
-        .WithPassword("test_password")
-        .Build();
-
     private Respawner? _respawner;
     private ApiFixture? _apiFixture;
+    private string _connectionString = string.Empty;
 
     /// <summary>
-    /// The connection string to the running Testcontainer database.
+    /// The connection string to this fixture's database on the shared Testcontainer.
     /// </summary>
-    public string ConnectionString => _container.GetConnectionString();
+    public string ConnectionString => _connectionString;
 
     /// <summary>
-    /// The shared API fixture (WebApplicationFactory) for the entire test run.
+    /// The shared API fixture (WebApplicationFactory) for this collection.
     /// Created once, reused by every test class.
     /// </summary>
     public ApiFixture Api => _apiFixture ?? throw new InvalidOperationException("PostgresFixture not initialized");
 
+    /// <summary>
+    /// The database this fixture leases. Derived from the fixture type so that every fixture
+    /// gets its own database on the shared container without a name having to be maintained.
+    /// </summary>
+    protected virtual string DatabaseName => $"test_116_{GetType().Name.ToLowerInvariant()}";
+
     /// <inheritdoc />
     public async ValueTask InitializeAsync()
     {
-        await _container.StartAsync();
-        await ApplyMigrationsAsync();
+        _connectionString = await TestPostgresContainer.LeaseDatabaseAsync(DatabaseName);
         await CreateRespawnerAsync();
 
         _apiFixture = CreateApiFixture();
@@ -51,15 +43,15 @@ public class PostgresFixture : IAsyncLifetime
     }
 
     /// <summary>
-    /// Creates the <see cref="ApiFixture" /> that boots the application for this container.
+    /// Creates the <see cref="ApiFixture" /> that boots the application for this database.
     /// Derived fixtures override this to substitute a differently configured host, such as one
     /// that keeps the production rate limit policies active.
     /// </summary>
-    /// <returns>The API fixture used for the lifetime of the container.</returns>
+    /// <returns>The API fixture used for the lifetime of the collection.</returns>
     protected virtual ApiFixture CreateApiFixture() => new(this);
 
     /// <summary>
-    /// Truncates all data across identity, core, and content schemas.
+    /// Truncates all data across the identity, core, content, and mailer schemas.
     /// </summary>
     public async Task ResetAsync()
     {
@@ -72,52 +64,16 @@ public class PostgresFixture : IAsyncLifetime
     }
 
     /// <inheritdoc />
-    public async ValueTask DisposeAsync()
+    public ValueTask DisposeAsync()
     {
-        if (_apiFixture is not null)
-        {
-            _apiFixture.Dispose();
-        }
+        _apiFixture?.Dispose();
+        TestPostgresContainer.ReleaseDatabase(_connectionString);
 
-        await _container.DisposeAsync();
+        return ValueTask.CompletedTask;
     }
 
     /// <summary>
-    /// Applies EF Core migrations for all three module DbContexts.
-    /// </summary>
-    private async Task ApplyMigrationsAsync()
-    {
-        var options = new DbContextOptionsBuilder<IdentityDbContext>()
-            .UseNpgsql(ConnectionString)
-            .UseSnakeCaseNamingConvention()
-            .Options;
-        await using var identityContext = new IdentityDbContext(options);
-        await identityContext.Database.MigrateAsync();
-
-        var coreOptions = new DbContextOptionsBuilder<CoreDbContext>()
-            .UseNpgsql(ConnectionString)
-            .UseSnakeCaseNamingConvention()
-            .Options;
-        await using var coreContext = new CoreDbContext(coreOptions);
-        await coreContext.Database.MigrateAsync();
-
-        var contentOptions = new DbContextOptionsBuilder<ContentDbContext>()
-            .UseNpgsql(ConnectionString)
-            .UseSnakeCaseNamingConvention()
-            .Options;
-        await using var contentContext = new ContentDbContext(contentOptions);
-        await contentContext.Database.MigrateAsync();
-
-        var mailerOptions = new DbContextOptionsBuilder<MailerDbContext>()
-            .UseNpgsql(ConnectionString)
-            .UseSnakeCaseNamingConvention()
-            .Options;
-        await using var mailerContext = new MailerDbContext(mailerOptions);
-        await mailerContext.Database.MigrateAsync();
-    }
-
-    /// <summary>
-    /// Creates a Respawner targeting all three module schemas.
+    /// Creates a Respawner targeting the four module schemas of this fixture's database.
     /// </summary>
     private async Task CreateRespawnerAsync()
     {

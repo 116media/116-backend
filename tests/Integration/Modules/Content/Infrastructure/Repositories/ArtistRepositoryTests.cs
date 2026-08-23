@@ -134,12 +134,6 @@ public class ArtistRepositoryTests(PostgresFixture postgres) : BaseRepositoryTes
         result.Should().NotContain(a => a.Id == nonMatchingArtist.Id);
     }
 
-    /// <summary>
-    /// Exercises the <c>ArtistId</c> FK's <c>OnDelete(DeleteBehavior.SetNull)</c> configuration
-    /// end-to-end against real Postgres: deleting a claimed artist with linked lyrics and videos
-    /// must set their <c>ArtistId</c> to null rather than cascading the delete or throwing an FK
-    /// violation.
-    /// </summary>
     [Fact]
     public async Task DeletingClaimedArtistWithLinkedContent_SetsArtistIdNullOnLyricsAndVideos_WithoutCascadingOrThrowing()
     {

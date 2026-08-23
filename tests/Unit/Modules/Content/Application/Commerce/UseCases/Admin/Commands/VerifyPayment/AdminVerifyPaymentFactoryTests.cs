@@ -27,7 +27,7 @@ public class AdminVerifyPaymentFactoryTests
     private readonly AdminVerifyPaymentFactory _factory;
 
     private static readonly Guid AdminUserId = Guid.NewGuid();
-    private const string ReceiptUrl = TestConstants.Content.Commerce.ValidReceiptUrl;
+    private const string ReceiptUrl = TestConstants.Commerce.ValidReceiptUrl;
 
     public AdminVerifyPaymentFactoryTests()
     {

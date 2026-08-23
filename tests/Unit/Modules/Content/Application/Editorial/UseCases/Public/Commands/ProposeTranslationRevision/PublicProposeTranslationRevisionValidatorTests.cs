@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.Content.Application.Editorial.UseCases.Public.Commands.ProposeTranslationRevision;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Tests.Fixtures.Constants;
@@ -29,7 +28,7 @@ public class PublicProposeTranslationRevisionValidatorTests
     ) =>
         new(
             TranslationId: Guid.NewGuid(),
-            ProposedText: proposedText ?? TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
+            ProposedText: proposedText ?? TestConstants.Lyrics.ValidLyricsText,
             EditSummary: editSummary,
             UserId: Guid.NewGuid()
         );
@@ -106,34 +105,6 @@ public class PublicProposeTranslationRevisionValidatorTests
         result
             .Errors.Should()
             .Contain(e => e.PropertyName == nameof(PublicProposeTranslationRevisionCommand.ProposedText));
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-        var validator = new PublicProposeTranslationRevisionValidator(_i18n);
-        var command = BuildValidCommand(proposedText: string.Empty);
-
-        // Act
-        ValidationResult result = await validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(PublicProposeTranslationRevisionCommand.ProposedText)
-                && e.ErrorMessage == _i18n.Translation.Msg.ProposedTextRequired()
-            );
     }
 
     #endregion

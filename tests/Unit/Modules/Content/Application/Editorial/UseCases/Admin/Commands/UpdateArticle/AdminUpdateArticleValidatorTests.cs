@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArticle;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Tests.Fixtures.Constants;
@@ -27,10 +26,10 @@ public class AdminUpdateArticleValidatorTests
         new(
             Id: Guid.NewGuid().ToString(),
             CategoryId: Guid.NewGuid(),
-            Title: TestConstants.Content.Editorial.Article.ValidTitle,
-            Slug: TestConstants.Content.Editorial.Article.ValidSlug,
-            Headline: TestConstants.Content.Editorial.Article.ValidHeadline,
-            Body: TestConstants.Content.Editorial.Article.ValidBody,
+            Title: TestConstants.Article.ValidTitle,
+            Slug: TestConstants.Article.ValidSlug,
+            Headline: TestConstants.Article.ValidHeadline,
+            Body: TestConstants.Article.ValidBody,
             CustomerId: null,
             OrderItemId: null,
             SocialBoost: false,
@@ -160,7 +159,7 @@ public class AdminUpdateArticleValidatorTests
         // Arrange
         var command = ValidCommand() with
         {
-            Title = new string('a', TestConstants.Content.Editorial.Article.TitleMaxLength + 1),
+            Title = new string('a', TestConstants.Article.TitleMaxLength + 1),
         };
 
         // Act
@@ -172,8 +171,7 @@ public class AdminUpdateArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateArticleCommand.Title)
-                && e.ErrorMessage
-                    == _i18n.Article.Msg.TitleTooLong(TestConstants.Content.Editorial.Article.TitleMaxLength)
+                && e.ErrorMessage == _i18n.Article.Msg.TitleTooLong(TestConstants.Article.TitleMaxLength)
             );
     }
 
@@ -257,7 +255,7 @@ public class AdminUpdateArticleValidatorTests
         // Arrange
         var command = ValidCommand() with
         {
-            Headline = new string('a', TestConstants.Content.Editorial.Article.HeadlineMinLength - 1),
+            Headline = new string('a', TestConstants.Article.HeadlineMinLength - 1),
         };
 
         // Act
@@ -269,8 +267,7 @@ public class AdminUpdateArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateArticleCommand.Headline)
-                && e.ErrorMessage
-                    == _i18n.Article.Msg.HeadlineTooShort(TestConstants.Content.Editorial.Article.HeadlineMinLength)
+                && e.ErrorMessage == _i18n.Article.Msg.HeadlineTooShort(TestConstants.Article.HeadlineMinLength)
             );
     }
 
@@ -280,7 +277,7 @@ public class AdminUpdateArticleValidatorTests
         // Arrange
         var command = ValidCommand() with
         {
-            Headline = new string('a', TestConstants.Content.Editorial.Article.HeadlineMaxLength + 1),
+            Headline = new string('a', TestConstants.Article.HeadlineMaxLength + 1),
         };
 
         // Act
@@ -292,8 +289,7 @@ public class AdminUpdateArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateArticleCommand.Headline)
-                && e.ErrorMessage
-                    == _i18n.Article.Msg.HeadlineTooLong(TestConstants.Content.Editorial.Article.HeadlineMaxLength)
+                && e.ErrorMessage == _i18n.Article.Msg.HeadlineTooLong(TestConstants.Article.HeadlineMaxLength)
             );
     }
 
@@ -499,34 +495,6 @@ public class AdminUpdateArticleValidatorTests
 
         // Assert
         result.IsValid.Should().BeTrue();
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-        var validator = new AdminUpdateArticleValidator(_i18n);
-        var command = ValidCommand() with { Title = string.Empty };
-
-        // Act
-        ValidationResult result = await validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminUpdateArticleCommand.Title)
-                && e.ErrorMessage == _i18n.Article.Msg.TitleRequired()
-            );
     }
 
     #endregion

@@ -42,8 +42,8 @@ public class AdminCreateTagHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenSlugDoesNotExist_ShouldCreateAndReturnDto()
     {
         // Arrange
-        string name = TestConstants.Content.Tag.ValidName;
-        string slug = TestConstants.Content.Tag.ValidSlug;
+        string name = TestConstants.Tag.ValidName;
+        string slug = TestConstants.Tag.ValidSlug;
         var command = new AdminCreateTagCommand(Name: name, Slug: slug);
 
         _lookupRepositoryMock.SetupGetTagBySlug(slug, null);
@@ -68,10 +68,10 @@ public class AdminCreateTagHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenSlugAlreadyExists_ShouldThrowConflictException()
     {
         // Arrange
-        string slug = TestConstants.Content.Tag.ValidSlug;
-        var command = new AdminCreateTagCommand(Name: TestConstants.Content.Tag.ValidName, Slug: slug);
+        string slug = TestConstants.Tag.ValidSlug;
+        var command = new AdminCreateTagCommand(Name: TestConstants.Tag.ValidName, Slug: slug);
 
-        TagEntity existingTag = TagFactory.Create(TestConstants.Content.Tag.AnotherValidName, slug);
+        TagEntity existingTag = TagFactory.Create(TestConstants.Tag.AnotherValidName, slug);
         _lookupRepositoryMock.SetupGetTagBySlug(slug, existingTag);
 
         // Act
@@ -85,10 +85,10 @@ public class AdminCreateTagHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenSlugAlreadyExists_ShouldNotAddCommitOrInvalidate()
     {
         // Arrange
-        string slug = TestConstants.Content.Tag.ValidSlug;
-        var command = new AdminCreateTagCommand(Name: TestConstants.Content.Tag.ValidName, Slug: slug);
+        string slug = TestConstants.Tag.ValidSlug;
+        var command = new AdminCreateTagCommand(Name: TestConstants.Tag.ValidName, Slug: slug);
 
-        TagEntity existingTag = TagFactory.Create(TestConstants.Content.Tag.AnotherValidName, slug);
+        TagEntity existingTag = TagFactory.Create(TestConstants.Tag.AnotherValidName, slug);
         _lookupRepositoryMock.SetupGetTagBySlug(slug, existingTag);
 
         // Act
@@ -114,8 +114,8 @@ public class AdminCreateTagHandlerTests : BaseContentHandlerTest
     public async Task Handle_WithCancellationToken_ShouldPassToRepository()
     {
         // Arrange
-        string slug = TestConstants.Content.Tag.ValidSlug;
-        var command = new AdminCreateTagCommand(Name: TestConstants.Content.Tag.ValidName, Slug: slug);
+        string slug = TestConstants.Tag.ValidSlug;
+        var command = new AdminCreateTagCommand(Name: TestConstants.Tag.ValidName, Slug: slug);
 
         _lookupRepositoryMock.SetupGetTagBySlug(slug, null);
         using CancellationTokenSource cts = new();

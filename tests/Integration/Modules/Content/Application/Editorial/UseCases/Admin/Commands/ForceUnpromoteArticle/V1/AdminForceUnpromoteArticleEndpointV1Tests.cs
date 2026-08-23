@@ -1,7 +1,10 @@
 using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.ForceUnpromoteArticle.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -59,13 +62,12 @@ public class AdminForceUnpromoteArticleEndpointV1Tests(PostgresFixture db) : Bas
 
         var response = await Client.PatchAsJsonAsync(UnpromoteUrl("non-existent-slug"), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Article"))
+        );
     }
 
-    /// <summary>
-    /// Verifies that force-unpromoting a promoted article succeeds, returns the article id and
-    /// an unpromoted timestamp, and clears the promotion on the persisted article.
-    /// </summary>
     [Fact]
     public async Task ForceUnpromoteArticle_AsSuperAdmin_WithPromotedArticle_ReturnsOk()
     {
@@ -101,11 +103,6 @@ public class AdminForceUnpromoteArticleEndpointV1Tests(PostgresFixture db) : Bas
         persisted.UnpromotedAt.Should().NotBeNull();
     }
 
-    /// <summary>
-    /// Verifies that force-unpromoting an article that does not have an active promotion
-    /// returns a 400 Bad Request problem, exercising the <c>!IsPromoted</c> guard
-    /// in <c>ArticleEntity.ForceUnpromote</c>.
-    /// </summary>
     [Fact]
     public async Task ForceUnpromoteArticle_AsSuperAdmin_NotPromoted_ReturnsBadRequest()
     {
@@ -125,6 +122,9 @@ public class AdminForceUnpromoteArticleEndpointV1Tests(PostgresFixture db) : Bas
 
         var response = await Client.PatchAsJsonAsync(UnpromoteUrl(article.Slug), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<ArticleErrorMessage>(m => m.NotPromoted())
+        );
     }
 }

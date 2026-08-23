@@ -3,7 +3,9 @@ using _116.Tests.Fixtures.Builders.Helpers;
 namespace _116.Tests.Fixtures.Factories.Helpers;
 
 /// <summary>
-/// Factory for quickly creating raw input strings used to test slug generation.
+/// Named aliases for <see cref="SlugInputBuilder" /> chains that three or more tests share
+/// verbatim. A shape fewer tests need belongs at the call site as a builder chain, not here —
+/// factory names carry the combinatorics, and combinatorics multiply.
 /// </summary>
 public static class SlugInputFactory
 {
@@ -23,14 +25,6 @@ public static class SlugInputFactory
     /// The provided display name.
     /// </returns>
     public static string Create(string name) => new SlugInputBuilder().WithName(name).Build();
-
-    /// <summary>
-    /// Creates a random input with leading and trailing whitespace.
-    /// </summary>
-    /// <returns>
-    /// A random input string padded with spaces.
-    /// </returns>
-    public static string CreateWithSpaces() => new SlugInputBuilder().WithLeadingAndTrailingSpaces().Build();
 
     /// <summary>
     /// Creates a random all-uppercase input.

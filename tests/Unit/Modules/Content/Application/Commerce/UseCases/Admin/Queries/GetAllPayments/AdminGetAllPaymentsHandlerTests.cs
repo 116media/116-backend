@@ -4,6 +4,7 @@ using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Identity.Contracts.Application;
 using _116.Shared.Application.Pagination;
+using _116.Tests.Fixtures.Builders.Entities.Content;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Unit.Tests.Common;
@@ -38,12 +39,10 @@ public class AdminGetAllPaymentsHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         var orderId = Guid.NewGuid();
-        ContentOrderEntity order = ContentOrderFactory.CreateWithId(orderId);
         CustomerEntity customer = CustomerFactory.Create();
-        typeof(ContentOrderEntity).GetProperty(nameof(ContentOrderEntity.Customer))!.SetValue(order, customer);
+        ContentOrderEntity order = new ContentOrderBuilder().WithId(orderId).WithCustomer(customer).Build();
 
-        ContentPaymentEntity payment = ContentPaymentFactory.Create(orderId);
-        typeof(ContentPaymentEntity).GetProperty(nameof(ContentPaymentEntity.Order))!.SetValue(payment, order);
+        ContentPaymentEntity payment = new ContentPaymentBuilder().WithOrder(order).Build();
 
         List<ContentPaymentEntity> payments = [payment];
         _orderRepositoryMock.SetupGetAllPaymentsAsync(payments, payments.Count);
@@ -70,12 +69,13 @@ public class AdminGetAllPaymentsHandlerTests : BaseContentHandlerTest
         // Arrange
         var orderId = Guid.NewGuid();
         var adminUserId = Guid.NewGuid();
-        ContentOrderEntity order = ContentOrderFactory.CreateWithId(orderId);
         CustomerEntity customer = CustomerFactory.Create();
-        typeof(ContentOrderEntity).GetProperty(nameof(ContentOrderEntity.Customer))!.SetValue(order, customer);
+        ContentOrderEntity order = new ContentOrderBuilder().WithId(orderId).WithCustomer(customer).Build();
 
-        ContentPaymentEntity payment = ContentPaymentFactory.CreateVerified(orderId);
-        typeof(ContentPaymentEntity).GetProperty(nameof(ContentPaymentEntity.Order))!.SetValue(payment, order);
+        ContentPaymentEntity payment = new ContentPaymentBuilder()
+            .AsVerified(Guid.NewGuid(), TestConstants.Commerce.ValidReceiptUrl)
+            .WithOrder(order)
+            .Build();
 
         Guid verifierId = payment.VerifiedById!.Value;
         _userLookupMock.SetupGetUserNameById(verifierId, TestConstants.User.ValidUserName);
@@ -104,12 +104,10 @@ public class AdminGetAllPaymentsHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         var orderId = Guid.NewGuid();
-        ContentOrderEntity order = ContentOrderFactory.CreateWithId(orderId);
         CustomerEntity customer = CustomerFactory.Create();
-        typeof(ContentOrderEntity).GetProperty(nameof(ContentOrderEntity.Customer))!.SetValue(order, customer);
+        ContentOrderEntity order = new ContentOrderBuilder().WithId(orderId).WithCustomer(customer).Build();
 
-        ContentPaymentEntity payment = ContentPaymentFactory.Create(orderId);
-        typeof(ContentPaymentEntity).GetProperty(nameof(ContentPaymentEntity.Order))!.SetValue(payment, order);
+        ContentPaymentEntity payment = new ContentPaymentBuilder().WithOrder(order).Build();
 
         List<ContentPaymentEntity> payments = [payment];
         _orderRepositoryMock.SetupGetAllPaymentsAsync(payments, payments.Count);

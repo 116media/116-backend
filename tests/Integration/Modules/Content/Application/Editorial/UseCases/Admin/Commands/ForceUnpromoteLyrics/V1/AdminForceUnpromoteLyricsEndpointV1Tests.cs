@@ -1,9 +1,14 @@
 using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.ForceUnpromoteLyrics.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Constants;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.ForceUnpromoteLyrics.V1;
 
@@ -13,6 +18,9 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminForceUnpromoteLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private static string ValidationDetail(string property, string message) =>
+        new ValidationException([new ValidationFailure(property, message)]).Message;
+
     private const string Reason = "Government takedown request";
 
     /// <summary>
@@ -65,9 +73,6 @@ public class AdminForceUnpromoteLyricsEndpointV1Tests(PostgresFixture db) : Base
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    /// <summary>
-    /// The endpoint is restricted to SuperAdmins, so a plain Admin token is rejected.
-    /// </summary>
     [Fact]
     public async Task ForceUnpromoteLyrics_AsAdmin_ReturnsForbidden()
     {
@@ -91,13 +96,12 @@ public class AdminForceUnpromoteLyricsEndpointV1Tests(PostgresFixture db) : Base
             new AdminForceUnpromoteLyricsRequest(Reason)
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Lyrics"))
+        );
     }
 
-    /// <summary>
-    /// An empty reason is rejected by the request validation pipeline before the handler runs,
-    /// leaving the promotion untouched.
-    /// </summary>
     [Fact]
     public async Task ForceUnpromoteLyrics_WithEmptyReason_ReturnsBadRequestAndKeepsPromotion()
     {
@@ -109,7 +113,10 @@ public class AdminForceUnpromoteLyricsEndpointV1Tests(PostgresFixture db) : Base
             new AdminForceUnpromoteLyricsRequest(string.Empty)
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("Reason", Localized<LyricsErrorMessage>(m => m.RejectionReasonRequired()))
+        );
 
         await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
         LyricsEntity? persisted = await ctx.Lyrics.FirstOrDefaultAsync(item => item.Id == lyrics.Id);
@@ -119,10 +126,6 @@ public class AdminForceUnpromoteLyricsEndpointV1Tests(PostgresFixture db) : Base
         persisted.UnpromotedAt.Should().BeNull();
     }
 
-    /// <summary>
-    /// A reason longer than <see cref="ContentConstants.MaxRejectionReasonLength" /> is rejected
-    /// by the maximum-length rule.
-    /// </summary>
     [Fact]
     public async Task ForceUnpromoteLyrics_WithTooLongReason_ReturnsBadRequest()
     {
@@ -136,7 +139,13 @@ public class AdminForceUnpromoteLyricsEndpointV1Tests(PostgresFixture db) : Base
             new AdminForceUnpromoteLyricsRequest(tooLongReason)
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail(
+                "Reason",
+                Localized<LyricsErrorMessage>(m => m.RejectionReasonTooLong(ContentConstants.MaxRejectionReasonLength))
+            )
+        );
 
         await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
         LyricsEntity? persisted = await ctx.Lyrics.FirstOrDefaultAsync(item => item.Id == lyrics.Id);
@@ -145,10 +154,6 @@ public class AdminForceUnpromoteLyricsEndpointV1Tests(PostgresFixture db) : Base
         persisted!.IsPromoted.Should().BeTrue();
     }
 
-    /// <summary>
-    /// The success path clears the promotion and stamps the audit trail required for a future
-    /// pro-rata refund calculation.
-    /// </summary>
     [Fact]
     public async Task ForceUnpromoteLyrics_AsSuperAdmin_WithPromotedPage_ReturnsOkAndStampsAuditTrail()
     {
@@ -177,10 +182,6 @@ public class AdminForceUnpromoteLyricsEndpointV1Tests(PostgresFixture db) : Base
         persisted.UnpromotedReason.Should().Be(Reason);
     }
 
-    /// <summary>
-    /// A lyrics page that carries no active promotion cannot be unpromoted — the domain guard
-    /// surfaces as a 400 and nothing is persisted.
-    /// </summary>
     [Fact]
     public async Task ForceUnpromoteLyrics_WhenNotPromoted_ReturnsBadRequest()
     {
@@ -199,7 +200,10 @@ public class AdminForceUnpromoteLyricsEndpointV1Tests(PostgresFixture db) : Base
             new AdminForceUnpromoteLyricsRequest(Reason)
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<LyricsErrorMessage>(m => m.NotPromoted())
+        );
 
         await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
         LyricsEntity? persisted = await ctx.Lyrics.FirstOrDefaultAsync(item => item.Id == lyrics.Id);

@@ -387,10 +387,6 @@ public class ContentDbContextTests
         result.Should().NotBeNull();
     }
 
-    /// <summary>
-    /// Verifies that the artist ownership claim requests are reachable as a set
-    /// on the context.
-    /// </summary>
     [Fact]
     public void ArtistClaimRequests_ShouldReturnDbSet()
     {

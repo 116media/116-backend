@@ -1,7 +1,10 @@
 using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.ActivateShortVideo.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.ActivateShortVideo.V1;
@@ -59,7 +62,10 @@ public class AdminActivateShortVideoEndpointV1Tests(PostgresFixture db) : BaseAp
 
         var response = await Client.PatchAsync(ActivateUrl(Guid.NewGuid()), null);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("ShortVideo"))
+        );
     }
 
     [Fact]
@@ -76,14 +82,13 @@ public class AdminActivateShortVideoEndpointV1Tests(PostgresFixture db) : BaseAp
 
         var response = await Client.PatchAsync(ActivateUrl(shortVideo.Id), null);
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<ShortVideoErrorMessage>(m => m.AlreadyActive())
+        );
         (await GetIsActiveAsync(shortVideo.Id)).Should().BeTrue();
     }
 
-    /// <summary>
-    /// Verifies that activating a file-less draft is rejected, exercising the
-    /// <c>VideoFileRequired</c> guard in <c>ShortVideoEntity.Activate</c>.
-    /// </summary>
     [Fact]
     public async Task ActivateShortVideo_AsSuperAdmin_DraftWithoutVideoFile_ReturnsBadRequest()
     {
@@ -98,14 +103,13 @@ public class AdminActivateShortVideoEndpointV1Tests(PostgresFixture db) : BaseAp
 
         var response = await Client.PatchAsync(ActivateUrl(draft.Id), null);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<ShortVideoErrorMessage>(m => m.VideoFileRequired())
+        );
         (await GetIsActiveAsync(draft.Id)).Should().BeFalse();
     }
 
-    /// <summary>
-    /// Verifies that activating an inactive short video succeeds, persists IsActive = true,
-    /// exercising the happy path of <c>ShortVideoEntity.Activate</c>.
-    /// </summary>
     [Fact]
     public async Task ActivateShortVideo_AsSuperAdmin_InactiveShortVideo_ReturnsOk()
     {

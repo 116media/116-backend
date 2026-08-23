@@ -47,8 +47,8 @@ public class AdminCreateShortVideoHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         var command = new AdminCreateShortVideoCommand(
-            Title: TestConstants.Content.Editorial.ShortVideo.ValidTitle,
-            Slug: TestConstants.Content.Editorial.ShortVideo.ValidSlug,
+            Title: TestConstants.ShortVideo.ValidTitle,
+            Slug: TestConstants.ShortVideo.ValidSlug,
             AuthorId: Guid.NewGuid(),
             VideoId: null
         );
@@ -94,8 +94,8 @@ public class AdminCreateShortVideoHandlerTests : BaseContentHandlerTest
         // Arrange
         Guid videoId = Guid.NewGuid();
         var command = new AdminCreateShortVideoCommand(
-            Title: TestConstants.Content.Editorial.ShortVideo.ValidTitle,
-            Slug: TestConstants.Content.Editorial.ShortVideo.ValidSlug,
+            Title: TestConstants.ShortVideo.ValidTitle,
+            Slug: TestConstants.ShortVideo.ValidSlug,
             AuthorId: Guid.NewGuid(),
             VideoId: videoId
         );
@@ -124,9 +124,9 @@ public class AdminCreateShortVideoHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenSlugAlreadyExists_ShouldThrowConflictException()
     {
         // Arrange
-        string slug = TestConstants.Content.Editorial.ShortVideo.ValidSlug;
+        string slug = TestConstants.ShortVideo.ValidSlug;
         var command = new AdminCreateShortVideoCommand(
-            Title: TestConstants.Content.Editorial.ShortVideo.ValidTitle,
+            Title: TestConstants.ShortVideo.ValidTitle,
             Slug: slug,
             AuthorId: Guid.NewGuid(),
             VideoId: null

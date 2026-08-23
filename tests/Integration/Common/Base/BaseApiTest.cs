@@ -1,5 +1,6 @@
 using _116.Content.Application.Shared.Cache;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Integration.Tests.Common.Stubs;
 using _116.Shared.Domain;
 using _116.Tests.Fixtures.Factories.Identity;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -15,6 +16,12 @@ namespace _116.Integration.Tests.Common.Base;
 [Collection("Database")]
 public abstract class BaseApiTest : IAsyncLifetime
 {
+    /// <summary>
+    /// Every scope opened by <see cref="CreateDbContext{TDbContext}" />, disposed at the
+    /// end of the test so its Npgsql connection is released.
+    /// </summary>
+    private readonly List<IServiceScope> _scopes = [];
+
     /// <summary>
     /// The shared Testcontainer database fixture.
     /// </summary>
@@ -44,14 +51,42 @@ public abstract class BaseApiTest : IAsyncLifetime
     }
 
     /// <summary>
+    /// Opens a scope, records it for disposal at the end of the test, and returns it.
+    /// </summary>
+    /// <returns>The scope, already tracked.</returns>
+    private IServiceScope OpenScope()
+    {
+        IServiceScope scope = Api.Services.CreateScope();
+        _scopes.Add(scope);
+        return scope;
+    }
+
+    /// <summary>
+    /// Resolves an application message class from the host container and invokes
+    /// <paramref name="select" /> under <paramref name="culture" />, producing the exact string
+    /// the application would have put in a ProblemDetails <c>Detail</c>. Pair it with
+    /// <c>ShouldBeProblem&lt;TException&gt;</c> instead of hardcoding the sentence.
+    /// </summary>
+    /// <typeparam name="TMessage">The message class to resolve (e.g. <c>ArticleErrorMessage</c>).</typeparam>
+    /// <param name="select">Selects the message method to invoke, with its arguments.</param>
+    /// <param name="culture">
+    /// The culture to resolve in. Defaults to the culture the host answers a request that sends
+    /// no <c>Accept-Language</c> header, which is what <see cref="Client" /> does.
+    /// </param>
+    /// <returns>The localized message text.</returns>
+    protected string Localized<TMessage>(
+        Func<TMessage, string> select,
+        string culture = LocalizedMessage.DefaultCulture
+    )
+        where TMessage : notnull => LocalizedMessage.Resolve(Api.Services, select, culture);
+
+    /// <summary>
     /// Creates a new <typeparamref name="TDbContext" /> scoped to the Testcontainer database.
     /// </summary>
+    /// <typeparam name="TDbContext">The module context to resolve.</typeparam>
+    /// <returns>The resolved context.</returns>
     protected TDbContext CreateDbContext<TDbContext>()
-        where TDbContext : DbContext
-    {
-        var scope = Api.Services.CreateScope();
-        return scope.ServiceProvider.GetRequiredService<TDbContext>();
-    }
+        where TDbContext : DbContext => OpenScope().ServiceProvider.GetRequiredService<TDbContext>();
 
     /// <summary>
     /// Seeds data within a scoped <typeparamref name="TDbContext" /> and saves,
@@ -85,14 +120,9 @@ public abstract class BaseApiTest : IAsyncLifetime
     }
 
     /// <summary>
-    /// Saves seeded aggregates as reconstituted state rather than as behavior.
-    /// Builders reach the state a test needs by calling real domain methods, which raise the
-    /// domain events those methods own. The contexts returned by
-    /// <see cref="CreateDbContext{TDbContext}" /> come from the application container, so the
-    /// dispatch interceptor is attached and those events would fire their production handlers —
-    /// welcome emails, notification rows, promotion stamps — against the arrangement of every
-    /// test. Discarding the pending events immediately before the save makes seeding equivalent
-    /// to loading rows that already existed, which is what an arrangement means.
+    /// Saves seeded aggregates as reconstituted state rather than as behavior, discarding the
+    /// pending domain events so the dispatch interceptor never fires production handlers
+    /// against a test's arrangement.
     /// </summary>
     /// <param name="context">The context holding the seeded, not-yet-saved aggregates.</param>
     /// <returns>A task that completes once the seeded rows are persisted.</returns>
@@ -118,6 +148,7 @@ public abstract class BaseApiTest : IAsyncLifetime
     public async ValueTask InitializeAsync()
     {
         await Db.ResetAsync();
+        ResetStubs();
         InvalidateTagCache();
         InvalidatePopularArticlesCache();
         InvalidatePopularVideosCache();
@@ -126,13 +157,23 @@ public abstract class BaseApiTest : IAsyncLifetime
     }
 
     /// <summary>
-    /// Clears the in-process tag cache before each test.
-    /// The <see cref="IMemoryCache" /> lives in the shared <see cref="ApiFixture" /> singleton and
-    /// is not touched by <see cref="PostgresFixture.ResetAsync" />, so cached tag lists would
-    /// otherwise leak across tests. Integration tests seed rows directly via
-    /// <see cref="SeedAsync{TDbContext}" />, bypassing the mutation handlers that invalidate the
-    /// eviction token in production; cancelling the shared token here reproduces that invalidation
-    /// so each test reads its own freshly seeded data.
+    /// Resets every <see cref="IResettableStub" /> before each test, since the stubs are
+    /// singletons in the shared <see cref="ApiFixture" /> and outlive the database reset.
+    /// </summary>
+    private void ResetStubs()
+    {
+        using IServiceScope scope = Api.Services.CreateScope();
+
+        foreach (IResettableStub stub in scope.ServiceProvider.GetServices<IResettableStub>())
+        {
+            stub.Reset();
+        }
+    }
+
+    /// <summary>
+    /// Clears the in-process tag cache before each test, since the shared
+    /// <see cref="IMemoryCache" /> is not touched by
+    /// <see cref="PostgresFixture.ResetAsync" />.
     /// </summary>
     private void InvalidateTagCache()
     {
@@ -143,9 +184,7 @@ public abstract class BaseApiTest : IAsyncLifetime
 
     /// <summary>
     /// Clears the in-process popular-articles cache before each test, for the same reason as
-    /// <see cref="InvalidateTagCache" />: the shared <see cref="IMemoryCache" /> outlives the
-    /// database reset, so ranked article lists cached by one test would otherwise be served
-    /// to the next.
+    /// <see cref="InvalidateTagCache" />.
     /// </summary>
     private void InvalidatePopularArticlesCache()
     {
@@ -156,9 +195,7 @@ public abstract class BaseApiTest : IAsyncLifetime
 
     /// <summary>
     /// Clears the in-process popular-videos cache before each test, for the same reason as
-    /// <see cref="InvalidatePopularArticlesCache" />: the shared <see cref="IMemoryCache" />
-    /// outlives the database reset, so ranked video lists cached by one test would otherwise
-    /// be served to the next.
+    /// <see cref="InvalidateTagCache" />.
     /// </summary>
     private void InvalidatePopularVideosCache()
     {
@@ -168,10 +205,23 @@ public abstract class BaseApiTest : IAsyncLifetime
     }
 
     /// <inheritdoc />
-    public ValueTask DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
         Client.Dispose();
-        return ValueTask.CompletedTask;
+
+        foreach (IServiceScope scope in _scopes)
+        {
+            if (scope is IAsyncDisposable asyncDisposable)
+            {
+                await asyncDisposable.DisposeAsync();
+            }
+            else
+            {
+                scope.Dispose();
+            }
+        }
+
+        _scopes.Clear();
     }
 
     /// <summary>

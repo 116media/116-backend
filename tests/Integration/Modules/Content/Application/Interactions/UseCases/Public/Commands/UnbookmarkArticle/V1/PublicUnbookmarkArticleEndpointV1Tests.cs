@@ -1,6 +1,9 @@
 using _116.Content.Application.Interactions.UseCases.Public.Commands.UnbookmarkArticle.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Interactions.UseCases.Public.Commands.UnbookmarkArticle.V1;
@@ -36,19 +39,18 @@ public class PublicUnbookmarkArticleEndpointV1Tests(PostgresFixture db) : BaseAp
     }
 
     [Fact]
-    public async Task UnbookmarkArticle_AsVisitor_NonExistentBookmark_ReturnsNotFound()
+    public async Task UnbookmarkArticle_AsVisitor_NonExistentArticle_ReturnsNotFound()
     {
         Client.AuthenticateAsVisitor();
 
         var response = await Client.DeleteAsync(Routes.Public.Articles.Bookmarks(Guid.NewGuid()));
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Article"))
+        );
     }
 
-    /// <summary>
-    /// Verifies that unbookmarking a previously bookmarked article removes the
-    /// bookmark row and returns a successful response.
-    /// </summary>
     [Fact]
     public async Task UnbookmarkArticle_WhenBookmarked_RemovesBookmarkAndPersists()
     {
@@ -68,9 +70,6 @@ public class PublicUnbookmarkArticleEndpointV1Tests(PostgresFixture db) : BaseAp
             .BeFalse();
     }
 
-    /// <summary>
-    /// Verifies that unbookmarking an article that was never bookmarked returns 400 Bad Request.
-    /// </summary>
     [Fact]
     public async Task UnbookmarkArticle_WhenNotBookmarked_ReturnsBadRequest()
     {
@@ -79,6 +78,9 @@ public class PublicUnbookmarkArticleEndpointV1Tests(PostgresFixture db) : BaseAp
 
         var response = await Client.DeleteAsync(Routes.Public.Articles.Bookmarks(article.Id));
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<ArticleInteractionErrorMessage>(m => m.BookmarkNotFound())
+        );
     }
 }

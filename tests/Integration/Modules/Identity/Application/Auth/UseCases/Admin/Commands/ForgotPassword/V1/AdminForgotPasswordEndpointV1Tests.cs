@@ -1,8 +1,12 @@
 using _116.Identity.Application.Auth.Constants;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.ForgotPassword.V1;
+using _116.Identity.Application.Shared.Errors.Messages;
+using _116.Identity.Application.Shared.Exceptions;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Builders.Requests.Identity;
 using _116.Tests.Fixtures.Factories.Identity;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.Auth.UseCases.Admin.Commands.ForgotPassword.V1;
 
@@ -15,6 +19,9 @@ public class AdminForgotPasswordEndpointV1Tests(PostgresFixture db) : BaseApiTes
     private const string AuthUrl = ApiRoutes.Admin.Auth;
     private const string ForgotPasswordUrl = $"{AuthUrl}/{AuthRouteConstants.ForgotPassword}";
 
+    private static string ValidationDetail(string property, string message) =>
+        new ValidationException([new ValidationFailure(property, message)]).Message;
+
     [Fact]
     public async Task ForgotPassword_WithEmptyEmail_ReturnsValidationError()
     {
@@ -23,14 +30,12 @@ public class AdminForgotPasswordEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.PostAsJsonAsync(ForgotPasswordUrl, request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("Email", Localized<ValidationErrorMessage>(m => m.EmailRequired()))
+        );
     }
 
-    /// <summary>
-    /// Verifies that submitting a forgot-password request for an existing non-admin user
-    /// returns 403 Forbidden, exercising the AccessDeniedExceptionHandler.
-    /// The handler throws AccessDeniedException when the user lacks an admin role.
-    /// </summary>
     [Fact]
     public async Task ForgotPassword_ForNonAdminUser_ReturnsForbidden()
     {
@@ -44,13 +49,12 @@ public class AdminForgotPasswordEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.PostAsJsonAsync(ForgotPasswordUrl, request);
 
-        await response.ShouldBeProblem(HttpStatusCode.Forbidden);
+        await response.ShouldBeProblem<AccessDeniedException>(
+            HttpStatusCode.Forbidden,
+            Localized<AuthenticationErrorMessage>(m => m.InsufficientPermissions())
+        );
     }
 
-    /// <summary>
-    /// Verifies that a forgot-password request for an existing admin account returns 200 OK
-    /// with the anti-enumeration success payload echoing the submitted email.
-    /// </summary>
     [Fact]
     public async Task ForgotPassword_ForAdminUser_ReturnsSuccessEchoingEmail()
     {

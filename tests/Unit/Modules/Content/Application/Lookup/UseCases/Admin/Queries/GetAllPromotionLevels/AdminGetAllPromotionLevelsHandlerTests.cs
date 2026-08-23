@@ -48,7 +48,7 @@ public class AdminGetAllPromotionLevelsHandlerTests : BaseContentHandlerTest
     public async Task Handle_WithSearchTerm_ShouldPassSearchToRepository()
     {
         // Arrange
-        string searchTerm = TestConstants.Content.PromotionLevel.ValidName;
+        string searchTerm = TestConstants.PromotionLevel.ValidName;
         PromotionLevelEntity level = PromotionLevelFactory.CreateDefault();
         _lookupRepositoryMock.SetupGetAllPromotionLevels(new List<PromotionLevelEntity> { level });
 

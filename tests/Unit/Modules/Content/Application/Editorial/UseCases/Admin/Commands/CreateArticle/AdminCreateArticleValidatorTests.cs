@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateArticle;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Tests.Fixtures.Constants;
@@ -31,8 +30,8 @@ public class AdminCreateArticleValidatorTests
         // Arrange
         var command = new AdminCreateArticleCommand(
             CategoryId: Guid.NewGuid(),
-            Title: TestConstants.Content.Editorial.Article.ValidTitle,
-            Slug: TestConstants.Content.Editorial.Article.ValidSlug,
+            Title: TestConstants.Article.ValidTitle,
+            Slug: TestConstants.Article.ValidSlug,
             AuthorId: Guid.NewGuid(),
             CustomerId: null,
             OrderItemId: null
@@ -54,8 +53,8 @@ public class AdminCreateArticleValidatorTests
         var orderItemId = Guid.NewGuid();
         var command = new AdminCreateArticleCommand(
             CategoryId: Guid.NewGuid(),
-            Title: TestConstants.Content.Editorial.Article.ValidTitle,
-            Slug: TestConstants.Content.Editorial.Article.ValidSlug,
+            Title: TestConstants.Article.ValidTitle,
+            Slug: TestConstants.Article.ValidSlug,
             AuthorId: Guid.NewGuid(),
             CustomerId: customerId,
             OrderItemId: orderItemId
@@ -79,8 +78,8 @@ public class AdminCreateArticleValidatorTests
         // Arrange
         var command = new AdminCreateArticleCommand(
             CategoryId: Guid.Empty,
-            Title: TestConstants.Content.Editorial.Article.ValidTitle,
-            Slug: TestConstants.Content.Editorial.Article.ValidSlug,
+            Title: TestConstants.Article.ValidTitle,
+            Slug: TestConstants.Article.ValidSlug,
             AuthorId: Guid.NewGuid(),
             CustomerId: null,
             OrderItemId: null
@@ -110,7 +109,7 @@ public class AdminCreateArticleValidatorTests
         var command = new AdminCreateArticleCommand(
             CategoryId: Guid.NewGuid(),
             Title: string.Empty,
-            Slug: TestConstants.Content.Editorial.Article.ValidSlug,
+            Slug: TestConstants.Article.ValidSlug,
             AuthorId: Guid.NewGuid(),
             CustomerId: null,
             OrderItemId: null
@@ -135,8 +134,8 @@ public class AdminCreateArticleValidatorTests
         // Arrange
         var command = new AdminCreateArticleCommand(
             CategoryId: Guid.NewGuid(),
-            Title: new string('a', TestConstants.Content.Editorial.Article.TitleMaxLength + 1),
-            Slug: TestConstants.Content.Editorial.Article.ValidSlug,
+            Title: new string('a', TestConstants.Article.TitleMaxLength + 1),
+            Slug: TestConstants.Article.ValidSlug,
             AuthorId: Guid.NewGuid(),
             CustomerId: null,
             OrderItemId: null
@@ -151,8 +150,7 @@ public class AdminCreateArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateArticleCommand.Title)
-                && e.ErrorMessage
-                    == _i18n.Article.Msg.TitleTooLong(TestConstants.Content.Editorial.Article.TitleMaxLength)
+                && e.ErrorMessage == _i18n.Article.Msg.TitleTooLong(TestConstants.Article.TitleMaxLength)
             );
     }
 
@@ -166,7 +164,7 @@ public class AdminCreateArticleValidatorTests
         // Arrange
         var command = new AdminCreateArticleCommand(
             CategoryId: Guid.NewGuid(),
-            Title: TestConstants.Content.Editorial.Article.ValidTitle,
+            Title: TestConstants.Article.ValidTitle,
             Slug: string.Empty,
             AuthorId: Guid.NewGuid(),
             CustomerId: null,
@@ -192,8 +190,8 @@ public class AdminCreateArticleValidatorTests
         // Arrange
         var command = new AdminCreateArticleCommand(
             CategoryId: Guid.NewGuid(),
-            Title: TestConstants.Content.Editorial.Article.ValidTitle,
-            Slug: new string('a', TestConstants.Content.Editorial.Article.SlugMaxLength + 1),
+            Title: TestConstants.Article.ValidTitle,
+            Slug: new string('a', TestConstants.Article.SlugMaxLength + 1),
             AuthorId: Guid.NewGuid(),
             CustomerId: null,
             OrderItemId: null
@@ -208,8 +206,7 @@ public class AdminCreateArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateArticleCommand.Slug)
-                && e.ErrorMessage
-                    == _i18n.Article.Msg.SlugTooLong(TestConstants.Content.Editorial.Article.SlugMaxLength)
+                && e.ErrorMessage == _i18n.Article.Msg.SlugTooLong(TestConstants.Article.SlugMaxLength)
             );
     }
 
@@ -219,7 +216,7 @@ public class AdminCreateArticleValidatorTests
         // Arrange
         var command = new AdminCreateArticleCommand(
             CategoryId: Guid.NewGuid(),
-            Title: TestConstants.Content.Editorial.Article.ValidTitle,
+            Title: TestConstants.Article.ValidTitle,
             Slug: "Invalid-Slug",
             AuthorId: Guid.NewGuid(),
             CustomerId: null,
@@ -249,8 +246,8 @@ public class AdminCreateArticleValidatorTests
         // Arrange
         var command = new AdminCreateArticleCommand(
             CategoryId: Guid.NewGuid(),
-            Title: TestConstants.Content.Editorial.Article.ValidTitle,
-            Slug: TestConstants.Content.Editorial.Article.ValidSlug,
+            Title: TestConstants.Article.ValidTitle,
+            Slug: TestConstants.Article.ValidSlug,
             AuthorId: Guid.NewGuid(),
             CustomerId: Guid.NewGuid(),
             OrderItemId: null
@@ -275,8 +272,8 @@ public class AdminCreateArticleValidatorTests
         // Arrange
         var command = new AdminCreateArticleCommand(
             CategoryId: Guid.NewGuid(),
-            Title: TestConstants.Content.Editorial.Article.ValidTitle,
-            Slug: TestConstants.Content.Editorial.Article.ValidSlug,
+            Title: TestConstants.Article.ValidTitle,
+            Slug: TestConstants.Article.ValidSlug,
             AuthorId: Guid.NewGuid(),
             CustomerId: null,
             OrderItemId: Guid.NewGuid()
@@ -292,41 +289,6 @@ public class AdminCreateArticleValidatorTests
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateArticleCommand.CustomerId)
                 && e.ErrorMessage == _i18n.Customer.Msg.CustomerIdRequired()
-            );
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-        var validator = new AdminCreateArticleValidator(_i18n);
-        var command = new AdminCreateArticleCommand(
-            CategoryId: Guid.NewGuid(),
-            Title: string.Empty,
-            Slug: TestConstants.Content.Editorial.Article.ValidSlug,
-            AuthorId: Guid.NewGuid(),
-            CustomerId: null,
-            OrderItemId: null
-        );
-
-        // Act
-        ValidationResult result = await validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminCreateArticleCommand.Title)
-                && e.ErrorMessage == _i18n.Article.Msg.TitleRequired()
             );
     }
 

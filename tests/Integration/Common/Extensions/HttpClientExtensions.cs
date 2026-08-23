@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
 using _116.BuildingBlocks.Constants;
+using _116.Identity.Domain.Enums;
 using Microsoft.IdentityModel.Tokens;
 
 namespace _116.Integration.Tests.Common.Extensions;
@@ -18,7 +19,7 @@ public static class HttpClientExtensions
     /// </summary>
     public static void AuthenticateAsSuperAdmin(this HttpClient client)
     {
-        client.AuthenticateAs(User.SuperAdminId, "SuperAdmin");
+        client.AuthenticateAs(User.SuperAdminId, nameof(EnumCoreUserRole.SuperAdmin));
     }
 
     /// <summary>
@@ -26,7 +27,7 @@ public static class HttpClientExtensions
     /// </summary>
     public static void AuthenticateAsAdmin(this HttpClient client)
     {
-        client.AuthenticateAs(User.AdminId, "Admin");
+        client.AuthenticateAs(User.AdminId, nameof(EnumCoreUserRole.Admin));
     }
 
     /// <summary>
@@ -34,7 +35,7 @@ public static class HttpClientExtensions
     /// </summary>
     public static void AuthenticateAsVisitor(this HttpClient client)
     {
-        client.AuthenticateAs(User.VisitorId, "Visitor");
+        client.AuthenticateAs(User.VisitorId, nameof(EnumCoreUserRole.Visitor));
     }
 
     /// <summary>

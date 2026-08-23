@@ -1,8 +1,14 @@
+using System.Net.Http.Headers;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.AttachPaymentProof.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Commerce.UseCases.Admin.Commands.AttachPaymentProof.V1;
 
@@ -12,6 +18,9 @@ namespace _116.Integration.Tests.Modules.Content.Application.Commerce.UseCases.A
 [Collection("Database")]
 public class AdminAttachPaymentProofEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private static string ValidationDetail(string property, string message) =>
+        new ValidationException([new ValidationFailure(property, message)]).Message;
+
     [Fact]
     public async Task AttachPaymentProof_AsSuperAdmin_WithValidFile_ReturnsOk()
     {
@@ -28,7 +37,7 @@ public class AdminAttachPaymentProofEndpointV1Tests(PostgresFixture db) : BaseAp
         Client.AuthenticateAsSuperAdmin();
         using var content = new MultipartFormDataContent();
         var fileContent = new ByteArrayContent(new byte[] { 0xFF, 0xD8, 0xFF, 0xE0 });
-        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
+        fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
         content.Add(fileContent, "file", "proof.jpg");
 
         var response = await Client.PostAsync(
@@ -49,12 +58,12 @@ public class AdminAttachPaymentProofEndpointV1Tests(PostgresFixture db) : BaseAp
     }
 
     [Fact]
-    public async Task AttachPaymentProof_NonExistentOrder_ReturnsNotFound()
+    public async Task AttachPaymentProof_WithUnknownOrderId_ReturnsOrderNotFound()
     {
         Client.AuthenticateAsSuperAdmin();
         using var content = new MultipartFormDataContent();
         var fileContent = new ByteArrayContent(new byte[] { 0xFF, 0xD8, 0xFF, 0xE0 });
-        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
+        fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
         content.Add(fileContent, "file", "proof.jpg");
 
         var response = await Client.PostAsync(
@@ -62,7 +71,38 @@ public class AdminAttachPaymentProofEndpointV1Tests(PostgresFixture db) : BaseAp
             content
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("ContentOrder"))
+        );
+    }
+
+    [Fact]
+    public async Task AttachPaymentProof_WithOrderThatHasNoPayment_ReturnsPaymentNotFound()
+    {
+        CustomerEntity customer = CustomerFactory.Create();
+        ContentOrderEntity order = ContentOrderFactory.CreateForCustomer(customer.Id);
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            ctx.Customers.Add(customer);
+            ctx.ContentOrders.Add(order);
+        });
+
+        Client.AuthenticateAsSuperAdmin();
+        using var content = new MultipartFormDataContent();
+        var fileContent = new ByteArrayContent(new byte[] { 0xFF, 0xD8, 0xFF, 0xE0 });
+        fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
+        content.Add(fileContent, "file", "proof.jpg");
+
+        var response = await Client.PostAsync(
+            $"{Routes.Admin.Orders.PaymentProof(order.Id)}?paymentMethod=BankTransfer",
+            content
+        );
+
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("ContentPayment"))
+        );
     }
 
     [Fact]
@@ -71,7 +111,7 @@ public class AdminAttachPaymentProofEndpointV1Tests(PostgresFixture db) : BaseAp
         Client.ClearAuthentication();
         using var content = new MultipartFormDataContent();
         var fileContent = new ByteArrayContent(new byte[] { 0xFF, 0xD8, 0xFF, 0xE0 });
-        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
+        fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
         content.Add(fileContent, "file", "proof.jpg");
 
         var response = await Client.PostAsync(
@@ -80,5 +120,24 @@ public class AdminAttachPaymentProofEndpointV1Tests(PostgresFixture db) : BaseAp
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task AttachPaymentProof_WithNoFilePart_ReturnsLocalizedValidationProblem()
+    {
+        Client.AuthenticateAsSuperAdmin();
+
+        using var content = new MultipartFormDataContent();
+        content.Add(new StringContent("unused"), "note");
+
+        var response = await Client.PostAsync(
+            $"{Routes.Admin.Orders.PaymentProof(Guid.NewGuid())}?paymentMethod=BankTransfer",
+            content
+        );
+
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("File", Localized<ContentOrderErrorMessage>(m => m.PaymentProofRequired()))
+        );
     }
 }

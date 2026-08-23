@@ -19,8 +19,8 @@ public class PackageEntityTests
     {
         // Arrange
         var id = Guid.NewGuid();
-        string name = TestConstants.Content.Package.ValidName;
-        string description = TestConstants.Content.Package.ValidDescription;
+        string name = TestConstants.Package.ValidName;
+        string description = TestConstants.Package.ValidDescription;
 
         // Act
         var entity = PackageEntity.Create(id, name, description, TestErrorsFactory.CreatePackageErrors());
@@ -38,13 +38,13 @@ public class PackageEntityTests
         // Act
         var entity = PackageEntity.Create(
             Guid.NewGuid(),
-            TestConstants.Content.Package.ValidName,
-            TestConstants.Content.Package.ValidDescription,
+            TestConstants.Package.ValidName,
+            TestConstants.Package.ValidDescription,
             TestErrorsFactory.CreatePackageErrors()
         );
 
         // Assert
-        entity.Description.Should().Be(TestConstants.Content.Package.ValidDescription);
+        entity.Description.Should().Be(TestConstants.Package.ValidDescription);
     }
 
     [Theory]
@@ -58,7 +58,7 @@ public class PackageEntityTests
             PackageEntity.Create(
                 Guid.NewGuid(),
                 invalidName!,
-                TestConstants.Content.Package.ValidDescription,
+                TestConstants.Package.ValidDescription,
                 TestErrorsFactory.CreatePackageErrors()
             );
 
@@ -76,8 +76,8 @@ public class PackageEntityTests
         // Arrange
         var entity = PackageEntity.Create(
             Guid.NewGuid(),
-            TestConstants.Content.Package.ValidName,
-            TestConstants.Content.Package.ValidDescription,
+            TestConstants.Package.ValidName,
+            TestConstants.Package.ValidDescription,
             TestErrorsFactory.CreatePackageErrors()
         );
         entity.Deactivate();
@@ -93,8 +93,8 @@ public class PackageEntityTests
         // Arrange
         var entity = PackageEntity.Create(
             Guid.NewGuid(),
-            TestConstants.Content.Package.ValidName,
-            TestConstants.Content.Package.ValidDescription,
+            TestConstants.Package.ValidName,
+            TestConstants.Package.ValidDescription,
             TestErrorsFactory.CreatePackageErrors()
         );
 
@@ -108,8 +108,8 @@ public class PackageEntityTests
         // Arrange
         var entity = PackageEntity.Create(
             Guid.NewGuid(),
-            TestConstants.Content.Package.ValidName,
-            TestConstants.Content.Package.ValidDescription,
+            TestConstants.Package.ValidName,
+            TestConstants.Package.ValidDescription,
             TestErrorsFactory.CreatePackageErrors()
         );
 
@@ -124,8 +124,8 @@ public class PackageEntityTests
         // Arrange
         var entity = PackageEntity.Create(
             Guid.NewGuid(),
-            TestConstants.Content.Package.ValidName,
-            TestConstants.Content.Package.ValidDescription,
+            TestConstants.Package.ValidName,
+            TestConstants.Package.ValidDescription,
             TestErrorsFactory.CreatePackageErrors()
         );
         entity.Deactivate();

@@ -120,8 +120,10 @@ public static class RateLimitingExtension
     /// <summary>
     /// Handles requests that exceed the rate limit by throwing a
     /// <see cref="RateLimitExceededException"/> handled by the global exception pipeline.
+    /// Exposed to the integration test host so it can restore the production rejection
+    /// contract rather than duplicate it.
     /// </summary>
-    private static ValueTask OnRateLimitRejected(OnRejectedContext context, CancellationToken cancellationToken)
+    internal static ValueTask OnRateLimitRejected(OnRejectedContext context, CancellationToken cancellationToken)
     {
         TimeSpan retryAfter = TimeSpan.Zero;
 

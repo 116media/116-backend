@@ -1,6 +1,8 @@
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.RemovePackageSlot.V1;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Catalog.UseCases.Admin.Commands.RemovePackageSlot.V1;
@@ -42,19 +44,18 @@ public class AdminRemovePackageSlotEndpointV1Tests(PostgresFixture db) : BaseApi
     }
 
     [Fact]
-    public async Task RemovePackageSlot_AsSuperAdmin_NonExistentPackage_ReturnsNotFound()
+    public async Task RemovePackageSlot_AsSuperAdmin_WithUnknownPackageId_ReturnsPackageNotFound()
     {
         Client.AuthenticateAsSuperAdmin();
 
         var response = await Client.DeleteAsync(Routes.Admin.Packages.Slot(Guid.NewGuid(), Guid.NewGuid()));
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Package"))
+        );
     }
 
-    /// <summary>
-    /// Verifies that removing a package slot that does not exist on a valid package
-    /// returns a 404 Not Found response.
-    /// </summary>
     [Fact]
     public async Task RemovePackageSlot_NonExistentSlot_ReturnsNotFound()
     {
@@ -69,7 +70,10 @@ public class AdminRemovePackageSlotEndpointV1Tests(PostgresFixture db) : BaseApi
 
         var response = await Client.DeleteAsync(Routes.Admin.Packages.Slot(package.Id, Guid.NewGuid()));
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("PackageSlot"))
+        );
     }
 
     [Fact]
@@ -101,5 +105,40 @@ public class AdminRemovePackageSlotEndpointV1Tests(PostgresFixture db) : BaseApi
 
         await using var verifyContext = CreateDbContext<ContentDbContext>();
         (await verifyContext.PackageSlots.AnyAsync(s => s.Id == slot.Id)).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task RemovePackageSlot_WithSlotBelongingToAnotherPackage_ReturnsNotFound()
+    {
+        PackageEntity owningPackage = null!;
+        PackageEntity otherPackage = null!;
+        PackageSlotEntity slot = null!;
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            ctx.ContentTypes.Add(contentType);
+            CategoryEntity category = CategoryFactory.Create(contentType.Id);
+            ctx.Categories.Add(category);
+            owningPackage = PackageFactory.Create();
+            ctx.Packages.Add(owningPackage);
+            otherPackage = PackageFactory.Create();
+            ctx.Packages.Add(otherPackage);
+            slot = PackageSlotFactory.Create(owningPackage.Id, category.Id);
+            ctx.PackageSlots.Add(slot);
+        });
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.DeleteAsync(Routes.Admin.Packages.Slot(otherPackage.Id, slot.Id));
+
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("PackageSlot"))
+        );
+
+        await using var verifyContext = CreateDbContext<ContentDbContext>();
+        (await verifyContext.PackageSlots.AnyAsync(s => s.Id == slot.Id))
+            .Should()
+            .BeTrue("a slot belonging to another package must not be removed");
     }
 }

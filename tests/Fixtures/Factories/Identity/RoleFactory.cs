@@ -5,7 +5,9 @@ using _116.Tests.Fixtures.Constants;
 namespace _116.Tests.Fixtures.Factories.Identity;
 
 /// <summary>
-/// Factory for quickly creating <see cref="RoleEntity"/> instances in tests.
+/// Named aliases for <see cref="RoleBuilder" /> chains that three or more tests share verbatim.
+/// A shape fewer tests need belongs at the call site as a builder chain, not here —
+/// factory names carry the combinatorics, and combinatorics multiply.
 /// </summary>
 public static class RoleFactory
 {

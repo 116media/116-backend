@@ -2,15 +2,17 @@ using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Services;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using Bogus;
 
 namespace _116.Tests.Fixtures.Builders.Entities.Identity;
 
 /// <summary>
-/// Fluent builder for creating <see cref="OtpEntity"/> instances in tests.
-/// For test code, prefer using OtpFactory instead of direct Builder usage.
+/// Fluent builder for creating <see cref="OtpEntity" /> instances in tests.
+/// Drives the real domain transitions, so every state it produces is one the application can reach.
+/// Use it for any shape a test needs; OtpFactory only names chains three or more tests share.
 /// </summary>
-internal class OtpBuilder
+public class OtpBuilder
 {
     /// <summary>
     /// The production hashing service, so a built OTP stores its code exactly the way the
@@ -18,7 +20,7 @@ internal class OtpBuilder
     /// </summary>
     private static readonly PasswordService Hasher = new();
 
-    private readonly Faker _faker = new();
+    private readonly Faker _faker = TestFaker.Create();
 
     private Guid _id;
     private Guid _userId;
@@ -137,7 +139,7 @@ internal class OtpBuilder
     }
 
     /// <summary>
-    /// Sets the OTP as having reached max attempts.
+    /// Sets the OTP to the attempt threshold, the locked state a real row holds.
     /// </summary>
     /// <returns>The builder instance for chaining.</returns>
     public OtpBuilder AsMaxAttemptsReached()

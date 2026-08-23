@@ -1,6 +1,9 @@
 using _116.Identity.Application.Roles.UseCases.Admin.Commands.AssignPermissionToRole.V1;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Builders.Requests.Identity;
 using _116.Tests.Fixtures.Factories.Identity;
 
@@ -98,7 +101,10 @@ public class AdminAssignPermissionToRoleEndpointV1Tests(PostgresFixture db) : Ba
 
         var response = await Client.PostAsJsonAsync(Routes.Admin.Roles.Permissions(nonExistentRoleId), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Role"))
+        );
     }
 
     [Fact]
@@ -119,7 +125,10 @@ public class AdminAssignPermissionToRoleEndpointV1Tests(PostgresFixture db) : Ba
 
         var response = await Client.PostAsJsonAsync(Routes.Admin.Roles.Permissions(roleId), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Permission"))
+        );
     }
 
     [Fact]
@@ -142,12 +151,12 @@ public class AdminAssignPermissionToRoleEndpointV1Tests(PostgresFixture db) : Ba
 
         var response = await Client.PostAsJsonAsync(Routes.Admin.Roles.Permissions(roleId), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<ConflictErrorMessage>(m => m.PermissionAlreadyAssignedToRole())
+        );
     }
 
-    /// <summary>
-    /// Verifies that assigning an inactive permission to a role returns a 400 Bad Request.
-    /// </summary>
     [Fact]
     public async Task AssignPermission_WhenPermissionInactive_ReturnsBadRequest()
     {
@@ -168,15 +177,12 @@ public class AdminAssignPermissionToRoleEndpointV1Tests(PostgresFixture db) : Ba
 
         var response = await Client.PostAsJsonAsync(Routes.Admin.Roles.Permissions(roleId), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<ValidationErrorMessage>(m => m.PermissionIsInactive())
+        );
     }
 
-    /// <summary>
-    /// Verifies that assigning a soft-deleted permission to a role returns a 400 Bad Request
-    /// carrying the deleted-permission message rather than the inactive-permission one, since a
-    /// soft delete also clears <c>IsActive</c> and both states would otherwise be
-    /// indistinguishable.
-    /// </summary>
     [Fact]
     public async Task AssignPermission_WhenPermissionDeleted_ReturnsBadRequest()
     {
@@ -203,6 +209,9 @@ public class AdminAssignPermissionToRoleEndpointV1Tests(PostgresFixture db) : Ba
 
         var response = await Client.SendAsync(httpRequest);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest, "Cannot use a deleted permission.");
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<ValidationErrorMessage>(m => m.PermissionIsDeleted(), LocalizedMessage.EnglishCulture)
+        );
     }
 }

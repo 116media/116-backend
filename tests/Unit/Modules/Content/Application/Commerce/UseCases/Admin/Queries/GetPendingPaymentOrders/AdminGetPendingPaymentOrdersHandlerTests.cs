@@ -2,6 +2,7 @@ using _116.Content.Application.Commerce.UseCases.Admin.Queries.GetPendingPayment
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Shared.Application.Pagination;
+using _116.Tests.Fixtures.Builders.Entities.Content;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Repositories;
@@ -31,12 +32,11 @@ public class AdminGetPendingPaymentOrdersHandlerTests : BaseContentHandlerTest
     public async Task Handle_ShouldReturnPaginatedPendingPaymentOrders()
     {
         // Arrange
-        List<ContentOrderEntity> orders = ContentOrderFactory.CreateMany(2);
         CustomerEntity customer = CustomerFactory.Create();
-        foreach (ContentOrderEntity order in orders)
-        {
-            typeof(ContentOrderEntity).GetProperty(nameof(ContentOrderEntity.Customer))!.SetValue(order, customer);
-        }
+        List<ContentOrderEntity> orders = Enumerable
+            .Range(0, 2)
+            .Select(_ => new ContentOrderBuilder().WithCustomer(customer).Build())
+            .ToList();
 
         _orderRepositoryMock.SetupGetAllAsync(orders, orders.Count);
 

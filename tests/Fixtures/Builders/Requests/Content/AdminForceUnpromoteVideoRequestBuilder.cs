@@ -17,7 +17,7 @@ public class AdminForceUnpromoteVideoRequestBuilder
     /// </summary>
     public AdminForceUnpromoteVideoRequestBuilder()
     {
-        _reason = TestConstants.Content.Editorial.Video.ValidRejectionReason;
+        _reason = TestConstants.Video.ValidRejectionReason;
     }
 
     /// <summary>

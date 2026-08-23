@@ -1,6 +1,8 @@
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetLyricsByVideoId.V1;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Public.Queries.GetLyricsByVideoId.V1;
@@ -51,10 +53,6 @@ public class PublicGetLyricsByVideoIdEndpointV1Tests(PostgresFixture db) : BaseA
         body.Lyrics.VideoId.Should().Be(video.Id);
     }
 
-    /// <summary>
-    /// A lyrics page linked to a video but not yet Published must be invisible to this public
-    /// endpoint, mirroring the by-slug lookup's status gate.
-    /// </summary>
     [Fact]
     public async Task GetLyricsByVideoId_WithDraftLyrics_ReturnsNotFound()
     {
@@ -87,7 +85,10 @@ public class PublicGetLyricsByVideoIdEndpointV1Tests(PostgresFixture db) : BaseA
 
         var response = await Client.GetAsync($"{ApiRoutes.Public.Lyrics}/videos/{video.Id}");
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Lyrics"))
+        );
     }
 
     [Fact]
@@ -98,13 +99,12 @@ public class PublicGetLyricsByVideoIdEndpointV1Tests(PostgresFixture db) : BaseA
 
         var response = await Client.GetAsync($"{ApiRoutes.Public.Lyrics}/videos/{nonExistentId}");
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Lyrics"))
+        );
     }
 
-    /// <summary>
-    /// The authenticated caller who liked the linked lyrics page sees <c>IsLiked: true</c>, and
-    /// the cached view/like/share counters pass through end to end through real Postgres.
-    /// </summary>
     [Fact]
     public async Task GetLyricsByVideoId_WhenCurrentUserHasLiked_ReturnsIsLikedTrueAndCounts()
     {
@@ -150,10 +150,6 @@ public class PublicGetLyricsByVideoIdEndpointV1Tests(PostgresFixture db) : BaseA
         body.Lyrics.ShareCount.Should().Be(2);
     }
 
-    /// <summary>
-    /// An anonymous caller always sees <c>IsLiked: false</c>, regardless of any like records
-    /// left by other users.
-    /// </summary>
     [Fact]
     public async Task GetLyricsByVideoId_WhenAnonymous_ReturnsIsLikedFalse()
     {

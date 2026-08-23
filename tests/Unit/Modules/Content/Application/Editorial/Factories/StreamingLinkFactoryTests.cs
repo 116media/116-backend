@@ -187,12 +187,6 @@ public class StreamingLinkFactoryTests
 
     #region GenerateSearchUrl guard
 
-    /// <summary>
-    /// The unsupported-platform guard is unreachable through <c>CreateStreamingLinks</c>, which
-    /// only iterates declared enum members. It exists so that adding a fifth platform without a
-    /// matching switch arm fails loudly instead of silently returning a wrong URL, so it is
-    /// asserted directly against an undeclared enum value.
-    /// </summary>
     [Fact]
     public void GenerateSearchUrl_WithUndeclaredPlatform_ShouldThrowArgumentOutOfRange()
     {
@@ -206,9 +200,6 @@ public class StreamingLinkFactoryTests
         act.Should().Throw<ArgumentOutOfRangeException>().WithParameterName("platform");
     }
 
-    /// <summary>
-    /// Every declared platform has an explicit switch arm, so none of them hits the guard.
-    /// </summary>
     [Fact]
     public void GenerateSearchUrl_WithEveryDeclaredPlatform_ShouldReturnAUrl()
     {

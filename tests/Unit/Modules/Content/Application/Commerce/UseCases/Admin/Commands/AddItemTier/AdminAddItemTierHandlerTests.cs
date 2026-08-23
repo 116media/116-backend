@@ -34,7 +34,7 @@ public class AdminAddItemTierHandlerTests
         Guid orderItemId = Guid.NewGuid();
         Guid pricingTierId = Guid.NewGuid();
         ContentItemTierEntity tier = ContentItemTierFactory.CreateDefault(orderItemId, pricingTierId);
-        const string tierName = TestConstants.Content.PricingTier.ValidName;
+        const string tierName = TestConstants.PricingTier.ValidName;
 
         _factoryMock.SetupAttachTierAsync((tier, tierName));
 
@@ -51,7 +51,7 @@ public class AdminAddItemTierHandlerTests
         result.Should().NotBeNull();
         result.Tier.Should().NotBeNull();
         result.Tier.TierName.Should().Be(tierName);
-        result.Tier.PriceSnapshotUsd.Should().Be(TestConstants.Content.Commerce.ValidTierPriceUsd);
+        result.Tier.PriceSnapshotUsd.Should().Be(TestConstants.Commerce.ValidTierPriceUsd);
     }
 
     #endregion

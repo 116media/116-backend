@@ -1,6 +1,8 @@
 using _116.Identity.Application.Roles.UseCases.Admin.Queries.GetRoleById.V1;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Identity;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.Roles.UseCases.Admin.Queries.GetRoleById.V1;
@@ -43,7 +45,10 @@ public class AdminGetRoleByIdEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         var response = await Client.GetAsync($"{ApiRoutes.Admin.Roles}/{Guid.NewGuid()}");
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Role"))
+        );
     }
 
     [Fact]

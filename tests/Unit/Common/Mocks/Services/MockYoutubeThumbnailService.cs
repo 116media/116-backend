@@ -45,7 +45,7 @@ public static class MockYoutubeThumbnailService
         Mock<IFormFile> fileMock = new();
         fileMock.Setup(x => x.FileName).Returns("thumbnail.jpg");
         fileMock.Setup(x => x.ContentType).Returns("image/jpeg");
-        fileMock.Setup(x => x.Length).Returns(TestConstants.Content.Editorial.Cloudinary.ValidBytes);
+        fileMock.Setup(x => x.Length).Returns(TestConstants.Cloudinary.ValidBytes);
         return fileMock.Object;
     }
 

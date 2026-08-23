@@ -4,6 +4,7 @@ using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
+using _116.Tests.Fixtures.Builders.Entities.Identity;
 using _116.Tests.Fixtures.Factories.Core;
 using _116.Tests.Fixtures.Factories.Identity;
 using AwesomeAssertions;
@@ -42,9 +43,12 @@ public class UserMapperTests
     public void ToUserResponseDto_WithAllParameters_ShouldMapCorrectly()
     {
         // Arrange
-        UserEntity user = UserFactory.Create("test@example.com", "testuser");
-        user.GetType().GetProperty("IsActive")!.SetValue(user, true);
-        user.GetType().GetProperty("IsVerified")!.SetValue(user, true);
+        UserEntity user = new UserBuilder()
+            .WithEmail("test@example.com")
+            .WithUserName("testuser")
+            .AsActive()
+            .AsVerified()
+            .Build();
 
         var roles = new List<RoleDto>
         {

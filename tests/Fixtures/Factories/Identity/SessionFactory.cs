@@ -5,7 +5,9 @@ using _116.Tests.Fixtures.Builders.Entities.Identity;
 namespace _116.Tests.Fixtures.Factories.Identity;
 
 /// <summary>
-/// Factory for quickly creating <see cref="SessionEntity"/> instances in tests.
+/// Named aliases for <see cref="SessionBuilder" /> chains that three or more tests share verbatim.
+/// A shape fewer tests need belongs at the call site as a builder chain, not here —
+/// factory names carry the combinatorics, and combinatorics multiply.
 /// </summary>
 public static class SessionFactory
 {
@@ -162,21 +164,6 @@ public static class SessionFactory
     /// <returns>A new SessionEntity with the specified browser.</returns>
     public static SessionEntity CreateWithBrowser(EnumBrowser browser) =>
         new SessionBuilder().WithBrowser(browser).Build();
-
-    /// <summary>
-    /// Creates a session with a specific platform.
-    /// </summary>
-    /// <param name="platform">The platform type.</param>
-    /// <returns>A new SessionEntity with the specified platform.</returns>
-    public static SessionEntity CreateWithPlatform(EnumPlatform platform) =>
-        new SessionBuilder().WithPlatform(platform).Build();
-
-    /// <summary>
-    /// Creates a session with a specific client.
-    /// </summary>
-    /// <param name="client">The client type.</param>
-    /// <returns>A new SessionEntity with the specified client.</returns>
-    public static SessionEntity CreateWithClient(EnumClient client) => new SessionBuilder().WithClient(client).Build();
 
     /// <summary>
     /// Creates a session with a specific expiration date.

@@ -1,8 +1,14 @@
+using _116.BuildingBlocks.Constants;
 using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadShortVideoFile.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.UploadShortVideoFile.V1;
 
@@ -12,6 +18,9 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminUploadShortVideoFileEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private static string ValidationDetail(string property, string message) =>
+        new ValidationException([new ValidationFailure(property, message)]).Message;
+
     private static MultipartFormDataContent CreateVideoContent()
     {
         var formContent = new MultipartFormDataContent();
@@ -63,7 +72,10 @@ public class AdminUploadShortVideoFileEndpointV1Tests(PostgresFixture db) : Base
             formContent
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("ShortVideo"))
+        );
     }
 
     [Fact]
@@ -83,13 +95,17 @@ public class AdminUploadShortVideoFileEndpointV1Tests(PostgresFixture db) : Base
 
         formContent.Dispose();
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail(
+                "File",
+                Localized<ShortVideoErrorMessage>(m =>
+                    m.FileInvalidExtension(string.Join(", ", FileConstants.AllowedVideoExtensions))
+                )
+            )
+        );
     }
 
-    /// <summary>
-    /// Verifies that uploading a video file to an existing draft short video returns the stubbed
-    /// Cloudinary URL and persists the resolved video file id.
-    /// </summary>
     [Fact]
     public async Task UploadShortVideoFile_AsSuperAdmin_WithValidFile_ReturnsOkAndPersists()
     {
@@ -118,5 +134,24 @@ public class AdminUploadShortVideoFileEndpointV1Tests(PostgresFixture db) : Base
         await using ContentDbContext verifyContext = CreateDbContext<ContentDbContext>();
         ShortVideoEntity? persisted = await verifyContext.ShortVideos.FindAsync(shortVideo.Id);
         persisted!.VideoFileId.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task UploadShortVideoFile_WithNoFilePart_ReturnsLocalizedValidationProblem()
+    {
+        Client.AuthenticateAsSuperAdmin();
+
+        using var formContent = new MultipartFormDataContent();
+        formContent.Add(new StringContent("unused"), "note");
+
+        var response = await Client.PostAsync(
+            Routes.Admin.Editorial.Video(EditorialRouteConstants.Shorts, Guid.NewGuid()),
+            formContent
+        );
+
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("File", Localized<ShortVideoErrorMessage>(m => m.FileRequired()))
+        );
     }
 }

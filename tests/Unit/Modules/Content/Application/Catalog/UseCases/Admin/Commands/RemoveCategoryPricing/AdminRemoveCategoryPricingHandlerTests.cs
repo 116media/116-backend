@@ -51,6 +51,7 @@ public class AdminRemoveCategoryPricingHandlerTests : BaseContentHandlerTest
             PricingTierId: pricingTier.Id.ToString()
         );
 
+        _categoryRepositoryMock.SetupGetByIdOrThrow(category);
         _categoryRepositoryMock.SetupGetPricing(category.Id, pricingTier.Id, pricing);
         _categoryRepositoryMock.SetupGetPricingByCategory(category.Id, new List<CategoryPricingEntity>());
 
@@ -83,6 +84,7 @@ public class AdminRemoveCategoryPricingHandlerTests : BaseContentHandlerTest
             PricingTierId: tier1.Id.ToString()
         );
 
+        _categoryRepositoryMock.SetupGetByIdOrThrow(category);
         _categoryRepositoryMock.SetupGetPricing(category.Id, tier1.Id, pricingToRemove);
         _categoryRepositoryMock.SetupGetPricingByCategory(category.Id, new List<CategoryPricingEntity> { remaining });
 
@@ -101,6 +103,29 @@ public class AdminRemoveCategoryPricingHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenPricingNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
+        ContentTypeEntity contentType = ContentTypeFactory.Create();
+        CategoryEntity category = CategoryFactory.Create(contentType.Id);
+        var tierId = Guid.NewGuid();
+
+        var command = new AdminRemoveCategoryPricingCommand(
+            CategoryId: category.Id.ToString(),
+            PricingTierId: tierId.ToString()
+        );
+
+        _categoryRepositoryMock.SetupGetByIdOrThrow(category);
+        _categoryRepositoryMock.SetupGetPricing(category.Id, tierId, null);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
+    }
+
+    [Fact]
+    public async Task Handle_WhenCategoryNotFound_ShouldThrowNotFoundExceptionWithoutReadingPricing()
+    {
+        // Arrange
         var categoryId = Guid.NewGuid();
         var tierId = Guid.NewGuid();
 
@@ -109,13 +134,17 @@ public class AdminRemoveCategoryPricingHandlerTests : BaseContentHandlerTest
             PricingTierId: tierId.ToString()
         );
 
-        _categoryRepositoryMock.SetupGetPricing(categoryId, tierId, null);
+        _categoryRepositoryMock.SetupGetByIdOrThrowNotFound(categoryId);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _categoryRepositoryMock.Verify(
+            x => x.GetPricingAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
     }
 
     #endregion

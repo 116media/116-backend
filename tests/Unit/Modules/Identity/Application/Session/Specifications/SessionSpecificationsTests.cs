@@ -1,5 +1,6 @@
 using _116.Identity.Application.Session.Specifications;
 using _116.Identity.Domain.Entities;
+using _116.Tests.Fixtures.Builders.Entities.Identity;
 using _116.Tests.Fixtures.Factories.Identity;
 using AwesomeAssertions;
 using Xunit;
@@ -197,8 +198,7 @@ public class SessionSpecificationsTests
         // Arrange
         var userId = Guid.NewGuid();
         string deviceId = "device-123";
-        SessionEntity session = SessionFactory.Create(userId, deviceId);
-        session.GetType().GetProperty("ExpiresAt")!.SetValue(session, DateTime.UtcNow.AddDays(-1));
+        SessionEntity session = new SessionBuilder().WithUserId(userId).WithDeviceId(deviceId).AsExpired().Build();
         SessionByUserIdAndDeviceIdSpecification spec = new(userId, deviceId);
 
         // Act
@@ -214,8 +214,7 @@ public class SessionSpecificationsTests
         // Arrange
         var userId = Guid.NewGuid();
         string deviceId = "device-123";
-        SessionEntity session = SessionFactory.Create(userId, deviceId);
-        session.GetType().GetProperty("IsRevoked")!.SetValue(session, true);
+        SessionEntity session = new SessionBuilder().WithUserId(userId).WithDeviceId(deviceId).AsRevoked().Build();
         SessionByUserIdAndDeviceIdSpecification spec = new(userId, deviceId);
 
         // Act
@@ -236,7 +235,6 @@ public class SessionSpecificationsTests
         var userId = Guid.NewGuid();
         string deviceId = "device-123";
         SessionEntity session = SessionFactory.Create(userId, deviceId);
-        session.GetType().GetProperty("IsRevoked")!.SetValue(session, false);
 
         SessionIsActiveByUserIdAndDeviceIdSpecification spec = new(userId, deviceId);
 
@@ -253,7 +251,6 @@ public class SessionSpecificationsTests
         // Arrange
         string deviceId = "device-123";
         SessionEntity session = SessionFactory.Create(Guid.NewGuid(), deviceId);
-        session.GetType().GetProperty("IsRevoked")!.SetValue(session, false);
 
         SessionIsActiveByUserIdAndDeviceIdSpecification spec = new(Guid.NewGuid(), deviceId);
 
@@ -272,8 +269,7 @@ public class SessionSpecificationsTests
     public void SessionIsRevokedSpecification_WithRevokedSession_ShouldReturnTrue()
     {
         // Arrange
-        SessionEntity session = SessionFactory.Create();
-        session.GetType().GetProperty("IsRevoked")!.SetValue(session, true);
+        SessionEntity session = new SessionBuilder().AsRevoked().Build();
         SessionIsRevokedSpecification spec = new();
 
         // Act
@@ -288,7 +284,6 @@ public class SessionSpecificationsTests
     {
         // Arrange
         SessionEntity session = SessionFactory.Create();
-        session.GetType().GetProperty("IsRevoked")!.SetValue(session, false);
         SessionIsRevokedSpecification spec = new();
 
         // Act
@@ -307,7 +302,6 @@ public class SessionSpecificationsTests
     {
         // Arrange
         SessionEntity session = SessionFactory.Create();
-        session.GetType().GetProperty("IsRevoked")!.SetValue(session, false);
         SessionIsNotRevokedSpecification spec = new();
 
         // Act
@@ -321,8 +315,7 @@ public class SessionSpecificationsTests
     public void SessionIsNotRevokedSpecification_WithRevokedSession_ShouldReturnFalse()
     {
         // Arrange
-        SessionEntity session = SessionFactory.Create();
-        session.GetType().GetProperty("IsRevoked")!.SetValue(session, true);
+        SessionEntity session = new SessionBuilder().AsRevoked().Build();
         SessionIsNotRevokedSpecification spec = new();
 
         // Act
@@ -405,7 +398,6 @@ public class SessionSpecificationsTests
     {
         // Arrange
         SessionEntity session = SessionFactory.CreateWithExpiresAt(DateTime.UtcNow.AddDays(1));
-        session.GetType().GetProperty("IsRevoked")!.SetValue(session, false);
         SessionIsActiveSpecification spec = new();
 
         // Act
@@ -420,7 +412,6 @@ public class SessionSpecificationsTests
     {
         // Arrange
         SessionEntity session = SessionFactory.CreateWithExpiresAt(DateTime.UtcNow.AddDays(-1));
-        session.GetType().GetProperty("IsRevoked")!.SetValue(session, false);
         SessionIsActiveSpecification spec = new();
 
         // Act
@@ -434,8 +425,7 @@ public class SessionSpecificationsTests
     public void SessionIsActiveSpecification_WithRevokedSession_ShouldReturnFalse()
     {
         // Arrange
-        SessionEntity session = SessionFactory.CreateWithExpiresAt(DateTime.UtcNow.AddDays(1));
-        session.GetType().GetProperty("IsRevoked")!.SetValue(session, true);
+        SessionEntity session = new SessionBuilder().WithExpiresAt(DateTime.UtcNow.AddDays(1)).AsRevoked().Build();
         SessionIsActiveSpecification spec = new();
 
         // Act
@@ -455,7 +445,6 @@ public class SessionSpecificationsTests
         // Arrange
         string refreshTokenHash = "token-hash-123";
         SessionEntity session = SessionFactory.CreateWithRefreshTokenHash(refreshTokenHash);
-        session.GetType().GetProperty("IsRevoked")!.SetValue(session, false);
         ValidRefreshTokenSessionSpecification spec = new(refreshTokenHash);
 
         // Act
@@ -471,7 +460,6 @@ public class SessionSpecificationsTests
         // Arrange
         string refreshTokenHash = "token-hash-123";
         SessionEntity session = SessionFactory.CreateExpiredWithRefreshTokenHash(refreshTokenHash);
-        session.GetType().GetProperty("IsRevoked")!.SetValue(session, false);
         ValidRefreshTokenSessionSpecification spec = new(refreshTokenHash);
 
         // Act
@@ -486,8 +474,7 @@ public class SessionSpecificationsTests
     {
         // Arrange
         string refreshTokenHash = "token-hash-123";
-        SessionEntity session = SessionFactory.CreateWithRefreshTokenHash(refreshTokenHash);
-        session.GetType().GetProperty("IsRevoked")!.SetValue(session, true);
+        SessionEntity session = new SessionBuilder().WithRefreshTokenHash(refreshTokenHash).AsRevoked().Build();
         ValidRefreshTokenSessionSpecification spec = new(refreshTokenHash);
 
         // Act
@@ -502,7 +489,6 @@ public class SessionSpecificationsTests
     {
         // Arrange
         SessionEntity session = SessionFactory.CreateWithRefreshTokenHash("token-hash-123");
-        session.GetType().GetProperty("IsRevoked")!.SetValue(session, false);
         ValidRefreshTokenSessionSpecification spec = new("different-hash");
 
         // Act
@@ -521,8 +507,7 @@ public class SessionSpecificationsTests
     {
         // Arrange
         DateTime cutoffDate = DateTime.UtcNow.AddDays(-5);
-        SessionEntity session = SessionFactory.Create();
-        session.GetType().GetProperty("CreatedAt")!.SetValue(session, DateTime.UtcNow.AddDays(-3));
+        SessionEntity session = new SessionBuilder().WithCreatedAt(DateTime.UtcNow.AddDays(-3)).Build();
         SessionCreatedAfterSpecification spec = new(cutoffDate);
 
         // Act
@@ -537,8 +522,7 @@ public class SessionSpecificationsTests
     {
         // Arrange
         DateTime cutoffDate = DateTime.UtcNow.AddDays(-5);
-        SessionEntity session = SessionFactory.Create();
-        session.GetType().GetProperty("CreatedAt")!.SetValue(session, DateTime.UtcNow.AddDays(-10));
+        SessionEntity session = new SessionBuilder().WithCreatedAt(DateTime.UtcNow.AddDays(-10)).Build();
         SessionCreatedAfterSpecification spec = new(cutoffDate);
 
         // Act
@@ -557,8 +541,7 @@ public class SessionSpecificationsTests
     {
         // Arrange
         DateTime cutoffDate = DateTime.UtcNow.AddDays(-5);
-        SessionEntity session = SessionFactory.Create();
-        session.GetType().GetProperty("CreatedAt")!.SetValue(session, DateTime.UtcNow.AddDays(-10));
+        SessionEntity session = new SessionBuilder().WithCreatedAt(DateTime.UtcNow.AddDays(-10)).Build();
         SessionCreatedBeforeSpecification spec = new(cutoffDate);
 
         // Act
@@ -573,8 +556,7 @@ public class SessionSpecificationsTests
     {
         // Arrange
         DateTime cutoffDate = DateTime.UtcNow.AddDays(-5);
-        SessionEntity session = SessionFactory.Create();
-        session.GetType().GetProperty("CreatedAt")!.SetValue(session, DateTime.UtcNow.AddDays(-3));
+        SessionEntity session = new SessionBuilder().WithCreatedAt(DateTime.UtcNow.AddDays(-3)).Build();
         SessionCreatedBeforeSpecification spec = new(cutoffDate);
 
         // Act
@@ -641,7 +623,6 @@ public class SessionSpecificationsTests
         // Arrange
         var userId = Guid.NewGuid();
         SessionEntity session = SessionFactory.Create(userId);
-        session.GetType().GetProperty("IsRevoked")!.SetValue(session, false);
         ActiveSessionsByUserIdSpecification spec = new(userId);
 
         // Act
@@ -656,7 +637,6 @@ public class SessionSpecificationsTests
     {
         // Arrange
         SessionEntity session = SessionFactory.Create(Guid.NewGuid());
-        session.GetType().GetProperty("IsRevoked")!.SetValue(session, false);
         ActiveSessionsByUserIdSpecification spec = new(Guid.NewGuid());
 
         // Act
@@ -671,8 +651,7 @@ public class SessionSpecificationsTests
     {
         // Arrange
         var userId = Guid.NewGuid();
-        SessionEntity session = SessionFactory.Create(userId);
-        session.GetType().GetProperty("IsRevoked")!.SetValue(session, true);
+        SessionEntity session = new SessionBuilder().WithUserId(userId).AsRevoked().Build();
         ActiveSessionsByUserIdSpecification spec = new(userId);
 
         // Act
@@ -688,7 +667,6 @@ public class SessionSpecificationsTests
         // Arrange
         var userId = Guid.NewGuid();
         SessionEntity session = SessionFactory.CreateExpired(userId);
-        session.GetType().GetProperty("IsRevoked")!.SetValue(session, false);
         ActiveSessionsByUserIdSpecification spec = new(userId);
 
         // Act
@@ -710,14 +688,18 @@ public class SessionSpecificationsTests
         string deviceId = "device-123";
 
         SessionEntity activeSession = SessionFactory.Create(userId, deviceId);
-        activeSession.GetType().GetProperty("IsRevoked")!.SetValue(activeSession, false);
 
-        SessionEntity expiredSession = SessionFactory.Create(userId, deviceId);
-        expiredSession.GetType().GetProperty("ExpiresAt")!.SetValue(expiredSession, DateTime.UtcNow.AddDays(-1));
-        expiredSession.GetType().GetProperty("IsRevoked")!.SetValue(expiredSession, false);
+        SessionEntity expiredSession = new SessionBuilder()
+            .WithUserId(userId)
+            .WithDeviceId(deviceId)
+            .AsExpired()
+            .Build();
 
-        SessionEntity revokedSession = SessionFactory.Create(userId, deviceId);
-        revokedSession.GetType().GetProperty("IsRevoked")!.SetValue(revokedSession, true);
+        SessionEntity revokedSession = new SessionBuilder()
+            .WithUserId(userId)
+            .WithDeviceId(deviceId)
+            .AsRevoked()
+            .Build();
 
         SessionEntity otherDeviceSession = SessionFactory.Create(userId, "device-other");
         SessionEntity otherUserSession = SessionFactory.Create(Guid.NewGuid(), deviceId);
@@ -771,13 +753,13 @@ public class SessionSpecificationsTests
     {
         // Arrange
         SessionEntity activeSession = SessionFactory.CreateWithExpiresAt(DateTime.UtcNow.AddDays(1));
-        activeSession.GetType().GetProperty("IsRevoked")!.SetValue(activeSession, false);
 
         SessionEntity expiredSession = SessionFactory.CreateWithExpiresAt(DateTime.UtcNow.AddDays(-1));
-        expiredSession.GetType().GetProperty("IsRevoked")!.SetValue(expiredSession, false);
 
-        SessionEntity revokedSession = SessionFactory.CreateWithExpiresAt(DateTime.UtcNow.AddDays(1));
-        revokedSession.GetType().GetProperty("IsRevoked")!.SetValue(revokedSession, true);
+        SessionEntity revokedSession = new SessionBuilder()
+            .WithExpiresAt(DateTime.UtcNow.AddDays(1))
+            .AsRevoked()
+            .Build();
 
         List<SessionEntity> sessions = [activeSession, expiredSession, revokedSession];
         SessionIsActiveSpecification spec = new();
@@ -796,13 +778,10 @@ public class SessionSpecificationsTests
         var userId = Guid.NewGuid();
 
         SessionEntity validSession = SessionFactory.Create(userId);
-        validSession.GetType().GetProperty("IsRevoked")!.SetValue(validSession, false);
 
         SessionEntity otherUserSession = SessionFactory.Create(Guid.NewGuid());
-        otherUserSession.GetType().GetProperty("IsRevoked")!.SetValue(otherUserSession, false);
 
-        SessionEntity revokedSession = SessionFactory.Create(userId);
-        revokedSession.GetType().GetProperty("IsRevoked")!.SetValue(revokedSession, true);
+        SessionEntity revokedSession = new SessionBuilder().WithUserId(userId).AsRevoked().Build();
 
         List<SessionEntity> sessions = [validSession, otherUserSession, revokedSession];
         ActiveSessionsByUserIdSpecification spec = new(userId);

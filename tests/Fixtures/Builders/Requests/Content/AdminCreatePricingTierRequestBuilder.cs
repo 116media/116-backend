@@ -1,5 +1,6 @@
 using _116.Content.Application.Lookup.UseCases.Admin.Commands.CreatePricingTier.V1;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using Bogus;
 
 namespace _116.Tests.Fixtures.Builders.Requests.Content;
@@ -9,7 +10,7 @@ namespace _116.Tests.Fixtures.Builders.Requests.Content;
 /// </summary>
 public class AdminCreatePricingTierRequestBuilder
 {
-    private readonly Faker _faker = new();
+    private readonly Faker _faker = TestFaker.Create();
 
     private string _name;
     private string _description;
@@ -21,7 +22,7 @@ public class AdminCreatePricingTierRequestBuilder
     public AdminCreatePricingTierRequestBuilder()
     {
         string candidate = $"tier_{_faker.Random.AlphaNumeric(length: 8)}";
-        _name = candidate[..Math.Min(TestConstants.Content.PricingTier.NameMaxLength, candidate.Length)];
+        _name = candidate[..Math.Min(TestConstants.PricingTier.NameMaxLength, candidate.Length)];
         _description = _faker.Lorem.Sentence(wordCount: 5);
     }
 

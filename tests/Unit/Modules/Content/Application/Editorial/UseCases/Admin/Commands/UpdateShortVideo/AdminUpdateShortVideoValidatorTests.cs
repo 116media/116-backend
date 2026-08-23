@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateShortVideo;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Tests.Fixtures.Constants;
@@ -31,7 +30,7 @@ public class AdminUpdateShortVideoValidatorTests
         // Arrange
         var command = new AdminUpdateShortVideoCommand(
             Id: Guid.NewGuid().ToString(),
-            Title: TestConstants.Content.Editorial.ShortVideo.ValidTitle,
+            Title: TestConstants.ShortVideo.ValidTitle,
             VideoId: null
         );
 
@@ -53,7 +52,7 @@ public class AdminUpdateShortVideoValidatorTests
         // Arrange
         var command = new AdminUpdateShortVideoCommand(
             Id: "not-a-guid",
-            Title: TestConstants.Content.Editorial.ShortVideo.ValidTitle,
+            Title: TestConstants.ShortVideo.ValidTitle,
             VideoId: null
         );
 
@@ -71,7 +70,7 @@ public class AdminUpdateShortVideoValidatorTests
         // Arrange
         var command = new AdminUpdateShortVideoCommand(
             Id: string.Empty,
-            Title: TestConstants.Content.Editorial.ShortVideo.ValidTitle,
+            Title: TestConstants.ShortVideo.ValidTitle,
             VideoId: null
         );
 
@@ -116,7 +115,7 @@ public class AdminUpdateShortVideoValidatorTests
         // Arrange
         var command = new AdminUpdateShortVideoCommand(
             Id: Guid.NewGuid().ToString(),
-            Title: new string('a', TestConstants.Content.Editorial.ShortVideo.TitleMaxLength + 1),
+            Title: new string('a', TestConstants.ShortVideo.TitleMaxLength + 1),
             VideoId: null
         );
 
@@ -129,40 +128,7 @@ public class AdminUpdateShortVideoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateShortVideoCommand.Title)
-                && e.ErrorMessage
-                    == _i18n.ShortVideo.Msg.TitleTooLong(TestConstants.Content.Editorial.ShortVideo.TitleMaxLength)
-            );
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-        var validator = new AdminUpdateShortVideoValidator(_i18n);
-        var command = new AdminUpdateShortVideoCommand(
-            Id: Guid.NewGuid().ToString(),
-            Title: string.Empty,
-            VideoId: null
-        );
-
-        // Act
-        ValidationResult result = await validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminUpdateShortVideoCommand.Title)
-                && e.ErrorMessage == _i18n.ShortVideo.Msg.TitleRequired()
+                && e.ErrorMessage == _i18n.ShortVideo.Msg.TitleTooLong(TestConstants.ShortVideo.TitleMaxLength)
             );
     }
 

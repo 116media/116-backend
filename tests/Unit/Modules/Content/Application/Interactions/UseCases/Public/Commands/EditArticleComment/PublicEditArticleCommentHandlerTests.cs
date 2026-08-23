@@ -50,7 +50,7 @@ public class PublicEditArticleCommentHandlerTests
             UserId: comment.UserId,
             Body: "Updated comment body."
         );
-        _articleRepositoryMock.SetupGetCommentByIdAsync(comment);
+        _articleRepositoryMock.SetupGetCommentByIdInArticleAsync(comment, article.Id);
 
         // Act
         PublicEditArticleCommentResult result = await _handler.Handle(command, CancellationToken.None);
@@ -75,7 +75,7 @@ public class PublicEditArticleCommentHandlerTests
             UserId: Guid.NewGuid(),
             Body: "Updated comment body."
         );
-        _articleRepositoryMock.SetupGetCommentByIdAsync(null);
+        _articleRepositoryMock.SetupGetCommentByIdInArticleAsync(null, command.ArticleId);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
@@ -97,7 +97,7 @@ public class PublicEditArticleCommentHandlerTests
             UserId: Guid.NewGuid(),
             Body: "Updated comment body."
         );
-        _articleRepositoryMock.SetupGetCommentByIdAsync(comment);
+        _articleRepositoryMock.SetupGetCommentByIdInArticleAsync(comment, article.Id);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);

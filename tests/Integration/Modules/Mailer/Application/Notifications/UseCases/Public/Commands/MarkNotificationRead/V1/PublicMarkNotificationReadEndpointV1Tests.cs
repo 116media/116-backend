@@ -1,7 +1,9 @@
 using _116.Mailer.Application.Notifications.UseCases.Public.Commands.MarkNotificationRead.V1;
+using _116.Mailer.Application.Shared.Errors.Messages;
 using _116.Mailer.Contracts.Application;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
 
 namespace _116.Integration.Tests.Modules.Mailer.Application.Notifications.UseCases.Public.Commands.MarkNotificationRead.V1;
 
@@ -73,7 +75,10 @@ public class PublicMarkNotificationReadEndpointV1Tests(PostgresFixture db) : Bas
 
         var response = await Client.PatchAsync($"{ApiRoutes.Public.Notifications}/{foreign.Id}/read", content: null);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<NotificationErrorMessage>(m => m.NotificationNotFound())
+        );
         (await ReadAtOfAsync(foreign.Id)).Should().BeNull();
     }
 
@@ -87,7 +92,10 @@ public class PublicMarkNotificationReadEndpointV1Tests(PostgresFixture db) : Bas
             content: null
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<NotificationErrorMessage>(m => m.NotificationNotFound())
+        );
     }
 
     [Fact]

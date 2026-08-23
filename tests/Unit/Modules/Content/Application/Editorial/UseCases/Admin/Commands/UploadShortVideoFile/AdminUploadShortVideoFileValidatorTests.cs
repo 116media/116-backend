@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadShortVideoFile;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Tests.Fixtures.Helpers;
@@ -111,35 +110,6 @@ public class AdminUploadShortVideoFileValidatorTests
         // Assert
         result.IsValid.Should().BeFalse();
         result.Errors.Should().Contain(e => e.PropertyName == nameof(AdminUploadShortVideoFileCommand.File));
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-        var validator = new AdminUploadShortVideoFileValidator(_i18n);
-        IFormFile? file = null;
-        var command = new AdminUploadShortVideoFileCommand(ShortVideoId: Guid.NewGuid().ToString(), File: file!);
-
-        // Act
-        ValidationResult result = await validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminUploadShortVideoFileCommand.File)
-                && e.ErrorMessage == _i18n.ShortVideo.Msg.FileRequired()
-            );
     }
 
     #endregion

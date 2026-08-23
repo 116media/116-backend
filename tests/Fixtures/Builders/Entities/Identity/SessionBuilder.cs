@@ -1,17 +1,20 @@
+using System.Reflection;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using Bogus;
 
 namespace _116.Tests.Fixtures.Builders.Entities.Identity;
 
 /// <summary>
-/// Fluent builder for creating <see cref="SessionEntity"/> instances in tests.
-/// For test code, prefer using SessionFactory instead of direct Builder usage.
+/// Fluent builder for creating <see cref="SessionEntity" /> instances in tests.
+/// Drives the real domain transitions, so every state it produces is one the application can reach.
+/// Use it for any shape a test needs; SessionFactory only names chains three or more tests share.
 /// </summary>
-internal class SessionBuilder
+public class SessionBuilder
 {
-    private readonly Faker _faker = new();
+    private readonly Faker _faker = TestFaker.Create();
 
     private Guid _id;
     private Guid _userId;
@@ -25,6 +28,8 @@ internal class SessionBuilder
     private string? _ipAddress;
     private string? _userAgent;
     private bool _isRevoked;
+    private DateTime? _createdAt;
+    private UserEntity? _user;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SessionBuilder"/> class with random default values.
@@ -208,6 +213,31 @@ internal class SessionBuilder
     }
 
     /// <summary>
+    /// Overrides the <c>CreatedAt</c> audit stamp the persistence interceptor would write,
+    /// for tests that order or filter sessions by creation time.
+    /// </summary>
+    /// <param name="createdAt">The creation timestamp to stamp on the session.</param>
+    /// <returns>The builder instance for chaining.</returns>
+    public SessionBuilder WithCreatedAt(DateTime createdAt)
+    {
+        _createdAt = createdAt;
+        return this;
+    }
+
+    /// <summary>
+    /// Attaches the User navigation EF Core populates through <c>.Include(s =&gt; s.User)</c>,
+    /// and points the foreign key at the same user.
+    /// </summary>
+    /// <param name="user">The owning user the session should carry.</param>
+    /// <returns>The builder instance for chaining.</returns>
+    public SessionBuilder WithUser(UserEntity user)
+    {
+        _user = user;
+        _userId = user.Id;
+        return this;
+    }
+
+    /// <summary>
     /// Builds the <see cref="SessionEntity"/> instance.
     /// </summary>
     /// <returns>A configured SessionEntity instance.</returns>
@@ -230,6 +260,18 @@ internal class SessionBuilder
         if (_isRevoked)
         {
             session.Revoke();
+        }
+
+        if (_createdAt.HasValue)
+        {
+            session.CreatedAt = _createdAt.Value;
+        }
+
+        if (_user is not null)
+        {
+            typeof(SessionEntity)
+                .GetProperty(nameof(SessionEntity.User), BindingFlags.Public | BindingFlags.Instance)!
+                .SetValue(session, _user);
         }
 
         return session;

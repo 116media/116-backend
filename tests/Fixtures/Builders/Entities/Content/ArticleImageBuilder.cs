@@ -5,15 +5,16 @@ using _116.Tests.Fixtures.Constants;
 namespace _116.Tests.Fixtures.Builders.Entities.Content;
 
 /// <summary>
-/// Fluent builder for creating <see cref="ArticleImageEntity"/> instances in tests.
-/// For test code, prefer using ArticleImageFactory instead of direct Builder usage.
+/// Fluent builder for creating <see cref="ArticleImageEntity" /> instances in tests.
+/// Drives the real domain transitions, so every state it produces is one the application can reach.
+/// Use it for any shape a test needs; ArticleImageFactory only names chains three or more tests share.
 /// </summary>
-internal class ArticleImageBuilder
+public class ArticleImageBuilder
 {
     private Guid _id = Guid.NewGuid();
     private Guid _articleId;
-    private string _storageKey = TestConstants.Content.Editorial.ArticleImage.ValidStorageKey;
-    private string _url = TestConstants.Content.Editorial.ArticleImage.ValidUrl;
+    private string _storageKey = TestConstants.ArticleImage.ValidStorageKey;
+    private string _url = TestConstants.ArticleImage.ValidUrl;
     private EnumArticleImageType _imageType = EnumArticleImageType.Body;
 
     /// <summary>

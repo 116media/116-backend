@@ -1,8 +1,14 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArticle.V1;
+using _116.Content.Application.Shared.Errors.Messages;
+using _116.Content.Domain.Constants;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Factories.Content;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArticle.V1;
 
@@ -12,6 +18,9 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminUpdateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private static string ValidationDetail(string property, string message) =>
+        new ValidationException([new ValidationFailure(property, message)]).Message;
+
     [Fact]
     public async Task UpdateArticle_WithNoAuth_ReturnsUnauthorized()
     {
@@ -43,13 +52,12 @@ public class AdminUpdateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Articles}/{nonExistentId}", request);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Article"))
+        );
     }
 
-    /// <summary>
-    /// Verifies that a full article update returns 200 OK, echoes the new title/headline/body
-    /// in the typed response, and persists the changed fields.
-    /// </summary>
     [Fact]
     public async Task UpdateArticle_AsSuperAdmin_WithValidData_ReturnsOk()
     {
@@ -89,11 +97,6 @@ public class AdminUpdateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
         persisted.Body.Should().Be(request.Body);
     }
 
-    /// <summary>
-    /// Verifies that updating an article with a title exceeding the maximum allowed length
-    /// (100 characters) returns a 400 Bad Request response from the validator, exercising
-    /// the <c>isRequired=false</c> branch of <c>ValidArticleTitle</c> in EditorialValidation.
-    /// </summary>
     [Fact]
     public async Task UpdateArticle_WithTitleTooLong_ReturnsBadRequest()
     {
@@ -105,14 +108,15 @@ public class AdminUpdateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Articles}/{id}", request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail(
+                "Title",
+                Localized<ArticleErrorMessage>(m => m.TitleTooLong(ContentConstants.MaxTitleLength))
+            )
+        );
     }
 
-    /// <summary>
-    /// Verifies that updating an article with a slug containing spaces and special characters
-    /// returns a 400 Bad Request response from the validator, exercising the slug regex
-    /// validation in EditorialValidation.
-    /// </summary>
     [Fact]
     public async Task UpdateArticle_WithInvalidSlug_ReturnsBadRequest()
     {
@@ -122,13 +126,12 @@ public class AdminUpdateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Articles}/{id}", request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("Slug", Localized<ArticleErrorMessage>(m => m.SlugInvalidFormat()))
+        );
     }
 
-    /// <summary>
-    /// Verifies that updating an article with a headline shorter than the minimum allowed
-    /// length (100 characters) returns a 400 Bad Request response from the validator.
-    /// </summary>
     [Fact]
     public async Task UpdateArticle_WithTooShortHeadline_ReturnsBadRequest()
     {
@@ -138,14 +141,15 @@ public class AdminUpdateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Articles}/{id}", request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail(
+                "Headline",
+                Localized<ArticleErrorMessage>(m => m.HeadlineTooShort(ContentConstants.MinHeadlineLength))
+            )
+        );
     }
 
-    /// <summary>
-    /// Verifies that updating an article with a slug exceeding the maximum allowed length
-    /// (220 characters) returns a 400 Bad Request response from the validator, exercising
-    /// the MaximumLength branch of <c>ValidArticleSlug</c> in EditorialValidation.
-    /// </summary>
     [Fact]
     public async Task UpdateArticle_WithSlugTooLong_ReturnsBadRequest()
     {
@@ -157,14 +161,12 @@ public class AdminUpdateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Articles}/{id}", request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("Slug", Localized<ArticleErrorMessage>(m => m.SlugTooLong(ContentConstants.MaxSlugLength)))
+        );
     }
 
-    /// <summary>
-    /// Verifies that updating an article with a headline exceeding the maximum allowed length
-    /// (500 characters) returns a 400 Bad Request response from the validator, exercising
-    /// the MaximumLength branch of <c>ValidArticleHeadline</c> in EditorialValidation.
-    /// </summary>
     [Fact]
     public async Task UpdateArticle_WithHeadlineTooLong_ReturnsBadRequest()
     {
@@ -176,14 +178,15 @@ public class AdminUpdateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Articles}/{id}", request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail(
+                "Headline",
+                Localized<ArticleErrorMessage>(m => m.HeadlineTooLong(ContentConstants.MaxHeadlineLength))
+            )
+        );
     }
 
-    /// <summary>
-    /// Verifies that updating an article with a meta title shorter than the minimum allowed
-    /// length (10 characters) returns a 400 Bad Request response from the validator,
-    /// exercising the MinimumLength branch of <c>ValidMetaTitle</c> in EditorialValidation.
-    /// </summary>
     [Fact]
     public async Task UpdateArticle_WithMetaTitleTooShort_ReturnsBadRequest()
     {
@@ -193,14 +196,15 @@ public class AdminUpdateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Articles}/{id}", request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail(
+                "MetaTitle",
+                Localized<ArticleErrorMessage>(m => m.MetaTitleTooShort(ContentConstants.MinMetaTitleLength))
+            )
+        );
     }
 
-    /// <summary>
-    /// Verifies that updating an article with a meta title exceeding the maximum allowed
-    /// length (70 characters) returns a 400 Bad Request response from the validator,
-    /// exercising the MaximumLength branch of <c>ValidMetaTitle</c> in EditorialValidation.
-    /// </summary>
     [Fact]
     public async Task UpdateArticle_WithMetaTitleTooLong_ReturnsBadRequest()
     {
@@ -212,14 +216,15 @@ public class AdminUpdateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Articles}/{id}", request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail(
+                "MetaTitle",
+                Localized<ArticleErrorMessage>(m => m.MetaTitleTooLong(ContentConstants.MaxMetaTitleLength))
+            )
+        );
     }
 
-    /// <summary>
-    /// Verifies that updating an article with a meta description shorter than the minimum
-    /// allowed length (50 characters) returns a 400 Bad Request response from the validator,
-    /// exercising the MinimumLength branch of <c>ValidMetaDescription</c> in EditorialValidation.
-    /// </summary>
     [Fact]
     public async Task UpdateArticle_WithMetaDescriptionTooShort_ReturnsBadRequest()
     {
@@ -231,14 +236,17 @@ public class AdminUpdateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Articles}/{id}", request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail(
+                "MetaDescription",
+                Localized<ArticleErrorMessage>(m =>
+                    m.MetaDescriptionTooShort(ContentConstants.MinMetaDescriptionLength)
+                )
+            )
+        );
     }
 
-    /// <summary>
-    /// Verifies that updating an article with a meta description exceeding the maximum allowed
-    /// length (160 characters) returns a 400 Bad Request response from the validator,
-    /// exercising the MaximumLength branch of <c>ValidMetaDescription</c> in EditorialValidation.
-    /// </summary>
     [Fact]
     public async Task UpdateArticle_WithMetaDescriptionTooLong_ReturnsBadRequest()
     {
@@ -250,13 +258,15 @@ public class AdminUpdateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Articles}/{id}", request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail(
+                "MetaDescription",
+                Localized<ArticleErrorMessage>(m => m.MetaDescriptionTooLong(ContentConstants.MaxMetaDescriptionLength))
+            )
+        );
     }
 
-    /// <summary>
-    /// Verifies that updating an article with an empty body returns a 400 Bad Request response
-    /// from the validator, exercising the <c>ValidArticleBody</c> branch in EditorialValidation.
-    /// </summary>
     [Fact]
     public async Task UpdateArticle_WithEmptyBody_ReturnsBadRequest()
     {
@@ -266,6 +276,9 @@ public class AdminUpdateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Articles}/{id}", request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("Body", Localized<ArticleErrorMessage>(m => m.BodyRequired()))
+        );
     }
 }

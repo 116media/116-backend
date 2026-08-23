@@ -21,8 +21,12 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Session.Factories;
 /// <summary>
 /// Unit tests for <see cref="SessionsFactory"/>.
 /// </summary>
-public class SessionFactoryTests
+[Collection("EnvironmentVariable")]
+public class SessionFactoryTests : IDisposable
 {
+    private const string RefreshTokenExpirationVariable = "JWT_REFRESH_TOKEN_EXPIRATION";
+
+    private readonly string? _originalRefreshTokenExpiration;
     private readonly Mock<IJwtService> _jwtServiceMock;
     private readonly Mock<IRefreshTokenService> _refreshTokenServiceMock;
     private readonly Mock<ISessionRepository> _sessionRepositoryMock;
@@ -32,7 +36,8 @@ public class SessionFactoryTests
 
     public SessionFactoryTests()
     {
-        Environment.SetEnvironmentVariable("JWT_REFRESH_TOKEN_EXPIRATION", "43200");
+        _originalRefreshTokenExpiration = Environment.GetEnvironmentVariable(RefreshTokenExpirationVariable);
+        Environment.SetEnvironmentVariable(RefreshTokenExpirationVariable, "43200");
 
         _jwtServiceMock = new Mock<IJwtService>();
         _refreshTokenServiceMock = new Mock<IRefreshTokenService>();
@@ -50,6 +55,13 @@ public class SessionFactoryTests
             _unitOfWorkMock.Object,
             sessionErrors
         );
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        Environment.SetEnvironmentVariable(RefreshTokenExpirationVariable, _originalRefreshTokenExpiration);
+        GC.SuppressFinalize(this);
     }
 
     #region CreateSessionAsync Tests

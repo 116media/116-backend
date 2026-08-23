@@ -7,6 +7,7 @@ using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
+using Microsoft.AspNetCore.Http;
 
 namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.AttachPaymentProof;
 
@@ -36,18 +37,22 @@ public class AdminAttachPaymentProofHandler(
     {
         Guid orderId = Guid.Parse(command.OrderId);
 
+        await contentOrderRepository.GetByIdOrThrowAsync(id: orderId, ct: cancellationToken);
+
         ContentPaymentEntity payment = await orderPaymentFactory.GetByOrderIdOrThrowAsync(
             orderId: orderId,
             ct: cancellationToken
         );
 
-        string mimeType = command.File.ContentType.Split(';')[0].Trim().ToLowerInvariant();
+        IFormFile file = command.File!;
+
+        string mimeType = file.ContentType.Split(';')[0].Trim().ToLowerInvariant();
 
         FileEntity proofFile = await fileRepository.UploadAndStoreRawFileAsync(
-            file: command.File,
+            file: file,
             publicId: command.OrderId,
             folder: "content/payment-proofs",
-            originalFileName: command.File.FileName,
+            originalFileName: file.FileName,
             mimeType: mimeType,
             cancellationToken: cancellationToken
         );

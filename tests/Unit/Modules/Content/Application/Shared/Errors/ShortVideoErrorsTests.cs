@@ -13,7 +13,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Shared.Errors;
 public class ShortVideoErrorsTests
 {
     private readonly ShortVideoErrors _errors = TestErrorsFactory.CreateShortVideoErrors();
-    private readonly ShortVideoErrorMessage _message = LocalizerFactory.CreateMessage<ShortVideoErrorMessage>("en");
+    private readonly ShortVideoErrorMessage _message = LocalizerFactory.CreateMessage<ShortVideoErrorMessage>();
 
     [Fact]
     public void NotFound_WithId_ShouldReturnNotFoundException()

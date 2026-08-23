@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Moq;
 using Xunit;
 
 namespace _116.Unit.Tests.Modules.Core;
@@ -43,6 +45,19 @@ public class CoreModuleTests : IDisposable
         GC.SuppressFinalize(this);
     }
 
+    /// <summary>
+    /// Builds a host environment stub reporting the given name.
+    /// </summary>
+    /// <param name="name">The environment name the stub reports.</param>
+    /// <returns>The stubbed host environment.</returns>
+    private static IHostEnvironment HostEnvironment(string name)
+    {
+        var environment = new Mock<IHostEnvironment>();
+        environment.SetupGet(host => host.EnvironmentName).Returns(name);
+
+        return environment.Object;
+    }
+
     [Fact]
     public void AddCoreModule_ShouldRegisterCoreDbContext()
     {
@@ -61,7 +76,7 @@ public class CoreModuleTests : IDisposable
         services.AddSingleton(cloudinarySettings);
 
         // Act
-        services.AddCoreModule();
+        services.AddCoreModule(HostEnvironment("Testing"));
         ServiceProvider serviceProvider = services.BuildServiceProvider();
 
         // Assert
@@ -87,7 +102,7 @@ public class CoreModuleTests : IDisposable
         services.AddSingleton(cloudinarySettings);
 
         // Act
-        services.AddCoreModule();
+        services.AddCoreModule(HostEnvironment("Testing"));
         ServiceProvider serviceProvider = services.BuildServiceProvider();
 
         // Assert
@@ -114,7 +129,7 @@ public class CoreModuleTests : IDisposable
         services.AddSingleton(cloudinarySettings);
 
         // Act
-        services.AddCoreModule();
+        services.AddCoreModule(HostEnvironment("Testing"));
         ServiceProvider serviceProvider = services.BuildServiceProvider();
 
         // Assert
@@ -141,7 +156,7 @@ public class CoreModuleTests : IDisposable
         services.AddSingleton(cloudinarySettings);
 
         // Act
-        services.AddCoreModule();
+        services.AddCoreModule(HostEnvironment("Testing"));
         ServiceProvider serviceProvider = services.BuildServiceProvider();
 
         // Assert
@@ -168,7 +183,7 @@ public class CoreModuleTests : IDisposable
         services.AddSingleton(cloudinarySettings);
 
         // Act
-        services.AddCoreModule();
+        services.AddCoreModule(HostEnvironment("Testing"));
         ServiceProvider serviceProvider = services.BuildServiceProvider();
 
         // Assert
@@ -184,7 +199,7 @@ public class CoreModuleTests : IDisposable
         _services.AddSingleton(_cloudinarySettings);
 
         // Act
-        IServiceCollection result = _services.AddCoreModule();
+        IServiceCollection result = _services.AddCoreModule(HostEnvironment("Testing"));
 
         // Assert
         result.Should().NotBeNull();
@@ -201,7 +216,7 @@ public class CoreModuleTests : IDisposable
         services.AddSingleton(_cloudinarySettings);
 
         // Act
-        services.AddCoreModule();
+        services.AddCoreModule(HostEnvironment("Testing"));
         ServiceProvider serviceProvider = services.BuildServiceProvider();
 
         // Assert
@@ -212,11 +227,6 @@ public class CoreModuleTests : IDisposable
         httpClient.Should().NotBeNull();
     }
 
-    /// <summary>
-    /// Verifies that the pipeline configuration runs the module's migration
-    /// step — the Core options always enable it — and hands the builder back
-    /// for chaining.
-    /// </summary>
     [Fact]
     public void UseCoreModule_ShouldRunTheMigrationStepAndReturnAppBuilder()
     {
@@ -231,7 +241,9 @@ public class CoreModuleTests : IDisposable
                 .UseNpgsql("Host=localhost;Port=5432;Database=unit;Username=unit;Password=unit")
                 .ReplaceService<IMigrator, NoOpMigrator>()
         );
-        services.AddCoreModule();
+
+        services.AddSingleton<IHostEnvironment>(HostEnvironment("Development"));
+        services.AddCoreModule(HostEnvironment("Development"));
 
         ServiceProvider serviceProvider = services.BuildServiceProvider();
         var app = new ApplicationBuilder(serviceProvider);
@@ -248,7 +260,7 @@ public class CoreModuleTests : IDisposable
     {
         // Arrange & Act
         _services.AddSingleton(_cloudinarySettings);
-        IServiceCollection result = _services.AddCoreModule();
+        IServiceCollection result = _services.AddCoreModule(HostEnvironment("Testing"));
 
         ServiceProvider serviceProvider = _services.BuildServiceProvider();
 

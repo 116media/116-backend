@@ -1,9 +1,13 @@
 using _116.Identity.Application.Auth.Constants;
+using _116.Identity.Application.Auth.Exceptions;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.VerifyOtp.V1;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Builders.Requests.Identity;
 using _116.Tests.Fixtures.Factories.Identity;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.Auth.UseCases.Admin.Commands.VerifyOtp.V1;
 
@@ -15,6 +19,9 @@ public class AdminVerifyOtpEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
     private const string AuthUrl = ApiRoutes.Admin.Auth;
     private const string VerifyOtpUrl = $"{AuthUrl}/{AuthRouteConstants.VerifyOtp}";
+
+    private static string ValidationDetail(params (string Property, string Message)[] failures) =>
+        new ValidationException(failures.Select(f => new ValidationFailure(f.Property, f.Message))).Message;
 
     [Fact]
     public async Task VerifyOtp_WithEmptyFields_ReturnsValidationError()
@@ -28,13 +35,16 @@ public class AdminVerifyOtpEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.PostAsJsonAsync(VerifyOtpUrl, request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail(
+                ("Email", Localized<ValidationErrorMessage>(m => m.EmailRequired())),
+                ("Code", Localized<ValidationErrorMessage>(m => m.OtpCodeRequired())),
+                ("Purpose", Localized<ValidationErrorMessage>(m => m.OtpPurposeRequired()))
+            )
+        );
     }
 
-    /// <summary>
-    /// Verifies that submitting a valid, unexpired OTP for an admin account marks the account
-    /// as verified and consumes the OTP in the database.
-    /// </summary>
     [Fact]
     public async Task VerifyOtp_WithValidOtp_MarksUserVerifiedAndConsumesOtp()
     {
@@ -76,10 +86,6 @@ public class AdminVerifyOtpEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
         consumedOtp.IsUsed.Should().BeTrue();
     }
 
-    /// <summary>
-    /// Verifies that submitting an expired OTP returns 410 Gone.
-    /// Covers the OtpExpirationExceptionHandler path.
-    /// </summary>
     [Fact]
     public async Task VerifyOtp_WithExpiredOtp_ReturnsGone()
     {
@@ -108,13 +114,12 @@ public class AdminVerifyOtpEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.PostAsJsonAsync(VerifyOtpUrl, request);
 
-        await response.ShouldBeProblem(HttpStatusCode.Gone);
+        await response.ShouldBeProblem<OtpExpirationException>(
+            HttpStatusCode.Gone,
+            Localized<ValidationErrorMessage>(m => m.OtpExpired())
+        );
     }
 
-    /// <summary>
-    /// Verifies that submitting an OTP after maximum attempts have been reached returns 429 TooManyRequests.
-    /// Covers the OtpAttemptsLimitExceptionHandler path.
-    /// </summary>
     [Fact]
     public async Task VerifyOtp_WithMaxAttemptsReached_ReturnsTooManyRequests()
     {
@@ -143,6 +148,9 @@ public class AdminVerifyOtpEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.PostAsJsonAsync(VerifyOtpUrl, request);
 
-        await response.ShouldBeProblem(HttpStatusCode.TooManyRequests);
+        await response.ShouldBeProblem<OtpAttemptsLimitException>(
+            HttpStatusCode.TooManyRequests,
+            Localized<ValidationErrorMessage>(m => m.MaxOtpAttemptsReached())
+        );
     }
 }

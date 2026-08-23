@@ -13,7 +13,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Shared.Errors;
 public class TagErrorsTests
 {
     private readonly TagErrors _errors = TestErrorsFactory.CreateTagErrors();
-    private readonly TagErrorMessage _message = LocalizerFactory.CreateMessage<TagErrorMessage>("en");
+    private readonly TagErrorMessage _message = LocalizerFactory.CreateMessage<TagErrorMessage>();
 
     [Fact]
     public void SlugAlreadyExists_WithSlug_ShouldReturnConflictException()

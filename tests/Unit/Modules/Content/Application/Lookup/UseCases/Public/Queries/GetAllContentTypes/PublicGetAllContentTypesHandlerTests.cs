@@ -89,7 +89,7 @@ public class PublicGetAllContentTypesHandlerTests : BaseContentHandlerTest
 
         // Assert
         result.ContentTypes.Should().ContainSingle();
-        result.ContentTypes[0].Name.Should().Be(TestConstants.Content.ContentType.ValidName);
+        result.ContentTypes[0].Name.Should().Be(TestConstants.ContentType.ValidName);
     }
 
     #endregion

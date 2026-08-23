@@ -1,7 +1,10 @@
 using _116.Identity.Application.Roles.Constants;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Application.User.UseCases.Admin.Commands.AssignRoleToUser.V1;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Builders.Requests.Identity;
 using _116.Tests.Fixtures.Factories.Identity;
 
@@ -68,12 +71,12 @@ public class AdminAssignRoleToUserEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         var response = await Client.PostAsJsonAsync(UserRolesUrl(TestUser.AdminId), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Role"))
+        );
     }
 
-    /// <summary>
-    /// Verifies that assigning a role that is already assigned to the user returns a 409 Conflict.
-    /// </summary>
     [Fact]
     public async Task AssignRole_WhenAlreadyAssigned_ReturnsConflict()
     {
@@ -90,12 +93,12 @@ public class AdminAssignRoleToUserEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         var response = await Client.PostAsJsonAsync(UserRolesUrl(TestUser.AdminId), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<ConflictErrorMessage>(m => m.RoleAlreadyAssignedToUser())
+        );
     }
 
-    /// <summary>
-    /// Verifies that assigning an inactive role to a user returns a 400 Bad Request.
-    /// </summary>
     [Fact]
     public async Task AssignRole_WhenRoleInactive_ReturnsBadRequest()
     {
@@ -111,14 +114,12 @@ public class AdminAssignRoleToUserEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         var response = await Client.PostAsJsonAsync(UserRolesUrl(TestUser.AdminId), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<ValidationErrorMessage>(m => m.RoleIsInactive())
+        );
     }
 
-    /// <summary>
-    /// Verifies that assigning a soft-deleted role to a user returns a 400 Bad Request carrying
-    /// the deleted-role message rather than the inactive-role one, since a soft delete also
-    /// clears <c>IsActive</c> and both states would otherwise be indistinguishable.
-    /// </summary>
     [Fact]
     public async Task AssignRole_WhenRoleDeleted_ReturnsBadRequest()
     {
@@ -140,6 +141,9 @@ public class AdminAssignRoleToUserEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         var response = await Client.SendAsync(httpRequest);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest, "Cannot use a deleted role.");
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<ValidationErrorMessage>(m => m.RoleIsDeleted(), LocalizedMessage.EnglishCulture)
+        );
     }
 }

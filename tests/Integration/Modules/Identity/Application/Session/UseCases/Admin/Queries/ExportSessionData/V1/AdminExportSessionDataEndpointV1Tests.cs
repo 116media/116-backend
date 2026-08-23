@@ -1,7 +1,10 @@
 using _116.Identity.Application.Session.UseCases.Admin.Queries.ExportSessionData.V1;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Identity;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.Session.UseCases.Admin.Queries.ExportSessionData.V1;
 
@@ -11,6 +14,9 @@ namespace _116.Integration.Tests.Modules.Identity.Application.Session.UseCases.A
 [Collection("Database")]
 public class AdminExportSessionDataEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private static string ValidationDetail(string property, string message) =>
+        new ValidationException([new ValidationFailure(property, message)]).Message;
+
     [Fact]
     public async Task AdminExportSessions_WithNoAuth_ReturnsUnauthorized()
     {
@@ -63,10 +69,6 @@ public class AdminExportSessionDataEndpointV1Tests(PostgresFixture db) : BaseApi
         body.SessionData.Should().Contain(s => s.UserId == TestUser.SuperAdminId);
     }
 
-    /// <summary>
-    /// Verifies that requesting a session data export with an unsupported format
-    /// returns a 400 Bad Request due to the export format validation rule.
-    /// </summary>
     [Fact]
     public async Task AdminExportSessions_WithInvalidFormat_ReturnsBadRequest()
     {
@@ -74,14 +76,12 @@ public class AdminExportSessionDataEndpointV1Tests(PostgresFixture db) : BaseApi
 
         var response = await Client.GetAsync($"{Routes.Admin.Sessions.Export()}?format=invalid_format");
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("Format", Localized<ValidationErrorMessage>(m => m.ExportFormatInvalid()))
+        );
     }
 
-    /// <summary>
-    /// Verifies that requesting a session data export with CSV format returns
-    /// a 200 OK response with the correct CSV content type and a non-empty body.
-    /// This exercises the ExportFile branch of the endpoint.
-    /// </summary>
     [Fact]
     public async Task AdminExportSessions_WithCsvFormat_ReturnsFileResponse()
     {
@@ -100,10 +100,6 @@ public class AdminExportSessionDataEndpointV1Tests(PostgresFixture db) : BaseApi
         (await response.Content.ReadAsByteArrayAsync()).Should().NotBeEmpty();
     }
 
-    /// <summary>
-    /// Verifies that requesting a session data export with XLSX format returns
-    /// a 200 OK response with the correct spreadsheet content type and a non-empty body.
-    /// </summary>
     [Fact]
     public async Task AdminExportSessions_WithXlsxFormat_ReturnsFileResponse()
     {
@@ -124,10 +120,6 @@ public class AdminExportSessionDataEndpointV1Tests(PostgresFixture db) : BaseApi
         (await response.Content.ReadAsByteArrayAsync()).Should().NotBeEmpty();
     }
 
-    /// <summary>
-    /// Verifies that requesting a session data export with an invalid status
-    /// returns a 400 Bad Request due to the status validation rule.
-    /// </summary>
     [Fact]
     public async Task AdminExportSessions_WithInvalidStatus_ReturnsBadRequest()
     {
@@ -135,6 +127,9 @@ public class AdminExportSessionDataEndpointV1Tests(PostgresFixture db) : BaseApi
 
         var response = await Client.GetAsync($"{Routes.Admin.Sessions.Export()}?status=invalid_status");
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("Status", Localized<ValidationErrorMessage>(m => m.ExportStatusInvalid()))
+        );
     }
 }

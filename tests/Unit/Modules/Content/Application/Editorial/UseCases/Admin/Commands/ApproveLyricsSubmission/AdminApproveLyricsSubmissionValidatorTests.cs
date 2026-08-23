@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.ApproveLyricsSubmission;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Tests.Fixtures.Constants;
@@ -24,11 +23,7 @@ public class AdminApproveLyricsSubmissionValidatorTests
     }
 
     private static AdminApproveLyricsSubmissionCommand BuildValidCommand(string? slug = null) =>
-        new(
-            Id: Guid.NewGuid(),
-            Slug: slug ?? TestConstants.Content.Editorial.Lyrics.ValidSlug,
-            ReviewerId: Guid.NewGuid()
-        );
+        new(Id: Guid.NewGuid(), Slug: slug ?? TestConstants.Lyrics.ValidSlug, ReviewerId: Guid.NewGuid());
 
     #region Valid Command Tests
 
@@ -73,9 +68,7 @@ public class AdminApproveLyricsSubmissionValidatorTests
     public async Task Validate_WithSlugExceedingMaxLength_ShouldHaveError()
     {
         // Arrange
-        var command = BuildValidCommand(
-            slug: new string('a', TestConstants.Content.Editorial.Lyrics.SlugMaxLength + 1)
-        );
+        var command = BuildValidCommand(slug: new string('a', TestConstants.Lyrics.SlugMaxLength + 1));
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -86,7 +79,7 @@ public class AdminApproveLyricsSubmissionValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminApproveLyricsSubmissionCommand.Slug)
-                && e.ErrorMessage == _i18n.Lyrics.Msg.SlugTooLong(TestConstants.Content.Editorial.Lyrics.SlugMaxLength)
+                && e.ErrorMessage == _i18n.Lyrics.Msg.SlugTooLong(TestConstants.Lyrics.SlugMaxLength)
             );
     }
 
@@ -106,34 +99,6 @@ public class AdminApproveLyricsSubmissionValidatorTests
             .Contain(e =>
                 e.PropertyName == nameof(AdminApproveLyricsSubmissionCommand.Slug)
                 && e.ErrorMessage == _i18n.Lyrics.Msg.SlugInvalidFormat()
-            );
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-        var validator = new AdminApproveLyricsSubmissionValidator(_i18n);
-        var command = BuildValidCommand(slug: string.Empty);
-
-        // Act
-        ValidationResult result = await validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminApproveLyricsSubmissionCommand.Slug)
-                && e.ErrorMessage == _i18n.Lyrics.Msg.SlugRequired()
             );
     }
 

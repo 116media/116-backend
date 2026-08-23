@@ -5,7 +5,9 @@ using _116.Tests.Fixtures.Constants;
 namespace _116.Tests.Fixtures.Factories.Content;
 
 /// <summary>
-/// Factory for quickly creating <see cref="TagEntity"/> instances in tests.
+/// Named aliases for <see cref="TagBuilder" /> chains that three or more tests share verbatim.
+/// A shape fewer tests need belongs at the call site as a builder chain, not here —
+/// factory names carry the combinatorics, and combinatorics multiply.
 /// </summary>
 public static class TagFactory
 {
@@ -20,18 +22,10 @@ public static class TagFactory
     public static TagEntity Create(string name, string slug) => new TagBuilder().WithName(name).WithSlug(slug).Build();
 
     /// <summary>
-    /// Creates a tag with a specific ID.
-    /// </summary>
-    public static TagEntity CreateWithId(Guid id) => new TagBuilder().WithId(id).Build();
-
-    /// <summary>
     /// Creates a tag with known default values.
     /// </summary>
     public static TagEntity CreateDefault() =>
-        new TagBuilder()
-            .WithName(TestConstants.Content.Tag.ValidName)
-            .WithSlug(TestConstants.Content.Tag.ValidSlug)
-            .Build();
+        new TagBuilder().WithName(TestConstants.Tag.ValidName).WithSlug(TestConstants.Tag.ValidSlug).Build();
 
     /// <summary>
     /// Creates a list of tags with the specified count.

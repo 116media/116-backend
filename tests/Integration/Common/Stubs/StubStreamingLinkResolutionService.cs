@@ -6,28 +6,25 @@ namespace _116.Integration.Tests.Common.Stubs;
 
 /// <summary>
 /// In-memory stub replacing the Odesli-backed resolution service so integration tests never
-/// call the real provider. Behaviour is scripted per test via the static hooks and reset in
-/// each test's arrange step — the same external-service stub pattern as Cloudinary.
+/// call the real provider. Behaviour is scripted per test through the instance hooks below,
+/// which the base classes reset before each test.
 /// </summary>
-public class StubStreamingLinkResolutionService : IStreamingLinkResolutionService
+public class StubStreamingLinkResolutionService : IStreamingLinkResolutionService, IResettableStub
 {
     /// <summary>
     /// The platform links the next resolutions return. Defaults to every modelled platform
     /// so the happy path needs no arrangement.
     /// </summary>
-    public static IReadOnlyDictionary<EnumStreamingPlatform, string> NextResult { get; set; } = DefaultResult();
+    public IReadOnlyDictionary<EnumStreamingPlatform, string> NextResult { get; set; } = DefaultResult();
 
     /// <summary>
     /// When set, the next resolutions throw this instead of returning
     /// <see cref="NextResult" />.
     /// </summary>
-    public static StreamingLinkResolutionException? NextException { get; set; }
+    public StreamingLinkResolutionException? NextException { get; set; }
 
-    /// <summary>
-    /// Restores the default happy-path behaviour. Call at the start of any test that
-    /// scripted the hooks, so state never leaks between tests in the collection.
-    /// </summary>
-    public static void Reset()
+    /// <inheritdoc />
+    public void Reset()
     {
         NextResult = DefaultResult();
         NextException = null;

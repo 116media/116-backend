@@ -1,9 +1,11 @@
 using _116.Identity.Application.Auth.Services;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Mailer.Contracts.Application;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Builders.Requests.Identity;
 using _116.Tests.Fixtures.Factories.Identity;
 using _116.Tests.Fixtures.Helpers;
@@ -55,18 +57,15 @@ public class DomainEventDispatchFlowTests(PostgresFixture db) : BaseApiTest(db)
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        // The email handler enqueued the security confirmation post-commit.
         await using MailerDbContext mailerContext = CreateDbContext<MailerDbContext>();
         var outbox = await mailerContext.OutboxEmails.Where(o => o.RecipientAddress == email).ToListAsync();
         outbox.Should().ContainSingle(o => o.Template == "PasswordChanged");
 
-        // The notification handler wrote the in-app row for the same fact.
         List<NotificationEntity> notifications = await mailerContext
             .Notifications.Where(n => n.UserId == userId)
             .ToListAsync();
         notifications.Should().ContainSingle(n => n.Type == EnumNotificationType.PasswordChanged);
 
-        // The invalidation handler revoked every session except the acting one.
         await using IdentityDbContext identityContext = CreateDbContext<IdentityDbContext>();
         SessionEntity acting = await identityContext.Sessions.SingleAsync(s => s.Id == actingSessionId);
         SessionEntity other = await identityContext.Sessions.SingleAsync(s => s.Id == otherSessionId);
@@ -107,10 +106,11 @@ public class DomainEventDispatchFlowTests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.PatchAsJsonAsync(Routes.Public.Auth.ChangePassword(), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<ValidationErrorMessage>(m => m.IncorrectCurrentPassword())
+        );
 
-        // The rejected operation dispatched nothing: no security email beyond the
-        // seeding-time welcome, no notification, no revocation.
         await using MailerDbContext mailerContext = CreateDbContext<MailerDbContext>();
         (
             await mailerContext.OutboxEmails.CountAsync(o =>

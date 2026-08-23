@@ -1,10 +1,13 @@
 using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Editorial.UseCases.Public.Commands.VoteOnLyricsRevision.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Factories.Identity;
 
@@ -39,13 +42,12 @@ public class PublicVoteOnLyricsRevisionEndpointV1Tests(PostgresFixture db) : Bas
             new PublicVoteOnLyricsRevisionRequest(EnumVote.Approve, null)
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("LyricsRevision"))
+        );
     }
 
-    /// <summary>
-    /// A second vote from the same user on the same lyrics-text correction revision is
-    /// rejected as a conflict.
-    /// </summary>
     [Fact]
     public async Task VoteOnLyricsRevision_DuplicateVoteFromSameUser_ReturnsConflict()
     {
@@ -75,16 +77,12 @@ public class PublicVoteOnLyricsRevisionEndpointV1Tests(PostgresFixture db) : Bas
             new PublicVoteOnLyricsRevisionRequest(EnumVote.Approve, null)
         );
 
-        await secondVote.ShouldBeProblem(HttpStatusCode.Conflict);
+        await secondVote.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<LyricsRevisionErrorMessage>(m => m.AlreadyVoted())
+        );
     }
 
-    /// <summary>
-    /// Reaching <see cref="LyricsRevisionConstants.AutoAcceptThreshold" /> net approvals
-    /// auto-accepts the revision and calls through to <c>ReplaceLyricsText</c> — verified here
-    /// by re-fetching the lyrics page afterward and confirming ONLY its <c>LyricsText</c>
-    /// changed, proving the narrow-setter behavior end-to-end (title/artist/slug/status all
-    /// untouched).
-    /// </summary>
     [Fact]
     public async Task VoteOnLyricsRevision_ReachingAutoAcceptThreshold_ReplacesOnlyLyricsText()
     {

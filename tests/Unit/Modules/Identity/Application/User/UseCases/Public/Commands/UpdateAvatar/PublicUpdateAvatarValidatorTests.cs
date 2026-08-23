@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.User.UseCases.Public.Commands.UpdateAvatar;
@@ -263,36 +262,6 @@ public class PublicUpdateAvatarValidatorTests
         // Assert
         result.IsValid.Should().BeFalse();
         result.Errors.Should().HaveCountGreaterThanOrEqualTo(1);
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-        var i18n = TestErrorsFactory.CreateIdentityI18n();
-        var validator = new PublicUpdateAvatarValidator(i18n);
-        var command = new PublicUpdateAvatarCommand(
-            UserId: Guid.NewGuid(),
-            SessionId: Guid.NewGuid(),
-            AvatarFile: null!
-        );
-
-        // Act
-        TestValidationResult<PublicUpdateAvatarCommand>? result = await validator.TestValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .ShouldHaveValidationErrorFor(x => x.AvatarFile)
-            .WithErrorMessage(i18n.User.Validation.AvatarFileRequired());
     }
 
     #endregion

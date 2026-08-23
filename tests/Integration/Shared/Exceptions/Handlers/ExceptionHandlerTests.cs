@@ -1,4 +1,8 @@
-using Microsoft.AspNetCore.Mvc;
+using _116.Identity.Application.Shared.Errors.Messages;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace _116.Integration.Tests.Shared.Exceptions.Handlers;
 
@@ -9,6 +13,9 @@ namespace _116.Integration.Tests.Shared.Exceptions.Handlers;
 [Collection("Database")]
 public class ExceptionHandlerTests(PostgresFixture db) : BaseApiTest(db)
 {
+    private static string ValidationDetail(params (string Property, string Message)[] failures) =>
+        new ValidationException(failures.Select(f => new ValidationFailure(f.Property, f.Message))).Message;
+
     [Fact]
     public async Task AuthenticationException_ShouldReturn401_WhenNoToken()
     {
@@ -40,7 +47,10 @@ public class ExceptionHandlerTests(PostgresFixture db) : BaseApiTest(db)
         Guid nonExistentId = Guid.NewGuid();
         var response = await Client.GetAsync($"{ApiRoutes.Admin.Roles}/{nonExistentId}");
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Role"))
+        );
     }
 
     [Fact]
@@ -51,35 +61,42 @@ public class ExceptionHandlerTests(PostgresFixture db) : BaseApiTest(db)
         Guid nonExistentId = Guid.NewGuid();
         var response = await Client.GetAsync($"{ApiRoutes.Admin.Roles}/{nonExistentId}");
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
-
-        ProblemDetails problem = await response.ReadAsAsync<ProblemDetails>();
-        problem.Status.Should().Be(404);
-        problem.Title.Should().NotBeNullOrWhiteSpace();
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Role"))
+        );
     }
 
     [Fact]
-    public async Task BadRequestExceptionHandler_ShouldReturn400_WhenValidationFails()
+    public async Task ValidationExceptionHandler_ShouldReturn400_WhenValidationFails()
     {
         Client.AuthenticateAsSuperAdmin();
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Roles, new { Name = "", Description = "" });
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail(
+                ("Name", Localized<ValidationErrorMessage>(m => m.RoleNameRequired())),
+                ("Description", Localized<ValidationErrorMessage>(m => m.RoleDescriptionRequired()))
+            )
+        );
     }
 
     [Fact]
-    public async Task BadRequestExceptionHandler_ShouldReturnProblemDetails()
+    public async Task ValidationExceptionHandler_ShouldReturnProblemDetails()
     {
         Client.AuthenticateAsSuperAdmin();
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Roles, new { Name = "", Description = "" });
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
-
-        ProblemDetails problem = await response.ReadAsAsync<ProblemDetails>();
-        problem.Status.Should().Be(400);
-        problem.Title.Should().NotBeNullOrWhiteSpace();
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail(
+                ("Name", Localized<ValidationErrorMessage>(m => m.RoleNameRequired())),
+                ("Description", Localized<ValidationErrorMessage>(m => m.RoleDescriptionRequired()))
+            )
+        );
     }
 
     [Fact]
@@ -87,7 +104,10 @@ public class ExceptionHandlerTests(PostgresFixture db) : BaseApiTest(db)
     {
         var response = await Client.GetAsync($"{ApiRoutes.Public.Base}/nonexistent-resource");
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<ResourceNotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.ResourceNotFound())
+        );
     }
 
     [Fact]
@@ -95,11 +115,10 @@ public class ExceptionHandlerTests(PostgresFixture db) : BaseApiTest(db)
     {
         var response = await Client.GetAsync($"{ApiRoutes.Public.Base}/nonexistent-resource");
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
-
-        ProblemDetails problem = await response.ReadAsAsync<ProblemDetails>();
-        problem.Status.Should().Be(404);
-        problem.Title.Should().NotBeNullOrWhiteSpace();
+        await response.ShouldBeProblem<ResourceNotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.ResourceNotFound())
+        );
     }
 
     [Fact]
@@ -107,17 +126,20 @@ public class ExceptionHandlerTests(PostgresFixture db) : BaseApiTest(db)
     {
         var response = await Client.DeleteAsync(Routes.Public.Auth.Login());
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.MethodNotAllowed, HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.MethodNotAllowed);
     }
 
     [Fact]
-    public async Task FormatExceptionStrategy_ShouldReturn404_ForInvalidUuidOnGuidConstrainedRoute()
+    public async Task ResourceNotFoundExceptionHandler_ShouldReturn404_ForInvalidUuidOnGuidConstrainedRoute()
     {
         Client.AuthenticateAsSuperAdmin();
 
         var response = await Client.GetAsync($"{ApiRoutes.Admin.Roles}/not-a-uuid");
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<ResourceNotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.ResourceNotFound())
+        );
     }
 
     [Fact]
@@ -131,6 +153,9 @@ public class ExceptionHandlerTests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Roles, rolePayload);
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<ConflictErrorMessage>(m => m.RoleAlreadyExists("ConflictTestRole"))
+        );
     }
 }

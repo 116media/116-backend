@@ -83,10 +83,6 @@ public class AdminGetAllLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         body.Lyrics.Should().NotBeNull();
     }
 
-    /// <summary>
-    /// Verifies that the search query parameter filters lyrics by song title,
-    /// returning only lyrics whose song title matches the search term.
-    /// </summary>
     [Fact]
     public async Task GetAllLyrics_WithSearchQuery_ReturnsFilteredResults()
     {
@@ -117,10 +113,6 @@ public class AdminGetAllLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         body.Lyrics.Items.Should().OnlyContain(item => item.SongTitle.Contains("UniqueSearchTerm"));
     }
 
-    /// <summary>
-    /// Verifies that the status query parameter filters lyrics by editorial workflow status,
-    /// returning only lyrics whose status matches the requested filter.
-    /// </summary>
     [Fact]
     public async Task GetAllLyrics_WithStatusFilter_ReturnsOnlyMatchingLyrics()
     {
@@ -151,9 +143,6 @@ public class AdminGetAllLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         body.Lyrics.Items.Should().OnlyContain(item => item.Status == EnumContentStatus.Published);
     }
 
-    /// <summary>
-    /// Verifies that the categoryId query parameter filters lyrics down to the given category.
-    /// </summary>
     [Fact]
     public async Task GetAllLyrics_WithCategoryFilter_ReturnsOnlyMatchingLyrics()
     {

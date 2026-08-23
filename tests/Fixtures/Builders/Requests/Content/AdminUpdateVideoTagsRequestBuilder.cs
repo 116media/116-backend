@@ -17,11 +17,7 @@ public class AdminUpdateVideoTagsRequestBuilder
     /// </summary>
     public AdminUpdateVideoTagsRequestBuilder()
     {
-        _tagNames = new List<string>
-        {
-            TestConstants.Content.Tag.ValidName,
-            TestConstants.Content.Tag.AnotherValidName,
-        };
+        _tagNames = new List<string> { TestConstants.Tag.ValidName, TestConstants.Tag.AnotherValidName };
     }
 
     /// <summary>

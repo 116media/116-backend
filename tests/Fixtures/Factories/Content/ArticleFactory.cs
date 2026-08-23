@@ -1,11 +1,12 @@
 using _116.Content.Domain.Entities;
 using _116.Tests.Fixtures.Builders.Entities.Content;
-using _116.Tests.Fixtures.Constants;
 
 namespace _116.Tests.Fixtures.Factories.Content;
 
 /// <summary>
-/// Factory for quickly creating <see cref="ArticleEntity"/> instances in tests.
+/// Named aliases for <see cref="ArticleBuilder" /> chains that three or more tests share verbatim.
+/// A shape fewer tests need belongs at the call site as a builder chain, not here —
+/// factory names carry the combinatorics, and combinatorics multiply.
 /// </summary>
 public static class ArticleFactory
 {
@@ -15,21 +16,10 @@ public static class ArticleFactory
     public static ArticleEntity Create(Guid categoryId) => new ArticleBuilder(categoryId).Build();
 
     /// <summary>
-    /// Creates a free article in Draft status.
-    /// </summary>
-    public static ArticleEntity CreateFree(Guid categoryId) => new ArticleBuilder(categoryId).Build();
-
-    /// <summary>
     /// Creates a paid article in Draft status linked to a customer and order item.
     /// </summary>
     public static ArticleEntity CreatePaid(Guid categoryId, Guid customerId, Guid orderItemId) =>
         new ArticleBuilder(categoryId).WithCustomer(customerId, orderItemId).Build();
-
-    /// <summary>
-    /// Creates a free article with a specific ID in Draft status.
-    /// </summary>
-    public static ArticleEntity CreateWithId(Guid id, Guid categoryId) =>
-        new ArticleBuilder(categoryId).WithId(id).Build();
 
     /// <summary>
     /// Creates a free article with specific title and slug in Draft status.
@@ -98,13 +88,4 @@ public static class ArticleFactory
     /// Creates an archived free article.
     /// </summary>
     public static ArticleEntity CreateArchived(Guid categoryId) => new ArticleBuilder(categoryId).AsArchived().Build();
-
-    /// <summary>
-    /// Creates a free article with the default known values from TestConstants.
-    /// </summary>
-    public static ArticleEntity CreateDefault(Guid categoryId) =>
-        new ArticleBuilder(categoryId)
-            .WithTitle(TestConstants.Content.Editorial.Article.ValidTitle)
-            .WithSlug(TestConstants.Content.Editorial.Article.ValidSlug)
-            .Build();
 }

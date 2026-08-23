@@ -5,12 +5,13 @@ using Bogus;
 namespace _116.Tests.Fixtures.Builders.Entities.Content;
 
 /// <summary>
-/// Fluent builder for creating <see cref="CustomerEntity"/> instances in tests.
-/// For test code, prefer using CustomerFactory instead of direct Builder usage.
+/// Fluent builder for creating <see cref="CustomerEntity" /> instances in tests.
+/// Drives the real domain transitions, so every state it produces is one the application can reach.
+/// Use it for any shape a test needs; CustomerFactory only names chains three or more tests share.
 /// </summary>
-internal class CustomerBuilder
+public class CustomerBuilder
 {
-    private readonly Faker _faker = new();
+    private readonly Faker _faker = TestFaker.Create();
 
     private Guid _id;
     private string _fullName;

@@ -245,10 +245,6 @@ public class DispatchDomainEventsInterceptorTests
         publisherMock.Verify(p => p.Publish(It.IsAny<IDomainEvent>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
-    /// <summary>
-    /// Verifies that interception carrying no context is a no-op on every entry
-    /// point: nothing is collected, nothing is dispatched, and no guard throws.
-    /// </summary>
     [Fact]
     public async Task Interception_WithoutAContext_ShouldCollectAndDispatchNothing()
     {

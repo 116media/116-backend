@@ -24,8 +24,8 @@ public class ArticleEntityTests
     {
         // Arrange
         var id = Guid.NewGuid();
-        const string title = TestConstants.Content.Editorial.Article.ValidTitle;
-        const string slug = TestConstants.Content.Editorial.Article.ValidSlug;
+        const string title = TestConstants.Article.ValidTitle;
+        const string slug = TestConstants.Article.ValidSlug;
 
         // Act
         ArticleEntity article = ArticleEntity.CreateFree(
@@ -60,7 +60,7 @@ public class ArticleEntityTests
                 Guid.NewGuid(),
                 CategoryId,
                 invalidTitle!,
-                TestConstants.Content.Editorial.Article.ValidSlug,
+                TestConstants.Article.ValidSlug,
                 AuthorId,
                 TestErrorsFactory.CreateArticleErrors()
             );
@@ -80,7 +80,7 @@ public class ArticleEntityTests
             ArticleEntity.CreateFree(
                 Guid.NewGuid(),
                 CategoryId,
-                TestConstants.Content.Editorial.Article.ValidTitle,
+                TestConstants.Article.ValidTitle,
                 invalidSlug!,
                 AuthorId,
                 TestErrorsFactory.CreateArticleErrors()
@@ -107,8 +107,8 @@ public class ArticleEntityTests
             customerId,
             orderItemId,
             CategoryId,
-            TestConstants.Content.Editorial.Article.ValidTitle,
-            TestConstants.Content.Editorial.Article.ValidSlug,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateArticleErrors()
         );
@@ -132,7 +132,7 @@ public class ArticleEntityTests
                 Guid.NewGuid(),
                 CategoryId,
                 invalidTitle!,
-                TestConstants.Content.Editorial.Article.ValidSlug,
+                TestConstants.Article.ValidSlug,
                 AuthorId,
                 TestErrorsFactory.CreateArticleErrors()
             );
@@ -153,7 +153,7 @@ public class ArticleEntityTests
                 Guid.NewGuid(),
                 Guid.NewGuid(),
                 CategoryId,
-                TestConstants.Content.Editorial.Article.ValidTitle,
+                TestConstants.Article.ValidTitle,
                 invalidSlug!,
                 AuthorId,
                 TestErrorsFactory.CreateArticleErrors()
@@ -174,8 +174,8 @@ public class ArticleEntityTests
         ArticleEntity article = ArticleEntity.CreateFree(
             Guid.NewGuid(),
             CategoryId,
-            TestConstants.Content.Editorial.Article.ValidTitle,
-            TestConstants.Content.Editorial.Article.ValidSlug,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateArticleErrors()
         );
@@ -195,8 +195,8 @@ public class ArticleEntityTests
         ArticleEntity article = ArticleEntity.CreateFree(
             Guid.NewGuid(),
             CategoryId,
-            TestConstants.Content.Editorial.Article.ValidTitle,
-            TestConstants.Content.Editorial.Article.ValidSlug,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateArticleErrors()
         );
@@ -217,8 +217,8 @@ public class ArticleEntityTests
         ArticleEntity article = ArticleEntity.CreateFree(
             Guid.NewGuid(),
             CategoryId,
-            TestConstants.Content.Editorial.Article.ValidTitle,
-            TestConstants.Content.Editorial.Article.ValidSlug,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateArticleErrors()
         );
@@ -238,8 +238,8 @@ public class ArticleEntityTests
         ArticleEntity article = ArticleEntity.CreateFree(
             Guid.NewGuid(),
             CategoryId,
-            TestConstants.Content.Editorial.Article.ValidTitle,
-            TestConstants.Content.Editorial.Article.ValidSlug,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateArticleErrors()
         );
@@ -259,8 +259,8 @@ public class ArticleEntityTests
         ArticleEntity article = ArticleEntity.CreateFree(
             Guid.NewGuid(),
             CategoryId,
-            TestConstants.Content.Editorial.Article.ValidTitle,
-            TestConstants.Content.Editorial.Article.ValidSlug,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateArticleErrors()
         );
@@ -284,8 +284,8 @@ public class ArticleEntityTests
         ArticleEntity article = ArticleEntity.CreateFree(
             Guid.NewGuid(),
             CategoryId,
-            TestConstants.Content.Editorial.Article.ValidTitle,
-            TestConstants.Content.Editorial.Article.ValidSlug,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateArticleErrors()
         );
@@ -307,8 +307,8 @@ public class ArticleEntityTests
         ArticleEntity article = ArticleEntity.CreateFree(
             Guid.NewGuid(),
             CategoryId,
-            TestConstants.Content.Editorial.Article.ValidTitle,
-            TestConstants.Content.Editorial.Article.ValidSlug,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateArticleErrors()
         );
@@ -330,8 +330,8 @@ public class ArticleEntityTests
         ArticleEntity article = ArticleEntity.CreateFree(
             Guid.NewGuid(),
             CategoryId,
-            TestConstants.Content.Editorial.Article.ValidTitle,
-            TestConstants.Content.Editorial.Article.ValidSlug,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateArticleErrors()
         );
@@ -352,8 +352,8 @@ public class ArticleEntityTests
         ArticleEntity article = ArticleEntity.CreateFree(
             Guid.NewGuid(),
             CategoryId,
-            TestConstants.Content.Editorial.Article.ValidTitle,
-            TestConstants.Content.Editorial.Article.ValidSlug,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateArticleErrors()
         );
@@ -374,8 +374,8 @@ public class ArticleEntityTests
         ArticleEntity article = ArticleEntity.CreateFree(
             Guid.NewGuid(),
             CategoryId,
-            TestConstants.Content.Editorial.Article.ValidTitle,
-            TestConstants.Content.Editorial.Article.ValidSlug,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateArticleErrors()
         );
@@ -398,8 +398,8 @@ public class ArticleEntityTests
         ArticleEntity article = ArticleEntity.CreateFree(
             Guid.NewGuid(),
             CategoryId,
-            TestConstants.Content.Editorial.Article.ValidTitle,
-            TestConstants.Content.Editorial.Article.ValidSlug,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateArticleErrors()
         );
@@ -421,8 +421,8 @@ public class ArticleEntityTests
         ArticleEntity article = ArticleEntity.CreateFree(
             Guid.NewGuid(),
             CategoryId,
-            TestConstants.Content.Editorial.Article.ValidTitle,
-            TestConstants.Content.Editorial.Article.ValidSlug,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateArticleErrors()
         );
@@ -457,8 +457,8 @@ public class ArticleEntityTests
         ArticleEntity article = ArticleEntity.CreateFree(
             Guid.NewGuid(),
             CategoryId,
-            TestConstants.Content.Editorial.Article.ValidTitle,
-            TestConstants.Content.Editorial.Article.ValidSlug,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateArticleErrors()
         );
@@ -481,12 +481,12 @@ public class ArticleEntityTests
         ArticleEntity article = ArticleEntity.CreateFree(
             Guid.NewGuid(),
             CategoryId,
-            TestConstants.Content.Editorial.Article.ValidTitle,
-            TestConstants.Content.Editorial.Article.ValidSlug,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateArticleErrors()
         );
-        const string reason = TestConstants.Content.Editorial.Article.ValidRejectionReason;
+        const string reason = TestConstants.Article.ValidRejectionReason;
 
         // Act
         bool result = article.Reject(reason);
@@ -504,15 +504,15 @@ public class ArticleEntityTests
         ArticleEntity article = ArticleEntity.CreateFree(
             Guid.NewGuid(),
             CategoryId,
-            TestConstants.Content.Editorial.Article.ValidTitle,
-            TestConstants.Content.Editorial.Article.ValidSlug,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateArticleErrors()
         );
-        article.Reject(TestConstants.Content.Editorial.Article.ValidRejectionReason);
+        article.Reject(TestConstants.Article.ValidRejectionReason);
 
         // Act
-        bool result = article.Reject(TestConstants.Content.Editorial.Article.ValidRejectionReason);
+        bool result = article.Reject(TestConstants.Article.ValidRejectionReason);
 
         // Assert
         result.Should().BeFalse();
@@ -525,12 +525,12 @@ public class ArticleEntityTests
         ArticleEntity article = ArticleEntity.CreateFree(
             Guid.NewGuid(),
             CategoryId,
-            TestConstants.Content.Editorial.Article.ValidTitle,
-            TestConstants.Content.Editorial.Article.ValidSlug,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateArticleErrors()
         );
-        const string reason = TestConstants.Content.Editorial.Article.ValidRejectionReason;
+        const string reason = TestConstants.Article.ValidRejectionReason;
 
         // Act
         article.Reject(reason);
@@ -559,8 +559,8 @@ public class ArticleEntityTests
         ArticleEntity article = ArticleEntity.CreateFree(
             Guid.NewGuid(),
             CategoryId,
-            TestConstants.Content.Editorial.Article.ValidTitle,
-            TestConstants.Content.Editorial.Article.ValidSlug,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateArticleErrors()
         );
@@ -583,8 +583,8 @@ public class ArticleEntityTests
         ArticleEntity article = ArticleEntity.CreateFree(
             Guid.NewGuid(),
             CategoryId,
-            TestConstants.Content.Editorial.Article.ValidTitle,
-            TestConstants.Content.Editorial.Article.ValidSlug,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateArticleErrors()
         );
@@ -611,8 +611,8 @@ public class ArticleEntityTests
         ArticleEntity article = ArticleEntity.CreateFree(
             Guid.NewGuid(),
             CategoryId,
-            TestConstants.Content.Editorial.Article.ValidTitle,
-            TestConstants.Content.Editorial.Article.ValidSlug,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateArticleErrors()
         );
@@ -631,8 +631,8 @@ public class ArticleEntityTests
         ArticleEntity article = ArticleEntity.CreateFree(
             Guid.NewGuid(),
             CategoryId,
-            TestConstants.Content.Editorial.Article.ValidTitle,
-            TestConstants.Content.Editorial.Article.ValidSlug,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateArticleErrors()
         );
@@ -660,8 +660,8 @@ public class ArticleEntityTests
         ArticleEntity article = ArticleEntity.CreateFree(
             Guid.NewGuid(),
             CategoryId,
-            TestConstants.Content.Editorial.Article.ValidTitle,
-            TestConstants.Content.Editorial.Article.ValidSlug,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateArticleErrors()
         );
@@ -670,7 +670,7 @@ public class ArticleEntityTests
         DateTimeOffset before = DateTimeOffset.UtcNow;
 
         // Act
-        article.ForceUnpromote(superAdminId, reason);
+        article.ForceUnpromote(superAdminId, reason, TestErrorsFactory.CreateArticleErrors());
 
         // Assert
         article.IsPromoted.Should().BeFalse();
@@ -690,8 +690,8 @@ public class ArticleEntityTests
         ArticleEntity article = ArticleEntity.CreateFree(
             Guid.NewGuid(),
             CategoryId,
-            TestConstants.Content.Editorial.Article.ValidTitle,
-            TestConstants.Content.Editorial.Article.ValidSlug,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateArticleErrors()
         );
@@ -699,7 +699,7 @@ public class ArticleEntityTests
         article.ClearDomainEvents();
 
         // Act
-        article.ForceUnpromote("super-admin-uuid", reason);
+        article.ForceUnpromote("super-admin-uuid", reason, TestErrorsFactory.CreateArticleErrors());
 
         // Assert
         article
@@ -725,14 +725,15 @@ public class ArticleEntityTests
         ArticleEntity article = ArticleEntity.CreateFree(
             Guid.NewGuid(),
             CategoryId,
-            TestConstants.Content.Editorial.Article.ValidTitle,
-            TestConstants.Content.Editorial.Article.ValidSlug,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateArticleErrors()
         );
 
         // Act
-        Action act = () => article.ForceUnpromote("super-admin-uuid", "reason");
+        Action act = () =>
+            article.ForceUnpromote("super-admin-uuid", "reason", TestErrorsFactory.CreateArticleErrors());
 
         // Assert
         act.Should().Throw<BadRequestException>();
@@ -745,8 +746,8 @@ public class ArticleEntityTests
         ArticleEntity article = ArticleEntity.CreateFree(
             Guid.NewGuid(),
             CategoryId,
-            TestConstants.Content.Editorial.Article.ValidTitle,
-            TestConstants.Content.Editorial.Article.ValidSlug,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateArticleErrors()
         );
@@ -757,13 +758,13 @@ public class ArticleEntityTests
         article.StampPromotion(Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(7));
 
         // Act
-        article.ForceUnpromote("super-admin-uuid", "reason");
+        article.ForceUnpromote("super-admin-uuid", "reason", TestErrorsFactory.CreateArticleErrors());
 
         // Assert
         article.Status.Should().Be(EnumContentStatus.Published);
         article.SocialBoost.Should().BeTrue();
-        article.Title.Should().Be(TestConstants.Content.Editorial.Article.ValidTitle);
-        article.Slug.Should().Be(TestConstants.Content.Editorial.Article.ValidSlug);
+        article.Title.Should().Be(TestConstants.Article.ValidTitle);
+        article.Slug.Should().Be(TestConstants.Article.ValidSlug);
     }
 
     #endregion
@@ -777,8 +778,8 @@ public class ArticleEntityTests
         ArticleEntity article = ArticleEntity.CreateFree(
             Guid.NewGuid(),
             CategoryId,
-            TestConstants.Content.Editorial.Article.ValidTitle,
-            TestConstants.Content.Editorial.Article.ValidSlug,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateArticleErrors()
         );
@@ -797,8 +798,8 @@ public class ArticleEntityTests
         ArticleEntity article = ArticleEntity.CreateFree(
             Guid.NewGuid(),
             CategoryId,
-            TestConstants.Content.Editorial.Article.ValidTitle,
-            TestConstants.Content.Editorial.Article.ValidSlug,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateArticleErrors()
         );
@@ -818,8 +819,8 @@ public class ArticleEntityTests
         ArticleEntity article = ArticleEntity.CreateFree(
             Guid.NewGuid(),
             CategoryId,
-            TestConstants.Content.Editorial.Article.ValidTitle,
-            TestConstants.Content.Editorial.Article.ValidSlug,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateArticleErrors()
         );
@@ -838,8 +839,8 @@ public class ArticleEntityTests
         ArticleEntity article = ArticleEntity.CreateFree(
             Guid.NewGuid(),
             CategoryId,
-            TestConstants.Content.Editorial.Article.ValidTitle,
-            TestConstants.Content.Editorial.Article.ValidSlug,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateArticleErrors()
         );
@@ -858,8 +859,8 @@ public class ArticleEntityTests
         ArticleEntity article = ArticleEntity.CreateFree(
             Guid.NewGuid(),
             CategoryId,
-            TestConstants.Content.Editorial.Article.ValidTitle,
-            TestConstants.Content.Editorial.Article.ValidSlug,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateArticleErrors()
         );
@@ -878,8 +879,8 @@ public class ArticleEntityTests
         ArticleEntity article = ArticleEntity.CreateFree(
             Guid.NewGuid(),
             CategoryId,
-            TestConstants.Content.Editorial.Article.ValidTitle,
-            TestConstants.Content.Editorial.Article.ValidSlug,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateArticleErrors()
         );
@@ -898,8 +899,8 @@ public class ArticleEntityTests
         ArticleEntity article = ArticleEntity.CreateFree(
             Guid.NewGuid(),
             CategoryId,
-            TestConstants.Content.Editorial.Article.ValidTitle,
-            TestConstants.Content.Editorial.Article.ValidSlug,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateArticleErrors()
         );
@@ -918,8 +919,8 @@ public class ArticleEntityTests
         ArticleEntity article = ArticleEntity.CreateFree(
             Guid.NewGuid(),
             CategoryId,
-            TestConstants.Content.Editorial.Article.ValidTitle,
-            TestConstants.Content.Editorial.Article.ValidSlug,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateArticleErrors()
         );
@@ -942,8 +943,8 @@ public class ArticleEntityTests
         ArticleEntity article = ArticleEntity.CreateFree(
             Guid.NewGuid(),
             CategoryId,
-            TestConstants.Content.Editorial.Article.ValidTitle,
-            TestConstants.Content.Editorial.Article.ValidSlug,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateArticleErrors()
         );
@@ -963,8 +964,8 @@ public class ArticleEntityTests
         ArticleEntity article = ArticleEntity.CreateFree(
             Guid.NewGuid(),
             CategoryId,
-            TestConstants.Content.Editorial.Article.ValidTitle,
-            TestConstants.Content.Editorial.Article.ValidSlug,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateArticleErrors()
         );
@@ -984,8 +985,8 @@ public class ArticleEntityTests
         ArticleEntity article = ArticleEntity.CreateFree(
             Guid.NewGuid(),
             CategoryId,
-            TestConstants.Content.Editorial.Article.ValidTitle,
-            TestConstants.Content.Editorial.Article.ValidSlug,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateArticleErrors()
         );
@@ -1028,8 +1029,8 @@ public class ArticleEntityTests
         ArticleEntity article = ArticleEntity.CreateFree(
             Guid.NewGuid(),
             CategoryId,
-            TestConstants.Content.Editorial.Article.ValidTitle,
-            TestConstants.Content.Editorial.Article.ValidSlug,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateArticleErrors()
         );
@@ -1066,8 +1067,8 @@ public class ArticleEntityTests
         ArticleEntity article = ArticleEntity.CreateFree(
             Guid.NewGuid(),
             CategoryId,
-            TestConstants.Content.Editorial.Article.ValidTitle,
-            TestConstants.Content.Editorial.Article.ValidSlug,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateArticleErrors()
         );
@@ -1100,8 +1101,8 @@ public class ArticleEntityTests
         ArticleEntity article = ArticleEntity.CreateFree(
             Guid.NewGuid(),
             CategoryId,
-            TestConstants.Content.Editorial.Article.ValidTitle,
-            TestConstants.Content.Editorial.Article.ValidSlug,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateArticleErrors()
         );
@@ -1128,8 +1129,8 @@ public class ArticleEntityTests
         ArticleEntity article = ArticleEntity.CreateFree(
             Guid.NewGuid(),
             CategoryId,
-            TestConstants.Content.Editorial.Article.ValidTitle,
-            TestConstants.Content.Editorial.Article.ValidSlug,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateArticleErrors()
         );
@@ -1157,8 +1158,8 @@ public class ArticleEntityTests
         ArticleEntity article = ArticleEntity.CreateFree(
             Guid.NewGuid(),
             CategoryId,
-            TestConstants.Content.Editorial.Article.ValidTitle,
-            TestConstants.Content.Editorial.Article.ValidSlug,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateArticleErrors()
         );
@@ -1179,8 +1180,8 @@ public class ArticleEntityTests
         ArticleEntity article = ArticleEntity.CreateFree(
             Guid.NewGuid(),
             CategoryId,
-            TestConstants.Content.Editorial.Article.ValidTitle,
-            TestConstants.Content.Editorial.Article.ValidSlug,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateArticleErrors()
         );
@@ -1208,8 +1209,8 @@ public class ArticleEntityTests
         ArticleEntity article = ArticleEntity.CreateFree(
             Guid.NewGuid(),
             CategoryId,
-            TestConstants.Content.Editorial.Article.ValidTitle,
-            TestConstants.Content.Editorial.Article.ValidSlug,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateArticleErrors()
         );
@@ -1230,8 +1231,8 @@ public class ArticleEntityTests
         ArticleEntity article = ArticleEntity.CreateFree(
             Guid.NewGuid(),
             CategoryId,
-            TestConstants.Content.Editorial.Article.ValidTitle,
-            TestConstants.Content.Editorial.Article.ValidSlug,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateArticleErrors()
         );

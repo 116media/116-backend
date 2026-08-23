@@ -1,5 +1,6 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateVideo.V1;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using Bogus;
 
 namespace _116.Tests.Fixtures.Builders.Requests.Content;
@@ -10,7 +11,7 @@ namespace _116.Tests.Fixtures.Builders.Requests.Content;
 /// </summary>
 public class AdminCreateVideoRequestBuilder
 {
-    private readonly Faker _faker = new();
+    private readonly Faker _faker = TestFaker.Create();
 
     private Guid _categoryId;
     private string _title;
@@ -27,11 +28,11 @@ public class AdminCreateVideoRequestBuilder
     public AdminCreateVideoRequestBuilder()
     {
         _categoryId = _faker.Random.Guid();
-        _title = TestConstants.Content.Editorial.Video.ValidTitle;
-        _slug = TestConstants.Content.Editorial.Video.ValidSlug;
+        _title = TestConstants.Video.ValidTitle;
+        _slug = TestConstants.Video.ValidSlug;
         _customerId = null;
         _orderItemId = null;
-        _description = TestConstants.Content.Editorial.Video.ValidDescription;
+        _description = TestConstants.Video.ValidDescription;
         _shootingScheduledAt = null;
     }
 

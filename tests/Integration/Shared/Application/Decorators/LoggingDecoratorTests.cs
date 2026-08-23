@@ -1,4 +1,6 @@
 using _116.Identity.Application.Roles.UseCases.Admin.Queries.GetAllRoles.V1;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 
 namespace _116.Integration.Tests.Shared.Application.Decorators;
 
@@ -30,6 +32,9 @@ public class LoggingDecoratorTests(PostgresFixture db) : BaseApiTest(db)
         Guid nonExistentId = Guid.NewGuid();
         var response = await Client.GetAsync($"{ApiRoutes.Admin.Roles}/{nonExistentId}");
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Role"))
+        );
     }
 }

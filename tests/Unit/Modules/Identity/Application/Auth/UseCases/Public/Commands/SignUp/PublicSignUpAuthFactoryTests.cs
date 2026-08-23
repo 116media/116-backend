@@ -55,11 +55,6 @@ public class PublicSignUpAuthFactoryTests
 
     #region Success Cases
 
-    /// <summary>
-    /// Verifies that the verification email carries the plaintext code from the creation result
-    /// while the entity handed to the OTP repository carries only its hash. This is the assertion
-    /// that would fail if the plaintext ever leaked into the persisted row.
-    /// </summary>
     [Fact]
     public async Task RegisterAsync_ShouldMailThePlainCodeWhilePersistingOnlyItsHash()
     {

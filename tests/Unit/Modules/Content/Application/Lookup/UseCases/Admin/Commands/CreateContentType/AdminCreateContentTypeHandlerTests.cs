@@ -40,7 +40,7 @@ public class AdminCreateContentTypeHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenNameDoesNotExist_ShouldCreateAndReturnDto()
     {
         // Arrange
-        string name = TestConstants.Content.ContentType.ValidName;
+        string name = TestConstants.ContentType.ValidName;
         var command = new AdminCreateContentTypeCommand(Name: name);
 
         _lookupRepositoryMock.SetupContentTypeExistsByName(name, false);
@@ -66,7 +66,7 @@ public class AdminCreateContentTypeHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenNameAlreadyExists_ShouldThrowConflictException()
     {
         // Arrange
-        string name = TestConstants.Content.ContentType.ValidName;
+        string name = TestConstants.ContentType.ValidName;
         var command = new AdminCreateContentTypeCommand(Name: name);
 
         _lookupRepositoryMock.SetupContentTypeExistsByName(name, true);
@@ -82,7 +82,7 @@ public class AdminCreateContentTypeHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenNameAlreadyExists_ShouldNotAddOrCommit()
     {
         // Arrange
-        string name = TestConstants.Content.ContentType.ValidName;
+        string name = TestConstants.ContentType.ValidName;
         var command = new AdminCreateContentTypeCommand(Name: name);
 
         _lookupRepositoryMock.SetupContentTypeExistsByName(name, true);
@@ -110,7 +110,7 @@ public class AdminCreateContentTypeHandlerTests : BaseContentHandlerTest
     public async Task Handle_WithCancellationToken_ShouldPassToRepository()
     {
         // Arrange
-        string name = TestConstants.Content.ContentType.ValidName;
+        string name = TestConstants.ContentType.ValidName;
         var command = new AdminCreateContentTypeCommand(Name: name);
 
         _lookupRepositoryMock.SetupContentTypeExistsByName(name, false);

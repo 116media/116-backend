@@ -57,7 +57,7 @@ public class PublicGetLyricsBySlugHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenLyricsFoundBySlug_ShouldReturnLyrics()
     {
         // Arrange
-        string slug = TestConstants.Content.Editorial.Lyrics.ValidSlug;
+        string slug = TestConstants.Lyrics.ValidSlug;
         LyricsEntity lyrics = LyricsFactory.CreateWithSlug(CategoryId, slug);
         lyrics.Publish();
         var query = new PublicGetLyricsBySlugQuery(Slug: slug);
@@ -73,15 +73,11 @@ public class PublicGetLyricsBySlugHandlerTests : BaseContentHandlerTest
         result.Lyrics.Slug.Should().Be(slug);
     }
 
-    /// <summary>
-    /// When a published lyrics page is linked to an existing video, the response resolves the
-    /// linked video's own slug so the frontend can cross-link to it.
-    /// </summary>
     [Fact]
     public async Task Handle_WhenLyricsLinkedToExistingVideo_ShouldResolveVideoSlug()
     {
         // Arrange
-        string slug = TestConstants.Content.Editorial.Lyrics.ValidSlug;
+        string slug = TestConstants.Lyrics.ValidSlug;
         Guid videoId = Guid.NewGuid();
         LyricsEntity lyrics = LyricsFactory.CreateForVideo(CategoryId, videoId);
         lyrics.Publish();
@@ -98,15 +94,11 @@ public class PublicGetLyricsBySlugHandlerTests : BaseContentHandlerTest
         result.VideoSlug.Should().Be("linked-video-slug");
     }
 
-    /// <summary>
-    /// A stale <c>VideoId</c> pointing at a video that no longer exists must degrade to a null
-    /// <c>VideoSlug</c> rather than 404ing the entire lyrics page.
-    /// </summary>
     [Fact]
     public async Task Handle_WhenLinkedVideoNoLongerExists_ShouldResolveNullVideoSlugWithoutThrowing()
     {
         // Arrange
-        string slug = TestConstants.Content.Editorial.Lyrics.ValidSlug;
+        string slug = TestConstants.Lyrics.ValidSlug;
         Guid videoId = Guid.NewGuid();
         LyricsEntity lyrics = LyricsFactory.CreateForVideo(CategoryId, videoId);
         lyrics.Publish();
@@ -122,14 +114,11 @@ public class PublicGetLyricsBySlugHandlerTests : BaseContentHandlerTest
         result.VideoSlug.Should().BeNull();
     }
 
-    /// <summary>
-    /// A standalone lyrics page with no linked video must resolve a null <c>VideoSlug</c>.
-    /// </summary>
     [Fact]
     public async Task Handle_WhenLyricsStandalone_ShouldResolveNullVideoSlug()
     {
         // Arrange
-        string slug = TestConstants.Content.Editorial.Lyrics.ValidSlug;
+        string slug = TestConstants.Lyrics.ValidSlug;
         LyricsEntity lyrics = LyricsFactory.CreateWithSlug(CategoryId, slug);
         lyrics.Publish();
         var query = new PublicGetLyricsBySlugQuery(Slug: slug);
@@ -143,15 +132,11 @@ public class PublicGetLyricsBySlugHandlerTests : BaseContentHandlerTest
         result.VideoSlug.Should().BeNull();
     }
 
-    /// <summary>
-    /// When a published lyrics page is linked to an existing artist profile, the response
-    /// resolves the linked artist's own slug so the frontend can cross-link to the artist page.
-    /// </summary>
     [Fact]
     public async Task Handle_WhenLyricsLinkedToExistingArtist_ShouldResolveArtistSlug()
     {
         // Arrange
-        string slug = TestConstants.Content.Editorial.Lyrics.ValidSlug;
+        string slug = TestConstants.Lyrics.ValidSlug;
         LyricsEntity lyrics = LyricsFactory.CreateWithSlug(CategoryId, slug);
         lyrics.Publish();
         ArtistEntity artist = ArtistFactory.CreateWithSlug("linked-artist-slug");
@@ -168,15 +153,11 @@ public class PublicGetLyricsBySlugHandlerTests : BaseContentHandlerTest
         result.ArtistSlug.Should().Be("linked-artist-slug");
     }
 
-    /// <summary>
-    /// A stale <c>ArtistId</c> pointing at an artist profile that no longer exists must degrade
-    /// to a null <c>ArtistSlug</c> rather than 404ing the entire lyrics page.
-    /// </summary>
     [Fact]
     public async Task Handle_WhenLinkedArtistNoLongerExists_ShouldResolveNullArtistSlugWithoutThrowing()
     {
         // Arrange
-        string slug = TestConstants.Content.Editorial.Lyrics.ValidSlug;
+        string slug = TestConstants.Lyrics.ValidSlug;
         LyricsEntity lyrics = LyricsFactory.CreateWithSlug(CategoryId, slug);
         lyrics.Publish();
         Guid artistId = Guid.NewGuid();
@@ -193,14 +174,11 @@ public class PublicGetLyricsBySlugHandlerTests : BaseContentHandlerTest
         result.ArtistSlug.Should().BeNull();
     }
 
-    /// <summary>
-    /// A lyrics page with no linked artist profile must resolve a null <c>ArtistSlug</c>.
-    /// </summary>
     [Fact]
     public async Task Handle_WhenLyricsHasNoLinkedArtist_ShouldResolveNullArtistSlug()
     {
         // Arrange
-        string slug = TestConstants.Content.Editorial.Lyrics.ValidSlug;
+        string slug = TestConstants.Lyrics.ValidSlug;
         LyricsEntity lyrics = LyricsFactory.CreateWithSlug(CategoryId, slug);
         lyrics.Publish();
         var query = new PublicGetLyricsBySlugQuery(Slug: slug);
@@ -214,15 +192,11 @@ public class PublicGetLyricsBySlugHandlerTests : BaseContentHandlerTest
         result.ArtistSlug.Should().BeNull();
     }
 
-    /// <summary>
-    /// A lyrics page not yet Published must be invisible to this public by-slug endpoint,
-    /// mirroring <c>PublicGetArticleBySlugHandler</c>'s status gate.
-    /// </summary>
     [Fact]
     public async Task Handle_WhenLyricsFoundBySlugButNotPublished_ShouldThrowNotFoundException()
     {
         // Arrange
-        string slug = TestConstants.Content.Editorial.Lyrics.ValidSlug;
+        string slug = TestConstants.Lyrics.ValidSlug;
         LyricsEntity draftLyrics = LyricsFactory.CreateWithSlug(CategoryId, slug);
         var query = new PublicGetLyricsBySlugQuery(Slug: slug);
 
@@ -239,7 +213,7 @@ public class PublicGetLyricsBySlugHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenNoLyricsMatchSlug_ShouldThrowNotFoundException()
     {
         // Arrange
-        string slug = TestConstants.Content.Editorial.Lyrics.AnotherValidSlug;
+        string slug = TestConstants.Lyrics.AnotherValidSlug;
         var query = new PublicGetLyricsBySlugQuery(Slug: slug);
 
         _lyricsRepositoryMock.SetupGetBySlug(slug, null);
@@ -251,15 +225,11 @@ public class PublicGetLyricsBySlugHandlerTests : BaseContentHandlerTest
         await act.Should().ThrowAsync<NotFoundException>();
     }
 
-    /// <summary>
-    /// A lyrics page linked to an album returns the album's other published tracks, excluding
-    /// the current song itself.
-    /// </summary>
     [Fact]
     public async Task Handle_WhenLyricsLinkedToAlbum_ShouldReturnSiblingAlbumTracksExcludingSelf()
     {
         // Arrange
-        string slug = TestConstants.Content.Editorial.Lyrics.ValidSlug;
+        string slug = TestConstants.Lyrics.ValidSlug;
         Guid albumId = Guid.NewGuid();
         LyricsEntity lyrics = LyricsFactory.CreateWithSlug(CategoryId, slug);
         lyrics.LinkAlbum(albumId);
@@ -284,14 +254,11 @@ public class PublicGetLyricsBySlugHandlerTests : BaseContentHandlerTest
         result.AlbumTracks.Select(t => t.Slug).Should().Contain(["sibling-track-one", "sibling-track-two"]);
     }
 
-    /// <summary>
-    /// A standalone lyrics page (no linked album) must resolve an empty <c>AlbumTracks</c> list.
-    /// </summary>
     [Fact]
     public async Task Handle_WhenLyricsHasNoAlbum_ShouldReturnEmptyAlbumTracks()
     {
         // Arrange
-        string slug = TestConstants.Content.Editorial.Lyrics.ValidSlug;
+        string slug = TestConstants.Lyrics.ValidSlug;
         LyricsEntity lyrics = LyricsFactory.CreateWithSlug(CategoryId, slug);
         lyrics.Publish();
         var query = new PublicGetLyricsBySlugQuery(Slug: slug);
@@ -305,14 +272,11 @@ public class PublicGetLyricsBySlugHandlerTests : BaseContentHandlerTest
         result.AlbumTracks.Should().BeEmpty();
     }
 
-    /// <summary>
-    /// The streaming links section always resolves exactly four platforms for an album release.
-    /// </summary>
     [Fact]
     public async Task Handle_WhenLyricsLinkedToAlbum_ShouldReturnFiveStreamingLinks()
     {
         // Arrange
-        string slug = TestConstants.Content.Editorial.Lyrics.ValidSlug;
+        string slug = TestConstants.Lyrics.ValidSlug;
         Guid albumId = Guid.NewGuid();
         LyricsEntity lyrics = LyricsFactory.CreateWithSlug(CategoryId, slug);
         lyrics.LinkAlbum(albumId);
@@ -328,14 +292,11 @@ public class PublicGetLyricsBySlugHandlerTests : BaseContentHandlerTest
         result.StreamingLinks.Should().HaveCount(5);
     }
 
-    /// <summary>
-    /// The streaming links section always resolves exactly four platforms for a standalone single.
-    /// </summary>
     [Fact]
     public async Task Handle_WhenLyricsStandalone_ShouldReturnFiveStreamingLinks()
     {
         // Arrange
-        string slug = TestConstants.Content.Editorial.Lyrics.ValidSlug;
+        string slug = TestConstants.Lyrics.ValidSlug;
         LyricsEntity lyrics = LyricsFactory.CreateWithSlug(CategoryId, slug);
         lyrics.Publish();
         var query = new PublicGetLyricsBySlugQuery(Slug: slug);
@@ -349,15 +310,11 @@ public class PublicGetLyricsBySlugHandlerTests : BaseContentHandlerTest
         result.StreamingLinks.Should().HaveCount(5);
     }
 
-    /// <summary>
-    /// A curated streaming link stored for the standalone single must be preferred over the
-    /// generated search-query fallback for that platform.
-    /// </summary>
     [Fact]
     public async Task Handle_WhenCuratedStreamingLinkExistsForStandaloneSingle_ShouldPreferCuratedOverGenerated()
     {
         // Arrange
-        string slug = TestConstants.Content.Editorial.Lyrics.ValidSlug;
+        string slug = TestConstants.Lyrics.ValidSlug;
         LyricsEntity lyrics = LyricsFactory.CreateWithSlug(CategoryId, slug);
         lyrics.Publish();
         var query = new PublicGetLyricsBySlugQuery(Slug: slug);
@@ -376,14 +333,11 @@ public class PublicGetLyricsBySlugHandlerTests : BaseContentHandlerTest
         result.StreamingLinks.Single(l => l.Platform == "Spotify").Url.Should().Be(curatedUrl);
     }
 
-    /// <summary>
-    /// The authenticated caller who liked the lyrics page must see <c>IsLiked: true</c>.
-    /// </summary>
     [Fact]
     public async Task Handle_WhenCurrentUserHasLiked_ShouldReturnIsLikedTrue()
     {
         // Arrange
-        string slug = TestConstants.Content.Editorial.Lyrics.ValidSlug;
+        string slug = TestConstants.Lyrics.ValidSlug;
         LyricsEntity lyrics = LyricsFactory.CreateWithSlug(CategoryId, slug);
         lyrics.Publish();
         Guid currentUserId = Guid.NewGuid();
@@ -399,14 +353,11 @@ public class PublicGetLyricsBySlugHandlerTests : BaseContentHandlerTest
         result.Lyrics.IsLiked.Should().BeTrue();
     }
 
-    /// <summary>
-    /// An authenticated caller who has not liked the lyrics page must see <c>IsLiked: false</c>.
-    /// </summary>
     [Fact]
     public async Task Handle_WhenCurrentUserHasNotLiked_ShouldReturnIsLikedFalse()
     {
         // Arrange
-        string slug = TestConstants.Content.Editorial.Lyrics.ValidSlug;
+        string slug = TestConstants.Lyrics.ValidSlug;
         LyricsEntity lyrics = LyricsFactory.CreateWithSlug(CategoryId, slug);
         lyrics.Publish();
         var query = new PublicGetLyricsBySlugQuery(Slug: slug, CurrentUserId: Guid.NewGuid());
@@ -421,14 +372,11 @@ public class PublicGetLyricsBySlugHandlerTests : BaseContentHandlerTest
         result.Lyrics.IsLiked.Should().BeFalse();
     }
 
-    /// <summary>
-    /// An anonymous caller must always see <c>IsLiked: false</c>, regardless of any like records.
-    /// </summary>
     [Fact]
     public async Task Handle_WhenAnonymous_ShouldReturnIsLikedFalse()
     {
         // Arrange
-        string slug = TestConstants.Content.Editorial.Lyrics.ValidSlug;
+        string slug = TestConstants.Lyrics.ValidSlug;
         LyricsEntity lyrics = LyricsFactory.CreateWithSlug(CategoryId, slug);
         lyrics.Publish();
         var query = new PublicGetLyricsBySlugQuery(Slug: slug, CurrentUserId: null);
@@ -443,14 +391,11 @@ public class PublicGetLyricsBySlugHandlerTests : BaseContentHandlerTest
         result.Lyrics.IsLiked.Should().BeFalse();
     }
 
-    /// <summary>
-    /// The view/like/share interaction counters must pass through from the entity unchanged.
-    /// </summary>
     [Fact]
     public async Task Handle_ShouldPassThroughViewLikeAndShareCounts()
     {
         // Arrange
-        string slug = TestConstants.Content.Editorial.Lyrics.ValidSlug;
+        string slug = TestConstants.Lyrics.ValidSlug;
         LyricsEntity lyrics = LyricsFactory.CreateWithSlug(CategoryId, slug);
         lyrics.Publish();
         lyrics.IncrementViewCount();

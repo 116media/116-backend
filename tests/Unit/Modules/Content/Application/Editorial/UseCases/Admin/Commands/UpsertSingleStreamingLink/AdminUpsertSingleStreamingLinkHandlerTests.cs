@@ -110,11 +110,6 @@ public class AdminUpsertSingleStreamingLinkHandlerTests
         await act.Should().ThrowAsync<NotFoundException>();
     }
 
-    /// <summary>
-    /// The important business-rule test: a track that belongs to an album must get its
-    /// streaming links through the album's own endpoint, not per-track — this call must be
-    /// rejected with a conflict rather than silently creating a per-track link.
-    /// </summary>
     [Fact]
     public async Task Handle_WhenLyricsBelongsToAlbum_ShouldThrowConflictException()
     {

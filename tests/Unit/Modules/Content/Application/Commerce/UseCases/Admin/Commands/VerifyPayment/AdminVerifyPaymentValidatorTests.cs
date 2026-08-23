@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPayment;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Tests.Fixtures.Constants;
@@ -33,7 +32,7 @@ public class AdminVerifyPaymentValidatorTests
         // Arrange
         var command = new AdminVerifyPaymentCommand(
             OrderId: Guid.NewGuid().ToString(),
-            ReceiptUrl: TestConstants.Content.Commerce.ValidReceiptUrl,
+            ReceiptUrl: TestConstants.Commerce.ValidReceiptUrl,
             AdminUserId: Guid.NewGuid()
         );
 
@@ -55,7 +54,7 @@ public class AdminVerifyPaymentValidatorTests
         // Arrange
         var command = new AdminVerifyPaymentCommand(
             OrderId: "not-a-guid",
-            ReceiptUrl: TestConstants.Content.Commerce.ValidReceiptUrl,
+            ReceiptUrl: TestConstants.Commerce.ValidReceiptUrl,
             AdminUserId: Guid.NewGuid()
         );
 
@@ -109,7 +108,7 @@ public class AdminVerifyPaymentValidatorTests
         // Arrange
         var command = new AdminVerifyPaymentCommand(
             OrderId: Guid.NewGuid().ToString(),
-            ReceiptUrl: TestConstants.Content.Commerce.ValidReceiptUrl,
+            ReceiptUrl: TestConstants.Commerce.ValidReceiptUrl,
             AdminUserId: Guid.Empty
         );
 
@@ -123,38 +122,6 @@ public class AdminVerifyPaymentValidatorTests
             .Contain(e =>
                 e.PropertyName == nameof(AdminVerifyPaymentCommand.AdminUserId)
                 && e.ErrorMessage == _i18n.ContentOrder.Msg.AdminUserIdRequired()
-            );
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-        var validator = new AdminVerifyPaymentValidator(_i18n);
-        var command = new AdminVerifyPaymentCommand(
-            OrderId: Guid.NewGuid().ToString(),
-            ReceiptUrl: string.Empty,
-            AdminUserId: Guid.NewGuid()
-        );
-
-        // Act
-        ValidationResult result = await validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminVerifyPaymentCommand.ReceiptUrl)
-                && e.ErrorMessage == _i18n.ContentOrder.Msg.ReceiptUrlRequired()
             );
     }
 

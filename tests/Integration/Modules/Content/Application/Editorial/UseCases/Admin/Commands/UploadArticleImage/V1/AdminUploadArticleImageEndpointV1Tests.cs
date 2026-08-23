@@ -1,9 +1,14 @@
 using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadArticleImage.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.UploadArticleImage.V1;
 
@@ -13,6 +18,9 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminUploadArticleImageEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private static string ValidationDetail(string property, string message) =>
+        new ValidationException([new ValidationFailure(property, message)]).Message;
+
     [Fact]
     public async Task UploadArticleImage_WithNoAuth_ReturnsUnauthorized()
     {
@@ -62,22 +70,23 @@ public class AdminUploadArticleImageEndpointV1Tests(PostgresFixture db) : BaseAp
     }
 
     [Fact]
-    public async Task UploadArticleImage_AsSuperAdmin_WithNonExistentId_ReturnsError()
+    public async Task UploadArticleImage_AsSuperAdmin_WithNonExistentId_ReturnsNotFound()
     {
         Client.AuthenticateAsSuperAdmin();
 
         using var formContent = new MultipartFormDataContent();
         formContent.Add(new ByteArrayContent(new byte[] { 0xFF, 0xD8 }), "file", "test.jpg");
-        formContent.Add(new StringContent("Cover"), "imageType");
 
         var response = await Client.PostAsync(
-            Routes.Admin.Editorial.Images(EditorialRouteConstants.Articles, Guid.NewGuid()),
+            $"{Routes.Admin.Editorial.Images(EditorialRouteConstants.Articles, Guid.NewGuid())}"
+                + $"?imageType={EnumArticleImageType.Cover}",
             formContent
         );
 
-        response
-            .StatusCode.Should()
-            .BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.NotFound, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Article"))
+        );
     }
 
     [Fact]
@@ -89,34 +98,38 @@ public class AdminUploadArticleImageEndpointV1Tests(PostgresFixture db) : BaseAp
         formContent.Add(new ByteArrayContent(new byte[] { 0xFF, 0xD8 }), "file", "test.jpg");
 
         var response = await Client.PostAsync(
-            $"{ApiRoutes.Admin.Articles}/not-a-guid/{EditorialRouteConstants.Images}",
+            $"{ApiRoutes.Admin.Articles}/not-a-guid/{EditorialRouteConstants.Images}"
+                + $"?imageType={EnumArticleImageType.Cover}",
             formContent
         );
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("ArticleId", Localized<ArticleErrorMessage>(m => m.Localizer["IdInvalid"].Value))
+        );
     }
 
     [Fact]
-    public async Task UploadArticleImage_WithNoFile_ShouldReturnBadRequest()
+    public async Task UploadArticleImage_WithNoFilePart_ReturnsLocalizedValidationProblem()
     {
         Client.AuthenticateAsSuperAdmin();
         Guid id = Guid.NewGuid();
 
         using var formContent = new MultipartFormDataContent();
-        formContent.Add(new StringContent("Cover"), "imageType");
+        formContent.Add(new StringContent("unused"), "note");
 
         var response = await Client.PostAsync(
-            Routes.Admin.Editorial.Images(EditorialRouteConstants.Articles, id),
+            $"{Routes.Admin.Editorial.Images(EditorialRouteConstants.Articles, id)}"
+                + $"?imageType={EnumArticleImageType.Cover}",
             formContent
         );
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("File", Localized<ArticleErrorMessage>(m => m.FileRequired()))
+        );
     }
 
-    /// <summary>
-    /// Verifies that uploading a cover image returns 201 Created, returns the stubbed
-    /// Cloudinary URL in the typed response, and persists a Cover ArticleImage row.
-    /// </summary>
     [Fact]
     public async Task UploadArticleImage_AsSuperAdmin_WithCoverImage_ReturnsCreated()
     {
@@ -138,7 +151,6 @@ public class AdminUploadArticleImageEndpointV1Tests(PostgresFixture db) : BaseAp
         fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
         formContent.Add(fileContent, "file", "cover.jpg");
 
-        // imageType is a plain minimal-API parameter bound from the query string.
         var response = await Client.PostAsync(
             $"{Routes.Admin.Editorial.Images(EditorialRouteConstants.Articles, article.Id)}"
                 + $"?imageType={EnumArticleImageType.Cover}",
@@ -159,12 +171,8 @@ public class AdminUploadArticleImageEndpointV1Tests(PostgresFixture db) : BaseAp
         persisted.Url.Should().Contain("res.cloudinary.com/test-cloud");
     }
 
-    /// <summary>
-    /// Verifies that uploading an article image with an empty article ID
-    /// returns a 400 Bad Request response from the IsValidGuid validator rule.
-    /// </summary>
     [Fact]
-    public async Task UploadArticleImage_WithEmptyGuid_ShouldReturnBadRequest()
+    public async Task UploadArticleImage_WithEmptyGuid_ReturnsNotFound()
     {
         Client.AuthenticateAsSuperAdmin();
 
@@ -174,10 +182,14 @@ public class AdminUploadArticleImageEndpointV1Tests(PostgresFixture db) : BaseAp
         formContent.Add(fileContent, "file", "test.jpg");
 
         var response = await Client.PostAsync(
-            Routes.Admin.Editorial.Images(EditorialRouteConstants.Articles, Guid.Empty),
+            $"{Routes.Admin.Editorial.Images(EditorialRouteConstants.Articles, Guid.Empty)}"
+                + $"?imageType={EnumArticleImageType.Cover}",
             formContent
         );
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Article"))
+        );
     }
 }

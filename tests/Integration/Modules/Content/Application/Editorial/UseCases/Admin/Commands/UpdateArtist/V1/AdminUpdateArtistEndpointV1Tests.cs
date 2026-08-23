@@ -1,6 +1,8 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArtist.V1;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArtist.V1;
@@ -57,7 +59,10 @@ public class AdminUpdateArtistEndpointV1Tests(PostgresFixture db) : BaseApiTest(
             new AdminUpdateArtistRequest("Name", null, null, null, null, null)
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Artist"))
+        );
     }
 
     [Fact]
@@ -82,10 +87,6 @@ public class AdminUpdateArtistEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         persisted!.Name.Should().Be("Updated Name");
     }
 
-    /// <summary>
-    /// The slug is immutable after creation — updating an artist's name/bio must never
-    /// change the URL-safe slug used to address its public profile page.
-    /// </summary>
     [Fact]
     public async Task UpdateArtist_ShouldNeverChangeSlug()
     {

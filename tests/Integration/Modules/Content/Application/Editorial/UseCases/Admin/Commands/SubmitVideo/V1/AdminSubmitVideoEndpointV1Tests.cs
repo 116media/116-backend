@@ -1,7 +1,10 @@
 using _116.Content.Application.Editorial.Constants;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.SubmitVideo.V1;
@@ -82,7 +85,10 @@ public class AdminSubmitVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
             null
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Video"))
+        );
     }
 
     [Fact]
@@ -96,7 +102,10 @@ public class AdminSubmitVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
             null
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<VideoErrorMessage>(m => m.AlreadyPendingReview())
+        );
         (await GetVideoStatusAsync(video.Id)).Should().Be(EnumContentStatus.PendingReview);
     }
 
@@ -115,10 +124,6 @@ public class AdminSubmitVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
         (await GetVideoStatusAsync(video.Id)).Should().Be(EnumContentStatus.PendingReview);
     }
 
-    /// <summary>
-    /// Submitting a paid video whose order is not yet paid moves it to PendingPayment; submitting
-    /// it again conflicts because it is already awaiting payment.
-    /// </summary>
     [Fact]
     public async Task SubmitVideo_AsSuperAdmin_PaidVideoAlreadySubmitted_ReturnsConflict()
     {
@@ -143,6 +148,9 @@ public class AdminSubmitVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
         (await GetVideoStatusAsync(video.Id)).Should().Be(EnumContentStatus.PendingPayment);
 
         var secondResponse = await Client.PatchAsync(url, null);
-        await secondResponse.ShouldBeProblem(HttpStatusCode.Conflict);
+        await secondResponse.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<VideoErrorMessage>(m => m.AlreadySubmitted())
+        );
     }
 }

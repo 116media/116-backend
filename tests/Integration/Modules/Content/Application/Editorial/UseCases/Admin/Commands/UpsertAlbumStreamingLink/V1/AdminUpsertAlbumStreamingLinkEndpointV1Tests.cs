@@ -3,6 +3,8 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpsertAlbumStre
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.UpsertAlbumStreamingLink.V1;
@@ -75,13 +77,12 @@ public class AdminUpsertAlbumStreamingLinkEndpointV1Tests(PostgresFixture db) : 
             new AdminUpsertAlbumStreamingLinkRequest(SpotifyUrl)
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Album"))
+        );
     }
 
-    /// <summary>
-    /// The first upsert for an empty platform slot inserts a new curated link row bound to the
-    /// album, leaving the single-side association unset.
-    /// </summary>
     [Fact]
     public async Task UpsertAlbumStreamingLink_WhenSlotEmpty_CreatesLinkAndPersists()
     {
@@ -111,10 +112,6 @@ public class AdminUpsertAlbumStreamingLinkEndpointV1Tests(PostgresFixture db) : 
         persisted.Url.Should().Be(SpotifyUrl);
     }
 
-    /// <summary>
-    /// A second upsert on an already-populated platform slot replaces the curated URL on the
-    /// existing row instead of inserting a duplicate.
-    /// </summary>
     [Fact]
     public async Task UpsertAlbumStreamingLink_WhenSlotAlreadySet_ReplacesUrlWithoutDuplicating()
     {
@@ -148,10 +145,6 @@ public class AdminUpsertAlbumStreamingLinkEndpointV1Tests(PostgresFixture db) : 
         persisted[0].Url.Should().Be(ReplacementUrl);
     }
 
-    /// <summary>
-    /// Each platform owns an independent slot on the same album, so setting a second platform
-    /// does not disturb the first.
-    /// </summary>
     [Fact]
     public async Task UpsertAlbumStreamingLink_ForSecondPlatform_CreatesSeparateRow()
     {

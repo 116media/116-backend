@@ -1,8 +1,12 @@
 using _116.Content.Application.Lookup.UseCases.Admin.Commands.CreatePromotionLevel.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Factories.Content;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Lookup.UseCases.Admin.Commands.CreatePromotionLevel.V1;
 
@@ -12,6 +16,9 @@ namespace _116.Integration.Tests.Modules.Content.Application.Lookup.UseCases.Adm
 [Collection("Database")]
 public class AdminCreatePromotionLevelEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private static string ValidationDetail(string property, string message) =>
+        new ValidationException([new ValidationFailure(property, message)]).Message;
+
     [Fact]
     public async Task CreatePromotionLevel_WithNoAuth_ReturnsUnauthorized()
     {
@@ -58,10 +65,6 @@ public class AdminCreatePromotionLevelEndpointV1Tests(PostgresFixture db) : Base
         persisted!.Name.Should().Be(request.Name);
     }
 
-    /// <summary>
-    /// Verifies that creating a promotion level with a name that already exists
-    /// returns a 409 Conflict response.
-    /// </summary>
     [Fact]
     public async Task CreatePromotionLevel_WithDuplicateName_ReturnsConflict()
     {
@@ -81,14 +84,12 @@ public class AdminCreatePromotionLevelEndpointV1Tests(PostgresFixture db) : Base
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.PromotionLevels, request);
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<PromotionLevelErrorMessage>(m => m.AlreadyExists(request.Name))
+        );
     }
 
-    /// <summary>
-    /// Verifies that creating a promotion level with a zero or negative duration
-    /// returns a 400 Bad Request response, exercising the <c>ValidDurationDays</c>
-    /// rule in PromotionLevelValidation.
-    /// </summary>
     [Fact]
     public async Task CreatePromotionLevel_WithZeroDuration_ReturnsBadRequest()
     {
@@ -97,14 +98,12 @@ public class AdminCreatePromotionLevelEndpointV1Tests(PostgresFixture db) : Base
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.PromotionLevels, request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("DurationDays", Localized<PromotionLevelErrorMessage>(m => m.DurationMustBePositive()))
+        );
     }
 
-    /// <summary>
-    /// Verifies that creating a promotion level with a negative price
-    /// returns a 400 Bad Request response, exercising the <c>ValidPriceUsd</c>
-    /// rule in PromotionLevelValidation.
-    /// </summary>
     [Fact]
     public async Task CreatePromotionLevel_WithNegativePrice_ReturnsBadRequest()
     {
@@ -113,14 +112,12 @@ public class AdminCreatePromotionLevelEndpointV1Tests(PostgresFixture db) : Base
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.PromotionLevels, request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("PriceUsd", Localized<PromotionLevelErrorMessage>(m => m.PriceMustBeNonNegative()))
+        );
     }
 
-    /// <summary>
-    /// Verifies that creating a promotion level with a spot priority outside the
-    /// valid range (1-3) returns a 400 Bad Request response, exercising the
-    /// <c>ValidSpotPriority</c> rule in PromotionLevelValidation.
-    /// </summary>
     [Fact]
     public async Task CreatePromotionLevel_WithInvalidSpotPriority_ReturnsBadRequest()
     {
@@ -129,14 +126,12 @@ public class AdminCreatePromotionLevelEndpointV1Tests(PostgresFixture db) : Base
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.PromotionLevels, request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("SpotPriority", Localized<PromotionLevelErrorMessage>(m => m.InvalidSpotPriority()))
+        );
     }
 
-    /// <summary>
-    /// Verifies that creating a promotion level with an empty name
-    /// returns a 400 Bad Request response, exercising the <c>ValidPromotionLevelName</c>
-    /// rule in PromotionLevelValidation.
-    /// </summary>
     [Fact]
     public async Task CreatePromotionLevel_WithEmptyName_ReturnsBadRequest()
     {
@@ -145,6 +140,9 @@ public class AdminCreatePromotionLevelEndpointV1Tests(PostgresFixture db) : Base
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.PromotionLevels, request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("Name", Localized<PromotionLevelErrorMessage>(m => m.NameRequired()))
+        );
     }
 }

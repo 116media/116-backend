@@ -288,11 +288,6 @@ public class VideoRepositoryTests : BaseRepositoryTest
         result.Should().BeNull();
     }
 
-    /// <summary>
-    /// Verifies that <see cref="IVideoRepository.GetAllAsync" /> with a search query returns
-    /// only videos whose title matches the keyword, exercising the search path
-    /// in <c>VideoRepository</c> via <c>VideoSearchSpecification</c>.
-    /// </summary>
     [Fact]
     public async Task GetAllAsync_WithSearchQuery_ReturnsFilteredResults()
     {

@@ -1,7 +1,10 @@
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.CancelOrder.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Commerce.UseCases.Admin.Commands.CancelOrder.V1;
@@ -43,7 +46,10 @@ public class AdminCancelOrderEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         var response = await Client.PatchAsync(Routes.Admin.Orders.Cancel(Guid.NewGuid()), null);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("ContentOrder"))
+        );
     }
 
     [Fact]
@@ -71,7 +77,10 @@ public class AdminCancelOrderEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         var response = await Client.PatchAsync(Routes.Admin.Orders.Cancel(order.Id), null);
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<ContentOrderErrorMessage>(m => m.AlreadyCancelled())
+        );
 
         await using ContentDbContext db = CreateDbContext<ContentDbContext>();
         ContentOrderEntity? persisted = await db.ContentOrders.FindAsync(order.Id);
@@ -93,7 +102,10 @@ public class AdminCancelOrderEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         var response = await Client.PatchAsync(Routes.Admin.Orders.Cancel(order.Id), null);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<ContentOrderErrorMessage>(m => m.CannotCancelPaidOrder())
+        );
 
         await using ContentDbContext db = CreateDbContext<ContentDbContext>();
         ContentOrderEntity? persisted = await db.ContentOrders.FindAsync(order.Id);

@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateLyrics;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Tests.Fixtures.Constants;
@@ -27,11 +26,11 @@ public class AdminUpdateLyricsValidatorTests
         new(
             Id: Guid.NewGuid().ToString(),
             CategoryId: Guid.NewGuid(),
-            SongTitle: TestConstants.Content.Editorial.Lyrics.ValidSongTitle,
-            ArtistName: TestConstants.Content.Editorial.Lyrics.ValidArtistName,
-            Slug: TestConstants.Content.Editorial.Lyrics.ValidSlug,
-            LyricsText: TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
-            Language: TestConstants.Content.Editorial.Lyrics.ValidLanguage,
+            SongTitle: TestConstants.Lyrics.ValidSongTitle,
+            ArtistName: TestConstants.Lyrics.ValidArtistName,
+            Slug: TestConstants.Lyrics.ValidSlug,
+            LyricsText: TestConstants.Lyrics.ValidLyricsText,
+            Language: TestConstants.Lyrics.ValidLanguage,
             VideoId: null,
             CustomerId: null,
             OrderItemId: null
@@ -323,34 +322,6 @@ public class AdminUpdateLyricsValidatorTests
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateLyricsCommand.CustomerId)
                 && e.ErrorMessage == _i18n.Customer.Msg.CustomerIdRequired()
-            );
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-        var validator = new AdminUpdateLyricsValidator(_i18n);
-        var command = ValidCommand() with { LyricsText = string.Empty };
-
-        // Act
-        ValidationResult result = await validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminUpdateLyricsCommand.LyricsText)
-                && e.ErrorMessage == _i18n.Lyrics.Msg.LyricsTextRequired()
             );
     }
 

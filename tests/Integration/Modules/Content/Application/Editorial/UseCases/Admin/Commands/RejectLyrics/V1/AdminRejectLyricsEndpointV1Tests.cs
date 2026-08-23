@@ -1,8 +1,11 @@
 using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.RejectLyrics.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -78,46 +81,44 @@ public class AdminRejectLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
     public async Task RejectLyrics_AsSuperAdmin_WithNonExistentId_ReturnsError()
     {
         Client.AuthenticateAsSuperAdmin();
-        var request = new AdminRejectLyricsRequest(TestConstants.Content.Editorial.Lyrics.ValidRejectionReason);
+        var request = new AdminRejectLyricsRequest(TestConstants.Lyrics.ValidRejectionReason);
 
         var response = await Client.PatchAsJsonAsync(
             Routes.Admin.Editorial.Reject(EditorialRouteConstants.Lyrics, Guid.NewGuid()),
             request
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Lyrics"))
+        );
     }
 
-    /// <summary>
-    /// Verifies that rejecting a lyrics page that is already in Rejected status
-    /// returns a 409 Conflict problem and leaves the lyrics page rejected.
-    /// </summary>
     [Fact]
     public async Task RejectLyrics_WhenAlreadyRejected_ReturnsConflict()
     {
         LyricsEntity lyrics = await SeedLyricsAsync(LyricsFactory.CreateRejected);
         Client.AuthenticateAsSuperAdmin();
-        var request = new AdminRejectLyricsRequest(TestConstants.Content.Editorial.Lyrics.ValidRejectionReason);
+        var request = new AdminRejectLyricsRequest(TestConstants.Lyrics.ValidRejectionReason);
 
         var response = await Client.PatchAsJsonAsync(
             Routes.Admin.Editorial.Reject(EditorialRouteConstants.Lyrics, lyrics.Id),
             request
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<LyricsErrorMessage>(m => m.AlreadyRejected())
+        );
         (await GetLyricsAsync(lyrics.Id)).Status.Should().Be(EnumContentStatus.Rejected);
     }
 
-    /// <summary>
-    /// Verifies that rejecting a PendingReview lyrics page succeeds, returns IsSuccess true,
-    /// transitions the persisted status to Rejected, and records the rejection reason.
-    /// </summary>
     [Fact]
     public async Task RejectLyrics_AsSuperAdmin_PendingReviewLyrics_ReturnsOk()
     {
         LyricsEntity lyrics = await SeedLyricsAsync(LyricsFactory.CreatePendingReview);
         Client.AuthenticateAsSuperAdmin();
-        var request = new AdminRejectLyricsRequest(TestConstants.Content.Editorial.Lyrics.ValidRejectionReason);
+        var request = new AdminRejectLyricsRequest(TestConstants.Lyrics.ValidRejectionReason);
 
         var response = await Client.PatchAsJsonAsync(
             Routes.Admin.Editorial.Reject(EditorialRouteConstants.Lyrics, lyrics.Id),

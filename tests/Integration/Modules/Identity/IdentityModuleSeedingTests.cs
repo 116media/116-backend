@@ -1,42 +1,27 @@
-using _116.Identity;
+using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.EntityFrameworkCore;
-using Moq;
 
 namespace _116.Integration.Tests.Modules.Identity;
 
 /// <summary>
-/// Integration coverage for the seeding branch of <c>UseIdentityModule</c>. The integration
-/// host runs under the Testing environment, where seeding is disabled, so that branch is
-/// never exercised at startup. This test drives the extension against the real host service
-/// provider with a non-Testing environment so the branch — and the SuperAdmin/VisitorRole
-/// seeders it invokes — actually run.
+/// Covers the seeding branch of <c>UseIdentityModule</c> through a host booted as Development,
+/// so the assertion is about the rows the seeders write at startup.
 /// </summary>
-[Collection("Database")]
-public class IdentityModuleSeedingTests(PostgresFixture db) : BaseApiTest(db)
+/// <param name="db">The Development-environment host and its container.</param>
+[Collection("Seeding")]
+public class IdentityModuleSeedingTests(SeedingPostgresFixture db)
 {
     [Fact]
-    public async Task UseIdentityModule_WhenSeedingEnabled_RunsIdentitySeeders()
+    public async Task DevelopmentHost_RunsTheIdentitySeeders()
     {
-        string? previousEnvironment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Development");
+        using IServiceScope scope = db.Api.Services.CreateScope();
+        await using IdentityDbContext context = scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
 
-        try
-        {
-            var applicationBuilder = new Mock<IApplicationBuilder>();
-            applicationBuilder.Setup(builder => builder.ApplicationServices).Returns(Api.Services);
+        bool seeded = await context.Roles.AnyAsync(
+            role => role.Name == nameof(EnumCoreUserRole.Visitor),
+            TestContext.Current.CancellationToken
+        );
 
-            IApplicationBuilder result = applicationBuilder.Object.UseIdentityModule();
-
-            result.Should().BeSameAs(applicationBuilder.Object);
-
-            await using IdentityDbContext context = CreateDbContext<IdentityDbContext>();
-            (await context.Roles.AnyAsync()).Should().BeTrue();
-        }
-        finally
-        {
-            Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", previousEnvironment);
-        }
+        seeded.Should().BeTrue("VisitorRoleSeeder runs when the host boots outside the Testing environment");
     }
 }

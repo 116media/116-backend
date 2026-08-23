@@ -5,7 +5,9 @@ using _116.Tests.Fixtures.Constants;
 namespace _116.Tests.Fixtures.Factories.Core;
 
 /// <summary>
-/// Factory for quickly creating <see cref="FileEntity"/> instances in tests.
+/// Named aliases for <see cref="FileBuilder" /> chains that three or more tests share verbatim.
+/// A shape fewer tests need belongs at the call site as a builder chain, not here —
+/// factory names carry the combinatorics, and combinatorics multiply.
 /// </summary>
 public static class FileFactory
 {
@@ -60,13 +62,6 @@ public static class FileFactory
     /// <param name="sizeInBytes">The file size in bytes.</param>
     /// <returns>A new FileEntity with the specified size.</returns>
     public static FileEntity CreateWithSize(long sizeInBytes) => new FileBuilder().WithSizeInBytes(sizeInBytes).Build();
-
-    /// <summary>
-    /// Creates a list of files with the specified count.
-    /// </summary>
-    /// <param name="count">The number of files to create.</param>
-    /// <returns>A list of FileEntity instances.</returns>
-    public static List<FileEntity> CreateMany(int count) => Enumerable.Range(0, count).Select(_ => Create()).ToList();
 
     /// <summary>
     /// Creates a file with known test values.

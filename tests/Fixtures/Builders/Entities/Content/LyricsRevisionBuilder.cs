@@ -3,10 +3,11 @@ using _116.Content.Domain.Entities;
 namespace _116.Tests.Fixtures.Builders.Entities.Content;
 
 /// <summary>
-/// Fluent builder for creating <see cref="LyricsRevisionEntity"/> instances in tests.
-/// For test code, prefer using LyricsRevisionFactory instead of direct Builder usage.
+/// Fluent builder for creating <see cref="LyricsRevisionEntity" /> instances in tests.
+/// Drives the real domain transitions, so every state it produces is one the application can reach.
+/// Use it for any shape a test needs; LyricsRevisionFactory only names chains three or more tests share.
 /// </summary>
-internal class LyricsRevisionBuilder
+public class LyricsRevisionBuilder
 {
     private Guid _id = Guid.NewGuid();
     private Guid _lyricsId = Guid.NewGuid();

@@ -46,11 +46,7 @@ public class AdminUpdateShortVideoHandlerTests : BaseContentHandlerTest
         string? title = null,
         Guid? videoId = null
     ) =>
-        new(
-            Id: id ?? Guid.NewGuid().ToString(),
-            Title: title ?? TestConstants.Content.Editorial.ShortVideo.ValidTitle,
-            VideoId: videoId
-        );
+        new(Id: id ?? Guid.NewGuid().ToString(), Title: title ?? TestConstants.ShortVideo.ValidTitle, VideoId: videoId);
 
     #region Success Cases
 

@@ -56,10 +56,6 @@ public class CommerceCustomerNotifierTests
         CommerceCustomerNotifier.PaymentMethods().Should().Be("BankTransfer, MobileMoney, Cash");
     }
 
-    /// <summary>
-    /// Verifies that an order whose items all carry their category renders the
-    /// category names, which is what the invoice reads best.
-    /// </summary>
     [Fact]
     public void ItemSummary_WithEveryCategoryLoaded_ShouldListTheCategoryNames()
     {
@@ -72,10 +68,6 @@ public class CommerceCustomerNotifierTests
         CommerceCustomerNotifier.ItemSummary(order).Should().Be("Musique, Interview");
     }
 
-    /// <summary>
-    /// Verifies that a category navigation left unloaded falls back to the item
-    /// count instead of dropping the item from the summary.
-    /// </summary>
     [Fact]
     public void ItemSummary_WithACategoryNotLoaded_ShouldFallBackToTheItemCount()
     {
@@ -87,10 +79,6 @@ public class CommerceCustomerNotifierTests
         CommerceCustomerNotifier.ItemSummary(order).Should().Be("2 item(s)");
     }
 
-    /// <summary>
-    /// Verifies that an order without items summarizes as a count rather than
-    /// an empty string.
-    /// </summary>
     [Fact]
     public void ItemSummary_WithoutItems_ShouldFallBackToTheItemCount()
     {
@@ -99,10 +87,6 @@ public class CommerceCustomerNotifierTests
         CommerceCustomerNotifier.ItemSummary(order).Should().Be("0 item(s)");
     }
 
-    /// <summary>
-    /// Verifies that cancelling an order whose customer record resolves sends
-    /// the cancellation to that customer's address.
-    /// </summary>
     [Fact]
     public async Task NotifyOrderCancelledAsync_WithAResolvableCustomer_ShouldEnqueueTheCancellation()
     {
@@ -132,10 +116,6 @@ public class CommerceCustomerNotifierTests
         );
     }
 
-    /// <summary>
-    /// Verifies that a customer record that no longer resolves stops the
-    /// cancellation notice rather than sending it nowhere.
-    /// </summary>
     [Fact]
     public async Task NotifyOrderCancelledAsync_WhenTheCustomerNoLongerResolves_ShouldEnqueueNothing()
     {
@@ -152,10 +132,6 @@ public class CommerceCustomerNotifierTests
         _mailerMock.VerifyNoOtherCalls();
     }
 
-    /// <summary>
-    /// Verifies that content owned by no customer — nothing was commissioned —
-    /// is not looked up and notifies nobody.
-    /// </summary>
     [Fact]
     public async Task NotifyPromotionRemovedAsync_WithoutACustomerId_ShouldNotLookUpOrNotifyAnyone()
     {

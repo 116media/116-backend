@@ -1,8 +1,11 @@
 using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.SubmitArticle.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.SubmitArticle.V1;
@@ -83,15 +86,14 @@ public class AdminSubmitArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
             null
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Article"))
+        );
     }
 
-    /// <summary>
-    /// Verifies that submitting a free article that is already in PendingReview status
-    /// returns a 409 Conflict problem and leaves the status unchanged.
-    /// </summary>
     [Fact]
-    public async Task SubmitArticle_WhenAlreadySubmitted_ReturnsConflict()
+    public async Task SubmitArticle_WhenAlreadyPendingReview_ReturnsConflict()
     {
         ArticleEntity article = await SeedArticleAsync(ArticleFactory.CreatePendingReview);
         Client.AuthenticateAsSuperAdmin();
@@ -101,16 +103,13 @@ public class AdminSubmitArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
             null
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<ArticleErrorMessage>(m => m.AlreadyPendingReview())
+        );
         (await GetArticleStatusAsync(article.Id)).Should().Be(EnumContentStatus.PendingReview);
     }
 
-    /// <summary>
-    /// Verifies that submitting a paid article that has already left Draft (it is awaiting
-    /// payment) returns a 409 Conflict via the already-submitted message and leaves the
-    /// status unchanged. This exercises the paid branch that reports AlreadySubmitted, as
-    /// opposed to the free branch that reports AlreadyPendingReview.
-    /// </summary>
     [Fact]
     public async Task SubmitArticle_WhenPaidArticleAwaitingPayment_ReturnsConflict()
     {
@@ -136,14 +135,13 @@ public class AdminSubmitArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
             null
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<ArticleErrorMessage>(m => m.AlreadySubmitted())
+        );
         (await GetArticleStatusAsync(article.Id)).Should().Be(EnumContentStatus.PendingPayment);
     }
 
-    /// <summary>
-    /// Verifies that submitting a free draft article succeeds, returns IsSuccess true,
-    /// and transitions the persisted status from Draft to PendingReview.
-    /// </summary>
     [Fact]
     public async Task SubmitArticle_AsSuperAdmin_FreeArticle_ReturnsOk()
     {

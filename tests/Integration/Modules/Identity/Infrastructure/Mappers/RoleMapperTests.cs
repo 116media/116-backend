@@ -17,9 +17,6 @@ public class RoleMapperTests(PostgresFixture postgres) : BaseRepositoryTest(post
 {
     private readonly IMapper _mapper = new Mapper(IdentityMappingRegistration.CreateConfiguration());
 
-    /// <summary>
-    /// Verifies that ToRoleDto maps all fields from a persisted RoleEntity.
-    /// </summary>
     [Fact]
     public async Task ToRoleDto_ShouldMapAllFields()
     {
@@ -41,9 +38,6 @@ public class RoleMapperTests(PostgresFixture postgres) : BaseRepositoryTest(post
         dto.DeletedAt.Should().Be(loaded.DeletedAt);
     }
 
-    /// <summary>
-    /// Verifies that ToPermissionDto maps all fields from a persisted PermissionEntity.
-    /// </summary>
     [Fact]
     public async Task ToPermissionDto_ShouldMapAllFields()
     {
@@ -66,9 +60,6 @@ public class RoleMapperTests(PostgresFixture postgres) : BaseRepositoryTest(post
         dto.DeletedAt.Should().Be(loaded.DeletedAt);
     }
 
-    /// <summary>
-    /// Verifies that ToRoleWithPermissionsDto maps role fields and associated permissions.
-    /// </summary>
     [Fact]
     public async Task ToRoleWithPermissionsDto_ShouldMapRoleAndPermissions()
     {

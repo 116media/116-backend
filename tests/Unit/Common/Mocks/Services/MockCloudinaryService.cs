@@ -100,8 +100,8 @@ public static class MockCloudinaryService
 
     public static CloudinaryUploadResult DefaultVideoUploadResult() =>
         new(
-            PublicId: TestConstants.Content.Editorial.Cloudinary.ValidPublicId,
-            SecureUrl: TestConstants.Content.Editorial.Cloudinary.ValidSecureUrl,
+            PublicId: TestConstants.Cloudinary.ValidPublicId,
+            SecureUrl: TestConstants.Cloudinary.ValidSecureUrl,
             Format: "mp4",
             Width: 1080,
             Height: 1920,
@@ -137,13 +137,13 @@ public static class MockCloudinaryService
 
     public static CloudinaryUploadResult DefaultUploadResult() =>
         new(
-            PublicId: TestConstants.Content.Editorial.Cloudinary.ValidPublicId,
-            SecureUrl: TestConstants.Content.Editorial.Cloudinary.ValidSecureUrl,
-            Format: TestConstants.Content.Editorial.Cloudinary.ValidFormat,
-            Width: TestConstants.Content.Editorial.Cloudinary.ValidWidth,
-            Height: TestConstants.Content.Editorial.Cloudinary.ValidHeight,
-            Bytes: TestConstants.Content.Editorial.Cloudinary.ValidBytes,
-            ResourceType: TestConstants.Content.Editorial.Cloudinary.ValidResourceType
+            PublicId: TestConstants.Cloudinary.ValidPublicId,
+            SecureUrl: TestConstants.Cloudinary.ValidSecureUrl,
+            Format: TestConstants.Cloudinary.ValidFormat,
+            Width: TestConstants.Cloudinary.ValidWidth,
+            Height: TestConstants.Cloudinary.ValidHeight,
+            Bytes: TestConstants.Cloudinary.ValidBytes,
+            ResourceType: TestConstants.Cloudinary.ValidResourceType
         );
 
     private static void SetupDefaults(Mock<ICloudinaryService> mock)

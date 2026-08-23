@@ -2,6 +2,8 @@ using _116.Content.Application.Commerce.UseCases.Admin.Commands.CreateOrder.V1;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -84,13 +86,16 @@ public class AdminCreateOrderEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
     }
 
     [Fact]
-    public async Task CreateOrder_WithNonExistentCustomer_ReturnsNotFoundOrBadRequest()
+    public async Task CreateOrder_WithNonExistentCustomer_ReturnsNotFound()
     {
         Client.AuthenticateAsSuperAdmin();
         AdminCreateOrderRequest request = new AdminCreateOrderRequestBuilder().Build();
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Orders, request);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Customer"))
+        );
     }
 }

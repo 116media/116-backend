@@ -13,9 +13,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Shared.Errors;
 public class PromotionLevelErrorsTests
 {
     private readonly PromotionLevelErrors _errors = TestErrorsFactory.CreatePromotionLevelErrors();
-    private readonly PromotionLevelErrorMessage _message = LocalizerFactory.CreateMessage<PromotionLevelErrorMessage>(
-        "en"
-    );
+    private readonly PromotionLevelErrorMessage _message = LocalizerFactory.CreateMessage<PromotionLevelErrorMessage>();
 
     [Fact]
     public void AlreadyExists_WithName_ShouldReturnConflictException()

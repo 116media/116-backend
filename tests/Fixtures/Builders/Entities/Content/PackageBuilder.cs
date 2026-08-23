@@ -6,12 +6,13 @@ using Bogus;
 namespace _116.Tests.Fixtures.Builders.Entities.Content;
 
 /// <summary>
-/// Fluent builder for creating <see cref="PackageEntity"/> instances in tests.
-/// For test code, prefer using PackageFactory instead of direct Builder usage.
+/// Fluent builder for creating <see cref="PackageEntity" /> instances in tests.
+/// Drives the real domain transitions, so every state it produces is one the application can reach.
+/// Use it for any shape a test needs; PackageFactory only names chains three or more tests share.
 /// </summary>
-internal class PackageBuilder
+public class PackageBuilder
 {
-    private readonly Faker _faker = new();
+    private readonly Faker _faker = TestFaker.Create();
 
     private Guid _id;
     private string _name;
@@ -25,7 +26,7 @@ internal class PackageBuilder
     {
         _id = Guid.NewGuid();
         string word = _faker.Lorem.Word();
-        _name = word[..Math.Min(TestConstants.Content.Package.NameMaxLength, word.Length)];
+        _name = word[..Math.Min(TestConstants.Package.NameMaxLength, word.Length)];
     }
 
     /// <summary>

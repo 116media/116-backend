@@ -59,15 +59,12 @@ public class CacheInvalidationRegressionTests(PostgresFixture db) : BaseApiTest(
             return (lyrics, usedTag, idleTag, article);
         });
 
-        // Warm the popular-tags cache: the article-linked tag ranks first.
         Client.ClearAuthentication();
         var warm = await Client.GetAsync($"{ApiRoutes.Public.Tags}/popular");
         warm.StatusCode.Should().Be(HttpStatusCode.OK);
         PublicGetPopularTagsResponse warmBody = await warm.ReadAsAsync<PublicGetPopularTagsResponse>();
         warmBody.Tags.First().Id.Should().Be(usedTag.Id);
 
-        // Raw removal of the article-tag link bypasses the event pipeline, so
-        // the cached ranking is now stale (both tags actually rank by name).
         await using (ContentDbContext ctx = CreateDbContext<ContentDbContext>())
         {
             ArticleTagEntity link = await ctx.ArticleTags.FirstAsync(t => t.ArticleId == article.Id);
@@ -79,7 +76,6 @@ public class CacheInvalidationRegressionTests(PostgresFixture db) : BaseApiTest(
         PublicGetPopularTagsResponse staleBody = await stale.ReadAsAsync<PublicGetPopularTagsResponse>();
         staleBody.Tags.First().Id.Should().Be(usedTag.Id);
 
-        // Replacing the lyrics tag set over HTTP evicts the tags cache.
         Client.AuthenticateAsSuperAdmin();
         var setTags = await Client.PutAsJsonAsync(
             Routes.Admin.Editorial.Tags(EditorialRouteConstants.Lyrics, lyrics.Id),
@@ -98,9 +94,6 @@ public class CacheInvalidationRegressionTests(PostgresFixture db) : BaseApiTest(
     {
         Guid categoryId = await SeedCategoryAsync();
 
-        // Seeding is reconstitution: the comment row and the counter it would
-        // have produced are both part of the arrangement and are both stated
-        // outright. Only the act below goes through the event path.
         ArticleEntity article = await SeedAsync<ContentDbContext, ArticleEntity>(ctx =>
         {
             ArticleEntity entity = ArticleFactory.CreatePublished(categoryId);
@@ -123,7 +116,6 @@ public class CacheInvalidationRegressionTests(PostgresFixture db) : BaseApiTest(
         warmBody.Articles.Single(a => a.Id == article.Id).CommentCount.Should().Be(1);
         warmBody.Articles.Single(a => a.Id == article.Id).LikeCount.Should().Be(0);
 
-        // Raw like-count bump bypasses the event pipeline: the cache is stale.
         await using (ContentDbContext ctx = CreateDbContext<ContentDbContext>())
         {
             ArticleEntity tracked = await ctx.Articles.FirstAsync(a => a.Id == article.Id);
@@ -137,8 +129,6 @@ public class CacheInvalidationRegressionTests(PostgresFixture db) : BaseApiTest(
         PublicGetPopularArticlesResponse staleBody = await stale.ReadAsAsync<PublicGetPopularArticlesResponse>();
         staleBody.Articles.Single(a => a.Id == article.Id).LikeCount.Should().Be(0);
 
-        // The admin comment deletion decrements the counter and evicts the
-        // cache through the engagement event — the audited omission.
         Client.AuthenticateAsSuperAdmin();
         var delete = await Client.DeleteAsync(
             $"{ApiRoutes.Admin.Articles}/{article.Id}/{InteractionsRouteConstants.Comments}/{comment.Id}"
@@ -197,8 +187,6 @@ public class CacheInvalidationRegressionTests(PostgresFixture db) : BaseApiTest(
         PublicGetPopularArticlesResponse staleBody = await stale.ReadAsAsync<PublicGetPopularArticlesResponse>();
         staleBody.Articles.Single(a => a.Id == published.Id).LikeCount.Should().Be(1);
 
-        // Deleting the draft article evicts the cache through the deletion
-        // event — the audited omission.
         Client.AuthenticateAsSuperAdmin();
         var delete = await Client.DeleteAsync($"{ApiRoutes.Admin.Articles}/{draft.Id}");
         delete.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -231,7 +219,6 @@ public class CacheInvalidationRegressionTests(PostgresFixture db) : BaseApiTest(
         PublicGetPopularVideosResponse warmBody = await warm.ReadAsAsync<PublicGetPopularVideosResponse>();
         warmBody.Videos.Single(v => v.Id == published.Id).ShareCount.Should().Be(1);
 
-        // Raw share-count bump bypasses the event pipeline: the cache is stale.
         await using (ContentDbContext ctx = CreateDbContext<ContentDbContext>())
         {
             VideoEntity tracked = await ctx.Videos.FirstAsync(v => v.Id == published.Id);
@@ -247,8 +234,6 @@ public class CacheInvalidationRegressionTests(PostgresFixture db) : BaseApiTest(
         PublicGetPopularVideosResponse staleBody = await stale.ReadAsAsync<PublicGetPopularVideosResponse>();
         staleBody.Videos.Single(v => v.Id == published.Id).ShareCount.Should().Be(1);
 
-        // Deleting the draft video evicts the cache through the deletion
-        // event — the audited omission.
         Client.AuthenticateAsSuperAdmin();
         var delete = await Client.DeleteAsync($"{ApiRoutes.Admin.Videos}/{draft.Id}");
         delete.StatusCode.Should().Be(HttpStatusCode.OK);

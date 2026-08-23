@@ -6,12 +6,13 @@ using Bogus;
 namespace _116.Tests.Fixtures.Builders.Entities.Identity;
 
 /// <summary>
-/// Fluent builder for creating <see cref="PermissionEntity"/> instances in tests.
-/// For test code, prefer using PermissionFactory instead of direct Builder usage.
+/// Fluent builder for creating <see cref="PermissionEntity" /> instances in tests.
+/// Drives the real domain transitions, so every state it produces is one the application can reach.
+/// Use it for any shape a test needs; PermissionFactory only names chains three or more tests share.
 /// </summary>
-internal class PermissionBuilder
+public class PermissionBuilder
 {
-    private readonly Faker _faker = new();
+    private readonly Faker _faker = TestFaker.Create();
 
     private Guid _id;
     private string _resource;
@@ -98,16 +99,6 @@ internal class PermissionBuilder
     public PermissionBuilder AsInactive()
     {
         _isActive = false;
-        return this;
-    }
-
-    /// <summary>
-    /// Marks the permission as active.
-    /// </summary>
-    /// <returns>The builder instance for chaining.</returns>
-    public PermissionBuilder AsActive()
-    {
-        _isActive = true;
         return this;
     }
 

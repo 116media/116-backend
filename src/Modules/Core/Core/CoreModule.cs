@@ -14,6 +14,7 @@ using _116.Shared.Application.Services;
 using _116.Shared.Infrastructure;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace _116.Core;
 
@@ -24,13 +25,16 @@ public static class CoreModule
 {
     /// <summary>
     /// Gets the shared module configuration options for the Core module.
+    /// Migrations run in every environment except Testing; the module owns no seeders.
     /// </summary>
-    private static ModuleOptions<CoreDbContext> GetModuleOptions() =>
+    /// <param name="environment">The host environment the options are derived from.</param>
+    /// <returns>The module options for the supplied environment.</returns>
+    private static ModuleOptions<CoreDbContext> GetModuleOptions(IHostEnvironment environment) =>
         new()
         {
             ModuleName = CoreConstants.ModuleName,
             SchemaName = CoreConstants.SchemaName,
-            EnableMigrations = true,
+            EnableMigrations = !environment.IsEnvironment("Testing"),
             EnableSeeding = false,
         };
 
@@ -38,19 +42,17 @@ public static class CoreModule
     /// Adds the Core module's services to the dependency injection container.
     /// </summary>
     /// <param name="services">The service collection to register services into.</param>
+    /// <param name="environment">The host environment deciding whether the module migrates at startup.</param>
     /// <returns>The updated <see cref="IServiceCollection"/> for chaining.</returns>
-    /// <remarks>
-    /// Registers database context with interceptors for core management including file handling.
-    /// </remarks>
     /// <example>
     /// <code>
-    /// builder.Services.AddCoreModule(builder.Configuration);
+    /// builder.Services.AddCoreModule(builder.Environment);
     /// </code>
     /// </example>
-    public static IServiceCollection AddCoreModule(this IServiceCollection services)
+    public static IServiceCollection AddCoreModule(this IServiceCollection services, IHostEnvironment environment)
     {
         // Register the database with base module infrastructure
-        services.AddModuleDatabase(GetModuleOptions());
+        services.AddModuleDatabase(GetModuleOptions(environment));
 
         // Register error message classes (IStringLocalizer-backed)
         services.AddScoped<ValidationErrorMessage>();
@@ -83,9 +85,6 @@ public static class CoreModule
     /// </summary>
     /// <param name="app">The application builder.</param>
     /// <returns>The updated <see cref="IApplicationBuilder"/> for chaining.</returns>
-    /// <remarks>
-    /// Applies pending EF Core migrations for core management.
-    /// </remarks>
     /// <example>
     /// <code>
     /// app.UseCoreModule();
@@ -94,7 +93,8 @@ public static class CoreModule
     public static IApplicationBuilder UseCoreModule(this IApplicationBuilder app)
     {
         // Configure Http request pipeline.
-        app.UseModuleDatabase(GetModuleOptions());
+        IHostEnvironment environment = app.ApplicationServices.GetRequiredService<IHostEnvironment>();
+        app.UseModuleDatabase(GetModuleOptions(environment));
 
         return app;
     }

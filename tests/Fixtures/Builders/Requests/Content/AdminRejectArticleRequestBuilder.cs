@@ -17,7 +17,7 @@ public class AdminRejectArticleRequestBuilder
     /// </summary>
     public AdminRejectArticleRequestBuilder()
     {
-        _reason = TestConstants.Content.Editorial.Article.ValidRejectionReason;
+        _reason = TestConstants.Article.ValidRejectionReason;
     }
 
     /// <summary>

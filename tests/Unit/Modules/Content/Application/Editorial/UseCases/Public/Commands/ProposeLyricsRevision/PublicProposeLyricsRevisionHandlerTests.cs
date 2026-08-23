@@ -58,17 +58,11 @@ public class PublicProposeLyricsRevisionHandlerTests
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
-    /// <summary>
-    /// Proves there is no trust exemption based on origin: a correction proposed against a
-    /// lyrics page created via the plain admin/CreateFree path — with no submission history at
-    /// all — succeeds identically to any other lyrics page, since the handler only ever confirms
-    /// the lyrics record exists and never inspects how it came to exist.
-    /// </summary>
     [Fact]
     public async Task Handle_AgainstAdminCreatedLyricsWithNoSubmissionHistory_ShouldSucceedIdentically()
     {
         // Arrange
-        LyricsEntity adminCreatedLyrics = LyricsFactory.CreateFree(Guid.NewGuid());
+        LyricsEntity adminCreatedLyrics = LyricsFactory.Create(Guid.NewGuid());
         _lyricsRepositoryMock.SetupGetByIdOrThrow(adminCreatedLyrics);
         var command = new PublicProposeLyricsRevisionCommand(
             adminCreatedLyrics.Id,

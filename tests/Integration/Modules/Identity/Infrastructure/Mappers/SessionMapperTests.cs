@@ -17,9 +17,6 @@ public class SessionMapperTests(PostgresFixture postgres) : BaseRepositoryTest(p
 {
     private readonly IMapper _mapper = new Mapper(IdentityMappingRegistration.CreateConfiguration());
 
-    /// <summary>
-    /// Verifies that ToSessionDto maps all fields from a persisted SessionEntity.
-    /// </summary>
     [Fact]
     public async Task ToSessionDto_ShouldMapAllFields()
     {
@@ -47,9 +44,6 @@ public class SessionMapperTests(PostgresFixture postgres) : BaseRepositoryTest(p
         dto.IsCurrent.Should().BeFalse();
     }
 
-    /// <summary>
-    /// Verifies that ToSessionDto sets IsCurrent to true when the current session ID matches.
-    /// </summary>
     [Fact]
     public async Task ToSessionDto_WithCurrentSessionId_ShouldSetIsCurrent()
     {
@@ -68,9 +62,6 @@ public class SessionMapperTests(PostgresFixture postgres) : BaseRepositoryTest(p
         dto.IsCurrent.Should().BeTrue();
     }
 
-    /// <summary>
-    /// Verifies that ToSessionDto maps IsActive to false for an expired session.
-    /// </summary>
     [Fact]
     public async Task ToSessionDto_ExpiredSession_ShouldMapIsActiveFalse()
     {
@@ -89,9 +80,6 @@ public class SessionMapperTests(PostgresFixture postgres) : BaseRepositoryTest(p
         dto.IsActive.Should().BeFalse();
     }
 
-    /// <summary>
-    /// Verifies that ToSessionExportDtos maps a collection of sessions correctly.
-    /// </summary>
     [Fact]
     public async Task ToSessionExportDtos_ShouldMapCollection()
     {

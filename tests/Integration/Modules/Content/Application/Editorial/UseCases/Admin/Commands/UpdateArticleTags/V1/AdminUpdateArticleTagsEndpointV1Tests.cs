@@ -2,6 +2,8 @@ using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArticleTags.V1;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -50,13 +52,12 @@ public class AdminUpdateArticleTagsEndpointV1Tests(PostgresFixture db) : BaseApi
             request
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Article"))
+        );
     }
 
-    /// <summary>
-    /// Verifies that updating article tags replaces the existing tag set with the new set,
-    /// returns IsSuccess true, and persists exactly the newly supplied tag association.
-    /// </summary>
     [Fact]
     public async Task UpdateArticle_WithTags_ReplacesExistingTags()
     {

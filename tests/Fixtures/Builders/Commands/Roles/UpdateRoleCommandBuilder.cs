@@ -1,5 +1,6 @@
 using _116.Identity.Application.Roles.UseCases.Admin.Commands.UpdateRole;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using Bogus;
 
 namespace _116.Tests.Fixtures.Builders.Commands.Roles;
@@ -9,7 +10,7 @@ namespace _116.Tests.Fixtures.Builders.Commands.Roles;
 /// </summary>
 public class UpdateRoleCommandBuilder
 {
-    private readonly Faker _faker = new();
+    private readonly Faker _faker = TestFaker.Create();
 
     private Guid _roleId;
     private string? _name;

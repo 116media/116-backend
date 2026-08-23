@@ -1,8 +1,11 @@
 using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpsertSingleStreamingLink.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.UpsertSingleStreamingLink.V1;
@@ -95,13 +98,12 @@ public class AdminUpsertSingleStreamingLinkEndpointV1Tests(PostgresFixture db) :
             new AdminUpsertSingleStreamingLinkRequest(SpotifyUrl)
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Lyrics"))
+        );
     }
 
-    /// <summary>
-    /// The first upsert for an empty platform slot inserts a new curated link row bound to the
-    /// standalone single, leaving the album-side association unset.
-    /// </summary>
     [Fact]
     public async Task UpsertSingleStreamingLink_WhenSlotEmpty_CreatesLinkAndPersists()
     {
@@ -131,10 +133,6 @@ public class AdminUpsertSingleStreamingLinkEndpointV1Tests(PostgresFixture db) :
         persisted.Url.Should().Be(SpotifyUrl);
     }
 
-    /// <summary>
-    /// A second upsert on an already-populated platform slot replaces the curated URL on the
-    /// existing row instead of inserting a duplicate.
-    /// </summary>
     [Fact]
     public async Task UpsertSingleStreamingLink_WhenSlotAlreadySet_ReplacesUrlWithoutDuplicating()
     {
@@ -168,10 +166,6 @@ public class AdminUpsertSingleStreamingLinkEndpointV1Tests(PostgresFixture db) :
         persisted[0].Url.Should().Be(ReplacementUrl);
     }
 
-    /// <summary>
-    /// A track that belongs to an album gets its streaming links through the album, so the
-    /// per-track upsert is rejected as a conflict and nothing is persisted.
-    /// </summary>
     [Fact]
     public async Task UpsertSingleStreamingLink_WhenLyricsBelongsToAlbum_ReturnsConflict()
     {
@@ -193,7 +187,10 @@ public class AdminUpsertSingleStreamingLinkEndpointV1Tests(PostgresFixture db) :
             new AdminUpsertSingleStreamingLinkRequest(SpotifyUrl)
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<LyricsErrorMessage>(m => m.BelongsToAlbum())
+        );
 
         await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
         bool anyPersisted = await ctx.StreamingLinks.AnyAsync(link => link.LyricsId == lyrics.Id);

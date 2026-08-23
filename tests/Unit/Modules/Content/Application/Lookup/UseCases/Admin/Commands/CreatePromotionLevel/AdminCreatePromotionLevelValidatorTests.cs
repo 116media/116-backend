@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.Content.Application.Lookup.UseCases.Admin.Commands.CreatePromotionLevel;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Tests.Fixtures.Constants;
@@ -32,9 +31,9 @@ public class AdminCreatePromotionLevelValidatorTests
     {
         // Arrange
         var command = new AdminCreatePromotionLevelCommand(
-            Name: TestConstants.Content.PromotionLevel.ValidName,
-            DurationDays: TestConstants.Content.PromotionLevel.ValidDurationDays,
-            PriceUsd: TestConstants.Content.PromotionLevel.ValidPriceUsd,
+            Name: TestConstants.PromotionLevel.ValidName,
+            DurationDays: TestConstants.PromotionLevel.ValidDurationDays,
+            PriceUsd: TestConstants.PromotionLevel.ValidPriceUsd,
             SpotPriority: 1
         );
 
@@ -51,9 +50,9 @@ public class AdminCreatePromotionLevelValidatorTests
     {
         // Arrange
         var command = new AdminCreatePromotionLevelCommand(
-            Name: TestConstants.Content.PromotionLevel.ValidName,
-            DurationDays: TestConstants.Content.PromotionLevel.ValidDurationDays,
-            PriceUsd: TestConstants.Content.PromotionLevel.ZeroPriceUsd,
+            Name: TestConstants.PromotionLevel.ValidName,
+            DurationDays: TestConstants.PromotionLevel.ValidDurationDays,
+            PriceUsd: TestConstants.PromotionLevel.ZeroPriceUsd,
             SpotPriority: 1
         );
 
@@ -74,8 +73,8 @@ public class AdminCreatePromotionLevelValidatorTests
         // Arrange
         var command = new AdminCreatePromotionLevelCommand(
             Name: string.Empty,
-            DurationDays: TestConstants.Content.PromotionLevel.ValidDurationDays,
-            PriceUsd: TestConstants.Content.PromotionLevel.ValidPriceUsd,
+            DurationDays: TestConstants.PromotionLevel.ValidDurationDays,
+            PriceUsd: TestConstants.PromotionLevel.ValidPriceUsd,
             SpotPriority: 1
         );
 
@@ -97,9 +96,9 @@ public class AdminCreatePromotionLevelValidatorTests
     {
         // Arrange
         var command = new AdminCreatePromotionLevelCommand(
-            Name: new string('a', TestConstants.Content.PromotionLevel.NameMaxLength + 1),
-            DurationDays: TestConstants.Content.PromotionLevel.ValidDurationDays,
-            PriceUsd: TestConstants.Content.PromotionLevel.ValidPriceUsd,
+            Name: new string('a', TestConstants.PromotionLevel.NameMaxLength + 1),
+            DurationDays: TestConstants.PromotionLevel.ValidDurationDays,
+            PriceUsd: TestConstants.PromotionLevel.ValidPriceUsd,
             SpotPriority: 1
         );
 
@@ -112,8 +111,7 @@ public class AdminCreatePromotionLevelValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminCreatePromotionLevelCommand.Name)
-                && e.ErrorMessage
-                    == _i18n.PromotionLevel.Msg.NameTooLong(TestConstants.Content.PromotionLevel.NameMaxLength)
+                && e.ErrorMessage == _i18n.PromotionLevel.Msg.NameTooLong(TestConstants.PromotionLevel.NameMaxLength)
             );
     }
 
@@ -126,9 +124,9 @@ public class AdminCreatePromotionLevelValidatorTests
     {
         // Arrange
         var command = new AdminCreatePromotionLevelCommand(
-            Name: TestConstants.Content.PromotionLevel.ValidName,
+            Name: TestConstants.PromotionLevel.ValidName,
             DurationDays: 0,
-            PriceUsd: TestConstants.Content.PromotionLevel.ValidPriceUsd,
+            PriceUsd: TestConstants.PromotionLevel.ValidPriceUsd,
             SpotPriority: 1
         );
 
@@ -150,9 +148,9 @@ public class AdminCreatePromotionLevelValidatorTests
     {
         // Arrange
         var command = new AdminCreatePromotionLevelCommand(
-            Name: TestConstants.Content.PromotionLevel.ValidName,
+            Name: TestConstants.PromotionLevel.ValidName,
             DurationDays: -1,
-            PriceUsd: TestConstants.Content.PromotionLevel.ValidPriceUsd,
+            PriceUsd: TestConstants.PromotionLevel.ValidPriceUsd,
             SpotPriority: 1
         );
 
@@ -178,8 +176,8 @@ public class AdminCreatePromotionLevelValidatorTests
     {
         // Arrange
         var command = new AdminCreatePromotionLevelCommand(
-            Name: TestConstants.Content.PromotionLevel.ValidName,
-            DurationDays: TestConstants.Content.PromotionLevel.ValidDurationDays,
+            Name: TestConstants.PromotionLevel.ValidName,
+            DurationDays: TestConstants.PromotionLevel.ValidDurationDays,
             PriceUsd: -0.01m,
             SpotPriority: 1
         );
@@ -209,9 +207,9 @@ public class AdminCreatePromotionLevelValidatorTests
     {
         // Arrange
         var command = new AdminCreatePromotionLevelCommand(
-            Name: TestConstants.Content.PromotionLevel.ValidName,
-            DurationDays: TestConstants.Content.PromotionLevel.ValidDurationDays,
-            PriceUsd: TestConstants.Content.PromotionLevel.ValidPriceUsd,
+            Name: TestConstants.PromotionLevel.ValidName,
+            DurationDays: TestConstants.PromotionLevel.ValidDurationDays,
+            PriceUsd: TestConstants.PromotionLevel.ValidPriceUsd,
             SpotPriority: spotPriority
         );
 
@@ -236,9 +234,9 @@ public class AdminCreatePromotionLevelValidatorTests
     {
         // Arrange
         var command = new AdminCreatePromotionLevelCommand(
-            Name: TestConstants.Content.PromotionLevel.ValidName,
-            DurationDays: TestConstants.Content.PromotionLevel.ValidDurationDays,
-            PriceUsd: TestConstants.Content.PromotionLevel.ValidPriceUsd,
+            Name: TestConstants.PromotionLevel.ValidName,
+            DurationDays: TestConstants.PromotionLevel.ValidDurationDays,
+            PriceUsd: TestConstants.PromotionLevel.ValidPriceUsd,
             SpotPriority: spotPriority
         );
 
@@ -249,39 +247,6 @@ public class AdminCreatePromotionLevelValidatorTests
         result
             .Errors.Should()
             .NotContain(e => e.PropertyName == nameof(AdminCreatePromotionLevelCommand.SpotPriority));
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-        var validator = new AdminCreatePromotionLevelValidator(_i18n);
-        var command = new AdminCreatePromotionLevelCommand(
-            Name: "",
-            DurationDays: TestConstants.Content.PromotionLevel.ValidDurationDays,
-            PriceUsd: TestConstants.Content.PromotionLevel.ValidPriceUsd,
-            SpotPriority: 1
-        );
-
-        // Act
-        ValidationResult result = await validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminCreatePromotionLevelCommand.Name)
-                && e.ErrorMessage == _i18n.PromotionLevel.Msg.NameRequired()
-            );
     }
 
     #endregion

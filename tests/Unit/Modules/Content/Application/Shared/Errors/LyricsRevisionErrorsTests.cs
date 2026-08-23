@@ -14,9 +14,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Shared.Errors;
 public class LyricsRevisionErrorsTests
 {
     private readonly LyricsRevisionErrors _errors = TestErrorsFactory.CreateLyricsRevisionErrors();
-    private readonly LyricsRevisionErrorMessage _message = LocalizerFactory.CreateMessage<LyricsRevisionErrorMessage>(
-        "en"
-    );
+    private readonly LyricsRevisionErrorMessage _message = LocalizerFactory.CreateMessage<LyricsRevisionErrorMessage>();
 
     #region LyricsRevisionErrors
 

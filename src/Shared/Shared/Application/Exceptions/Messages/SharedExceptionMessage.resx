@@ -96,6 +96,39 @@
   <data name="Entity_CategoryPricing" xml:space="preserve">
     <value>the requested category pricing</value>
   </data>
+  <data name="Entity_Artist" xml:space="preserve">
+    <value>the requested artist</value>
+  </data>
+  <data name="Entity_ArtistSocialLink" xml:space="preserve">
+    <value>the requested social link</value>
+  </data>
+  <data name="Entity_Album" xml:space="preserve">
+    <value>the requested album</value>
+  </data>
+  <data name="Entity_LyricsSubmission" xml:space="preserve">
+    <value>the requested lyrics submission</value>
+  </data>
+  <data name="Entity_LyricsRevision" xml:space="preserve">
+    <value>the requested lyrics revision</value>
+  </data>
+  <data name="Entity_Lyrics revision" xml:space="preserve">
+    <value>the requested lyrics revision</value>
+  </data>
+  <data name="Entity_LyricsTranslation" xml:space="preserve">
+    <value>the requested translation</value>
+  </data>
+  <data name="Entity_Translation" xml:space="preserve">
+    <value>the requested translation</value>
+  </data>
+  <data name="Entity_LyricsTranslationRevision" xml:space="preserve">
+    <value>the requested translation revision</value>
+  </data>
+  <data name="Entity_Translation revision" xml:space="preserve">
+    <value>the requested translation revision</value>
+  </data>
+  <data name="ResourceNotFound" xml:space="preserve">
+    <value>The requested resource was not found.</value>
+  </data>
   <data name="InvalidIdentifier" xml:space="preserve">
     <value>The provided identifier is invalid.</value>
   </data>

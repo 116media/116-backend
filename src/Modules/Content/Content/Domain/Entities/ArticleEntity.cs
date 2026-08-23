@@ -581,14 +581,15 @@ public class ArticleEntity : Aggregate<Guid>
     /// <param name="reason">
     /// Mandatory reason for the force-unpromote (e.g. "government request", "policy violation").
     /// </param>
+    /// <param name="errors">The errors factory instance.</param>
     /// <exception cref="BadRequestException">
     /// Thrown when the article does not have an active promotion.
     /// </exception>
-    public void ForceUnpromote(string unpromotedBy, string reason)
+    public void ForceUnpromote(string unpromotedBy, string reason, ArticleErrors errors)
     {
         if (!IsPromoted)
         {
-            throw new BadRequestException("Article is not currently promoted.");
+            throw errors.NotPromoted();
         }
 
         IsPromoted = false;

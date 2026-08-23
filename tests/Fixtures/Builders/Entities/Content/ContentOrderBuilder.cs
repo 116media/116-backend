@@ -1,13 +1,15 @@
+using System.Reflection;
 using _116.Content.Domain.Entities;
 using _116.Tests.Fixtures.Helpers;
 
 namespace _116.Tests.Fixtures.Builders.Entities.Content;
 
 /// <summary>
-/// Fluent builder for creating <see cref="ContentOrderEntity"/> instances in tests.
-/// For test code, prefer using ContentOrderFactory instead of direct Builder usage.
+/// Fluent builder for creating <see cref="ContentOrderEntity" /> instances in tests.
+/// Drives the real domain transitions, so every state it produces is one the application can reach.
+/// Use it for any shape a test needs; ContentOrderFactory only names chains three or more tests share.
 /// </summary>
-internal class ContentOrderBuilder
+public class ContentOrderBuilder
 {
     private Guid _id = Guid.NewGuid();
     private Guid _customerId = Guid.NewGuid();
@@ -15,6 +17,8 @@ internal class ContentOrderBuilder
     private bool _submitted;
     private bool _paid;
     private bool _cancelled;
+    private CustomerEntity? _customer;
+    private ContentPaymentEntity? _payment;
 
     public ContentOrderBuilder WithId(Guid id)
     {
@@ -53,6 +57,26 @@ internal class ContentOrderBuilder
         return this;
     }
 
+    /// <summary>
+    /// Attaches the Customer navigation EF Core populates through <c>.Include(o =&gt; o.Customer)</c>,
+    /// and points the foreign key at the same customer.
+    /// </summary>
+    public ContentOrderBuilder WithCustomer(CustomerEntity customer)
+    {
+        _customer = customer;
+        _customerId = customer.Id;
+        return this;
+    }
+
+    /// <summary>
+    /// Attaches the Payment navigation EF Core populates through <c>.Include(o =&gt; o.Payment)</c>.
+    /// </summary>
+    public ContentOrderBuilder WithPayment(ContentPaymentEntity payment)
+    {
+        _payment = payment;
+        return this;
+    }
+
     public ContentOrderEntity Build()
     {
         var errors = TestErrorsFactory.CreateContentOrderErrors();
@@ -76,6 +100,20 @@ internal class ContentOrderBuilder
         if (_cancelled)
         {
             order.Cancel(errors);
+        }
+
+        if (_customer is not null)
+        {
+            typeof(ContentOrderEntity)
+                .GetProperty(nameof(ContentOrderEntity.Customer), BindingFlags.Public | BindingFlags.Instance)!
+                .SetValue(order, _customer);
+        }
+
+        if (_payment is not null)
+        {
+            typeof(ContentOrderEntity)
+                .GetProperty(nameof(ContentOrderEntity.Payment), BindingFlags.Public | BindingFlags.Instance)!
+                .SetValue(order, _payment);
         }
 
         return order;

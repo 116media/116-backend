@@ -48,10 +48,6 @@ public class ExpiredOtpCleanupJobTests
 
     #region Nothing To Purge
 
-    /// <summary>
-    /// The repository stages the removal without saving, so a run that matched no row must not
-    /// commit: an empty commit would flush whatever else the scope happens to be tracking.
-    /// </summary>
     [Fact]
     public async Task Execute_WithNoExpiredOtps_ShouldNotCommit()
     {
@@ -70,10 +66,6 @@ public class ExpiredOtpCleanupJobTests
 
     #region Purge
 
-    /// <summary>
-    /// The removal only reaches the database when the job commits the unit of work, so a run
-    /// that matched rows must commit exactly once for the whole batch.
-    /// </summary>
     [Fact]
     public async Task Execute_WithExpiredOtps_ShouldCommitOnceForTheBatch()
     {
@@ -92,10 +84,6 @@ public class ExpiredOtpCleanupJobTests
 
     #region Failure Tolerance
 
-    /// <summary>
-    /// A scheduled run that throws would surface to Quartz as a job failure; the purge is
-    /// disposable work, so a repository fault is logged and the run ends without committing.
-    /// </summary>
     [Fact]
     public async Task Execute_WhenTheRepositoryThrows_ShouldSwallowTheFailureAndNotCommit()
     {
@@ -112,9 +100,6 @@ public class ExpiredOtpCleanupJobTests
         _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
 
-    /// <summary>
-    /// A commit fault is equally contained, so one failed sweep does not stop the schedule.
-    /// </summary>
     [Fact]
     public async Task Execute_WhenTheCommitThrows_ShouldSwallowTheFailure()
     {

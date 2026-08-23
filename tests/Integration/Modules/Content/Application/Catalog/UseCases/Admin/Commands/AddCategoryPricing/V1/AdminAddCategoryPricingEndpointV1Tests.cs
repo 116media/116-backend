@@ -1,8 +1,13 @@
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.AddCategoryPricing.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Factories.Content;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Catalog.UseCases.Admin.Commands.AddCategoryPricing.V1;
 
@@ -12,6 +17,9 @@ namespace _116.Integration.Tests.Modules.Content.Application.Catalog.UseCases.Ad
 [Collection("Database")]
 public class AdminAddCategoryPricingEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private static string ValidationDetail(string property, string message) =>
+        new ValidationException([new ValidationFailure(property, message)]).Message;
+
     [Fact]
     public async Task AddCategoryPricing_AsSuperAdmin_WithValidData_ReturnsCreated()
     {
@@ -89,13 +97,12 @@ public class AdminAddCategoryPricingEndpointV1Tests(PostgresFixture db) : BaseAp
 
         var response = await Client.PostAsJsonAsync(Routes.Admin.Categories.Pricing(Guid.NewGuid()), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Category"))
+        );
     }
 
-    /// <summary>
-    /// Verifies that adding category pricing with a pricing tier that is already
-    /// associated with the category returns a 409 Conflict response.
-    /// </summary>
     [Fact]
     public async Task AddCategoryPricing_WithDuplicateTier_ReturnsConflict()
     {
@@ -121,13 +128,12 @@ public class AdminAddCategoryPricingEndpointV1Tests(PostgresFixture db) : BaseAp
 
         var response = await Client.PostAsJsonAsync(Routes.Admin.Categories.Pricing(category.Id), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<CategoryErrorMessage>(m => m.PricingAlreadyExists())
+        );
     }
 
-    /// <summary>
-    /// Verifies that adding category pricing with an inactive pricing tier
-    /// returns a 400 BadRequest response because the tier must be active.
-    /// </summary>
     [Fact]
     public async Task AddCategoryPricing_WithInactiveTier_ReturnsBadRequest()
     {
@@ -151,13 +157,12 @@ public class AdminAddCategoryPricingEndpointV1Tests(PostgresFixture db) : BaseAp
 
         var response = await Client.PostAsJsonAsync(Routes.Admin.Categories.Pricing(category.Id), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<PricingTierErrorMessage>(m => m.IsInactive())
+        );
     }
 
-    /// <summary>
-    /// Verifies that adding category pricing with a negative price
-    /// returns a 400 BadRequest response because the price must be non-negative.
-    /// </summary>
     [Fact]
     public async Task AddPricing_WithNegativePrice_ReturnsBadRequest()
     {
@@ -181,6 +186,9 @@ public class AdminAddCategoryPricingEndpointV1Tests(PostgresFixture db) : BaseAp
 
         var response = await Client.PostAsJsonAsync(Routes.Admin.Categories.Pricing(category.Id), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("PriceUsd", Localized<CategoryErrorMessage>(m => m.PriceMustBeNonNegative()))
+        );
     }
 }

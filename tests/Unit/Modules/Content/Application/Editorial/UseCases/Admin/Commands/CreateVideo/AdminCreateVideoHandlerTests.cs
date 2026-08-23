@@ -53,16 +53,16 @@ public class AdminCreateVideoHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         CategoryEntity category = CategoryFactory.Create(CategoryId);
-        string slug = TestConstants.Content.Editorial.Video.ValidSlug;
+        string slug = TestConstants.Video.ValidSlug;
 
         var command = new AdminCreateVideoCommand(
             CategoryId: category.Id,
-            Title: TestConstants.Content.Editorial.Video.ValidTitle,
+            Title: TestConstants.Video.ValidTitle,
             Slug: slug,
             AuthorId: AuthorId,
             CustomerId: null,
             OrderItemId: null,
-            Description: TestConstants.Content.Editorial.Video.ValidDescription,
+            Description: TestConstants.Video.ValidDescription,
             ShootingScheduledAt: null
         );
 
@@ -89,18 +89,18 @@ public class AdminCreateVideoHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         CategoryEntity category = CategoryFactory.Create(CategoryId);
-        string slug = TestConstants.Content.Editorial.Video.ValidSlug;
+        string slug = TestConstants.Video.ValidSlug;
         Guid customerId = Guid.NewGuid();
         Guid orderItemId = Guid.NewGuid();
 
         var command = new AdminCreateVideoCommand(
             CategoryId: category.Id,
-            Title: TestConstants.Content.Editorial.Video.ValidTitle,
+            Title: TestConstants.Video.ValidTitle,
             Slug: slug,
             AuthorId: AuthorId,
             CustomerId: customerId,
             OrderItemId: orderItemId,
-            Description: TestConstants.Content.Editorial.Video.ValidDescription,
+            Description: TestConstants.Video.ValidDescription,
             ShootingScheduledAt: null
         );
 
@@ -133,12 +133,12 @@ public class AdminCreateVideoHandlerTests : BaseContentHandlerTest
         Guid nonExistentId = Guid.NewGuid();
         var command = new AdminCreateVideoCommand(
             CategoryId: nonExistentId,
-            Title: TestConstants.Content.Editorial.Video.ValidTitle,
-            Slug: TestConstants.Content.Editorial.Video.ValidSlug,
+            Title: TestConstants.Video.ValidTitle,
+            Slug: TestConstants.Video.ValidSlug,
             AuthorId: AuthorId,
             CustomerId: null,
             OrderItemId: null,
-            Description: TestConstants.Content.Editorial.Video.ValidDescription,
+            Description: TestConstants.Video.ValidDescription,
             ShootingScheduledAt: null
         );
         _categoryRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentId);
@@ -155,16 +155,16 @@ public class AdminCreateVideoHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         CategoryEntity category = CategoryFactory.Create(CategoryId);
-        const string slug = TestConstants.Content.Editorial.Video.ValidSlug;
+        const string slug = TestConstants.Video.ValidSlug;
 
         var command = new AdminCreateVideoCommand(
             CategoryId: category.Id,
-            Title: TestConstants.Content.Editorial.Video.ValidTitle,
+            Title: TestConstants.Video.ValidTitle,
             Slug: slug,
             AuthorId: AuthorId,
             CustomerId: null,
             OrderItemId: null,
-            Description: TestConstants.Content.Editorial.Video.ValidDescription,
+            Description: TestConstants.Video.ValidDescription,
             ShootingScheduledAt: null
         );
 

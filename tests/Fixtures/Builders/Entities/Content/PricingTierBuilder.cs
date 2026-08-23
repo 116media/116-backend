@@ -6,12 +6,13 @@ using Bogus;
 namespace _116.Tests.Fixtures.Builders.Entities.Content;
 
 /// <summary>
-/// Fluent builder for creating <see cref="PricingTierEntity"/> instances in tests.
-/// For test code, prefer using PricingTierFactory instead of direct Builder usage.
+/// Fluent builder for creating <see cref="PricingTierEntity" /> instances in tests.
+/// Drives the real domain transitions, so every state it produces is one the application can reach.
+/// Use it for any shape a test needs; PricingTierFactory only names chains three or more tests share.
 /// </summary>
-internal class PricingTierBuilder
+public class PricingTierBuilder
 {
-    private readonly Faker _faker = new();
+    private readonly Faker _faker = TestFaker.Create();
 
     private Guid _id;
     private string _name;
@@ -27,7 +28,7 @@ internal class PricingTierBuilder
         string word = _faker.Lorem.Word();
         string prefix = word.Length > 4 ? word[..4] : word;
         string unique = $"{prefix}{Guid.NewGuid():N}";
-        _name = unique[..Math.Min(TestConstants.Content.PricingTier.NameMaxLength, unique.Length)];
+        _name = unique[..Math.Min(TestConstants.PricingTier.NameMaxLength, unique.Length)];
     }
 
     /// <summary>

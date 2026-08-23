@@ -24,7 +24,7 @@ public class PublicRenamePlaylistValidatorTests
         var command = new PublicRenamePlaylistCommand(
             Id: Guid.NewGuid(),
             UserId: Guid.NewGuid(),
-            Name: TestConstants.Content.Interactions.ValidPlaylistName
+            Name: TestConstants.Interactions.ValidPlaylistName
         );
 
         // Act

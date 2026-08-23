@@ -1,6 +1,9 @@
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.SetExclusiveCategory.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Catalog.UseCases.Admin.Commands.SetExclusiveCategory.V1;
@@ -71,7 +74,10 @@ public class AdminSetExclusiveCategoryEndpointV1Tests(PostgresFixture db) : Base
             null
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Category"))
+        );
     }
 
     [Fact]
@@ -87,10 +93,6 @@ public class AdminSetExclusiveCategoryEndpointV1Tests(PostgresFixture db) : Base
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    /// <summary>
-    /// Verifies that setting an inactive category as exclusive
-    /// returns a 400 BadRequest response.
-    /// </summary>
     [Fact]
     public async Task SetExclusive_WhenInactive_ReturnsBadRequest()
     {
@@ -110,14 +112,13 @@ public class AdminSetExclusiveCategoryEndpointV1Tests(PostgresFixture db) : Base
             null
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<CategoryErrorMessage>(m => m.CannotMakeInactiveExclusive())
+        );
         (await IsCategoryExclusiveAsync(category.Id)).Should().BeFalse();
     }
 
-    /// <summary>
-    /// Verifies that setting a non-Video category as exclusive
-    /// returns a 400 BadRequest response because only Video categories can be exclusive.
-    /// </summary>
     [Fact]
     public async Task SetExclusive_WhenNonVideoCategory_ReturnsBadRequest()
     {
@@ -137,7 +138,10 @@ public class AdminSetExclusiveCategoryEndpointV1Tests(PostgresFixture db) : Base
             null
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<CategoryErrorMessage>(m => m.OnlyVideoCategoryCanBeExclusive())
+        );
         (await IsCategoryExclusiveAsync(category.Id)).Should().BeFalse();
     }
 }

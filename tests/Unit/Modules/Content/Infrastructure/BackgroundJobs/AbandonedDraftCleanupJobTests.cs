@@ -131,11 +131,6 @@ public class AbandonedDraftCleanupJobTests
         _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    /// <summary>
-    /// A cover-type <c>article_images</c> row shares its storage key with the cover file row,
-    /// whose remote asset the file soft-delete reaction already purges. Carrying that key in the
-    /// deletion event as well would delete the same asset twice, so only body keys are captured.
-    /// </summary>
     [Fact]
     public async Task Execute_WithDraftWithACoverImageRow_ShouldCaptureOnlyTheBodyImageKeys()
     {

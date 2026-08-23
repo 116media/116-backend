@@ -203,11 +203,6 @@ public class LyricsRepositoryTests(PostgresFixture postgres) : BaseRepositoryTes
         removed.Should().BeNull();
     }
 
-    /// <summary>
-    /// Verifies that <see cref="ILyricsRepository.GetAllAsync" /> with a search query returns
-    /// only lyrics whose song title matches the keyword, exercising the search path
-    /// in <c>LyricsRepository</c> via <c>LyricsSearchSpecification</c>.
-    /// </summary>
     [Fact]
     public async Task GetAllAsync_WithSearchQuery_ReturnsFilteredResults()
     {
@@ -234,10 +229,6 @@ public class LyricsRepositoryTests(PostgresFixture postgres) : BaseRepositoryTes
         result.Should().NotContain(l => l.Id == nonMatchingLyrics.Id);
     }
 
-    /// <summary>
-    /// Verifies that <see cref="ILyricsRepository.GetAllAsync" /> filters correctly by
-    /// content status, category, and language.
-    /// </summary>
     [Fact]
     public async Task GetAllAsync_WithStatusCategoryAndLanguageFilters_ReturnsOnlyMatchingResults()
     {
@@ -272,10 +263,6 @@ public class LyricsRepositoryTests(PostgresFixture postgres) : BaseRepositoryTes
         result.Should().ContainSingle(l => l.Id == published.Id);
     }
 
-    /// <summary>
-    /// Proves the "New Lyrics" bug fix: with no sort param, results come back <c>CreatedAt</c>
-    /// descending (newest first), not alphabetical by <c>SongTitle</c>.
-    /// </summary>
     [Fact]
     public async Task GetAllAsync_WithNoSortParam_ReturnsNewestFirstNotAlphabetical()
     {
@@ -319,15 +306,6 @@ public class LyricsRepositoryTests(PostgresFixture postgres) : BaseRepositoryTes
         result.Select(l => l.Id).Should().ContainInOrder(newest.Id, middle.Id, oldest.Id);
     }
 
-    /// <summary>
-    /// Guard test (spec 13's explicit ask): the default/"newest" sort branch has no
-    /// <c>IsPromoted</c>-aware case. A promoted lyrics page created BEFORE a non-promoted one
-    /// must still sort AFTER it (interleaved strictly by recency), proving promotion status
-    /// plays no role in ordering. If a future change adds an IsPromoted-first branch to the sort
-    /// switch without updating this test, this assertion fails because the promoted-but-older
-    /// page would then be pinned first. The "views"/"likes"/"shares" branches (added alongside
-    /// the interaction counters) have their own equivalent guard below.
-    /// </summary>
     [Fact]
     public async Task GetAllAsync_PromotedAndNonPromotedLyrics_InterleaveStrictlyByCreatedAtDescending()
     {
@@ -372,10 +350,6 @@ public class LyricsRepositoryTests(PostgresFixture postgres) : BaseRepositoryTes
         result.Select(l => l.Id).Should().ContainInOrder(newestNotPromoted.Id, middleNotPromoted.Id, oldestPromoted.Id);
     }
 
-    /// <summary>
-    /// <c>sort=views</c> orders strictly by <see cref="LyricsEntity.ViewCount"/> descending,
-    /// independent of recency — the oldest record with the most views comes first.
-    /// </summary>
     [Fact]
     public async Task GetAllAsync_SortByViews_OrdersByViewCountDescending()
     {
@@ -408,9 +382,6 @@ public class LyricsRepositoryTests(PostgresFixture postgres) : BaseRepositoryTes
         result.Select(l => l.Id).Should().ContainInOrder(mostViewed.Id, midViewed.Id, leastViewed.Id);
     }
 
-    /// <summary>
-    /// <c>sort=likes</c> orders strictly by <see cref="LyricsEntity.LikeCount"/> descending.
-    /// </summary>
     [Fact]
     public async Task GetAllAsync_SortByLikes_OrdersByLikeCountDescending()
     {
@@ -440,9 +411,6 @@ public class LyricsRepositoryTests(PostgresFixture postgres) : BaseRepositoryTes
         result.Select(l => l.Id).Should().ContainInOrder(mostLiked.Id, midLiked.Id, leastLiked.Id);
     }
 
-    /// <summary>
-    /// <c>sort=shares</c> orders strictly by <see cref="LyricsEntity.ShareCount"/> descending.
-    /// </summary>
     [Fact]
     public async Task GetAllAsync_SortByShares_OrdersByShareCountDescending()
     {
@@ -472,10 +440,6 @@ public class LyricsRepositoryTests(PostgresFixture postgres) : BaseRepositoryTes
         result.Select(l => l.Id).Should().ContainInOrder(mostShared.Id, midShared.Id, leastShared.Id);
     }
 
-    /// <summary>
-    /// Guard test: <c>sort=views</c> has no <c>IsPromoted</c>-aware branch either — a promoted
-    /// record with fewer views must not be pinned ahead of a non-promoted record with more views.
-    /// </summary>
     [Fact]
     public async Task GetAllAsync_SortByViews_PromotedRecordWithFewerViewsDoesNotJumpAhead()
     {
@@ -566,10 +530,6 @@ public class LyricsRepositoryTests(PostgresFixture postgres) : BaseRepositoryTes
             .BeTrue();
     }
 
-    /// <summary>
-    /// Verifies the DB-level unique constraint on <c>(UserId, LyricsId)</c> — a second like row
-    /// for the same user and lyrics page must be rejected at the database level.
-    /// </summary>
     [Fact]
     public async Task AddLikeAsync_DuplicateUserAndLyrics_ViolatesUniqueConstraint()
     {
@@ -809,11 +769,6 @@ public class LyricsRepositoryTests(PostgresFixture postgres) : BaseRepositoryTes
         similar.Should().ContainSingle(l => l.Id == tagMatch.Id);
     }
 
-    /// <summary>
-    /// A standalone (no <c>VideoId</c>) source with no tags of its own has nothing to match in
-    /// the video-category or shared-tags branches, so it falls all the way through to the
-    /// latest-standalone branch and returns another standalone published record.
-    /// </summary>
     [Fact]
     public async Task GetSimilarAsync_NoVideoAndNoTags_FallsThroughToLatestStandaloneBranch()
     {
@@ -853,11 +808,6 @@ public class LyricsRepositoryTests(PostgresFixture postgres) : BaseRepositoryTes
 
     #region GetPublishedByAlbumAsync
 
-    /// <summary>
-    /// Verifies that <see cref="ILyricsRepository.GetPublishedByAlbumAsync" /> returns the
-    /// album's other published tracks while excluding the source track, exercising the album
-    /// filter in <c>LyricsRepository</c> via <c>LyricsByAlbumSpecification</c>.
-    /// </summary>
     [Fact]
     public async Task GetPublishedByAlbumAsync_WithSiblingTracks_ReturnsThemExcludingTheSource()
     {
@@ -887,10 +837,6 @@ public class LyricsRepositoryTests(PostgresFixture postgres) : BaseRepositoryTes
         tracks.Should().NotContain(l => l.Id == source.Id);
     }
 
-    /// <summary>
-    /// Verifies that <c>LyricsByAlbumSpecification</c> scopes the lookup to the requested album,
-    /// so a published track belonging to a different album is never returned.
-    /// </summary>
     [Fact]
     public async Task GetPublishedByAlbumAsync_TrackOnAnotherAlbum_IsNotReturned()
     {

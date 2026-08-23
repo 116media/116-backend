@@ -1,6 +1,8 @@
 using _116.Content.Application.Shared.DTOs;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Interactions.UseCases.Public.Queries.GetPlaylistById.V1;
@@ -50,10 +52,14 @@ public class PublicGetPlaylistByIdEndpointV1Tests(PostgresFixture db) : BaseApiT
     public async Task GetPlaylistById_AsVisitor_NonExistent_ReturnsNotFound()
     {
         Client.AuthenticateAsVisitor();
+        var missingId = Guid.NewGuid();
 
-        var response = await Client.GetAsync(Routes.Public.Playlists.ById(Guid.NewGuid()));
+        var response = await Client.GetAsync(Routes.Public.Playlists.ById(missingId));
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<PlaylistErrorMessage>(m => m.NotFound(missingId))
+        );
     }
 
     [Fact]
@@ -65,7 +71,10 @@ public class PublicGetPlaylistByIdEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         var response = await Client.GetAsync(Routes.Public.Playlists.ById(playlist.Id));
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<PlaylistErrorMessage>(m => m.NotOwner())
+        );
     }
 
     [Fact]

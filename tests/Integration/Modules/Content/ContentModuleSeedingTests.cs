@@ -1,42 +1,27 @@
-using _116.Content;
+using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.EntityFrameworkCore;
-using Moq;
 
 namespace _116.Integration.Tests.Modules.Content;
 
 /// <summary>
-/// Integration coverage for the seeding branch of <c>UseContentModule</c>. The integration
-/// host runs under the Testing environment, where seeding is disabled, so that branch is
-/// never exercised at startup. This test drives the extension against the real host service
-/// provider with a non-Testing environment so the branch — and the ContentTypeSeeder it
-/// invokes — actually runs.
+/// Covers the seeding branch of <c>UseContentModule</c> through a host booted as Development,
+/// so the assertion is about the rows the seeders write at startup.
 /// </summary>
-[Collection("Database")]
-public class ContentModuleSeedingTests(PostgresFixture db) : BaseApiTest(db)
+/// <param name="db">The Development-environment host and its container.</param>
+[Collection("Seeding")]
+public class ContentModuleSeedingTests(SeedingPostgresFixture db)
 {
     [Fact]
-    public async Task UseContentModule_WhenSeedingEnabled_RunsContentTypeSeeder()
+    public async Task DevelopmentHost_RunsTheContentTypeSeeder()
     {
-        string? previousEnvironment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Development");
+        using IServiceScope scope = db.Api.Services.CreateScope();
+        await using ContentDbContext context = scope.ServiceProvider.GetRequiredService<ContentDbContext>();
 
-        try
-        {
-            var applicationBuilder = new Mock<IApplicationBuilder>();
-            applicationBuilder.Setup(builder => builder.ApplicationServices).Returns(Api.Services);
+        bool seeded = await context.ContentTypes.AnyAsync(
+            contentType => contentType.Name == nameof(EnumCoreContentType.Article),
+            TestContext.Current.CancellationToken
+        );
 
-            IApplicationBuilder result = applicationBuilder.Object.UseContentModule();
-
-            result.Should().BeSameAs(applicationBuilder.Object);
-
-            await using ContentDbContext context = CreateDbContext<ContentDbContext>();
-            (await context.ContentTypes.AnyAsync()).Should().BeTrue();
-        }
-        finally
-        {
-            Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", previousEnvironment);
-        }
+        seeded.Should().BeTrue("ContentTypeSeeder runs when the host boots outside the Testing environment");
     }
 }

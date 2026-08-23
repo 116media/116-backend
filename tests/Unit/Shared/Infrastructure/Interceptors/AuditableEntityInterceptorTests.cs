@@ -3,6 +3,7 @@ using _116.Shared.Domain;
 using _116.Shared.Infrastructure.interceptors;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Xunit;
 
@@ -38,7 +39,19 @@ public class AuditableEntityInterceptorTests
         }
     }
 
-    private static TestDbContext CreateInMemoryContext(ICurrentActor? actor = null)
+    /// <summary>
+    /// The instant the interceptor's clock starts at. Every timestamp assertion below is a
+    /// literal offset from it, so nothing is derived from the clock the subject reads.
+    /// </summary>
+    private static readonly DateTime StartInstant = new(2026, 6, 30, 10, 0, 0, DateTimeKind.Utc);
+
+    /// <summary>
+    /// The clock the interceptor stamps from. xUnit builds a new class instance per fact,
+    /// so advancement never leaks between tests.
+    /// </summary>
+    private readonly FakeTimeProvider _time = new(new DateTimeOffset(StartInstant));
+
+    private TestDbContext CreateInMemoryContext(ICurrentActor? actor = null)
     {
         ICurrentActor currentActor =
             actor
@@ -46,7 +59,7 @@ public class AuditableEntityInterceptorTests
 
         DbContextOptions<TestDbContext> options = new DbContextOptionsBuilder<TestDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-            .AddInterceptors(new AuditableEntityInterceptor(currentActor))
+            .AddInterceptors(new AuditableEntityInterceptor(currentActor, _time))
             .Options;
 
         return new TestDbContext(options);
@@ -58,18 +71,14 @@ public class AuditableEntityInterceptorTests
         // Arrange
         using TestDbContext context = CreateInMemoryContext();
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Test" };
-        DateTime beforeSave = DateTime.UtcNow;
 
         // Act
         context.TestEntities.Add(entity);
         context.SaveChanges();
 
         // Assert
-        DateTime afterSave = DateTime.UtcNow;
         entity.CreatedBy.Should().Be("System");
-        entity.CreatedAt.Should().NotBeNull();
-        entity.CreatedAt!.Value.Should().BeOnOrAfter(beforeSave);
-        entity.CreatedAt!.Value.Should().BeOnOrBefore(afterSave);
+        entity.CreatedAt.Should().Be(StartInstant);
     }
 
     [Fact]
@@ -78,18 +87,14 @@ public class AuditableEntityInterceptorTests
         // Arrange
         using TestDbContext context = CreateInMemoryContext();
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Test" };
-        DateTime beforeSave = DateTime.UtcNow;
 
         // Act
         context.TestEntities.Add(entity);
         context.SaveChanges();
 
         // Assert
-        DateTime afterSave = DateTime.UtcNow;
         entity.UpdatedBy.Should().Be("System");
-        entity.UpdatedAt.Should().NotBeNull();
-        entity.UpdatedAt!.Value.Should().BeOnOrAfter(beforeSave);
-        entity.UpdatedAt!.Value.Should().BeOnOrBefore(afterSave);
+        entity.UpdatedAt.Should().Be(StartInstant);
     }
 
     [Fact]
@@ -101,21 +106,16 @@ public class AuditableEntityInterceptorTests
         context.TestEntities.Add(entity);
         context.SaveChanges();
 
-        DateTime originalUpdatedAt = entity.UpdatedAt!.Value;
-        Thread.Sleep(10); // Ensure time difference
+        entity.UpdatedAt.Should().Be(StartInstant);
+        _time.Advance(TimeSpan.FromMinutes(1));
 
         // Act
         entity.Name = "Modified";
-        DateTime beforeUpdate = DateTime.UtcNow;
         context.SaveChanges();
 
         // Assert
-        DateTime afterUpdate = DateTime.UtcNow;
         entity.UpdatedBy.Should().Be("System");
-        entity.UpdatedAt.Should().NotBeNull();
-        entity.UpdatedAt.Should().BeAfter(originalUpdatedAt);
-        entity.UpdatedAt!.Value.Should().BeOnOrAfter(beforeUpdate);
-        entity.UpdatedAt!.Value.Should().BeOnOrBefore(afterUpdate);
+        entity.UpdatedAt.Should().Be(StartInstant.AddMinutes(1));
     }
 
     [Fact]
@@ -127,16 +127,16 @@ public class AuditableEntityInterceptorTests
         context.TestEntities.Add(entity);
         context.SaveChanges();
 
-        string? originalCreatedBy = entity.CreatedBy;
-        DateTime? originalCreatedAt = entity.CreatedAt;
+        entity.CreatedAt.Should().Be(StartInstant);
+        _time.Advance(TimeSpan.FromMinutes(1));
 
         // Act
         entity.Name = "Modified";
         context.SaveChanges();
 
         // Assert
-        entity.CreatedBy.Should().Be(originalCreatedBy);
-        entity.CreatedAt.Should().Be(originalCreatedAt);
+        entity.CreatedBy.Should().Be("System");
+        entity.CreatedAt.Should().Be(StartInstant);
     }
 
     [Fact]
@@ -145,18 +145,14 @@ public class AuditableEntityInterceptorTests
         // Arrange
         using TestDbContext context = CreateInMemoryContext();
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Test" };
-        DateTime beforeSave = DateTime.UtcNow;
 
         // Act
         context.TestEntities.Add(entity);
         await context.SaveChangesAsync();
 
         // Assert
-        DateTime afterSave = DateTime.UtcNow;
         entity.CreatedBy.Should().Be("System");
-        entity.CreatedAt.Should().NotBeNull();
-        entity.CreatedAt!.Value.Should().BeOnOrAfter(beforeSave);
-        entity.CreatedAt!.Value.Should().BeOnOrBefore(afterSave);
+        entity.CreatedAt.Should().Be(StartInstant);
     }
 
     [Fact]
@@ -168,21 +164,16 @@ public class AuditableEntityInterceptorTests
         context.TestEntities.Add(entity);
         await context.SaveChangesAsync();
 
-        DateTime originalUpdatedAt = entity.UpdatedAt!.Value;
-        await Task.Delay(10); // Ensure time difference
+        entity.UpdatedAt.Should().Be(StartInstant);
+        _time.Advance(TimeSpan.FromMinutes(1));
 
         // Act
         entity.Name = "Modified";
-        DateTime beforeUpdate = DateTime.UtcNow;
         await context.SaveChangesAsync();
 
         // Assert
-        DateTime afterUpdate = DateTime.UtcNow;
         entity.UpdatedBy.Should().Be("System");
-        entity.UpdatedAt.Should().NotBeNull();
-        entity.UpdatedAt.Should().BeAfter(originalUpdatedAt);
-        entity.UpdatedAt!.Value.Should().BeOnOrAfter(beforeUpdate);
-        entity.UpdatedAt!.Value.Should().BeOnOrBefore(afterUpdate);
+        entity.UpdatedAt.Should().Be(StartInstant.AddMinutes(1));
     }
 
     [Fact]
@@ -194,16 +185,16 @@ public class AuditableEntityInterceptorTests
         context.TestEntities.Add(entity);
         context.SaveChanges();
 
-        DateTime? originalUpdatedAt = entity.UpdatedAt;
-        string? originalUpdatedBy = entity.UpdatedBy;
+        entity.UpdatedAt.Should().Be(StartInstant);
+        _time.Advance(TimeSpan.FromMinutes(1));
 
-        // Act - Save again without modifications
+        // Act
         context.Entry(entity).State = EntityState.Unchanged;
         context.SaveChanges();
 
-        // Assert - Fields should remain unchanged
-        entity.UpdatedAt.Should().Be(originalUpdatedAt);
-        entity.UpdatedBy.Should().Be(originalUpdatedBy);
+        // Assert
+        entity.UpdatedAt.Should().Be(StartInstant);
+        entity.UpdatedBy.Should().Be("System");
     }
 
     [Fact]
@@ -213,18 +204,16 @@ public class AuditableEntityInterceptorTests
         using TestDbContext context = CreateInMemoryContext();
         var entity1 = new TestEntity { Id = Guid.NewGuid(), Name = "Entity 1" };
         var entity2 = new TestEntity { Id = Guid.NewGuid(), Name = "Entity 2" };
-        DateTime beforeSave = DateTime.UtcNow;
 
         // Act
         context.TestEntities.AddRange(entity1, entity2);
         context.SaveChanges();
 
         // Assert
-        DateTime afterSave = DateTime.UtcNow;
         entity1.CreatedBy.Should().Be("System");
-        entity1.CreatedAt.Should().BeOnOrAfter(beforeSave).And.BeOnOrBefore(afterSave);
+        entity1.CreatedAt.Should().Be(StartInstant);
         entity2.CreatedBy.Should().Be("System");
-        entity2.CreatedAt.Should().BeOnOrAfter(beforeSave).And.BeOnOrBefore(afterSave);
+        entity2.CreatedAt.Should().Be(StartInstant);
     }
 
     [Fact]
@@ -236,20 +225,21 @@ public class AuditableEntityInterceptorTests
         context.TestEntities.Add(entity);
         context.SaveChanges();
 
-        DateTime originalUpdatedAt = entity.UpdatedAt!.Value;
+        entity.UpdatedAt.Should().Be(StartInstant);
+        _time.Advance(TimeSpan.FromMinutes(1));
 
         // Act
         context.TestEntities.Remove(entity);
         context.SaveChanges();
 
-        // Assert - Updated fields should not change on delete
-        entity.UpdatedAt.Should().Be(originalUpdatedAt);
+        // Assert
+        entity.UpdatedAt.Should().Be(StartInstant);
     }
 
     [Fact]
     public void SavingChanges_WithUnchangedEntityButModifiedOwnedEntity_ShouldUpdateFields()
     {
-        // Arrange - Create entity with owned entity
+        // Arrange
         using TestDbContext context = CreateInMemoryContext();
         var entity = new TestEntity
         {
@@ -260,33 +250,23 @@ public class AuditableEntityInterceptorTests
         context.TestEntities.Add(entity);
         context.SaveChanges();
 
-        DateTime? originalUpdatedAt = entity.UpdatedAt;
-        Thread.Sleep(10); // Ensure time difference
+        entity.UpdatedAt.Should().Be(StartInstant);
+        _time.Advance(TimeSpan.FromMinutes(1));
 
-        // Modify only the owned entity
         if (entity.OwnedData != null)
         {
             entity.OwnedData.Value = "Modified";
             context.Entry(entity.OwnedData).State = EntityState.Modified;
         }
 
-        // Ensure parent entity is Unchanged
         context.Entry(entity).State = EntityState.Unchanged;
-        DateTime beforeSave = DateTime.UtcNow;
 
         // Act
         context.SaveChanges();
 
-        // Assert - UpdatedBy and UpdatedAt should be set even though parent is Unchanged
-        DateTime afterSave = DateTime.UtcNow;
+        // Assert
         entity.UpdatedBy.Should().Be("System");
-        entity.UpdatedAt.Should().NotBeNull();
-        if (originalUpdatedAt.HasValue)
-        {
-            entity.UpdatedAt.Should().BeAfter(originalUpdatedAt.Value);
-        }
-        entity.UpdatedAt!.Value.Should().BeOnOrAfter(beforeSave);
-        entity.UpdatedAt!.Value.Should().BeOnOrBefore(afterSave);
+        entity.UpdatedAt.Should().Be(StartInstant.AddMinutes(1));
     }
 
     #region ResolveActor

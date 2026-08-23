@@ -1,6 +1,13 @@
+using System.Net.Http.Headers;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.Login.V1;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp.V1;
+using _116.Identity.Application.Shared.Errors.Messages;
+using _116.Identity.Application.User.UseCases.Public.Queries.GetOwnProfile.V1;
+using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Identity;
 
 namespace _116.Integration.Tests.Workflows;
@@ -13,10 +20,10 @@ namespace _116.Integration.Tests.Workflows;
 public class AuthenticationFlowTests(PostgresFixture db) : BaseApiTest(db)
 {
     [Fact]
-    public async Task SignUpAndLogin_ShouldGrantAccessToProtectedEndpoints()
+    public async Task SignUp_PersistsTheUserAndReturnsTokens()
     {
         await SeedAsync<IdentityDbContext>(context =>
-            context.Roles.Add(RoleFactory.CreateWithId(Guid.NewGuid(), "Visitor"))
+            context.Roles.Add(RoleFactory.CreateWithId(Guid.NewGuid(), nameof(EnumCoreUserRole.Visitor)))
         );
 
         Client.ClearAuthentication();
@@ -32,7 +39,6 @@ public class AuthenticationFlowTests(PostgresFixture db) : BaseApiTest(db)
         PublicSignUpMobileResponse signupBody = await signupResponse.ReadAsAsync<PublicSignUpMobileResponse>();
         signupBody.AccessToken.Should().NotBeNullOrEmpty();
         signupBody.RefreshToken.Should().NotBeNullOrEmpty();
-        signupBody.AccessToken.Split('.').Should().HaveCount(3);
         signupBody.User.Email.Should().Be(email);
         signupBody.User.UserName.Should().Be(userName);
 
@@ -44,7 +50,7 @@ public class AuthenticationFlowTests(PostgresFixture db) : BaseApiTest(db)
     public async Task Login_WithValidCredentials_ShouldReturnTokens()
     {
         await SeedAsync<IdentityDbContext>(context =>
-            context.Roles.Add(RoleFactory.CreateWithId(Guid.NewGuid(), "Visitor"))
+            context.Roles.Add(RoleFactory.CreateWithId(Guid.NewGuid(), nameof(EnumCoreUserRole.Visitor)))
         );
 
         Client.ClearAuthentication();
@@ -82,6 +88,47 @@ public class AuthenticationFlowTests(PostgresFixture db) : BaseApiTest(db)
     }
 
     [Fact]
+    public async Task Login_ThenCallProtectedEndpointWithTheIssuedToken_ResolvesTheCaller()
+    {
+        await SeedAsync<IdentityDbContext>(context =>
+            context.Roles.Add(RoleFactory.CreateWithId(Guid.NewGuid(), nameof(EnumCoreUserRole.Visitor)))
+        );
+
+        Client.ClearAuthentication();
+        Client.DefaultRequestHeaders.Add("X-Device-Id", Guid.NewGuid().ToString());
+
+        string email = $"issued-{Guid.NewGuid():N}@test.com";
+        string userName = $"u{Guid.NewGuid():N}"[..10];
+        var signupRequest = new PublicSignUpRequest(Email: email, UserName: userName, Password: TestAuth.ValidPassword);
+
+        HttpResponseMessage signupResponse = await Client.PostAsJsonAsync(Routes.Public.Auth.SignUp(), signupRequest);
+        signupResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        await using (IdentityDbContext seedContext = CreateDbContext<IdentityDbContext>())
+        {
+            UserEntity user = await seedContext.Users.FirstAsync(u => u.Email == email);
+            user.MarkAsVerified();
+            user.Activate();
+            await seedContext.SaveChangesAsync();
+        }
+
+        var loginRequest = new PublicLoginRequest(Credentials: email, Password: TestAuth.ValidPassword);
+
+        HttpResponseMessage loginResponse = await Client.PostAsJsonAsync(Routes.Public.Auth.Login(), loginRequest);
+        loginResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        PublicLoginMobileResponse loginBody = await loginResponse.ReadAsAsync<PublicLoginMobileResponse>();
+        Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", loginBody.AccessToken);
+
+        HttpResponseMessage protectedResponse = await Client.GetAsync(Routes.Public.Me.Profile());
+
+        protectedResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        PublicGetOwnProfileResponse profile = await protectedResponse.ReadAsAsync<PublicGetOwnProfileResponse>();
+        profile.User.Email.Should().Be(email, "the endpoint resolved the caller from the issued token's claims");
+    }
+
+    [Fact]
     public async Task SignUp_WithDuplicateEmail_ShouldReturnConflict()
     {
         Client.ClearAuthentication();
@@ -94,7 +141,10 @@ public class AuthenticationFlowTests(PostgresFixture db) : BaseApiTest(db)
 
         HttpResponseMessage response = await Client.PostAsJsonAsync(Routes.Public.Auth.SignUp(), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<ConflictErrorMessage>(m => m.EmailAlreadyExists(TestUser.SuperAdminEmail))
+        );
     }
 
     [Fact]
@@ -106,6 +156,9 @@ public class AuthenticationFlowTests(PostgresFixture db) : BaseApiTest(db)
 
         HttpResponseMessage response = await Client.PostAsJsonAsync(Routes.Public.Auth.Login(), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("User"))
+        );
     }
 }

@@ -1,4 +1,5 @@
 using _116.Identity.Application.User.UseCases.Admin.Commands.AssignRoleToUser.V1;
+using _116.Tests.Fixtures.Helpers;
 using Bogus;
 
 namespace _116.Tests.Fixtures.Builders.Requests.Identity;
@@ -8,7 +9,7 @@ namespace _116.Tests.Fixtures.Builders.Requests.Identity;
 /// </summary>
 public class AdminAssignRoleToUserRequestBuilder
 {
-    private readonly Faker _faker = new();
+    private readonly Faker _faker = TestFaker.Create();
 
     private Guid _roleId;
 

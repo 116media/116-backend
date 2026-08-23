@@ -1,6 +1,8 @@
 using _116.Content.Application.Lookup.UseCases.Admin.Commands.DeleteTag.V1;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Lookup.UseCases.Admin.Commands.DeleteTag.V1;
@@ -28,7 +30,10 @@ public class AdminDeleteTagEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Tags}/{Guid.NewGuid()}");
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Tag"))
+        );
     }
 
     [Fact]

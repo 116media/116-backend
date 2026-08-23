@@ -83,11 +83,6 @@ public class NotificationRendererTests
         rendered.Title.Should().Be("Password changed");
     }
 
-    /// <summary>
-    /// Verifies that a malformed culture name — one no culture can be built
-    /// from, unlike an unassigned two-letter code — falls back to the neutral
-    /// resources instead of failing the render.
-    /// </summary>
     [Fact]
     public void Render_WithAMalformedCultureName_ShouldFallBackToNeutralResources()
     {

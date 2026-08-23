@@ -4,6 +4,7 @@ using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Application.User.UseCases.Public.Commands.UpdateAvatar.Contracts;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
+using Microsoft.AspNetCore.Http;
 
 namespace _116.Identity.Application.User.UseCases.Public.Commands.UpdateAvatar;
 
@@ -36,12 +37,14 @@ public class PublicUpdateAvatarHandler(
             cancellationToken: cancellationToken
         );
 
+        IFormFile file = command.AvatarFile!;
+
         FileEntity fileEntity = await fileRepository.UpdateAvatarFromFileAsync(
             currentAvatarFileId: userData.User.AvatarFileId,
-            avatarFile: command.AvatarFile,
+            avatarFile: file,
             command.UserId.ToString(),
-            originalFileName: command.AvatarFile.FileName,
-            mimeType: command.AvatarFile.ContentType,
+            originalFileName: file.FileName,
+            mimeType: file.ContentType,
             cancellationToken: cancellationToken
         );
 

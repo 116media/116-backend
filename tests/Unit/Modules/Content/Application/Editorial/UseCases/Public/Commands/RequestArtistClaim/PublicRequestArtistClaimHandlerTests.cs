@@ -94,12 +94,6 @@ public class PublicRequestArtistClaimHandlerTests
             );
     }
 
-    /// <summary>
-    /// The request/verify split: requesting a claim must never call
-    /// <see cref="ArtistEntity.ClaimOwnership"/> or mutate the profile — only an admin's
-    /// separate verify-owner action does that. This asserts the artist repository's
-    /// <c>Update</c> is never invoked as proof no profile mutation happened.
-    /// </summary>
     [Fact]
     public async Task Handle_ShouldNeverCallArtistRepositoryUpdate()
     {
@@ -117,10 +111,6 @@ public class PublicRequestArtistClaimHandlerTests
         artist.VerifiedAt.Should().BeNull();
     }
 
-    /// <summary>
-    /// A profile with a verified owner is settled: no further account may queue a claim for it,
-    /// so the request is rejected as a conflict before any row is written.
-    /// </summary>
     [Fact]
     public async Task Handle_WhenArtistIsAlreadyOwned_ShouldThrowConflictExceptionAndPersistNothing()
     {
@@ -142,10 +132,6 @@ public class PublicRequestArtistClaimHandlerTests
         _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
 
-    /// <summary>
-    /// The review queue holds requests worth reviewing, not a submit-count: a second request
-    /// from the same account for the same profile is rejected as a conflict.
-    /// </summary>
     [Fact]
     public async Task Handle_WhenTheSameUserAlreadyRequestedThisArtist_ShouldThrowConflictExceptionAndPersistNothing()
     {

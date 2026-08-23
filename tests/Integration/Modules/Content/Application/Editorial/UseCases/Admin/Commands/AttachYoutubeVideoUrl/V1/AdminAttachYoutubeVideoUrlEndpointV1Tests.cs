@@ -1,9 +1,15 @@
 using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.AttachYoutubeVideoUrl.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
+using _116.Tests.Fixtures.Builders.Entities.Content;
 using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Factories.Content;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.AttachYoutubeVideoUrl.V1;
 
@@ -13,6 +19,9 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminAttachYoutubeVideoUrlEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private static string ValidationDetail(string property, string message) =>
+        new ValidationException([new ValidationFailure(property, message)]).Message;
+
     private const string ValidYoutubeUrl = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
 
     private async Task<VideoEntity> SeedVideoAsync(Func<Guid, VideoEntity> create)
@@ -75,13 +84,12 @@ public class AdminAttachYoutubeVideoUrlEndpointV1Tests(PostgresFixture db) : Bas
             request
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Video"))
+        );
     }
 
-    /// <summary>
-    /// Verifies that attaching a valid YouTube URL to a draft video (with no future shoot
-    /// scheduled) persists the URL and resolves a thumbnail via the stubbed services.
-    /// </summary>
     [Fact]
     public async Task AttachYoutubeVideoUrl_AsSuperAdmin_WithValidData_ReturnsOkAndPersists()
     {
@@ -107,14 +115,12 @@ public class AdminAttachYoutubeVideoUrlEndpointV1Tests(PostgresFixture db) : Bas
         persisted.ThumbnailFileId.Should().NotBeNull();
     }
 
-    /// <summary>
-    /// Verifies that attaching a YouTube URL to a video whose shoot date is still in the
-    /// future returns a 400 Bad Request response because the video has not been shot yet.
-    /// </summary>
     [Fact]
     public async Task AttachYoutubeVideoUrl_BeforeShootDate_ReturnsBadRequest()
     {
-        VideoEntity video = await SeedVideoAsync(categoryId => VideoFactory.CreateWithFutureShoot(categoryId));
+        VideoEntity video = await SeedVideoAsync(categoryId =>
+            new VideoBuilder(categoryId).WithShootingScheduledAt(DateTimeOffset.UtcNow.AddDays(30)).Build()
+        );
         Client.AuthenticateAsSuperAdmin();
         AdminAttachYoutubeVideoUrlRequest request = new AdminAttachYoutubeVideoUrlRequestBuilder()
             .WithYoutubeVideoUrl(ValidYoutubeUrl)
@@ -125,15 +131,13 @@ public class AdminAttachYoutubeVideoUrlEndpointV1Tests(PostgresFixture db) : Bas
             request
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<VideoErrorMessage>(m => m.CannotAttachYoutubeUrlBeforeShoot(video.ShootingScheduledAt!.Value))
+        );
         (await GetVideoAsync(video.Id)).YoutubeVideoUrl.Should().BeNull();
     }
 
-    /// <summary>
-    /// Verifies that attaching an invalid YouTube URL (not matching youtube.com/watch,
-    /// youtu.be, youtube.com/embed, or youtube.com/shorts patterns) returns a
-    /// 400 Bad Request response from the validator.
-    /// </summary>
     [Fact]
     public async Task AttachYoutubeVideoUrl_WithInvalidYoutubeUrl_ReturnsBadRequest()
     {
@@ -148,6 +152,9 @@ public class AdminAttachYoutubeVideoUrlEndpointV1Tests(PostgresFixture db) : Bas
             request
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("YoutubeVideoUrl", Localized<VideoErrorMessage>(m => m.YoutubeUrlInvalidFormat()))
+        );
     }
 }

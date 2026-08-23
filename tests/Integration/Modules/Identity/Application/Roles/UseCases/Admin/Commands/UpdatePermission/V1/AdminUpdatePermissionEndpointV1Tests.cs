@@ -1,6 +1,8 @@
 using _116.Identity.Application.Roles.UseCases.Admin.Commands.UpdatePermission.V1;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Builders.Requests.Identity;
 using _116.Tests.Fixtures.Factories.Identity;
 
@@ -67,6 +69,9 @@ public class AdminUpdatePermissionEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Permissions}/{nonExistentId}", request);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Permission"))
+        );
     }
 }

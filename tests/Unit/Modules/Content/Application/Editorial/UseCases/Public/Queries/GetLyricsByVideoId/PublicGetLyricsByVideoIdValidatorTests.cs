@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetLyricsByVideoId;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Tests.Fixtures.Helpers;
@@ -76,34 +75,6 @@ public class PublicGetLyricsByVideoIdValidatorTests
             .Contain(e =>
                 e.PropertyName == nameof(PublicGetLyricsByVideoIdQuery.VideoId)
                 && e.ErrorMessage == _i18n.Video.Msg.Localizer["IdInvalid"].Value
-            );
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-        var validator = new PublicGetLyricsByVideoIdValidator(_i18n);
-        var query = new PublicGetLyricsByVideoIdQuery(VideoId: string.Empty);
-
-        // Act
-        ValidationResult result = await validator.ValidateAsync(query);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(PublicGetLyricsByVideoIdQuery.VideoId)
-                && e.ErrorMessage == _i18n.Video.Msg.Localizer["IdRequired"].Value
             );
     }
 

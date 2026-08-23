@@ -13,13 +13,9 @@ namespace _116.Unit.Tests.Modules.Mailer.Application.Shared.Errors;
 /// </summary>
 public class NewsletterErrorsTests
 {
-    private readonly NewsletterErrors _errors = new(LocalizerFactory.CreateMessage<NewsletterErrorMessage>("en"));
-    private readonly NewsletterErrorMessage _message = LocalizerFactory.CreateMessage<NewsletterErrorMessage>("en");
+    private readonly NewsletterErrors _errors = new(LocalizerFactory.CreateMessage<NewsletterErrorMessage>());
+    private readonly NewsletterErrorMessage _message = LocalizerFactory.CreateMessage<NewsletterErrorMessage>();
 
-    /// <summary>
-    /// Verifies that the factory exposes the message provider the validators
-    /// read their copy from.
-    /// </summary>
     [Fact]
     public void Msg_ShouldExposeUsableMessageProvider()
     {
@@ -31,10 +27,6 @@ public class NewsletterErrorsTests
         msg.TokenInvalid().Should().NotBeNullOrWhiteSpace();
     }
 
-    /// <summary>
-    /// Verifies that a stale, tampered, or rotated confirmation or unsubscribe
-    /// link produces a not-found carrying the localized message.
-    /// </summary>
     [Fact]
     public void TokenNotFound_ShouldReturnNotFoundExceptionWithLocalizedMessage()
     {

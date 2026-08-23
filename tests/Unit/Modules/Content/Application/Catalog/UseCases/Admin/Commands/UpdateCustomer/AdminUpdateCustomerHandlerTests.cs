@@ -76,8 +76,8 @@ public class AdminUpdateCustomerHandlerTests : BaseContentHandlerTest
 
         var command = new AdminUpdateCustomerCommand(
             Id: nonExistentId.ToString(),
-            FullName: TestConstants.Content.Customer.ValidFullName,
-            Email: TestConstants.Content.Customer.ValidEmail,
+            FullName: TestConstants.Customer.ValidFullName,
+            Email: TestConstants.Customer.ValidEmail,
             Phone: null,
             Company: null,
             Notes: null

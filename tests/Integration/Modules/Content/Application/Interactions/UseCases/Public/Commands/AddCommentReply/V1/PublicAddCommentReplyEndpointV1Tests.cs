@@ -1,8 +1,11 @@
 using _116.Content.Application.Interactions.UseCases.Public.Commands.AddCommentReply.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Interactions.UseCases.Public.Commands.AddCommentReply.V1;
@@ -94,7 +97,10 @@ public class PublicAddCommentReplyEndpointV1Tests(PostgresFixture db) : BaseApiT
             new PublicAddCommentReplyRequest("nested reply")
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<ArticleInteractionErrorMessage>(m => m.CannotReplyToReply())
+        );
     }
 
     [Fact]
@@ -108,7 +114,10 @@ public class PublicAddCommentReplyEndpointV1Tests(PostgresFixture db) : BaseApiT
             new PublicAddCommentReplyRequest("reply")
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("ArticleComment"))
+        );
     }
 
     /// <summary>
@@ -136,11 +145,6 @@ public class PublicAddCommentReplyEndpointV1Tests(PostgresFixture db) : BaseApiT
         });
     }
 
-    /// <summary>
-    /// A reply body past the excerpt limit reaches the parent author's email cut back to the last
-    /// word boundary before the limit, with an ellipsis standing in for the remainder. The tail of
-    /// the body must not survive into the notice.
-    /// </summary>
     [Fact]
     public async Task AddReply_WithALongBody_TruncatesTheEmailExcerptAtAWordBoundary()
     {
@@ -173,10 +177,6 @@ public class PublicAddCommentReplyEndpointV1Tests(PostgresFixture db) : BaseApiT
         email.TextBody.Should().NotContain(middle);
     }
 
-    /// <summary>
-    /// A long reply body holding no whitespace before the excerpt limit has no word boundary to
-    /// fall back on, so the excerpt is cut at the limit itself and still carries the ellipsis.
-    /// </summary>
     [Fact]
     public async Task AddReply_WithALongUnbrokenBody_TruncatesTheEmailExcerptAtTheLimit()
     {

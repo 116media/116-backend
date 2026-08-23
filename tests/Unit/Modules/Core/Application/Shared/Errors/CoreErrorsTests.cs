@@ -13,9 +13,9 @@ namespace _116.Unit.Tests.Modules.Core.Application.Shared.Errors;
 public class CoreErrorsTests
 {
     private readonly FileErrors _errors = TestErrorsFactory.CreateFileErrors();
-    private readonly ValidationErrorMessage _i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>("en");
+    private readonly ValidationErrorMessage _i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>();
     private readonly InternalServerErrorMessage _internalServer =
-        LocalizerFactory.CreateMessage<InternalServerErrorMessage>("en");
+        LocalizerFactory.CreateMessage<InternalServerErrorMessage>();
 
     [Fact]
     public void FileNameRequired_ShouldReturnBadRequestException()

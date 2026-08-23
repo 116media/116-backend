@@ -1,6 +1,7 @@
 using _116.Content.Application.Editorial.Specifications;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
+using _116.Tests.Fixtures.Builders.Entities.Content;
 using _116.Tests.Fixtures.Factories.Content;
 using AwesomeAssertions;
 using Xunit;
@@ -21,21 +22,10 @@ public class ArtistContentSpecificationsTests
         List<LyricsEntity>? lyrics = null,
         List<VideoEntity>? videos = null,
         List<AlbumEntity>? albums = null,
-        List<(ArticleArtistEntity Join, ArticleEntity Article)>? taggedArticles = null
+        List<ArticleArtistEntity>? taggedArticles = null
     )
     {
-        List<ArticleArtistEntity> joins = [];
-
-        if (taggedArticles is not null)
-        {
-            foreach ((ArticleArtistEntity join, ArticleEntity article) in taggedArticles)
-            {
-                // The predicate navigates join.Article.Status, so the navigation is wired
-                // by hand for the in-memory evaluation.
-                typeof(ArticleArtistEntity).GetProperty(nameof(ArticleArtistEntity.Article))!.SetValue(join, article);
-                joins.Add(join);
-            }
-        }
+        List<ArticleArtistEntity> joins = taggedArticles ?? [];
 
         var specification = new ArtistHasContentSpecification(
             lyrics: (lyrics ?? []).AsQueryable(),
@@ -110,9 +100,9 @@ public class ArtistContentSpecificationsTests
     {
         ArtistEntity artist = ArtistFactory.Create();
         ArticleEntity article = ArticleFactory.CreatePublished(CategoryId);
-        ArticleArtistEntity join = ArticleArtistEntity.Create(Guid.NewGuid(), article.Id, artist.Id);
+        ArticleArtistEntity join = new ArticleArtistBuilder().WithArticle(article).WithArtistId(artist.Id).Build();
 
-        Evaluate(artist, taggedArticles: [(join, article)]).Should().BeTrue();
+        Evaluate(artist, taggedArticles: [join]).Should().BeTrue();
     }
 
     [Fact]
@@ -122,9 +112,9 @@ public class ArtistContentSpecificationsTests
         // the article's status.
         ArtistEntity artist = ArtistFactory.Create();
         ArticleEntity draft = ArticleFactory.Create(CategoryId);
-        ArticleArtistEntity join = ArticleArtistEntity.Create(Guid.NewGuid(), draft.Id, artist.Id);
+        ArticleArtistEntity join = new ArticleArtistBuilder().WithArticle(draft).WithArtistId(artist.Id).Build();
 
-        Evaluate(artist, taggedArticles: [(join, draft)]).Should().BeFalse();
+        Evaluate(artist, taggedArticles: [join]).Should().BeFalse();
     }
 
     [Fact]

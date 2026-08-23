@@ -1,7 +1,11 @@
 using _116.Identity.Application.Roles.UseCases.Admin.Commands.CreatePermission.V1;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Builders.Requests.Identity;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.Roles.UseCases.Admin.Commands.CreatePermission.V1;
 
@@ -11,6 +15,9 @@ namespace _116.Integration.Tests.Modules.Identity.Application.Roles.UseCases.Adm
 [Collection("Database")]
 public class AdminCreatePermissionEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private static string ValidationDetail(string property, string message) =>
+        new ValidationException([new ValidationFailure(property, message)]).Message;
+
     [Fact]
     public async Task CreatePermission_ShouldReturnSuccess_WhenSuperAdminWithValidData()
     {
@@ -20,7 +27,7 @@ public class AdminCreatePermissionEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Permissions, request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.Created);
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var body = await response.ReadAsAsync<AdminCreatePermissionResponse>();
         body.Permission.Id.Should().NotBeEmpty();
@@ -74,7 +81,10 @@ public class AdminCreatePermissionEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Permissions, duplicateRequest);
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<ConflictErrorMessage>(m => m.PermissionAlreadyExists(request.Resource, request.Action))
+        );
     }
 
     [Fact]
@@ -88,6 +98,9 @@ public class AdminCreatePermissionEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Permissions, request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("Resource", Localized<ValidationErrorMessage>(m => m.PermissionResourceRequired()))
+        );
     }
 }

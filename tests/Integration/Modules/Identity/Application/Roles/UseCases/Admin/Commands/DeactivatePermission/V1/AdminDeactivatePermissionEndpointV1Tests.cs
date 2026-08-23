@@ -1,6 +1,8 @@
 using _116.Identity.Application.Roles.UseCases.Admin.Commands.DeactivatePermission.V1;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Identity;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.Roles.UseCases.Admin.Commands.DeactivatePermission.V1;
@@ -51,9 +53,6 @@ public class AdminDeactivatePermissionEndpointV1Tests(PostgresFixture db) : Base
         (await IsPermissionActiveAsync(permission.Id)).Should().BeFalse();
     }
 
-    /// <summary>
-    /// Verifies that deactivating a permission that is already inactive returns a 409 Conflict.
-    /// </summary>
     [Fact]
     public async Task DeactivatePermission_WhenAlreadyInactive_ReturnsConflict()
     {
@@ -68,7 +67,10 @@ public class AdminDeactivatePermissionEndpointV1Tests(PostgresFixture db) : Base
 
         var response = await Client.PatchAsync(Routes.Admin.Permissions.Deactivate(permission.Id), null);
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<ConflictErrorMessage>(m => m.PermissionAlreadyInactive())
+        );
         (await IsPermissionActiveAsync(permission.Id)).Should().BeFalse();
     }
 }

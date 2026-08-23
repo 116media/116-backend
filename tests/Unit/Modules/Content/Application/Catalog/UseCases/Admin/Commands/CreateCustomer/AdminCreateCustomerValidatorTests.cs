@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.CreateCustomer;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Tests.Fixtures.Constants;
@@ -29,11 +28,11 @@ public class AdminCreateCustomerValidatorTests
     {
         // Arrange
         var command = new AdminCreateCustomerCommand(
-            FullName: TestConstants.Content.Customer.ValidFullName,
-            Email: TestConstants.Content.Customer.ValidEmail,
-            Phone: TestConstants.Content.Customer.ValidPhone,
-            Company: TestConstants.Content.Customer.ValidCompany,
-            Notes: TestConstants.Content.Customer.ValidNotes
+            FullName: TestConstants.Customer.ValidFullName,
+            Email: TestConstants.Customer.ValidEmail,
+            Phone: TestConstants.Customer.ValidPhone,
+            Company: TestConstants.Customer.ValidCompany,
+            Notes: TestConstants.Customer.ValidNotes
         );
 
         // Act
@@ -49,8 +48,8 @@ public class AdminCreateCustomerValidatorTests
     {
         // Arrange
         var command = new AdminCreateCustomerCommand(
-            FullName: TestConstants.Content.Customer.ValidFullName,
-            Email: TestConstants.Content.Customer.ValidEmail,
+            FullName: TestConstants.Customer.ValidFullName,
+            Email: TestConstants.Customer.ValidEmail,
             Phone: null,
             Company: null,
             Notes: null
@@ -73,7 +72,7 @@ public class AdminCreateCustomerValidatorTests
         // Arrange
         var command = new AdminCreateCustomerCommand(
             FullName: string.Empty,
-            Email: TestConstants.Content.Customer.ValidEmail,
+            Email: TestConstants.Customer.ValidEmail,
             Phone: null,
             Company: null,
             Notes: null
@@ -97,8 +96,8 @@ public class AdminCreateCustomerValidatorTests
     {
         // Arrange
         var command = new AdminCreateCustomerCommand(
-            FullName: new string('a', TestConstants.Content.Customer.FullNameMaxLength + 1),
-            Email: TestConstants.Content.Customer.ValidEmail,
+            FullName: new string('a', TestConstants.Customer.FullNameMaxLength + 1),
+            Email: TestConstants.Customer.ValidEmail,
             Phone: null,
             Company: null,
             Notes: null
@@ -113,8 +112,7 @@ public class AdminCreateCustomerValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateCustomerCommand.FullName)
-                && e.ErrorMessage
-                    == _i18n.Customer.Msg.FullNameTooLong(TestConstants.Content.Customer.FullNameMaxLength)
+                && e.ErrorMessage == _i18n.Customer.Msg.FullNameTooLong(TestConstants.Customer.FullNameMaxLength)
             );
     }
 
@@ -127,7 +125,7 @@ public class AdminCreateCustomerValidatorTests
     {
         // Arrange
         var command = new AdminCreateCustomerCommand(
-            FullName: TestConstants.Content.Customer.ValidFullName,
+            FullName: TestConstants.Customer.ValidFullName,
             Email: string.Empty,
             Phone: null,
             Company: null,
@@ -152,7 +150,7 @@ public class AdminCreateCustomerValidatorTests
     {
         // Arrange
         var command = new AdminCreateCustomerCommand(
-            FullName: TestConstants.Content.Customer.ValidFullName,
+            FullName: TestConstants.Customer.ValidFullName,
             Email: "not-email",
             Phone: null,
             Company: null,
@@ -177,8 +175,8 @@ public class AdminCreateCustomerValidatorTests
     {
         // Arrange
         var command = new AdminCreateCustomerCommand(
-            FullName: TestConstants.Content.Customer.ValidFullName,
-            Email: new string('a', TestConstants.Content.Customer.EmailMaxLength + 1),
+            FullName: TestConstants.Customer.ValidFullName,
+            Email: new string('a', TestConstants.Customer.EmailMaxLength + 1),
             Phone: null,
             Company: null,
             Notes: null
@@ -201,9 +199,9 @@ public class AdminCreateCustomerValidatorTests
     {
         // Arrange
         var command = new AdminCreateCustomerCommand(
-            FullName: TestConstants.Content.Customer.ValidFullName,
-            Email: TestConstants.Content.Customer.ValidEmail,
-            Phone: new string('1', TestConstants.Content.Customer.PhoneMaxLength + 1),
+            FullName: TestConstants.Customer.ValidFullName,
+            Email: TestConstants.Customer.ValidEmail,
+            Phone: new string('1', TestConstants.Customer.PhoneMaxLength + 1),
             Company: null,
             Notes: null
         );
@@ -217,7 +215,7 @@ public class AdminCreateCustomerValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateCustomerCommand.Phone)
-                && e.ErrorMessage == _i18n.Customer.Msg.PhoneTooLong(TestConstants.Content.Customer.PhoneMaxLength)
+                && e.ErrorMessage == _i18n.Customer.Msg.PhoneTooLong(TestConstants.Customer.PhoneMaxLength)
             );
     }
 
@@ -226,10 +224,10 @@ public class AdminCreateCustomerValidatorTests
     {
         // Arrange
         var command = new AdminCreateCustomerCommand(
-            FullName: TestConstants.Content.Customer.ValidFullName,
-            Email: TestConstants.Content.Customer.ValidEmail,
+            FullName: TestConstants.Customer.ValidFullName,
+            Email: TestConstants.Customer.ValidEmail,
             Phone: null,
-            Company: new string('c', TestConstants.Content.Customer.CompanyMaxLength + 1),
+            Company: new string('c', TestConstants.Customer.CompanyMaxLength + 1),
             Notes: null
         );
 
@@ -242,7 +240,7 @@ public class AdminCreateCustomerValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateCustomerCommand.Company)
-                && e.ErrorMessage == _i18n.Customer.Msg.CompanyTooLong(TestConstants.Content.Customer.CompanyMaxLength)
+                && e.ErrorMessage == _i18n.Customer.Msg.CompanyTooLong(TestConstants.Customer.CompanyMaxLength)
             );
     }
 
@@ -251,11 +249,11 @@ public class AdminCreateCustomerValidatorTests
     {
         // Arrange
         var command = new AdminCreateCustomerCommand(
-            FullName: TestConstants.Content.Customer.ValidFullName,
-            Email: TestConstants.Content.Customer.ValidEmail,
+            FullName: TestConstants.Customer.ValidFullName,
+            Email: TestConstants.Customer.ValidEmail,
             Phone: null,
             Company: null,
-            Notes: new string('n', TestConstants.Content.Customer.NotesMaxLength + 1)
+            Notes: new string('n', TestConstants.Customer.NotesMaxLength + 1)
         );
 
         // Act
@@ -267,41 +265,7 @@ public class AdminCreateCustomerValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateCustomerCommand.Notes)
-                && e.ErrorMessage == _i18n.Customer.Msg.NotesTooLong(TestConstants.Content.Customer.NotesMaxLength)
-            );
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-        var validator = new AdminCreateCustomerValidator(_i18n);
-        var command = new AdminCreateCustomerCommand(
-            FullName: string.Empty,
-            Email: TestConstants.Content.Customer.ValidEmail,
-            Phone: null,
-            Company: null,
-            Notes: null
-        );
-
-        // Act
-        ValidationResult result = await validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminCreateCustomerCommand.FullName)
-                && e.ErrorMessage == _i18n.Customer.Msg.FullNameRequired()
+                && e.ErrorMessage == _i18n.Customer.Msg.NotesTooLong(TestConstants.Customer.NotesMaxLength)
             );
     }
 

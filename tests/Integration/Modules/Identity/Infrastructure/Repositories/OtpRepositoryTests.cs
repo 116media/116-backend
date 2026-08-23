@@ -37,10 +37,6 @@ public class OtpRepositoryTests(PostgresFixture postgres) : BaseRepositoryTest(p
         saved.Purpose.Should().Be(EnumOtpPurpose.EmailVerification);
     }
 
-    /// <summary>
-    /// Verifies that a persisted OTP keeps only the hash of its code: the row that reaches
-    /// PostgreSQL can never be read back as a usable credential.
-    /// </summary>
     [Fact]
     public async Task AddAsync_ShouldStoreTheCodeHashAndNeverThePlaintext()
     {
@@ -64,11 +60,6 @@ public class OtpRepositoryTests(PostgresFixture postgres) : BaseRepositoryTest(p
         saved.Purpose.Should().Be(EnumOtpPurpose.PasswordReset);
     }
 
-    /// <summary>
-    /// Verifies that <see cref="IOtpRepository.ValidateOtpAsync" /> accepts the plaintext code by
-    /// comparing it against the stored hash, exercising the identity lookup in
-    /// <c>OtpRepository</c> via <c>OtpForValidationSpecification</c>.
-    /// </summary>
     [Fact]
     public async Task ValidateOtpAsync_ValidOtp_ShouldReturnMatchingOtp()
     {
@@ -100,11 +91,6 @@ public class OtpRepositoryTests(PostgresFixture postgres) : BaseRepositoryTest(p
         await act.Should().ThrowAsync<NotFoundException>();
     }
 
-    /// <summary>
-    /// Verifies that <see cref="IOtpRepository.ValidateUsedOtpAsync" /> matches a consumed OTP by
-    /// hash comparison, exercising the used-row lookup in <c>OtpRepository</c> via
-    /// <c>OtpForUsedValidationSpecification</c>.
-    /// </summary>
     [Fact]
     public async Task ValidateUsedOtpAsync_UsedOtp_ShouldReturnMatchingOtp()
     {
@@ -124,11 +110,6 @@ public class OtpRepositoryTests(PostgresFixture postgres) : BaseRepositoryTest(p
         result.IsUsed.Should().BeTrue();
     }
 
-    /// <summary>
-    /// Verifies that a code that does not match the stored hash is rejected and consumes one of
-    /// the allowed attempts, and that exhausting them switches the failure to the attempts-limit
-    /// error. Drives <c>OtpRepository.ValidateOtpAsync</c> through the real DI-resolved repository.
-    /// </summary>
     [Fact]
     public async Task ValidateOtpAsync_WithAWrongCode_ShouldConsumeAttemptsUntilTheLimitIsReached()
     {

@@ -6,18 +6,19 @@ using _116.Tests.Fixtures.Helpers;
 namespace _116.Tests.Fixtures.Builders.Entities.Content;
 
 /// <summary>
-/// Fluent builder for creating <see cref="LyricsEntity"/> instances in tests.
-/// For test code, prefer using LyricsFactory instead of direct Builder usage.
+/// Fluent builder for creating <see cref="LyricsEntity" /> instances in tests.
+/// Drives the real domain transitions, so every state it produces is one the application can reach.
+/// Use it for any shape a test needs; LyricsFactory only names chains three or more tests share.
 /// </summary>
-internal class LyricsBuilder
+public class LyricsBuilder
 {
     private Guid _id = Guid.NewGuid();
     private Guid _categoryId;
-    private string _songTitle = TestConstants.Content.Editorial.Lyrics.ValidSongTitle;
-    private string _artistName = TestConstants.Content.Editorial.Lyrics.ValidArtistName;
-    private string _lyricsText = TestConstants.Content.Editorial.Lyrics.ValidLyricsText;
-    private string _language = TestConstants.Content.Editorial.Lyrics.ValidLanguage;
-    private string _slug = $"{TestConstants.Content.Editorial.Lyrics.ValidSlug}-{Guid.NewGuid():N}";
+    private string _songTitle = TestConstants.Lyrics.ValidSongTitle;
+    private string _artistName = TestConstants.Lyrics.ValidArtistName;
+    private string _lyricsText = TestConstants.Lyrics.ValidLyricsText;
+    private string _language = TestConstants.Lyrics.ValidLanguage;
+    private string _slug = $"{TestConstants.Lyrics.ValidSlug}-{Guid.NewGuid():N}";
     private Guid _authorId = Guid.NewGuid();
     private Guid? _videoId;
     private Guid? _customerId;
@@ -50,15 +51,6 @@ internal class LyricsBuilder
     public LyricsBuilder WithId(Guid id)
     {
         _id = id;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the category ID.
-    /// </summary>
-    public LyricsBuilder WithCategoryId(Guid categoryId)
-    {
-        _categoryId = categoryId;
         return this;
     }
 
@@ -177,7 +169,7 @@ internal class LyricsBuilder
     public LyricsBuilder AsRejected(string? reason = null)
     {
         _targetStatus = EnumContentStatus.Rejected;
-        _rejectionReason = reason ?? TestConstants.Content.Editorial.Lyrics.ValidRejectionReason;
+        _rejectionReason = reason ?? TestConstants.Lyrics.ValidRejectionReason;
         return this;
     }
 
@@ -361,7 +353,7 @@ internal class LyricsBuilder
                 entity.Publish();
                 break;
             case EnumContentStatus.Rejected:
-                entity.Reject(_rejectionReason ?? TestConstants.Content.Editorial.Lyrics.ValidRejectionReason);
+                entity.Reject(_rejectionReason ?? TestConstants.Lyrics.ValidRejectionReason);
                 break;
             case EnumContentStatus.Archived:
                 entity.MarkPendingReview();

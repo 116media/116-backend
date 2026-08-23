@@ -1,8 +1,13 @@
 using System.Net.Http.Headers;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadAlbumCover.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.UploadAlbumCover.V1;
 
@@ -12,6 +17,9 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminUploadAlbumCoverEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private static string ValidationDetail(string property, string message) =>
+        new ValidationException([new ValidationFailure(property, message)]).Message;
+
     private async Task<AlbumEntity> SeedAlbumAsync()
     {
         return await SeedAsync<ContentDbContext, AlbumEntity>(ctx =>
@@ -64,7 +72,10 @@ public class AdminUploadAlbumCoverEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         var response = await Client.PostAsync(Routes.Admin.Albums.Cover(Guid.NewGuid()), formContent);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Album"))
+        );
     }
 
     [Fact]
@@ -88,5 +99,21 @@ public class AdminUploadAlbumCoverEndpointV1Tests(PostgresFixture db) : BaseApiT
         await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
         AlbumEntity? persisted = await ctx.Albums.FindAsync(album.Id);
         persisted!.CoverImageFileId.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task UploadAlbumCover_WithNoFilePart_ReturnsLocalizedValidationProblem()
+    {
+        Client.AuthenticateAsSuperAdmin();
+
+        using var formContent = new MultipartFormDataContent();
+        formContent.Add(new StringContent("unused"), "note");
+
+        var response = await Client.PostAsync(Routes.Admin.Albums.Cover(Guid.NewGuid()), formContent);
+
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("File", Localized<LyricsErrorMessage>(m => m.FileRequired()))
+        );
     }
 }

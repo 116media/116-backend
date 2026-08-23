@@ -2,6 +2,7 @@ using _116.Shared.Application.Decorators;
 using _116.Shared.Contracts.Application.CQRS;
 using AwesomeAssertions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Xunit;
 
@@ -18,6 +19,12 @@ public class LoggingDecoratorTests
 
     public record TestResponse(string Result);
 
+    /// <summary>
+    /// The clock the decorator measures elapsed time with. xUnit builds a new class instance
+    /// per fact, so advancement never leaks between tests.
+    /// </summary>
+    private readonly FakeTimeProvider _time = new();
+
     #endregion
 
     #region Success Cases - Basic Logging
@@ -32,7 +39,7 @@ public class LoggingDecoratorTests
             .ReturnsAsync(new TestResponse("Success"));
 
         Mock<ILogger<LoggingDecorator<TestRequest, TestResponse>>> loggerMock = new();
-        LoggingDecorator<TestRequest, TestResponse> decorator = new(handlerMock.Object, loggerMock.Object);
+        LoggingDecorator<TestRequest, TestResponse> decorator = new(handlerMock.Object, loggerMock.Object, _time);
 
         TestRequest request = new("test");
 
@@ -56,7 +63,7 @@ public class LoggingDecoratorTests
             .ReturnsAsync(expectedResponse);
 
         Mock<ILogger<LoggingDecorator<TestRequest, TestResponse>>> loggerMock = new();
-        LoggingDecorator<TestRequest, TestResponse> decorator = new(handlerMock.Object, loggerMock.Object);
+        LoggingDecorator<TestRequest, TestResponse> decorator = new(handlerMock.Object, loggerMock.Object, _time);
 
         // Act
         TestResponse response = await decorator.Handle(new TestRequest("test"));
@@ -79,7 +86,7 @@ public class LoggingDecoratorTests
             .ReturnsAsync(new TestResponse("Success"));
 
         Mock<ILogger<LoggingDecorator<TestRequest, TestResponse>>> loggerMock = new();
-        LoggingDecorator<TestRequest, TestResponse> decorator = new(handlerMock.Object, loggerMock.Object);
+        LoggingDecorator<TestRequest, TestResponse> decorator = new(handlerMock.Object, loggerMock.Object, _time);
 
         // Act
         await decorator.Handle(new TestRequest("test"));
@@ -108,7 +115,7 @@ public class LoggingDecoratorTests
             .ReturnsAsync(new TestResponse("Success"));
 
         Mock<ILogger<LoggingDecorator<TestRequest, TestResponse>>> loggerMock = new();
-        LoggingDecorator<TestRequest, TestResponse> decorator = new(handlerMock.Object, loggerMock.Object);
+        LoggingDecorator<TestRequest, TestResponse> decorator = new(handlerMock.Object, loggerMock.Object, _time);
 
         // Act
         await decorator.Handle(new TestRequest("test"));
@@ -137,7 +144,7 @@ public class LoggingDecoratorTests
             .ReturnsAsync(new TestResponse("Success"));
 
         Mock<ILogger<LoggingDecorator<TestRequest, TestResponse>>> loggerMock = new();
-        LoggingDecorator<TestRequest, TestResponse> decorator = new(handlerMock.Object, loggerMock.Object);
+        LoggingDecorator<TestRequest, TestResponse> decorator = new(handlerMock.Object, loggerMock.Object, _time);
 
         // Act
         await decorator.Handle(new TestRequest("test"));
@@ -166,7 +173,7 @@ public class LoggingDecoratorTests
             .ReturnsAsync(new TestResponse("Success"));
 
         Mock<ILogger<LoggingDecorator<TestRequest, TestResponse>>> loggerMock = new();
-        LoggingDecorator<TestRequest, TestResponse> decorator = new(handlerMock.Object, loggerMock.Object);
+        LoggingDecorator<TestRequest, TestResponse> decorator = new(handlerMock.Object, loggerMock.Object, _time);
 
         // Act
         await decorator.Handle(new TestRequest("test"));
@@ -199,7 +206,7 @@ public class LoggingDecoratorTests
             .ReturnsAsync(new TestResponse("Success")); // Returns immediately
 
         Mock<ILogger<LoggingDecorator<TestRequest, TestResponse>>> loggerMock = new();
-        LoggingDecorator<TestRequest, TestResponse> decorator = new(handlerMock.Object, loggerMock.Object);
+        LoggingDecorator<TestRequest, TestResponse> decorator = new(handlerMock.Object, loggerMock.Object, _time);
 
         // Act
         await decorator.Handle(new TestRequest("test"));
@@ -218,21 +225,26 @@ public class LoggingDecoratorTests
         );
     }
 
-    [Fact]
-    public async Task Handle_WithSlowRequest_ShouldLogPerformanceWarning()
+    [Theory]
+    [InlineData(3.1, 1)]
+    [InlineData(2.9, 0)]
+    public async Task Handle_ShouldLogPerformanceWarningOnlyAboveTheThreeSecondThreshold(
+        double elapsedSeconds,
+        int expectedWarnings
+    )
     {
         // Arrange
         Mock<IRequestHandler<TestRequest, TestResponse>> handlerMock = new();
         handlerMock
             .Setup(h => h.Handle(It.IsAny<TestRequest>(), It.IsAny<CancellationToken>()))
-            .Returns(async () =>
+            .Returns(() =>
             {
-                await Task.Delay(3100); // Delay more than 3 seconds
-                return new TestResponse("Success");
+                _time.Advance(TimeSpan.FromSeconds(elapsedSeconds));
+                return Task.FromResult(new TestResponse("Success"));
             });
 
         Mock<ILogger<LoggingDecorator<TestRequest, TestResponse>>> loggerMock = new();
-        LoggingDecorator<TestRequest, TestResponse> decorator = new(handlerMock.Object, loggerMock.Object);
+        LoggingDecorator<TestRequest, TestResponse> decorator = new(handlerMock.Object, loggerMock.Object, _time);
 
         // Act
         await decorator.Handle(new TestRequest("test"));
@@ -247,7 +259,7 @@ public class LoggingDecoratorTests
                     It.IsAny<Exception>(),
                     It.IsAny<Func<It.IsAnyType, Exception?, string>>()
                 ),
-            Times.Once
+            Times.Exactly(expectedWarnings)
         );
     }
 
@@ -258,14 +270,14 @@ public class LoggingDecoratorTests
         Mock<IRequestHandler<TestRequest, TestResponse>> handlerMock = new();
         handlerMock
             .Setup(h => h.Handle(It.IsAny<TestRequest>(), It.IsAny<CancellationToken>()))
-            .Returns(async () =>
+            .Returns(() =>
             {
-                await Task.Delay(3100);
-                return new TestResponse("Success");
+                _time.Advance(TimeSpan.FromSeconds(4.25));
+                return Task.FromResult(new TestResponse("Success"));
             });
 
         Mock<ILogger<LoggingDecorator<TestRequest, TestResponse>>> loggerMock = new();
-        LoggingDecorator<TestRequest, TestResponse> decorator = new(handlerMock.Object, loggerMock.Object);
+        LoggingDecorator<TestRequest, TestResponse> decorator = new(handlerMock.Object, loggerMock.Object, _time);
 
         // Act
         await decorator.Handle(new TestRequest("test"));
@@ -276,7 +288,7 @@ public class LoggingDecoratorTests
                 x.Log(
                     LogLevel.Warning,
                     It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("seconds")),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("4.25 seconds")),
                     It.IsAny<Exception>(),
                     It.IsAny<Func<It.IsAnyType, Exception?, string>>()
                 ),
@@ -298,7 +310,7 @@ public class LoggingDecoratorTests
             .ReturnsAsync(new TestResponse("Success"));
 
         Mock<ILogger<LoggingDecorator<TestRequest, TestResponse>>> loggerMock = new();
-        LoggingDecorator<TestRequest, TestResponse> decorator = new(handlerMock.Object, loggerMock.Object);
+        LoggingDecorator<TestRequest, TestResponse> decorator = new(handlerMock.Object, loggerMock.Object, _time);
 
         CancellationTokenSource cts = new();
         CancellationToken token = cts.Token;
@@ -354,7 +366,7 @@ public class LoggingDecoratorTests
             )
             .Callback(() => logSequence.Add("End"));
 
-        LoggingDecorator<TestRequest, TestResponse> decorator = new(handlerMock.Object, loggerMock.Object);
+        LoggingDecorator<TestRequest, TestResponse> decorator = new(handlerMock.Object, loggerMock.Object, _time);
 
         // Act
         await decorator.Handle(new TestRequest("test"));
@@ -376,7 +388,7 @@ public class LoggingDecoratorTests
             .ThrowsAsync(new InvalidOperationException("Handler error"));
 
         Mock<ILogger<LoggingDecorator<TestRequest, TestResponse>>> loggerMock = new();
-        LoggingDecorator<TestRequest, TestResponse> decorator = new(handlerMock.Object, loggerMock.Object);
+        LoggingDecorator<TestRequest, TestResponse> decorator = new(handlerMock.Object, loggerMock.Object, _time);
 
         // Act
         try
@@ -416,7 +428,7 @@ public class LoggingDecoratorTests
             .ThrowsAsync(new InvalidOperationException("Handler error"));
 
         Mock<ILogger<LoggingDecorator<TestRequest, TestResponse>>> loggerMock = new();
-        LoggingDecorator<TestRequest, TestResponse> decorator = new(handlerMock.Object, loggerMock.Object);
+        LoggingDecorator<TestRequest, TestResponse> decorator = new(handlerMock.Object, loggerMock.Object, _time);
 
         // Act
         Func<Task> act = async () => await decorator.Handle(new TestRequest("test"));

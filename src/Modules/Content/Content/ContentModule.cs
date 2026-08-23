@@ -39,6 +39,7 @@ using Mapster;
 using MapsterMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace _116.Content;
 
@@ -49,11 +50,13 @@ public static class ContentModule
 {
     /// <summary>
     /// Gets the shared module configuration options for the Content module.
+    /// Migrations and seeding run in every environment except Testing.
     /// </summary>
-    private static ModuleOptions<ContentDbContext> GetModuleOptions()
+    /// <param name="environment">The host environment the options are derived from.</param>
+    /// <returns>The module options for the supplied environment.</returns>
+    private static ModuleOptions<ContentDbContext> GetModuleOptions(IHostEnvironment environment)
     {
-        string environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
-        bool enableSeeding = !environment.Equals("Testing", StringComparison.OrdinalIgnoreCase);
+        bool enableSeeding = !environment.IsEnvironment("Testing");
 
         return new ModuleOptions<ContentDbContext>
         {
@@ -68,10 +71,11 @@ public static class ContentModule
     /// Adds the Content module's services to the dependency injection container.
     /// </summary>
     /// <param name="services">The service collection to register services into.</param>
+    /// <param name="environment">The host environment deciding whether the module migrates and seeds.</param>
     /// <returns>The updated <see cref="IServiceCollection" /> for chaining.</returns>
-    public static IServiceCollection AddContentModule(this IServiceCollection services)
+    public static IServiceCollection AddContentModule(this IServiceCollection services, IHostEnvironment environment)
     {
-        services.AddModuleDatabase(GetModuleOptions());
+        services.AddModuleDatabase(GetModuleOptions(environment));
 
         // Register error message classes (IStringLocalizer-backed)
         services.AddScoped<ArticleErrorMessage>();
@@ -250,7 +254,8 @@ public static class ContentModule
     /// <returns>The updated <see cref="IApplicationBuilder" /> for chaining.</returns>
     public static IApplicationBuilder UseContentModule(this IApplicationBuilder app)
     {
-        ModuleOptions<ContentDbContext> options = GetModuleOptions();
+        IHostEnvironment environment = app.ApplicationServices.GetRequiredService<IHostEnvironment>();
+        ModuleOptions<ContentDbContext> options = GetModuleOptions(environment);
         app.UseModuleDatabase(options);
 
         if (options.EnableSeeding)

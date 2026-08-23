@@ -12,12 +12,15 @@ namespace _116.Unit.Tests.Modules.Identity.Infrastructure.Persistence.Seeds.Supe
 /// <summary>
 /// Unit tests for <see cref="SuperAdminEntityFactory"/>.
 /// </summary>
-[Collection("SuperAdminSeeder")]
-public class SuperAdminEntityFactoryTests
+[Collection("EnvironmentVariable")]
+public class SuperAdminEntityFactoryTests : IDisposable
 {
+    private const string DefaultPasswordVariable = "DEFAULT_USER_PASSWORD";
+
     private readonly Mock<IPasswordService> _passwordServiceMock;
     private readonly UserErrors _userErrors = TestErrorsFactory.CreateUserErrors();
     private readonly SuperAdminEntityFactory _factory;
+    private readonly string? _originalPassword;
 
     public SuperAdminEntityFactoryTests()
     {
@@ -25,11 +28,18 @@ public class SuperAdminEntityFactoryTests
         _factory = new SuperAdminEntityFactory(_passwordServiceMock.Object, TestErrorsFactory.CreateUserErrors());
 
         // Setup default password environment variable
-        string? originalPassword = Environment.GetEnvironmentVariable("DEFAULT_USER_PASSWORD");
-        if (string.IsNullOrWhiteSpace(originalPassword))
+        _originalPassword = Environment.GetEnvironmentVariable(DefaultPasswordVariable);
+        if (string.IsNullOrWhiteSpace(_originalPassword))
         {
-            Environment.SetEnvironmentVariable("DEFAULT_USER_PASSWORD", "TestPassword123!");
+            Environment.SetEnvironmentVariable(DefaultPasswordVariable, "TestPassword123!");
         }
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        Environment.SetEnvironmentVariable(DefaultPasswordVariable, _originalPassword);
+        GC.SuppressFinalize(this);
     }
 
     #region CreateSuperAdminUser Tests

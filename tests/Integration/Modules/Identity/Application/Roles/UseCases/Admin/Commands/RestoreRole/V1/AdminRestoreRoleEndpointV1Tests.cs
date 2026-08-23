@@ -1,6 +1,8 @@
 using _116.Identity.Application.Roles.UseCases.Admin.Commands.RestoreRole.V1;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Identity;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.Roles.UseCases.Admin.Commands.RestoreRole.V1;
@@ -43,9 +45,6 @@ public class AdminRestoreRoleEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
         (await IsRoleDeletedAsync(role.Id)).Should().BeFalse();
     }
 
-    /// <summary>
-    /// Verifies that restoring a role that is not deleted returns a 409 Conflict.
-    /// </summary>
     [Fact]
     public async Task RestoreRole_WhenNotDeleted_ReturnsConflict()
     {
@@ -60,7 +59,10 @@ public class AdminRestoreRoleEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         var response = await Client.PatchAsync(Routes.Admin.Roles.Restore(role.Id), null);
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<ConflictErrorMessage>(m => m.RoleNotDeleted())
+        );
         (await IsRoleDeletedAsync(role.Id)).Should().BeFalse();
     }
 }

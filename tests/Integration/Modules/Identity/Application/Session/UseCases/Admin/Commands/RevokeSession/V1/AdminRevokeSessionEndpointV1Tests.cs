@@ -3,6 +3,8 @@ using _116.Identity.Application.Session.UseCases.Admin.Commands.RevokeSession.V1
 using _116.Identity.Domain.Constants;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Identity;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.Session.UseCases.Admin.Commands.RevokeSession.V1;
@@ -34,7 +36,10 @@ public class AdminRevokeSessionEndpointV1Tests(PostgresFixture db) : BaseApiTest
         Guid nonExistentId = Guid.NewGuid();
         var response = await Client.PostAsync($"{RevokeSessionBaseUrl}/{nonExistentId}", null);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Session"))
+        );
     }
 
     [Fact]

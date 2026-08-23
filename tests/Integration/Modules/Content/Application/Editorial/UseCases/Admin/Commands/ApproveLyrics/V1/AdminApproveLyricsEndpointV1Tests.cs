@@ -1,8 +1,11 @@
 using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.ApproveLyrics.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.ApproveLyrics.V1;
@@ -83,13 +86,12 @@ public class AdminApproveLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest
             null
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Lyrics"))
+        );
     }
 
-    /// <summary>
-    /// Verifies that approving a lyrics page that is already in Approved status
-    /// returns a 409 Conflict problem and leaves the lyrics page approved.
-    /// </summary>
     [Fact]
     public async Task ApproveLyrics_WhenAlreadyApproved_ReturnsConflict()
     {
@@ -101,14 +103,13 @@ public class AdminApproveLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest
             null
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<LyricsErrorMessage>(m => m.AlreadyApproved())
+        );
         (await GetLyricsStatusAsync(lyrics.Id)).Should().Be(EnumContentStatus.Approved);
     }
 
-    /// <summary>
-    /// Verifies that approving a PendingReview lyrics page succeeds, returns IsSuccess true,
-    /// and transitions the persisted status to Approved.
-    /// </summary>
     [Fact]
     public async Task ApproveLyrics_AsSuperAdmin_PendingReviewLyrics_ReturnsOk()
     {

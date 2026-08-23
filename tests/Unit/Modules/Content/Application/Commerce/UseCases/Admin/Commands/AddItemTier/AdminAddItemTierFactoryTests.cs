@@ -36,7 +36,7 @@ public class AdminAddItemTierFactoryTests
             _lookupRepositoryMock.Object,
             _unitOfWorkMock.Object,
             TestErrorsFactory.CreateContentOrderErrors(),
-            TestErrorsFactory.CreatePricingTierErrors()
+            TestErrorsFactory.CreateCategoryErrors()
         );
     }
 
@@ -159,7 +159,6 @@ public class AdminAddItemTierFactoryTests
         ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, category.Id);
         PricingTierEntity pricingTier = PricingTierFactory.CreateDefault();
 
-        // Pre-attach the same tier to the item
         ContentItemTierEntity existingTier = ContentItemTierFactory.Create(item.Id, pricingTier.Id, 100m);
         item.Tiers.Add(existingTier);
 

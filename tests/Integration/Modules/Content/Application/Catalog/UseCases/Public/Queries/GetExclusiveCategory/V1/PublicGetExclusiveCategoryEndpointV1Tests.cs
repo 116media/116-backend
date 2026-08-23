@@ -1,6 +1,8 @@
 using _116.Content.Application.Catalog.UseCases.Public.Queries.GetExclusiveCategory.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Catalog.UseCases.Public.Queries.GetExclusiveCategory.V1;
@@ -18,7 +20,10 @@ public class PublicGetExclusiveCategoryEndpointV1Tests(PostgresFixture db) : Bas
 
         var response = await Client.GetAsync($"{ApiRoutes.Public.Categories}/exclusive?pageIndex=0&pageSize=10");
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<CategoryErrorMessage>(m => m.NoExclusiveCategoryFound())
+        );
     }
 
     [Fact]

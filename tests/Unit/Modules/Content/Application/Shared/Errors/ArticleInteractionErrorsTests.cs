@@ -14,7 +14,7 @@ public class ArticleInteractionErrorsTests
 {
     private readonly ArticleInteractionErrors _errors = TestErrorsFactory.CreateArticleInteractionErrors();
     private readonly ArticleInteractionErrorMessage _message =
-        LocalizerFactory.CreateMessage<ArticleInteractionErrorMessage>("en");
+        LocalizerFactory.CreateMessage<ArticleInteractionErrorMessage>();
 
     [Fact]
     public void AlreadyLiked_ShouldReturnConflictException()

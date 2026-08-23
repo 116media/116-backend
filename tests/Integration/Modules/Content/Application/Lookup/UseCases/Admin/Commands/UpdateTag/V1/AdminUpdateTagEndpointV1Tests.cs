@@ -1,9 +1,15 @@
 using _116.Content.Application.Lookup.UseCases.Admin.Commands.UpdateTag.V1;
+using _116.Content.Application.Shared.Errors.Messages;
+using _116.Content.Domain.Constants;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Lookup.UseCases.Admin.Commands.UpdateTag.V1;
 
@@ -13,6 +19,9 @@ namespace _116.Integration.Tests.Modules.Content.Application.Lookup.UseCases.Adm
 [Collection("Database")]
 public class AdminUpdateTagEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private static string ValidationDetail(string property, string message) =>
+        new ValidationException([new ValidationFailure(property, message)]).Message;
+
     [Fact]
     public async Task UpdateTag_WithNoAuth_ReturnsUnauthorized()
     {
@@ -32,7 +41,10 @@ public class AdminUpdateTagEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Tags}/{Guid.NewGuid()}", request);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Tag"))
+        );
     }
 
     [Fact]
@@ -63,48 +75,40 @@ public class AdminUpdateTagEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
         persisted.Slug.Should().Be(request.Slug);
     }
 
-    /// <summary>
-    /// Verifies that updating a tag with a slug exceeding the maximum allowed length
-    /// (60 characters) returns a 400 Bad Request response.
-    /// </summary>
     [Fact]
     public async Task UpdateTag_WithSlugTooLong_ReturnsBadRequest()
     {
         Client.AuthenticateAsSuperAdmin();
         Guid id = Guid.NewGuid();
         var request = new AdminUpdateTagRequestBuilder()
-            .WithSlug(new string('a', TestConstants.Content.Tag.SlugMaxLength + 1))
+            .WithSlug(new string('a', TestConstants.Tag.SlugMaxLength + 1))
             .Build();
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Tags}/{id}", request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("Slug", Localized<TagErrorMessage>(m => m.SlugTooLong(ContentConstants.MaxTagSlugLength)))
+        );
     }
 
-    /// <summary>
-    /// Verifies that updating a tag with a name exceeding the maximum allowed length
-    /// (50 characters) returns a 400 Bad Request response, exercising the
-    /// <c>isRequired=false</c> branch of <c>ValidTagName</c> in TagValidation.
-    /// </summary>
     [Fact]
     public async Task UpdateTag_WithNameTooLong_ReturnsBadRequest()
     {
         Client.AuthenticateAsSuperAdmin();
         Guid id = Guid.NewGuid();
         var request = new AdminUpdateTagRequestBuilder()
-            .WithName(new string('T', TestConstants.Content.Tag.NameMaxLength + 1))
+            .WithName(new string('T', TestConstants.Tag.NameMaxLength + 1))
             .Build();
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Tags}/{id}", request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("Name", Localized<TagErrorMessage>(m => m.NameTooLong(ContentConstants.MaxTagNameLength)))
+        );
     }
 
-    /// <summary>
-    /// Verifies that updating a tag with a slug that does not match the required format
-    /// (lowercase letters, numbers, and hyphens only) returns a 400 Bad Request response,
-    /// exercising the slug regex branch of TagValidation.
-    /// </summary>
     [Fact]
     public async Task UpdateTag_WithInvalidSlugFormat_ReturnsBadRequest()
     {
@@ -114,6 +118,9 @@ public class AdminUpdateTagEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Tags}/{id}", request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("Slug", Localized<TagErrorMessage>(m => m.SlugInvalidFormat()))
+        );
     }
 }

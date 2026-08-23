@@ -64,11 +64,11 @@ public class AdminUpdateLyricsHandlerTests : BaseContentHandlerTest
         new(
             Id: lyrics.Id.ToString(),
             CategoryId: categoryId,
-            SongTitle: TestConstants.Content.Editorial.Lyrics.ValidSongTitle,
-            ArtistName: TestConstants.Content.Editorial.Lyrics.ValidArtistName,
+            SongTitle: TestConstants.Lyrics.ValidSongTitle,
+            ArtistName: TestConstants.Lyrics.ValidArtistName,
             Slug: slug ?? lyrics.Slug,
-            LyricsText: TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
-            Language: TestConstants.Content.Editorial.Lyrics.ValidLanguage,
+            LyricsText: TestConstants.Lyrics.ValidLyricsText,
+            Language: TestConstants.Lyrics.ValidLanguage,
             VideoId: videoId,
             CustomerId: null,
             OrderItemId: null
@@ -210,11 +210,7 @@ public class AdminUpdateLyricsHandlerTests : BaseContentHandlerTest
         // Lyrics has a different slug so the handler's slug-change check is triggered.
         LyricsEntity lyrics = LyricsFactory.CreateWithSlug(CategoryId, "original-lyrics-slug");
         // Command uses ValidSlug — a different slug that already belongs to another lyrics page.
-        AdminUpdateLyricsCommand command = BuildCommand(
-            lyrics,
-            category.Id,
-            slug: TestConstants.Content.Editorial.Lyrics.ValidSlug
-        );
+        AdminUpdateLyricsCommand command = BuildCommand(lyrics, category.Id, slug: TestConstants.Lyrics.ValidSlug);
         LyricsEntity conflicting = LyricsFactory.CreateWithSlug(CategoryId, command.Slug);
 
         _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);

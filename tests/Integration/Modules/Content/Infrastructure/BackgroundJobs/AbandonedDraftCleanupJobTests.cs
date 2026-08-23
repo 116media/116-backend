@@ -32,10 +32,6 @@ public class AbandonedDraftCleanupJobTests(PostgresFixture db) : BaseApiTest(db)
     private AbandonedDraftCleanupJob CreateJob() =>
         new(Api.Services.GetRequiredService<IServiceScopeFactory>(), NullLogger<AbandonedDraftCleanupJob>.Instance);
 
-    /// <summary>
-    /// Verifies that <c>ContentModule</c> actually schedules the job, so the purge behaviour proven
-    /// below runs in production rather than only when a test invokes it.
-    /// </summary>
     [Fact]
     public async Task ContentModule_SchedulesTheJobWithTheRunningScheduler()
     {
@@ -50,13 +46,6 @@ public class AbandonedDraftCleanupJobTests(PostgresFixture db) : BaseApiTest(db)
         exists.Should().BeTrue();
     }
 
-    /// <summary>
-    /// Verifies the whole purge in one run: only the back-dated empty draft is removed, its
-    /// <c>article_images</c> rows go with it through the foreign-key cascade, a recent draft and a
-    /// published article are left alone, and the post-commit <c>ArticleDeletedEvent</c> reaction
-    /// runs from a job-driven commit — soft-deleting the cover file row and handing the body image
-    /// storage keys to the storage provider.
-    /// </summary>
     [Fact]
     public async Task Execute_PurgesTheAbandonedDraftWithItsAssetsAndLeavesLiveArticlesAlone()
     {
@@ -115,11 +104,6 @@ public class AbandonedDraftCleanupJobTests(PostgresFixture db) : BaseApiTest(db)
         CloudinaryStub.DeletedPublicIds.Should().Contain([firstBodyKey, secondBodyKey]);
     }
 
-    /// <summary>
-    /// Verifies that a run with nothing to purge is a no-op: an empty draft created inside the
-    /// cutoff window survives, so the job's age condition is what selects rows rather than the
-    /// emptiness condition alone.
-    /// </summary>
     [Fact]
     public async Task Execute_WithNoDraftOlderThanTheCutoff_RemovesNothing()
     {

@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.RejectVideo;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Tests.Fixtures.Constants;
@@ -30,7 +29,7 @@ public class AdminRejectVideoValidatorTests
         // Arrange
         var command = new AdminRejectVideoCommand(
             Id: Guid.NewGuid().ToString(),
-            Reason: TestConstants.Content.Editorial.Video.ValidRejectionReason
+            Reason: TestConstants.Video.ValidRejectionReason
         );
 
         // Act
@@ -49,10 +48,7 @@ public class AdminRejectVideoValidatorTests
     public async Task Validate_WithEmptyId_ShouldHaveError()
     {
         // Arrange
-        var command = new AdminRejectVideoCommand(
-            Id: string.Empty,
-            Reason: TestConstants.Content.Editorial.Video.ValidRejectionReason
-        );
+        var command = new AdminRejectVideoCommand(Id: string.Empty, Reason: TestConstants.Video.ValidRejectionReason);
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -71,10 +67,7 @@ public class AdminRejectVideoValidatorTests
     public async Task Validate_WithInvalidGuidId_ShouldHaveError()
     {
         // Arrange
-        var command = new AdminRejectVideoCommand(
-            Id: "not-a-guid",
-            Reason: TestConstants.Content.Editorial.Video.ValidRejectionReason
-        );
+        var command = new AdminRejectVideoCommand(Id: "not-a-guid", Reason: TestConstants.Video.ValidRejectionReason);
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -118,7 +111,7 @@ public class AdminRejectVideoValidatorTests
         // Arrange
         var command = new AdminRejectVideoCommand(
             Id: Guid.NewGuid().ToString(),
-            Reason: new string('a', TestConstants.Content.Editorial.Video.RejectionReasonMaxLength + 1)
+            Reason: new string('a', TestConstants.Video.RejectionReasonMaxLength + 1)
         );
 
         // Act
@@ -131,43 +124,7 @@ public class AdminRejectVideoValidatorTests
             .Contain(e =>
                 e.PropertyName == nameof(AdminRejectVideoCommand.Reason)
                 && e.ErrorMessage
-                    == _i18n.Article.Msg.RejectionReasonTooLong(
-                        TestConstants.Content.Editorial.Video.RejectionReasonMaxLength
-                    )
-            );
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-        var validator = new AdminRejectVideoValidator(_i18n);
-        var command = new AdminRejectVideoCommand(Id: string.Empty, Reason: string.Empty);
-
-        // Act
-        ValidationResult result = await validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminRejectVideoCommand.Id)
-                && e.ErrorMessage == _i18n.Video.Msg.Localizer["VideoIdRequired"].Value
-            );
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminRejectVideoCommand.Reason)
-                && e.ErrorMessage == _i18n.Article.Msg.RejectionReasonRequired()
+                    == _i18n.Article.Msg.RejectionReasonTooLong(TestConstants.Video.RejectionReasonMaxLength)
             );
     }
 

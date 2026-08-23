@@ -24,7 +24,7 @@ public class PublicAddArticleCommentValidatorTests
         var command = new PublicAddArticleCommentCommand(
             ArticleId: Guid.NewGuid(),
             UserId: Guid.NewGuid(),
-            Body: TestConstants.Content.Interactions.ValidCommentBody
+            Body: TestConstants.Interactions.ValidCommentBody
         );
 
         // Act

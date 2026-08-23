@@ -13,7 +13,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Shared.Errors;
 public class CategoryErrorsTests
 {
     private readonly CategoryErrors _errors = TestErrorsFactory.CreateCategoryErrors();
-    private readonly CategoryErrorMessage _message = LocalizerFactory.CreateMessage<CategoryErrorMessage>("en");
+    private readonly CategoryErrorMessage _message = LocalizerFactory.CreateMessage<CategoryErrorMessage>();
 
     [Fact]
     public void AlreadyExists_WithSlug_ShouldReturnConflictException()

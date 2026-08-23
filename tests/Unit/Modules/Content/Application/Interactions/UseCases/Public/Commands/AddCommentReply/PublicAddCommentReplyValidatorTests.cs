@@ -21,9 +21,7 @@ public class PublicAddCommentReplyValidatorTests
     [Fact]
     public async Task Validate_WhenBodyIsValid_ShouldPass()
     {
-        ValidationResult result = await _validator.ValidateAsync(
-            Command(TestConstants.Content.Interactions.ValidCommentBody)
-        );
+        ValidationResult result = await _validator.ValidateAsync(Command(TestConstants.Interactions.ValidCommentBody));
 
         result.IsValid.Should().BeTrue();
     }

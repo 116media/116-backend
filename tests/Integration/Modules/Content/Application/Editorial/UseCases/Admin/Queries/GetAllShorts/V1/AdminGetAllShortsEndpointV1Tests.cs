@@ -67,10 +67,6 @@ public class AdminGetAllShortsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         body.ShortVideos.Should().NotBeNull();
     }
 
-    /// <summary>
-    /// Verifies that the search query parameter filters short videos by title,
-    /// returning only short videos whose title matches the search term.
-    /// </summary>
     [Fact]
     public async Task GetAllShorts_WithSearchQuery_ReturnsFilteredResults()
     {

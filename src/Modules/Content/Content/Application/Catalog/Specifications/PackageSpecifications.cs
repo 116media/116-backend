@@ -52,3 +52,16 @@ public class PackageSlotByIdSpecification(Guid slotId) : Specification<PackageSl
         return slot => slot.Id == slotId;
     }
 }
+
+/// <summary>
+/// Specification that matches a package slot by its identifier within a specific package.
+/// A slot that belongs to a different package is not a match.
+/// </summary>
+public class PackageSlotByIdInPackageSpecification(Guid slotId, Guid packageId) : Specification<PackageSlotEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<PackageSlotEntity, bool>> ToExpression()
+    {
+        return slot => slot.Id == slotId && slot.PackageId == packageId;
+    }
+}

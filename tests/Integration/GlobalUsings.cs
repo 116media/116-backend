@@ -3,6 +3,7 @@ global using System.Net.Http.Json;
 global using _116.Integration.Tests.Common.Base;
 global using _116.Integration.Tests.Common.Extensions;
 global using _116.Integration.Tests.Common.Fixtures;
+global using _116.Integration.Tests.Common.Helpers;
 global using static _116.Tests.Fixtures.Constants.TestConstants;
 global using _116.Tests.Fixtures.Routes;
 global using AwesomeAssertions;

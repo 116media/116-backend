@@ -14,6 +14,7 @@ namespace _116.Unit.Tests.Modules.Identity.Infrastructure.Services;
 /// <summary>
 /// Unit tests for <see cref="TokenDeliveryService"/>.
 /// </summary>
+[Collection("EnvironmentVariable")]
 public class TokenDeliveryServiceTests : IDisposable
 {
     private const string AspNetCoreEnvVar = "ASPNETCORE_ENVIRONMENT";
@@ -31,9 +32,11 @@ public class TokenDeliveryServiceTests : IDisposable
         _sut = new TokenDeliveryService(_httpContextAccessorMock.Object, _sessionMetadataServiceMock.Object);
     }
 
+    /// <inheritdoc />
     public void Dispose()
     {
         Environment.SetEnvironmentVariable(AspNetCoreEnvVar, _originalEnvironment);
+        GC.SuppressFinalize(this);
     }
 
     #region IsWebClient Tests

@@ -2,6 +2,8 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpsertArtistSoc
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.UpsertArtistSocialLink.V1;
@@ -64,7 +66,10 @@ public class AdminUpsertArtistSocialLinkEndpointV1Tests(PostgresFixture db) : Ba
             new AdminUpsertArtistSocialLinkRequest(InstagramUrl)
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Artist"))
+        );
     }
 
     [Fact]
@@ -94,10 +99,6 @@ public class AdminUpsertArtistSocialLinkEndpointV1Tests(PostgresFixture db) : Ba
         persisted.Url.Should().Be(InstagramUrl);
     }
 
-    /// <summary>
-    /// Two upserts on one platform slot must leave exactly one row carrying the second URL —
-    /// the upsert verb exists precisely so this is never a 409.
-    /// </summary>
     [Fact]
     public async Task UpsertArtistSocialLink_Twice_LeavesOneRowWithTheSecondUrl()
     {
@@ -149,10 +150,6 @@ public class AdminUpsertArtistSocialLinkEndpointV1Tests(PostgresFixture db) : Ba
         rows.Select(r => r.Platform).Should().Equal(EnumSocialPlatform.Instagram, EnumSocialPlatform.YouTube);
     }
 
-    /// <summary>
-    /// The URL becomes an href on the public page, so a non-https scheme is rejected on
-    /// write — a javascript: value here would be a stored XSS vector.
-    /// </summary>
     [Theory]
     [InlineData("http://instagram.com/someone")]
     [InlineData("javascript:alert(1)")]

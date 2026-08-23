@@ -4,7 +4,9 @@ using _116.Tests.Fixtures.Builders.Entities.Content;
 namespace _116.Tests.Fixtures.Factories.Content;
 
 /// <summary>
-/// Factory for quickly creating <see cref="LyricsTranslationRevisionEntity"/> instances in tests.
+/// Named aliases for <see cref="LyricsTranslationRevisionBuilder" /> chains that three or more tests share verbatim.
+/// A shape fewer tests need belongs at the call site as a builder chain, not here —
+/// factory names carry the combinatorics, and combinatorics multiply.
 /// </summary>
 public static class LyricsTranslationRevisionFactory
 {
@@ -13,12 +15,6 @@ public static class LyricsTranslationRevisionFactory
     /// </summary>
     public static LyricsTranslationRevisionEntity Create(Guid translationId) =>
         new LyricsTranslationRevisionBuilder().WithTranslationId(translationId).Build();
-
-    /// <summary>
-    /// Creates a pending translation revision with a specific ID.
-    /// </summary>
-    public static LyricsTranslationRevisionEntity CreateWithId(Guid id, Guid translationId) =>
-        new LyricsTranslationRevisionBuilder().WithId(id).WithTranslationId(translationId).Build();
 
     /// <summary>
     /// Creates a pending translation revision proposed by a specific user, with specific text.

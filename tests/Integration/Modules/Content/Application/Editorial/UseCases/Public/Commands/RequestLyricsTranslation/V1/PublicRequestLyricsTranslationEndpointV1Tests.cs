@@ -2,6 +2,8 @@ using _116.Content.Application.Editorial.UseCases.Public.Commands.RequestLyricsT
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Public.Commands.RequestLyricsTranslation.V1;
@@ -35,14 +37,12 @@ public class PublicRequestLyricsTranslationEndpointV1Tests(PostgresFixture db) :
             new PublicRequestLyricsTranslationRequest("es")
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Lyrics"))
+        );
     }
 
-    /// <summary>
-    /// The first request for a given <c>(lyricsId, language)</c> pair calls through to the
-    /// real, DI-wired placeholder <c>ITranslationService</c> and persists a new AI-sourced
-    /// translation row.
-    /// </summary>
     [Fact]
     public async Task RequestLyricsTranslation_FirstRequestForLanguage_CreatesAiSourcedTranslation()
     {
@@ -78,13 +78,6 @@ public class PublicRequestLyricsTranslationEndpointV1Tests(PostgresFixture db) :
         persisted[0].Source.Should().Be(EnumTranslationSource.Ai);
     }
 
-    /// <summary>
-    /// A second request for the same <c>(lyricsId, language)</c> pair returns the already
-    /// persisted translation rather than generating and inserting a second row — idempotency
-    /// is proven via the persisted row count, not by asserting the placeholder service wasn't
-    /// invoked again, since it is a real DI-wired dependency in this integration test, not a
-    /// mock.
-    /// </summary>
     [Fact]
     public async Task RequestLyricsTranslation_SecondRequestForSameLanguage_DoesNotCreateSecondRow()
     {
@@ -121,10 +114,6 @@ public class PublicRequestLyricsTranslationEndpointV1Tests(PostgresFixture db) :
         persistedCount.Should().Be(1);
     }
 
-    /// <summary>
-    /// Requesting a different language for the same lyrics page creates its own independent
-    /// translation row rather than colliding with the first.
-    /// </summary>
     [Fact]
     public async Task RequestLyricsTranslation_DifferentLanguageForSameLyrics_CreatesSecondIndependentRow()
     {

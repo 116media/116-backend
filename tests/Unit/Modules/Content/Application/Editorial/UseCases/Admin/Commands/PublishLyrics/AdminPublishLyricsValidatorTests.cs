@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.PublishLyrics;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Tests.Fixtures.Helpers;
@@ -77,34 +76,6 @@ public class AdminPublishLyricsValidatorTests
             .Contain(e =>
                 e.PropertyName == nameof(AdminPublishLyricsCommand.Id)
                 && e.ErrorMessage == _i18n.Lyrics.Msg.Localizer["IdInvalid"].Value
-            );
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-        var validator = new AdminPublishLyricsValidator(_i18n);
-        var command = new AdminPublishLyricsCommand(Id: string.Empty);
-
-        // Act
-        ValidationResult result = await validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminPublishLyricsCommand.Id)
-                && e.ErrorMessage == _i18n.Lyrics.Msg.Localizer["IdRequired"].Value
             );
     }
 

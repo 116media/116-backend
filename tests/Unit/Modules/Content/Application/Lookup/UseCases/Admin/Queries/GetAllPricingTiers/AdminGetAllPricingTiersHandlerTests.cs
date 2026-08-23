@@ -48,7 +48,7 @@ public class AdminGetAllPricingTiersHandlerTests : BaseContentHandlerTest
     public async Task Handle_WithSearchTerm_ShouldPassSearchToRepository()
     {
         // Arrange
-        string searchTerm = TestConstants.Content.PricingTier.ValidName;
+        string searchTerm = TestConstants.PricingTier.ValidName;
         PricingTierEntity tier = PricingTierFactory.CreateDefault();
         _lookupRepositoryMock.SetupGetAllPricingTiers(new List<PricingTierEntity> { tier });
 

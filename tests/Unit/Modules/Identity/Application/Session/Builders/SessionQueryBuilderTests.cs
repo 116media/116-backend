@@ -1,7 +1,10 @@
 using _116.Identity.Application.Session.Builders;
 using _116.Identity.Application.Session.Builders.Contracts;
 using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.Enums;
 using _116.Shared.Application.Specifications;
+using _116.Tests.Fixtures.Factories.Identity;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
@@ -248,6 +251,71 @@ public class SessionQueryBuilderTests
 
         // Assert
         specification.Should().BeNull("whitespace status should be ignored");
+    }
+
+    /// <summary>
+    /// Supplies each recognised session status in mixed casing, the culture the comparison runs
+    /// under, and the status the builder is expected to select.
+    /// </summary>
+    /// <returns>Status string, culture name, and expected status per row.</returns>
+    public static TheoryData<string, string, EnumSessionStatus> StatusesAndCultures()
+    {
+        var data = new TheoryData<string, string, EnumSessionStatus>();
+
+        (string Status, EnumSessionStatus Expected)[] statuses =
+        [
+            ("Active", EnumSessionStatus.Active),
+            ("ACTIVE", EnumSessionStatus.Active),
+            ("active", EnumSessionStatus.Active),
+            ("Expired", EnumSessionStatus.Expired),
+            ("EXPIRED", EnumSessionStatus.Expired),
+            ("Revoked", EnumSessionStatus.Revoked),
+            ("REVOKED", EnumSessionStatus.Revoked),
+        ];
+
+        foreach ((string status, EnumSessionStatus expected) in statuses)
+        {
+            data.Add(status, "en-US", expected);
+            data.Add(status, "tr-TR", expected);
+        }
+
+        return data;
+    }
+
+    [Theory]
+    [MemberData(nameof(StatusesAndCultures))]
+    public void WithStatus_ShouldSelectTheMatchingSpecification_InEveryCulture(
+        string status,
+        string culture,
+        EnumSessionStatus expected
+    )
+    {
+        using var cultureScope = new CultureScope(culture);
+
+        SessionQueryBuilder builder = new();
+
+        // Act
+        Specification<SessionEntity>? specification = builder.WithStatus(status).Build();
+
+        // Assert
+        specification.Should().NotBeNull($"'{status}' is a recognised status under {culture}");
+
+        SessionEntity activeSession = SessionFactory.Create();
+        SessionEntity expiredSession = SessionFactory.CreateExpired();
+        SessionEntity revokedSession = SessionFactory.CreateRevoked();
+
+        specification!
+            .IsSatisfiedBy(activeSession)
+            .Should()
+            .Be(expected == EnumSessionStatus.Active, $"'{status}' under {culture} selects {expected}");
+        specification
+            .IsSatisfiedBy(expiredSession)
+            .Should()
+            .Be(expected == EnumSessionStatus.Expired, $"'{status}' under {culture} selects {expected}");
+        specification
+            .IsSatisfiedBy(revokedSession)
+            .Should()
+            .Be(expected == EnumSessionStatus.Revoked, $"'{status}' under {culture} selects {expected}");
     }
 
     #endregion

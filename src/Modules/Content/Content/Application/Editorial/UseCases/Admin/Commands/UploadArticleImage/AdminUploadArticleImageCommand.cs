@@ -9,9 +9,9 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadArtic
 /// Command for uploading an image associated with an article (cover or body).
 /// </summary>
 /// <param name="ArticleId">The unique identifier of the article to attach the image to.</param>
-/// <param name="File">The image file to upload.</param>
+/// <param name="File">The image file to upload. Null when the file part is missing.</param>
 /// <param name="ImageType">Whether this is a cover image or a body image.</param>
-public record AdminUploadArticleImageCommand(string ArticleId, IFormFile File, EnumArticleImageType ImageType)
+public record AdminUploadArticleImageCommand(string ArticleId, IFormFile? File, EnumArticleImageType ImageType)
     : ICommand<AdminUploadArticleImageResult>;
 
 /// <summary>

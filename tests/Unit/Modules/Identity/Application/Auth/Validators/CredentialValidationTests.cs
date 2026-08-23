@@ -14,7 +14,7 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Auth.Validators;
 /// </summary>
 public class CredentialValidationTests
 {
-    private readonly ValidationErrorMessage _enMsg = LocalizerFactory.CreateMessage<ValidationErrorMessage>("en");
+    private readonly ValidationErrorMessage _enMsg = LocalizerFactory.CreateMessage<ValidationErrorMessage>();
 
     // Property names must match what the optional When() conditions check via reflection
     private class TestEmailCommand

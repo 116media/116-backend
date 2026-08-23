@@ -186,18 +186,28 @@ public class OtpEntityTests
     }
 
     [Fact]
-    public void HasMaxAttemptsReached_AfterIncrementingToMax_ShouldReturnTrue()
+    public void HasMaxAttemptsReached_OneAttemptBelowTheThreshold_ShouldReturnFalse()
     {
-        // Arrange
         OtpEntity otp = OtpFactory.Create();
 
-        // Act - Increment to max attempts (5 by default)
+        for (int i = 0; i < TestConstants.Otp.MaxAttempts - 1; i++)
+        {
+            otp.IncrementAttemptCount();
+        }
+
+        otp.HasMaxAttemptsReached().Should().BeFalse();
+    }
+
+    [Fact]
+    public void HasMaxAttemptsReached_AtTheThreshold_ShouldReturnTrue()
+    {
+        OtpEntity otp = OtpFactory.Create();
+
         for (int i = 0; i < TestConstants.Otp.MaxAttempts; i++)
         {
             otp.IncrementAttemptCount();
         }
 
-        // Assert
         otp.HasMaxAttemptsReached().Should().BeTrue();
     }
 

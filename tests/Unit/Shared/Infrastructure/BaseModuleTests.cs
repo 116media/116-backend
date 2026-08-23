@@ -125,6 +125,25 @@ public class BaseModuleTests
     }
 
     [Fact]
+    public void AddModuleDatabase_ShouldRegisterTheSystemClockAsASingleton()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var options = new ModuleOptions<TestDbContext> { ModuleName = "Test" };
+
+        // Act
+        services.AddModuleDatabase(options);
+
+        // Assert
+        ServiceDescriptor descriptor = services
+            .Should()
+            .ContainSingle(s => s.ServiceType == typeof(TimeProvider))
+            .Which;
+        descriptor.Lifetime.Should().Be(ServiceLifetime.Singleton);
+        descriptor.ImplementationInstance.Should().BeSameAs(TimeProvider.System);
+    }
+
+    [Fact]
     public void AddModuleDatabase_WhenInterceptorsAlreadyRegistered_ShouldNotRegisterDuplicates()
     {
         // Arrange
@@ -188,11 +207,6 @@ public class BaseModuleTests
         result.Should().BeSameAs(app, "method should return the app builder for chaining");
     }
 
-    /// <summary>
-    /// Verifies that migrations enabled on the options run the module's
-    /// migration step against the registered context and still hand the builder
-    /// back for chaining.
-    /// </summary>
     [Fact]
     public void UseModuleDatabase_WithMigrationsEnabled_ShouldMigrateAndReturnAppBuilder()
     {
@@ -217,10 +231,6 @@ public class BaseModuleTests
         result.Should().BeSameAs(app);
     }
 
-    /// <summary>
-    /// Verifies that seeding enabled on the options executes every registered
-    /// seeder.
-    /// </summary>
     [Fact]
     public void UseModuleDatabase_WithSeedingEnabled_ShouldRunTheRegisteredSeeders()
     {

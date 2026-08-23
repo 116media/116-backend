@@ -1,7 +1,10 @@
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.AddOrderItem.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -61,7 +64,10 @@ public class AdminAddOrderItemEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.PostAsJsonAsync(Routes.Admin.Orders.Items(Guid.NewGuid()), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("ContentOrder"))
+        );
     }
 
     [Fact]
@@ -75,9 +81,6 @@ public class AdminAddOrderItemEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    /// <summary>
-    /// Verifies that adding an item to a submitted (non-draft) order returns 400 Bad Request.
-    /// </summary>
     [Fact]
     public async Task AddItem_ToSubmittedOrder_ReturnsBadRequest()
     {
@@ -100,6 +103,9 @@ public class AdminAddOrderItemEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.PostAsJsonAsync(Routes.Admin.Orders.Items(order.Id), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<ContentOrderErrorMessage>(m => m.CannotAddItemToNonDraftOrder())
+        );
     }
 }

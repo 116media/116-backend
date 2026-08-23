@@ -5,7 +5,9 @@ using _116.Tests.Fixtures.Builders.Entities.Content;
 namespace _116.Tests.Fixtures.Factories.Content;
 
 /// <summary>
-/// Factory for quickly creating <see cref="AlbumEntity"/> instances in tests.
+/// Named aliases for <see cref="AlbumBuilder" /> chains that three or more tests share verbatim.
+/// A shape fewer tests need belongs at the call site as a builder chain, not here —
+/// factory names carry the combinatorics, and combinatorics multiply.
 /// </summary>
 public static class AlbumFactory
 {
@@ -13,11 +15,6 @@ public static class AlbumFactory
     /// Creates a standalone album (no linked artist) with default valid values.
     /// </summary>
     public static AlbumEntity Create() => new AlbumBuilder().Build();
-
-    /// <summary>
-    /// Creates an album with a specific ID.
-    /// </summary>
-    public static AlbumEntity CreateWithId(Guid id) => new AlbumBuilder().WithId(id).Build();
 
     /// <summary>
     /// Creates an album linked to the given artist profile.

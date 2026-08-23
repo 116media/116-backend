@@ -5,7 +5,9 @@ using _116.Tests.Fixtures.Builders.Entities.Content;
 namespace _116.Tests.Fixtures.Factories.Content;
 
 /// <summary>
-/// Factory for quickly creating <see cref="StreamingLinkEntity"/> instances in tests.
+/// Named aliases for <see cref="StreamingLinkBuilder" /> chains that three or more tests share verbatim.
+/// A shape fewer tests need belongs at the call site as a builder chain, not here —
+/// factory names carry the combinatorics, and combinatorics multiply.
 /// </summary>
 public static class StreamingLinkFactory
 {
@@ -36,22 +38,4 @@ public static class StreamingLinkFactory
             .WithPlatform(platform)
             .WithUrl(url ?? "https://open.spotify.com/track/curated-xyz789")
             .Build();
-
-    /// <summary>
-    /// Creates a curated streaming link with a specific ID for the given album and platform.
-    /// </summary>
-    public static StreamingLinkEntity CreateForAlbumWithId(
-        Guid id,
-        Guid albumId,
-        EnumStreamingPlatform platform = EnumStreamingPlatform.Spotify
-    ) => new StreamingLinkBuilder().WithId(id).ForAlbum(albumId).WithPlatform(platform).Build();
-
-    /// <summary>
-    /// Creates a curated streaming link with a specific ID for the given lyrics page and platform.
-    /// </summary>
-    public static StreamingLinkEntity CreateForLyricsWithId(
-        Guid id,
-        Guid lyricsId,
-        EnumStreamingPlatform platform = EnumStreamingPlatform.Spotify
-    ) => new StreamingLinkBuilder().WithId(id).ForLyrics(lyricsId).WithPlatform(platform).Build();
 }

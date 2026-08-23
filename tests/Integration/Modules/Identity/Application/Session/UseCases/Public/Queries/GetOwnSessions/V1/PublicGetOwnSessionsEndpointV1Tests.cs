@@ -1,7 +1,9 @@
 using _116.Identity.Application.Session.Constants;
 using _116.Identity.Application.Session.UseCases.Public.Queries.GetOwnSessions.V1;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Identity;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.Session.UseCases.Public.Queries.GetOwnSessions.V1;
@@ -54,11 +56,6 @@ public class PublicGetOwnSessionsEndpointV1Tests(PostgresFixture db) : BaseApiTe
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
-    /// <summary>
-    /// The listing marks the caller's own session, so a token carrying no session claim cannot be
-    /// served: the account passes the status policy but the request has no identifiable session to
-    /// mark. The credential is rejected instead of the response guessing one.
-    /// </summary>
     [Fact]
     public async Task PublicGetOwnSessions_WithATokenCarryingNoSessionClaim_Returns401()
     {
@@ -68,6 +65,9 @@ public class PublicGetOwnSessionsEndpointV1Tests(PostgresFixture db) : BaseApiTe
 
         var response = await Client.GetAsync(PublicMeSessions);
 
-        await response.ShouldBeProblem(HttpStatusCode.Unauthorized);
+        await response.ShouldBeProblem<AuthenticationException>(
+            HttpStatusCode.Unauthorized,
+            Localized<AuthenticationErrorMessage>(m => m.InvalidUserAuthentication())
+        );
     }
 }

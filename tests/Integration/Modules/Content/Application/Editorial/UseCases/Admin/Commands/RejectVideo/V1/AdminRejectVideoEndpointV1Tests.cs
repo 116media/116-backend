@@ -1,8 +1,11 @@
 using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.RejectVideo.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -85,7 +88,10 @@ public class AdminRejectVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
             request
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Video"))
+        );
     }
 
     [Fact]
@@ -100,7 +106,10 @@ public class AdminRejectVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
             request
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<VideoErrorMessage>(m => m.AlreadyRejected())
+        );
         (await GetVideoAsync(video.Id)).Status.Should().Be(EnumContentStatus.Rejected);
     }
 
@@ -116,7 +125,12 @@ public class AdminRejectVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
             request
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<VideoErrorMessage>(m =>
+                m.InvalidStatusTransition(from: nameof(EnumContentStatus.Draft), to: nameof(EnumContentStatus.Rejected))
+            )
+        );
         (await GetVideoAsync(video.Id)).Status.Should().Be(EnumContentStatus.Draft);
     }
 

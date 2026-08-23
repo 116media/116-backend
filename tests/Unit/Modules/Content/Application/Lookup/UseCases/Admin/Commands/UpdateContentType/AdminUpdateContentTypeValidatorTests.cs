@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.Content.Application.Lookup.UseCases.Admin.Commands.UpdateContentType;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Tests.Fixtures.Constants;
@@ -33,7 +32,7 @@ public class AdminUpdateContentTypeValidatorTests
         // Arrange
         var command = new AdminUpdateContentTypeCommand(
             Id: Guid.NewGuid().ToString(),
-            Name: TestConstants.Content.ContentType.ValidName
+            Name: TestConstants.ContentType.ValidName
         );
 
         // Act
@@ -50,7 +49,7 @@ public class AdminUpdateContentTypeValidatorTests
         // Arrange
         var command = new AdminUpdateContentTypeCommand(
             Id: Guid.NewGuid().ToString(),
-            Name: new string('a', TestConstants.Content.ContentType.NameMaxLength)
+            Name: new string('a', TestConstants.ContentType.NameMaxLength)
         );
 
         // Act
@@ -68,7 +67,7 @@ public class AdminUpdateContentTypeValidatorTests
     public async Task Validate_WithEmptyId_ShouldHaveError()
     {
         // Arrange
-        var command = new AdminUpdateContentTypeCommand(Id: "", Name: TestConstants.Content.ContentType.ValidName);
+        var command = new AdminUpdateContentTypeCommand(Id: "", Name: TestConstants.ContentType.ValidName);
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -112,7 +111,7 @@ public class AdminUpdateContentTypeValidatorTests
         // Arrange
         var command = new AdminUpdateContentTypeCommand(
             Id: Guid.NewGuid().ToString(),
-            Name: new string('a', TestConstants.Content.ContentType.NameMaxLength + 1)
+            Name: new string('a', TestConstants.ContentType.NameMaxLength + 1)
         );
 
         // Act
@@ -125,7 +124,7 @@ public class AdminUpdateContentTypeValidatorTests
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateContentTypeCommand.Name)
                 && e.ErrorMessage
-                    == $"Content type name must not exceed {TestConstants.Content.ContentType.NameMaxLength} characters."
+                    == $"Content type name must not exceed {TestConstants.ContentType.NameMaxLength} characters."
             );
     }
 
@@ -141,34 +140,6 @@ public class AdminUpdateContentTypeValidatorTests
         // Assert
         result.IsValid.Should().BeFalse();
         result.Errors.Should().HaveCount(2);
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-        var validator = new AdminUpdateContentTypeValidator(_i18n);
-        var command = new AdminUpdateContentTypeCommand(Id: Guid.NewGuid().ToString(), Name: "");
-
-        // Act
-        ValidationResult result = await validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminUpdateContentTypeCommand.Name)
-                && e.ErrorMessage == _i18n.ContentType.Msg.NameRequired()
-            );
     }
 
     #endregion

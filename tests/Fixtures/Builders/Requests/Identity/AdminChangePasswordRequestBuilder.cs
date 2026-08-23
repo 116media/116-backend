@@ -1,5 +1,6 @@
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.ChangePassword.V1;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using Bogus;
 
 namespace _116.Tests.Fixtures.Builders.Requests.Identity;
@@ -11,7 +12,7 @@ namespace _116.Tests.Fixtures.Builders.Requests.Identity;
 /// </summary>
 public class AdminChangePasswordRequestBuilder
 {
-    private readonly Faker _faker = new();
+    private readonly Faker _faker = TestFaker.Create();
 
     private string _oldPassword;
     private string _newPassword;

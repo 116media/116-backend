@@ -42,15 +42,15 @@ public class AdminCreateCustomerHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenEmailDoesNotExist_ShouldCreateAndReturnCustomer()
     {
         // Arrange
-        string email = TestConstants.Content.Customer.ValidEmail;
-        string fullName = TestConstants.Content.Customer.ValidFullName;
+        string email = TestConstants.Customer.ValidEmail;
+        string fullName = TestConstants.Customer.ValidFullName;
 
         var command = new AdminCreateCustomerCommand(
             FullName: fullName,
             Email: email,
-            Phone: TestConstants.Content.Customer.ValidPhone,
-            Company: TestConstants.Content.Customer.ValidCompany,
-            Notes: TestConstants.Content.Customer.ValidNotes
+            Phone: TestConstants.Customer.ValidPhone,
+            Company: TestConstants.Customer.ValidCompany,
+            Notes: TestConstants.Customer.ValidNotes
         );
 
         _customerRepositoryMock.SetupGetByEmail(email, null);
@@ -76,10 +76,10 @@ public class AdminCreateCustomerHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenEmailAlreadyExists_ShouldThrowConflictException()
     {
         // Arrange
-        string email = TestConstants.Content.Customer.ValidEmail;
+        string email = TestConstants.Customer.ValidEmail;
 
         var command = new AdminCreateCustomerCommand(
-            FullName: TestConstants.Content.Customer.ValidFullName,
+            FullName: TestConstants.Customer.ValidFullName,
             Email: email,
             Phone: null,
             Company: null,
@@ -100,10 +100,10 @@ public class AdminCreateCustomerHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenEmailConflicts_ShouldNotAddOrCommit()
     {
         // Arrange
-        string email = TestConstants.Content.Customer.ValidEmail;
+        string email = TestConstants.Customer.ValidEmail;
 
         var command = new AdminCreateCustomerCommand(
-            FullName: TestConstants.Content.Customer.ValidFullName,
+            FullName: TestConstants.Customer.ValidFullName,
             Email: email,
             Phone: null,
             Company: null,

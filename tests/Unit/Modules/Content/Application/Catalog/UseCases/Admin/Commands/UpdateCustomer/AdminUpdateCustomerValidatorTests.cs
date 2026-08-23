@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCustomer;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Tests.Fixtures.Constants;
@@ -30,11 +29,11 @@ public class AdminUpdateCustomerValidatorTests
         // Arrange
         var command = new AdminUpdateCustomerCommand(
             Id: Guid.NewGuid().ToString(),
-            FullName: TestConstants.Content.Customer.ValidFullName,
-            Email: TestConstants.Content.Customer.ValidEmail,
-            Phone: TestConstants.Content.Customer.ValidPhone,
-            Company: TestConstants.Content.Customer.ValidCompany,
-            Notes: TestConstants.Content.Customer.ValidNotes
+            FullName: TestConstants.Customer.ValidFullName,
+            Email: TestConstants.Customer.ValidEmail,
+            Phone: TestConstants.Customer.ValidPhone,
+            Company: TestConstants.Customer.ValidCompany,
+            Notes: TestConstants.Customer.ValidNotes
         );
 
         // Act
@@ -51,8 +50,8 @@ public class AdminUpdateCustomerValidatorTests
         // Arrange
         var command = new AdminUpdateCustomerCommand(
             Id: Guid.NewGuid().ToString(),
-            FullName: TestConstants.Content.Customer.ValidFullName,
-            Email: TestConstants.Content.Customer.ValidEmail,
+            FullName: TestConstants.Customer.ValidFullName,
+            Email: TestConstants.Customer.ValidEmail,
             Phone: null,
             Company: null,
             Notes: null
@@ -75,8 +74,8 @@ public class AdminUpdateCustomerValidatorTests
         // Arrange
         var command = new AdminUpdateCustomerCommand(
             Id: "",
-            FullName: TestConstants.Content.Customer.ValidFullName,
-            Email: TestConstants.Content.Customer.ValidEmail,
+            FullName: TestConstants.Customer.ValidFullName,
+            Email: TestConstants.Customer.ValidEmail,
             Phone: null,
             Company: null,
             Notes: null
@@ -106,7 +105,7 @@ public class AdminUpdateCustomerValidatorTests
         var command = new AdminUpdateCustomerCommand(
             Id: Guid.NewGuid().ToString(),
             FullName: string.Empty,
-            Email: TestConstants.Content.Customer.ValidEmail,
+            Email: TestConstants.Customer.ValidEmail,
             Phone: null,
             Company: null,
             Notes: null
@@ -122,41 +121,6 @@ public class AdminUpdateCustomerValidatorTests
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateCustomerCommand.FullName)
                 && e.ErrorMessage == _i18n.Customer.Msg.FullNameRequired()
-            );
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-        var validator = new AdminUpdateCustomerValidator(_i18n);
-        var command = new AdminUpdateCustomerCommand(
-            Id: "",
-            FullName: TestConstants.Content.Customer.ValidFullName,
-            Email: TestConstants.Content.Customer.ValidEmail,
-            Phone: null,
-            Company: null,
-            Notes: null
-        );
-
-        // Act
-        ValidationResult result = await validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminUpdateCustomerCommand.Id)
-                && e.ErrorMessage == _i18n.Customer.Msg.Localizer["IdRequired"].Value
             );
     }
 

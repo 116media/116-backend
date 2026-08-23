@@ -4,10 +4,11 @@ using _116.Content.Domain.Enums;
 namespace _116.Tests.Fixtures.Builders.Entities.Content;
 
 /// <summary>
-/// Fluent builder for creating <see cref="StreamingLinkEntity"/> instances in tests.
-/// For test code, prefer using StreamingLinkFactory instead of direct Builder usage.
+/// Fluent builder for creating <see cref="StreamingLinkEntity" /> instances in tests.
+/// Drives the real domain transitions, so every state it produces is one the application can reach.
+/// Use it for any shape a test needs; StreamingLinkFactory only names chains three or more tests share.
 /// </summary>
-internal class StreamingLinkBuilder
+public class StreamingLinkBuilder
 {
     private Guid _id = Guid.NewGuid();
     private Guid? _albumId;

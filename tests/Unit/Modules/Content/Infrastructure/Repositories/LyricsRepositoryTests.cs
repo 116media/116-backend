@@ -300,10 +300,6 @@ public class LyricsRepositoryTests : IDisposable
 
     #region GetSimilarAsync Tests
 
-    /// <summary>
-    /// A source lyrics page linked to a video finds another published lyrics page linked to a
-    /// video in the same category — the first waterfall branch (spec 06).
-    /// </summary>
     [Fact]
     public async Task GetSimilarAsync_WhenVideoCategoryMatchExists_ShouldReturnCategoryBranchMatch()
     {
@@ -329,10 +325,6 @@ public class LyricsRepositoryTests : IDisposable
         similar.Should().NotContain(l => l.Id == source.Id);
     }
 
-    /// <summary>
-    /// A standalone source lyrics page finds another published lyrics page sharing at least one
-    /// tag — the second waterfall branch (spec 06), used when there is no video-category match.
-    /// </summary>
     [Fact]
     public async Task GetSimilarAsync_WhenNoVideoCategoryMatchButSharedTagExists_ShouldReturnSharedTagsBranchMatch()
     {
@@ -352,10 +344,6 @@ public class LyricsRepositoryTests : IDisposable
         similar.Should().ContainSingle(l => l.Id == tagMatch.Id);
     }
 
-    /// <summary>
-    /// A standalone source lyrics page with no video and no shared tags falls through to the
-    /// third waterfall branch — the most recent other standalone published lyrics pages.
-    /// </summary>
     [Fact]
     public async Task GetSimilarAsync_WhenNoCategoryOrTagMatch_ShouldReturnStandaloneBranchMatch()
     {
@@ -372,12 +360,6 @@ public class LyricsRepositoryTests : IDisposable
         similar.Should().ContainSingle(l => l.Id == standaloneMatch.Id);
     }
 
-    /// <summary>
-    /// The resolved, deliberate fallthrough design (spec 06): a video-linked source lyrics page
-    /// with zero same-category matches must still fall through to the shared-tags branch and
-    /// return the tag-based matches, rather than stopping at an empty category branch. A
-    /// regression here would silently break the approved waterfall design.
-    /// </summary>
     [Fact]
     public async Task GetSimilarAsync_WhenVideoLinkedWithNoCategoryMatchButSharedTagExists_ShouldFallThroughToSharedTagsBranch()
     {
@@ -407,10 +389,6 @@ public class LyricsRepositoryTests : IDisposable
         similar.Should().ContainSingle(l => l.Id == tagMatch.Id);
     }
 
-    /// <summary>
-    /// When none of the three waterfall branches yield any matches, the result is an empty list,
-    /// never a thrown exception.
-    /// </summary>
     [Fact]
     public async Task GetSimilarAsync_WhenNoMatchesInAnyBranch_ShouldReturnEmptyList()
     {
@@ -426,10 +404,6 @@ public class LyricsRepositoryTests : IDisposable
         similar.Should().BeEmpty();
     }
 
-    /// <summary>
-    /// A missing source lyrics page id must throw, since <c>GetSimilarAsync</c> resolves the
-    /// source via <c>GetByIdOrThrowAsync</c> before running the waterfall.
-    /// </summary>
     [Fact]
     public async Task GetSimilarAsync_WhenSourceLyricsDoNotExist_ShouldThrowNotFoundException()
     {

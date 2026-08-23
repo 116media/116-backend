@@ -1,6 +1,8 @@
 using _116.Content.Application.Interactions.UseCases.Public.Commands.DeletePlaylist.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Interactions.UseCases.Public.Commands.DeletePlaylist.V1;
@@ -35,16 +37,16 @@ public class PublicDeletePlaylistEndpointV1Tests(PostgresFixture db) : BaseApiTe
     public async Task DeletePlaylist_AsVisitor_NonExistent_ReturnsNotFound()
     {
         Client.AuthenticateAsVisitor();
+        var missingId = Guid.NewGuid();
 
-        var response = await Client.DeleteAsync(Routes.Public.Playlists.ById(Guid.NewGuid()));
+        var response = await Client.DeleteAsync(Routes.Public.Playlists.ById(missingId));
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<PlaylistErrorMessage>(m => m.NotFound(missingId))
+        );
     }
 
-    /// <summary>
-    /// Verifies that a visitor attempting to delete a playlist owned by a different user
-    /// receives a 400 Bad Request response.
-    /// </summary>
     [Fact]
     public async Task DeletePlaylist_AsVisitor_WhenNotOwner_ReturnsBadRequest()
     {
@@ -53,7 +55,10 @@ public class PublicDeletePlaylistEndpointV1Tests(PostgresFixture db) : BaseApiTe
 
         var response = await Client.DeleteAsync(Routes.Public.Playlists.ById(playlist.Id));
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<PlaylistErrorMessage>(m => m.NotOwner())
+        );
     }
 
     [Fact]

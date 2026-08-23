@@ -1,5 +1,8 @@
 using _116.Identity.Application.Auth.UseCases.Public.Commands.ForgotPassword.V1;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Builders.Requests.Identity;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.Auth.UseCases.Public.Commands.ForgotPassword.V1;
 
@@ -9,6 +12,9 @@ namespace _116.Integration.Tests.Modules.Identity.Application.Auth.UseCases.Publ
 [Collection("Database")]
 public class PublicForgotPasswordEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private static string ValidationDetail(string property, string message) =>
+        new ValidationException([new ValidationFailure(property, message)]).Message;
+
     [Fact]
     public async Task ForgotPassword_WithInvalidEmail_ReturnsValidationError()
     {
@@ -17,14 +23,12 @@ public class PublicForgotPasswordEndpointV1Tests(PostgresFixture db) : BaseApiTe
 
         var response = await Client.PostAsJsonAsync(Routes.Public.Auth.ForgotPassword(), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("Email", Localized<ValidationErrorMessage>(m => m.InvalidEmailFormatMsg()))
+        );
     }
 
-    /// <summary>
-    /// Verifies that a well-formed forgot-password request returns 200 OK with the
-    /// anti-enumeration success payload echoing the submitted email. The endpoint always
-    /// reports success regardless of whether the email maps to an existing account.
-    /// </summary>
     [Fact]
     public async Task ForgotPassword_WithValidEmail_ReturnsSuccessEchoingEmail()
     {

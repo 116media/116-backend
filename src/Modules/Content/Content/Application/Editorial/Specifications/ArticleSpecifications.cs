@@ -224,6 +224,20 @@ public class ArticleCommentByIdSpecification(Guid commentId) : Specification<Art
 }
 
 /// <summary>
+/// Specification that matches an article comment by its identifier within a specific article.
+/// A comment that exists under a different article is not a match.
+/// </summary>
+public class ArticleCommentByIdInArticleSpecification(Guid commentId, Guid articleId)
+    : Specification<ArticleCommentEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<ArticleCommentEntity, bool>> ToExpression()
+    {
+        return comment => comment.Id == commentId && comment.ArticleId == articleId;
+    }
+}
+
+/// <summary>
 /// Specification that matches non-deleted replies to a specific parent comment.
 /// </summary>
 public class ArticleCommentReplyByParentSpecification(Guid parentCommentId) : Specification<ArticleCommentEntity>

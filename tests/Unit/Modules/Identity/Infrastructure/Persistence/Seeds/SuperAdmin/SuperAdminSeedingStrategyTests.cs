@@ -15,13 +15,16 @@ namespace _116.Unit.Tests.Modules.Identity.Infrastructure.Persistence.Seeds.Supe
 /// <summary>
 /// Unit tests for <see cref="SuperAdminSeedingStrategy"/>.
 /// </summary>
-[Collection("SuperAdminSeeder")]
-public class SuperAdminSeedingStrategyTests
+[Collection("EnvironmentVariable")]
+public class SuperAdminSeedingStrategyTests : IDisposable
 {
+    private const string DefaultPasswordVariable = "DEFAULT_USER_PASSWORD";
+
     private readonly Mock<ILogger<SuperAdminRepositoryManager>> _repositoryLoggerMock;
     private readonly Mock<ILogger<SuperAdminSeedingStrategy>> _loggerMock;
     private readonly Mock<IPasswordService> _passwordServiceMock;
     private readonly UserErrors _userErrors = TestErrorsFactory.CreateUserErrors();
+    private readonly string? _originalPassword;
 
     public SuperAdminSeedingStrategyTests()
     {
@@ -32,7 +35,15 @@ public class SuperAdminSeedingStrategyTests
         _passwordServiceMock.Setup(x => x.Hash(It.IsAny<string>())).Returns("hashedPassword");
 
         // Ensure password env variable is always set for tests
-        Environment.SetEnvironmentVariable("DEFAULT_USER_PASSWORD", "TestPassword123!");
+        _originalPassword = Environment.GetEnvironmentVariable(DefaultPasswordVariable);
+        Environment.SetEnvironmentVariable(DefaultPasswordVariable, "TestPassword123!");
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        Environment.SetEnvironmentVariable(DefaultPasswordVariable, _originalPassword);
+        GC.SuppressFinalize(this);
     }
 
     private DbContextOptions<IdentityDbContext> CreateOptions()

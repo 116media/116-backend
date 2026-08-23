@@ -1,10 +1,15 @@
 using _116.Identity.Application.Auth.Constants;
+using _116.Identity.Application.Auth.Exceptions;
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.ResetPassword.V1;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Builders.Requests.Identity;
 using _116.Tests.Fixtures.Factories.Identity;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.Auth.UseCases.Admin.Commands.ResetPassword.V1;
 
@@ -16,6 +21,9 @@ public class AdminResetPasswordEndpointV1Tests(PostgresFixture db) : BaseApiTest
 {
     private const string AuthUrl = ApiRoutes.Admin.Auth;
     private const string ResetPasswordUrl = $"{AuthUrl}/{AuthRouteConstants.ResetPassword}";
+
+    private static string ValidationDetail(params (string Property, string Message)[] failures) =>
+        new ValidationException(failures.Select(f => new ValidationFailure(f.Property, f.Message))).Message;
 
     [Fact]
     public async Task ResetPassword_WithEmptyFields_ReturnsValidationError()
@@ -29,13 +37,16 @@ public class AdminResetPasswordEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PostAsJsonAsync(ResetPasswordUrl, request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail(
+                ("Email", Localized<ValidationErrorMessage>(m => m.EmailRequired())),
+                ("Code", Localized<ValidationErrorMessage>(m => m.OtpCodeRequired())),
+                ("NewPassword", Localized<ValidationErrorMessage>(m => m.PasswordRequired()))
+            )
+        );
     }
 
-    /// <summary>
-    /// Verifies that a valid OTP code that has been previously verified allows
-    /// the admin user to reset their password successfully and persists the new hash.
-    /// </summary>
     [Fact]
     public async Task ResetPassword_WithValidOtp_ReturnsOk()
     {
@@ -76,12 +87,8 @@ public class AdminResetPasswordEndpointV1Tests(PostgresFixture db) : BaseApiTest
         passwordService.Verify(request.NewPassword, updated.PasswordHash).Should().BeTrue();
     }
 
-    /// <summary>
-    /// Verifies that providing an incorrect OTP code returns a 400 Bad Request,
-    /// indicating that the OTP has not yet been verified via the verify-otp endpoint.
-    /// </summary>
     [Fact]
-    public async Task ResetPassword_WithInvalidOtpCode_ReturnsBadRequest()
+    public async Task ResetPassword_WithCodeNotMatchingTheVerifiedOtp_ReturnsBadRequest()
     {
         Client.ClearAuthentication();
 
@@ -108,13 +115,12 @@ public class AdminResetPasswordEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PostAsJsonAsync(ResetPasswordUrl, request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<ValidationErrorMessage>(m => m.OtpNotYetVerified())
+        );
     }
 
-    /// <summary>
-    /// Verifies that attempting to reset a password with an expired OTP returns 410 Gone,
-    /// covering the OtpExpirationExceptionHandler path.
-    /// </summary>
     [Fact]
     public async Task ResetPassword_WithExpiredOtp_ReturnsGone()
     {
@@ -143,14 +149,12 @@ public class AdminResetPasswordEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PostAsJsonAsync(ResetPasswordUrl, request);
 
-        await response.ShouldBeProblem(HttpStatusCode.Gone);
+        await response.ShouldBeProblem<OtpExpirationException>(
+            HttpStatusCode.Gone,
+            Localized<ValidationErrorMessage>(m => m.OtpExpired())
+        );
     }
 
-    /// <summary>
-    /// Verifies that attempting to reset a password when the OTP has not yet been verified
-    /// via the verify-otp endpoint returns a 400 Bad Request.
-    /// This covers the scenario where the OTP has max attempts reached but was never marked as used.
-    /// </summary>
     [Fact]
     public async Task ResetPassword_WithUnverifiedOtp_ReturnsBadRequest()
     {
@@ -179,6 +183,9 @@ public class AdminResetPasswordEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PostAsJsonAsync(ResetPasswordUrl, request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<ValidationErrorMessage>(m => m.OtpNotYetVerified())
+        );
     }
 }

@@ -595,14 +595,15 @@ public class VideoEntity : Aggregate<Guid>
     /// <param name="reason">
     /// Mandatory reason for the force-unpromote (e.g. "government request", "policy violation").
     /// </param>
+    /// <param name="errors">The errors factory instance.</param>
     /// <exception cref="BadRequestException">
     /// Thrown when the video does not have an active promotion.
     /// </exception>
-    public void ForceUnpromote(string unpromotedBy, string reason)
+    public void ForceUnpromote(string unpromotedBy, string reason, VideoErrors errors)
     {
         if (!IsPromoted)
         {
-            throw new BadRequestException("Video is not currently promoted.");
+            throw errors.NotPromoted();
         }
 
         IsPromoted = false;

@@ -1,8 +1,13 @@
 using System.Net.Http.Headers;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadArtistAvatar.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.UploadArtistAvatar.V1;
 
@@ -12,6 +17,9 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminUploadArtistAvatarEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private static string ValidationDetail(string property, string message) =>
+        new ValidationException([new ValidationFailure(property, message)]).Message;
+
     private async Task<ArtistEntity> SeedArtistAsync()
     {
         return await SeedAsync<ContentDbContext, ArtistEntity>(ctx =>
@@ -64,7 +72,10 @@ public class AdminUploadArtistAvatarEndpointV1Tests(PostgresFixture db) : BaseAp
 
         var response = await Client.PostAsync(Routes.Admin.Artists.Avatar(Guid.NewGuid()), formContent);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Artist"))
+        );
     }
 
     [Fact]
@@ -90,10 +101,6 @@ public class AdminUploadArtistAvatarEndpointV1Tests(PostgresFixture db) : BaseAp
         persisted!.AvatarFileId.Should().NotBeNull();
     }
 
-    /// <summary>
-    /// Uploading a replacement avatar for an artist that already has one overwrites the
-    /// stored file reference rather than accumulating multiple files.
-    /// </summary>
     [Fact]
     public async Task UploadArtistAvatar_WhenArtistHasExistingAvatar_OverwritesInPlace()
     {
@@ -118,5 +125,21 @@ public class AdminUploadArtistAvatarEndpointV1Tests(PostgresFixture db) : BaseAp
         ArtistEntity? afterSecond = await verifyContext.Artists.FindAsync(artist.Id);
         afterSecond!.AvatarFileId.Should().NotBeNull();
         firstFileId.Should().NotBe(Guid.Empty);
+    }
+
+    [Fact]
+    public async Task UploadArtistAvatar_WithNoFilePart_ReturnsLocalizedValidationProblem()
+    {
+        Client.AuthenticateAsSuperAdmin();
+
+        using var formContent = new MultipartFormDataContent();
+        formContent.Add(new StringContent("unused"), "note");
+
+        var response = await Client.PostAsync(Routes.Admin.Artists.Avatar(Guid.NewGuid()), formContent);
+
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("File", Localized<LyricsErrorMessage>(m => m.FileRequired()))
+        );
     }
 }

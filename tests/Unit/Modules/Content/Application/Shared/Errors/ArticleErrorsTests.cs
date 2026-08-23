@@ -13,7 +13,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Shared.Errors;
 public class ArticleErrorsTests
 {
     private readonly ArticleErrors _errors = TestErrorsFactory.CreateArticleErrors();
-    private readonly ArticleErrorMessage _message = LocalizerFactory.CreateMessage<ArticleErrorMessage>("en");
+    private readonly ArticleErrorMessage _message = LocalizerFactory.CreateMessage<ArticleErrorMessage>();
 
     [Fact]
     public void NotFound_WithId_ShouldReturnNotFoundException()

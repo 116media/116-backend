@@ -17,9 +17,6 @@ public class UserMapperTests(PostgresFixture postgres) : BaseRepositoryTest(post
 {
     private readonly IMapper _mapper = new Mapper(IdentityMappingRegistration.CreateConfiguration());
 
-    /// <summary>
-    /// Verifies that ToUserResponseDto maps all fields with empty roles and permissions.
-    /// </summary>
     [Fact]
     public async Task ToUserResponseDto_ShouldMapAllFields()
     {
@@ -48,9 +45,6 @@ public class UserMapperTests(PostgresFixture postgres) : BaseRepositoryTest(post
         dto.Avatar.Should().BeNull();
     }
 
-    /// <summary>
-    /// Verifies that ToUserResponseDto includes provided roles and permissions collections.
-    /// </summary>
     [Fact]
     public async Task ToUserResponseDto_WithRolesAndPermissions_ShouldIncludeThem()
     {

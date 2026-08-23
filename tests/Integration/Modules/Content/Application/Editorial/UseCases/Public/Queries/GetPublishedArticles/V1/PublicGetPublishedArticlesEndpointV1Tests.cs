@@ -57,10 +57,6 @@ public class PublicGetPublishedArticlesEndpointV1Tests(PostgresFixture db) : Bas
         body.Articles.PageSize.Should().Be(10);
     }
 
-    /// <summary>
-    /// Verifies that an authenticated user's feed stamps IsLiked / IsBookmarked only on the
-    /// articles that user actually interacted with, leaving the rest false.
-    /// </summary>
     [Fact]
     public async Task GetPublishedArticles_WhenAuthenticated_StampsOnlyTheUsersInteractions()
     {
@@ -90,11 +86,6 @@ public class PublicGetPublishedArticlesEndpointV1Tests(PostgresFixture db) : Bas
         body.Articles.Items.Single(item => item.Id == articles[2].Id).IsBookmarked.Should().BeFalse();
     }
 
-    /// <summary>
-    /// Verifies that one user's interaction state never leaks into another user's feed
-    /// response. This is the caching-correctness gate: it must keep passing if the feed
-    /// ever gains a response cache.
-    /// </summary>
     [Fact]
     public async Task GetPublishedArticles_DoesNotLeakInteractionStateAcrossUsers()
     {

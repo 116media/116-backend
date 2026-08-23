@@ -1,10 +1,14 @@
 using System.Net.Http.Headers;
+using _116.BuildingBlocks.Constants;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Application.User.Constants;
 using _116.Identity.Application.User.UseCases.Admin.Commands.UpdateAvatar.V1;
 using _116.Identity.Domain.Constants;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Identity;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.User.UseCases.Admin.Commands.UpdateAvatar.V1;
 
@@ -15,6 +19,9 @@ namespace _116.Integration.Tests.Modules.Identity.Application.User.UseCases.Admi
 public class AdminUpdateAvatarEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
     private const string AdminMeAvatar = $"{ApiRoutes.Admin.Base}/{IdentityConstants.Me}/{UserRouteConstants.Avatar}";
+
+    private static string ValidationDetail(string property, string message) =>
+        new ValidationException([new ValidationFailure(property, message)]).Message;
 
     [Fact]
     public async Task AdminUpdateAvatar_AsSuperAdmin_WithValidSession_UpdatesAvatar()
@@ -71,11 +78,19 @@ public class AdminUpdateAvatarEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.PatchAsync(AdminMeAvatar, content);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail(
+                "AvatarFile",
+                Localized<ValidationErrorMessage>(m =>
+                    m.AvatarFileInvalidExtension(string.Join(", ", FileConstants.AllowedAvatarExtensions))
+                )
+            )
+        );
     }
 
     [Fact]
-    public async Task AdminUpdateAvatar_WithInvalidMimeType_ShouldReturn422()
+    public async Task AdminUpdateAvatar_WithInvalidMimeType_ShouldReturnBadRequest()
     {
         Client.AuthenticateAsSuperAdmin();
 
@@ -86,6 +101,30 @@ public class AdminUpdateAvatarEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.PatchAsync(AdminMeAvatar, content);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail(
+                "AvatarFile",
+                Localized<ValidationErrorMessage>(m =>
+                    m.AvatarFileInvalidType(string.Join(", ", FileConstants.AllowedAvatarMimeTypes))
+                )
+            )
+        );
+    }
+
+    [Fact]
+    public async Task AdminUpdateAvatar_WithNoFilePart_ReturnsLocalizedValidationProblem()
+    {
+        Client.AuthenticateAsSuperAdmin();
+
+        using var content = new MultipartFormDataContent();
+        content.Add(new StringContent("unused"), "note");
+
+        var response = await Client.PatchAsync(AdminMeAvatar, content);
+
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("AvatarFile", Localized<ValidationErrorMessage>(m => m.AvatarFileRequired()))
+        );
     }
 }

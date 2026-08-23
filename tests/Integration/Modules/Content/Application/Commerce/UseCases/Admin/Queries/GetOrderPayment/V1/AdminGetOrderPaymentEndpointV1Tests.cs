@@ -2,6 +2,8 @@ using _116.Content.Application.Commerce.UseCases.Admin.Queries.GetOrderPayment.V
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Commerce.UseCases.Admin.Queries.GetOrderPayment.V1;
@@ -37,13 +39,37 @@ public class AdminGetOrderPaymentEndpointV1Tests(PostgresFixture db) : BaseApiTe
     }
 
     [Fact]
-    public async Task GetOrderPayment_NonExistentOrder_ReturnsNotFound()
+    public async Task GetOrderPayment_WithUnknownOrderId_ReturnsOrderNotFound()
     {
         Client.AuthenticateAsSuperAdmin();
 
         var response = await Client.GetAsync(Routes.Admin.Orders.Payment(Guid.NewGuid()));
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("ContentOrder"))
+        );
+    }
+
+    [Fact]
+    public async Task GetOrderPayment_WithOrderThatHasNoPayment_ReturnsPaymentNotFound()
+    {
+        CustomerEntity customer = CustomerFactory.Create();
+        ContentOrderEntity order = ContentOrderFactory.CreateForCustomer(customer.Id);
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            ctx.Customers.Add(customer);
+            ctx.ContentOrders.Add(order);
+        });
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.GetAsync(Routes.Admin.Orders.Payment(order.Id));
+
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("ContentPayment"))
+        );
     }
 
     [Fact]

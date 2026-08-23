@@ -2,6 +2,8 @@ using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.SetLyricsTags.V1;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.SetLyricsTags.V1;
@@ -48,13 +50,12 @@ public class AdminSetLyricsTagsEndpointV1Tests(PostgresFixture db) : BaseApiTest
             new AdminSetLyricsTagsRequest(new List<Guid>())
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Lyrics"))
+        );
     }
 
-    /// <summary>
-    /// Assigning a tag set then replacing it with a new set removes the old association rows
-    /// entirely — no leftover rows from the previous set remain.
-    /// </summary>
     [Fact]
     public async Task SetLyricsTags_WithNewSet_FullyReplacesOldSetWithNoLeftoverRows()
     {
@@ -100,9 +101,6 @@ public class AdminSetLyricsTagsEndpointV1Tests(PostgresFixture db) : BaseApiTest
         persistedTagIds.Should().ContainSingle().Which.Should().Be(newTag.Id);
     }
 
-    /// <summary>
-    /// Passing an empty tag id array clears every tag association on the lyrics page.
-    /// </summary>
     [Fact]
     public async Task SetLyricsTags_WithEmptyArray_ClearsAllTags()
     {
@@ -142,10 +140,6 @@ public class AdminSetLyricsTagsEndpointV1Tests(PostgresFixture db) : BaseApiTest
         persistedTagIds.Should().BeEmpty();
     }
 
-    /// <summary>
-    /// The same <see cref="TagEntity"/> can be applied to an article, a video, and a lyrics
-    /// page simultaneously without conflict — the join tables are independent per content type.
-    /// </summary>
     [Fact]
     public async Task SetLyricsTags_SameTagAppliedToArticleAndVideo_NoConflict()
     {

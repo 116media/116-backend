@@ -82,10 +82,6 @@ public class AdminGetAllArticlesEndpointV1Tests(PostgresFixture db) : BaseApiTes
         body.Articles.Should().NotBeNull();
     }
 
-    /// <summary>
-    /// Verifies that the search query parameter filters articles by title,
-    /// returning only articles whose title matches the search term.
-    /// </summary>
     [Fact]
     public async Task GetAllArticles_WithSearchQuery_ReturnsFilteredResults()
     {

@@ -1,6 +1,9 @@
 using _116.Content.Application.Interactions.UseCases.Public.Commands.UnbookmarkShortVideo.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Interactions.UseCases.Public.Commands.UnbookmarkShortVideo.V1;
@@ -38,12 +41,12 @@ public class PublicUnbookmarkShortVideoEndpointV1Tests(PostgresFixture db) : Bas
 
         var response = await Client.DeleteAsync(Routes.Public.Shorts.Bookmarks(Guid.NewGuid()));
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("ShortVideo"))
+        );
     }
 
-    /// <summary>
-    /// Verifies that unbookmarking a previously bookmarked short video removes the bookmark row.
-    /// </summary>
     [Fact]
     public async Task UnbookmarkShortVideo_WhenBookmarked_RemovesBookmarkAndPersists()
     {
@@ -67,9 +70,6 @@ public class PublicUnbookmarkShortVideoEndpointV1Tests(PostgresFixture db) : Bas
             .BeFalse();
     }
 
-    /// <summary>
-    /// Verifies that unbookmarking a short video that was never bookmarked returns 400 Bad Request.
-    /// </summary>
     [Fact]
     public async Task UnbookmarkShortVideo_WhenNotBookmarked_ReturnsBadRequest()
     {
@@ -78,6 +78,9 @@ public class PublicUnbookmarkShortVideoEndpointV1Tests(PostgresFixture db) : Bas
 
         var response = await Client.DeleteAsync(Routes.Public.Shorts.Bookmarks(shortVideo.Id));
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<ShortVideoInteractionErrorMessage>(m => m.BookmarkNotFound())
+        );
     }
 }

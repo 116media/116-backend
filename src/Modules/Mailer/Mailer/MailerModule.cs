@@ -18,6 +18,7 @@ using _116.Shared.Application.Extensions;
 using _116.Shared.Infrastructure;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace _116.Mailer;
 
@@ -28,11 +29,13 @@ public static class MailerModule
 {
     /// <summary>
     /// Gets the shared module configuration options for the Mailer module.
+    /// Migrations run in every environment except Testing; the module owns no seeders.
     /// </summary>
-    private static ModuleOptions<MailerDbContext> GetModuleOptions()
+    /// <param name="environment">The host environment the options are derived from.</param>
+    /// <returns>The module options for the supplied environment.</returns>
+    private static ModuleOptions<MailerDbContext> GetModuleOptions(IHostEnvironment environment)
     {
-        string environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
-        bool enableMigrations = !environment.Equals("Testing", StringComparison.OrdinalIgnoreCase);
+        bool enableMigrations = !environment.IsEnvironment("Testing");
 
         return new ModuleOptions<MailerDbContext>
         {
@@ -47,10 +50,11 @@ public static class MailerModule
     /// Adds the Mailer module's services to the dependency injection container.
     /// </summary>
     /// <param name="services">The service collection to register services into.</param>
+    /// <param name="environment">The host environment deciding whether the module migrates at startup.</param>
     /// <returns>The updated <see cref="IServiceCollection" /> for chaining.</returns>
-    public static IServiceCollection AddMailerModule(this IServiceCollection services)
+    public static IServiceCollection AddMailerModule(this IServiceCollection services, IHostEnvironment environment)
     {
-        services.AddModuleDatabase(GetModuleOptions());
+        services.AddModuleDatabase(GetModuleOptions(environment));
 
         services.AddScoped<NewsletterErrorMessage>();
         services.AddScoped<NewsletterErrors>();
@@ -106,7 +110,9 @@ public static class MailerModule
     /// <returns>The updated <see cref="IApplicationBuilder" /> for chaining.</returns>
     public static IApplicationBuilder UseMailerModule(this IApplicationBuilder app)
     {
-        app.UseModuleDatabase(GetModuleOptions());
+        IHostEnvironment environment = app.ApplicationServices.GetRequiredService<IHostEnvironment>();
+        app.UseModuleDatabase(GetModuleOptions(environment));
+
         return app;
     }
 }

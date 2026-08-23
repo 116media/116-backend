@@ -7,8 +7,8 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadShort
 /// Command for uploading or replacing the video file of a short video.
 /// </summary>
 /// <param name="ShortVideoId">The unique identifier of the short video to update.</param>
-/// <param name="File">The video file to upload.</param>
-public record AdminUploadShortVideoFileCommand(string ShortVideoId, IFormFile File)
+/// <param name="File">The video file to upload. Null when the file part is missing.</param>
+public record AdminUploadShortVideoFileCommand(string ShortVideoId, IFormFile? File)
     : ICommand<AdminUploadShortVideoFileResult>;
 
 /// <summary>

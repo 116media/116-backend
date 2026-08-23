@@ -4,7 +4,9 @@ using _116.Tests.Fixtures.Builders.Entities.Content;
 namespace _116.Tests.Fixtures.Factories.Content;
 
 /// <summary>
-/// Factory for quickly creating <see cref="PlaylistEntity"/> instances in tests.
+/// Named aliases for <see cref="PlaylistBuilder" /> chains that three or more tests share verbatim.
+/// A shape fewer tests need belongs at the call site as a builder chain, not here —
+/// factory names carry the combinatorics, and combinatorics multiply.
 /// </summary>
 public static class PlaylistFactory
 {
@@ -18,20 +20,6 @@ public static class PlaylistFactory
     /// </summary>
     public static PlaylistEntity CreateWithId(Guid id, Guid userId) =>
         new PlaylistBuilder().WithId(id).WithUserId(userId).Build();
-
-    /// <summary>
-    /// Creates a playlist with videos already added to its collection.
-    /// </summary>
-    public static PlaylistEntity CreateWithVideos(Guid userId, IReadOnlyList<PlaylistVideoEntity> videos)
-    {
-        PlaylistEntity playlist = Create(userId);
-        foreach (PlaylistVideoEntity video in videos)
-        {
-            playlist.Videos.Add(video);
-        }
-
-        return playlist;
-    }
 
     /// <summary>
     /// Creates a list of playlists owned by the given user.

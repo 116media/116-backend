@@ -2,6 +2,7 @@ using _116.Content.Application.Catalog.Specifications;
 using _116.Content.Application.Editorial.Specifications;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
+using _116.Tests.Fixtures.Builders.Entities.Content;
 using _116.Tests.Fixtures.Factories.Content;
 using AwesomeAssertions;
 using Xunit;
@@ -80,7 +81,7 @@ public class PromotionFeedSpecificationTests
         ArticleEntity article = status switch
         {
             EnumContentStatus.Published => ArticleFactory.CreatePublished(gossipCategoryId),
-            EnumContentStatus.Archived => ArticleFactory.CreateArchived(gossipCategoryId),
+            EnumContentStatus.Archived => new ArticleBuilder(gossipCategoryId).AsArchived().Build(),
             _ => ArticleFactory.Create(gossipCategoryId),
         };
 
@@ -132,8 +133,10 @@ public class PromotionFeedSpecificationTests
     public void FreeVideo_WhenCommissioned_ShouldReturnFalse()
     {
         // Arrange
-        VideoEntity video = VideoFactory.CreatePublished(CategoryId);
-        video.GetType().GetProperty("CustomerId")!.SetValue(video, Guid.NewGuid());
+        VideoEntity video = new VideoBuilder(CategoryId)
+            .WithCustomer(Guid.NewGuid(), Guid.NewGuid())
+            .AsPublished()
+            .Build();
         var spec = new FreeVideoSpecification();
         Func<VideoEntity, bool> predicate = spec.ToExpression().Compile();
 
@@ -167,8 +170,7 @@ public class PromotionFeedSpecificationTests
     public void GossipCategory_WhenGossipFallbackAndActive_ShouldReturnTrue()
     {
         // Arrange
-        CategoryEntity category = CategoryFactory.Create(Guid.NewGuid());
-        category.GetType().GetProperty("IsGossip")!.SetValue(category, true);
+        CategoryEntity category = new CategoryBuilder(Guid.NewGuid()).AsGossip().Build();
         var spec = new GossipCategorySpecification();
         Func<CategoryEntity, bool> predicate = spec.ToExpression().Compile();
 
@@ -183,8 +185,7 @@ public class PromotionFeedSpecificationTests
     public void GossipCategory_WhenGossipFallbackButInactive_ShouldReturnFalse()
     {
         // Arrange
-        CategoryEntity category = CategoryFactory.Create(Guid.NewGuid());
-        category.GetType().GetProperty("IsGossip")!.SetValue(category, true);
+        CategoryEntity category = new CategoryBuilder(Guid.NewGuid()).AsGossip().Build();
         category.Deactivate();
         var spec = new GossipCategorySpecification();
         Func<CategoryEntity, bool> predicate = spec.ToExpression().Compile();

@@ -4,7 +4,9 @@ using _116.Tests.Fixtures.Constants;
 namespace _116.Tests.Fixtures.Factories.Content;
 
 /// <summary>
-/// Factory for quickly creating <see cref="ArticleCommentEntity"/> instances in tests.
+/// Named aliases for <see cref="ArticleCommentEntity" /> arrangements that three or more tests share verbatim.
+/// A shape fewer tests need belongs at the call site as a builder chain, not here —
+/// factory names carry the combinatorics, and combinatorics multiply.
 /// </summary>
 public static class ArticleCommentFactory
 {
@@ -16,18 +18,7 @@ public static class ArticleCommentFactory
             id: Guid.NewGuid(),
             userId: userId,
             articleId: articleId,
-            body: TestConstants.Content.Interactions.ValidCommentBody
-        );
-
-    /// <summary>
-    /// Creates a non-deleted comment with a specific ID.
-    /// </summary>
-    public static ArticleCommentEntity CreateWithId(Guid id, Guid articleId, Guid userId) =>
-        ArticleCommentEntity.Create(
-            id: id,
-            userId: userId,
-            articleId: articleId,
-            body: TestConstants.Content.Interactions.ValidCommentBody
+            body: TestConstants.Interactions.ValidCommentBody
         );
 
     /// <summary>

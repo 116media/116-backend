@@ -18,8 +18,8 @@ public class ShortVideoEntityTests
     private static ShortVideoEntity CreateStandalone() =>
         ShortVideoEntity.CreateStandalone(
             Guid.NewGuid(),
-            TestConstants.Content.Editorial.ShortVideo.ValidTitle,
-            TestConstants.Content.Editorial.ShortVideo.ValidSlug,
+            TestConstants.ShortVideo.ValidTitle,
+            TestConstants.ShortVideo.ValidSlug,
             AuthorId,
             TestErrorsFactory.CreateShortVideoErrors()
         );
@@ -31,8 +31,8 @@ public class ShortVideoEntityTests
     {
         // Arrange
         var id = Guid.NewGuid();
-        const string title = TestConstants.Content.Editorial.ShortVideo.ValidTitle;
-        const string slug = TestConstants.Content.Editorial.ShortVideo.ValidSlug;
+        const string title = TestConstants.ShortVideo.ValidTitle;
+        const string slug = TestConstants.ShortVideo.ValidSlug;
 
         // Act
         ShortVideoEntity shortVideo = ShortVideoEntity.CreateStandalone(
@@ -66,7 +66,7 @@ public class ShortVideoEntityTests
             ShortVideoEntity.CreateStandalone(
                 Guid.NewGuid(),
                 invalidTitle!,
-                TestConstants.Content.Editorial.ShortVideo.ValidSlug,
+                TestConstants.ShortVideo.ValidSlug,
                 AuthorId,
                 TestErrorsFactory.CreateShortVideoErrors()
             );
@@ -88,8 +88,8 @@ public class ShortVideoEntityTests
         // Act
         ShortVideoEntity shortVideo = ShortVideoEntity.CreateTeaser(
             Guid.NewGuid(),
-            TestConstants.Content.Editorial.ShortVideo.ValidTitle,
-            TestConstants.Content.Editorial.ShortVideo.ValidSlug,
+            TestConstants.ShortVideo.ValidTitle,
+            TestConstants.ShortVideo.ValidSlug,
             videoId,
             AuthorId,
             TestErrorsFactory.CreateShortVideoErrors()
@@ -112,7 +112,7 @@ public class ShortVideoEntityTests
             ShortVideoEntity.CreateTeaser(
                 Guid.NewGuid(),
                 invalidTitle!,
-                TestConstants.Content.Editorial.ShortVideo.ValidSlug,
+                TestConstants.ShortVideo.ValidSlug,
                 Guid.NewGuid(),
                 AuthorId,
                 TestErrorsFactory.CreateShortVideoErrors()
@@ -346,7 +346,7 @@ public class ShortVideoEntityTests
 
         // Assert
         shortVideo.Title.Should().Be("New Title");
-        shortVideo.Slug.Should().Be(TestConstants.Content.Editorial.ShortVideo.ValidSlug);
+        shortVideo.Slug.Should().Be(TestConstants.ShortVideo.ValidSlug);
         shortVideo.VideoId.Should().BeNull();
         shortVideo.HasFullVideo.Should().BeFalse();
     }
@@ -373,8 +373,8 @@ public class ShortVideoEntityTests
         Guid parentVideoId = Guid.NewGuid();
         ShortVideoEntity shortVideo = ShortVideoEntity.CreateTeaser(
             Guid.NewGuid(),
-            TestConstants.Content.Editorial.ShortVideo.ValidTitle,
-            TestConstants.Content.Editorial.ShortVideo.ValidSlug,
+            TestConstants.ShortVideo.ValidTitle,
+            TestConstants.ShortVideo.ValidSlug,
             parentVideoId,
             AuthorId,
             TestErrorsFactory.CreateShortVideoErrors()

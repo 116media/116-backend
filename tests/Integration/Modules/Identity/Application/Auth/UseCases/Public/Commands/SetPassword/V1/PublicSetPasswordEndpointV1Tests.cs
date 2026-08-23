@@ -1,10 +1,14 @@
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SetPassword.V1;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Builders.Requests.Identity;
 using _116.Tests.Fixtures.Factories.Identity;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.Auth.UseCases.Public.Commands.SetPassword.V1;
 
@@ -14,6 +18,9 @@ namespace _116.Integration.Tests.Modules.Identity.Application.Auth.UseCases.Publ
 [Collection("Database")]
 public class PublicSetPasswordEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private static string ValidationDetail(string property, string message) =>
+        new ValidationException([new ValidationFailure(property, message)]).Message;
+
     [Fact]
     public async Task SetPassword_WithNoAuth_ReturnsUnauthorized()
     {
@@ -25,10 +32,6 @@ public class PublicSetPasswordEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    /// <summary>
-    /// Verifies that an OAuth user without a password can successfully set a local password,
-    /// and that the password hash is persisted and verifiable.
-    /// </summary>
     [Fact]
     public async Task SetPassword_ForOAuthUser_ReturnsOk()
     {
@@ -58,9 +61,6 @@ public class PublicSetPasswordEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         passwordService.Verify(TestAuth.ValidPassword, updated.PasswordHash).Should().BeTrue();
     }
 
-    /// <summary>
-    /// Verifies that a local auth user trying to set a password returns 400 Bad Request.
-    /// </summary>
     [Fact]
     public async Task SetPassword_ForLocalUser_ReturnsBadRequest()
     {
@@ -70,14 +70,12 @@ public class PublicSetPasswordEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.PostAsJsonAsync(Routes.Public.Auth.SetPassword(), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<ValidationErrorMessage>(m => m.PasswordOnlyForExternalAuth())
+        );
     }
 
-    /// <summary>
-    /// Verifies that an OAuth account whose provider shared no email address is refused a local
-    /// password. A local credential without an address would be unrecoverable — no reset could
-    /// ever reach the owner — so the request is rejected before any hash is written.
-    /// </summary>
     [Fact]
     public async Task SetPassword_ForOAuthUserWithoutAnEmailAddress_ReturnsBadRequest()
     {
@@ -95,7 +93,10 @@ public class PublicSetPasswordEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.PostAsJsonAsync(Routes.Public.Auth.SetPassword(), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest, "An email address is required to set a password.");
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<ValidationErrorMessage>(m => m.EmailRequiredToSetPassword(), LocalizedMessage.EnglishCulture)
+        );
 
         await using var verifyContext = CreateDbContext<IdentityDbContext>();
         UserEntity untouched = await verifyContext.Users.FirstAsync(u => u.Id == oauthUser.Id);
@@ -103,9 +104,6 @@ public class PublicSetPasswordEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         untouched.AuthProvider.Should().Be(EnumAuthProvider.Facebook);
     }
 
-    /// <summary>
-    /// Verifies that submitting with an empty password returns a 400 Bad Request from the validator.
-    /// </summary>
     [Fact]
     public async Task SetPassword_WithEmptyPassword_ReturnsBadRequest()
     {
@@ -115,6 +113,9 @@ public class PublicSetPasswordEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.PostAsJsonAsync(Routes.Public.Auth.SetPassword(), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("Password", Localized<ValidationErrorMessage>(m => m.PasswordRequired()))
+        );
     }
 }

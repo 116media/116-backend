@@ -1,6 +1,8 @@
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCategoryPricing.V1;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -82,7 +84,33 @@ public class AdminUpdateCategoryPricingEndpointV1Tests(PostgresFixture db) : Bas
     }
 
     [Fact]
-    public async Task UpdateCategoryPricing_NonExistentCategory_ReturnsNotFound()
+    public async Task UpdateCategoryPricing_NonExistentPricing_ReturnsNotFound()
+    {
+        CategoryEntity category = await SeedAsync<ContentDbContext, CategoryEntity>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            ctx.ContentTypes.Add(contentType);
+            CategoryEntity cat = CategoryFactory.Create(contentType.Id);
+            ctx.Categories.Add(cat);
+            return cat;
+        });
+
+        Client.AuthenticateAsSuperAdmin();
+        AdminUpdateCategoryPricingRequest request = new AdminUpdateCategoryPricingRequestBuilder().Build();
+
+        var response = await Client.PutAsJsonAsync(
+            Routes.Admin.Categories.PricingItem(category.Id, Guid.NewGuid()),
+            request
+        );
+
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("CategoryPricing"))
+        );
+    }
+
+    [Fact]
+    public async Task UpdateCategoryPricing_WithUnknownCategoryId_ReturnsCategoryNotFound()
     {
         Client.AuthenticateAsSuperAdmin();
         AdminUpdateCategoryPricingRequest request = new AdminUpdateCategoryPricingRequestBuilder().Build();
@@ -92,6 +120,56 @@ public class AdminUpdateCategoryPricingEndpointV1Tests(PostgresFixture db) : Bas
             request
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Category"))
+        );
+    }
+
+    [Fact]
+    public async Task UpdateCategoryPricing_WithPricingBelongingToAnotherCategory_ReturnsNotFound()
+    {
+        CategoryEntity owningCategory = null!;
+        CategoryEntity addressedCategory = null!;
+        PricingTierEntity pricingTier = null!;
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            ctx.ContentTypes.Add(contentType);
+            owningCategory = CategoryFactory.Create(contentType.Id);
+            ctx.Categories.Add(owningCategory);
+            addressedCategory = CategoryFactory.Create(contentType.Id);
+            ctx.Categories.Add(addressedCategory);
+            pricingTier = PricingTierFactory.Create();
+            ctx.PricingTiers.Add(pricingTier);
+            CategoryPricingEntity categoryPricing = CategoryPricingFactory.Create(
+                owningCategory.Id,
+                pricingTier.Id,
+                5.99m
+            );
+            ctx.CategoryPricing.Add(categoryPricing);
+        });
+
+        Client.AuthenticateAsSuperAdmin();
+        AdminUpdateCategoryPricingRequest request = new AdminUpdateCategoryPricingRequestBuilder()
+            .WithPriceUsd(99.99m)
+            .Build();
+
+        var response = await Client.PutAsJsonAsync(
+            Routes.Admin.Categories.PricingItem(addressedCategory.Id, pricingTier.Id),
+            request
+        );
+
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("CategoryPricing"))
+        );
+
+        await using var verifyContext = CreateDbContext<ContentDbContext>();
+        CategoryPricingEntity? untouched = await verifyContext.CategoryPricing.FirstOrDefaultAsync(cp =>
+            cp.CategoryId == owningCategory.Id && cp.PricingTierId == pricingTier.Id
+        );
+        untouched.Should().NotBeNull();
+        untouched!.PriceUsd.Should().Be(5.99m);
     }
 }

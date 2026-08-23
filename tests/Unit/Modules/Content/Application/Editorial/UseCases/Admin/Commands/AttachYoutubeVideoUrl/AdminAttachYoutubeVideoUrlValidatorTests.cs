@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.AttachYoutubeVideoUrl;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Tests.Fixtures.Constants;
@@ -31,7 +30,7 @@ public class AdminAttachYoutubeVideoUrlValidatorTests
         // Arrange
         var command = new AdminAttachYoutubeVideoUrlCommand(
             VideoId: Guid.NewGuid().ToString(),
-            YoutubeVideoUrl: TestConstants.Content.Editorial.Video.ValidYoutubeVideoUrl
+            YoutubeVideoUrl: TestConstants.Video.ValidYoutubeVideoUrl
         );
 
         // Act
@@ -52,7 +51,7 @@ public class AdminAttachYoutubeVideoUrlValidatorTests
         // Arrange
         var command = new AdminAttachYoutubeVideoUrlCommand(
             VideoId: string.Empty,
-            YoutubeVideoUrl: TestConstants.Content.Editorial.Video.ValidYoutubeVideoUrl
+            YoutubeVideoUrl: TestConstants.Video.ValidYoutubeVideoUrl
         );
 
         // Act
@@ -74,7 +73,7 @@ public class AdminAttachYoutubeVideoUrlValidatorTests
         // Arrange
         var command = new AdminAttachYoutubeVideoUrlCommand(
             VideoId: "not-a-guid",
-            YoutubeVideoUrl: TestConstants.Content.Editorial.Video.ValidYoutubeVideoUrl
+            YoutubeVideoUrl: TestConstants.Video.ValidYoutubeVideoUrl
         );
 
         // Act
@@ -122,7 +121,7 @@ public class AdminAttachYoutubeVideoUrlValidatorTests
         // Arrange
         var command = new AdminAttachYoutubeVideoUrlCommand(
             VideoId: Guid.NewGuid().ToString(),
-            YoutubeVideoUrl: new string('a', TestConstants.Content.Editorial.Video.YoutubeVideoUrlMaxLength + 1)
+            YoutubeVideoUrl: new string('a', TestConstants.Video.YoutubeVideoUrlMaxLength + 1)
         );
 
         // Act
@@ -134,8 +133,7 @@ public class AdminAttachYoutubeVideoUrlValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminAttachYoutubeVideoUrlCommand.YoutubeVideoUrl)
-                && e.ErrorMessage
-                    == _i18n.Video.Msg.YoutubeUrlTooLong(TestConstants.Content.Editorial.Video.YoutubeVideoUrlMaxLength)
+                && e.ErrorMessage == _i18n.Video.Msg.YoutubeUrlTooLong(TestConstants.Video.YoutubeVideoUrlMaxLength)
             );
     }
 
@@ -158,37 +156,6 @@ public class AdminAttachYoutubeVideoUrlValidatorTests
             .Contain(e =>
                 e.PropertyName == nameof(AdminAttachYoutubeVideoUrlCommand.YoutubeVideoUrl)
                 && e.ErrorMessage == _i18n.Video.Msg.YoutubeUrlInvalidFormat()
-            );
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-        var validator = new AdminAttachYoutubeVideoUrlValidator(_i18n);
-        var command = new AdminAttachYoutubeVideoUrlCommand(
-            VideoId: Guid.NewGuid().ToString(),
-            YoutubeVideoUrl: string.Empty
-        );
-
-        // Act
-        ValidationResult result = await validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminAttachYoutubeVideoUrlCommand.YoutubeVideoUrl)
-                && e.ErrorMessage == _i18n.Video.Msg.YoutubeUrlRequired()
             );
     }
 

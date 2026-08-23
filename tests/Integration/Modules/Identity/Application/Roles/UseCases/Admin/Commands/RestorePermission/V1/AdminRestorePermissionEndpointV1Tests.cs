@@ -1,6 +1,8 @@
 using _116.Identity.Application.Roles.UseCases.Admin.Commands.RestorePermission.V1;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Identity;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.Roles.UseCases.Admin.Commands.RestorePermission.V1;
@@ -51,9 +53,6 @@ public class AdminRestorePermissionEndpointV1Tests(PostgresFixture db) : BaseApi
         (await IsPermissionDeletedAsync(permission.Id)).Should().BeFalse();
     }
 
-    /// <summary>
-    /// Verifies that restoring a permission that is not deleted returns a 409 Conflict.
-    /// </summary>
     [Fact]
     public async Task RestorePermission_WhenNotDeleted_ReturnsConflict()
     {
@@ -68,7 +67,10 @@ public class AdminRestorePermissionEndpointV1Tests(PostgresFixture db) : BaseApi
 
         var response = await Client.PatchAsync(Routes.Admin.Permissions.Restore(permission.Id), null);
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<ConflictErrorMessage>(m => m.PermissionNotDeleted())
+        );
         (await IsPermissionDeletedAsync(permission.Id)).Should().BeFalse();
     }
 }

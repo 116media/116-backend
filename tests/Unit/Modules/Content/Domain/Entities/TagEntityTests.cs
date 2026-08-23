@@ -20,8 +20,8 @@ public class TagEntityTests
     {
         // Arrange
         var id = Guid.NewGuid();
-        string name = TestConstants.Content.Tag.ValidName;
-        string slug = TestConstants.Content.Tag.ValidSlug;
+        string name = TestConstants.Tag.ValidName;
+        string slug = TestConstants.Tag.ValidSlug;
 
         // Act
         var entity = TagEntity.Create(id, name, slug, TestErrorsFactory.CreateTagErrors());
@@ -43,7 +43,7 @@ public class TagEntityTests
             TagEntity.Create(
                 Guid.NewGuid(),
                 invalidName!,
-                TestConstants.Content.Tag.ValidSlug,
+                TestConstants.Tag.ValidSlug,
                 TestErrorsFactory.CreateTagErrors()
             );
 
@@ -61,7 +61,7 @@ public class TagEntityTests
         Action act = () =>
             TagEntity.Create(
                 Guid.NewGuid(),
-                TestConstants.Content.Tag.ValidName,
+                TestConstants.Tag.ValidName,
                 invalidSlug!,
                 TestErrorsFactory.CreateTagErrors()
             );
@@ -80,8 +80,8 @@ public class TagEntityTests
         // Arrange
         var tag = TagEntity.Create(
             Guid.NewGuid(),
-            TestConstants.Content.Tag.ValidName,
-            TestConstants.Content.Tag.ValidSlug,
+            TestConstants.Tag.ValidName,
+            TestConstants.Tag.ValidSlug,
             TestErrorsFactory.CreateTagErrors()
         );
 
@@ -102,8 +102,8 @@ public class TagEntityTests
         // Arrange
         var tag = TagEntity.Create(
             Guid.NewGuid(),
-            TestConstants.Content.Tag.ValidName,
-            TestConstants.Content.Tag.ValidSlug,
+            TestConstants.Tag.ValidName,
+            TestConstants.Tag.ValidSlug,
             TestErrorsFactory.CreateTagErrors()
         );
 
@@ -124,8 +124,8 @@ public class TagEntityTests
         // Arrange
         var tag = TagEntity.Create(
             Guid.NewGuid(),
-            TestConstants.Content.Tag.ValidName,
-            TestConstants.Content.Tag.ValidSlug,
+            TestConstants.Tag.ValidName,
+            TestConstants.Tag.ValidSlug,
             TestErrorsFactory.CreateTagErrors()
         );
 

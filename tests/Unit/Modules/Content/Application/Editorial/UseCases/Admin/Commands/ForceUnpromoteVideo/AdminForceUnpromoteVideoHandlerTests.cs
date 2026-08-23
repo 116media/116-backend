@@ -53,7 +53,7 @@ public class AdminForceUnpromoteVideoHandlerTests
         VideoEntity video = VideoFactory.CreatePromoted(CategoryId);
         var command = new AdminForceUnpromoteVideoCommand(
             Slug: video.Slug,
-            Reason: TestConstants.Content.Editorial.Video.ValidRejectionReason
+            Reason: TestConstants.Video.ValidRejectionReason
         );
         _videoRepositoryMock.SetupGetBySlug(video.Slug, video);
 
@@ -77,7 +77,7 @@ public class AdminForceUnpromoteVideoHandlerTests
         // Arrange
         var command = new AdminForceUnpromoteVideoCommand(
             Slug: "non-existent-slug",
-            Reason: TestConstants.Content.Editorial.Video.ValidRejectionReason
+            Reason: TestConstants.Video.ValidRejectionReason
         );
         _videoRepositoryMock.SetupGetBySlug("non-existent-slug", null);
 

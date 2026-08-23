@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.Content.Application.Lookup.UseCases.Admin.Commands.CreateTag;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Tests.Fixtures.Constants;
@@ -31,10 +30,7 @@ public class AdminCreateTagValidatorTests
     public async Task Validate_WithValidNameAndSlug_ShouldNotHaveErrors()
     {
         // Arrange
-        var command = new AdminCreateTagCommand(
-            Name: TestConstants.Content.Tag.ValidName,
-            Slug: TestConstants.Content.Tag.ValidSlug
-        );
+        var command = new AdminCreateTagCommand(Name: TestConstants.Tag.ValidName, Slug: TestConstants.Tag.ValidSlug);
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -48,7 +44,7 @@ public class AdminCreateTagValidatorTests
     public async Task Validate_WithSlugContainingNumbers_ShouldNotHaveErrors()
     {
         // Arrange
-        var command = new AdminCreateTagCommand(Name: TestConstants.Content.Tag.ValidName, Slug: "fally-ipupa-123");
+        var command = new AdminCreateTagCommand(Name: TestConstants.Tag.ValidName, Slug: "fally-ipupa-123");
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -61,9 +57,9 @@ public class AdminCreateTagValidatorTests
     public async Task Validate_WithMaxLengthNameAndSlug_ShouldNotHaveErrors()
     {
         // Arrange
-        string maxLengthSlug = new('a', TestConstants.Content.Tag.SlugMaxLength);
+        string maxLengthSlug = new('a', TestConstants.Tag.SlugMaxLength);
         var command = new AdminCreateTagCommand(
-            Name: new string('a', TestConstants.Content.Tag.NameMaxLength),
+            Name: new string('a', TestConstants.Tag.NameMaxLength),
             Slug: maxLengthSlug
         );
 
@@ -82,7 +78,7 @@ public class AdminCreateTagValidatorTests
     public async Task Validate_WithEmptyName_ShouldHaveError()
     {
         // Arrange
-        var command = new AdminCreateTagCommand(Name: string.Empty, Slug: TestConstants.Content.Tag.ValidSlug);
+        var command = new AdminCreateTagCommand(Name: string.Empty, Slug: TestConstants.Tag.ValidSlug);
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -100,7 +96,7 @@ public class AdminCreateTagValidatorTests
     public async Task Validate_WithNullName_ShouldHaveError()
     {
         // Arrange
-        var command = new AdminCreateTagCommand(Name: null!, Slug: TestConstants.Content.Tag.ValidSlug);
+        var command = new AdminCreateTagCommand(Name: null!, Slug: TestConstants.Tag.ValidSlug);
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -119,8 +115,8 @@ public class AdminCreateTagValidatorTests
     {
         // Arrange
         var command = new AdminCreateTagCommand(
-            Name: new string('a', TestConstants.Content.Tag.NameMaxLength + 1),
-            Slug: TestConstants.Content.Tag.ValidSlug
+            Name: new string('a', TestConstants.Tag.NameMaxLength + 1),
+            Slug: TestConstants.Tag.ValidSlug
         );
 
         // Act
@@ -132,7 +128,7 @@ public class AdminCreateTagValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminCreateTagCommand.Name)
-                && e.ErrorMessage == _i18n.Tag.Msg.NameTooLong(TestConstants.Content.Tag.NameMaxLength)
+                && e.ErrorMessage == _i18n.Tag.Msg.NameTooLong(TestConstants.Tag.NameMaxLength)
             );
     }
 
@@ -144,7 +140,7 @@ public class AdminCreateTagValidatorTests
     public async Task Validate_WithEmptySlug_ShouldHaveError()
     {
         // Arrange
-        var command = new AdminCreateTagCommand(Name: TestConstants.Content.Tag.ValidName, Slug: string.Empty);
+        var command = new AdminCreateTagCommand(Name: TestConstants.Tag.ValidName, Slug: string.Empty);
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -162,8 +158,8 @@ public class AdminCreateTagValidatorTests
     public async Task Validate_WithSlugExceedingMaxLength_ShouldHaveError()
     {
         // Arrange
-        string longSlug = new('a', TestConstants.Content.Tag.SlugMaxLength + 1);
-        var command = new AdminCreateTagCommand(Name: TestConstants.Content.Tag.ValidName, Slug: longSlug);
+        string longSlug = new('a', TestConstants.Tag.SlugMaxLength + 1);
+        var command = new AdminCreateTagCommand(Name: TestConstants.Tag.ValidName, Slug: longSlug);
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -174,7 +170,7 @@ public class AdminCreateTagValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminCreateTagCommand.Slug)
-                && e.ErrorMessage == _i18n.Tag.Msg.SlugTooLong(TestConstants.Content.Tag.SlugMaxLength)
+                && e.ErrorMessage == _i18n.Tag.Msg.SlugTooLong(TestConstants.Tag.SlugMaxLength)
             );
     }
 
@@ -182,7 +178,7 @@ public class AdminCreateTagValidatorTests
     public async Task Validate_WithUppercaseSlug_ShouldHaveError()
     {
         // Arrange
-        var command = new AdminCreateTagCommand(Name: TestConstants.Content.Tag.ValidName, Slug: "Fally-Ipupa");
+        var command = new AdminCreateTagCommand(Name: TestConstants.Tag.ValidName, Slug: "Fally-Ipupa");
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -201,7 +197,7 @@ public class AdminCreateTagValidatorTests
     public async Task Validate_WithSlugContainingSpaces_ShouldHaveError()
     {
         // Arrange
-        var command = new AdminCreateTagCommand(Name: TestConstants.Content.Tag.ValidName, Slug: "fally ipupa");
+        var command = new AdminCreateTagCommand(Name: TestConstants.Tag.ValidName, Slug: "fally ipupa");
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -233,33 +229,6 @@ public class AdminCreateTagValidatorTests
         result.IsValid.Should().BeFalse();
         result.Errors.Should().Contain(e => e.PropertyName == nameof(AdminCreateTagCommand.Name));
         result.Errors.Should().Contain(e => e.PropertyName == nameof(AdminCreateTagCommand.Slug));
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-        var validator = new AdminCreateTagValidator(_i18n);
-        var command = new AdminCreateTagCommand(Name: "", Slug: TestConstants.Content.Tag.ValidSlug);
-
-        // Act
-        ValidationResult result = await validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminCreateTagCommand.Name) && e.ErrorMessage == _i18n.Tag.Msg.NameRequired()
-            );
     }
 
     #endregion

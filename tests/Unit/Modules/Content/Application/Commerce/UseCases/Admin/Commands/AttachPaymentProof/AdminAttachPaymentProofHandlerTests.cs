@@ -119,9 +119,49 @@ public class AdminAttachPaymentProofHandlerTests : BaseContentHandlerTest
     }
 
     [Fact]
+    public async Task Handle_WhenOrderNotFound_ShouldThrowNotFoundExceptionWithoutUploading()
+    {
+        // Arrange
+        Guid orderId = Guid.NewGuid();
+        _orderRepositoryMock.SetupGetByIdOrThrowNotFound(orderId);
+
+        Mock<IFormFile> fileMock = new();
+        fileMock.Setup(f => f.ContentType).Returns("image/jpeg");
+        fileMock.Setup(f => f.FileName).Returns("proof.jpg");
+
+        var command = new AdminAttachPaymentProofCommand(
+            OrderId: orderId.ToString(),
+            File: fileMock.Object,
+            PaymentMethod: EnumPaymentMethod.BankTransfer
+        );
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
+        _orderPaymentFactoryMock.Verify(
+            x => x.GetByOrderIdOrThrowAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
+        _fileRepositoryMock.Verify(
+            x =>
+                x.UploadAndStoreRawFileAsync(
+                    It.IsAny<IFormFile>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Never
+        );
+    }
+
+    [Fact]
     public async Task Handle_ShouldExtractMimeTypeBeforeSemicolon()
     {
-        // Arrange — verify mimeType is correctly extracted from ContentType
+        // Arrange
         Guid orderId = Guid.NewGuid();
         ContentPaymentEntity payment = ContentPaymentFactory.Create(orderId);
         FileEntity proofFile = FileFactory.CreateJpeg();

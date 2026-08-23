@@ -21,7 +21,7 @@ public class PackageSlotEntityTests
         var id = Guid.NewGuid();
         var packageId = Guid.NewGuid();
         var categoryId = Guid.NewGuid();
-        int quantity = TestConstants.Content.PackageSlot.ValidQuantity;
+        int quantity = TestConstants.PackageSlot.ValidQuantity;
 
         // Act
         var entity = PackageSlotEntity.Create(
@@ -50,7 +50,7 @@ public class PackageSlotEntityTests
             Guid.NewGuid(),
             null,
             false,
-            TestConstants.Content.PackageSlot.ValidQuantity,
+            TestConstants.PackageSlot.ValidQuantity,
             TestErrorsFactory.CreatePackageErrors()
         );
 
@@ -68,12 +68,12 @@ public class PackageSlotEntityTests
             Guid.NewGuid(),
             null,
             false,
-            TestConstants.Content.PackageSlot.AnotherValidQuantity,
+            TestConstants.PackageSlot.AnotherValidQuantity,
             TestErrorsFactory.CreatePackageErrors()
         );
 
         // Assert
-        entity.Quantity.Should().Be(TestConstants.Content.PackageSlot.AnotherValidQuantity);
+        entity.Quantity.Should().Be(TestConstants.PackageSlot.AnotherValidQuantity);
     }
 
     [Theory]

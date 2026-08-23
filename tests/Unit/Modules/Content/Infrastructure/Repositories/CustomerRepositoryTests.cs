@@ -126,7 +126,7 @@ public class CustomerRepositoryTests : IDisposable
     public async Task GetByEmailAsync_WhenFound_ShouldReturnEntity()
     {
         // Arrange
-        string email = TestConstants.Content.Customer.ValidEmail;
+        string email = TestConstants.Customer.ValidEmail;
         CustomerEntity customer = CustomerFactory.Create(email);
         _context.Customers.Add(customer);
         await _context.SaveChangesAsync();

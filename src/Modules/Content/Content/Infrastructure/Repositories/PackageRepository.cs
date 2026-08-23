@@ -96,6 +96,20 @@ public class PackageRepository(ContentDbContext context) : IPackageRepository
     }
 
     /// <inheritdoc />
+    public async Task<PackageSlotEntity?> GetSlotByIdAsync(
+        Guid slotId,
+        Guid packageId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var specification = new PackageSlotByIdInPackageSpecification(slotId: slotId, packageId: packageId);
+        return await context.PackageSlots.FirstOrDefaultBySpecificationAsync(
+            specification: specification,
+            cancellationToken: cancellationToken
+        );
+    }
+
+    /// <inheritdoc />
     public async Task AddSlotAsync(PackageSlotEntity slot, CancellationToken cancellationToken = default)
     {
         await context.PackageSlots.AddAsync(slot, cancellationToken);

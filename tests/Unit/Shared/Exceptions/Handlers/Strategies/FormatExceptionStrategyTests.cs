@@ -15,7 +15,7 @@ namespace _116.Unit.Tests.Shared.Exceptions.Handlers.Strategies;
 public class FormatExceptionStrategyTests
 {
     private readonly FormatExceptionStrategy _handler = new();
-    private readonly SharedExceptionMessage i18n = LocalizerFactory.CreateMessage<SharedExceptionMessage>("en");
+    private readonly SharedExceptionMessage i18n = LocalizerFactory.CreateMessage<SharedExceptionMessage>();
 
     #region ExceptionType Tests
 

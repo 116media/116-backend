@@ -14,9 +14,10 @@ public class AdminUpdateLyricsMetadataValidator : AbstractValidator<AdminUpdateL
     /// Initializes a new instance of <see cref="AdminUpdateLyricsMetadataValidator" /> with the specified error message provider.
     /// </summary>
     /// <param name="i18n">Content module i18n facade.</param>
-    public AdminUpdateLyricsMetadataValidator(ContentI18n i18n)
+    /// <param name="timeProvider">The clock the release-year upper boundary is computed from.</param>
+    public AdminUpdateLyricsMetadataValidator(ContentI18n i18n, TimeProvider timeProvider)
     {
-        RuleFor(x => x.ReleaseYear).ValidReleaseYear();
+        RuleFor(x => x.ReleaseYear).ValidReleaseYear(timeProvider);
         RuleFor(x => x.Album).ValidAlbum(i18n.Lyrics.Msg);
         RuleFor(x => x.Label).ValidLabel(i18n.Lyrics.Msg);
         RuleFor(x => x.Songwriter).ValidSongwriter(i18n.Lyrics.Msg);

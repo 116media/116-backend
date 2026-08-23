@@ -539,11 +539,15 @@ public static partial class EditorialValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the release year property.</param>
+    /// <param name="timeProvider">The clock the upper boundary is computed from.</param>
     /// <returns>The configured rule builder.</returns>
-    public static IRuleBuilderOptions<T, short?> ValidReleaseYear<T>(this IRuleBuilder<T, short?> ruleBuilder)
+    public static IRuleBuilderOptions<T, short?> ValidReleaseYear<T>(
+        this IRuleBuilder<T, short?> ruleBuilder,
+        TimeProvider timeProvider
+    )
     {
         return ruleBuilder
-            .InclusiveBetween((short)1900, (short)(DateTimeOffset.UtcNow.Year + 1))
+            .InclusiveBetween((short)1900, (short)(timeProvider.GetUtcNow().Year + 1))
             .When(x => GetNullableShortPropertyValue(instance: x, propertyName: "ReleaseYear") is not null);
     }
 

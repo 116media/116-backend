@@ -71,6 +71,8 @@ public static class AuthTestHelpers
 
     /// <summary>
     /// Creates PublicLoginAuthData with a specific user (predictable scenario).
+    /// These three aliases are the intended entry point; AuthDataBuilder is an implementation
+    /// detail of this file and is not part of the fixture API tests reach for.
     /// </summary>
     public static PublicLoginAuthData CreatePublicLoginAuthData(UserEntity user) =>
         new AuthDataBuilder(user).BuildPublicLoginAuthData();

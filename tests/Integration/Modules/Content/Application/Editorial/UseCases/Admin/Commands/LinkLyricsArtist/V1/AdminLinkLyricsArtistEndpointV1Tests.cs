@@ -2,6 +2,8 @@ using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.LinkLyricsArtist.V1;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.LinkLyricsArtist.V1;
@@ -76,7 +78,10 @@ public class AdminLinkLyricsArtistEndpointV1Tests(PostgresFixture db) : BaseApiT
             new AdminLinkLyricsArtistRequest(null)
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Lyrics"))
+        );
     }
 
     [Fact]
@@ -100,10 +105,6 @@ public class AdminLinkLyricsArtistEndpointV1Tests(PostgresFixture db) : BaseApiT
         persisted!.ArtistId.Should().Be(artist.Id);
     }
 
-    /// <summary>
-    /// Linking an artist profile must never touch the plain-text <c>ArtistName</c> field —
-    /// unlinking later should revert the record to that same untouched free-text value.
-    /// </summary>
     [Fact]
     public async Task LinkLyricsArtist_ShouldNotTouchPlainTextArtistName()
     {
@@ -132,13 +133,12 @@ public class AdminLinkLyricsArtistEndpointV1Tests(PostgresFixture db) : BaseApiT
             new AdminLinkLyricsArtistRequest(Guid.NewGuid())
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Artist"))
+        );
     }
 
-    /// <summary>
-    /// Unlinking (passing a null <c>ArtistId</c>) reverts the lyrics page to its plain-text
-    /// <c>ArtistName</c> only, with no data loss.
-    /// </summary>
     [Fact]
     public async Task LinkLyricsArtist_WithNullArtistId_UnlinksExistingArtist()
     {
@@ -162,9 +162,6 @@ public class AdminLinkLyricsArtistEndpointV1Tests(PostgresFixture db) : BaseApiT
         persisted!.ArtistId.Should().BeNull();
     }
 
-    /// <summary>
-    /// Re-linking to a different artist after an unlink replaces the association cleanly.
-    /// </summary>
     [Fact]
     public async Task LinkLyricsArtist_ReLinkToDifferentArtist_UpdatesToNewArtist()
     {

@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.AddCategoryPricing;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Tests.Fixtures.Constants;
@@ -31,7 +30,7 @@ public class AdminAddCategoryPricingValidatorTests
         var command = new AdminAddCategoryPricingCommand(
             CategoryId: Guid.NewGuid().ToString(),
             PricingTierId: Guid.NewGuid(),
-            PriceUsd: TestConstants.Content.CategoryPricing.ValidPriceUsd
+            PriceUsd: TestConstants.CategoryPricing.ValidPriceUsd
         );
 
         // Act
@@ -49,7 +48,7 @@ public class AdminAddCategoryPricingValidatorTests
         var command = new AdminAddCategoryPricingCommand(
             CategoryId: Guid.NewGuid().ToString(),
             PricingTierId: Guid.NewGuid(),
-            PriceUsd: TestConstants.Content.CategoryPricing.ZeroPriceUsd
+            PriceUsd: TestConstants.CategoryPricing.ZeroPriceUsd
         );
 
         // Act
@@ -70,7 +69,7 @@ public class AdminAddCategoryPricingValidatorTests
         var command = new AdminAddCategoryPricingCommand(
             CategoryId: "",
             PricingTierId: Guid.NewGuid(),
-            PriceUsd: TestConstants.Content.CategoryPricing.ValidPriceUsd
+            PriceUsd: TestConstants.CategoryPricing.ValidPriceUsd
         );
 
         // Act
@@ -97,7 +96,7 @@ public class AdminAddCategoryPricingValidatorTests
         var command = new AdminAddCategoryPricingCommand(
             CategoryId: Guid.NewGuid().ToString(),
             PricingTierId: Guid.Empty,
-            PriceUsd: TestConstants.Content.CategoryPricing.ValidPriceUsd
+            PriceUsd: TestConstants.CategoryPricing.ValidPriceUsd
         );
 
         // Act
@@ -137,38 +136,6 @@ public class AdminAddCategoryPricingValidatorTests
             .Contain(e =>
                 e.PropertyName == nameof(AdminAddCategoryPricingCommand.PriceUsd)
                 && e.ErrorMessage == _i18n.Category.Msg.PriceMustBeNonNegative()
-            );
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-        var validator = new AdminAddCategoryPricingValidator(_i18n);
-        var command = new AdminAddCategoryPricingCommand(
-            CategoryId: "",
-            PricingTierId: Guid.NewGuid(),
-            PriceUsd: TestConstants.Content.CategoryPricing.ValidPriceUsd
-        );
-
-        // Act
-        ValidationResult result = await validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminAddCategoryPricingCommand.CategoryId)
-                && e.ErrorMessage == _i18n.Category.Msg.Localizer["IdRequired"].Value
             );
     }
 

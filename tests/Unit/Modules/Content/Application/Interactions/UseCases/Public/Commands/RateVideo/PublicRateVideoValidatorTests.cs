@@ -43,7 +43,7 @@ public class PublicRateVideoValidatorTests
         var command = new PublicRateVideoCommand(
             VideoId: Guid.NewGuid(),
             UserId: Guid.NewGuid(),
-            Stars: TestConstants.Content.Interactions.InvalidStarRatingBelowMin
+            Stars: TestConstants.Interactions.InvalidStarRatingBelowMin
         );
 
         // Act
@@ -61,7 +61,7 @@ public class PublicRateVideoValidatorTests
         var command = new PublicRateVideoCommand(
             VideoId: Guid.NewGuid(),
             UserId: Guid.NewGuid(),
-            Stars: TestConstants.Content.Interactions.InvalidStarRatingAboveMax
+            Stars: TestConstants.Interactions.InvalidStarRatingAboveMax
         );
 
         // Act

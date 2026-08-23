@@ -14,7 +14,7 @@ public class ShortVideoInteractionErrorsTests
 {
     private readonly ShortVideoInteractionErrors _errors = TestErrorsFactory.CreateShortVideoInteractionErrors();
     private readonly ShortVideoInteractionErrorMessage _message =
-        LocalizerFactory.CreateMessage<ShortVideoInteractionErrorMessage>("en");
+        LocalizerFactory.CreateMessage<ShortVideoInteractionErrorMessage>();
 
     [Fact]
     public void AlreadyLiked_ShouldReturnConflictException()

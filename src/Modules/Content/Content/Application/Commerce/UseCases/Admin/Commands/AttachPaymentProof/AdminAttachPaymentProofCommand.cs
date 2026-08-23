@@ -10,9 +10,9 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.AttachPaymen
 /// Accepts images (JPEG, PNG, GIF, WebP) or PDF documents up to 5 MB.
 /// </summary>
 /// <param name="OrderId">The identifier of the order.</param>
-/// <param name="File">The payment proof file to upload to Cloudinary.</param>
+/// <param name="File">The payment proof file to upload to Cloudinary. Null when the file part is missing.</param>
 /// <param name="PaymentMethod">The payment method used.</param>
-public record AdminAttachPaymentProofCommand(string OrderId, IFormFile File, EnumPaymentMethod PaymentMethod)
+public record AdminAttachPaymentProofCommand(string OrderId, IFormFile? File, EnumPaymentMethod PaymentMethod)
     : ICommand<AdminAttachPaymentProofResult>;
 
 /// <summary>

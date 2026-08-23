@@ -3,6 +3,7 @@ using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Shared.Application.Exceptions;
+using _116.Tests.Fixtures.Builders.Entities.Content;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
@@ -45,7 +46,7 @@ public class AdminRejectArticleHandlerTests
         ArticleEntity article = ArticleFactory.CreatePendingReview(CategoryId);
         var command = new AdminRejectArticleCommand(
             Id: article.Id.ToString(),
-            Reason: TestConstants.Content.Editorial.Article.ValidRejectionReason
+            Reason: TestConstants.Article.ValidRejectionReason
         );
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
 
@@ -69,7 +70,7 @@ public class AdminRejectArticleHandlerTests
         Guid nonExistentId = Guid.NewGuid();
         var command = new AdminRejectArticleCommand(
             Id: nonExistentId.ToString(),
-            Reason: TestConstants.Content.Editorial.Article.ValidRejectionReason
+            Reason: TestConstants.Article.ValidRejectionReason
         );
         _articleRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentId);
 
@@ -84,10 +85,10 @@ public class AdminRejectArticleHandlerTests
     public async Task Handle_WhenArticleAlreadyRejected_ShouldThrowConflictException()
     {
         // Arrange
-        ArticleEntity article = ArticleFactory.CreateRejected(CategoryId);
+        ArticleEntity article = new ArticleBuilder(CategoryId).AsRejected().Build();
         var command = new AdminRejectArticleCommand(
             Id: article.Id.ToString(),
-            Reason: TestConstants.Content.Editorial.Article.ValidRejectionReason
+            Reason: TestConstants.Article.ValidRejectionReason
         );
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
 
@@ -105,7 +106,7 @@ public class AdminRejectArticleHandlerTests
         ArticleEntity article = ArticleFactory.Create(CategoryId); // Draft status
         var command = new AdminRejectArticleCommand(
             Id: article.Id.ToString(),
-            Reason: TestConstants.Content.Editorial.Article.ValidRejectionReason
+            Reason: TestConstants.Article.ValidRejectionReason
         );
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
 

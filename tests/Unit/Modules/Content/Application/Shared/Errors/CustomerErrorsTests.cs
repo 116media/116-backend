@@ -13,7 +13,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Shared.Errors;
 public class CustomerErrorsTests
 {
     private readonly CustomerErrors _errors = TestErrorsFactory.CreateCustomerErrors();
-    private readonly CustomerErrorMessage _message = LocalizerFactory.CreateMessage<CustomerErrorMessage>("en");
+    private readonly CustomerErrorMessage _message = LocalizerFactory.CreateMessage<CustomerErrorMessage>();
 
     [Fact]
     public void AlreadyExists_WithEmail_ShouldReturnConflictException()

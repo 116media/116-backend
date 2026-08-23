@@ -1,5 +1,6 @@
 using _116.Content.Application.Lookup.UseCases.Admin.Commands.UpdateContentType.V1;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using Bogus;
 
 namespace _116.Tests.Fixtures.Builders.Requests.Content;
@@ -9,7 +10,7 @@ namespace _116.Tests.Fixtures.Builders.Requests.Content;
 /// </summary>
 public class AdminUpdateContentTypeRequestBuilder
 {
-    private readonly Faker _faker = new();
+    private readonly Faker _faker = TestFaker.Create();
 
     private string _name;
 
@@ -20,7 +21,7 @@ public class AdminUpdateContentTypeRequestBuilder
     public AdminUpdateContentTypeRequestBuilder()
     {
         string candidate = $"Type{_faker.Random.AlphaNumeric(length: 8)}";
-        _name = candidate[..Math.Min(TestConstants.Content.ContentType.NameMaxLength, candidate.Length)];
+        _name = candidate[..Math.Min(TestConstants.ContentType.NameMaxLength, candidate.Length)];
     }
 
     /// <summary>

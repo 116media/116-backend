@@ -220,4 +220,9 @@ public class LyricsErrorMessage(IStringLocalizer<LyricsErrorMessage> localizer)
     /// lyrics page that belongs to an album.
     /// </summary>
     public string BelongsToAlbum() => localizer["BelongsToAlbum"];
+
+    /// <summary>
+    /// Gets an error message for when a lyrics page carries no active promotion.
+    /// </summary>
+    public string NotPromoted() => localizer["NotPromoted"];
 }

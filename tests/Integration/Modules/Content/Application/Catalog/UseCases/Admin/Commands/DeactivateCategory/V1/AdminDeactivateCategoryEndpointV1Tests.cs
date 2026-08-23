@@ -1,5 +1,8 @@
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Catalog.UseCases.Admin.Commands.DeactivateCategory.V1;
@@ -64,7 +67,10 @@ public class AdminDeactivateCategoryEndpointV1Tests(PostgresFixture db) : BaseAp
 
         var response = await Client.PatchAsync(Routes.Admin.Categories.Deactivate(Guid.NewGuid()), null);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Category"))
+        );
     }
 
     [Fact]
@@ -77,10 +83,6 @@ public class AdminDeactivateCategoryEndpointV1Tests(PostgresFixture db) : BaseAp
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    /// <summary>
-    /// Verifies that deactivating a category that is already inactive
-    /// returns a 409 Conflict response.
-    /// </summary>
     [Fact]
     public async Task DeactivateCategory_WhenAlreadyInactive_ReturnsConflict()
     {
@@ -90,7 +92,10 @@ public class AdminDeactivateCategoryEndpointV1Tests(PostgresFixture db) : BaseAp
 
         var response = await Client.PatchAsync(Routes.Admin.Categories.Deactivate(category.Id), null);
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<CategoryErrorMessage>(m => m.AlreadyInactive())
+        );
         (await IsCategoryActiveAsync(category.Id)).Should().BeFalse();
     }
 }

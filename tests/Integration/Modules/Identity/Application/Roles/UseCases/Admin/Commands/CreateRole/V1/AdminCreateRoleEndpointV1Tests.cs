@@ -1,8 +1,12 @@
 using _116.Identity.Application.Roles.UseCases.Admin.Commands.CreateRole.V1;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Builders.Requests.Identity;
 using _116.Tests.Fixtures.Factories.Identity;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.Roles.UseCases.Admin.Commands.CreateRole.V1;
 
@@ -13,6 +17,9 @@ namespace _116.Integration.Tests.Modules.Identity.Application.Roles.UseCases.Adm
 public class AdminCreateRoleEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
     private static string ShortName(string prefix = "r") => $"{prefix}{Guid.NewGuid().ToString("N")[..8]}";
+
+    private static string ValidationDetail(string property, string message) =>
+        new ValidationException([new ValidationFailure(property, message)]).Message;
 
     [Fact]
     public async Task CreateRole_AsSuperAdmin_WithValidData_ReturnsSuccess()
@@ -74,7 +81,10 @@ public class AdminCreateRoleEndpointV1Tests(PostgresFixture db) : BaseApiTest(db
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Roles, request);
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<ConflictErrorMessage>(m => m.RoleAlreadyExists(duplicateName))
+        );
     }
 
     [Fact]
@@ -85,6 +95,9 @@ public class AdminCreateRoleEndpointV1Tests(PostgresFixture db) : BaseApiTest(db
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Roles, request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("Name", Localized<ValidationErrorMessage>(m => m.RoleNameRequired()))
+        );
     }
 }

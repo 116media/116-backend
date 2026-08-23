@@ -48,10 +48,10 @@ public class AdminCreateAlbumHandlerTests
     {
         // Arrange
         var command = new AdminCreateAlbumCommand(
-            TestConstants.Content.Editorial.Album.ValidName,
+            TestConstants.Album.ValidName,
             null,
-            TestConstants.Content.Editorial.Album.ValidReleaseYear,
-            TestConstants.Content.Editorial.Album.ValidLabel,
+            TestConstants.Album.ValidReleaseYear,
+            TestConstants.Album.ValidLabel,
             EnumReleaseType.Album
         );
 
@@ -72,7 +72,7 @@ public class AdminCreateAlbumHandlerTests
         ArtistEntity artist = ArtistFactory.Create();
         _artistRepositoryMock.SetupGetByIdOrThrow(artist);
         var command = new AdminCreateAlbumCommand(
-            TestConstants.Content.Editorial.Album.ValidName,
+            TestConstants.Album.ValidName,
             artist.Id,
             null,
             null,
@@ -99,7 +99,7 @@ public class AdminCreateAlbumHandlerTests
         Guid nonExistentArtistId = Guid.NewGuid();
         _artistRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentArtistId);
         var command = new AdminCreateAlbumCommand(
-            TestConstants.Content.Editorial.Album.ValidName,
+            TestConstants.Album.ValidName,
             nonExistentArtistId,
             null,
             null,
@@ -120,7 +120,7 @@ public class AdminCreateAlbumHandlerTests
         Guid nonExistentArtistId = Guid.NewGuid();
         _artistRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentArtistId);
         var command = new AdminCreateAlbumCommand(
-            TestConstants.Content.Editorial.Album.ValidName,
+            TestConstants.Album.ValidName,
             nonExistentArtistId,
             null,
             null,

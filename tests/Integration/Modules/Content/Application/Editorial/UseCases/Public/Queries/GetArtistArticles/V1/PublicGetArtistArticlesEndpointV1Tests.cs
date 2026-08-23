@@ -1,6 +1,8 @@
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetArtistArticles.V1;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Public.Queries.GetArtistArticles.V1;
@@ -18,7 +20,10 @@ public class PublicGetArtistArticlesEndpointV1Tests(PostgresFixture db) : BaseAp
 
         var response = await Client.GetAsync(Routes.Public.Artists.Articles("no-such-artist"));
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Artist"))
+        );
     }
 
     [Fact]

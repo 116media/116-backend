@@ -39,7 +39,7 @@ public class AdminForceUnpromoteVideoHandler(
             throw i18n.Video.NotFound(Guid.Empty);
         }
 
-        video.ForceUnpromote(unpromotedBy: currentActor.UserId!, reason: command.Reason);
+        video.ForceUnpromote(unpromotedBy: currentActor.UserId!, reason: command.Reason, errors: i18n.Video);
 
         videoRepository.Update(video: video);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);

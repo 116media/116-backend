@@ -4,7 +4,9 @@ using _116.Tests.Fixtures.Builders.Entities.Identity;
 namespace _116.Tests.Fixtures.Factories.Identity;
 
 /// <summary>
-/// Factory for quickly creating <see cref="PermissionEntity"/> instances in tests.
+/// Named aliases for <see cref="PermissionBuilder" /> chains that three or more tests share verbatim.
+/// A shape fewer tests need belongs at the call site as a builder chain, not here —
+/// factory names carry the combinatorics, and combinatorics multiply.
 /// </summary>
 public static class PermissionFactory
 {
@@ -85,26 +87,11 @@ public static class PermissionFactory
     public static PermissionEntity CreateCreate(string resource) => Create(resource, PermissionActions.Create);
 
     /// <summary>
-    /// Creates an update permission for a specific resource.
-    /// </summary>
-    /// <param name="resource">The resource name.</param>
-    /// <returns>A new update PermissionEntity.</returns>
-    public static PermissionEntity CreateUpdate(string resource) => Create(resource, PermissionActions.Update);
-
-    /// <summary>
     /// Creates a delete permission for a specific resource.
     /// </summary>
     /// <param name="resource">The resource name.</param>
     /// <returns>A new delete PermissionEntity.</returns>
     public static PermissionEntity CreateDelete(string resource) => Create(resource, PermissionActions.Delete);
-
-    /// <summary>
-    /// Creates CRUD permissions for a specific resource.
-    /// </summary>
-    /// <param name="resource">The resource name.</param>
-    /// <returns>A list of CRUD PermissionEntity instances.</returns>
-    public static List<PermissionEntity> CreateCrud(string resource) =>
-        [CreateRead(resource), CreateCreate(resource), CreateUpdate(resource), CreateDelete(resource)];
 
     /// <summary>
     /// Standard permission actions.
@@ -113,8 +100,6 @@ public static class PermissionFactory
     {
         public const string Read = "read";
         public const string Create = "create";
-        public const string Update = "update";
         public const string Delete = "delete";
-        public const string Approve = "approve";
     }
 }

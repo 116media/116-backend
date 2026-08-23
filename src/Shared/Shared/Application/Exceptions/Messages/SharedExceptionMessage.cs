@@ -31,6 +31,14 @@ public class SharedExceptionMessage(IStringLocalizer<SharedExceptionMessage> loc
         string.Format(localizer["EntityNotFound"], ResolveEntityLabel(entityName));
 
     /// <summary>
+    /// User-friendly, localized "not found" message for a request that matched no API route.
+    /// Never echoes the requested method or path — those stay in the exception message for
+    /// logs only.
+    /// </summary>
+    /// <returns>A friendly, localized resource-not-found message.</returns>
+    public string ResourceNotFound() => localizer["ResourceNotFound"];
+
+    /// <summary>
     /// Error message indicating that a provided identifier has an invalid format.
     /// </summary>
     public string InvalidIdentifier() => localizer["InvalidIdentifier"];

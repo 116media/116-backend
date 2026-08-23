@@ -1,10 +1,12 @@
 using _116.Content.Application.Commerce.UseCases.Admin.Queries.GetOrderById;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
 using _116.Identity.Contracts.Application;
 using _116.Shared.Application.Exceptions;
+using _116.Tests.Fixtures.Builders.Entities.Content;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Factories.Core;
@@ -68,15 +70,14 @@ public class AdminGetOrderByIdHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         var orderId = Guid.NewGuid();
-        ContentOrderEntity order = ContentOrderFactory.CreateWithId(orderId);
-        ContentPaymentEntity payment = ContentPaymentFactory.CreateVerified(orderId);
-        Guid verifierId = payment.VerifiedById!.Value;
         Guid proofFileId = Guid.NewGuid();
-
-        typeof(ContentOrderEntity).GetProperty(nameof(ContentOrderEntity.Payment))!.SetValue(order, payment);
-        typeof(ContentPaymentEntity)
-            .GetProperty(nameof(ContentPaymentEntity.PaymentProofFileId))!
-            .SetValue(payment, (Guid?)proofFileId);
+        ContentPaymentEntity payment = new ContentPaymentBuilder()
+            .WithOrderId(orderId)
+            .WithProofFileId(proofFileId, EnumPaymentMethod.BankTransfer)
+            .AsVerified(Guid.NewGuid(), TestConstants.Commerce.ValidReceiptUrl)
+            .Build();
+        Guid verifierId = payment.VerifiedById!.Value;
+        ContentOrderEntity order = new ContentOrderBuilder().WithId(orderId).WithPayment(payment).Build();
 
         FileEntity proofFile = FileFactory.CreateWithId(proofFileId);
 
@@ -100,14 +101,12 @@ public class AdminGetOrderByIdHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         var orderId = Guid.NewGuid();
-        ContentOrderEntity order = ContentOrderFactory.CreateWithId(orderId);
-        ContentPaymentEntity payment = ContentPaymentFactory.Create(orderId);
         Guid proofFileId = Guid.NewGuid();
-
-        typeof(ContentOrderEntity).GetProperty(nameof(ContentOrderEntity.Payment))!.SetValue(order, payment);
-        typeof(ContentPaymentEntity)
-            .GetProperty(nameof(ContentPaymentEntity.PaymentProofFileId))!
-            .SetValue(payment, (Guid?)proofFileId);
+        ContentPaymentEntity payment = new ContentPaymentBuilder()
+            .WithOrderId(orderId)
+            .WithProofFileId(proofFileId, EnumPaymentMethod.BankTransfer)
+            .Build();
+        ContentOrderEntity order = new ContentOrderBuilder().WithId(orderId).WithPayment(payment).Build();
 
         FileEntity proofFile = FileFactory.CreateWithId(proofFileId);
 

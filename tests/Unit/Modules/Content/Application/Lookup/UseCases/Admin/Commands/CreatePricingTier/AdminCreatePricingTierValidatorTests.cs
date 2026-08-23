@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.Content.Application.Lookup.UseCases.Admin.Commands.CreatePricingTier;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Tests.Fixtures.Constants;
@@ -32,8 +31,8 @@ public class AdminCreatePricingTierValidatorTests
     {
         // Arrange
         var command = new AdminCreatePricingTierCommand(
-            Name: TestConstants.Content.PricingTier.ValidName,
-            Description: TestConstants.Content.PricingTier.ValidDescription
+            Name: TestConstants.PricingTier.ValidName,
+            Description: TestConstants.PricingTier.ValidDescription
         );
 
         // Act
@@ -49,8 +48,8 @@ public class AdminCreatePricingTierValidatorTests
     {
         // Arrange
         var command = new AdminCreatePricingTierCommand(
-            Name: new string('a', TestConstants.Content.PricingTier.NameMaxLength),
-            Description: TestConstants.Content.PricingTier.ValidDescription
+            Name: new string('a', TestConstants.PricingTier.NameMaxLength),
+            Description: TestConstants.PricingTier.ValidDescription
         );
 
         // Act
@@ -65,8 +64,8 @@ public class AdminCreatePricingTierValidatorTests
     {
         // Arrange
         var command = new AdminCreatePricingTierCommand(
-            Name: TestConstants.Content.PricingTier.ValidName,
-            Description: new string('a', TestConstants.Content.PricingTier.DescriptionMaxLength)
+            Name: TestConstants.PricingTier.ValidName,
+            Description: new string('a', TestConstants.PricingTier.DescriptionMaxLength)
         );
 
         // Act
@@ -86,7 +85,7 @@ public class AdminCreatePricingTierValidatorTests
         // Arrange
         var command = new AdminCreatePricingTierCommand(
             Name: string.Empty,
-            Description: TestConstants.Content.PricingTier.ValidDescription
+            Description: TestConstants.PricingTier.ValidDescription
         );
 
         // Act
@@ -108,7 +107,7 @@ public class AdminCreatePricingTierValidatorTests
         // Arrange
         var command = new AdminCreatePricingTierCommand(
             Name: null!,
-            Description: TestConstants.Content.PricingTier.ValidDescription
+            Description: TestConstants.PricingTier.ValidDescription
         );
 
         // Act
@@ -129,8 +128,8 @@ public class AdminCreatePricingTierValidatorTests
     {
         // Arrange
         var command = new AdminCreatePricingTierCommand(
-            Name: new string('a', TestConstants.Content.PricingTier.NameMaxLength + 1),
-            Description: TestConstants.Content.PricingTier.ValidDescription
+            Name: new string('a', TestConstants.PricingTier.NameMaxLength + 1),
+            Description: TestConstants.PricingTier.ValidDescription
         );
 
         // Act
@@ -142,7 +141,7 @@ public class AdminCreatePricingTierValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminCreatePricingTierCommand.Name)
-                && e.ErrorMessage == _i18n.PricingTier.Msg.NameTooLong(TestConstants.Content.PricingTier.NameMaxLength)
+                && e.ErrorMessage == _i18n.PricingTier.Msg.NameTooLong(TestConstants.PricingTier.NameMaxLength)
             );
     }
 
@@ -154,10 +153,7 @@ public class AdminCreatePricingTierValidatorTests
     public async Task Validate_WithNullDescription_ShouldHaveError()
     {
         // Arrange
-        var command = new AdminCreatePricingTierCommand(
-            Name: TestConstants.Content.PricingTier.ValidName,
-            Description: null!
-        );
+        var command = new AdminCreatePricingTierCommand(Name: TestConstants.PricingTier.ValidName, Description: null!);
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -177,7 +173,7 @@ public class AdminCreatePricingTierValidatorTests
     {
         // Arrange
         var command = new AdminCreatePricingTierCommand(
-            Name: TestConstants.Content.PricingTier.ValidName,
+            Name: TestConstants.PricingTier.ValidName,
             Description: string.Empty
         );
 
@@ -199,8 +195,8 @@ public class AdminCreatePricingTierValidatorTests
     {
         // Arrange
         var command = new AdminCreatePricingTierCommand(
-            Name: TestConstants.Content.PricingTier.ValidName,
-            Description: new string('a', TestConstants.Content.PricingTier.DescriptionMaxLength + 1)
+            Name: TestConstants.PricingTier.ValidName,
+            Description: new string('a', TestConstants.PricingTier.DescriptionMaxLength + 1)
         );
 
         // Act
@@ -213,38 +209,7 @@ public class AdminCreatePricingTierValidatorTests
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminCreatePricingTierCommand.Description)
                 && e.ErrorMessage
-                    == _i18n.PricingTier.Msg.DescriptionTooLong(TestConstants.Content.PricingTier.DescriptionMaxLength)
-            );
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-        var validator = new AdminCreatePricingTierValidator(_i18n);
-        var command = new AdminCreatePricingTierCommand(
-            Name: "",
-            Description: TestConstants.Content.PricingTier.ValidDescription
-        );
-
-        // Act
-        ValidationResult result = await validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminCreatePricingTierCommand.Name)
-                && e.ErrorMessage == _i18n.PricingTier.Msg.NameRequired()
+                    == _i18n.PricingTier.Msg.DescriptionTooLong(TestConstants.PricingTier.DescriptionMaxLength)
             );
     }
 

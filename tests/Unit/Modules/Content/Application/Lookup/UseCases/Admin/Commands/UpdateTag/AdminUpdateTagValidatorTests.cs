@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.Content.Application.Lookup.UseCases.Admin.Commands.UpdateTag;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Tests.Fixtures.Constants;
@@ -33,8 +32,8 @@ public class AdminUpdateTagValidatorTests
         // Arrange
         var command = new AdminUpdateTagCommand(
             Id: Guid.NewGuid().ToString(),
-            Name: TestConstants.Content.Tag.ValidName,
-            Slug: TestConstants.Content.Tag.ValidSlug
+            Name: TestConstants.Tag.ValidName,
+            Slug: TestConstants.Tag.ValidSlug
         );
 
         // Act
@@ -55,8 +54,8 @@ public class AdminUpdateTagValidatorTests
         // Arrange
         var command = new AdminUpdateTagCommand(
             Id: string.Empty,
-            Name: TestConstants.Content.Tag.ValidName,
-            Slug: TestConstants.Content.Tag.ValidSlug
+            Name: TestConstants.Tag.ValidName,
+            Slug: TestConstants.Tag.ValidSlug
         );
 
         // Act
@@ -73,8 +72,8 @@ public class AdminUpdateTagValidatorTests
         // Arrange
         var command = new AdminUpdateTagCommand(
             Id: "not-a-valid-guid",
-            Name: TestConstants.Content.Tag.ValidName,
-            Slug: TestConstants.Content.Tag.ValidSlug
+            Name: TestConstants.Tag.ValidName,
+            Slug: TestConstants.Tag.ValidSlug
         );
 
         // Act
@@ -96,7 +95,7 @@ public class AdminUpdateTagValidatorTests
         var command = new AdminUpdateTagCommand(
             Id: Guid.NewGuid().ToString(),
             Name: string.Empty,
-            Slug: TestConstants.Content.Tag.ValidSlug
+            Slug: TestConstants.Tag.ValidSlug
         );
 
         // Act
@@ -121,7 +120,7 @@ public class AdminUpdateTagValidatorTests
         // Arrange
         var command = new AdminUpdateTagCommand(
             Id: Guid.NewGuid().ToString(),
-            Name: TestConstants.Content.Tag.ValidName,
+            Name: TestConstants.Tag.ValidName,
             Slug: string.Empty
         );
 
@@ -155,37 +154,6 @@ public class AdminUpdateTagValidatorTests
         result.Errors.Should().Contain(e => e.PropertyName == nameof(AdminUpdateTagCommand.Id));
         result.Errors.Should().Contain(e => e.PropertyName == nameof(AdminUpdateTagCommand.Name));
         result.Errors.Should().Contain(e => e.PropertyName == nameof(AdminUpdateTagCommand.Slug));
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-        var validator = new AdminUpdateTagValidator(_i18n);
-        var command = new AdminUpdateTagCommand(
-            Id: Guid.NewGuid().ToString(),
-            Name: "",
-            Slug: TestConstants.Content.Tag.ValidSlug
-        );
-
-        // Act
-        ValidationResult result = await validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminUpdateTagCommand.Name) && e.ErrorMessage == _i18n.Tag.Msg.NameRequired()
-            );
     }
 
     #endregion

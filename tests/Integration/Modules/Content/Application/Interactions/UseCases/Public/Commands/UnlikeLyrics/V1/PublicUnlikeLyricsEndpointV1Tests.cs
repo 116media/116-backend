@@ -1,6 +1,9 @@
 using _116.Content.Application.Interactions.UseCases.Public.Commands.UnlikeLyrics.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Interactions.UseCases.Public.Commands.UnlikeLyrics.V1;
@@ -44,12 +47,12 @@ public class PublicUnlikeLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.DeleteAsync(Routes.Public.Lyrics.Likes(Guid.NewGuid()));
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Lyrics"))
+        );
     }
 
-    /// <summary>
-    /// Unliking a lyrics page with no prior like row must reject rather than silently succeed.
-    /// </summary>
     [Fact]
     public async Task UnlikeLyrics_WithoutPriorLike_ReturnsBadRequest()
     {
@@ -58,13 +61,12 @@ public class PublicUnlikeLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.DeleteAsync(Routes.Public.Lyrics.Likes(lyrics.Id));
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<LyricsInteractionErrorMessage>(m => m.LikeNotFound())
+        );
     }
 
-    /// <summary>
-    /// Verifies that unliking a previously liked lyrics page removes the like row, decrements
-    /// the cached <c>LikeCount</c>, and returns success.
-    /// </summary>
     [Fact]
     public async Task UnlikeLyrics_WithPriorLike_ReturnsOkAndRemovesLike()
     {

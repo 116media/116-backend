@@ -1,5 +1,6 @@
 using _116.Identity.Application.User.UseCases.Admin.Commands.UpdateOwnProfile.V1;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using Bogus;
 
 namespace _116.Tests.Fixtures.Builders.Requests.Identity;
@@ -14,7 +15,7 @@ namespace _116.Tests.Fixtures.Builders.Requests.Identity;
 /// </remarks>
 public class AdminUpdateOwnProfileRequestBuilder
 {
-    private readonly Faker _faker = new();
+    private readonly Faker _faker = TestFaker.Create();
 
     private string? _userName;
     private string? _countryName;

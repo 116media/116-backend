@@ -20,9 +20,9 @@ public class ArtistEntityTests
     {
         // Arrange
         var id = Guid.NewGuid();
-        const string name = TestConstants.Content.Editorial.Artist.ValidName;
-        const string slug = TestConstants.Content.Editorial.Artist.ValidSlug;
-        const string bio = TestConstants.Content.Editorial.Artist.ValidBio;
+        const string name = TestConstants.Artist.ValidName;
+        const string slug = TestConstants.Artist.ValidSlug;
+        const string bio = TestConstants.Artist.ValidBio;
 
         // Act
         ArtistEntity artist = ArtistEntity.Create(
@@ -53,8 +53,8 @@ public class ArtistEntityTests
         // Act
         ArtistEntity artist = ArtistEntity.Create(
             Guid.NewGuid(),
-            TestConstants.Content.Editorial.Artist.ValidName,
-            TestConstants.Content.Editorial.Artist.ValidSlug,
+            TestConstants.Artist.ValidName,
+            TestConstants.Artist.ValidSlug,
             null,
             null,
             null,
@@ -78,7 +78,7 @@ public class ArtistEntityTests
             ArtistEntity.Create(
                 Guid.NewGuid(),
                 invalidName!,
-                TestConstants.Content.Editorial.Artist.ValidSlug,
+                TestConstants.Artist.ValidSlug,
                 null,
                 null,
                 null,
@@ -101,7 +101,7 @@ public class ArtistEntityTests
         Action act = () =>
             ArtistEntity.Create(
                 Guid.NewGuid(),
-                TestConstants.Content.Editorial.Artist.ValidName,
+                TestConstants.Artist.ValidName,
                 invalidSlug!,
                 null,
                 null,
@@ -153,9 +153,9 @@ public class ArtistEntityTests
         // Arrange
         ArtistEntity artist = ArtistEntity.Create(
             Guid.NewGuid(),
-            TestConstants.Content.Editorial.Artist.ValidName,
-            TestConstants.Content.Editorial.Artist.ValidSlug,
-            TestConstants.Content.Editorial.Artist.ValidBio,
+            TestConstants.Artist.ValidName,
+            TestConstants.Artist.ValidSlug,
+            TestConstants.Artist.ValidBio,
             null,
             null,
             null,
@@ -330,8 +330,8 @@ public class ArtistEntityTests
         // Act
         ArtistEntity artist = ArtistEntity.Create(
             Guid.NewGuid(),
-            TestConstants.Content.Editorial.Artist.ValidName,
-            TestConstants.Content.Editorial.Artist.ValidSlug,
+            TestConstants.Artist.ValidName,
+            TestConstants.Artist.ValidSlug,
             null,
             "Aubrey Drake Graham",
             ["Drizzy", "Champagne Papi"],
@@ -362,8 +362,8 @@ public class ArtistEntityTests
         // Arrange — blanks dropped, whitespace trimmed, case-insensitive dedupe keeps first casing.
         ArtistEntity artist = ArtistEntity.Create(
             Guid.NewGuid(),
-            TestConstants.Content.Editorial.Artist.ValidName,
-            TestConstants.Content.Editorial.Artist.ValidSlug,
+            TestConstants.Artist.ValidName,
+            TestConstants.Artist.ValidSlug,
             null,
             null,
             ["  Drizzy  ", "", "   ", "drizzy", "Champagne Papi"],
@@ -386,8 +386,8 @@ public class ArtistEntityTests
         Action act = () =>
             ArtistEntity.Create(
                 Guid.NewGuid(),
-                TestConstants.Content.Editorial.Artist.ValidName,
-                TestConstants.Content.Editorial.Artist.ValidSlug,
+                TestConstants.Artist.ValidName,
+                TestConstants.Artist.ValidSlug,
                 null,
                 null,
                 aliases,
@@ -407,8 +407,8 @@ public class ArtistEntityTests
         Action act = () =>
             ArtistEntity.Create(
                 Guid.NewGuid(),
-                TestConstants.Content.Editorial.Artist.ValidName,
-                TestConstants.Content.Editorial.Artist.ValidSlug,
+                TestConstants.Artist.ValidName,
+                TestConstants.Artist.ValidSlug,
                 null,
                 null,
                 [new string('a', 101)],
@@ -431,8 +431,8 @@ public class ArtistEntityTests
         Action act = () =>
             ArtistEntity.Create(
                 Guid.NewGuid(),
-                TestConstants.Content.Editorial.Artist.ValidName,
-                TestConstants.Content.Editorial.Artist.ValidSlug,
+                TestConstants.Artist.ValidName,
+                TestConstants.Artist.ValidSlug,
                 null,
                 null,
                 null,
@@ -451,8 +451,8 @@ public class ArtistEntityTests
         // Arrange
         ArtistEntity artist = ArtistEntity.Create(
             Guid.NewGuid(),
-            TestConstants.Content.Editorial.Artist.ValidName,
-            TestConstants.Content.Editorial.Artist.ValidSlug,
+            TestConstants.Artist.ValidName,
+            TestConstants.Artist.ValidSlug,
             null,
             "Real Name",
             ["Alias"],
@@ -536,9 +536,9 @@ public class ArtistEntityTests
     {
         return ArtistEntity.Create(
             Guid.NewGuid(),
-            TestConstants.Content.Editorial.Artist.ValidName,
-            TestConstants.Content.Editorial.Artist.ValidSlug,
-            TestConstants.Content.Editorial.Artist.ValidBio,
+            TestConstants.Artist.ValidName,
+            TestConstants.Artist.ValidSlug,
+            TestConstants.Artist.ValidBio,
             null,
             null,
             null,

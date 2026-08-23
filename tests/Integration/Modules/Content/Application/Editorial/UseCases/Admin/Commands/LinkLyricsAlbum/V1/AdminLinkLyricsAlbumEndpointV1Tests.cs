@@ -2,6 +2,8 @@ using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.LinkLyricsAlbum.V1;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.LinkLyricsAlbum.V1;
@@ -83,10 +85,6 @@ public class AdminLinkLyricsAlbumEndpointV1Tests(PostgresFixture db) : BaseApiTe
         persisted!.AlbumId.Should().Be(album.Id);
     }
 
-    /// <summary>
-    /// Linking an album must never touch the plain-text <c>Album</c> field set via
-    /// <c>UpdateMetadata</c> — unlinking should revert to that same free-text value untouched.
-    /// </summary>
     [Fact]
     public async Task LinkLyricsAlbum_ShouldNotTouchPlainTextAlbumField()
     {
@@ -117,6 +115,27 @@ public class AdminLinkLyricsAlbumEndpointV1Tests(PostgresFixture db) : BaseApiTe
     }
 
     [Fact]
+    public async Task LinkLyricsAlbum_WithNonExistentLyricsId_ReturnsNotFound()
+    {
+        (_, AlbumEntity album) = await SeedLyricsAndAlbumAsync();
+        Client.AuthenticateAsAdmin();
+
+        var response = await Client.PutAsJsonAsync(
+            Routes.Admin.Editorial.Action(
+                EditorialRouteConstants.Lyrics,
+                Guid.NewGuid(),
+                EditorialRouteConstants.Album
+            ),
+            new AdminLinkLyricsAlbumRequest(album.Id)
+        );
+
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Lyrics"))
+        );
+    }
+
+    [Fact]
     public async Task LinkLyricsAlbum_WithNonExistentAlbumId_ReturnsNotFound()
     {
         (LyricsEntity lyrics, _) = await SeedLyricsAndAlbumAsync();
@@ -127,7 +146,10 @@ public class AdminLinkLyricsAlbumEndpointV1Tests(PostgresFixture db) : BaseApiTe
             new AdminLinkLyricsAlbumRequest(Guid.NewGuid())
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Album"))
+        );
     }
 
     [Fact]

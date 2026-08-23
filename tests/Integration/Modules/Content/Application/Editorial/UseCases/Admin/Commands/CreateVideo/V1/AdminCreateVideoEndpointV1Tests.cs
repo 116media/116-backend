@@ -1,9 +1,14 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateVideo.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Factories.Content;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.CreateVideo.V1;
 
@@ -13,6 +18,9 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminCreateVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private static string ValidationDetail(string property, string message) =>
+        new ValidationException([new ValidationFailure(property, message)]).Message;
+
     private async Task<CategoryEntity> SeedCategoryAsync()
     {
         return await SeedAsync<ContentDbContext, CategoryEntity>(ctx =>
@@ -95,7 +103,10 @@ public class AdminCreateVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Videos, request);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Category"))
+        );
     }
 
     [Fact]
@@ -111,7 +122,10 @@ public class AdminCreateVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Videos, request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("Title", Localized<VideoErrorMessage>(m => m.TitleRequired()))
+        );
     }
 
     [Fact]
@@ -136,6 +150,9 @@ public class AdminCreateVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Videos, request);
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<VideoErrorMessage>(m => m.SlugAlreadyExists(existingVideo.Slug))
+        );
     }
 }

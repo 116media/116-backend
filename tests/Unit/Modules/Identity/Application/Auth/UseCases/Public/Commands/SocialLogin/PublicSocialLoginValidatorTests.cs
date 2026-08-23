@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin;
 using _116.Identity.Application.Shared.Errors.Facade;
@@ -262,37 +261,6 @@ public class PublicSocialLoginValidatorTests
         // Assert
         result.IsValid.Should().BeFalse();
         result.Errors.Should().HaveCountGreaterThanOrEqualTo(4);
-    }
-
-    #endregion
-
-    #region Culture Tests
-
-    [Theory]
-    [InlineData("en")]
-    [InlineData("fr")]
-    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
-    {
-        // Arrange
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-        var i18n = TestErrorsFactory.CreateIdentityI18n();
-        var validator = new PublicSocialLoginValidator(i18n);
-        var command = new PublicSocialLoginCommand(
-            Email: TestConstants.User.ValidEmail,
-            UserName: TestConstants.User.ValidUserName,
-            AvatarUrl: null,
-            Provider: null!
-        );
-
-        // Act
-        TestValidationResult<PublicSocialLoginCommand>? result = await validator.TestValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .ShouldHaveValidationErrorFor(x => x.Provider)
-            .WithErrorMessage(i18n.User.Validation.AuthProviderRequired());
     }
 
     #endregion

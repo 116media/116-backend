@@ -28,12 +28,18 @@ public class PublicGetPopularArticlesEndpointV1Tests(PostgresFixture db) : BaseA
         });
     }
 
+    /// <summary>
+    /// Seeds a published article. When <paramref name="publishedAt" /> is supplied the stamp
+    /// applied by <c>Publish</c> is replaced through the tracked entry, so an ordering test gets
+    /// its ordering from a seeded value rather than from how fast the seeding ran.
+    /// </summary>
     private async Task<ArticleEntity> SeedArticleAsync(
         Guid categoryId,
         int likes = 0,
         int comments = 0,
         int shares = 0,
-        int bookmarks = 0
+        int bookmarks = 0,
+        DateTimeOffset? publishedAt = null
     )
     {
         return await SeedAsync<ContentDbContext, ArticleEntity>(ctx =>
@@ -61,6 +67,12 @@ public class PublicGetPopularArticlesEndpointV1Tests(PostgresFixture db) : BaseA
             }
 
             ctx.Articles.Add(article);
+
+            if (publishedAt.HasValue)
+            {
+                ctx.Entry(article).Property(a => a.PublishedAt).CurrentValue = publishedAt.Value;
+            }
+
             return article;
         });
     }
@@ -88,9 +100,16 @@ public class PublicGetPopularArticlesEndpointV1Tests(PostgresFixture db) : BaseA
     {
         Guid categoryId = await SeedCategoryAsync();
 
-        ArticleEntity older = await SeedArticleAsync(categoryId, likes: 2);
-        await Task.Delay(50);
-        ArticleEntity newer = await SeedArticleAsync(categoryId, likes: 2);
+        ArticleEntity older = await SeedArticleAsync(
+            categoryId,
+            likes: 2,
+            publishedAt: new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero)
+        );
+        ArticleEntity newer = await SeedArticleAsync(
+            categoryId,
+            likes: 2,
+            publishedAt: new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero)
+        );
 
         Client.ClearAuthentication();
 

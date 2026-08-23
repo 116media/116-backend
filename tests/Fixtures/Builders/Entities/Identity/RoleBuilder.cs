@@ -7,12 +7,13 @@ using Bogus;
 namespace _116.Tests.Fixtures.Builders.Entities.Identity;
 
 /// <summary>
-/// Fluent builder for creating <see cref="RoleEntity"/> instances in tests.
-/// For test code, prefer using RoleFactory instead of direct Builder usage.
+/// Fluent builder for creating <see cref="RoleEntity" /> instances in tests.
+/// Drives the real domain transitions, so every state it produces is one the application can reach.
+/// Use it for any shape a test needs; RoleFactory only names chains three or more tests share.
 /// </summary>
-internal class RoleBuilder
+public class RoleBuilder
 {
-    private readonly Faker _faker = new();
+    private readonly Faker _faker = TestFaker.Create();
     private readonly List<PermissionEntity> _permissions = [];
 
     private Guid _id;
@@ -74,16 +75,6 @@ internal class RoleBuilder
     public RoleBuilder AsInactive()
     {
         _isActive = false;
-        return this;
-    }
-
-    /// <summary>
-    /// Marks the role as active.
-    /// </summary>
-    /// <returns>The builder instance for chaining.</returns>
-    public RoleBuilder AsActive()
-    {
-        _isActive = true;
         return this;
     }
 

@@ -48,7 +48,7 @@ public class AdminAddCategoryPricingHandlerTests : BaseContentHandlerTest
         ContentTypeEntity contentType = ContentTypeFactory.Create();
         CategoryEntity category = CategoryFactory.Create(contentType.Id);
         PricingTierEntity pricingTier = PricingTierFactory.CreateDefault();
-        decimal priceUsd = TestConstants.Content.CategoryPricing.ValidPriceUsd;
+        decimal priceUsd = TestConstants.CategoryPricing.ValidPriceUsd;
 
         var command = new AdminAddCategoryPricingCommand(
             CategoryId: category.Id.ToString(),
@@ -90,7 +90,7 @@ public class AdminAddCategoryPricingHandlerTests : BaseContentHandlerTest
         var command = new AdminAddCategoryPricingCommand(
             CategoryId: nonExistentCategoryId.ToString(),
             PricingTierId: Guid.NewGuid(),
-            PriceUsd: TestConstants.Content.CategoryPricing.ValidPriceUsd
+            PriceUsd: TestConstants.CategoryPricing.ValidPriceUsd
         );
 
         _categoryRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentCategoryId);
@@ -113,7 +113,7 @@ public class AdminAddCategoryPricingHandlerTests : BaseContentHandlerTest
         var command = new AdminAddCategoryPricingCommand(
             CategoryId: category.Id.ToString(),
             PricingTierId: nonExistentTierId,
-            PriceUsd: TestConstants.Content.CategoryPricing.ValidPriceUsd
+            PriceUsd: TestConstants.CategoryPricing.ValidPriceUsd
         );
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
@@ -137,7 +137,7 @@ public class AdminAddCategoryPricingHandlerTests : BaseContentHandlerTest
         var command = new AdminAddCategoryPricingCommand(
             CategoryId: category.Id.ToString(),
             PricingTierId: inactiveTier.Id,
-            PriceUsd: TestConstants.Content.CategoryPricing.ValidPriceUsd
+            PriceUsd: TestConstants.CategoryPricing.ValidPriceUsd
         );
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
@@ -161,7 +161,7 @@ public class AdminAddCategoryPricingHandlerTests : BaseContentHandlerTest
         var command = new AdminAddCategoryPricingCommand(
             CategoryId: category.Id.ToString(),
             PricingTierId: pricingTier.Id,
-            PriceUsd: TestConstants.Content.CategoryPricing.ValidPriceUsd
+            PriceUsd: TestConstants.CategoryPricing.ValidPriceUsd
         );
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);

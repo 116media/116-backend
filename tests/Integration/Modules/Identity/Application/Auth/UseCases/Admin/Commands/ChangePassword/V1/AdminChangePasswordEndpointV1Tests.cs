@@ -1,10 +1,14 @@
+using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.Constants;
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.ChangePassword.V1;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Builders.Requests.Identity;
 using _116.Tests.Fixtures.Factories.Identity;
 using _116.Tests.Fixtures.Helpers;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.Auth.UseCases.Admin.Commands.ChangePassword.V1;
 
@@ -17,6 +21,9 @@ public class AdminChangePasswordEndpointV1Tests(PostgresFixture db) : BaseApiTes
     private const string AuthUrl = ApiRoutes.Admin.Auth;
     private const string ChangePasswordUrl = $"{AuthUrl}/{AuthRouteConstants.ChangePassword}";
     private const string KnownPassword = TestAuth.ValidPassword;
+
+    private static string ValidationDetail(params (string Property, string Message)[] failures) =>
+        new ValidationException(failures.Select(f => new ValidationFailure(f.Property, f.Message))).Message;
 
     [Fact]
     public async Task ChangePassword_WithNoAuth_ReturnsUnauthorized()
@@ -37,13 +44,19 @@ public class AdminChangePasswordEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.PatchAsJsonAsync(ChangePasswordUrl, request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail(
+                (
+                    "NewPassword",
+                    Localized<ValidationErrorMessage>(m =>
+                        m.PasswordTooShort(m.NewPasswordFieldName(), UserConstants.MinPasswordLength)
+                    )
+                )
+            )
+        );
     }
 
-    /// <summary>
-    /// Verifies that sending an empty old and new password returns a 400 Bad Request
-    /// due to validation failure from the AdminChangePasswordValidator.
-    /// </summary>
     [Fact]
     public async Task ChangePassword_WithEmptyPayload_ReturnsBadRequest()
     {
@@ -55,13 +68,15 @@ public class AdminChangePasswordEndpointV1Tests(PostgresFixture db) : BaseApiTes
             .Build();
         var response = await Client.PatchAsJsonAsync(ChangePasswordUrl, request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail(
+                ("OldPassword", Localized<ValidationErrorMessage>(m => m.CurrentPasswordRequired())),
+                ("NewPassword", Localized<ValidationErrorMessage>(m => m.PasswordRequired()))
+            )
+        );
     }
 
-    /// <summary>
-    /// Verifies that an admin with a correct current password can change it successfully and
-    /// that the persisted password hash is updated to the new value.
-    /// </summary>
     [Fact]
     public async Task ChangePassword_AsAdmin_WithCorrectPassword_ReturnsOk()
     {

@@ -1,5 +1,6 @@
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Exceptions.Handlers.Strategies;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
@@ -14,6 +15,8 @@ namespace _116.Unit.Tests.Shared.Exceptions.Handlers.Strategies;
 public class ResourceNotFoundExceptionHandlerTests
 {
     private readonly ResourceNotFoundExceptionHandler _handler = new();
+
+    private readonly SharedExceptionMessage _i18n = LocalizerFactory.CreateMessage<SharedExceptionMessage>();
 
     #region ExceptionType Tests
 
@@ -46,18 +49,50 @@ public class ResourceNotFoundExceptionHandlerTests
     }
 
     [Fact]
-    public void CreateProblemDetails_ShouldReturnProblemDetailsWithExceptionMessage()
+    public void CreateProblemDetails_ShouldReturnLocalizedResourceNotFoundMessage()
     {
         // Arrange
-        string errorMessage = "The requested resource '/api/nonexistent' was not found";
-        ResourceNotFoundException exception = new(errorMessage);
+        ResourceNotFoundException exception = new(path: "/api/v1/public/nonexistent", method: "GET");
         DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
         ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
-        problemDetails.Detail.Should().Be(errorMessage);
+        problemDetails.Detail.Should().Be(_i18n.ResourceNotFound());
+    }
+
+    [Fact]
+    public void CreateProblemDetails_ShouldNotLeakRequestPathOrMethod()
+    {
+        // Arrange
+        ResourceNotFoundException exception = new(path: "/api/v1/public/nonexistent", method: "GET");
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
+
+        // Act
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
+
+        // Assert
+        exception.Message.Should().Contain("/api/v1/public/nonexistent").And.Contain("GET");
+        problemDetails.Detail.Should().NotContain("/api/v1/public/nonexistent");
+        problemDetails.Detail.Should().NotBe(exception.Message);
+    }
+
+    [Fact]
+    public void CreateProblemDetails_InFrench_ShouldReturnFrenchResourceNotFoundMessage()
+    {
+        // Arrange
+        string enDetail = _i18n.ResourceNotFound();
+        using var scope = new CultureScope("fr");
+        ResourceNotFoundException exception = new(path: "/api/v1/public/nonexistent", method: "GET");
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
+
+        // Act
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
+
+        // Assert
+        problemDetails.Detail.Should().NotBe(enDetail);
+        problemDetails.Detail.Should().Be(_i18n.ResourceNotFound());
     }
 
     [Fact]

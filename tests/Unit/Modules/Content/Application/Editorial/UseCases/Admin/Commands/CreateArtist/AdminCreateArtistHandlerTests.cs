@@ -44,9 +44,9 @@ public class AdminCreateArtistHandlerTests
     {
         // Arrange
         var command = new AdminCreateArtistCommand(
-            TestConstants.Content.Editorial.Artist.ValidName,
-            TestConstants.Content.Editorial.Artist.ValidSlug,
-            TestConstants.Content.Editorial.Artist.ValidBio,
+            TestConstants.Artist.ValidName,
+            TestConstants.Artist.ValidSlug,
+            TestConstants.Artist.ValidBio,
             null,
             null,
             null,
@@ -76,8 +76,8 @@ public class AdminCreateArtistHandlerTests
     {
         // Arrange
         var command = new AdminCreateArtistCommand(
-            TestConstants.Content.Editorial.Artist.ValidName,
-            TestConstants.Content.Editorial.Artist.ValidSlug,
+            TestConstants.Artist.ValidName,
+            TestConstants.Artist.ValidSlug,
             null,
             null,
             null,
@@ -99,8 +99,8 @@ public class AdminCreateArtistHandlerTests
     {
         // Arrange
         var command = new AdminCreateArtistCommand(
-            TestConstants.Content.Editorial.Artist.ValidName,
-            TestConstants.Content.Editorial.Artist.ValidSlug,
+            TestConstants.Artist.ValidName,
+            TestConstants.Artist.ValidSlug,
             null,
             null,
             null,

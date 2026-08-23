@@ -321,11 +321,6 @@ public class DomainEventPublisherTests
         );
     }
 
-    /// <summary>
-    /// Verifies that the per-handler fallback honors an instance registration:
-    /// the registered object is dispatched to as-is rather than being rebuilt,
-    /// even though a sibling handler broke the fan-out resolution.
-    /// </summary>
     [Fact]
     public async Task Publish_WhenOneHandlerCannotBeConstructed_StillRunsAnInstanceRegisteredSibling()
     {
@@ -355,11 +350,6 @@ public class DomainEventPublisherTests
         siblingRan.Should().BeTrue();
     }
 
-    /// <summary>
-    /// Verifies that a handler registered through a factory that throws is
-    /// reported against the handler service type — a factory registration names
-    /// no implementation type — and that its siblings still run.
-    /// </summary>
     [Fact]
     public async Task Publish_WhenAHandlerFactoryThrows_LogsTheServiceTypeAndRunsTheSiblings()
     {

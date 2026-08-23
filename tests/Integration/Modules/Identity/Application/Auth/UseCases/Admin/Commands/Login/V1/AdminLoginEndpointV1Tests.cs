@@ -1,10 +1,15 @@
 using _116.Identity.Application.Auth.Constants;
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.Login.V1;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Builders.Requests.Identity;
 using _116.Tests.Fixtures.Factories.Identity;
 using _116.Tests.Fixtures.Helpers;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.Auth.UseCases.Admin.Commands.Login.V1;
 
@@ -17,6 +22,9 @@ public class AdminLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
     private const string AuthUrl = ApiRoutes.Admin.Auth;
     private const string LoginUrl = $"{AuthUrl}/{AuthRouteConstants.Login}";
 
+    private static string ValidationDetail(string property, string message) =>
+        new ValidationException([new ValidationFailure(property, message)]).Message;
+
     [Fact]
     public async Task Login_WithEmptyEmail_ReturnsValidationError()
     {
@@ -25,7 +33,10 @@ public class AdminLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.PostAsJsonAsync(LoginUrl, request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("Email", Localized<ValidationErrorMessage>(m => m.EmailRequired()))
+        );
     }
 
     [Fact]
@@ -39,24 +50,26 @@ public class AdminLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.PostAsJsonAsync(LoginUrl, request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("Password", Localized<ValidationErrorMessage>(m => m.PasswordRequired()))
+        );
     }
 
     [Fact]
-    public async Task Login_WithNonExistentEmail_ReturnsNotFoundOrBadRequest()
+    public async Task Login_WithNonExistentEmail_ReturnsNotFound()
     {
         Client.ClearAuthentication();
         var request = new AdminLoginRequestBuilder().WithEmail("nobody@nowhere.com").Build();
 
         var response = await Client.PostAsJsonAsync(LoginUrl, request);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("User"))
+        );
     }
 
-    /// <summary>
-    /// Verifies that a valid admin credential pair authenticates successfully and returns the
-    /// admin profile in the response body (tokens are delivered via HttpOnly cookies).
-    /// </summary>
     [Fact]
     public async Task Login_WithValidAdminCredentials_ReturnsAdminUser()
     {
@@ -94,13 +107,6 @@ public class AdminLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
         body.User.IsVerified.Should().BeTrue();
     }
 
-    /// <summary>
-    /// Verifies that a known admin account rejected on its password reaches
-    /// <c>AdminLoginAuthFactory</c>'s <c>InvalidCredentials</c> branch: the email lookup succeeds,
-    /// <c>IPasswordService.Verify</c> fails, and the response is a 401 carrying the neutral
-    /// credential message — distinct from the 404 a nonexistent account produces. The password is
-    /// checked before the admin-role and account-status guards, so neither is reached here.
-    /// </summary>
     [Fact]
     public async Task Login_WithKnownEmailAndWrongPassword_ReturnsInvalidCredentialsUnauthorized()
     {
@@ -133,6 +139,9 @@ public class AdminLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.PostAsJsonAsync(LoginUrl, request);
 
-        await response.ShouldBeProblem(HttpStatusCode.Unauthorized, "Invalid email or password.");
+        await response.ShouldBeProblem<AuthenticationException>(
+            HttpStatusCode.Unauthorized,
+            Localized<AuthenticationErrorMessage>(m => m.InvalidCredentials(), LocalizedMessage.EnglishCulture)
+        );
     }
 }

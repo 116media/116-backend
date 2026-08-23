@@ -127,4 +127,12 @@ public class LyricsErrors(LyricsErrorMessage i18n)
     {
         return new ConflictException(i18n.BelongsToAlbum());
     }
+
+    /// <summary>
+    /// Throws when a lyrics page carries no active promotion.
+    /// </summary>
+    public BadRequestException NotPromoted()
+    {
+        return new BadRequestException(i18n.NotPromoted());
+    }
 }

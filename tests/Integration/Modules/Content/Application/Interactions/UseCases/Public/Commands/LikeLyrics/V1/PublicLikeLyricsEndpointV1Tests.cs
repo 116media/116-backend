@@ -1,6 +1,9 @@
 using _116.Content.Application.Interactions.UseCases.Public.Commands.LikeLyrics.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Interactions.UseCases.Public.Commands.LikeLyrics.V1;
@@ -44,13 +47,12 @@ public class PublicLikeLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         var response = await Client.PostAsync(Routes.Public.Lyrics.Likes(Guid.NewGuid()), null);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Lyrics"))
+        );
     }
 
-    /// <summary>
-    /// Verifies that liking a lyrics page creates the like row, increments the cached
-    /// <c>LikeCount</c>, and returns success.
-    /// </summary>
     [Fact]
     public async Task LikeLyrics_AsVisitor_WithValidLyrics_ReturnsOk()
     {
@@ -72,10 +74,6 @@ public class PublicLikeLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
         updated!.LikeCount.Should().Be(1);
     }
 
-    /// <summary>
-    /// Verifies that liking a lyrics page that is already liked returns 409 Conflict, and does
-    /// not create a duplicate like row.
-    /// </summary>
     [Fact]
     public async Task LikeLyrics_WhenAlreadyLiked_ReturnsConflict()
     {
@@ -86,7 +84,10 @@ public class PublicLikeLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         var response = await Client.PostAsync(Routes.Public.Lyrics.Likes(lyrics.Id), null);
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<LyricsInteractionErrorMessage>(m => m.AlreadyLiked())
+        );
 
         await using var verifyDb = CreateDbContext<ContentDbContext>();
         (await verifyDb.LyricsLikes.CountAsync(l => l.LyricsId == lyrics.Id && l.UserId == TestUser.VisitorId))
