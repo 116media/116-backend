@@ -70,4 +70,11 @@ public interface IPackageRepository : IRepository<PackageEntity>
     /// Removes a package slot from the repository.
     /// </summary>
     void RemoveSlot(PackageSlotEntity slot);
+
+    /// <summary>
+    /// Stages a modified package for the next commit. The write is explicit so it
+    /// does not depend on the change tracker having observed the mutation.
+    /// </summary>
+    /// <param name="package">The modified package.</param>
+    void Update(PackageEntity package);
 }
