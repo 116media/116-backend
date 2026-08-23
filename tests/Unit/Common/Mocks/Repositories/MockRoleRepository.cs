@@ -30,6 +30,7 @@ public static class MockRoleRepository
     public static Mock<IRoleRepository> SetupGetByIdOrThrow(this Mock<IRoleRepository> mock, RoleEntity role)
     {
         mock.Setup(x => x.GetRoleByIdOrThrowAsync(role.Id, It.IsAny<CancellationToken>())).ReturnsAsync(role);
+        mock.Setup(x => x.ExistsByIdAsync(role.Id, It.IsAny<CancellationToken>())).ReturnsAsync(true);
         return mock;
     }
 
@@ -57,6 +58,7 @@ public static class MockRoleRepository
         RoleEntity role
     )
     {
+        mock.Setup(x => x.ExistsByIdAsync(role.Id, It.IsAny<CancellationToken>())).ReturnsAsync(true);
         mock.Setup(x => x.GetRoleByIdWithPermissionsOrThrowAsync(role.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(role);
         return mock;
