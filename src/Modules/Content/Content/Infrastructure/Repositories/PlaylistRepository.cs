@@ -40,7 +40,8 @@ public class PlaylistRepository(ContentDbContext context) : IPlaylistRepository
     {
         var specification = new PlaylistByIdSpecification(id: id);
         return await context
-            .Playlists.ApplySpecification(specification: specification)
+            .Playlists.AsTracking()
+            .ApplySpecification(specification: specification)
             .FirstOrDefaultAsync(cancellationToken);
     }
 
@@ -80,7 +81,8 @@ public class PlaylistRepository(ContentDbContext context) : IPlaylistRepository
     {
         var specification = new PlaylistVideoByPlaylistAndVideoSpecification(playlistId: playlistId, videoId: videoId);
         PlaylistVideoEntity? entry = await context
-            .PlaylistVideos.ApplySpecification(specification: specification)
+            .PlaylistVideos.AsTracking()
+            .ApplySpecification(specification: specification)
             .FirstOrDefaultAsync(cancellationToken);
 
         if (entry is not null)
