@@ -74,6 +74,29 @@ public class ArticleConfiguration : IEntityTypeConfiguration<ArticleEntity>
         // without this the news term scans the articles table per artist row.
         builder.HasIndex(x => x.Status);
 
+        // The published listings and the popular/promoted feeds all filter on status and order
+        // by published_at; without the composite Postgres bitmap-scans status then full-sorts.
+        builder
+            .HasIndex(x => new { x.Status, x.PublishedAt })
+            .HasDatabaseName("ix_articles_status_published_at")
+            .IsDescending(false, true);
+
+        builder
+            .HasIndex(x => new
+            {
+                x.CategoryId,
+                x.Status,
+                x.PublishedAt,
+            })
+            .HasDatabaseName("ix_articles_category_status_published_at");
+
+        // Promoted rows are a sliver of the table, so the homepage grid reads a filtered index.
+        builder
+            .HasIndex(x => x.PublishedAt)
+            .HasDatabaseName("ix_articles_promoted_published_at")
+            .HasFilter("is_promoted = true")
+            .IsDescending(true);
+
         builder.HasOne(x => x.Category).WithMany().HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.Restrict);
 
         builder
