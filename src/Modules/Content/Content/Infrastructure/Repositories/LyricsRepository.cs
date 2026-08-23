@@ -4,6 +4,7 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Specifications;
 using _116.Shared.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
@@ -366,9 +367,14 @@ public class LyricsRepository(ContentDbContext context) : ILyricsRepository
     }
 
     /// <inheritdoc />
-    public Task<bool> ExistsAsync(Guid lyricsId, CancellationToken cancellationToken = default)
+    public async Task ExistsOrThrowAsync(Guid lyricsId, CancellationToken cancellationToken = default)
     {
-        return context.Lyrics.AnyAsync(l => l.Id == lyricsId, cancellationToken);
+        bool exists = await context.Lyrics.AnyAsync(l => l.Id == lyricsId, cancellationToken);
+
+        if (!exists)
+        {
+            throw new NotFoundException(nameof(LyricsEntity), lyricsId);
+        }
     }
 
     /// <inheritdoc />
