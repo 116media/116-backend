@@ -456,12 +456,11 @@ public interface IArticleRepository : IRepository<ArticleEntity>
     );
 
     /// <summary>
-    /// Reports whether an article row exists, without materializing the aggregate.
+    /// Throws when no article row exists, without materializing the aggregate.
     /// </summary>
     /// <param name="articleId">The article identifier.</param>
     /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
-    /// <returns><c>true</c> when the row exists.</returns>
-    Task<bool> ExistsAsync(Guid articleId, CancellationToken cancellationToken = default);
+    Task ExistsOrThrowAsync(Guid articleId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Applies a signed delta to one engagement counter in a single statement, clamped at zero.
