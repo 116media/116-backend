@@ -75,7 +75,7 @@ and only then change the default ([9.6](#96-the-no-tracking-default)).
 | --- | --- | --- | --- |
 | D1 | Tracking default | flip globally and let tests find the gaps, or annotate reads one by one | **Flip globally — but only after 9.5.** Per-query `AsNoTracking` on ~150 terminations is the same edit count with no end state: the next new query still tracks by default. The flip is correct; the audit's *sequencing* is not, because 19 writes fail silently rather than loudly. |
 | D2 | How to find the tracking-dependent writes | run the suite and look for red, or find them statically | **Statically.** "Run it and see" cannot find a silent no-op. The rule is mechanical: a handler that mutates a loaded entity and never calls a persisting repository method depends on the tracker. It returns exactly 19 files today and is re-run in Verification as a regression guard. |
-| D3 | Existence checks | keep `GetByIdOrThrowAsync`, or add `ExistsAsync` | **`ExistsAsync`.** 18 interaction handlers `await` a 5-include aggregate load and discard the result. `AnyAsync` returns a boolean from an index probe. The `NotFound` exception must still be thrown by the handler, so the repository stays a query, not a guard. |
+| D3 | Existence checks | keep `GetByIdOrThrowAsync`, or an existence guard | **`ExistsOrThrowAsync`.** 18 interaction handlers `await` a 5-include aggregate load and discard the result; the guard is an `AnyAsync` index probe that throws the same `NotFoundException` the load threw. Handlers never construct exceptions inline — the throw site (and therefore the localized wire format) stays behind the repository's `*OrThrowAsync` convention, exactly like `GetByIdOrThrowAsync`. |
 | D4 | Soft delete | global query filter, or keep the 104 hand-written predicates | **Global filter** on the 4 soft-deletable types. A hand-written predicate is correct only until someone writes the 105th query; two are already wrong today. |
 | D5 | The comment-threading path | drop tombstones, or keep rendering them | **Keep them** — `GetCommentsAsync` needs tombstones so replies keep their parent, and renders `Body = null`. It gets `IgnoreQueryFilters()`; `GetCommentByIdAsync` deliberately does **not**, which is what stops editing a deleted comment. |
 | D6 | Index creation | plain `CREATE INDEX` in a migration, or `CONCURRENTLY` | **`CONCURRENTLY`**, hand-written into the migration with `suppressTransaction: true`. A plain build on `articles`/`videos` takes an `ACCESS EXCLUSIVE` lock; with §4.10 still open, migrations run at startup, so that lock lands during a deploy. |
@@ -152,19 +152,23 @@ Add to each of the four content repository interfaces:
 
 ```csharp
 /// <summary>
-/// Reports whether an article row exists, without materializing the aggregate.
+/// Throws when no article row exists, without materializing the aggregate.
 /// </summary>
-/// <param name="id">The article identifier.</param>
+/// <param name="articleId">The article identifier.</param>
 /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
-/// <returns><c>true</c> when the row exists.</returns>
-Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default);
+Task ExistsOrThrowAsync(Guid articleId, CancellationToken cancellationToken = default);
 ```
 
 ```csharp
 /// <inheritdoc />
-public Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default)
+public async Task ExistsOrThrowAsync(Guid articleId, CancellationToken cancellationToken = default)
 {
-    return context.Articles.AnyAsync(a => a.Id == id, cancellationToken);
+    bool exists = await context.Articles.AnyAsync(a => a.Id == articleId, cancellationToken);
+
+    if (!exists)
+    {
+        throw new NotFoundException(nameof(ArticleEntity), articleId);
+    }
 }
 ```
 
@@ -178,19 +182,17 @@ await response.ShouldBeProblem<NotFoundException>(
 );
 ```
 
-So the handler throws **the same `NotFoundException`, not an i18n rule exception** — a
+The guard throws **the same `NotFoundException`, not an i18n rule exception** — a
 `ContentRuleException` here would change the problem `Title` and the message, and every
-missing-entity endpoint test would fail:
+missing-entity endpoint test would fail. Handlers stay one line and construct nothing:
 
 ```csharp
-if (!await articleRepository.ExistsAsync(id: command.ArticleId, cancellationToken: cancellationToken))
-{
-    throw new NotFoundException(nameof(Article), command.ArticleId);
-}
+await articleRepository.ExistsOrThrowAsync(articleId: command.ArticleId, cancellationToken: cancellationToken);
 ```
 
-Match the exact `entityName` string the current response carries per aggregate (`"Article"`,
-`"Video"`, `"Lyrics"`, `"ShortVideo"`) — the existing endpoint tests are the source of truth.
+The `NotFoundExceptionHandler` strategy localizes the response from `EntityName` through
+`SharedExceptionMessage.EntityNotFound` per request culture — the throw site only has to carry
+the right entity name, which `nameof(ArticleEntity)` does identically to the old load path.
 
 ### 9.3 Read indexes
 
