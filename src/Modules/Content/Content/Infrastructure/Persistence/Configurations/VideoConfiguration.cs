@@ -73,6 +73,13 @@ public class VideoConfiguration : IEntityTypeConfiguration<VideoEntity>
         // filter on this exact pair per artist row.
         builder.HasIndex(x => new { x.ArtistId, x.Status });
 
+        // The default video listing and the per-category feed filter on status and order by
+        // published_at; the composite serves both without a sort node.
+        builder
+            .HasIndex(x => new { x.Status, x.PublishedAt })
+            .HasDatabaseName("ix_videos_status_published_at")
+            .IsDescending(false, true);
+
         builder.HasOne(x => x.Category).WithMany().HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.Restrict);
 
         builder
