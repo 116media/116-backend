@@ -2,6 +2,7 @@ using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Shared.Application.Exceptions;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Content.Application.Interactions.UseCases.Public.Commands.UnlikeArticle;
@@ -24,7 +25,15 @@ public class PublicUnlikeArticleHandler(
         CancellationToken cancellationToken
     )
     {
-        await articleRepository.GetByIdOrThrowAsync(id: command.ArticleId, cancellationToken: cancellationToken);
+        bool exists = await articleRepository.ExistsAsync(
+            articleId: command.ArticleId,
+            cancellationToken: cancellationToken
+        );
+
+        if (!exists)
+        {
+            throw new NotFoundException(nameof(ArticleEntity), command.ArticleId);
+        }
 
         bool hasLiked = await articleRepository.HasLikedAsync(
             userId: command.UserId,
