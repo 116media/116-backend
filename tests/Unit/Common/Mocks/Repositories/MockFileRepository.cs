@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
 using Microsoft.AspNetCore.Http;
@@ -10,6 +11,13 @@ namespace _116.Unit.Tests.Common.Mocks.Repositories;
 /// </summary>
 public static class MockFileRepository
 {
+    /// <summary>
+    /// Files registered through <see cref="SetupGetById(Mock{IFileRepository}, FileEntity)" />,
+    /// per mock instance, so the batch lookups serve the same arrangement as the single ones.
+    /// </summary>
+    private static readonly ConditionalWeakTable<Mock<IFileRepository>, Dictionary<Guid, FileEntity>> KnownFiles =
+        new();
+
     /// <summary>
     /// Creates a new mock instance of IFileRepository.
     /// </summary>
@@ -30,6 +38,7 @@ public static class MockFileRepository
     public static Mock<IFileRepository> SetupGetById(this Mock<IFileRepository> mock, FileEntity file)
     {
         mock.Setup(x => x.GetByIdAsync(file.Id, It.IsAny<CancellationToken>())).ReturnsAsync(file);
+        KnownFiles.GetOrCreateValue(mock)[file.Id] = file;
         return mock;
     }
 
@@ -566,6 +575,24 @@ public static class MockFileRepository
     /// <param name="mock">The repository mock to configure.</param>
     private static void SetupDefaults(Mock<IFileRepository> mock)
     {
+        Dictionary<Guid, FileEntity> known = KnownFiles.GetOrCreateValue(mock);
+
+        mock.Setup(x => x.GetByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(
+                (IReadOnlyCollection<Guid> ids, CancellationToken _) =>
+                    (IReadOnlyDictionary<Guid, FileEntity>)
+                        ids.Distinct().Where(known.ContainsKey).ToDictionary(id => id, id => known[id])
+            );
+
+        mock.Setup(x =>
+                x.GetStorageUrlsByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>())
+            )
+            .ReturnsAsync(
+                (IReadOnlyCollection<Guid> ids, CancellationToken _) =>
+                    (IReadOnlyDictionary<Guid, string>)
+                        ids.Distinct().Where(known.ContainsKey).ToDictionary(id => id, id => known[id].StorageUrl)
+            );
+
         mock.Setup(x => x.AddAsync(It.IsAny<FileEntity>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
 
         mock.Setup(x => x.UpdateAsync(It.IsAny<FileEntity>(), It.IsAny<CancellationToken>()))
