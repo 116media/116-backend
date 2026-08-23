@@ -228,6 +228,14 @@ public interface ILyricsRepository : IRepository<LyricsEntity>
     Task<IReadOnlyList<LyricsEntity>> GetSimilarAsync(Guid lyricsId, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Reports whether a lyrics page row exists, without materializing the aggregate.
+    /// </summary>
+    /// <param name="lyricsId">The lyrics identifier.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns><c>true</c> when the row exists.</returns>
+    Task<bool> ExistsAsync(Guid lyricsId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Applies a signed delta to one engagement counter in a single statement, clamped at zero.
     /// Set-based by design: two concurrent likes cannot both read the same value and write the
     /// same increment, and the change tracker never sees the row, so the audit columns keep
