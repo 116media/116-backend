@@ -7,7 +7,6 @@ using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
 using _116.Identity.Contracts.Application;
-using _116.Shared.Application.Exceptions;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
 
@@ -41,15 +40,7 @@ public class PublicAddCommentReplyHandler(
         CancellationToken cancellationToken
     )
     {
-        bool exists = await articleRepository.ExistsAsync(
-            articleId: command.ArticleId,
-            cancellationToken: cancellationToken
-        );
-
-        if (!exists)
-        {
-            throw new NotFoundException(nameof(ArticleEntity), command.ArticleId);
-        }
+        await articleRepository.ExistsOrThrowAsync(articleId: command.ArticleId, cancellationToken: cancellationToken);
 
         ArticleCommentEntity? parent = await articleRepository.GetCommentByIdAsync(
             commentId: command.ParentCommentId,
