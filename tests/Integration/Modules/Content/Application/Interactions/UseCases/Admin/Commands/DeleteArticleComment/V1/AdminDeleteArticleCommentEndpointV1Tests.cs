@@ -86,7 +86,9 @@ public class AdminDeleteArticleCommentEndpointV1Tests(PostgresFixture db) : Base
         body.IsSuccess.Should().BeTrue();
 
         await using ContentDbContext verifyDb = CreateDbContext<ContentDbContext>();
-        ArticleCommentEntity? stored = await verifyDb.ArticleComments.FindAsync(comment.Id);
+        ArticleCommentEntity? stored = await verifyDb
+            .ArticleComments.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(c => c.Id == comment.Id);
         stored!.IsDeleted.Should().BeTrue();
     }
 
