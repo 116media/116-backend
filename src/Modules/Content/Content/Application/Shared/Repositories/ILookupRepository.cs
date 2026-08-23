@@ -175,6 +175,18 @@ public interface ILookupRepository : IRepository<ContentTypeEntity>
     Task<TagEntity?> GetTagByNameAsync(string name, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Retrieves the tags matching any of the given names (case-insensitive) in one query,
+    /// keyed by lower-cased name.
+    /// </summary>
+    /// <param name="names">The tag names to resolve.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>A read-only map of lower-cased tag name to entity; unmatched names are absent.</returns>
+    Task<IReadOnlyDictionary<string, TagEntity>> GetTagsByNamesAsync(
+        IReadOnlyCollection<string> names,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
     /// Removes a tag entity from the repository.
     /// </summary>
     /// <param name="entity">The tag entity to remove.</param>
@@ -226,4 +238,32 @@ public interface ILookupRepository : IRepository<ContentTypeEntity>
         EnumCoreContentType? contentType = null,
         CancellationToken cancellationToken = default
     );
+
+    /// <summary>
+    /// Stages a modified content type for the next commit. The write is explicit so it
+    /// does not depend on the change tracker having observed the mutation.
+    /// </summary>
+    /// <param name="contentType">The modified content type.</param>
+    void UpdateContentType(ContentTypeEntity contentType);
+
+    /// <summary>
+    /// Stages a modified pricing tier for the next commit. The write is explicit so it
+    /// does not depend on the change tracker having observed the mutation.
+    /// </summary>
+    /// <param name="pricingTier">The modified pricing tier.</param>
+    void UpdatePricingTier(PricingTierEntity pricingTier);
+
+    /// <summary>
+    /// Stages a modified promotion level for the next commit. The write is explicit so it
+    /// does not depend on the change tracker having observed the mutation.
+    /// </summary>
+    /// <param name="promotionLevel">The modified promotion level.</param>
+    void UpdatePromotionLevel(PromotionLevelEntity promotionLevel);
+
+    /// <summary>
+    /// Stages a modified tag for the next commit. The write is explicit so it
+    /// does not depend on the change tracker having observed the mutation.
+    /// </summary>
+    /// <param name="tag">The modified tag.</param>
+    void UpdateTag(TagEntity tag);
 }
