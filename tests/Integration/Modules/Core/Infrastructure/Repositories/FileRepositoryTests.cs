@@ -1,4 +1,5 @@
 using _116.Core.Application.Shared.Repositories;
+using _116.Core.Domain.Entities;
 using _116.Core.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Core;
 
@@ -83,7 +84,7 @@ public class FileRepositoryTests(PostgresFixture postgres) : BaseRepositoryTest(
         result.Should().BeTrue();
 
         await using var verifyContext = CreateDbContext<CoreDbContext>();
-        var deleted = await verifyContext.Files.FindAsync(file.Id);
+        FileEntity? deleted = await verifyContext.Files.IgnoreQueryFilters().FirstOrDefaultAsync(f => f.Id == file.Id);
         deleted.Should().NotBeNull();
         deleted!.IsDeleted.Should().BeTrue();
         deleted.DeletedAt.Should().NotBeNull();
@@ -183,7 +184,7 @@ public class FileRepositoryTests(PostgresFixture postgres) : BaseRepositoryTest(
         await repo.SaveChangesAsync();
 
         await using var verifyContext = CreateDbContext<CoreDbContext>();
-        var updated = await verifyContext.Files.FindAsync(file.Id);
+        FileEntity? updated = await verifyContext.Files.IgnoreQueryFilters().FirstOrDefaultAsync(f => f.Id == file.Id);
         updated!.IsDeleted.Should().BeTrue();
     }
 }
