@@ -31,16 +31,16 @@ public class AdminUpdateVideoTagsHandler(
 
         await videoRepository.GetByIdOrThrowAsync(id: videoId, cancellationToken: cancellationToken);
 
+        IReadOnlyDictionary<string, TagEntity> existingTagsByName = await lookupRepository.GetTagsByNamesAsync(
+            names: command.TagNames,
+            cancellationToken: cancellationToken
+        );
+
         var resolvedTagIds = new List<Guid>();
 
         foreach (string name in command.TagNames)
         {
-            TagEntity? existing = await lookupRepository.GetTagByNameAsync(
-                name: name,
-                cancellationToken: cancellationToken
-            );
-
-            if (existing is null)
+            if (!existingTagsByName.TryGetValue(name.ToLower(), out TagEntity? existing))
             {
                 string uniqueSlug = SlugHelper.ToUniqueSlug(name);
                 existing = TagEntity.Create(id: Guid.NewGuid(), name: name, slug: uniqueSlug);
