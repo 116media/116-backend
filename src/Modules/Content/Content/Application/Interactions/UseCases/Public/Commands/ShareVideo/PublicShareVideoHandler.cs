@@ -1,6 +1,7 @@
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Shared.Application.Exceptions;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Content.Application.Interactions.UseCases.Public.Commands.ShareVideo;
@@ -19,7 +20,12 @@ public class PublicShareVideoHandler(IVideoRepository videoRepository, IContentU
         CancellationToken cancellationToken
     )
     {
-        await videoRepository.GetByIdOrThrowAsync(id: command.VideoId, cancellationToken: cancellationToken);
+        bool exists = await videoRepository.ExistsAsync(videoId: command.VideoId, cancellationToken: cancellationToken);
+
+        if (!exists)
+        {
+            throw new NotFoundException(nameof(VideoEntity), command.VideoId);
+        }
 
         var share = VideoShareEntity.Create(
             id: Guid.NewGuid(),
