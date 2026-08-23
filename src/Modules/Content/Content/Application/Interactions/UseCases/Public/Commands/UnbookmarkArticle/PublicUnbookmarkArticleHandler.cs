@@ -2,7 +2,6 @@ using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Shared.Application.Exceptions;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Content.Application.Interactions.UseCases.Public.Commands.UnbookmarkArticle;
@@ -25,15 +24,7 @@ public class PublicUnbookmarkArticleHandler(
         CancellationToken cancellationToken
     )
     {
-        bool exists = await articleRepository.ExistsAsync(
-            articleId: command.ArticleId,
-            cancellationToken: cancellationToken
-        );
-
-        if (!exists)
-        {
-            throw new NotFoundException(nameof(ArticleEntity), command.ArticleId);
-        }
+        await articleRepository.ExistsOrThrowAsync(articleId: command.ArticleId, cancellationToken: cancellationToken);
 
         bool hasBookmarked = await articleRepository.HasBookmarkedAsync(
             userId: command.UserId,
