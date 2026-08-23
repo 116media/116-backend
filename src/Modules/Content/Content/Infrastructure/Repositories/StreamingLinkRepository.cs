@@ -24,7 +24,8 @@ public class StreamingLinkRepository(ContentDbContext context) : IStreamingLinkR
     {
         var specification = new StreamingLinkByAlbumAndPlatformSpecification(albumId: albumId, platform: platform);
         return await context
-            .StreamingLinks.ApplySpecification(specification: specification)
+            .StreamingLinks.AsTracking()
+            .ApplySpecification(specification: specification)
             .FirstOrDefaultAsync(cancellationToken);
     }
 
@@ -51,7 +52,8 @@ public class StreamingLinkRepository(ContentDbContext context) : IStreamingLinkR
     {
         var specification = new StreamingLinkByLyricsAndPlatformSpecification(lyricsId: lyricsId, platform: platform);
         return await context
-            .StreamingLinks.ApplySpecification(specification: specification)
+            .StreamingLinks.AsTracking()
+            .ApplySpecification(specification: specification)
             .FirstOrDefaultAsync(cancellationToken);
     }
 
