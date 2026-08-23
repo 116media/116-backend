@@ -456,6 +456,14 @@ public interface IArticleRepository : IRepository<ArticleEntity>
     );
 
     /// <summary>
+    /// Reports whether an article row exists, without materializing the aggregate.
+    /// </summary>
+    /// <param name="articleId">The article identifier.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns><c>true</c> when the row exists.</returns>
+    Task<bool> ExistsAsync(Guid articleId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Applies a signed delta to one engagement counter in a single statement, clamped at zero.
     /// Set-based by design: two concurrent likes cannot both read the same value and write the
     /// same increment, and the change tracker never sees the row, so the audit columns keep
