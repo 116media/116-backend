@@ -2,6 +2,7 @@ using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Shared.Application.Exceptions;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Content.Application.Interactions.UseCases.Public.Commands.LikeLyrics;
@@ -24,7 +25,15 @@ public class PublicLikeLyricsHandler(
         CancellationToken cancellationToken
     )
     {
-        await lyricsRepository.GetByIdOrThrowAsync(id: command.LyricsId, cancellationToken: cancellationToken);
+        bool exists = await lyricsRepository.ExistsAsync(
+            lyricsId: command.LyricsId,
+            cancellationToken: cancellationToken
+        );
+
+        if (!exists)
+        {
+            throw new NotFoundException(nameof(LyricsEntity), command.LyricsId);
+        }
 
         bool alreadyLiked = await lyricsRepository.HasLikedAsync(
             userId: command.UserId,
