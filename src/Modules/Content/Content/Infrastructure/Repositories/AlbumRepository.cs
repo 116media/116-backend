@@ -30,7 +30,8 @@ public class AlbumRepository(ContentDbContext context) : IAlbumRepository
     {
         var specification = new AlbumByIdSpecification(id: id);
         return await context
-            .Albums.ApplySpecification(specification: specification)
+            .Albums.AsTracking()
+            .ApplySpecification(specification: specification)
             .FirstDefaultOrThrowAsync(keyValue: id, cancellationToken: cancellationToken);
     }
 
