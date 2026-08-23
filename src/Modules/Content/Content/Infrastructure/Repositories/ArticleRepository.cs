@@ -62,6 +62,7 @@ public class ArticleRepository(ContentDbContext context) : IArticleRepository
                 .ThenInclude(t => t.Tag)
             .Include(a => a.Customer)
             .Include(a => a.PromotionLevel)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(cancellationToken);
     }
 
@@ -70,13 +71,15 @@ public class ArticleRepository(ContentDbContext context) : IArticleRepository
     {
         var specification = new ArticleByIdSpecification(id: id);
         return await context
-            .Articles.ApplySpecification(specification: specification)
+            .Articles.AsTracking()
+            .ApplySpecification(specification: specification)
             .Include(a => a.Category)
             .Include(a => a.Images)
             .Include(a => a.Tags)
                 .ThenInclude(t => t.Tag)
             .Include(a => a.Customer)
             .Include(a => a.PromotionLevel)
+            .AsSplitQuery()
             .FirstDefaultOrThrowAsync(keyValue: id, cancellationToken: cancellationToken);
     }
 
@@ -85,12 +88,14 @@ public class ArticleRepository(ContentDbContext context) : IArticleRepository
     {
         var specification = new ArticleBySlugSpecification(slug: slug);
         return await context
-            .Articles.ApplySpecification(specification: specification)
+            .Articles.AsTracking()
+            .ApplySpecification(specification: specification)
             .Include(a => a.Category)
             .Include(a => a.Images)
             .Include(a => a.Tags)
                 .ThenInclude(t => t.Tag)
             .Include(a => a.PromotionLevel)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(cancellationToken);
     }
 
@@ -143,7 +148,8 @@ public class ArticleRepository(ContentDbContext context) : IArticleRepository
     {
         var specification = new ArticleByOrderItemIdSpecification(orderItemId: orderItemId);
         return await context
-            .Articles.ApplySpecification(specification: specification)
+            .Articles.AsTracking()
+            .ApplySpecification(specification: specification)
             .FirstOrDefaultAsync(cancellationToken);
     }
 
@@ -179,7 +185,8 @@ public class ArticleRepository(ContentDbContext context) : IArticleRepository
     {
         var specification = new ArticleImageByArticleIdSpecification(articleId: articleId);
         return await context
-            .ArticleImages.ApplySpecification(specification: specification)
+            .ArticleImages.AsTracking()
+            .ApplySpecification(specification: specification)
             .ToListAsync(cancellationToken);
     }
 
@@ -210,7 +217,8 @@ public class ArticleRepository(ContentDbContext context) : IArticleRepository
     {
         var specification = new ArticleTagByArticleIdSpecification(articleId: articleId);
         return await context
-            .ArticleTags.ApplySpecification(specification: specification)
+            .ArticleTags.AsTracking()
+            .ApplySpecification(specification: specification)
             .ToListAsync(cancellationToken);
     }
 
@@ -233,7 +241,8 @@ public class ArticleRepository(ContentDbContext context) : IArticleRepository
     )
     {
         List<ArticleArtistEntity> current = await context
-            .ArticleArtists.Where(aa => aa.ArticleId == articleId)
+            .ArticleArtists.AsTracking()
+            .Where(aa => aa.ArticleId == articleId)
             .ToListAsync(cancellationToken: cancellationToken);
 
         var desired = artistIds.ToHashSet();
@@ -296,7 +305,8 @@ public class ArticleRepository(ContentDbContext context) : IArticleRepository
     {
         var specification = new ArticleLikeByUserAndArticleSpecification(userId: userId, articleId: articleId);
         ArticleLikeEntity? like = await context
-            .ArticleLikes.ApplySpecification(specification: specification)
+            .ArticleLikes.AsTracking()
+            .ApplySpecification(specification: specification)
             .FirstOrDefaultAsync(cancellationToken);
 
         if (like is not null)
@@ -330,7 +340,8 @@ public class ArticleRepository(ContentDbContext context) : IArticleRepository
     {
         var specification = new ArticleBookmarkByUserAndArticleSpecification(userId: userId, articleId: articleId);
         ArticleBookmarkEntity? bookmark = await context
-            .ArticleBookmarks.ApplySpecification(specification: specification)
+            .ArticleBookmarks.AsTracking()
+            .ApplySpecification(specification: specification)
             .FirstOrDefaultAsync(cancellationToken);
 
         if (bookmark is not null)
@@ -386,9 +397,12 @@ public class ArticleRepository(ContentDbContext context) : IArticleRepository
     )
     {
         var specification = new ArticleCommentByArticleIdSpecification(articleId: articleId);
-        IQueryable<ArticleCommentEntity> query = context.ArticleComments.ApplySpecification(
-            specification: specification
-        );
+
+        // Tombstones stay in the thread (rendered with a null body), so this listing alone
+        // reads through the soft-delete filter.
+        IQueryable<ArticleCommentEntity> query = context
+            .ArticleComments.IgnoreQueryFilters()
+            .ApplySpecification(specification: specification);
 
         int totalCount = await query.CountAsync(cancellationToken);
 
@@ -409,7 +423,8 @@ public class ArticleRepository(ContentDbContext context) : IArticleRepository
     {
         var specification = new ArticleCommentByIdSpecification(commentId: commentId);
         return await context
-            .ArticleComments.ApplySpecification(specification: specification)
+            .ArticleComments.AsTracking()
+            .ApplySpecification(specification: specification)
             .FirstOrDefaultAsync(cancellationToken);
     }
 
@@ -422,7 +437,8 @@ public class ArticleRepository(ContentDbContext context) : IArticleRepository
     {
         var specification = new ArticleCommentByIdInArticleSpecification(commentId: commentId, articleId: articleId);
         return await context
-            .ArticleComments.ApplySpecification(specification: specification)
+            .ArticleComments.AsTracking()
+            .ApplySpecification(specification: specification)
             .FirstOrDefaultAsync(cancellationToken);
     }
 
@@ -502,7 +518,8 @@ public class ArticleRepository(ContentDbContext context) : IArticleRepository
     {
         var specification = new ArticleCommentLikeByUserAndCommentSpecification(userId: userId, commentId: commentId);
         ArticleCommentLikeEntity? like = await context
-            .ArticleCommentLikes.ApplySpecification(specification: specification)
+            .ArticleCommentLikes.AsTracking()
+            .ApplySpecification(specification: specification)
             .FirstOrDefaultAsync(cancellationToken);
 
         if (like is not null)
@@ -761,6 +778,12 @@ public class ArticleRepository(ContentDbContext context) : IArticleRepository
             .OrderByDescending(a => a.PublishedAt)
             .Take(limit)
             .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public Task<bool> ExistsAsync(Guid articleId, CancellationToken cancellationToken = default)
+    {
+        return context.Articles.AnyAsync(a => a.Id == articleId, cancellationToken);
     }
 
     /// <inheritdoc />
