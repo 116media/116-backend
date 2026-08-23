@@ -86,7 +86,16 @@ public abstract class BaseApiTest : IAsyncLifetime
     /// <typeparam name="TDbContext">The module context to resolve.</typeparam>
     /// <returns>The resolved context.</returns>
     protected TDbContext CreateDbContext<TDbContext>()
-        where TDbContext : DbContext => OpenScope().ServiceProvider.GetRequiredService<TDbContext>();
+        where TDbContext : DbContext
+    {
+        var context = OpenScope().ServiceProvider.GetRequiredService<TDbContext>();
+
+        // Tests arrange and assert through this context; tracked queries keep the
+        // load-mutate-save arrangement idiom working under the module's no-tracking default.
+        context.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.TrackAll;
+
+        return context;
+    }
 
     /// <summary>
     /// Seeds data within a scoped <typeparamref name="TDbContext" /> and saves,
