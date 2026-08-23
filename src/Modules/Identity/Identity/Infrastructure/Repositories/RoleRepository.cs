@@ -48,6 +48,12 @@ public class RoleRepository(IdentityDbContext context) : IRoleRepository
     }
 
     /// <inheritdoc />
+    public Task<bool> ExistsByIdAsync(Guid roleId, CancellationToken cancellationToken = default)
+    {
+        return context.Roles.AnyAsync(role => role.Id == roleId, cancellationToken);
+    }
+
+    /// <inheritdoc />
     public async Task AddAsync(RoleEntity role, CancellationToken cancellationToken = default)
     {
         await context.Roles.AddAsync(role, cancellationToken);
