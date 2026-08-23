@@ -72,7 +72,8 @@ public class CategoryRepository(ContentDbContext context) : ICategoryRepository
     {
         var specification = new CategoryByIdSpecification(id: id);
         return await context
-            .Categories.ApplySpecification(specification: specification)
+            .Categories.AsTracking()
+            .ApplySpecification(specification: specification)
             .Include(c => c.ContentType)
             .Include(c => c.Pricing)
                 .ThenInclude(p => p.PricingTier)
@@ -155,7 +156,8 @@ public class CategoryRepository(ContentDbContext context) : ICategoryRepository
     {
         var specification = new CategoryPricingByIdsSpecification(categoryId: categoryId, pricingTierId: pricingTierId);
         return await context
-            .CategoryPricing.ApplySpecification(specification: specification)
+            .CategoryPricing.AsTracking()
+            .ApplySpecification(specification: specification)
             .Include(p => p.PricingTier)
             .FirstOrDefaultAsync(cancellationToken);
     }
@@ -187,7 +189,8 @@ public class CategoryRepository(ContentDbContext context) : ICategoryRepository
     {
         var specification = new ExclusiveCategorySpecification();
         return await context
-            .Categories.ApplySpecification(specification: specification)
+            .Categories.AsTracking()
+            .ApplySpecification(specification: specification)
             .Include(c => c.ContentType)
             .FirstOrDefaultAsync(cancellationToken);
     }
@@ -197,7 +200,8 @@ public class CategoryRepository(ContentDbContext context) : ICategoryRepository
     {
         var specification = new DefaultLyricsCategorySpecification();
         return await context
-            .Categories.ApplySpecification(specification: specification)
+            .Categories.AsTracking()
+            .ApplySpecification(specification: specification)
             .Include(c => c.ContentType)
             .FirstOrDefaultAsync(cancellationToken);
     }
@@ -210,9 +214,16 @@ public class CategoryRepository(ContentDbContext context) : ICategoryRepository
     {
         var specification = new PinnedToFeedCategorySpecification(contentTypeId: contentTypeId);
         return await context
-            .Categories.ApplySpecification(specification: specification)
+            .Categories.AsTracking()
+            .ApplySpecification(specification: specification)
             .Include(c => c.ContentType)
             .OrderByDescending(c => c.PinnedToFeedAt)
             .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public void Update(CategoryEntity category)
+    {
+        context.Categories.Update(category);
     }
 }
