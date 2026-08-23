@@ -1,7 +1,6 @@
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Shared.Application.Exceptions;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Content.Application.Interactions.UseCases.Public.Commands.RateVideo;
@@ -17,12 +16,7 @@ public class PublicRateVideoHandler(IVideoRepository videoRepository, IContentUn
     /// <inheritdoc />
     public async Task<PublicRateVideoResult> Handle(PublicRateVideoCommand command, CancellationToken cancellationToken)
     {
-        bool exists = await videoRepository.ExistsAsync(videoId: command.VideoId, cancellationToken: cancellationToken);
-
-        if (!exists)
-        {
-            throw new NotFoundException(nameof(VideoEntity), command.VideoId);
-        }
+        await videoRepository.ExistsOrThrowAsync(videoId: command.VideoId, cancellationToken: cancellationToken);
 
         VideoRatingEntity? existingRating = await videoRepository.GetRatingAsync(
             userId: command.UserId,
