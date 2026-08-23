@@ -29,7 +29,8 @@ public class LookupRepository(ContentDbContext context) : ILookupRepository
     {
         var specification = new ContentTypeByIdSpecification(id: id);
         return await context
-            .ContentTypes.ApplySpecification(specification: specification)
+            .ContentTypes.AsTracking()
+            .ApplySpecification(specification: specification)
             .FirstDefaultOrThrowAsync(keyValue: id, cancellationToken: cancellationToken);
     }
 
@@ -82,7 +83,8 @@ public class LookupRepository(ContentDbContext context) : ILookupRepository
     {
         var specification = new PricingTierByIdSpecification(id: id);
         return await context
-            .PricingTiers.ApplySpecification(specification: specification)
+            .PricingTiers.AsTracking()
+            .ApplySpecification(specification: specification)
             .FirstDefaultOrThrowAsync(keyValue: id, cancellationToken: cancellationToken);
     }
 
@@ -126,7 +128,8 @@ public class LookupRepository(ContentDbContext context) : ILookupRepository
     {
         var specification = new PromotionLevelByIdSpecification(id: id);
         return await context
-            .PromotionLevels.ApplySpecification(specification: specification)
+            .PromotionLevels.AsTracking()
+            .ApplySpecification(specification: specification)
             .FirstDefaultOrThrowAsync(keyValue: id, cancellationToken: cancellationToken);
     }
 
@@ -176,7 +179,8 @@ public class LookupRepository(ContentDbContext context) : ILookupRepository
     {
         var specification = new TagByIdSpecification(id: id);
         return await context
-            .Tags.ApplySpecification(specification: specification)
+            .Tags.AsTracking()
+            .ApplySpecification(specification: specification)
             .FirstDefaultOrThrowAsync(keyValue: id, cancellationToken: cancellationToken);
     }
 
@@ -203,6 +207,21 @@ public class LookupRepository(ContentDbContext context) : ILookupRepository
             t => t.Name.ToLower() == name.ToLower(),
             cancellationToken: cancellationToken
         );
+    }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyDictionary<string, TagEntity>> GetTagsByNamesAsync(
+        IReadOnlyCollection<string> names,
+        CancellationToken cancellationToken = default
+    )
+    {
+        List<string> loweredNames = names.Select(name => name.ToLower()).Distinct().ToList();
+
+        List<TagEntity> tags = await context
+            .Tags.Where(tag => loweredNames.Contains(tag.Name.ToLower()))
+            .ToListAsync(cancellationToken);
+
+        return tags.GroupBy(tag => tag.Name.ToLower()).ToDictionary(group => group.Key, group => group.First());
     }
 
     /// <inheritdoc />
@@ -235,5 +254,29 @@ public class LookupRepository(ContentDbContext context) : ILookupRepository
             .Build(context);
 
         return await query.ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public void UpdateContentType(ContentTypeEntity contentType)
+    {
+        context.ContentTypes.Update(contentType);
+    }
+
+    /// <inheritdoc />
+    public void UpdatePricingTier(PricingTierEntity pricingTier)
+    {
+        context.PricingTiers.Update(pricingTier);
+    }
+
+    /// <inheritdoc />
+    public void UpdatePromotionLevel(PromotionLevelEntity promotionLevel)
+    {
+        context.PromotionLevels.Update(promotionLevel);
+    }
+
+    /// <inheritdoc />
+    public void UpdateTag(TagEntity tag)
+    {
+        context.Tags.Update(tag);
     }
 }
