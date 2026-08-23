@@ -2,6 +2,7 @@ using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
+using _116.Shared.Application.Exceptions;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
 
@@ -37,11 +38,12 @@ public class AdminBulkUpdateRolePermissionsHandler(
     {
         Guid roleId = Guid.Parse(input: command.RoleId);
 
-        // Validate role exists
-        await roleRepository.GetRoleByIdWithPermissionsOrThrowAsync(
-            roleId: roleId,
-            cancellationToken: cancellationToken
-        );
+        bool roleExists = await roleRepository.ExistsByIdAsync(roleId: roleId, cancellationToken: cancellationToken);
+
+        if (!roleExists)
+        {
+            throw new NotFoundException(nameof(RoleEntity), roleId);
+        }
 
         // Get current permission IDs
         List<Guid> currentPermissionIds = await rolePermissionRepository.GetPermissionIdsByRoleIdAsync(
@@ -56,19 +58,17 @@ public class AdminBulkUpdateRolePermissionsHandler(
         List<Guid> permissionsToAdd = newPermissionIds.Except(currentPermissionIdsSet).ToList();
         List<Guid> permissionsToRemove = currentPermissionIdsSet.Except(newPermissionIds).ToList();
 
-        // Remove permissions
-        foreach (Guid permissionId in permissionsToRemove)
-        {
-            RolePermissionEntity? rolePermission = await rolePermissionRepository.GetByRoleAndPermissionAsync(
+        // Remove permissions — one query for the whole removal set, not one per permission.
+        List<RolePermissionEntity> rolePermissionsToRemove =
+            await rolePermissionRepository.GetByRoleAndPermissionIdsAsync(
                 roleId: roleId,
-                permissionId: permissionId,
+                permissionIds: permissionsToRemove,
                 cancellationToken: cancellationToken
             );
 
-            if (rolePermission is not null)
-            {
-                rolePermissionRepository.Delete(entity: rolePermission);
-            }
+        foreach (RolePermissionEntity rolePermission in rolePermissionsToRemove)
+        {
+            rolePermissionRepository.Delete(entity: rolePermission);
         }
 
         // Add new permissions
