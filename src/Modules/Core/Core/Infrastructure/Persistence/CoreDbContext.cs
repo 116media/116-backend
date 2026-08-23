@@ -33,6 +33,10 @@ public class CoreDbContext(DbContextOptions<CoreDbContext> options) : DbContext(
     {
         modelBuilder.HasDefaultSchema(CoreConstants.SchemaName);
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+
+        // Soft-deleted files never resolve for consumers; no read path renders deleted files.
+        modelBuilder.Entity<FileEntity>().HasQueryFilter(file => !file.IsDeleted);
+
         base.OnModelCreating(modelBuilder);
     }
 }
