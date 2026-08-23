@@ -48,6 +48,15 @@ public static class LyricsMapper
     {
         string? coverImageUrl = await ResolveCoverImageUrlAsync(entity, fileRepository, ct);
 
+        return entity.ToLyricsSummaryDto(coverImageUrl: coverImageUrl);
+    }
+
+    /// <summary>
+    /// Maps a <see cref="LyricsEntity" /> to a <see cref="LyricsSummaryDto" /> from an
+    /// already resolved cover URL. Performs no IO — batch mappings resolve files up front.
+    /// </summary>
+    public static LyricsSummaryDto ToLyricsSummaryDto(this LyricsEntity entity, string? coverImageUrl)
+    {
         return new LyricsSummaryDto(
             entity.Id,
             entity.CategoryId,
@@ -85,12 +94,20 @@ public static class LyricsMapper
         CancellationToken ct = default
     )
     {
-        var results = new List<LyricsSummaryDto>(entities.Count);
-        foreach (LyricsEntity entity in entities)
-        {
-            results.Add(await entity.ToLyricsSummaryDtoAsync(fileRepository, ct));
-        }
-        return results;
+        IReadOnlyDictionary<Guid, FileEntity> files = await fileRepository.GetByIdsAsync(
+            entities.Where(e => e.CoverImageFileId.HasValue).Select(e => e.CoverImageFileId!.Value).Distinct().ToList(),
+            ct
+        );
+
+        return entities
+            .Select(entity =>
+                entity.ToLyricsSummaryDto(
+                    coverImageUrl: entity.CoverImageFileId.HasValue
+                        ? files.GetValueOrDefault(entity.CoverImageFileId.Value)?.StorageUrl
+                        : null
+                )
+            )
+            .ToList();
     }
 
     /// <summary>
@@ -131,12 +148,9 @@ public static class LyricsMapper
         CancellationToken ct = default
     )
     {
-        var results = new List<LyricsSummaryDto>(entities.Count);
-        foreach (LyricsEntity entity in entities)
-        {
-            results.Add(await entity.ToLyricsSummaryDtoAsync(fileRepository, likedLyricsIds, ct));
-        }
-        return results;
+        IReadOnlyList<LyricsSummaryDto> summaries = await entities.ToLyricsSummaryDtosAsync(fileRepository, ct);
+
+        return summaries.Select(dto => dto with { IsLiked = likedLyricsIds.Contains(dto.Id) }).ToList();
     }
 
     /// <summary>
