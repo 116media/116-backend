@@ -2,6 +2,7 @@ using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Shared.Application.Exceptions;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
 
@@ -25,7 +26,15 @@ public class PublicAddArticleCommentHandler(
         CancellationToken cancellationToken
     )
     {
-        await articleRepository.GetByIdOrThrowAsync(id: command.ArticleId, cancellationToken: cancellationToken);
+        bool exists = await articleRepository.ExistsAsync(
+            articleId: command.ArticleId,
+            cancellationToken: cancellationToken
+        );
+
+        if (!exists)
+        {
+            throw new NotFoundException(nameof(ArticleEntity), command.ArticleId);
+        }
 
         var comment = ArticleCommentEntity.Create(
             id: Guid.NewGuid(),
