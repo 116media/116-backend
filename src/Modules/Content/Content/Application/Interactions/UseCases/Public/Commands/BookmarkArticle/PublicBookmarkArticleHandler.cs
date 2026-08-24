@@ -9,11 +9,11 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.Bookmar
 /// <summary>
 /// Handles the <see cref="PublicBookmarkArticleCommand" /> to record a user's bookmark on an article.
 /// </summary>
-/// <param name="articleRepository">Repository for article data access operations.</param>
+/// <param name="articleInteractionRepository">Repository for article interaction data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class PublicBookmarkArticleHandler(
-    IArticleRepository articleRepository,
+    IArticleInteractionRepository articleInteractionRepository,
     IContentUnitOfWork unitOfWork,
     ContentI18n i18n
 ) : ICommandHandler<PublicBookmarkArticleCommand, PublicBookmarkArticleResult>
@@ -24,9 +24,12 @@ public class PublicBookmarkArticleHandler(
         CancellationToken cancellationToken
     )
     {
-        await articleRepository.ExistsOrThrowAsync(articleId: command.ArticleId, cancellationToken: cancellationToken);
+        await articleInteractionRepository.ExistsOrThrowAsync(
+            articleId: command.ArticleId,
+            cancellationToken: cancellationToken
+        );
 
-        bool alreadyBookmarked = await articleRepository.HasBookmarkedAsync(
+        bool alreadyBookmarked = await articleInteractionRepository.HasBookmarkedAsync(
             userId: command.UserId,
             articleId: command.ArticleId,
             cancellationToken: cancellationToken
@@ -43,7 +46,7 @@ public class PublicBookmarkArticleHandler(
             articleId: command.ArticleId
         );
 
-        await articleRepository.AddBookmarkAsync(bookmark: bookmark, cancellationToken: cancellationToken);
+        await articleInteractionRepository.AddBookmarkAsync(bookmark: bookmark, cancellationToken: cancellationToken);
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
