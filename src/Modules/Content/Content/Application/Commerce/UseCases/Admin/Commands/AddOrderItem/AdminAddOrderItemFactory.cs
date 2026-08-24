@@ -12,14 +12,14 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.AddOrderItem
 /// Forces IsBonus = true when the order's package slot capacity is exceeded.
 /// </summary>
 /// <param name="categoryRepository">Repository for category data access operations.</param>
-/// <param name="lookupRepository">Repository for lookup data access operations.</param>
+/// <param name="promotionLevelRepository">Repository for promotion level data access operations.</param>
 /// <param name="packageRepository">Repository for package data access operations.</param>
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="categoryErrors">Category domain error factory.</param>
 public class AdminAddOrderItemFactory(
     ICategoryRepository categoryRepository,
-    ILookupRepository lookupRepository,
+    IPromotionLevelRepository promotionLevelRepository,
     IPackageRepository packageRepository,
     IContentOrderRepository contentOrderRepository,
     IContentUnitOfWork unitOfWork,
@@ -53,7 +53,7 @@ public class AdminAddOrderItemFactory(
 
             if (promotionLevelId.HasValue)
             {
-                promoLevel = await lookupRepository.GetPromotionLevelByIdOrThrowAsync(
+                promoLevel = await promotionLevelRepository.GetByIdOrThrowAsync(
                     id: promotionLevelId.Value,
                     cancellationToken: cancellationToken
                 );
