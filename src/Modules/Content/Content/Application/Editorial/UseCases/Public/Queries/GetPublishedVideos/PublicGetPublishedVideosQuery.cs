@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.DTOs;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
@@ -17,7 +18,25 @@ public record PublicGetPublishedVideosQuery(
     string? Search,
     Guid? CategoryId,
     string? TagSlug
-) : IQuery<PublicGetPublishedVideosResult>;
+) : IQuery<PublicGetPublishedVideosResult>, IConditionallyCacheableRequest
+{
+    /// <inheritdoc />
+    /// <remarks>
+    /// Free-text search produces an unbounded key space, so those results are never stored.
+    /// </remarks>
+    public bool IsCacheable => string.IsNullOrWhiteSpace(Search);
+
+    /// <inheritdoc />
+    public string CacheKey =>
+        $"published_videos:{PaginatedRequest.PageIndex}:{PaginatedRequest.PageSize}"
+        + $":{CategoryId?.ToString() ?? "all"}:{TagSlug ?? "all"}";
+
+    /// <inheritdoc />
+    public TimeSpan Ttl => TimeSpan.FromMinutes(10);
+
+    /// <inheritdoc />
+    public IReadOnlyList<string> CacheTags => [ContentCacheTags.Videos];
+}
 
 /// <summary>
 /// Result of the <see cref="PublicGetPublishedVideosQuery" /> containing a paginated list of video summaries.
