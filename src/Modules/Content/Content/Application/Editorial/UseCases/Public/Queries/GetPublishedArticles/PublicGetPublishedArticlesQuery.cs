@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.DTOs;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
@@ -22,7 +23,27 @@ public record PublicGetPublishedArticlesQuery(
     Guid? CategoryId,
     string? TagSlug,
     Guid? CurrentUserId = null
-) : IQuery<PublicGetPublishedArticlesResult>;
+) : IQuery<PublicGetPublishedArticlesResult>, IConditionallyCacheableRequest
+{
+    /// <inheritdoc />
+    /// <remarks>
+    /// Only the anonymous projection is stored: an authenticated response carries per-user
+    /// interaction flags, and caching it would show one reader another reader's likes.
+    /// Free-text search additionally produces an unbounded key space.
+    /// </remarks>
+    public bool IsCacheable => CurrentUserId is null && string.IsNullOrWhiteSpace(Search);
+
+    /// <inheritdoc />
+    public string CacheKey =>
+        $"published_articles:{PaginatedRequest.PageIndex}:{PaginatedRequest.PageSize}"
+        + $":{CategoryId?.ToString() ?? "all"}:{TagSlug ?? "all"}";
+
+    /// <inheritdoc />
+    public TimeSpan Ttl => TimeSpan.FromMinutes(10);
+
+    /// <inheritdoc />
+    public IReadOnlyList<string> CacheTags => [ContentCacheTags.Articles];
+}
 
 /// <summary>
 /// Result of the <see cref="PublicGetPublishedArticlesQuery" /> containing a paginated list of article summaries.
