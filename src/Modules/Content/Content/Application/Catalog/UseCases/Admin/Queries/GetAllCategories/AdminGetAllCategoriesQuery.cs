@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.DTOs;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
@@ -11,7 +12,20 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Queries.GetAllCategori
 /// <param name="IsActive">Optional filter by active status.</param>
 /// <param name="IsFree">Optional filter by free/paid status.</param>
 public record AdminGetAllCategoriesQuery(PaginatedRequest PaginatedRequest, bool? IsActive = null, bool? IsFree = null)
-    : IQuery<AdminGetAllCategoriesResult>;
+    : IQuery<AdminGetAllCategoriesResult>,
+        ICacheableRequest
+{
+    /// <inheritdoc />
+    public string CacheKey =>
+        $"lookup:categories:admin:{PaginatedRequest.PageIndex}:{PaginatedRequest.PageSize}"
+        + $":{IsActive?.ToString() ?? "any"}:{IsFree?.ToString() ?? "any"}";
+
+    /// <inheritdoc />
+    public TimeSpan Ttl => TimeSpan.FromMinutes(30);
+
+    /// <inheritdoc />
+    public IReadOnlyList<string> CacheTags => [ContentCacheTags.Lookups];
+}
 
 /// <summary>
 /// Result of the <see cref="AdminGetAllCategoriesQuery" /> containing paginated category DTOs.
