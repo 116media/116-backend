@@ -269,4 +269,17 @@ public class AppEnvironment
         string? baseUrl = Environment.GetEnvironmentVariable("FRONTEND_BASE_URL");
         return baseUrl?.TrimEnd('/');
     }
+
+    /// <summary>
+    /// Retrieves the Redis connection string backing the hybrid cache's distributed layer.
+    /// </summary>
+    /// <remarks>
+    /// The value is fetched from the <c>REDIS_URL</c> environment variable. When absent the
+    /// hybrid cache runs in-process only, which is the single-instance and test configuration.
+    /// </remarks>
+    /// <returns>The Redis connection string, or <c>null</c> when no distributed layer is configured.</returns>
+    public static string? RedisUrl()
+    {
+        return Environment.GetEnvironmentVariable("REDIS_URL");
+    }
 }
