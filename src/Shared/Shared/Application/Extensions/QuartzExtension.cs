@@ -1,3 +1,4 @@
+using _116.Shared.Application.Configurations;
 using _116.Shared.Application.Jobs;
 using Microsoft.Extensions.DependencyInjection;
 using Quartz;
@@ -36,6 +37,35 @@ public static class QuartzExtension
         });
 
         services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
+
+        return services;
+    }
+
+    /// <summary>
+    /// Points the scheduler at the clustered Postgres job store, so N instances share one
+    /// trigger timeline and every job fires exactly once per schedule across the cluster.
+    /// Call once from the host; <see cref="AddScheduledJob{TJob}" /> calls compose with it.
+    /// </summary>
+    /// <param name="services">The service collection to register into.</param>
+    /// <returns>The updated <see cref="IServiceCollection" /> for chaining.</returns>
+    public static IServiceCollection AddClusteredQuartzStore(this IServiceCollection services)
+    {
+        var (host, port, db, user, pass) = AppEnvironment.Database();
+        string connectionString = $"Host={host};Port={port};Database={db};Username={user};Password={pass};";
+
+        services.AddQuartz(q =>
+        {
+            q.UsePersistentStore(store =>
+            {
+                store.UsePostgres(postgres =>
+                {
+                    postgres.ConnectionString = connectionString;
+                    postgres.TablePrefix = "quartz.qrtz_";
+                });
+                store.UseClustering();
+                store.UseSystemTextJsonSerializer();
+            });
+        });
 
         return services;
     }
