@@ -12,7 +12,7 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetOwnLi
 /// Handles the current-user liked article query.
 /// </summary>
 public class PublicGetOwnLikedArticlesHandler(
-    IArticleRepository articleRepository,
+    IArticleInteractionRepository articleInteractionRepository,
     IFileRepository fileRepository,
     IMapper mapper
 ) : IQueryHandler<PublicGetOwnLikedArticlesQuery, PublicGetOwnLikedArticlesResult>
@@ -25,7 +25,7 @@ public class PublicGetOwnLikedArticlesHandler(
     {
         int pageIndex = query.PaginatedRequest.PageIndex;
         int pageSize = query.PaginatedRequest.PageSize;
-        (List<ArticleActivity> activities, int totalCount) = await articleRepository.GetLikedArticlesAsync(
+        (List<ArticleActivity> activities, int totalCount) = await articleInteractionRepository.GetLikedArticlesAsync(
             query.UserId,
             pageIndex + 1,
             pageSize,
@@ -34,7 +34,11 @@ public class PublicGetOwnLikedArticlesHandler(
 
         Guid[] articleIds = activities.Select(activity => activity.Article.Id).ToArray();
         (IReadOnlySet<Guid> liked, IReadOnlySet<Guid> bookmarked) =
-            await articleRepository.GetLikedAndBookmarkedIdsAsync(query.UserId, articleIds, cancellationToken);
+            await articleInteractionRepository.GetLikedAndBookmarkedIdsAsync(
+                query.UserId,
+                articleIds,
+                cancellationToken
+            );
 
         var items = new List<UserArticleActivityDto>(activities.Count);
         foreach (ArticleActivity activity in activities)
