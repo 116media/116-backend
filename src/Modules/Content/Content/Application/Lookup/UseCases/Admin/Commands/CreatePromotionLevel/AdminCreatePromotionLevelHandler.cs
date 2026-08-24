@@ -11,12 +11,12 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.CreatePromotio
 /// <summary>
 /// Handles the <see cref="AdminCreatePromotionLevelCommand" /> to create a new promotion level.
 /// </summary>
-/// <param name="lookupRepository">Repository for lookup data access operations.</param>
+/// <param name="promotionLevelRepository">Repository for promotion level data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminCreatePromotionLevelHandler(
-    ILookupRepository lookupRepository,
+    IPromotionLevelRepository promotionLevelRepository,
     IContentUnitOfWork unitOfWork,
     IMapper mapper,
     ContentI18n i18n
@@ -28,7 +28,7 @@ public class AdminCreatePromotionLevelHandler(
         CancellationToken cancellationToken
     )
     {
-        bool exists = await lookupRepository.PromotionLevelExistsByNameAsync(
+        bool exists = await promotionLevelRepository.ExistsByNameAsync(
             name: command.Name,
             cancellationToken: cancellationToken
         );
@@ -46,10 +46,7 @@ public class AdminCreatePromotionLevelHandler(
             spotPriority: command.SpotPriority
         );
 
-        await lookupRepository.AddPromotionLevelAsync(
-            promotionLevel: promotionLevel,
-            cancellationToken: cancellationToken
-        );
+        await promotionLevelRepository.AddAsync(promotionLevel: promotionLevel, cancellationToken: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         var dto = promotionLevel.ToPromotionLevelDto(mapper);
