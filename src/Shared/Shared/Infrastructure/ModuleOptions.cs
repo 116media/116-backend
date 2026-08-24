@@ -20,18 +20,6 @@ public class ModuleOptions<TDbContext>
     public string? SchemaName { get; init; }
 
     /// <summary>
-    /// Whether to enable database migrations for this module.
-    /// Default is true.
-    /// </summary>
-    public bool EnableMigrations { get; init; } = true;
-
-    /// <summary>
-    /// Whether to enable data seeding for this module.
-    /// Default is true.
-    /// </summary>
-    public bool EnableSeeding { get; init; } = true;
-
-    /// <summary>
     /// Whether to use connection pooling for the DbContext.
     /// Default is true.
     /// </summary>
