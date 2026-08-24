@@ -11,7 +11,9 @@ namespace _116.Identity.Infrastructure.Repositories;
 /// Implementation of <see cref="IUserRoleRepository" /> for managing user-role associations.
 /// </summary>
 /// <param name="context">The database context for accessing user-role data.</param>
-public class UserRoleRepository(IdentityDbContext context) : IUserRoleRepository
+public class UserRoleRepository(IdentityDbContext context)
+    : IdentityRepository<UserRoleEntity>(context),
+        IUserRoleRepository
 {
     /// <inheritdoc />
     public async Task<bool> ExistsByUserAndRoleAsync(
@@ -21,7 +23,7 @@ public class UserRoleRepository(IdentityDbContext context) : IUserRoleRepository
     )
     {
         var specification = new UserRoleByUserAndRoleSpecification(userId: userId, roleId: roleId);
-        return await context.UserRoles.ApplySpecification(specification: specification).AnyAsync(cancellationToken);
+        return await Context.UserRoles.ApplySpecification(specification: specification).AnyAsync(cancellationToken);
     }
 
     /// <inheritdoc />
@@ -32,7 +34,7 @@ public class UserRoleRepository(IdentityDbContext context) : IUserRoleRepository
     )
     {
         var specification = new UserRoleByUserAndRoleSpecification(userId: userId, roleId: roleId);
-        return await context
+        return await Context
             .UserRoles.ApplySpecification(specification: specification)
             .FirstOrDefaultAsync(cancellationToken);
     }
@@ -44,21 +46,15 @@ public class UserRoleRepository(IdentityDbContext context) : IUserRoleRepository
     )
     {
         var specification = new UserRoleByUserIdSpecification(userId: userId);
-        return await context
+        return await Context
             .UserRoles.ApplySpecification(specification: specification)
             .Include(ur => ur.Role)
             .ToListAsync(cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task AddAsync(UserRoleEntity entity, CancellationToken cancellationToken = default)
-    {
-        await context.UserRoles.AddAsync(entity, cancellationToken);
-    }
-
-    /// <inheritdoc />
     public void Delete(UserRoleEntity entity)
     {
-        context.UserRoles.Remove(entity);
+        Context.UserRoles.Remove(entity);
     }
 }
