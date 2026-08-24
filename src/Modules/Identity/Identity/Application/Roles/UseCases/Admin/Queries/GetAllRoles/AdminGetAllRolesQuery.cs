@@ -1,3 +1,4 @@
+using _116.Identity.Application.Shared.Cache;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
@@ -16,7 +17,25 @@ public record AdminGetAllRolesQuery(
     string? Search = null,
     bool? IsActive = null,
     bool? IsDeleted = null
-) : IQuery<AdminGetAllRolesResult>;
+) : IQuery<AdminGetAllRolesResult>, IConditionallyCacheableRequest
+{
+    /// <inheritdoc />
+    /// <remarks>
+    /// Free-text search produces an unbounded key space, so those results are never stored.
+    /// </remarks>
+    public bool IsCacheable => string.IsNullOrWhiteSpace(Search);
+
+    /// <inheritdoc />
+    public string CacheKey =>
+        $"lookup:roles:admin:{PaginatedRequest.PageIndex}:{PaginatedRequest.PageSize}"
+        + $":{IsActive?.ToString() ?? "any"}:{IsDeleted?.ToString() ?? "any"}";
+
+    /// <inheritdoc />
+    public TimeSpan Ttl => TimeSpan.FromMinutes(30);
+
+    /// <inheritdoc />
+    public IReadOnlyList<string> CacheTags => [IdentityCacheTags.Lookups];
+}
 
 /// <summary>
 /// The result of executing an <see cref="AdminGetAllRolesQuery" />.
