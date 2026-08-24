@@ -1,5 +1,4 @@
 using _116.Identity.Domain.Entities;
-using _116.Shared.Domain;
 
 namespace _116.Identity.Application.Shared.Repositories;
 
@@ -7,7 +6,7 @@ namespace _116.Identity.Application.Shared.Repositories;
 /// Repository interface for managing role-permission associations.
 /// Provides methods for role-permission retrieval, validation, and management.
 /// </summary>
-public interface IRolePermissionRepository : IRepository<RolePermissionEntity>
+public interface IRolePermissionRepository
 {
     /// <summary>
     /// Checks if a role-permission association already exists.
