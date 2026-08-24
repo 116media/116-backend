@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.DTOs;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
@@ -11,7 +12,19 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetArtistAr
 /// </summary>
 /// <param name="Slug">The URL-safe slug of the artist profile.</param>
 /// <param name="Page">Pagination parameters for the article list.</param>
-public record PublicGetArtistArticlesQuery(string Slug, PaginatedRequest Page) : IQuery<PublicGetArtistArticlesResult>;
+public record PublicGetArtistArticlesQuery(string Slug, PaginatedRequest Page)
+    : IQuery<PublicGetArtistArticlesResult>,
+        ICacheableRequest
+{
+    /// <inheritdoc />
+    public string CacheKey => $"artist_articles:{Slug}:{Page.PageIndex}:{Page.PageSize}";
+
+    /// <inheritdoc />
+    public TimeSpan Ttl => TimeSpan.FromMinutes(10);
+
+    /// <inheritdoc />
+    public IReadOnlyList<string> CacheTags => [ContentCacheTags.Artists, ContentCacheTags.Articles];
+}
 
 /// <summary>
 /// Result of the <see cref="PublicGetArtistArticlesQuery" /> containing the paginated articles.
