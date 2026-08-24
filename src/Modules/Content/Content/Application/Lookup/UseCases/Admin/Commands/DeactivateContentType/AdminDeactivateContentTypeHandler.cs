@@ -11,12 +11,12 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.DeactivateCont
 /// <summary>
 /// Handles the <see cref="AdminDeactivateContentTypeCommand" /> to deactivate a content type.
 /// </summary>
-/// <param name="lookupRepository">Repository for lookup data access operations.</param>
+/// <param name="contentTypeRepository">Repository for content type data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminDeactivateContentTypeHandler(
-    ILookupRepository lookupRepository,
+    IContentTypeRepository contentTypeRepository,
     IContentUnitOfWork unitOfWork,
     IMapper mapper,
     ContentI18n i18n
@@ -30,7 +30,7 @@ public class AdminDeactivateContentTypeHandler(
     {
         Guid id = Guid.Parse(command.Id);
 
-        ContentTypeEntity contentType = await lookupRepository.GetContentTypeByIdOrThrowAsync(
+        ContentTypeEntity contentType = await contentTypeRepository.GetByIdOrThrowAsync(
             id: id,
             cancellationToken: cancellationToken
         );
@@ -42,7 +42,7 @@ public class AdminDeactivateContentTypeHandler(
             throw i18n.ContentType.AlreadyInactive();
         }
 
-        lookupRepository.UpdateContentType(contentType: contentType);
+        contentTypeRepository.Update(contentType: contentType);
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
