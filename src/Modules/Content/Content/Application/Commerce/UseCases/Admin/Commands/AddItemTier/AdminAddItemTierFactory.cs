@@ -12,14 +12,14 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.AddItemTier;
 /// </summary>
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
 /// <param name="categoryRepository">Repository for category data access operations.</param>
-/// <param name="lookupRepository">Repository for lookup data access operations.</param>
+/// <param name="pricingTierRepository">Repository for pricing tier data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="contentOrderErrors">Content order domain error factory.</param>
 /// <param name="categoryErrors">Category domain error factory.</param>
 public class AdminAddItemTierFactory(
     IContentOrderRepository contentOrderRepository,
     ICategoryRepository categoryRepository,
-    ILookupRepository lookupRepository,
+    IPricingTierRepository pricingTierRepository,
     IContentUnitOfWork unitOfWork,
     ContentOrderErrors contentOrderErrors,
     CategoryErrors categoryErrors
@@ -62,7 +62,7 @@ public class AdminAddItemTierFactory(
                 throw contentOrderErrors.TierAlreadyAttached();
             }
 
-            PricingTierEntity pricingTier = await lookupRepository.GetPricingTierByIdOrThrowAsync(
+            PricingTierEntity pricingTier = await pricingTierRepository.GetByIdOrThrowAsync(
                 id: pricingTierId,
                 cancellationToken: cancellationToken
             );
