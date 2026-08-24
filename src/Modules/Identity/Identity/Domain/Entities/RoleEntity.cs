@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using _116.BuildingBlocks.Constants;
+using _116.Identity.Domain.Events;
 using _116.Identity.Domain.Exceptions;
 using _116.Identity.Domain.StateMachines;
 using _116.Shared.Domain;
@@ -70,12 +71,15 @@ public class RoleEntity : Aggregate<Guid>
             throw new IdentityRuleException(IdentityRuleCodes.RoleDescriptionRequired);
         }
 
-        return new RoleEntity
+        var role = new RoleEntity
         {
             Id = id,
             Name = name,
             Description = description,
         };
+        role.AddDomainEvent(new RoleChangedEvent(RoleId: id));
+
+        return role;
     }
 
     /// <summary>
@@ -97,6 +101,7 @@ public class RoleEntity : Aggregate<Guid>
 
         Name = name;
         Description = description;
+        AddDomainEvent(new RoleChangedEvent(RoleId: Id));
     }
 
     /// <summary>
@@ -111,6 +116,8 @@ public class RoleEntity : Aggregate<Guid>
         }
 
         IsActive = true;
+        AddDomainEvent(new RoleChangedEvent(RoleId: Id));
+
         return true;
     }
 
@@ -126,6 +133,8 @@ public class RoleEntity : Aggregate<Guid>
         }
 
         IsActive = false;
+        AddDomainEvent(new RoleChangedEvent(RoleId: Id));
+
         return true;
     }
 
@@ -143,6 +152,8 @@ public class RoleEntity : Aggregate<Guid>
         IsDeleted = true;
         IsActive = false;
         DeletedAt = DateTime.UtcNow;
+        AddDomainEvent(new RoleChangedEvent(RoleId: Id));
+
         return true;
     }
 
@@ -159,6 +170,17 @@ public class RoleEntity : Aggregate<Guid>
 
         IsDeleted = false;
         DeletedAt = null;
+        AddDomainEvent(new RoleChangedEvent(RoleId: Id));
+
         return true;
+    }
+
+    /// <summary>
+    /// Raises the role-changed fact for this role's permanent removal, so cached lookup
+    /// projections refresh once the deletion commits.
+    /// </summary>
+    public void MarkHardDeleted()
+    {
+        AddDomainEvent(new RoleChangedEvent(RoleId: Id));
     }
 }
