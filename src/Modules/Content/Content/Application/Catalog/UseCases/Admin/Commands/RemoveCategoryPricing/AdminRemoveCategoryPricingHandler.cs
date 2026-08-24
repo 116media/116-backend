@@ -42,6 +42,7 @@ public class AdminRemoveCategoryPricingHandler(
 
         if (pricing is not null)
         {
+            pricing.MarkRemoved();
             categoryRepository.RemovePricing(pricing: pricing);
             await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
