@@ -11,12 +11,12 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.CreateContentT
 /// <summary>
 /// Handles the <see cref="AdminCreateContentTypeCommand" /> to create a new content type.
 /// </summary>
-/// <param name="lookupRepository">Repository for lookup data access operations.</param>
+/// <param name="contentTypeRepository">Repository for content type data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminCreateContentTypeHandler(
-    ILookupRepository lookupRepository,
+    IContentTypeRepository contentTypeRepository,
     IContentUnitOfWork unitOfWork,
     IMapper mapper,
     ContentI18n i18n
@@ -28,7 +28,7 @@ public class AdminCreateContentTypeHandler(
         CancellationToken cancellationToken
     )
     {
-        bool exists = await lookupRepository.ContentTypeExistsByNameAsync(
+        bool exists = await contentTypeRepository.ExistsByNameAsync(
             name: command.Name,
             cancellationToken: cancellationToken
         );
@@ -40,7 +40,7 @@ public class AdminCreateContentTypeHandler(
 
         var contentType = ContentTypeEntity.Create(id: Guid.NewGuid(), name: command.Name);
 
-        await lookupRepository.AddContentTypeAsync(contentType: contentType, cancellationToken: cancellationToken);
+        await contentTypeRepository.AddAsync(contentType: contentType, cancellationToken: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         var dto = contentType.ToContentTypeDto(mapper);
