@@ -1,5 +1,4 @@
 using _116.Identity.Domain.Entities;
-using _116.Shared.Domain;
 
 namespace _116.Identity.Application.Shared.Repositories;
 
@@ -7,7 +6,7 @@ namespace _116.Identity.Application.Shared.Repositories;
 /// Repository interface for managing user-role associations.
 /// Provides methods for user-role retrieval, validation, and management.
 /// </summary>
-public interface IUserRoleRepository : IRepository<UserRoleEntity>
+public interface IUserRoleRepository
 {
     /// <summary>
     /// Checks if a user-role association already exists.
