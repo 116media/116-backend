@@ -4,6 +4,7 @@ using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Domain.Events;
 using _116.Shared.Application.Services;
+using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Logging;
 
 namespace _116.Content.Application.Interactions.EventHandlers;
@@ -19,11 +20,11 @@ namespace _116.Content.Application.Interactions.EventHandlers;
 /// and the dispatch is skipped: the counter dies with the row.
 /// </summary>
 /// <param name="videoRepository">Repository for video data access operations.</param>
-/// <param name="cacheInvalidator">Token source evicting all popular-videos cache entries.</param>
+/// <param name="cache">The hybrid cache holding the popular-videos feeds.</param>
 /// <param name="logger">Logger recording events whose video no longer exists.</param>
 public class VideoEngagementHandler(
     IVideoRepository videoRepository,
-    IPopularVideosCacheInvalidator cacheInvalidator,
+    HybridCache cache,
     ILogger<VideoEngagementHandler> logger
 ) : IDomainEventHandler<VideoEngagedEvent>
 {
@@ -51,7 +52,7 @@ public class VideoEngagementHandler(
             );
         }
 
-        cacheInvalidator.Invalidate();
+        await cache.RemoveByTagAsync(ContentCacheTags.PopularVideos, cancellationToken);
     }
 
     /// <summary>
