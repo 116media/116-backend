@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Enums;
 using _116.Shared.Application.Pagination;
@@ -14,7 +15,19 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetArtistRe
 /// <param name="ReleaseType">The release type to filter to.</param>
 /// <param name="Page">Pagination parameters for the release list.</param>
 public record PublicGetArtistReleasesQuery(string Slug, EnumReleaseType ReleaseType, PaginatedRequest Page)
-    : IQuery<PublicGetArtistReleasesResult>;
+    : IQuery<PublicGetArtistReleasesResult>,
+        ICacheableRequest
+{
+    /// <inheritdoc />
+    public string CacheKey =>
+        $"artist_releases:{Slug}:{ReleaseType.ToString().ToLowerInvariant()}:{Page.PageIndex}:{Page.PageSize}";
+
+    /// <inheritdoc />
+    public TimeSpan Ttl => TimeSpan.FromMinutes(10);
+
+    /// <inheritdoc />
+    public IReadOnlyList<string> CacheTags => [ContentCacheTags.Artists];
+}
 
 /// <summary>
 /// Result of the <see cref="PublicGetArtistReleasesQuery" /> containing the paginated releases.
