@@ -27,14 +27,8 @@ public class OtpRepository(
     UserErrors userErrors,
     IOtpService otpService,
     IAccountLockoutRepository lockoutRepository
-) : IOtpRepository
+) : IdentityRepository<OtpEntity>(context), IOtpRepository
 {
-    /// <inheritdoc />
-    public async Task AddAsync(OtpEntity otp, CancellationToken cancellationToken = default)
-    {
-        await context.Otps.AddAsync(entity: otp, cancellationToken: cancellationToken);
-    }
-
     /// <inheritdoc />
     public async Task<OtpEntity> ValidateOtpAsync(
         Guid userId,
@@ -46,7 +40,7 @@ public class OtpRepository(
         // Load the outstanding OTP for this user and purpose; the code itself cannot take part
         // in the query because the stored value is salted.
         var specification = new OtpForValidationSpecification(userId: userId, purpose: purpose);
-        OtpEntity? candidateOtp = await context
+        OtpEntity? candidateOtp = await Context
             .Otps.ApplySpecification(specification: specification)
             .OrderByDescending(o => o.CreatedAt)
             .FirstOrDefaultAsync(cancellationToken: cancellationToken);
@@ -78,8 +72,8 @@ public class OtpRepository(
         await lockoutRepository.RegisterFailedOtpAsync(userId: userId, cancellationToken: cancellationToken);
         candidateOtp.IncrementAttemptCount();
 
-        context.Otps.Update(entity: candidateOtp);
-        await context.SaveChangesAsync(cancellationToken: cancellationToken);
+        Context.Otps.Update(entity: candidateOtp);
+        await Context.SaveChangesAsync(cancellationToken: cancellationToken);
 
         if (candidateOtp.HasMaxAttemptsReached())
         {
@@ -100,7 +94,7 @@ public class OtpRepository(
         // Load the most recently consumed OTP for this user and purpose; the salted hash keeps
         // the code out of the query, so the comparison happens on the loaded row.
         var specification = new OtpForUsedValidationSpecification(userId: userId, purpose: purpose);
-        OtpEntity? matchingOtp = await context
+        OtpEntity? matchingOtp = await Context
             .Otps.ApplySpecification(specification: specification)
             .OrderByDescending(o => o.CreatedAt)
             .FirstOrDefaultAsync(cancellationToken: cancellationToken);
@@ -131,7 +125,7 @@ public class OtpRepository(
     {
         DateTime windowStart = DateTime.UtcNow.AddMinutes(value: -UserConstants.OtpResendWindowMinutes);
 
-        return await context.Otps.CountAsync(
+        return await Context.Otps.CountAsync(
             o => o.UserId == userId && o.Purpose == purpose && o.CreatedAt >= windowStart,
             cancellationToken: cancellationToken
         );
@@ -149,7 +143,7 @@ public class OtpRepository(
 
         // The redeemed code is only marked used in memory at this point, so it still matches the
         // not-used predicate; excluding it by id stops verification consuming its own code.
-        List<OtpEntity> expiredOtpList = await context
+        List<OtpEntity> expiredOtpList = await Context
             .Otps.ApplySpecification(specification: specification)
             .Where(o => exceptOtpId == null || o.Id != exceptOtpId)
             .ToListAsync(cancellationToken: cancellationToken);
@@ -164,11 +158,11 @@ public class OtpRepository(
     public async Task<int> CleanupExpiredOtpsAsync(CancellationToken cancellationToken = default)
     {
         var specification = new OtpIsExpiredSpecification();
-        List<OtpEntity> expiredOtpList = await context
+        List<OtpEntity> expiredOtpList = await Context
             .Otps.ApplySpecification(specification: specification)
             .ToListAsync(cancellationToken: cancellationToken);
 
-        context.Otps.RemoveRange(entities: expiredOtpList);
+        Context.Otps.RemoveRange(entities: expiredOtpList);
         return expiredOtpList.Count;
     }
 }
