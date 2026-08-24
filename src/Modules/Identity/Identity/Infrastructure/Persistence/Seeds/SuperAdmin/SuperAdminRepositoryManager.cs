@@ -146,6 +146,16 @@ public class SuperAdminRepositoryManager(IdentityDbContext context, ILogger<Supe
     }
 
     /// <summary>
+    /// Creates the context's execution strategy, which must own any explicit transaction once
+    /// retry-on-failure is enabled.
+    /// </summary>
+    /// <returns>The execution strategy for the identity database.</returns>
+    public IExecutionStrategy CreateExecutionStrategy()
+    {
+        return context.Database.CreateExecutionStrategy();
+    }
+
+    /// <summary>
     /// Begins a database transaction.
     /// </summary>
     /// <returns>The database transaction.</returns>
