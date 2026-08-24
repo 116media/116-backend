@@ -62,6 +62,7 @@ public class AdminBulkUpdateRolePermissionsHandler(
 
         foreach (RolePermissionEntity rolePermission in rolePermissionsToRemove)
         {
+            rolePermission.MarkRemoved();
             rolePermissionRepository.Delete(entity: rolePermission);
         }
 
