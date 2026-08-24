@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.DTOs;
 using _116.Shared.Contracts.Application.CQRS;
 
@@ -18,7 +19,19 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPopularV
 /// drop the video currently being viewed.
 /// </param>
 public record PublicGetPopularVideosQuery(int Limit, Guid? CategoryId, Guid? ExcludeId)
-    : IQuery<PublicGetPopularVideosResult>;
+    : IQuery<PublicGetPopularVideosResult>,
+        ICacheableRequest
+{
+    /// <inheritdoc />
+    public string CacheKey =>
+        $"popular_videos:{Limit}:{CategoryId?.ToString() ?? "all"}:{ExcludeId?.ToString() ?? "none"}";
+
+    /// <inheritdoc />
+    public TimeSpan Ttl => TimeSpan.FromMinutes(10);
+
+    /// <inheritdoc />
+    public IReadOnlyList<string> CacheTags => [ContentCacheTags.PopularVideos];
+}
 
 /// <summary>
 /// Result of the <see cref="PublicGetPopularVideosQuery" /> containing the ranked video
