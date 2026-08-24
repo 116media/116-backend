@@ -11,12 +11,12 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.ActivatePromot
 /// <summary>
 /// Handles the <see cref="AdminActivatePromotionLevelCommand" /> to activate a promotion level.
 /// </summary>
-/// <param name="lookupRepository">Repository for lookup data access operations.</param>
+/// <param name="promotionLevelRepository">Repository for promotion level data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminActivatePromotionLevelHandler(
-    ILookupRepository lookupRepository,
+    IPromotionLevelRepository promotionLevelRepository,
     IContentUnitOfWork unitOfWork,
     IMapper mapper,
     ContentI18n i18n
@@ -30,7 +30,7 @@ public class AdminActivatePromotionLevelHandler(
     {
         Guid id = Guid.Parse(command.Id);
 
-        PromotionLevelEntity promotionLevel = await lookupRepository.GetPromotionLevelByIdOrThrowAsync(
+        PromotionLevelEntity promotionLevel = await promotionLevelRepository.GetByIdOrThrowAsync(
             id: id,
             cancellationToken: cancellationToken
         );
@@ -42,7 +42,7 @@ public class AdminActivatePromotionLevelHandler(
             throw i18n.PromotionLevel.AlreadyActive();
         }
 
-        lookupRepository.UpdatePromotionLevel(promotionLevel: promotionLevel);
+        promotionLevelRepository.Update(promotionLevel: promotionLevel);
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
