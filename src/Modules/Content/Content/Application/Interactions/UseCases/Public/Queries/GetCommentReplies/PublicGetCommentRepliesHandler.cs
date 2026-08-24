@@ -15,12 +15,12 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetComme
 /// non-deleted replies to a comment, enriching each reply with its commenter's author profile
 /// (batch-resolved, no N+1) and, when a viewer is supplied, whether the viewer has liked it.
 /// </summary>
-/// <param name="articleRepository">Repository for article data access operations.</param>
+/// <param name="articleCommentRepository">Repository for article comment data access operations.</param>
 /// <param name="userLookup">Cross-module service for resolving commenter profiles.</param>
 /// <param name="fileRepository">Repository for resolving avatar file URLs.</param>
 /// <param name="mapper">The mapper used to project entities to DTOs.</param>
 public class PublicGetCommentRepliesHandler(
-    IArticleRepository articleRepository,
+    IArticleCommentRepository articleCommentRepository,
     IUserLookupService userLookup,
     IFileRepository fileRepository,
     IMapper mapper
@@ -35,7 +35,7 @@ public class PublicGetCommentRepliesHandler(
         int pageIndex = query.PaginatedRequest.PageIndex;
         int pageSize = query.PaginatedRequest.PageSize;
 
-        (List<ArticleCommentEntity> replies, int totalCount) = await articleRepository.GetRepliesAsync(
+        (List<ArticleCommentEntity> replies, int totalCount) = await articleCommentRepository.GetRepliesAsync(
             parentCommentId: query.CommentId,
             page: pageIndex + 1,
             pageSize: pageSize,
@@ -132,7 +132,7 @@ public class PublicGetCommentRepliesHandler(
 
         Guid[] commentIds = replies.Select(c => c.Id).ToArray();
 
-        IReadOnlySet<Guid> likedIds = await articleRepository.GetLikedCommentIdsAsync(
+        IReadOnlySet<Guid> likedIds = await articleCommentRepository.GetLikedCommentIdsAsync(
             viewerUserId: viewerId,
             commentIds: commentIds,
             cancellationToken: cancellationToken
