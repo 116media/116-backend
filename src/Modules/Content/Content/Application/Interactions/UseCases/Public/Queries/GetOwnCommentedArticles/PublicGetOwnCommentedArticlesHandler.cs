@@ -12,7 +12,8 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetOwnCo
 /// Handles the current-user grouped article comment query.
 /// </summary>
 public class PublicGetOwnCommentedArticlesHandler(
-    IArticleRepository articleRepository,
+    IArticleCommentRepository articleCommentRepository,
+    IArticleInteractionRepository articleInteractionRepository,
     IFileRepository fileRepository,
     IMapper mapper
 ) : IQueryHandler<PublicGetOwnCommentedArticlesQuery, PublicGetOwnCommentedArticlesResult>
@@ -25,16 +26,21 @@ public class PublicGetOwnCommentedArticlesHandler(
     {
         int pageIndex = query.PaginatedRequest.PageIndex;
         int pageSize = query.PaginatedRequest.PageSize;
-        (List<CommentedArticleActivity> activities, int totalCount) = await articleRepository.GetCommentedArticlesAsync(
-            query.UserId,
-            pageIndex + 1,
-            pageSize,
-            cancellationToken
-        );
+        (List<CommentedArticleActivity> activities, int totalCount) =
+            await articleCommentRepository.GetCommentedArticlesAsync(
+                query.UserId,
+                pageIndex + 1,
+                pageSize,
+                cancellationToken
+            );
 
         Guid[] articleIds = activities.Select(activity => activity.Article.Id).ToArray();
         (IReadOnlySet<Guid> liked, IReadOnlySet<Guid> bookmarked) =
-            await articleRepository.GetLikedAndBookmarkedIdsAsync(query.UserId, articleIds, cancellationToken);
+            await articleInteractionRepository.GetLikedAndBookmarkedIdsAsync(
+                query.UserId,
+                articleIds,
+                cancellationToken
+            );
 
         var items = new List<UserCommentedArticleDto>(activities.Count);
         foreach (CommentedArticleActivity activity in activities)
