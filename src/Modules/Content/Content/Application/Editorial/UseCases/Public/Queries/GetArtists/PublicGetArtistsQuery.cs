@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.DTOs;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
@@ -14,7 +15,24 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetArtists;
 /// <param name="Letter">Optional initial-letter bucket, <c>A</c>–<c>Z</c> or <c>#</c>.</param>
 /// <param name="Search">Optional accent-insensitive name search term, minimum two characters.</param>
 public record PublicGetArtistsQuery(PaginatedRequest Page, string? Letter, string? Search)
-    : IQuery<PublicGetArtistsResult>;
+    : IQuery<PublicGetArtistsResult>,
+        IConditionallyCacheableRequest
+{
+    /// <inheritdoc />
+    /// <remarks>
+    /// Free-text search produces an unbounded key space, so those results are never stored.
+    /// </remarks>
+    public bool IsCacheable => string.IsNullOrWhiteSpace(Search);
+
+    /// <inheritdoc />
+    public string CacheKey => $"artists:{Page.PageIndex}:{Page.PageSize}:{Letter ?? "all"}";
+
+    /// <inheritdoc />
+    public TimeSpan Ttl => TimeSpan.FromMinutes(10);
+
+    /// <inheritdoc />
+    public IReadOnlyList<string> CacheTags => [ContentCacheTags.Artists];
+}
 
 /// <summary>
 /// Result of the <see cref="PublicGetArtistsQuery" /> containing the directory page and the
