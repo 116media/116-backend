@@ -13,11 +13,11 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPaymen
 /// time from the payment's verification instant, and the post-commit event
 /// handlers stamp the content and send the receipt.
 /// </summary>
-/// <param name="lookupRepository">Repository for lookup data access operations.</param>
+/// <param name="promotionLevelRepository">Repository for promotion level data access operations.</param>
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 public class AdminVerifyPaymentFactory(
-    ILookupRepository lookupRepository,
+    IPromotionLevelRepository promotionLevelRepository,
     IContentOrderRepository contentOrderRepository,
     IContentUnitOfWork unitOfWork
 ) : IVerifyPaymentFactory
@@ -71,7 +71,7 @@ public class AdminVerifyPaymentFactory(
 
         foreach (Guid promotionLevelId in promotionLevelIds)
         {
-            PromotionLevelEntity promotionLevel = await lookupRepository.GetPromotionLevelByIdOrThrowAsync(
+            PromotionLevelEntity promotionLevel = await promotionLevelRepository.GetByIdOrThrowAsync(
                 id: promotionLevelId,
                 cancellationToken: cancellationToken
             );
