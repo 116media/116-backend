@@ -13,15 +13,17 @@ namespace _116.Content.Application.Interactions.EventHandlers;
 /// its own scope: the like row is already durable and the rows remain the
 /// source of truth.
 /// </summary>
-/// <param name="articleRepository">Repository for article data access operations.</param>
+/// <param name="articleCommentRepository">Repository for article comment data access operations.</param>
 /// <param name="logger">Logger recording events whose comment no longer exists.</param>
-public class CommentEngagementHandler(IArticleRepository articleRepository, ILogger<CommentEngagementHandler> logger)
-    : IDomainEventHandler<CommentEngagedEvent>
+public class CommentEngagementHandler(
+    IArticleCommentRepository articleCommentRepository,
+    ILogger<CommentEngagementHandler> logger
+) : IDomainEventHandler<CommentEngagedEvent>
 {
     /// <inheritdoc />
     public async Task Handle(CommentEngagedEvent domainEvent, CancellationToken cancellationToken = default)
     {
-        int updated = await articleRepository.ApplyCommentLikeDeltaAsync(
+        int updated = await articleCommentRepository.ApplyCommentLikeDeltaAsync(
             commentId: domainEvent.CommentId,
             delta: domainEvent.Delta,
             cancellationToken: cancellationToken
