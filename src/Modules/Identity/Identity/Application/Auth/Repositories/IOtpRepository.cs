@@ -1,7 +1,6 @@
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Shared.Application.Exceptions;
-using _116.Shared.Domain;
 
 namespace _116.Identity.Application.Auth.Repositories;
 
@@ -9,7 +8,7 @@ namespace _116.Identity.Application.Auth.Repositories;
 /// Repository interface for managing OTP entities and verification operations.
 /// Provides methods for OTP creation, validation, and cleanup.
 /// </summary>
-public interface IOtpRepository : IRepository<OtpEntity>
+public interface IOtpRepository
 {
     /// <summary>
     /// Adds a new OTP entity to the repository.
