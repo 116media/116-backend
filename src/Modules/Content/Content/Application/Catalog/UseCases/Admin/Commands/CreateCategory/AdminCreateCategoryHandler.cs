@@ -13,14 +13,14 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.CreateCategor
 /// <summary>
 /// Handles the <see cref="AdminCreateCategoryCommand" /> to create a new content category.
 /// </summary>
-/// <param name="lookupRepository">Repository for verifying lookup entities (content type).</param>
+/// <param name="contentTypeRepository">Repository for verifying lookup entities (content type).</param>
 /// <param name="categoryRepository">Repository for category data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="fileRepository">Repository for file storage operations.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminCreateCategoryHandler(
-    ILookupRepository lookupRepository,
+    IContentTypeRepository contentTypeRepository,
     ICategoryRepository categoryRepository,
     IContentUnitOfWork unitOfWork,
     IFileRepository fileRepository,
@@ -36,7 +36,7 @@ public class AdminCreateCategoryHandler(
     {
         Guid contentTypeId = Guid.Parse(command.ContentTypeId);
 
-        ContentTypeEntity contentType = await lookupRepository.GetContentTypeByIdOrThrowAsync(
+        ContentTypeEntity contentType = await contentTypeRepository.GetByIdOrThrowAsync(
             id: contentTypeId,
             cancellationToken: cancellationToken
         );
