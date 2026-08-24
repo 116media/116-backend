@@ -1,9 +1,7 @@
 using _116.Shared.Application.Configurations;
 using _116.Shared.Application.Services;
-using _116.Shared.Infrastructure.Extensions;
 using _116.Shared.Infrastructure.interceptors;
 using _116.Shared.Infrastructure.Services;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
@@ -69,46 +67,16 @@ public static class BaseModule
     }
 
     /// <summary>
-    /// Configures the module's middleware pipeline for database operations.
-    /// </summary>
-    /// <typeparam name="TDbContext">The DbContext type for the module</typeparam>
-    /// <param name="app">The application builder</param>
-    /// <param name="options">Module-specific configuration options</param>
-    /// <returns>The updated application builder for chaining</returns>
-    /// <remarks>
-    /// This method handles the following operations:
-    /// <list type="bullet">
-    /// <item>Database migrations (if enabled)</item>
-    /// <item>Data seeding (if enabled)</item>
-    /// </list>
-    /// </remarks>
-    public static IApplicationBuilder UseModuleDatabase<TDbContext>(
-        this IApplicationBuilder app,
-        ModuleOptions<TDbContext> options
-    )
-        where TDbContext : DbContext
-    {
-        if (options.EnableMigrations)
-        {
-            app.UseMigration<TDbContext>();
-        }
-
-        if (options.EnableSeeding)
-        {
-            app.UseSeed();
-        }
-
-        return app;
-    }
-
-    /// <summary>
     /// Gets the default database connection string from environment configuration.
     /// </summary>
     /// <returns>The formatted connection string</returns>
     private static string GetDefaultConnectionString()
     {
         var (host, port, db, user, pass) = AppEnvironment.Database();
-        return $"Host={host};Port={port};Database={db};Username={user};Password={pass};";
+
+        // All module contexts share this string, so Npgsql serves them from one physical pool;
+        // the cap is per connection string, not per context.
+        return $"Host={host};Port={port};Database={db};Username={user};Password={pass};Maximum Pool Size=100;";
     }
 
     /// <summary>
@@ -179,7 +147,21 @@ public static class BaseModule
         // Add interceptors
         options.AddInterceptors(serviceProvider.GetServices<ISaveChangesInterceptor>());
 
-        // Configure PostgreSQL with snake_case naming
-        options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention();
+        // Configure PostgreSQL with snake_case naming. Transient faults retry with backoff;
+        // the command timeout keeps a wedged statement from holding a pooled connection open.
+        options
+            .UseNpgsql(
+                connectionString,
+                npgsql =>
+                {
+                    npgsql.EnableRetryOnFailure(
+                        maxRetryCount: 3,
+                        maxRetryDelay: TimeSpan.FromSeconds(5),
+                        errorCodesToAdd: null
+                    );
+                    npgsql.CommandTimeout(30);
+                }
+            )
+            .UseSnakeCaseNamingConvention();
     }
 }
