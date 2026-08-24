@@ -1,4 +1,5 @@
 using _116.Content.Application.Editorial.Constants;
+using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.DTOs;
 using _116.Shared.Contracts.Application.CQRS;
 
@@ -18,7 +19,24 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetArticleP
 public record PublicGetArticlePromotionFeedQuery(
     int StripSize = EditorialFeedConstants.DefaultStripSize,
     Guid? CurrentUserId = null
-) : IQuery<PublicGetArticlePromotionFeedResult>;
+) : IQuery<PublicGetArticlePromotionFeedResult>, IConditionallyCacheableRequest
+{
+    /// <inheritdoc />
+    /// <remarks>
+    /// Only the anonymous projection is stored: an authenticated response carries per-user
+    /// interaction flags, and caching it would show one reader another reader's likes.
+    /// </remarks>
+    public bool IsCacheable => CurrentUserId is null;
+
+    /// <inheritdoc />
+    public string CacheKey => $"article_promotion_feed:{StripSize}";
+
+    /// <inheritdoc />
+    public TimeSpan Ttl => TimeSpan.FromMinutes(10);
+
+    /// <inheritdoc />
+    public IReadOnlyList<string> CacheTags => [ContentCacheTags.Articles];
+}
 
 /// <summary>
 /// A single promoted article entry for the feed.
