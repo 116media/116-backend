@@ -11,11 +11,11 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.UnlikeA
 /// comment and decrement its cached like count (never below zero). Idempotent: unliking a
 /// comment the user has not liked makes no change and still reports success.
 /// </summary>
-/// <param name="articleRepository">Repository for article data access operations.</param>
+/// <param name="articleCommentRepository">Repository for article comment data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class PublicUnlikeArticleCommentHandler(
-    IArticleRepository articleRepository,
+    IArticleCommentRepository articleCommentRepository,
     IContentUnitOfWork unitOfWork,
     ContentI18n i18n
 ) : ICommandHandler<PublicUnlikeArticleCommentCommand, PublicUnlikeArticleCommentResult>
@@ -26,7 +26,7 @@ public class PublicUnlikeArticleCommentHandler(
         CancellationToken cancellationToken
     )
     {
-        ArticleCommentEntity? comment = await articleRepository.GetCommentByIdAsync(
+        ArticleCommentEntity? comment = await articleCommentRepository.GetCommentByIdAsync(
             commentId: command.CommentId,
             cancellationToken: cancellationToken
         );
@@ -36,7 +36,7 @@ public class PublicUnlikeArticleCommentHandler(
             throw i18n.ArticleInteraction.CommentNotFound(command.CommentId);
         }
 
-        bool hasLiked = await articleRepository.HasLikedCommentAsync(
+        bool hasLiked = await articleCommentRepository.HasLikedCommentAsync(
             userId: command.UserId,
             commentId: command.CommentId,
             cancellationToken: cancellationToken
@@ -47,7 +47,7 @@ public class PublicUnlikeArticleCommentHandler(
             return new PublicUnlikeArticleCommentResult(IsSuccess: true);
         }
 
-        await articleRepository.RemoveCommentLikeAsync(
+        await articleCommentRepository.RemoveCommentLikeAsync(
             userId: command.UserId,
             commentId: command.CommentId,
             cancellationToken: cancellationToken
