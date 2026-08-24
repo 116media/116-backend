@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using _116.BuildingBlocks.Constants;
+using _116.Identity.Domain.Events;
 using _116.Identity.Domain.Exceptions;
 using _116.Identity.Domain.StateMachines;
 using _116.Shared.Domain;
@@ -83,13 +84,16 @@ public class PermissionEntity : Aggregate<Guid>
             throw error;
         }
 
-        return new PermissionEntity
+        var permission = new PermissionEntity
         {
             Id = id,
             Resource = resource,
             Action = action,
             Description = description,
         };
+        permission.AddDomainEvent(new PermissionChangedEvent(PermissionId: id));
+
+        return permission;
     }
 
     /// <summary>
@@ -122,6 +126,7 @@ public class PermissionEntity : Aggregate<Guid>
         Resource = resource;
         Action = action;
         Description = description;
+        AddDomainEvent(new PermissionChangedEvent(PermissionId: Id));
     }
 
     /// <summary>
@@ -136,6 +141,8 @@ public class PermissionEntity : Aggregate<Guid>
         }
 
         IsActive = true;
+        AddDomainEvent(new PermissionChangedEvent(PermissionId: Id));
+
         return true;
     }
 
@@ -151,6 +158,8 @@ public class PermissionEntity : Aggregate<Guid>
         }
 
         IsActive = false;
+        AddDomainEvent(new PermissionChangedEvent(PermissionId: Id));
+
         return true;
     }
 
@@ -168,6 +177,8 @@ public class PermissionEntity : Aggregate<Guid>
         IsDeleted = true;
         IsActive = false;
         DeletedAt = DateTime.UtcNow;
+        AddDomainEvent(new PermissionChangedEvent(PermissionId: Id));
+
         return true;
     }
 
@@ -184,6 +195,17 @@ public class PermissionEntity : Aggregate<Guid>
 
         IsDeleted = false;
         DeletedAt = null;
+        AddDomainEvent(new PermissionChangedEvent(PermissionId: Id));
+
         return true;
+    }
+
+    /// <summary>
+    /// Raises the permission-changed fact for this permission's permanent removal, so cached
+    /// lookup projections refresh once the deletion commits.
+    /// </summary>
+    public void MarkHardDeleted()
+    {
+        AddDomainEvent(new PermissionChangedEvent(PermissionId: Id));
     }
 }
