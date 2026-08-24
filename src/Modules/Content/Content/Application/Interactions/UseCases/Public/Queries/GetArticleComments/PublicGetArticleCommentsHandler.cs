@@ -18,12 +18,12 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetArtic
 /// When a viewer is supplied, each comment is also stamped with whether that viewer has
 /// liked it, resolved in a single batch query.
 /// </summary>
-/// <param name="articleRepository">Repository for article data access operations.</param>
+/// <param name="articleCommentRepository">Repository for article comment data access operations.</param>
 /// <param name="userLookup">Cross-module service for resolving commenter profiles.</param>
 /// <param name="fileRepository">Repository for resolving avatar file URLs.</param>
 /// <param name="mapper">The mapper used to project entities to DTOs.</param>
 public class PublicGetArticleCommentsHandler(
-    IArticleRepository articleRepository,
+    IArticleCommentRepository articleCommentRepository,
     IUserLookupService userLookup,
     IFileRepository fileRepository,
     IMapper mapper
@@ -38,7 +38,7 @@ public class PublicGetArticleCommentsHandler(
         int pageIndex = query.PaginatedRequest.PageIndex;
         int pageSize = query.PaginatedRequest.PageSize;
 
-        (List<ArticleCommentEntity> comments, int totalCount) = await articleRepository.GetCommentsAsync(
+        (List<ArticleCommentEntity> comments, int totalCount) = await articleCommentRepository.GetCommentsAsync(
             articleId: query.ArticleId,
             page: pageIndex + 1,
             pageSize: pageSize,
@@ -135,7 +135,7 @@ public class PublicGetArticleCommentsHandler(
 
         Guid[] commentIds = comments.Select(c => c.Id).ToArray();
 
-        IReadOnlyDictionary<Guid, int> replyCounts = await articleRepository.GetReplyCountsAsync(
+        IReadOnlyDictionary<Guid, int> replyCounts = await articleCommentRepository.GetReplyCountsAsync(
             parentCommentIds: commentIds,
             cancellationToken: cancellationToken
         );
@@ -173,7 +173,7 @@ public class PublicGetArticleCommentsHandler(
 
         Guid[] commentIds = comments.Select(c => c.Id).ToArray();
 
-        IReadOnlySet<Guid> likedIds = await articleRepository.GetLikedCommentIdsAsync(
+        IReadOnlySet<Guid> likedIds = await articleCommentRepository.GetLikedCommentIdsAsync(
             viewerUserId: viewerId,
             commentIds: commentIds,
             cancellationToken: cancellationToken
