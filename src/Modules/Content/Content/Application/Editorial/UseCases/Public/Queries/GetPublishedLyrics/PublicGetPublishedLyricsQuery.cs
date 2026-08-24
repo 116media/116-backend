@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.DTOs;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
@@ -28,7 +29,27 @@ public record PublicGetPublishedLyricsQuery(
     Guid? CategoryId,
     string? Sort,
     Guid? CurrentUserId = null
-) : IQuery<PublicGetPublishedLyricsResult>;
+) : IQuery<PublicGetPublishedLyricsResult>, IConditionallyCacheableRequest
+{
+    /// <inheritdoc />
+    /// <remarks>
+    /// Only the anonymous projection is stored: an authenticated response carries per-user
+    /// interaction flags, and caching it would show one reader another reader's likes.
+    /// Free-text search additionally produces an unbounded key space.
+    /// </remarks>
+    public bool IsCacheable => CurrentUserId is null && string.IsNullOrWhiteSpace(Search);
+
+    /// <inheritdoc />
+    public string CacheKey =>
+        $"published_lyrics:{PaginatedRequest.PageIndex}:{PaginatedRequest.PageSize}"
+        + $":{Language ?? "all"}:{CategoryId?.ToString() ?? "all"}:{Sort ?? "default"}";
+
+    /// <inheritdoc />
+    public TimeSpan Ttl => TimeSpan.FromMinutes(10);
+
+    /// <inheritdoc />
+    public IReadOnlyList<string> CacheTags => [ContentCacheTags.Lyrics];
+}
 
 /// <summary>
 /// Result of the <see cref="PublicGetPublishedLyricsQuery" /> containing a paginated list of lyrics summaries.
