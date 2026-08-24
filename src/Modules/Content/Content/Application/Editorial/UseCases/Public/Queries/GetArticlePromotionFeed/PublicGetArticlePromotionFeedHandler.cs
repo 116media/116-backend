@@ -14,11 +14,13 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetArticleP
 /// promotion feed grouped by spot priority, with gossip fallbacks for empty spots.
 /// </summary>
 /// <param name="articleRepository">Repository for article data access operations.</param>
+/// <param name="articleInteractionRepository">Repository for article interaction data access operations.</param>
 /// <param name="categoryRepository">Repository for category data access operations.</param>
 /// <param name="fileRepository">Repository for resolving file URLs.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class PublicGetArticlePromotionFeedHandler(
     IArticleRepository articleRepository,
+    IArticleInteractionRepository articleInteractionRepository,
     ICategoryRepository categoryRepository,
     IFileRepository fileRepository,
     IMapper mapper
@@ -71,7 +73,7 @@ public class PublicGetArticlePromotionFeedHandler(
             .ToList();
 
         (IReadOnlySet<Guid> liked, IReadOnlySet<Guid> bookmarked) =
-            await articleRepository.GetLikedAndBookmarkedIdsAsync(
+            await articleInteractionRepository.GetLikedAndBookmarkedIdsAsync(
                 currentUserId: query.CurrentUserId,
                 articleIds: allFeedIds,
                 cancellationToken: cancellationToken
