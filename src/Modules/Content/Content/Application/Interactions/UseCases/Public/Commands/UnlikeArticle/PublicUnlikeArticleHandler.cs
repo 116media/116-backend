@@ -9,11 +9,11 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.UnlikeA
 /// <summary>
 /// Handles the <see cref="PublicUnlikeArticleCommand" /> to remove a user's like from an article.
 /// </summary>
-/// <param name="articleRepository">Repository for article data access operations.</param>
+/// <param name="articleInteractionRepository">Repository for article interaction data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class PublicUnlikeArticleHandler(
-    IArticleRepository articleRepository,
+    IArticleInteractionRepository articleInteractionRepository,
     IContentUnitOfWork unitOfWork,
     ContentI18n i18n
 ) : ICommandHandler<PublicUnlikeArticleCommand, PublicUnlikeArticleResult>
@@ -24,9 +24,12 @@ public class PublicUnlikeArticleHandler(
         CancellationToken cancellationToken
     )
     {
-        await articleRepository.ExistsOrThrowAsync(articleId: command.ArticleId, cancellationToken: cancellationToken);
+        await articleInteractionRepository.ExistsOrThrowAsync(
+            articleId: command.ArticleId,
+            cancellationToken: cancellationToken
+        );
 
-        bool hasLiked = await articleRepository.HasLikedAsync(
+        bool hasLiked = await articleInteractionRepository.HasLikedAsync(
             userId: command.UserId,
             articleId: command.ArticleId,
             cancellationToken: cancellationToken
@@ -37,7 +40,7 @@ public class PublicUnlikeArticleHandler(
             throw i18n.ArticleInteraction.LikeNotFound();
         }
 
-        await articleRepository.RemoveLikeAsync(
+        await articleInteractionRepository.RemoveLikeAsync(
             userId: command.UserId,
             articleId: command.ArticleId,
             cancellationToken: cancellationToken
