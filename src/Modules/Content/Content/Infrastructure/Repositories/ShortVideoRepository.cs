@@ -15,7 +15,9 @@ namespace _116.Content.Infrastructure.Repositories;
 /// Implementation of <see cref="IShortVideoRepository" /> for managing short video entities.
 /// </summary>
 /// <param name="context">The Content module database context.</param>
-public class ShortVideoRepository(ContentDbContext context) : IShortVideoRepository
+public class ShortVideoRepository(ContentDbContext context)
+    : ContentRepository<ShortVideoEntity>(context),
+        IShortVideoRepository
 {
     /// <inheritdoc />
     public async Task<(List<ShortVideoEntity> ShortVideos, int TotalCount)> GetAllAsync(
@@ -26,7 +28,7 @@ public class ShortVideoRepository(ContentDbContext context) : IShortVideoReposit
         CancellationToken cancellationToken = default
     )
     {
-        IQueryable<ShortVideoEntity> query = context.ShortVideos.Include(s => s.ParentVideo);
+        IQueryable<ShortVideoEntity> query = Context.ShortVideos.Include(s => s.ParentVideo);
 
         Specification<ShortVideoEntity>? spec = new ShortVideoQueryBuilder()
             .WithSearch(search: search)
@@ -61,7 +63,7 @@ public class ShortVideoRepository(ContentDbContext context) : IShortVideoReposit
         // fresh uniform ordering per session (XOR-by-constant preserves uniformity), and the
         // unique FeedRank makes the sort key a strict total order — so keyset paging on it
         // alone never drifts or repeats, with no id tie-breaker needed.
-        IQueryable<ShortVideoEntity> query = context
+        IQueryable<ShortVideoEntity> query = Context
             .ShortVideos.Include(shortVideo => shortVideo.ParentVideo)
             .Where(shortVideo => shortVideo.IsActive);
 
@@ -85,12 +87,12 @@ public class ShortVideoRepository(ContentDbContext context) : IShortVideoReposit
             return (new HashSet<Guid>(), new HashSet<Guid>());
         }
 
-        List<Guid> likedIds = await context
+        List<Guid> likedIds = await Context
             .ShortVideoLikes.Where(like => like.UserId == userId && shortVideoIds.Contains(like.ShortVideoId))
             .Select(like => like.ShortVideoId)
             .ToListAsync(cancellationToken);
 
-        List<Guid> bookmarkedIds = await context
+        List<Guid> bookmarkedIds = await Context
             .ShortVideoBookmarks.Where(bookmark =>
                 bookmark.UserId == userId && shortVideoIds.Contains(bookmark.ShortVideoId)
             )
@@ -109,7 +111,7 @@ public class ShortVideoRepository(ContentDbContext context) : IShortVideoReposit
     )
     {
         var specification = new ShortVideoLikeByUserIdSpecification(userId: userId);
-        IQueryable<ShortVideoLikeEntity> query = context
+        IQueryable<ShortVideoLikeEntity> query = Context
             .ShortVideoLikes.ApplySpecification(specification: specification)
             .Where(like => like.ShortVideo.IsActive);
         int totalCount = await query.CountAsync(cancellationToken);
@@ -137,7 +139,7 @@ public class ShortVideoRepository(ContentDbContext context) : IShortVideoReposit
     )
     {
         var specification = new ShortVideoBookmarkByUserIdSpecification(userId: userId);
-        IQueryable<ShortVideoBookmarkEntity> query = context
+        IQueryable<ShortVideoBookmarkEntity> query = Context
             .ShortVideoBookmarks.ApplySpecification(specification: specification)
             .Where(bookmark => bookmark.ShortVideo.IsActive);
         int totalCount = await query.CountAsync(cancellationToken);
@@ -165,7 +167,7 @@ public class ShortVideoRepository(ContentDbContext context) : IShortVideoReposit
     )
     {
         var specification = new ShortVideoShareByUserIdSpecification(userId: userId);
-        var query = context
+        var query = Context
             .ShortVideoShares.ApplySpecification(specification: specification)
             .Where(share => share.ShortVideo.IsActive)
             .GroupBy(share => share.ShortVideoId)
@@ -183,7 +185,7 @@ public class ShortVideoRepository(ContentDbContext context) : IShortVideoReposit
             .Take(pageSize)
             .ToListAsync(cancellationToken);
         List<Guid> shortVideoIds = rows.Select(row => row.ShortVideoId).ToList();
-        Dictionary<Guid, ShortVideoEntity> shortVideos = await context
+        Dictionary<Guid, ShortVideoEntity> shortVideos = await Context
             .ShortVideos.Include(shortVideo => shortVideo.ParentVideo)
             .Where(shortVideo => shortVideoIds.Contains(shortVideo.Id))
             .ToDictionaryAsync(shortVideo => shortVideo.Id, cancellationToken);
@@ -203,48 +205,10 @@ public class ShortVideoRepository(ContentDbContext context) : IShortVideoReposit
     public async Task<ShortVideoEntity?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default)
     {
         var specification = new ShortVideoBySlugSpecification(slug: slug);
-        return await context
+        return await Context
             .ShortVideos.Include(s => s.ParentVideo)
             .ApplySpecification(specification: specification)
             .FirstOrDefaultAsync(cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public async Task<ShortVideoEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        var specification = new ShortVideoByIdSpecification(id: id);
-        return await context.ShortVideos.FirstOrDefaultBySpecificationAsync(
-            specification: specification,
-            cancellationToken: cancellationToken
-        );
-    }
-
-    /// <inheritdoc />
-    public async Task<ShortVideoEntity> GetByIdOrThrowAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        var specification = new ShortVideoByIdSpecification(id: id);
-        return await context
-            .ShortVideos.AsTracking()
-            .ApplySpecification(specification: specification)
-            .FirstDefaultOrThrowAsync(keyValue: id, cancellationToken: cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public async Task AddAsync(ShortVideoEntity shortVideo, CancellationToken cancellationToken = default)
-    {
-        await context.ShortVideos.AddAsync(shortVideo, cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public void Update(ShortVideoEntity shortVideo)
-    {
-        context.ShortVideos.Update(shortVideo);
-    }
-
-    /// <inheritdoc />
-    public void Remove(ShortVideoEntity shortVideo)
-    {
-        context.ShortVideos.Remove(shortVideo);
     }
 
     /// <inheritdoc />
@@ -254,7 +218,7 @@ public class ShortVideoRepository(ContentDbContext context) : IShortVideoReposit
             userId: userId,
             shortVideoId: shortVideoId
         );
-        return await context
+        return await Context
             .ShortVideoLikes.ApplySpecification(specification: specification)
             .AnyAsync(cancellationToken);
     }
@@ -262,7 +226,7 @@ public class ShortVideoRepository(ContentDbContext context) : IShortVideoReposit
     /// <inheritdoc />
     public async Task AddLikeAsync(ShortVideoLikeEntity like, CancellationToken cancellationToken = default)
     {
-        await context.ShortVideoLikes.AddAsync(like, cancellationToken);
+        await Context.ShortVideoLikes.AddAsync(like, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -272,7 +236,7 @@ public class ShortVideoRepository(ContentDbContext context) : IShortVideoReposit
             userId: userId,
             shortVideoId: shortVideoId
         );
-        ShortVideoLikeEntity? like = await context
+        ShortVideoLikeEntity? like = await Context
             .ShortVideoLikes.AsTracking()
             .ApplySpecification(specification: specification)
             .FirstOrDefaultAsync(cancellationToken);
@@ -280,7 +244,7 @@ public class ShortVideoRepository(ContentDbContext context) : IShortVideoReposit
         if (like is not null)
         {
             like.MarkRemoved();
-            context.ShortVideoLikes.Remove(like);
+            Context.ShortVideoLikes.Remove(like);
         }
     }
 
@@ -295,7 +259,7 @@ public class ShortVideoRepository(ContentDbContext context) : IShortVideoReposit
             userId: userId,
             shortVideoId: shortVideoId
         );
-        return await context
+        return await Context
             .ShortVideoBookmarks.ApplySpecification(specification: specification)
             .AnyAsync(cancellationToken);
     }
@@ -303,7 +267,7 @@ public class ShortVideoRepository(ContentDbContext context) : IShortVideoReposit
     /// <inheritdoc />
     public async Task AddBookmarkAsync(ShortVideoBookmarkEntity bookmark, CancellationToken cancellationToken = default)
     {
-        await context.ShortVideoBookmarks.AddAsync(bookmark, cancellationToken);
+        await Context.ShortVideoBookmarks.AddAsync(bookmark, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -313,7 +277,7 @@ public class ShortVideoRepository(ContentDbContext context) : IShortVideoReposit
             userId: userId,
             shortVideoId: shortVideoId
         );
-        ShortVideoBookmarkEntity? bookmark = await context
+        ShortVideoBookmarkEntity? bookmark = await Context
             .ShortVideoBookmarks.AsTracking()
             .ApplySpecification(specification: specification)
             .FirstOrDefaultAsync(cancellationToken);
@@ -321,14 +285,14 @@ public class ShortVideoRepository(ContentDbContext context) : IShortVideoReposit
         if (bookmark is not null)
         {
             bookmark.MarkRemoved();
-            context.ShortVideoBookmarks.Remove(bookmark);
+            Context.ShortVideoBookmarks.Remove(bookmark);
         }
     }
 
     /// <inheritdoc />
     public async Task AddShareAsync(ShortVideoShareEntity share, CancellationToken cancellationToken = default)
     {
-        await context.ShortVideoShares.AddAsync(share, cancellationToken);
+        await Context.ShortVideoShares.AddAsync(share, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -337,7 +301,7 @@ public class ShortVideoRepository(ContentDbContext context) : IShortVideoReposit
         CancellationToken cancellationToken = default
     )
     {
-        await context.ShortVideoViewEvents.AddAsync(viewEvent, cancellationToken);
+        await Context.ShortVideoViewEvents.AddAsync(viewEvent, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -348,7 +312,7 @@ public class ShortVideoRepository(ContentDbContext context) : IShortVideoReposit
         CancellationToken cancellationToken = default
     )
     {
-        return await context.ShortVideoViewEvents.AnyAsync(
+        return await Context.ShortVideoViewEvents.AnyAsync(
             x => x.ShortVideoId == shortVideoId && x.DedupKey == dedupKey && x.IsCounted && x.CreatedAt >= since,
             cancellationToken
         );
@@ -357,20 +321,9 @@ public class ShortVideoRepository(ContentDbContext context) : IShortVideoReposit
     /// <inheritdoc />
     public async Task<int> PruneUncountedViewEventsAsync(DateTime cutoff, CancellationToken cancellationToken = default)
     {
-        return await context
+        return await Context
             .ShortVideoViewEvents.Where(x => !x.IsCounted && x.CreatedAt < cutoff)
             .ExecuteDeleteAsync(cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public async Task ExistsOrThrowAsync(Guid shortVideoId, CancellationToken cancellationToken = default)
-    {
-        bool exists = await context.ShortVideos.AnyAsync(v => v.Id == shortVideoId, cancellationToken);
-
-        if (!exists)
-        {
-            throw new NotFoundException(nameof(ShortVideoEntity), shortVideoId);
-        }
     }
 
     /// <inheritdoc />
@@ -381,7 +334,7 @@ public class ShortVideoRepository(ContentDbContext context) : IShortVideoReposit
         CancellationToken cancellationToken = default
     )
     {
-        IQueryable<ShortVideoEntity> row = context.ShortVideos.Where(e => e.Id == shortVideoId);
+        IQueryable<ShortVideoEntity> row = Context.ShortVideos.Where(e => e.Id == shortVideoId);
 
         // Math.Max reaches PostgreSQL as GREATEST, so a racing unlike cannot go negative.
         return kind switch
