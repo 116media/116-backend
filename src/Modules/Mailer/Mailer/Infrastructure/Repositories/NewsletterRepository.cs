@@ -11,19 +11,15 @@ namespace _116.Mailer.Infrastructure.Repositories;
 /// EF Core implementation of <see cref="INewsletterRepository" />.
 /// </summary>
 /// <param name="context">The Mailer module database context.</param>
-public class NewsletterRepository(MailerDbContext context) : INewsletterRepository
+public class NewsletterRepository(MailerDbContext context)
+    : MailerRepository<NewsletterSubscriberEntity>(context),
+        INewsletterRepository
 {
-    /// <inheritdoc />
-    public async Task AddAsync(NewsletterSubscriberEntity subscriber, CancellationToken cancellationToken)
-    {
-        await context.NewsletterSubscribers.AddAsync(subscriber, cancellationToken);
-    }
-
     /// <inheritdoc />
     public async Task<NewsletterSubscriberEntity?> GetByEmailAsync(string email, CancellationToken cancellationToken)
     {
         string normalized = email.Trim().ToLowerInvariant();
-        return await context.NewsletterSubscribers.FirstOrDefaultAsync(x => x.Email == normalized, cancellationToken);
+        return await Context.NewsletterSubscribers.FirstOrDefaultAsync(x => x.Email == normalized, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -32,7 +28,7 @@ public class NewsletterRepository(MailerDbContext context) : INewsletterReposito
         CancellationToken cancellationToken
     )
     {
-        return await context.NewsletterSubscribers.FirstOrDefaultAsync(
+        return await Context.NewsletterSubscribers.FirstOrDefaultAsync(
             x => x.ConfirmationToken == token,
             cancellationToken
         );
@@ -44,7 +40,7 @@ public class NewsletterRepository(MailerDbContext context) : INewsletterReposito
         CancellationToken cancellationToken
     )
     {
-        return await context.NewsletterSubscribers.FirstOrDefaultAsync(
+        return await Context.NewsletterSubscribers.FirstOrDefaultAsync(
             x => x.UnsubscribeToken == token,
             cancellationToken
         );
@@ -58,7 +54,7 @@ public class NewsletterRepository(MailerDbContext context) : INewsletterReposito
         CancellationToken cancellationToken
     )
     {
-        IQueryable<NewsletterSubscriberEntity> query = context.NewsletterSubscribers.AsNoTracking();
+        IQueryable<NewsletterSubscriberEntity> query = Context.NewsletterSubscribers.AsNoTracking();
 
         if (status is not null)
         {
