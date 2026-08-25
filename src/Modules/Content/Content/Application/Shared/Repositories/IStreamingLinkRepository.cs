@@ -1,13 +1,12 @@
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
-using _116.Shared.Domain;
 
 namespace _116.Content.Application.Shared.Repositories;
 
 /// <summary>
 /// Repository interface for streaming platform link data access operations.
 /// </summary>
-public interface IStreamingLinkRepository : IRepository<StreamingLinkEntity>
+public interface IStreamingLinkRepository
 {
     /// <summary>
     /// Retrieves the curated streaming link for a given album and platform. Returns null if
