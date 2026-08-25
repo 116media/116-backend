@@ -10,9 +10,9 @@ namespace _116.Content.Application.Lookup.UseCases.Public.Queries.GetAllContentT
 /// <summary>
 /// Handles the <see cref="PublicGetAllContentTypesQuery" /> to retrieve all content types.
 /// </summary>
-/// <param name="lookupRepository">Repository for lookup data access operations.</param>
+/// <param name="contentTypeRepository">Repository for content type data access operations.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-public class PublicGetAllContentTypesHandler(ILookupRepository lookupRepository, IMapper mapper)
+public class PublicGetAllContentTypesHandler(IContentTypeRepository contentTypeRepository, IMapper mapper)
     : IQueryHandler<PublicGetAllContentTypesQuery, PublicGetAllContentTypesResult>
 {
     /// <inheritdoc />
@@ -21,7 +21,7 @@ public class PublicGetAllContentTypesHandler(ILookupRepository lookupRepository,
         CancellationToken cancellationToken
     )
     {
-        IReadOnlyList<ContentTypeEntity> contentTypes = await lookupRepository.GetActiveContentTypesAsync(
+        IReadOnlyList<ContentTypeEntity> contentTypes = await contentTypeRepository.GetActiveAsync(
             cancellationToken: cancellationToken
         );
 
