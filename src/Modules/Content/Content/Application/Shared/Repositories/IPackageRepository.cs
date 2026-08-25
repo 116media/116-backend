@@ -1,12 +1,11 @@
 using _116.Content.Domain.Entities;
-using _116.Shared.Domain;
 
 namespace _116.Content.Application.Shared.Repositories;
 
 /// <summary>
 /// Repository interface for package and package slot data access operations.
 /// </summary>
-public interface IPackageRepository : IRepository<PackageEntity>
+public interface IPackageRepository
 {
     /// <summary>
     /// Retrieves a paginated list of packages with an optional active status filter.
