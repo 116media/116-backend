@@ -64,8 +64,7 @@ public class AdminUpdateCategoryPricingHandlerTests : BaseContentHandlerTest
         AdminUpdateCategoryPricingResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Pricing.Should().NotBeNull();
+        result.Pricing.PriceUsd.Should().Be(TestConstants.CategoryPricing.UpdatedPriceUsd);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 

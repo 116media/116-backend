@@ -30,15 +30,6 @@ public class PackageSlotBuilder
     }
 
     /// <summary>
-    /// Sets the slot ID.
-    /// </summary>
-    public PackageSlotBuilder WithId(Guid id)
-    {
-        _id = id;
-        return this;
-    }
-
-    /// <summary>
     /// Sets the category ID (null for open slot).
     /// </summary>
     public PackageSlotBuilder WithCategoryId(Guid? categoryId)
@@ -53,15 +44,6 @@ public class PackageSlotBuilder
     public PackageSlotBuilder WithIsRequired(bool isRequired)
     {
         _isRequired = isRequired;
-        return this;
-    }
-
-    /// <summary>
-    /// Marks the slot as optional (not required).
-    /// </summary>
-    public PackageSlotBuilder AsOptional()
-    {
-        _isRequired = false;
         return this;
     }
 

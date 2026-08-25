@@ -48,12 +48,11 @@ public class AdminLinkVideoArtistHandlerTests
         var command = new AdminLinkVideoArtistCommand(video.Id, artist.Id);
 
         // Act
-        AdminLinkVideoArtistResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         video.ArtistId.Should().Be(artist.Id);
-        _videoRepositoryMock.VerifyUpdateCalled();
+        _videoRepositoryMock.VerifyUpdateCalled(video);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -67,15 +66,16 @@ public class AdminLinkVideoArtistHandlerTests
         var command = new AdminLinkVideoArtistCommand(video.Id, null);
 
         // Act
-        AdminLinkVideoArtistResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         video.ArtistId.Should().BeNull();
         _artistRepositoryMock.Verify(
             x => x.GetByIdOrThrowAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
             Times.Never
         );
+        _videoRepositoryMock.VerifyUpdateCalled(video);
+        _unitOfWorkMock.VerifyCommitCalled();
     }
 
     [Fact]
@@ -94,5 +94,7 @@ public class AdminLinkVideoArtistHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        video.ArtistId.Should().BeNull();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 }

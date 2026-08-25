@@ -25,17 +25,6 @@ public class PublicRenamePlaylistRequestBuilder
     }
 
     /// <summary>
-    /// Sets the playlist name.
-    /// </summary>
-    /// <param name="name">The new playlist display name.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public PublicRenamePlaylistRequestBuilder WithName(string name)
-    {
-        _name = name;
-        return this;
-    }
-
-    /// <summary>
     /// Builds the <see cref="PublicRenamePlaylistRequest"/> instance.
     /// </summary>
     /// <returns>A configured PublicRenamePlaylistRequest instance.</returns>

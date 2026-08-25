@@ -50,7 +50,6 @@ public class AdminDeactivatePricingTierHandlerTests : BaseContentHandlerTest
         AdminDeactivatePricingTierResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.PricingTier.IsActive.Should().BeFalse();
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -85,16 +84,10 @@ public class AdminDeactivatePricingTierHandlerTests : BaseContentHandlerTest
         _lookupRepositoryMock.SetupGetPricingTierByIdOrThrow(inactive);
 
         // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (ConflictException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<ConflictException>();
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 

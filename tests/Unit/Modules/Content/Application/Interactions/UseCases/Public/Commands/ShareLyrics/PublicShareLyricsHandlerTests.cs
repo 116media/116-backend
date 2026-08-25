@@ -42,10 +42,9 @@ public class PublicShareLyricsHandlerTests
         var command = new PublicShareLyricsCommand(LyricsId: lyrics.Id, UserId: null);
 
         // Act
-        PublicShareLyricsResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         _lyricsRepositoryMock.VerifyAddShareCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -65,10 +64,9 @@ public class PublicShareLyricsHandlerTests
         );
 
         // Act
-        PublicShareLyricsResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         _lyricsRepositoryMock.VerifyAddShareCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }

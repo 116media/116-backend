@@ -47,7 +47,7 @@ public class PublicChangePasswordHandlerTests
     #region Success Cases
 
     [Fact]
-    public async Task Handle_WithValidOldPassword_ShouldReturnSuccess()
+    public async Task Handle_WithValidOldPassword_ShouldUpdateUserPasswordHash()
     {
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
@@ -73,11 +73,10 @@ public class PublicChangePasswordHandlerTests
         _passwordServiceMock.Setup(x => x.Hash(newPassword)).Returns(newPasswordHash);
 
         // Act
-        PublicChangePasswordResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.IsSuccess.Should().BeTrue();
+        user.PasswordHash.Should().Be(newPasswordHash);
     }
 
     [Fact]
@@ -262,16 +261,10 @@ public class PublicChangePasswordHandlerTests
         _passwordServiceMock.Setup(x => x.Verify("wrong", user.PasswordHash)).Returns(false);
 
         // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (BadRequestException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<BadRequestException>();
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 

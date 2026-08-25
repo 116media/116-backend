@@ -68,8 +68,6 @@ public class PublicGetLyricsBySlugHandlerTests : BaseContentHandlerTest
         PublicGetLyricsBySlugResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Lyrics.Should().NotBeNull();
         result.Lyrics.Slug.Should().Be(slug);
     }
 
@@ -344,7 +342,7 @@ public class PublicGetLyricsBySlugHandlerTests : BaseContentHandlerTest
         var query = new PublicGetLyricsBySlugQuery(Slug: slug, CurrentUserId: currentUserId);
 
         _lyricsRepositoryMock.SetupGetBySlug(slug, lyrics);
-        _lyricsRepositoryMock.SetupHasLikedAsync(true);
+        _lyricsRepositoryMock.SetupHasLikedAsync(currentUserId, lyrics.Id, result: true);
 
         // Act
         PublicGetLyricsBySlugResult result = await _handler.Handle(query, CancellationToken.None);
@@ -360,10 +358,11 @@ public class PublicGetLyricsBySlugHandlerTests : BaseContentHandlerTest
         string slug = TestConstants.Lyrics.ValidSlug;
         LyricsEntity lyrics = LyricsFactory.CreateWithSlug(CategoryId, slug);
         lyrics.Publish();
-        var query = new PublicGetLyricsBySlugQuery(Slug: slug, CurrentUserId: Guid.NewGuid());
+        Guid currentUserId = Guid.NewGuid();
+        var query = new PublicGetLyricsBySlugQuery(Slug: slug, CurrentUserId: currentUserId);
 
         _lyricsRepositoryMock.SetupGetBySlug(slug, lyrics);
-        _lyricsRepositoryMock.SetupHasLikedAsync(false);
+        _lyricsRepositoryMock.SetupHasLikedAsync(currentUserId, lyrics.Id, result: false);
 
         // Act
         PublicGetLyricsBySlugResult result = await _handler.Handle(query, CancellationToken.None);
@@ -382,13 +381,13 @@ public class PublicGetLyricsBySlugHandlerTests : BaseContentHandlerTest
         var query = new PublicGetLyricsBySlugQuery(Slug: slug, CurrentUserId: null);
 
         _lyricsRepositoryMock.SetupGetBySlug(slug, lyrics);
-        _lyricsRepositoryMock.SetupHasLikedAsync(true);
 
         // Act
         PublicGetLyricsBySlugResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
         result.Lyrics.IsLiked.Should().BeFalse();
+        _lyricsRepositoryMock.VerifyHasLikedNotCalled();
     }
 
     [Fact]

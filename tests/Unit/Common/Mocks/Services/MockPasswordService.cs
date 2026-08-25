@@ -80,28 +80,6 @@ public static class MockPasswordService
     }
 
     /// <summary>
-    /// Sets up Verify to return true for any password and hash.
-    /// </summary>
-    /// <param name="mock">The mock instance.</param>
-    /// <returns>The mock instance for chaining.</returns>
-    public static Mock<IPasswordService> SetupVerifyReturnsTrue(this Mock<IPasswordService> mock)
-    {
-        mock.Setup(x => x.Verify(It.IsAny<string>(), It.IsAny<string?>())).Returns(true);
-        return mock;
-    }
-
-    /// <summary>
-    /// Sets up Verify to return false for any password and hash.
-    /// </summary>
-    /// <param name="mock">The mock instance.</param>
-    /// <returns>The mock instance for chaining.</returns>
-    public static Mock<IPasswordService> SetupVerifyReturnsFalse(this Mock<IPasswordService> mock)
-    {
-        mock.Setup(x => x.Verify(It.IsAny<string>(), It.IsAny<string?>())).Returns(false);
-        return mock;
-    }
-
-    /// <summary>
     /// Verifies that Hash was called with the specified password.
     /// </summary>
     /// <param name="mock">The mock instance.</param>
@@ -139,12 +117,15 @@ public static class MockPasswordService
     }
 
     /// <summary>
-    /// Sets up default behaviors for the mock.
+    /// Defaults hashing, which no test asserts through this mock, and defaults verification to
+    /// <c>false</c> so a test that depends on a credential being accepted names it through
+    /// <see cref="SetupVerifySuccess" />.
     /// </summary>
+    /// <param name="mock">The mock instance.</param>
     private static void SetupDefaults(Mock<IPasswordService> mock)
     {
         mock.Setup(x => x.Hash(It.IsAny<string>())).Returns(TestConstants.User.DefaultPasswordHash);
 
-        mock.Setup(x => x.Verify(It.IsAny<string>(), It.IsAny<string?>())).Returns(true);
+        mock.Setup(x => x.Verify(It.IsAny<string>(), It.IsAny<string?>())).Returns(false);
     }
 }

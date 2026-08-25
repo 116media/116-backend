@@ -1,7 +1,9 @@
 using _116.Content.Application.Commerce.Specifications;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
+using _116.Tests.Fixtures.Builders.Entities.Content;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Unit.Tests.Common.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
@@ -9,9 +11,26 @@ namespace _116.Unit.Tests.Modules.Content.Application.Commerce.Specifications;
 
 /// <summary>
 /// Unit tests for Commerce order specifications.
+/// Specifications using EF.Functions.ILike are evaluated through
+/// <see cref="ILikeSpecificationEvaluator" />, which rewrites ILike for in-memory execution.
 /// </summary>
 public class ContentOrderSpecificationTests
 {
+    /// <summary>
+    /// Builds an order whose Customer navigation is populated, mirroring the
+    /// Include the search specifications rely on.
+    /// </summary>
+    private static ContentOrderEntity CreateOrderForCustomer(string fullName, string email, string? company)
+    {
+        CustomerEntity customer = new CustomerBuilder()
+            .WithFullName(fullName)
+            .WithEmail(email)
+            .WithCompany(company)
+            .Build();
+
+        return new ContentOrderBuilder().WithCustomer(customer).Build();
+    }
+
     #region ContentOrderByIdSpecification
 
     [Fact]
@@ -94,31 +113,37 @@ public class ContentOrderSpecificationTests
 
     #region ContentOrderSearchSpecification
 
-    [Fact]
-    public void SearchSpec_ShouldCompileWithoutError()
+    [Theory]
+    [InlineData("mokonzi", true)]
+    [InlineData("MOKONZI", true)]
+    [InlineData("acme.io", true)]
+    [InlineData("acme corp", true)]
+    [InlineData("kinix", false)]
+    public void SearchSpec_ShouldMatchCustomerNameEmailOrCompanyCaseInsensitively(string search, bool expected)
     {
         // Arrange
-        var spec = new ContentOrderSearchSpecification("test");
+        ContentOrderEntity order = CreateOrderForCustomer("Didi Mokonzi", "didi@acme.io", "Acme Corp");
+        var spec = new ContentOrderSearchSpecification(search);
 
         // Act
-        Func<ContentOrderEntity, bool> compiled = spec.ToExpression().Compile();
+        bool result = spec.IsSatisfiedInMemoryBy(order);
 
-        // Assert — compiles successfully (ILike cannot be tested in-memory)
-        compiled.Should().NotBeNull();
+        // Assert
+        result.Should().Be(expected);
     }
 
     [Fact]
-    public void SearchSpec_ShouldGenerateNonNullExpression()
+    public void SearchSpec_WithNullCompany_ShouldNotMatchCompanyTerm()
     {
         // Arrange
-        var spec = new ContentOrderSearchSpecification("acme");
+        ContentOrderEntity order = CreateOrderForCustomer("Didi Mokonzi", "didi@acme.io", company: null);
+        var spec = new ContentOrderSearchSpecification("corp");
 
         // Act
-        var expression = spec.ToExpression();
+        bool result = spec.IsSatisfiedInMemoryBy(order);
 
         // Assert
-        expression.Should().NotBeNull();
-        expression.Body.Should().NotBeNull();
+        result.Should().BeFalse();
     }
 
     #endregion
@@ -243,25 +268,27 @@ public class ContentOrderSpecificationTests
 
     #region ContentPaymentSearchSpecification
 
-    [Fact]
-    public void PaymentSearchSpec_ShouldCompileWithoutError()
+    [Theory]
+    [InlineData("mokonzi", true)]
+    [InlineData("MOKONZI", true)]
+    [InlineData("acme.io", true)]
+    [InlineData("acme corp", true)]
+    [InlineData("kinix", false)]
+    public void PaymentSearchSpec_ShouldMatchOrderCustomerNameEmailOrCompanyCaseInsensitively(
+        string search,
+        bool expected
+    )
     {
-        var spec = new ContentPaymentSearchSpecification("test");
+        // Arrange
+        ContentOrderEntity order = CreateOrderForCustomer("Didi Mokonzi", "didi@acme.io", "Acme Corp");
+        ContentPaymentEntity payment = new ContentPaymentBuilder().WithOrder(order).Build();
+        var spec = new ContentPaymentSearchSpecification(search);
 
-        Func<ContentPaymentEntity, bool> compiled = spec.ToExpression().Compile();
+        // Act
+        bool result = spec.IsSatisfiedInMemoryBy(payment);
 
-        compiled.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void PaymentSearchSpec_ShouldGenerateNonNullExpression()
-    {
-        var spec = new ContentPaymentSearchSpecification("acme");
-
-        var expression = spec.ToExpression();
-
-        expression.Should().NotBeNull();
-        expression.Body.Should().NotBeNull();
+        // Assert
+        result.Should().Be(expected);
     }
 
     #endregion

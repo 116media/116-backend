@@ -21,17 +21,6 @@ public class AdminForceUnpromoteArticleRequestBuilder
     }
 
     /// <summary>
-    /// Sets the unpromote reason.
-    /// </summary>
-    /// <param name="reason">The unpromote reason.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public AdminForceUnpromoteArticleRequestBuilder WithReason(string reason)
-    {
-        _reason = reason;
-        return this;
-    }
-
-    /// <summary>
     /// Builds the <see cref="AdminForceUnpromoteArticleRequest"/> instance.
     /// </summary>
     /// <returns>A configured AdminForceUnpromoteArticleRequest instance.</returns>

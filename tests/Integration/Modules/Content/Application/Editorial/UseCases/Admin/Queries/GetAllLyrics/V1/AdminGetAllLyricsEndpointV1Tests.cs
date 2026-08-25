@@ -65,7 +65,7 @@ public class AdminGetAllLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         AdminGetAllLyricsResponse body = await response.ReadAsAsync<AdminGetAllLyricsResponse>();
         body.Lyrics.Items.Should().Contain(item => item.Id == lyrics.Id);
-        body.Lyrics.Count.Should().BeGreaterThanOrEqualTo(1);
+        body.Lyrics.Count.Should().Be(1);
         body.Lyrics.PageIndex.Should().Be(0);
         body.Lyrics.PageSize.Should().Be(10);
     }

@@ -2,6 +2,8 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.RejectArticle;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
+using _116.Content.Domain.Events;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Builders.Entities.Content;
 using _116.Tests.Fixtures.Constants;
@@ -40,7 +42,7 @@ public class AdminRejectArticleHandlerTests
     #region Success Cases
 
     [Fact]
-    public async Task Handle_WhenArticleInPendingReview_ShouldRejectWithReasonAndReturnSuccess()
+    public async Task Handle_WhenArticleInPendingReview_ShouldRecordStatusAndReason()
     {
         // Arrange
         ArticleEntity article = ArticleFactory.CreatePendingReview(CategoryId);
@@ -51,12 +53,46 @@ public class AdminRejectArticleHandlerTests
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
 
         // Act
-        AdminRejectArticleResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
-        _articleRepositoryMock.VerifyUpdateCalled();
+        article.Status.Should().Be(EnumContentStatus.Rejected);
+        article.RejectionReason.Should().Be(TestConstants.Article.ValidRejectionReason);
+        _articleRepositoryMock.VerifyUpdateCalled(article);
         _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    [Fact]
+    public async Task Handle_WhenArticleInPendingReview_ShouldRaiseCommissionedContentRejectedEvent()
+    {
+        // Arrange
+        ArticleEntity article = ArticleFactory.CreatePendingReview(CategoryId);
+        article.ClearDomainEvents();
+        var command = new AdminRejectArticleCommand(
+            Id: article.Id.ToString(),
+            Reason: TestConstants.Article.ValidRejectionReason
+        );
+        _articleRepositoryMock.SetupGetByIdOrThrow(article);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        article
+            .DomainEvents.OfType<CommissionedContentRejectedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(
+                new CommissionedContentRejectedEvent(
+                    ContentId: article.Id,
+                    ContentType: EnumCoreContentType.Article,
+                    CustomerId: article.CustomerId,
+                    Title: article.Title,
+                    Reason: TestConstants.Article.ValidRejectionReason
+                )
+            );
+        article.DomainEvents.OfType<ArticleUnpublishedEvent>().Should().BeEmpty();
     }
 
     #endregion
@@ -79,6 +115,7 @@ public class AdminRejectArticleHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
@@ -86,6 +123,7 @@ public class AdminRejectArticleHandlerTests
     {
         // Arrange
         ArticleEntity article = new ArticleBuilder(CategoryId).AsRejected().Build();
+        article.ClearDomainEvents();
         var command = new AdminRejectArticleCommand(
             Id: article.Id.ToString(),
             Reason: TestConstants.Article.ValidRejectionReason
@@ -97,13 +135,17 @@ public class AdminRejectArticleHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<ConflictException>();
+        article.Status.Should().Be(EnumContentStatus.Rejected);
+        article.DomainEvents.Should().BeEmpty();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
     public async Task Handle_WhenArticleInWrongStatus_ShouldThrowBadRequestException()
     {
         // Arrange
-        ArticleEntity article = ArticleFactory.Create(CategoryId); // Draft status
+        ArticleEntity article = ArticleFactory.Create(CategoryId);
+        article.ClearDomainEvents();
         var command = new AdminRejectArticleCommand(
             Id: article.Id.ToString(),
             Reason: TestConstants.Article.ValidRejectionReason
@@ -115,6 +157,9 @@ public class AdminRejectArticleHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<BadRequestException>();
+        article.Status.Should().Be(EnumContentStatus.Draft);
+        article.DomainEvents.Should().BeEmpty();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     #endregion

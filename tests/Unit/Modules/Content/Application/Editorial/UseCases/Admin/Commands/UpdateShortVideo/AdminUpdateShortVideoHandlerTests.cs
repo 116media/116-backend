@@ -65,8 +65,6 @@ public class AdminUpdateShortVideoHandlerTests : BaseContentHandlerTest
         AdminUpdateShortVideoResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.ShortVideo.Should().NotBeNull();
         result.ShortVideo.Title.Should().Be(command.Title);
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -87,7 +85,6 @@ public class AdminUpdateShortVideoHandlerTests : BaseContentHandlerTest
         AdminUpdateShortVideoResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.ShortVideo.HasFullVideo.Should().BeTrue();
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -108,7 +105,6 @@ public class AdminUpdateShortVideoHandlerTests : BaseContentHandlerTest
         AdminUpdateShortVideoResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.ShortVideo.HasFullVideo.Should().BeFalse();
     }
 

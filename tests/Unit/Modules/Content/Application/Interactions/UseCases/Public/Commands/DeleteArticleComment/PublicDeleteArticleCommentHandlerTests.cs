@@ -52,10 +52,10 @@ public class PublicDeleteArticleCommentHandlerTests
         _articleRepositoryMock.SetupGetCommentByIdInArticleAsync(comment, article.Id);
 
         // Act
-        PublicDeleteArticleCommentResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
+        comment.IsDeleted.Should().BeTrue();
         _articleRepositoryMock.VerifyUpdateCommentCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -63,8 +63,7 @@ public class PublicDeleteArticleCommentHandlerTests
     [Fact]
     public async Task Handle_WhenCommentAlreadyDeleted_ShouldReportSuccessWithoutCommitting()
     {
-        // Arrange — a repeated delete must not decrement the article's cached
-        // comment count a second time.
+        // Arrange
         ArticleEntity article = ArticleFactory.CreatePublished(CategoryId);
         ArticleCommentEntity comment = ArticleCommentFactory.Create(article.Id, Guid.NewGuid());
         comment.SoftDelete();
@@ -77,10 +76,9 @@ public class PublicDeleteArticleCommentHandlerTests
         _articleRepositoryMock.SetupGetCommentByIdInArticleAsync(comment, article.Id);
 
         // Act
-        PublicDeleteArticleCommentResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         comment.DomainEvents.Should().BeEmpty();
         _articleRepositoryMock.Verify(x => x.UpdateComment(It.IsAny<ArticleCommentEntity>()), Times.Never);
         _unitOfWorkMock.VerifyCommitNotCalled();
@@ -99,7 +97,7 @@ public class PublicDeleteArticleCommentHandlerTests
             ArticleId: Guid.NewGuid(),
             CommentId: Guid.NewGuid()
         );
-        _articleRepositoryMock.SetupGetCommentByIdInArticleAsync(null, command.ArticleId);
+        _articleRepositoryMock.SetupGetCommentByIdInArticleNotFound(command.CommentId, command.ArticleId);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);

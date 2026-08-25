@@ -85,28 +85,6 @@ public class AdminUpdateVideoRequestBuilder
     }
 
     /// <summary>
-    /// Sets the optional B2B customer who commissioned the video.
-    /// </summary>
-    /// <param name="customerId">The customer identifier, or null.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public AdminUpdateVideoRequestBuilder WithCustomerId(Guid? customerId)
-    {
-        _customerId = customerId;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the optional order item the video fulfils.
-    /// </summary>
-    /// <param name="orderItemId">The order item identifier, or null.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public AdminUpdateVideoRequestBuilder WithOrderItemId(Guid? orderItemId)
-    {
-        _orderItemId = orderItemId;
-        return this;
-    }
-
-    /// <summary>
     /// Sets whether the video is flagged for social media promotion.
     /// </summary>
     /// <param name="socialBoost">The social boost flag.</param>

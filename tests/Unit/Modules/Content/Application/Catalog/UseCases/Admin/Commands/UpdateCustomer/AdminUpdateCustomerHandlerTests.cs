@@ -59,8 +59,7 @@ public class AdminUpdateCustomerHandlerTests : BaseContentHandlerTest
         AdminUpdateCustomerResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Customer.Should().NotBeNull();
+        result.Customer.FullName.Should().Be(newFullName);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 

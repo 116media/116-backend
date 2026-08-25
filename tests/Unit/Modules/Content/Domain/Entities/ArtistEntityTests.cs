@@ -268,16 +268,10 @@ public class ArtistEntityTests
         artist.ClearDomainEvents();
 
         // Act
-        try
-        {
-            artist.ClaimOwnership(Guid.NewGuid(), TestErrorsFactory.CreateArtistErrors());
-        }
-        catch (ConflictException)
-        {
-            // The guard is the point of this test.
-        }
+        Action act = () => artist.ClaimOwnership(Guid.NewGuid(), TestErrorsFactory.CreateArtistErrors());
 
         // Assert
+        act.Should().Throw<ConflictException>();
         artist.DomainEvents.OfType<ArtistOwnershipVerifiedEvent>().Should().BeEmpty();
     }
 
@@ -304,16 +298,10 @@ public class ArtistEntityTests
         artist.ClaimOwnership(originalOwnerId, TestErrorsFactory.CreateArtistErrors());
 
         // Act
-        try
-        {
-            artist.ClaimOwnership(Guid.NewGuid(), TestErrorsFactory.CreateArtistErrors());
-        }
-        catch (ConflictException)
-        {
-            // Expected
-        }
+        Action act = () => artist.ClaimOwnership(Guid.NewGuid(), TestErrorsFactory.CreateArtistErrors());
 
         // Assert
+        act.Should().Throw<ConflictException>();
         artist.UserId.Should().Be(originalOwnerId);
     }
 

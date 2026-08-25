@@ -39,10 +39,9 @@ public class AdminDeleteShortVideoHandlerTests
         _shortVideoRepositoryMock.SetupGetByIdOrThrow(shortVideo);
 
         // Act
-        AdminDeleteShortVideoResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         ShortVideoDeletedEvent deletedEvent = shortVideo
             .DomainEvents.OfType<ShortVideoDeletedEvent>()
             .Should()
@@ -63,10 +62,9 @@ public class AdminDeleteShortVideoHandlerTests
         _shortVideoRepositoryMock.SetupGetByIdOrThrow(shortVideo);
 
         // Act
-        AdminDeleteShortVideoResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         ShortVideoDeletedEvent deletedEvent = shortVideo
             .DomainEvents.OfType<ShortVideoDeletedEvent>()
             .Should()

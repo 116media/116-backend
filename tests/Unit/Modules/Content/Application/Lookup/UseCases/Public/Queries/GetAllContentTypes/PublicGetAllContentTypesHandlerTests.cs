@@ -40,7 +40,6 @@ public class PublicGetAllContentTypesHandlerTests : BaseContentHandlerTest
         PublicGetAllContentTypesResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.ContentTypes.Should().HaveCount(3);
     }
 
@@ -56,7 +55,6 @@ public class PublicGetAllContentTypesHandlerTests : BaseContentHandlerTest
         PublicGetAllContentTypesResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.ContentTypes.Should().BeEmpty();
     }
 

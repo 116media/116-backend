@@ -218,7 +218,7 @@ public class PublicGetArtistBySlugHandlerTests : BaseContentHandlerTest
 
         // Assert — the derived flag ships; the claiming user's identity never does.
         result.Artist.IsVerified.Should().BeTrue();
-        result.Artist.GetType().GetProperty("UserId").Should().BeNull();
+        result.Artist.GetType().GetProperty(nameof(ArtistEntity.UserId)).Should().BeNull();
     }
 
     #endregion

@@ -5,6 +5,7 @@ using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
+using _116.Content.Domain.Events;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
@@ -50,18 +51,30 @@ public class PublicVoteOnTranslationRevisionHandlerTests
     {
         // Arrange
         LyricsTranslationRevisionEntity revision = LyricsTranslationRevisionFactory.Create(Guid.NewGuid());
+        revision.ClearDomainEvents();
         _revisionRepositoryMock.SetupGetByIdOrThrow(revision);
-        // GetNetApprovalsAsync returns the tally BEFORE this vote is cast — the handler adds
-        // this vote's own +1/-1 contribution itself. threshold - 2 existing approvals + this
-        // Approve vote = threshold - 1, staying below the threshold.
         _voteRepositoryMock.SetupGetNetApprovals(revision.Id, TranslationConstants.AutoAcceptThreshold - 2);
-        var command = new PublicVoteOnTranslationRevisionCommand(revision.Id, EnumVote.Approve, null, Guid.NewGuid());
+        var userId = Guid.NewGuid();
+        var command = new PublicVoteOnTranslationRevisionCommand(revision.Id, EnumVote.Approve, null, userId);
+
+        LyricsTranslationVoteEntity? addedVote = null;
+        _voteRepositoryMock
+            .Setup(x => x.AddAsync(It.IsAny<LyricsTranslationVoteEntity>(), It.IsAny<CancellationToken>()))
+            .Callback<LyricsTranslationVoteEntity, CancellationToken>((vote, _) => addedVote = vote)
+            .Returns(Task.CompletedTask);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         revision.Status.Should().Be(EnumRevisionStatus.Pending);
+        revision.DecidedByUserId.Should().BeNull();
+        revision.DomainEvents.Should().BeEmpty();
+        addedVote.Should().NotBeNull();
+        addedVote!.RevisionId.Should().Be(revision.Id);
+        addedVote.UserId.Should().Be(userId);
+        addedVote.Vote.Should().Be(EnumVote.Approve);
+        _revisionRepositoryMock.Verify(x => x.Update(It.IsAny<LyricsTranslationRevisionEntity>()), Times.Never);
         _translationRepositoryMock.Verify(x => x.Update(It.IsAny<LyricsTranslationEntity>()), Times.Never);
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -78,8 +91,6 @@ public class PublicVoteOnTranslationRevisionHandlerTests
         );
         _revisionRepositoryMock.SetupGetByIdOrThrow(revision);
         _translationRepositoryMock.SetupGetByIdOrThrow(translation);
-        // GetNetApprovalsAsync returns the tally BEFORE this vote — threshold - 1 existing
-        // approvals + this Approve vote = exactly the threshold, triggering auto-accept.
         _voteRepositoryMock.SetupGetNetApprovals(revision.Id, TranslationConstants.AutoAcceptThreshold - 1);
         var command = new PublicVoteOnTranslationRevisionCommand(revision.Id, EnumVote.Approve, null, Guid.NewGuid());
 
@@ -91,9 +102,46 @@ public class PublicVoteOnTranslationRevisionHandlerTests
         revision.DecidedByUserId.Should().BeNull();
         translation.Text.Should().Be("Newly accepted translation text.");
         translation.Source.Should().Be(EnumTranslationSource.Community);
-        _revisionRepositoryMock.VerifyUpdateCalled();
-        _translationRepositoryMock.VerifyUpdateCalled();
+        _voteRepositoryMock.VerifyAddCalled();
+        _revisionRepositoryMock.VerifyUpdateCalled(revision);
+        _translationRepositoryMock.VerifyUpdateCalled(translation);
         _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    [Fact]
+    public async Task Handle_WhenNetApprovalsReachThreshold_ShouldRaiseTranslationRevisionDecidedEvent()
+    {
+        // Arrange
+        LyricsTranslationEntity translation = LyricsTranslationFactory.Create(Guid.NewGuid());
+        LyricsTranslationRevisionEntity revision = LyricsTranslationRevisionFactory.Create(
+            translation.Id,
+            Guid.NewGuid(),
+            "Newly accepted translation text."
+        );
+        revision.ClearDomainEvents();
+        _revisionRepositoryMock.SetupGetByIdOrThrow(revision);
+        _translationRepositoryMock.SetupGetByIdOrThrow(translation);
+        _voteRepositoryMock.SetupGetNetApprovals(revision.Id, TranslationConstants.AutoAcceptThreshold - 1);
+        var command = new PublicVoteOnTranslationRevisionCommand(revision.Id, EnumVote.Approve, null, Guid.NewGuid());
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        revision
+            .DomainEvents.OfType<TranslationRevisionDecidedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(
+                new TranslationRevisionDecidedEvent(
+                    RevisionId: revision.Id,
+                    TranslationId: translation.Id,
+                    ProposedByUserId: revision.ProposedByUserId,
+                    Accepted: true,
+                    ByModerator: false
+                )
+            );
     }
 
     #endregion
@@ -105,6 +153,7 @@ public class PublicVoteOnTranslationRevisionHandlerTests
     {
         // Arrange
         LyricsTranslationRevisionEntity revision = LyricsTranslationRevisionFactory.Create(Guid.NewGuid());
+        revision.ClearDomainEvents();
         var userId = Guid.NewGuid();
         _revisionRepositoryMock.SetupGetByIdOrThrow(revision);
         _voteRepositoryMock.SetupHasVoted(revision.Id, userId, hasVoted: true);
@@ -115,10 +164,13 @@ public class PublicVoteOnTranslationRevisionHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<ConflictException>();
+        revision.Status.Should().Be(EnumRevisionStatus.Pending);
+        revision.DomainEvents.Should().BeEmpty();
         _voteRepositoryMock.Verify(
             x => x.AddAsync(It.IsAny<LyricsTranslationVoteEntity>(), It.IsAny<CancellationToken>()),
             Times.Never
         );
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     #endregion

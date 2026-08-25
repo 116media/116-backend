@@ -19,15 +19,6 @@ public class LyricsRevisionBuilder
     private Guid? _decidedByUserId;
 
     /// <summary>
-    /// Sets the revision ID.
-    /// </summary>
-    public LyricsRevisionBuilder WithId(Guid id)
-    {
-        _id = id;
-        return this;
-    }
-
-    /// <summary>
     /// Sets the lyrics page being corrected.
     /// </summary>
     public LyricsRevisionBuilder WithLyricsId(Guid lyricsId)
@@ -46,42 +37,11 @@ public class LyricsRevisionBuilder
     }
 
     /// <summary>
-    /// Sets the optional edit summary.
-    /// </summary>
-    public LyricsRevisionBuilder WithEditSummary(string? editSummary)
-    {
-        _editSummary = editSummary;
-        return this;
-    }
-
-    /// <summary>
     /// Sets the identity user UUID of the proposer.
     /// </summary>
     public LyricsRevisionBuilder WithProposedByUserId(Guid userId)
     {
         _proposedByUserId = userId;
-        return this;
-    }
-
-    /// <summary>
-    /// Transitions the revision to <c>Accepted</c>, optionally via a moderator.
-    /// </summary>
-    public LyricsRevisionBuilder AsAccepted(Guid? decidedByUserId = null)
-    {
-        _accepted = true;
-        _rejected = false;
-        _decidedByUserId = decidedByUserId;
-        return this;
-    }
-
-    /// <summary>
-    /// Transitions the revision to <c>Rejected</c> by the given moderator.
-    /// </summary>
-    public LyricsRevisionBuilder AsRejected(Guid decidedByUserId)
-    {
-        _rejected = true;
-        _accepted = false;
-        _decidedByUserId = decidedByUserId;
         return this;
     }
 

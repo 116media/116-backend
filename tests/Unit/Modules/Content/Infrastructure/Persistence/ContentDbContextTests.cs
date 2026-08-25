@@ -1,3 +1,4 @@
+using _116.Content.Domain.Constants;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using AwesomeAssertions;
@@ -12,387 +13,109 @@ namespace _116.Unit.Tests.Modules.Content.Infrastructure.Persistence;
 /// </summary>
 public class ContentDbContextTests
 {
+    /// <summary>
+    /// The number of domain entity types the Content module declares. The count is asserted
+    /// separately so a reflection query that stops matching cannot turn the theories below into
+    /// silently passing runs with zero cases.
+    /// </summary>
+    private const int DomainEntityCount = 49;
+
+    /// <summary>
+    /// The model is built once for the whole class. <see cref="IModel"/> is a frozen snapshot, so
+    /// it stays readable after the context that produced it is disposed.
+    /// </summary>
+    private static readonly IModel SharedModel = BuildModel();
+
+    /// <summary>
+    /// Every concrete type in the infrastructure assembly, scanned once so the configuration
+    /// theory does not re-enumerate the assembly for each of its rows.
+    /// </summary>
+    private static readonly Type[] InfrastructureTypes = typeof(ContentDbContext)
+        .Assembly.GetTypes()
+        .Where(t => t is { IsClass: true, IsAbstract: false })
+        .ToArray();
+
+    /// <summary>
+    /// Builds options backed by a private in-memory database.
+    /// </summary>
+    /// <returns>Options for a throwaway context instance.</returns>
     private static DbContextOptions<ContentDbContext> CreateOptions() =>
         new DbContextOptionsBuilder<ContentDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
 
-    #region DbSet Properties
-
-    [Fact]
-    public void ContentTypes_ShouldReturnDbSet()
+    /// <summary>
+    /// Builds the Content model once so the theories below read a shared snapshot.
+    /// </summary>
+    /// <returns>The frozen model produced by <see cref="ContentDbContext.OnModelCreating"/>.</returns>
+    private static IModel BuildModel()
     {
         using var context = new ContentDbContext(CreateOptions());
-        DbSet<ContentTypeEntity> result = context.ContentTypes;
-        result.Should().NotBeNull();
+        return context.Model;
+    }
+
+    /// <summary>
+    /// Enumerates the concrete domain entity types declared by the Content module from the
+    /// assembly's type system rather than from a hand-written list. Reflection is used here to
+    /// walk the type system, never to reach private state.
+    /// </summary>
+    /// <returns>The domain entity types, ordered by name for stable test output.</returns>
+    private static IReadOnlyList<Type> DomainEntityTypes() =>
+        typeof(ContentTypeEntity)
+            .Assembly.GetTypes()
+            .Where(t =>
+                t is { IsClass: true, IsAbstract: false, IsPublic: true }
+                && t.Namespace == typeof(ContentTypeEntity).Namespace
+                && t.Name.EndsWith("Entity", StringComparison.Ordinal)
+            )
+            .OrderBy(t => t.Name)
+            .ToList();
+
+    /// <summary>
+    /// Supplies one theory row per domain entity type, so an entity added to
+    /// <c>Domain/Entities/</c> is covered without any change to this file.
+    /// </summary>
+    /// <returns>The domain entity types as theory rows.</returns>
+    public static TheoryData<Type> DomainEntities() => new(DomainEntityTypes());
+
+    #region Domain Entity Mapping
+
+    [Fact]
+    public void DomainEntities_ShouldDiscoverEveryDeclaredEntityType()
+    {
+        DomainEntityTypes().Count.Should().Be(DomainEntityCount);
+    }
+
+    [Theory]
+    [MemberData(nameof(DomainEntities))]
+    public void Model_ShouldMapEveryDomainEntityWithAPrimaryKeyInTheContentSchema(Type entityType)
+    {
+        IEntityType? mapped = SharedModel.FindEntityType(entityType);
+
+        mapped.Should().NotBeNull($"{entityType.Name} is a domain entity and must be mapped");
+        mapped!.FindPrimaryKey().Should().NotBeNull($"{entityType.Name} must declare a primary key");
+        mapped.GetSchema().Should().Be(ContentConstants.SchemaName, $"{entityType.Name} belongs to the module schema");
+    }
+
+    [Theory]
+    [MemberData(nameof(DomainEntities))]
+    public void Model_ShouldApplyAnExplicitConfigurationForEveryDomainEntity(Type entityType)
+    {
+        Type configurationContract = typeof(IEntityTypeConfiguration<>).MakeGenericType(entityType);
+
+        Type? configuration = Array.Find(InfrastructureTypes, configurationContract.IsAssignableFrom);
+
+        configuration
+            .Should()
+            .NotBeNull($"{entityType.Name} must be configured explicitly rather than by EF Core convention");
     }
 
     [Fact]
-    public void PricingTiers_ShouldReturnDbSet()
+    public void Model_ShouldNotMapAnyTypeOutsideTheDomainEntities()
     {
-        using var context = new ContentDbContext(CreateOptions());
-        DbSet<PricingTierEntity> result = context.PricingTiers;
-        result.Should().NotBeNull();
-    }
+        IEnumerable<string> mapped = SharedModel.GetEntityTypes().Select(e => e.ClrType.Name);
 
-    [Fact]
-    public void PromotionLevels_ShouldReturnDbSet()
-    {
-        using var context = new ContentDbContext(CreateOptions());
-        DbSet<PromotionLevelEntity> result = context.PromotionLevels;
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void Tags_ShouldReturnDbSet()
-    {
-        using var context = new ContentDbContext(CreateOptions());
-        DbSet<TagEntity> result = context.Tags;
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void Categories_ShouldReturnDbSet()
-    {
-        using var context = new ContentDbContext(CreateOptions());
-        DbSet<CategoryEntity> result = context.Categories;
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void CategoryPricing_ShouldReturnDbSet()
-    {
-        using var context = new ContentDbContext(CreateOptions());
-        DbSet<CategoryPricingEntity> result = context.CategoryPricing;
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void Customers_ShouldReturnDbSet()
-    {
-        using var context = new ContentDbContext(CreateOptions());
-        DbSet<CustomerEntity> result = context.Customers;
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void Packages_ShouldReturnDbSet()
-    {
-        using var context = new ContentDbContext(CreateOptions());
-        DbSet<PackageEntity> result = context.Packages;
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void PackageSlots_ShouldReturnDbSet()
-    {
-        using var context = new ContentDbContext(CreateOptions());
-        DbSet<PackageSlotEntity> result = context.PackageSlots;
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void Articles_ShouldReturnDbSet()
-    {
-        using var context = new ContentDbContext(CreateOptions());
-        DbSet<ArticleEntity> result = context.Articles;
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void ArticleImages_ShouldReturnDbSet()
-    {
-        using var context = new ContentDbContext(CreateOptions());
-        DbSet<ArticleImageEntity> result = context.ArticleImages;
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void ArticleTags_ShouldReturnDbSet()
-    {
-        using var context = new ContentDbContext(CreateOptions());
-        DbSet<ArticleTagEntity> result = context.ArticleTags;
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void Videos_ShouldReturnDbSet()
-    {
-        using var context = new ContentDbContext(CreateOptions());
-        DbSet<VideoEntity> result = context.Videos;
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void VideoTags_ShouldReturnDbSet()
-    {
-        using var context = new ContentDbContext(CreateOptions());
-        DbSet<VideoTagEntity> result = context.VideoTags;
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void ShortVideos_ShouldReturnDbSet()
-    {
-        using var context = new ContentDbContext(CreateOptions());
-        DbSet<ShortVideoEntity> result = context.ShortVideos;
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void Lyrics_ShouldReturnDbSet()
-    {
-        using var context = new ContentDbContext(CreateOptions());
-        DbSet<LyricsEntity> result = context.Lyrics;
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void ContentOrders_ShouldReturnDbSet()
-    {
-        using var context = new ContentDbContext(CreateOptions());
-        DbSet<ContentOrderEntity> result = context.ContentOrders;
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void ContentOrderItems_ShouldReturnDbSet()
-    {
-        using var context = new ContentDbContext(CreateOptions());
-        DbSet<ContentOrderItemEntity> result = context.ContentOrderItems;
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void ContentItemTiers_ShouldReturnDbSet()
-    {
-        using var context = new ContentDbContext(CreateOptions());
-        DbSet<ContentItemTierEntity> result = context.ContentItemTiers;
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void ContentPayments_ShouldReturnDbSet()
-    {
-        using var context = new ContentDbContext(CreateOptions());
-        DbSet<ContentPaymentEntity> result = context.ContentPayments;
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void ArticleLikes_ShouldReturnDbSet()
-    {
-        using var context = new ContentDbContext(CreateOptions());
-        DbSet<ArticleLikeEntity> result = context.ArticleLikes;
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void ArticleBookmarks_ShouldReturnDbSet()
-    {
-        using var context = new ContentDbContext(CreateOptions());
-        DbSet<ArticleBookmarkEntity> result = context.ArticleBookmarks;
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void ArticleShares_ShouldReturnDbSet()
-    {
-        using var context = new ContentDbContext(CreateOptions());
-        DbSet<ArticleShareEntity> result = context.ArticleShares;
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void ArticleComments_ShouldReturnDbSet()
-    {
-        using var context = new ContentDbContext(CreateOptions());
-        DbSet<ArticleCommentEntity> result = context.ArticleComments;
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void VideoRatings_ShouldReturnDbSet()
-    {
-        using var context = new ContentDbContext(CreateOptions());
-        DbSet<VideoRatingEntity> result = context.VideoRatings;
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void VideoShares_ShouldReturnDbSet()
-    {
-        using var context = new ContentDbContext(CreateOptions());
-        DbSet<VideoShareEntity> result = context.VideoShares;
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void ShortVideoLikes_ShouldReturnDbSet()
-    {
-        using var context = new ContentDbContext(CreateOptions());
-        DbSet<ShortVideoLikeEntity> result = context.ShortVideoLikes;
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void ShortVideoBookmarks_ShouldReturnDbSet()
-    {
-        using var context = new ContentDbContext(CreateOptions());
-        DbSet<ShortVideoBookmarkEntity> result = context.ShortVideoBookmarks;
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void ShortVideoShares_ShouldReturnDbSet()
-    {
-        using var context = new ContentDbContext(CreateOptions());
-        DbSet<ShortVideoShareEntity> result = context.ShortVideoShares;
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void LyricsTags_ShouldReturnDbSet()
-    {
-        using var context = new ContentDbContext(CreateOptions());
-        DbSet<LyricsTagEntity> result = context.LyricsTags;
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void ArticleCommentLikes_ShouldReturnDbSet()
-    {
-        using var context = new ContentDbContext(CreateOptions());
-        DbSet<ArticleCommentLikeEntity> result = context.ArticleCommentLikes;
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void Playlists_ShouldReturnDbSet()
-    {
-        using var context = new ContentDbContext(CreateOptions());
-        DbSet<PlaylistEntity> result = context.Playlists;
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void PlaylistVideos_ShouldReturnDbSet()
-    {
-        using var context = new ContentDbContext(CreateOptions());
-        DbSet<PlaylistVideoEntity> result = context.PlaylistVideos;
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void ShortVideoViewEvents_ShouldReturnDbSet()
-    {
-        using var context = new ContentDbContext(CreateOptions());
-        DbSet<ShortVideoViewEventEntity> result = context.ShortVideoViewEvents;
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void LyricsLikes_ShouldReturnDbSet()
-    {
-        using var context = new ContentDbContext(CreateOptions());
-        DbSet<LyricsLikeEntity> result = context.LyricsLikes;
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void LyricsShares_ShouldReturnDbSet()
-    {
-        using var context = new ContentDbContext(CreateOptions());
-        DbSet<LyricsShareEntity> result = context.LyricsShares;
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void LyricsViewEvents_ShouldReturnDbSet()
-    {
-        using var context = new ContentDbContext(CreateOptions());
-        DbSet<LyricsViewEventEntity> result = context.LyricsViewEvents;
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void Artists_ShouldReturnDbSet()
-    {
-        using var context = new ContentDbContext(CreateOptions());
-        DbSet<ArtistEntity> result = context.Artists;
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void Albums_ShouldReturnDbSet()
-    {
-        using var context = new ContentDbContext(CreateOptions());
-        DbSet<AlbumEntity> result = context.Albums;
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void StreamingLinks_ShouldReturnDbSet()
-    {
-        using var context = new ContentDbContext(CreateOptions());
-        DbSet<StreamingLinkEntity> result = context.StreamingLinks;
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void LyricsTranslations_ShouldReturnDbSet()
-    {
-        using var context = new ContentDbContext(CreateOptions());
-        DbSet<LyricsTranslationEntity> result = context.LyricsTranslations;
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void LyricsTranslationRevisions_ShouldReturnDbSet()
-    {
-        using var context = new ContentDbContext(CreateOptions());
-        DbSet<LyricsTranslationRevisionEntity> result = context.LyricsTranslationRevisions;
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void LyricsTranslationVotes_ShouldReturnDbSet()
-    {
-        using var context = new ContentDbContext(CreateOptions());
-        DbSet<LyricsTranslationVoteEntity> result = context.LyricsTranslationVotes;
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void LyricsSubmissions_ShouldReturnDbSet()
-    {
-        using var context = new ContentDbContext(CreateOptions());
-        DbSet<LyricsSubmissionEntity> result = context.LyricsSubmissions;
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void LyricsRevisions_ShouldReturnDbSet()
-    {
-        using var context = new ContentDbContext(CreateOptions());
-        DbSet<LyricsRevisionEntity> result = context.LyricsRevisions;
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void LyricsRevisionVotes_ShouldReturnDbSet()
-    {
-        using var context = new ContentDbContext(CreateOptions());
-        DbSet<LyricsRevisionVoteEntity> result = context.LyricsRevisionVotes;
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void ArtistClaimRequests_ShouldReturnDbSet()
-    {
-        using var context = new ContentDbContext(CreateOptions());
-        DbSet<ArtistClaimRequestEntity> result = context.ArtistClaimRequests;
-        result.Should().NotBeNull();
+        mapped.Should().BeEquivalentTo(DomainEntityTypes().Select(t => t.Name));
     }
 
     #endregion
@@ -402,45 +125,20 @@ public class ContentDbContextTests
     [Fact]
     public void OnModelCreating_ShouldApplyConfigurationsFromAssembly()
     {
-        using var context = new ContentDbContext(CreateOptions());
-        IModel model = context.Model;
-        IEntityType? articleEntityType = model.FindEntityType(typeof(ArticleEntity));
+        IEntityType? articleEntityType = SharedModel.FindEntityType(typeof(ArticleEntity));
+
         articleEntityType.Should().NotBeNull();
-        articleEntityType.GetSchema().Should().Be("content");
+        articleEntityType!
+            .FindProperty(nameof(ArticleEntity.Title))!
+            .GetMaxLength()
+            .Should()
+            .Be(ContentConstants.MaxTitleLength);
     }
 
     [Fact]
     public void Context_ShouldSetDefaultSchemaToContent()
     {
-        using var context = new ContentDbContext(CreateOptions());
-        IModel model = context.Model;
-        IEntityType? videoEntityType = model.FindEntityType(typeof(VideoEntity));
-        videoEntityType.Should().NotBeNull();
-        videoEntityType.GetSchema().Should().Be("content");
-    }
-
-    [Fact]
-    public void Context_ShouldHaveAllEntityTypesConfigured()
-    {
-        using var context = new ContentDbContext(CreateOptions());
-        IModel model = context.Model;
-
-        model.FindEntityType(typeof(ContentTypeEntity)).Should().NotBeNull();
-        model.FindEntityType(typeof(PricingTierEntity)).Should().NotBeNull();
-        model.FindEntityType(typeof(PromotionLevelEntity)).Should().NotBeNull();
-        model.FindEntityType(typeof(TagEntity)).Should().NotBeNull();
-        model.FindEntityType(typeof(CategoryEntity)).Should().NotBeNull();
-        model.FindEntityType(typeof(CategoryPricingEntity)).Should().NotBeNull();
-        model.FindEntityType(typeof(CustomerEntity)).Should().NotBeNull();
-        model.FindEntityType(typeof(PackageEntity)).Should().NotBeNull();
-        model.FindEntityType(typeof(PackageSlotEntity)).Should().NotBeNull();
-        model.FindEntityType(typeof(ArticleEntity)).Should().NotBeNull();
-        model.FindEntityType(typeof(ArticleImageEntity)).Should().NotBeNull();
-        model.FindEntityType(typeof(ArticleTagEntity)).Should().NotBeNull();
-        model.FindEntityType(typeof(VideoEntity)).Should().NotBeNull();
-        model.FindEntityType(typeof(VideoTagEntity)).Should().NotBeNull();
-        model.FindEntityType(typeof(ShortVideoEntity)).Should().NotBeNull();
-        model.FindEntityType(typeof(LyricsEntity)).Should().NotBeNull();
+        SharedModel.GetDefaultSchema().Should().Be(ContentConstants.SchemaName);
     }
 
     #endregion

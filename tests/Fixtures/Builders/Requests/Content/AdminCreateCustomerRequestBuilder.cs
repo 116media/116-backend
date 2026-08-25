@@ -54,39 +54,6 @@ public class AdminCreateCustomerRequestBuilder
     }
 
     /// <summary>
-    /// Sets the optional phone number of the customer.
-    /// </summary>
-    /// <param name="phone">The customer phone number, or null to omit it.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public AdminCreateCustomerRequestBuilder WithPhone(string? phone)
-    {
-        _phone = phone;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the optional company or label name of the customer.
-    /// </summary>
-    /// <param name="company">The customer company name, or null to omit it.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public AdminCreateCustomerRequestBuilder WithCompany(string? company)
-    {
-        _company = company;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the optional internal notes about the customer.
-    /// </summary>
-    /// <param name="notes">The customer notes, or null to omit them.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public AdminCreateCustomerRequestBuilder WithNotes(string? notes)
-    {
-        _notes = notes;
-        return this;
-    }
-
-    /// <summary>
     /// Builds the <see cref="AdminCreateCustomerRequest"/> instance.
     /// </summary>
     /// <returns>A configured AdminCreateCustomerRequest instance.</returns>

@@ -50,8 +50,8 @@ public class AdminGetCustomerOrdersHandlerTests : BaseContentHandlerTest
         AdminGetCustomerOrdersResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Orders.Should().NotBeNull();
+        result.Orders.Items.Should().HaveCount(orders.Count);
+        result.Orders.Count.Should().Be(orders.Count);
     }
 
     #endregion

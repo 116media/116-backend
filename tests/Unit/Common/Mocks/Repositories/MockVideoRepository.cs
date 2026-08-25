@@ -146,9 +146,13 @@ public static class MockVideoRepository
         mock.Verify(x => x.AddAsync(It.IsAny<VideoEntity>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    public static void VerifyUpdateCalled(this Mock<IVideoRepository> mock)
+    /// <summary>
+    /// Verifies that the repository was handed exactly the expected entity once,
+    /// so updating a different instance than the one looked up fails the test.
+    /// </summary>
+    public static void VerifyUpdateCalled(this Mock<IVideoRepository> mock, VideoEntity expected)
     {
-        mock.Verify(x => x.Update(It.IsAny<VideoEntity>()), Times.Once);
+        mock.Verify(x => x.Update(expected), Times.Once);
     }
 
     public static void VerifyRemoveCalled(this Mock<IVideoRepository> mock, VideoEntity video)
@@ -166,13 +170,44 @@ public static class MockVideoRepository
         mock.Verify(x => x.RemoveTag(It.IsAny<VideoTagEntity>()), Times.Once);
     }
 
-    public static Mock<IVideoRepository> SetupGetRatingAsync(
+    /// <summary>
+    /// Sets up the rating lookup to answer only for the rating's own user and video ids, so a
+    /// handler that asks on behalf of another user or video is not silently handed this rating.
+    /// </summary>
+    /// <param name="mock">The repository mock to configure.</param>
+    /// <param name="rating">The rating returned for its own user and video identifiers.</param>
+    /// <returns>The same mock, for chaining.</returns>
+    public static Mock<IVideoRepository> SetupGetRatingAsync(this Mock<IVideoRepository> mock, VideoRatingEntity rating)
+    {
+        Guid ratedByUserId = rating.UserId;
+        Guid ratedVideoId = rating.VideoId;
+        mock.Setup(x =>
+                x.GetRatingAsync(
+                    It.Is<Guid>(id => id == ratedByUserId),
+                    It.Is<Guid>(id => id == ratedVideoId),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync(rating);
+        return mock;
+    }
+
+    /// <summary>
+    /// Arranges a miss for the given user and video pair, so the "not yet rated" branch is reached
+    /// for the identifiers the test names rather than for every pair the handler could ask about.
+    /// </summary>
+    /// <param name="mock">The repository mock to configure.</param>
+    /// <param name="userId">The rating author identifier that must resolve to nothing.</param>
+    /// <param name="videoId">The video identifier that must resolve to nothing.</param>
+    /// <returns>The same mock, for chaining.</returns>
+    public static Mock<IVideoRepository> SetupGetRatingNotFound(
         this Mock<IVideoRepository> mock,
-        VideoRatingEntity? rating
+        Guid userId,
+        Guid videoId
     )
     {
-        mock.Setup(x => x.GetRatingAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(rating);
+        mock.Setup(x => x.GetRatingAsync(userId, videoId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((VideoRatingEntity?)null);
         return mock;
     }
 
@@ -201,17 +236,17 @@ public static class MockVideoRepository
         mock.Verify(x => x.AddShareAsync(It.IsAny<VideoShareEntity>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
+    /// <summary>
+    /// Installs defaults for write, void and aggregate members only. Identity lookups are left
+    /// unconfigured so that a miss has to be arranged by the test, naming the identifier it is a
+    /// miss for, rather than being asserted for every identifier before the test says anything.
+    /// </summary>
+    /// <param name="mock">The repository mock to configure.</param>
     private static void SetupDefaults(Mock<IVideoRepository> mock)
     {
         mock.Setup(x => x.AddAsync(It.IsAny<VideoEntity>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
         mock.Setup(x => x.AddTagAsync(It.IsAny<VideoTagEntity>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
-        mock.Setup(x => x.GetByOrderItemIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((VideoEntity?)null);
-        mock.Setup(x => x.GetBySlugAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((VideoEntity?)null);
-        mock.Setup(x => x.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((VideoEntity?)null);
         mock.Setup(x =>
                 x.GetAllAsync(
                     It.IsAny<int>(),
@@ -227,8 +262,6 @@ public static class MockVideoRepository
         mock.Setup(x => x.GetPromotedAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new List<VideoEntity>());
         mock.Setup(x => x.GetTagsByVideoIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<VideoTagEntity>());
-        mock.Setup(x => x.GetRatingAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((VideoRatingEntity?)null);
         mock.Setup(x => x.GetAllRatingsForVideoAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<VideoRatingEntity>());
         mock.Setup(x => x.AddRatingAsync(It.IsAny<VideoRatingEntity>(), It.IsAny<CancellationToken>()))

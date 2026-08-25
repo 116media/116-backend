@@ -3,6 +3,7 @@ using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Tests.Fixtures.Builders.Entities.Content;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Unit.Tests.Common.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
@@ -10,8 +11,8 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.Specifications;
 
 /// <summary>
 /// Unit tests for article specification classes.
-/// Note: Specifications using EF.Functions.ILike or cross-type DateTime/DateTimeOffset comparisons
-/// require a real PostgreSQL provider — those are covered via ToExpression().Compile() only.
+/// Specifications using EF.Functions.ILike are evaluated through
+/// <see cref="ILikeSpecificationEvaluator" />, which rewrites ILike for in-memory execution.
 /// </summary>
 public class ArticleSpecificationsTests
 {
@@ -51,18 +52,22 @@ public class ArticleSpecificationsTests
 
     #region ArticleBySlugSpecification
 
-    // ILike: requires PostgreSQL provider — compile-only
-    [Fact]
-    public void ArticleBySlugSpecification_ShouldCompileExpression()
+    [Theory]
+    [InlineData("fally-ipupa-portrait", true)]
+    [InlineData("FALLY-IPUPA-PORTRAIT", true)]
+    [InlineData("fally-ipupa", false)]
+    [InlineData("koffi-olomide", false)]
+    public void ArticleBySlugSpecification_ShouldMatchWholeSlugCaseInsensitively(string slug, bool expected)
     {
         // Arrange
-        var spec = new ArticleBySlugSpecification("fally-ipupa-portrait");
+        ArticleEntity article = ArticleFactory.CreateWithSlug(CategoryId, "fally-ipupa-portrait");
+        var spec = new ArticleBySlugSpecification(slug);
 
         // Act
-        Func<ArticleEntity, bool> predicate = spec.ToExpression().Compile();
+        bool result = spec.IsSatisfiedInMemoryBy(article);
 
         // Assert
-        predicate.Should().NotBeNull();
+        result.Should().Be(expected);
     }
 
     #endregion
@@ -133,18 +138,22 @@ public class ArticleSpecificationsTests
 
     #region ArticleSearchSpecification
 
-    // ILike: requires PostgreSQL provider — compile-only
-    [Fact]
-    public void ArticleSearchSpecification_ShouldCompileExpression()
+    [Theory]
+    [InlineData("fally", true)]
+    [InlineData("FALLY IPUPA", true)]
+    [InlineData("portrait interview", true)]
+    [InlineData("koffi olomide", false)]
+    public void ArticleSearchSpecification_ShouldMatchTitleSubstringCaseInsensitively(string search, bool expected)
     {
         // Arrange
-        var spec = new ArticleSearchSpecification("fally");
+        ArticleEntity article = new ArticleBuilder(CategoryId).WithTitle("Fally Ipupa Portrait Interview").Build();
+        var spec = new ArticleSearchSpecification(search);
 
         // Act
-        Func<ArticleEntity, bool> predicate = spec.ToExpression().Compile();
+        bool result = spec.IsSatisfiedInMemoryBy(article);
 
         // Assert
-        predicate.Should().NotBeNull();
+        result.Should().Be(expected);
     }
 
     #endregion

@@ -45,13 +45,12 @@ public class PublicUnlikeArticleHandlerTests
         Guid userId = Guid.NewGuid();
         var command = new PublicUnlikeArticleCommand(ArticleId: article.Id, UserId: userId);
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
-        _articleRepositoryMock.SetupHasLikedAsync(true);
+        _articleRepositoryMock.SetupHasLikedAsync(userId, article.Id, result: true);
 
         // Act
-        PublicUnlikeArticleResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         _articleRepositoryMock.VerifyRemoveLikeCalled(userId, article.Id);
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -80,9 +79,10 @@ public class PublicUnlikeArticleHandlerTests
     {
         // Arrange
         ArticleEntity article = ArticleFactory.CreatePublished(CategoryId);
-        var command = new PublicUnlikeArticleCommand(ArticleId: article.Id, UserId: Guid.NewGuid());
+        Guid userId = Guid.NewGuid();
+        var command = new PublicUnlikeArticleCommand(ArticleId: article.Id, UserId: userId);
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
-        _articleRepositoryMock.SetupHasLikedAsync(false);
+        _articleRepositoryMock.SetupHasLikedAsync(userId, article.Id, result: false);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);

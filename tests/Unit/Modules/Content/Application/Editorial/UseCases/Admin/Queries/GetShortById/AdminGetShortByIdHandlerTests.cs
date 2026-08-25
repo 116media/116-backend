@@ -54,8 +54,6 @@ public class AdminGetShortByIdHandlerTests : BaseContentHandlerTest
         AdminGetShortByIdResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.ShortVideo.Should().NotBeNull();
         result.ShortVideo.Id.Should().Be(shortVideo.Id);
     }
 

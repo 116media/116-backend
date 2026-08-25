@@ -598,3 +598,26 @@ production behaviour in test code, which is a worse outcome.
       every policy on this host
 - [x] 4 — `OnRejected` restored in `ApiFixture.DisableRateLimiting` by referencing the
       production handler, with the visibility choice recorded
+
+## Implementation notes
+
+Implemented 2026-08-23. Option A was taken: the header reader stays in `Program.cs` and
+is now asserted, rather than being deleted as dead configuration. The `CLAUDE.md` claim
+about `X-Api-Version` is therefore correct as written and needed no edit.
+
+Two knock-on costs this spec paid that are worth recording, because both landed in
+other specs' ledgers:
+
+1. **A fourth container.** `CorsPostgresFixture` had to be its own fixture because
+   `DASHBOARD_ORIGIN` must be set before the host reads it during construction. That
+   took the suite from three containers to four, which is the count spec 11 found
+   when it arrived and which the audit's arithmetic did not anticipate. Spec 11
+   consolidated all four onto one server with per-fixture template clones, so the
+   fixture survives and the container does not.
+2. **A ninth class in the environment-variable collection.** `CorsPostgresFixture`
+   mutates process environment, so it joined the `[Collection("EnvironmentVariable")]`
+   population spec 02 Change 4 governs, taking it past the eight that spec counted.
+
+The ten rate-limit policy rows were each verified against their endpoint's
+`RequireRateLimiting` call rather than against `RateLimitPolicies`, so a policy
+registered but never applied to a route would still show up as a missing row.

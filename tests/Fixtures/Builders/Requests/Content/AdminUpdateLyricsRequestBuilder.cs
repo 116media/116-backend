@@ -96,28 +96,6 @@ public class AdminUpdateLyricsRequestBuilder
     }
 
     /// <summary>
-    /// Sets the lyrics language code.
-    /// </summary>
-    /// <param name="language">The language code.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public AdminUpdateLyricsRequestBuilder WithLanguage(string language)
-    {
-        _language = language;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the optional video the lyrics are associated with.
-    /// </summary>
-    /// <param name="videoId">The video identifier, or null.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public AdminUpdateLyricsRequestBuilder WithVideoId(Guid? videoId)
-    {
-        _videoId = videoId;
-        return this;
-    }
-
-    /// <summary>
     /// Sets the optional B2B customer who commissioned the lyrics page.
     /// </summary>
     /// <param name="customerId">The customer identifier, or null for free content.</param>

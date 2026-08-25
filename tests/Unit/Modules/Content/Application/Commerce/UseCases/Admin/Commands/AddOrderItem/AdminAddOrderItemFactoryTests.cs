@@ -68,7 +68,6 @@ public class AdminAddOrderItemFactoryTests
         );
 
         // Assert
-        item.Should().NotBeNull();
         item.OrderId.Should().Be(order.Id);
         item.CategoryId.Should().Be(category.Id);
         categoryName.Should().Be(category.Name);
@@ -100,7 +99,6 @@ public class AdminAddOrderItemFactoryTests
         );
 
         // Assert
-        item.Should().NotBeNull();
         item.PromotionLevelId.Should().Be(promoLevel.Id);
         item.PromoPriceSnapshotUsd.Should().Be(promoLevel.PriceUsd);
         categoryName.Should().Be(category.Name);

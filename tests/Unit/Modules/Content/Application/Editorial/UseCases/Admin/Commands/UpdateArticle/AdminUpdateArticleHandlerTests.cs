@@ -2,6 +2,7 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArticle;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Content.Domain.Events;
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
@@ -87,10 +88,21 @@ public class AdminUpdateArticleHandlerTests : BaseContentHandlerTest
         AdminUpdateArticleResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Article.Should().NotBeNull();
+        article.CategoryId.Should().Be(command.CategoryId);
+        article.Title.Should().Be(command.Title);
+        article.Slug.Should().Be(command.Slug);
+        article.Headline.Should().Be(command.Headline);
+        article.Body.Should().Be(command.Body);
+        article.CustomerId.Should().BeNull();
+        article.OrderItemId.Should().BeNull();
+        article.SocialBoost.Should().BeFalse();
+        article.MetaTitle.Should().BeNull();
+        article.MetaDescription.Should().BeNull();
+        result.Article.Id.Should().Be(article.Id);
+        result.Article.Title.Should().Be(command.Title);
+        result.Article.Slug.Should().Be(command.Slug);
         article.DomainEvents.OfType<ArticleBodyImagesOrphanedEvent>().Should().BeEmpty();
-        _articleRepositoryMock.VerifyUpdateCalled();
+        _articleRepositoryMock.VerifyUpdateCalled(article);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -101,8 +113,8 @@ public class AdminUpdateArticleHandlerTests : BaseContentHandlerTest
         CategoryEntity category = CategoryFactory.Create(CategoryId);
         ArticleEntity article = ArticleFactory.Create(CategoryId);
         AdminUpdateArticleCommand command = BuildCommand(article, category.Id);
-        // Body-type images whose URLs do not appear in the command body drop out on update.
         List<ArticleImageEntity> images = ArticleImageFactory.CreateMany(article.Id, 2);
+        article.ClearDomainEvents();
 
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
@@ -113,16 +125,16 @@ public class AdminUpdateArticleHandlerTests : BaseContentHandlerTest
             .ReturnsAsync(article);
 
         // Act
-        AdminUpdateArticleResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
-        // Assert — the handler defers row removal and asset deletion to the post-commit consumer.
-        result.Should().NotBeNull();
-        article
+        // Assert
+        ArticleBodyImagesOrphanedEvent orphanedEvent = article
             .DomainEvents.OfType<ArticleBodyImagesOrphanedEvent>()
             .Should()
             .ContainSingle()
-            .Which.StorageKeys.Should()
-            .BeEquivalentTo(images.Select(img => img.StorageKey));
+            .Subject;
+        orphanedEvent.ArticleId.Should().Be(article.Id);
+        orphanedEvent.StorageKeys.Should().BeEquivalentTo(images.Select(img => img.StorageKey));
         _articleRepositoryMock.Verify(x => x.RemoveImages(It.IsAny<IEnumerable<ArticleImageEntity>>()), Times.Never);
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -145,6 +157,7 @@ public class AdminUpdateArticleHandlerTests : BaseContentHandlerTest
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
@@ -152,6 +165,8 @@ public class AdminUpdateArticleHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         ArticleEntity article = ArticleFactory.CreateApproved(CategoryId);
+        article.ClearDomainEvents();
+        string originalTitle = article.Title;
         AdminUpdateArticleCommand command = BuildCommand(article, CategoryId);
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
 
@@ -160,6 +175,10 @@ public class AdminUpdateArticleHandlerTests : BaseContentHandlerTest
 
         // Assert
         await act.Should().ThrowAsync<BadRequestException>();
+        article.Status.Should().Be(EnumContentStatus.Approved);
+        article.Title.Should().Be(originalTitle);
+        article.DomainEvents.Should().BeEmpty();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
@@ -167,9 +186,8 @@ public class AdminUpdateArticleHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         CategoryEntity category = CategoryFactory.Create(CategoryId);
-        // Article has a different slug so the handler's slug-change check is triggered.
         ArticleEntity article = ArticleFactory.CreateWithSlug(CategoryId, "original-article-slug");
-        // Command uses ValidSlug — a different slug that already belongs to another article.
+        article.ClearDomainEvents();
         AdminUpdateArticleCommand command = BuildCommand(article, category.Id);
         ArticleEntity conflicting = ArticleFactory.CreateWithSlug(CategoryId, command.Slug);
 
@@ -182,6 +200,9 @@ public class AdminUpdateArticleHandlerTests : BaseContentHandlerTest
 
         // Assert
         await act.Should().ThrowAsync<ConflictException>();
+        article.Slug.Should().Be("original-article-slug");
+        article.DomainEvents.Should().BeEmpty();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     #endregion

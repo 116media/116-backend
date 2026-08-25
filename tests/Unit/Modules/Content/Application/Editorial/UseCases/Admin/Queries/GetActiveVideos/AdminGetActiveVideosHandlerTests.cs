@@ -43,7 +43,6 @@ public class AdminGetActiveVideosHandlerTests : BaseContentHandlerTest
         AdminGetActiveVideosResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.Videos.Should().HaveCount(3);
     }
 

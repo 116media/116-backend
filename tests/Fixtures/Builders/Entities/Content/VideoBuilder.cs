@@ -44,15 +44,6 @@ public class VideoBuilder
     }
 
     /// <summary>
-    /// Sets the video ID.
-    /// </summary>
-    public VideoBuilder WithId(Guid id)
-    {
-        _id = id;
-        return this;
-    }
-
-    /// <summary>
     /// Sets the video title.
     /// </summary>
     public VideoBuilder WithTitle(string title)
@@ -64,27 +55,20 @@ public class VideoBuilder
     /// <summary>
     /// Sets the video slug.
     /// </summary>
-    public VideoBuilder WithSlug(string slug)
-    {
-        _slug = slug;
-        return this;
-    }
-
     /// <summary>
-    /// Sets the author ID.
+    /// Sets the description, which the search specification matches alongside the title.
     /// </summary>
-    public VideoBuilder WithAuthorId(Guid authorId)
-    {
-        _authorId = authorId;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the description.
-    /// </summary>
+    /// <param name="description">The video description.</param>
+    /// <returns>The builder instance for chaining.</returns>
     public VideoBuilder WithDescription(string description)
     {
         _description = description;
+        return this;
+    }
+
+    public VideoBuilder WithSlug(string slug)
+    {
+        _slug = slug;
         return this;
     }
 

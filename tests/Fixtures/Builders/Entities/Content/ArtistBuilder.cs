@@ -23,15 +23,6 @@ public class ArtistBuilder
     private string? _hometown;
 
     /// <summary>
-    /// Sets the artist ID.
-    /// </summary>
-    public ArtistBuilder WithId(Guid id)
-    {
-        _id = id;
-        return this;
-    }
-
-    /// <summary>
     /// Sets the artist's display name.
     /// </summary>
     public ArtistBuilder WithName(string name)
@@ -55,15 +46,6 @@ public class ArtistBuilder
     public ArtistBuilder WithBio(string? bio)
     {
         _bio = bio;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the artist's avatar file ID.
-    /// </summary>
-    public ArtistBuilder WithAvatarFileId(Guid avatarFileId)
-    {
-        _avatarFileId = avatarFileId;
         return this;
     }
 

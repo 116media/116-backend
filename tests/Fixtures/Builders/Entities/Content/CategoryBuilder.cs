@@ -43,15 +43,6 @@ public class CategoryBuilder
     }
 
     /// <summary>
-    /// Sets the category ID.
-    /// </summary>
-    public CategoryBuilder WithId(Guid id)
-    {
-        _id = id;
-        return this;
-    }
-
-    /// <summary>
     /// Sets the category name.
     /// </summary>
     public CategoryBuilder WithName(string name)
@@ -66,15 +57,6 @@ public class CategoryBuilder
     public CategoryBuilder WithSlug(string slug)
     {
         _slug = slug;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the category description.
-    /// </summary>
-    public CategoryBuilder WithDescription(string description)
-    {
-        _description = description;
         return this;
     }
 

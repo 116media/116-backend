@@ -2,6 +2,7 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.ApproveVideo;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
@@ -36,7 +37,7 @@ public class AdminApproveVideoHandlerTests
     }
 
     [Fact]
-    public async Task Handle_WhenVideoInPendingReview_ShouldApproveAndReturnSuccess()
+    public async Task Handle_WhenVideoInPendingReview_ShouldTransitionToApproved()
     {
         // Arrange
         VideoEntity video = VideoFactory.CreatePendingReview(CategoryId);
@@ -44,11 +45,11 @@ public class AdminApproveVideoHandlerTests
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
 
         // Act
-        AdminApproveVideoResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
-        _videoRepositoryMock.VerifyUpdateCalled();
+        video.Status.Should().Be(EnumContentStatus.Approved);
+        _videoRepositoryMock.VerifyUpdateCalled(video);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -65,6 +66,7 @@ public class AdminApproveVideoHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
@@ -80,13 +82,15 @@ public class AdminApproveVideoHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<ConflictException>();
+        video.Status.Should().Be(EnumContentStatus.Approved);
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
     public async Task Handle_WhenVideoInWrongStatus_ShouldThrowBadRequestException()
     {
         // Arrange
-        VideoEntity video = VideoFactory.Create(CategoryId); // Draft
+        VideoEntity video = VideoFactory.Create(CategoryId);
         var command = new AdminApproveVideoCommand(Id: video.Id.ToString());
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
 
@@ -95,5 +99,7 @@ public class AdminApproveVideoHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<BadRequestException>();
+        video.Status.Should().Be(EnumContentStatus.Draft);
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 }

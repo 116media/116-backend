@@ -80,8 +80,8 @@ public class AdminCreateArticleHandlerTests : BaseContentHandlerTest
         AdminCreateArticleResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Article.Should().NotBeNull();
+        result.Article.Id.Should().Be(created.Id);
+        result.Article.CustomerId.Should().BeNull();
 
         _articleRepositoryMock.VerifyAddCalled();
         _unitOfWorkMock.VerifyCommitCalled();
@@ -117,8 +117,9 @@ public class AdminCreateArticleHandlerTests : BaseContentHandlerTest
         AdminCreateArticleResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Article.Should().NotBeNull();
+        result.Article.Id.Should().Be(created.Id);
+        result.Article.CustomerId.Should().Be(customerId);
+        result.Article.OrderItemId.Should().Be(orderItemId);
 
         _articleRepositoryMock.VerifyAddCalled();
         _unitOfWorkMock.VerifyCommitCalled();
@@ -236,16 +237,10 @@ public class AdminCreateArticleHandlerTests : BaseContentHandlerTest
         _articleRepositoryMock.SetupGetBySlug(slug, existing);
 
         // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (ConflictException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<ConflictException>();
         _articleRepositoryMock.Verify(
             x => x.AddAsync(It.IsAny<ArticleEntity>(), It.IsAny<CancellationToken>()),
             Times.Never

@@ -1,3 +1,4 @@
+using System.Reflection;
 using _116.Identity.Application.Auth.Exceptions;
 using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Application.Shared.Errors.Messages;
@@ -15,6 +16,17 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Shared.Errors;
 /// </summary>
 public class UserErrorsTests
 {
+    private const string Email = "user@example.com";
+    private const string Username = "john_doe";
+    private const string PhoneNumber = "+1234567890";
+    private const string RoleName = "Admin";
+    private const string CoreRoleName = "Visitor";
+    private const string MissingRoleName = "SuperAdmin";
+    private const string PermissionResource = "users";
+    private const string PermissionAction = "read";
+    private const string MalformedUsername = "bad username!";
+    private const string MalformedEmail = "not-an-email";
+
     private readonly UserErrors _errors = TestErrorsFactory.CreateUserErrors();
     private readonly ConflictErrorMessage _conflict = LocalizerFactory.CreateMessage<ConflictErrorMessage>();
     private readonly ValidationErrorMessage _validation = LocalizerFactory.CreateMessage<ValidationErrorMessage>();
@@ -23,492 +35,312 @@ public class UserErrorsTests
     private readonly AuthorizationErrorMessage _authorization =
         LocalizerFactory.CreateMessage<AuthorizationErrorMessage>();
 
+    /// <summary>
+    /// One factory of <see cref="UserErrors"/> under test: the exception type it is required to
+    /// return, the call that produces it, and the message it must carry. The expected message is
+    /// resolved from the test instance's localizers rather than from a literal, so an emptied
+    /// resource entry fails the row instead of silently matching it.
+    /// </summary>
+    /// <param name="ExpectedException">The concrete exception type the factory must return.</param>
+    /// <param name="Invoke">Invokes the factory under test.</param>
+    /// <param name="ExpectedMessage">Resolves the localized message the exception must carry.</param>
+    private sealed record ErrorCase(
+        Type ExpectedException,
+        Func<UserErrors, Exception> Invoke,
+        Func<UserErrorsTests, string> ExpectedMessage
+    );
+
+    /// <summary>
+    /// Every exception factory declared by <see cref="UserErrors"/>, keyed by the factory name so
+    /// a failing theory row names the factory instead of rendering a delegate's type name.
+    /// </summary>
+    private static readonly Dictionary<string, ErrorCase> Cases = new()
+    {
+        [nameof(UserErrors.EmailAlreadyExists)] = new(
+            typeof(ConflictException),
+            e => e.EmailAlreadyExists(Email),
+            t => t._conflict.EmailAlreadyExists(Email)
+        ),
+        [nameof(UserErrors.UsernameAlreadyExists)] = new(
+            typeof(ConflictException),
+            e => e.UsernameAlreadyExists(Username),
+            t => t._conflict.UsernameAlreadyExists(Username)
+        ),
+        [nameof(UserErrors.PhoneNumberAlreadyExists)] = new(
+            typeof(ConflictException),
+            e => e.PhoneNumberAlreadyExists(PhoneNumber),
+            t => t._conflict.PhoneNumberAlreadyExists(PhoneNumber)
+        ),
+        [nameof(UserErrors.RoleAlreadyExists)] = new(
+            typeof(ConflictException),
+            e => e.RoleAlreadyExists(RoleName),
+            t => t._conflict.RoleAlreadyExists(RoleName)
+        ),
+        [nameof(UserErrors.RoleAlreadyAssignedToUser)] = new(
+            typeof(ConflictException),
+            e => e.RoleAlreadyAssignedToUser(),
+            t => t._conflict.RoleAlreadyAssignedToUser()
+        ),
+        [nameof(UserErrors.PermissionAlreadyExists)] = new(
+            typeof(ConflictException),
+            e => e.PermissionAlreadyExists(PermissionResource, PermissionAction),
+            t => t._conflict.PermissionAlreadyExists(PermissionResource, PermissionAction)
+        ),
+        [nameof(UserErrors.PermissionAlreadyAssignedToRole)] = new(
+            typeof(ConflictException),
+            e => e.PermissionAlreadyAssignedToRole(),
+            t => t._conflict.PermissionAlreadyAssignedToRole()
+        ),
+        [nameof(UserErrors.RoleAlreadyActive)] = new(
+            typeof(ConflictException),
+            e => e.RoleAlreadyActive(),
+            t => t._conflict.RoleAlreadyActive()
+        ),
+        [nameof(UserErrors.RoleAlreadyInactive)] = new(
+            typeof(ConflictException),
+            e => e.RoleAlreadyInactive(),
+            t => t._conflict.RoleAlreadyInactive()
+        ),
+        [nameof(UserErrors.RoleAlreadyDeleted)] = new(
+            typeof(ConflictException),
+            e => e.RoleAlreadyDeleted(),
+            t => t._conflict.RoleAlreadyDeleted()
+        ),
+        [nameof(UserErrors.RoleNotDeleted)] = new(
+            typeof(ConflictException),
+            e => e.RoleNotDeleted(),
+            t => t._conflict.RoleNotDeleted()
+        ),
+        [nameof(UserErrors.PermissionAlreadyActive)] = new(
+            typeof(ConflictException),
+            e => e.PermissionAlreadyActive(),
+            t => t._conflict.PermissionAlreadyActive()
+        ),
+        [nameof(UserErrors.PermissionAlreadyInactive)] = new(
+            typeof(ConflictException),
+            e => e.PermissionAlreadyInactive(),
+            t => t._conflict.PermissionAlreadyInactive()
+        ),
+        [nameof(UserErrors.PermissionAlreadyDeleted)] = new(
+            typeof(ConflictException),
+            e => e.PermissionAlreadyDeleted(),
+            t => t._conflict.PermissionAlreadyDeleted()
+        ),
+        [nameof(UserErrors.PermissionNotDeleted)] = new(
+            typeof(ConflictException),
+            e => e.PermissionNotDeleted(),
+            t => t._conflict.PermissionNotDeleted()
+        ),
+        [nameof(UserErrors.AccountAlreadyVerified)] = new(
+            typeof(ConflictException),
+            e => e.AccountAlreadyVerified(),
+            t => t._validation.AccountAlreadyVerified()
+        ),
+        [nameof(UserErrors.NewPasswordSameAsOld)] = new(
+            typeof(ConflictException),
+            e => e.NewPasswordSameAsOld(),
+            t => t._validation.NewPasswordSameAsOld()
+        ),
+        [nameof(UserErrors.CoreRoleCannotBeDeleted)] = new(
+            typeof(BadRequestException),
+            e => e.CoreRoleCannotBeDeleted(CoreRoleName),
+            t => t._validation.CoreRoleCannotBeDeleted(CoreRoleName)
+        ),
+        [nameof(UserErrors.RoleIsInactive)] = new(
+            typeof(BadRequestException),
+            e => e.RoleIsInactive(),
+            t => t._validation.RoleIsInactive()
+        ),
+        [nameof(UserErrors.RoleIsDeleted)] = new(
+            typeof(BadRequestException),
+            e => e.RoleIsDeleted(),
+            t => t._validation.RoleIsDeleted()
+        ),
+        [nameof(UserErrors.PermissionIsInactive)] = new(
+            typeof(BadRequestException),
+            e => e.PermissionIsInactive(),
+            t => t._validation.PermissionIsInactive()
+        ),
+        [nameof(UserErrors.PermissionIsDeleted)] = new(
+            typeof(BadRequestException),
+            e => e.PermissionIsDeleted(),
+            t => t._validation.PermissionIsDeleted()
+        ),
+        [nameof(UserErrors.PermissionNotAssignedToRole)] = new(
+            typeof(BadRequestException),
+            e => e.PermissionNotAssignedToRole(),
+            t => t._validation.PermissionNotAssignedToRole()
+        ),
+        [nameof(UserErrors.RoleNotAssignedToUser)] = new(
+            typeof(BadRequestException),
+            e => e.RoleNotAssignedToUser(),
+            t => t._validation.RoleNotAssignedToUser()
+        ),
+        [nameof(UserErrors.InvalidUsernameFormat)] = new(
+            typeof(BadRequestException),
+            e => e.InvalidUsernameFormat(MalformedUsername),
+            t => t._validation.InvalidUsernameFormat(MalformedUsername)
+        ),
+        [nameof(UserErrors.PermissionResourceRequired)] = new(
+            typeof(BadRequestException),
+            e => e.PermissionResourceRequired(),
+            t => t._validation.PermissionResourceRequired()
+        ),
+        [nameof(UserErrors.PermissionActionRequired)] = new(
+            typeof(BadRequestException),
+            e => e.PermissionActionRequired(),
+            t => t._validation.PermissionActionRequired()
+        ),
+        [nameof(UserErrors.PermissionDescriptionRequired)] = new(
+            typeof(BadRequestException),
+            e => e.PermissionDescriptionRequired(),
+            t => t._validation.PermissionDescriptionRequired()
+        ),
+        [nameof(UserErrors.RoleNameRequired)] = new(
+            typeof(BadRequestException),
+            e => e.RoleNameRequired(),
+            t => t._validation.RoleNameRequired()
+        ),
+        [nameof(UserErrors.RoleDescriptionRequired)] = new(
+            typeof(BadRequestException),
+            e => e.RoleDescriptionRequired(),
+            t => t._validation.RoleDescriptionRequired()
+        ),
+        [nameof(UserErrors.InvalidOtpCode)] = new(
+            typeof(BadRequestException),
+            e => e.InvalidOtpCode(),
+            t => t._validation.InvalidOtpCode()
+        ),
+        [nameof(UserErrors.OtpNotYetVerified)] = new(
+            typeof(BadRequestException),
+            e => e.OtpNotYetVerified(),
+            t => t._validation.OtpNotYetVerified()
+        ),
+        [nameof(UserErrors.PasswordNotConfigured)] = new(
+            typeof(BadRequestException),
+            e => e.PasswordNotConfigured(EnumAuthProvider.Google),
+            t => t._validation.PasswordNotConfigured(EnumAuthProvider.Google)
+        ),
+        [nameof(UserErrors.IncorrectCurrentPassword)] = new(
+            typeof(BadRequestException),
+            e => e.IncorrectCurrentPassword(),
+            t => t._validation.IncorrectCurrentPassword()
+        ),
+        [nameof(UserErrors.EmailRequiredToSetPassword)] = new(
+            typeof(BadRequestException),
+            e => e.EmailRequiredToSetPassword(),
+            t => t._validation.EmailRequiredToSetPassword()
+        ),
+        [nameof(UserErrors.PasswordOnlyForExternalAuth)] = new(
+            typeof(BadRequestException),
+            e => e.PasswordOnlyForExternalAuth(),
+            t => t._validation.PasswordOnlyForExternalAuth()
+        ),
+        [nameof(UserErrors.AccountInactive)] = new(
+            typeof(AccountInactiveException),
+            e => e.AccountInactive(Email),
+            t => t._authorization.AccountInactive(Email)
+        ),
+        [nameof(UserErrors.AccountNotVerified)] = new(
+            typeof(AccountNotVerifiedException),
+            e => e.AccountNotVerified(Email),
+            t => t._authorization.AccountNotVerified(Email)
+        ),
+        [nameof(UserErrors.InvalidCredentials)] = new(
+            typeof(AuthenticationException),
+            e => e.InvalidCredentials(),
+            t => t._authentication.InvalidCredentials()
+        ),
+        [nameof(UserErrors.InvalidEmailFormat)] = new(
+            typeof(AuthenticationException),
+            e => e.InvalidEmailFormat(MalformedEmail),
+            t => t._validation.InvalidEmailFormat(MalformedEmail)
+        ),
+        [nameof(UserErrors.InvalidPasswordFormat)] = new(
+            typeof(AuthenticationException),
+            e => e.InvalidPasswordFormat(),
+            t => t._validation.InvalidPasswordFormat()
+        ),
+        [nameof(UserErrors.InvalidUserAuthentication)] = new(
+            typeof(AuthenticationException),
+            e => e.InvalidUserAuthentication(),
+            t => t._authentication.InvalidUserAuthentication()
+        ),
+        [nameof(UserErrors.InsufficientPermissions)] = new(
+            typeof(AccessDeniedException),
+            e => e.InsufficientPermissions(),
+            t => t._authentication.InsufficientPermissions()
+        ),
+        [nameof(UserErrors.NoValidOtpFound)] = new(
+            typeof(NotFoundException),
+            e => e.NoValidOtpFound(),
+            t => t._validation.NoValidOtpFound()
+        ),
+        [nameof(UserErrors.RoleNotFoundByName)] = new(
+            typeof(NotFoundException),
+            e => e.RoleNotFoundByName(MissingRoleName),
+            _ => $"Could not find Role with name: {MissingRoleName}"
+        ),
+        [nameof(UserErrors.OtpExpired)] = new(
+            typeof(OtpExpirationException),
+            e => e.OtpExpired(),
+            t => t._validation.OtpExpired()
+        ),
+        [nameof(UserErrors.MaxOtpAttemptsReached)] = new(
+            typeof(OtpAttemptsLimitException),
+            e => e.MaxOtpAttemptsReached(),
+            t => t._validation.MaxOtpAttemptsReached()
+        ),
+    };
+
+    /// <summary>
+    /// Supplies one theory row per exception factory, identified by the factory name so the
+    /// runner reports a readable case identifier.
+    /// </summary>
+    /// <returns>The factory names as theory rows.</returns>
+    public static TheoryData<string> FactoryCases() => new(Cases.Keys.OrderBy(name => name, StringComparer.Ordinal));
+
+    #region Exception Factories
+
+    [Fact]
+    public void FactoryCases_ShouldCoverEveryExceptionFactoryDeclaredByUserErrors()
+    {
+        // Arrange
+        IEnumerable<string> declared = typeof(UserErrors)
+            .GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+            .Where(m => !m.IsSpecialName && typeof(Exception).IsAssignableFrom(m.ReturnType))
+            .Select(m => m.Name);
+
+        // Assert
+        declared.Should().BeEquivalentTo(Cases.Keys);
+    }
+
+    [Theory]
+    [MemberData(nameof(FactoryCases))]
+    public void Factory_ShouldReturnTheDeclaredExceptionTypeWithTheLocalizedMessage(string caseName)
+    {
+        // Arrange
+        ErrorCase errorCase = Cases[caseName];
+
+        // Act
+        Exception exception = errorCase.Invoke(_errors);
+
+        // Assert
+        exception.Should().BeOfType(errorCase.ExpectedException, caseName);
+        exception.Message.Should().Be(errorCase.ExpectedMessage(this), caseName);
+    }
+
+    #endregion
+
+    #region Message Providers
+
     [Fact]
     public void Validation_ShouldReturnValidationErrorMessage()
     {
         ValidationErrorMessage result = _errors.Validation;
 
         result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void EmailAlreadyExists_ShouldReturnConflictException()
-    {
-        // Arrange
-        const string email = "user@example.com";
-
-        // Act
-        ConflictException exception = _errors.EmailAlreadyExists(email);
-
-        // Assert
-        exception.Should().BeOfType<ConflictException>();
-        exception.Message.Should().Be(_conflict.EmailAlreadyExists(email));
-    }
-
-    [Fact]
-    public void UsernameAlreadyExists_ShouldReturnConflictException()
-    {
-        // Arrange
-        const string username = "john_doe";
-
-        // Act
-        ConflictException exception = _errors.UsernameAlreadyExists(username);
-
-        // Assert
-        exception.Should().BeOfType<ConflictException>();
-        exception.Message.Should().Be(_conflict.UsernameAlreadyExists(username));
-    }
-
-    [Fact]
-    public void PhoneNumberAlreadyExists_ShouldReturnConflictException()
-    {
-        // Arrange
-        const string phone = "+1234567890";
-
-        // Act
-        ConflictException exception = _errors.PhoneNumberAlreadyExists(phone);
-
-        // Assert
-        exception.Should().BeOfType<ConflictException>();
-        exception.Message.Should().Be(_conflict.PhoneNumberAlreadyExists(phone));
-    }
-
-    [Fact]
-    public void RoleAlreadyExists_ShouldReturnConflictException()
-    {
-        // Arrange
-        const string roleName = "Admin";
-
-        // Act
-        ConflictException exception = _errors.RoleAlreadyExists(roleName);
-
-        // Assert
-        exception.Should().BeOfType<ConflictException>();
-        exception.Message.Should().Be(_conflict.RoleAlreadyExists(roleName));
-    }
-
-    [Fact]
-    public void RoleAlreadyAssignedToUser_ShouldReturnConflictException()
-    {
-        ConflictException exception = _errors.RoleAlreadyAssignedToUser();
-
-        exception.Should().BeOfType<ConflictException>();
-        exception.Message.Should().Be(_conflict.RoleAlreadyAssignedToUser());
-    }
-
-    [Fact]
-    public void RoleNotFoundByName_ShouldReturnNotFoundException()
-    {
-        // Arrange
-        const string roleName = "SuperAdmin";
-
-        // Act
-        NotFoundException exception = _errors.RoleNotFoundByName(roleName);
-
-        // Assert
-        exception.Should().BeOfType<NotFoundException>();
-        exception.Message.Should().Contain("Role");
-        exception.Message.Should().Contain(roleName);
-    }
-
-    [Fact]
-    public void PermissionAlreadyExists_ShouldReturnConflictException()
-    {
-        // Arrange
-        const string resource = "users";
-        const string action = "read";
-
-        // Act
-        ConflictException exception = _errors.PermissionAlreadyExists(resource, action);
-
-        // Assert
-        exception.Should().BeOfType<ConflictException>();
-        exception.Message.Should().Be(_conflict.PermissionAlreadyExists(resource, action));
-    }
-
-    [Fact]
-    public void PermissionAlreadyAssignedToRole_ShouldReturnConflictException()
-    {
-        ConflictException exception = _errors.PermissionAlreadyAssignedToRole();
-
-        exception.Should().BeOfType<ConflictException>();
-        exception.Message.Should().Be(_conflict.PermissionAlreadyAssignedToRole());
-    }
-
-    [Fact]
-    public void RoleAlreadyActive_ShouldReturnConflictException()
-    {
-        ConflictException exception = _errors.RoleAlreadyActive();
-
-        exception.Should().BeOfType<ConflictException>();
-        exception.Message.Should().Be(_conflict.RoleAlreadyActive());
-    }
-
-    [Fact]
-    public void RoleAlreadyInactive_ShouldReturnConflictException()
-    {
-        ConflictException exception = _errors.RoleAlreadyInactive();
-
-        exception.Should().BeOfType<ConflictException>();
-        exception.Message.Should().Be(_conflict.RoleAlreadyInactive());
-    }
-
-    [Fact]
-    public void RoleAlreadyDeleted_ShouldReturnConflictException()
-    {
-        ConflictException exception = _errors.RoleAlreadyDeleted();
-
-        exception.Should().BeOfType<ConflictException>();
-        exception.Message.Should().Be(_conflict.RoleAlreadyDeleted());
-    }
-
-    [Fact]
-    public void RoleNotDeleted_ShouldReturnConflictException()
-    {
-        ConflictException exception = _errors.RoleNotDeleted();
-
-        exception.Should().BeOfType<ConflictException>();
-        exception.Message.Should().Be(_conflict.RoleNotDeleted());
-    }
-
-    [Fact]
-    public void PermissionAlreadyActive_ShouldReturnConflictException()
-    {
-        ConflictException exception = _errors.PermissionAlreadyActive();
-
-        exception.Should().BeOfType<ConflictException>();
-        exception.Message.Should().Be(_conflict.PermissionAlreadyActive());
-    }
-
-    [Fact]
-    public void PermissionAlreadyInactive_ShouldReturnConflictException()
-    {
-        ConflictException exception = _errors.PermissionAlreadyInactive();
-
-        exception.Should().BeOfType<ConflictException>();
-        exception.Message.Should().Be(_conflict.PermissionAlreadyInactive());
-    }
-
-    [Fact]
-    public void PermissionAlreadyDeleted_ShouldReturnConflictException()
-    {
-        ConflictException exception = _errors.PermissionAlreadyDeleted();
-
-        exception.Should().BeOfType<ConflictException>();
-        exception.Message.Should().Be(_conflict.PermissionAlreadyDeleted());
-    }
-
-    [Fact]
-    public void PermissionNotDeleted_ShouldReturnConflictException()
-    {
-        ConflictException exception = _errors.PermissionNotDeleted();
-
-        exception.Should().BeOfType<ConflictException>();
-        exception.Message.Should().Be(_conflict.PermissionNotDeleted());
-    }
-
-    [Fact]
-    public void AccountAlreadyVerified_ShouldReturnConflictException()
-    {
-        ConflictException exception = _errors.AccountAlreadyVerified();
-
-        exception.Should().BeOfType<ConflictException>();
-        exception.Message.Should().Be(_validation.AccountAlreadyVerified());
-    }
-
-    [Fact]
-    public void NewPasswordSameAsOld_ShouldReturnConflictException()
-    {
-        ConflictException exception = _errors.NewPasswordSameAsOld();
-
-        exception.Should().BeOfType<ConflictException>();
-        exception.Message.Should().Be(_validation.NewPasswordSameAsOld());
-    }
-
-    [Fact]
-    public void CoreRoleCannotBeDeleted_ShouldReturnBadRequestException()
-    {
-        // Arrange
-        const string roleName = "Visitor";
-
-        // Act
-        BadRequestException exception = _errors.CoreRoleCannotBeDeleted(roleName);
-
-        // Assert
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().Be(_validation.CoreRoleCannotBeDeleted(roleName));
-    }
-
-    [Fact]
-    public void RoleIsInactive_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.RoleIsInactive();
-
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().Be(_validation.RoleIsInactive());
-    }
-
-    [Fact]
-    public void RoleIsDeleted_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.RoleIsDeleted();
-
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().Be(_validation.RoleIsDeleted());
-    }
-
-    [Fact]
-    public void PermissionIsInactive_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.PermissionIsInactive();
-
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().Be(_validation.PermissionIsInactive());
-    }
-
-    [Fact]
-    public void PermissionIsDeleted_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.PermissionIsDeleted();
-
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().Be(_validation.PermissionIsDeleted());
-    }
-
-    [Fact]
-    public void PermissionNotAssignedToRole_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.PermissionNotAssignedToRole();
-
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().Be(_validation.PermissionNotAssignedToRole());
-    }
-
-    [Fact]
-    public void RoleNotAssignedToUser_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.RoleNotAssignedToUser();
-
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().Be(_validation.RoleNotAssignedToUser());
-    }
-
-    [Fact]
-    public void InvalidUsernameFormat_ShouldReturnBadRequestException()
-    {
-        // Arrange
-        const string username = "bad username!";
-
-        // Act
-        BadRequestException exception = _errors.InvalidUsernameFormat(username);
-
-        // Assert
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().Be(_validation.InvalidUsernameFormat(username));
-    }
-
-    [Fact]
-    public void PermissionResourceRequired_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.PermissionResourceRequired();
-
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().Be(_validation.PermissionResourceRequired());
-    }
-
-    [Fact]
-    public void PermissionActionRequired_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.PermissionActionRequired();
-
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().Be(_validation.PermissionActionRequired());
-    }
-
-    [Fact]
-    public void PermissionDescriptionRequired_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.PermissionDescriptionRequired();
-
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().Be(_validation.PermissionDescriptionRequired());
-    }
-
-    [Fact]
-    public void RoleNameRequired_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.RoleNameRequired();
-
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().Be(_validation.RoleNameRequired());
-    }
-
-    [Fact]
-    public void RoleDescriptionRequired_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.RoleDescriptionRequired();
-
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().Be(_validation.RoleDescriptionRequired());
-    }
-
-    [Fact]
-    public void InvalidOtpCode_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.InvalidOtpCode();
-
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().Be(_validation.InvalidOtpCode());
-    }
-
-    [Fact]
-    public void OtpNotYetVerified_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.OtpNotYetVerified();
-
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().Be(_validation.OtpNotYetVerified());
-    }
-
-    [Fact]
-    public void PasswordNotConfigured_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.PasswordNotConfigured(EnumAuthProvider.Google);
-
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().Be(_validation.PasswordNotConfigured(EnumAuthProvider.Google));
-    }
-
-    [Fact]
-    public void IncorrectCurrentPassword_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.IncorrectCurrentPassword();
-
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().Be(_validation.IncorrectCurrentPassword());
-    }
-
-    [Fact]
-    public void EmailRequiredToSetPassword_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.EmailRequiredToSetPassword();
-
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().Be(_validation.EmailRequiredToSetPassword());
-    }
-
-    [Fact]
-    public void PasswordOnlyForExternalAuth_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.PasswordOnlyForExternalAuth();
-
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().Be(_validation.PasswordOnlyForExternalAuth());
-    }
-
-    [Fact]
-    public void AccountInactive_ShouldReturnAccountInactiveException()
-    {
-        // Arrange
-        const string email = "user@example.com";
-
-        // Act
-        AccountInactiveException exception = _errors.AccountInactive(email);
-
-        // Assert
-        exception.Should().BeOfType<AccountInactiveException>();
-        exception.Message.Should().Be(_authorization.AccountInactive(email));
-    }
-
-    [Fact]
-    public void AccountNotVerified_ShouldReturnAccountNotVerifiedException()
-    {
-        // Arrange
-        const string email = "user@example.com";
-
-        // Act
-        AccountNotVerifiedException exception = _errors.AccountNotVerified(email);
-
-        // Assert
-        exception.Should().BeOfType<AccountNotVerifiedException>();
-        exception.Message.Should().Be(_authorization.AccountNotVerified(email));
-    }
-
-    [Fact]
-    public void InvalidCredentials_ShouldReturnAuthenticationException()
-    {
-        AuthenticationException exception = _errors.InvalidCredentials();
-
-        exception.Should().BeOfType<AuthenticationException>();
-        exception.Message.Should().Be(_authentication.InvalidCredentials());
-    }
-
-    [Fact]
-    public void InvalidEmailFormat_ShouldReturnAuthenticationException()
-    {
-        // Arrange
-        const string email = "not-an-email";
-
-        // Act
-        AuthenticationException exception = _errors.InvalidEmailFormat(email);
-
-        // Assert
-        exception.Should().BeOfType<AuthenticationException>();
-        exception.Message.Should().Be(_validation.InvalidEmailFormat(email));
-    }
-
-    [Fact]
-    public void InvalidPasswordFormat_ShouldReturnAuthenticationException()
-    {
-        AuthenticationException exception = _errors.InvalidPasswordFormat();
-
-        exception.Should().BeOfType<AuthenticationException>();
-        exception.Message.Should().Be(_validation.InvalidPasswordFormat());
-    }
-
-    [Fact]
-    public void InvalidUserAuthentication_ShouldReturnAuthenticationException()
-    {
-        AuthenticationException exception = _errors.InvalidUserAuthentication();
-
-        exception.Should().BeOfType<AuthenticationException>();
-        exception.Message.Should().Be(_authentication.InvalidUserAuthentication());
-    }
-
-    [Fact]
-    public void InsufficientPermissions_ShouldReturnAccessDeniedException()
-    {
-        AccessDeniedException exception = _errors.InsufficientPermissions();
-
-        exception.Should().BeOfType<AccessDeniedException>();
-        exception.Message.Should().Be(_authentication.InsufficientPermissions());
-    }
-
-    [Fact]
-    public void NoValidOtpFound_ShouldReturnNotFoundException()
-    {
-        NotFoundException exception = _errors.NoValidOtpFound();
-
-        exception.Should().BeOfType<NotFoundException>();
-        exception.Message.Should().Be(_validation.NoValidOtpFound());
-    }
-
-    [Fact]
-    public void OtpExpired_ShouldReturnOtpExpirationException()
-    {
-        OtpExpirationException exception = _errors.OtpExpired();
-
-        exception.Should().BeOfType<OtpExpirationException>();
-        exception.Message.Should().Be(_validation.OtpExpired());
-    }
-
-    [Fact]
-    public void MaxOtpAttemptsReached_ShouldReturnOtpAttemptsLimitException()
-    {
-        OtpAttemptsLimitException exception = _errors.MaxOtpAttemptsReached();
-
-        exception.Should().BeOfType<OtpAttemptsLimitException>();
-        exception.Message.Should().Be(_validation.MaxOtpAttemptsReached());
+        result.RoleIsInactive().Should().Be(_validation.RoleIsInactive());
     }
 
     [Fact]
@@ -528,4 +360,6 @@ public class UserErrorsTests
     {
         _authorization.Localizer["AccountInactive"].Value.Should().NotBeNullOrEmpty();
     }
+
+    #endregion
 }

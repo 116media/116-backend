@@ -41,10 +41,9 @@ public class PublicShareArticleHandlerTests
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
 
         // Act
-        PublicShareArticleResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         _articleRepositoryMock.VerifyAddShareCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -58,10 +57,9 @@ public class PublicShareArticleHandlerTests
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
 
         // Act
-        PublicShareArticleResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         _articleRepositoryMock.VerifyAddShareCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }

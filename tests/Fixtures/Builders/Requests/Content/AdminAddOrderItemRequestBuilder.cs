@@ -54,17 +54,6 @@ public class AdminAddOrderItemRequestBuilder
     }
 
     /// <summary>
-    /// Sets the optional homepage promotion level for this content item.
-    /// </summary>
-    /// <param name="promotionLevelId">The promotion level identifier, or null for none.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public AdminAddOrderItemRequestBuilder WithPromotionLevelId(Guid? promotionLevelId)
-    {
-        _promotionLevelId = promotionLevelId;
-        return this;
-    }
-
-    /// <summary>
     /// Sets whether social media promotion is requested for this content item.
     /// </summary>
     /// <param name="socialBoost">True to request social media promotion.</param>

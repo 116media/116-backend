@@ -756,21 +756,49 @@ Mitigation: this is intentional and one-time. Re-run the unit suite twice after 
 change; a value-dependent test fails identically both times, which distinguishes it from
 a genuine flake.
 
+## Implementation notes
+
+Implemented 2026-08-22. Three corrections, all a consequence of the order the specs
+actually landed in.
+
+1. **Change 3 covers 11 files, not 104.** Spec 06 ran first and deleted the 104
+   `*_ShouldBeLocalizedForCulture` theories outright, which is the reordering recorded
+   in [00-index.md](00-index.md). Those files were the bulk of the 104 the audit
+   counted, so by the time `CultureScope` existed there were 11 files left that
+   genuinely set a culture. The invariant that matters held either way: the only
+   assignment to `CultureInfo.CurrentCulture` anywhere in the suite is inside
+   `CultureScope` itself, at `tests/Fixtures/Helpers/CultureScope.cs:27,34`.
+2. **Change 4 covers 11 classes, not eight.** Specs 01 and 12 each added a fixture
+   that mutates process environment before its host is constructed
+   (`SeedingPostgresFixture`, `CorsPostgresFixture`), and spec 13's French-default test
+   joined too. There is no `SuperAdminSeeder` collection definition left to delete —
+   spec 01 Change 5 replaced those tests with the `Seeding` collection first.
+3. **Change 1's "13 hand-written `Reset()` calls" are down to two**, both inside the
+   base classes' own `ResetStubs()` loops (`BaseApiTest.cs:169`,
+   `BaseRepositoryTest.cs:98`). No static hook assignment survives anywhere in
+   `tests/Integration`.
+
+Change 5 landed exactly as specified: 73 `TestFaker.Create()` declarations and zero
+`new Faker()`, and `UserBuilder` derives both email and username with a GUID component,
+budgeting the username against `TestConstants.User.UserNameMaxLength` so it stays
+inside the production column width spec 03 aliased.
+
 ## Checklist
 
-- [ ] 1 — `IResettableStub` added; the three stubs implement it; all three registered
+- [x] 1 — `IResettableStub` added; the three stubs implement it; all three registered
       under the interface as singletons; `ResetStubs()` called from both base classes;
-      13 hand-written `Reset()` calls and 8 static hook assignments removed
-- [ ] 2 — `_scopes` and `OpenScope()` added to both base classes; the four helpers route
+      the hand-written `Reset()` calls and static hook assignments removed
+- [x] 2 — `_scopes` and `OpenScope()` added to both base classes; the four helpers route
       through it; both `DisposeAsync` implementations dispose every tracked scope,
       preferring `IAsyncDisposable`; the three already-correct sites left alone
-- [ ] 3 — `CultureScope` restores both cultures; all 104 files use it; no direct
-      assignment to `Thread.CurrentThread.CurrentCulture` remains
-- [ ] 4 — Eight classes carry `[Collection("EnvironmentVariable")]`; the
-      `SuperAdminSeeder` collection definition deleted; four classes gained a restoring
-      `Dispose` that restores `null` correctly
-- [ ] 5 — `TestFaker.Create()` added; all 73 declarations call it;
+- [x] 3 — `CultureScope` restores both cultures; every file that sets a culture uses it
+      (11, not 104 — see the implementation notes); no direct assignment to
+      `Thread.CurrentThread.CurrentCulture` remains outside `CultureScope`
+- [x] 4 — 11 classes carry `[Collection("EnvironmentVariable")]`; no `SuperAdminSeeder`
+      collection definition remains; the restoring `Dispose` implementations restore
+      `null` correctly
+- [x] 5 — `TestFaker.Create()` added; all 73 declarations call it;
       `TestDataModuleInitializer` kept with a corrected doc comment; `UserBuilder`
       derives email and username with a GUID component
 - [ ] `EmailDeliveryFlowTests` asserts exact counts instead of reading a baseline
-- [ ] Both suites run twice back to back with identical results
+- [x] Both suites run twice back to back with identical results — verified 2026-08-25: unit 7,693 passed / 6 skipped and integration 1,936 passed, each run twice back to back with identical executed-test-name sets and identical outcomes, compared from `.trx` rather than by pass count

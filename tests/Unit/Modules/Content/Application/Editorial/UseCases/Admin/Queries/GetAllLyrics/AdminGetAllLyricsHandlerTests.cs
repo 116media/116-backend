@@ -48,7 +48,6 @@ public class AdminGetAllLyricsHandlerTests : BaseContentHandlerTest
         AdminGetAllLyricsResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.Lyrics.Items.Should().HaveCount(lyricsList.Count);
         result.Lyrics.Count.Should().Be((long)lyricsList.Count);
     }

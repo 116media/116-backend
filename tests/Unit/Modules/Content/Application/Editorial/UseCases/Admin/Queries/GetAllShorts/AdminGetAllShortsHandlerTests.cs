@@ -2,6 +2,7 @@ using _116.Content.Application.Editorial.UseCases.Admin.Queries.GetAllShorts;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
+using _116.Core.Domain.Entities;
 using _116.Identity.Contracts.Application;
 using _116.Shared.Application.Pagination;
 using _116.Tests.Fixtures.Factories.Content;
@@ -29,6 +30,8 @@ public class AdminGetAllShortsHandlerTests : BaseContentHandlerTest
         _shortVideoRepositoryMock = MockShortVideoRepository.Create();
         _userLookupMock = MockUserLookupService.Create();
         _fileRepositoryMock = MockFileRepository.Create();
+        _fileRepositoryMock.SetupGetByIds(new Dictionary<Guid, FileEntity>());
+
         _handler = new AdminGetAllShortsHandler(
             _shortVideoRepositoryMock.Object,
             _userLookupMock.Object,
@@ -54,7 +57,6 @@ public class AdminGetAllShortsHandlerTests : BaseContentHandlerTest
         AdminGetAllShortsResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.ShortVideos.Items.Should().HaveCount(shorts.Count);
         result.ShortVideos.Count.Should().Be((long)shorts.Count);
     }

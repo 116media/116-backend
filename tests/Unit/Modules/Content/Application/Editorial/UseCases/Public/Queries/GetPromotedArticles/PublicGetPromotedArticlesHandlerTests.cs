@@ -50,8 +50,6 @@ public class PublicGetPromotedArticlesHandlerTests : BaseContentHandlerTest
         PublicGetPromotedArticlesResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Articles.Should().NotBeNull();
         result.Articles.Count.Should().Be(promoted.Count);
     }
 

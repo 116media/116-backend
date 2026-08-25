@@ -49,9 +49,11 @@ public class ShortVideoEngagementHandlerTests
         await _handler.Handle(new ShortVideoEngagedEvent(shortVideo.Id, kind, 1), CancellationToken.None);
 
         // Assert
-        int total = shortVideo.LikeCount + shortVideo.BookmarkCount + shortVideo.ShareCount + shortVideo.ViewCount;
-        total.Should().Be(1);
-        _shortVideoRepositoryMock.VerifyUpdateCalled();
+        shortVideo.LikeCount.Should().Be(kind == EnumEngagementKind.Like ? 1 : 0);
+        shortVideo.BookmarkCount.Should().Be(kind == EnumEngagementKind.Bookmark ? 1 : 0);
+        shortVideo.ShareCount.Should().Be(kind == EnumEngagementKind.Share ? 1 : 0);
+        shortVideo.ViewCount.Should().Be(kind == EnumEngagementKind.View ? 1 : 0);
+        _shortVideoRepositoryMock.VerifyUpdateCalled(shortVideo);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -70,8 +72,9 @@ public class ShortVideoEngagementHandlerTests
         await _handler.Handle(new ShortVideoEngagedEvent(shortVideo.Id, kind, -1), CancellationToken.None);
 
         // Assert
-        int total = shortVideo.LikeCount + shortVideo.BookmarkCount;
-        total.Should().Be(1);
+        shortVideo.LikeCount.Should().Be(kind == EnumEngagementKind.Like ? 0 : 1);
+        shortVideo.BookmarkCount.Should().Be(kind == EnumEngagementKind.Bookmark ? 0 : 1);
+        _shortVideoRepositoryMock.VerifyUpdateCalled(shortVideo);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -89,14 +92,18 @@ public class ShortVideoEngagementHandlerTests
         );
 
         // Assert
+        shortVideo.LikeCount.Should().Be(0);
+        shortVideo.BookmarkCount.Should().Be(0);
+        shortVideo.ShareCount.Should().Be(0);
+        shortVideo.ViewCount.Should().Be(0);
+        _shortVideoRepositoryMock.Verify(x => x.Update(It.IsAny<ShortVideoEntity>()), Times.Never);
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
     public async Task Handle_WhenShortVideoMissing_ShouldSkipWithoutCommit()
     {
-        // Arrange — the short video vanished between the interaction commit
-        // and the dispatch, which is a race, not an error.
+        // Arrange
         Guid shortVideoId = Guid.NewGuid();
         _shortVideoRepositoryMock.SetupGetByIdAsync(shortVideoId, null);
 

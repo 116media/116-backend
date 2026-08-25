@@ -124,16 +124,18 @@ public static class MockCategoryRepository
         mock.Verify(x => x.RemovePricing(pricing), Times.Once);
     }
 
+    /// <summary>
+    /// Installs defaults for write, void and aggregate members only. Identity lookups are left
+    /// unconfigured so that a miss has to be arranged by the test, naming the identifier it is a
+    /// miss for, rather than being asserted for every identifier before the test says anything.
+    /// </summary>
+    /// <param name="mock">The repository mock to configure.</param>
     private static void SetupDefaults(Mock<ICategoryRepository> mock)
     {
         mock.Setup(x => x.AddAsync(It.IsAny<CategoryEntity>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
         mock.Setup(x => x.AddPricingAsync(It.IsAny<CategoryPricingEntity>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
-        mock.Setup(x => x.GetBySlugAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((CategoryEntity?)null);
-        mock.Setup(x => x.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((CategoryEntity?)null);
         mock.Setup(x =>
                 x.GetAllAsync(
                     It.IsAny<int>(),
@@ -148,14 +150,8 @@ public static class MockCategoryRepository
             .ReturnsAsync(new List<CategoryEntity>());
         mock.Setup(x => x.GetPricingByCategoryAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<CategoryPricingEntity>());
-        mock.Setup(x => x.GetPricingAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((CategoryPricingEntity?)null);
-        mock.Setup(x => x.GetGossipCategoryAsync(It.IsAny<CancellationToken>())).ReturnsAsync((CategoryEntity?)null);
-        mock.Setup(x => x.GetExclusiveCategoryAsync(It.IsAny<CancellationToken>())).ReturnsAsync((CategoryEntity?)null);
         mock.Setup(x => x.GetPinnedToFeedCategoriesAsync(It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<CategoryEntity>());
-        mock.Setup(x => x.GetDefaultLyricsCategoryAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync((CategoryEntity?)null);
     }
 
     /// <summary>

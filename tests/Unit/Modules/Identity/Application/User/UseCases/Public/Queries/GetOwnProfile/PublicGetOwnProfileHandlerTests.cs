@@ -47,8 +47,7 @@ public class PublicGetOwnProfileHandlerTests : BaseHandlerTest
         PublicGetOwnProfileResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.User.Should().NotBeNull();
+        result.User.Id.Should().Be(user.Id);
     }
 
     [Fact]

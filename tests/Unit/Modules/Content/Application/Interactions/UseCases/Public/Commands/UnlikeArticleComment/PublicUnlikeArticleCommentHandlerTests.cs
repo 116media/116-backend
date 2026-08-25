@@ -38,14 +38,14 @@ public class PublicUnlikeArticleCommentHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenLiked_ShouldRemoveLikeAndCommit()
     {
         ArticleCommentEntity comment = ArticleCommentFactory.Create(Guid.NewGuid(), Guid.NewGuid());
+        var userId = Guid.NewGuid();
         _articleRepositoryMock.SetupGetCommentByIdAsync(comment);
-        _articleRepositoryMock.SetupHasLikedCommentAsync(true);
+        _articleRepositoryMock.SetupHasLikedCommentAsync(userId, comment.Id, result: true);
 
-        var command = new PublicUnlikeArticleCommentCommand(comment.Id, Guid.NewGuid());
+        var command = new PublicUnlikeArticleCommentCommand(comment.Id, userId);
 
-        PublicUnlikeArticleCommentResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
-        result.IsSuccess.Should().BeTrue();
         comment.LikeCount.Should().Be(0);
         _articleRepositoryMock.VerifyRemoveCommentLikeCalled(Times.Once());
         _unitOfWorkMock.VerifyCommitCalled();
@@ -55,14 +55,14 @@ public class PublicUnlikeArticleCommentHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenNotLiked_ShouldBeIdempotentNoOp()
     {
         ArticleCommentEntity comment = ArticleCommentFactory.Create(Guid.NewGuid(), Guid.NewGuid());
+        var userId = Guid.NewGuid();
         _articleRepositoryMock.SetupGetCommentByIdAsync(comment);
-        _articleRepositoryMock.SetupHasLikedCommentAsync(false);
+        _articleRepositoryMock.SetupHasLikedCommentAsync(userId, comment.Id, result: false);
 
-        var command = new PublicUnlikeArticleCommentCommand(comment.Id, Guid.NewGuid());
+        var command = new PublicUnlikeArticleCommentCommand(comment.Id, userId);
 
-        PublicUnlikeArticleCommentResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
-        result.IsSuccess.Should().BeTrue();
         comment.LikeCount.Should().Be(0);
         _articleRepositoryMock.VerifyRemoveCommentLikeCalled(Times.Never());
     }
@@ -70,9 +70,10 @@ public class PublicUnlikeArticleCommentHandlerTests : BaseContentHandlerTest
     [Fact]
     public async Task Handle_WhenCommentNotFound_ShouldThrowNotFound()
     {
-        _articleRepositoryMock.SetupGetCommentByIdAsync(null);
+        Guid missingCommentId = Guid.NewGuid();
+        _articleRepositoryMock.SetupGetCommentByIdNotFound(missingCommentId);
 
-        var command = new PublicUnlikeArticleCommentCommand(Guid.NewGuid(), Guid.NewGuid());
+        var command = new PublicUnlikeArticleCommentCommand(missingCommentId, Guid.NewGuid());
 
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 

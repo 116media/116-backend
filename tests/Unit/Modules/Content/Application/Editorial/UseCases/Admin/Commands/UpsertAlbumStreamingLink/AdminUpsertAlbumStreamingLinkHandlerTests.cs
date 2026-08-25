@@ -54,7 +54,19 @@ public class AdminUpsertAlbumStreamingLinkHandlerTests
 
         // Assert
         result.StreamingLinkId.Should().NotBeEmpty();
-        _streamingLinkRepositoryMock.VerifyAddCalled();
+        _streamingLinkRepositoryMock.Verify(
+            x =>
+                x.AddAsync(
+                    It.Is<StreamingLinkEntity>(link =>
+                        link.Id == result.StreamingLinkId
+                        && link.AlbumId == album.Id
+                        && link.Platform == EnumStreamingPlatform.Spotify
+                        && link.Url == "https://open.spotify.com/album/abc"
+                    ),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Once
+        );
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -79,7 +91,8 @@ public class AdminUpsertAlbumStreamingLinkHandlerTests
         // Assert
         result.StreamingLinkId.Should().Be(existing.Id);
         existing.Url.Should().Be("https://open.spotify.com/album/updated");
-        _streamingLinkRepositoryMock.VerifyUpdateCalled();
+        existing.Platform.Should().Be(EnumStreamingPlatform.Spotify);
+        _streamingLinkRepositoryMock.VerifyUpdateCalled(existing);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -104,6 +117,7 @@ public class AdminUpsertAlbumStreamingLinkHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     #endregion

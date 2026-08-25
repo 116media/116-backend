@@ -22,7 +22,7 @@ public class PackageRepositoryTests(PostgresFixture postgres) : BaseRepositoryTe
 
         var (packages, totalCount) = await repo.GetAllAsync(1, 10, null);
 
-        totalCount.Should().BeGreaterThanOrEqualTo(3);
+        totalCount.Should().Be(3);
         packages.Should().NotBeEmpty();
     }
 

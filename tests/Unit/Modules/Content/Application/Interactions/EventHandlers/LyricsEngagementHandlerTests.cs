@@ -46,7 +46,7 @@ public class LyricsEngagementHandlerTests
 
         // Assert
         lyrics.LikeCount.Should().Be(1);
-        _lyricsRepositoryMock.VerifyUpdateCalled();
+        _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -63,6 +63,7 @@ public class LyricsEngagementHandlerTests
 
         // Assert
         lyrics.LikeCount.Should().Be(0);
+        _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -78,6 +79,7 @@ public class LyricsEngagementHandlerTests
 
         // Assert
         lyrics.ShareCount.Should().Be(1);
+        _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -93,6 +95,7 @@ public class LyricsEngagementHandlerTests
 
         // Assert
         lyrics.ViewCount.Should().Be(1);
+        _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -110,14 +113,17 @@ public class LyricsEngagementHandlerTests
         );
 
         // Assert
+        lyrics.LikeCount.Should().Be(0);
+        lyrics.ShareCount.Should().Be(0);
+        lyrics.ViewCount.Should().Be(0);
+        _lyricsRepositoryMock.VerifyUpdateNotCalled();
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
     public async Task Handle_WhenLyricsMissing_ShouldSkipWithoutCommit()
     {
-        // Arrange — the lyrics page vanished between the interaction commit
-        // and the dispatch, which is a race, not an error.
+        // Arrange
         Guid lyricsId = Guid.NewGuid();
         _lyricsRepositoryMock.SetupGetByIdAsync(lyricsId, null);
 

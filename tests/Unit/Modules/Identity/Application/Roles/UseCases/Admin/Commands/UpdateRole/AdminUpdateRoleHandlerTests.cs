@@ -55,8 +55,6 @@ public class AdminUpdateRoleHandlerTests : BaseHandlerTest
         AdminUpdateRoleResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Role.Should().NotBeNull();
         result.Role.Name.Should().Be(newName);
         result.Role.Description.Should().Be(newDescription);
         _unitOfWorkMock.VerifyCommitCalled();
@@ -231,16 +229,10 @@ public class AdminUpdateRoleHandlerTests : BaseHandlerTest
         _roleRepositoryMock.SetupExistsByName(duplicateName, exists: true);
 
         // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (ConflictException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<ConflictException>();
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 

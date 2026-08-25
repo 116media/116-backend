@@ -66,8 +66,6 @@ public class PublicLoginHandlerTests : BaseHandlerTest
         PublicLoginResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.AuthenticationResult.Should().NotBeNull();
         result.AuthenticationResult.AccessToken.Should().Be("access-token");
         result.AuthenticationResult.RefreshToken.Should().Be("refresh-token");
     }
@@ -220,16 +218,10 @@ public class PublicLoginHandlerTests : BaseHandlerTest
             .ThrowsAsync(new BadRequestException("Invalid credentials."));
 
         // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (BadRequestException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<BadRequestException>();
         _sessionFactoryMock.Verify(
             x =>
                 x.CreateSessionAsync(

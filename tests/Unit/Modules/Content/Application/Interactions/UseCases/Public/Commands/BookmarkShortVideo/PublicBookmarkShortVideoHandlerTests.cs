@@ -40,17 +40,17 @@ public class PublicBookmarkShortVideoHandlerTests
     {
         // Arrange
         ShortVideoEntity shortVideo = ShortVideoFactory.Create();
+        var userId = Guid.NewGuid();
 
         _shortVideoRepositoryMock.SetupGetByIdOrThrow(shortVideo);
-        _shortVideoRepositoryMock.SetupHasBookmarkedAsync(false);
+        _shortVideoRepositoryMock.SetupHasBookmarkedAsync(userId, shortVideo.Id, result: false);
 
-        var command = new PublicBookmarkShortVideoCommand(ShortVideoId: shortVideo.Id, UserId: Guid.NewGuid());
+        var command = new PublicBookmarkShortVideoCommand(ShortVideoId: shortVideo.Id, UserId: userId);
 
         // Act
-        PublicBookmarkShortVideoResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         _shortVideoRepositoryMock.VerifyAddBookmarkCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -80,11 +80,12 @@ public class PublicBookmarkShortVideoHandlerTests
     {
         // Arrange
         ShortVideoEntity shortVideo = ShortVideoFactory.Create();
+        var userId = Guid.NewGuid();
 
         _shortVideoRepositoryMock.SetupGetByIdOrThrow(shortVideo);
-        _shortVideoRepositoryMock.SetupHasBookmarkedAsync(true);
+        _shortVideoRepositoryMock.SetupHasBookmarkedAsync(userId, shortVideo.Id, result: true);
 
-        var command = new PublicBookmarkShortVideoCommand(ShortVideoId: shortVideo.Id, UserId: Guid.NewGuid());
+        var command = new PublicBookmarkShortVideoCommand(ShortVideoId: shortVideo.Id, UserId: userId);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);

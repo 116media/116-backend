@@ -43,15 +43,14 @@ public class PublicUnlikeLyricsHandlerTests
         LyricsEntity lyrics = LyricsFactory.Create(Guid.NewGuid());
 
         _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
-        _lyricsRepositoryMock.SetupHasLikedAsync(true);
+        _lyricsRepositoryMock.SetupHasLikedAsync(userId, lyrics.Id, result: true);
 
         var command = new PublicUnlikeLyricsCommand(LyricsId: lyrics.Id, UserId: userId);
 
         // Act
-        PublicUnlikeLyricsResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         _lyricsRepositoryMock.VerifyRemoveLikeCalled(userId, lyrics.Id);
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -81,11 +80,12 @@ public class PublicUnlikeLyricsHandlerTests
     {
         // Arrange
         LyricsEntity lyrics = LyricsFactory.Create(Guid.NewGuid());
+        var userId = Guid.NewGuid();
 
         _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
-        _lyricsRepositoryMock.SetupHasLikedAsync(false);
+        _lyricsRepositoryMock.SetupHasLikedAsync(userId, lyrics.Id, result: false);
 
-        var command = new PublicUnlikeLyricsCommand(LyricsId: lyrics.Id, UserId: Guid.NewGuid());
+        var command = new PublicUnlikeLyricsCommand(LyricsId: lyrics.Id, UserId: userId);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);

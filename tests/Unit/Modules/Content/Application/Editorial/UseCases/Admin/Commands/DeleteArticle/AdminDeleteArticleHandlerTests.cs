@@ -50,10 +50,9 @@ public class AdminDeleteArticleHandlerTests
         _articleRepositoryMock.SetupGetImagesByArticleId(article.Id, new List<ArticleImageEntity>());
 
         // Act
-        AdminDeleteArticleResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         _articleRepositoryMock.VerifyRemoveCalled(article);
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -70,10 +69,9 @@ public class AdminDeleteArticleHandlerTests
         _articleRepositoryMock.SetupGetImagesByArticleId(article.Id, images);
 
         // Act
-        AdminDeleteArticleResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         article
             .DomainEvents.OfType<ArticleDeletedEvent>()
             .Should()
@@ -119,10 +117,9 @@ public class AdminDeleteArticleHandlerTests
         _articleRepositoryMock.SetupGetImagesByArticleId(article.Id, new List<ArticleImageEntity>());
 
         // Act
-        AdminDeleteArticleResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         _articleRepositoryMock.VerifyRemoveCalled(article);
         _unitOfWorkMock.VerifyCommitCalled();
     }

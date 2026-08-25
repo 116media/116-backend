@@ -40,7 +40,6 @@ public class AdminGetAllPricingTiersHandlerTests : BaseContentHandlerTest
         AdminGetAllPricingTiersResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.PricingTiers.Should().HaveCount(3);
     }
 
@@ -58,7 +57,6 @@ public class AdminGetAllPricingTiersHandlerTests : BaseContentHandlerTest
         AdminGetAllPricingTiersResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.PricingTiers.Should().ContainSingle();
         _lookupRepositoryMock.Verify(
             x => x.GetAllPricingTiersAsync(searchTerm, It.IsAny<CancellationToken>()),
@@ -78,7 +76,6 @@ public class AdminGetAllPricingTiersHandlerTests : BaseContentHandlerTest
         AdminGetAllPricingTiersResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.PricingTiers.Should().BeEmpty();
     }
 

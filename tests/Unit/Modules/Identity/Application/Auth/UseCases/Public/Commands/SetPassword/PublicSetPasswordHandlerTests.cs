@@ -45,28 +45,6 @@ public class PublicSetPasswordHandlerTests
     #region Success Cases
 
     [Fact]
-    public async Task Handle_WithValidRequest_ShouldReturnSuccess()
-    {
-        // Arrange
-        UserEntity user = UserFactory.CreateVerifiedActive();
-        string password = "NewPassword123!";
-        string hashedPassword = "hashed-password";
-
-        PublicSetPasswordCommand command = new(UserId: user.Id, SessionId: Guid.NewGuid(), Password: password);
-
-        _authRepositoryMock.SetupFindUserByIdOrThrow(user);
-        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
-        _passwordServiceMock.Setup(x => x.Hash(password)).Returns(hashedPassword);
-
-        // Act
-        PublicSetPasswordResult result = await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        result.Should().NotBeNull();
-        result.IsSuccess.Should().BeTrue();
-    }
-
-    [Fact]
     public async Task Handle_ShouldHashPassword()
     {
         // Arrange
@@ -180,16 +158,10 @@ public class PublicSetPasswordHandlerTests
         _authRepositoryMock.SetupFindUserByIdOrThrowNotFound(userId);
 
         // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (NotFoundException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 

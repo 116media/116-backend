@@ -37,15 +37,6 @@ public class PromotionLevelBuilder
     }
 
     /// <summary>
-    /// Sets the promotion level ID.
-    /// </summary>
-    public PromotionLevelBuilder WithId(Guid id)
-    {
-        _id = id;
-        return this;
-    }
-
-    /// <summary>
     /// Sets the promotion level name.
     /// </summary>
     public PromotionLevelBuilder WithName(string name)

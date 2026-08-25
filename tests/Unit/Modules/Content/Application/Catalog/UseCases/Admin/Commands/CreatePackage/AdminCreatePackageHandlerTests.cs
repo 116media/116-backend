@@ -54,8 +54,6 @@ public class AdminCreatePackageHandlerTests : BaseContentHandlerTest
         AdminCreatePackageResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Package.Should().NotBeNull();
         result.Package.Name.Should().Be(name);
 
         _packageRepositoryMock.VerifyAddCalled();

@@ -55,7 +55,7 @@ public class VideoRepositoryTests : BaseRepositoryTest
             categoryId: null
         );
 
-        totalCount.Should().BeGreaterThanOrEqualTo(5);
+        totalCount.Should().Be(5);
         result.Should().HaveCount(3);
     }
 
@@ -310,7 +310,7 @@ public class VideoRepositoryTests : BaseRepositoryTest
             categoryId: null
         );
 
-        totalCount.Should().BeGreaterThanOrEqualTo(1);
+        totalCount.Should().Be(1);
         result.Should().Contain(v => v.Id == matchingVideo.Id);
         result.Should().NotContain(v => v.Id == nonMatchingVideo.Id);
     }

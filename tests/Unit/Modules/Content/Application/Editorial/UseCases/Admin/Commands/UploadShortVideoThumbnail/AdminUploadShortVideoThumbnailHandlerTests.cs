@@ -48,6 +48,8 @@ public class AdminUploadShortVideoThumbnailHandlerTests
     {
         // Arrange
         ShortVideoEntity shortVideo = ShortVideoFactory.Create();
+        FileEntity uploadedFile = FileFactory.CreateImage();
+        _fileRepositoryMock.SetupReplaceImageFile(uploadedFile);
         IFormFile fileMock = MockYoutubeThumbnailService.CreateMockFormFile();
         var command = new AdminUploadShortVideoThumbnailCommand(ShortVideoId: shortVideo.Id.ToString(), File: fileMock);
 
@@ -57,19 +59,21 @@ public class AdminUploadShortVideoThumbnailHandlerTests
         AdminUploadShortVideoThumbnailResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.ThumbnailUrl.Should().NotBeNullOrEmpty();
-        result.ThumbnailStorageKey.Should().NotBeNullOrEmpty();
+        shortVideo.ThumbnailFileId.Should().Be(uploadedFile.Id);
+        result.ThumbnailUrl.Should().Be(uploadedFile.StorageUrl);
+        result.ThumbnailStorageKey.Should().Be(uploadedFile.StorageKey);
         _fileRepositoryMock.VerifyReplaceImageFileCalled();
-        _shortVideoRepositoryMock.VerifyUpdateCalled();
+        _shortVideoRepositoryMock.VerifyUpdateCalled(shortVideo);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
     [Fact]
     public async Task Handle_WhenShortVideoHasExistingThumbnail_ShouldOverwriteInPlaceWithoutDelete()
     {
-        // Arrange — thumbnail uses the short video ID as publicId so Cloudinary overwrites in place
+        // Arrange
         ShortVideoEntity shortVideo = ShortVideoFactory.CreateWithThumbnail();
+        FileEntity uploadedFile = FileFactory.CreateImage();
+        _fileRepositoryMock.SetupReplaceImageFile(uploadedFile);
         IFormFile fileMock = MockYoutubeThumbnailService.CreateMockFormFile();
         var command = new AdminUploadShortVideoThumbnailCommand(ShortVideoId: shortVideo.Id.ToString(), File: fileMock);
 
@@ -79,8 +83,11 @@ public class AdminUploadShortVideoThumbnailHandlerTests
         AdminUploadShortVideoThumbnailResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
+        shortVideo.ThumbnailFileId.Should().Be(uploadedFile.Id);
+        result.ThumbnailUrl.Should().Be(uploadedFile.StorageUrl);
+        result.ThumbnailStorageKey.Should().Be(uploadedFile.StorageKey);
         _fileRepositoryMock.VerifyReplaceImageFileCalled();
+        _shortVideoRepositoryMock.VerifyUpdateCalled(shortVideo);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -98,5 +105,6 @@ public class AdminUploadShortVideoThumbnailHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 }

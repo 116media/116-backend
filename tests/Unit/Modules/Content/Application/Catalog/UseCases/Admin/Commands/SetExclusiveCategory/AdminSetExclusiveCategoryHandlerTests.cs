@@ -55,11 +55,9 @@ public class AdminSetExclusiveCategoryHandlerTests : BaseContentHandlerTest
         _categoryRepositoryMock.SetupGetExclusiveCategory(null);
 
         // Act
-        AdminSetExclusiveCategoryResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Category.Should().NotBeNull();
         category.IsExclusive.Should().BeTrue();
         _unitOfWorkMock.VerifyCommitCalled();
     }

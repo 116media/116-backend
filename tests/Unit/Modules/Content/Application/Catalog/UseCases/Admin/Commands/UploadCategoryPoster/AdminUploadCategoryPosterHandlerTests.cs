@@ -57,11 +57,10 @@ public class AdminUploadCategoryPosterHandlerTests : BaseContentHandlerTest
         _fileRepositoryMock.SetupReplaceImageFile(fileEntity);
 
         // Act
-        AdminUploadCategoryPosterResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Category.Should().NotBeNull();
+        category.PosterFileId.Should().Be(fileEntity.Id);
         _fileRepositoryMock.VerifyReplaceImageFileCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -84,10 +83,9 @@ public class AdminUploadCategoryPosterHandlerTests : BaseContentHandlerTest
         _fileRepositoryMock.SetupReplaceImageFile(newFileEntity);
 
         // Act
-        AdminUploadCategoryPosterResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         category.PosterFileId.Should().Be(newFileEntity.Id);
         _unitOfWorkMock.VerifyCommitCalled();
     }

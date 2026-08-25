@@ -48,8 +48,6 @@ public class AdminAddItemTierHandlerTests
         AdminAddItemTierResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Tier.Should().NotBeNull();
         result.Tier.TierName.Should().Be(tierName);
         result.Tier.PriceSnapshotUsd.Should().Be(TestConstants.Commerce.ValidTierPriceUsd);
     }

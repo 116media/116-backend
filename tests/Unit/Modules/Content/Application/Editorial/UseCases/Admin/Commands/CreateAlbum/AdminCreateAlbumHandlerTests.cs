@@ -128,16 +128,10 @@ public class AdminCreateAlbumHandlerTests
         );
 
         // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (NotFoundException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
         _albumRepositoryMock.VerifyAddNotCalled();
         _unitOfWorkMock.VerifyCommitNotCalled();
     }

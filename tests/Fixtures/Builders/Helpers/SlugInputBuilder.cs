@@ -35,18 +35,6 @@ public class SlugInputBuilder
     }
 
     /// <summary>
-    /// Wraps the current value with leading and trailing whitespace.
-    /// </summary>
-    /// <returns>
-    /// The builder instance for chaining.
-    /// </returns>
-    public SlugInputBuilder WithLeadingAndTrailingSpaces()
-    {
-        _value = $"  {_faker.Lorem.Word()}   ";
-        return this;
-    }
-
-    /// <summary>
     /// Sets the input to a randomly generated all-uppercase word.
     /// </summary>
     /// <returns>

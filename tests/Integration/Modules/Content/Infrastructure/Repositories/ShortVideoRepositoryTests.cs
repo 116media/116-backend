@@ -36,7 +36,7 @@ public class ShortVideoRepositoryTests(PostgresFixture postgres) : BaseRepositor
 
         var (result, totalCount) = await repo.GetAllAsync(page: 1, pageSize: 3, search: null, isActive: null);
 
-        totalCount.Should().BeGreaterThanOrEqualTo(5);
+        totalCount.Should().Be(5);
         result.Should().HaveCount(3);
     }
 

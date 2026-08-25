@@ -49,8 +49,6 @@ public class AdminCreateContentTypeHandlerTests : BaseContentHandlerTest
         AdminCreateContentTypeResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.ContentType.Should().NotBeNull();
         result.ContentType.Name.Should().Be(name);
         result.ContentType.IsActive.Should().BeTrue();
 
@@ -88,16 +86,10 @@ public class AdminCreateContentTypeHandlerTests : BaseContentHandlerTest
         _lookupRepositoryMock.SetupContentTypeExistsByName(name, true);
 
         // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (ConflictException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<ConflictException>();
         _lookupRepositoryMock.VerifyAddContentTypeNotCalled();
         _unitOfWorkMock.VerifyCommitNotCalled();
     }

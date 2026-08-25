@@ -84,9 +84,12 @@ public class AdminAttachPaymentProofHandlerTests : BaseContentHandlerTest
         AdminAttachPaymentProofResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Proof.Should().NotBeNull();
-        _orderRepositoryMock.VerifyUpdatePaymentCalled();
+        payment.PaymentProofFileId.Should().Be(proofFile.Id);
+        payment.PaymentMethod.Should().Be(EnumPaymentMethod.BankTransfer);
+        result.Proof.Id.Should().Be(proofFile.Id);
+        result.Proof.OriginalFileName.Should().Be(proofFile.OriginalFileName);
+        result.Proof.StorageUrl.Should().Be(proofFile.StorageUrl);
+        _orderRepositoryMock.Verify(x => x.UpdatePaymentAsync(payment, It.IsAny<CancellationToken>()), Times.Once);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -116,6 +119,7 @@ public class AdminAttachPaymentProofHandlerTests : BaseContentHandlerTest
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
@@ -156,6 +160,7 @@ public class AdminAttachPaymentProofHandlerTests : BaseContentHandlerTest
                 ),
             Times.Never
         );
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]

@@ -56,7 +56,6 @@ public class PublicUpdateAvatarAuthFactoryTests
         );
 
         // Assert
-        result.Should().NotBeNull();
         result.User.Should().Be(user);
     }
 
@@ -189,7 +188,6 @@ public class PublicUpdateAvatarAuthFactoryTests
         );
 
         // Assert
-        result.Should().NotBeNull();
         result.User.Should().Be(user);
     }
 

@@ -181,7 +181,7 @@ public class SessionRepositoryTests(PostgresFixture postgres) : BaseRepositoryTe
 
         var (result, totalCount) = await repo.GetAllWithPaginationAsync(1, 3);
 
-        totalCount.Should().BeGreaterThanOrEqualTo(5);
+        totalCount.Should().Be(5);
         result.Should().HaveCount(3);
     }
 
@@ -201,7 +201,7 @@ public class SessionRepositoryTests(PostgresFixture postgres) : BaseRepositoryTe
         var deletedCount = await repo.DeleteExpiredSessionsAsync();
         await db.SaveChangesAsync();
 
-        deletedCount.Should().BeGreaterThanOrEqualTo(1);
+        deletedCount.Should().Be(1);
 
         await using var verifyContext = CreateDbContext<IdentityDbContext>();
         var active = await verifyContext.Sessions.FindAsync(activeSession.Id);
@@ -251,6 +251,6 @@ public class SessionRepositoryTests(PostgresFixture postgres) : BaseRepositoryTe
 
         var count = await repo.GetTotalActiveSessionsCountAsync();
 
-        count.Should().BeGreaterThanOrEqualTo(3);
+        count.Should().Be(3);
     }
 }

@@ -2,6 +2,8 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.RejectVideo;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
+using _116.Content.Domain.Events;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
@@ -37,7 +39,7 @@ public class AdminRejectVideoHandlerTests
     }
 
     [Fact]
-    public async Task Handle_WhenVideoInPendingReview_ShouldRejectAndReturnSuccess()
+    public async Task Handle_WhenVideoInPendingReview_ShouldTransitionToRejected()
     {
         // Arrange
         VideoEntity video = VideoFactory.CreatePendingReview(CategoryId);
@@ -48,12 +50,46 @@ public class AdminRejectVideoHandlerTests
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
 
         // Act
-        AdminRejectVideoResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
-        _videoRepositoryMock.VerifyUpdateCalled();
+        video.Status.Should().Be(EnumContentStatus.Rejected);
+        video.RejectionReason.Should().Be(TestConstants.Video.ValidRejectionReason);
+        _videoRepositoryMock.VerifyUpdateCalled(video);
         _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    [Fact]
+    public async Task Handle_WhenVideoInPendingReview_ShouldRaiseCommissionedContentRejectedEvent()
+    {
+        // Arrange
+        VideoEntity video = VideoFactory.CreatePendingReview(CategoryId);
+        video.ClearDomainEvents();
+        var command = new AdminRejectVideoCommand(
+            Id: video.Id.ToString(),
+            Reason: TestConstants.Video.ValidRejectionReason
+        );
+        _videoRepositoryMock.SetupGetByIdOrThrow(video);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        video
+            .DomainEvents.OfType<CommissionedContentRejectedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(
+                new CommissionedContentRejectedEvent(
+                    ContentId: video.Id,
+                    ContentType: EnumCoreContentType.Video,
+                    CustomerId: video.CustomerId,
+                    Title: video.Title,
+                    Reason: TestConstants.Video.ValidRejectionReason
+                )
+            );
+        video.DomainEvents.OfType<VideoUnpublishedEvent>().Should().BeEmpty();
     }
 
     [Fact]
@@ -72,6 +108,7 @@ public class AdminRejectVideoHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
@@ -79,6 +116,7 @@ public class AdminRejectVideoHandlerTests
     {
         // Arrange
         VideoEntity video = VideoFactory.CreateRejected(CategoryId);
+        video.ClearDomainEvents();
         var command = new AdminRejectVideoCommand(
             Id: video.Id.ToString(),
             Reason: TestConstants.Video.ValidRejectionReason
@@ -90,13 +128,17 @@ public class AdminRejectVideoHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<ConflictException>();
+        video.Status.Should().Be(EnumContentStatus.Rejected);
+        video.DomainEvents.Should().BeEmpty();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
     public async Task Handle_WhenVideoInWrongStatus_ShouldThrowBadRequestException()
     {
         // Arrange
-        VideoEntity video = VideoFactory.Create(CategoryId); // Draft
+        VideoEntity video = VideoFactory.Create(CategoryId);
+        video.ClearDomainEvents();
         var command = new AdminRejectVideoCommand(
             Id: video.Id.ToString(),
             Reason: TestConstants.Video.ValidRejectionReason
@@ -108,5 +150,9 @@ public class AdminRejectVideoHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<BadRequestException>();
+        video.Status.Should().Be(EnumContentStatus.Draft);
+        video.RejectionReason.Should().BeNull();
+        video.DomainEvents.Should().BeEmpty();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 }

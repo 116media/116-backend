@@ -49,8 +49,6 @@ public class AdminCreateRoleHandlerTests : BaseHandlerTest
         AdminCreateRoleResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Role.Should().NotBeNull();
         result.Role.Name.Should().Be(TestConstants.Role.ValidName);
         result.Role.Description.Should().Be(TestConstants.Role.ValidDescription);
 
@@ -119,16 +117,10 @@ public class AdminCreateRoleHandlerTests : BaseHandlerTest
         _roleRepositoryMock.SetupExistsByName(TestConstants.Role.ValidName, exists: true);
 
         // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (ConflictException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<ConflictException>();
         _roleRepositoryMock.Verify(x => x.AddAsync(It.IsAny<RoleEntity>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
@@ -141,16 +133,10 @@ public class AdminCreateRoleHandlerTests : BaseHandlerTest
         _roleRepositoryMock.SetupExistsByName(TestConstants.Role.ValidName, exists: true);
 
         // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (ConflictException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<ConflictException>();
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 

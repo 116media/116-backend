@@ -34,6 +34,12 @@ public static class ArticleFactory
         new ArticleBuilder(categoryId).AsPublished().Build();
 
     /// <summary>
+    /// Creates a published free article with an explicit PublishedAt, for deterministic ordering.
+    /// </summary>
+    public static ArticleEntity CreatePublishedAt(Guid categoryId, DateTimeOffset publishedAt) =>
+        new ArticleBuilder(categoryId).AsPublishedAt(publishedAt).Build();
+
+    /// <summary>
     /// Creates a rejected free article.
     /// </summary>
     public static ArticleEntity CreateRejected(Guid categoryId) => new ArticleBuilder(categoryId).AsRejected().Build();

@@ -21,17 +21,6 @@ public class AdminForceUnpromoteVideoRequestBuilder
     }
 
     /// <summary>
-    /// Sets the unpromote reason.
-    /// </summary>
-    /// <param name="reason">The unpromote reason.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public AdminForceUnpromoteVideoRequestBuilder WithReason(string reason)
-    {
-        _reason = reason;
-        return this;
-    }
-
-    /// <summary>
     /// Builds the <see cref="AdminForceUnpromoteVideoRequest"/> instance.
     /// </summary>
     /// <returns>A configured AdminForceUnpromoteVideoRequest instance.</returns>

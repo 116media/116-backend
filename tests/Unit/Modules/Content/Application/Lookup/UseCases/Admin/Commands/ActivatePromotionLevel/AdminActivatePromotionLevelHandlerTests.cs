@@ -50,7 +50,6 @@ public class AdminActivatePromotionLevelHandlerTests : BaseContentHandlerTest
         AdminActivatePromotionLevelResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.PromotionLevel.IsActive.Should().BeTrue();
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -85,16 +84,10 @@ public class AdminActivatePromotionLevelHandlerTests : BaseContentHandlerTest
         _lookupRepositoryMock.SetupGetPromotionLevelByIdOrThrow(active);
 
         // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (ConflictException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<ConflictException>();
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 

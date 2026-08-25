@@ -82,10 +82,10 @@ public class AdminAttachYoutubeVideoUrlHandlerTests : BaseContentHandlerTest
         AdminAttachYoutubeVideoUrlResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Video.Should().NotBeNull();
         video.YoutubeVideoUrl.Should().Be(command.YoutubeVideoUrl);
-        _videoRepositoryMock.VerifyUpdateCalled();
+        result.Video.Id.Should().Be(video.Id);
+        result.Video.YoutubeVideoUrl.Should().Be(command.YoutubeVideoUrl);
+        _videoRepositoryMock.VerifyUpdateCalled(video);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -94,6 +94,7 @@ public class AdminAttachYoutubeVideoUrlHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         VideoEntity video = CreateVideoWithCategory();
+        video.ClearDomainEvents();
         var command = new AdminAttachYoutubeVideoUrlCommand(
             VideoId: video.Id.ToString(),
             YoutubeVideoUrl: TestConstants.Video.ValidYoutubeVideoUrl
@@ -107,13 +108,13 @@ public class AdminAttachYoutubeVideoUrlHandlerTests : BaseContentHandlerTest
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
-        // Assert — the thumbnail is acquired by the post-commit consumer, not inline.
+        // Assert
         video
             .DomainEvents.OfType<VideoYoutubeUrlAttachedEvent>()
             .Should()
             .ContainSingle()
             .Which.Should()
-            .Be(new VideoYoutubeUrlAttachedEvent(video.Id, command.YoutubeVideoUrl));
+            .Be(new VideoYoutubeUrlAttachedEvent(VideoId: video.Id, YoutubeVideoUrl: command.YoutubeVideoUrl));
         _fileRepositoryMock.VerifyReplaceImageFileNotCalled();
     }
 
@@ -137,6 +138,7 @@ public class AdminAttachYoutubeVideoUrlHandlerTests : BaseContentHandlerTest
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
@@ -144,6 +146,7 @@ public class AdminAttachYoutubeVideoUrlHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         VideoEntity video = CreateVideoWithCategory(DateTimeOffset.UtcNow.AddDays(30));
+        video.ClearDomainEvents();
         var command = new AdminAttachYoutubeVideoUrlCommand(
             VideoId: video.Id.ToString(),
             YoutubeVideoUrl: TestConstants.Video.ValidYoutubeVideoUrl
@@ -157,6 +160,9 @@ public class AdminAttachYoutubeVideoUrlHandlerTests : BaseContentHandlerTest
         await act.Should()
             .ThrowAsync<BadRequestException>()
             .WithMessage("*YouTube URL cannot be added before the shooting date*");
+        video.YoutubeVideoUrl.Should().BeNull();
+        video.DomainEvents.Should().BeEmpty();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
@@ -177,8 +183,10 @@ public class AdminAttachYoutubeVideoUrlHandlerTests : BaseContentHandlerTest
         AdminAttachYoutubeVideoUrlResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Video.Should().NotBeNull();
+        video.YoutubeVideoUrl.Should().Be(command.YoutubeVideoUrl);
+        result.Video.Id.Should().Be(video.Id);
+        result.Video.YoutubeVideoUrl.Should().Be(command.YoutubeVideoUrl);
+        _videoRepositoryMock.VerifyUpdateCalled(video);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 

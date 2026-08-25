@@ -2,6 +2,8 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.PublishLyrics;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
+using _116.Content.Domain.Events;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
@@ -38,7 +40,7 @@ public class AdminPublishLyricsHandlerTests
     #region Success Cases
 
     [Fact]
-    public async Task Handle_WhenLyricsIsApproved_ShouldPublishAndReturnSuccess()
+    public async Task Handle_WhenLyricsIsApproved_ShouldTransitionToPublished()
     {
         // Arrange
         LyricsEntity lyrics = LyricsFactory.CreateApproved(CategoryId);
@@ -46,12 +48,42 @@ public class AdminPublishLyricsHandlerTests
         _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
 
         // Act
-        AdminPublishLyricsResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
-        _lyricsRepositoryMock.VerifyUpdateCalled();
+        lyrics.Status.Should().Be(EnumContentStatus.Published);
+        lyrics.PublishedAt.Should().NotBeNull();
+        _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
         _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    [Fact]
+    public async Task Handle_WhenLyricsIsApproved_ShouldRaiseCommissionedContentPublishedEvent()
+    {
+        // Arrange
+        LyricsEntity lyrics = LyricsFactory.CreateApproved(CategoryId);
+        lyrics.ClearDomainEvents();
+        var command = new AdminPublishLyricsCommand(Id: lyrics.Id.ToString());
+        _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        lyrics
+            .DomainEvents.OfType<CommissionedContentPublishedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(
+                new CommissionedContentPublishedEvent(
+                    ContentId: lyrics.Id,
+                    ContentType: EnumCoreContentType.Lyrics,
+                    CustomerId: lyrics.CustomerId,
+                    Title: lyrics.SongTitle,
+                    Slug: lyrics.Slug
+                )
+            );
     }
 
     #endregion
@@ -71,6 +103,7 @@ public class AdminPublishLyricsHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
@@ -78,6 +111,7 @@ public class AdminPublishLyricsHandlerTests
     {
         // Arrange
         LyricsEntity lyrics = LyricsFactory.CreatePublished(CategoryId);
+        lyrics.ClearDomainEvents();
         var command = new AdminPublishLyricsCommand(Id: lyrics.Id.ToString());
         _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
 
@@ -86,13 +120,17 @@ public class AdminPublishLyricsHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<ConflictException>();
+        lyrics.Status.Should().Be(EnumContentStatus.Published);
+        lyrics.DomainEvents.Should().BeEmpty();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
     public async Task Handle_WhenLyricsInWrongStatus_ShouldThrowBadRequestException()
     {
         // Arrange
-        LyricsEntity lyrics = LyricsFactory.Create(CategoryId); // Draft status
+        LyricsEntity lyrics = LyricsFactory.Create(CategoryId);
+        lyrics.ClearDomainEvents();
         var command = new AdminPublishLyricsCommand(Id: lyrics.Id.ToString());
         _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
 
@@ -101,6 +139,10 @@ public class AdminPublishLyricsHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<BadRequestException>();
+        lyrics.Status.Should().Be(EnumContentStatus.Draft);
+        lyrics.PublishedAt.Should().BeNull();
+        lyrics.DomainEvents.Should().BeEmpty();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     #endregion

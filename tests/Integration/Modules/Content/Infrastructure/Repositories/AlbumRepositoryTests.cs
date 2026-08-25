@@ -74,7 +74,7 @@ public class AlbumRepositoryTests(PostgresFixture postgres) : BaseRepositoryTest
         var repo = Resolve<IAlbumRepository>();
         var (result, totalCount) = await repo.GetAllAsync(1, 100, uniqueName);
 
-        totalCount.Should().BeGreaterThanOrEqualTo(1);
+        totalCount.Should().Be(1);
         result.Should().Contain(a => a.Id == matchingAlbum.Id);
         result.Should().NotContain(a => a.Id == nonMatchingAlbum.Id);
     }

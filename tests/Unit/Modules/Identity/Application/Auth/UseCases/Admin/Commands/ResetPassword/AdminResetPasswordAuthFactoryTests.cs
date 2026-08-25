@@ -64,7 +64,6 @@ public class AdminResetPasswordAuthFactoryTests
         AdminResetPasswordAuthData result = await _factory.GetUserForResetAsync(email, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.User.Should().Be(user);
     }
 
@@ -187,8 +186,7 @@ public class AdminResetPasswordAuthFactoryTests
         UserEntity result = await _factory.ResetPasswordAsync(user, newPassword, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Should().Be(user);
+        result.PasswordHash.Should().Be(hashedPassword);
     }
 
     [Fact]

@@ -3,6 +3,7 @@ using _116.Identity.Application.Session.Builders.Contracts;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Shared.Application.Specifications;
+using _116.Tests.Fixtures.Builders.Entities.Identity;
 using _116.Tests.Fixtures.Factories.Identity;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
@@ -120,16 +121,20 @@ public class SessionQueryBuilderTests
     #region WithUserId Tests
 
     [Fact]
-    public void WithUserId_WithValidUserId_ShouldBuildSpecification()
+    public void WithUserId_WithValidUserId_ShouldMatchOnlyThatUsersSessions()
     {
         // Arrange
         SessionQueryBuilder builder = new();
+        SessionEntity ownSession = SessionFactory.Create(TestUserId);
+        SessionEntity otherUsersSession = SessionFactory.Create(Guid.NewGuid());
 
         // Act
         Specification<SessionEntity>? specification = builder.WithUserId(TestUserId).Build();
 
         // Assert
         specification.Should().NotBeNull("user ID filter was provided");
+        specification!.IsSatisfiedBy(ownSession).Should().BeTrue();
+        specification.IsSatisfiedBy(otherUsersSession).Should().BeFalse();
     }
 
     [Fact]
@@ -148,58 +153,6 @@ public class SessionQueryBuilderTests
     #endregion
 
     #region WithStatus Tests
-
-    [Fact]
-    public void WithStatus_WithActiveStatus_ShouldBuildSpecification()
-    {
-        // Arrange
-        SessionQueryBuilder builder = new();
-
-        // Act
-        Specification<SessionEntity>? specification = builder.WithStatus("Active").Build();
-
-        // Assert
-        specification.Should().NotBeNull("active status filter was provided");
-    }
-
-    [Fact]
-    public void WithStatus_WithExpiredStatus_ShouldBuildSpecification()
-    {
-        // Arrange
-        SessionQueryBuilder builder = new();
-
-        // Act
-        Specification<SessionEntity>? specification = builder.WithStatus("Expired").Build();
-
-        // Assert
-        specification.Should().NotBeNull("expired status filter was provided");
-    }
-
-    [Fact]
-    public void WithStatus_WithMixedCaseActive_ShouldBuildSpecification()
-    {
-        // Arrange
-        SessionQueryBuilder builder = new();
-
-        // Act
-        Specification<SessionEntity>? specification = builder.WithStatus("ACTIVE").Build();
-
-        // Assert
-        specification.Should().NotBeNull("status comparison should be case-insensitive");
-    }
-
-    [Fact]
-    public void WithStatus_WithMixedCaseExpired_ShouldBuildSpecification()
-    {
-        // Arrange
-        SessionQueryBuilder builder = new();
-
-        // Act
-        Specification<SessionEntity>? specification = builder.WithStatus("expired").Build();
-
-        // Assert
-        specification.Should().NotBeNull("status comparison should be case-insensitive");
-    }
 
     [Fact]
     public void WithStatus_WithInvalidStatus_ShouldNotBuildSpecification()
@@ -323,16 +276,20 @@ public class SessionQueryBuilderTests
     #region WithIpAddress Tests
 
     [Fact]
-    public void WithIpAddress_WithValidIpAddress_ShouldBuildSpecification()
+    public void WithIpAddress_WithValidIpAddress_ShouldMatchOnlySessionsFromThatAddress()
     {
         // Arrange
         SessionQueryBuilder builder = new();
+        SessionEntity matchingSession = SessionFactory.CreateWithIpAddress("192.168.1.1");
+        SessionEntity otherSession = SessionFactory.CreateWithIpAddress("10.0.0.5");
 
         // Act
         Specification<SessionEntity>? specification = builder.WithIpAddress("192.168.1.1").Build();
 
         // Assert
         specification.Should().NotBeNull("IP address filter was provided");
+        specification!.IsSatisfiedBy(matchingSession).Should().BeTrue();
+        specification.IsSatisfiedBy(otherSession).Should().BeFalse();
     }
 
     [Fact]
@@ -379,16 +336,20 @@ public class SessionQueryBuilderTests
     #region WithFromDate Tests
 
     [Fact]
-    public void WithFromDate_WithValidDate_ShouldBuildSpecification()
+    public void WithFromDate_WithValidDate_ShouldMatchOnlySessionsCreatedOnOrAfterIt()
     {
         // Arrange
         SessionQueryBuilder builder = new();
+        SessionEntity recentSession = new SessionBuilder().WithCreatedAt(TestDate.AddDays(1)).Build();
+        SessionEntity oldSession = new SessionBuilder().WithCreatedAt(TestDate.AddDays(-1)).Build();
 
         // Act
         Specification<SessionEntity>? specification = builder.WithFromDate(TestDate).Build();
 
         // Assert
         specification.Should().NotBeNull("from date filter was provided");
+        specification!.IsSatisfiedBy(recentSession).Should().BeTrue();
+        specification.IsSatisfiedBy(oldSession).Should().BeFalse();
     }
 
     [Fact]
@@ -409,16 +370,20 @@ public class SessionQueryBuilderTests
     #region WithToDate Tests
 
     [Fact]
-    public void WithToDate_WithValidDate_ShouldBuildSpecification()
+    public void WithToDate_WithValidDate_ShouldMatchOnlySessionsCreatedOnOrBeforeIt()
     {
         // Arrange
         SessionQueryBuilder builder = new();
+        SessionEntity oldSession = new SessionBuilder().WithCreatedAt(TestDate.AddDays(-1)).Build();
+        SessionEntity recentSession = new SessionBuilder().WithCreatedAt(TestDate.AddDays(1)).Build();
 
         // Act
         Specification<SessionEntity>? specification = builder.WithToDate(TestDate).Build();
 
         // Assert
         specification.Should().NotBeNull("to date filter was provided");
+        specification!.IsSatisfiedBy(oldSession).Should().BeTrue();
+        specification.IsSatisfiedBy(recentSession).Should().BeFalse();
     }
 
     [Fact]
@@ -439,29 +404,37 @@ public class SessionQueryBuilderTests
     #region WithActiveStatus Tests
 
     [Fact]
-    public void WithActiveStatus_WithTrue_ShouldBuildSpecification()
+    public void WithActiveStatus_WithTrue_ShouldMatchOnlyActiveSessions()
     {
         // Arrange
         SessionQueryBuilder builder = new();
+        SessionEntity activeSession = SessionFactory.Create();
+        SessionEntity expiredSession = SessionFactory.CreateExpired();
 
         // Act
         Specification<SessionEntity>? specification = builder.WithActiveStatus(true).Build();
 
         // Assert
         specification.Should().NotBeNull("active status filter was provided");
+        specification!.IsSatisfiedBy(activeSession).Should().BeTrue();
+        specification.IsSatisfiedBy(expiredSession).Should().BeFalse();
     }
 
     [Fact]
-    public void WithActiveStatus_WithFalse_ShouldBuildSpecification()
+    public void WithActiveStatus_WithFalse_ShouldMatchOnlyExpiredSessions()
     {
         // Arrange
         SessionQueryBuilder builder = new();
+        SessionEntity expiredSession = SessionFactory.CreateExpired();
+        SessionEntity activeSession = SessionFactory.Create();
 
         // Act
         Specification<SessionEntity>? specification = builder.WithActiveStatus(false).Build();
 
         // Assert
         specification.Should().NotBeNull("inactive status filter was provided");
+        specification!.IsSatisfiedBy(expiredSession).Should().BeTrue();
+        specification.IsSatisfiedBy(activeSession).Should().BeFalse();
     }
 
     [Fact]
@@ -480,6 +453,27 @@ public class SessionQueryBuilderTests
     #endregion
 
     #region Specification Chaining Tests
+
+    [Fact]
+    public void Build_WithUserIdAndActiveStatus_ShouldMatchOnlyEntitiesSatisfyingBoth()
+    {
+        // Arrange
+        SessionEntity match = SessionFactory.Create(TestUserId);
+        SessionEntity wrongUser = SessionFactory.Create(Guid.NewGuid());
+        SessionEntity expired = SessionFactory.CreateExpired(TestUserId);
+
+        // Act
+        Specification<SessionEntity>? specification = new SessionQueryBuilder()
+            .WithUserId(TestUserId)
+            .WithActiveStatus(true)
+            .Build();
+
+        // Assert
+        specification.Should().NotBeNull();
+        specification!.IsSatisfiedBy(match).Should().BeTrue();
+        specification.IsSatisfiedBy(wrongUser).Should().BeFalse();
+        specification.IsSatisfiedBy(expired).Should().BeFalse();
+    }
 
     [Fact]
     public void Build_WithAllFilters_ShouldCombineSpecifications()

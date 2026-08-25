@@ -57,8 +57,6 @@ public class AdminGetVideoByIdHandlerTests : BaseContentHandlerTest
         AdminGetVideoByIdResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Video.Should().NotBeNull();
         result.Video.Id.Should().Be(video.Id);
     }
 

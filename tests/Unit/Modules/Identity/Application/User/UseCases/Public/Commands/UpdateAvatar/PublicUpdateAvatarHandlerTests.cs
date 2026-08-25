@@ -72,8 +72,7 @@ public class PublicUpdateAvatarHandlerTests : BaseHandlerTest
         PublicUpdateAvatarResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.User.Should().NotBeNull();
+        result.User.Id.Should().Be(user.Id);
     }
 
     [Fact]
@@ -253,16 +252,10 @@ public class PublicUpdateAvatarHandlerTests : BaseHandlerTest
             .ThrowsAsync(new NotFoundException("User not found."));
 
         // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (NotFoundException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
         _fileRepositoryMock.Verify(
             x =>
                 x.UpdateAvatarFromFileAsync(

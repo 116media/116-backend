@@ -98,39 +98,6 @@ public class AdminUpdateArticleRequestBuilder
     }
 
     /// <summary>
-    /// Sets the optional B2B customer who commissioned the article.
-    /// </summary>
-    /// <param name="customerId">The customer identifier, or null.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public AdminUpdateArticleRequestBuilder WithCustomerId(Guid? customerId)
-    {
-        _customerId = customerId;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the optional order item the article fulfils.
-    /// </summary>
-    /// <param name="orderItemId">The order item identifier, or null.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public AdminUpdateArticleRequestBuilder WithOrderItemId(Guid? orderItemId)
-    {
-        _orderItemId = orderItemId;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets whether the article is flagged for social media promotion.
-    /// </summary>
-    /// <param name="socialBoost">The social boost flag.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public AdminUpdateArticleRequestBuilder WithSocialBoost(bool socialBoost)
-    {
-        _socialBoost = socialBoost;
-        return this;
-    }
-
-    /// <summary>
     /// Sets the optional SEO meta title.
     /// </summary>
     /// <param name="metaTitle">The meta title, or null.</param>

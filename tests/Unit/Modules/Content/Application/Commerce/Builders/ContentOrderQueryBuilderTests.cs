@@ -3,6 +3,9 @@ using _116.Content.Application.Commerce.Builders.Contracts;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Shared.Application.Specifications;
+using _116.Tests.Fixtures.Builders.Entities.Content;
+using _116.Tests.Fixtures.Factories.Content;
+using _116.Unit.Tests.Common.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
@@ -30,10 +33,12 @@ public class ContentOrderQueryBuilderTests
     }
 
     [Fact]
-    public void WithStatus_WhenStatusProvided_ShouldReturnBuilderWithSpecification()
+    public void WithStatus_WhenStatusProvided_ShouldMatchOnlyOrdersInThatStatus()
     {
         // Arrange
         var builder = new ContentOrderQueryBuilder();
+        ContentOrderEntity draftOrder = ContentOrderFactory.Create();
+        ContentOrderEntity paidOrder = ContentOrderFactory.CreatePaid();
 
         // Act
         builder.WithStatus(EnumOrderStatus.Draft);
@@ -41,6 +46,8 @@ public class ContentOrderQueryBuilderTests
 
         // Assert
         spec.Should().NotBeNull();
+        spec!.IsSatisfiedBy(draftOrder).Should().BeTrue();
+        spec.IsSatisfiedBy(paidOrder).Should().BeFalse();
     }
 
     [Fact]
@@ -75,17 +82,22 @@ public class ContentOrderQueryBuilderTests
     }
 
     [Fact]
-    public void WithCustomerId_WhenCustomerIdProvided_ShouldReturnBuilderWithSpecification()
+    public void WithCustomerId_WhenCustomerIdProvided_ShouldMatchOnlyThatCustomersOrders()
     {
         // Arrange
         var builder = new ContentOrderQueryBuilder();
+        var customerId = Guid.NewGuid();
+        ContentOrderEntity ownOrder = ContentOrderFactory.CreateForCustomer(customerId);
+        ContentOrderEntity otherCustomersOrder = ContentOrderFactory.CreateForCustomer(Guid.NewGuid());
 
         // Act
-        builder.WithCustomerId(Guid.NewGuid());
+        builder.WithCustomerId(customerId);
         Specification<ContentOrderEntity>? spec = builder.Build();
 
         // Assert
         spec.Should().NotBeNull();
+        spec!.IsSatisfiedBy(ownOrder).Should().BeTrue();
+        spec.IsSatisfiedBy(otherCustomersOrder).Should().BeFalse();
     }
 
     [Fact]
@@ -134,10 +146,22 @@ public class ContentOrderQueryBuilderTests
     }
 
     [Fact]
-    public void WithSearch_WhenSearchProvided_ShouldReturnBuilderWithSpecification()
+    public void WithSearch_WhenSearchProvided_ShouldMatchCustomerFieldsCaseInsensitively()
     {
         // Arrange
         var builder = new ContentOrderQueryBuilder();
+        CustomerEntity matchingCustomer = new CustomerBuilder()
+            .WithFullName("Grace Lombe")
+            .WithEmail("grace@acme.io")
+            .WithCompany("Acme Corp")
+            .Build();
+        CustomerEntity otherCustomer = new CustomerBuilder()
+            .WithFullName("Didi Mokonzi")
+            .WithEmail("didi@kinix.cd")
+            .WithCompany("Kinix Media")
+            .Build();
+        ContentOrderEntity matchingOrder = new ContentOrderBuilder().WithCustomer(matchingCustomer).Build();
+        ContentOrderEntity otherOrder = new ContentOrderBuilder().WithCustomer(otherCustomer).Build();
 
         // Act
         builder.WithSearch("acme");
@@ -145,6 +169,8 @@ public class ContentOrderQueryBuilderTests
 
         // Assert
         spec.Should().NotBeNull();
+        spec!.IsSatisfiedInMemoryBy(matchingOrder).Should().BeTrue();
+        spec.IsSatisfiedInMemoryBy(otherOrder).Should().BeFalse();
     }
 
     [Fact]
@@ -165,18 +191,25 @@ public class ContentOrderQueryBuilderTests
     #region CombineSpecification Tests
 
     [Fact]
-    public void Build_WhenBothStatusAndCustomerIdProvided_ShouldCombineSpecifications()
+    public void Build_WhenBothStatusAndCustomerIdProvided_ShouldMatchOnlyOrdersSatisfyingBoth()
     {
-        // Arrange — triggers CombineSpecification's And() branch (_specification is not null)
+        // Arrange
         var builder = new ContentOrderQueryBuilder();
+        var customerId = Guid.NewGuid();
+        ContentOrderEntity match = new ContentOrderBuilder().WithCustomerId(customerId).Build();
+        ContentOrderEntity wrongCustomer = ContentOrderFactory.CreateForCustomer(Guid.NewGuid());
+        ContentOrderEntity paidOrder = new ContentOrderBuilder().WithCustomerId(customerId).AsPaid().Build();
 
         // Act
         builder.WithStatus(EnumOrderStatus.Draft);
-        builder.WithCustomerId(Guid.NewGuid());
+        builder.WithCustomerId(customerId);
         Specification<ContentOrderEntity>? spec = builder.Build();
 
         // Assert
         spec.Should().NotBeNull();
+        spec!.IsSatisfiedBy(match).Should().BeTrue();
+        spec.IsSatisfiedBy(wrongCustomer).Should().BeFalse();
+        spec.IsSatisfiedBy(paidOrder).Should().BeFalse();
     }
 
     [Fact]

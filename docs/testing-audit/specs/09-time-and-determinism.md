@@ -741,20 +741,50 @@ it with `DateTime.Now` and a 10 ms tolerance. Convert that test to UTC and to an
 exact assertion only once the property is fixed; until then, note it and leave it, so
 the workaround does not get mistaken for a passing contract.
 
+## Implementation notes
+
+Implemented 2026-08-23. Three corrections to the audit's numbers.
+
+1. **"~30 tolerance assertions" was really 9.** The audit's estimate counted every
+   assertion mentioning a time, including exact ones. Nine were genuinely
+   tolerance-based — asserting that a computed instant fell inside a window rather
+   than equalling a value — and all nine now assert exact instants against a
+   `FakeTimeProvider`. The smaller number does not weaken the case for the decision
+   taken in [00-index.md](00-index.md): a tolerance assertion is the shape that cannot
+   fail when the clock arithmetic is wrong by less than the tolerance, and nine of
+   those is nine too many.
+2. **6.4 seconds of sleeps were removed**, not the ~6 s estimated: both
+   `Task.Delay(3100)` calls, the three `Thread.Sleep` / `Task.Delay(10)` pairs and the
+   three `Task.Delay(50)` ordering sites. The only `Task.Delay` left anywhere in the
+   suite is `TestPostgresContainer.cs:127`, a 250 ms poll interval in the container
+   retry loop, which is infrastructure rather than an assertion crutch.
+3. **`TimeProvider` seams were added at 6 sites in `src/`**, not the broader sweep the
+   spec implies: `LoggingDecorator`, `AuditableEntityInterceptor`, `OtpService`, and
+   the three album/lyrics validators that reach the shared
+   `EditorialValidation.ValidReleaseYear` extension. `TimeProvider.System` is registered
+   twice on purpose — `Program.cs:53` for the application, and
+   `BaseModule.cs:123` via `TryAddSingleton` so a module composed in isolation still
+   has the seam the audit interceptor needs.
+
+The 2030 literal is gone from the whole suite; the release-year tests now assert their
+four boundary cases against literal years supplied by a fake clock, so the file will
+not start failing on 1 January 2030.
+
 ## Checklist
 
-- [ ] 1 — `TimeProvider.System` registered as a singleton in `Program.cs`; the
+- [x] 1 — `TimeProvider.System` registered as a singleton in `Program.cs`; the
       components that changes 2–5 depend on take `TimeProvider` by constructor
-      injection; domain methods take the instant as a parameter; the unconverted
-      `UtcNow` sites are enumerated in the implementation notes
-- [ ] 2 — `Microsoft.Extensions.TimeProvider.Testing` referenced by both test
-      projects at a verified 9.x version; the tolerance-based assertions replaced by
+      injection; domain methods take the instant as a parameter; the six converted
+      sites are enumerated in the implementation notes
+- [x] 2 — `Microsoft.Extensions.TimeProvider.Testing` referenced by both test
+      projects at 9.10.0; the nine tolerance-based assertions replaced by
       exact ones against a `FakeTimeProvider`
-- [ ] 3 — both `Task.Delay(3100)` calls and all three `Thread.Sleep` / `Task.Delay(10)`
+- [x] 3 — both `Task.Delay(3100)` calls and all three `Thread.Sleep` / `Task.Delay(10)`
       pairs removed; `CalculateExpirationTime_CalledMultipleTimes_ShouldReturnIncreasingTimes`
       deleted
-- [ ] 4 — `ArticleBuilder.AsPublishedAt` added; the three `await Task.Delay(50)`
-      ordering sites seed explicit timestamps months apart
-- [ ] 5 — the 2030 literal replaced by a seeded window that also seeds a row the
+- [x] 4 — `ArticleBuilder.AsPublishedAt` added (and `VideoBuilder.AsPublishedAt`
+      alongside it); the three `await Task.Delay(50)` ordering sites seed explicit
+      timestamps months apart
+- [x] 5 — the 2030 literal replaced by a seeded window that also seeds a row the
       filter must exclude; `ValidReleaseYear` takes a `TimeProvider` and its tests
       assert all four boundary cases against literal years

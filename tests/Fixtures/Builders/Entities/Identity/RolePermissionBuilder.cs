@@ -48,17 +48,6 @@ public class RolePermissionBuilder
     }
 
     /// <summary>
-    /// Sets the permission ID.
-    /// </summary>
-    /// <param name="permissionId">The permission identifier.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public RolePermissionBuilder WithPermissionId(Guid permissionId)
-    {
-        _permissionId = permissionId;
-        return this;
-    }
-
-    /// <summary>
     /// Sets both role and permission IDs.
     /// </summary>
     /// <param name="roleId">The role identifier.</param>
@@ -93,21 +82,11 @@ public class RolePermissionBuilder
 
         if (_permission is not null)
         {
-            SetNavigationProperty(rolePermission, "Permission", _permission);
+            typeof(RolePermissionEntity)
+                .GetProperty(nameof(RolePermissionEntity.Permission), BindingFlags.Public | BindingFlags.Instance)!
+                .SetValue(rolePermission, _permission);
         }
 
         return rolePermission;
-    }
-
-    /// <summary>
-    /// Sets a navigation property using reflection for testing purposes.
-    /// </summary>
-    private static void SetNavigationProperty<T>(RolePermissionEntity entity, string propertyName, T value)
-    {
-        PropertyInfo? property = typeof(RolePermissionEntity).GetProperty(
-            propertyName,
-            BindingFlags.Public | BindingFlags.Instance
-        );
-        property?.SetValue(entity, value);
     }
 }

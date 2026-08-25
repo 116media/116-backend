@@ -1,5 +1,18 @@
 # Spec 07 — Mock discipline
 
+> **Status: landed, with changes 5 and 6 outstanding.** Changes 1 through 4 are in the
+> code, and a defect class this spec did not anticipate — a swallowed exception in the
+> Act phase — was found and fixed across 27 sites. Change 1 landed against the identity
+> lookups: 48 blanket read defaults were removed across 18 repository mocks, and
+> `grep -rn "GetByIdAsync(It.IsAny<Guid>()" tests/Unit/Common/Mocks/` now returns
+> nothing. It landed by default removal with loose mocks retained, which is the only
+> route this spec's own Scope section leaves open — changing `MockBehavior` in the same
+> pass is ruled out there. The limit that follows from that choice, and the aggregate
+> reads deliberately kept and sequenced as change 6, are argued for in the
+> implementation notes. Change 5's dead-helper deletion was not attempted; change 6 is
+> gated on `MockBehavior.Strict` and has not started. See the implementation notes
+> below and [00-index.md](00-index.md) for global progress.
+
 ## Goal
 
 The repository mock factories install a default return value for every read method,
@@ -405,6 +418,35 @@ none and gains one in `tests/Unit/Common/Mocks/`.
 `OpenReadStream()` produces a null stream and a failure that looks unrelated to the
 change.
 
+### 6. Retire the aggregate read defaults, after strict behaviour lands
+
+**Files:** the same repository mock files.
+
+Change 1 removed the identity lookups. What remains in `SetupDefaults` is the
+aggregate surface: `GetAllAsync(any) → (empty, 0)`, `GetPromotedAsync(any) → empty
+list`, `HasLikedAsync(any, any) → false`, `GetReplyCountsAsync(any) → empty
+dictionary`, `GetTotalsAsync(any) → ArtistTotals(Songs: 1, …)`. These are unstated
+arrangements too — a per-artist list query answered `empty` for every artist id lets a
+"this artist has no videos" test pass with the wrong artist id — but they differ from
+change 1 in two ways that make them a separate change.
+
+First, removing them is not behaviour-preserving: Moq's loose provider returns an
+empty sequence only for `IEnumerable<T>`, `IQueryable<T>` and arrays, so
+`Task<List<T>>`, `Task<IReadOnlyList<T>>`, `Task<Dictionary<K,V>>`,
+`Task<IReadOnlySet<T>>` and every `(List<T>, int)` tuple resolve to `null` and the
+handler dereferences it. The failure is a `NullReferenceException` in the mapper,
+which points at the collection, not at the identifier. Second, the blast radius is
+the full ~470 `Create()` call sites rather than the fourteen change 1 produced.
+
+Do this after `MockBehavior.Strict`, not before. With strict mocks the missing
+arrangement names the member and the arguments it was called with, which is the
+diagnostic that makes ~470 sites tractable; without it the same work is 470
+null-reference stack traces. Sequence per repository mock, as change 1 did.
+
+*If done wrong:* replacing a removed collection default with `SetupX(empty)` in a
+shared test constructor recreates the blanket answer one folder closer and is harder
+to grep for than the original.
+
 ## Expected fallout
 
 **This is the important section of this spec.** Change 1 will surface missing
@@ -461,10 +503,10 @@ existing ones. Verify by mutation on three representative cases:
 Grep-provable invariants after this spec:
 
 ```bash
-# no read-method default survives in a mock factory
+# no identity-lookup default survives in a mock factory
 grep -rn "GetByIdAsync(It.IsAny<Guid>()" tests/Unit/Common/Mocks/     # → nothing
 grep -rn "ReturnsAsync((.*Entity?)null)" tests/Unit/Common/Mocks/ \
-  | grep "It.IsAny"                                                   # → nothing
+  | grep -E "It.IsAny<(Guid|string|Guid\?)>"                          # → nothing
 
 # the password default rejects
 grep -n "Verify(It.IsAny<string>(), It.IsAny<string?>())).Returns(true)" \
@@ -508,17 +550,146 @@ bytes and `image/jpeg`. A validation test asserting a size or extension boundary
 must use the three-argument overload with its original values, not the parameterless
 one.
 
+## Implementation notes
+
+Implemented and verified 2026-08-24.
+
+**Change 3 was already done, and this spec was stale about it.**
+`MockPasswordService.SetupDefaults` at
+`tests/Unit/Common/Mocks/Services/MockPasswordService.cs:129` arranges
+`Verify(It.IsAny<string>(), It.IsAny<string?>())` to return `false`. The invert was
+landed by an earlier spec; nothing was changed here beyond confirming the six call
+sites still pass.
+
+**Change 4 landed against a narrower, stated rule.** Seven mock helpers were
+tightened across 14 argument positions, updating 34 call sites. The rule applied,
+recorded here so the next author does not have to re-derive it:
+
+1. An argument the assertion is about is matched by value or by `It.Is<T>`.
+2. An identifier is never `It.IsAny<>`.
+3. `CancellationToken` and `EventId` always stay `It.IsAny<>`.
+
+`It.Is<` now appears 37 times under `tests/Unit/Common/Mocks/`. Zero assertion-free
+tests remain.
+
+**A separate defect class was found and fixed, outside this spec's change list.**
+27 sites across 21 files wrapped the Act phase in `try { … } catch (SomeException) { }`
+with the assertions inside the catch and nothing after it. Every one of them passed
+if the handler stopped throwing entirely, which is the same failure shape as an
+assertion-free test wearing a `[Fact]`. All 27 are now
+`await act.Should().ThrowAsync<T>()`. The three `try/catch` blocks left in `tests/Unit`
+(`Shared/Middleware/ResourceNotFoundMiddlewareTests.cs:74,106,166`) assert on the
+caught exception and throw when nothing was thrown, so they cannot pass silently.
+
+Three further corrections made while implementing:
+
+1. One hollow `[Fact(Skip)]` with an empty expression body was deleted —
+   `ArtistRepositoryTests`, the folded-name search case. The behaviour is covered by
+   `PublicGetArtistsEndpointV1Tests`, which reaches it through a real request.
+   `grep -rn "Fact(Skip" tests/` now returns nothing.
+2. Six loose `Times` constraints were tightened to exact cardinalities.
+3. `LoggingDecoratorTests.Handle_ShouldLogEndEvenIfHandlerThrows` was renamed. It
+   asserted the opposite of the truth: END is **not** logged on the throwing path.
+
+**Change 1 landed, scoped to identity lookups, by default removal rather than by
+`MockBehavior.Strict`.** Every `SetupDefaults` that answered an identity question with
+a miss for any argument had that answer deleted: 48 blanket read defaults across 18
+repository mocks — the `ReturnsAsync((XEntity?)null)` family, the two
+`GetItem…OrThrowAsync`/`GetTagByIdOrThrowAsync` `ThrowsAsync(new NotFoundException(…))`
+defaults, and `MockFileRepository.GetByIdsAsync(any) → empty dictionary`, which the
+spec names explicitly. Both of the spec's grep invariants now hold. Two single-user
+lookups in `MockUserLookupService` were included for the same reason; its batch
+`GetAuthorInfosByIdsAsync` default was kept.
+
+**What was deliberately kept, and why.** The aggregate reads — empty lists, empty
+tuples, `false`, `0`, and the batch dictionaries — remain. They do not answer an
+identity question, so they cannot convert a wrong-identifier bug into a passing
+not-found test, which is the defect this spec exists to remove. They are also the
+defaults handler tests lean on hardest: under loose Moq, `Task<List<T>>`,
+`Task<(List<T>, int)>`, `Task<IReadOnlyList<T>>`, `Task<Dictionary<K,V>>` and
+`Task<IReadOnlySet<T>>` all resolve to `null`, not to an empty collection, so removing
+them turns roughly 470 mock call sites into `NullReferenceException`s that say nothing
+about identifiers. That work is worth doing, but it is a different change with a
+different failure mode; it is recorded as change 6 below rather than smuggled into
+change 1.
+
+**The honest limit of change 1 under loose mocks, which the spec did not state.**
+Deleting `GetByIdAsync(any) → null` does not, on its own, make an unarranged call
+loud: Moq's loose default for a reference-typed read is already `null`, so the removal
+is behaviour-preserving for the whole `ReturnsAsync((XEntity?)null)` family. What it
+buys is that the arrangement is no longer *asserted in another folder* — a test that
+depends on a miss now has to say so, and the invariant is grep-checkable. Making the
+call actually fail needs the `MockBehavior.Strict` step this spec defers in its Scope
+section; until that lands, change 1 is a precondition for loudness, not loudness
+itself. The three defaults that were *not* behaviour-preserving are exactly the ones
+that produced fallout, listed below.
+
+**Fallout, and the arrangement each red test was given.** Twenty tests across six
+files went red, and thirteen call sites in thirteen more stopped compiling once the
+nullable-entity helper overloads were withdrawn. The `OrThrow` defaults: `AdminRemoveOrderItemHandlerTests` and
+`AdminEditOrderItemHandlerTests` (`Handle_WhenItemNotFound_…`) and
+`AdminRemoveItemTierHandlerTests` (`Handle_WhenTierNotFound_…`,
+`Handle_WhenItemBelongsToAnotherOrder_…`) all asserted `NotFoundException` while
+passing `Guid.NewGuid()` inline for the identifier they never named; each now hoists
+that id and states `SetupGetItemByIdOrThrowNotFound(orderId, itemId)` or
+`SetupGetItemTierByIdOrThrowNotFound(itemId, tierId)`, two new helpers added next to
+their positive counterparts. The `GetByIdsAsync` default: `AdminGetAllShortsHandlerTests`,
+`PublicGetShortsFeedHandlerTests`, `PublicGetPublicShortsHandlerTests`,
+`ShortVideoMapperTests` (four cases) and `MapperExtensionTests` all batch-map short
+videos, which always carry a `VideoFileId`, so each now states its file map with
+`SetupGetByIds`. `PublicGetOwnShortVideoFavoritesHandlerTests` already stated it and is
+the shape the others were made to match. No test was made green by restoring a default.
+
+**Four helpers still arranged a miss for every identifier from inside the test, which
+is the same defect one level down.** `MockArticleRepository.SetupGetCommentByIdAsync`,
+`SetupGetCommentByIdInArticleAsync`, `MockVideoRepository.SetupGetRatingAsync` and
+`MockPlaylistRepository.SetupGetByIdAsync`/`SetupGetByIdWithVideosAsync` took a
+nullable entity and fell back to `It.IsAny<Guid>() → null` when handed `null`. The
+nullable parameter is gone; each has a sibling `SetupXNotFound(id)` and the thirteen
+call sites that passed `null` now name the identifier they are a miss for.
+`SetupGetCommentByIdInArticleAsync` additionally matches the comment id, not just the
+article id.
+
+**No handler was caught asking for the wrong identifier.** The three comment handlers
+the tightened article helpers now discriminate against
+(`PublicEditArticleCommentHandler`, `PublicDeleteArticleCommentHandler`,
+`AdminDeleteArticleCommentHandler`) all pass `command.CommentId` and
+`command.ArticleId` in the right positions, and `PublicRateVideoHandler` passes
+`userId`/`videoId` in the order `IVideoRepository.GetRatingAsync` declares.
+
+**Change 5 was not attempted.** `new Mock<IFormFile>` still appears 26 times in
+`tests/`, and 155 raw `new Mock<` declarations remain in `tests/Unit` outside
+`tests/Unit/Common/`. The dead-helper measurement was re-run and is recorded as an
+open follow-up in [../90-remediation-plan.md](../90-remediation-plan.md): 97 of 329
+public mock helpers have no call site outside `tests/Unit/Common/Mocks/`.
+
+**The ~40-file fallout this spec budgeted for no longer exists.** Only two mock
+helpers still accept an entity while matching its identifier with `It.IsAny`:
+`MockAddItemTierFactory.SetupAttachTierAsync` (`:17-23`) and
+`MockAddOrderItemFactory.SetupCreateItemAsync` (`:18-26`). Spec 13's scoped-overload
+work and spec 04's exact-detail sweep between them absorbed most of what the Expected
+fallout section predicted, so the remaining exposure is two files, not forty.
+
 ## Checklist
 
-- [ ] 1 — `SetupDefaults` in every repository mock configures write and void members
-      only; every read-setup helper takes the identifier it matches on
-- [ ] 2 — a `SetupXNotFound(id)` helper exists next to each read helper, and the
-      naming is consistent across the mock files
-- [ ] 3 — `MockPasswordService` defaults `Verify` to `false`, with the doc comment
+- [x] 1 — `SetupDefaults` in every repository mock installs no identity-lookup default,
+      and every read-setup helper takes the identifier it matches on — 48 defaults
+      removed across 18 mocks, 5 helpers de-nullified with `SetupXNotFound(id)`
+      siblings, 33 tests and call sites given the arrangement they were relying on. Aggregate reads
+      are kept on purpose; retiring them is change 6
+- [x] 2 — a `SetupXNotFound(id)` helper exists next to each read helper, and the
+      naming is consistent across the mock files — landed as
+      `SetupXOrThrowNotFound(id)`, 29 helpers
+- [x] 3 — `MockPasswordService` defaults `Verify` to `false`, with the doc comment
       explaining why, and all six existing call sites still pass
-- [ ] 4 — no `Verify` matches two or more meaningful arguments entirely with
+- [x] 4 — no `Verify` matches two or more meaningful arguments entirely with
       `It.IsAny<>`; identifiers are matched by value, `CancellationToken` is not;
-      cardinality assertions keep their accompanying identity assertions
+      cardinality assertions keep their accompanying identity assertions — 7 helpers,
+      14 argument positions, 34 call sites, under the three-part rule in the notes
+      above
 - [ ] 5 — the uncalled helper methods under `tests/Unit/Common/Mocks/` are deleted
       after the tightening work, and `new Mock<IFormFile>` no longer appears in
-      `tests/`
+      `tests/` — **not attempted**; 97 uncalled helpers and 26 `new Mock<IFormFile>`
+      sites remain
+- [ ] 6 — the aggregate read defaults are retired once `MockBehavior.Strict` is in
+      place — **not started**; deliberately deferred, see change 6

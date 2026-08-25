@@ -1,7 +1,9 @@
 using _116.Content.Application.Editorial.Specifications;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
+using _116.Tests.Fixtures.Builders.Entities.Content;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Unit.Tests.Common.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
@@ -9,8 +11,8 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.Specifications;
 
 /// <summary>
 /// Unit tests for lyrics specification classes.
-/// Note: Specifications using EF.Functions.ILike require a real PostgreSQL provider —
-/// those are covered via ToExpression().Compile() only.
+/// Specifications using EF.Functions.ILike are evaluated through
+/// <see cref="ILikeSpecificationEvaluator" />, which rewrites ILike for in-memory execution.
 /// </summary>
 public class LyricsSpecificationsTests
 {
@@ -50,18 +52,22 @@ public class LyricsSpecificationsTests
 
     #region LyricsBySlugSpecification
 
-    // ILike: requires PostgreSQL provider — compile-only
-    [Fact]
-    public void LyricsBySlugSpecification_ShouldCompileExpression()
+    [Theory]
+    [InlineData("fally-ipupa-eloko-oyo-lyrics", true)]
+    [InlineData("FALLY-IPUPA-ELOKO-OYO-LYRICS", true)]
+    [InlineData("eloko-oyo", false)]
+    [InlineData("fally-ipupa-mabele-lyrics", false)]
+    public void LyricsBySlugSpecification_ShouldMatchWholeSlugCaseInsensitively(string slug, bool expected)
     {
         // Arrange
-        var spec = new LyricsBySlugSpecification("fally-ipupa-eloko-oyo-lyrics");
+        LyricsEntity lyrics = LyricsFactory.CreateWithSlug(CategoryId, "fally-ipupa-eloko-oyo-lyrics");
+        var spec = new LyricsBySlugSpecification(slug);
 
         // Act
-        Func<LyricsEntity, bool> predicate = spec.ToExpression().Compile();
+        bool result = spec.IsSatisfiedInMemoryBy(lyrics);
 
         // Assert
-        predicate.Should().NotBeNull();
+        result.Should().Be(expected);
     }
 
     #endregion
@@ -132,18 +138,22 @@ public class LyricsSpecificationsTests
 
     #region LyricsSearchSpecification
 
-    // ILike: requires PostgreSQL provider — compile-only
-    [Fact]
-    public void LyricsSearchSpecification_ShouldCompileExpression()
+    [Theory]
+    [InlineData("eloko", true)]
+    [InlineData("FALLY", true)]
+    [InlineData("nazali", true)]
+    [InlineData("koffi", false)]
+    public void LyricsSearchSpecification_ShouldMatchTitleArtistOrTextCaseInsensitively(string search, bool expected)
     {
         // Arrange
-        var spec = new LyricsSearchSpecification("fally");
+        LyricsEntity lyrics = LyricsFactory.Create(CategoryId, "Eloko Oyo", "Fally Ipupa");
+        var spec = new LyricsSearchSpecification(search);
 
         // Act
-        Func<LyricsEntity, bool> predicate = spec.ToExpression().Compile();
+        bool result = spec.IsSatisfiedInMemoryBy(lyrics);
 
         // Assert
-        predicate.Should().NotBeNull();
+        result.Should().Be(expected);
     }
 
     #endregion
@@ -197,18 +207,21 @@ public class LyricsSpecificationsTests
 
     #region LyricsByLanguageSpecification
 
-    // ILike: requires PostgreSQL provider — compile-only
-    [Fact]
-    public void LyricsByLanguageSpecification_ShouldCompileExpression()
+    [Theory]
+    [InlineData("fr", true)]
+    [InlineData("FR", true)]
+    [InlineData("en", false)]
+    public void LyricsByLanguageSpecification_ShouldMatchLanguageCaseInsensitively(string language, bool expected)
     {
         // Arrange
-        var spec = new LyricsByLanguageSpecification("fr");
+        LyricsEntity lyrics = new LyricsBuilder(CategoryId).WithLanguage("fr").Build();
+        var spec = new LyricsByLanguageSpecification(language);
 
         // Act
-        Func<LyricsEntity, bool> predicate = spec.ToExpression().Compile();
+        bool result = spec.IsSatisfiedInMemoryBy(lyrics);
 
         // Assert
-        predicate.Should().NotBeNull();
+        result.Should().Be(expected);
     }
 
     #endregion

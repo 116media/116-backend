@@ -65,9 +65,8 @@ public class AdminGetOrderPaymentHandlerTests : BaseContentHandlerTest
         AdminGetOrderPaymentResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Payment.Should().NotBeNull();
         result.Payment.PaymentProof.Should().NotBeNull();
+        result.Payment.PaymentProof!.Id.Should().Be(proofFile.Id);
     }
 
     [Fact]
@@ -85,7 +84,6 @@ public class AdminGetOrderPaymentHandlerTests : BaseContentHandlerTest
         AdminGetOrderPaymentResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Payment.Should().NotBeNull();
         result.Payment.PaymentProof.Should().BeNull();
 
         _fileRepositoryMock.Verify(x => x.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
@@ -108,7 +106,6 @@ public class AdminGetOrderPaymentHandlerTests : BaseContentHandlerTest
         AdminGetOrderPaymentResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Payment.Should().NotBeNull();
         result.Payment.VerifiedByUserName.Should().Be(TestConstants.User.ValidUserName);
         _userLookupMock.VerifyGetUserNameByIdCalled(verifierId);
     }

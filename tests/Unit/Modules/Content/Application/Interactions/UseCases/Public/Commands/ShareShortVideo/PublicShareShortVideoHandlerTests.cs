@@ -41,10 +41,9 @@ public class PublicShareShortVideoHandlerTests
         var command = new PublicShareShortVideoCommand(ShortVideoId: shortVideo.Id, UserId: null);
 
         // Act
-        PublicShareShortVideoResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         _shortVideoRepositoryMock.VerifyAddShareCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }

@@ -40,8 +40,6 @@ public class AdminGetPackageByIdHandlerTests : BaseContentHandlerTest
         AdminGetPackageByIdResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Package.Should().NotBeNull();
         result.Package.Id.Should().Be(package.Id);
     }
 

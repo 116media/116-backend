@@ -399,8 +399,8 @@ Change 3 starts.
       seed-and-assert constraint
 - [x] 4 — `tests/Integration/xunit.runner.json` added with parallelism stated
       explicitly and included as content in the project file
-- [ ] Full integration suite run twice back to back with identical results and an
-      unchanged test count
+- [x] Full integration suite run twice back to back with identical results and an
+      unchanged test count — verified 2026-08-25: 1,936 passed on both runs, identical executed-test-name sets and identical outcomes compared from `.trx`
 - [x] 3 — Recorded as gated, with the 420-second trigger stated and the running log of
       measured times started
 
@@ -517,3 +517,27 @@ Change 3 starts when a recorded value crosses **420 seconds**.
 | Date | Run time | Notes |
 | --- | --- | --- |
 | 2026-08-23 | 221 s | 1,936 tests, before this spec |
+| 2026-08-24 | ~130 s | 1,936 tests, after consolidation to one server with per-fixture template clones |
+| 2026-08-24 | 143 s | spec 14 verification sweep, run 1 of 2 |
+| 2026-08-24 | 144 s | spec 14 verification sweep, run 2 of 2 |
+
+### Outcome, measured after the fact
+
+The wall clock went from **3 m 41 s (221 s) to 2 m 23 s (143 s)** on the same
+machine and the same 1,936 tests — about 35% off, and several times the 20–30 s this
+section predicted. The prediction was low because it costed the twelve removed
+`MigrateAsync` calls at zero: the note above says explicitly that a four-context pass
+over 38 migration files "was not measured, so no number is claimed for it". It is the
+dominant term. Three fixtures × four contexts of migration, replaced by three ~339 ms
+`CREATE DATABASE ... TEMPLATE` clones, accounts for most of the ~78 s.
+
+The gap between prediction and result is larger than the run-to-run spread, so this one
+is safe to read as a real improvement rather than noise — unlike the ~3 s container and
+~17 s tmpfs terms, which are not separable at this resolution.
+
+Restating the correction this spec's notes make above, because it is the part most
+likely to be repeated elsewhere: **the container arithmetic in the audit was stale.**
+There were four containers by implementation time, not two, and Testcontainers 4.12.0
+already applied `fsync=off`, `full_page_writes=off` and `synchronous_commit=off` in
+`PostgreSqlBuilder.Init()`, so Change 1's durability flags were a no-op. Any before/after
+number attributed to them would have been fictional.

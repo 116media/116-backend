@@ -62,7 +62,7 @@ public class AdminUploadArtistAvatarHandlerTests
         result.AvatarStorageKey.Should().Be(fileEntity.StorageKey);
         artist.AvatarFileId.Should().Be(fileEntity.Id);
 
-        _artistRepositoryMock.VerifyUpdateCalled();
+        _artistRepositoryMock.VerifyUpdateCalled(artist);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -81,5 +81,6 @@ public class AdminUploadArtistAvatarHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 }

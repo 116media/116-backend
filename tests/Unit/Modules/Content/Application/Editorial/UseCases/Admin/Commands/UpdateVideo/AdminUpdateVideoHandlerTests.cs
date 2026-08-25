@@ -2,6 +2,7 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateVideo;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Core.Application.Shared.Repositories;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
@@ -68,7 +69,6 @@ public class AdminUpdateVideoHandlerTests : BaseContentHandlerTest
         CategoryEntity category = CategoryFactory.Create(CategoryId);
         VideoEntity video = VideoFactory.CreateWithCategory(CategoryId, category);
         AdminUpdateVideoCommand command = BuildCommand(video, category.Id);
-        // video.Slug == command.Slug (both ValidSlug), so handler skips slug conflict check
 
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
@@ -77,9 +77,19 @@ public class AdminUpdateVideoHandlerTests : BaseContentHandlerTest
         AdminUpdateVideoResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Video.Should().NotBeNull();
-        _videoRepositoryMock.VerifyUpdateCalled();
+        video.CategoryId.Should().Be(command.CategoryId);
+        video.Title.Should().Be(command.Title);
+        video.Slug.Should().Be(command.Slug);
+        video.Description.Should().Be(command.Description);
+        video.CustomerId.Should().BeNull();
+        video.OrderItemId.Should().BeNull();
+        video.SocialBoost.Should().BeFalse();
+        video.MetaTitle.Should().BeNull();
+        video.MetaDescription.Should().BeNull();
+        result.Video.Id.Should().Be(video.Id);
+        result.Video.Title.Should().Be(command.Title);
+        result.Video.Slug.Should().Be(command.Slug);
+        _videoRepositoryMock.VerifyUpdateCalled(video);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -101,6 +111,7 @@ public class AdminUpdateVideoHandlerTests : BaseContentHandlerTest
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
@@ -108,6 +119,8 @@ public class AdminUpdateVideoHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         VideoEntity video = VideoFactory.CreateApproved(CategoryId);
+        string originalTitle = video.Title;
+        string originalSlug = video.Slug;
         AdminUpdateVideoCommand command = BuildCommand(video, CategoryId);
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
 
@@ -116,6 +129,10 @@ public class AdminUpdateVideoHandlerTests : BaseContentHandlerTest
 
         // Assert
         await act.Should().ThrowAsync<BadRequestException>();
+        video.Status.Should().Be(EnumContentStatus.Approved);
+        video.Title.Should().Be(originalTitle);
+        video.Slug.Should().Be(originalSlug);
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
@@ -136,6 +153,8 @@ public class AdminUpdateVideoHandlerTests : BaseContentHandlerTest
 
         // Assert
         await act.Should().ThrowAsync<ConflictException>();
+        video.Slug.Should().Be("original-video-slug");
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     #endregion

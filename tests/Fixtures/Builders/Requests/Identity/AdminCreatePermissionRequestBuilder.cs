@@ -62,17 +62,6 @@ public class AdminCreatePermissionRequestBuilder
     }
 
     /// <summary>
-    /// Sets the permission description.
-    /// </summary>
-    /// <param name="description">The permission description.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public AdminCreatePermissionRequestBuilder WithDescription(string description)
-    {
-        _description = description;
-        return this;
-    }
-
-    /// <summary>
     /// Builds the <see cref="AdminCreatePermissionRequest"/> instance.
     /// </summary>
     /// <returns>A configured AdminCreatePermissionRequest instance.</returns>

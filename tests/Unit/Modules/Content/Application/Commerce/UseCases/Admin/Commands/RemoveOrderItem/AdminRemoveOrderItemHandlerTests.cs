@@ -4,6 +4,7 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Builders.Entities.Content;
+using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
@@ -37,7 +38,7 @@ public class AdminRemoveOrderItemHandlerTests
     #region Success Cases
 
     [Fact]
-    public async Task Handle_WhenDraftOrderAndItemExists_ShouldRemoveAndReturnSuccess()
+    public async Task Handle_WhenDraftOrderAndItemExists_ShouldRemoveItemAndRecalculateTotal()
     {
         // Arrange
         CustomerEntity customer = CustomerFactory.Create();
@@ -46,20 +47,31 @@ public class AdminRemoveOrderItemHandlerTests
         ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, Guid.NewGuid());
         order.Items.Add(item);
 
+        ContentOrderEntity orderAfterRemoval = new ContentOrderBuilder()
+            .WithId(order.Id)
+            .WithCustomer(customer)
+            .Build();
+        ContentOrderItemEntity remainingItem = ContentOrderItemFactory.Create(order.Id, Guid.NewGuid());
+        remainingItem.Tiers.Add(
+            ContentItemTierFactory.Create(remainingItem.Id, Guid.NewGuid(), TestConstants.Commerce.ValidTierPriceUsd)
+        );
+        orderAfterRemoval.Items.Add(remainingItem);
+
         _orderRepositoryMock
-            .Setup(x => x.GetByIdWithItemsAsync(order.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(order);
+            .SetupSequence(x => x.GetByIdWithItemsAsync(order.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(order)
+            .ReturnsAsync(orderAfterRemoval);
         _orderRepositoryMock.SetupGetItemByIdOrThrow(item);
 
         var command = new AdminRemoveOrderItemCommand(OrderId: order.Id.ToString(), ItemId: item.Id.ToString());
 
         // Act
-        AdminRemoveOrderItemResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
-        _orderRepositoryMock.VerifyRemoveItemCalled();
-        _orderRepositoryMock.VerifyUpdateCalled();
+        orderAfterRemoval.TotalAmountUsd.Should().Be(TestConstants.Commerce.ValidTierPriceUsd);
+        _orderRepositoryMock.Verify(x => x.RemoveItemAsync(item, It.IsAny<CancellationToken>()), Times.Once);
+        _orderRepositoryMock.VerifyUpdateCalled(orderAfterRemoval);
         _unitOfWorkMock.VerifyCommitCalled(times: 2);
     }
 
@@ -83,6 +95,7 @@ public class AdminRemoveOrderItemHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
@@ -103,6 +116,11 @@ public class AdminRemoveOrderItemHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<BadRequestException>();
+        _orderRepositoryMock.Verify(
+            x => x.RemoveItemAsync(It.IsAny<ContentOrderItemEntity>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
@@ -111,18 +129,21 @@ public class AdminRemoveOrderItemHandlerTests
         // Arrange
         CustomerEntity customer = CustomerFactory.Create();
         ContentOrderEntity order = new ContentOrderBuilder().WithCustomer(customer).Build();
+        Guid missingItemId = Guid.NewGuid();
 
         _orderRepositoryMock
             .Setup(x => x.GetByIdWithItemsAsync(order.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(order);
+        _orderRepositoryMock.SetupGetItemByIdOrThrowNotFound(order.Id, missingItemId);
 
-        var command = new AdminRemoveOrderItemCommand(OrderId: order.Id.ToString(), ItemId: Guid.NewGuid().ToString());
+        var command = new AdminRemoveOrderItemCommand(OrderId: order.Id.ToString(), ItemId: missingItemId.ToString());
 
-        // Act — default mock throws NotFoundException for GetItemByIdOrThrowAsync
+        // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     #endregion

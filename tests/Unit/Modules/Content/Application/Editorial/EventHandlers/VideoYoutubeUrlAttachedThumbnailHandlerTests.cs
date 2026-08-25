@@ -74,7 +74,7 @@ public class VideoYoutubeUrlAttachedThumbnailHandlerTests
         );
         _fileRepositoryMock.VerifyReplaceImageFileCalled();
         video.ThumbnailFileId.Should().Be(_uploadedFile.Id);
-        _videoRepositoryMock.VerifyUpdateCalled();
+        _videoRepositoryMock.VerifyUpdateCalled(video);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -107,6 +107,7 @@ public class VideoYoutubeUrlAttachedThumbnailHandlerTests
             Times.Once
         );
         video.ThumbnailFileId.Should().Be(_uploadedFile.Id);
+        _videoRepositoryMock.VerifyUpdateCalled(video);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -152,6 +153,10 @@ public class VideoYoutubeUrlAttachedThumbnailHandlerTests
         );
 
         // Assert
-        _youtubeThumbnailMock.Verify(x => x.DownloadThumbnailAsync(expectedId, It.IsAny<CancellationToken>()));
+        _youtubeThumbnailMock.Verify(
+            x => x.DownloadThumbnailAsync(expectedId, It.IsAny<CancellationToken>()),
+            Times.Once
+        );
+        video.ThumbnailFileId.Should().Be(_uploadedFile.Id);
     }
 }

@@ -50,7 +50,6 @@ public class AdminActivateContentTypeHandlerTests : BaseContentHandlerTest
         AdminActivateContentTypeResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.ContentType.IsActive.Should().BeTrue();
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -85,16 +84,10 @@ public class AdminActivateContentTypeHandlerTests : BaseContentHandlerTest
         _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(active);
 
         // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (ConflictException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<ConflictException>();
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 

@@ -129,7 +129,7 @@ public class ArtistRepositoryTests(PostgresFixture postgres) : BaseRepositoryTes
         var repo = Resolve<IArtistRepository>();
         var (result, totalCount) = await repo.GetAllAsync(1, 100, uniqueName);
 
-        totalCount.Should().BeGreaterThanOrEqualTo(1);
+        totalCount.Should().Be(1);
         result.Should().Contain(a => a.Id == matchingArtist.Id);
         result.Should().NotContain(a => a.Id == nonMatchingArtist.Id);
     }

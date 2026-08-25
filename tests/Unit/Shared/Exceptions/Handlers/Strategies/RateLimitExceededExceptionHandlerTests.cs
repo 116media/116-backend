@@ -11,39 +11,16 @@ namespace _116.Unit.Tests.Shared.Exceptions.Handlers.Strategies;
 
 /// <summary>
 /// Unit tests for <see cref="RateLimitExceededExceptionHandler"/>.
+/// The title, instance and trace extensions are covered for every strategy by
+/// <see cref="ExceptionStrategyContractTests" />; the status, the Retry-After header and the
+/// custom-message branch are asserted here.
 /// </summary>
 public class RateLimitExceededExceptionHandlerTests
 {
     private readonly RateLimitExceededExceptionHandler _handler = new();
     private readonly SharedExceptionMessage i18n = LocalizerFactory.CreateMessage<SharedExceptionMessage>();
 
-    #region ExceptionType Tests
-
-    [Fact]
-    public void ExceptionType_ShouldReturnRateLimitExceededExceptionType()
-    {
-        Type exceptionType = _handler.ExceptionType;
-
-        exceptionType.Should().Be(typeof(RateLimitExceededException));
-    }
-
-    #endregion
-
     #region CreateProblemDetails Tests
-
-    [Fact]
-    public void CreateProblemDetails_ShouldReturnProblemDetailsWithCorrectTitle()
-    {
-        // Arrange
-        RateLimitExceededException exception = new(TimeSpan.FromSeconds(60));
-        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
-
-        // Act
-        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
-
-        // Assert
-        problemDetails.Title.Should().Be(nameof(RateLimitExceededException));
-    }
 
     [Fact]
     public void CreateProblemDetails_ShouldReturnLocalizedDetailMessage()
@@ -72,55 +49,6 @@ public class RateLimitExceededExceptionHandlerTests
 
         // Assert
         problemDetails.Status.Should().Be(StatusCodes.Status429TooManyRequests);
-    }
-
-    [Fact]
-    public void CreateProblemDetails_ShouldIncludeRequestPath()
-    {
-        // Arrange
-        RateLimitExceededException exception = new(TimeSpan.FromSeconds(60));
-        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
-        string requestPath = "/api/v1/public/auth/login";
-        context.Request.Path = requestPath;
-
-        // Act
-        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
-
-        // Assert
-        problemDetails.Instance.Should().Be(requestPath);
-    }
-
-    [Fact]
-    public void CreateProblemDetails_ShouldIncludeTraceIdExtension()
-    {
-        // Arrange
-        RateLimitExceededException exception = new(TimeSpan.FromSeconds(60));
-        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
-        string traceId = "ratelimit-trace-505";
-        context.TraceIdentifier = traceId;
-
-        // Act
-        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
-
-        // Assert
-        problemDetails.Extensions.Should().ContainKey("traceId");
-        problemDetails.Extensions["traceId"].Should().Be(traceId);
-    }
-
-    [Fact]
-    public void CreateProblemDetails_ShouldIncludeTimestampExtension()
-    {
-        // Arrange
-        RateLimitExceededException exception = new(TimeSpan.FromSeconds(60));
-        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
-
-        // Act
-        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
-
-        // Assert
-        problemDetails.Extensions.Should().ContainKey("timestamp");
-        var timestamp = (DateTime)problemDetails.Extensions["timestamp"]!;
-        timestamp.Should().NotBe(default(DateTime));
     }
 
     [Fact]

@@ -2,6 +2,7 @@ using _116.Content.Application.Editorial.Specifications;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Unit.Tests.Common.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
@@ -9,12 +10,23 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.Specifications;
 
 /// <summary>
 /// Unit tests for video specification classes.
-/// Note: Specifications using EF.Functions.ILike require a real PostgreSQL provider —
-/// those are covered via ToExpression().Compile() only.
+/// Specifications using EF.Functions.ILike are evaluated through
+/// <see cref="ILikeSpecificationEvaluator" />, which rewrites ILike for in-memory execution.
 /// </summary>
 public class VideoSpecificationsTests
 {
     private static readonly Guid CategoryId = Guid.NewGuid();
+
+    /// <summary>
+    /// Attaches a tag to a video through the junction entity, populating the Tag
+    /// navigation EF Core would load via Include.
+    /// </summary>
+    private static void AttachTag(VideoEntity video, TagEntity tag)
+    {
+        VideoTagEntity videoTag = VideoTagEntity.Create(Guid.NewGuid(), video.Id, tag.Id);
+        typeof(VideoTagEntity).GetProperty(nameof(VideoTagEntity.Tag))!.SetValue(videoTag, tag);
+        video.Tags.Add(videoTag);
+    }
 
     #region VideoByIdSpecification
 
@@ -50,18 +62,22 @@ public class VideoSpecificationsTests
 
     #region VideoBySlugSpecification
 
-    // ILike: requires PostgreSQL provider — compile-only
-    [Fact]
-    public void VideoBySlugSpecification_ShouldCompileExpression()
+    [Theory]
+    [InlineData("116-le-focus-fally-ipupa", true)]
+    [InlineData("116-LE-FOCUS-FALLY-IPUPA", true)]
+    [InlineData("le-focus", false)]
+    [InlineData("116-le-focus-koffi-olomide", false)]
+    public void VideoBySlugSpecification_ShouldMatchWholeSlugCaseInsensitively(string slug, bool expected)
     {
         // Arrange
-        var spec = new VideoBySlugSpecification("116-le-focus-fally-ipupa");
+        VideoEntity video = VideoFactory.CreateWithSlug(CategoryId, "116-le-focus-fally-ipupa");
+        var spec = new VideoBySlugSpecification(slug);
 
         // Act
-        Func<VideoEntity, bool> predicate = spec.ToExpression().Compile();
+        bool result = spec.IsSatisfiedInMemoryBy(video);
 
         // Assert
-        predicate.Should().NotBeNull();
+        result.Should().Be(expected);
     }
 
     #endregion
@@ -132,36 +148,58 @@ public class VideoSpecificationsTests
 
     #region VideoSearchSpecification
 
-    // ILike: requires PostgreSQL provider — compile-only
-    [Fact]
-    public void VideoSearchSpecification_ShouldCompileExpression()
+    [Theory]
+    [InlineData("fally", true)]
+    [InlineData("116 LE FOCUS", true)]
+    [InlineData("le focus — fally", true)]
+    [InlineData("koffi", false)]
+    public void VideoSearchSpecification_ShouldMatchTitleSubstringCaseInsensitively(string search, bool expected)
     {
         // Arrange
-        var spec = new VideoSearchSpecification("fally");
+        VideoEntity video = VideoFactory.CreateWithTitle(CategoryId, "116 Le Focus — Fally Ipupa");
+        var spec = new VideoSearchSpecification(search);
 
         // Act
-        Func<VideoEntity, bool> predicate = spec.ToExpression().Compile();
+        bool result = spec.IsSatisfiedInMemoryBy(video);
 
         // Assert
-        predicate.Should().NotBeNull();
+        result.Should().Be(expected);
     }
 
     #endregion
 
     #region VideoByTagSlugSpecification
 
-    // ILike: requires PostgreSQL provider — compile-only
-    [Fact]
-    public void VideoByTagSlugSpecification_ShouldCompileExpression()
+    [Theory]
+    [InlineData("rumba", true)]
+    [InlineData("RUMBA", true)]
+    [InlineData("ndombolo", false)]
+    public void VideoByTagSlugSpecification_ShouldMatchTagSlugCaseInsensitively(string tagSlug, bool expected)
     {
         // Arrange
+        VideoEntity video = VideoFactory.Create(CategoryId);
+        AttachTag(video, TagFactory.Create("Rumba", "rumba"));
+        var spec = new VideoByTagSlugSpecification(tagSlug);
+
+        // Act
+        bool result = spec.IsSatisfiedInMemoryBy(video);
+
+        // Assert
+        result.Should().Be(expected);
+    }
+
+    [Fact]
+    public void VideoByTagSlugSpecification_WithUntaggedVideo_ShouldReturnFalse()
+    {
+        // Arrange
+        VideoEntity video = VideoFactory.Create(CategoryId);
         var spec = new VideoByTagSlugSpecification("rumba");
 
         // Act
-        Func<VideoEntity, bool> predicate = spec.ToExpression().Compile();
+        bool result = spec.IsSatisfiedInMemoryBy(video);
 
         // Assert
-        predicate.Should().NotBeNull();
+        result.Should().BeFalse();
     }
 
     #endregion

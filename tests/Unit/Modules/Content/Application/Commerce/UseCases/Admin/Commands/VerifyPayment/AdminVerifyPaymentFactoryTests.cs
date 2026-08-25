@@ -54,9 +54,12 @@ public class AdminVerifyPaymentFactoryTests
 
         // Assert
         payment.Status.Should().Be(EnumPaymentStatus.Verified);
+        payment.VerifiedById.Should().Be(AdminUserId);
+        payment.VerifiedAt.Should().NotBeNull();
+        payment.ReceiptUrl.Should().Be(ReceiptUrl);
         order.Status.Should().Be(EnumOrderStatus.Paid);
-        _orderRepositoryMock.VerifyUpdatePaymentCalled();
-        _orderRepositoryMock.VerifyUpdateCalled();
+        _orderRepositoryMock.Verify(x => x.UpdatePaymentAsync(payment, It.IsAny<CancellationToken>()), Times.Once);
+        _orderRepositoryMock.VerifyUpdateCalled(order);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -75,6 +78,7 @@ public class AdminVerifyPaymentFactoryTests
         OrderPaidEvent paidEvent = order.DomainEvents.OfType<OrderPaidEvent>().Should().ContainSingle().Which;
         paidEvent.OrderId.Should().Be(order.Id);
         paidEvent.PaymentId.Should().Be(payment.Id);
+        paidEvent.Items.Should().BeEmpty();
     }
 
     [Fact]
@@ -97,8 +101,7 @@ public class AdminVerifyPaymentFactoryTests
         // Act
         await _factory.VerifyAsync(order, payment, AdminUserId, ReceiptUrl, CancellationToken.None);
 
-        // Assert — the window runs from the payment's own verification instant,
-        // truncated to whole milliseconds.
+        // Assert
         payment.VerifiedAt.Should().NotBeNull();
         DateTimeOffset verifiedAt = payment.VerifiedAt!.Value;
         DateTimeOffset expectedPaidAt = verifiedAt.AddTicks(-(verifiedAt.Ticks % TimeSpan.TicksPerMillisecond));
@@ -108,6 +111,7 @@ public class AdminVerifyPaymentFactoryTests
         effect.OrderItemId.Should().Be(item.Id);
         effect.PromotionLevelId.Should().Be(promoLevel.Id);
         effect.PromotionUntil.Should().Be(expectedPaidAt.AddDays(promoLevel.DurationDays));
+        effect.SocialBoost.Should().Be(item.SocialBoost);
     }
 
     [Fact]
@@ -123,6 +127,7 @@ public class AdminVerifyPaymentFactoryTests
         await _factory.VerifyAsync(order, payment, AdminUserId, ReceiptUrl, CancellationToken.None);
 
         // Assert
+        order.Status.Should().Be(EnumOrderStatus.Paid);
         _lookupRepositoryMock.Verify(
             x => x.GetPromotionLevelByIdOrThrowAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
             Times.Never
@@ -143,7 +148,46 @@ public class AdminVerifyPaymentFactoryTests
 
         // Assert
         await act.Should().ThrowAsync<ConflictException>();
+        payment.Status.Should().Be(EnumPaymentStatus.Verified);
+        order.Status.Should().Be(EnumOrderStatus.PendingPayment);
         order.DomainEvents.Should().BeEmpty();
-        _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
+        _unitOfWorkMock.VerifyCommitNotCalled();
+    }
+
+    [Fact]
+    public async Task VerifyAsync_WhenPaymentAlreadyRejected_ShouldThrowConflictAndNotCommit()
+    {
+        // Arrange
+        ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
+        order.ClearDomainEvents();
+        ContentPaymentEntity payment = ContentPaymentFactory.CreateRejected(order.Id);
+
+        // Act
+        Func<Task> act = () => _factory.VerifyAsync(order, payment, AdminUserId, ReceiptUrl, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<ConflictException>();
+        payment.Status.Should().Be(EnumPaymentStatus.Rejected);
+        order.Status.Should().Be(EnumOrderStatus.PendingPayment);
+        order.DomainEvents.Should().BeEmpty();
+        _unitOfWorkMock.VerifyCommitNotCalled();
+    }
+
+    [Fact]
+    public async Task VerifyAsync_WhenOrderAlreadyPaid_ShouldThrowConflictAndNotCommit()
+    {
+        // Arrange
+        ContentOrderEntity order = ContentOrderFactory.CreatePaid();
+        order.ClearDomainEvents();
+        ContentPaymentEntity payment = ContentPaymentFactory.Create(order.Id);
+
+        // Act
+        Func<Task> act = () => _factory.VerifyAsync(order, payment, AdminUserId, ReceiptUrl, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<ConflictException>();
+        order.Status.Should().Be(EnumOrderStatus.Paid);
+        order.DomainEvents.Should().BeEmpty();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 }

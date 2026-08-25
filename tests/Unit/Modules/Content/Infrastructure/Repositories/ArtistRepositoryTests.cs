@@ -471,10 +471,5 @@ public class ArtistRepositoryTests : IDisposable
         rows.Should().ContainSingle(r => r.Artist.Id == elodie.Id);
     }
 
-    [Fact(
-        Skip = "The folded search uses EF.Functions.Like which is not supported by InMemoryDatabase — tested in integration tests"
-    )]
-    public Task GetPublicDirectoryAsync_WithSearch_ShouldMatchFoldedNames() => Task.CompletedTask;
-
     #endregion
 }

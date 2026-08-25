@@ -55,7 +55,6 @@ public class AdminUpdateContentTypeHandlerTests : BaseContentHandlerTest
         AdminUpdateContentTypeResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.ContentType.Name.Should().Be(TestConstants.ContentType.AnotherValidName);
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -71,14 +70,13 @@ public class AdminUpdateContentTypeHandlerTests : BaseContentHandlerTest
         );
 
         _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(existing);
-        // Same name exists — but it belongs to the same entity so allowed
         _lookupRepositoryMock.SetupContentTypeExistsByName(TestConstants.ContentType.ValidName, true);
 
         // Act
         AdminUpdateContentTypeResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
+        result.ContentType.Name.Should().Be(TestConstants.ContentType.ValidName);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 

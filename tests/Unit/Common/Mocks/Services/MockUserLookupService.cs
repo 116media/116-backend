@@ -101,16 +101,13 @@ public static class MockUserLookupService
     }
 
     /// <summary>
-    /// Sets up default behaviors for the mock.
+    /// Installs the batch lookup default only. The single-user lookups are left unconfigured so a
+    /// miss has to be arranged for the identifier it is a miss for, rather than being asserted for
+    /// every identifier before the test says anything.
     /// </summary>
+    /// <param name="mock">The service mock to configure.</param>
     private static void SetupDefaults(Mock<IUserLookupService> mock)
     {
-        mock.Setup(x => x.GetUserNameByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((string?)null);
-
-        mock.Setup(x => x.GetAuthorInfoByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((AuthorInfo?)null);
-
         mock.Setup(x =>
                 x.GetAuthorInfosByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>())
             )

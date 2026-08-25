@@ -31,15 +31,6 @@ public class ContentTypeBuilder
     }
 
     /// <summary>
-    /// Sets the content type ID.
-    /// </summary>
-    public ContentTypeBuilder WithId(Guid id)
-    {
-        _id = id;
-        return this;
-    }
-
-    /// <summary>
     /// Sets the content type name.
     /// </summary>
     public ContentTypeBuilder WithName(string name)

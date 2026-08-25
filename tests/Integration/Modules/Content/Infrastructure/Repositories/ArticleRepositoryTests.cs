@@ -39,7 +39,7 @@ public class ArticleRepositoryTests(PostgresFixture postgres) : BaseRepositoryTe
             categoryId: null
         );
 
-        totalCount.Should().BeGreaterThanOrEqualTo(5);
+        totalCount.Should().Be(5);
         result.Should().HaveCount(3);
     }
 
@@ -69,9 +69,9 @@ public class ArticleRepositoryTests(PostgresFixture postgres) : BaseRepositoryTe
             categoryId: null
         );
 
-        totalCount.Should().BeGreaterThanOrEqualTo(5);
+        totalCount.Should().Be(5);
         page1.Should().HaveCount(3);
-        page2.Should().HaveCountGreaterThanOrEqualTo(2);
+        page2.Should().HaveCount(2);
     }
 
     [Fact]

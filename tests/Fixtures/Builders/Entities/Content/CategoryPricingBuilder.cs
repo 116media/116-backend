@@ -28,15 +28,6 @@ public class CategoryPricingBuilder
     }
 
     /// <summary>
-    /// Sets the pricing ID.
-    /// </summary>
-    public CategoryPricingBuilder WithId(Guid id)
-    {
-        _id = id;
-        return this;
-    }
-
-    /// <summary>
     /// Sets the price in USD.
     /// </summary>
     public CategoryPricingBuilder WithPriceUsd(decimal priceUsd)

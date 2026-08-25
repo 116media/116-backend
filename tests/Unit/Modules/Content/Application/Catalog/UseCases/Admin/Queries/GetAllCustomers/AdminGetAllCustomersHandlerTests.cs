@@ -42,8 +42,6 @@ public class AdminGetAllCustomersHandlerTests : BaseContentHandlerTest
         AdminGetAllCustomersResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Customers.Should().NotBeNull();
         result.Customers.Items.Should().HaveCount(3);
         result.Customers.Count.Should().Be(totalCount);
     }

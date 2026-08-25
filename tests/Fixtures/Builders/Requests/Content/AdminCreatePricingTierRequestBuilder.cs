@@ -38,17 +38,6 @@ public class AdminCreatePricingTierRequestBuilder
     }
 
     /// <summary>
-    /// Sets the pricing tier description.
-    /// </summary>
-    /// <param name="description">The pricing tier description.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public AdminCreatePricingTierRequestBuilder WithDescription(string description)
-    {
-        _description = description;
-        return this;
-    }
-
-    /// <summary>
     /// Builds the <see cref="AdminCreatePricingTierRequest"/> instance.
     /// </summary>
     /// <returns>A configured AdminCreatePricingTierRequest instance.</returns>

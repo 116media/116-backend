@@ -39,17 +39,6 @@ public class AdminCreateRoleRequestBuilder
     }
 
     /// <summary>
-    /// Sets the role description.
-    /// </summary>
-    /// <param name="description">The role description.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public AdminCreateRoleRequestBuilder WithDescription(string description)
-    {
-        _description = description;
-        return this;
-    }
-
-    /// <summary>
     /// Builds the <see cref="AdminCreateRoleRequest"/> instance.
     /// </summary>
     /// <returns>A configured AdminCreateRoleRequest instance.</returns>

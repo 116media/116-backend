@@ -11,23 +11,14 @@ namespace _116.Unit.Tests.Shared.Exceptions.Handlers.Strategies;
 
 /// <summary>
 /// Unit tests for <see cref="FormatExceptionStrategy"/>.
+/// The instance and trace extensions are covered for every strategy by
+/// <see cref="ExceptionStrategyContractTests" />; the rewritten title, the localized detail and the
+/// <see cref="InvalidFormatException" /> type it names are asserted here.
 /// </summary>
 public class FormatExceptionStrategyTests
 {
     private readonly FormatExceptionStrategy _handler = new();
     private readonly SharedExceptionMessage i18n = LocalizerFactory.CreateMessage<SharedExceptionMessage>();
-
-    #region ExceptionType Tests
-
-    [Fact]
-    public void ExceptionType_ShouldReturnFormatExceptionType()
-    {
-        Type exceptionType = _handler.ExceptionType;
-
-        exceptionType.Should().Be<FormatException>();
-    }
-
-    #endregion
 
     #region CreateProblemDetails Tests
 
@@ -71,55 +62,6 @@ public class FormatExceptionStrategyTests
 
         // Assert
         problemDetails.Status.Should().Be(StatusCodes.Status400BadRequest);
-    }
-
-    [Fact]
-    public void CreateProblemDetails_ShouldIncludeRequestPath()
-    {
-        // Arrange
-        FormatException exception = new("Input string was not in a correct format.");
-        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
-        const string requestPath = "/api/v1/admin/roles/not-a-guid";
-        context.Request.Path = requestPath;
-
-        // Act
-        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
-
-        // Assert
-        problemDetails.Instance.Should().Be(requestPath);
-    }
-
-    [Fact]
-    public void CreateProblemDetails_ShouldIncludeTraceIdExtension()
-    {
-        // Arrange
-        FormatException exception = new("Input string was not in a correct format.");
-        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
-        const string traceId = "test-trace-123";
-        context.TraceIdentifier = traceId;
-
-        // Act
-        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
-
-        // Assert
-        problemDetails.Extensions.Should().ContainKey("traceId");
-        problemDetails.Extensions["traceId"].Should().Be(traceId);
-    }
-
-    [Fact]
-    public void CreateProblemDetails_ShouldIncludeTimestampExtension()
-    {
-        // Arrange
-        FormatException exception = new("Input string was not in a correct format.");
-        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
-
-        // Act
-        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
-
-        // Assert
-        problemDetails.Extensions.Should().ContainKey("timestamp");
-        var timestamp = (DateTime)problemDetails.Extensions["timestamp"]!;
-        timestamp.Should().NotBe(default);
     }
 
     [Fact]

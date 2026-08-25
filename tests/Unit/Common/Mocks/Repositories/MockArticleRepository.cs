@@ -145,9 +145,13 @@ public static class MockArticleRepository
         mock.Verify(x => x.AddAsync(It.IsAny<ArticleEntity>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    public static void VerifyUpdateCalled(this Mock<IArticleRepository> mock)
+    /// <summary>
+    /// Verifies that the repository was handed exactly the expected entity once,
+    /// so updating a different instance than the one looked up fails the test.
+    /// </summary>
+    public static void VerifyUpdateCalled(this Mock<IArticleRepository> mock, ArticleEntity expected)
     {
-        mock.Verify(x => x.Update(It.IsAny<ArticleEntity>()), Times.Once);
+        mock.Verify(x => x.Update(expected), Times.Once);
     }
 
     public static void VerifyRemoveCalled(this Mock<IArticleRepository> mock, ArticleEntity article)
@@ -175,16 +179,48 @@ public static class MockArticleRepository
         mock.Verify(x => x.RemoveTag(It.IsAny<ArticleTagEntity>()), Times.Once);
     }
 
-    public static Mock<IArticleRepository> SetupHasLikedAsync(this Mock<IArticleRepository> mock, bool result)
+    /// <summary>
+    /// Answers the like-existence check for one user and article pair only. Any other pair falls
+    /// through to the default false, so a handler that asks on behalf of another user or about a
+    /// different article is not silently handed this answer.
+    /// </summary>
+    public static Mock<IArticleRepository> SetupHasLikedAsync(
+        this Mock<IArticleRepository> mock,
+        Guid userId,
+        Guid articleId,
+        bool result
+    )
     {
-        mock.Setup(x => x.HasLikedAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+        mock.Setup(x =>
+                x.HasLikedAsync(
+                    It.Is<Guid>(id => id == userId),
+                    It.Is<Guid>(id => id == articleId),
+                    It.IsAny<CancellationToken>()
+                )
+            )
             .ReturnsAsync(result);
         return mock;
     }
 
-    public static Mock<IArticleRepository> SetupHasBookmarkedAsync(this Mock<IArticleRepository> mock, bool result)
+    /// <summary>
+    /// Answers the bookmark-existence check for one user and article pair only. Any other pair
+    /// falls through to the default false, so a handler that asks on behalf of another user or
+    /// about a different article is not silently handed this answer.
+    /// </summary>
+    public static Mock<IArticleRepository> SetupHasBookmarkedAsync(
+        this Mock<IArticleRepository> mock,
+        Guid userId,
+        Guid articleId,
+        bool result
+    )
     {
-        mock.Setup(x => x.HasBookmarkedAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+        mock.Setup(x =>
+                x.HasBookmarkedAsync(
+                    It.Is<Guid>(id => id == userId),
+                    It.Is<Guid>(id => id == articleId),
+                    It.IsAny<CancellationToken>()
+                )
+            )
             .ReturnsAsync(result);
         return mock;
     }
@@ -242,34 +278,84 @@ public static class MockArticleRepository
         );
     }
 
+    /// <summary>
+    /// Sets up the comment lookup to return the comment only for its own id. Any other id falls
+    /// through to the loose default, so a handler that looks up a different comment is not silently
+    /// satisfied.
+    /// </summary>
+    /// <param name="mock">The repository mock to configure.</param>
+    /// <param name="comment">The comment returned for its own identifier.</param>
+    /// <returns>The same mock, for chaining.</returns>
     public static Mock<IArticleRepository> SetupGetCommentByIdAsync(
         this Mock<IArticleRepository> mock,
-        ArticleCommentEntity? comment
+        ArticleCommentEntity comment
     )
     {
-        mock.Setup(x => x.GetCommentByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(comment);
+        Guid commentId = comment.Id;
+        mock.Setup(x => x.GetCommentByIdAsync(It.Is<Guid>(id => id == commentId), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(comment);
         return mock;
     }
 
     /// <summary>
-    /// Sets up the article-scoped comment lookup to return the comment only for the given article id.
-    /// Any other article id falls through to the default null, so a cross-article lookup is
-    /// distinguishable from a matching one.
+    /// Arranges a miss for <paramref name="commentId" />. Naming the identifier is what separates
+    /// "this comment does not exist" from "no comment lookup this handler makes can succeed".
     /// </summary>
+    /// <param name="mock">The repository mock to configure.</param>
+    /// <param name="commentId">The identifier that must resolve to nothing.</param>
+    /// <returns>The same mock, for chaining.</returns>
+    public static Mock<IArticleRepository> SetupGetCommentByIdNotFound(
+        this Mock<IArticleRepository> mock,
+        Guid commentId
+    )
+    {
+        mock.Setup(x => x.GetCommentByIdAsync(commentId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((ArticleCommentEntity?)null);
+        return mock;
+    }
+
+    /// <summary>
+    /// Sets up the article-scoped comment lookup to return the comment only for its own id within
+    /// the given article, so both a cross-article lookup and a wrong-comment lookup stay unanswered.
+    /// </summary>
+    /// <param name="mock">The repository mock to configure.</param>
+    /// <param name="comment">The comment returned for its own identifier.</param>
+    /// <param name="articleId">The article the comment must be looked up under.</param>
+    /// <returns>The same mock, for chaining.</returns>
     public static Mock<IArticleRepository> SetupGetCommentByIdInArticleAsync(
         this Mock<IArticleRepository> mock,
-        ArticleCommentEntity? comment,
+        ArticleCommentEntity comment,
         Guid articleId
     )
     {
+        Guid commentId = comment.Id;
         mock.Setup(x =>
                 x.GetCommentByIdAsync(
-                    It.IsAny<Guid>(),
+                    It.Is<Guid>(id => id == commentId),
                     It.Is<Guid>(id => id == articleId),
                     It.IsAny<CancellationToken>()
                 )
             )
             .ReturnsAsync(comment);
+        return mock;
+    }
+
+    /// <summary>
+    /// Arranges a miss for the given comment within the given article, naming both identifiers so
+    /// the not-found branch is reached only for the pair the test declares.
+    /// </summary>
+    /// <param name="mock">The repository mock to configure.</param>
+    /// <param name="commentId">The comment identifier that must resolve to nothing.</param>
+    /// <param name="articleId">The article the lookup is scoped to.</param>
+    /// <returns>The same mock, for chaining.</returns>
+    public static Mock<IArticleRepository> SetupGetCommentByIdInArticleNotFound(
+        this Mock<IArticleRepository> mock,
+        Guid commentId,
+        Guid articleId
+    )
+    {
+        mock.Setup(x => x.GetCommentByIdAsync(commentId, articleId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((ArticleCommentEntity?)null);
         return mock;
     }
 
@@ -309,9 +395,25 @@ public static class MockArticleRepository
         return mock;
     }
 
-    public static Mock<IArticleRepository> SetupHasLikedCommentAsync(this Mock<IArticleRepository> mock, bool result)
+    /// <summary>
+    /// Answers the comment-like existence check for one user and comment pair only. Any other pair
+    /// falls through to the default false, so a handler that asks on behalf of another user or
+    /// about a different comment is not silently handed this answer.
+    /// </summary>
+    public static Mock<IArticleRepository> SetupHasLikedCommentAsync(
+        this Mock<IArticleRepository> mock,
+        Guid userId,
+        Guid commentId,
+        bool result
+    )
     {
-        mock.Setup(x => x.HasLikedCommentAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+        mock.Setup(x =>
+                x.HasLikedCommentAsync(
+                    It.Is<Guid>(id => id == userId),
+                    It.Is<Guid>(id => id == commentId),
+                    It.IsAny<CancellationToken>()
+                )
+            )
             .ReturnsAsync(result);
         return mock;
     }
@@ -480,6 +582,12 @@ public static class MockArticleRepository
         mock.Verify(x => x.UpdateComment(It.IsAny<ArticleCommentEntity>()), Times.Once);
     }
 
+    /// <summary>
+    /// Installs defaults for write, void and aggregate members only. Identity lookups are left
+    /// unconfigured so that a miss has to be arranged by the test, naming the identifier it is a
+    /// miss for, rather than being asserted for every identifier before the test says anything.
+    /// </summary>
+    /// <param name="mock">The repository mock to configure.</param>
     private static void SetupDefaults(Mock<IArticleRepository> mock)
     {
         mock.Setup(x => x.AddAsync(It.IsAny<ArticleEntity>(), It.IsAny<CancellationToken>()))
@@ -488,12 +596,6 @@ public static class MockArticleRepository
             .Returns(Task.CompletedTask);
         mock.Setup(x => x.AddTagAsync(It.IsAny<ArticleTagEntity>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
-        mock.Setup(x => x.GetByOrderItemIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((ArticleEntity?)null);
-        mock.Setup(x => x.GetBySlugAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((ArticleEntity?)null);
-        mock.Setup(x => x.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((ArticleEntity?)null);
         mock.Setup(x =>
                 x.GetAllAsync(
                     It.IsAny<int>(),
@@ -561,10 +663,6 @@ public static class MockArticleRepository
                 )
             )
             .ReturnsAsync((new HashSet<Guid>(), new HashSet<Guid>()));
-        mock.Setup(x => x.GetCommentByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((ArticleCommentEntity?)null);
-        mock.Setup(x => x.GetCommentByIdAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((ArticleCommentEntity?)null);
         mock.Setup(x =>
                 x.GetCommentsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>())
             )

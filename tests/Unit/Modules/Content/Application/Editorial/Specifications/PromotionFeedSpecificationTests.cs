@@ -16,23 +16,48 @@ public class PromotionFeedSpecificationTests
 {
     private static readonly Guid CategoryId = Guid.NewGuid();
 
+    /// <summary>
+    /// Populates the PromotionLevel navigation EF Core would load via Include, so the
+    /// spot-priority predicates can be evaluated in memory.
+    /// </summary>
+    private static void AttachPromotionLevel<TEntity>(TEntity entity, PromotionLevelEntity level)
+        where TEntity : class
+    {
+        typeof(TEntity).GetProperty(nameof(ArticleEntity.PromotionLevel))!.SetValue(entity, level);
+    }
+
     #region ArticleBySpotPrioritySpecification
 
     [Fact]
     public void ArticleBySpotPriority_WhenPromotedPublishedAndSpotMatches_ShouldReturnTrue()
     {
         // Arrange
-        ArticleEntity article = ArticleFactory.CreatePromoted(CategoryId);
-        var promotionLevelId = Guid.NewGuid();
-        article.StampPromotion(promotionLevelId, DateTimeOffset.UtcNow.AddDays(7));
-
+        PromotionLevelEntity level = new PromotionLevelBuilder().WithSpotPriority(1).Build();
+        ArticleEntity article = ArticleFactory.CreatePromoted(CategoryId, level.Id);
+        AttachPromotionLevel(article, level);
         var spec = new ArticleBySpotPrioritySpecification(spotPriority: 1);
-        Func<ArticleEntity, bool> predicate = spec.ToExpression().Compile();
 
-        // Act + Assert — spec compiles and evaluates without NPE
-        // Full spot matching requires PromotionLevel nav property loaded (EF concern);
-        // here we verify the expression compiles and a non-promoted article does not match.
-        predicate.Should().NotBeNull();
+        // Act
+        bool result = spec.IsSatisfiedBy(article);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public void ArticleBySpotPriority_WhenSpotPriorityDiffers_ShouldReturnFalse()
+    {
+        // Arrange
+        PromotionLevelEntity level = new PromotionLevelBuilder().WithSpotPriority(2).Build();
+        ArticleEntity article = ArticleFactory.CreatePromoted(CategoryId, level.Id);
+        AttachPromotionLevel(article, level);
+        var spec = new ArticleBySpotPrioritySpecification(spotPriority: 1);
+
+        // Act
+        bool result = spec.IsSatisfiedBy(article);
+
+        // Assert
+        result.Should().BeFalse();
     }
 
     [Fact]
@@ -218,16 +243,35 @@ public class PromotionFeedSpecificationTests
     #region VideoBySpotPrioritySpecification
 
     [Fact]
-    public void VideoBySpotPriority_ShouldCompileExpression()
+    public void VideoBySpotPriority_WhenPromotedPublishedAndSpotMatches_ShouldReturnTrue()
     {
         // Arrange
+        PromotionLevelEntity level = new PromotionLevelBuilder().WithSpotPriority(1).Build();
+        VideoEntity video = VideoFactory.CreatePromoted(CategoryId, level.Id);
+        AttachPromotionLevel(video, level);
         var spec = new VideoBySpotPrioritySpecification(spotPriority: 1);
 
         // Act
-        Func<VideoEntity, bool> predicate = spec.ToExpression().Compile();
+        bool result = spec.IsSatisfiedBy(video);
 
         // Assert
-        predicate.Should().NotBeNull();
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public void VideoBySpotPriority_WhenSpotPriorityDiffers_ShouldReturnFalse()
+    {
+        // Arrange
+        PromotionLevelEntity level = new PromotionLevelBuilder().WithSpotPriority(2).Build();
+        VideoEntity video = VideoFactory.CreatePromoted(CategoryId, level.Id);
+        AttachPromotionLevel(video, level);
+        var spec = new VideoBySpotPrioritySpecification(spotPriority: 1);
+
+        // Act
+        bool result = spec.IsSatisfiedBy(video);
+
+        // Assert
+        result.Should().BeFalse();
     }
 
     [Fact]

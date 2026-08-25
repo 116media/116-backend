@@ -55,8 +55,7 @@ public class PublicGetArticleBySlugHandlerTests : BaseContentHandlerTest
         PublicGetArticleBySlugResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Article.Should().NotBeNull();
+        result.Article.Id.Should().Be(article.Id);
     }
 
     [Fact]
@@ -115,11 +114,12 @@ public class PublicGetArticleBySlugHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         ArticleEntity article = ArticleFactory.CreatePublished(CategoryId);
-        var query = new PublicGetArticleBySlugQuery(Slug: article.Slug, CurrentUserId: Guid.NewGuid());
+        var userId = Guid.NewGuid();
+        var query = new PublicGetArticleBySlugQuery(Slug: article.Slug, CurrentUserId: userId);
 
         _articleRepositoryMock.SetupGetBySlug(article.Slug, article);
-        _articleRepositoryMock.SetupHasLikedAsync(true);
-        _articleRepositoryMock.SetupHasBookmarkedAsync(true);
+        _articleRepositoryMock.SetupHasLikedAsync(userId, article.Id, result: true);
+        _articleRepositoryMock.SetupHasBookmarkedAsync(userId, article.Id, result: true);
 
         // Act
         PublicGetArticleBySlugResult result = await _handler.Handle(query, CancellationToken.None);
@@ -134,11 +134,12 @@ public class PublicGetArticleBySlugHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         ArticleEntity article = ArticleFactory.CreatePublished(CategoryId);
-        var query = new PublicGetArticleBySlugQuery(Slug: article.Slug, CurrentUserId: Guid.NewGuid());
+        var userId = Guid.NewGuid();
+        var query = new PublicGetArticleBySlugQuery(Slug: article.Slug, CurrentUserId: userId);
 
         _articleRepositoryMock.SetupGetBySlug(article.Slug, article);
-        _articleRepositoryMock.SetupHasLikedAsync(true);
-        _articleRepositoryMock.SetupHasBookmarkedAsync(false);
+        _articleRepositoryMock.SetupHasLikedAsync(userId, article.Id, result: true);
+        _articleRepositoryMock.SetupHasBookmarkedAsync(userId, article.Id, result: false);
 
         // Act
         PublicGetArticleBySlugResult result = await _handler.Handle(query, CancellationToken.None);

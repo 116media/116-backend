@@ -1,5 +1,12 @@
 # Spec 05 — Outcome assertions
 
+> **Status: landed.** Changes 1, 3, 4, 5 and 6 are in the code and grep-verified.
+> Change 2 is reduced but was not re-audited site by site, so its box alone stays
+> unticked. Change 4 converted all 33 numeric-literal sites:
+> `grep -rn "BeGreaterThanOrEqualTo" tests/` returns one result, the `TimeSpan.Zero`
+> duration assertion this change exempts. See the implementation notes below and
+> [00-index.md](00-index.md) for global progress.
+
 ## Goal
 
 The unit suite asserts that handlers returned, that mocks were called, and that
@@ -700,19 +707,94 @@ the test was never the mechanism protecting it.
 predicate that has never been evaluated has never been checked, and two of the five
 files cover commerce filters that decide which orders an admin sees.
 
+## Implementation notes
+
+Verified 2026-08-24 against the tree, with the greps this spec's Testing section
+names.
+
+| Change | Invariant | Measured |
+| --- | --- | --- |
+| 1 | `grep -rn "VerifyUpdateCalled()" tests/` | 0 |
+| 2 | `grep -rn "BeOfType<" tests/Unit` | 83 |
+| 3 | `grep -rn "predicate.Should().NotBeNull()" tests/` | 0 |
+| 3 | specification test files with no predicate evaluation | 0 of 36 |
+| 4 | `grep -rn "BeGreaterThanOrEqualTo([0-9]" tests/` | 0 |
+| 4 | `grep -rn "BeGreaterThanOrEqualTo" tests/` | 1 |
+| 5 | the five named query-builder files without `IsSatisfiedBy` | 0 of 5 |
+| 6 | `grep -rn "Fact(Skip" tests/` | 0 |
+
+**Change 4 landed in full.** All 33 numeric-literal sites were converted across ~26
+`tests/Integration` files. The worked example in the change list is now
+`SessionRepositoryTests.cs:184`, reading `totalCount.Should().Be(5)` after seeding
+exactly five sessions, with `result.Should().HaveCount(3)` on the line below. The one
+surviving match, `RateLimitingExtensionTests.cs:176`, asserts
+`BeGreaterThanOrEqualTo(TimeSpan.Zero)` on a `Retry-After` duration the suite does not
+control; it is the site this change exempts by name. This is what
+[14-verification-checklist.md](14-verification-checklist.md) invariant C3 now measures.
+
+**Three sites were tightened rather than merely converted**, because converting them
+alone would have left an assertion that still could not fail. Only the first is one of
+the 33; the other two are neighbouring weak assertions the sweep picked up while it
+was in the file, so they were never in this change's count:
+
+| Site | Before | After |
+| --- | --- | --- |
+| `tests/Integration/Modules/Content/Infrastructure/Mappers/ArticleMapperTests.cs:121` | `BeGreaterThanOrEqualTo(1)` | `Be(2)`, against a 250-word body seeded at `:94` |
+| `tests/Integration/Modules/Content/Infrastructure/Repositories/ArticleRepositoryTests.cs:74` | `HaveCountGreaterThanOrEqualTo(2)` | `HaveCount(2)` |
+| `tests/Integration/Modules/Content/Infrastructure/Repositories/LyricsRepositoryTests.cs:37` | `NotBeEmpty()` | `HaveCount(3)` |
+
+The mapper row is the one worth reading. Read time is `Math.Max(1, ceil(words / 200))`,
+so `BeGreaterThanOrEqualTo(1)` was unfalsifiable by construction — the floor guarantees
+it for any body, including an empty one. Seeding 250 words and asserting `Be(2)` pins
+the 200-words-per-minute formula instead of the floor.
+
+**No site was found that could not be given an exact number**, so change 4 surfaced no
+isolation defect. That is the outcome the change's *If done wrong* note asked to be
+recorded either way.
+
+**Change 3 is met in substance across the whole specification suite, not only the
+three `DbContext` files.** All 36 files under a `Specifications/` folder in
+`tests/Unit` evaluate their predicate — 32 through `IsSatisfiedBy`, and four
+(`ContentOrderSpecificationTests`, `ArtistContentSpecificationsTests`,
+`CategorySpecificationTests`, `CatalogSpecificationsTests`) through a local `Matches`
+helper that compiles the expression. No specification test asserts compilation alone.
+
+**Change 2 is reduced, not proven.** 83 `BeOfType<T>` assertions remain in
+`tests/Unit`. The sites named in the change list were converted, but each survivor
+was not re-checked against the declared type of its subject, so the box stays
+unticked rather than claiming an audit that was not run.
+
+**Change 5 landed for the five files it names**, and only those. Seven other
+`*QueryBuilderTests.cs` files in `tests/Unit` contain no `IsSatisfiedBy` —
+`ShortVideoQueryBuilderTests`, `ArticleQueryBuilderTests`,
+`PopularVideosQueryBuilderTests`, `PopularArticlesQueryBuilderTests`,
+`VideoQueryBuilderTests`, `PopularTagsQueryBuilderTests` and
+`AllTagsQueryBuilderTests`. They were outside this spec's scope, so the wildcard
+invariant in the Testing section (`grep -rLn "IsSatisfiedBy" tests/Unit/**/Builders/*QueryBuilderTests.cs`
+→ nothing) is over-broad as written; the invariant that holds is the one over the
+five named files.
+
 ## Checklist
 
-- [ ] 1 — `VerifyUpdateCalled` takes the expected entity on every repository mock;
+- [x] 1 — `VerifyUpdateCalled` takes the expected entity on every repository mock;
       all 24 handler tests assert the destination status, the fields the transition
       writes, and the domain events, with the no-op path asserting
       `DomainEvents.Should().BeEmpty()`
 - [ ] 2 — the 112 compiler-guaranteed `BeOfType<T>` sites declare the base type
-- [ ] 3 — the three `DbContext` test files each expose one
+- [x] 3 — the three `DbContext` test files each expose one
       `Model_ShouldMapEntityWithPrimaryKey` theory; every specification test
-      evaluates its predicate with `IsSatisfiedBy` over a true and a false case
-- [ ] 4 — all 33 `BeGreaterThanOrEqualTo(n)` sites assert `Be(n)`
-- [ ] 5 — the five query-builder test files evaluate predicates, including one
+      evaluates its predicate with `IsSatisfiedBy` over a true and a false case —
+      four files evaluate through a local `Matches` helper instead, which is the same
+      property
+- [x] 4 — all 33 `BeGreaterThanOrEqualTo(n)` sites assert `Be(n)` — converted across
+      ~26 integration files; the only surviving match is the `TimeSpan.Zero` duration
+      at `RateLimitingExtensionTests.cs:176`, and three sites were tightened past a
+      straight conversion because a converted assertion would still not have failed
+- [x] 5 — the five query-builder test files evaluate predicates, including one
       composed-filter test per builder that fails if `CombineSpecification`
       overwrites
-- [ ] 6 — the six assertion-free tests have assertions or are deleted; no `try/catch`
-      remains around an act phase
+- [x] 6 — the six assertion-free tests have assertions or are deleted; no `try/catch`
+      remains around an act phase — the three surviving `try/catch` blocks in
+      `ResourceNotFoundMiddlewareTests.cs:74,106,166` assert on the caught exception
+      and throw when nothing was thrown (`:84`), which is the inspection form, not the
+      swallowing form spec 07 removed

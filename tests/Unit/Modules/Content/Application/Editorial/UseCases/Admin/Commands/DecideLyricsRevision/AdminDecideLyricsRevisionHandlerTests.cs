@@ -3,6 +3,7 @@ using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
+using _116.Content.Domain.Events;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
@@ -52,16 +53,51 @@ public class AdminDecideLyricsRevisionHandlerTests
         var command = new AdminDecideLyricsRevisionCommand(revision.Id, Accept: true, moderatorId);
 
         // Act
-        AdminDecideLyricsRevisionResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         revision.Status.Should().Be(EnumRevisionStatus.Accepted);
         revision.DecidedByUserId.Should().Be(moderatorId);
         lyrics.LyricsText.Should().Be("Moderator-approved lyrics text.");
-        _revisionRepositoryMock.VerifyUpdateCalled();
-        _lyricsRepositoryMock.VerifyUpdateCalled();
+        _revisionRepositoryMock.VerifyUpdateCalled(revision);
+        _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
         _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    [Fact]
+    public async Task Handle_WhenAcceptTrue_ShouldRaiseLyricsRevisionDecidedEvent()
+    {
+        // Arrange
+        LyricsEntity lyrics = LyricsFactory.Create(Guid.NewGuid());
+        LyricsRevisionEntity revision = LyricsRevisionFactory.Create(
+            lyrics.Id,
+            Guid.NewGuid(),
+            "Moderator-approved lyrics text."
+        );
+        revision.ClearDomainEvents();
+        _revisionRepositoryMock.SetupGetByIdOrThrow(revision);
+        _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
+        var moderatorId = Guid.NewGuid();
+        var command = new AdminDecideLyricsRevisionCommand(revision.Id, Accept: true, moderatorId);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        revision
+            .DomainEvents.OfType<LyricsRevisionDecidedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(
+                new LyricsRevisionDecidedEvent(
+                    RevisionId: revision.Id,
+                    LyricsId: lyrics.Id,
+                    ProposedByUserId: revision.ProposedByUserId,
+                    Accepted: true,
+                    ByModerator: true
+                )
+            );
     }
 
     #endregion
@@ -78,15 +114,44 @@ public class AdminDecideLyricsRevisionHandlerTests
         var command = new AdminDecideLyricsRevisionCommand(revision.Id, Accept: false, moderatorId);
 
         // Act
-        AdminDecideLyricsRevisionResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         revision.Status.Should().Be(EnumRevisionStatus.Rejected);
         revision.DecidedByUserId.Should().Be(moderatorId);
-        _revisionRepositoryMock.VerifyUpdateCalled();
+        _revisionRepositoryMock.VerifyUpdateCalled(revision);
         _lyricsRepositoryMock.Verify(x => x.Update(It.IsAny<LyricsEntity>()), Times.Never);
         _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    [Fact]
+    public async Task Handle_WhenAcceptFalse_ShouldRaiseLyricsRevisionDecidedEvent()
+    {
+        // Arrange
+        LyricsRevisionEntity revision = LyricsRevisionFactory.Create(Guid.NewGuid());
+        revision.ClearDomainEvents();
+        var moderatorId = Guid.NewGuid();
+        _revisionRepositoryMock.SetupGetByIdOrThrow(revision);
+        var command = new AdminDecideLyricsRevisionCommand(revision.Id, Accept: false, moderatorId);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        revision
+            .DomainEvents.OfType<LyricsRevisionDecidedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(
+                new LyricsRevisionDecidedEvent(
+                    RevisionId: revision.Id,
+                    LyricsId: revision.LyricsId,
+                    ProposedByUserId: revision.ProposedByUserId,
+                    Accepted: false,
+                    ByModerator: true
+                )
+            );
     }
 
     #endregion

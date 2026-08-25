@@ -58,7 +58,6 @@ public class AdminCreateArtistHandlerTests
         AdminCreateArtistResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.Artist.Name.Should().Be(command.Name);
         result.Artist.Slug.Should().Be(command.Slug);
         result.Artist.Bio.Should().Be(command.Bio);
@@ -111,16 +110,10 @@ public class AdminCreateArtistHandlerTests
         _artistRepositoryMock.SetupGetBySlug(command.Slug, existing);
 
         // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (ConflictException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<ConflictException>();
         _artistRepositoryMock.VerifyAddNotCalled();
         _unitOfWorkMock.VerifyCommitNotCalled();
     }

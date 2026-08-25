@@ -40,11 +40,11 @@ public class AdminForceLogoutUserHandlerTests
         AdminForceLogoutUserCommand command = new(UserId: userId.ToString());
 
         // Act
-        AdminForceLogoutUserResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.IsSuccess.Should().BeTrue();
+        _sessionRepositoryMock.VerifyDeleteAllByUserIdCalled(userId);
+        _unitOfWorkMock.VerifyCommitCalled();
     }
 
     [Fact]

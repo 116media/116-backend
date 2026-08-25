@@ -322,6 +322,7 @@ public class MapperExtensionTests : BaseContentHandlerTest
         Mock<IFileRepository> fileRepositoryMock = MockFileRepository.Create();
         FileEntity videoFile = FileFactory.CreateVideo();
         fileRepositoryMock.SetupGetById(videoFile);
+        fileRepositoryMock.SetupGetByIds(new Dictionary<Guid, FileEntity>());
 
         // Act
         IReadOnlyList<ShortVideoDto> result = await entities.ToShortVideoDtosAsync(

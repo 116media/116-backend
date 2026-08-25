@@ -78,8 +78,7 @@ public class AdminCreateVideoHandlerTests : BaseContentHandlerTest
         AdminCreateVideoResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Video.Should().NotBeNull();
+        result.Video.Id.Should().Be(created.Id);
         _videoRepositoryMock.VerifyAddCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -116,8 +115,7 @@ public class AdminCreateVideoHandlerTests : BaseContentHandlerTest
         AdminCreateVideoResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Video.Should().NotBeNull();
+        result.Video.Id.Should().Be(created.Id);
         _videoRepositoryMock.VerifyAddCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }

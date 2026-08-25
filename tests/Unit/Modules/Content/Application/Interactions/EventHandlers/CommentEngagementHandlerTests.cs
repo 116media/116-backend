@@ -69,10 +69,11 @@ public class CommentEngagementHandlerTests
     public async Task Handle_WhenCommentMissing_ShouldSkipWithoutCommit()
     {
         // Arrange
-        _articleRepositoryMock.SetupGetCommentByIdAsync(null);
+        Guid missingCommentId = Guid.NewGuid();
+        _articleRepositoryMock.SetupGetCommentByIdNotFound(missingCommentId);
 
         // Act
-        await _handler.Handle(new CommentEngagedEvent(Guid.NewGuid(), 1), CancellationToken.None);
+        await _handler.Handle(new CommentEngagedEvent(missingCommentId, 1), CancellationToken.None);
 
         // Assert
         _unitOfWorkMock.VerifyCommitNotCalled();

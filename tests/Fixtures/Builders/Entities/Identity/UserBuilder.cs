@@ -90,17 +90,6 @@ public class UserBuilder
     }
 
     /// <summary>
-    /// Sets the password hash.
-    /// </summary>
-    /// <param name="passwordHash">The password hash.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public UserBuilder WithPasswordHash(string passwordHash)
-    {
-        _passwordHash = passwordHash;
-        return this;
-    }
-
-    /// <summary>
     /// Sets the authentication provider.
     /// </summary>
     /// <param name="authProvider">The authentication provider.</param>

@@ -62,17 +62,6 @@ public class PublicUpdateOwnProfileRequestBuilder
     }
 
     /// <summary>
-    /// Sets the country name to update.
-    /// </summary>
-    /// <param name="countryName">The new country name.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public PublicUpdateOwnProfileRequestBuilder WithCountryName(string? countryName)
-    {
-        _countryName = countryName;
-        return this;
-    }
-
-    /// <summary>
     /// Sets the partial phone number to update.
     /// </summary>
     /// <param name="partialPhoneNumber">The new partial phone number.</param>
@@ -80,17 +69,6 @@ public class PublicUpdateOwnProfileRequestBuilder
     public PublicUpdateOwnProfileRequestBuilder WithPartialPhoneNumber(string? partialPhoneNumber)
     {
         _partialPhoneNumber = partialPhoneNumber;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the country ISO code to update.
-    /// </summary>
-    /// <param name="countryIsoCode">The new country ISO code.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public PublicUpdateOwnProfileRequestBuilder WithCountryIsoCode(string? countryIsoCode)
-    {
-        _countryIsoCode = countryIsoCode;
         return this;
     }
 

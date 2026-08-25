@@ -71,8 +71,6 @@ public class AdminRemovePermissionFromRoleHandlerTests : BaseHandlerTest
         AdminRemovePermissionFromRoleResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Role.Should().NotBeNull();
         result.Role.Id.Should().Be(role.Id);
         _rolePermissionRepositoryMock.VerifyDeleteCalled(rolePermission);
         _unitOfWorkMock.VerifyCommitCalled();
@@ -169,16 +167,10 @@ public class AdminRemovePermissionFromRoleHandlerTests : BaseHandlerTest
         _rolePermissionRepositoryMock.SetupGetByRoleAndPermissionReturnsNull(role.Id, permissionId);
 
         // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (BadRequestException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<BadRequestException>();
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 

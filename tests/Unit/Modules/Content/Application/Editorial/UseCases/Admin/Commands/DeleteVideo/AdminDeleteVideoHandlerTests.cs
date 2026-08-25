@@ -47,11 +47,15 @@ public class AdminDeleteVideoHandlerTests
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
 
         // Act
-        AdminDeleteVideoResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
-        video.DomainEvents.OfType<VideoDeletedEvent>().Should().ContainSingle().Which.ThumbnailFileId.Should().BeNull();
+        video
+            .DomainEvents.OfType<VideoDeletedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.ThumbnailFileId.Should()
+            .BeNull();
         _videoRepositoryMock.VerifyRemoveCalled(video);
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -65,10 +69,9 @@ public class AdminDeleteVideoHandlerTests
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
 
         // Act
-        AdminDeleteVideoResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         video
             .DomainEvents.OfType<VideoDeletedEvent>()
             .Should()
@@ -88,10 +91,9 @@ public class AdminDeleteVideoHandlerTests
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
 
         // Act
-        AdminDeleteVideoResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         _videoRepositoryMock.VerifyRemoveCalled(video);
         _unitOfWorkMock.VerifyCommitCalled();
     }

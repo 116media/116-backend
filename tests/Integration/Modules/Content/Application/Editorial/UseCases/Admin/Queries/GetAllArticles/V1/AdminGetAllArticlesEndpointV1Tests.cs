@@ -64,7 +64,7 @@ public class AdminGetAllArticlesEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         AdminGetAllArticlesResponse body = await response.ReadAsAsync<AdminGetAllArticlesResponse>();
         body.Articles.Items.Should().Contain(item => item.Id == article.Id);
-        body.Articles.Count.Should().BeGreaterThanOrEqualTo(1);
+        body.Articles.Count.Should().Be(1);
         body.Articles.PageIndex.Should().Be(0);
         body.Articles.PageSize.Should().Be(10);
     }

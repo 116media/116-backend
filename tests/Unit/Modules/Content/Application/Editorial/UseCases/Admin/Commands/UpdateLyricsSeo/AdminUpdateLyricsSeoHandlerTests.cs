@@ -62,9 +62,12 @@ public class AdminUpdateLyricsSeoHandlerTests : BaseContentHandlerTest
         AdminUpdateLyricsSeoResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Lyrics.Should().NotBeNull();
-        _lyricsRepositoryMock.VerifyUpdateCalled();
+        lyrics.MetaTitle.Should().Be("Updated SEO Title");
+        lyrics.MetaDescription.Should().Be("Updated SEO Description");
+        lyrics.StructuredData.Should().BeNull();
+        result.Lyrics.MetaTitle.Should().Be("Updated SEO Title");
+        result.Lyrics.MetaDescription.Should().Be("Updated SEO Description");
+        _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -86,5 +89,6 @@ public class AdminUpdateLyricsSeoHandlerTests : BaseContentHandlerTest
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 }

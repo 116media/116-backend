@@ -1,5 +1,11 @@
 # Spec 08 — Fixture architecture
 
+> **Status: complete, with checklist item 4 deliberately unticked.** Changes 1, 2 and
+> 3 landed in full. Change 4's substantive rule — reflection never reaches a state the
+> domain refuses to enter — holds everywhere, but the stricter "no `SetValue` in
+> `tests/Unit`" clause contradicts change 4c's own rule about EF navigation
+> reconstitution and is not met. The implementation notes below record why.
+
 ## Goal
 
 All 36 entity builders under `tests/Fixtures/Builders/Entities/` are declared
@@ -462,18 +468,102 @@ whichever choice is made in this spec's implementation notes.
 Mailer `MetaField` tests look like dead surface to a mechanical scan. They are not in
 scope. Exclude those two directories from the sweep explicitly.
 
+## Implementation notes
+
+Implemented 2026-08-23/24. Four corrections to this spec, all found against the code.
+
+1. **There are 38 entity builders, not 36.** `PlaylistVideoBuilder` and
+   `ArticleArtistBuilder` were added after the audit's count was taken. All 38 are
+   `public`; `grep -rn "internal class" tests/Fixtures/Builders/Entities/` returns
+   nothing and the fixtures project still publishes no `InternalsVisibleTo`.
+2. **The factory surface was reported to shrink from 380 static methods to 242.**
+   That figure does not reconcile against the tree — see the 2026-08-24
+   re-verification below, which measures 310. Two methods were recorded here rather
+   than deleted silently, because spec 10 was still in flight and might consume them:
+   `ArticleFactory.CreateArchived` and `ArticleFactory.CreateRejected`. It did.
+3. **`AuthDataBuilder` was resolved by keeping the three `AuthTestHelpers` aliases.**
+   `WithUser`, `WithUserPermissions` and `WithUserPermission` were deleted; the builder
+   now exposes a constructor and the three `Build*` methods only, and
+   `AuthTestHelpers` records that the builder is an implementation detail of that file
+   rather than part of the fixture API. This is the recommendation in the Risks section
+   above, taken as written.
+4. **The spec's `CreateFree` invariant is over-broad.**
+   `grep -rn "CreateFree" tests/` cannot return nothing: `ArticleEntity.CreateFree` is
+   a production domain factory and `CategoryFactory.CreateFree` is a distinct,
+   live fixture method with call sites. The invariant that actually holds is
+   `grep -n "CreateFree" tests/Fixtures/Factories/Content/ArticleFactory.cs` → nothing.
+
+**Change 4 is partially landed.** All bare-string reflection is gone from the whole
+suite — `grep -rn 'GetProperty("' tests/` returns nothing, which covers both fixture
+sites (step 4a) and the last three `tests/Unit` holdouts, now
+`nameof(ArticleEntity.PromotionLevel)`, `nameof(VideoTagEntity.Tag)` (twice) and
+`nameof(ArtistEntity.UserId)`. The `entity.CreatedAt = ...` false positives were left
+alone, all 13 of them.
+
+What did not land is the spec's stricter clause, "no `SetValue` remains in
+`tests/Unit`". Six calls remain, and **the clause conflicts with change 4c's own
+rule**:
+
+| Site | Why it stays |
+| --- | --- |
+| `PromotionFeedSpecificationTests.cs:26` | Attaches the `PromotionLevel` navigation EF Core loads via `Include`. This is exactly the persisted-state reconstitution 4c blesses. |
+| `VideoSpecificationsTests.cs:27`, `VideoQueryBuilderTests.cs:27` | Same shape, for `VideoTagEntity.Tag`. |
+| `ApiVersioningExtensionsTests.cs:121,132` | Saves and restores a private static field on a production type across a test; not entity state at all. |
+| `ValidationExceptionHandlerTests.cs:179` | Nulls a private field on a `ValidationException` to reach a defensive branch; not entity state. |
+
+The three navigation sites belong in `tests/Fixtures` by 4c's letter, but the
+specifications they arrange for are unit-scoped and each attaches a different
+navigation, so a fixture helper would be a one-caller indirection. The two
+private-field sites are outside 4c's subject matter entirely. Leaving box 4 unticked
+records that the invariant as written is not met; the substantive rule — reflection
+never reaches a state the domain refuses to enter — is met everywhere.
+
+The `MetaField` decision is untouched and still open. Both Mailer directories are
+intact: `Newsletter/MetaFields/` (2 files) and `Notifications/MetaFields/` (1 file).
+
+**Re-verified 2026-08-24**, after specs 07 and 10 landed on top of this work:
+
+| Invariant | Measured |
+| --- | --- |
+| `grep -rn "^internal class" tests/Fixtures/Builders/Entities/` | 0 — all 38 public |
+| `grep -n "InternalsVisibleTo" tests/Fixtures/_116.Tests.Fixtures.csproj` | 0 |
+| `grep -rn 'GetProperty("' tests/` | 0 |
+| `grep -rn "SetValue(" tests/Unit tests/Integration` | 6 |
+| `grep -n "CreateFree" tests/Fixtures/Factories/Content/ArticleFactory.cs` | 0 |
+| factory classes carrying the layering rule | 43 of 43 |
+
+The six `SetValue` sites are exactly the ones tabulated above and no others.
+`CategoryEntityTests.cs:262` matches a naive `SetValue` grep but is a test *named*
+`SetPosterFileId_ShouldSetValue`, not a reflection write.
+
+**The 380 → 242 factory figure does not reconcile with the tree and should not be
+quoted.** Counting `public static` method declarations under
+`tests/Fixtures/Factories/` on 2026-08-24 gives 310 across 43 files, and the only
+change to that directory in the working tree is `ArticleFactory.CreatePublishedAt`,
+an addition. Neither 380 nor 242 is reproducible from the code as it stands. What is
+verifiable is that the specific members change 2 named are absent —
+`ArticleFactory.CreateFree` and the three `AuthDataBuilder` fluent methods do not
+appear anywhere in `tests/Fixtures/` — and that the two methods held back for spec 10
+now have call sites, so the hold was correct: `ArticleFactory.CreateRejected` at
+`AdminRejectArticleEndpointV1Tests.cs:100` and `ArticleFactory.CreateArchived` at
+`AdminArchiveArticleEndpointV1Tests.cs:98`. Treat 310 as
+today's baseline and re-derive the uncalled set before any further deletion, which is
+what the change list asked for in the first place.
+
 ## Checklist
 
-- [ ] 1 — all 36 entity builders declared `public`, with doc comments stating the
+- [x] 1 — all 38 entity builders declared `public`, with doc comments stating the
       layering rule instead of the "prefer the factory" instruction the access
       modifier was enforcing; no `InternalsVisibleTo` added
-- [ ] 2 — the dead fixture surface deleted after re-measurement, starting with
-      `ArticleFactory.CreateFree` and the 64 uncalled factory methods; the
-      `AuthDataBuilder` duplication resolved one way and recorded
-- [ ] 3 — the builder / factory / inline rule recorded on every factory class doc
-      comment, and applied to `VideoFactory` and `ArticleFactory` in this change
+- [x] 2 — the dead fixture surface deleted after re-measurement, starting with
+      `ArticleFactory.CreateFree`; the `AuthDataBuilder` duplication resolved one way
+      and recorded; two uncalled `ArticleFactory` methods knowingly held back
+- [x] 3 — the builder / factory / inline rule recorded on every factory class doc
+      comment (43 of 43), and applied to `VideoFactory` and `ArticleFactory`
 - [ ] 4 — the two bare-string reflection sites use `nameof`; no `SetValue` remains in
       `tests/Unit` or `tests/Integration`; the legitimate persisted-state
       reconstitution stays in `tests/Fixtures`; `entity.CreatedAt = ...` assignments
-      left untouched
-- [ ] The Mailer `MetaField` init-tests are unchanged, and the decision remains open
+      left untouched — **partial**: bare-string reflection is gone suite-wide and the
+      `CreatedAt` assignments are untouched, but six `SetValue` calls remain in
+      `tests/Unit`. See the implementation notes.
+- [x] The Mailer `MetaField` init-tests are unchanged, and the decision remains open

@@ -2,6 +2,7 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.ArchiveLyrics;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
@@ -38,7 +39,7 @@ public class AdminArchiveLyricsHandlerTests
     #region Success Cases
 
     [Fact]
-    public async Task Handle_WhenLyricsIsPublished_ShouldArchiveAndReturnSuccess()
+    public async Task Handle_WhenLyricsIsPublished_ShouldTransitionToArchived()
     {
         // Arrange
         LyricsEntity lyrics = LyricsFactory.CreatePublished(CategoryId);
@@ -46,16 +47,16 @@ public class AdminArchiveLyricsHandlerTests
         _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
 
         // Act
-        AdminArchiveLyricsResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
-        _lyricsRepositoryMock.VerifyUpdateCalled();
+        lyrics.Status.Should().Be(EnumContentStatus.Archived);
+        _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
     [Fact]
-    public async Task Handle_WhenLyricsIsDraft_ShouldArchiveAndReturnSuccess()
+    public async Task Handle_WhenLyricsIsDraft_ShouldTransitionToArchived()
     {
         // Arrange
         LyricsEntity lyrics = LyricsFactory.Create(CategoryId);
@@ -63,11 +64,11 @@ public class AdminArchiveLyricsHandlerTests
         _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
 
         // Act
-        AdminArchiveLyricsResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
-        _lyricsRepositoryMock.VerifyUpdateCalled();
+        lyrics.Status.Should().Be(EnumContentStatus.Archived);
+        _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -88,6 +89,7 @@ public class AdminArchiveLyricsHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
@@ -103,6 +105,8 @@ public class AdminArchiveLyricsHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<ConflictException>();
+        lyrics.Status.Should().Be(EnumContentStatus.Archived);
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     #endregion

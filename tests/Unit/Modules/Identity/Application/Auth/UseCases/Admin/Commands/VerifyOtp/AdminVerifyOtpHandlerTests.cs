@@ -41,31 +41,6 @@ public class AdminVerifyOtpHandlerTests
     #region Success Cases
 
     [Fact]
-    public async Task Handle_WithValidOtp_ShouldReturnSuccess()
-    {
-        // Arrange
-        string email = "admin@example.com";
-        string code = "123456";
-        string purpose = EnumOtpPurpose.EmailVerification.ToString();
-        UserEntity user = UserFactory.CreateVerifiedActive();
-        OtpEntity otp = OtpFactory.Create(user.Id, code);
-
-        AdminVerifyOtpCommand command = new(Email: email, Code: code, Purpose: purpose);
-
-        _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
-        _authRepositoryMock.SetupIsUserAdminReturnsTrue();
-        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
-        _otpRepositoryMock.SetupValidateOtp(otp);
-
-        // Act
-        AdminVerifyOtpResult result = await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        result.Should().NotBeNull();
-        result.IsSuccess.Should().BeTrue();
-    }
-
-    [Fact]
     public async Task Handle_ShouldMarkOtpAsUsed()
     {
         // Arrange
@@ -270,16 +245,10 @@ public class AdminVerifyOtpHandlerTests
         _otpRepositoryMock.SetupValidateOtpInvalidCode(user.Id, code, EnumOtpPurpose.EmailVerification);
 
         // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (BadRequestException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<BadRequestException>();
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 

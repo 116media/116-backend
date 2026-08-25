@@ -45,8 +45,6 @@ public class AdminGetCategoryByIdHandlerTests : BaseContentHandlerTest
         AdminGetCategoryByIdResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Category.Should().NotBeNull();
         result.Category.Id.Should().Be(category.Id);
     }
 

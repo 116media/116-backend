@@ -92,7 +92,7 @@ public class PublicGetPublishedLyricsEndpointV1Tests(PostgresFixture db) : BaseA
         PublicGetPublishedLyricsResponse body = await response.ReadAsAsync<PublicGetPublishedLyricsResponse>();
         body.Lyrics.Items.Should().HaveCount(2);
         body.Lyrics.PageSize.Should().Be(2);
-        body.Lyrics.Count.Should().BeGreaterThanOrEqualTo(5);
+        body.Lyrics.Count.Should().Be(5);
     }
 
     [Fact]

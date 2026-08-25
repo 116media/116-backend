@@ -32,15 +32,6 @@ public class TagBuilder
     }
 
     /// <summary>
-    /// Sets the tag ID.
-    /// </summary>
-    public TagBuilder WithId(Guid id)
-    {
-        _id = id;
-        return this;
-    }
-
-    /// <summary>
     /// Sets the tag name.
     /// </summary>
     public TagBuilder WithName(string name)

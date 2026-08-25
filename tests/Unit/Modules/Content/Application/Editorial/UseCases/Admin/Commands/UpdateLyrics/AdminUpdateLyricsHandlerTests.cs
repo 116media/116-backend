@@ -77,7 +77,7 @@ public class AdminUpdateLyricsHandlerTests : BaseContentHandlerTest
     #region Success Cases
 
     [Fact]
-    public async Task Handle_WhenLyricsExists_ShouldUpdateAndReturnLyrics()
+    public async Task Handle_WhenLyricsExists_ShouldApplyCommandFieldsAndReturnLyrics()
     {
         // Arrange
         CategoryEntity category = CategoryFactory.Create(CategoryId);
@@ -94,9 +94,17 @@ public class AdminUpdateLyricsHandlerTests : BaseContentHandlerTest
         AdminUpdateLyricsResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Lyrics.Should().NotBeNull();
-        _lyricsRepositoryMock.VerifyUpdateCalled();
+        lyrics.CategoryId.Should().Be(category.Id);
+        lyrics.SongTitle.Should().Be(TestConstants.Lyrics.ValidSongTitle);
+        lyrics.ArtistName.Should().Be(TestConstants.Lyrics.ValidArtistName);
+        lyrics.Slug.Should().Be(command.Slug);
+        lyrics.LyricsText.Should().Be(TestConstants.Lyrics.ValidLyricsText);
+        lyrics.Language.Should().Be(TestConstants.Lyrics.ValidLanguage);
+        lyrics.VideoId.Should().BeNull();
+        lyrics.CustomerId.Should().BeNull();
+        lyrics.OrderItemId.Should().BeNull();
+        result.Lyrics.Id.Should().Be(lyrics.Id);
+        _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -124,8 +132,9 @@ public class AdminUpdateLyricsHandlerTests : BaseContentHandlerTest
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        lyrics.VideoId.Should().Be(videoId);
         video.HasLyrics.Should().BeTrue();
-        _videoRepositoryMock.VerifyUpdateCalled();
+        _videoRepositoryMock.VerifyUpdateCalled(video);
     }
 
     [Fact]
@@ -158,6 +167,7 @@ public class AdminUpdateLyricsHandlerTests : BaseContentHandlerTest
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        lyrics.VideoId.Should().Be(newVideoId);
         oldVideo.HasLyrics.Should().BeFalse();
         newVideo.HasLyrics.Should().BeTrue();
         _videoRepositoryMock.Verify(x => x.Update(oldVideo), Times.Once);
@@ -182,6 +192,7 @@ public class AdminUpdateLyricsHandlerTests : BaseContentHandlerTest
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
@@ -200,6 +211,8 @@ public class AdminUpdateLyricsHandlerTests : BaseContentHandlerTest
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        lyrics.CategoryId.Should().Be(CategoryId);
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
@@ -207,9 +220,7 @@ public class AdminUpdateLyricsHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         CategoryEntity category = CategoryFactory.Create(CategoryId);
-        // Lyrics has a different slug so the handler's slug-change check is triggered.
         LyricsEntity lyrics = LyricsFactory.CreateWithSlug(CategoryId, "original-lyrics-slug");
-        // Command uses ValidSlug — a different slug that already belongs to another lyrics page.
         AdminUpdateLyricsCommand command = BuildCommand(lyrics, category.Id, slug: TestConstants.Lyrics.ValidSlug);
         LyricsEntity conflicting = LyricsFactory.CreateWithSlug(CategoryId, command.Slug);
 
@@ -222,6 +233,8 @@ public class AdminUpdateLyricsHandlerTests : BaseContentHandlerTest
 
         // Assert
         await act.Should().ThrowAsync<ConflictException>();
+        lyrics.Slug.Should().Be("original-lyrics-slug");
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     #endregion

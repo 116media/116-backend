@@ -70,8 +70,8 @@ public class AdminAddCategoryPricingHandlerTests : BaseContentHandlerTest
         AdminAddCategoryPricingResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Pricing.Should().NotBeNull();
+        result.Pricing.TierId.Should().Be(pricingTier.Id);
+        result.Pricing.PriceUsd.Should().Be(priceUsd);
 
         _categoryRepositoryMock.VerifyAddPricingCalled();
         _unitOfWorkMock.VerifyCommitCalled();

@@ -81,7 +81,6 @@ public class PublicResendOtpFactoryTests
         OtpCreationResult result = await _factory.ResendOtpAsync(userId, purpose, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.Otp.UserId.Should().Be(userId);
     }
 
@@ -175,7 +174,8 @@ public class PublicResendOtpFactoryTests
         OtpCreationResult result = await _factory.ResendOtpAsync(userId, purpose, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
+        result.Otp.UserId.Should().Be(userId);
+        result.Otp.Purpose.Should().Be(purposeEnum);
     }
 
     #endregion

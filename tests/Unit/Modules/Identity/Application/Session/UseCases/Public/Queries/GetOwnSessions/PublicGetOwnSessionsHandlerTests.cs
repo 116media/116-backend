@@ -42,7 +42,6 @@ public class PublicGetOwnSessionsHandlerTests : BaseHandlerTest
         PublicGetOwnSessionsResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.Sessions.Should().HaveCount(3);
     }
 

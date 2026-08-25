@@ -49,7 +49,6 @@ public class AdminGetUserRolesHandlerTests : BaseHandlerTest
         AdminGetUserRolesResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.Roles.Should().HaveCount(2);
     }
 

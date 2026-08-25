@@ -28,28 +28,6 @@ public class AdminUpdateRoleRequestBuilder
     }
 
     /// <summary>
-    /// Sets the role name.
-    /// </summary>
-    /// <param name="name">The role name.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public AdminUpdateRoleRequestBuilder WithName(string? name)
-    {
-        _name = name;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the role description.
-    /// </summary>
-    /// <param name="description">The role description.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public AdminUpdateRoleRequestBuilder WithDescription(string? description)
-    {
-        _description = description;
-        return this;
-    }
-
-    /// <summary>
     /// Builds the <see cref="AdminUpdateRoleRequest"/> instance.
     /// </summary>
     /// <returns>A configured AdminUpdateRoleRequest instance.</returns>

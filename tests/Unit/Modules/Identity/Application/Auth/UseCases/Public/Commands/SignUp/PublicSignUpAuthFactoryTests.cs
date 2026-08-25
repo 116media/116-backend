@@ -115,8 +115,7 @@ public class PublicSignUpAuthFactoryTests
         PublicSignUpAuthData result = await _factory.RegisterAsync(email, userName, password, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.User.Should().NotBeNull();
+        result.User.Should().BeSameAs(user);
     }
 
     [Fact]
@@ -339,16 +338,10 @@ public class PublicSignUpAuthFactoryTests
             .ThrowsAsync(new ConflictException("Credentials already exist."));
 
         // Act
-        try
-        {
-            await _factory.RegisterAsync(email, userName, password, CancellationToken.None);
-        }
-        catch (ConflictException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _factory.RegisterAsync(email, userName, password, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<ConflictException>();
         _authRepositoryMock.Verify(x => x.AddAsync(It.IsAny<UserEntity>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 

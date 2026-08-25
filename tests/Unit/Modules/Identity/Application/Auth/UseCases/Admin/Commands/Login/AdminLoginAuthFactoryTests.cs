@@ -47,15 +47,14 @@ public class AdminLoginAuthFactoryTests
         UserEntity user = UserFactory.CreateAdmin();
 
         _authRepositoryMock.SetupGetUserWithRolesByEmail(user);
-        _passwordServiceMock.SetupVerifyReturnsTrue();
+        _passwordServiceMock.SetupVerifySuccess(password, user.PasswordHash);
         _authRepositoryMock.SetupIsUserAdminReturnsTrue();
 
         // Act
         AdminLoginAuthData result = await _factory.AuthenticateAsync(email, password, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.User.Should().NotBeNull();
+        result.User.Should().BeSameAs(user);
         result.User.Id.Should().Be(user.Id);
     }
 
@@ -68,7 +67,7 @@ public class AdminLoginAuthFactoryTests
         UserEntity user = UserFactory.CreateAdmin();
 
         _authRepositoryMock.SetupGetUserWithRolesByEmail(user);
-        _passwordServiceMock.SetupVerifyReturnsTrue();
+        _passwordServiceMock.SetupVerifySuccess(password, user.PasswordHash);
         _authRepositoryMock.SetupIsUserAdminReturnsTrue();
 
         // Act
@@ -94,7 +93,7 @@ public class AdminLoginAuthFactoryTests
         UserEntity user = UserFactory.CreateAdmin();
 
         _authRepositoryMock.SetupGetUserWithRolesByEmail(user);
-        _passwordServiceMock.SetupVerifyReturnsTrue();
+        _passwordServiceMock.SetupVerifySuccess(password, user.PasswordHash);
         _authRepositoryMock.SetupIsUserAdminReturnsTrue();
 
         // Act
@@ -113,7 +112,7 @@ public class AdminLoginAuthFactoryTests
         UserEntity user = UserFactory.CreateAdmin();
 
         _authRepositoryMock.SetupGetUserWithRolesByEmail(user);
-        _passwordServiceMock.SetupVerifyReturnsTrue();
+        _passwordServiceMock.SetupVerifySuccess(password, user.PasswordHash);
         _authRepositoryMock.SetupIsUserAdminReturnsTrue();
 
         // Act
@@ -152,7 +151,7 @@ public class AdminLoginAuthFactoryTests
         UserEntity user = UserFactory.CreateAdmin();
 
         _authRepositoryMock.SetupGetUserWithRolesByEmail(user);
-        _passwordServiceMock.SetupVerifyReturnsFalse();
+        _passwordServiceMock.SetupVerifyFailure(password, user.PasswordHash);
 
         // Act
         Func<Task> act = async () => await _factory.AuthenticateAsync(email, password, CancellationToken.None);
@@ -170,19 +169,13 @@ public class AdminLoginAuthFactoryTests
         UserEntity user = UserFactory.CreateAdmin();
 
         _authRepositoryMock.SetupGetUserWithRolesByEmail(user);
-        _passwordServiceMock.SetupVerifyReturnsFalse();
+        _passwordServiceMock.SetupVerifyFailure(password, user.PasswordHash);
 
         // Act
-        try
-        {
-            await _factory.AuthenticateAsync(email, password, CancellationToken.None);
-        }
-        catch (AuthenticationException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _factory.AuthenticateAsync(email, password, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<AuthenticationException>();
         _authRepositoryMock.Verify(x => x.IsUserAdmin(It.IsAny<UserEntity>()), Times.Never);
     }
 
@@ -195,7 +188,7 @@ public class AdminLoginAuthFactoryTests
         UserEntity user = UserFactory.CreateVerifiedActive();
 
         _authRepositoryMock.SetupGetUserWithRolesByEmail(user);
-        _passwordServiceMock.SetupVerifyReturnsTrue();
+        _passwordServiceMock.SetupVerifySuccess(password, user.PasswordHash);
         _authRepositoryMock.SetupIsUserAdminThrowsAuthorizationException();
 
         // Act
@@ -219,7 +212,7 @@ public class AdminLoginAuthFactoryTests
         using CancellationTokenSource cts = new();
 
         _authRepositoryMock.SetupGetUserWithRolesByEmail(user);
-        _passwordServiceMock.SetupVerifyReturnsTrue();
+        _passwordServiceMock.SetupVerifySuccess(password, user.PasswordHash);
         _authRepositoryMock.SetupIsUserAdminReturnsTrue();
 
         // Act

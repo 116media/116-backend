@@ -44,7 +44,7 @@ public class PublicRecordShortVideoViewHandlerTests
         PublicRecordShortVideoViewResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
+        result.IsCounted.Should().BeTrue();
         _shortVideoRepositoryMock.VerifyAddViewEventCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -195,12 +195,9 @@ public class PublicRecordShortVideoViewHandlerTests
         PublicRecordShortVideoViewResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         result.IsCounted.Should().BeFalse();
         recorded.Should().NotBeNull();
         recorded!.IsCounted.Should().BeFalse();
-
-        // The raw event is still stored, but the displayed count is not touched.
         _shortVideoRepositoryMock.VerifyAddViewEventCalled();
         _shortVideoRepositoryMock.VerifyUpdateNotCalled();
         _unitOfWorkMock.VerifyCommitCalled();

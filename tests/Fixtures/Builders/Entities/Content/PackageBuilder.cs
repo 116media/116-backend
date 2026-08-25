@@ -30,29 +30,11 @@ public class PackageBuilder
     }
 
     /// <summary>
-    /// Sets the package ID.
-    /// </summary>
-    public PackageBuilder WithId(Guid id)
-    {
-        _id = id;
-        return this;
-    }
-
-    /// <summary>
     /// Sets the package name.
     /// </summary>
     public PackageBuilder WithName(string name)
     {
         _name = name;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the package description.
-    /// </summary>
-    public PackageBuilder WithDescription(string description)
-    {
-        _description = description;
         return this;
     }
 

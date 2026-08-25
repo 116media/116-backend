@@ -59,8 +59,6 @@ public class AdminDeactivatePermissionHandlerTests : BaseHandlerTest
         AdminDeactivatePermissionResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Permission.Should().NotBeNull();
         result.Permission.Id.Should().Be(activePermission.Id);
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -141,16 +139,10 @@ public class AdminDeactivatePermissionHandlerTests : BaseHandlerTest
         _permissionRepositoryMock.SetupGetByIdOrThrow(inactivePermission);
 
         // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (ConflictException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<ConflictException>();
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 

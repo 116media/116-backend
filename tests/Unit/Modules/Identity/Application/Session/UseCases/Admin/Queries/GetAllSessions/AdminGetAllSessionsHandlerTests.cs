@@ -41,8 +41,6 @@ public class AdminGetAllSessionsHandlerTests : BaseHandlerTest
         AdminGetAllSessionsResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Sessions.Should().NotBeNull();
         result.Sessions.Items.Should().HaveCount(5);
         result.Sessions.Count.Should().Be(5);
     }

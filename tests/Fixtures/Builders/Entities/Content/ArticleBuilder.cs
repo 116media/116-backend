@@ -22,9 +22,9 @@ public class ArticleBuilder
     private Guid? _orderItemId;
     private EnumContentStatus _targetStatus = EnumContentStatus.Draft;
     private string? _rejectionReason;
-    private bool _stampSocialBoost;
     private DateTimeOffset? _promotedUntil;
     private Guid _promotionLevelId = Guid.NewGuid();
+    private DateTimeOffset? _publishedAtOverride;
     private DateTime? _createdAt;
     private CategoryEntity? _category;
     private CustomerEntity? _customerNavigation;
@@ -35,15 +35,6 @@ public class ArticleBuilder
     public ArticleBuilder(Guid categoryId)
     {
         _categoryId = categoryId;
-    }
-
-    /// <summary>
-    /// Sets the article ID.
-    /// </summary>
-    public ArticleBuilder WithId(Guid id)
-    {
-        _id = id;
-        return this;
     }
 
     /// <summary>
@@ -61,15 +52,6 @@ public class ArticleBuilder
     public ArticleBuilder WithSlug(string slug)
     {
         _slug = slug;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the author ID.
-    /// </summary>
-    public ArticleBuilder WithAuthorId(Guid authorId)
-    {
-        _authorId = authorId;
         return this;
     }
 
@@ -120,6 +102,16 @@ public class ArticleBuilder
     }
 
     /// <summary>
+    /// Publishes the article with an explicit PublishedAt, for deterministic "latest first" ordering.
+    /// </summary>
+    public ArticleBuilder AsPublishedAt(DateTimeOffset publishedAt)
+    {
+        AsPublished();
+        _publishedAtOverride = publishedAt;
+        return this;
+    }
+
+    /// <summary>
     /// Transitions the article to Rejected status with a reason.
     /// </summary>
     public ArticleBuilder AsRejected(string? reason = null)
@@ -135,15 +127,6 @@ public class ArticleBuilder
     public ArticleBuilder AsArchived()
     {
         _targetStatus = EnumContentStatus.Archived;
-        return this;
-    }
-
-    /// <summary>
-    /// Stamps the article as having social boost.
-    /// </summary>
-    public ArticleBuilder WithSocialBoost()
-    {
-        _stampSocialBoost = true;
         return this;
     }
 
@@ -215,14 +198,19 @@ public class ArticleBuilder
 
         ApplyStatusTransition(entity);
 
-        if (_stampSocialBoost)
-        {
-            entity.StampSocialBoost();
-        }
-
         if (_promotedUntil.HasValue)
         {
             entity.StampPromotion(_promotionLevelId, _promotedUntil.Value);
+        }
+
+        if (_publishedAtOverride.HasValue)
+        {
+            PropertyInfo publishedProp = typeof(ArticleEntity).GetProperty(
+                nameof(ArticleEntity.PublishedAt),
+                BindingFlags.Public | BindingFlags.Instance
+            )!;
+
+            publishedProp.SetValue(entity, _publishedAtOverride);
         }
 
         if (_category is not null)

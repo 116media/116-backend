@@ -69,8 +69,6 @@ public class AdminCreateOrderHandlerTests
         AdminCreateOrderResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Order.Should().NotBeNull();
         result.Order.CustomerName.Should().Be(customer.FullName);
         _orderRepositoryMock.VerifyAddCalled();
         _unitOfWorkMock.VerifyCommitCalled();
@@ -96,7 +94,7 @@ public class AdminCreateOrderHandlerTests
         AdminCreateOrderResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Order.Should().NotBeNull();
+        result.Order.CustomerName.Should().Be(customer.FullName);
         _orderRepositoryMock.VerifyAddCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }

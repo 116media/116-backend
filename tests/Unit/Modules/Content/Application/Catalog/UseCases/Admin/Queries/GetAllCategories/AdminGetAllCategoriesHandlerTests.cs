@@ -46,8 +46,6 @@ public class AdminGetAllCategoriesHandlerTests : BaseContentHandlerTest
         AdminGetAllCategoriesResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Categories.Should().NotBeNull();
         result.Categories.Items.Should().HaveCount(3);
         result.Categories.Count.Should().Be(totalCount);
     }

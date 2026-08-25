@@ -70,50 +70,6 @@ public class AdminCreateVideoRequestBuilder
     }
 
     /// <summary>
-    /// Sets the optional B2B customer who commissioned the video.
-    /// </summary>
-    /// <param name="customerId">The customer identifier, or null for free content.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public AdminCreateVideoRequestBuilder WithCustomerId(Guid? customerId)
-    {
-        _customerId = customerId;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the optional order item the video fulfils.
-    /// </summary>
-    /// <param name="orderItemId">The order item identifier, or null for free content.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public AdminCreateVideoRequestBuilder WithOrderItemId(Guid? orderItemId)
-    {
-        _orderItemId = orderItemId;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the video description.
-    /// </summary>
-    /// <param name="description">The video description.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public AdminCreateVideoRequestBuilder WithDescription(string description)
-    {
-        _description = description;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the optional shooting scheduled date.
-    /// </summary>
-    /// <param name="shootingScheduledAt">The shooting scheduled date, or null.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public AdminCreateVideoRequestBuilder WithShootingScheduledAt(DateTimeOffset? shootingScheduledAt)
-    {
-        _shootingScheduledAt = shootingScheduledAt;
-        return this;
-    }
-
-    /// <summary>
     /// Builds the <see cref="AdminCreateVideoRequest"/> instance.
     /// </summary>
     /// <returns>A configured AdminCreateVideoRequest instance.</returns>

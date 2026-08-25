@@ -24,39 +24,6 @@ public class AdminUpdateLyricsSeoRequestBuilder
     }
 
     /// <summary>
-    /// Sets the optional SEO meta title.
-    /// </summary>
-    /// <param name="metaTitle">The meta title, or null.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public AdminUpdateLyricsSeoRequestBuilder WithMetaTitle(string? metaTitle)
-    {
-        _metaTitle = metaTitle;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the optional SEO meta description.
-    /// </summary>
-    /// <param name="metaDescription">The meta description, or null.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public AdminUpdateLyricsSeoRequestBuilder WithMetaDescription(string? metaDescription)
-    {
-        _metaDescription = metaDescription;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the optional schema.org JSON-LD structured data.
-    /// </summary>
-    /// <param name="structuredData">The structured data, or null.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public AdminUpdateLyricsSeoRequestBuilder WithStructuredData(string? structuredData)
-    {
-        _structuredData = structuredData;
-        return this;
-    }
-
-    /// <summary>
     /// Builds the <see cref="AdminUpdateLyricsSeoRequest"/> instance.
     /// </summary>
     /// <returns>A configured AdminUpdateLyricsSeoRequest instance.</returns>

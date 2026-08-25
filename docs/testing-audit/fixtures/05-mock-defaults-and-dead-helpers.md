@@ -326,9 +326,15 @@ Two rules follow, and they generalise past mocking:
 
 ## Checklist
 
-- [ ] `SetupDefaults` in every repository mock configures write and void members only
-- [ ] Every read-method setup helper takes the identifier it is arranging for
-- [ ] `MockPasswordService` defaults `Verify` to `false`
+- [x] `SetupDefaults` in every repository mock installs no identity-lookup default —
+      48 removed across 18 mocks. The aggregate reads (empty lists, tuples, `false`,
+      `0`, batch dictionaries) are kept on purpose: they answer no identity question,
+      and under loose Moq removing them yields `null` collections rather than empty
+      ones. Retiring them is spec 07 change 6, sequenced after `MockBehavior.Strict`
+- [x] Every read-method setup helper takes the identifier it is arranging for — the
+      four helpers that still fell back to `It.IsAny<Guid>() → null` when handed a
+      null entity now have `SetupXNotFound(id)` siblings instead
+- [x] `MockPasswordService` defaults `Verify` to `false`
 - [ ] The 108 uncalled helper methods under `tests/Unit/Common/Mocks/` deleted
 - [ ] `grep -rn "new Mock<IFormFile>" tests/` returns nothing —
       `FileTestHelpers.CreateMockFormFile` used instead

@@ -11,56 +11,16 @@ namespace _116.Unit.Tests.Shared.Exceptions.Handlers.Strategies;
 
 /// <summary>
 /// Unit tests for <see cref="NotFoundExceptionHandler"/>.
+/// The title, instance and trace extensions are covered for every strategy by
+/// <see cref="ExceptionStrategyContractTests" />; the status and the entity-name detail branch are
+/// asserted here.
 /// </summary>
 public class NotFoundExceptionHandlerTests
 {
     private readonly NotFoundExceptionHandler _handler = new();
     private readonly SharedExceptionMessage i18n = LocalizerFactory.CreateMessage<SharedExceptionMessage>();
 
-    #region ExceptionType Tests
-
-    [Fact]
-    public void ExceptionType_ShouldReturnNotFoundExceptionType()
-    {
-        // Act
-        Type exceptionType = _handler.ExceptionType;
-
-        // Assert
-        exceptionType.Should().Be(typeof(NotFoundException));
-    }
-
-    #endregion
-
     #region CreateProblemDetails Tests
-
-    [Fact]
-    public void CreateProblemDetails_ShouldReturnProblemDetailsWithCorrectTitle()
-    {
-        // Arrange
-        NotFoundException exception = new("Resource not found");
-        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
-
-        // Act
-        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
-
-        // Assert
-        problemDetails.Title.Should().Be(nameof(NotFoundException));
-    }
-
-    [Fact]
-    public void CreateProblemDetails_ShouldReturnProblemDetailsWithExceptionMessage()
-    {
-        // Arrange
-        string errorMessage = "User with id '123' was not found";
-        NotFoundException exception = new(errorMessage);
-        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
-
-        // Act
-        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
-
-        // Assert
-        problemDetails.Detail.Should().Be(errorMessage);
-    }
 
     [Fact]
     public void CreateProblemDetails_ShouldReturn404StatusCode()
@@ -74,55 +34,6 @@ public class NotFoundExceptionHandlerTests
 
         // Assert
         problemDetails.Status.Should().Be(StatusCodes.Status404NotFound);
-    }
-
-    [Fact]
-    public void CreateProblemDetails_ShouldIncludeRequestPath()
-    {
-        // Arrange
-        NotFoundException exception = new("Not found");
-        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
-        string requestPath = "/api/v1/admin/users/123";
-        context.Request.Path = requestPath;
-
-        // Act
-        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
-
-        // Assert
-        problemDetails.Instance.Should().Be(requestPath);
-    }
-
-    [Fact]
-    public void CreateProblemDetails_ShouldIncludeTraceIdExtension()
-    {
-        // Arrange
-        NotFoundException exception = new("Not found");
-        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
-        string traceId = "notfound-trace-202";
-        context.TraceIdentifier = traceId;
-
-        // Act
-        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
-
-        // Assert
-        problemDetails.Extensions.Should().ContainKey("traceId");
-        problemDetails.Extensions["traceId"].Should().Be(traceId);
-    }
-
-    [Fact]
-    public void CreateProblemDetails_ShouldIncludeTimestampExtension()
-    {
-        // Arrange
-        NotFoundException exception = new("Not found");
-        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
-
-        // Act
-        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
-
-        // Assert
-        problemDetails.Extensions.Should().ContainKey("timestamp");
-        var timestamp = (DateTime)problemDetails.Extensions["timestamp"]!;
-        timestamp.Should().NotBe(default(DateTime));
     }
 
     #endregion
@@ -139,7 +50,7 @@ public class NotFoundExceptionHandlerTests
         // Act
         ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
-        // Assert — friendly per-entity label, keyed on the cleaned entity name
+        // Assert
         problemDetails.Detail.Should().Be(i18n.EntityNotFound("User"));
     }
 
@@ -153,7 +64,7 @@ public class NotFoundExceptionHandlerTests
         // Act
         ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
-        // Assert — same friendly message regardless of which key the lookup used
+        // Assert
         problemDetails.Detail.Should().Be(i18n.EntityNotFound("User"));
     }
 
@@ -168,7 +79,7 @@ public class NotFoundExceptionHandlerTests
         // Act
         ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
-        // Assert — no structured entity, so the raw (already-localized) message is used
+        // Assert
         problemDetails.Detail.Should().Be(customMessage);
     }
 
@@ -182,7 +93,7 @@ public class NotFoundExceptionHandlerTests
         // Act
         ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
-        // Assert — the raw class name and the searched value never reach the user
+        // Assert
         problemDetails.Detail.Should().Be(i18n.EntityNotFound("Session"));
         problemDetails.Detail.Should().NotContain("session-uuid");
         problemDetails.Detail.Should().NotContain("SessionEntity");
@@ -198,7 +109,7 @@ public class NotFoundExceptionHandlerTests
         // Act
         ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
-        // Assert — neither the key name nor its value are exposed
+        // Assert
         problemDetails.Detail.Should().Be(i18n.EntityNotFound("Permission"));
         problemDetails.Detail.Should().NotContain("resource");
         problemDetails.Detail.Should().NotContain("articles.read");
@@ -207,7 +118,7 @@ public class NotFoundExceptionHandlerTests
     [Fact]
     public void CreateProblemDetails_WithUnmappedEntity_ShouldFallBackToGenericLabel()
     {
-        // Arrange — an entity with no specific label falls back to the generic one
+        // Arrange
         NotFoundException exception = new("SomethingObscureEntity", (object)"xyz-789");
         DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
@@ -232,7 +143,7 @@ public class NotFoundExceptionHandlerTests
         // Act
         ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
-        // Assert — localized to French, still friendly, still no leak
+        // Assert
         problemDetails.Detail.Should().NotBe(enDetail);
         problemDetails.Detail.Should().Be(i18n.EntityNotFound("User"));
         problemDetails.Detail.Should().NotContain("abc-123");

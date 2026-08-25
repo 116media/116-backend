@@ -695,17 +695,49 @@ mutable state, the cache becomes a cross-test leak. Note the constraint in the
 pipeline resolves `Accept-Language`, nothing more. Resisting the urge to add one per
 endpoint is part of this spec: that path leads back to 104 files.
 
+## Implementation notes
+
+Implemented 2026-08-22, before spec 02 Change 3, per the reordering in
+[00-index.md](00-index.md).
+
+**`TestLocalizer` was deleted rather than amended.** The spec's Change 3 names two
+helpers to fix. `LocalizerFactory.CreateMessage<T>()` lost its inert `culture`
+parameter and now takes no arguments at all, resolving from a single cached container.
+`TestLocalizer.For<T>()` was removed outright: it built its own
+`ResourceManagerStringLocalizerFactory` and resolved strings against whatever ambient
+UI culture happened to be set at access time, which is a second, differently-configured
+localization stack sitting beside the one the application uses. Two entry points into
+localization is the condition that let the 104 self-comparing theories look correct;
+`tests/Fixtures/Helpers/LocalizerFactory.cs` is now the only one.
+
+**The deletion is complete and load-bearing for spec 02.**
+`grep -rn "ShouldBeLocalizedForCulture" tests/` returns nothing across all 104 former
+theories. Because this ran first, spec 02's `CultureScope` adoption had 11 files to
+convert rather than the audit's 104 — those files were the bulk of the culture-setting
+population, and converting them would have been wasted work on code about to be
+deleted.
+
+`ResourceCompletenessTests` lives at `tests/Unit/Shared/Localization/`, discovers
+catalogues by manifest inspection, and is now the only thing in the suite that can
+catch a key present in `en` and absent in `fr`. The 104 deleted theories caught none
+of them: each compared a localizer's output to itself.
+
 ## Checklist
 
-- [ ] 1 — `ResourceCompletenessTests` discovers all 33 catalogues by manifest
+- [x] 1 — `ResourceCompletenessTests` discovers all catalogues by manifest
       inspection, asserts key-set equality against `en` and `fr` with
       `tryParents: false`, asserts non-empty values, asserts placeholder parity, and
       asserts French does not repeat the neutral English string
-- [ ] 2 — all 104 `*_ShouldBeLocalizedForCulture` theories deleted, the surrounding
+- [x] 2 — all 104 `*_ShouldBeLocalizedForCulture` theories deleted, the surrounding
       files otherwise intact
-- [ ] 3 — `LocalizerFactory.CreateMessage<T>` and `TestLocalizer.For<T>` take no
-      `culture` parameter and resolve from a single cached container;
-      `TestErrorsFactory.CreateStreamingLinkErrors` no longer claims a catalogue it
-      cannot pin
+- [x] 3 — `LocalizerFactory.CreateMessage<T>` takes no `culture` parameter and resolves
+      from a single cached container; `TestLocalizer` was deleted rather than amended
+      (see the implementation notes); `TestErrorsFactory.CreateStreamingLinkErrors` no
+      longer claims a catalogue it cannot pin
 - [ ] 4 — the `PublicLoginEndpointV1Tests` `en`/`fr` pair is intact, and one
-      equivalent pair exists for Content and for Mailer
+      equivalent pair exists for Content and for Mailer — **partial**: the Identity pair
+      is intact (`PublicLoginEndpointV1Tests.cs:307`) and Content has five files sending
+      an explicit `Accept-Language`, but **no test under
+      `tests/Integration/Modules/Mailer/` sends the header at all**, so the Mailer
+      catalogue is never exercised end to end under a chosen culture. Carried to the
+      open follow-ups.

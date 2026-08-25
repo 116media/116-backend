@@ -53,9 +53,7 @@ public class AdminRemovePackageSlotHandlerTests : BaseContentHandlerTest
         AdminRemovePackageSlotResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.IsSuccess.Should().BeTrue();
-        result.Package.Should().NotBeNull();
+        result.Package.Id.Should().Be(package.Id);
 
         _packageRepositoryMock.VerifyRemoveSlotCalled(slot);
         _unitOfWorkMock.VerifyCommitCalled();

@@ -49,10 +49,9 @@ public class AdminRemoveArtistSocialLinkHandlerTests
         var command = new AdminRemoveArtistSocialLinkCommand(artistId, EnumSocialPlatform.TikTok);
 
         // Act
-        AdminRemoveArtistSocialLinkResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
         _artistRepositoryMock.Verify(x => x.RemoveSocialLink(existing), Times.Once);
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -60,7 +59,7 @@ public class AdminRemoveArtistSocialLinkHandlerTests
     [Fact]
     public async Task Handle_WhenNoLinkForPlatform_ShouldThrowNotFound()
     {
-        // Arrange — the admin asked to delete something specific and must learn it was not there.
+        // Arrange
         var command = new AdminRemoveArtistSocialLinkCommand(Guid.NewGuid(), EnumSocialPlatform.Website);
 
         // Act

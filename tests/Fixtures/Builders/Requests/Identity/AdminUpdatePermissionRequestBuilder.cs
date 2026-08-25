@@ -40,39 +40,6 @@ public class AdminUpdatePermissionRequestBuilder
     }
 
     /// <summary>
-    /// Sets the permission resource name.
-    /// </summary>
-    /// <param name="resource">The resource name.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public AdminUpdatePermissionRequestBuilder WithResource(string? resource)
-    {
-        _resource = resource;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the permission action name.
-    /// </summary>
-    /// <param name="action">The action name.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public AdminUpdatePermissionRequestBuilder WithAction(string? action)
-    {
-        _action = action;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the permission description.
-    /// </summary>
-    /// <param name="description">The permission description.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public AdminUpdatePermissionRequestBuilder WithDescription(string? description)
-    {
-        _description = description;
-        return this;
-    }
-
-    /// <summary>
     /// Builds the <see cref="AdminUpdatePermissionRequest"/> instance.
     /// </summary>
     /// <returns>A configured AdminUpdatePermissionRequest instance.</returns>

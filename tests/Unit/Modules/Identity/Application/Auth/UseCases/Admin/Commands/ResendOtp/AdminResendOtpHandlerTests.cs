@@ -75,33 +75,6 @@ public class AdminResendOtpHandlerTests
     }
 
     [Fact]
-    public async Task Handle_WhenUserExists_ShouldReturnSuccess()
-    {
-        // Arrange
-        string email = "admin@example.com";
-        string purpose = EnumOtpPurpose.EmailVerification.ToString();
-        UserEntity user = UserFactory.CreateVerifiedActive();
-        OtpEntity otp = OtpFactory.Create(user.Id);
-
-        AdminResendOtpCommand command = new(Email: email, Purpose: purpose);
-
-        _authRepositoryMock.SetupExistsByEmail(new Email(email), true);
-        _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
-        _authRepositoryMock.SetupIsUserAdminReturnsTrue();
-        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
-        _otpFactoryMock
-            .Setup(x => x.ResendOtpAsync(user.Id, It.IsAny<OtpPurpose>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new OtpCreationResult(otp, TestConstants.Otp.DefaultCode));
-
-        // Act
-        AdminResendOtpResult result = await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        result.Should().NotBeNull();
-        result.IsSuccess.Should().BeTrue();
-    }
-
-    [Fact]
     public async Task Handle_WhenUserExists_ShouldCallOtpFactory()
     {
         // Arrange
@@ -128,23 +101,6 @@ public class AdminResendOtpHandlerTests
             x => x.ResendOtpAsync(user.Id, It.IsAny<OtpPurpose>(), It.IsAny<CancellationToken>()),
             Times.Once
         );
-    }
-
-    [Fact]
-    public async Task Handle_WhenUserDoesNotExist_ShouldStillReturnSuccess()
-    {
-        // Arrange - Security: prevent user enumeration
-        string email = "nonexistent@example.com";
-        string purpose = EnumOtpPurpose.EmailVerification.ToString();
-        AdminResendOtpCommand command = new(Email: email, Purpose: purpose);
-
-        _authRepositoryMock.SetupExistsByEmail(new Email(email), false);
-
-        // Act
-        AdminResendOtpResult result = await _handler.Handle(command, CancellationToken.None);
-
-        // Assert - Returns success to prevent user enumeration
-        result.IsSuccess.Should().BeTrue();
     }
 
     [Fact]

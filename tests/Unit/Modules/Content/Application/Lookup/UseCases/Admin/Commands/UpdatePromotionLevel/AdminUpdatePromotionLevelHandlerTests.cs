@@ -61,7 +61,6 @@ public class AdminUpdatePromotionLevelHandlerTests : BaseContentHandlerTest
         AdminUpdatePromotionLevelResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.PromotionLevel.Name.Should().Be(newName);
         result.PromotionLevel.DurationDays.Should().Be(newDuration);
         result.PromotionLevel.PriceUsd.Should().Be(newPrice);
@@ -89,7 +88,6 @@ public class AdminUpdatePromotionLevelHandlerTests : BaseContentHandlerTest
         AdminUpdatePromotionLevelResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
         result.PromotionLevel.Name.Should().Be(sameName);
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -162,16 +160,10 @@ public class AdminUpdatePromotionLevelHandlerTests : BaseContentHandlerTest
         _lookupRepositoryMock.SetupPromotionLevelExistsByName(conflictingName, true);
 
         // Act
-        try
-        {
-            await _handler.Handle(command, CancellationToken.None);
-        }
-        catch (ConflictException)
-        {
-            // Expected
-        }
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await act.Should().ThrowAsync<ConflictException>();
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 

@@ -86,6 +86,18 @@ public class ArticleMapperTests(PostgresFixture postgres) : BaseRepositoryTest(p
         await seedContext.SaveChangesAsync();
 
         var article = ArticleFactory.Create(category.Id);
+        article.Update(
+            categoryId: category.Id,
+            title: article.Title,
+            slug: article.Slug,
+            headline: article.Headline,
+            body: string.Join(' ', Enumerable.Repeat("mot", 250)),
+            customerId: article.CustomerId,
+            orderItemId: article.OrderItemId,
+            socialBoost: article.SocialBoost,
+            metaTitle: article.MetaTitle,
+            metaDescription: article.MetaDescription
+        );
         seedContext.Articles.Add(article);
         await seedContext.SaveChangesAsync();
 
@@ -106,7 +118,7 @@ public class ArticleMapperTests(PostgresFixture postgres) : BaseRepositoryTest(p
         dto.CategoryName.Should().Be("Culture");
         dto.Title.Should().Be(loaded.Title);
         dto.Body.Should().Be(loaded.Body);
-        dto.ReadTimeInMinutes.Should().BeGreaterThanOrEqualTo(1);
+        dto.ReadTimeInMinutes.Should().Be(2);
     }
 
     [Fact]

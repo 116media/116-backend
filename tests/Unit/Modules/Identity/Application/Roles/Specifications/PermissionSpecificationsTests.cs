@@ -1,7 +1,7 @@
-using System.Linq.Expressions;
 using _116.Identity.Application.Roles.Specifications;
 using _116.Identity.Domain.Entities;
 using _116.Tests.Fixtures.Factories.Identity;
+using _116.Unit.Tests.Common.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
@@ -275,20 +275,27 @@ public class PermissionSpecificationsTests
 
     #endregion
 
-    #region PermissionSearchSpecification Tests - ToExpression Only
+    #region PermissionSearchSpecification Tests
 
-    [Fact]
-    public void PermissionSearchSpecification_ShouldCreateValidExpression()
+    [Theory]
+    [InlineData("articles", true)]
+    [InlineData("READ", true)]
+    [InlineData("published articles", true)]
+    [InlineData("videos", false)]
+    public void PermissionSearchSpecification_ShouldMatchResourceActionOrDescriptionCaseInsensitively(
+        string search,
+        bool expected
+    )
     {
         // Arrange
-        PermissionSearchSpecification spec = new("articles");
+        PermissionEntity permission = PermissionFactory.Create("articles", "read", "Read published articles");
+        PermissionSearchSpecification spec = new(search);
 
         // Act
-        Expression<Func<PermissionEntity, bool>> expression = spec.ToExpression();
+        bool result = spec.IsSatisfiedInMemoryBy(permission);
 
         // Assert
-        expression.Should().NotBeNull();
-        expression.Compile().Should().NotBeNull();
+        result.Should().Be(expected);
     }
 
     #endregion

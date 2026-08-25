@@ -50,7 +50,7 @@ public class AdminGetAllPackagesEndpointV1Tests(PostgresFixture db) : BaseApiTes
         var body = await response.ReadAsAsync<AdminGetAllPackagesResponse>();
         body.Packages.PageIndex.Should().Be(0);
         body.Packages.PageSize.Should().Be(10);
-        body.Packages.Count.Should().BeGreaterThanOrEqualTo(3);
+        body.Packages.Count.Should().Be(3);
         body.Packages.Items.Should().Contain(p => p.Id == packages[0].Id);
     }
 

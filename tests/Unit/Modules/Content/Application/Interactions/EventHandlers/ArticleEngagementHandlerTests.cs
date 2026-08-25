@@ -60,7 +60,7 @@ public class ArticleEngagementHandlerTests
         // Assert
         int total = article.LikeCount + article.BookmarkCount + article.CommentCount + article.ShareCount;
         total.Should().Be(1);
-        _articleRepositoryMock.VerifyUpdateCalled();
+        _articleRepositoryMock.VerifyUpdateCalled(article);
         _unitOfWorkMock.VerifyCommitCalled();
         _cacheInvalidatorMock.VerifyInvalidateCalled();
     }
@@ -86,7 +86,7 @@ public class ArticleEngagementHandlerTests
         // Assert
         int total = article.LikeCount + article.BookmarkCount + article.CommentCount;
         total.Should().Be(2);
-        _articleRepositoryMock.VerifyUpdateCalled();
+        _articleRepositoryMock.VerifyUpdateCalled(article);
         _unitOfWorkMock.VerifyCommitCalled();
         _cacheInvalidatorMock.VerifyInvalidateCalled();
     }

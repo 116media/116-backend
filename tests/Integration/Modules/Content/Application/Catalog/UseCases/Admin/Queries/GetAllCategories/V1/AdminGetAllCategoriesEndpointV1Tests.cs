@@ -52,7 +52,7 @@ public class AdminGetAllCategoriesEndpointV1Tests(PostgresFixture db) : BaseApiT
         var body = await response.ReadAsAsync<AdminGetAllCategoriesResponse>();
         body.Categories.PageIndex.Should().Be(0);
         body.Categories.PageSize.Should().Be(10);
-        body.Categories.Count.Should().BeGreaterThanOrEqualTo(3);
+        body.Categories.Count.Should().Be(3);
         body.Categories.Items.Should().Contain(c => c.Id == categories[0].Id);
     }
 

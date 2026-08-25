@@ -2,6 +2,7 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.ApproveArticle;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
@@ -38,7 +39,7 @@ public class AdminApproveArticleHandlerTests
     #region Success Cases
 
     [Fact]
-    public async Task Handle_WhenArticleInPendingReview_ShouldApproveAndReturnSuccess()
+    public async Task Handle_WhenArticleInPendingReview_ShouldTransitionToApproved()
     {
         // Arrange
         ArticleEntity article = ArticleFactory.CreatePendingReview(CategoryId);
@@ -46,11 +47,11 @@ public class AdminApproveArticleHandlerTests
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
 
         // Act
-        AdminApproveArticleResult result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
-        _articleRepositoryMock.VerifyUpdateCalled();
+        article.Status.Should().Be(EnumContentStatus.Approved);
+        _articleRepositoryMock.VerifyUpdateCalled(article);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -71,6 +72,7 @@ public class AdminApproveArticleHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
@@ -86,13 +88,15 @@ public class AdminApproveArticleHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<ConflictException>();
+        article.Status.Should().Be(EnumContentStatus.Approved);
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
     public async Task Handle_WhenArticleInWrongStatus_ShouldThrowBadRequestException()
     {
         // Arrange
-        ArticleEntity article = ArticleFactory.Create(CategoryId); // Draft status
+        ArticleEntity article = ArticleFactory.Create(CategoryId);
         var command = new AdminApproveArticleCommand(Id: article.Id.ToString());
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
 
@@ -101,6 +105,8 @@ public class AdminApproveArticleHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<BadRequestException>();
+        article.Status.Should().Be(EnumContentStatus.Draft);
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     #endregion

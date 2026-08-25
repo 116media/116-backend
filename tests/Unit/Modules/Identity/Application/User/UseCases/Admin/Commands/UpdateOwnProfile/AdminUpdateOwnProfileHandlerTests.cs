@@ -71,8 +71,7 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
         AdminUpdateOwnProfileResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.User.Should().NotBeNull();
+        result.User.Id.Should().Be(user.Id);
     }
 
     [Fact]
