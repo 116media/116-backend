@@ -8,9 +8,9 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.DeleteTag;
 /// <summary>
 /// Handles the <see cref="AdminDeleteTagCommand" /> to permanently delete a content tag.
 /// </summary>
-/// <param name="lookupRepository">Repository for lookup data access operations.</param>
+/// <param name="tagRepository">Repository for tag data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-public class AdminDeleteTagHandler(ILookupRepository lookupRepository, IContentUnitOfWork unitOfWork)
+public class AdminDeleteTagHandler(ITagRepository tagRepository, IContentUnitOfWork unitOfWork)
     : ICommandHandler<AdminDeleteTagCommand, AdminDeleteTagResult>
 {
     /// <inheritdoc />
@@ -18,10 +18,10 @@ public class AdminDeleteTagHandler(ILookupRepository lookupRepository, IContentU
     {
         Guid id = Guid.Parse(command.Id);
 
-        TagEntity tag = await lookupRepository.GetTagByIdOrThrowAsync(id: id, cancellationToken: cancellationToken);
+        TagEntity tag = await tagRepository.GetByIdOrThrowAsync(id: id, cancellationToken: cancellationToken);
 
         tag.MarkDeleted();
-        lookupRepository.Remove(entity: tag);
+        tagRepository.Remove(entity: tag);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminDeleteTagResult(IsSuccess: true);
