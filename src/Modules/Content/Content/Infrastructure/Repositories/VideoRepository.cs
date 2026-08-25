@@ -15,7 +15,7 @@ namespace _116.Content.Infrastructure.Repositories;
 /// Implementation of <see cref="IVideoRepository" /> for managing video entities.
 /// </summary>
 /// <param name="context">The Content module database context.</param>
-public class VideoRepository(ContentDbContext context) : IVideoRepository
+public class VideoRepository(ContentDbContext context) : ContentRepository<VideoEntity>(context), IVideoRepository
 {
     /// <inheritdoc />
     public async Task<(List<VideoEntity> Videos, int TotalCount)> GetAllAsync(
@@ -28,7 +28,7 @@ public class VideoRepository(ContentDbContext context) : IVideoRepository
         CancellationToken cancellationToken = default
     )
     {
-        IQueryable<VideoEntity> query = context.Videos.Include(v => v.Category);
+        IQueryable<VideoEntity> query = Context.Videos.Include(v => v.Category);
 
         Specification<VideoEntity>? spec = new VideoQueryBuilder()
             .WithSearch(search: search)
@@ -57,7 +57,7 @@ public class VideoRepository(ContentDbContext context) : IVideoRepository
     public async Task<List<VideoEntity>> GetActiveAsync(CancellationToken cancellationToken = default)
     {
         var specification = new ActiveVideoSpecification();
-        return await context
+        return await Context
             .Videos.Include(v => v.Category)
             .ApplySpecification(specification)
             .OrderByDescending(v => v.CreatedAt)
@@ -65,10 +65,10 @@ public class VideoRepository(ContentDbContext context) : IVideoRepository
     }
 
     /// <inheritdoc />
-    public async Task<VideoEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public override async Task<VideoEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var specification = new VideoByIdSpecification(id: id);
-        return await context
+        return await Context
             .Videos.ApplySpecification(specification: specification)
             .Include(v => v.Category)
             .Include(v => v.Tags)
@@ -79,10 +79,10 @@ public class VideoRepository(ContentDbContext context) : IVideoRepository
     }
 
     /// <inheritdoc />
-    public async Task<VideoEntity> GetByIdOrThrowAsync(Guid id, CancellationToken cancellationToken = default)
+    public override async Task<VideoEntity> GetByIdOrThrowAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var specification = new VideoByIdSpecification(id: id);
-        return await context
+        return await Context
             .Videos.AsTracking()
             .ApplySpecification(specification: specification)
             .Include(v => v.Category)
@@ -97,7 +97,7 @@ public class VideoRepository(ContentDbContext context) : IVideoRepository
     public async Task<VideoEntity?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default)
     {
         var specification = new VideoBySlugSpecification(slug: slug);
-        return await context
+        return await Context
             .Videos.AsTracking()
             .ApplySpecification(specification: specification)
             .Include(v => v.Category)
@@ -111,7 +111,7 @@ public class VideoRepository(ContentDbContext context) : IVideoRepository
     public async Task<IReadOnlyList<VideoEntity>> GetPromotedAsync(CancellationToken cancellationToken = default)
     {
         var specification = new PromotedVideoSpecification();
-        return await context
+        return await Context
             .Videos.ApplySpecification(specification: specification)
             .Include(v => v.Category)
             .OrderByDescending(v => v.PublishedAt)
@@ -130,7 +130,7 @@ public class VideoRepository(ContentDbContext context) : IVideoRepository
             .WithCategory(categoryId: categoryId)
             .WithExcludeId(excludeId: excludeId)
             .WithLimit(limit: limit)
-            .Build(context: context);
+            .Build(context: Context);
 
         return await query.ToListAsync(cancellationToken);
     }
@@ -142,41 +142,23 @@ public class VideoRepository(ContentDbContext context) : IVideoRepository
     )
     {
         var specification = new VideoByOrderItemIdSpecification(orderItemId: orderItemId);
-        return await context
+        return await Context
             .Videos.AsTracking()
             .ApplySpecification(specification: specification)
             .FirstOrDefaultAsync(cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task AddAsync(VideoEntity video, CancellationToken cancellationToken = default)
-    {
-        await context.Videos.AddAsync(video, cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public void Update(VideoEntity video)
-    {
-        context.Videos.Update(video);
-    }
-
-    /// <inheritdoc />
-    public void Remove(VideoEntity video)
-    {
-        context.Videos.Remove(video);
-    }
-
-    /// <inheritdoc />
     public async Task AddTagAsync(VideoTagEntity tag, CancellationToken cancellationToken = default)
     {
-        await context.VideoTags.AddAsync(tag, cancellationToken);
+        await Context.VideoTags.AddAsync(tag, cancellationToken);
     }
 
     /// <inheritdoc />
     public void RemoveTag(VideoTagEntity tag)
     {
         tag.MarkRemoved();
-        context.VideoTags.Remove(tag);
+        Context.VideoTags.Remove(tag);
     }
 
     /// <inheritdoc />
@@ -186,7 +168,7 @@ public class VideoRepository(ContentDbContext context) : IVideoRepository
     )
     {
         var specification = new VideoTagByVideoIdSpecification(videoId: videoId);
-        return await context
+        return await Context
             .VideoTags.AsTracking()
             .ApplySpecification(specification: specification)
             .ToListAsync(cancellationToken);
@@ -200,7 +182,7 @@ public class VideoRepository(ContentDbContext context) : IVideoRepository
     )
     {
         var specification = new VideoRatingByUserAndVideoSpecification(userId: userId, videoId: videoId);
-        return await context
+        return await Context
             .VideoRatings.AsTracking()
             .ApplySpecification(specification: specification)
             .FirstOrDefaultAsync(cancellationToken);
@@ -209,13 +191,13 @@ public class VideoRepository(ContentDbContext context) : IVideoRepository
     /// <inheritdoc />
     public async Task AddRatingAsync(VideoRatingEntity rating, CancellationToken cancellationToken = default)
     {
-        await context.VideoRatings.AddAsync(rating, cancellationToken);
+        await Context.VideoRatings.AddAsync(rating, cancellationToken);
     }
 
     /// <inheritdoc />
     public void UpdateRating(VideoRatingEntity rating)
     {
-        context.VideoRatings.Update(rating);
+        Context.VideoRatings.Update(rating);
     }
 
     /// <inheritdoc />
@@ -225,7 +207,7 @@ public class VideoRepository(ContentDbContext context) : IVideoRepository
     )
     {
         var specification = new VideoRatingByVideoIdSpecification(videoId: videoId);
-        return await context
+        return await Context
             .VideoRatings.ApplySpecification(specification: specification)
             .ToListAsync(cancellationToken);
     }
@@ -233,7 +215,7 @@ public class VideoRepository(ContentDbContext context) : IVideoRepository
     /// <inheritdoc />
     public async Task AddShareAsync(VideoShareEntity share, CancellationToken cancellationToken = default)
     {
-        await context.VideoShares.AddAsync(share, cancellationToken);
+        await Context.VideoShares.AddAsync(share, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -245,7 +227,7 @@ public class VideoRepository(ContentDbContext context) : IVideoRepository
     )
     {
         var specification = new VideoRatingByUserIdSpecification(userId: userId);
-        IQueryable<VideoRatingEntity> query = context
+        IQueryable<VideoRatingEntity> query = Context
             .VideoRatings.ApplySpecification(specification: specification)
             .Where(rating => rating.Video.Status == EnumContentStatus.Published);
 
@@ -279,7 +261,7 @@ public class VideoRepository(ContentDbContext context) : IVideoRepository
     )
     {
         var specification = new VideoShareByUserIdSpecification(userId: userId);
-        IQueryable<VideoShareEntity> ownPublishedShares = context
+        IQueryable<VideoShareEntity> ownPublishedShares = Context
             .VideoShares.ApplySpecification(specification: specification)
             .Where(share => share.Video.Status == EnumContentStatus.Published);
 
@@ -308,7 +290,7 @@ public class VideoRepository(ContentDbContext context) : IVideoRepository
             .ToListAsync(cancellationToken);
 
         Guid[] videoIds = pageMetadata.Select(activity => activity.VideoId).ToArray();
-        Dictionary<Guid, VideoEntity> videos = await context
+        Dictionary<Guid, VideoEntity> videos = await Context
             .Videos.Where(video => videoIds.Contains(video.Id))
             .Include(video => video.Category)
             .ToDictionaryAsync(video => video.Id, cancellationToken);
@@ -332,7 +314,7 @@ public class VideoRepository(ContentDbContext context) : IVideoRepository
     )
     {
         var specification = new VideoBySpotPrioritySpecification(spotPriority: spotPriority);
-        return await context
+        return await Context
             .Videos.ApplySpecification(specification: specification)
             .Include(v => v.Category)
             .Include(v => v.PromotionLevel)
@@ -348,7 +330,7 @@ public class VideoRepository(ContentDbContext context) : IVideoRepository
     )
     {
         var specification = new FreeVideoSpecification();
-        return await context
+        return await Context
             .Videos.ApplySpecification(specification: specification)
             .Where(v => !excludeIds.Contains(v.Id))
             .Include(v => v.Category)
@@ -367,7 +349,7 @@ public class VideoRepository(ContentDbContext context) : IVideoRepository
             new VideoByCategorySpecification(categoryId: categoryId)
         );
 
-        return await context
+        return await Context
             .Videos.ApplySpecification(specification: specification)
             .Include(v => v.Category)
             .OrderByDescending(v => v.PublishedAt)
@@ -383,7 +365,7 @@ public class VideoRepository(ContentDbContext context) : IVideoRepository
             new VideoByCategorySpecification(categoryId: categoryId)
         );
 
-        return await context.Videos.ApplySpecification(specification: specification).CountAsync(cancellationToken);
+        return await Context.Videos.ApplySpecification(specification: specification).CountAsync(cancellationToken);
     }
 
     /// <inheritdoc />
@@ -398,7 +380,7 @@ public class VideoRepository(ContentDbContext context) : IVideoRepository
             new VideoByArtistSpecification(artistId: artistId)
         );
 
-        IQueryable<VideoEntity> query = context
+        IQueryable<VideoEntity> query = Context
             .Videos.Include(v => v.Category)
             .ApplySpecification(specification: specification);
 
@@ -415,17 +397,6 @@ public class VideoRepository(ContentDbContext context) : IVideoRepository
     }
 
     /// <inheritdoc />
-    public async Task ExistsOrThrowAsync(Guid videoId, CancellationToken cancellationToken = default)
-    {
-        bool exists = await context.Videos.AnyAsync(v => v.Id == videoId, cancellationToken);
-
-        if (!exists)
-        {
-            throw new NotFoundException(nameof(VideoEntity), videoId);
-        }
-    }
-
-    /// <inheritdoc />
     public async Task<int?> ApplyEngagementDeltaAsync(
         Guid videoId,
         EnumEngagementKind kind,
@@ -433,7 +404,7 @@ public class VideoRepository(ContentDbContext context) : IVideoRepository
         CancellationToken cancellationToken = default
     )
     {
-        IQueryable<VideoEntity> row = context.Videos.Where(e => e.Id == videoId);
+        IQueryable<VideoEntity> row = Context.Videos.Where(e => e.Id == videoId);
 
         // Math.Max reaches PostgreSQL as GREATEST, so a racing unlike cannot go negative.
         return kind switch
@@ -454,7 +425,7 @@ public class VideoRepository(ContentDbContext context) : IVideoRepository
         CancellationToken cancellationToken = default
     )
     {
-        return context
+        return Context
             .Videos.Where(v => v.Id == videoId)
             .ExecuteUpdateAsync(
                 setters => setters.SetProperty(v => v.RatingAverage, average).SetProperty(v => v.RatingCount, count),
