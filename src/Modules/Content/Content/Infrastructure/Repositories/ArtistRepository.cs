@@ -13,43 +13,23 @@ namespace _116.Content.Infrastructure.Repositories;
 /// Implementation of <see cref="IArtistRepository" /> for managing artist profile entities.
 /// </summary>
 /// <param name="context">The Content module database context.</param>
-public class ArtistRepository(ContentDbContext context) : IArtistRepository
+public class ArtistRepository(ContentDbContext context) : ContentRepository<ArtistEntity>(context), IArtistRepository
 {
     /// <inheritdoc />
     public async Task<ArtistEntity?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default)
     {
         var specification = new ArtistBySlugSpecification(slug: slug);
-        return await context.Artists.FirstOrDefaultBySpecificationAsync(
+        return await Context.Artists.FirstOrDefaultBySpecificationAsync(
             specification: specification,
             cancellationToken: cancellationToken
         );
-    }
-
-    /// <inheritdoc />
-    public async Task<ArtistEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        var specification = new ArtistByIdSpecification(id: id);
-        return await context.Artists.FirstOrDefaultBySpecificationAsync(
-            specification: specification,
-            cancellationToken: cancellationToken
-        );
-    }
-
-    /// <inheritdoc />
-    public async Task<ArtistEntity> GetByIdOrThrowAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        var specification = new ArtistByIdSpecification(id: id);
-        return await context
-            .Artists.AsTracking()
-            .ApplySpecification(specification: specification)
-            .FirstDefaultOrThrowAsync(keyValue: id, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
     public async Task<ArtistEntity?> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         var specification = new ArtistByUserIdSpecification(userId: userId);
-        return await context.Artists.FirstOrDefaultBySpecificationAsync(
+        return await Context.Artists.FirstOrDefaultBySpecificationAsync(
             specification: specification,
             cancellationToken: cancellationToken
         );
@@ -63,7 +43,7 @@ public class ArtistRepository(ContentDbContext context) : IArtistRepository
         CancellationToken cancellationToken = default
     )
     {
-        IQueryable<ArtistEntity> query = context.Artists;
+        IQueryable<ArtistEntity> query = Context.Artists;
 
         if (!string.IsNullOrWhiteSpace(search))
         {
@@ -83,18 +63,6 @@ public class ArtistRepository(ContentDbContext context) : IArtistRepository
     }
 
     /// <inheritdoc />
-    public async Task AddAsync(ArtistEntity artist, CancellationToken cancellationToken = default)
-    {
-        await context.Artists.AddAsync(artist, cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public void Update(ArtistEntity artist)
-    {
-        context.Artists.Update(artist);
-    }
-
-    /// <inheritdoc />
     public async Task<(List<ArtistDirectoryRow> Artists, int TotalCount)> GetPublicDirectoryAsync(
         int page,
         int pageSize,
@@ -103,12 +71,12 @@ public class ArtistRepository(ContentDbContext context) : IArtistRepository
         CancellationToken cancellationToken = default
     )
     {
-        IQueryable<ArtistEntity> query = context.Artists.ApplySpecification(
+        IQueryable<ArtistEntity> query = Context.Artists.ApplySpecification(
             specification: new ArtistHasContentSpecification(
-                lyrics: context.Lyrics,
-                videos: context.Videos,
-                albums: context.Albums,
-                articleArtists: context.ArticleArtists
+                lyrics: Context.Lyrics,
+                videos: Context.Videos,
+                albums: Context.Albums,
+                articleArtists: Context.ArticleArtists
             )
         );
 
@@ -136,13 +104,13 @@ public class ArtistRepository(ContentDbContext context) : IArtistRepository
             .Take(count: pageSize)
             .Select(a => new ArtistDirectoryRow(
                 a,
-                context.Lyrics.Count(l => l.ArtistId == a.Id && l.Status == EnumContentStatus.Published)
-                    + context.Videos.Count(v => v.ArtistId == a.Id && v.Status == EnumContentStatus.Published)
-                    + context.Albums.Count(al =>
+                Context.Lyrics.Count(l => l.ArtistId == a.Id && l.Status == EnumContentStatus.Published)
+                    + Context.Videos.Count(v => v.ArtistId == a.Id && v.Status == EnumContentStatus.Published)
+                    + Context.Albums.Count(al =>
                         al.ArtistId == a.Id
                         && (al.ReleaseType == EnumReleaseType.Album || al.ReleaseType == EnumReleaseType.Mixtape)
                     )
-                    + context.ArticleArtists.Count(aa =>
+                    + Context.ArticleArtists.Count(aa =>
                         aa.ArtistId == a.Id && aa.Article.Status == EnumContentStatus.Published
                     )
             ))
@@ -154,13 +122,13 @@ public class ArtistRepository(ContentDbContext context) : IArtistRepository
     /// <inheritdoc />
     public async Task<IReadOnlyList<string>> GetAvailableLettersAsync(CancellationToken cancellationToken = default)
     {
-        return await context
+        return await Context
             .Artists.ApplySpecification(
                 specification: new ArtistHasContentSpecification(
-                    lyrics: context.Lyrics,
-                    videos: context.Videos,
-                    albums: context.Albums,
-                    articleArtists: context.ArticleArtists
+                    lyrics: Context.Lyrics,
+                    videos: Context.Videos,
+                    albums: Context.Albums,
+                    articleArtists: Context.ArticleArtists
                 )
             )
             .Select(a => a.InitialLetter)
@@ -174,14 +142,14 @@ public class ArtistRepository(ContentDbContext context) : IArtistRepository
     {
         // One statement projecting all five counts, term-for-term aligned with the
         // directory's content predicate — the profile's 404 rule sums these.
-        ArtistTotals? totals = await context
+        ArtistTotals? totals = await Context
             .Artists.Where(a => a.Id == artistId)
             .Select(a => new ArtistTotals(
-                context.Lyrics.Count(l => l.ArtistId == a.Id && l.Status == EnumContentStatus.Published),
-                context.Videos.Count(v => v.ArtistId == a.Id && v.Status == EnumContentStatus.Published),
-                context.Albums.Count(al => al.ArtistId == a.Id && al.ReleaseType == EnumReleaseType.Album),
-                context.Albums.Count(al => al.ArtistId == a.Id && al.ReleaseType == EnumReleaseType.Mixtape),
-                context.ArticleArtists.Count(aa =>
+                Context.Lyrics.Count(l => l.ArtistId == a.Id && l.Status == EnumContentStatus.Published),
+                Context.Videos.Count(v => v.ArtistId == a.Id && v.Status == EnumContentStatus.Published),
+                Context.Albums.Count(al => al.ArtistId == a.Id && al.ReleaseType == EnumReleaseType.Album),
+                Context.Albums.Count(al => al.ArtistId == a.Id && al.ReleaseType == EnumReleaseType.Mixtape),
+                Context.ArticleArtists.Count(aa =>
                     aa.ArtistId == a.Id && aa.Article.Status == EnumContentStatus.Published
                 )
             ))
@@ -196,7 +164,7 @@ public class ArtistRepository(ContentDbContext context) : IArtistRepository
         CancellationToken cancellationToken = default
     )
     {
-        return await context
+        return await Context
             .ArtistSocialLinks.Where(link => link.ArtistId == artistId)
             .OrderBy(link => link.Platform)
             .ToListAsync(cancellationToken: cancellationToken);
@@ -209,7 +177,7 @@ public class ArtistRepository(ContentDbContext context) : IArtistRepository
         CancellationToken cancellationToken = default
     )
     {
-        return await context
+        return await Context
             .ArtistSocialLinks.AsTracking()
             .FirstOrDefaultAsync(
                 link => link.ArtistId == artistId && link.Platform == platform,
@@ -220,18 +188,18 @@ public class ArtistRepository(ContentDbContext context) : IArtistRepository
     /// <inheritdoc />
     public async Task AddSocialLinkAsync(ArtistSocialLinkEntity link, CancellationToken cancellationToken = default)
     {
-        await context.ArtistSocialLinks.AddAsync(link, cancellationToken);
+        await Context.ArtistSocialLinks.AddAsync(link, cancellationToken);
     }
 
     /// <inheritdoc />
     public void UpdateSocialLink(ArtistSocialLinkEntity link)
     {
-        context.ArtistSocialLinks.Update(link);
+        Context.ArtistSocialLinks.Update(link);
     }
 
     /// <inheritdoc />
     public void RemoveSocialLink(ArtistSocialLinkEntity link)
     {
-        context.ArtistSocialLinks.Remove(link);
+        Context.ArtistSocialLinks.Remove(link);
     }
 }
