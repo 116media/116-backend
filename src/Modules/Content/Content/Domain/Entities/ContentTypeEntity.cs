@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using _116.Content.Domain.Constants;
+using _116.Content.Domain.Events;
 using _116.Content.Domain.Exceptions;
 using _116.Content.Domain.StateMachines;
 using _116.Shared.Domain;
@@ -42,7 +43,10 @@ public class ContentTypeEntity : Aggregate<Guid>
             throw new ContentRuleException(ContentRuleCodes.ContentTypeNameRequired);
         }
 
-        return new ContentTypeEntity { Id = id, Name = name };
+        var contentType = new ContentTypeEntity { Id = id, Name = name };
+        contentType.AddDomainEvent(new ContentTypeChangedEvent(ContentTypeId: id));
+
+        return contentType;
     }
 
     /// <summary>
@@ -58,6 +62,7 @@ public class ContentTypeEntity : Aggregate<Guid>
         }
 
         Name = name;
+        AddDomainEvent(new ContentTypeChangedEvent(ContentTypeId: Id));
     }
 
     /// <summary>
@@ -72,6 +77,8 @@ public class ContentTypeEntity : Aggregate<Guid>
         }
 
         IsActive = true;
+        AddDomainEvent(new ContentTypeChangedEvent(ContentTypeId: Id));
+
         return true;
     }
 
@@ -87,6 +94,8 @@ public class ContentTypeEntity : Aggregate<Guid>
         }
 
         IsActive = false;
+        AddDomainEvent(new ContentTypeChangedEvent(ContentTypeId: Id));
+
         return true;
     }
 }
