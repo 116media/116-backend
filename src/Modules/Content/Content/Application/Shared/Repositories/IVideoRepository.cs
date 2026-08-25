@@ -1,6 +1,5 @@
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
-using _116.Shared.Domain;
 
 namespace _116.Content.Application.Shared.Repositories;
 
@@ -22,7 +21,7 @@ public sealed record SharedVideoActivity(
 /// <summary>
 /// Repository interface for video data access operations.
 /// </summary>
-public interface IVideoRepository : IRepository<VideoEntity>
+public interface IVideoRepository
 {
     /// <summary>
     /// Retrieves a paginated list of videos with optional filters.
