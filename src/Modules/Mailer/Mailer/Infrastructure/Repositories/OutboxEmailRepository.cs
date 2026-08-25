@@ -10,14 +10,10 @@ namespace _116.Mailer.Infrastructure.Repositories;
 /// EF Core implementation of <see cref="IOutboxEmailRepository" />.
 /// </summary>
 /// <param name="context">The Mailer module database context.</param>
-public class OutboxEmailRepository(MailerDbContext context) : IOutboxEmailRepository
+public class OutboxEmailRepository(MailerDbContext context)
+    : MailerRepository<OutboxEmailEntity>(context),
+        IOutboxEmailRepository
 {
-    /// <inheritdoc />
-    public async Task AddAsync(OutboxEmailEntity email, CancellationToken cancellationToken)
-    {
-        await context.OutboxEmails.AddAsync(email, cancellationToken);
-    }
-
     /// <inheritdoc />
     public async Task<IReadOnlyList<OutboxEmailEntity>> ClaimDueBatchAsync(
         int batchSize,
@@ -29,7 +25,7 @@ public class OutboxEmailRepository(MailerDbContext context) : IOutboxEmailReposi
         // replicas) from double-sending the same row: each claims a disjoint
         // batch and the losers skip instead of blocking. The lock only holds
         // while the dispatcher's surrounding transaction is open.
-        return await context
+        return await Context
             .OutboxEmails.FromSqlInterpolated(
                 $"""
                 SELECT * FROM mailer.outbox_emails
