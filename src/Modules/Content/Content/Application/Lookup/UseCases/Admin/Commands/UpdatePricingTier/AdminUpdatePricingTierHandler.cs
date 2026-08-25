@@ -11,12 +11,12 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.UpdatePricingT
 /// <summary>
 /// Handles the <see cref="AdminUpdatePricingTierCommand" /> to update an existing pricing tier.
 /// </summary>
-/// <param name="lookupRepository">Repository for lookup data access operations.</param>
+/// <param name="pricingTierRepository">Repository for pricing tier data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminUpdatePricingTierHandler(
-    ILookupRepository lookupRepository,
+    IPricingTierRepository pricingTierRepository,
     IContentUnitOfWork unitOfWork,
     IMapper mapper,
     ContentI18n i18n
@@ -30,12 +30,12 @@ public class AdminUpdatePricingTierHandler(
     {
         Guid id = Guid.Parse(command.Id);
 
-        PricingTierEntity pricingTier = await lookupRepository.GetPricingTierByIdOrThrowAsync(
+        PricingTierEntity pricingTier = await pricingTierRepository.GetByIdOrThrowAsync(
             id: id,
             cancellationToken: cancellationToken
         );
 
-        bool nameConflict = await lookupRepository.PricingTierExistsByNameAsync(
+        bool nameConflict = await pricingTierRepository.ExistsByNameAsync(
             name: command.Name,
             cancellationToken: cancellationToken
         );
@@ -47,7 +47,7 @@ public class AdminUpdatePricingTierHandler(
 
         pricingTier.Update(name: command.Name, description: command.Description);
 
-        lookupRepository.UpdatePricingTier(pricingTier: pricingTier);
+        pricingTierRepository.Update(pricingTier: pricingTier);
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
