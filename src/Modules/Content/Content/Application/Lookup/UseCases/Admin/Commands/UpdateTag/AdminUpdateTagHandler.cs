@@ -11,12 +11,12 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.UpdateTag;
 /// <summary>
 /// Handles the <see cref="AdminUpdateTagCommand" /> to update an existing content tag.
 /// </summary>
-/// <param name="lookupRepository">Repository for lookup data access operations.</param>
+/// <param name="tagRepository">Repository for tag data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminUpdateTagHandler(
-    ILookupRepository lookupRepository,
+    ITagRepository tagRepository,
     IContentUnitOfWork unitOfWork,
     IMapper mapper,
     ContentI18n i18n
@@ -27,9 +27,9 @@ public class AdminUpdateTagHandler(
     {
         Guid id = Guid.Parse(command.Id);
 
-        TagEntity tag = await lookupRepository.GetTagByIdOrThrowAsync(id: id, cancellationToken: cancellationToken);
+        TagEntity tag = await tagRepository.GetByIdOrThrowAsync(id: id, cancellationToken: cancellationToken);
 
-        TagEntity? existing = await lookupRepository.GetTagBySlugAsync(
+        TagEntity? existing = await tagRepository.GetBySlugAsync(
             slug: command.Slug,
             cancellationToken: cancellationToken
         );
@@ -41,7 +41,7 @@ public class AdminUpdateTagHandler(
 
         tag.Update(name: command.Name, slug: command.Slug);
 
-        lookupRepository.UpdateTag(tag: tag);
+        tagRepository.Update(tag: tag);
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
