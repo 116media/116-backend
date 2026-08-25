@@ -13,30 +13,10 @@ namespace _116.Content.Infrastructure.Repositories;
 /// submission entities.
 /// </summary>
 /// <param name="context">The Content module database context.</param>
-public class LyricsSubmissionRepository(ContentDbContext context) : ILyricsSubmissionRepository
+public class LyricsSubmissionRepository(ContentDbContext context)
+    : ContentRepository<LyricsSubmissionEntity>(context),
+        ILyricsSubmissionRepository
 {
-    /// <inheritdoc />
-    public async Task<LyricsSubmissionEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        var specification = new SubmissionByIdSpecification(id: id);
-        return await context
-            .LyricsSubmissions.ApplySpecification(specification: specification)
-            .FirstOrDefaultAsync(cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public async Task<LyricsSubmissionEntity> GetByIdOrThrowAsync(
-        Guid id,
-        CancellationToken cancellationToken = default
-    )
-    {
-        var specification = new SubmissionByIdSpecification(id: id);
-        return await context
-            .LyricsSubmissions.AsTracking()
-            .ApplySpecification(specification: specification)
-            .FirstDefaultOrThrowAsync(keyValue: id, cancellationToken: cancellationToken);
-    }
-
     /// <inheritdoc />
     public async Task<(List<LyricsSubmissionEntity> Submissions, int TotalCount)> GetAllAsync(
         int page,
@@ -45,7 +25,7 @@ public class LyricsSubmissionRepository(ContentDbContext context) : ILyricsSubmi
         CancellationToken cancellationToken = default
     )
     {
-        IQueryable<LyricsSubmissionEntity> query = context.LyricsSubmissions;
+        IQueryable<LyricsSubmissionEntity> query = Context.LyricsSubmissions;
 
         if (status.HasValue)
         {
@@ -70,25 +50,13 @@ public class LyricsSubmissionRepository(ContentDbContext context) : ILyricsSubmi
     )
     {
         return await (
-            from submission in context.LyricsSubmissions
+            from submission in Context.LyricsSubmissions
             where submission.Status == EnumSubmissionStatus.Pending
             where
-                context.Lyrics.Any(lyrics =>
+                Context.Lyrics.Any(lyrics =>
                     lyrics.SongTitle == submission.SongTitle && lyrics.ArtistName == submission.ArtistName
                 )
             select submission
         ).ToListAsync(cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public async Task AddAsync(LyricsSubmissionEntity submission, CancellationToken cancellationToken = default)
-    {
-        await context.LyricsSubmissions.AddAsync(submission, cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public void Update(LyricsSubmissionEntity submission)
-    {
-        context.LyricsSubmissions.Update(submission);
     }
 }
