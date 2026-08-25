@@ -1,12 +1,11 @@
 using _116.Content.Domain.Entities;
-using _116.Shared.Domain;
 
 namespace _116.Content.Application.Shared.Repositories;
 
 /// <summary>
 /// Repository interface for lyrics-text community correction revision data access operations.
 /// </summary>
-public interface ILyricsRevisionRepository : IRepository<LyricsRevisionEntity>
+public interface ILyricsRevisionRepository
 {
     /// <summary>
     /// Retrieves a lyrics revision by its unique identifier.
