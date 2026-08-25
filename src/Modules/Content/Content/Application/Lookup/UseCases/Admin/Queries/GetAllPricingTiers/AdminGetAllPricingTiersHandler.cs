@@ -10,9 +10,9 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Queries.GetAllPricingTi
 /// <summary>
 /// Handles the <see cref="AdminGetAllPricingTiersQuery" /> to retrieve all pricing tiers.
 /// </summary>
-/// <param name="lookupRepository">Repository for lookup data access operations.</param>
+/// <param name="pricingTierRepository">Repository for pricing tier data access operations.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-public class AdminGetAllPricingTiersHandler(ILookupRepository lookupRepository, IMapper mapper)
+public class AdminGetAllPricingTiersHandler(IPricingTierRepository pricingTierRepository, IMapper mapper)
     : IQueryHandler<AdminGetAllPricingTiersQuery, AdminGetAllPricingTiersResult>
 {
     /// <inheritdoc />
@@ -21,7 +21,7 @@ public class AdminGetAllPricingTiersHandler(ILookupRepository lookupRepository, 
         CancellationToken cancellationToken
     )
     {
-        IReadOnlyList<PricingTierEntity> pricingTiers = await lookupRepository.GetAllPricingTiersAsync(
+        IReadOnlyList<PricingTierEntity> pricingTiers = await pricingTierRepository.GetAllAsync(
             search: query.Search,
             cancellationToken: cancellationToken
         );
