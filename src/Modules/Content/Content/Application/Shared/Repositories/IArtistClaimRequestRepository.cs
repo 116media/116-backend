@@ -1,12 +1,11 @@
 using _116.Content.Domain.Entities;
-using _116.Shared.Domain;
 
 namespace _116.Content.Application.Shared.Repositories;
 
 /// <summary>
 /// Repository interface for artist ownership claim request data access operations.
 /// </summary>
-public interface IArtistClaimRequestRepository : IRepository<ArtistClaimRequestEntity>
+public interface IArtistClaimRequestRepository
 {
     /// <summary>
     /// Adds a new artist ownership claim request to the repository.
