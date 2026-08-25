@@ -11,7 +11,9 @@ namespace _116.Content.Infrastructure.Repositories;
 /// Implementation of <see cref="ICustomerRepository" /> for managing B2B customer entities.
 /// </summary>
 /// <param name="context">The Content module database context.</param>
-public class CustomerRepository(ContentDbContext context) : ICustomerRepository
+public class CustomerRepository(ContentDbContext context)
+    : ContentRepository<CustomerEntity>(context),
+        ICustomerRepository
 {
     /// <inheritdoc />
     public async Task<(List<CustomerEntity> Customers, int TotalCount)> GetAllAsync(
@@ -20,9 +22,9 @@ public class CustomerRepository(ContentDbContext context) : ICustomerRepository
         CancellationToken cancellationToken = default
     )
     {
-        int totalCount = await context.Customers.CountAsync(cancellationToken);
+        int totalCount = await Context.Customers.CountAsync(cancellationToken);
 
-        List<CustomerEntity> customers = await context
+        List<CustomerEntity> customers = await Context
             .Customers.OrderByDescending(c => c.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
@@ -32,44 +34,12 @@ public class CustomerRepository(ContentDbContext context) : ICustomerRepository
     }
 
     /// <inheritdoc />
-    public async Task<CustomerEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        var specification = new CustomerByIdSpecification(id: id);
-        return await context.Customers.FirstOrDefaultBySpecificationAsync(
-            specification: specification,
-            cancellationToken: cancellationToken
-        );
-    }
-
-    /// <inheritdoc />
-    public async Task<CustomerEntity> GetByIdOrThrowAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        var specification = new CustomerByIdSpecification(id: id);
-        return await context
-            .Customers.AsTracking()
-            .ApplySpecification(specification: specification)
-            .FirstDefaultOrThrowAsync(keyValue: id, cancellationToken: cancellationToken);
-    }
-
-    /// <inheritdoc />
     public async Task<CustomerEntity?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
     {
         var specification = new CustomerByEmailSpecification(email: email);
-        return await context.Customers.FirstOrDefaultBySpecificationAsync(
+        return await Context.Customers.FirstOrDefaultBySpecificationAsync(
             specification: specification,
             cancellationToken: cancellationToken
         );
-    }
-
-    /// <inheritdoc />
-    public async Task AddAsync(CustomerEntity customer, CancellationToken cancellationToken = default)
-    {
-        await context.Customers.AddAsync(customer, cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public void Update(CustomerEntity customer)
-    {
-        context.Customers.Update(customer);
     }
 }
