@@ -1,12 +1,11 @@
 using _116.Content.Domain.Entities;
-using _116.Shared.Domain;
 
 namespace _116.Content.Application.Shared.Repositories;
 
 /// <summary>
 /// Repository interface for category and category pricing data access operations.
 /// </summary>
-public interface ICategoryRepository : IRepository<CategoryEntity>
+public interface ICategoryRepository
 {
     /// <summary>
     /// Retrieves a paginated list of categories with optional filters.
