@@ -1,12 +1,11 @@
 using _116.Content.Domain.Entities;
-using _116.Shared.Domain;
 
 namespace _116.Content.Application.Shared.Repositories;
 
 /// <summary>
 /// Repository interface for lyrics-text correction revision vote data access operations.
 /// </summary>
-public interface ILyricsRevisionVoteRepository : IRepository<LyricsRevisionVoteEntity>
+public interface ILyricsRevisionVoteRepository
 {
     /// <summary>
     /// Adds a new vote to the repository.
