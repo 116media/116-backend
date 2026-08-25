@@ -408,6 +408,78 @@ public class ArticleSpecificationsTests
 
     #endregion
 
+    #region ArticleCommentByIdInArticleSpecification
+
+    [Fact]
+    public void ArticleCommentByIdInArticleSpecification_WithMatchingCommentAndArticle_ShouldReturnTrue()
+    {
+        // Arrange
+        Guid articleId = Guid.NewGuid();
+        ArticleCommentEntity comment = ArticleCommentEntity.Create(Guid.NewGuid(), Guid.NewGuid(), articleId, "body");
+        var spec = new ArticleCommentByIdInArticleSpecification(comment.Id, articleId);
+
+        // Act
+        bool result = spec.IsSatisfiedBy(comment);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public void ArticleCommentByIdInArticleSpecification_WithMatchingCommentUnderDifferentArticle_ShouldReturnFalse()
+    {
+        // Arrange
+        ArticleCommentEntity comment = ArticleCommentEntity.Create(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            "body"
+        );
+        var spec = new ArticleCommentByIdInArticleSpecification(comment.Id, Guid.NewGuid());
+
+        // Act
+        bool result = spec.IsSatisfiedBy(comment);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void ArticleCommentByIdInArticleSpecification_WithDifferentCommentUnderMatchingArticle_ShouldReturnFalse()
+    {
+        // Arrange
+        Guid articleId = Guid.NewGuid();
+        ArticleCommentEntity comment = ArticleCommentEntity.Create(Guid.NewGuid(), Guid.NewGuid(), articleId, "body");
+        var spec = new ArticleCommentByIdInArticleSpecification(Guid.NewGuid(), articleId);
+
+        // Act
+        bool result = spec.IsSatisfiedBy(comment);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void ArticleCommentByIdInArticleSpecification_WithDifferentCommentAndArticle_ShouldReturnFalse()
+    {
+        // Arrange
+        ArticleCommentEntity comment = ArticleCommentEntity.Create(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            "body"
+        );
+        var spec = new ArticleCommentByIdInArticleSpecification(Guid.NewGuid(), Guid.NewGuid());
+
+        // Act
+        bool result = spec.IsSatisfiedBy(comment);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    #endregion
+
     #region ArticleByArtistSpecification
 
     [Fact]

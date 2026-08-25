@@ -14,9 +14,6 @@ public class LyricsRevisionBuilder
     private string _proposedText = "Corrected lyrics text.";
     private string? _editSummary = "Fixed a misheard line.";
     private Guid _proposedByUserId = Guid.NewGuid();
-    private bool _accepted;
-    private bool _rejected;
-    private Guid? _decidedByUserId;
 
     /// <summary>
     /// Sets the lyrics page being corrected.
@@ -57,15 +54,6 @@ public class LyricsRevisionBuilder
             editSummary: _editSummary,
             userId: _proposedByUserId
         );
-
-        if (_accepted)
-        {
-            entity.Accept(_decidedByUserId);
-        }
-        else if (_rejected)
-        {
-            entity.Reject(_decidedByUserId!.Value);
-        }
 
         entity.CreatedAt = DateTime.UtcNow;
 

@@ -15,7 +15,6 @@ public class ArtistBuilder
     private string _name = TestConstants.Artist.ValidName;
     private string _slug = $"{TestConstants.Artist.ValidSlug}-{Guid.NewGuid():N}";
     private string? _bio;
-    private Guid? _avatarFileId;
     private Guid? _userId;
     private string? _realName;
     private IReadOnlyList<string>? _aliases;
@@ -110,11 +109,6 @@ public class ArtistBuilder
             hometown: _hometown,
             errors: TestErrorsFactory.CreateArtistErrors()
         );
-
-        if (_avatarFileId.HasValue)
-        {
-            entity.SetAvatarFileId(_avatarFileId.Value);
-        }
 
         if (_userId.HasValue)
         {

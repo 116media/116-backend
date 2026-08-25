@@ -70,7 +70,7 @@ public class AdminForceUnpromoteArticleHandlerTests
         article.UnpromotedReason.Should().Be(TestConstants.Article.ValidRejectionReason);
         article.UnpromotedAt.Should().NotBeNull();
         result.ArticleId.Should().Be(article.Id);
-        result.UnpromotedAt.Should().Be(article.UnpromotedAt.Value);
+        result.UnpromotedAt.Should().Be(article.UnpromotedAt);
         _articleRepositoryMock.VerifyUpdateCalled(article);
         _unitOfWorkMock.VerifyCommitCalled();
     }
