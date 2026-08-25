@@ -12,14 +12,10 @@ namespace _116.Content.Infrastructure.Repositories;
 /// Implementation of <see cref="IPlaylistRepository" /> for managing playlist entities.
 /// </summary>
 /// <param name="context">The Content module database context.</param>
-public class PlaylistRepository(ContentDbContext context) : IPlaylistRepository
+public class PlaylistRepository(ContentDbContext context)
+    : ContentRepository<PlaylistEntity>(context),
+        IPlaylistRepository
 {
-    /// <inheritdoc />
-    public async Task AddAsync(PlaylistEntity playlist, CancellationToken cancellationToken = default)
-    {
-        await context.Playlists.AddAsync(playlist, cancellationToken);
-    }
-
     /// <inheritdoc />
     public async Task<IReadOnlyList<PlaylistEntity>> GetByUserIdAsync(
         Guid userId,
@@ -27,7 +23,7 @@ public class PlaylistRepository(ContentDbContext context) : IPlaylistRepository
     )
     {
         var specification = new PlaylistByUserIdSpecification(userId: userId);
-        return await context
+        return await Context
             .Playlists.ApplySpecification(specification: specification)
             .Include(p => p.Videos.Where(pv => pv.Video.Status == EnumContentStatus.Published))
                 .ThenInclude(pv => pv.Video)
@@ -36,10 +32,10 @@ public class PlaylistRepository(ContentDbContext context) : IPlaylistRepository
     }
 
     /// <inheritdoc />
-    public async Task<PlaylistEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public override async Task<PlaylistEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var specification = new PlaylistByIdSpecification(id: id);
-        return await context
+        return await Context
             .Playlists.AsTracking()
             .ApplySpecification(specification: specification)
             .FirstOrDefaultAsync(cancellationToken);
@@ -49,7 +45,7 @@ public class PlaylistRepository(ContentDbContext context) : IPlaylistRepository
     public async Task<PlaylistEntity?> GetByIdWithVideosAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var specification = new PlaylistByIdSpecification(id: id);
-        return await context
+        return await Context
             .Playlists.ApplySpecification(specification: specification)
             .Include(p => p.Videos.Where(pv => pv.Video.Status == EnumContentStatus.Published))
                 .ThenInclude(pv => pv.Video)
@@ -65,7 +61,7 @@ public class PlaylistRepository(ContentDbContext context) : IPlaylistRepository
     )
     {
         var specification = new PlaylistVideoByPlaylistAndVideoSpecification(playlistId: playlistId, videoId: videoId);
-        return await context
+        return await Context
             .PlaylistVideos.ApplySpecification(specification: specification)
             .AnyAsync(cancellationToken);
     }
@@ -73,33 +69,27 @@ public class PlaylistRepository(ContentDbContext context) : IPlaylistRepository
     /// <inheritdoc />
     public async Task AddVideoAsync(PlaylistVideoEntity playlistVideo, CancellationToken cancellationToken = default)
     {
-        await context.PlaylistVideos.AddAsync(playlistVideo, cancellationToken);
+        await Context.PlaylistVideos.AddAsync(playlistVideo, cancellationToken);
     }
 
     /// <inheritdoc />
     public async Task RemoveVideoAsync(Guid playlistId, Guid videoId, CancellationToken cancellationToken = default)
     {
         var specification = new PlaylistVideoByPlaylistAndVideoSpecification(playlistId: playlistId, videoId: videoId);
-        PlaylistVideoEntity? entry = await context
+        PlaylistVideoEntity? entry = await Context
             .PlaylistVideos.AsTracking()
             .ApplySpecification(specification: specification)
             .FirstOrDefaultAsync(cancellationToken);
 
         if (entry is not null)
         {
-            context.PlaylistVideos.Remove(entry);
+            Context.PlaylistVideos.Remove(entry);
         }
-    }
-
-    /// <inheritdoc />
-    public void Update(PlaylistEntity playlist)
-    {
-        context.Playlists.Update(playlist);
     }
 
     /// <inheritdoc />
     public void Delete(PlaylistEntity playlist)
     {
-        context.Playlists.Remove(playlist);
+        Context.Playlists.Remove(playlist);
     }
 }
