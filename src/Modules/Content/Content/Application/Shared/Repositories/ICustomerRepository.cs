@@ -1,12 +1,11 @@
 using _116.Content.Domain.Entities;
-using _116.Shared.Domain;
 
 namespace _116.Content.Application.Shared.Repositories;
 
 /// <summary>
 /// Repository interface for B2B customer data access operations.
 /// </summary>
-public interface ICustomerRepository : IRepository<CustomerEntity>
+public interface ICustomerRepository
 {
     /// <summary>
     /// Retrieves a paginated list of customers ordered by most recently created first.
