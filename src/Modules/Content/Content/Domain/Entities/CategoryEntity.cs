@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using _116.Content.Domain.Constants;
+using _116.Content.Domain.Events;
 using _116.Content.Domain.Exceptions;
 using _116.Content.Domain.StateMachines;
 using _116.Shared.Domain;
@@ -153,7 +154,7 @@ public class CategoryEntity : Aggregate<Guid>
             throw new ContentRuleException(ContentRuleCodes.CategorySlugRequired);
         }
 
-        return new CategoryEntity
+        var category = new CategoryEntity
         {
             Id = id,
             ContentTypeId = contentTypeId,
@@ -166,6 +167,9 @@ public class CategoryEntity : Aggregate<Guid>
             IsDefaultForLyrics = isDefaultForLyrics,
             IsActive = true,
         };
+        category.AddDomainEvent(new CategoryChangedEvent(CategoryId: id));
+
+        return category;
     }
 
     /// <summary>
@@ -206,6 +210,7 @@ public class CategoryEntity : Aggregate<Guid>
         IsGossip = isGossip;
         IsExclusive = isExclusive;
         IsDefaultForLyrics = isDefaultForLyrics;
+        AddDomainEvent(new CategoryChangedEvent(CategoryId: Id));
     }
 
     /// <summary>
@@ -216,6 +221,7 @@ public class CategoryEntity : Aggregate<Guid>
     public void SetDefaultForLyrics()
     {
         IsDefaultForLyrics = true;
+        AddDomainEvent(new CategoryChangedEvent(CategoryId: Id));
     }
 
     /// <summary>
@@ -225,6 +231,7 @@ public class CategoryEntity : Aggregate<Guid>
     public void ClearDefaultForLyrics()
     {
         IsDefaultForLyrics = false;
+        AddDomainEvent(new CategoryChangedEvent(CategoryId: Id));
     }
 
     /// <summary>
@@ -254,6 +261,8 @@ public class CategoryEntity : Aggregate<Guid>
         }
 
         IsActive = true;
+        AddDomainEvent(new CategoryChangedEvent(CategoryId: Id));
+
         return true;
     }
 
@@ -269,6 +278,8 @@ public class CategoryEntity : Aggregate<Guid>
         }
 
         IsActive = false;
+        AddDomainEvent(new CategoryChangedEvent(CategoryId: Id));
+
         return true;
     }
 
@@ -279,6 +290,7 @@ public class CategoryEntity : Aggregate<Guid>
     public void SetPosterFileId(Guid? posterFileId)
     {
         PosterFileId = posterFileId;
+        AddDomainEvent(new CategoryChangedEvent(CategoryId: Id));
     }
 
     /// <summary>
@@ -289,6 +301,7 @@ public class CategoryEntity : Aggregate<Guid>
     public void SetExclusive()
     {
         IsExclusive = true;
+        AddDomainEvent(new CategoryChangedEvent(CategoryId: Id));
     }
 
     /// <summary>
@@ -298,6 +311,7 @@ public class CategoryEntity : Aggregate<Guid>
     public void ClearExclusive()
     {
         IsExclusive = false;
+        AddDomainEvent(new CategoryChangedEvent(CategoryId: Id));
     }
 
     /// <summary>
@@ -309,6 +323,7 @@ public class CategoryEntity : Aggregate<Guid>
     public void PinToFeed()
     {
         PinnedToFeedAt = DateTimeOffset.UtcNow;
+        AddDomainEvent(new CategoryChangedEvent(CategoryId: Id));
     }
 
     /// <summary>
@@ -325,6 +340,8 @@ public class CategoryEntity : Aggregate<Guid>
         }
 
         PinnedToFeedAt = null;
+        AddDomainEvent(new CategoryChangedEvent(CategoryId: Id));
+
         return true;
     }
 }
