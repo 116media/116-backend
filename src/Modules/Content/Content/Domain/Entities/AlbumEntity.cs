@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using _116.Content.Domain.Constants;
 using _116.Content.Domain.Enums;
+using _116.Content.Domain.Events;
 using _116.Content.Domain.Exceptions;
 using _116.Content.Domain.StateMachines;
 using _116.Shared.Domain;
@@ -81,7 +82,7 @@ public class AlbumEntity : Aggregate<Guid>
             throw new ContentRuleException(ContentRuleCodes.AlbumNameRequired);
         }
 
-        return new AlbumEntity
+        var album = new AlbumEntity
         {
             Id = id,
             Name = name,
@@ -91,6 +92,13 @@ public class AlbumEntity : Aggregate<Guid>
             Label = label,
             ReleaseType = releaseType,
         };
+
+        if (artistId is not null)
+        {
+            album.AddDomainEvent(new ArtistChangedEvent(ArtistId: artistId.Value));
+        }
+
+        return album;
     }
 
     /// <summary>
@@ -119,5 +127,10 @@ public class AlbumEntity : Aggregate<Guid>
         ReleaseYear = releaseYear;
         Label = label;
         ReleaseType = releaseType;
+
+        if (ArtistId is not null)
+        {
+            AddDomainEvent(new ArtistChangedEvent(ArtistId: ArtistId.Value));
+        }
     }
 }
