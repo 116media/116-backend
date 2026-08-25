@@ -13,19 +13,15 @@ namespace _116.Content.Infrastructure.Repositories;
 /// revision vote entities.
 /// </summary>
 /// <param name="context">The Content module database context.</param>
-public class TranslationVoteRepository(ContentDbContext context) : ITranslationVoteRepository
+public class TranslationVoteRepository(ContentDbContext context)
+    : ContentRepository<LyricsTranslationVoteEntity>(context),
+        ITranslationVoteRepository
 {
-    /// <inheritdoc />
-    public async Task AddAsync(LyricsTranslationVoteEntity vote, CancellationToken cancellationToken = default)
-    {
-        await context.LyricsTranslationVotes.AddAsync(vote, cancellationToken);
-    }
-
     /// <inheritdoc />
     public async Task<bool> HasVotedAsync(Guid revisionId, Guid userId, CancellationToken cancellationToken = default)
     {
         var specification = new TranslationVoteByRevisionAndUserSpecification(revisionId: revisionId, userId: userId);
-        return await context
+        return await Context
             .LyricsTranslationVotes.ApplySpecification(specification: specification)
             .AnyAsync(cancellationToken);
     }
@@ -34,7 +30,7 @@ public class TranslationVoteRepository(ContentDbContext context) : ITranslationV
     public async Task<int> GetNetApprovalsAsync(Guid revisionId, CancellationToken cancellationToken = default)
     {
         var specification = new TranslationVoteByRevisionIdSpecification(revisionId: revisionId);
-        return await context
+        return await Context
             .LyricsTranslationVotes.ApplySpecification(specification: specification)
             .SumAsync(vote => vote.Vote == EnumVote.Approve ? 1 : -1, cancellationToken);
     }
