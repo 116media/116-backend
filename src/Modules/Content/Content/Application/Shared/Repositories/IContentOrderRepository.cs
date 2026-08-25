@@ -1,6 +1,5 @@
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
-using _116.Shared.Domain;
 
 namespace _116.Content.Application.Shared.Repositories;
 
@@ -8,7 +7,7 @@ namespace _116.Content.Application.Shared.Repositories;
 /// Repository interface for content order data access operations.
 /// Covers all four Commerce entities: orders, items, tiers, and payments.
 /// </summary>
-public interface IContentOrderRepository : IRepository<ContentOrderEntity>
+public interface IContentOrderRepository
 {
     /// <summary>
     /// Adds a new content order to the repository.
