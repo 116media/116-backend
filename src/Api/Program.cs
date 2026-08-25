@@ -1,12 +1,17 @@
 using System.Reflection;
 using System.Text.Json.Serialization;
+using _116.Api;
 using _116.Shared.Application.Configurations;
 using _116.Shared.Application.Extensions;
+using _116.Shared.Infrastructure.Cache;
+using _116.Shared.Infrastructure.Seed;
 using Asp.Versioning;
 using Carter;
 using DotNetEnv;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.Extensions.Caching.Hybrid;
 using Serilog;
+using StackExchange.Redis;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -50,6 +55,35 @@ builder.Services.AddRateLimiting();
 
 builder.Services.AddMemoryCache();
 
+// With REDIS_URL set the hybrid cache gains Redis as its distributed layer plus an eviction
+// backplane, making tag eviction visible across instances. Without it the cache runs
+// in-process only.
+string? redisUrl = AppEnvironment.RedisUrl();
+if (!string.IsNullOrWhiteSpace(redisUrl))
+{
+    builder.Services.AddStackExchangeRedisCache(options =>
+    {
+        options.Configuration = redisUrl;
+        options.InstanceName = "116:";
+    });
+    builder.Services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(redisUrl));
+}
+
+// Entry options are per-request via ICacheableRequest; these are defaults.
+builder.Services.AddHybridCache(options =>
+{
+    options.DefaultEntryOptions = new HybridCacheEntryOptions
+    {
+        Expiration = TimeSpan.FromMinutes(10),
+        LocalCacheExpiration = TimeSpan.FromMinutes(10),
+    };
+});
+
+if (!string.IsNullOrWhiteSpace(redisUrl))
+{
+    builder.Services.Decorate<HybridCache, BackplaneHybridCache>();
+}
+
 builder.Services.AddSingleton(TimeProvider.System);
 
 builder.Services.AddAppLocalization();
@@ -79,6 +113,22 @@ builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter())
 );
 
+// The clustered job store needs real Postgres and its quartz schema; Testing hosts remove the
+// scheduler entirely and keep the default in-memory store registration.
+if (!builder.Environment.IsEnvironment("Testing"))
+{
+    builder.Services.AddClusteredQuartzStore();
+}
+
+// Startup order matters: migrations (Development only) run before seeding, and both before the
+// Quartz hosted service the modules register below, whose persistent store needs the schema.
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddHostedService<DevelopmentMigrationHostedService>();
+}
+
+builder.Services.AddHostedService<DataSeedingHostedService>();
+
 builder
     .Services.AddIdentityModule(builder.Environment)
     .AddCoreModule(builder.Environment)
@@ -105,6 +155,15 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 
 WebApplication app = builder.Build();
 
+// Explicit migration mode: `dotnet run --project src/Api -- migrate` applies every module's
+// pending migrations and exits. Deploys run this before rolling instances, which is also the
+// only order under which CONCURRENTLY index builds can run out of band.
+if (args.Contains("migrate"))
+{
+    await DatabaseMigrator.MigrateAllAsync(app.Services);
+    return;
+}
+
 if (!app.Environment.IsDevelopment() && allowedOrigins.Length == 0)
 {
     app.Logger.LogWarning(
@@ -130,8 +189,6 @@ app.UseApiVersioning();
 
 app.MapCarter();
 app.UseResourceNotFoundHandler();
-
-app.UseIdentityModule().UseCoreModule().UseContentModule().UseMailerModule();
 
 app.Run();
 
