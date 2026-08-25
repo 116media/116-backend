@@ -10,9 +10,9 @@ namespace _116.Content.Application.Lookup.UseCases.Public.Queries.GetActivePromo
 /// <summary>
 /// Handles the <see cref="PublicGetActivePromotionLevelsQuery" /> to retrieve all active promotion levels.
 /// </summary>
-/// <param name="lookupRepository">Repository for lookup data access operations.</param>
+/// <param name="promotionLevelRepository">Repository for promotion level data access operations.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-public class PublicGetActivePromotionLevelsHandler(ILookupRepository lookupRepository, IMapper mapper)
+public class PublicGetActivePromotionLevelsHandler(IPromotionLevelRepository promotionLevelRepository, IMapper mapper)
     : IQueryHandler<PublicGetActivePromotionLevelsQuery, PublicGetActivePromotionLevelsResult>
 {
     /// <inheritdoc />
@@ -21,7 +21,7 @@ public class PublicGetActivePromotionLevelsHandler(ILookupRepository lookupRepos
         CancellationToken cancellationToken
     )
     {
-        IReadOnlyList<PromotionLevelEntity> promotionLevels = await lookupRepository.GetActivePromotionLevelsAsync(
+        IReadOnlyList<PromotionLevelEntity> promotionLevels = await promotionLevelRepository.GetActiveAsync(
             cancellationToken: cancellationToken
         );
 
