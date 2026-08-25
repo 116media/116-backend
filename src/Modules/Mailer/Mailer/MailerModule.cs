@@ -16,7 +16,6 @@ using _116.Mailer.Infrastructure.Services;
 using _116.Shared.Application.Configurations;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Infrastructure;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -33,18 +32,8 @@ public static class MailerModule
     /// </summary>
     /// <param name="environment">The host environment the options are derived from.</param>
     /// <returns>The module options for the supplied environment.</returns>
-    private static ModuleOptions<MailerDbContext> GetModuleOptions(IHostEnvironment environment)
-    {
-        bool enableMigrations = !environment.IsEnvironment("Testing");
-
-        return new ModuleOptions<MailerDbContext>
-        {
-            ModuleName = MailerConstants.ModuleName,
-            SchemaName = MailerConstants.SchemaName,
-            EnableMigrations = enableMigrations,
-            EnableSeeding = false,
-        };
-    }
+    private static ModuleOptions<MailerDbContext> GetModuleOptions() =>
+        new() { ModuleName = MailerConstants.ModuleName, SchemaName = MailerConstants.SchemaName };
 
     /// <summary>
     /// Adds the Mailer module's services to the dependency injection container.
@@ -54,7 +43,7 @@ public static class MailerModule
     /// <returns>The updated <see cref="IServiceCollection" /> for chaining.</returns>
     public static IServiceCollection AddMailerModule(this IServiceCollection services, IHostEnvironment environment)
     {
-        services.AddModuleDatabase(GetModuleOptions(environment));
+        services.AddModuleDatabase(GetModuleOptions());
 
         services.AddScoped<NewsletterErrorMessage>();
         services.AddScoped<NewsletterErrors>();
@@ -66,6 +55,7 @@ public static class MailerModule
         services.AddScoped<INotificationRenderer, NotificationRenderer>();
 
         services.AddScoped<IMailerUnitOfWork, MailerUnitOfWork>();
+        services.AddScoped(typeof(IMailerRepository<>), typeof(MailerRepository<>));
         services.AddScoped<IOutboxEmailRepository, OutboxEmailRepository>();
         services.AddScoped<INewsletterRepository, NewsletterRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
@@ -101,18 +91,5 @@ public static class MailerModule
             default:
                 throw new InvalidOperationException($"Unknown EMAIL_PROVIDER '{provider}'.");
         }
-    }
-
-    /// <summary>
-    /// Configures the Mailer module's middleware in the application pipeline.
-    /// </summary>
-    /// <param name="app">The application builder.</param>
-    /// <returns>The updated <see cref="IApplicationBuilder" /> for chaining.</returns>
-    public static IApplicationBuilder UseMailerModule(this IApplicationBuilder app)
-    {
-        IHostEnvironment environment = app.ApplicationServices.GetRequiredService<IHostEnvironment>();
-        app.UseModuleDatabase(GetModuleOptions(environment));
-
-        return app;
     }
 }
