@@ -23,7 +23,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Commerce.UseCases.Admin.Co
 /// </summary>
 public class AdminVerifyPaymentFactoryTests
 {
-    private readonly Mock<ILookupRepository> _lookupRepositoryMock;
+    private readonly Mock<IPromotionLevelRepository> _promotionLevelRepositoryMock;
     private readonly Mock<IContentOrderRepository> _orderRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminVerifyPaymentFactory _factory;
@@ -33,11 +33,11 @@ public class AdminVerifyPaymentFactoryTests
 
     public AdminVerifyPaymentFactoryTests()
     {
-        _lookupRepositoryMock = MockLookupRepository.Create();
+        _promotionLevelRepositoryMock = MockPromotionLevelRepository.Create();
         _orderRepositoryMock = MockContentOrderRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _factory = new AdminVerifyPaymentFactory(
-            _lookupRepositoryMock.Object,
+            _promotionLevelRepositoryMock.Object,
             _orderRepositoryMock.Object,
             _unitOfWorkMock.Object
         );
@@ -97,7 +97,7 @@ public class AdminVerifyPaymentFactoryTests
         );
         order.Items.Add(item);
         ContentPaymentEntity payment = ContentPaymentFactory.CreateWithProof(order.Id, Guid.NewGuid());
-        _lookupRepositoryMock.SetupGetPromotionLevelByIdOrThrow(promoLevel);
+        _promotionLevelRepositoryMock.SetupGetPromotionLevelByIdOrThrow(promoLevel);
 
         // Act
         await _factory.VerifyAsync(order, payment, AdminUserId, ReceiptUrl, CancellationToken.None);
@@ -129,8 +129,8 @@ public class AdminVerifyPaymentFactoryTests
 
         // Assert
         order.Status.Should().Be(EnumOrderStatus.Paid);
-        _lookupRepositoryMock.Verify(
-            x => x.GetPromotionLevelByIdOrThrowAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+        _promotionLevelRepositoryMock.Verify(
+            x => x.GetByIdOrThrowAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
             Times.Never
         );
         _unitOfWorkMock.VerifyCommitCalled();
