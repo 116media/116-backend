@@ -23,18 +23,18 @@ public class PublicGetCommentRepliesHandlerTests : BaseContentHandlerTest
     private static readonly Guid ParentId = Guid.NewGuid();
     private static readonly Guid UserId = Guid.NewGuid();
 
-    private readonly Mock<IArticleRepository> _articleRepositoryMock;
+    private readonly Mock<IArticleCommentRepository> _articleCommentRepositoryMock;
     private readonly Mock<IUserLookupService> _userLookupMock;
     private readonly Mock<IFileRepository> _fileRepositoryMock;
     private readonly PublicGetCommentRepliesHandler _handler;
 
     public PublicGetCommentRepliesHandlerTests()
     {
-        _articleRepositoryMock = MockArticleRepository.Create();
+        _articleCommentRepositoryMock = MockArticleCommentRepository.Create();
         _userLookupMock = new Mock<IUserLookupService>();
         _fileRepositoryMock = new Mock<IFileRepository>();
         _handler = new PublicGetCommentRepliesHandler(
-            _articleRepositoryMock.Object,
+            _articleCommentRepositoryMock.Object,
             _userLookupMock.Object,
             _fileRepositoryMock.Object,
             Mapper
@@ -60,7 +60,7 @@ public class PublicGetCommentRepliesHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenRepliesExist_ReturnsMappedRepliesWithAuthors()
     {
         ArticleCommentEntity reply = Reply();
-        _articleRepositoryMock.SetupGetRepliesAsync(new List<ArticleCommentEntity> { reply }, totalCount: 1);
+        _articleCommentRepositoryMock.SetupGetRepliesAsync(new List<ArticleCommentEntity> { reply }, totalCount: 1);
         SetupAuthor();
 
         PublicGetCommentRepliesResult result = await _handler.Handle(Query(), CancellationToken.None);
@@ -74,9 +74,9 @@ public class PublicGetCommentRepliesHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenViewerLikedReply_StampsIsLiked()
     {
         ArticleCommentEntity reply = Reply();
-        _articleRepositoryMock.SetupGetRepliesAsync(new List<ArticleCommentEntity> { reply }, totalCount: 1);
+        _articleCommentRepositoryMock.SetupGetRepliesAsync(new List<ArticleCommentEntity> { reply }, totalCount: 1);
         SetupAuthor();
-        _articleRepositoryMock.SetupGetLikedCommentIds(new HashSet<Guid> { reply.Id });
+        _articleCommentRepositoryMock.SetupGetLikedCommentIds(new HashSet<Guid> { reply.Id });
 
         PublicGetCommentRepliesResult result = await _handler.Handle(Query(Guid.NewGuid()), CancellationToken.None);
 
@@ -87,12 +87,12 @@ public class PublicGetCommentRepliesHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenAnonymousViewer_SkipsLikeLookup()
     {
         ArticleCommentEntity reply = Reply();
-        _articleRepositoryMock.SetupGetRepliesAsync(new List<ArticleCommentEntity> { reply }, totalCount: 1);
+        _articleCommentRepositoryMock.SetupGetRepliesAsync(new List<ArticleCommentEntity> { reply }, totalCount: 1);
         SetupAuthor();
 
         await _handler.Handle(Query(viewerUserId: null), CancellationToken.None);
 
-        _articleRepositoryMock.Verify(
+        _articleCommentRepositoryMock.Verify(
             x =>
                 x.GetLikedCommentIdsAsync(
                     It.IsAny<Guid>(),
@@ -106,7 +106,7 @@ public class PublicGetCommentRepliesHandlerTests : BaseContentHandlerTest
     [Fact]
     public async Task Handle_WhenNoReplies_ReturnsEmptyPage()
     {
-        _articleRepositoryMock.SetupGetRepliesAsync(new List<ArticleCommentEntity>(), totalCount: 0);
+        _articleCommentRepositoryMock.SetupGetRepliesAsync(new List<ArticleCommentEntity>(), totalCount: 0);
 
         PublicGetCommentRepliesResult result = await _handler.Handle(Query(), CancellationToken.None);
 
