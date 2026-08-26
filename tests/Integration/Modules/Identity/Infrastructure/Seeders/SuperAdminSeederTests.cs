@@ -16,7 +16,7 @@ public class SuperAdminSeederTests(PostgresFixture postgres) : BaseRepositoryTes
     {
         var seeder = Resolve<SuperAdminSeeder>();
 
-        await seeder.SeedAllAsync();
+        await seeder.SeedAsync();
 
         await using var context = CreateDbContext<IdentityDbContext>();
         UserEntity? superAdmin = await context
@@ -34,7 +34,7 @@ public class SuperAdminSeederTests(PostgresFixture postgres) : BaseRepositoryTes
     {
         var seeder = Resolve<SuperAdminSeeder>();
 
-        await seeder.SeedAllAsync();
+        await seeder.SeedAsync();
 
         await using var context = CreateDbContext<IdentityDbContext>();
         UserEntity superAdmin = await context
@@ -56,7 +56,7 @@ public class SuperAdminSeederTests(PostgresFixture postgres) : BaseRepositoryTes
     {
         var seeder = Resolve<SuperAdminSeeder>();
 
-        await seeder.SeedAllAsync();
+        await seeder.SeedAsync();
 
         await using var context = CreateDbContext<IdentityDbContext>();
         UserEntity superAdmin = await context
@@ -72,7 +72,7 @@ public class SuperAdminSeederTests(PostgresFixture postgres) : BaseRepositoryTes
     {
         var seeder = Resolve<SuperAdminSeeder>();
 
-        await seeder.SeedAllAsync();
+        await seeder.SeedAsync();
 
         await using var context = CreateDbContext<IdentityDbContext>();
         UserEntity superAdmin = await context
@@ -88,8 +88,8 @@ public class SuperAdminSeederTests(PostgresFixture postgres) : BaseRepositoryTes
     {
         var seeder = Resolve<SuperAdminSeeder>();
 
-        await seeder.SeedAllAsync();
-        await seeder.SeedAllAsync();
+        await seeder.SeedAsync();
+        await seeder.SeedAsync();
 
         await using var context = CreateDbContext<IdentityDbContext>();
         int count = await context
@@ -105,7 +105,7 @@ public class SuperAdminSeederTests(PostgresFixture postgres) : BaseRepositoryTes
     {
         var seeder = Resolve<SuperAdminSeeder>();
 
-        await seeder.SeedAllAsync();
+        await seeder.SeedAsync();
 
         await using var context = CreateDbContext<IdentityDbContext>();
         RoleEntity? role = await context.Roles.FirstOrDefaultAsync(r => r.Name == "SuperAdmin");
