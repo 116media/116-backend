@@ -19,16 +19,16 @@ namespace _116.Unit.Tests.Modules.Content.Application.Interactions.UseCases.Publ
 /// </summary>
 public class PublicLikeArticleCommentHandlerTests : BaseContentHandlerTest
 {
-    private readonly Mock<IArticleRepository> _articleRepositoryMock;
+    private readonly Mock<IArticleCommentRepository> _articleCommentRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly PublicLikeArticleCommentHandler _handler;
 
     public PublicLikeArticleCommentHandlerTests()
     {
-        _articleRepositoryMock = MockArticleRepository.Create();
+        _articleCommentRepositoryMock = MockArticleCommentRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _handler = new PublicLikeArticleCommentHandler(
-            _articleRepositoryMock.Object,
+            _articleCommentRepositoryMock.Object,
             _unitOfWorkMock.Object,
             TestErrorsFactory.CreateContentI18n()
         );
@@ -39,14 +39,14 @@ public class PublicLikeArticleCommentHandlerTests : BaseContentHandlerTest
     {
         ArticleCommentEntity comment = ArticleCommentFactory.Create(Guid.NewGuid(), Guid.NewGuid());
         var userId = Guid.NewGuid();
-        _articleRepositoryMock.SetupGetCommentByIdAsync(comment);
-        _articleRepositoryMock.SetupHasLikedCommentAsync(userId, comment.Id, result: false);
+        _articleCommentRepositoryMock.SetupGetCommentByIdAsync(comment);
+        _articleCommentRepositoryMock.SetupHasLikedCommentAsync(userId, comment.Id, result: false);
 
         var command = new PublicLikeArticleCommentCommand(comment.Id, userId);
 
         await _handler.Handle(command, CancellationToken.None);
 
-        _articleRepositoryMock.VerifyAddCommentLikeCalled(Times.Once());
+        _articleCommentRepositoryMock.VerifyAddCommentLikeCalled(Times.Once());
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -55,22 +55,22 @@ public class PublicLikeArticleCommentHandlerTests : BaseContentHandlerTest
     {
         ArticleCommentEntity comment = ArticleCommentFactory.Create(Guid.NewGuid(), Guid.NewGuid());
         var userId = Guid.NewGuid();
-        _articleRepositoryMock.SetupGetCommentByIdAsync(comment);
-        _articleRepositoryMock.SetupHasLikedCommentAsync(userId, comment.Id, result: true);
+        _articleCommentRepositoryMock.SetupGetCommentByIdAsync(comment);
+        _articleCommentRepositoryMock.SetupHasLikedCommentAsync(userId, comment.Id, result: true);
 
         var command = new PublicLikeArticleCommentCommand(comment.Id, userId);
 
         await _handler.Handle(command, CancellationToken.None);
 
         comment.LikeCount.Should().Be(0);
-        _articleRepositoryMock.VerifyAddCommentLikeCalled(Times.Never());
+        _articleCommentRepositoryMock.VerifyAddCommentLikeCalled(Times.Never());
     }
 
     [Fact]
     public async Task Handle_WhenCommentNotFound_ShouldThrowNotFound()
     {
         Guid missingCommentId = Guid.NewGuid();
-        _articleRepositoryMock.SetupGetCommentByIdNotFound(missingCommentId);
+        _articleCommentRepositoryMock.SetupGetCommentByIdNotFound(missingCommentId);
 
         var command = new PublicLikeArticleCommentCommand(missingCommentId, Guid.NewGuid());
 
