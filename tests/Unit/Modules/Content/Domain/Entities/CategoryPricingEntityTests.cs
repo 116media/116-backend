@@ -1,4 +1,5 @@
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Events;
 using _116.Content.Domain.Exceptions;
 using _116.Content.Domain.StateMachines;
 using _116.Shared.Application.Exceptions;
@@ -126,6 +127,56 @@ public class CategoryPricingEntityTests
             .Throw<ContentRuleException>()
             .Which.Code.Should()
             .Be(ContentRuleCodes.CategoryPriceMustBeNonNegative);
+    }
+
+    #endregion
+
+    #region Domain Events
+
+    [Fact]
+    public void Create_ShouldRaiseCategoryChangedEventForTheCategory()
+    {
+        // Arrange
+        var categoryId = Guid.NewGuid();
+
+        // Act
+        var entity = CategoryPricingEntity.Create(Guid.NewGuid(), categoryId, Guid.NewGuid(), 25m);
+
+        // Assert
+        entity
+            .DomainEvents.OfType<CategoryChangedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(new CategoryChangedEvent(categoryId));
+    }
+
+    [Fact]
+    public void UpdatePrice_ShouldRaiseCategoryChangedEvent()
+    {
+        // Arrange
+        var entity = CategoryPricingEntity.Create(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), 25m);
+        entity.ClearDomainEvents();
+
+        // Act
+        entity.UpdatePrice(30m);
+
+        // Assert
+        entity.DomainEvents.OfType<CategoryChangedEvent>().Should().ContainSingle();
+    }
+
+    [Fact]
+    public void MarkRemoved_ShouldRaiseCategoryChangedEvent()
+    {
+        // Arrange
+        var entity = CategoryPricingEntity.Create(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), 25m);
+        entity.ClearDomainEvents();
+
+        // Act
+        entity.MarkRemoved();
+
+        // Assert
+        entity.DomainEvents.OfType<CategoryChangedEvent>().Should().ContainSingle();
     }
 
     #endregion
