@@ -16,13 +16,13 @@ namespace _116.Unit.Tests.Modules.Content.Application.Lookup.UseCases.Admin.Quer
 /// </summary>
 public class AdminGetAllPricingTiersHandlerTests : BaseContentHandlerTest
 {
-    private readonly Mock<ILookupRepository> _lookupRepositoryMock;
+    private readonly Mock<IPricingTierRepository> _pricingTierRepositoryMock;
     private readonly AdminGetAllPricingTiersHandler _handler;
 
     public AdminGetAllPricingTiersHandlerTests()
     {
-        _lookupRepositoryMock = MockLookupRepository.Create();
-        _handler = new AdminGetAllPricingTiersHandler(_lookupRepositoryMock.Object, Mapper);
+        _pricingTierRepositoryMock = MockPricingTierRepository.Create();
+        _handler = new AdminGetAllPricingTiersHandler(_pricingTierRepositoryMock.Object, Mapper);
     }
 
     #region Success Cases
@@ -32,7 +32,7 @@ public class AdminGetAllPricingTiersHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         List<PricingTierEntity> pricingTiers = PricingTierFactory.CreateMany(3);
-        _lookupRepositoryMock.SetupGetAllPricingTiers(pricingTiers);
+        _pricingTierRepositoryMock.SetupGetAllPricingTiers(pricingTiers);
 
         var query = new AdminGetAllPricingTiersQuery(Search: null);
 
@@ -49,7 +49,7 @@ public class AdminGetAllPricingTiersHandlerTests : BaseContentHandlerTest
         // Arrange
         string searchTerm = TestConstants.PricingTier.ValidName;
         PricingTierEntity tier = PricingTierFactory.CreateDefault();
-        _lookupRepositoryMock.SetupGetAllPricingTiers(new List<PricingTierEntity> { tier });
+        _pricingTierRepositoryMock.SetupGetAllPricingTiers(new List<PricingTierEntity> { tier });
 
         var query = new AdminGetAllPricingTiersQuery(Search: searchTerm);
 
@@ -58,17 +58,14 @@ public class AdminGetAllPricingTiersHandlerTests : BaseContentHandlerTest
 
         // Assert
         result.PricingTiers.Should().ContainSingle();
-        _lookupRepositoryMock.Verify(
-            x => x.GetAllPricingTiersAsync(searchTerm, It.IsAny<CancellationToken>()),
-            Times.Once
-        );
+        _pricingTierRepositoryMock.Verify(x => x.GetAllAsync(searchTerm, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
     public async Task Handle_WithEmptyList_ShouldReturnEmptyList()
     {
         // Arrange
-        _lookupRepositoryMock.SetupGetAllPricingTiers(new List<PricingTierEntity>());
+        _pricingTierRepositoryMock.SetupGetAllPricingTiers(new List<PricingTierEntity>());
 
         var query = new AdminGetAllPricingTiersQuery();
 
@@ -84,7 +81,7 @@ public class AdminGetAllPricingTiersHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         PricingTierEntity tier = PricingTierFactory.CreateDefault();
-        _lookupRepositoryMock.SetupGetAllPricingTiers(new List<PricingTierEntity> { tier });
+        _pricingTierRepositoryMock.SetupGetAllPricingTiers(new List<PricingTierEntity> { tier });
 
         var query = new AdminGetAllPricingTiersQuery();
 
