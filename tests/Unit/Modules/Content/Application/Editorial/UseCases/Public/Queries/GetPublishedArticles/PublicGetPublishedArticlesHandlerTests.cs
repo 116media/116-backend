@@ -20,6 +20,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Public.
 public class PublicGetPublishedArticlesHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<IArticleRepository> _articleRepositoryMock;
+    private readonly Mock<IArticleInteractionRepository> _articleInteractionRepositoryMock;
     private readonly Mock<IFileRepository> _fileRepositoryMock;
     private readonly PublicGetPublishedArticlesHandler _handler;
 
@@ -28,11 +29,13 @@ public class PublicGetPublishedArticlesHandlerTests : BaseContentHandlerTest
     public PublicGetPublishedArticlesHandlerTests()
     {
         _articleRepositoryMock = MockArticleRepository.Create();
+        _articleInteractionRepositoryMock = MockArticleInteractionRepository.Create();
         _fileRepositoryMock = MockFileRepository.Create();
         FileEntity coverFile = FileFactory.CreateImage();
         _fileRepositoryMock.SetupGetById(coverFile);
         _handler = new PublicGetPublishedArticlesHandler(
             _articleRepositoryMock.Object,
+            _articleInteractionRepositoryMock.Object,
             _fileRepositoryMock.Object,
             Mapper
         );
@@ -100,7 +103,7 @@ public class PublicGetPublishedArticlesHandlerTests : BaseContentHandlerTest
 
         // Assert
         result.Articles.Items.Should().OnlyContain(article => !article.IsLiked && !article.IsBookmarked);
-        _articleRepositoryMock.VerifyGetLikedAndBookmarkedIdsCalledWithUser(Times.Never());
+        _articleInteractionRepositoryMock.VerifyGetLikedAndBookmarkedIdsCalledWithUser(Times.Never());
     }
 
     [Fact]
@@ -119,7 +122,7 @@ public class PublicGetPublishedArticlesHandlerTests : BaseContentHandlerTest
         );
 
         _articleRepositoryMock.SetupGetAllAsync(articles, articles.Count);
-        _articleRepositoryMock.SetupGetLikedAndBookmarkedIds([likedId], [bookmarkedId]);
+        _articleInteractionRepositoryMock.SetupGetLikedAndBookmarkedIds([likedId], [bookmarkedId]);
 
         // Act
         PublicGetPublishedArticlesResult result = await _handler.Handle(query, CancellationToken.None);
@@ -132,6 +135,6 @@ public class PublicGetPublishedArticlesHandlerTests : BaseContentHandlerTest
         result.Articles.Items.Single(article => article.Id == articles[2].Id).IsLiked.Should().BeFalse();
         result.Articles.Items.Single(article => article.Id == articles[2].Id).IsBookmarked.Should().BeFalse();
 
-        _articleRepositoryMock.VerifyGetLikedAndBookmarkedIdsCalledWithUser(Times.Once());
+        _articleInteractionRepositoryMock.VerifyGetLikedAndBookmarkedIdsCalledWithUser(Times.Once());
     }
 }
