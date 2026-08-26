@@ -20,16 +20,16 @@ namespace _116.Unit.Tests.Modules.Content.Application.Lookup.UseCases.Admin.Comm
 /// </summary>
 public class AdminUpdateContentTypeHandlerTests : BaseContentHandlerTest
 {
-    private readonly Mock<ILookupRepository> _lookupRepositoryMock;
+    private readonly Mock<IContentTypeRepository> _contentTypeRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminUpdateContentTypeHandler _handler;
 
     public AdminUpdateContentTypeHandlerTests()
     {
-        _lookupRepositoryMock = MockLookupRepository.Create();
+        _contentTypeRepositoryMock = MockContentTypeRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _handler = new AdminUpdateContentTypeHandler(
-            _lookupRepositoryMock.Object,
+            _contentTypeRepositoryMock.Object,
             _unitOfWorkMock.Object,
             Mapper,
             TestErrorsFactory.CreateContentI18n()
@@ -48,8 +48,8 @@ public class AdminUpdateContentTypeHandlerTests : BaseContentHandlerTest
             Name: TestConstants.ContentType.AnotherValidName
         );
 
-        _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(existing);
-        _lookupRepositoryMock.SetupContentTypeExistsByName(TestConstants.ContentType.AnotherValidName, false);
+        _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrow(existing);
+        _contentTypeRepositoryMock.SetupContentTypeExistsByName(TestConstants.ContentType.AnotherValidName, false);
 
         // Act
         AdminUpdateContentTypeResult result = await _handler.Handle(command, CancellationToken.None);
@@ -69,8 +69,8 @@ public class AdminUpdateContentTypeHandlerTests : BaseContentHandlerTest
             Name: TestConstants.ContentType.ValidName
         );
 
-        _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(existing);
-        _lookupRepositoryMock.SetupContentTypeExistsByName(TestConstants.ContentType.ValidName, true);
+        _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrow(existing);
+        _contentTypeRepositoryMock.SetupContentTypeExistsByName(TestConstants.ContentType.ValidName, true);
 
         // Act
         AdminUpdateContentTypeResult result = await _handler.Handle(command, CancellationToken.None);
@@ -94,7 +94,7 @@ public class AdminUpdateContentTypeHandlerTests : BaseContentHandlerTest
             Name: TestConstants.ContentType.AnotherValidName
         );
 
-        _lookupRepositoryMock.SetupGetContentTypeByIdOrThrowNotFound(nonExistentId);
+        _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrowNotFound(nonExistentId);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
@@ -111,8 +111,8 @@ public class AdminUpdateContentTypeHandlerTests : BaseContentHandlerTest
         string conflictingName = TestConstants.ContentType.AnotherValidName;
         var command = new AdminUpdateContentTypeCommand(Id: existing.Id.ToString(), Name: conflictingName);
 
-        _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(existing);
-        _lookupRepositoryMock.SetupContentTypeExistsByName(conflictingName, true);
+        _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrow(existing);
+        _contentTypeRepositoryMock.SetupContentTypeExistsByName(conflictingName, true);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
