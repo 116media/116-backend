@@ -16,13 +16,13 @@ namespace _116.Unit.Tests.Modules.Content.Application.Lookup.UseCases.Admin.Quer
 /// </summary>
 public class AdminGetAllContentTypesHandlerTests : BaseContentHandlerTest
 {
-    private readonly Mock<ILookupRepository> _lookupRepositoryMock;
+    private readonly Mock<IContentTypeRepository> _contentTypeRepositoryMock;
     private readonly AdminGetAllContentTypesHandler _handler;
 
     public AdminGetAllContentTypesHandlerTests()
     {
-        _lookupRepositoryMock = MockLookupRepository.Create();
-        _handler = new AdminGetAllContentTypesHandler(_lookupRepositoryMock.Object, Mapper);
+        _contentTypeRepositoryMock = MockContentTypeRepository.Create();
+        _handler = new AdminGetAllContentTypesHandler(_contentTypeRepositoryMock.Object, Mapper);
     }
 
     #region Success Cases
@@ -32,7 +32,7 @@ public class AdminGetAllContentTypesHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         List<ContentTypeEntity> contentTypes = ContentTypeFactory.CreateMany(3);
-        _lookupRepositoryMock.SetupGetAllContentTypes(contentTypes);
+        _contentTypeRepositoryMock.SetupGetAllContentTypes(contentTypes);
 
         var query = new AdminGetAllContentTypesQuery(Search: null);
 
@@ -49,7 +49,7 @@ public class AdminGetAllContentTypesHandlerTests : BaseContentHandlerTest
         // Arrange
         string searchTerm = TestConstants.ContentType.ValidName;
         ContentTypeEntity contentType = ContentTypeFactory.CreateDefault();
-        _lookupRepositoryMock.SetupGetAllContentTypes(new List<ContentTypeEntity> { contentType });
+        _contentTypeRepositoryMock.SetupGetAllContentTypes(new List<ContentTypeEntity> { contentType });
 
         var query = new AdminGetAllContentTypesQuery(Search: searchTerm);
 
@@ -58,17 +58,14 @@ public class AdminGetAllContentTypesHandlerTests : BaseContentHandlerTest
 
         // Assert
         result.ContentTypes.Should().ContainSingle();
-        _lookupRepositoryMock.Verify(
-            x => x.GetAllContentTypesAsync(searchTerm, It.IsAny<CancellationToken>()),
-            Times.Once
-        );
+        _contentTypeRepositoryMock.Verify(x => x.GetAllAsync(searchTerm, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
     public async Task Handle_WithEmptyList_ShouldReturnEmptyList()
     {
         // Arrange
-        _lookupRepositoryMock.SetupGetAllContentTypes(new List<ContentTypeEntity>());
+        _contentTypeRepositoryMock.SetupGetAllContentTypes(new List<ContentTypeEntity>());
 
         var query = new AdminGetAllContentTypesQuery();
 
