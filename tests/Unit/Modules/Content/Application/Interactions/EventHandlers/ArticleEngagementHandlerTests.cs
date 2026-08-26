@@ -7,6 +7,7 @@ using _116.Content.Domain.Events;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
+using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
@@ -20,17 +21,17 @@ namespace _116.Unit.Tests.Modules.Content.Application.Interactions.EventHandlers
 /// </summary>
 public class ArticleEngagementHandlerTests
 {
-    private readonly Mock<IArticleRepository> _articleRepositoryMock;
-    private readonly Mock<IPopularArticlesCacheInvalidator> _cacheInvalidatorMock;
+    private readonly Mock<IArticleInteractionRepository> _articleInteractionRepositoryMock;
+    private readonly Mock<HybridCache> _cacheMock;
     private readonly ArticleEngagementHandler _handler;
 
     public ArticleEngagementHandlerTests()
     {
-        _articleRepositoryMock = MockArticleRepository.Create();
-        _cacheInvalidatorMock = MockPopularArticlesCacheInvalidator.Create();
+        _articleInteractionRepositoryMock = MockArticleInteractionRepository.Create();
+        _cacheMock = MockHybridCache.Create();
         _handler = new ArticleEngagementHandler(
-            _articleRepositoryMock.Object,
-            _cacheInvalidatorMock.Object,
+            _articleInteractionRepositoryMock.Object,
+            _cacheMock.Object,
             NullLogger<ArticleEngagementHandler>.Instance
         );
     }
@@ -47,7 +48,7 @@ public class ArticleEngagementHandlerTests
     {
         // Arrange
         var articleId = Guid.NewGuid();
-        _articleRepositoryMock
+        _articleInteractionRepositoryMock
             .Setup(x => x.ApplyEngagementDeltaAsync(articleId, kind, delta, It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
 
@@ -55,11 +56,11 @@ public class ArticleEngagementHandlerTests
         await _handler.Handle(new ArticleEngagedEvent(articleId, kind, delta), CancellationToken.None);
 
         // Assert
-        _articleRepositoryMock.Verify(
+        _articleInteractionRepositoryMock.Verify(
             x => x.ApplyEngagementDeltaAsync(articleId, kind, delta, It.IsAny<CancellationToken>()),
             Times.Once
         );
-        _cacheInvalidatorMock.VerifyInvalidateCalled();
+        _cacheMock.VerifyRemovedByTag(ContentCacheTags.PopularArticles);
     }
 
     [Fact]
@@ -67,7 +68,7 @@ public class ArticleEngagementHandlerTests
     {
         // Arrange — loading to mutate is the race stage 8 removed; the counter moves in SQL only.
         var articleId = Guid.NewGuid();
-        _articleRepositoryMock
+        _articleInteractionRepositoryMock
             .Setup(x =>
                 x.ApplyEngagementDeltaAsync(
                     articleId,
@@ -81,12 +82,12 @@ public class ArticleEngagementHandlerTests
         // Act
         await _handler.Handle(new ArticleEngagedEvent(articleId, EnumEngagementKind.Like, 1), CancellationToken.None);
 
-        // Assert
-        _articleRepositoryMock.Verify(
-            x => x.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
-            Times.Never
+        // Assert — the interaction repository exposes no aggregate load or update, so the
+        // set-based path cannot fall back to load-then-mutate; the delta call is the whole write.
+        _articleInteractionRepositoryMock.Verify(
+            x => x.ApplyEngagementDeltaAsync(articleId, EnumEngagementKind.Like, 1, It.IsAny<CancellationToken>()),
+            Times.Once
         );
-        _articleRepositoryMock.Verify(x => x.Update(It.IsAny<ArticleEntity>()), Times.Never);
     }
 
     [Fact]
@@ -94,7 +95,7 @@ public class ArticleEngagementHandlerTests
     {
         // Arrange — the repository answers 0 rows for a kind it has no column for.
         var articleId = Guid.NewGuid();
-        _articleRepositoryMock
+        _articleInteractionRepositoryMock
             .Setup(x =>
                 x.ApplyEngagementDeltaAsync(articleId, EnumEngagementKind.View, 1, It.IsAny<CancellationToken>())
             )
@@ -104,7 +105,7 @@ public class ArticleEngagementHandlerTests
         await _handler.Handle(new ArticleEngagedEvent(articleId, EnumEngagementKind.View, 1), CancellationToken.None);
 
         // Assert
-        _cacheInvalidatorMock.VerifyInvalidateCalled();
+        _cacheMock.VerifyRemovedByTag(ContentCacheTags.PopularArticles);
     }
 
     [Fact]
@@ -113,7 +114,7 @@ public class ArticleEngagementHandlerTests
         // Arrange — the article vanished between the interaction commit and the dispatch, which is
         // a race, not an error. The ranked list is evicted regardless.
         var articleId = Guid.NewGuid();
-        _articleRepositoryMock
+        _articleInteractionRepositoryMock
             .Setup(x =>
                 x.ApplyEngagementDeltaAsync(articleId, EnumEngagementKind.Like, 1, It.IsAny<CancellationToken>())
             )
@@ -123,6 +124,6 @@ public class ArticleEngagementHandlerTests
         await _handler.Handle(new ArticleEngagedEvent(articleId, EnumEngagementKind.Like, 1), CancellationToken.None);
 
         // Assert
-        _cacheInvalidatorMock.VerifyInvalidateCalled();
+        _cacheMock.VerifyRemovedByTag(ContentCacheTags.PopularArticles);
     }
 }
