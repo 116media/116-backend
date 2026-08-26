@@ -15,13 +15,13 @@ namespace _116.Unit.Tests.Modules.Content.Application.Lookup.UseCases.Public.Que
 /// </summary>
 public class PublicGetActivePromotionLevelsHandlerTests : BaseContentHandlerTest
 {
-    private readonly Mock<ILookupRepository> _lookupRepositoryMock;
+    private readonly Mock<IPromotionLevelRepository> _promotionLevelRepositoryMock;
     private readonly PublicGetActivePromotionLevelsHandler _handler;
 
     public PublicGetActivePromotionLevelsHandlerTests()
     {
-        _lookupRepositoryMock = MockLookupRepository.Create();
-        _handler = new PublicGetActivePromotionLevelsHandler(_lookupRepositoryMock.Object, Mapper);
+        _promotionLevelRepositoryMock = MockPromotionLevelRepository.Create();
+        _handler = new PublicGetActivePromotionLevelsHandler(_promotionLevelRepositoryMock.Object, Mapper);
     }
 
     #region Success Cases
@@ -31,7 +31,7 @@ public class PublicGetActivePromotionLevelsHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         List<PromotionLevelEntity> activeList = PromotionLevelFactory.CreateMany(2);
-        _lookupRepositoryMock.SetupGetActivePromotionLevels(activeList);
+        _promotionLevelRepositoryMock.SetupGetActivePromotionLevels(activeList);
 
         var query = new PublicGetActivePromotionLevelsQuery();
 
@@ -46,7 +46,7 @@ public class PublicGetActivePromotionLevelsHandlerTests : BaseContentHandlerTest
     public async Task Handle_WithEmptyList_ShouldReturnEmptyList()
     {
         // Arrange
-        _lookupRepositoryMock.SetupGetActivePromotionLevels(new List<PromotionLevelEntity>());
+        _promotionLevelRepositoryMock.SetupGetActivePromotionLevels(new List<PromotionLevelEntity>());
 
         var query = new PublicGetActivePromotionLevelsQuery();
 
