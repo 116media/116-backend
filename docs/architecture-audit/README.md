@@ -31,8 +31,10 @@ touching.
 | 12 | [Shared Kernel vs BuildingBlocks](12-shared-kernel-and-buildingblocks.md) | What each foundation project should really be under DDD/Clean |
 | 13 | [Core is Storage; the Settings module](13-core-storage-and-settings-module.md) | Rename Core→Storage; design the intended system-settings + user-preferences module |
 | 14 | [Notifications, email & subscriptions](14-notifications-email-and-subscriptions.md) | Notification = concept, email/in-app = channels; mandatory vs preference-gated vs opt-in |
+| 15 | [Layer dependency verification](15-layer-dependency-verification.md) | Inward dependency rule re-verified after Stage 9 — what is clean, what is closed, and two findings 01–14 missed |
+| 16 | [Caching architecture](16-caching-architecture.md) | Duplication, stampede, uncached reference data; supersedes 04 §4.8's version-key remedy with `HybridCache` |
 | — | [Module restructure study](module-restructure-study/README.md) | Deep study: per-module src/tests + layers-as-projects — is 13→30 projects worth it? (verdict: no; do CPM + NetArchTest instead) |
-| — | [Implementation specs](implementation-specs/00-implementation-plan.md) | The staged, checkbox-driven remediation plan — 16 sequential stages, one PR each, with full code per stage |
+| — | [Implementation specs](implementation-specs/00-implementation-plan.md) | The staged, checkbox-driven remediation plan — 20 stages, one PR each, with full code per stage |
 
 ## Severity legend
 
