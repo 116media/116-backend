@@ -22,18 +22,18 @@ public class PublicGetOwnArticleBookmarksHandlerTests : BaseContentHandlerTest
     private static readonly Guid CategoryId = Guid.NewGuid();
     private static readonly Guid UserId = Guid.NewGuid();
 
-    private readonly Mock<IArticleRepository> _articleRepositoryMock;
+    private readonly Mock<IArticleInteractionRepository> _articleInteractionRepositoryMock;
     private readonly Mock<IFileRepository> _fileRepositoryMock;
     private readonly PublicGetOwnArticleBookmarksHandler _handler;
 
     public PublicGetOwnArticleBookmarksHandlerTests()
     {
-        _articleRepositoryMock = MockArticleRepository.Create();
+        _articleInteractionRepositoryMock = MockArticleInteractionRepository.Create();
         _fileRepositoryMock = MockFileRepository.Create();
         FileEntity coverFile = FileFactory.CreateImage();
         _fileRepositoryMock.SetupGetById(coverFile);
         _handler = new PublicGetOwnArticleBookmarksHandler(
-            _articleRepositoryMock.Object,
+            _articleInteractionRepositoryMock.Object,
             _fileRepositoryMock.Object,
             Mapper
         );
@@ -47,11 +47,11 @@ public class PublicGetOwnArticleBookmarksHandlerTests : BaseContentHandlerTest
         // Arrange
         ArticleEntity article = ArticleFactory.CreatePublished(CategoryId);
         DateTimeOffset bookmarkedAt = DateTimeOffset.UtcNow.AddDays(-2);
-        _articleRepositoryMock.SetupGetBookmarkedArticlesAsync(
+        _articleInteractionRepositoryMock.SetupGetBookmarkedArticlesAsync(
             new List<BookmarkedArticleActivity> { new(article, bookmarkedAt) },
             totalCount: 1
         );
-        _articleRepositoryMock.SetupGetLikedAndBookmarkedIds(
+        _articleInteractionRepositoryMock.SetupGetLikedAndBookmarkedIds(
             likedIds: new HashSet<Guid>(),
             bookmarkedIds: new HashSet<Guid> { article.Id }
         );
@@ -74,7 +74,10 @@ public class PublicGetOwnArticleBookmarksHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenUserHasNoBookmarks_ShouldReturnEmptyPage()
     {
         // Arrange
-        _articleRepositoryMock.SetupGetBookmarkedArticlesAsync(new List<BookmarkedArticleActivity>(), totalCount: 0);
+        _articleInteractionRepositoryMock.SetupGetBookmarkedArticlesAsync(
+            new List<BookmarkedArticleActivity>(),
+            totalCount: 0
+        );
 
         var query = new PublicGetOwnArticleBookmarksQuery(
             UserId: UserId,
