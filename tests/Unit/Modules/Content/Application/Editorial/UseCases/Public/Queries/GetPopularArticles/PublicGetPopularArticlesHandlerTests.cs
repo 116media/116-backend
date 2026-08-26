@@ -7,25 +7,22 @@ using _116.Core.Domain.Entities;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Factories.Core;
 using _116.Unit.Tests.Common;
-using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
 namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Public.Queries.GetPopularArticles;
 
 /// <summary>
-/// Unit tests for <see cref="PublicGetPopularArticlesHandler"/>.
+/// Unit tests for <see cref="PublicGetPopularArticlesHandler"/>. Caching lives in the
+/// CQRS caching decorator, so these cover the projection only; the cache-key contract
+/// the decorator relies on is asserted on the query record.
 /// </summary>
 public class PublicGetPopularArticlesHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<IArticleRepository> _articleRepositoryMock;
     private readonly Mock<IFileRepository> _fileRepositoryMock;
-    private readonly Mock<IPopularArticlesCacheInvalidator> _cacheInvalidatorMock;
-    private readonly IMemoryCache _cache;
     private readonly PublicGetPopularArticlesHandler _handler;
 
     private static readonly Guid CategoryId = Guid.NewGuid();
@@ -34,15 +31,11 @@ public class PublicGetPopularArticlesHandlerTests : BaseContentHandlerTest
     {
         _articleRepositoryMock = MockArticleRepository.Create();
         _fileRepositoryMock = MockFileRepository.Create();
-        _cacheInvalidatorMock = MockPopularArticlesCacheInvalidator.Create();
-        _cache = new MemoryCache(Options.Create(new MemoryCacheOptions()));
         FileEntity coverFile = FileFactory.CreateImage();
         _fileRepositoryMock.SetupGetById(coverFile);
         _handler = new PublicGetPopularArticlesHandler(
             _articleRepositoryMock.Object,
             _fileRepositoryMock.Object,
-            _cache,
-            _cacheInvalidatorMock.Object,
             Mapper
         );
     }
@@ -99,75 +92,42 @@ public class PublicGetPopularArticlesHandlerTests : BaseContentHandlerTest
     }
 
     [Fact]
-    public async Task Handle_CalledTwiceWithSameArgs_ShouldHitRepositoryOnce()
+    public void CacheKey_WithSameArguments_ShouldBeStable()
     {
         // Arrange
-        _articleRepositoryMock.SetupGetPopularArticlesAsync(ArticleFactory.CreateManyPublished(CategoryId, 3));
+        var categoryId = Guid.NewGuid();
+        var first = new PublicGetPopularArticlesQuery(Limit: 5, CategoryId: categoryId, ExcludeId: null);
+        var second = new PublicGetPopularArticlesQuery(Limit: 5, CategoryId: categoryId, ExcludeId: null);
+
+        // Assert
+        first.CacheKey.Should().Be(second.CacheKey);
+    }
+
+    [Fact]
+    public void CacheKey_WithDifferentArguments_ShouldDiffer()
+    {
+        // Arrange
+        var baseline = new PublicGetPopularArticlesQuery(Limit: 5, CategoryId: null, ExcludeId: null);
+
+        // Assert — every parameter participates in the key
+        new PublicGetPopularArticlesQuery(Limit: 7, CategoryId: null, ExcludeId: null)
+            .CacheKey.Should()
+            .NotBe(baseline.CacheKey);
+        new PublicGetPopularArticlesQuery(Limit: 5, CategoryId: Guid.NewGuid(), ExcludeId: null)
+            .CacheKey.Should()
+            .NotBe(baseline.CacheKey);
+        new PublicGetPopularArticlesQuery(Limit: 5, CategoryId: null, ExcludeId: Guid.NewGuid())
+            .CacheKey.Should()
+            .NotBe(baseline.CacheKey);
+    }
+
+    [Fact]
+    public void CacheTags_ShouldCarryThePopularArticlesTag()
+    {
+        // Arrange
         var query = new PublicGetPopularArticlesQuery(Limit: 5, CategoryId: null, ExcludeId: null);
 
-        // Act
-        await _handler.Handle(query, CancellationToken.None);
-        await _handler.Handle(query, CancellationToken.None);
-
         // Assert
-        _articleRepositoryMock.Verify(
-            x => x.GetPopularArticlesAsync(5, null, null, It.IsAny<CancellationToken>()),
-            Times.Once
-        );
-    }
-
-    [Fact]
-    public async Task Handle_CalledWithDifferentExcludeId_ShouldHitRepositoryTwice()
-    {
-        // Arrange
-        _articleRepositoryMock.SetupGetPopularArticlesAsync(ArticleFactory.CreateManyPublished(CategoryId, 3));
-        Guid firstExcludeId = Guid.NewGuid();
-        Guid secondExcludeId = Guid.NewGuid();
-
-        // Act
-        await _handler.Handle(
-            new PublicGetPopularArticlesQuery(Limit: 5, CategoryId: null, ExcludeId: firstExcludeId),
-            CancellationToken.None
-        );
-        await _handler.Handle(
-            new PublicGetPopularArticlesQuery(Limit: 5, CategoryId: null, ExcludeId: secondExcludeId),
-            CancellationToken.None
-        );
-
-        // Assert
-        _articleRepositoryMock.Verify(
-            x => x.GetPopularArticlesAsync(5, null, firstExcludeId, It.IsAny<CancellationToken>()),
-            Times.Once
-        );
-        _articleRepositoryMock.Verify(
-            x => x.GetPopularArticlesAsync(5, null, secondExcludeId, It.IsAny<CancellationToken>()),
-            Times.Once
-        );
-        _articleRepositoryMock.Verify(
-            x =>
-                x.GetPopularArticlesAsync(
-                    It.IsAny<int>(),
-                    It.IsAny<Guid?>(),
-                    It.IsAny<Guid?>(),
-                    It.IsAny<CancellationToken>()
-                ),
-            Times.Exactly(2)
-        );
-    }
-
-    [Fact]
-    public async Task Handle_ShouldNotCallInvalidate()
-    {
-        // Arrange
-        _articleRepositoryMock.SetupGetPopularArticlesAsync(ArticleFactory.CreateManyPublished(CategoryId, 3));
-
-        // Act
-        await _handler.Handle(
-            new PublicGetPopularArticlesQuery(Limit: 5, CategoryId: null, ExcludeId: null),
-            CancellationToken.None
-        );
-
-        // Assert
-        _cacheInvalidatorMock.VerifyInvalidateNotCalled();
+        query.CacheTags.Should().ContainSingle().Which.Should().Be(ContentCacheTags.PopularArticles);
     }
 }
