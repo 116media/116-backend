@@ -17,15 +17,15 @@ namespace _116.Unit.Tests.Modules.Content.Application.Lookup.UseCases.Admin.Comm
 /// </summary>
 public class AdminDeleteTagHandlerTests
 {
-    private readonly Mock<ILookupRepository> _lookupRepositoryMock;
+    private readonly Mock<ITagRepository> _tagRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminDeleteTagHandler _handler;
 
     public AdminDeleteTagHandlerTests()
     {
-        _lookupRepositoryMock = MockLookupRepository.Create();
+        _tagRepositoryMock = MockTagRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _handler = new AdminDeleteTagHandler(_lookupRepositoryMock.Object, _unitOfWorkMock.Object);
+        _handler = new AdminDeleteTagHandler(_tagRepositoryMock.Object, _unitOfWorkMock.Object);
     }
 
     #region Success Cases
@@ -37,13 +37,13 @@ public class AdminDeleteTagHandlerTests
         TagEntity tag = TagFactory.CreateDefault();
         var command = new AdminDeleteTagCommand(Id: tag.Id.ToString());
 
-        _lookupRepositoryMock.SetupGetTagByIdOrThrow(entity: tag);
+        _tagRepositoryMock.SetupGetTagByIdOrThrow(entity: tag);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _lookupRepositoryMock.VerifyRemoveTagCalled(tag: tag);
+        _tagRepositoryMock.VerifyRemoveTagCalled(tag: tag);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -58,7 +58,7 @@ public class AdminDeleteTagHandlerTests
         Guid nonExistentId = Guid.NewGuid();
         var command = new AdminDeleteTagCommand(Id: nonExistentId.ToString());
 
-        _lookupRepositoryMock.SetupGetTagByIdOrThrowNotFound(id: nonExistentId);
+        _tagRepositoryMock.SetupGetTagByIdOrThrowNotFound(id: nonExistentId);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
@@ -74,14 +74,14 @@ public class AdminDeleteTagHandlerTests
         Guid nonExistentId = Guid.NewGuid();
         var command = new AdminDeleteTagCommand(Id: nonExistentId.ToString());
 
-        _lookupRepositoryMock.SetupGetTagByIdOrThrowNotFound(id: nonExistentId);
+        _tagRepositoryMock.SetupGetTagByIdOrThrowNotFound(id: nonExistentId);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
-        _lookupRepositoryMock.VerifyRemoveTagNotCalled();
+        _tagRepositoryMock.VerifyRemoveTagNotCalled();
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
@@ -96,14 +96,14 @@ public class AdminDeleteTagHandlerTests
         TagEntity tag = TagFactory.CreateDefault();
         var command = new AdminDeleteTagCommand(Id: tag.Id.ToString());
 
-        _lookupRepositoryMock.SetupGetTagByIdOrThrow(entity: tag);
+        _tagRepositoryMock.SetupGetTagByIdOrThrow(entity: tag);
         using CancellationTokenSource cts = new();
 
         // Act
         await _handler.Handle(command, cts.Token);
 
         // Assert
-        _lookupRepositoryMock.Verify(x => x.GetTagByIdOrThrowAsync(tag.Id, cts.Token), Times.Once);
+        _tagRepositoryMock.Verify(x => x.GetByIdOrThrowAsync(tag.Id, cts.Token), Times.Once);
     }
 
     #endregion
