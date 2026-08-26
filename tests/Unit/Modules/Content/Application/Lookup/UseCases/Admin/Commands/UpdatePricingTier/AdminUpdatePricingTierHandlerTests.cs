@@ -20,16 +20,16 @@ namespace _116.Unit.Tests.Modules.Content.Application.Lookup.UseCases.Admin.Comm
 /// </summary>
 public class AdminUpdatePricingTierHandlerTests : BaseContentHandlerTest
 {
-    private readonly Mock<ILookupRepository> _lookupRepositoryMock;
+    private readonly Mock<IPricingTierRepository> _pricingTierRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminUpdatePricingTierHandler _handler;
 
     public AdminUpdatePricingTierHandlerTests()
     {
-        _lookupRepositoryMock = MockLookupRepository.Create();
+        _pricingTierRepositoryMock = MockPricingTierRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _handler = new AdminUpdatePricingTierHandler(
-            _lookupRepositoryMock.Object,
+            _pricingTierRepositoryMock.Object,
             _unitOfWorkMock.Object,
             Mapper,
             TestErrorsFactory.CreateContentI18n()
@@ -50,8 +50,8 @@ public class AdminUpdatePricingTierHandlerTests : BaseContentHandlerTest
             Description: TestConstants.PricingTier.ValidDescription
         );
 
-        _lookupRepositoryMock.SetupGetPricingTierByIdOrThrow(existing);
-        _lookupRepositoryMock.SetupPricingTierExistsByName(newName, false);
+        _pricingTierRepositoryMock.SetupGetPricingTierByIdOrThrow(existing);
+        _pricingTierRepositoryMock.SetupPricingTierExistsByName(newName, false);
 
         // Act
         AdminUpdatePricingTierResult result = await _handler.Handle(command, CancellationToken.None);
@@ -73,8 +73,8 @@ public class AdminUpdatePricingTierHandlerTests : BaseContentHandlerTest
             Description: TestConstants.PricingTier.ValidDescription
         );
 
-        _lookupRepositoryMock.SetupGetPricingTierByIdOrThrow(existing);
-        _lookupRepositoryMock.SetupPricingTierExistsByName(sameName, true);
+        _pricingTierRepositoryMock.SetupGetPricingTierByIdOrThrow(existing);
+        _pricingTierRepositoryMock.SetupPricingTierExistsByName(sameName, true);
 
         // Act
         AdminUpdatePricingTierResult result = await _handler.Handle(command, CancellationToken.None);
@@ -97,8 +97,8 @@ public class AdminUpdatePricingTierHandlerTests : BaseContentHandlerTest
             Description: description
         );
 
-        _lookupRepositoryMock.SetupGetPricingTierByIdOrThrow(existing);
-        _lookupRepositoryMock.SetupPricingTierExistsByName(newName, false);
+        _pricingTierRepositoryMock.SetupGetPricingTierByIdOrThrow(existing);
+        _pricingTierRepositoryMock.SetupPricingTierExistsByName(newName, false);
 
         // Act
         AdminUpdatePricingTierResult result = await _handler.Handle(command, CancellationToken.None);
@@ -122,7 +122,7 @@ public class AdminUpdatePricingTierHandlerTests : BaseContentHandlerTest
             Description: TestConstants.PricingTier.ValidDescription
         );
 
-        _lookupRepositoryMock.SetupGetPricingTierByIdOrThrowNotFound(nonExistentId);
+        _pricingTierRepositoryMock.SetupGetPricingTierByIdOrThrowNotFound(nonExistentId);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
@@ -143,8 +143,8 @@ public class AdminUpdatePricingTierHandlerTests : BaseContentHandlerTest
             Description: TestConstants.PricingTier.ValidDescription
         );
 
-        _lookupRepositoryMock.SetupGetPricingTierByIdOrThrow(existing);
-        _lookupRepositoryMock.SetupPricingTierExistsByName(conflictingName, true);
+        _pricingTierRepositoryMock.SetupGetPricingTierByIdOrThrow(existing);
+        _pricingTierRepositoryMock.SetupPricingTierExistsByName(conflictingName, true);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
@@ -165,8 +165,8 @@ public class AdminUpdatePricingTierHandlerTests : BaseContentHandlerTest
             Description: TestConstants.PricingTier.ValidDescription
         );
 
-        _lookupRepositoryMock.SetupGetPricingTierByIdOrThrow(existing);
-        _lookupRepositoryMock.SetupPricingTierExistsByName(conflictingName, true);
+        _pricingTierRepositoryMock.SetupGetPricingTierByIdOrThrow(existing);
+        _pricingTierRepositoryMock.SetupPricingTierExistsByName(conflictingName, true);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
@@ -193,8 +193,8 @@ public class AdminUpdatePricingTierHandlerTests : BaseContentHandlerTest
         );
         using var cts = new CancellationTokenSource();
 
-        _lookupRepositoryMock.SetupGetPricingTierByIdOrThrow(existing);
-        _lookupRepositoryMock.SetupPricingTierExistsByName(newName, false);
+        _pricingTierRepositoryMock.SetupGetPricingTierByIdOrThrow(existing);
+        _pricingTierRepositoryMock.SetupPricingTierExistsByName(newName, false);
 
         // Act
         await _handler.Handle(command, cts.Token);
