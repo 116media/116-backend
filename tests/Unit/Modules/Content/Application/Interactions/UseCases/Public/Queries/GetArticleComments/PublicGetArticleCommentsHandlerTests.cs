@@ -23,18 +23,18 @@ public class PublicGetArticleCommentsHandlerTests : BaseContentHandlerTest
     private static readonly Guid UserId = Guid.NewGuid();
     private static readonly Guid AvatarFileId = Guid.NewGuid();
 
-    private readonly Mock<IArticleRepository> _articleRepositoryMock;
+    private readonly Mock<IArticleCommentRepository> _articleCommentRepositoryMock;
     private readonly Mock<IUserLookupService> _userLookupMock;
     private readonly Mock<IFileRepository> _fileRepositoryMock;
     private readonly PublicGetArticleCommentsHandler _handler;
 
     public PublicGetArticleCommentsHandlerTests()
     {
-        _articleRepositoryMock = MockArticleRepository.Create();
+        _articleCommentRepositoryMock = MockArticleCommentRepository.Create();
         _userLookupMock = new Mock<IUserLookupService>();
         _fileRepositoryMock = new Mock<IFileRepository>();
         _handler = new PublicGetArticleCommentsHandler(
-            _articleRepositoryMock.Object,
+            _articleCommentRepositoryMock.Object,
             _userLookupMock.Object,
             _fileRepositoryMock.Object,
             Mapper
@@ -60,7 +60,7 @@ public class PublicGetArticleCommentsHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         ArticleCommentEntity comment = ArticleCommentFactory.Create(ArticleId, UserId);
-        _articleRepositoryMock.SetupGetCommentsAsync(new List<ArticleCommentEntity> { comment }, totalCount: 1);
+        _articleCommentRepositoryMock.SetupGetCommentsAsync(new List<ArticleCommentEntity> { comment }, totalCount: 1);
         SetupAuthor(UserId, "jane", email: "jane@example.com", avatarFileId: null, role: "Visitor");
 
         // Act
@@ -77,7 +77,7 @@ public class PublicGetArticleCommentsHandlerTests : BaseContentHandlerTest
     public async Task Handle_DoesNotExposeEmail()
     {
         ArticleCommentEntity comment = ArticleCommentFactory.Create(ArticleId, UserId);
-        _articleRepositoryMock.SetupGetCommentsAsync(new List<ArticleCommentEntity> { comment }, totalCount: 1);
+        _articleCommentRepositoryMock.SetupGetCommentsAsync(new List<ArticleCommentEntity> { comment }, totalCount: 1);
         SetupAuthor(UserId, "jane", email: "jane@example.com", avatarFileId: null, role: "Visitor");
 
         PublicGetArticleCommentsResult result = await _handler.Handle(Query(), CancellationToken.None);
@@ -90,7 +90,7 @@ public class PublicGetArticleCommentsHandlerTests : BaseContentHandlerTest
     {
         ArticleCommentEntity c1 = ArticleCommentFactory.Create(ArticleId, UserId);
         ArticleCommentEntity c2 = ArticleCommentFactory.Create(ArticleId, UserId);
-        _articleRepositoryMock.SetupGetCommentsAsync(new List<ArticleCommentEntity> { c1, c2 }, totalCount: 2);
+        _articleCommentRepositoryMock.SetupGetCommentsAsync(new List<ArticleCommentEntity> { c1, c2 }, totalCount: 2);
         SetupAuthor(UserId, "jane", null, null, "Visitor");
 
         await _handler.Handle(Query(), CancellationToken.None);
@@ -105,7 +105,7 @@ public class PublicGetArticleCommentsHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenUserNotResolvable_LeavesAuthorNull()
     {
         ArticleCommentEntity comment = ArticleCommentFactory.Create(ArticleId, UserId);
-        _articleRepositoryMock.SetupGetCommentsAsync(new List<ArticleCommentEntity> { comment }, totalCount: 1);
+        _articleCommentRepositoryMock.SetupGetCommentsAsync(new List<ArticleCommentEntity> { comment }, totalCount: 1);
         _userLookupMock
             .Setup(x =>
                 x.GetAuthorInfosByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>())
@@ -122,7 +122,7 @@ public class PublicGetArticleCommentsHandlerTests : BaseContentHandlerTest
     {
         ArticleCommentEntity comment = ArticleCommentFactory.Create(ArticleId, UserId);
         comment.SoftDelete();
-        _articleRepositoryMock.SetupGetCommentsAsync(new List<ArticleCommentEntity> { comment }, totalCount: 1);
+        _articleCommentRepositoryMock.SetupGetCommentsAsync(new List<ArticleCommentEntity> { comment }, totalCount: 1);
 
         PublicGetArticleCommentsResult result = await _handler.Handle(Query(), CancellationToken.None);
 
@@ -139,7 +139,7 @@ public class PublicGetArticleCommentsHandlerTests : BaseContentHandlerTest
     public async Task Handle_WithAvatar_ResolvesAvatarUrl()
     {
         ArticleCommentEntity comment = ArticleCommentFactory.Create(ArticleId, UserId);
-        _articleRepositoryMock.SetupGetCommentsAsync(new List<ArticleCommentEntity> { comment }, totalCount: 1);
+        _articleCommentRepositoryMock.SetupGetCommentsAsync(new List<ArticleCommentEntity> { comment }, totalCount: 1);
         SetupAuthor(UserId, "jane", null, AvatarFileId, "Visitor");
         _fileRepositoryMock
             .Setup(x =>
@@ -155,7 +155,7 @@ public class PublicGetArticleCommentsHandlerTests : BaseContentHandlerTest
     [Fact]
     public async Task Handle_WhenNoComments_ReturnsEmptyPage()
     {
-        _articleRepositoryMock.SetupGetCommentsAsync(new List<ArticleCommentEntity>(), totalCount: 0);
+        _articleCommentRepositoryMock.SetupGetCommentsAsync(new List<ArticleCommentEntity>(), totalCount: 0);
 
         PublicGetArticleCommentsResult result = await _handler.Handle(Query(), CancellationToken.None);
 
@@ -166,9 +166,9 @@ public class PublicGetArticleCommentsHandlerTests : BaseContentHandlerTest
     public async Task Handle_StampsReplyCountForTopLevelComment()
     {
         ArticleCommentEntity comment = ArticleCommentFactory.Create(ArticleId, UserId);
-        _articleRepositoryMock.SetupGetCommentsAsync(new List<ArticleCommentEntity> { comment }, totalCount: 1);
+        _articleCommentRepositoryMock.SetupGetCommentsAsync(new List<ArticleCommentEntity> { comment }, totalCount: 1);
         SetupAuthor(UserId, "jane", null, null, "Visitor");
-        _articleRepositoryMock.SetupGetReplyCounts(new Dictionary<Guid, int> { [comment.Id] = 3 });
+        _articleCommentRepositoryMock.SetupGetReplyCounts(new Dictionary<Guid, int> { [comment.Id] = 3 });
 
         PublicGetArticleCommentsResult result = await _handler.Handle(Query(), CancellationToken.None);
 
@@ -179,9 +179,9 @@ public class PublicGetArticleCommentsHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenViewerLikedComment_StampsIsLikedTrue()
     {
         ArticleCommentEntity comment = ArticleCommentFactory.Create(ArticleId, UserId);
-        _articleRepositoryMock.SetupGetCommentsAsync(new List<ArticleCommentEntity> { comment }, totalCount: 1);
+        _articleCommentRepositoryMock.SetupGetCommentsAsync(new List<ArticleCommentEntity> { comment }, totalCount: 1);
         SetupAuthor(UserId, "jane", null, null, "Visitor");
-        _articleRepositoryMock.SetupGetLikedCommentIds(new HashSet<Guid> { comment.Id });
+        _articleCommentRepositoryMock.SetupGetLikedCommentIds(new HashSet<Guid> { comment.Id });
 
         PublicGetArticleCommentsResult result = await _handler.Handle(Query(Guid.NewGuid()), CancellationToken.None);
 
@@ -192,7 +192,7 @@ public class PublicGetArticleCommentsHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenAnonymousViewer_SkipsLikeLookupAndLeavesIsLikedFalse()
     {
         ArticleCommentEntity comment = ArticleCommentFactory.Create(ArticleId, UserId);
-        _articleRepositoryMock.SetupGetCommentsAsync(new List<ArticleCommentEntity> { comment }, totalCount: 1);
+        _articleCommentRepositoryMock.SetupGetCommentsAsync(new List<ArticleCommentEntity> { comment }, totalCount: 1);
         SetupAuthor(UserId, "jane", null, null, "Visitor");
 
         PublicGetArticleCommentsResult result = await _handler.Handle(
@@ -201,7 +201,7 @@ public class PublicGetArticleCommentsHandlerTests : BaseContentHandlerTest
         );
 
         result.Comments.Items.Single().IsLiked.Should().BeFalse();
-        _articleRepositoryMock.Verify(
+        _articleCommentRepositoryMock.Verify(
             x =>
                 x.GetLikedCommentIdsAsync(
                     It.IsAny<Guid>(),
