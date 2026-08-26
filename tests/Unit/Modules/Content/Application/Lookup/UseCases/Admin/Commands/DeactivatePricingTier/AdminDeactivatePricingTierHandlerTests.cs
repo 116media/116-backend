@@ -19,16 +19,16 @@ namespace _116.Unit.Tests.Modules.Content.Application.Lookup.UseCases.Admin.Comm
 /// </summary>
 public class AdminDeactivatePricingTierHandlerTests : BaseContentHandlerTest
 {
-    private readonly Mock<ILookupRepository> _lookupRepositoryMock;
+    private readonly Mock<IPricingTierRepository> _pricingTierRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminDeactivatePricingTierHandler _handler;
 
     public AdminDeactivatePricingTierHandlerTests()
     {
-        _lookupRepositoryMock = MockLookupRepository.Create();
+        _pricingTierRepositoryMock = MockPricingTierRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _handler = new AdminDeactivatePricingTierHandler(
-            _lookupRepositoryMock.Object,
+            _pricingTierRepositoryMock.Object,
             _unitOfWorkMock.Object,
             Mapper,
             TestErrorsFactory.CreateContentI18n()
@@ -44,7 +44,7 @@ public class AdminDeactivatePricingTierHandlerTests : BaseContentHandlerTest
         PricingTierEntity active = PricingTierFactory.CreateDefault();
         var command = new AdminDeactivatePricingTierCommand(Id: active.Id.ToString());
 
-        _lookupRepositoryMock.SetupGetPricingTierByIdOrThrow(active);
+        _pricingTierRepositoryMock.SetupGetPricingTierByIdOrThrow(active);
 
         // Act
         AdminDeactivatePricingTierResult result = await _handler.Handle(command, CancellationToken.None);
@@ -65,7 +65,7 @@ public class AdminDeactivatePricingTierHandlerTests : BaseContentHandlerTest
         PricingTierEntity inactive = PricingTierFactory.CreateInactive();
         var command = new AdminDeactivatePricingTierCommand(Id: inactive.Id.ToString());
 
-        _lookupRepositoryMock.SetupGetPricingTierByIdOrThrow(inactive);
+        _pricingTierRepositoryMock.SetupGetPricingTierByIdOrThrow(inactive);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
@@ -81,7 +81,7 @@ public class AdminDeactivatePricingTierHandlerTests : BaseContentHandlerTest
         PricingTierEntity inactive = PricingTierFactory.CreateInactive();
         var command = new AdminDeactivatePricingTierCommand(Id: inactive.Id.ToString());
 
-        _lookupRepositoryMock.SetupGetPricingTierByIdOrThrow(inactive);
+        _pricingTierRepositoryMock.SetupGetPricingTierByIdOrThrow(inactive);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
@@ -98,7 +98,7 @@ public class AdminDeactivatePricingTierHandlerTests : BaseContentHandlerTest
         var nonExistentId = Guid.NewGuid();
         var command = new AdminDeactivatePricingTierCommand(Id: nonExistentId.ToString());
 
-        _lookupRepositoryMock.SetupGetPricingTierByIdOrThrowNotFound(nonExistentId);
+        _pricingTierRepositoryMock.SetupGetPricingTierByIdOrThrowNotFound(nonExistentId);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
