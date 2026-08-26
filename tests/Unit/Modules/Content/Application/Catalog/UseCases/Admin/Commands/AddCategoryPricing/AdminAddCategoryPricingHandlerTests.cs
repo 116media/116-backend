@@ -21,18 +21,18 @@ namespace _116.Unit.Tests.Modules.Content.Application.Catalog.UseCases.Admin.Com
 public class AdminAddCategoryPricingHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<ICategoryRepository> _categoryRepositoryMock;
-    private readonly Mock<ILookupRepository> _lookupRepositoryMock;
+    private readonly Mock<IPricingTierRepository> _pricingTierRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminAddCategoryPricingHandler _handler;
 
     public AdminAddCategoryPricingHandlerTests()
     {
         _categoryRepositoryMock = MockCategoryRepository.Create();
-        _lookupRepositoryMock = MockLookupRepository.Create();
+        _pricingTierRepositoryMock = MockPricingTierRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _handler = new AdminAddCategoryPricingHandler(
             _categoryRepositoryMock.Object,
-            _lookupRepositoryMock.Object,
+            _pricingTierRepositoryMock.Object,
             _unitOfWorkMock.Object,
             Mapper,
             TestErrorsFactory.CreateContentI18n()
@@ -57,7 +57,7 @@ public class AdminAddCategoryPricingHandlerTests : BaseContentHandlerTest
         );
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-        _lookupRepositoryMock.SetupGetPricingTierByIdOrThrow(pricingTier);
+        _pricingTierRepositoryMock.SetupGetPricingTierByIdOrThrow(pricingTier);
         _categoryRepositoryMock.SetupGetPricing(category.Id, pricingTier.Id, null);
 
         CategoryPricingEntity created = CategoryPricingFactory.Create(category.Id, pricingTier.Id, priceUsd);
@@ -117,7 +117,7 @@ public class AdminAddCategoryPricingHandlerTests : BaseContentHandlerTest
         );
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-        _lookupRepositoryMock.SetupGetPricingTierByIdOrThrowNotFound(nonExistentTierId);
+        _pricingTierRepositoryMock.SetupGetPricingTierByIdOrThrowNotFound(nonExistentTierId);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
@@ -141,7 +141,7 @@ public class AdminAddCategoryPricingHandlerTests : BaseContentHandlerTest
         );
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-        _lookupRepositoryMock.SetupGetPricingTierByIdOrThrow(inactiveTier);
+        _pricingTierRepositoryMock.SetupGetPricingTierByIdOrThrow(inactiveTier);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
@@ -165,7 +165,7 @@ public class AdminAddCategoryPricingHandlerTests : BaseContentHandlerTest
         );
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-        _lookupRepositoryMock.SetupGetPricingTierByIdOrThrow(pricingTier);
+        _pricingTierRepositoryMock.SetupGetPricingTierByIdOrThrow(pricingTier);
 
         CategoryPricingEntity existing = CategoryPricingFactory.Create(category.Id, pricingTier.Id);
         _categoryRepositoryMock.SetupGetPricing(category.Id, pricingTier.Id, existing);
