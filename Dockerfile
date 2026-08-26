@@ -12,6 +12,8 @@ COPY src/Modules/Core/Core/*.csproj ./src/Modules/Core/Core/
 COPY src/Modules/Identity/Identity/*.csproj ./src/Modules/Identity/Identity/
 COPY src/Modules/Identity/Identity.Contracts/*.csproj ./src/Modules/Identity/Identity.Contracts/
 COPY src/Modules/Content/Content/*.csproj ./src/Modules/Content/Content/
+COPY src/Modules/Mailer/Mailer/*.csproj ./src/Modules/Mailer/Mailer/
+COPY src/Modules/Mailer/Mailer.Contracts/*.csproj ./src/Modules/Mailer/Mailer.Contracts/
 COPY tests/Unit/*.csproj ./tests/Unit/
 COPY tests/Integration/*.csproj ./tests/Integration/
 COPY tests/Fixtures/*.csproj ./tests/Fixtures/
