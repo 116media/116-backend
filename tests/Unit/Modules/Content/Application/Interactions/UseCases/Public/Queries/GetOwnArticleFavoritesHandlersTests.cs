@@ -26,6 +26,8 @@ public class GetOwnArticleFavoritesHandlersTests : BaseContentHandlerTest
     private static readonly Guid UserId = Guid.NewGuid();
     private static readonly Guid CategoryId = Guid.NewGuid();
     private readonly Mock<IArticleRepository> _articles = MockArticleRepository.Create();
+    private readonly Mock<IArticleCommentRepository> _comments = MockArticleCommentRepository.Create();
+    private readonly Mock<IArticleInteractionRepository> _interactions = MockArticleInteractionRepository.Create();
     private readonly Mock<IFileRepository> _files = MockFileRepository.Create();
 
     [Fact]
@@ -33,12 +35,12 @@ public class GetOwnArticleFavoritesHandlersTests : BaseContentHandlerTest
     {
         ArticleEntity article = ArticleFactory.CreatePublished(CategoryId);
         DateTimeOffset interactedAt = DateTimeOffset.UtcNow.AddHours(-1);
-        _articles.SetupGetLikedArticlesAsync([new ArticleActivity(article, interactedAt, 1)], 1);
-        _articles.SetupGetLikedAndBookmarkedIds(
+        _interactions.SetupGetLikedArticlesAsync([new ArticleActivity(article, interactedAt, 1)], 1);
+        _interactions.SetupGetLikedAndBookmarkedIds(
             likedIds: new HashSet<Guid> { article.Id },
             bookmarkedIds: new HashSet<Guid>()
         );
-        var handler = new PublicGetOwnLikedArticlesHandler(_articles.Object, _files.Object, Mapper);
+        var handler = new PublicGetOwnLikedArticlesHandler(_interactions.Object, _files.Object, Mapper);
 
         PublicGetOwnLikedArticlesResult result = await handler.Handle(
             new PublicGetOwnLikedArticlesQuery(UserId, new PaginatedRequest(0, 12)),
@@ -54,11 +56,11 @@ public class GetOwnArticleFavoritesHandlersTests : BaseContentHandlerTest
     {
         ArticleEntity article = ArticleFactory.CreatePublished(CategoryId);
         DateTimeOffset interactedAt = DateTimeOffset.UtcNow.AddMinutes(-10);
-        _articles.SetupGetSharedArticlesAsync(
+        _interactions.SetupGetSharedArticlesAsync(
             [new ArticleActivity(article, interactedAt, 3, EnumShareChannel.WhatsApp)],
             1
         );
-        var handler = new PublicGetOwnSharedArticlesHandler(_articles.Object, _files.Object, Mapper);
+        var handler = new PublicGetOwnSharedArticlesHandler(_interactions.Object, _files.Object, Mapper);
 
         PublicGetOwnSharedArticlesResult result = await handler.Handle(
             new PublicGetOwnSharedArticlesQuery(UserId, new PaginatedRequest(0, 12)),
@@ -76,8 +78,13 @@ public class GetOwnArticleFavoritesHandlersTests : BaseContentHandlerTest
         ArticleEntity article = ArticleFactory.CreatePublished(CategoryId);
         ArticleCommentEntity comment = ArticleCommentFactory.Create(article.Id, UserId);
         DateTimeOffset commentedAt = DateTimeOffset.UtcNow.AddMinutes(-5);
-        _articles.SetupGetCommentedArticlesAsync([new CommentedArticleActivity(article, comment, 2, commentedAt)], 1);
-        var handler = new PublicGetOwnCommentedArticlesHandler(_articles.Object, _files.Object, Mapper);
+        _comments.SetupGetCommentedArticlesAsync([new CommentedArticleActivity(article, comment, 2, commentedAt)], 1);
+        var handler = new PublicGetOwnCommentedArticlesHandler(
+            _comments.Object,
+            _interactions.Object,
+            _files.Object,
+            Mapper
+        );
 
         PublicGetOwnCommentedArticlesResult result = await handler.Handle(
             new PublicGetOwnCommentedArticlesQuery(UserId, new PaginatedRequest(0, 12)),
@@ -102,9 +109,10 @@ public class GetOwnArticleFavoritesHandlersTests : BaseContentHandlerTest
             "My reply"
         );
         _articles.SetupGetByIdAsync(article.Id, article);
-        _articles.SetupGetOwnCommentsForArticleAsync([parent, reply], 2);
+        _comments.SetupGetOwnCommentsForArticleAsync([parent, reply], 2);
         var handler = new PublicGetOwnCommentsForArticleHandler(
             _articles.Object,
+            _comments.Object,
             Mapper,
             TestErrorsFactory.CreateContentI18n()
         );
@@ -125,6 +133,7 @@ public class GetOwnArticleFavoritesHandlersTests : BaseContentHandlerTest
         _articles.SetupGetByIdAsync(article.Id, article);
         var handler = new PublicGetOwnCommentsForArticleHandler(
             _articles.Object,
+            _comments.Object,
             Mapper,
             TestErrorsFactory.CreateContentI18n()
         );
