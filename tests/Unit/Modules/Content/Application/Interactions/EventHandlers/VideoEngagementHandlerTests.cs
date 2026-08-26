@@ -8,6 +8,7 @@ using _116.Tests.Fixtures.Factories.Content;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
+using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
@@ -24,16 +25,16 @@ public class VideoEngagementHandlerTests
     private static readonly Guid CategoryId = Guid.NewGuid();
 
     private readonly Mock<IVideoRepository> _videoRepositoryMock;
-    private readonly Mock<IPopularVideosCacheInvalidator> _cacheInvalidatorMock;
+    private readonly Mock<HybridCache> _cacheMock;
     private readonly VideoEngagementHandler _handler;
 
     public VideoEngagementHandlerTests()
     {
         _videoRepositoryMock = MockVideoRepository.Create();
-        _cacheInvalidatorMock = MockPopularVideosCacheInvalidator.Create();
+        _cacheMock = MockHybridCache.Create();
         _handler = new VideoEngagementHandler(
             _videoRepositoryMock.Object,
-            _cacheInvalidatorMock.Object,
+            _cacheMock.Object,
             NullLogger<VideoEngagementHandler>.Instance
         );
     }
@@ -58,7 +59,7 @@ public class VideoEngagementHandlerTests
             Times.Once
         );
         _videoRepositoryMock.Verify(x => x.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
-        _cacheInvalidatorMock.VerifyInvalidateCalled();
+        _cacheMock.VerifyRemovedByTag(ContentCacheTags.PopularVideos);
     }
 
     [Fact]
@@ -95,7 +96,7 @@ public class VideoEngagementHandlerTests
                 ),
             Times.Never
         );
-        _cacheInvalidatorMock.VerifyInvalidateCalled();
+        _cacheMock.VerifyRemovedByTag(ContentCacheTags.PopularVideos);
     }
 
     [Fact]
@@ -130,6 +131,6 @@ public class VideoEngagementHandlerTests
         await _handler.Handle(new VideoEngagedEvent(videoId, EnumEngagementKind.Share, 1), CancellationToken.None);
 
         // Assert
-        _cacheInvalidatorMock.VerifyInvalidateCalled();
+        _cacheMock.VerifyRemovedByTag(ContentCacheTags.PopularVideos);
     }
 }
