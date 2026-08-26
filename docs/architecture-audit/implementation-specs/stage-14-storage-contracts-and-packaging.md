@@ -43,6 +43,7 @@ Verified in the current tree:
 
 - [ ] 14.1 — `Directory.Packages.props` + `Directory.Build.props`; all csproj versions centralized
 - [ ] 14.2 — `Core.Contracts`: `IFileStore`, `FileRef`, `EnumStoredFileKind`; shared `FileRef` mapper (kills the duplicated `FileEntity → FileDto` `[02 §9]`)
+- [ ] 14.2b — id→URL resolution cached behind `IFileStore` (deferred from Stage 10.5: `FileRef` is a flat record, so it may be cached; `FileEntity` may not). Evicted by `FileSoftDeletedEvent` via `RemoveByTagAsync`
 - [ ] 14.3 — Avatar workflow + `SlugHelper` + colour service evicted to their owners
 - [ ] 14.4 — Identity off Core internals; then Content; the 115 usings → 0
 - [ ] 14.5 — Pipeline: swap-then-mark, per-kind `resource_type`, Polly-wrapped client, atomic upload+write, `FileEntity.Create` guards `[05 §10]`
