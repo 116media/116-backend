@@ -56,7 +56,8 @@ public class EngagementCounterTests(PostgresFixture postgres) : BaseRepositoryTe
     {
         Guid articleId = await SeedArticleAsync();
 
-        await Resolve<IArticleRepository>().ApplyEngagementDeltaAsync(articleId, kind, 1, CancellationToken.None);
+        await Resolve<IArticleInteractionRepository>()
+            .ApplyEngagementDeltaAsync(articleId, kind, 1, CancellationToken.None);
 
         ArticleEntity a = await ReadAsync<ArticleEntity>(articleId);
         (
@@ -77,7 +78,7 @@ public class EngagementCounterTests(PostgresFixture postgres) : BaseRepositoryTe
     public async Task Article_WhenDecrementedBelowZero_ShouldClampInSql()
     {
         Guid articleId = await SeedArticleAsync();
-        IArticleRepository repository = Resolve<IArticleRepository>();
+        IArticleInteractionRepository repository = Resolve<IArticleInteractionRepository>();
         await repository.ApplyEngagementDeltaAsync(articleId, EnumEngagementKind.Like, 1, CancellationToken.None);
 
         await repository.ApplyEngagementDeltaAsync(articleId, EnumEngagementKind.Like, -1, CancellationToken.None);
@@ -91,7 +92,7 @@ public class EngagementCounterTests(PostgresFixture postgres) : BaseRepositoryTe
     {
         Guid articleId = await SeedArticleAsync();
 
-        int? updated = await Resolve<IArticleRepository>()
+        int? updated = await Resolve<IArticleInteractionRepository>()
             .ApplyEngagementDeltaAsync(articleId, EnumEngagementKind.View, 1, CancellationToken.None);
 
         updated.Should().BeNull("articles carry no view counter, which is not a missing row");
@@ -100,7 +101,7 @@ public class EngagementCounterTests(PostgresFixture postgres) : BaseRepositoryTe
     [Fact]
     public async Task Article_WhenTheRowIsGone_ShouldReportZeroRows()
     {
-        int? updated = await Resolve<IArticleRepository>()
+        int? updated = await Resolve<IArticleInteractionRepository>()
             .ApplyEngagementDeltaAsync(Guid.NewGuid(), EnumEngagementKind.Like, 1, CancellationToken.None);
 
         updated.Should().Be(0);
@@ -117,7 +118,7 @@ public class EngagementCounterTests(PostgresFixture postgres) : BaseRepositoryTe
             await seed.SaveChangesAsync();
         }
 
-        IArticleRepository repository = Resolve<IArticleRepository>();
+        IArticleCommentRepository repository = Resolve<IArticleCommentRepository>();
         await repository.ApplyCommentLikeDeltaAsync(comment.Id, 1, CancellationToken.None);
         (await ReadAsync<ArticleCommentEntity>(comment.Id)).LikeCount.Should().Be(1);
 
