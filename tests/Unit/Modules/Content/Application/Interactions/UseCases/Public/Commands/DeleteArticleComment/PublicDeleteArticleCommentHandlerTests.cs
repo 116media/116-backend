@@ -18,7 +18,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Interactions.UseCases.Publ
 /// </summary>
 public class PublicDeleteArticleCommentHandlerTests
 {
-    private readonly Mock<IArticleRepository> _articleRepositoryMock;
+    private readonly Mock<IArticleCommentRepository> _articleCommentRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly PublicDeleteArticleCommentHandler _handler;
 
@@ -26,10 +26,10 @@ public class PublicDeleteArticleCommentHandlerTests
 
     public PublicDeleteArticleCommentHandlerTests()
     {
-        _articleRepositoryMock = MockArticleRepository.Create();
+        _articleCommentRepositoryMock = MockArticleCommentRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _handler = new PublicDeleteArticleCommentHandler(
-            _articleRepositoryMock.Object,
+            _articleCommentRepositoryMock.Object,
             _unitOfWorkMock.Object,
             TestErrorsFactory.CreateContentI18n()
         );
@@ -49,14 +49,14 @@ public class PublicDeleteArticleCommentHandlerTests
             ArticleId: article.Id,
             CommentId: comment.Id
         );
-        _articleRepositoryMock.SetupGetCommentByIdInArticleAsync(comment, article.Id);
+        _articleCommentRepositoryMock.SetupGetCommentByIdInArticleAsync(comment, article.Id);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         comment.IsDeleted.Should().BeTrue();
-        _articleRepositoryMock.VerifyUpdateCommentCalled();
+        _articleCommentRepositoryMock.VerifyUpdateCommentCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -73,14 +73,14 @@ public class PublicDeleteArticleCommentHandlerTests
             ArticleId: article.Id,
             CommentId: comment.Id
         );
-        _articleRepositoryMock.SetupGetCommentByIdInArticleAsync(comment, article.Id);
+        _articleCommentRepositoryMock.SetupGetCommentByIdInArticleAsync(comment, article.Id);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         comment.DomainEvents.Should().BeEmpty();
-        _articleRepositoryMock.Verify(x => x.UpdateComment(It.IsAny<ArticleCommentEntity>()), Times.Never);
+        _articleCommentRepositoryMock.Verify(x => x.UpdateComment(It.IsAny<ArticleCommentEntity>()), Times.Never);
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
@@ -97,7 +97,7 @@ public class PublicDeleteArticleCommentHandlerTests
             ArticleId: Guid.NewGuid(),
             CommentId: Guid.NewGuid()
         );
-        _articleRepositoryMock.SetupGetCommentByIdInArticleNotFound(command.CommentId, command.ArticleId);
+        _articleCommentRepositoryMock.SetupGetCommentByIdInArticleNotFound(command.CommentId, command.ArticleId);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
@@ -118,7 +118,7 @@ public class PublicDeleteArticleCommentHandlerTests
             ArticleId: article.Id,
             CommentId: comment.Id
         );
-        _articleRepositoryMock.SetupGetCommentByIdInArticleAsync(comment, article.Id);
+        _articleCommentRepositoryMock.SetupGetCommentByIdInArticleAsync(comment, article.Id);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
