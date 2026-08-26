@@ -20,16 +20,16 @@ namespace _116.Unit.Tests.Modules.Content.Application.Lookup.UseCases.Admin.Comm
 /// </summary>
 public class AdminCreateTagHandlerTests : BaseContentHandlerTest
 {
-    private readonly Mock<ILookupRepository> _lookupRepositoryMock;
+    private readonly Mock<ITagRepository> _tagRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminCreateTagHandler _handler;
 
     public AdminCreateTagHandlerTests()
     {
-        _lookupRepositoryMock = MockLookupRepository.Create();
+        _tagRepositoryMock = MockTagRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _handler = new AdminCreateTagHandler(
-            _lookupRepositoryMock.Object,
+            _tagRepositoryMock.Object,
             _unitOfWorkMock.Object,
             Mapper,
             TestErrorsFactory.CreateContentI18n()
@@ -46,7 +46,7 @@ public class AdminCreateTagHandlerTests : BaseContentHandlerTest
         string slug = TestConstants.Tag.ValidSlug;
         var command = new AdminCreateTagCommand(Name: name, Slug: slug);
 
-        _lookupRepositoryMock.SetupGetTagBySlug(slug, null);
+        _tagRepositoryMock.SetupGetTagBySlug(slug, null);
 
         // Act
         AdminCreateTagResult result = await _handler.Handle(command, CancellationToken.None);
@@ -55,7 +55,7 @@ public class AdminCreateTagHandlerTests : BaseContentHandlerTest
         result.Tag.Name.Should().Be(name);
         result.Tag.Slug.Should().Be(slug);
 
-        _lookupRepositoryMock.VerifyAddTagCalled();
+        _tagRepositoryMock.VerifyAddTagCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -71,7 +71,7 @@ public class AdminCreateTagHandlerTests : BaseContentHandlerTest
         var command = new AdminCreateTagCommand(Name: TestConstants.Tag.ValidName, Slug: slug);
 
         TagEntity existingTag = TagFactory.Create(TestConstants.Tag.AnotherValidName, slug);
-        _lookupRepositoryMock.SetupGetTagBySlug(slug, existingTag);
+        _tagRepositoryMock.SetupGetTagBySlug(slug, existingTag);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
@@ -88,14 +88,14 @@ public class AdminCreateTagHandlerTests : BaseContentHandlerTest
         var command = new AdminCreateTagCommand(Name: TestConstants.Tag.ValidName, Slug: slug);
 
         TagEntity existingTag = TagFactory.Create(TestConstants.Tag.AnotherValidName, slug);
-        _lookupRepositoryMock.SetupGetTagBySlug(slug, existingTag);
+        _tagRepositoryMock.SetupGetTagBySlug(slug, existingTag);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<ConflictException>();
-        _lookupRepositoryMock.VerifyAddTagNotCalled();
+        _tagRepositoryMock.VerifyAddTagNotCalled();
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
@@ -110,14 +110,14 @@ public class AdminCreateTagHandlerTests : BaseContentHandlerTest
         string slug = TestConstants.Tag.ValidSlug;
         var command = new AdminCreateTagCommand(Name: TestConstants.Tag.ValidName, Slug: slug);
 
-        _lookupRepositoryMock.SetupGetTagBySlug(slug, null);
+        _tagRepositoryMock.SetupGetTagBySlug(slug, null);
         using CancellationTokenSource cts = new();
 
         // Act
         await _handler.Handle(command, cts.Token);
 
         // Assert
-        _lookupRepositoryMock.Verify(x => x.GetTagBySlugAsync(slug, cts.Token), Times.Once);
+        _tagRepositoryMock.Verify(x => x.GetBySlugAsync(slug, cts.Token), Times.Once);
     }
 
     #endregion
