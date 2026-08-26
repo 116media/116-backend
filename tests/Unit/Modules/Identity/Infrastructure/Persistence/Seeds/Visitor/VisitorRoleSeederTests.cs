@@ -43,10 +43,10 @@ public class VisitorRoleSeederTests
             .Options;
     }
 
-    #region SeedAllAsync Tests
+    #region SeedAsync Tests
 
     [Fact]
-    public async Task SeedAllAsync_WhenVisitorRoleDoesNotExist_ShouldCreateVisitorRole()
+    public async Task SeedAsync_WhenVisitorRoleDoesNotExist_ShouldCreateVisitorRole()
     {
         // Arrange
         DbContextOptions<IdentityDbContext> options = CreateOptions();
@@ -54,7 +54,7 @@ public class VisitorRoleSeederTests
         var seeder = new VisitorRoleSeeder(context, _loggerMock.Object);
 
         // Act
-        await seeder.SeedAllAsync();
+        await seeder.SeedAsync();
 
         // Assert
         RoleEntity? visitorRole = await context.Roles.FirstOrDefaultAsync(r =>
@@ -65,7 +65,7 @@ public class VisitorRoleSeederTests
     }
 
     [Fact]
-    public async Task SeedAllAsync_WhenVisitorRoleDoesNotExist_ShouldCreatePermissions()
+    public async Task SeedAsync_WhenVisitorRoleDoesNotExist_ShouldCreatePermissions()
     {
         // Arrange
         DbContextOptions<IdentityDbContext> options = CreateOptions();
@@ -73,7 +73,7 @@ public class VisitorRoleSeederTests
         var seeder = new VisitorRoleSeeder(context, _loggerMock.Object);
 
         // Act
-        await seeder.SeedAllAsync();
+        await seeder.SeedAsync();
 
         // Assert
         int permissionCount = await context.Permissions.CountAsync();
@@ -81,7 +81,7 @@ public class VisitorRoleSeederTests
     }
 
     [Fact]
-    public async Task SeedAllAsync_WhenVisitorRoleDoesNotExist_ShouldCreate29Permissions()
+    public async Task SeedAsync_WhenVisitorRoleDoesNotExist_ShouldCreate29Permissions()
     {
         // Arrange
         DbContextOptions<IdentityDbContext> options = CreateOptions();
@@ -89,7 +89,7 @@ public class VisitorRoleSeederTests
         var seeder = new VisitorRoleSeeder(context, _loggerMock.Object);
 
         // Act
-        await seeder.SeedAllAsync();
+        await seeder.SeedAsync();
 
         // Assert
         int permissionCount = await context.Permissions.CountAsync();
@@ -99,7 +99,7 @@ public class VisitorRoleSeederTests
     [Fact(
         Skip = "Static PermissionEntity instances cause EF Core change tracking issues across test runs - requires production code refactoring"
     )]
-    public async Task SeedAllAsync_WhenVisitorRoleDoesNotExist_ShouldCreateRolePermissionAssociations()
+    public async Task SeedAsync_WhenVisitorRoleDoesNotExist_ShouldCreateRolePermissionAssociations()
     {
         // Arrange
         DbContextOptions<IdentityDbContext> options = CreateOptions();
@@ -107,7 +107,7 @@ public class VisitorRoleSeederTests
         var seeder = new VisitorRoleSeeder(context, _loggerMock.Object);
 
         // Act
-        await seeder.SeedAllAsync();
+        await seeder.SeedAsync();
 
         // Assert - count actual permissions and role-permissions
         int permissionCount = await context.Permissions.CountAsync();
@@ -119,7 +119,7 @@ public class VisitorRoleSeederTests
     }
 
     [Fact]
-    public async Task SeedAllAsync_WhenVisitorRoleAlreadyExists_ShouldSkipSeeding()
+    public async Task SeedAsync_WhenVisitorRoleAlreadyExists_ShouldSkipSeeding()
     {
         // Arrange
         DbContextOptions<IdentityDbContext> options = CreateOptions();
@@ -133,7 +133,7 @@ public class VisitorRoleSeederTests
         var seeder = new VisitorRoleSeeder(context, _loggerMock.Object);
 
         // Act
-        await seeder.SeedAllAsync();
+        await seeder.SeedAsync();
 
         // Assert
         int roleCount = await context.Roles.CountAsync();
@@ -141,7 +141,7 @@ public class VisitorRoleSeederTests
     }
 
     [Fact]
-    public async Task SeedAllAsync_WhenVisitorRoleAlreadyExists_ShouldNotAddPermissions()
+    public async Task SeedAsync_WhenVisitorRoleAlreadyExists_ShouldNotAddPermissions()
     {
         // Arrange
         DbContextOptions<IdentityDbContext> options = CreateOptions();
@@ -155,7 +155,7 @@ public class VisitorRoleSeederTests
         var seeder = new VisitorRoleSeeder(context, _loggerMock.Object);
 
         // Act
-        await seeder.SeedAllAsync();
+        await seeder.SeedAsync();
 
         // Assert
         int permissionCount = await context.Permissions.CountAsync();
@@ -163,7 +163,7 @@ public class VisitorRoleSeederTests
     }
 
     [Fact]
-    public async Task SeedAllAsync_WhenVisitorRoleAlreadyExists_ShouldLogSkipMessage()
+    public async Task SeedAsync_WhenVisitorRoleAlreadyExists_ShouldLogSkipMessage()
     {
         // Arrange
         DbContextOptions<IdentityDbContext> options = CreateOptions();
@@ -177,7 +177,7 @@ public class VisitorRoleSeederTests
         var seeder = new VisitorRoleSeeder(context, _loggerMock.Object);
 
         // Act
-        await seeder.SeedAllAsync();
+        await seeder.SeedAsync();
 
         // Assert
         _loggerMock.Verify(
@@ -194,7 +194,7 @@ public class VisitorRoleSeederTests
     }
 
     [Fact]
-    public async Task SeedAllAsync_WhenSeeding_ShouldLogStartMessage()
+    public async Task SeedAsync_WhenSeeding_ShouldLogStartMessage()
     {
         // Arrange
         DbContextOptions<IdentityDbContext> options = CreateOptions();
@@ -202,7 +202,7 @@ public class VisitorRoleSeederTests
         var seeder = new VisitorRoleSeeder(context, _loggerMock.Object);
 
         // Act
-        await seeder.SeedAllAsync();
+        await seeder.SeedAsync();
 
         // Assert
         _loggerMock.Verify(
@@ -219,7 +219,7 @@ public class VisitorRoleSeederTests
     }
 
     [Fact]
-    public async Task SeedAllAsync_WhenSeedingCompletes_ShouldLogCompletionMessage()
+    public async Task SeedAsync_WhenSeedingCompletes_ShouldLogCompletionMessage()
     {
         // Arrange
         DbContextOptions<IdentityDbContext> options = CreateOptions();
@@ -227,7 +227,7 @@ public class VisitorRoleSeederTests
         var seeder = new VisitorRoleSeeder(context, _loggerMock.Object);
 
         // Act
-        await seeder.SeedAllAsync();
+        await seeder.SeedAsync();
 
         // Assert
         _loggerMock.Verify(
@@ -244,7 +244,7 @@ public class VisitorRoleSeederTests
     }
 
     [Fact]
-    public async Task SeedAllAsync_WhenSeedingSucceeds_ShouldLogPermissionCount()
+    public async Task SeedAsync_WhenSeedingSucceeds_ShouldLogPermissionCount()
     {
         // Arrange
         DbContextOptions<IdentityDbContext> options = CreateOptions();
@@ -252,7 +252,7 @@ public class VisitorRoleSeederTests
         var seeder = new VisitorRoleSeeder(context, _loggerMock.Object);
 
         // Act
-        await seeder.SeedAllAsync();
+        await seeder.SeedAsync();
 
         // Assert
         _loggerMock.Verify(
@@ -273,7 +273,7 @@ public class VisitorRoleSeederTests
     #region Role Description Tests
 
     [Fact]
-    public async Task SeedAllAsync_ShouldSetCorrectRoleDescription()
+    public async Task SeedAsync_ShouldSetCorrectRoleDescription()
     {
         // Arrange
         DbContextOptions<IdentityDbContext> options = CreateOptions();
@@ -281,7 +281,7 @@ public class VisitorRoleSeederTests
         var seeder = new VisitorRoleSeeder(context, _loggerMock.Object);
 
         // Act
-        await seeder.SeedAllAsync();
+        await seeder.SeedAsync();
 
         // Assert
         RoleEntity? visitorRole = await context.Roles.FirstOrDefaultAsync(r =>
