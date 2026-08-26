@@ -18,7 +18,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Interactions.UseCases.Publ
 /// </summary>
 public class PublicEditArticleCommentHandlerTests
 {
-    private readonly Mock<IArticleRepository> _articleRepositoryMock;
+    private readonly Mock<IArticleCommentRepository> _articleCommentRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly PublicEditArticleCommentHandler _handler;
 
@@ -26,10 +26,10 @@ public class PublicEditArticleCommentHandlerTests
 
     public PublicEditArticleCommentHandlerTests()
     {
-        _articleRepositoryMock = MockArticleRepository.Create();
+        _articleCommentRepositoryMock = MockArticleCommentRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _handler = new PublicEditArticleCommentHandler(
-            _articleRepositoryMock.Object,
+            _articleCommentRepositoryMock.Object,
             _unitOfWorkMock.Object,
             TestErrorsFactory.CreateContentI18n()
         );
@@ -50,14 +50,14 @@ public class PublicEditArticleCommentHandlerTests
             UserId: comment.UserId,
             Body: "Updated comment body."
         );
-        _articleRepositoryMock.SetupGetCommentByIdInArticleAsync(comment, article.Id);
+        _articleCommentRepositoryMock.SetupGetCommentByIdInArticleAsync(comment, article.Id);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         comment.Body.Should().Be(command.Body);
-        _articleRepositoryMock.VerifyUpdateCommentCalled();
+        _articleCommentRepositoryMock.VerifyUpdateCommentCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -75,7 +75,7 @@ public class PublicEditArticleCommentHandlerTests
             UserId: Guid.NewGuid(),
             Body: "Updated comment body."
         );
-        _articleRepositoryMock.SetupGetCommentByIdInArticleNotFound(command.CommentId, command.ArticleId);
+        _articleCommentRepositoryMock.SetupGetCommentByIdInArticleNotFound(command.CommentId, command.ArticleId);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
@@ -97,7 +97,7 @@ public class PublicEditArticleCommentHandlerTests
             UserId: Guid.NewGuid(),
             Body: "Updated comment body."
         );
-        _articleRepositoryMock.SetupGetCommentByIdInArticleAsync(comment, article.Id);
+        _articleCommentRepositoryMock.SetupGetCommentByIdInArticleAsync(comment, article.Id);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
