@@ -1,5 +1,6 @@
 using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.Events;
 using _116.Identity.Domain.Exceptions;
 using _116.Identity.Domain.StateMachines;
 using _116.Shared.Application.Exceptions;
@@ -349,6 +350,53 @@ public class PermissionEntityTests
         // Assert
         permission.IsDeleted.Should().BeFalse();
         permission.IsActive.Should().BeFalse(); // Was deactivated by SoftDelete, should remain inactive
+    }
+
+    #endregion
+
+    #region Domain Events
+
+    [Fact]
+    public void Create_ShouldRaisePermissionChangedEvent()
+    {
+        // Act
+        var permission = PermissionEntity.Create(Guid.NewGuid(), "articles", "read", "Read articles");
+
+        // Assert
+        permission
+            .DomainEvents.OfType<PermissionChangedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(new PermissionChangedEvent(permission.Id));
+    }
+
+    [Fact]
+    public void Update_ShouldRaisePermissionChangedEvent()
+    {
+        // Arrange
+        var permission = PermissionEntity.Create(Guid.NewGuid(), "articles", "read", "Read articles");
+        permission.ClearDomainEvents();
+
+        // Act
+        permission.Update("articles", "create", "Create articles");
+
+        // Assert
+        permission.DomainEvents.OfType<PermissionChangedEvent>().Should().ContainSingle();
+    }
+
+    [Fact]
+    public void Activate_WhenAlreadyActive_ShouldRaiseNothing()
+    {
+        // Arrange — a no-op transition must not evict the lookup cache
+        var permission = PermissionEntity.Create(Guid.NewGuid(), "articles", "read", "Read articles");
+        permission.ClearDomainEvents();
+
+        // Act
+        permission.Activate();
+
+        // Assert
+        permission.DomainEvents.Should().BeEmpty();
     }
 
     #endregion
