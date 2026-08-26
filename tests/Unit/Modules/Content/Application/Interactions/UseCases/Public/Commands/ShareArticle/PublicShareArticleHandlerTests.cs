@@ -17,7 +17,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Interactions.UseCases.Publ
 /// </summary>
 public class PublicShareArticleHandlerTests
 {
-    private readonly Mock<IArticleRepository> _articleRepositoryMock;
+    private readonly Mock<IArticleInteractionRepository> _articleInteractionRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly PublicShareArticleHandler _handler;
 
@@ -25,9 +25,9 @@ public class PublicShareArticleHandlerTests
 
     public PublicShareArticleHandlerTests()
     {
-        _articleRepositoryMock = MockArticleRepository.Create();
+        _articleInteractionRepositoryMock = MockArticleInteractionRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _handler = new PublicShareArticleHandler(_articleRepositoryMock.Object, _unitOfWorkMock.Object);
+        _handler = new PublicShareArticleHandler(_articleInteractionRepositoryMock.Object, _unitOfWorkMock.Object);
     }
 
     #region Success Cases
@@ -38,13 +38,13 @@ public class PublicShareArticleHandlerTests
         // Arrange
         ArticleEntity article = ArticleFactory.CreatePublished(CategoryId);
         var command = new PublicShareArticleCommand(ArticleId: article.Id, UserId: null);
-        _articleRepositoryMock.SetupGetByIdOrThrow(article);
+        _articleInteractionRepositoryMock.SetupExistsOrThrow(article.Id);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _articleRepositoryMock.VerifyAddShareCalled();
+        _articleInteractionRepositoryMock.VerifyAddShareCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -54,13 +54,13 @@ public class PublicShareArticleHandlerTests
         // Arrange
         ArticleEntity article = ArticleFactory.CreatePublished(CategoryId);
         var command = new PublicShareArticleCommand(ArticleId: article.Id, UserId: Guid.NewGuid());
-        _articleRepositoryMock.SetupGetByIdOrThrow(article);
+        _articleInteractionRepositoryMock.SetupExistsOrThrow(article.Id);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _articleRepositoryMock.VerifyAddShareCalled();
+        _articleInteractionRepositoryMock.VerifyAddShareCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -74,7 +74,7 @@ public class PublicShareArticleHandlerTests
         // Arrange
         Guid articleId = Guid.NewGuid();
         var command = new PublicShareArticleCommand(ArticleId: articleId, UserId: null);
-        _articleRepositoryMock.SetupGetByIdOrThrowNotFound(articleId);
+        _articleInteractionRepositoryMock.SetupExistsOrThrowNotFound(articleId);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
