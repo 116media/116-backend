@@ -69,10 +69,10 @@ public class SuperAdminSeederTests : IDisposable
         );
     }
 
-    #region SeedAllAsync — Happy Path (SuperAdmin does not exist)
+    #region SeedAsync — Happy Path (SuperAdmin does not exist)
 
     [Fact]
-    public async Task SeedAllAsync_WhenSuperAdminDoesNotExist_ShouldCreateSuperAdminUser()
+    public async Task SeedAsync_WhenSuperAdminDoesNotExist_ShouldCreateSuperAdminUser()
     {
         // Arrange
         var (connection, options) = CreateSqliteOptions();
@@ -83,7 +83,7 @@ public class SuperAdminSeederTests : IDisposable
         SuperAdminSeeder seeder = CreateSeeder(context);
 
         // Act
-        await seeder.SeedAllAsync();
+        await seeder.SeedAsync();
 
         // Assert
         UserEntity? user = await context.Users.FirstOrDefaultAsync(u => u.Email == SuperAdminConfiguration.Email);
@@ -92,7 +92,7 @@ public class SuperAdminSeederTests : IDisposable
     }
 
     [Fact]
-    public async Task SeedAllAsync_WhenSuperAdminDoesNotExist_ShouldCreateSuperAdminRole()
+    public async Task SeedAsync_WhenSuperAdminDoesNotExist_ShouldCreateSuperAdminRole()
     {
         // Arrange
         var (connection, options) = CreateSqliteOptions();
@@ -103,7 +103,7 @@ public class SuperAdminSeederTests : IDisposable
         SuperAdminSeeder seeder = CreateSeeder(context);
 
         // Act
-        await seeder.SeedAllAsync();
+        await seeder.SeedAsync();
 
         // Assert
         RoleEntity? role = await context.Roles.FirstOrDefaultAsync(r => r.Name == SuperAdminConfiguration.RoleName);
@@ -111,7 +111,7 @@ public class SuperAdminSeederTests : IDisposable
     }
 
     [Fact]
-    public async Task SeedAllAsync_WhenSuperAdminDoesNotExist_ShouldCreateSystemPermission()
+    public async Task SeedAsync_WhenSuperAdminDoesNotExist_ShouldCreateSystemPermission()
     {
         // Arrange
         var (connection, options) = CreateSqliteOptions();
@@ -122,7 +122,7 @@ public class SuperAdminSeederTests : IDisposable
         SuperAdminSeeder seeder = CreateSeeder(context);
 
         // Act
-        await seeder.SeedAllAsync();
+        await seeder.SeedAsync();
 
         // Assert
         PermissionEntity? permission = await context.Permissions.FirstOrDefaultAsync(p =>
@@ -133,7 +133,7 @@ public class SuperAdminSeederTests : IDisposable
     }
 
     [Fact]
-    public async Task SeedAllAsync_WhenSuperAdminDoesNotExist_ShouldLogCompletionMessage()
+    public async Task SeedAsync_WhenSuperAdminDoesNotExist_ShouldLogCompletionMessage()
     {
         // Arrange
         var (connection, options) = CreateSqliteOptions();
@@ -144,7 +144,7 @@ public class SuperAdminSeederTests : IDisposable
         SuperAdminSeeder seeder = CreateSeeder(context);
 
         // Act
-        await seeder.SeedAllAsync();
+        await seeder.SeedAsync();
 
         // Assert
         _seederLoggerMock.Verify(
@@ -161,7 +161,7 @@ public class SuperAdminSeederTests : IDisposable
     }
 
     [Fact]
-    public async Task SeedAllAsync_WhenSuperAdminDoesNotExist_ShouldHashPassword()
+    public async Task SeedAsync_WhenSuperAdminDoesNotExist_ShouldHashPassword()
     {
         // Arrange
         var (connection, options) = CreateSqliteOptions();
@@ -172,7 +172,7 @@ public class SuperAdminSeederTests : IDisposable
         SuperAdminSeeder seeder = CreateSeeder(context);
 
         // Act
-        await seeder.SeedAllAsync();
+        await seeder.SeedAsync();
 
         // Assert
         _passwordServiceMock.Verify(x => x.Hash(It.IsAny<string>()), Times.Once);
@@ -180,10 +180,10 @@ public class SuperAdminSeederTests : IDisposable
 
     #endregion
 
-    #region SeedAllAsync — Already Exists (skip path)
+    #region SeedAsync — Already Exists (skip path)
 
     [Fact]
-    public async Task SeedAllAsync_WhenSuperAdminAlreadyExists_ShouldSkipSeeding()
+    public async Task SeedAsync_WhenSuperAdminAlreadyExists_ShouldSkipSeeding()
     {
         // Arrange
         var (connection, options) = CreateSqliteOptions();
@@ -203,7 +203,7 @@ public class SuperAdminSeederTests : IDisposable
         SuperAdminSeeder seeder = CreateSeeder(context);
 
         // Act
-        await seeder.SeedAllAsync();
+        await seeder.SeedAsync();
 
         // Assert — user count stays at 1, no new seeding occurred
         int userCount = await context.Users.CountAsync();
@@ -211,7 +211,7 @@ public class SuperAdminSeederTests : IDisposable
     }
 
     [Fact]
-    public async Task SeedAllAsync_WhenSuperAdminAlreadyExists_ShouldLogSkipMessage()
+    public async Task SeedAsync_WhenSuperAdminAlreadyExists_ShouldLogSkipMessage()
     {
         // Arrange
         var (connection, options) = CreateSqliteOptions();
@@ -231,7 +231,7 @@ public class SuperAdminSeederTests : IDisposable
         SuperAdminSeeder seeder = CreateSeeder(context);
 
         // Act
-        await seeder.SeedAllAsync();
+        await seeder.SeedAsync();
 
         // Assert
         _seederLoggerMock.Verify(
@@ -249,10 +249,10 @@ public class SuperAdminSeederTests : IDisposable
 
     #endregion
 
-    #region SeedAllAsync — Exception / Rollback Path
+    #region SeedAsync — Exception / Rollback Path
 
     [Fact]
-    public async Task SeedAllAsync_WhenExceptionOccurs_ShouldRethrowException()
+    public async Task SeedAsync_WhenExceptionOccurs_ShouldRethrowException()
     {
         // Arrange — force exception inside the transaction via Hash()
         _passwordServiceMock
@@ -267,12 +267,12 @@ public class SuperAdminSeederTests : IDisposable
         SuperAdminSeeder seeder = CreateSeeder(context);
 
         // Act & Assert
-        Func<Task> act = async () => await seeder.SeedAllAsync();
+        Func<Task> act = async () => await seeder.SeedAsync();
         await act.Should().ThrowExactlyAsync<InvalidOperationException>();
     }
 
     [Fact]
-    public async Task SeedAllAsync_WhenExceptionOccurs_ShouldLogError()
+    public async Task SeedAsync_WhenExceptionOccurs_ShouldLogError()
     {
         // Arrange
         _passwordServiceMock
@@ -289,7 +289,7 @@ public class SuperAdminSeederTests : IDisposable
         // Act
         try
         {
-            await seeder.SeedAllAsync();
+            await seeder.SeedAsync();
         }
         catch
         { /* expected */
@@ -310,7 +310,7 @@ public class SuperAdminSeederTests : IDisposable
     }
 
     [Fact]
-    public async Task SeedAllAsync_WhenExceptionOccursDuringTransaction_ShouldLogRollback()
+    public async Task SeedAsync_WhenExceptionOccursDuringTransaction_ShouldLogRollback()
     {
         // Arrange
         _passwordServiceMock
@@ -327,7 +327,7 @@ public class SuperAdminSeederTests : IDisposable
         // Act
         try
         {
-            await seeder.SeedAllAsync();
+            await seeder.SeedAsync();
         }
         catch
         { /* expected */
