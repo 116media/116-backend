@@ -18,7 +18,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Interactions.UseCases.Publ
 /// </summary>
 public class PublicBookmarkArticleHandlerTests
 {
-    private readonly Mock<IArticleRepository> _articleRepositoryMock;
+    private readonly Mock<IArticleInteractionRepository> _articleInteractionRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly PublicBookmarkArticleHandler _handler;
 
@@ -26,10 +26,10 @@ public class PublicBookmarkArticleHandlerTests
 
     public PublicBookmarkArticleHandlerTests()
     {
-        _articleRepositoryMock = MockArticleRepository.Create();
+        _articleInteractionRepositoryMock = MockArticleInteractionRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _handler = new PublicBookmarkArticleHandler(
-            _articleRepositoryMock.Object,
+            _articleInteractionRepositoryMock.Object,
             _unitOfWorkMock.Object,
             TestErrorsFactory.CreateContentI18n()
         );
@@ -44,14 +44,14 @@ public class PublicBookmarkArticleHandlerTests
         ArticleEntity article = ArticleFactory.CreatePublished(CategoryId);
         Guid userId = Guid.NewGuid();
         var command = new PublicBookmarkArticleCommand(ArticleId: article.Id, UserId: userId);
-        _articleRepositoryMock.SetupGetByIdOrThrow(article);
-        _articleRepositoryMock.SetupHasBookmarkedAsync(userId, article.Id, result: false);
+        _articleInteractionRepositoryMock.SetupExistsOrThrow(article.Id);
+        _articleInteractionRepositoryMock.SetupHasBookmarkedAsync(userId, article.Id, result: false);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _articleRepositoryMock.VerifyAddBookmarkCalled();
+        _articleInteractionRepositoryMock.VerifyAddBookmarkCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -65,7 +65,7 @@ public class PublicBookmarkArticleHandlerTests
         // Arrange
         Guid articleId = Guid.NewGuid();
         var command = new PublicBookmarkArticleCommand(ArticleId: articleId, UserId: Guid.NewGuid());
-        _articleRepositoryMock.SetupGetByIdOrThrowNotFound(articleId);
+        _articleInteractionRepositoryMock.SetupExistsOrThrowNotFound(articleId);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
@@ -81,8 +81,8 @@ public class PublicBookmarkArticleHandlerTests
         ArticleEntity article = ArticleFactory.CreatePublished(CategoryId);
         Guid userId = Guid.NewGuid();
         var command = new PublicBookmarkArticleCommand(ArticleId: article.Id, UserId: userId);
-        _articleRepositoryMock.SetupGetByIdOrThrow(article);
-        _articleRepositoryMock.SetupHasBookmarkedAsync(userId, article.Id, result: true);
+        _articleInteractionRepositoryMock.SetupExistsOrThrow(article.Id);
+        _articleInteractionRepositoryMock.SetupHasBookmarkedAsync(userId, article.Id, result: true);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
