@@ -19,6 +19,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Interactions.EventHandlers
 public class CommentReplyAddedNotificationsHandlerTests
 {
     private readonly Mock<IArticleRepository> _articleRepositoryMock;
+    private readonly Mock<IArticleCommentRepository> _articleCommentRepositoryMock;
     private readonly Mock<IUserLookupService> _userLookupServiceMock = new();
     private readonly Mock<IMailer> _mailerMock = new();
     private readonly Mock<INotifier> _notifierMock = new();
@@ -33,6 +34,7 @@ public class CommentReplyAddedNotificationsHandlerTests
     public CommentReplyAddedNotificationsHandlerTests()
     {
         _articleRepositoryMock = MockArticleRepository.Create();
+        _articleCommentRepositoryMock = MockArticleCommentRepository.Create();
 
         _article = ArticleFactory.CreatePublished(Guid.NewGuid());
         _parent = ArticleCommentFactory.Create(_article.Id, _parentAuthorId);
@@ -44,16 +46,17 @@ public class CommentReplyAddedNotificationsHandlerTests
             body: "Totally agree with you!"
         );
 
-        _articleRepositoryMock
+        _articleCommentRepositoryMock
             .Setup(x => x.GetCommentByIdAsync(_parent.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(_parent);
-        _articleRepositoryMock
+        _articleCommentRepositoryMock
             .Setup(x => x.GetCommentByIdAsync(_reply.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(_reply);
         _articleRepositoryMock.SetupGetByIdAsync(_article.Id, _article);
 
         _handler = new CommentReplyAddedNotificationsHandler(
             _articleRepositoryMock.Object,
+            _articleCommentRepositoryMock.Object,
             _userLookupServiceMock.Object,
             _mailerMock.Object,
             _notifierMock.Object,
