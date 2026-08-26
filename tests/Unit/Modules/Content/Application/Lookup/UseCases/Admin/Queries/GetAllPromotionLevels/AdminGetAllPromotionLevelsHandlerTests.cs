@@ -16,13 +16,13 @@ namespace _116.Unit.Tests.Modules.Content.Application.Lookup.UseCases.Admin.Quer
 /// </summary>
 public class AdminGetAllPromotionLevelsHandlerTests : BaseContentHandlerTest
 {
-    private readonly Mock<ILookupRepository> _lookupRepositoryMock;
+    private readonly Mock<IPromotionLevelRepository> _promotionLevelRepositoryMock;
     private readonly AdminGetAllPromotionLevelsHandler _handler;
 
     public AdminGetAllPromotionLevelsHandlerTests()
     {
-        _lookupRepositoryMock = MockLookupRepository.Create();
-        _handler = new AdminGetAllPromotionLevelsHandler(_lookupRepositoryMock.Object, Mapper);
+        _promotionLevelRepositoryMock = MockPromotionLevelRepository.Create();
+        _handler = new AdminGetAllPromotionLevelsHandler(_promotionLevelRepositoryMock.Object, Mapper);
     }
 
     #region Success Cases
@@ -32,7 +32,7 @@ public class AdminGetAllPromotionLevelsHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         List<PromotionLevelEntity> promotionLevels = PromotionLevelFactory.CreateMany(3);
-        _lookupRepositoryMock.SetupGetAllPromotionLevels(promotionLevels);
+        _promotionLevelRepositoryMock.SetupGetAllPromotionLevels(promotionLevels);
 
         var query = new AdminGetAllPromotionLevelsQuery(Search: null);
 
@@ -49,7 +49,7 @@ public class AdminGetAllPromotionLevelsHandlerTests : BaseContentHandlerTest
         // Arrange
         string searchTerm = TestConstants.PromotionLevel.ValidName;
         PromotionLevelEntity level = PromotionLevelFactory.CreateDefault();
-        _lookupRepositoryMock.SetupGetAllPromotionLevels(new List<PromotionLevelEntity> { level });
+        _promotionLevelRepositoryMock.SetupGetAllPromotionLevels(new List<PromotionLevelEntity> { level });
 
         var query = new AdminGetAllPromotionLevelsQuery(Search: searchTerm);
 
@@ -58,17 +58,14 @@ public class AdminGetAllPromotionLevelsHandlerTests : BaseContentHandlerTest
 
         // Assert
         result.PromotionLevels.Should().ContainSingle();
-        _lookupRepositoryMock.Verify(
-            x => x.GetAllPromotionLevelsAsync(searchTerm, It.IsAny<CancellationToken>()),
-            Times.Once
-        );
+        _promotionLevelRepositoryMock.Verify(x => x.GetAllAsync(searchTerm, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
     public async Task Handle_WithEmptyList_ShouldReturnEmptyList()
     {
         // Arrange
-        _lookupRepositoryMock.SetupGetAllPromotionLevels(new List<PromotionLevelEntity>());
+        _promotionLevelRepositoryMock.SetupGetAllPromotionLevels(new List<PromotionLevelEntity>());
 
         var query = new AdminGetAllPromotionLevelsQuery();
 
@@ -84,7 +81,7 @@ public class AdminGetAllPromotionLevelsHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         PromotionLevelEntity level = PromotionLevelFactory.CreateDefault();
-        _lookupRepositoryMock.SetupGetAllPromotionLevels(new List<PromotionLevelEntity> { level });
+        _promotionLevelRepositoryMock.SetupGetAllPromotionLevels(new List<PromotionLevelEntity> { level });
 
         var query = new AdminGetAllPromotionLevelsQuery();
 
