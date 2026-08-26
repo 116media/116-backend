@@ -93,9 +93,12 @@ and for each user, and is deliberately **not** part of the publishing domain. Tw
   (which is already a god aggregate — [07 A2](07-identity-and-security.md)). On signup, Identity
   raises `UserCreatedEvent`; a Settings handler creates a default `UserPreferences` row (or Settings
   lazily creates one on first read). No FK, no bloating the user aggregate.
-- **Everyone reads system settings** through a cached `ISystemSettingsProvider`. The cache **must**
-  be distributed (Redis) with versioned invalidation — an in-memory cache breaks on multi-instance
-  ([04 §8](04-content-infrastructure.md)), and settings are read on nearly every request.
+- **Everyone reads system settings** through a cached `ISystemSettingsProvider`. Settings are read
+  on nearly every request and an in-memory-only cache breaks on multi-instance
+  ([04 §8](04-content-infrastructure.md)). Use the mechanism Stage 10 establishes — `HybridCache`
+  (L1 + L2 Redis) with `RemoveByTagAsync`, not a hand-built version key
+  ([16 §16.4](16-caching-architecture.md)). System settings are reference data: one tag, evicted by
+  the admin mutation that changed them.
 
 ### Contracts surface (`Settings.Contracts`, a leaf like `Identity.Contracts`)
 
