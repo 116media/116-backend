@@ -1,4 +1,5 @@
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Events;
 using _116.Content.Domain.Exceptions;
 using _116.Content.Domain.StateMachines;
 using _116.Shared.Application.Exceptions;
@@ -199,6 +200,54 @@ public class PricingTierEntityTests
 
         // Assert
         result.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region Domain Events
+
+    [Fact]
+    public void Create_ShouldRaisePricingTierChangedEvent()
+    {
+        // Act
+        var entity = PricingTierEntity.Create(Guid.NewGuid(), TestConstants.PricingTier.ValidName, "desc");
+
+        // Assert
+        entity
+            .DomainEvents.OfType<PricingTierChangedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(new PricingTierChangedEvent(entity.Id));
+    }
+
+    [Fact]
+    public void Update_ShouldRaisePricingTierChangedEvent()
+    {
+        // Arrange
+        var entity = PricingTierEntity.Create(Guid.NewGuid(), TestConstants.PricingTier.ValidName, "desc");
+        entity.ClearDomainEvents();
+
+        // Act
+        entity.Update("Premium", "updated");
+
+        // Assert
+        entity.DomainEvents.OfType<PricingTierChangedEvent>().Should().ContainSingle();
+    }
+
+    [Fact]
+    public void Deactivate_WhenAlreadyInactive_ShouldRaiseNothing()
+    {
+        // Arrange — a no-op transition must not evict the lookup cache
+        var entity = PricingTierEntity.Create(Guid.NewGuid(), TestConstants.PricingTier.ValidName, "desc");
+        entity.Deactivate();
+        entity.ClearDomainEvents();
+
+        // Act
+        entity.Deactivate();
+
+        // Assert
+        entity.DomainEvents.Should().BeEmpty();
     }
 
     #endregion
