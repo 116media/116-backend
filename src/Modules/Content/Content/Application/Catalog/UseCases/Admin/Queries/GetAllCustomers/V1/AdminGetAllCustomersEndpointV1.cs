@@ -39,12 +39,20 @@ public class AdminGetAllCustomersEndpointV1 : ICarterModule
         group
             .MapGet(
                 "/",
-                async (IDispatcher dispatcher, int pageIndex = 0, int pageSize = 10) =>
+                async (
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
+                    int pageIndex = 0,
+                    int pageSize = 10
+                ) =>
                 {
                     var paginatedRequest = new PaginatedRequest(pageIndex, pageSize);
                     var query = new AdminGetAllCustomersQuery(PaginatedRequest: paginatedRequest);
 
-                    AdminGetAllCustomersResult result = await dispatcher.Send(request: query);
+                    AdminGetAllCustomersResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminGetAllCustomersResponse(Customers: result.Customers);
                     return Results.Ok(response);
