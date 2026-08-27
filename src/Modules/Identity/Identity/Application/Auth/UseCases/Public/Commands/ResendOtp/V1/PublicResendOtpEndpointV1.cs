@@ -42,10 +42,13 @@ public class PublicResendOtpEndpointV1 : ICarterModule
         group
             .MapPost(
                 pattern: AuthRouteConstants.ResendOtp,
-                async (PublicResendOtpRequest request, IDispatcher dispatcher) =>
+                async (PublicResendOtpRequest request, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var command = new PublicResendOtpCommand(Email: request.Email, Purpose: request.Purpose);
-                    PublicResendOtpResult result = await dispatcher.Send(request: command);
+                    PublicResendOtpResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicResendOtpResponse(IsSuccess: result.IsSuccess);
 
