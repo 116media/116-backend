@@ -44,14 +44,21 @@ public class AdminResetPasswordEndpointV1 : ICarterModule
         group
             .MapPost(
                 pattern: AuthRouteConstants.ResetPassword,
-                async (AdminResetPasswordRequest request, IDispatcher dispatcher) =>
+                async (
+                    AdminResetPasswordRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new AdminResetPasswordCommand(
                         Email: request.Email,
                         Code: request.Code,
                         NewPassword: request.NewPassword
                     );
-                    AdminResetPasswordResult result = await dispatcher.Send(request: command);
+                    AdminResetPasswordResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminResetPasswordResponse(IsSuccess: result.IsSuccess);
 
