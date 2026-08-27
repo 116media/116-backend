@@ -37,11 +37,14 @@ public class AdminHardDeleteRoleEndpointV1 : ICarterModule
         group
             .MapDelete(
                 $"{{id}}/{RoleRouteConstants.Hard}",
-                async (string id, IDispatcher dispatcher) =>
+                async (string id, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var command = new AdminHardDeleteRoleCommand(RoleId: id);
 
-                    AdminHardDeleteRoleResult result = await dispatcher.Send(request: command);
+                    AdminHardDeleteRoleResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminHardDeleteRoleResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(value: response);
