@@ -2,6 +2,7 @@ using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Session.Cache;
 using _116.Identity.Domain.Events;
 using _116.Shared.Application.Configurations;
+using _116.Shared.Application.Configurations.Schemas;
 using _116.Shared.Application.Services;
 using Microsoft.Extensions.Logging;
 
@@ -20,10 +21,7 @@ public class SessionRevokedLogHandler(ISessionRevocationCache revocationCache, I
     public Task Handle(SessionRevokedEvent domainEvent, CancellationToken cancellationToken = default)
     {
         // The entry only needs to outlive the access tokens minted for the session.
-        var (_, _, _, accessTokenExpiration, _) = AppEnvironment.Jwt();
-        int ttlMinutes = int.TryParse(s: accessTokenExpiration, out int parsed)
-            ? parsed
-            : JwtClaimsConstants.DefaultExpiration;
+        int ttlMinutes = JwtEnv.AccessTokenExpirationMinutes.Value;
 
         revocationCache.Revoke(sessionId: domainEvent.SessionId, ttl: TimeSpan.FromMinutes(ttlMinutes));
 
