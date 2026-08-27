@@ -38,11 +38,14 @@ public class AdminGetPackageByIdEndpointV1 : ICarterModule
         group
             .MapGet(
                 "/{id:guid}",
-                async (Guid id, IDispatcher dispatcher) =>
+                async (Guid id, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var query = new AdminGetPackageByIdQuery(Id: id);
 
-                    AdminGetPackageByIdResult result = await dispatcher.Send(request: query);
+                    AdminGetPackageByIdResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminGetPackageByIdResponse(Package: result.Package);
                     return Results.Ok(response);
