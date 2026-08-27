@@ -43,13 +43,17 @@ public class AdminSignOutFromAllDevicesEndpointV1 : ICarterModule
                     ClaimsPrincipal user,
                     IClaimsProvider authProvider,
                     IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
                     ITokenDeliveryService tokenDelivery
                 ) =>
                 {
                     Guid userId = authProvider.GetUserIdFromClaims(user: user);
 
                     var command = new AdminSignOutFromAllDevicesCommand(UserId: userId);
-                    AdminSignOutFromAllDevicesResult result = await dispatcher.Send(request: command);
+                    AdminSignOutFromAllDevicesResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     tokenDelivery.ClearTokenCookies();
 
