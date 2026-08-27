@@ -39,11 +39,14 @@ public class AdminSoftDeleteRoleEndpointV1 : ICarterModule
         group
             .MapDelete(
                 "{id}",
-                async (string id, IDispatcher dispatcher) =>
+                async (string id, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var command = new AdminSoftDeleteRoleCommand(RoleId: id);
 
-                    AdminSoftDeleteRoleResult result = await dispatcher.Send(request: command);
+                    AdminSoftDeleteRoleResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminSoftDeleteRoleResponse(Role: result.Role, IsSuccess: result.IsSuccess);
                     return Results.Ok(value: response);
