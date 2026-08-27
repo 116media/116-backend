@@ -44,7 +44,13 @@ public class AdminUpdateCategoryPricingEndpointV1 : ICarterModule
         group
             .MapPut(
                 $"/{{id}}/{CatalogRouteConstants.Pricing}/{{tierId}}",
-                async (string id, string tierId, AdminUpdateCategoryPricingRequest request, IDispatcher dispatcher) =>
+                async (
+                    string id,
+                    string tierId,
+                    AdminUpdateCategoryPricingRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new AdminUpdateCategoryPricingCommand(
                         CategoryId: id,
@@ -52,7 +58,10 @@ public class AdminUpdateCategoryPricingEndpointV1 : ICarterModule
                         PriceUsd: request.PriceUsd
                     );
 
-                    AdminUpdateCategoryPricingResult result = await dispatcher.Send(request: command);
+                    AdminUpdateCategoryPricingResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminUpdateCategoryPricingResponse(Pricing: result.Pricing);
                     return Results.Ok(response);
