@@ -39,11 +39,14 @@ public class AdminRemoveCategoryPricingEndpointV1 : ICarterModule
         group
             .MapDelete(
                 $"/{{id}}/{CatalogRouteConstants.Pricing}/{{tierId}}",
-                async (string id, string tierId, IDispatcher dispatcher) =>
+                async (string id, string tierId, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var command = new AdminRemoveCategoryPricingCommand(CategoryId: id, PricingTierId: tierId);
 
-                    AdminRemoveCategoryPricingResult result = await dispatcher.Send(request: command);
+                    AdminRemoveCategoryPricingResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminRemoveCategoryPricingResponse(
                         Pricing: result.Pricing,
