@@ -37,10 +37,13 @@ public class AdminActivatePackageEndpointV1 : ICarterModule
         group
             .MapPatch(
                 $"/{{id}}/{CatalogRouteConstants.Activate}",
-                async (string id, IDispatcher dispatcher) =>
+                async (string id, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var command = new AdminActivatePackageCommand(Id: id);
-                    AdminActivatePackageResult result = await dispatcher.Send(request: command);
+                    AdminActivatePackageResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminActivatePackageResponse(Package: result.Package);
                     return Results.Ok(response);
