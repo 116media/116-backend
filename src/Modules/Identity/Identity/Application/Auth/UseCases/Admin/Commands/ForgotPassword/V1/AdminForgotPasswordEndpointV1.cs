@@ -42,10 +42,17 @@ public class AdminForgotPasswordEndpointV1 : ICarterModule
         group
             .MapPost(
                 pattern: AuthRouteConstants.ForgotPassword,
-                async (AdminForgotPasswordRequest request, IDispatcher dispatcher) =>
+                async (
+                    AdminForgotPasswordRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new AdminForgotPasswordCommand(Email: request.Email);
-                    AdminForgotPasswordResult result = await dispatcher.Send(request: command);
+                    AdminForgotPasswordResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminForgotPasswordResponse(IsSuccess: result.IsSuccess, Email: request.Email);
 
