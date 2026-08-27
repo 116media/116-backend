@@ -1,5 +1,6 @@
 using _116.Identity.Domain.Enums;
 using _116.Shared.Application.Configurations;
+using _116.Shared.Application.Configurations.Schemas;
 
 namespace _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
 
@@ -52,12 +53,6 @@ public static class SuperAdminConfiguration
     /// <exception cref="InvalidOperationException">Thrown when no password is configured.</exception>
     public static string GetPassword()
     {
-        string? password = AppEnvironment.DefaultPassword();
-        if (string.IsNullOrWhiteSpace(value: password))
-        {
-            throw new InvalidOperationException("DEFAULT_USER_PASSWORD env variable is missing or empty.");
-        }
-
-        return password;
+        return SecurityEnv.DefaultUserPassword.Value;
     }
 }
