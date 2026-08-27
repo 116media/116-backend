@@ -1,4 +1,5 @@
 using _116.Shared.Application.Configurations;
+using _116.Shared.Application.Configurations.Schemas;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace _116.Shared.Application.Extensions;
@@ -15,13 +16,11 @@ public static class CloudinaryExtensions
     /// <returns>The service collection for chaining.</returns>
     public static IServiceCollection AddCloudinaryConfiguration(this IServiceCollection services)
     {
-        var (cloudName, apiKey, apiSecret) = AppEnvironment.Cloudinary();
-
         var config = new CloudinarySettings
         {
-            ApiKey = apiKey ?? "",
-            CloudName = cloudName ?? "",
-            ApiSecret = apiSecret ?? "",
+            ApiKey = CloudinaryEnv.ApiKey.Value,
+            CloudName = CloudinaryEnv.CloudName.Value,
+            ApiSecret = CloudinaryEnv.ApiSecret.Value,
         };
 
         services.AddSingleton(config);
