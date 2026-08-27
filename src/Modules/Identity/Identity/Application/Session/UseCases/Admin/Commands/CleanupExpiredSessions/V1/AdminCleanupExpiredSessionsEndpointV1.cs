@@ -37,10 +37,13 @@ public class AdminCleanupExpiredSessionsEndpointV1 : ICarterModule
         group
             .MapPost(
                 pattern: SessionRouteConstants.Cleanup,
-                async (IDispatcher dispatcher) =>
+                async (IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var command = new AdminCleanupExpiredSessionsCommand();
-                    AdminCleanupExpiredSessionsResult result = await dispatcher.Send(request: command);
+                    AdminCleanupExpiredSessionsResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminCleanupExpiredSessionsResponse(DeletedCount: result.DeletedCount);
                     return Results.Ok(value: response);
