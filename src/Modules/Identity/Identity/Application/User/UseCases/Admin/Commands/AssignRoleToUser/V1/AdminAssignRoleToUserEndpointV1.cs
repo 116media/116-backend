@@ -43,11 +43,19 @@ public class AdminAssignRoleToUserEndpointV1 : ICarterModule
         group
             .MapPost(
                 "{id}/roles",
-                async (string id, AdminAssignRoleToUserRequest request, IDispatcher dispatcher) =>
+                async (
+                    string id,
+                    AdminAssignRoleToUserRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new AdminAssignRoleToUserCommand(UserId: id, RoleId: request.RoleId);
 
-                    AdminAssignRoleToUserResult result = await dispatcher.Send(request: command);
+                    AdminAssignRoleToUserResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminAssignRoleToUserResponse(Roles: result.Roles);
                     return Results.Ok(value: response);
