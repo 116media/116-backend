@@ -38,11 +38,14 @@ public class AdminRemoveRoleFromUserEndpointV1 : ICarterModule
         group
             .MapDelete(
                 "{id}/roles/{roleId}",
-                async (string id, string roleId, IDispatcher dispatcher) =>
+                async (string id, string roleId, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var command = new AdminRemoveRoleFromUserCommand(UserId: id, RoleId: roleId);
 
-                    AdminRemoveRoleFromUserResult result = await dispatcher.Send(request: command);
+                    AdminRemoveRoleFromUserResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminRemoveRoleFromUserResponse(
                         Roles: result.Roles,
