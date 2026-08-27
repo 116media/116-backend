@@ -50,7 +50,8 @@ public class PublicChangePasswordEndpointV1 : ICarterModule
                     PublicChangePasswordRequest request,
                     ClaimsPrincipal user,
                     IClaimsProvider authProvider,
-                    IDispatcher dispatcher
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
                 ) =>
                 {
                     Guid userId = authProvider.GetUserIdFromClaims(user: user);
@@ -62,7 +63,10 @@ public class PublicChangePasswordEndpointV1 : ICarterModule
                         OldPassword: request.OldPassword,
                         NewPassword: request.NewPassword
                     );
-                    PublicChangePasswordResult result = await dispatcher.Send(request: command);
+                    PublicChangePasswordResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicChangePasswordResponse(IsSuccess: result.IsSuccess);
 
