@@ -38,11 +38,14 @@ public class AdminDeactivatePermissionEndpointV1 : ICarterModule
         group
             .MapPatch(
                 $"{{id}}/{PermissionRouteConstants.Deactivate}",
-                async (string id, IDispatcher dispatcher) =>
+                async (string id, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var command = new AdminDeactivatePermissionCommand(PermissionId: id);
 
-                    AdminDeactivatePermissionResult result = await dispatcher.Send(request: command);
+                    AdminDeactivatePermissionResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminDeactivatePermissionResponse(Permission: result.Permission);
                     return Results.Ok(value: response);
