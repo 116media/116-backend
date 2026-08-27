@@ -46,7 +46,12 @@ public class AdminUpdatePermissionEndpointV1 : ICarterModule
         group
             .MapPut(
                 "{id}",
-                async (string id, AdminUpdatePermissionRequest request, IDispatcher dispatcher) =>
+                async (
+                    string id,
+                    AdminUpdatePermissionRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new AdminUpdatePermissionCommand(
                         PermissionId: id,
@@ -55,7 +60,10 @@ public class AdminUpdatePermissionEndpointV1 : ICarterModule
                         Description: request.Description
                     );
 
-                    AdminUpdatePermissionResult result = await dispatcher.Send(request: command);
+                    AdminUpdatePermissionResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminUpdatePermissionResponse(Permission: result.Permission);
                     return Results.Ok(value: response);
