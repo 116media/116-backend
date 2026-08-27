@@ -44,7 +44,8 @@ public class PublicUpdateAvatarEndpointV1 : ICarterModule
                     IFormFile? avatarFile,
                     ClaimsPrincipal user,
                     IClaimsProvider authProvider,
-                    IDispatcher dispatcher
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
                 ) =>
                 {
                     Guid userId = authProvider.GetUserIdFromClaims(user: user);
@@ -55,7 +56,10 @@ public class PublicUpdateAvatarEndpointV1 : ICarterModule
                         SessionId: sessionId,
                         AvatarFile: avatarFile
                     );
-                    PublicUpdateAvatarResult result = await dispatcher.Send(request: command);
+                    PublicUpdateAvatarResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicUpdateAvatarResponse(User: result.User);
 
