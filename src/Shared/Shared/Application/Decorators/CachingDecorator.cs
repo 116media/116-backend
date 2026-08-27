@@ -1,3 +1,4 @@
+using System.Globalization;
 using _116.Shared.Contracts.Application.CQRS;
 using Microsoft.Extensions.Caching.Hybrid;
 
@@ -32,13 +33,22 @@ public class CachingDecorator<TRequest, TResponse>(IRequestHandler<TRequest, TRe
         var options = new HybridCacheEntryOptions { Expiration = cacheable.Ttl, LocalCacheExpiration = cacheable.Ttl };
 
         // The state overload keeps the factory static, so no closure is allocated per request.
+        // The request culture rides in the state: with a cancelable token the cache runs the
+        // factory detached from the caller's execution context, which would otherwise reset
+        // localization to the process default inside the handler.
         return await cache.GetOrCreateAsync(
             options: options,
             key: cacheable.CacheKey,
-            state: (handler, request),
+            state: (handler, request, CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture),
             tags: cacheable.CacheTags,
             cancellationToken: cancellationToken,
-            factory: static async (state, token) => await state.handler.Handle(state.request, token)
+            factory: static async (state, token) =>
+            {
+                CultureInfo.CurrentCulture = state.CurrentCulture;
+                CultureInfo.CurrentUICulture = state.CurrentUICulture;
+
+                return await state.handler.Handle(state.request, token);
+            }
         );
     }
 }
