@@ -12,6 +12,7 @@ using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Shared.Application.Configurations;
+using _116.Shared.Application.Configurations.Schemas;
 
 namespace _116.Identity.Application.Session.Factories;
 
@@ -47,15 +48,13 @@ public class SessionFactory(
     {
         // Generate refresh token
         DateTimeOffset now = DateTimeOffset.UtcNow;
-        var (_, _, _, _, refreshTokenExpirationMinutes) = AppEnvironment.Jwt();
         string refreshToken = refreshTokenService.GenerateRefreshToken();
         string refreshTokenHash = refreshTokenService.HashRefreshToken(refreshToken: refreshToken);
-        DateTime refreshTokenExpiresAt = now.AddMinutes(minutes: int.Parse(refreshTokenExpirationMinutes!)).UtcDateTime;
+        DateTime refreshTokenExpiresAt = now.AddMinutes(
+            minutes: JwtEnv.RefreshTokenExpirationMinutes.Value
+        ).UtcDateTime;
 
-        int absoluteLifetimeDays = AppEnvironment.SessionAbsoluteLifetimeDays(
-            fallbackDays: SessionConstants.DefaultAbsoluteLifetimeDays
-        );
-        DateTime absoluteExpiresAt = now.AddDays(days: absoluteLifetimeDays).UtcDateTime;
+        DateTime absoluteExpiresAt = now.AddDays(days: JwtEnv.SessionAbsoluteLifetimeDays.Value).UtcDateTime;
 
         // Extract metadata
         string? deviceId = sessionMetadataService.ExtractDeviceId();
