@@ -38,11 +38,14 @@ public class AdminPinCategoryToFeedEndpointV1 : ICarterModule
         group
             .MapPatch(
                 $"/{{id}}/{CatalogRouteConstants.PinToFeed}",
-                async (string id, IDispatcher dispatcher) =>
+                async (string id, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var command = new AdminPinCategoryToFeedCommand(Id: id);
 
-                    AdminPinCategoryToFeedResult result = await dispatcher.Send(request: command);
+                    AdminPinCategoryToFeedResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminPinCategoryToFeedResponse(Category: result.Category);
                     return Results.Ok(response);
