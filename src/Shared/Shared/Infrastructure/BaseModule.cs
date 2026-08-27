@@ -1,4 +1,5 @@
 using _116.Shared.Application.Configurations;
+using _116.Shared.Application.Configurations.Schemas;
 using _116.Shared.Application.Services;
 using _116.Shared.Infrastructure.interceptors;
 using _116.Shared.Infrastructure.Services;
@@ -72,11 +73,9 @@ public static class BaseModule
     /// <returns>The formatted connection string</returns>
     private static string GetDefaultConnectionString()
     {
-        var (host, port, db, user, pass) = AppEnvironment.Database();
-
         // All module contexts share this string, so Npgsql serves them from one physical pool;
         // the cap is per connection string, not per context.
-        return $"Host={host};Port={port};Database={db};Username={user};Password={pass};Maximum Pool Size=100;";
+        return $"{DatabaseEnv.ConnectionString()}Maximum Pool Size=100;";
     }
 
     /// <summary>
