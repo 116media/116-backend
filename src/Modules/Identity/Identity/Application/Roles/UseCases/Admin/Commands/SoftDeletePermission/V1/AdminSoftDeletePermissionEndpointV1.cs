@@ -39,11 +39,14 @@ public class AdminSoftDeletePermissionEndpointV1 : ICarterModule
         group
             .MapDelete(
                 "{id}",
-                async (string id, IDispatcher dispatcher) =>
+                async (string id, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var command = new AdminSoftDeletePermissionCommand(PermissionId: id);
 
-                    AdminSoftDeletePermissionResult result = await dispatcher.Send(request: command);
+                    AdminSoftDeletePermissionResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminSoftDeletePermissionResponse(
                         Permission: result.Permission,
