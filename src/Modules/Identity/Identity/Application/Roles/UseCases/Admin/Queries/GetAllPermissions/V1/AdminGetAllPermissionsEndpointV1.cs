@@ -41,6 +41,7 @@ public class AdminGetAllPermissionsEndpointV1 : ICarterModule
                 "/",
                 async (
                     IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
                     int pageIndex = 0,
                     int pageSize = 10,
                     string? search = null,
@@ -57,7 +58,10 @@ public class AdminGetAllPermissionsEndpointV1 : ICarterModule
                         IsDeleted: isDeleted
                     );
 
-                    AdminGetAllPermissionsResult result = await dispatcher.Send(request: query);
+                    AdminGetAllPermissionsResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminGetAllPermissionsResponse(Permissions: result.Permissions);
                     return Results.Ok(value: response);
