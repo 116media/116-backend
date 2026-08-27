@@ -32,11 +32,11 @@ public class OtpService : IOtpService
     /// <param name="pepper">The server-side key mixed into every code hash.</param>
     /// <param name="timeProvider">The clock the expiration window is measured from.</param>
     /// <exception cref="InvalidOperationException">Thrown when the pepper is missing or empty.</exception>
-    public OtpService(string? pepper, TimeProvider timeProvider)
+    public OtpService(string pepper, TimeProvider timeProvider)
     {
         if (string.IsNullOrWhiteSpace(value: pepper))
         {
-            throw new InvalidOperationException("OTP_PEPPER env variable is missing or empty.");
+            throw new InvalidOperationException("The OTP hashing pepper must not be empty.");
         }
 
         _pepper = Encoding.UTF8.GetBytes(s: pepper);
