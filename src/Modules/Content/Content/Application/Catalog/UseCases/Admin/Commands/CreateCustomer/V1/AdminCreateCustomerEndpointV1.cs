@@ -49,7 +49,12 @@ public class AdminCreateCustomerEndpointV1 : ICarterModule
         group
             .MapPost(
                 "/",
-                async (AdminCreateCustomerRequest request, IDispatcher dispatcher, HttpContext httpContext) =>
+                async (
+                    AdminCreateCustomerRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
+                    HttpContext httpContext
+                ) =>
                 {
                     var command = new AdminCreateCustomerCommand(
                         FullName: request.FullName,
@@ -59,7 +64,10 @@ public class AdminCreateCustomerEndpointV1 : ICarterModule
                         Notes: request.Notes
                     );
 
-                    AdminCreateCustomerResult result = await dispatcher.Send(request: command);
+                    AdminCreateCustomerResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminCreateCustomerResponse(Customer: result.Customer);
                     Guid customerId = response.Customer.Id;
