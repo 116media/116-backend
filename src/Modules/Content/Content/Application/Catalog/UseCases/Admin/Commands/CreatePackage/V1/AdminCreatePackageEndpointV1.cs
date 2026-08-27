@@ -46,11 +46,19 @@ public class AdminCreatePackageEndpointV1 : ICarterModule
         group
             .MapPost(
                 "/",
-                async (AdminCreatePackageRequest request, IDispatcher dispatcher, HttpContext httpContext) =>
+                async (
+                    AdminCreatePackageRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
+                    HttpContext httpContext
+                ) =>
                 {
                     var command = new AdminCreatePackageCommand(Name: request.Name, Description: request.Description);
 
-                    AdminCreatePackageResult result = await dispatcher.Send(request: command);
+                    AdminCreatePackageResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminCreatePackageResponse(Package: result.Package);
                     Guid packageId = response.Package.Id;
