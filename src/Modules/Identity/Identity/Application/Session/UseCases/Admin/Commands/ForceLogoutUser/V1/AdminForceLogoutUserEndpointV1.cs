@@ -37,10 +37,13 @@ public class AdminForceLogoutUserEndpointV1 : ICarterModule
         group
             .MapPost(
                 $"{SessionRouteConstants.ForceLogout}/{{id}}",
-                async (string id, IDispatcher dispatcher) =>
+                async (string id, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var command = new AdminForceLogoutUserCommand(UserId: id);
-                    AdminForceLogoutUserResult result = await dispatcher.Send(request: command);
+                    AdminForceLogoutUserResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminForceLogoutUserResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(value: response);
