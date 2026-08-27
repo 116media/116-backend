@@ -50,6 +50,7 @@ public class AdminAddCategoryPricingEndpointV1 : ICarterModule
                     string id,
                     AdminAddCategoryPricingRequest request,
                     IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
                     HttpContext httpContext
                 ) =>
                 {
@@ -59,7 +60,10 @@ public class AdminAddCategoryPricingEndpointV1 : ICarterModule
                         PriceUsd: request.PriceUsd
                     );
 
-                    AdminAddCategoryPricingResult result = await dispatcher.Send(request: command);
+                    AdminAddCategoryPricingResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminAddCategoryPricingResponse(Pricing: result.Pricing);
 
