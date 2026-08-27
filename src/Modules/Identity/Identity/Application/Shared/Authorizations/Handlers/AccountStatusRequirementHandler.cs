@@ -4,6 +4,7 @@ using _116.Identity.Application.Shared.Authorizations.Requirements;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Npgsql;
 
 namespace _116.Identity.Application.Shared.Authorizations.Handlers;
@@ -12,12 +13,15 @@ namespace _116.Identity.Application.Shared.Authorizations.Handlers;
 /// Authorization handler that validates account status requirements against user data.
 /// </summary>
 /// <remarks>
-/// Checks user account status from the database first, with JWT token claims as fallback for DB errors.
-/// Used for enforcing account status policies like verification, active status, etc.
+/// Resolves the user once per request — later policy evaluations reuse the entity cached in
+/// <c>HttpContext.Items</c>. A database outage fails the requirement rather than trusting
+/// possibly stale token claims.
 /// </remarks>
-public class AccountStatusRequirementHandler(IAuthRepository authRepository)
+public class AccountStatusRequirementHandler(IAuthRepository authRepository, IHttpContextAccessor httpContextAccessor)
     : AuthorizationHandler<AccountStatusRequirement>
 {
+    private const string AccountStatusItemKey = "account-status";
+
     /// <summary>
     /// Evaluates the account status requirement against the current authorization context.
     /// Checks the database first for user status, with JWT claims as fallback for connectivity errors.
@@ -28,8 +32,8 @@ public class AccountStatusRequirementHandler(IAuthRepository authRepository)
     /// </param>
     /// <returns>A task representing the asynchronous authorization evaluation operation.</returns>
     /// <remarks>
-    /// This method first attempts to validate the user's status from the database for real-time accuracy.
-    /// If database connectivity issues occur, it falls back to validating JWT claims.
+    /// The user's status is read from the database for real-time accuracy and cached on the
+    /// request, so several policies in one authorization pass cost a single query.
     /// Other exceptions (like validation errors) are allowed to bubble up to provide proper user feedback.
     /// </remarks>
     protected override async Task HandleRequirementAsync(
@@ -46,7 +50,7 @@ public class AccountStatusRequirementHandler(IAuthRepository authRepository)
 
         try
         {
-            UserEntity? user = await authRepository.FindUserByIdOrThrow(userId: userId);
+            UserEntity? user = await ResolveUserAsync(userId: userId);
             if (user is not null && CheckRequirementAgainstUser(user: user, requirement: requirement))
             {
                 context.Succeed(requirement: requirement);
@@ -54,16 +58,34 @@ public class AccountStatusRequirementHandler(IAuthRepository authRepository)
         }
         catch (Exception ex) when (IsDbConnectivityError(exception: ex))
         {
-            // Fallback to JWT claims for database connectivity errors
-            string? claimValue = context.User.FindFirst(type: requirement.ClaimType)?.Value;
-            if (
-                !string.IsNullOrEmpty(value: claimValue)
-                && claimValue.Equals(value: requirement.ClaimValue, comparisonType: StringComparison.OrdinalIgnoreCase)
-            )
-            {
-                context.Succeed(requirement: requirement);
-            }
+            // Token claims may be stale (deactivation, deletion), so an unverifiable status
+            // fails closed instead of trusting them.
+            context.Fail(
+                new AuthorizationFailureReason(handler: this, message: "Account status could not be verified.")
+            );
         }
+    }
+
+    /// <summary>
+    /// Loads the user once per request; later policy evaluations reuse the cached entity.
+    /// </summary>
+    /// <param name="userId">The authenticated user's identifier.</param>
+    /// <returns>The user, or null when none exists.</returns>
+    private async Task<UserEntity?> ResolveUserAsync(Guid userId)
+    {
+        HttpContext? httpContext = httpContextAccessor.HttpContext;
+        if (httpContext?.Items[AccountStatusItemKey] is UserEntity cached && cached.Id == userId)
+        {
+            return cached;
+        }
+
+        UserEntity? user = await authRepository.FindUserByIdOrThrow(userId: userId);
+        if (user is not null && httpContext is not null)
+        {
+            httpContext.Items[AccountStatusItemKey] = user;
+        }
+
+        return user;
     }
 
     /// <summary>
