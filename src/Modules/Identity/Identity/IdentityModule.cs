@@ -68,6 +68,7 @@ using _116.Identity.Infrastructure.Persistence.Seeds.Visitor;
 using _116.Identity.Infrastructure.Repositories;
 using _116.Identity.Infrastructure.Services;
 using _116.Shared.Application.Configurations;
+using _116.Shared.Application.Configurations.Schemas;
 using _116.Shared.Application.Exceptions.Handlers.Contracts;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Application.Services;
@@ -152,8 +153,8 @@ public static class IdentityModule
         services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();
         services.AddScoped<IUserRoleRepository, UserRoleRepository>();
         services.AddScoped<IOtpService>(sp => new OtpService(
-            AppEnvironment.OtpPepper(),
-            sp.GetRequiredService<TimeProvider>()
+            pepper: SecurityEnv.OtpPepper.Value,
+            timeProvider: sp.GetRequiredService<TimeProvider>()
         ));
         services.AddScoped<IOtpRepository, OtpRepository>();
         services.AddScoped<ISessionRepository, SessionRepository>();
@@ -174,12 +175,11 @@ public static class IdentityModule
         services.AddScoped<IPublicSocialLoginAuthFactory, PublicSocialLoginAuthFactory>();
 
         // Social-login token verification: keyed adapters resolved through the factory.
-        var (googleClientId, facebookAppId, facebookAppSecret) = AppEnvironment.SocialAuth();
         services.Configure<SocialAuthOptions>(options =>
         {
-            options.GoogleClientId = googleClientId ?? string.Empty;
-            options.FacebookAppId = facebookAppId ?? string.Empty;
-            options.FacebookAppSecret = facebookAppSecret ?? string.Empty;
+            options.GoogleClientId = SocialAuthEnv.GoogleClientId.Value;
+            options.FacebookAppId = SocialAuthEnv.FacebookAppId.Value;
+            options.FacebookAppSecret = SocialAuthEnv.FacebookAppSecret.Value;
         });
 
         services.AddKeyedScoped<ISocialTokenVerifier, GoogleTokenVerifier>(EnumAuthProvider.Google);
@@ -241,7 +241,6 @@ public static class IdentityModule
         services.AddScoped<IDomainEventHandler<RoleChangedEvent>, IdentityLookupCacheHandler>();
         services.AddScoped<IDomainEventHandler<PermissionChangedEvent>, IdentityLookupCacheHandler>();
 
-        var (secret, issuer, audience, _, _) = AppEnvironment.Jwt();
         services
             .AddAuthentication(defaultScheme: JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
@@ -252,9 +251,9 @@ public static class IdentityModule
                     ValidateAudience = true,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
-                    ValidIssuer = issuer,
-                    ValidAudience = audience,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret!)),
+                    ValidIssuer = JwtEnv.Issuer.Value,
+                    ValidAudience = JwtEnv.Audience.Value,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(JwtEnv.Secret.Value)),
                     ClockSkew = TimeSpan.Zero,
                 };
 
