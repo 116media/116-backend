@@ -51,6 +51,7 @@ public class AdminAddPackageSlotEndpointV1 : ICarterModule
                     string id,
                     AdminAddPackageSlotRequest request,
                     IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
                     HttpContext httpContext
                 ) =>
                 {
@@ -61,7 +62,10 @@ public class AdminAddPackageSlotEndpointV1 : ICarterModule
                         Quantity: request.Quantity
                     );
 
-                    AdminAddPackageSlotResult result = await dispatcher.Send(request: command);
+                    AdminAddPackageSlotResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminAddPackageSlotResponse(Package: result.Package);
                     Guid packageId = response.Package.Id;
