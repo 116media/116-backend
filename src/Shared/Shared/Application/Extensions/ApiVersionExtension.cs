@@ -2,8 +2,32 @@ using Asp.Versioning;
 using Asp.Versioning.Builder;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace _116.Shared.Application.Extensions;
+
+/// <summary>
+/// Holds the root versioned route group for one host. Registered as a per-host singleton so two
+/// hosts in one process — the integration fixtures — never share routing state.
+/// </summary>
+public sealed class RootVersionedGroupHolder
+{
+    private RouteGroupBuilder? _group;
+
+    /// <summary>
+    /// The root versioned route group, set once by <c>UseApiVersioning</c>.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when versioning was never initialized.</exception>
+    public RouteGroupBuilder Group
+    {
+        get =>
+            _group
+            ?? throw new InvalidOperationException(
+                "API versioning has not been initialized. Call app.UseApiVersioning() in Program.cs."
+            );
+        set => _group = value;
+    }
+}
 
 /// <summary>
 /// Extension methods for configuring API versioning
@@ -11,7 +35,16 @@ namespace _116.Shared.Application.Extensions;
 /// </summary>
 public static class ApiVersioningExtensions
 {
-    private static RouteGroupBuilder? _rootVersionedGroup;
+    /// <summary>
+    /// Registers the per-host holder the root versioned group lives in.
+    /// </summary>
+    /// <param name="services">The service collection to register into.</param>
+    /// <returns>The updated <see cref="IServiceCollection" /> for chaining.</returns>
+    public static IServiceCollection AddApiVersionGroupHolder(this IServiceCollection services)
+    {
+        services.AddSingleton<RootVersionedGroupHolder>();
+        return services;
+    }
 
     /// <summary>
     /// Configures API versioning and creates the root versioned group.
@@ -27,18 +60,9 @@ public static class ApiVersioningExtensions
             .ReportApiVersions()
             .Build();
 
-        _rootVersionedGroup = app.MapGroup("api/v{version:apiVersion}").WithApiVersionSet(versionSet);
+        RouteGroupBuilder group = app.MapGroup("api/v{version:apiVersion}").WithApiVersionSet(versionSet);
+        app.Services.GetRequiredService<RootVersionedGroupHolder>().Group = group;
     }
-
-    /// <summary>
-    /// Gets the root versioned route group.
-    /// Throws if versioning has not been initialized.
-    /// </summary>
-    private static RouteGroupBuilder RootVersionedGroup(this IEndpointRouteBuilder app) =>
-        _rootVersionedGroup
-        ?? throw new InvalidOperationException(
-            "API versioning has not been initialized. Call app.UseApiVersioning() in Program.cs."
-        );
 
     /// <summary>
     /// Maps a version-specific group of endpoints.
@@ -54,7 +78,8 @@ public static class ApiVersioningExtensions
         bool isDeprecated = false
     )
     {
-        RouteGroupBuilder versionGroup = app.RootVersionedGroup().MapGroup(string.Empty).HasApiVersion(version);
+        RouteGroupBuilder root = app.ServiceProvider.GetRequiredService<RootVersionedGroupHolder>().Group;
+        RouteGroupBuilder versionGroup = root.MapGroup(string.Empty).HasApiVersion(version);
 
         return isDeprecated ? versionGroup.HasDeprecatedApiVersion(version) : versionGroup;
     }
