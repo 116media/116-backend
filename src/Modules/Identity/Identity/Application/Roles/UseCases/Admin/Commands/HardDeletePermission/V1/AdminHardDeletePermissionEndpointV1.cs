@@ -37,11 +37,14 @@ public class AdminHardDeletePermissionEndpointV1 : ICarterModule
         group
             .MapDelete(
                 $"{{id}}/{PermissionRouteConstants.Hard}",
-                async (string id, IDispatcher dispatcher) =>
+                async (string id, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var command = new AdminHardDeletePermissionCommand(PermissionId: id);
 
-                    AdminHardDeletePermissionResult result = await dispatcher.Send(request: command);
+                    AdminHardDeletePermissionResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminHardDeletePermissionResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(value: response);
