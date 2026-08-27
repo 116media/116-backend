@@ -38,11 +38,14 @@ public class AdminSetExclusiveCategoryEndpointV1 : ICarterModule
         group
             .MapPatch(
                 "/{id}/set-exclusive",
-                async (string id, IDispatcher dispatcher) =>
+                async (string id, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var command = new AdminSetExclusiveCategoryCommand(Id: id);
 
-                    AdminSetExclusiveCategoryResult result = await dispatcher.Send(request: command);
+                    AdminSetExclusiveCategoryResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminSetExclusiveCategoryResponse(Category: result.Category);
                     return Results.Ok(response);
