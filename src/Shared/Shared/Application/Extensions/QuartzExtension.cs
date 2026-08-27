@@ -1,4 +1,5 @@
 using _116.Shared.Application.Configurations;
+using _116.Shared.Application.Configurations.Schemas;
 using _116.Shared.Application.Jobs;
 using Microsoft.Extensions.DependencyInjection;
 using Quartz;
@@ -50,8 +51,7 @@ public static class QuartzExtension
     /// <returns>The updated <see cref="IServiceCollection" /> for chaining.</returns>
     public static IServiceCollection AddClusteredQuartzStore(this IServiceCollection services)
     {
-        var (host, port, db, user, pass) = AppEnvironment.Database();
-        string connectionString = $"Host={host};Port={port};Database={db};Username={user};Password={pass};";
+        string connectionString = DatabaseEnv.ConnectionString();
 
         services.AddQuartz(q =>
         {
