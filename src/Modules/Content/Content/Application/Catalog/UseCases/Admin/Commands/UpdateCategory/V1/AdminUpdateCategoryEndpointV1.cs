@@ -60,7 +60,12 @@ public class AdminUpdateCategoryEndpointV1 : ICarterModule
         group
             .MapPut(
                 "/{id}",
-                async (string id, AdminUpdateCategoryRequest request, IDispatcher dispatcher) =>
+                async (
+                    string id,
+                    AdminUpdateCategoryRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new AdminUpdateCategoryCommand(
                         Id: id,
@@ -72,7 +77,10 @@ public class AdminUpdateCategoryEndpointV1 : ICarterModule
                         IsDefaultForLyrics: request.IsDefaultForLyrics
                     );
 
-                    AdminUpdateCategoryResult result = await dispatcher.Send(request: command);
+                    AdminUpdateCategoryResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminUpdateCategoryResponse(Category: result.Category);
                     return Results.Ok(response);
