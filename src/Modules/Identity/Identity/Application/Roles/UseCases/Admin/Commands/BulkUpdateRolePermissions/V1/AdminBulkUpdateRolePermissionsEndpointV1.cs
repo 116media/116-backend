@@ -44,14 +44,22 @@ public class AdminBulkUpdateRolePermissionsEndpointV1 : ICarterModule
         group
             .MapPut(
                 $"{{id}}/{RoleRouteConstants.Permissions}",
-                async (string id, AdminBulkUpdateRolePermissionsRequest request, IDispatcher dispatcher) =>
+                async (
+                    string id,
+                    AdminBulkUpdateRolePermissionsRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new AdminBulkUpdateRolePermissionsCommand(
                         RoleId: id,
                         PermissionIds: request.PermissionIds
                     );
 
-                    AdminBulkUpdateRolePermissionsResult result = await dispatcher.Send(request: command);
+                    AdminBulkUpdateRolePermissionsResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminBulkUpdateRolePermissionsResponse(Role: result.Role);
                     return Results.Ok(value: response);
