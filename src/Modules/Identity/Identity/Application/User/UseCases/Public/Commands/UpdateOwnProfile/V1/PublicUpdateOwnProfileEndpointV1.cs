@@ -63,7 +63,8 @@ public class PublicUpdateOwnProfileEndpointV1 : ICarterModule
                     PublicUpdateOwnProfileRequest request,
                     ClaimsPrincipal user,
                     IClaimsProvider authProvider,
-                    IDispatcher dispatcher
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
                 ) =>
                 {
                     Guid userId = authProvider.GetUserIdFromClaims(user: user);
@@ -79,7 +80,10 @@ public class PublicUpdateOwnProfileEndpointV1 : ICarterModule
                         CountryDialCode: request.CountryDialCode,
                         PartialPhoneNumber: request.PartialPhoneNumber
                     );
-                    PublicUpdateOwnProfileResult result = await dispatcher.Send(request: command);
+                    PublicUpdateOwnProfileResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicUpdateOwnProfileResponse(User: result.User);
 
