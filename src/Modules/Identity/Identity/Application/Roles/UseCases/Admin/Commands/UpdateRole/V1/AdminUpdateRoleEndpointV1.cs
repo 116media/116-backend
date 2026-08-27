@@ -45,7 +45,12 @@ public class AdminUpdateRoleEndpointV1 : ICarterModule
         group
             .MapPut(
                 "{id}",
-                async (string id, AdminUpdateRoleRequest request, IDispatcher dispatcher) =>
+                async (
+                    string id,
+                    AdminUpdateRoleRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new AdminUpdateRoleCommand(
                         RoleId: id,
@@ -53,7 +58,10 @@ public class AdminUpdateRoleEndpointV1 : ICarterModule
                         Description: request.Description
                     );
 
-                    AdminUpdateRoleResult result = await dispatcher.Send(request: command);
+                    AdminUpdateRoleResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminUpdateRoleResponse(Role: result.Role);
                     return Results.Ok(value: response);
