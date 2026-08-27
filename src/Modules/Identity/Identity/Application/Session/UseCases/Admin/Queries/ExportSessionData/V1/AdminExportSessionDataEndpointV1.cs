@@ -43,6 +43,7 @@ public class AdminExportSessionDataEndpointV1 : ICarterModule
                 pattern: SessionRouteConstants.Export,
                 async (
                     IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
                     ISessionExportService exportService,
                     string? status = null,
                     DateTime? fromDate = null,
@@ -59,7 +60,10 @@ public class AdminExportSessionDataEndpointV1 : ICarterModule
                         Columns: columns
                     );
 
-                    AdminExportSessionDataResult result = await dispatcher.Send(request: query);
+                    AdminExportSessionDataResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     return string.IsNullOrWhiteSpace(value: format)
                         ? Results.Ok(new AdminExportSessionDataResponse(SessionData: result.SessionData))
