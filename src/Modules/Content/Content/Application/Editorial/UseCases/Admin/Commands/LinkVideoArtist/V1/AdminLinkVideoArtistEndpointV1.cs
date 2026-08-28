@@ -43,10 +43,18 @@ public class AdminLinkVideoArtistEndpointV1 : ICarterModule
         group
             .MapPut(
                 $"/{{id}}/{EditorialRouteConstants.Artist}",
-                async (Guid id, AdminLinkVideoArtistRequest request, IDispatcher dispatcher) =>
+                async (
+                    Guid id,
+                    AdminLinkVideoArtistRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new AdminLinkVideoArtistCommand(VideoId: id, ArtistId: request.ArtistId);
-                    AdminLinkVideoArtistResult result = await dispatcher.Send(request: command);
+                    AdminLinkVideoArtistResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminLinkVideoArtistResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);
