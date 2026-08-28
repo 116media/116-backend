@@ -45,7 +45,8 @@ public class AdminVerifyPaymentEndpointV1 : ICarterModule
                     AdminVerifyPaymentRequest request,
                     ClaimsPrincipal user,
                     IClaimsProvider claimsProvider,
-                    IDispatcher dispatcher
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
                 ) =>
                 {
                     Guid adminUserId = claimsProvider.GetUserIdFromClaims(user: user);
@@ -56,7 +57,10 @@ public class AdminVerifyPaymentEndpointV1 : ICarterModule
                         AdminUserId: adminUserId
                     );
 
-                    AdminVerifyPaymentResult result = await dispatcher.Send(request: command);
+                    AdminVerifyPaymentResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminVerifyPaymentResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);
