@@ -45,11 +45,19 @@ public class AdminForceUnpromoteVideoEndpointV1 : ICarterModule
         group
             .MapPatch(
                 $"/{{slug}}/{EditorialRouteConstants.Unpromote}",
-                async (string slug, AdminForceUnpromoteVideoRequest request, IDispatcher dispatcher) =>
+                async (
+                    string slug,
+                    AdminForceUnpromoteVideoRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new AdminForceUnpromoteVideoCommand(Slug: slug, Reason: request.Reason);
 
-                    AdminForceUnpromoteVideoResult result = await dispatcher.Send(request: command);
+                    AdminForceUnpromoteVideoResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminForceUnpromoteVideoResponse(
                         VideoId: result.VideoId,
