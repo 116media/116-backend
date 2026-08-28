@@ -49,7 +49,8 @@ public class PublicProposeLyricsRevisionEndpointV1 : ICarterModule
                     PublicProposeLyricsRevisionRequest request,
                     ClaimsPrincipal user,
                     IClaimsProvider claimsProvider,
-                    IDispatcher dispatcher
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
                 ) =>
                 {
                     Guid userId = claimsProvider.GetUserIdFromClaims(user: user);
@@ -60,7 +61,10 @@ public class PublicProposeLyricsRevisionEndpointV1 : ICarterModule
                         EditSummary: request.EditSummary,
                         UserId: userId
                     );
-                    PublicProposeLyricsRevisionResult result = await dispatcher.Send(request: command);
+                    PublicProposeLyricsRevisionResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicProposeLyricsRevisionResponse(RevisionId: result.RevisionId);
                     return Results.Ok(response);
