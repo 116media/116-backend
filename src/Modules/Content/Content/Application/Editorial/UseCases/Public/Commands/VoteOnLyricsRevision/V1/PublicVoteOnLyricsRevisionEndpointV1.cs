@@ -50,7 +50,8 @@ public class PublicVoteOnLyricsRevisionEndpointV1 : ICarterModule
                     PublicVoteOnLyricsRevisionRequest request,
                     ClaimsPrincipal user,
                     IClaimsProvider claimsProvider,
-                    IDispatcher dispatcher
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
                 ) =>
                 {
                     Guid userId = claimsProvider.GetUserIdFromClaims(user: user);
@@ -61,7 +62,10 @@ public class PublicVoteOnLyricsRevisionEndpointV1 : ICarterModule
                         Comment: request.Comment,
                         UserId: userId
                     );
-                    PublicVoteOnLyricsRevisionResult result = await dispatcher.Send(request: command);
+                    PublicVoteOnLyricsRevisionResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicVoteOnLyricsRevisionResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);
