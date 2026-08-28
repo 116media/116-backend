@@ -32,11 +32,20 @@ public class AdminRemoveItemTierEndpointV1 : ICarterModule
         group
             .MapDelete(
                 $"/{{id}}/{CommerceRouteConstants.Items}/{{itemId}}/{CommerceRouteConstants.Tiers}/{{tierId}}",
-                async (string id, string itemId, string tierId, IDispatcher dispatcher) =>
+                async (
+                    string id,
+                    string itemId,
+                    string tierId,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new AdminRemoveItemTierCommand(OrderId: id, ItemId: itemId, TierId: tierId);
 
-                    AdminRemoveItemTierResult result = await dispatcher.Send(request: command);
+                    AdminRemoveItemTierResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminRemoveItemTierResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);
