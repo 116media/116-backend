@@ -45,7 +45,12 @@ public class AdminUpdateVideoSeoEndpointV1 : ICarterModule
         group
             .MapPatch(
                 $"/{{id}}/{EditorialRouteConstants.Seo}",
-                async (string id, AdminUpdateVideoSeoRequest request, IDispatcher dispatcher) =>
+                async (
+                    string id,
+                    AdminUpdateVideoSeoRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new AdminUpdateVideoSeoCommand(
                         Id: id,
@@ -53,7 +58,10 @@ public class AdminUpdateVideoSeoEndpointV1 : ICarterModule
                         MetaDescription: request.MetaDescription
                     );
 
-                    AdminUpdateVideoSeoResult result = await dispatcher.Send(request: command);
+                    AdminUpdateVideoSeoResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminUpdateVideoSeoResponse(Video: result.Video);
                     return Results.Ok(response);
