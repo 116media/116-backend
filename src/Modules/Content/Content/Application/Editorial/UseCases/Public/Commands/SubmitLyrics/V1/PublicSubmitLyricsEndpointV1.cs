@@ -59,7 +59,8 @@ public class PublicSubmitLyricsEndpointV1 : ICarterModule
                     PublicSubmitLyricsRequest request,
                     ClaimsPrincipal user,
                     IClaimsProvider claimsProvider,
-                    IDispatcher dispatcher
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
                 ) =>
                 {
                     Guid userId = claimsProvider.GetUserIdFromClaims(user: user);
@@ -72,7 +73,10 @@ public class PublicSubmitLyricsEndpointV1 : ICarterModule
                         Slug: request.Slug,
                         UserId: userId
                     );
-                    PublicSubmitLyricsResult result = await dispatcher.Send(request: command);
+                    PublicSubmitLyricsResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicSubmitLyricsResponse(
                         WentToQueue: result.WentToQueue,
