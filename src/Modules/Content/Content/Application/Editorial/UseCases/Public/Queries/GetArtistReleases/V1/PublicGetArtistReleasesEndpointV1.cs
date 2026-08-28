@@ -42,6 +42,7 @@ public class PublicGetArtistReleasesEndpointV1 : ICarterModule
                 async (
                     string slug,
                     IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
                     EnumReleaseType type = EnumReleaseType.Album,
                     int pageIndex = 0,
                     int pageSize = 12
@@ -53,7 +54,10 @@ public class PublicGetArtistReleasesEndpointV1 : ICarterModule
                         Page: new PaginatedRequest(pageIndex, pageSize)
                     );
 
-                    PublicGetArtistReleasesResult result = await dispatcher.Send(request: query);
+                    PublicGetArtistReleasesResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicGetArtistReleasesResponse(Releases: result.Releases);
                     return Results.Ok(response);
