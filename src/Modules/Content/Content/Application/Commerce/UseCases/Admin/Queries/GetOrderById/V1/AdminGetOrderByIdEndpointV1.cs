@@ -33,11 +33,14 @@ public class AdminGetOrderByIdEndpointV1 : ICarterModule
         group
             .MapGet(
                 "/{id:guid}",
-                async (Guid id, IDispatcher dispatcher) =>
+                async (Guid id, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var query = new AdminGetOrderByIdQuery(Id: id);
 
-                    AdminGetOrderByIdResult result = await dispatcher.Send(request: query);
+                    AdminGetOrderByIdResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminGetOrderByIdResponse(Order: result.Order);
                     return Results.Ok(response);
