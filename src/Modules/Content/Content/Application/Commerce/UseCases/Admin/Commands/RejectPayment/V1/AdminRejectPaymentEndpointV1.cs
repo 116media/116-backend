@@ -38,11 +38,19 @@ public class AdminRejectPaymentEndpointV1 : ICarterModule
         group
             .MapPatch(
                 $"/{{id}}/{CommerceRouteConstants.Payment}/{CommerceRouteConstants.Reject}",
-                async (string id, AdminRejectPaymentRequest request, IDispatcher dispatcher) =>
+                async (
+                    string id,
+                    AdminRejectPaymentRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new AdminRejectPaymentCommand(OrderId: id, Notes: request.Notes);
 
-                    AdminRejectPaymentResult result = await dispatcher.Send(request: command);
+                    AdminRejectPaymentResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminRejectPaymentResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);
