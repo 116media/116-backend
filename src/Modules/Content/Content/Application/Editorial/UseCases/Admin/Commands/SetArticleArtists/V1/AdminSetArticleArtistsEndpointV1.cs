@@ -43,11 +43,19 @@ public class AdminSetArticleArtistsEndpointV1 : ICarterModule
         group
             .MapPut(
                 $"/{{id}}/{EditorialRouteConstants.Artists}",
-                async (Guid id, AdminSetArticleArtistsRequest request, IDispatcher dispatcher) =>
+                async (
+                    Guid id,
+                    AdminSetArticleArtistsRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new AdminSetArticleArtistsCommand(ArticleId: id, ArtistIds: request.ArtistIds);
 
-                    AdminSetArticleArtistsResult result = await dispatcher.Send(request: command);
+                    AdminSetArticleArtistsResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminSetArticleArtistsResponse(ArtistIds: result.ArtistIds);
                     return Results.Ok(response);
