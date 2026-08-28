@@ -48,7 +48,8 @@ public class AdminUpsertArtistSocialLinkEndpointV1 : ICarterModule
                     Guid id,
                     EnumSocialPlatform platform,
                     AdminUpsertArtistSocialLinkRequest request,
-                    IDispatcher dispatcher
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
                 ) =>
                 {
                     var command = new AdminUpsertArtistSocialLinkCommand(
@@ -57,7 +58,10 @@ public class AdminUpsertArtistSocialLinkEndpointV1 : ICarterModule
                         Url: request.Url
                     );
 
-                    AdminUpsertArtistSocialLinkResult result = await dispatcher.Send(request: command);
+                    AdminUpsertArtistSocialLinkResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminUpsertArtistSocialLinkResponse(SocialLinkId: result.SocialLinkId);
                     return Results.Ok(response);
