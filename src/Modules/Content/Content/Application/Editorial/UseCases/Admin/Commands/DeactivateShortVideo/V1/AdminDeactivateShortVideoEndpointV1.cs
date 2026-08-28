@@ -37,10 +37,13 @@ public class AdminDeactivateShortVideoEndpointV1 : ICarterModule
         group
             .MapPatch(
                 $"/{{id}}/{EditorialRouteConstants.Deactivate}",
-                async (string id, IDispatcher dispatcher) =>
+                async (string id, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var command = new AdminDeactivateShortVideoCommand(Id: id);
-                    AdminDeactivateShortVideoResult result = await dispatcher.Send(request: command);
+                    AdminDeactivateShortVideoResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminDeactivateShortVideoResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);
