@@ -41,7 +41,12 @@ public class AdminEditOrderEndpointV1 : ICarterModule
         group
             .MapPatch(
                 "/{id}",
-                async (string id, AdminEditOrderRequest request, IDispatcher dispatcher) =>
+                async (
+                    string id,
+                    AdminEditOrderRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new AdminEditOrderCommand(
                         OrderId: id,
@@ -49,7 +54,10 @@ public class AdminEditOrderEndpointV1 : ICarterModule
                         PackageId: request.PackageId
                     );
 
-                    AdminEditOrderResult result = await dispatcher.Send(request: command);
+                    AdminEditOrderResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminEditOrderResponse(Order: result.Order);
                     return Results.Ok(response);
