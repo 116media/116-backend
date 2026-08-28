@@ -48,7 +48,12 @@ public class AdminUpdateAlbumEndpointV1 : ICarterModule
         group
             .MapPut(
                 "/{id}",
-                async (Guid id, AdminUpdateAlbumRequest request, IDispatcher dispatcher) =>
+                async (
+                    Guid id,
+                    AdminUpdateAlbumRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new AdminUpdateAlbumCommand(
                         Id: id,
@@ -58,7 +63,10 @@ public class AdminUpdateAlbumEndpointV1 : ICarterModule
                         ReleaseType: request.ReleaseType
                     );
 
-                    AdminUpdateAlbumResult result = await dispatcher.Send(request: command);
+                    AdminUpdateAlbumResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminUpdateAlbumResponse(Album: result.Album);
                     return Results.Ok(response);
