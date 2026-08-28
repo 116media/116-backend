@@ -46,7 +46,12 @@ public class AdminUpdateLyricsSeoEndpointV1 : ICarterModule
         group
             .MapPatch(
                 $"/{{id}}/{EditorialRouteConstants.Seo}",
-                async (string id, AdminUpdateLyricsSeoRequest request, IDispatcher dispatcher) =>
+                async (
+                    string id,
+                    AdminUpdateLyricsSeoRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new AdminUpdateLyricsSeoCommand(
                         Id: id,
@@ -55,7 +60,10 @@ public class AdminUpdateLyricsSeoEndpointV1 : ICarterModule
                         StructuredData: request.StructuredData
                     );
 
-                    AdminUpdateLyricsSeoResult result = await dispatcher.Send(request: command);
+                    AdminUpdateLyricsSeoResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminUpdateLyricsSeoResponse(Lyrics: result.Lyrics);
                     return Results.Ok(response);
