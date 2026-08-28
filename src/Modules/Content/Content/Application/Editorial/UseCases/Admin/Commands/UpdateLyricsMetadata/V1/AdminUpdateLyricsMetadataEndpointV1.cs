@@ -54,7 +54,12 @@ public class AdminUpdateLyricsMetadataEndpointV1 : ICarterModule
         group
             .MapPut(
                 $"/{{id}}/{EditorialRouteConstants.Metadata}",
-                async (Guid id, AdminUpdateLyricsMetadataRequest request, IDispatcher dispatcher) =>
+                async (
+                    Guid id,
+                    AdminUpdateLyricsMetadataRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new AdminUpdateLyricsMetadataCommand(
                         Id: id,
@@ -65,7 +70,10 @@ public class AdminUpdateLyricsMetadataEndpointV1 : ICarterModule
                         Producer: request.Producer
                     );
 
-                    AdminUpdateLyricsMetadataResult result = await dispatcher.Send(request: command);
+                    AdminUpdateLyricsMetadataResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminUpdateLyricsMetadataResponse(Lyrics: result.Lyrics);
                     return Results.Ok(response);
