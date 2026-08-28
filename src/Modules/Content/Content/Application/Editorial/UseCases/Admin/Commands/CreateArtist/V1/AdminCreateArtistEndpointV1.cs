@@ -59,7 +59,12 @@ public class AdminCreateArtistEndpointV1 : ICarterModule
         group
             .MapPost(
                 "/",
-                async (AdminCreateArtistRequest request, IDispatcher dispatcher, HttpContext httpContext) =>
+                async (
+                    AdminCreateArtistRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
+                    HttpContext httpContext
+                ) =>
                 {
                     var command = new AdminCreateArtistCommand(
                         Name: request.Name,
@@ -71,7 +76,10 @@ public class AdminCreateArtistEndpointV1 : ICarterModule
                         Hometown: request.Hometown
                     );
 
-                    AdminCreateArtistResult result = await dispatcher.Send(request: command);
+                    AdminCreateArtistResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminCreateArtistResponse(Artist: result.Artist);
                     Guid artistId = response.Artist.Id;
