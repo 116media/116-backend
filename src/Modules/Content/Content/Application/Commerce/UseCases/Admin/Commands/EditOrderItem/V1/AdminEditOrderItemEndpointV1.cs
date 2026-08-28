@@ -50,7 +50,13 @@ public class AdminEditOrderItemEndpointV1 : ICarterModule
         group
             .MapPatch(
                 $"/{{id}}/{CommerceRouteConstants.Items}/{{itemId}}",
-                async (string id, string itemId, AdminEditOrderItemRequest request, IDispatcher dispatcher) =>
+                async (
+                    string id,
+                    string itemId,
+                    AdminEditOrderItemRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new AdminEditOrderItemCommand(
                         OrderId: id,
@@ -62,7 +68,10 @@ public class AdminEditOrderItemEndpointV1 : ICarterModule
                         IsBonus: request.IsBonus
                     );
 
-                    AdminEditOrderItemResult result = await dispatcher.Send(request: command);
+                    AdminEditOrderItemResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminEditOrderItemResponse(Item: result.Item);
                     return Results.Ok(response);
