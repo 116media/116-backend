@@ -37,6 +37,7 @@ public class AdminGetAllOrdersEndpointV1 : ICarterModule
                 "/",
                 async (
                     IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
                     int pageIndex = 0,
                     int pageSize = 10,
                     EnumOrderStatus? status = null,
@@ -52,7 +53,10 @@ public class AdminGetAllOrdersEndpointV1 : ICarterModule
                         Search: search
                     );
 
-                    AdminGetAllOrdersResult result = await dispatcher.Send(request: query);
+                    AdminGetAllOrdersResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminGetAllOrdersResponse(Orders: result.Orders);
                     return Results.Ok(response);
