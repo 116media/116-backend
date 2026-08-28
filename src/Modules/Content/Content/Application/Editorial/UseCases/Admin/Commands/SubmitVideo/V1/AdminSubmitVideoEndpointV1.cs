@@ -37,10 +37,13 @@ public class AdminSubmitVideoEndpointV1 : ICarterModule
         group
             .MapPatch(
                 $"/{{id}}/{EditorialRouteConstants.Submit}",
-                async (string id, IDispatcher dispatcher) =>
+                async (string id, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var command = new AdminSubmitVideoCommand(Id: id);
-                    AdminSubmitVideoResult result = await dispatcher.Send(request: command);
+                    AdminSubmitVideoResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminSubmitVideoResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);
