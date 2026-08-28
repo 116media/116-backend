@@ -47,7 +47,13 @@ public class PublicGetArticlePromotionFeedEndpointV1 : ICarterModule
         group
             .MapGet(
                 $"/{EditorialRouteConstants.PromotionFeed}",
-                async (ClaimsPrincipal user, IClaimsProvider claimsProvider, IDispatcher dispatcher, int? stripSize) =>
+                async (
+                    ClaimsPrincipal user,
+                    IClaimsProvider claimsProvider,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
+                    int? stripSize
+                ) =>
                 {
                     Guid? userId = null;
 
@@ -60,7 +66,10 @@ public class PublicGetArticlePromotionFeedEndpointV1 : ICarterModule
                         StripSize: stripSize ?? EditorialFeedConstants.DefaultStripSize,
                         CurrentUserId: userId
                     );
-                    PublicGetArticlePromotionFeedResult result = await dispatcher.Send(request: query);
+                    PublicGetArticlePromotionFeedResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicGetArticlePromotionFeedResponse(
                         Spot1: result.Spot1,
