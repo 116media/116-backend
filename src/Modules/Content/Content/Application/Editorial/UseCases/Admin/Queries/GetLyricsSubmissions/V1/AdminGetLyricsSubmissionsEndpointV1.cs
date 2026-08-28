@@ -41,6 +41,7 @@ public class AdminGetLyricsSubmissionsEndpointV1 : ICarterModule
                 $"/{EditorialRouteConstants.Submissions}",
                 async (
                     IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
                     int pageIndex = 0,
                     int pageSize = 10,
                     EnumSubmissionStatus? status = null
@@ -50,7 +51,10 @@ public class AdminGetLyricsSubmissionsEndpointV1 : ICarterModule
 
                     var query = new AdminGetLyricsSubmissionsQuery(PaginatedRequest: paginatedRequest, Status: status);
 
-                    AdminGetLyricsSubmissionsResult result = await dispatcher.Send(request: query);
+                    AdminGetLyricsSubmissionsResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminGetLyricsSubmissionsResponse(Submissions: result.Submissions);
                     return Results.Ok(response);
