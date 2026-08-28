@@ -49,7 +49,8 @@ public class PublicProposeTranslationRevisionEndpointV1 : ICarterModule
                     PublicProposeTranslationRevisionRequest request,
                     ClaimsPrincipal user,
                     IClaimsProvider claimsProvider,
-                    IDispatcher dispatcher
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
                 ) =>
                 {
                     Guid userId = claimsProvider.GetUserIdFromClaims(user: user);
@@ -60,7 +61,10 @@ public class PublicProposeTranslationRevisionEndpointV1 : ICarterModule
                         EditSummary: request.EditSummary,
                         UserId: userId
                     );
-                    PublicProposeTranslationRevisionResult result = await dispatcher.Send(request: command);
+                    PublicProposeTranslationRevisionResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicProposeTranslationRevisionResponse(RevisionId: result.RevisionId);
                     return Results.Ok(response);
