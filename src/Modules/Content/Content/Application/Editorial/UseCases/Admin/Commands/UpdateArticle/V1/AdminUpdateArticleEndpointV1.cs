@@ -65,7 +65,12 @@ public class AdminUpdateArticleEndpointV1 : ICarterModule
         group
             .MapPut(
                 "/{id}",
-                async (string id, AdminUpdateArticleRequest request, IDispatcher dispatcher) =>
+                async (
+                    string id,
+                    AdminUpdateArticleRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new AdminUpdateArticleCommand(
                         Id: id,
@@ -81,7 +86,10 @@ public class AdminUpdateArticleEndpointV1 : ICarterModule
                         MetaDescription: request.MetaDescription
                     );
 
-                    AdminUpdateArticleResult result = await dispatcher.Send(request: command);
+                    AdminUpdateArticleResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminUpdateArticleResponse(Article: result.Article);
                     return Results.Ok(response);
