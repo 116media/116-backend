@@ -48,11 +48,19 @@ public class AdminResolveAlbumStreamingLinksEndpointV1 : ICarterModule
         group
             .MapPost(
                 $"/{{id}}/{EditorialRouteConstants.StreamingLinks}/{EditorialRouteConstants.Resolve}",
-                async (Guid id, AdminResolveAlbumStreamingLinksRequest request, IDispatcher dispatcher) =>
+                async (
+                    Guid id,
+                    AdminResolveAlbumStreamingLinksRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new AdminResolveAlbumStreamingLinksCommand(AlbumId: id, SourceUrl: request.SourceUrl);
 
-                    AdminResolveAlbumStreamingLinksResult result = await dispatcher.Send(request: command);
+                    AdminResolveAlbumStreamingLinksResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminResolveAlbumStreamingLinksResponse(
                         Resolved: result.Resolved,
