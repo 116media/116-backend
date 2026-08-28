@@ -38,10 +38,13 @@ public class AdminUploadAlbumCoverEndpointV1 : ICarterModule
         group
             .MapPost(
                 $"/{{id}}/{EditorialRouteConstants.Cover}",
-                async (Guid id, IFormFile? file, IDispatcher dispatcher) =>
+                async (Guid id, IFormFile? file, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var command = new AdminUploadAlbumCoverCommand(AlbumId: id, File: file);
-                    AdminUploadAlbumCoverResult result = await dispatcher.Send(request: command);
+                    AdminUploadAlbumCoverResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminUploadAlbumCoverResponse(
                         CoverImageUrl: result.CoverImageUrl,
