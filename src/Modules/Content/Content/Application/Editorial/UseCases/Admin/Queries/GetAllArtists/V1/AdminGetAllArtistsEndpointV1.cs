@@ -39,13 +39,22 @@ public class AdminGetAllArtistsEndpointV1 : ICarterModule
         group
             .MapGet(
                 "/",
-                async (IDispatcher dispatcher, int pageIndex = 0, int pageSize = 10, string? search = null) =>
+                async (
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
+                    int pageIndex = 0,
+                    int pageSize = 10,
+                    string? search = null
+                ) =>
                 {
                     var paginatedRequest = new PaginatedRequest(pageIndex, pageSize);
 
                     var query = new AdminGetAllArtistsQuery(PaginatedRequest: paginatedRequest, Search: search);
 
-                    AdminGetAllArtistsResult result = await dispatcher.Send(request: query);
+                    AdminGetAllArtistsResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminGetAllArtistsResponse(Artists: result.Artists);
                     return Results.Ok(response);
