@@ -48,7 +48,8 @@ public class AdminUpsertAlbumStreamingLinkEndpointV1 : ICarterModule
                     Guid id,
                     EnumStreamingPlatform platform,
                     AdminUpsertAlbumStreamingLinkRequest request,
-                    IDispatcher dispatcher
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
                 ) =>
                 {
                     var command = new AdminUpsertAlbumStreamingLinkCommand(
@@ -57,7 +58,10 @@ public class AdminUpsertAlbumStreamingLinkEndpointV1 : ICarterModule
                         Url: request.Url
                     );
 
-                    AdminUpsertAlbumStreamingLinkResult result = await dispatcher.Send(request: command);
+                    AdminUpsertAlbumStreamingLinkResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminUpsertAlbumStreamingLinkResponse(StreamingLinkId: result.StreamingLinkId);
                     return Results.Ok(response);
