@@ -43,10 +43,18 @@ public class AdminUpdateVideoTagsEndpointV1 : ICarterModule
         group
             .MapPut(
                 $"/{{id}}/{EditorialRouteConstants.Tags}",
-                async (string id, AdminUpdateVideoTagsRequest request, IDispatcher dispatcher) =>
+                async (
+                    string id,
+                    AdminUpdateVideoTagsRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new AdminUpdateVideoTagsCommand(VideoId: id, TagNames: request.TagNames);
-                    AdminUpdateVideoTagsResult result = await dispatcher.Send(request: command);
+                    AdminUpdateVideoTagsResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminUpdateVideoTagsResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);
