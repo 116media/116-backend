@@ -48,7 +48,8 @@ public class AdminUpsertSingleStreamingLinkEndpointV1 : ICarterModule
                     Guid id,
                     EnumStreamingPlatform platform,
                     AdminUpsertSingleStreamingLinkRequest request,
-                    IDispatcher dispatcher
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
                 ) =>
                 {
                     var command = new AdminUpsertSingleStreamingLinkCommand(
@@ -57,7 +58,10 @@ public class AdminUpsertSingleStreamingLinkEndpointV1 : ICarterModule
                         Url: request.Url
                     );
 
-                    AdminUpsertSingleStreamingLinkResult result = await dispatcher.Send(request: command);
+                    AdminUpsertSingleStreamingLinkResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminUpsertSingleStreamingLinkResponse(StreamingLinkId: result.StreamingLinkId);
                     return Results.Ok(response);
