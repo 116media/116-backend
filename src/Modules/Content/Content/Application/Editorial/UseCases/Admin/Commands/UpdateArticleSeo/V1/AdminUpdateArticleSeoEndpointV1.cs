@@ -45,7 +45,12 @@ public class AdminUpdateArticleSeoEndpointV1 : ICarterModule
         group
             .MapPatch(
                 $"/{{id}}/{EditorialRouteConstants.Seo}",
-                async (string id, AdminUpdateArticleSeoRequest request, IDispatcher dispatcher) =>
+                async (
+                    string id,
+                    AdminUpdateArticleSeoRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new AdminUpdateArticleSeoCommand(
                         Id: id,
@@ -53,7 +58,10 @@ public class AdminUpdateArticleSeoEndpointV1 : ICarterModule
                         MetaDescription: request.MetaDescription
                     );
 
-                    AdminUpdateArticleSeoResult result = await dispatcher.Send(request: command);
+                    AdminUpdateArticleSeoResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
                     var response = new AdminUpdateArticleSeoResponse(Article: result.Article);
 
                     return Results.Ok(response);
