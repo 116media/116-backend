@@ -45,12 +45,16 @@ public class AdminUploadArticleImageEndpointV1 : ICarterModule
                     IFormFile? file,
                     EnumArticleImageType imageType,
                     IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
                     HttpContext httpContext
                 ) =>
                 {
                     var command = new AdminUploadArticleImageCommand(ArticleId: id, File: file, ImageType: imageType);
 
-                    AdminUploadArticleImageResult result = await dispatcher.Send(request: command);
+                    AdminUploadArticleImageResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminUploadArticleImageResponse(Image: result.Image);
                     Guid imageId = response.Image.Id;
