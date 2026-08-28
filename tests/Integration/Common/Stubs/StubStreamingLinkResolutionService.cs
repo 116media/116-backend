@@ -23,11 +23,20 @@ public class StubStreamingLinkResolutionService : IStreamingLinkResolutionServic
     /// </summary>
     public StreamingLinkResolutionException? NextException { get; set; }
 
+    /// <summary>
+    /// When set, the next resolutions throw this instead of returning <see cref="NextResult" />.
+    /// Unlike <see cref="NextException" /> this carries an arbitrary, unmapped exception, so a test
+    /// can drive whatever escapes a handler through the real global exception pipeline (for example
+    /// an unexpected fault reaching the fallback strategy, or a cancellation).
+    /// </summary>
+    public Exception? NextUnhandledException { get; set; }
+
     /// <inheritdoc />
     public void Reset()
     {
         NextResult = DefaultResult();
         NextException = null;
+        NextUnhandledException = null;
     }
 
     /// <inheritdoc />
@@ -36,6 +45,11 @@ public class StubStreamingLinkResolutionService : IStreamingLinkResolutionServic
         CancellationToken cancellationToken = default
     )
     {
+        if (NextUnhandledException is not null)
+        {
+            throw NextUnhandledException;
+        }
+
         if (NextException is not null)
         {
             throw NextException;

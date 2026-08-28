@@ -41,7 +41,7 @@ public class AdminGetAllPermissionsHandlerTests : BaseHandlerTest
             PermissionFactory.Create("articles", "read"),
         ];
 
-        PaginatedRequest paginatedRequest = new(PageIndex: 0, PageSize: 10);
+        PaginatedRequest paginatedRequest = new(0, 10);
         AdminGetAllPermissionsQuery query = new(PaginatedRequest: paginatedRequest);
 
         _permissionRepositoryMock.SetupGetAllWithPagination(permissions, totalCount: 3);
@@ -60,7 +60,7 @@ public class AdminGetAllPermissionsHandlerTests : BaseHandlerTest
     public async Task Handle_WithEmptyRepository_ShouldReturnEmptyPaginatedResult()
     {
         // Arrange
-        PaginatedRequest paginatedRequest = new(PageIndex: 0, PageSize: 10);
+        PaginatedRequest paginatedRequest = new(0, 10);
         AdminGetAllPermissionsQuery query = new(PaginatedRequest: paginatedRequest);
 
         _permissionRepositoryMock.SetupGetAllWithPaginationEmpty();
@@ -84,7 +84,7 @@ public class AdminGetAllPermissionsHandlerTests : BaseHandlerTest
         int pageIndex = 2;
         int pageSize = 5;
 
-        PaginatedRequest paginatedRequest = new(PageIndex: pageIndex, PageSize: pageSize);
+        PaginatedRequest paginatedRequest = new(pageIndex, pageSize);
         AdminGetAllPermissionsQuery query = new(PaginatedRequest: paginatedRequest);
 
         _permissionRepositoryMock.SetupGetAllWithPaginationEmpty();
@@ -114,7 +114,7 @@ public class AdminGetAllPermissionsHandlerTests : BaseHandlerTest
         int totalCount = 100;
         List<PermissionEntity> permissions = [PermissionFactory.Create("users", "read")];
 
-        PaginatedRequest paginatedRequest = new(PageIndex: 0, PageSize: 10);
+        PaginatedRequest paginatedRequest = new(0, 10);
         AdminGetAllPermissionsQuery query = new(PaginatedRequest: paginatedRequest);
 
         _permissionRepositoryMock.SetupGetAllWithPagination(permissions, totalCount: totalCount);
@@ -137,7 +137,7 @@ public class AdminGetAllPermissionsHandlerTests : BaseHandlerTest
         // Arrange
         string searchTerm = "users";
 
-        PaginatedRequest paginatedRequest = new(PageIndex: 0, PageSize: 10);
+        PaginatedRequest paginatedRequest = new(0, 10);
         AdminGetAllPermissionsQuery query = new(PaginatedRequest: paginatedRequest, Search: searchTerm);
 
         _permissionRepositoryMock.SetupGetAllWithPaginationEmpty();
@@ -166,7 +166,7 @@ public class AdminGetAllPermissionsHandlerTests : BaseHandlerTest
         // Arrange
         bool isActive = true;
 
-        PaginatedRequest paginatedRequest = new(PageIndex: 0, PageSize: 10);
+        PaginatedRequest paginatedRequest = new(0, 10);
         AdminGetAllPermissionsQuery query = new(PaginatedRequest: paginatedRequest, IsActive: isActive);
 
         _permissionRepositoryMock.SetupGetAllWithPaginationEmpty();
@@ -197,7 +197,7 @@ public class AdminGetAllPermissionsHandlerTests : BaseHandlerTest
         bool isActive = true;
         bool isDeleted = false;
 
-        PaginatedRequest paginatedRequest = new(PageIndex: 0, PageSize: 10);
+        PaginatedRequest paginatedRequest = new(0, 10);
         AdminGetAllPermissionsQuery query = new(
             PaginatedRequest: paginatedRequest,
             Search: searchTerm,
@@ -241,7 +241,7 @@ public class AdminGetAllPermissionsHandlerTests : BaseHandlerTest
 
         List<PermissionEntity> permissions = [permission];
 
-        PaginatedRequest paginatedRequest = new(PageIndex: 0, PageSize: 10);
+        PaginatedRequest paginatedRequest = new(0, 10);
         AdminGetAllPermissionsQuery query = new(PaginatedRequest: paginatedRequest);
 
         _permissionRepositoryMock.SetupGetAllWithPagination(permissions, totalCount: 1);
@@ -265,7 +265,7 @@ public class AdminGetAllPermissionsHandlerTests : BaseHandlerTest
     public async Task Handle_WithCancellationToken_ShouldPassToRepository()
     {
         // Arrange
-        PaginatedRequest paginatedRequest = new(PageIndex: 0, PageSize: 10);
+        PaginatedRequest paginatedRequest = new(0, 10);
         AdminGetAllPermissionsQuery query = new(PaginatedRequest: paginatedRequest);
 
         using CancellationTokenSource cts = new();

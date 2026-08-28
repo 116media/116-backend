@@ -31,7 +31,7 @@ public class AdminGetAllSessionsHandlerTests : BaseHandlerTest
     public async Task Handle_WithSessions_ShouldReturnPaginatedResult()
     {
         // Arrange
-        PaginatedRequest paginatedRequest = new(PageIndex: 0, PageSize: 10);
+        PaginatedRequest paginatedRequest = new(0, 10);
         AdminGetAllSessionsQuery query = new(PaginatedRequest: paginatedRequest);
 
         List<SessionEntity> sessions = SessionFactory.CreateMany(5);
@@ -49,7 +49,7 @@ public class AdminGetAllSessionsHandlerTests : BaseHandlerTest
     public async Task Handle_WithNoSessions_ShouldReturnEmptyResult()
     {
         // Arrange
-        PaginatedRequest paginatedRequest = new(PageIndex: 0, PageSize: 10);
+        PaginatedRequest paginatedRequest = new(0, 10);
         AdminGetAllSessionsQuery query = new(PaginatedRequest: paginatedRequest);
         _sessionRepositoryMock.SetupGetAllWithPaginationEmpty();
 
@@ -65,7 +65,7 @@ public class AdminGetAllSessionsHandlerTests : BaseHandlerTest
     public async Task Handle_ShouldReturnCorrectPaginationInfo()
     {
         // Arrange
-        PaginatedRequest paginatedRequest = new(PageIndex: 2, PageSize: 5);
+        PaginatedRequest paginatedRequest = new(2, 5);
         AdminGetAllSessionsQuery query = new(PaginatedRequest: paginatedRequest);
 
         List<SessionEntity> sessions = SessionFactory.CreateMany(5);
@@ -85,7 +85,7 @@ public class AdminGetAllSessionsHandlerTests : BaseHandlerTest
     {
         // Arrange
         var userId = Guid.NewGuid();
-        PaginatedRequest paginatedRequest = new(PageIndex: 0, PageSize: 10);
+        PaginatedRequest paginatedRequest = new(0, 10);
         AdminGetAllSessionsQuery query = new(PaginatedRequest: paginatedRequest, UserId: userId.ToString());
         _sessionRepositoryMock.SetupGetAllWithPaginationEmpty();
 
@@ -113,7 +113,7 @@ public class AdminGetAllSessionsHandlerTests : BaseHandlerTest
     public async Task Handle_WithInvalidUserIdFilter_ShouldCallRepositoryWithNullUserId()
     {
         // Arrange
-        PaginatedRequest paginatedRequest = new(PageIndex: 0, PageSize: 10);
+        PaginatedRequest paginatedRequest = new(0, 10);
         AdminGetAllSessionsQuery query = new(PaginatedRequest: paginatedRequest, UserId: "invalid-guid");
         _sessionRepositoryMock.SetupGetAllWithPaginationEmpty();
 
@@ -141,7 +141,7 @@ public class AdminGetAllSessionsHandlerTests : BaseHandlerTest
     public async Task Handle_WithEmptyUserIdFilter_ShouldCallRepositoryWithNullUserId()
     {
         // Arrange
-        PaginatedRequest paginatedRequest = new(PageIndex: 0, PageSize: 10);
+        PaginatedRequest paginatedRequest = new(0, 10);
         AdminGetAllSessionsQuery query = new(PaginatedRequest: paginatedRequest, UserId: "");
         _sessionRepositoryMock.SetupGetAllWithPaginationEmpty();
 
@@ -175,7 +175,7 @@ public class AdminGetAllSessionsHandlerTests : BaseHandlerTest
         string status = "Active";
         string ipAddress = "192.168.1.1";
 
-        PaginatedRequest paginatedRequest = new(PageIndex: 0, PageSize: 10);
+        PaginatedRequest paginatedRequest = new(0, 10);
         AdminGetAllSessionsQuery query = new(
             PaginatedRequest: paginatedRequest,
             Status: status,
@@ -210,7 +210,7 @@ public class AdminGetAllSessionsHandlerTests : BaseHandlerTest
     public async Task Handle_ShouldAdjustPageIndexForRepository()
     {
         // Arrange - PageIndex is 0-based in query but 1-based for repository
-        PaginatedRequest paginatedRequest = new(PageIndex: 0, PageSize: 10);
+        PaginatedRequest paginatedRequest = new(0, 10);
         AdminGetAllSessionsQuery query = new(PaginatedRequest: paginatedRequest);
         _sessionRepositoryMock.SetupGetAllWithPaginationEmpty();
 
@@ -242,7 +242,7 @@ public class AdminGetAllSessionsHandlerTests : BaseHandlerTest
     public async Task Handle_WithCancellationToken_ShouldPassToRepository()
     {
         // Arrange
-        PaginatedRequest paginatedRequest = new(PageIndex: 0, PageSize: 10);
+        PaginatedRequest paginatedRequest = new(0, 10);
         AdminGetAllSessionsQuery query = new(PaginatedRequest: paginatedRequest);
         using CancellationTokenSource cts = new();
         _sessionRepositoryMock.SetupGetAllWithPaginationEmpty();

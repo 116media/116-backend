@@ -30,10 +30,7 @@ public class AdminGetAllSessionsValidatorTests
     public async Task Validate_WithValidQuery_ShouldNotHaveErrors()
     {
         // Arrange
-        AdminGetAllSessionsQuery query = new(
-            PaginatedRequest: new PaginatedRequest(PageIndex: 0, PageSize: 10),
-            UserId: null
-        );
+        AdminGetAllSessionsQuery query = new(PaginatedRequest: new PaginatedRequest(0, 10), UserId: null);
 
         // Act
         TestValidationResult<AdminGetAllSessionsQuery>? result = await _validator.TestValidateAsync(query);
@@ -48,7 +45,7 @@ public class AdminGetAllSessionsValidatorTests
     {
         // Arrange
         AdminGetAllSessionsQuery query = new(
-            PaginatedRequest: new PaginatedRequest(PageIndex: 0, PageSize: 10),
+            PaginatedRequest: new PaginatedRequest(0, 10),
             UserId: Guid.NewGuid().ToString()
         );
 
@@ -68,10 +65,7 @@ public class AdminGetAllSessionsValidatorTests
     public async Task Validate_WithInvalidUserIdFormat_ShouldHaveError()
     {
         // Arrange
-        AdminGetAllSessionsQuery query = new(
-            PaginatedRequest: new PaginatedRequest(PageIndex: 0, PageSize: 10),
-            UserId: "not-a-guid"
-        );
+        AdminGetAllSessionsQuery query = new(PaginatedRequest: new PaginatedRequest(0, 10), UserId: "not-a-guid");
 
         // Act
         TestValidationResult<AdminGetAllSessionsQuery>? result = await _validator.TestValidateAsync(query);
@@ -87,10 +81,7 @@ public class AdminGetAllSessionsValidatorTests
     public async Task Validate_WithNullUserId_ShouldNotHaveError()
     {
         // Arrange
-        AdminGetAllSessionsQuery query = new(
-            PaginatedRequest: new PaginatedRequest(PageIndex: 0, PageSize: 10),
-            UserId: null
-        );
+        AdminGetAllSessionsQuery query = new(PaginatedRequest: new PaginatedRequest(0, 10), UserId: null);
 
         // Act
         TestValidationResult<AdminGetAllSessionsQuery>? result = await _validator.TestValidateAsync(query);
@@ -104,10 +95,7 @@ public class AdminGetAllSessionsValidatorTests
     public async Task Validate_WithEmptyUserId_ShouldNotHaveError()
     {
         // Arrange
-        AdminGetAllSessionsQuery query = new(
-            PaginatedRequest: new PaginatedRequest(PageIndex: 0, PageSize: 10),
-            UserId: string.Empty
-        );
+        AdminGetAllSessionsQuery query = new(PaginatedRequest: new PaginatedRequest(0, 10), UserId: string.Empty);
 
         // Act
         TestValidationResult<AdminGetAllSessionsQuery>? result = await _validator.TestValidateAsync(query);

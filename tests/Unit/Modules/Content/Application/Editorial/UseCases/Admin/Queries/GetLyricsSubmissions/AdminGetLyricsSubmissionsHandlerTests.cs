@@ -33,7 +33,7 @@ public class AdminGetLyricsSubmissionsHandlerTests
         // Arrange
         LyricsSubmissionEntity submission = LyricsSubmissionFactory.Create("Eloko Oyo", "Fally Ipupa");
         _submissionRepositoryMock.SetupGetAllAsync([submission], 1);
-        var query = new AdminGetLyricsSubmissionsQuery(new PaginatedRequest(PageIndex: 0, PageSize: 10), Status: null);
+        var query = new AdminGetLyricsSubmissionsQuery(new PaginatedRequest(0, 10), Status: null);
 
         // Act
         AdminGetLyricsSubmissionsResult result = await _handler.Handle(query, CancellationToken.None);
@@ -53,7 +53,7 @@ public class AdminGetLyricsSubmissionsHandlerTests
     {
         // Arrange
         _submissionRepositoryMock.SetupGetAllAsync([], 0);
-        var query = new AdminGetLyricsSubmissionsQuery(new PaginatedRequest(PageIndex: 0, PageSize: 10), Status: null);
+        var query = new AdminGetLyricsSubmissionsQuery(new PaginatedRequest(0, 10), Status: null);
 
         // Act
         AdminGetLyricsSubmissionsResult result = await _handler.Handle(query, CancellationToken.None);

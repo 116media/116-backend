@@ -36,7 +36,7 @@ public class AdminGetAllCustomersHandlerTests : BaseContentHandlerTest
 
         _customerRepositoryMock.SetupGetAllAsync(customers, totalCount);
 
-        var query = new AdminGetAllCustomersQuery(PaginatedRequest: new PaginatedRequest(PageIndex: 0, PageSize: 10));
+        var query = new AdminGetAllCustomersQuery(PaginatedRequest: new PaginatedRequest(0, 10));
 
         // Act
         AdminGetAllCustomersResult result = await _handler.Handle(query, CancellationToken.None);
@@ -52,7 +52,7 @@ public class AdminGetAllCustomersHandlerTests : BaseContentHandlerTest
         // Arrange
         _customerRepositoryMock.SetupGetAllAsync(new List<CustomerEntity>(), 0);
 
-        var query = new AdminGetAllCustomersQuery(PaginatedRequest: new PaginatedRequest(PageIndex: 0, PageSize: 10));
+        var query = new AdminGetAllCustomersQuery(PaginatedRequest: new PaginatedRequest(0, 10));
 
         // Act
         AdminGetAllCustomersResult result = await _handler.Handle(query, CancellationToken.None);

@@ -40,7 +40,7 @@ public class AdminGetAllCategoriesHandlerTests : BaseContentHandlerTest
 
         _categoryRepositoryMock.SetupGetAllAsync(categories, totalCount);
 
-        var query = new AdminGetAllCategoriesQuery(PaginatedRequest: new PaginatedRequest(PageIndex: 0, PageSize: 10));
+        var query = new AdminGetAllCategoriesQuery(PaginatedRequest: new PaginatedRequest(0, 10));
 
         // Act
         AdminGetAllCategoriesResult result = await _handler.Handle(query, CancellationToken.None);
@@ -56,7 +56,7 @@ public class AdminGetAllCategoriesHandlerTests : BaseContentHandlerTest
         // Arrange
         _categoryRepositoryMock.SetupGetAllAsync(new List<CategoryEntity>(), 0);
 
-        var query = new AdminGetAllCategoriesQuery(PaginatedRequest: new PaginatedRequest(PageIndex: 0, PageSize: 10));
+        var query = new AdminGetAllCategoriesQuery(PaginatedRequest: new PaginatedRequest(0, 10));
 
         // Act
         AdminGetAllCategoriesResult result = await _handler.Handle(query, CancellationToken.None);

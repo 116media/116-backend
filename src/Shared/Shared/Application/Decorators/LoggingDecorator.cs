@@ -25,7 +25,7 @@ public class LoggingDecorator<TRequest, TResponse>(
     /// </summary>
     public async Task<TResponse> Handle(TRequest request, CancellationToken cancellationToken = default)
     {
-        LogStart(request);
+        LogStart();
 
         long startTimestamp = timeProvider.GetTimestamp();
 
@@ -38,11 +38,13 @@ public class LoggingDecorator<TRequest, TResponse>(
     }
 
     /// <summary>
-    /// Logs the start of the request processing.
+    /// Logs the start of the request processing. The request payload is intentionally NOT logged:
+    /// command records include credentials, OTP codes and refresh tokens, and Serilog would serialize
+    /// them in full.
     /// </summary>
-    private void LogStart(TRequest request)
+    private void LogStart()
     {
-        logger.LogInformation("[START] Handling {Request} - RequestData={RequestData}", typeof(TRequest).Name, request);
+        logger.LogInformation("[START] Handling {Request}", typeof(TRequest).Name);
     }
 
     /// <summary>
@@ -66,10 +68,6 @@ public class LoggingDecorator<TRequest, TResponse>(
     /// </summary>
     private void LogEnd()
     {
-        logger.LogInformation(
-            "[END] Handled {Request} - Response={Response}",
-            typeof(TRequest).Name,
-            typeof(TResponse).Name
-        );
+        logger.LogDebug("[END] Handled {Request} - Response={Response}", typeof(TRequest).Name, typeof(TResponse).Name);
     }
 }
