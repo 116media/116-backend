@@ -45,6 +45,7 @@ public class AdminAddItemTierEndpointV1 : ICarterModule
                     string itemId,
                     AdminAddItemTierRequest request,
                     IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
                     HttpContext httpContext
                 ) =>
                 {
@@ -54,7 +55,10 @@ public class AdminAddItemTierEndpointV1 : ICarterModule
                         PricingTierId: request.PricingTierId
                     );
 
-                    AdminAddItemTierResult result = await dispatcher.Send(request: command);
+                    AdminAddItemTierResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminAddItemTierResponse(Tier: result.Tier);
                     string path =
