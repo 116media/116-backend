@@ -38,11 +38,19 @@ public class AdminRemoveArtistSocialLinkEndpointV1 : ICarterModule
         group
             .MapDelete(
                 $"/{{id}}/{EditorialRouteConstants.SocialLinks}/{{platform}}",
-                async (Guid id, EnumSocialPlatform platform, IDispatcher dispatcher) =>
+                async (
+                    Guid id,
+                    EnumSocialPlatform platform,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new AdminRemoveArtistSocialLinkCommand(ArtistId: id, Platform: platform);
 
-                    AdminRemoveArtistSocialLinkResult result = await dispatcher.Send(request: command);
+                    AdminRemoveArtistSocialLinkResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminRemoveArtistSocialLinkResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);
