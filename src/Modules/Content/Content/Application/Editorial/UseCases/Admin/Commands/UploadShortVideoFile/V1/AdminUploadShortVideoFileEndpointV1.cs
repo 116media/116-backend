@@ -38,10 +38,13 @@ public class AdminUploadShortVideoFileEndpointV1 : ICarterModule
         group
             .MapPost(
                 $"/{{id}}/{EditorialRouteConstants.Video}",
-                async (string id, IFormFile? file, IDispatcher dispatcher) =>
+                async (string id, IFormFile? file, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var command = new AdminUploadShortVideoFileCommand(ShortVideoId: id, File: file);
-                    AdminUploadShortVideoFileResult result = await dispatcher.Send(request: command);
+                    AdminUploadShortVideoFileResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminUploadShortVideoFileResponse(
                         VideoUrl: result.VideoUrl,
