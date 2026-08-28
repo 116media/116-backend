@@ -41,6 +41,7 @@ public class AdminGetAllShortsEndpointV1 : ICarterModule
                 "/",
                 async (
                     IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
                     int pageIndex = 0,
                     int pageSize = 10,
                     string? search = null,
@@ -55,7 +56,10 @@ public class AdminGetAllShortsEndpointV1 : ICarterModule
                         IsActive: isActive
                     );
 
-                    AdminGetAllShortsResult result = await dispatcher.Send(request: query);
+                    AdminGetAllShortsResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminGetAllShortsResponse(ShortVideos: result.ShortVideos);
                     return Results.Ok(response);
