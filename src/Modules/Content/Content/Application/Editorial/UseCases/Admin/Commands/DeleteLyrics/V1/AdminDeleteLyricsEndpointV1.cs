@@ -37,10 +37,13 @@ public class AdminDeleteLyricsEndpointV1 : ICarterModule
         group
             .MapDelete(
                 "/{id}",
-                async (string id, IDispatcher dispatcher) =>
+                async (string id, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var command = new AdminDeleteLyricsCommand(Id: id);
-                    AdminDeleteLyricsResult result = await dispatcher.Send(request: command);
+                    AdminDeleteLyricsResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminDeleteLyricsResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);
