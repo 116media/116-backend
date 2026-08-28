@@ -45,11 +45,19 @@ public class AdminForceUnpromoteLyricsEndpointV1 : ICarterModule
         group
             .MapPost(
                 $"/{{id}}/{EditorialRouteConstants.Unpromote}",
-                async (Guid id, AdminForceUnpromoteLyricsRequest request, IDispatcher dispatcher) =>
+                async (
+                    Guid id,
+                    AdminForceUnpromoteLyricsRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new AdminForceUnpromoteLyricsCommand(Id: id, Reason: request.Reason);
 
-                    AdminForceUnpromoteLyricsResult result = await dispatcher.Send(request: command);
+                    AdminForceUnpromoteLyricsResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminForceUnpromoteLyricsResponse(
                         LyricsId: result.LyricsId,
