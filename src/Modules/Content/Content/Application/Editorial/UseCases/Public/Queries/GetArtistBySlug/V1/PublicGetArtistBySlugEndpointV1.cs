@@ -49,6 +49,7 @@ public class PublicGetArtistBySlugEndpointV1 : ICarterModule
                 async (
                     string slug,
                     IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
                     int lyricsPageIndex = 0,
                     int lyricsPageSize = 10,
                     int videosPageIndex = 0,
@@ -61,7 +62,10 @@ public class PublicGetArtistBySlugEndpointV1 : ICarterModule
                         VideosPage: new PaginatedRequest(videosPageIndex, videosPageSize)
                     );
 
-                    PublicGetArtistBySlugResult result = await dispatcher.Send(request: query);
+                    PublicGetArtistBySlugResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicGetArtistBySlugResponse(
                         Artist: result.Artist,
