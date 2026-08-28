@@ -38,10 +38,13 @@ public class AdminUploadShortVideoThumbnailEndpointV1 : ICarterModule
         group
             .MapPost(
                 $"/{{id}}/{EditorialRouteConstants.Thumbnail}",
-                async (string id, IFormFile file, IDispatcher dispatcher) =>
+                async (string id, IFormFile file, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var command = new AdminUploadShortVideoThumbnailCommand(ShortVideoId: id, File: file);
-                    AdminUploadShortVideoThumbnailResult result = await dispatcher.Send(request: command);
+                    AdminUploadShortVideoThumbnailResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminUploadShortVideoThumbnailResponse(
                         ThumbnailUrl: result.ThumbnailUrl,
