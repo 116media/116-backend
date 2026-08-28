@@ -42,14 +42,22 @@ public class AdminCreateOrderEndpointV1 : ICarterModule
         group
             .MapPost(
                 "/",
-                async (AdminCreateOrderRequest request, IDispatcher dispatcher, HttpContext httpContext) =>
+                async (
+                    AdminCreateOrderRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
+                    HttpContext httpContext
+                ) =>
                 {
                     var command = new AdminCreateOrderCommand(
                         CustomerId: request.CustomerId,
                         PackageId: request.PackageId
                     );
 
-                    AdminCreateOrderResult result = await dispatcher.Send(request: command);
+                    AdminCreateOrderResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminCreateOrderResponse(Order: result.Order);
                     string path = $"{ContentConstants.Admin}/{CommerceRouteConstants.Orders}/{response.Order.Id}";
