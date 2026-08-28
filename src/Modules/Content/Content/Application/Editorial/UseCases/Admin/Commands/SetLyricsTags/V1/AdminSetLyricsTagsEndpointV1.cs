@@ -43,10 +43,18 @@ public class AdminSetLyricsTagsEndpointV1 : ICarterModule
         group
             .MapPut(
                 $"/{{id}}/{EditorialRouteConstants.Tags}",
-                async (Guid id, AdminSetLyricsTagsRequest request, IDispatcher dispatcher) =>
+                async (
+                    Guid id,
+                    AdminSetLyricsTagsRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new AdminSetLyricsTagsCommand(LyricsId: id, TagIds: request.TagIds);
-                    AdminSetLyricsTagsResult result = await dispatcher.Send(request: command);
+                    AdminSetLyricsTagsResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminSetLyricsTagsResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);
