@@ -62,7 +62,12 @@ public class AdminUpdateVideoEndpointV1 : ICarterModule
         group
             .MapPut(
                 "/{id}",
-                async (string id, AdminUpdateVideoRequest request, IDispatcher dispatcher) =>
+                async (
+                    string id,
+                    AdminUpdateVideoRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new AdminUpdateVideoCommand(
                         Id: id,
@@ -77,7 +82,10 @@ public class AdminUpdateVideoEndpointV1 : ICarterModule
                         MetaDescription: request.MetaDescription
                     );
 
-                    AdminUpdateVideoResult result = await dispatcher.Send(request: command);
+                    AdminUpdateVideoResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
                     var response = new AdminUpdateVideoResponse(Video: result.Video);
                     return Results.Ok(response);
                 }
