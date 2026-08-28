@@ -38,10 +38,13 @@ public class AdminGetArticleByIdEndpointV1 : ICarterModule
         group
             .MapGet(
                 "/{id:guid}",
-                async (Guid id, IDispatcher dispatcher) =>
+                async (Guid id, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var query = new AdminGetArticleByIdQuery(Id: id);
-                    AdminGetArticleByIdResult result = await dispatcher.Send(request: query);
+                    AdminGetArticleByIdResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminGetArticleByIdResponse(Article: result.Article);
                     return Results.Ok(response);
