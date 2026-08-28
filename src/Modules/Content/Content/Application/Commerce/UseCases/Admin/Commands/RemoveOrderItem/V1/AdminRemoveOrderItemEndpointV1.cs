@@ -32,10 +32,13 @@ public class AdminRemoveOrderItemEndpointV1 : ICarterModule
         group
             .MapDelete(
                 $"/{{id}}/{CommerceRouteConstants.Items}/{{itemId}}",
-                async (string id, string itemId, IDispatcher dispatcher) =>
+                async (string id, string itemId, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var command = new AdminRemoveOrderItemCommand(OrderId: id, ItemId: itemId);
-                    AdminRemoveOrderItemResult result = await dispatcher.Send(request: command);
+                    AdminRemoveOrderItemResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminRemoveOrderItemResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);
