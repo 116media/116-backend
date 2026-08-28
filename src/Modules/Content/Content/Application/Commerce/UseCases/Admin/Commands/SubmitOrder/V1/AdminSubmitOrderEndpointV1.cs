@@ -32,10 +32,13 @@ public class AdminSubmitOrderEndpointV1 : ICarterModule
         group
             .MapPatch(
                 $"/{{id}}/{CommerceRouteConstants.Submit}",
-                async (string id, IDispatcher dispatcher) =>
+                async (string id, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var command = new AdminSubmitOrderCommand(OrderId: id);
-                    AdminSubmitOrderResult result = await dispatcher.Send(request: command);
+                    AdminSubmitOrderResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminSubmitOrderResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);
