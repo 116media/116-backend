@@ -36,9 +36,12 @@ public class PublicGetVideoFeedEndpointV1 : ICarterModule
         group
             .MapGet(
                 $"/{EditorialRouteConstants.Feed}",
-                async (IDispatcher dispatcher) =>
+                async (IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
-                    PublicGetVideoFeedResult result = await dispatcher.Send(request: new PublicGetVideoFeedQuery());
+                    PublicGetVideoFeedResult result = await dispatcher.Send(
+                        request: new PublicGetVideoFeedQuery(),
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicGetVideoFeedResponse(Sections: result.Sections);
                     return Results.Ok(response);
