@@ -34,13 +34,14 @@ public class PublicGetOwnSharedArticlesEndpointV1 : ICarterModule
                     ClaimsPrincipal user,
                     IClaimsProvider claims,
                     IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
                     int pageIndex = 0,
                     int pageSize = 10
                 ) =>
                 {
                     Guid userId = claims.GetUserIdFromClaims(user);
                     var query = new PublicGetOwnSharedArticlesQuery(userId, new PaginatedRequest(pageIndex, pageSize));
-                    PublicGetOwnSharedArticlesResult result = await dispatcher.Send(query);
+                    PublicGetOwnSharedArticlesResult result = await dispatcher.Send(query, cancellationToken);
                     return Results.Ok(result.Articles);
                 }
             )
