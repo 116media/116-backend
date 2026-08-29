@@ -37,11 +37,14 @@ public class PublicGetActivePromotionLevelsEndpointV1 : ICarterModule
         group
             .MapGet(
                 "/",
-                async (IDispatcher dispatcher) =>
+                async (IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var query = new PublicGetActivePromotionLevelsQuery();
 
-                    PublicGetActivePromotionLevelsResult result = await dispatcher.Send(request: query);
+                    PublicGetActivePromotionLevelsResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicGetActivePromotionLevelsResponse(PromotionLevels: result.PromotionLevels);
                     return Results.Ok(response);
