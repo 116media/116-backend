@@ -1,43 +1,30 @@
-using _116.Tests.Fixtures.Builders.Requests.Identity;
-
 namespace _116.Integration.Tests.Shared.Application.Configurations;
 
 /// <summary>
-/// Verifies that a host started without <c>OTP_PEPPER</c> refuses to run an OTP flow rather than
-/// falling back to an unkeyed hash, which would leave stored codes recoverable from a dump.
+/// Verifies that a host started without <c>OTP_PEPPER</c> refuses to boot, rather than falling
+/// back to an unkeyed hash that would leave stored codes recoverable from a dump.
 /// </summary>
 /// <remarks>
-/// These tests run against <see cref="OtpPepperlessPostgresFixture" />, the only host booted with
-/// the variable cleared. The key is read when the OTP service is resolved, so any request that
-/// reaches the service fails; the endpoint chosen here is anonymous, keeping the assertion about
-/// configuration rather than authentication.
+/// The pepperless host is built inside the test because boot validation throws during host
+/// construction; a collection fixture warming the host would fail before any test ran. The
+/// fixture restores the variable on dispose, so the shared hosts are unaffected.
 /// </remarks>
-/// <param name="db">The dedicated Testcontainer database and pepperless application host.</param>
+/// <param name="db">The shared Testcontainer database the pepperless host points at.</param>
 [Collection("OtpPepperless")]
-public class OtpPepperFailClosedTests(OtpPepperlessPostgresFixture db) : IDisposable
+public class OtpPepperFailClosedTests(OtpPepperlessPostgresFixture db)
 {
-    private readonly HttpClient _client = db.Api.CreateClient();
-
-    /// <inheritdoc />
-    public void Dispose()
-    {
-        _client.Dispose();
-        GC.SuppressFinalize(this);
-    }
-
     [Fact]
-    public async Task ForgotPassword_WithoutAConfiguredPepper_FailsInsteadOfHashingUnkeyed()
+    public void Boot_WithoutAConfiguredPepper_RefusesToStartNamingTheVariable()
     {
         // Arrange
-        var request = new PublicForgotPasswordRequestBuilder().WithEmail(TestUser.VisitorEmail).Build();
+        using var pepperlessHost = new OtpPepperlessApiFixture(db);
 
         // Act
-        using HttpResponseMessage response = await _client.PostAsJsonAsync(
-            Routes.Public.Auth.ForgotPassword(),
-            request
-        );
+        Action boot = () => pepperlessHost.CreateClient();
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
+        boot.Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage("*Invalid environment configuration*OTP_PEPPER is missing or empty.*");
     }
 }
