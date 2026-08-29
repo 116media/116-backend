@@ -44,6 +44,7 @@ public class PublicGetPublishedLyricsEndpointV1 : ICarterModule
                     ClaimsPrincipal user,
                     IClaimsProvider claimsProvider,
                     IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
                     int pageIndex = 0,
                     int pageSize = 10,
                     string? search = null,
@@ -70,7 +71,10 @@ public class PublicGetPublishedLyricsEndpointV1 : ICarterModule
                         CurrentUserId: userId
                     );
 
-                    PublicGetPublishedLyricsResult result = await dispatcher.Send(request: query);
+                    PublicGetPublishedLyricsResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicGetPublishedLyricsResponse(Lyrics: result.Lyrics);
                     return Results.Ok(response);
