@@ -39,7 +39,8 @@ public class PublicDeleteArticleCommentEndpointV1 : ICarterModule
                     string commentId,
                     ClaimsPrincipal user,
                     IClaimsProvider claimsProvider,
-                    IDispatcher dispatcher
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
                 ) =>
                 {
                     Guid userId = claimsProvider.GetUserIdFromClaims(user: user);
@@ -52,7 +53,10 @@ public class PublicDeleteArticleCommentEndpointV1 : ICarterModule
                         CommentId: parsedCommentId
                     );
 
-                    PublicDeleteArticleCommentResult result = await dispatcher.Send(request: command);
+                    PublicDeleteArticleCommentResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicDeleteArticleCommentResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);
