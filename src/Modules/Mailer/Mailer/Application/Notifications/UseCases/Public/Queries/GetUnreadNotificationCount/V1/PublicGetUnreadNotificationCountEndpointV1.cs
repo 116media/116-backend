@@ -37,12 +37,20 @@ public class PublicGetUnreadNotificationCountEndpointV1 : ICarterModule
         group
             .MapGet(
                 pattern: "unread-count",
-                async (ClaimsPrincipal user, IClaimsProvider claims, IDispatcher dispatcher) =>
+                async (
+                    ClaimsPrincipal user,
+                    IClaimsProvider claims,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     Guid userId = claims.GetUserIdFromClaims(user: user);
 
                     var query = new PublicGetUnreadNotificationCountQuery(UserId: userId);
-                    PublicGetUnreadNotificationCountResult result = await dispatcher.Send(request: query);
+                    PublicGetUnreadNotificationCountResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicGetUnreadNotificationCountResponse(Count: result.Count);
 
