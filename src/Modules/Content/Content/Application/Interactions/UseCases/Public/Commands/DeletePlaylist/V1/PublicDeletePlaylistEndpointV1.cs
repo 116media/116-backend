@@ -34,13 +34,22 @@ public class PublicDeletePlaylistEndpointV1 : ICarterModule
         group
             .MapDelete(
                 "/{id}",
-                async (string id, ClaimsPrincipal user, IClaimsProvider claimsProvider, IDispatcher dispatcher) =>
+                async (
+                    string id,
+                    ClaimsPrincipal user,
+                    IClaimsProvider claimsProvider,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     Guid playlistId = Guid.Parse(id);
                     Guid userId = claimsProvider.GetUserIdFromClaims(user: user);
 
                     var command = new PublicDeletePlaylistCommand(Id: playlistId, UserId: userId);
-                    PublicDeletePlaylistResult result = await dispatcher.Send(request: command);
+                    PublicDeletePlaylistResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicDeletePlaylistResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);
