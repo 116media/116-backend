@@ -45,11 +45,19 @@ public class AdminUpdateTagEndpointV1 : ICarterModule
         group
             .MapPut(
                 "/{id}",
-                async (string id, AdminUpdateTagRequest request, IDispatcher dispatcher) =>
+                async (
+                    string id,
+                    AdminUpdateTagRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new AdminUpdateTagCommand(Id: id, Name: request.Name, Slug: request.Slug);
 
-                    AdminUpdateTagResult result = await dispatcher.Send(request: command);
+                    AdminUpdateTagResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminUpdateTagResponse(Tag: result.Tag);
                     return Results.Ok(response);
