@@ -34,13 +34,22 @@ public class PublicBookmarkShortVideoEndpointV1 : ICarterModule
         group
             .MapPost(
                 $"/{{id}}/{InteractionsRouteConstants.Bookmarks}",
-                async (string id, ClaimsPrincipal user, IClaimsProvider claimsProvider, IDispatcher dispatcher) =>
+                async (
+                    string id,
+                    ClaimsPrincipal user,
+                    IClaimsProvider claimsProvider,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     Guid shortVideoId = Guid.Parse(id);
                     Guid userId = claimsProvider.GetUserIdFromClaims(user: user);
 
                     var command = new PublicBookmarkShortVideoCommand(ShortVideoId: shortVideoId, UserId: userId);
-                    PublicBookmarkShortVideoResult result = await dispatcher.Send(request: command);
+                    PublicBookmarkShortVideoResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicBookmarkShortVideoResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);
