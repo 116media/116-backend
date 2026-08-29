@@ -35,6 +35,7 @@ public class PublicGetOwnCommentsForArticleEndpointV1 : ICarterModule
                     ClaimsPrincipal user,
                     IClaimsProvider claims,
                     IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
                     int pageIndex = 0,
                     int pageSize = 20
                 ) =>
@@ -45,7 +46,7 @@ public class PublicGetOwnCommentsForArticleEndpointV1 : ICarterModule
                         id,
                         new PaginatedRequest(pageIndex, pageSize)
                     );
-                    PublicGetOwnCommentsForArticleResult result = await dispatcher.Send(query);
+                    PublicGetOwnCommentsForArticleResult result = await dispatcher.Send(query, cancellationToken);
                     return Results.Ok(result.Comments);
                 }
             )
