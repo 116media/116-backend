@@ -34,13 +34,14 @@ public class PublicGetOwnSharedVideosEndpointV1 : ICarterModule
                     ClaimsPrincipal user,
                     IClaimsProvider claimsProvider,
                     IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
                     int pageIndex = 0,
                     int pageSize = 10
                 ) =>
                 {
                     Guid userId = claimsProvider.GetUserIdFromClaims(user);
                     var query = new PublicGetOwnSharedVideosQuery(userId, new PaginatedRequest(pageIndex, pageSize));
-                    PublicGetOwnSharedVideosResult result = await dispatcher.Send(query);
+                    PublicGetOwnSharedVideosResult result = await dispatcher.Send(query, cancellationToken);
                     return Results.Ok(result.Videos);
                 }
             )
