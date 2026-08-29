@@ -44,11 +44,19 @@ public class AdminUpdateContentTypeEndpointV1 : ICarterModule
         group
             .MapPut(
                 "/{id}",
-                async (string id, AdminUpdateContentTypeRequest request, IDispatcher dispatcher) =>
+                async (
+                    string id,
+                    AdminUpdateContentTypeRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new AdminUpdateContentTypeCommand(Id: id, Name: request.Name);
 
-                    AdminUpdateContentTypeResult result = await dispatcher.Send(request: command);
+                    AdminUpdateContentTypeResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminUpdateContentTypeResponse(ContentType: result.ContentType);
                     return Results.Ok(response);
