@@ -45,7 +45,8 @@ public class PublicRecordShortVideoViewEndpointV1 : ICarterModule
                     HttpContext httpContext,
                     ClaimsPrincipal user,
                     IClaimsProvider claimsProvider,
-                    IDispatcher dispatcher
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
                 ) =>
                 {
                     Guid shortVideoId = Guid.Parse(id);
@@ -75,7 +76,10 @@ public class PublicRecordShortVideoViewEndpointV1 : ICarterModule
                         UserAgent: userAgent
                     );
 
-                    PublicRecordShortVideoViewResult result = await dispatcher.Send(request: command);
+                    PublicRecordShortVideoViewResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicRecordShortVideoViewResponse(
                         IsSuccess: result.IsSuccess,
