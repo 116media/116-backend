@@ -34,13 +34,22 @@ public class PublicUnbookmarkArticleEndpointV1 : ICarterModule
         group
             .MapDelete(
                 $"/{{id}}/{InteractionsRouteConstants.Bookmarks}",
-                async (string id, ClaimsPrincipal user, IClaimsProvider claimsProvider, IDispatcher dispatcher) =>
+                async (
+                    string id,
+                    ClaimsPrincipal user,
+                    IClaimsProvider claimsProvider,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     Guid articleId = Guid.Parse(id);
                     Guid userId = claimsProvider.GetUserIdFromClaims(user: user);
 
                     var command = new PublicUnbookmarkArticleCommand(ArticleId: articleId, UserId: userId);
-                    PublicUnbookmarkArticleResult result = await dispatcher.Send(request: command);
+                    PublicUnbookmarkArticleResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicUnbookmarkArticleResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);
