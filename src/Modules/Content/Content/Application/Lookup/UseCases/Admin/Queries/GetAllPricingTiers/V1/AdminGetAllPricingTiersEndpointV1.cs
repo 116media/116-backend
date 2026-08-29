@@ -38,11 +38,14 @@ public class AdminGetAllPricingTiersEndpointV1 : ICarterModule
         group
             .MapGet(
                 "/",
-                async (IDispatcher dispatcher, string? search = null) =>
+                async (IDispatcher dispatcher, CancellationToken cancellationToken, string? search = null) =>
                 {
                     var query = new AdminGetAllPricingTiersQuery(Search: search);
 
-                    AdminGetAllPricingTiersResult result = await dispatcher.Send(request: query);
+                    AdminGetAllPricingTiersResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminGetAllPricingTiersResponse(PricingTiers: result.PricingTiers);
 
