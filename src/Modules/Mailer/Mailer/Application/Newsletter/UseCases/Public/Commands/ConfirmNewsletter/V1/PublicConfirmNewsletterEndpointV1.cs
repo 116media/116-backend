@@ -35,10 +35,13 @@ public class PublicConfirmNewsletterEndpointV1 : ICarterModule
         group
             .MapGet(
                 pattern: "confirm/{token}",
-                async (string token, IDispatcher dispatcher) =>
+                async (string token, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var command = new PublicConfirmNewsletterCommand(Token: token);
-                    PublicConfirmNewsletterResult result = await dispatcher.Send(request: command);
+                    PublicConfirmNewsletterResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicConfirmNewsletterResponse(IsSubscribed: result.IsSubscribed);
 
