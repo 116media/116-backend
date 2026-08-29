@@ -34,13 +34,14 @@ public class PublicGetOwnLikedArticlesEndpointV1 : ICarterModule
                     ClaimsPrincipal user,
                     IClaimsProvider claims,
                     IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
                     int pageIndex = 0,
                     int pageSize = 10
                 ) =>
                 {
                     Guid userId = claims.GetUserIdFromClaims(user);
                     var query = new PublicGetOwnLikedArticlesQuery(userId, new PaginatedRequest(pageIndex, pageSize));
-                    PublicGetOwnLikedArticlesResult result = await dispatcher.Send(query);
+                    PublicGetOwnLikedArticlesResult result = await dispatcher.Send(query, cancellationToken);
                     return Results.Ok(result.Articles);
                 }
             )
