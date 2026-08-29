@@ -45,14 +45,18 @@ public class PublicRateVideoEndpointV1 : ICarterModule
                     PublicRateVideoRequest request,
                     ClaimsPrincipal user,
                     IClaimsProvider claimsProvider,
-                    IDispatcher dispatcher
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
                 ) =>
                 {
                     Guid videoId = Guid.Parse(id);
                     Guid userId = claimsProvider.GetUserIdFromClaims(user: user);
 
                     var command = new PublicRateVideoCommand(VideoId: videoId, UserId: userId, Stars: request.Stars);
-                    PublicRateVideoResult result = await dispatcher.Send(request: command);
+                    PublicRateVideoResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicRateVideoResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);
