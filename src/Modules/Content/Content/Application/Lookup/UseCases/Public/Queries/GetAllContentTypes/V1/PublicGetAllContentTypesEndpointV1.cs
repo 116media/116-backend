@@ -37,11 +37,14 @@ public class PublicGetAllContentTypesEndpointV1 : ICarterModule
         group
             .MapGet(
                 "/",
-                async (IDispatcher dispatcher) =>
+                async (IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var query = new PublicGetAllContentTypesQuery();
 
-                    PublicGetAllContentTypesResult result = await dispatcher.Send(request: query);
+                    PublicGetAllContentTypesResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicGetAllContentTypesResponse(ContentTypes: result.ContentTypes);
                     return Results.Ok(response);
