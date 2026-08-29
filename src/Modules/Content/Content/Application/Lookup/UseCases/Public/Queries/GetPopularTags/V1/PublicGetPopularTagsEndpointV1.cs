@@ -38,7 +38,12 @@ public class PublicGetPopularTagsEndpointV1 : ICarterModule
         group
             .MapGet(
                 "/",
-                async (IDispatcher dispatcher, int? limit = null, string? contentType = null) =>
+                async (
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
+                    int? limit = null,
+                    string? contentType = null
+                ) =>
                 {
                     EnumCoreContentType? parsedContentType = Enum.TryParse(
                         contentType,
@@ -50,7 +55,10 @@ public class PublicGetPopularTagsEndpointV1 : ICarterModule
 
                     var query = new PublicGetPopularTagsQuery(Limit: limit, ContentType: parsedContentType);
 
-                    PublicGetPopularTagsResult result = await dispatcher.Send(request: query);
+                    PublicGetPopularTagsResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicGetPopularTagsResponse(Tags: result.Tags);
                     return Results.Ok(response);
