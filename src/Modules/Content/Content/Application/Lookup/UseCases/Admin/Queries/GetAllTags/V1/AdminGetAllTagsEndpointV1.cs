@@ -38,11 +38,14 @@ public class AdminGetAllTagsEndpointV1 : ICarterModule
         group
             .MapGet(
                 "/",
-                async (IDispatcher dispatcher, string? search = null) =>
+                async (IDispatcher dispatcher, CancellationToken cancellationToken, string? search = null) =>
                 {
                     var query = new AdminGetAllTagsQuery(Search: search);
 
-                    AdminGetAllTagsResult result = await dispatcher.Send(request: query);
+                    AdminGetAllTagsResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminGetAllTagsResponse(Tags: result.Tags);
                     return Results.Ok(response);
