@@ -34,14 +34,23 @@ public class PublicBookmarkArticleEndpointV1 : ICarterModule
         group
             .MapPost(
                 $"/{{id}}/{InteractionsRouteConstants.Bookmarks}",
-                async (string id, ClaimsPrincipal user, IClaimsProvider claimsProvider, IDispatcher dispatcher) =>
+                async (
+                    string id,
+                    ClaimsPrincipal user,
+                    IClaimsProvider claimsProvider,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     Guid articleId = Guid.Parse(id);
                     Guid userId = claimsProvider.GetUserIdFromClaims(user: user);
 
                     var command = new PublicBookmarkArticleCommand(ArticleId: articleId, UserId: userId);
 
-                    PublicBookmarkArticleResult result = await dispatcher.Send(request: command);
+                    PublicBookmarkArticleResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicBookmarkArticleResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);
