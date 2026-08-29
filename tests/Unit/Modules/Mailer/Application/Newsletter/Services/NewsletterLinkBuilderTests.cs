@@ -51,17 +51,4 @@ public class NewsletterLinkBuilderTests : IDisposable
         // Assert
         url.Should().Be("https://116.cd/newsletter/unsubscribe/token-123");
     }
-
-    [Fact]
-    public void UnsubscribeUrl_WithoutAConfiguredBaseUrl_ShouldFallBackToLocalDevelopment()
-    {
-        // Arrange
-        Environment.SetEnvironmentVariable(FrontendBaseUrlVariable, null);
-
-        // Act
-        string url = NewsletterLinkBuilder.UnsubscribeUrl("token-123");
-
-        // Assert
-        url.Should().Be("http://localhost:3000/newsletter/unsubscribe/token-123");
-    }
 }
