@@ -40,6 +40,7 @@ public class PublicGetPublishedVideosEndpointV1 : ICarterModule
                 "/",
                 async (
                     IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
                     int pageIndex = 0,
                     int pageSize = 10,
                     string? search = null,
@@ -56,7 +57,10 @@ public class PublicGetPublishedVideosEndpointV1 : ICarterModule
                         TagSlug: tagSlug
                     );
 
-                    PublicGetPublishedVideosResult result = await dispatcher.Send(request: query);
+                    PublicGetPublishedVideosResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicGetPublishedVideosResponse(Videos: result.Videos);
                     return Results.Ok(response);
