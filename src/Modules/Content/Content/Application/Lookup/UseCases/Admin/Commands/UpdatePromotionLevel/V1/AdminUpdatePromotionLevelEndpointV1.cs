@@ -50,7 +50,12 @@ public class AdminUpdatePromotionLevelEndpointV1 : ICarterModule
         group
             .MapPut(
                 "/{id}",
-                async (string id, AdminUpdatePromotionLevelRequest request, IDispatcher dispatcher) =>
+                async (
+                    string id,
+                    AdminUpdatePromotionLevelRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new AdminUpdatePromotionLevelCommand(
                         Id: id,
@@ -60,7 +65,10 @@ public class AdminUpdatePromotionLevelEndpointV1 : ICarterModule
                         SpotPriority: request.SpotPriority
                     );
 
-                    AdminUpdatePromotionLevelResult result = await dispatcher.Send(request: command);
+                    AdminUpdatePromotionLevelResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminUpdatePromotionLevelResponse(PromotionLevel: result.PromotionLevel);
 
