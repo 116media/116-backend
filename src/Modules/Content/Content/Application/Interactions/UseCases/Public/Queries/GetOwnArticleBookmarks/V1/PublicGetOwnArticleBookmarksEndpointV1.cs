@@ -34,6 +34,7 @@ public class PublicGetOwnArticleBookmarksEndpointV1 : ICarterModule
                     ClaimsPrincipal user,
                     IClaimsProvider claimsProvider,
                     IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
                     int pageIndex = 0,
                     int pageSize = 10
                 ) =>
@@ -45,7 +46,10 @@ public class PublicGetOwnArticleBookmarksEndpointV1 : ICarterModule
                         PaginatedRequest: paginatedRequest
                     );
 
-                    PublicGetOwnArticleBookmarksResult result = await dispatcher.Send(request: query);
+                    PublicGetOwnArticleBookmarksResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
                     return Results.Ok(result.Articles);
                 }
             )
