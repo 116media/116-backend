@@ -42,7 +42,13 @@ public class PublicGetVideoBySlugEndpointV1 : ICarterModule
         group
             .MapGet(
                 "/{slug}",
-                async (string slug, ClaimsPrincipal user, IClaimsProvider claimsProvider, IDispatcher dispatcher) =>
+                async (
+                    string slug,
+                    ClaimsPrincipal user,
+                    IClaimsProvider claimsProvider,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     Guid? userId = null;
 
@@ -52,7 +58,10 @@ public class PublicGetVideoBySlugEndpointV1 : ICarterModule
                     }
 
                     var query = new PublicGetVideoBySlugQuery(Slug: slug, CurrentUserId: userId);
-                    PublicGetVideoBySlugResult result = await dispatcher.Send(request: query);
+                    PublicGetVideoBySlugResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicGetVideoBySlugResponse(Video: result.Video, ArtistSlug: result.ArtistSlug);
                     return Results.Ok(response);
