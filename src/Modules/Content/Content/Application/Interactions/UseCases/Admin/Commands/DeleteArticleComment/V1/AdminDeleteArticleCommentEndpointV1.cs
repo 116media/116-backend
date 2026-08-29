@@ -32,7 +32,7 @@ public class AdminDeleteArticleCommentEndpointV1 : ICarterModule
         group
             .MapDelete(
                 $"/{{id}}/{InteractionsRouteConstants.Comments}/{{commentId}}",
-                async (string id, string commentId, IDispatcher dispatcher) =>
+                async (string id, string commentId, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     Guid articleId = Guid.Parse(id);
                     Guid parsedCommentId = Guid.Parse(commentId);
@@ -42,7 +42,10 @@ public class AdminDeleteArticleCommentEndpointV1 : ICarterModule
                         CommentId: parsedCommentId
                     );
 
-                    AdminDeleteArticleCommentResult result = await dispatcher.Send(request: command);
+                    AdminDeleteArticleCommentResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminDeleteArticleCommentResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);
