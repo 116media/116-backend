@@ -12,6 +12,7 @@ using _116.Identity.Infrastructure.Persistence;
 using _116.Integration.Tests.Common.Stubs;
 using _116.Mailer.Application.Shared.Services;
 using _116.Mailer.Infrastructure.Persistence;
+using _116.Shared.Application.Builders.RateLimit;
 using _116.Shared.Application.Extensions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -42,6 +43,13 @@ public class ApiFixture(PostgresFixture db) : WebApplicationFactory<Program>
     protected virtual bool DisableRateLimits => true;
 
     /// <summary>
+    /// Controls whether the per-account throttle is replaced with a no-op. Defaults to
+    /// <see cref="DisableRateLimits" />; a fixture asserting the throttle in isolation overrides it to
+    /// <c>false</c> while leaving the middleware limiter disabled.
+    /// </summary>
+    protected virtual bool DisableAccountRateLimiter => DisableRateLimits;
+
+    /// <summary>
     /// The environment the host boots in. Defaults to <c>Testing</c>, which disables module
     /// migrations and seeding. Derived fixtures override it to boot a non-Testing host.
     /// </summary>
@@ -63,6 +71,11 @@ public class ApiFixture(PostgresFixture db) : WebApplicationFactory<Program>
             if (DisableRateLimits)
             {
                 DisableRateLimiting(services);
+            }
+
+            if (DisableAccountRateLimiter)
+            {
+                DisableAccountRateLimiting(services);
             }
         });
     }
@@ -119,6 +132,8 @@ public class ApiFixture(PostgresFixture db) : WebApplicationFactory<Program>
         Environment.SetEnvironmentVariable("EMAIL_FROM_ADDRESS", "no-reply@test.116");
         Environment.SetEnvironmentVariable("EMAIL_FROM_NAME", "116 Tests");
         Environment.SetEnvironmentVariable("FRONTEND_BASE_URL", "http://localhost:3000");
+
+        Environment.SetEnvironmentVariable("TRUSTED_PROXY_NETWORKS", string.Empty);
     }
 
     /// <summary>
@@ -216,6 +231,18 @@ public class ApiFixture(PostgresFixture db) : WebApplicationFactory<Program>
                 options.AddPolicy(policy, _ => RateLimitPartition.GetNoLimiter("test"));
             }
         });
+    }
+
+    /// <summary>
+    /// Replaces the per-account throttle with a no-op so the general suite is never rejected for
+    /// reusing an account within a window. The account throttle is a separate, in-handler limiter, so
+    /// it is disabled independently of the middleware policies above.
+    /// </summary>
+    /// <param name="services">The test host's service collection.</param>
+    private static void DisableAccountRateLimiting(IServiceCollection services)
+    {
+        RemoveAll<IAccountRateLimiter>(services);
+        services.AddSingleton<IAccountRateLimiter, NoopAccountRateLimiter>();
     }
 
     /// <summary>

@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Domain.Results;
 using _116.Shared.Contracts.Application.CQRS;
 
@@ -12,7 +13,14 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.Login;
 /// This command is specifically for administrative users requiring elevated privileges.
 /// The authentication process validates admin role requirements.
 /// </remarks>
-public record AdminLoginCommand(string Email, string Password) : ICommand<AdminLoginResult>;
+public record AdminLoginCommand(string Email, string Password) : ICommand<AdminLoginResult>, IAccountRateLimited
+{
+    /// <inheritdoc />
+    public string RateLimitPolicy => RateLimitPolicies.Authentication;
+
+    /// <inheritdoc />
+    public string AccountKey => Email;
+}
 
 /// <summary>
 /// Result of the <see cref="AdminLoginCommand" /> containing admin authentication details.

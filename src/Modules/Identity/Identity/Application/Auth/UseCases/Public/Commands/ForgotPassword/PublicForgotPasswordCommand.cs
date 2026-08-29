@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Identity.Application.Auth.UseCases.Public.Commands.ForgotPassword;
@@ -10,7 +11,14 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.ForgotPassword
 /// This command generates an OTP for password reset if a valid and active user account exists.
 /// Returns authentication result and requires verification through OTP.
 /// </remarks>
-public record PublicForgotPasswordCommand(string Email) : ICommand<PublicForgotPasswordResult>;
+public record PublicForgotPasswordCommand(string Email) : ICommand<PublicForgotPasswordResult>, IAccountRateLimited
+{
+    /// <inheritdoc />
+    public string RateLimitPolicy => RateLimitPolicies.PasswordManagement;
+
+    /// <inheritdoc />
+    public string AccountKey => Email;
+}
 
 /// <summary>
 /// Result of the <see cref="PublicForgotPasswordCommand" /> containing password reset status.

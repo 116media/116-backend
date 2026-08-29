@@ -1,3 +1,6 @@
+using System.Net;
+using IPNetwork = Microsoft.AspNetCore.HttpOverrides.IPNetwork;
+
 namespace _116.Shared.Application.Configurations;
 
 /// <summary>
@@ -161,6 +164,49 @@ public class AppEnvironment
                 .Where(o => !string.IsNullOrWhiteSpace(o))
                 .SelectMany(o => o!.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)),
         ];
+    }
+
+    /// <summary>
+    /// The proxy networks whose <c>X-Forwarded-*</c> headers are trusted, parsed from
+    /// <c>TRUSTED_PROXY_NETWORKS</c> (a comma-separated CIDR list, e.g.
+    /// <c>10.0.0.0/8,172.18.0.0/16</c>). An unset or empty value yields an empty array, which keeps
+    /// forwarded headers untrusted — correct for direct-connection local development.
+    /// </summary>
+    /// <returns>
+    /// The trusted proxy networks; empty when <c>TRUSTED_PROXY_NETWORKS</c> is unset or blank.
+    /// </returns>
+    public static IReadOnlyList<IPNetwork> TrustedProxyNetworks()
+    {
+        string? raw = Environment.GetEnvironmentVariable("TRUSTED_PROXY_NETWORKS");
+        if (string.IsNullOrWhiteSpace(raw))
+        {
+            return [];
+        }
+
+        return
+        [
+            .. raw.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Select(ParseCidr)
+                .Where(network => network is not null)
+                .Select(network => network!),
+        ];
+    }
+
+    /// <summary>
+    /// Parses a single CIDR block (<c>address/prefix</c>) into an <see cref="IPNetwork" />, returning
+    /// null for a malformed entry so one bad value cannot take down startup.
+    /// </summary>
+    /// <param name="cidr">The CIDR text to parse.</param>
+    /// <returns>The parsed network, or null when the entry is malformed.</returns>
+    private static IPNetwork? ParseCidr(string cidr)
+    {
+        string[] parts = cidr.Split('/', 2);
+        if (parts.Length != 2 || !IPAddress.TryParse(parts[0], out IPAddress? address))
+        {
+            return null;
+        }
+
+        return int.TryParse(parts[1], out int prefix) ? new IPNetwork(address, prefix) : null;
     }
 
     /// <summary>

@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Domain.Results;
 using _116.Shared.Contracts.Application.CQRS;
 
@@ -14,7 +15,14 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.Login;
 /// This command is tailored for public user login scenarios.
 /// The system validates the provided credentials and returns an authentication result if successful.
 /// </remarks>
-public record PublicLoginCommand(string Credentials, string Password) : ICommand<PublicLoginResult>;
+public record PublicLoginCommand(string Credentials, string Password) : ICommand<PublicLoginResult>, IAccountRateLimited
+{
+    /// <inheritdoc />
+    public string RateLimitPolicy => RateLimitPolicies.Authentication;
+
+    /// <inheritdoc />
+    public string AccountKey => Credentials;
+}
 
 /// <summary>
 /// The result of executing a <see cref="PublicLoginCommand" />.

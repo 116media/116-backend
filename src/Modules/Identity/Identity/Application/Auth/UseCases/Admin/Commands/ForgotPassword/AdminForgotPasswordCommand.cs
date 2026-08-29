@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.ForgotPassword;
@@ -10,7 +11,14 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.ForgotPassword;
 /// This command generates an OTP for password reset if a valid and active admin user account exists.
 /// Returns authentication result and requires verification through OTP.
 /// </remarks>
-public record AdminForgotPasswordCommand(string Email) : ICommand<AdminForgotPasswordResult>;
+public record AdminForgotPasswordCommand(string Email) : ICommand<AdminForgotPasswordResult>, IAccountRateLimited
+{
+    /// <inheritdoc />
+    public string RateLimitPolicy => RateLimitPolicies.PasswordManagement;
+
+    /// <inheritdoc />
+    public string AccountKey => Email;
+}
 
 /// <summary>
 /// Result of the <see cref="AdminForgotPasswordCommand" /> containing password reset status.

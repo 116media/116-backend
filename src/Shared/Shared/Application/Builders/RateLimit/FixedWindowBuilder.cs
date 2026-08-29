@@ -22,15 +22,19 @@ public class FixedWindowBuilder(RateLimiterOptions options)
     /// <returns>The builder instance for method chaining.</returns>
     public FixedWindowBuilder AddPolicy(string policyName, int permitLimit, int windowSeconds)
     {
-        options.AddFixedWindowLimiter(
+        options.AddPolicy(
             policyName,
-            limiterOptions =>
-            {
-                limiterOptions.PermitLimit = permitLimit;
-                limiterOptions.Window = TimeSpan.FromSeconds(windowSeconds);
-                limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-                limiterOptions.QueueLimit = 0;
-            }
+            httpContext =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: RateLimitPartitioning.ResolvePartitionKey(httpContext),
+                    factory: _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = permitLimit,
+                        Window = TimeSpan.FromSeconds(windowSeconds),
+                        QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                        QueueLimit = 0,
+                    }
+                )
         );
 
         return this;

@@ -23,16 +23,20 @@ public class SlidingWindowBuilder(RateLimiterOptions options)
     /// <returns>The builder instance for method chaining.</returns>
     public SlidingWindowBuilder AddPolicy(string policyName, int permitLimit, int windowSeconds, int segmentsPerWindow)
     {
-        options.AddSlidingWindowLimiter(
+        options.AddPolicy(
             policyName,
-            limiterOptions =>
-            {
-                limiterOptions.PermitLimit = permitLimit;
-                limiterOptions.Window = TimeSpan.FromSeconds(windowSeconds);
-                limiterOptions.SegmentsPerWindow = segmentsPerWindow;
-                limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-                limiterOptions.QueueLimit = 0;
-            }
+            httpContext =>
+                RateLimitPartition.GetSlidingWindowLimiter(
+                    partitionKey: RateLimitPartitioning.ResolvePartitionKey(httpContext),
+                    factory: _ => new SlidingWindowRateLimiterOptions
+                    {
+                        PermitLimit = permitLimit,
+                        Window = TimeSpan.FromSeconds(windowSeconds),
+                        SegmentsPerWindow = segmentsPerWindow,
+                        QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                        QueueLimit = 0,
+                    }
+                )
         );
         return this;
     }

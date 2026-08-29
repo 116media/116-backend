@@ -34,6 +34,8 @@ public static class RateLimitingExtension
             ConfigureFixedWindowPolicies(options);
         });
 
+        services.AddSingleton<IAccountRateLimiter, AccountRateLimiter>();
+
         return services;
     }
 
