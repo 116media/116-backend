@@ -34,12 +34,21 @@ public class PublicLikeArticleCommentEndpointV1 : ICarterModule
         group
             .MapPost(
                 $"/{InteractionsRouteConstants.Comments}/{{commentId:guid}}/{InteractionsRouteConstants.Likes}",
-                async (Guid commentId, ClaimsPrincipal user, IClaimsProvider claimsProvider, IDispatcher dispatcher) =>
+                async (
+                    Guid commentId,
+                    ClaimsPrincipal user,
+                    IClaimsProvider claimsProvider,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     Guid userId = claimsProvider.GetUserIdFromClaims(user: user);
 
                     var command = new PublicLikeArticleCommentCommand(CommentId: commentId, UserId: userId);
-                    PublicLikeArticleCommentResult result = await dispatcher.Send(request: command);
+                    PublicLikeArticleCommentResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicLikeArticleCommentResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);
