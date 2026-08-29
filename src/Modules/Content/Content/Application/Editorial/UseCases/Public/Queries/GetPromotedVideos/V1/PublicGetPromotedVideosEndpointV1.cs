@@ -37,10 +37,13 @@ public class PublicGetPromotedVideosEndpointV1 : ICarterModule
         group
             .MapGet(
                 $"/{EditorialRouteConstants.Promoted}",
-                async (IDispatcher dispatcher) =>
+                async (IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var query = new PublicGetPromotedVideosQuery();
-                    PublicGetPromotedVideosResult result = await dispatcher.Send(request: query);
+                    PublicGetPromotedVideosResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicGetPromotedVideosResponse(Videos: result.Videos);
                     return Results.Ok(response);
