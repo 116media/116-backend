@@ -45,7 +45,12 @@ public class AdminUpdatePricingTierEndpointV1 : ICarterModule
         group
             .MapPut(
                 "/{id}",
-                async (string id, AdminUpdatePricingTierRequest request, IDispatcher dispatcher) =>
+                async (
+                    string id,
+                    AdminUpdatePricingTierRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new AdminUpdatePricingTierCommand(
                         Id: id,
@@ -53,7 +58,10 @@ public class AdminUpdatePricingTierEndpointV1 : ICarterModule
                         Description: request.Description
                     );
 
-                    AdminUpdatePricingTierResult result = await dispatcher.Send(request: command);
+                    AdminUpdatePricingTierResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminUpdatePricingTierResponse(PricingTier: result.PricingTier);
 
