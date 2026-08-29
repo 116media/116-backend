@@ -34,10 +34,13 @@ public class PublicGetTranslationRevisionsEndpointV1 : ICarterModule
         group
             .MapGet(
                 $"/{{id}}/{EditorialRouteConstants.Revisions}",
-                async (Guid id, IDispatcher dispatcher) =>
+                async (Guid id, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var query = new PublicGetTranslationRevisionsQuery(TranslationId: id);
-                    PublicGetTranslationRevisionsResult result = await dispatcher.Send(request: query);
+                    PublicGetTranslationRevisionsResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicGetTranslationRevisionsResponse(Revisions: result.Revisions);
                     return Results.Ok(response);
