@@ -45,12 +45,15 @@ public class PublicGetVideoPromotionFeedEndpointV1 : ICarterModule
         group
             .MapGet(
                 $"/{EditorialRouteConstants.PromotionFeed}",
-                async (IDispatcher dispatcher, int? stripSize) =>
+                async (IDispatcher dispatcher, CancellationToken cancellationToken, int? stripSize) =>
                 {
                     var query = new PublicGetVideoPromotionFeedQuery(
                         StripSize: stripSize ?? EditorialFeedConstants.DefaultStripSize
                     );
-                    PublicGetVideoPromotionFeedResult result = await dispatcher.Send(request: query);
+                    PublicGetVideoPromotionFeedResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicGetVideoPromotionFeedResponse(
                         Spot1: result.Spot1,
