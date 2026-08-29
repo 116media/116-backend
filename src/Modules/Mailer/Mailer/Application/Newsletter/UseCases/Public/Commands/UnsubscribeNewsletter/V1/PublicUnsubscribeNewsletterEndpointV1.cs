@@ -35,10 +35,13 @@ public class PublicUnsubscribeNewsletterEndpointV1 : ICarterModule
         group
             .MapGet(
                 pattern: "unsubscribe/{token}",
-                async (string token, IDispatcher dispatcher) =>
+                async (string token, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var command = new PublicUnsubscribeNewsletterCommand(Token: token);
-                    PublicUnsubscribeNewsletterResult result = await dispatcher.Send(request: command);
+                    PublicUnsubscribeNewsletterResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicUnsubscribeNewsletterResponse(IsUnsubscribed: result.IsUnsubscribed);
 
