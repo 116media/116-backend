@@ -1,5 +1,4 @@
 using _116.Content.Application.Shared.Errors.Facade;
-using _116.Content.Application.Shared.Exceptions;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Application.Shared.Services;
@@ -36,21 +35,12 @@ public class AdminResolveAlbumStreamingLinksHandler(
     {
         await albumRepository.GetByIdOrThrowAsync(id: command.AlbumId, cancellationToken: cancellationToken);
 
-        IReadOnlyDictionary<EnumStreamingPlatform, string> resolved;
-
-        try
-        {
-            resolved = await resolutionService.ResolveAsync(
-                sourceUrl: command.SourceUrl,
-                cancellationToken: cancellationToken
-            );
-        }
-        catch (StreamingLinkResolutionException exception)
-        {
-            throw exception.IsRateLimited
-                ? i18n.StreamingLink.ResolutionRateLimited()
-                : i18n.StreamingLink.ResolutionFailed();
-        }
+        // A provider failure surfaces as StreamingLinkResolutionException, mapped by the global
+        // pipeline; the resolution service stays i18n-free.
+        IReadOnlyDictionary<EnumStreamingPlatform, string> resolved = await resolutionService.ResolveAsync(
+            sourceUrl: command.SourceUrl,
+            cancellationToken: cancellationToken
+        );
 
         if (resolved.Count == 0)
         {

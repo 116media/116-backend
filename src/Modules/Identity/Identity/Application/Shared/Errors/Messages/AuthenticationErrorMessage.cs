@@ -25,6 +25,14 @@ public class AuthenticationErrorMessage(IStringLocalizer<AuthenticationErrorMess
     }
 
     /// <summary>
+    /// Error message indicating that a social sign-in token could not be verified.
+    /// </summary>
+    public string InvalidProviderToken()
+    {
+        return localizer["InvalidProviderToken"];
+    }
+
+    /// <summary>
     /// Error message indicating that the user is not authenticated or the user ID is invalid.
     /// </summary>
     public string InvalidUserAuthentication()

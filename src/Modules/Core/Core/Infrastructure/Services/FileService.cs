@@ -3,6 +3,7 @@ using _116.Core.Application.Shared.Errors.Facade;
 using _116.Core.Application.Shared.Services;
 using _116.Shared.Application.Exceptions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
 namespace _116.Core.Infrastructure.Services;
 
@@ -12,7 +13,16 @@ namespace _116.Core.Infrastructure.Services;
 /// </summary>
 /// <param name="httpClient">HTTP client for downloading files from URLs.</param>
 /// <param name="cloudinaryService">Service for Cloudinary cloud storage operations.</param>
-public class FileService(HttpClient httpClient, ICloudinaryService cloudinaryService, CoreI18n i18n) : IFileService
+/// <param name="i18n">The Core i18n facade for localized errors.</param>
+/// <param name="urlSafetyGuard">Guard that rejects SSRF-prone URLs before they are fetched.</param>
+/// <param name="logger">Logger for download diagnostics.</param>
+public class FileService(
+    HttpClient httpClient,
+    ICloudinaryService cloudinaryService,
+    CoreI18n i18n,
+    IUrlSafetyGuard urlSafetyGuard,
+    ILogger<FileService> logger
+) : IFileService
 {
     /// <inheritdoc />
     public async Task<FileUploadResult> UploadFileAsync(
@@ -116,7 +126,7 @@ public class FileService(HttpClient httpClient, ICloudinaryService cloudinarySer
 
         try
         {
-            var (contentType, contentLength) = await GetFileMetadataAsync(uri, cancellationToken);
+            var (contentType, contentLength) = await GetFileMetadataAsync(uri!, cancellationToken);
 
             string localPath = uri?.LocalPath ?? string.Empty;
             string extension = ResolveExtension(localPath, contentType);
@@ -137,11 +147,15 @@ public class FileService(HttpClient httpClient, ICloudinaryService cloudinarySer
         }
         catch (HttpRequestException ex)
         {
-            throw i18n.File.FileDownloadFailed(fileUrl, ex.Message);
+            // Log the detail for diagnostics; never reflect provider text back to the client.
+            logger.LogWarning(ex, "Remote file download failed");
+            throw i18n.File.FileDownloadFailed();
         }
-        catch (Exception ex) when (ex is not ArgumentException and not BadRequestException)
+        catch (Exception ex)
+            when (ex is not ArgumentException and not BadRequestException and not InternalServerException)
         {
-            throw i18n.File.FileStorageFailed(ex.Message);
+            logger.LogWarning(ex, "Remote file download failed unexpectedly");
+            throw i18n.File.FileDownloadFailed();
         }
     }
 
@@ -165,12 +179,17 @@ public class FileService(HttpClient httpClient, ICloudinaryService cloudinarySer
     /// Retrieves metadata (content type and size) for the specified file.
     /// </summary>
     private async Task<(string? ContentType, long ContentLength)> GetFileMetadataAsync(
-        Uri? uri,
+        Uri uri,
         CancellationToken cancellationToken
     )
     {
-        using var headRequest = new HttpRequestMessage(HttpMethod.Head, uri);
-        using HttpResponseMessage headResponse = await httpClient.SendAsync(headRequest, cancellationToken);
+        using HttpResponseMessage headResponse = await SendGuardedAsync(
+            HttpMethod.Head,
+            uri,
+            range: null,
+            HttpCompletionOption.ResponseContentRead,
+            cancellationToken
+        );
         headResponse.EnsureSuccessStatusCode();
 
         string? contentType = headResponse.Content.Headers.ContentType?.MediaType;
@@ -190,27 +209,84 @@ public class FileService(HttpClient httpClient, ICloudinaryService cloudinarySer
     /// <summary>
     /// Attempts to determine content length using a range request.
     /// </summary>
-    private async Task<long?> TryGetContentLengthWithRangeAsync(Uri? uri, CancellationToken cancellationToken)
+    private async Task<long?> TryGetContentLengthWithRangeAsync(Uri uri, CancellationToken cancellationToken)
     {
-        using var partialRequest = new HttpRequestMessage(HttpMethod.Get, uri);
-        partialRequest.Headers.Range = new RangeHeaderValue(0, 0);
-
-        using HttpResponseMessage partialResponse = await httpClient.SendAsync(partialRequest, cancellationToken);
+        using HttpResponseMessage partialResponse = await SendGuardedAsync(
+            HttpMethod.Get,
+            uri,
+            new RangeHeaderValue(0, 0),
+            HttpCompletionOption.ResponseContentRead,
+            cancellationToken
+        );
         return partialResponse.Content.Headers.ContentRange?.Length;
     }
 
     /// <summary>
     /// Attempts to determine content length by downloading headers only.
     /// </summary>
-    private async Task<long?> TryGetContentLengthFallbackAsync(Uri? uri, CancellationToken cancellationToken)
+    private async Task<long?> TryGetContentLengthFallbackAsync(Uri uri, CancellationToken cancellationToken)
     {
-        var sampleRequest = new HttpRequestMessage(HttpMethod.Get, uri);
-        HttpResponseMessage sampleResponse = await httpClient.SendAsync(
-            sampleRequest,
+        using HttpResponseMessage sampleResponse = await SendGuardedAsync(
+            HttpMethod.Get,
+            uri,
+            range: null,
             HttpCompletionOption.ResponseHeadersRead,
             cancellationToken
         );
         return sampleResponse.Content.Headers.ContentLength;
+    }
+
+    /// <summary>
+    /// Sends a request, re-validating every hop against the SSRF guard. Auto-redirect is disabled on
+    /// the client, so redirects are followed manually here — each target is guarded before it is
+    /// dialled, and the chain is capped to stop redirect loops.
+    /// </summary>
+    /// <param name="method">The HTTP method to send.</param>
+    /// <param name="uri">The initial URL to fetch.</param>
+    /// <param name="range">Optional byte range to request; null for the full response.</param>
+    /// <param name="completion">When the returned task completes (headers-read or content-read).</param>
+    /// <param name="cancellationToken">Token to cancel the send.</param>
+    /// <returns>The first non-redirect response, with all hops verified safe.</returns>
+    private async Task<HttpResponseMessage> SendGuardedAsync(
+        HttpMethod method,
+        Uri uri,
+        RangeHeaderValue? range,
+        HttpCompletionOption completion,
+        CancellationToken cancellationToken
+    )
+    {
+        const int maxHops = 5;
+        Uri current = uri;
+
+        for (var hop = 0; hop < maxHops; hop++)
+        {
+            await urlSafetyGuard.EnsureSafeAsync(current, cancellationToken);
+
+            using var request = new HttpRequestMessage(method, current);
+            if (range is not null)
+            {
+                request.Headers.Range = range;
+            }
+
+            HttpResponseMessage response = await httpClient.SendAsync(request, completion, cancellationToken);
+
+            if ((int)response.StatusCode is < 300 or >= 400)
+            {
+                return response;
+            }
+
+            Uri? location = response.Headers.Location;
+            response.Dispose();
+
+            if (location is null)
+            {
+                throw i18n.File.FileDownloadFailed();
+            }
+
+            current = location.IsAbsoluteUri ? location : new Uri(current, location);
+        }
+
+        throw i18n.File.FileDownloadFailed();
     }
 
     /// <summary>

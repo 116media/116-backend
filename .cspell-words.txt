@@ -187,6 +187,7 @@ RRGGBB
 rulebook
 runsettings
 saisi
+scriptable
 Scrutor
 semaine
 semble

@@ -21,4 +21,7 @@
   <data name="AccessDenied" xml:space="preserve">
     <value>Accès refusé. Vous ne disposez pas des permissions suffisantes pour accéder à cette ressource.</value>
   </data>
+  <data name="ProviderEmailNotVerified" xml:space="preserve">
+    <value>L'adresse e-mail de votre compte social n'est pas vérifiée.</value>
+  </data>
 </root>

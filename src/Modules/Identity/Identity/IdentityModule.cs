@@ -1,4 +1,5 @@
 using System.Text;
+using _116.Identity.Application.Adapters.SocialAuth;
 using _116.Identity.Application.Adapters.Wangkanai.Detection;
 using _116.Identity.Application.Auth.EventHandlers;
 using _116.Identity.Application.Auth.Exceptions.Handlers;
@@ -52,7 +53,9 @@ using _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfile;
 using _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfile.Contracts;
 using _116.Identity.Contracts.Application;
 using _116.Identity.Domain.Constants;
+using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.Events;
+using _116.Identity.Infrastructure.Adapters.SocialAuth;
 using _116.Identity.Infrastructure.Adapters.Wangkanai.Detection;
 using _116.Identity.Infrastructure.BackgroundJobs;
 using _116.Identity.Infrastructure.Persistence;
@@ -160,6 +163,27 @@ public static class IdentityModule
         services.AddScoped<IAdminLoginAuthFactory, AdminLoginAuthFactory>();
         services.AddScoped<IPublicLoginAuthFactory, PublicLoginAuthFactory>();
         services.AddScoped<IPublicSocialLoginAuthFactory, PublicSocialLoginAuthFactory>();
+
+        // Social-login token verification: keyed adapters resolved through the factory.
+        var (googleClientId, facebookAppId, facebookAppSecret) = AppEnvironment.SocialAuth();
+        services.Configure<SocialAuthOptions>(options =>
+        {
+            options.GoogleClientId = googleClientId ?? string.Empty;
+            options.FacebookAppId = facebookAppId ?? string.Empty;
+            options.FacebookAppSecret = facebookAppSecret ?? string.Empty;
+        });
+
+        services.AddKeyedScoped<ISocialTokenVerifier, GoogleTokenVerifier>(EnumAuthProvider.Google);
+        services.AddHttpClient<FacebookTokenVerifier>(client =>
+        {
+            client.BaseAddress = new Uri(SocialAuthConstants.FacebookGraphBaseUrl);
+            client.Timeout = TimeSpan.FromSeconds(10);
+        });
+        services.AddKeyedScoped<ISocialTokenVerifier>(
+            EnumAuthProvider.Facebook,
+            (sp, _) => sp.GetRequiredService<FacebookTokenVerifier>()
+        );
+        services.AddScoped<ISocialTokenVerifierFactory, SocialTokenVerifierFactory>();
         services.AddScoped<IPublicUpdateProfileAuthFactory, PublicUpdateProfileAuthFactory>();
         services.AddScoped<IAdminUpdateProfileAuthFactory, AdminUpdateProfileAuthFactory>();
         services.AddScoped<IPublicUpdateAvatarAuthFactory, PublicUpdateAvatarAuthFactory>();
@@ -223,6 +247,8 @@ public static class IdentityModule
         services.AddSingleton<IExceptionStrategy, AccountNotVerifiedExceptionHandler>();
         services.AddSingleton<IExceptionStrategy, OtpAttemptsLimitExceptionHandler>();
         services.AddSingleton<IExceptionStrategy, OtpExpirationExceptionHandler>();
+        services.AddSingleton<IExceptionStrategy, SocialTokenVerificationExceptionHandler>();
+        services.AddSingleton<IExceptionStrategy, UnsupportedProviderExceptionHandler>();
         services.AddSingleton<IExceptionStrategy, AccessDeniedExceptionHandler>();
         services.AddSingleton<IExceptionStrategy, AccessTokenExpiryExceptionHandler>();
         services.AddSingleton<IExceptionStrategy, RefreshTokenExpiryExceptionHandler>();

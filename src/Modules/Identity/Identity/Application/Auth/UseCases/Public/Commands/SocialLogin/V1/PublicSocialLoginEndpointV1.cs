@@ -13,13 +13,13 @@ using Microsoft.AspNetCore.Routing;
 namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin.V1;
 
 /// <summary>
-/// Request model for social login authentication.
+/// Request model for social login authentication. The client sends only the provider and the
+/// provider-issued token; identity (email, name, avatar) is read from the verified token, never from
+/// the client.
 /// </summary>
-/// <param name="Email">The user's email address from the social provider.</param>
-/// <param name="UserName">The user's display name from the social provider.</param>
-/// <param name="AvatarUrl">Optional avatar URL from the social provider.</param>
 /// <param name="Provider">The social authentication provider (Google or Facebook).</param>
-public record PublicSocialLoginRequest(string Email, string UserName, string? AvatarUrl, string Provider);
+/// <param name="IdToken">The provider-issued ID / access token to verify.</param>
+public record PublicSocialLoginRequest(string Provider, string IdToken);
 
 /// <summary>
 /// Response model for mobile client social login (tokens delivered in the body).
@@ -67,12 +67,7 @@ public class PublicSocialLoginEndpointV1 : ICarterModule
                 pattern: AuthRouteConstants.SocialLogin,
                 async (PublicSocialLoginRequest request, IDispatcher dispatcher, ITokenDeliveryService tokenDelivery) =>
                 {
-                    var command = new PublicSocialLoginCommand(
-                        Email: request.Email,
-                        UserName: request.UserName,
-                        AvatarUrl: request.AvatarUrl,
-                        Provider: request.Provider
-                    );
+                    var command = new PublicSocialLoginCommand(Provider: request.Provider, IdToken: request.IdToken);
                     PublicSocialLoginResult result = await dispatcher.Send(request: command);
 
                     if (tokenDelivery.IsWebClient())

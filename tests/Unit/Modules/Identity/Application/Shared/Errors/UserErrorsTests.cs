@@ -251,6 +251,16 @@ public class UserErrorsTests
             e => e.InvalidCredentials(),
             t => t._authentication.InvalidCredentials()
         ),
+        [nameof(UserErrors.ProviderEmailNotVerified)] = new(
+            typeof(AccountNotVerifiedException),
+            e => e.ProviderEmailNotVerified(),
+            t => t._authorization.ProviderEmailNotVerified()
+        ),
+        [nameof(UserErrors.ProviderMismatch)] = new(
+            typeof(ConflictException),
+            e => e.ProviderMismatch(),
+            t => t._conflict.ProviderMismatch()
+        ),
         [nameof(UserErrors.InvalidEmailFormat)] = new(
             typeof(AuthenticationException),
             e => e.InvalidEmailFormat(MalformedEmail),

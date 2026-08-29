@@ -213,9 +213,7 @@ public class CloudinaryServiceTests
         // Assert
         ExceptionAssertions<BadRequestException> assertion = await act.Should()
             .ThrowExactlyAsync<BadRequestException>();
-        assertion
-            .Which.Message.Should()
-            .Be(_i18n.File.FileTooLarge(length, MaxSizeBytes(target), MaxSizeBytes(target) / BytesPerMegabyte).Message);
+        assertion.Which.Message.Should().Be(_i18n.File.FileTooLarge(MaxSizeBytes(target) / BytesPerMegabyte).Message);
     }
 
     [Theory]

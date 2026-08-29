@@ -20,6 +20,7 @@ using _116.Content.Application.Shared.Errors;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.EventHandlers;
+using _116.Content.Application.Shared.Exceptions.Handlers;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -32,6 +33,7 @@ using _116.Content.Infrastructure.Persistence;
 using _116.Content.Infrastructure.Persistence.Seeds.ContentTypes;
 using _116.Content.Infrastructure.Repositories;
 using _116.Content.Infrastructure.Services;
+using _116.Shared.Application.Exceptions.Handlers.Contracts;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Application.Services;
 using _116.Shared.Infrastructure;
@@ -100,6 +102,7 @@ public static class ContentModule
         services.AddScoped<SubmissionErrorMessage>();
         services.AddScoped<LyricsRevisionErrorMessage>();
         services.AddScoped<StreamingLinkErrorMessage>();
+        services.AddSingleton<IExceptionStrategy, StreamingLinkResolutionExceptionHandler>();
 
         // Register error factory classes
         services.AddScoped<ArticleErrors>();

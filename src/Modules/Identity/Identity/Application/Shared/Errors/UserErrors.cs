@@ -231,6 +231,22 @@ public class UserErrors(
     }
 
     /// <summary>
+    /// Throws when a social provider reports the account email as not verified.
+    /// </summary>
+    public AccountNotVerifiedException ProviderEmailNotVerified()
+    {
+        return new AccountNotVerifiedException(authorization.ProviderEmailNotVerified());
+    }
+
+    /// <summary>
+    /// Throws when an account is linked to a different social identity than the token presents.
+    /// </summary>
+    public ConflictException ProviderMismatch()
+    {
+        return new ConflictException(conflict.ProviderMismatch());
+    }
+
+    /// <summary>
     /// Throws when the email format is invalid.
     /// </summary>
     public AuthenticationException InvalidEmailFormat(string email)

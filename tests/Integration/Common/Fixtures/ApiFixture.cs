@@ -5,6 +5,9 @@ using _116.Content.Application.Shared.Services;
 using _116.Content.Infrastructure.Persistence;
 using _116.Core.Application.Shared.Services;
 using _116.Core.Infrastructure.Persistence;
+using _116.Core.Infrastructure.Services;
+using _116.Identity.Application.Adapters.SocialAuth;
+using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Integration.Tests.Common.Stubs;
 using _116.Mailer.Application.Shared.Services;
@@ -224,6 +227,40 @@ public class ApiFixture(PostgresFixture db) : WebApplicationFactory<Program>
         Replace<IYoutubeThumbnailService, StubYoutubeThumbnailService>(services);
         ReplaceStreamingLinkResolutionService(services);
         ReplaceEmailSender(services);
+        ReplaceSocialTokenVerifier(services);
+        StubRemoteFileTransport(services);
+    }
+
+    /// <summary>
+    /// Replaces the remote-file HTTP transport with a stub handler so <see cref="FileService" />'s
+    /// download path runs end-to-end — through the real SSRF guard and metadata resolution — without
+    /// any real outbound request. The guard still runs against the URL, so a blocked address is
+    /// rejected before the handler is reached.
+    /// </summary>
+    private static void StubRemoteFileTransport(IServiceCollection services)
+    {
+        services
+            .AddHttpClient<IFileService, FileService>(client => client.Timeout = TimeSpan.FromSeconds(10))
+            .ConfigurePrimaryHttpMessageHandler(() => new StubRemoteFileHandler());
+    }
+
+    /// <summary>
+    /// Replaces the real keyed provider verifiers with a single scriptable stub, so social-login is
+    /// driven through the real pipeline — including the real <see cref="ISocialTokenVerifierFactory" />
+    /// and its keyed resolution — without calling Google or Facebook. Only Google is registered:
+    /// Facebook is deliberately left without a verifier so the factory's unsupported-provider path is
+    /// exercised end-to-end through the real endpoint.
+    /// </summary>
+    private static void ReplaceSocialTokenVerifier(IServiceCollection services)
+    {
+        RemoveAll<ISocialTokenVerifier>(services);
+
+        services.AddSingleton<StubSocialTokenVerifier>();
+        services.AddKeyedSingleton<ISocialTokenVerifier>(
+            EnumAuthProvider.Google,
+            (sp, _) => sp.GetRequiredService<StubSocialTokenVerifier>()
+        );
+        services.AddSingleton<IResettableStub>(sp => sp.GetRequiredService<StubSocialTokenVerifier>());
     }
 
     /// <summary>

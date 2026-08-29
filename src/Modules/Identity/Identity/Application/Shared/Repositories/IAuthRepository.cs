@@ -238,17 +238,18 @@ public interface IAuthRepository : IRepository<UserEntity>, IClaimsProvider
     /// <summary>
     /// Gets the existing external user or creates a new one for social authentication.
     /// </summary>
-    /// <param name="email">User's email address.</param>
-    /// <param name="userName">Username from social provider.</param>
+    /// <param name="email">Verified email address from the provider token.</param>
+    /// <param name="userName">Display name from the provider token.</param>
     /// <param name="authProvider">Authentication provider.</param>
+    /// <param name="providerSubjectId">The provider's stable subject id, the primary match key.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>User entity with roles and permissions loaded.</returns>
     /// <exception cref="ConflictException">Thrown when a local account exists with the same email.</exception>
     /// <remarks>
     /// This method handles the complete workflow for social authentication:
-    /// - Checks if a user with the email exists
-    /// - Prevents social login if a local account exists
-    /// - Updates username if provided and different from existing
+    /// - Matches an existing account by (provider, subject id) first
+    /// - Otherwise matches by email: links the subject id to an unlinked external account,
+    ///   rejects a local account, and rejects an account tied to a different subject id
     /// - Creates a new external user if none exists
     /// - Assigns the Visitor role to new users
     /// - Returns the user with roles and permissions loaded
@@ -257,6 +258,7 @@ public interface IAuthRepository : IRepository<UserEntity>, IClaimsProvider
         string email,
         string? userName,
         AuthProvider authProvider,
+        string providerSubjectId,
         CancellationToken cancellationToken = default
     );
 

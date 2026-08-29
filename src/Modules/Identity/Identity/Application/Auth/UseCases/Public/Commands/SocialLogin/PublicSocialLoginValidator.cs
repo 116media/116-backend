@@ -8,11 +8,10 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin;
 /// Validator for the <see cref="PublicSocialLoginCommand" /> ensuring proper social login data format.
 /// </summary>
 /// <remarks>
-/// Validates email, username, avatar URL, and authentication provider according to requirements:
-/// - Email: Valid email format and required
-/// - UserName: Required, minimum length validation
-/// - Avatar: Optional, valid URL format if provided
+/// Validates only what the client is trusted to send:
 /// - Provider: Must be Google or Facebook only
+/// - IdToken: Required
+/// The verified identity is resolved from the provider token, not validated here.
 /// </remarks>
 public class PublicSocialLoginValidator : AbstractValidator<PublicSocialLoginCommand>
 {
@@ -24,9 +23,7 @@ public class PublicSocialLoginValidator : AbstractValidator<PublicSocialLoginCom
     /// </param>
     public PublicSocialLoginValidator(IdentityI18n i18n)
     {
-        RuleFor(x => x.Email).ValidEmail(i18n.User.Validation);
-        RuleFor(x => x.UserName).ValidUsername(i18n.User.Validation);
-        RuleFor(x => x.AvatarUrl).ValidAvatarUrl(i18n.User.Validation);
         RuleFor(x => x.Provider).ValidAuthProvider(i18n.User.Validation);
+        RuleFor(x => x.IdToken).NotEmpty().WithMessage(i18n.User.Validation.IdTokenRequired());
     }
 }

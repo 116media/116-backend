@@ -30,4 +30,7 @@
   <data name="DeviceIdRequired" xml:space="preserve">
     <value>L'identifiant de l'appareil est obligatoire. Veuillez fournir l'en-tête X-Device-Id.</value>
   </data>
+  <data name="InvalidProviderToken" xml:space="preserve">
+    <value>Le jeton de connexion sociale n'a pas pu être vérifié.</value>
+  </data>
 </root>

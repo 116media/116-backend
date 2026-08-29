@@ -1,5 +1,6 @@
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
+using _116.Identity.Application.Adapters.SocialAuth;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin.Contracts;
 using _116.Identity.Application.Shared.Persistence;
@@ -20,6 +21,8 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Auth.UseCases.Public.Comm
 /// </summary>
 public class PublicSocialLoginAuthFactoryTests
 {
+    private const EnumAuthProvider Provider = EnumAuthProvider.Google;
+
     private readonly Mock<IAuthRepository> _authRepositoryMock;
     private readonly Mock<IFileRepository> _fileRepositoryMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
@@ -37,25 +40,32 @@ public class PublicSocialLoginAuthFactoryTests
         );
     }
 
+    private static SocialTokenPayload Payload(string email, string userName, string? pictureUrl) =>
+        new(
+            ProviderSubjectId: $"sub-{Guid.NewGuid():N}",
+            Email: email,
+            EmailVerified: true,
+            Name: userName,
+            PictureUrl: pictureUrl
+        );
+
     #region AuthenticateOrCreateAsync Tests
 
     [Fact]
     public async Task AuthenticateOrCreateAsync_WithValidData_ShouldReturnAuthData()
     {
         // Arrange
-        string email = "user@example.com";
-        string userName = "socialuser";
-        string provider = "Google";
-        string? avatarUrl = "https://avatar.url/image.jpg";
-        UserEntity user = UserFactory.Create(email);
+        SocialTokenPayload payload = Payload("user@example.com", "socialuser", "https://avatar.url/image.jpg");
+        UserEntity user = UserFactory.Create(payload.Email);
         FileEntity avatarFile = FileFactory.Create();
 
         _authRepositoryMock
             .Setup(x =>
                 x.GetOrCreateExternalUserAsync(
                     It.IsAny<string>(),
-                    userName,
+                    payload.Name,
                     It.IsAny<AuthProvider>(),
+                    It.IsAny<string>(),
                     It.IsAny<CancellationToken>()
                 )
             )
@@ -65,7 +75,7 @@ public class PublicSocialLoginAuthFactoryTests
             .Setup(x =>
                 x.UpdateAvatarUrlFromSourceAsync(
                     user.AvatarFileId,
-                    avatarUrl,
+                    payload.PictureUrl,
                     user.Id.ToString(),
                     It.IsAny<bool>(),
                     It.IsAny<CancellationToken>()
@@ -77,10 +87,8 @@ public class PublicSocialLoginAuthFactoryTests
 
         // Act
         PublicSocialLoginAuthData result = await _factory.AuthenticateOrCreateAsync(
-            email,
-            userName,
-            provider,
-            avatarUrl,
+            payload,
+            Provider,
             CancellationToken.None
         );
 
@@ -89,21 +97,19 @@ public class PublicSocialLoginAuthFactoryTests
     }
 
     [Fact]
-    public async Task AuthenticateOrCreateAsync_WithoutAvatarUrl_ShouldNotUpdateAvatar()
+    public async Task AuthenticateOrCreateAsync_WithoutPicture_ShouldNotUpdateAvatar()
     {
         // Arrange
-        string email = "user@example.com";
-        string userName = "socialuser";
-        string provider = "Google";
-        string? avatarUrl = null;
-        UserEntity user = UserFactory.Create(email);
+        SocialTokenPayload payload = Payload("user@example.com", "socialuser", pictureUrl: null);
+        UserEntity user = UserFactory.Create(payload.Email);
 
         _authRepositoryMock
             .Setup(x =>
                 x.GetOrCreateExternalUserAsync(
                     It.IsAny<string>(),
-                    userName,
+                    payload.Name,
                     It.IsAny<AuthProvider>(),
+                    It.IsAny<string>(),
                     It.IsAny<CancellationToken>()
                 )
             )
@@ -113,7 +119,7 @@ public class PublicSocialLoginAuthFactoryTests
             .Setup(x =>
                 x.UpdateAvatarUrlFromSourceAsync(
                     user.AvatarFileId,
-                    avatarUrl,
+                    payload.PictureUrl,
                     user.Id.ToString(),
                     It.IsAny<bool>(),
                     It.IsAny<CancellationToken>()
@@ -124,20 +130,14 @@ public class PublicSocialLoginAuthFactoryTests
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
-        PublicSocialLoginAuthData result = await _factory.AuthenticateOrCreateAsync(
-            email,
-            userName,
-            provider,
-            avatarUrl,
-            CancellationToken.None
-        );
+        await _factory.AuthenticateOrCreateAsync(payload, Provider, CancellationToken.None);
 
         // Assert
         _fileRepositoryMock.Verify(
             x =>
                 x.UpdateAvatarUrlFromSourceAsync(
                     user.AvatarFileId,
-                    avatarUrl,
+                    payload.PictureUrl,
                     user.Id.ToString(),
                     It.IsAny<bool>(),
                     It.IsAny<CancellationToken>()
@@ -147,21 +147,19 @@ public class PublicSocialLoginAuthFactoryTests
     }
 
     [Fact]
-    public async Task AuthenticateOrCreateAsync_ShouldGetOrCreateExternalUser()
+    public async Task AuthenticateOrCreateAsync_ShouldGetOrCreateExternalUser_WithSubjectId()
     {
         // Arrange
-        string email = "user@example.com";
-        string userName = "socialuser";
-        string provider = "Google";
-        string? avatarUrl = null;
-        UserEntity user = UserFactory.Create(email);
+        SocialTokenPayload payload = Payload("user@example.com", "socialuser", pictureUrl: null);
+        UserEntity user = UserFactory.Create(payload.Email);
 
         _authRepositoryMock
             .Setup(x =>
                 x.GetOrCreateExternalUserAsync(
-                    It.Is<string>(e => e == email),
-                    userName,
-                    It.Is<AuthProvider>(p => ((string)p) == provider),
+                    It.Is<string>(e => e == payload.Email),
+                    payload.Name,
+                    It.Is<AuthProvider>(p => ((EnumAuthProvider)p) == Provider),
+                    payload.ProviderSubjectId,
                     It.IsAny<CancellationToken>()
                 )
             )
@@ -182,15 +180,16 @@ public class PublicSocialLoginAuthFactoryTests
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
-        await _factory.AuthenticateOrCreateAsync(email, userName, provider, avatarUrl, CancellationToken.None);
+        await _factory.AuthenticateOrCreateAsync(payload, Provider, CancellationToken.None);
 
         // Assert
         _authRepositoryMock.Verify(
             x =>
                 x.GetOrCreateExternalUserAsync(
-                    It.Is<string>(e => e == email),
-                    userName,
-                    It.Is<AuthProvider>(p => ((string)p) == provider),
+                    It.Is<string>(e => e == payload.Email),
+                    payload.Name,
+                    It.Is<AuthProvider>(p => ((EnumAuthProvider)p) == Provider),
+                    payload.ProviderSubjectId,
                     It.IsAny<CancellationToken>()
                 ),
             Times.Once
@@ -198,14 +197,11 @@ public class PublicSocialLoginAuthFactoryTests
     }
 
     [Fact]
-    public async Task AuthenticateOrCreateAsync_ShouldUpdateAvatarUrlFromSource()
+    public async Task AuthenticateOrCreateAsync_ShouldUpdateAvatarFromPicture()
     {
         // Arrange
-        string email = "user@example.com";
-        string userName = "socialuser";
-        string provider = "Google";
-        string? avatarUrl = "https://avatar.url/image.jpg";
-        UserEntity user = UserFactory.Create(email);
+        SocialTokenPayload payload = Payload("user@example.com", "socialuser", "https://avatar.url/image.jpg");
+        UserEntity user = UserFactory.Create(payload.Email);
 
         _authRepositoryMock
             .Setup(x =>
@@ -213,6 +209,7 @@ public class PublicSocialLoginAuthFactoryTests
                     It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.IsAny<AuthProvider>(),
+                    It.IsAny<string>(),
                     It.IsAny<CancellationToken>()
                 )
             )
@@ -222,7 +219,7 @@ public class PublicSocialLoginAuthFactoryTests
             .Setup(x =>
                 x.UpdateAvatarUrlFromSourceAsync(
                     user.AvatarFileId,
-                    avatarUrl,
+                    payload.PictureUrl,
                     user.Id.ToString(),
                     It.IsAny<bool>(),
                     It.IsAny<CancellationToken>()
@@ -233,14 +230,14 @@ public class PublicSocialLoginAuthFactoryTests
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
-        await _factory.AuthenticateOrCreateAsync(email, userName, provider, avatarUrl, CancellationToken.None);
+        await _factory.AuthenticateOrCreateAsync(payload, Provider, CancellationToken.None);
 
         // Assert
         _fileRepositoryMock.Verify(
             x =>
                 x.UpdateAvatarUrlFromSourceAsync(
                     user.AvatarFileId,
-                    avatarUrl,
+                    payload.PictureUrl,
                     user.Id.ToString(),
                     It.IsAny<bool>(),
                     It.IsAny<CancellationToken>()
@@ -253,11 +250,8 @@ public class PublicSocialLoginAuthFactoryTests
     public async Task AuthenticateOrCreateAsync_WithManualAvatarSource_ShouldPassCorrectFlag()
     {
         // Arrange
-        string email = "user@example.com";
-        string userName = "socialuser";
-        string provider = "Google";
-        string? avatarUrl = "https://avatar.url/image.jpg";
-        UserEntity user = UserFactory.Create(email);
+        SocialTokenPayload payload = Payload("user@example.com", "socialuser", "https://avatar.url/image.jpg");
+        UserEntity user = UserFactory.Create(payload.Email);
         user.UpdateAvatar(Guid.NewGuid(), EnumAvatarSource.Manual);
 
         _authRepositoryMock
@@ -266,6 +260,7 @@ public class PublicSocialLoginAuthFactoryTests
                     It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.IsAny<AuthProvider>(),
+                    It.IsAny<string>(),
                     It.IsAny<CancellationToken>()
                 )
             )
@@ -275,7 +270,7 @@ public class PublicSocialLoginAuthFactoryTests
             .Setup(x =>
                 x.UpdateAvatarUrlFromSourceAsync(
                     user.AvatarFileId,
-                    avatarUrl,
+                    payload.PictureUrl,
                     user.Id.ToString(),
                     true,
                     It.IsAny<CancellationToken>()
@@ -286,14 +281,14 @@ public class PublicSocialLoginAuthFactoryTests
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
-        await _factory.AuthenticateOrCreateAsync(email, userName, provider, avatarUrl, CancellationToken.None);
+        await _factory.AuthenticateOrCreateAsync(payload, Provider, CancellationToken.None);
 
         // Assert
         _fileRepositoryMock.Verify(
             x =>
                 x.UpdateAvatarUrlFromSourceAsync(
                     user.AvatarFileId,
-                    avatarUrl,
+                    payload.PictureUrl,
                     user.Id.ToString(),
                     true,
                     It.IsAny<CancellationToken>()
@@ -306,12 +301,9 @@ public class PublicSocialLoginAuthFactoryTests
     public async Task AuthenticateOrCreateAsync_WithAvatarFileReturned_ShouldUpdateUserAvatar()
     {
         // Arrange
-        string email = "user@example.com";
-        string userName = "socialuser";
-        string provider = "Google";
-        string? avatarUrl = "https://avatar.url/image.jpg";
+        SocialTokenPayload payload = Payload("user@example.com", "socialuser", "https://avatar.url/image.jpg");
         var avatarFileId = Guid.NewGuid();
-        UserEntity user = UserFactory.Create(email);
+        UserEntity user = UserFactory.Create(payload.Email);
         FileEntity avatarFile = FileFactory.CreateWithId(avatarFileId);
 
         _authRepositoryMock
@@ -320,6 +312,7 @@ public class PublicSocialLoginAuthFactoryTests
                     It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.IsAny<AuthProvider>(),
+                    It.IsAny<string>(),
                     It.IsAny<CancellationToken>()
                 )
             )
@@ -329,7 +322,7 @@ public class PublicSocialLoginAuthFactoryTests
             .Setup(x =>
                 x.UpdateAvatarUrlFromSourceAsync(
                     user.AvatarFileId,
-                    avatarUrl,
+                    payload.PictureUrl,
                     user.Id.ToString(),
                     It.IsAny<bool>(),
                     It.IsAny<CancellationToken>()
@@ -340,7 +333,7 @@ public class PublicSocialLoginAuthFactoryTests
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
-        await _factory.AuthenticateOrCreateAsync(email, userName, provider, avatarUrl, CancellationToken.None);
+        await _factory.AuthenticateOrCreateAsync(payload, Provider, CancellationToken.None);
 
         // Assert
         user.AvatarFileId.Should().Be(avatarFileId);
@@ -351,11 +344,8 @@ public class PublicSocialLoginAuthFactoryTests
     public async Task AuthenticateOrCreateAsync_ShouldCommitTransaction()
     {
         // Arrange
-        string email = "user@example.com";
-        string userName = "socialuser";
-        string provider = "Google";
-        string? avatarUrl = null;
-        UserEntity user = UserFactory.Create(email);
+        SocialTokenPayload payload = Payload("user@example.com", "socialuser", pictureUrl: null);
+        UserEntity user = UserFactory.Create(payload.Email);
 
         _authRepositoryMock
             .Setup(x =>
@@ -363,6 +353,7 @@ public class PublicSocialLoginAuthFactoryTests
                     It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.IsAny<AuthProvider>(),
+                    It.IsAny<string>(),
                     It.IsAny<CancellationToken>()
                 )
             )
@@ -383,7 +374,7 @@ public class PublicSocialLoginAuthFactoryTests
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
-        await _factory.AuthenticateOrCreateAsync(email, userName, provider, avatarUrl, CancellationToken.None);
+        await _factory.AuthenticateOrCreateAsync(payload, Provider, CancellationToken.None);
 
         // Assert
         _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
@@ -393,19 +384,17 @@ public class PublicSocialLoginAuthFactoryTests
     public async Task AuthenticateOrCreateAsync_WithCancellationToken_ShouldPassToRepositories()
     {
         // Arrange
-        string email = "user@example.com";
-        string userName = "socialuser";
-        string provider = "Google";
-        string? avatarUrl = "https://avatar.url/image.jpg";
-        UserEntity user = UserFactory.Create(email);
+        SocialTokenPayload payload = Payload("user@example.com", "socialuser", "https://avatar.url/image.jpg");
+        UserEntity user = UserFactory.Create(payload.Email);
         CancellationToken cancellationToken = new();
 
         _authRepositoryMock
             .Setup(x =>
                 x.GetOrCreateExternalUserAsync(
                     It.IsAny<string>(),
-                    userName,
+                    payload.Name,
                     It.IsAny<AuthProvider>(),
+                    It.IsAny<string>(),
                     cancellationToken
                 )
             )
@@ -415,7 +404,7 @@ public class PublicSocialLoginAuthFactoryTests
             .Setup(x =>
                 x.UpdateAvatarUrlFromSourceAsync(
                     user.AvatarFileId,
-                    avatarUrl,
+                    payload.PictureUrl,
                     user.Id.ToString(),
                     It.IsAny<bool>(),
                     cancellationToken
@@ -426,26 +415,16 @@ public class PublicSocialLoginAuthFactoryTests
         _unitOfWorkMock.Setup(x => x.CommitAsync(cancellationToken)).ReturnsAsync(1);
 
         // Act
-        await _factory.AuthenticateOrCreateAsync(email, userName, provider, avatarUrl, cancellationToken);
+        await _factory.AuthenticateOrCreateAsync(payload, Provider, cancellationToken);
 
         // Assert
         _authRepositoryMock.Verify(
             x =>
                 x.GetOrCreateExternalUserAsync(
                     It.IsAny<string>(),
-                    userName,
+                    payload.Name,
                     It.IsAny<AuthProvider>(),
-                    cancellationToken
-                ),
-            Times.Once
-        );
-        _fileRepositoryMock.Verify(
-            x =>
-                x.UpdateAvatarUrlFromSourceAsync(
-                    user.AvatarFileId,
-                    avatarUrl,
-                    user.Id.ToString(),
-                    It.IsAny<bool>(),
+                    It.IsAny<string>(),
                     cancellationToken
                 ),
             Times.Once

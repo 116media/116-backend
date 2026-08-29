@@ -31,6 +31,7 @@ public class CoreModuleTests : IDisposable
         _services = [];
         _services.AddLogging();
         _services.AddLocalization();
+        _services.AddSingleton(HostEnvironment("Testing"));
 
         _cloudinarySettings = new CloudinarySettings
         {
@@ -74,6 +75,7 @@ public class CoreModuleTests : IDisposable
             ApiSecret = "test-secret",
         };
         services.AddSingleton(cloudinarySettings);
+        services.AddSingleton(HostEnvironment("Testing"));
 
         // Act
         services.AddCoreModule(HostEnvironment("Testing"));
@@ -100,6 +102,7 @@ public class CoreModuleTests : IDisposable
             ApiSecret = "test-secret",
         };
         services.AddSingleton(cloudinarySettings);
+        services.AddSingleton(HostEnvironment("Testing"));
 
         // Act
         services.AddCoreModule(HostEnvironment("Testing"));
@@ -127,6 +130,7 @@ public class CoreModuleTests : IDisposable
             ApiSecret = "test-secret",
         };
         services.AddSingleton(cloudinarySettings);
+        services.AddSingleton(HostEnvironment("Testing"));
 
         // Act
         services.AddCoreModule(HostEnvironment("Testing"));
@@ -154,6 +158,7 @@ public class CoreModuleTests : IDisposable
             ApiSecret = "test-secret",
         };
         services.AddSingleton(cloudinarySettings);
+        services.AddSingleton(HostEnvironment("Testing"));
 
         // Act
         services.AddCoreModule(HostEnvironment("Testing"));
@@ -181,6 +186,7 @@ public class CoreModuleTests : IDisposable
             ApiSecret = "test-secret",
         };
         services.AddSingleton(cloudinarySettings);
+        services.AddSingleton(HostEnvironment("Testing"));
 
         // Act
         services.AddCoreModule(HostEnvironment("Testing"));

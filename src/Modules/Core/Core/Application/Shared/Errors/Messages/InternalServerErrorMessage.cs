@@ -25,6 +25,15 @@ public class InternalServerErrorMessage(IStringLocalizer<InternalServerErrorMess
     }
 
     /// <summary>
+    /// Gets a generic file-download failure message that reveals neither the URL nor the reason.
+    /// </summary>
+    /// <returns>A generic error message indicating the file could not be downloaded.</returns>
+    public string FileDownloadFailedGeneric()
+    {
+        return localizer["FileDownloadFailedGeneric"];
+    }
+
+    /// <summary>
     /// Gets the error message for file storage failure.
     /// </summary>
     /// <param name="reason">The specific reason for the storage failure.</param>

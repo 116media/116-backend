@@ -14,7 +14,7 @@ shippable work. **Rules of engagement:**
 ## Stage index
 
 - [ ] **Stage 1 — Critical security quick wins** → [`stage-01-critical-security-hardening.md`](stage-01-critical-security-hardening.md)
-- [ ] **Stage 2 — Social-login verification & SSRF**
+- [ ] **Stage 2 — Social-login verification & SSRF** → [`stage-02-social-login-and-ssrf.md`](stage-02-social-login-and-ssrf.md)
 - [ ] **Stage 3 — Rate-limit partitioning & trusted proxies**
 - [ ] **Stage 4 — Session revocation, verified signup & account-status enforcement**
 - [ ] **Stage 5 — Password & OTP hardening**

@@ -129,6 +129,7 @@ public class UserEntityTests
             id,
             userName,
             EnumAuthProvider.Google,
+            $"sub-{Guid.NewGuid():N}",
             TestErrorsFactory.CreateUserErrors(),
             email
         );
@@ -143,6 +144,25 @@ public class UserEntityTests
     }
 
     [Fact]
+    public void CreateExternal_ShouldStoreProviderSubjectId()
+    {
+        // Arrange
+        string subjectId = $"sub-{Guid.NewGuid():N}";
+
+        // Act
+        var user = UserEntity.CreateExternal(
+            Guid.NewGuid(),
+            TestConstants.User.ValidUserName,
+            EnumAuthProvider.Google,
+            subjectId,
+            TestErrorsFactory.CreateUserErrors()
+        );
+
+        // Assert
+        user.ProviderSubjectId.Should().Be(subjectId);
+    }
+
+    [Fact]
     public void CreateExternal_WithoutEmail_ShouldCreateExternalUser()
     {
         // Arrange
@@ -154,6 +174,7 @@ public class UserEntityTests
             id,
             userName,
             EnumAuthProvider.Facebook,
+            $"sub-{Guid.NewGuid():N}",
             TestErrorsFactory.CreateUserErrors()
         );
 
@@ -179,11 +200,75 @@ public class UserEntityTests
                 id,
                 invalidUserName!,
                 EnumAuthProvider.Google,
+                $"sub-{Guid.NewGuid():N}",
                 TestErrorsFactory.CreateUserErrors()
             );
 
         // Assert
         act.Should().Throw<Exception>();
+    }
+
+    #endregion
+
+    #region LinkProviderSubject Tests
+
+    [Fact]
+    public void LinkProviderSubject_WhenNoSubjectYet_ShouldSetIt()
+    {
+        // Arrange — an external account that predates subject-id tracking has a null subject id.
+        var user = UserEntity.CreateExternal(
+            Guid.NewGuid(),
+            TestConstants.User.ValidUserName,
+            EnumAuthProvider.Google,
+            providerSubjectId: null!,
+            TestErrorsFactory.CreateUserErrors()
+        );
+        string subjectId = $"sub-{Guid.NewGuid():N}";
+
+        // Act
+        user.LinkProviderSubject(subjectId, _userErrors);
+
+        // Assert
+        user.ProviderSubjectId.Should().Be(subjectId);
+    }
+
+    [Fact]
+    public void LinkProviderSubject_WhenSameSubject_ShouldRemainIdempotent()
+    {
+        // Arrange
+        string subjectId = $"sub-{Guid.NewGuid():N}";
+        var user = UserEntity.CreateExternal(
+            Guid.NewGuid(),
+            TestConstants.User.ValidUserName,
+            EnumAuthProvider.Google,
+            subjectId,
+            TestErrorsFactory.CreateUserErrors()
+        );
+
+        // Act
+        user.LinkProviderSubject(subjectId, _userErrors);
+
+        // Assert
+        user.ProviderSubjectId.Should().Be(subjectId);
+    }
+
+    [Fact]
+    public void LinkProviderSubject_WhenDifferentSubject_ShouldThrowProviderMismatch()
+    {
+        // Arrange
+        var user = UserEntity.CreateExternal(
+            Guid.NewGuid(),
+            TestConstants.User.ValidUserName,
+            EnumAuthProvider.Google,
+            $"sub-{Guid.NewGuid():N}",
+            TestErrorsFactory.CreateUserErrors()
+        );
+
+        // Act
+        Action act = () => user.LinkProviderSubject($"sub-{Guid.NewGuid():N}", _userErrors);
+
+        // Assert
+        act.Should().Throw<ConflictException>();
     }
 
     #endregion

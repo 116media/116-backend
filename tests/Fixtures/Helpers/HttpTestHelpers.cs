@@ -1,3 +1,4 @@
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Shared.Application.Exceptions.Messages;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,6 +28,8 @@ public static class HttpTestHelpers
         services.AddLogging();
         services.AddLocalization();
         services.AddScoped<SharedExceptionMessage>();
+        services.AddScoped<AuthenticationErrorMessage>();
+        services.AddScoped<ValidationErrorMessage>();
         services.AddSingleton<IHostEnvironment>(new TestHostEnvironment { EnvironmentName = environmentName });
         ServiceProvider provider = services.BuildServiceProvider();
 

@@ -5,7 +5,9 @@ namespace _116.Content.Application.Shared.Errors;
 
 /// <summary>
 /// Streaming link domain error factory providing simple, readable exception creation.
-/// Usage: StreamingLinkErrors.ResolutionFailed() or StreamingLinkErrors.NothingResolved()
+/// Provider resolution failures are raised by the resolution service as
+/// <c>StreamingLinkResolutionException</c> and mapped by its strategy handler, so they are not
+/// created here.
 /// </summary>
 public class StreamingLinkErrors(StreamingLinkErrorMessage i18n)
 {
@@ -13,24 +15,6 @@ public class StreamingLinkErrors(StreamingLinkErrorMessage i18n)
     /// Exposes the localized message provider for use in validator extensions.
     /// </summary>
     public StreamingLinkErrorMessage Msg => i18n;
-
-    /// <summary>
-    /// Throws when the external link-resolution provider is unreachable or answers with a
-    /// non-success status.
-    /// </summary>
-    public BadGatewayException ResolutionFailed()
-    {
-        return new BadGatewayException(i18n.ResolutionFailed());
-    }
-
-    /// <summary>
-    /// Throws when the external link-resolution provider is rate-limiting us — the admin
-    /// should wait rather than retry immediately.
-    /// </summary>
-    public RateLimitExceededException ResolutionRateLimited()
-    {
-        return new RateLimitExceededException(i18n.ResolutionRateLimited(), retryAfter: TimeSpan.FromMinutes(1));
-    }
 
     /// <summary>
     /// Throws when the provider resolved no platforms at all for the source URL, so nothing
