@@ -45,14 +45,18 @@ public class PublicRenamePlaylistEndpointV1 : ICarterModule
                     PublicRenamePlaylistRequest request,
                     ClaimsPrincipal user,
                     IClaimsProvider claimsProvider,
-                    IDispatcher dispatcher
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
                 ) =>
                 {
                     Guid playlistId = Guid.Parse(id);
                     Guid userId = claimsProvider.GetUserIdFromClaims(user: user);
 
                     var command = new PublicRenamePlaylistCommand(Id: playlistId, UserId: userId, Name: request.Name);
-                    PublicRenamePlaylistResult result = await dispatcher.Send(request: command);
+                    PublicRenamePlaylistResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicRenamePlaylistResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);
