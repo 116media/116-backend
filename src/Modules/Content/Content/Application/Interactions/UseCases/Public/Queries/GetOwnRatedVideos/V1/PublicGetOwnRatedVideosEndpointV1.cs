@@ -34,13 +34,14 @@ public class PublicGetOwnRatedVideosEndpointV1 : ICarterModule
                     ClaimsPrincipal user,
                     IClaimsProvider claimsProvider,
                     IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
                     int pageIndex = 0,
                     int pageSize = 10
                 ) =>
                 {
                     Guid userId = claimsProvider.GetUserIdFromClaims(user);
                     var query = new PublicGetOwnRatedVideosQuery(userId, new PaginatedRequest(pageIndex, pageSize));
-                    PublicGetOwnRatedVideosResult result = await dispatcher.Send(query);
+                    PublicGetOwnRatedVideosResult result = await dispatcher.Send(query, cancellationToken);
                     return Results.Ok(result.Videos);
                 }
             )
