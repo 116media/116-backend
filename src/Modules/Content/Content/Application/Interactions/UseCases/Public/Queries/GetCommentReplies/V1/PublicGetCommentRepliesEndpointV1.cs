@@ -34,6 +34,7 @@ public class PublicGetCommentRepliesEndpointV1 : ICarterModule
                     ClaimsPrincipal user,
                     IClaimsProvider claimsProvider,
                     IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
                     int pageIndex = 0,
                     int pageSize = 10
                 ) =>
@@ -52,7 +53,10 @@ public class PublicGetCommentRepliesEndpointV1 : ICarterModule
                         ViewerUserId: viewerUserId
                     );
 
-                    PublicGetCommentRepliesResult result = await dispatcher.Send(request: query);
+                    PublicGetCommentRepliesResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
                     return Results.Ok(result.Replies);
                 }
             )
