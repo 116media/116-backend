@@ -41,10 +41,17 @@ public class PublicSubscribeNewsletterEndpointV1 : ICarterModule
         group
             .MapPost(
                 pattern: "subscriptions",
-                async (PublicSubscribeNewsletterRequest request, IDispatcher dispatcher) =>
+                async (
+                    PublicSubscribeNewsletterRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new PublicSubscribeNewsletterCommand(Email: request.Email);
-                    PublicSubscribeNewsletterResult result = await dispatcher.Send(request: command);
+                    PublicSubscribeNewsletterResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicSubscribeNewsletterResponse(
                         IsSuccess: result.IsSuccess,
