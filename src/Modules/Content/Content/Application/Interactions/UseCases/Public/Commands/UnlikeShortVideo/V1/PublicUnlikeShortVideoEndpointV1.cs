@@ -34,13 +34,22 @@ public class PublicUnlikeShortVideoEndpointV1 : ICarterModule
         group
             .MapDelete(
                 $"/{{id}}/{InteractionsRouteConstants.Likes}",
-                async (string id, ClaimsPrincipal user, IClaimsProvider claimsProvider, IDispatcher dispatcher) =>
+                async (
+                    string id,
+                    ClaimsPrincipal user,
+                    IClaimsProvider claimsProvider,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     Guid shortVideoId = Guid.Parse(id);
                     Guid userId = claimsProvider.GetUserIdFromClaims(user: user);
 
                     var command = new PublicUnlikeShortVideoCommand(ShortVideoId: shortVideoId, UserId: userId);
-                    PublicUnlikeShortVideoResult result = await dispatcher.Send(request: command);
+                    PublicUnlikeShortVideoResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicUnlikeShortVideoResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);
