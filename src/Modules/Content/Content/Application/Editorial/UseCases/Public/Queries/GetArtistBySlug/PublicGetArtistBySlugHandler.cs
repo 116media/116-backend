@@ -6,7 +6,6 @@ using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
-using MapsterMapper;
 
 namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetArtistBySlug;
 
@@ -17,14 +16,12 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetArtistBy
 /// <param name="artistRepository">Repository for artist profile data access operations.</param>
 /// <param name="lyricsRepository">Repository for lyrics data access operations.</param>
 /// <param name="videoRepository">Repository for video data access operations.</param>
-/// <param name="mapper">The Mapster mapper used for video tags.</param>
 /// <param name="fileRepository">Repository for resolving avatar, cover, and thumbnail file URLs.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class PublicGetArtistBySlugHandler(
     IArtistRepository artistRepository,
     ILyricsRepository lyricsRepository,
     IVideoRepository videoRepository,
-    IMapper mapper,
     IFileRepository fileRepository,
     ContentI18n i18n
 ) : IQueryHandler<PublicGetArtistBySlugQuery, PublicGetArtistBySlugResult>
@@ -85,22 +82,22 @@ public class PublicGetArtistBySlugHandler(
 
         ArtistDto artistDto = await artist.ToArtistDtoAsync(fileRepository, cancellationToken, socialLinks);
 
-        IReadOnlyList<LyricsSummaryDto> lyricsDtos = await lyricsList
+        IReadOnlyList<PublicLyricsSummaryDto> lyricsDtos = await lyricsList
             .AsReadOnly()
-            .ToLyricsSummaryDtosAsync(fileRepository, cancellationToken);
+            .ToPublicLyricsSummaryDtosAsync(fileRepository, cancellationToken);
 
-        IReadOnlyList<VideoSummaryDto> videoDtos = await videoList
+        IReadOnlyList<PublicVideoSummaryDto> videoDtos = await videoList
             .AsReadOnly()
-            .ToVideoSummaryDtosAsync(mapper, fileRepository, cancellationToken);
+            .ToPublicVideoSummaryDtosAsync(fileRepository, cancellationToken);
 
-        var lyricsResult = new PaginatedResult<LyricsSummaryDto>(
+        var lyricsResult = new PaginatedResult<PublicLyricsSummaryDto>(
             pageIndex: lyricsPageIndex,
             pageSize: lyricsPageSize,
             count: lyricsTotalCount,
             items: lyricsDtos
         );
 
-        var videosResult = new PaginatedResult<VideoSummaryDto>(
+        var videosResult = new PaginatedResult<PublicVideoSummaryDto>(
             pageIndex: videosPageIndex,
             pageSize: videosPageSize,
             count: videosTotalCount,
