@@ -18,7 +18,7 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublishe
 /// Response model for listing published lyrics pages.
 /// </summary>
 /// <param name="Lyrics">Paginated result containing lyrics summary DTOs and pagination metadata.</param>
-public record PublicGetPublishedLyricsResponse(PaginatedResult<LyricsSummaryDto> Lyrics);
+public record PublicGetPublishedLyricsResponse(PaginatedResult<PublicLyricsSummaryDto> Lyrics);
 
 /// <summary>
 /// Defines the public get published lyrics endpoint.
