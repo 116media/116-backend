@@ -18,7 +18,7 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublishe
 /// Response model for listing published articles.
 /// </summary>
 /// <param name="Articles">Paginated result containing article summary DTOs and pagination metadata.</param>
-public record PublicGetPublishedArticlesResponse(PaginatedResult<ArticleSummaryDto> Articles);
+public record PublicGetPublishedArticlesResponse(PaginatedResult<PublicArticleSummaryDto> Articles);
 
 /// <summary>
 /// Defines the public get published articles endpoint.
