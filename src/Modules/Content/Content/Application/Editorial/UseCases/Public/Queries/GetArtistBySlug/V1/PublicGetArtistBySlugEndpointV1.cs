@@ -22,8 +22,8 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetArtistBy
 public record PublicGetArtistBySlugResponse(
     ArtistDto Artist,
     ArtistTotalsDto Totals,
-    PaginatedResult<LyricsSummaryDto> Lyrics,
-    PaginatedResult<VideoSummaryDto> Videos
+    PaginatedResult<PublicLyricsSummaryDto> Lyrics,
+    PaginatedResult<PublicVideoSummaryDto> Videos
 );
 
 /// <summary>
