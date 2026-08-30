@@ -119,7 +119,13 @@ public class PublicGetLyricsBySlugHandler(
                 cancellationToken: cancellationToken
             );
 
-        var dto = await lyrics.ToLyricsDetailDtoAsync(mapper, userLookup, fileRepository, cancellationToken, isLiked);
+        var dto = await lyrics.ToPublicLyricsDetailDtoAsync(
+            mapper,
+            userLookup,
+            fileRepository,
+            cancellationToken,
+            isLiked
+        );
         return new PublicGetLyricsBySlugResult(
             Lyrics: dto,
             VideoSlug: videoSlug,
