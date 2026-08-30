@@ -38,4 +38,4 @@ public record PublicGetPublicShortsQuery(PaginatedRequest PaginatedRequest, stri
 /// Result of the <see cref="PublicGetPublicShortsQuery" /> containing a paginated list of short video DTOs.
 /// </summary>
 /// <param name="ShortVideos">The paginated result containing short video DTOs.</param>
-public record PublicGetPublicShortsResult(PaginatedResult<ShortVideoDto> ShortVideos);
+public record PublicGetPublicShortsResult(PaginatedResult<PublicShortVideoDto> ShortVideos);
