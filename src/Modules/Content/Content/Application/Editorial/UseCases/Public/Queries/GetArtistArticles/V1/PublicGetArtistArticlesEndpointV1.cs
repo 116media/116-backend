@@ -16,7 +16,7 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetArtistAr
 /// Response model for retrieving articles tagged to an artist.
 /// </summary>
 /// <param name="Articles">The published articles tagged to the artist, newest first.</param>
-public record PublicGetArtistArticlesResponse(PaginatedResult<ArticleSummaryDto> Articles);
+public record PublicGetArtistArticlesResponse(PaginatedResult<PublicArticleSummaryDto> Articles);
 
 /// <summary>
 /// Defines the public get artist articles endpoint.
