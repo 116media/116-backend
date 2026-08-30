@@ -24,7 +24,7 @@ public record PublicGetArticlePromotionFeedResponse(
     ArticlePromotionSpotDto Spot1,
     ArticlePromotionSpotDto Spot2,
     ArticlePromotionSpot3Dto Spot3,
-    IReadOnlyList<ArticleSummaryDto> GossipStrip
+    IReadOnlyList<PublicArticleSummaryDto> GossipStrip
 );
 
 /// <summary>
