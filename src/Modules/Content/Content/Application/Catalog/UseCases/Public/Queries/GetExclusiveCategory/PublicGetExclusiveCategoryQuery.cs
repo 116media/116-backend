@@ -31,4 +31,4 @@ public record PublicGetExclusiveCategoryQuery(PaginatedRequest PaginatedRequest)
 /// </summary>
 /// <param name="Category">The exclusive category DTO.</param>
 /// <param name="Videos">Paginated list of published videos in the exclusive category.</param>
-public record PublicGetExclusiveCategoryResult(CategoryDto Category, PaginatedResult<VideoSummaryDto> Videos);
+public record PublicGetExclusiveCategoryResult(CategoryDto Category, PaginatedResult<PublicVideoSummaryDto> Videos);
