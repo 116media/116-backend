@@ -50,7 +50,7 @@ public class PublicGetLyricsByVideoIdHandler(
                     cancellationToken: cancellationToken
                 );
 
-            var dto = await lyrics.ToLyricsDetailDtoAsync(
+            var dto = await lyrics.ToPublicLyricsDetailDtoAsync(
                 mapper,
                 userLookup,
                 fileRepository,
