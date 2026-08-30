@@ -801,7 +801,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
         // Act
         IReadOnlyList<ArticleCommentDto> dtos = comments.ToArticleCommentDtos(
             Mapper,
-            new Dictionary<Guid, AuthorDto>()
+            new Dictionary<Guid, AdminAuthorDto>()
         );
 
         // Assert
@@ -819,7 +819,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
         // Act
         IReadOnlyList<ArticleCommentDto> dtos = comments.ToArticleCommentDtos(
             Mapper,
-            new Dictionary<Guid, AuthorDto>()
+            new Dictionary<Guid, AdminAuthorDto>()
         );
 
         // Assert
