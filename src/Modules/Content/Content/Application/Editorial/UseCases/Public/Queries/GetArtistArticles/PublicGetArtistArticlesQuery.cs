@@ -30,4 +30,4 @@ public record PublicGetArtistArticlesQuery(string Slug, PaginatedRequest Page)
 /// Result of the <see cref="PublicGetArtistArticlesQuery" /> containing the paginated articles.
 /// </summary>
 /// <param name="Articles">The published articles tagged to the artist, newest first.</param>
-public record PublicGetArtistArticlesResult(PaginatedResult<ArticleSummaryDto> Articles);
+public record PublicGetArtistArticlesResult(PaginatedResult<PublicArticleSummaryDto> Articles);
