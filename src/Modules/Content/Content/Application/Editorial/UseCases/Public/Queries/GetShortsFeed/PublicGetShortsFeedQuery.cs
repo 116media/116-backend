@@ -37,4 +37,4 @@ public record PublicGetShortsFeedQuery(string? Cursor, int PageSize, Guid? Curre
 /// </summary>
 /// <param name="Items">The ordered short videos for this page.</param>
 /// <param name="NextCursor">The cursor for the next page, or null when the feed is exhausted.</param>
-public record PublicGetShortsFeedResult(IReadOnlyList<ShortVideoDto> Items, string? NextCursor);
+public record PublicGetShortsFeedResult(IReadOnlyList<PublicShortVideoDto> Items, string? NextCursor);
