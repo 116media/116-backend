@@ -17,7 +17,7 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetLyricsBy
 /// Response model for retrieving lyrics by video ID.
 /// </summary>
 /// <param name="Lyrics">The lyrics information linked to the video.</param>
-public record PublicGetLyricsByVideoIdResponse(LyricsDetailDto Lyrics);
+public record PublicGetLyricsByVideoIdResponse(PublicLyricsDetailDto Lyrics);
 
 /// <summary>
 /// Defines the public get lyrics by video ID endpoint.
