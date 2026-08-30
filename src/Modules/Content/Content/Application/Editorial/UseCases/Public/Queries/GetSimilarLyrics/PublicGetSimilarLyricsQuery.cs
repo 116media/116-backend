@@ -40,4 +40,4 @@ public record PublicGetSimilarLyricsQuery(Guid LyricsId, Guid? CurrentUserId = n
 /// outcome, not an error.
 /// </summary>
 /// <param name="Lyrics">The matched similar lyrics pages, or an empty list.</param>
-public record PublicGetSimilarLyricsResult(IReadOnlyList<LyricsSummaryDto> Lyrics);
+public record PublicGetSimilarLyricsResult(IReadOnlyList<PublicLyricsSummaryDto> Lyrics);
