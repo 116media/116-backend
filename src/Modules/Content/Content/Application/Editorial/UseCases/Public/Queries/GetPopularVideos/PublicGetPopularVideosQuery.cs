@@ -38,4 +38,4 @@ public record PublicGetPopularVideosQuery(int Limit, Guid? CategoryId, Guid? Exc
 /// summaries.
 /// </summary>
 /// <param name="Videos">The popular videos ordered by engagement score descending.</param>
-public record PublicGetPopularVideosResult(IReadOnlyList<VideoSummaryDto> Videos);
+public record PublicGetPopularVideosResult(IReadOnlyList<PublicVideoSummaryDto> Videos);
