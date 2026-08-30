@@ -18,7 +18,7 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublicSh
 /// Response model for listing active short videos.
 /// </summary>
 /// <param name="ShortVideos">Paginated result containing short video DTOs and pagination metadata.</param>
-public record PublicGetPublicShortsResponse(PaginatedResult<ShortVideoDto> ShortVideos);
+public record PublicGetPublicShortsResponse(PaginatedResult<PublicShortVideoDto> ShortVideos);
 
 /// <summary>
 /// Defines the public get short videos endpoint.
