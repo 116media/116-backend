@@ -128,6 +128,6 @@ public record LyricsDetailDto(
     Guid? CustomerId = null,
     string? CustomerName = null,
     Guid? OrderItemId = null,
-    AuthorDto? Author = null,
+    AdminAuthorDto? Author = null,
     bool IsLiked = false
 ) : AuditableDto;
