@@ -59,4 +59,86 @@ public static class UserMapper
     {
         return fileEntity == null ? null : mapper.Map<FileDto>(fileEntity);
     }
+
+    /// <summary>
+    /// Projects a mapped <see cref="UserResponseDto" /> to its public shape, dropping the audit
+    /// trail and role/permission lifecycle state.
+    /// </summary>
+    public static PublicUserResponseDto ToPublicUserResponseDto(this UserResponseDto dto)
+    {
+        return new PublicUserResponseDto(
+            dto.Id,
+            dto.Email,
+            dto.UserName,
+            dto.Roles.Select(role => role.ToPublicRoleDto()).ToList(),
+            dto.Permissions.Select(permission => permission.ToPublicPermissionDto()).ToList(),
+            dto.AuthProvider,
+            dto.IsVerified,
+            dto.IsActive,
+            dto.Avatar.ToPublicFileDto(),
+            dto.CountryName,
+            dto.CountryIsoCode,
+            dto.CountryDialCode,
+            dto.PartialPhoneNumber,
+            dto.FullPhoneNumber
+        );
+    }
+
+    /// <summary>
+    /// Projects a mapped <see cref="RoleDto" /> to its public shape.
+    /// </summary>
+    public static PublicRoleDto ToPublicRoleDto(this RoleDto dto)
+    {
+        return new PublicRoleDto(dto.Id, dto.Name, dto.Description);
+    }
+
+    /// <summary>
+    /// Projects a mapped <see cref="PermissionDto" /> to its public shape.
+    /// </summary>
+    public static PublicPermissionDto ToPublicPermissionDto(this PermissionDto dto)
+    {
+        return new PublicPermissionDto(dto.Id, dto.Resource, dto.Action, dto.Description);
+    }
+
+    /// <summary>
+    /// Projects a mapped <see cref="RoleWithPermissionsDto" /> to its public shape.
+    /// </summary>
+    public static PublicRoleWithPermissionsDto ToPublicRoleWithPermissionsDto(this RoleWithPermissionsDto dto)
+    {
+        return new PublicRoleWithPermissionsDto(
+            dto.Id,
+            dto.Name,
+            dto.Description,
+            dto.Permissions.Select(permission => permission.ToPublicPermissionDto()).ToList()
+        );
+    }
+
+    /// <summary>
+    /// Projects a mapped <see cref="FileDto" /> to its public shape, or null.
+    /// </summary>
+    public static PublicFileDto? ToPublicFileDto(this FileDto? dto)
+    {
+        return dto is null ? null : new PublicFileDto(dto.Id, dto.StorageUrl, dto.MimeType);
+    }
+
+    /// <summary>
+    /// Projects a mapped <see cref="SessionDto" /> to its public shape, using the session's
+    /// creation instant as the display start time.
+    /// </summary>
+    public static PublicSessionDto ToPublicSessionDto(this SessionDto dto)
+    {
+        return new PublicSessionDto(
+            dto.Id,
+            dto.IpAddress,
+            dto.UserAgent,
+            dto.Browser,
+            dto.Device,
+            dto.Platform,
+            dto.Client,
+            dto.CreatedAt,
+            dto.ExpiresAt,
+            dto.IsActive,
+            dto.IsCurrent
+        );
+    }
 }
