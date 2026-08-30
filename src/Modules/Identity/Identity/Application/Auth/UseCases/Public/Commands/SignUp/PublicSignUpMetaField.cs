@@ -23,7 +23,10 @@ public static class PublicSignUpMetaField
             - Ensures the email/username is unique\n
             - Hashes the password using secure algorithms (bcrypt)\n
             - Creates a new public user account in the system\n
-            - Triggers optional account verification (email/SMS)\n
+            - Sends the email verification code required before the first login\n
+            \n
+            No tokens are issued and no session is opened: the account is created unverified, so
+            the user verifies the emailed code first and then logs in.\n
             \n
             **Authentication Requirements:**\n
             - No authentication required; open to the public for account creation\n

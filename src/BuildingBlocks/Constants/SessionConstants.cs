@@ -25,4 +25,10 @@ public static class SessionConstants
     /// Used to store client-generated unique device ID (GUID/UUID/NanoID).
     /// </summary>
     public const int MaxDeviceIdLength = 64;
+
+    /// <summary>
+    /// Fallback absolute session lifetime in days when
+    /// <c>JWT_SESSION_ABSOLUTE_LIFETIME_IN_DAYS</c> is not configured.
+    /// </summary>
+    public const int DefaultAbsoluteLifetimeDays = 30;
 }

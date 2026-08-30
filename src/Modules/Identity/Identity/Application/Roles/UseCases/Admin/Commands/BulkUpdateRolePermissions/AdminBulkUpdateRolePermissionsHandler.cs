@@ -8,15 +8,18 @@ using MapsterMapper;
 namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.BulkUpdateRolePermissions;
 
 /// <summary>
-/// Handles the <see cref="AdminBulkUpdateRolePermissionsCommand" /> to bulk update permissions of a role.
+/// Handles the <see cref="AdminBulkUpdateRolePermissionsCommand" /> to bulk update a role's
+/// permissions, bumping every role member's token version.
 /// </summary>
 /// <param name="roleRepository">Repository for role data access operations.</param>
 /// <param name="rolePermissionRepository">Repository for role-permission data access operations.</param>
+/// <param name="tokenStateRepository">Repository bumping the role members' token versions.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class AdminBulkUpdateRolePermissionsHandler(
     IRoleRepository roleRepository,
     IRolePermissionRepository rolePermissionRepository,
+    IUserTokenStateRepository tokenStateRepository,
     IIdentityUnitOfWork unitOfWork,
     IMapper mapper
 ) : ICommandHandler<AdminBulkUpdateRolePermissionsCommand, AdminBulkUpdateRolePermissionsResult>
@@ -79,6 +82,15 @@ public class AdminBulkUpdateRolePermissionsHandler(
         }
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+        // Only bump when the permission set actually changed.
+        if (permissionsToAdd.Count > 0 || permissionsToRemove.Count > 0)
+        {
+            await tokenStateRepository.BumpTokenVersionForRoleUsersAsync(
+                roleId: roleId,
+                cancellationToken: cancellationToken
+            );
+        }
 
         // Reload the role with permissions to return updated data
         RoleEntity? role = await roleRepository.GetRoleByIdWithPermissionsOrThrowAsync(

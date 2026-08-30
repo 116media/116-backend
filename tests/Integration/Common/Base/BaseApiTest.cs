@@ -139,6 +139,22 @@ public abstract class BaseApiTest : IAsyncLifetime
     }
 
     /// <summary>
+    /// Seeds an active, verified user so a token minted for it passes the token-invalidation
+    /// check. Use it instead of a bare <see cref="Guid" /> whenever a test authenticates as
+    /// someone other than the well-known users.
+    /// </summary>
+    /// <returns>The id of the seeded user.</returns>
+    protected async Task<Guid> SeedAuthenticatedUserAsync()
+    {
+        var user = UserFactory.Create();
+        user.MarkAsVerified();
+        user.Activate();
+
+        await SeedAsync<IdentityDbContext>(context => context.Users.Add(user));
+        return user.Id;
+    }
+
+    /// <summary>
     /// Override to seed test data after the database has been reset.
     /// Called once per test method, after the well-known test users have been seeded.
     /// </summary>
@@ -149,6 +165,7 @@ public abstract class BaseApiTest : IAsyncLifetime
     {
         await Db.ResetAsync();
         ResetStubs();
+        ClearMemoryCache();
         InvalidateTagCache();
         InvalidatePopularArticlesCache();
         InvalidatePopularVideosCache();
@@ -167,6 +184,19 @@ public abstract class BaseApiTest : IAsyncLifetime
         foreach (IResettableStub stub in scope.ServiceProvider.GetServices<IResettableStub>())
         {
             stub.Reset();
+        }
+    }
+
+    /// <summary>
+    /// Clears the shared in-process cache before each test, since it outlives the database reset
+    /// and security-state/denylist entries would otherwise leak into the next test.
+    /// </summary>
+    private void ClearMemoryCache()
+    {
+        using var scope = Api.Services.CreateScope();
+        if (scope.ServiceProvider.GetRequiredService<IMemoryCache>() is MemoryCache memoryCache)
+        {
+            memoryCache.Clear();
         }
     }
 

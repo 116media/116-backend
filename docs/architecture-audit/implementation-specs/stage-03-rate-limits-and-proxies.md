@@ -19,15 +19,15 @@ IP (trusted forwarded headers) and the **authenticated subject** (rate limiter a
 
 ## Checklist
 
-- [ ] 3.1 — `AppEnvironment.TrustedProxyNetworks()` reads `TRUSTED_PROXY_NETWORKS` (CIDR list) + `.env.template`
-- [ ] 3.2 — `ForwardedHeadersOptions`: populate `KnownNetworks` from config, `ForwardLimit = 1`; keep cleared when unset
-- [ ] 3.3 — `RateLimitPartitioning.ResolvePartitionKey` (authenticated subject → client IP)
-- [ ] 3.4 — Partition all three builders (`SlidingWindow`, `TokenBucket`, `FixedWindow`) by that key
-- [ ] 3.5 — Middleware order: `UseCors` above the exception handler; `UseRateLimiter` **after** `UseAuthentication`
-- [ ] 3.6 — `IAccountRateLimiter` (in-process, per-account) applied via an `AccountRateLimitDecorator`; the login/OTP/password commands opt in through `IAccountRateLimited`
-- [ ] 3.7 — CORS fails **closed** when origins are empty outside Development, with a startup warning
-- [ ] 3.8 — Unit + integration tests
-- [ ] 3.9 — Verify (build 0/0, unit green; run integration locally)
+- [x] 3.1 — `AppEnvironment.TrustedProxyNetworks()` reads `TRUSTED_PROXY_NETWORKS` (CIDR list) + `.env.template`
+- [x] 3.2 — `ForwardedHeadersOptions`: populate `KnownNetworks` from config, `ForwardLimit = 1`; keep cleared when unset
+- [x] 3.3 — `RateLimitPartitioning.ResolvePartitionKey` (authenticated subject → client IP)
+- [x] 3.4 — Partition all three builders (`SlidingWindow`, `TokenBucket`, `FixedWindow`) by that key
+- [x] 3.5 — Middleware order: `UseCors` above the exception handler; `UseRateLimiter` **after** `UseAuthentication`
+- [x] 3.6 — `IAccountRateLimiter` (in-process, per-account) applied via an `AccountRateLimitDecorator`; the login/OTP/password commands opt in through `IAccountRateLimited`
+- [x] 3.7 — CORS fails **closed** when origins are empty outside Development, with a startup warning
+- [x] 3.8 — Unit + integration tests
+- [x] 3.9 — Verify (build 0/0, unit green; run integration locally)
 
 ---
 

@@ -1,7 +1,6 @@
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.BuildingBlocks.Utils;
 using _116.Identity.Application.Auth.Constants;
-using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.User.Constants;
 using _116.Identity.Domain.Constants;
@@ -23,36 +22,15 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp.V1;
 public record PublicSignUpRequest(string Email, string UserName, string Password);
 
 /// <summary>
-/// Response model for mobile client signup (tokens delivered in the body).
+/// Response model for public user signup, deliberately carrying no tokens and setting no cookies.
 /// </summary>
 /// <param name="User">The created user information.</param>
-/// <param name="AccessToken">The JWT access token.</param>
-/// <param name="AccessTokenExpiresAt">Date and time when the access token expires in UTC.</param>
-/// <param name="RefreshToken">Refresh token for getting new access tokens.</param>
-/// <param name="RefreshTokenExpiresAt">Date and time when the refresh token expires in UTC.</param>
-/// <param name="TokenType">Type of token (typically "Bearer").</param>
-/// <param name="VerificationRequired">Indicates whether the user must verify their email before full access.</param>
-public record PublicSignUpMobileResponse(
-    UserResponseDto User,
-    string AccessToken,
-    DateTime AccessTokenExpiresAt,
-    string RefreshToken,
-    DateTime RefreshTokenExpiresAt,
-    string TokenType,
-    bool VerificationRequired
-);
+/// <param name="VerificationRequired">Indicates that email verification must happen before login.</param>
+public record PublicSignUpResponse(UserResponseDto User, bool VerificationRequired);
 
 /// <summary>
-/// Response model for web client signup (tokens delivered via HttpOnly cookies).
-/// </summary>
-/// <param name="User">The created user information.</param>
-/// <param name="VerificationRequired">Indicates whether the user must verify their email before full access.</param>
-public record PublicSignUpWebResponse(UserResponseDto User, bool VerificationRequired);
-
-/// <summary>
-/// Defines the public signup endpoint for new user registration.
-/// Handles input validation, account creation, token issuance,
-/// and indicates whether verification is required.
+/// Defines the public signup endpoint for new user registration, directing the user to email
+/// verification before their first login.
 /// </summary>
 public class PublicSignUpEndpointV1 : ICarterModule
 {
@@ -70,12 +48,7 @@ public class PublicSignUpEndpointV1 : ICarterModule
         group
             .MapPost(
                 pattern: AuthRouteConstants.SignUp,
-                async (
-                    PublicSignUpRequest request,
-                    IDispatcher dispatcher,
-                    HttpContext httpContext,
-                    ITokenDeliveryService tokenDelivery
-                ) =>
+                async (PublicSignUpRequest request, IDispatcher dispatcher, HttpContext httpContext) =>
                 {
                     var command = new PublicSignUpCommand(
                         Email: request.Email,
@@ -85,31 +58,15 @@ public class PublicSignUpEndpointV1 : ICarterModule
 
                     PublicSignUpResult result = await dispatcher.Send(request: command);
 
-                    string userPath =
-                        $"{IdentityConstants.Public}/{UserRouteConstants.Endpoint}/{result.AuthenticationResult.User.Id}";
+                    string userPath = $"{IdentityConstants.Public}/{UserRouteConstants.Endpoint}/{result.User.Id}";
                     string locationUrl = ApiVersionUrl.Build(context: httpContext, path: userPath);
 
-                    if (tokenDelivery.IsWebClient())
-                    {
-                        tokenDelivery.SetTokenCookies(authResult: result.AuthenticationResult);
-                        var webResponse = new PublicSignUpWebResponse(
-                            User: result.AuthenticationResult.User,
-                            VerificationRequired: result.VerificationRequired
-                        );
-                        return Results.Created(uri: locationUrl, value: webResponse);
-                    }
-
-                    var mobileResponse = new PublicSignUpMobileResponse(
-                        User: result.AuthenticationResult.User,
-                        AccessToken: result.AuthenticationResult.AccessToken,
-                        AccessTokenExpiresAt: result.AuthenticationResult.AccessTokenExpiresAt,
-                        RefreshToken: result.AuthenticationResult.RefreshToken,
-                        RefreshTokenExpiresAt: result.AuthenticationResult.RefreshTokenExpiresAt,
-                        TokenType: result.AuthenticationResult.TokenType,
+                    var response = new PublicSignUpResponse(
+                        User: result.User,
                         VerificationRequired: result.VerificationRequired
                     );
 
-                    return Results.Created(uri: locationUrl, value: mobileResponse);
+                    return Results.Created(uri: locationUrl, value: response);
                 }
             )
             .WithName(endpointName: PublicSignUpMetaField.SignUp.Name)
@@ -118,8 +75,7 @@ public class PublicSignUpEndpointV1 : ICarterModule
             .AllowAnonymous()
             .RequireRateLimiting(policyName: RateLimitPolicies.Authentication)
             .ProducesValidationProblem()
-            .Produces<PublicSignUpMobileResponse>(statusCode: StatusCodes.Status201Created)
-            .Produces<PublicSignUpWebResponse>(statusCode: StatusCodes.Status201Created)
+            .Produces<PublicSignUpResponse>(statusCode: StatusCodes.Status201Created)
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
             .ProducesProblem(statusCode: StatusCodes.Status409Conflict)
             .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);

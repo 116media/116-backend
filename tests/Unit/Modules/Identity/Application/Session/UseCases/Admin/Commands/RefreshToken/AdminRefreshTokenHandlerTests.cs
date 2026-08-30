@@ -2,6 +2,7 @@ using _116.Core.Application.Shared.Repositories;
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Session.Factories.Contracts;
 using _116.Identity.Application.Session.UseCases.Admin.Commands.RefreshToken;
+using _116.Identity.Application.Shared.Cache;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.Results;
@@ -52,7 +53,7 @@ public class AdminRefreshTokenHandlerTests : BaseHandlerTest
         DateTime accessTokenExpiry = DateTime.UtcNow.AddHours(1);
 
         AdminRefreshTokenCommand command = new(RefreshToken: refreshToken);
-        RefreshTokenData authData = new(user, session, newRefreshToken);
+        RefreshTokenData authData = new(user, session, newRefreshToken, new UserSecurityState(Guid.NewGuid(), 1));
         JwtGenerationResult jwtResult = new(accessToken, accessTokenExpiry);
 
         _refreshTokenFactoryMock
@@ -69,6 +70,8 @@ public class AdminRefreshTokenHandlerTests : BaseHandlerTest
                     It.IsAny<ICollection<RolePermissionEntity>>(),
                     user.IsVerified,
                     user.IsActive,
+                    authData.TokenState.SecurityStamp,
+                    authData.TokenState.TokenVersion,
                     user.AuthProvider
                 )
             )
@@ -92,7 +95,7 @@ public class AdminRefreshTokenHandlerTests : BaseHandlerTest
         string refreshToken = "valid-refresh-token";
 
         AdminRefreshTokenCommand command = new(RefreshToken: refreshToken);
-        RefreshTokenData authData = new(user, session, "new-token");
+        RefreshTokenData authData = new(user, session, "new-token", new UserSecurityState(Guid.NewGuid(), 1));
         JwtGenerationResult jwtResult = new("token", DateTime.UtcNow.AddHours(1));
 
         _refreshTokenFactoryMock
@@ -109,6 +112,8 @@ public class AdminRefreshTokenHandlerTests : BaseHandlerTest
                     It.IsAny<ICollection<RolePermissionEntity>>(),
                     It.IsAny<bool>(),
                     It.IsAny<bool>(),
+                    It.IsAny<Guid>(),
+                    It.IsAny<long>(),
                     It.IsAny<EnumAuthProvider>()
                 )
             )
@@ -134,7 +139,7 @@ public class AdminRefreshTokenHandlerTests : BaseHandlerTest
         string refreshToken = "valid-refresh-token";
 
         AdminRefreshTokenCommand command = new(RefreshToken: refreshToken);
-        RefreshTokenData authData = new(user, session, "new-token");
+        RefreshTokenData authData = new(user, session, "new-token", new UserSecurityState(Guid.NewGuid(), 1));
         JwtGenerationResult jwtResult = new("token", DateTime.UtcNow.AddHours(1));
 
         _refreshTokenFactoryMock
@@ -151,6 +156,8 @@ public class AdminRefreshTokenHandlerTests : BaseHandlerTest
                     It.IsAny<ICollection<RolePermissionEntity>>(),
                     It.IsAny<bool>(),
                     It.IsAny<bool>(),
+                    It.IsAny<Guid>(),
+                    It.IsAny<long>(),
                     It.IsAny<EnumAuthProvider>()
                 )
             )
@@ -172,6 +179,8 @@ public class AdminRefreshTokenHandlerTests : BaseHandlerTest
                     It.IsAny<ICollection<RolePermissionEntity>>(),
                     user.IsVerified,
                     user.IsActive,
+                    authData.TokenState.SecurityStamp,
+                    authData.TokenState.TokenVersion,
                     user.AuthProvider
                 ),
             Times.Once
@@ -187,7 +196,7 @@ public class AdminRefreshTokenHandlerTests : BaseHandlerTest
         string refreshToken = "valid-refresh-token";
 
         AdminRefreshTokenCommand command = new(RefreshToken: refreshToken);
-        RefreshTokenData authData = new(user, session, "new-token");
+        RefreshTokenData authData = new(user, session, "new-token", new UserSecurityState(Guid.NewGuid(), 1));
         JwtGenerationResult jwtResult = new("token", DateTime.UtcNow.AddHours(1));
 
         _refreshTokenFactoryMock
@@ -204,6 +213,8 @@ public class AdminRefreshTokenHandlerTests : BaseHandlerTest
                     It.IsAny<ICollection<RolePermissionEntity>>(),
                     It.IsAny<bool>(),
                     It.IsAny<bool>(),
+                    It.IsAny<Guid>(),
+                    It.IsAny<long>(),
                     It.IsAny<EnumAuthProvider>()
                 )
             )
@@ -229,7 +240,7 @@ public class AdminRefreshTokenHandlerTests : BaseHandlerTest
         string refreshToken = "valid-refresh-token";
 
         AdminRefreshTokenCommand command = new(RefreshToken: refreshToken);
-        RefreshTokenData authData = new(user, session, "new-token");
+        RefreshTokenData authData = new(user, session, "new-token", new UserSecurityState(Guid.NewGuid(), 1));
         JwtGenerationResult jwtResult = new("token", DateTime.UtcNow.AddHours(1));
 
         _refreshTokenFactoryMock
@@ -246,6 +257,8 @@ public class AdminRefreshTokenHandlerTests : BaseHandlerTest
                     It.IsAny<ICollection<RolePermissionEntity>>(),
                     It.IsAny<bool>(),
                     It.IsAny<bool>(),
+                    It.IsAny<Guid>(),
+                    It.IsAny<long>(),
                     It.IsAny<EnumAuthProvider>()
                 )
             )
@@ -273,7 +286,7 @@ public class AdminRefreshTokenHandlerTests : BaseHandlerTest
         using CancellationTokenSource cts = new();
 
         AdminRefreshTokenCommand command = new(RefreshToken: refreshToken);
-        RefreshTokenData authData = new(user, session, "new-token");
+        RefreshTokenData authData = new(user, session, "new-token", new UserSecurityState(Guid.NewGuid(), 1));
         JwtGenerationResult jwtResult = new("token", DateTime.UtcNow.AddHours(1));
 
         _refreshTokenFactoryMock
@@ -290,6 +303,8 @@ public class AdminRefreshTokenHandlerTests : BaseHandlerTest
                     It.IsAny<ICollection<RolePermissionEntity>>(),
                     It.IsAny<bool>(),
                     It.IsAny<bool>(),
+                    It.IsAny<Guid>(),
+                    It.IsAny<long>(),
                     It.IsAny<EnumAuthProvider>()
                 )
             )
@@ -313,7 +328,7 @@ public class AdminRefreshTokenHandlerTests : BaseHandlerTest
         using CancellationTokenSource cts = new();
 
         AdminRefreshTokenCommand command = new(RefreshToken: refreshToken);
-        RefreshTokenData authData = new(user, session, "new-token");
+        RefreshTokenData authData = new(user, session, "new-token", new UserSecurityState(Guid.NewGuid(), 1));
         JwtGenerationResult jwtResult = new("token", DateTime.UtcNow.AddHours(1));
 
         _refreshTokenFactoryMock
@@ -330,6 +345,8 @@ public class AdminRefreshTokenHandlerTests : BaseHandlerTest
                     It.IsAny<ICollection<RolePermissionEntity>>(),
                     It.IsAny<bool>(),
                     It.IsAny<bool>(),
+                    It.IsAny<Guid>(),
+                    It.IsAny<long>(),
                     It.IsAny<EnumAuthProvider>()
                 )
             )

@@ -287,6 +287,10 @@ namespace _116.Identity.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<DateTime>("AbsoluteExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("absolute_expires_at");
+
                     b.Property<string>("Browser")
                         .IsRequired()
                         .HasColumnType("text")
@@ -546,6 +550,44 @@ namespace _116.Identity.Infrastructure.Persistence.Migrations
                     b.ToTable("user_roles", "identity");
                 });
 
+            modelBuilder.Entity("_116.Identity.Domain.Entities.UserTokenStateEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid>("SecurityStamp")
+                        .HasColumnType("uuid")
+                        .HasColumnName("security_stamp");
+
+                    b.Property<long>("TokenVersion")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValue(0L)
+                        .HasColumnName("token_version");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_user_token_state");
+
+                    b.ToTable("user_token_state", "identity");
+                });
+
             modelBuilder.Entity("_116.Identity.Domain.Entities.OtpEntity", b =>
                 {
                     b.HasOne("_116.Identity.Domain.Entities.UserEntity", "User")
@@ -610,6 +652,16 @@ namespace _116.Identity.Infrastructure.Persistence.Migrations
                     b.Navigation("Role");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("_116.Identity.Domain.Entities.UserTokenStateEntity", b =>
+                {
+                    b.HasOne("_116.Identity.Domain.Entities.UserEntity", null)
+                        .WithOne()
+                        .HasForeignKey("_116.Identity.Domain.Entities.UserTokenStateEntity", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_user_token_state_users_user_id");
                 });
 
             modelBuilder.Entity("_116.Identity.Domain.Entities.PermissionEntity", b =>

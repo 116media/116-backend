@@ -29,6 +29,7 @@ public class SessionConfiguration : IEntityTypeConfiguration<SessionEntity>
             .IsRequired();
         builder.Property(s => s.CreatedAt).IsRequired();
         builder.Property(s => s.ExpiresAt).IsRequired();
+        builder.Property(s => s.AbsoluteExpiresAt).IsRequired();
         builder
             .Property(s => s.IpAddress)
             .HasMaxLength(maxLength: SessionConstants.MaxIpAddressLength)

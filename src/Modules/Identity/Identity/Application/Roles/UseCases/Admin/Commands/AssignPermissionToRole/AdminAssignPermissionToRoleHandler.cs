@@ -9,11 +9,13 @@ using MapsterMapper;
 namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.AssignPermissionToRole;
 
 /// <summary>
-/// Handles the <see cref="AdminAssignPermissionToRoleCommand" /> to assign a permission to a role.
+/// Handles the <see cref="AdminAssignPermissionToRoleCommand" /> to assign a permission to a
+/// role, bumping every role member's token version.
 /// </summary>
 /// <param name="roleRepository">Repository for role data access operations.</param>
 /// <param name="permissionRepository">Repository for permission data access operations.</param>
 /// <param name="rolePermissionRepository">Repository for role-permission data access operations.</param>
+/// <param name="tokenStateRepository">Repository bumping the role members' token versions.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 /// <param name="i18n">Single i18n entry point for the Identity module.</param>
@@ -21,6 +23,7 @@ public class AdminAssignPermissionToRoleHandler(
     IRoleRepository roleRepository,
     IPermissionRepository permissionRepository,
     IRolePermissionRepository rolePermissionRepository,
+    IUserTokenStateRepository tokenStateRepository,
     IIdentityUnitOfWork unitOfWork,
     IMapper mapper,
     IdentityI18n i18n
@@ -96,6 +99,11 @@ public class AdminAssignPermissionToRoleHandler(
 
         await rolePermissionRepository.AddAsync(entity: rolePermission, cancellationToken: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+        await tokenStateRepository.BumpTokenVersionForRoleUsersAsync(
+            roleId: roleId,
+            cancellationToken: cancellationToken
+        );
 
         // Reload the role with permissions to return updated data
         role = await roleRepository.GetRoleByIdWithPermissionsOrThrowAsync(

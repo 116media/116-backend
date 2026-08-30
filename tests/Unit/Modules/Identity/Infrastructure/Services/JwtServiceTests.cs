@@ -80,6 +80,8 @@ public class JwtServiceTests : IDisposable
             userPermissions,
             isVerified: true,
             isActive: true,
+            securityStamp: Guid.NewGuid(),
+            tokenVersion: 1,
             EnumAuthProvider.Local
         );
 
@@ -110,6 +112,8 @@ public class JwtServiceTests : IDisposable
             userPermissions,
             isVerified: true,
             isActive: true,
+            securityStamp: Guid.NewGuid(),
+            tokenVersion: 1,
             EnumAuthProvider.Local
         );
 
@@ -138,6 +142,8 @@ public class JwtServiceTests : IDisposable
             [],
             isVerified: true,
             isActive: true,
+            securityStamp: Guid.NewGuid(),
+            tokenVersion: 1,
             EnumAuthProvider.Local
         );
 
@@ -168,6 +174,8 @@ public class JwtServiceTests : IDisposable
             [],
             isVerified: true,
             isActive: true,
+            securityStamp: Guid.NewGuid(),
+            tokenVersion: 1,
             EnumAuthProvider.Local
         );
 
@@ -198,6 +206,8 @@ public class JwtServiceTests : IDisposable
             [],
             isVerified: true,
             isActive: true,
+            securityStamp: Guid.NewGuid(),
+            tokenVersion: 1,
             EnumAuthProvider.Local
         );
 
@@ -228,6 +238,8 @@ public class JwtServiceTests : IDisposable
             [],
             isVerified: true,
             isActive: true,
+            securityStamp: Guid.NewGuid(),
+            tokenVersion: 1,
             EnumAuthProvider.Local
         );
 
@@ -236,6 +248,41 @@ public class JwtServiceTests : IDisposable
         JwtSecurityToken token = handler.ReadJwtToken(result.Token);
         string? sessionClaim = token.Claims.FirstOrDefault(c => c.Type == JwtClaimsConstants.SessionId)?.Value;
         sessionClaim.Should().Be(sessionId.ToString());
+    }
+
+    [Fact]
+    public void GenerateToken_ShouldContainSecurityStampAndTokenVersionClaims()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
+        var securityStamp = Guid.NewGuid();
+        long tokenVersion = 42;
+
+        // Act
+        JwtGenerationResult result = _sut.GenerateToken(
+            userId,
+            sessionId,
+            "test@example.com",
+            "testuser",
+            [],
+            [],
+            isVerified: true,
+            isActive: true,
+            securityStamp: securityStamp,
+            tokenVersion: tokenVersion,
+            EnumAuthProvider.Local
+        );
+
+        // Assert
+        JwtSecurityTokenHandler handler = new();
+        JwtSecurityToken token = handler.ReadJwtToken(result.Token);
+
+        string? stampClaim = token.Claims.FirstOrDefault(c => c.Type == JwtClaimsConstants.SecurityStamp)?.Value;
+        string? versionClaim = token.Claims.FirstOrDefault(c => c.Type == JwtClaimsConstants.TokenVersion)?.Value;
+
+        stampClaim.Should().Be(securityStamp.ToString());
+        versionClaim.Should().Be(tokenVersion.ToString());
     }
 
     [Fact]
@@ -256,6 +303,8 @@ public class JwtServiceTests : IDisposable
             [],
             isVerified: true,
             isActive: true,
+            securityStamp: Guid.NewGuid(),
+            tokenVersion: 1,
             authProvider
         );
 
@@ -287,6 +336,8 @@ public class JwtServiceTests : IDisposable
             [],
             isVerified,
             isActive,
+            securityStamp: Guid.NewGuid(),
+            tokenVersion: 1,
             EnumAuthProvider.Local
         );
 
@@ -318,6 +369,8 @@ public class JwtServiceTests : IDisposable
             [],
             isVerified: true,
             isActive: true,
+            securityStamp: Guid.NewGuid(),
+            tokenVersion: 1,
             EnumAuthProvider.Local
         );
 
@@ -346,6 +399,8 @@ public class JwtServiceTests : IDisposable
             [],
             isVerified: true,
             isActive: true,
+            securityStamp: Guid.NewGuid(),
+            tokenVersion: 1,
             EnumAuthProvider.Local
         );
 
@@ -387,6 +442,8 @@ public class JwtServiceTests : IDisposable
             rolePermissions,
             isVerified: true,
             isActive: true,
+            securityStamp: Guid.NewGuid(),
+            tokenVersion: 1,
             EnumAuthProvider.Local
         );
 
@@ -436,6 +493,8 @@ public class JwtServiceTests : IDisposable
             rolePermissions,
             isVerified: true,
             isActive: true,
+            securityStamp: Guid.NewGuid(),
+            tokenVersion: 1,
             EnumAuthProvider.Local
         );
 
@@ -473,6 +532,8 @@ public class JwtServiceTests : IDisposable
             [],
             isVerified: true,
             isActive: true,
+            securityStamp: Guid.NewGuid(),
+            tokenVersion: 1,
             EnumAuthProvider.Local
         );
 
@@ -498,6 +559,8 @@ public class JwtServiceTests : IDisposable
             [],
             isVerified: true,
             isActive: true,
+            securityStamp: Guid.NewGuid(),
+            tokenVersion: 1,
             EnumAuthProvider.Local
         );
 
@@ -524,6 +587,8 @@ public class JwtServiceTests : IDisposable
             [],
             isVerified: true,
             isActive: true,
+            securityStamp: Guid.NewGuid(),
+            tokenVersion: 1,
             EnumAuthProvider.Local
         );
 
@@ -550,6 +615,8 @@ public class JwtServiceTests : IDisposable
             [],
             isVerified: true,
             isActive: true,
+            securityStamp: Guid.NewGuid(),
+            tokenVersion: 1,
             EnumAuthProvider.Local
         );
 
@@ -595,6 +662,8 @@ public class JwtServiceTests : IDisposable
             [],
             isVerified: true,
             isActive: true,
+            securityStamp: Guid.NewGuid(),
+            tokenVersion: 1,
             EnumAuthProvider.Local
         );
 
@@ -626,6 +695,8 @@ public class JwtServiceTests : IDisposable
             [],
             isVerified: true,
             isActive: true,
+            securityStamp: Guid.NewGuid(),
+            tokenVersion: 1,
             EnumAuthProvider.Local
         );
 
@@ -655,6 +726,8 @@ public class JwtServiceTests : IDisposable
             [],
             isVerified: true,
             isActive: true,
+            securityStamp: Guid.NewGuid(),
+            tokenVersion: 1,
             authProvider
         );
 
@@ -689,6 +762,8 @@ public class JwtServiceTests : IDisposable
                 [],
                 isVerified: true,
                 isActive: true,
+                securityStamp: Guid.NewGuid(),
+                tokenVersion: 1,
                 EnumAuthProvider.Local
             );
 
@@ -719,6 +794,8 @@ public class JwtServiceTests : IDisposable
                 [],
                 isVerified: true,
                 isActive: true,
+                securityStamp: Guid.NewGuid(),
+                tokenVersion: 1,
                 EnumAuthProvider.Local
             );
 

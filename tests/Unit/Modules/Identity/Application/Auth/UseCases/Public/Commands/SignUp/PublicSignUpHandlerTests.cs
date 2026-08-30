@@ -1,10 +1,8 @@
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp.Contracts;
-using _116.Identity.Application.Session.Factories.Contracts;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Identity;
-using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
 using AwesomeAssertions;
 using Moq;
@@ -13,25 +11,25 @@ using Xunit;
 namespace _116.Unit.Tests.Modules.Identity.Application.Auth.UseCases.Public.Commands.SignUp;
 
 /// <summary>
-/// Unit tests for <see cref="PublicSignUpHandler"/>.
+/// Unit tests for <see cref="PublicSignUpHandler"/>. Signup issues no session and no tokens:
+/// the handler only registers the account and returns the created user with the
+/// verification-required flag.
 /// </summary>
 public class PublicSignUpHandlerTests : BaseHandlerTest
 {
     private readonly Mock<IPublicSignUpAuthFactory> _authFactoryMock;
-    private readonly Mock<ISessionFactory> _sessionFactoryMock;
     private readonly PublicSignUpHandler _handler;
 
     public PublicSignUpHandlerTests()
     {
         _authFactoryMock = new Mock<IPublicSignUpAuthFactory>();
-        _sessionFactoryMock = new Mock<ISessionFactory>();
-        _handler = new PublicSignUpHandler(_authFactoryMock.Object, _sessionFactoryMock.Object, Mapper);
+        _handler = new PublicSignUpHandler(_authFactoryMock.Object, Mapper);
     }
 
     #region Success Cases
 
     [Fact]
-    public async Task Handle_WithValidData_ShouldReturnAuthenticationResult()
+    public async Task Handle_WithValidData_ShouldReturnMappedUserWithoutTokens()
     {
         // Arrange
         string email = "newuser@example.com";
@@ -42,21 +40,18 @@ public class PublicSignUpHandlerTests : BaseHandlerTest
 
         PublicSignUpCommand command = new(Email: email, UserName: userName, Password: password);
         PublicSignUpAuthData authData = new(User: user, UserPermissions: permissions);
-        SessionResult sessionResult = AuthTestHelpers.CreateDefaultSessionResult();
 
         _authFactoryMock
             .Setup(x => x.RegisterAsync(email, userName, password, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authData);
-        _sessionFactoryMock
-            .Setup(x => x.CreateSessionAsync(user, permissions, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(sessionResult);
 
         // Act
         PublicSignUpResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.AuthenticationResult.AccessToken.Should().Be("access-token");
-        result.AuthenticationResult.RefreshToken.Should().Be("refresh-token");
+        result.User.Id.Should().Be(user.Id);
+        result.User.Email.Should().Be(user.Email);
+        result.User.UserName.Should().Be(user.UserName);
         result.VerificationRequired.Should().BeTrue();
     }
 
@@ -72,14 +67,10 @@ public class PublicSignUpHandlerTests : BaseHandlerTest
 
         PublicSignUpCommand command = new(Email: email, UserName: userName, Password: password);
         PublicSignUpAuthData authData = new(User: user, UserPermissions: permissions);
-        SessionResult sessionResult = AuthTestHelpers.CreateDefaultSessionResult();
 
         _authFactoryMock
             .Setup(x => x.RegisterAsync(email, userName, password, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authData);
-        _sessionFactoryMock
-            .Setup(x => x.CreateSessionAsync(user, permissions, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(sessionResult);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
@@ -92,7 +83,7 @@ public class PublicSignUpHandlerTests : BaseHandlerTest
     }
 
     [Fact]
-    public async Task Handle_ShouldCreateSession()
+    public async Task Handle_ShouldAlwaysRequireVerification()
     {
         // Arrange
         string email = "newuser@example.com";
@@ -103,23 +94,21 @@ public class PublicSignUpHandlerTests : BaseHandlerTest
 
         PublicSignUpCommand command = new(Email: email, UserName: userName, Password: password);
         PublicSignUpAuthData authData = new(User: user, UserPermissions: permissions);
-        SessionResult sessionResult = AuthTestHelpers.CreateDefaultSessionResult();
 
         _authFactoryMock
             .Setup(x => x.RegisterAsync(email, userName, password, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authData);
-        _sessionFactoryMock
-            .Setup(x => x.CreateSessionAsync(user, permissions, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(sessionResult);
 
         // Act
-        await _handler.Handle(command, CancellationToken.None);
+        PublicSignUpResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _sessionFactoryMock.Verify(
-            x => x.CreateSessionAsync(user, permissions, It.IsAny<CancellationToken>()),
+        result.VerificationRequired.Should().BeTrue();
+        _authFactoryMock.Verify(
+            x => x.RegisterAsync(email, userName, password, It.IsAny<CancellationToken>()),
             Times.Once
         );
+        _authFactoryMock.VerifyNoOtherCalls();
     }
 
     #endregion
@@ -167,7 +156,7 @@ public class PublicSignUpHandlerTests : BaseHandlerTest
     }
 
     [Fact]
-    public async Task Handle_WhenRegistrationFails_ShouldNotCreateSession()
+    public async Task Handle_WhenRegistrationFails_ShouldPropagateException()
     {
         // Arrange
         string email = "existing@example.com";
@@ -184,15 +173,11 @@ public class PublicSignUpHandlerTests : BaseHandlerTest
 
         // Assert
         await act.Should().ThrowAsync<ConflictException>();
-        _sessionFactoryMock.Verify(
-            x =>
-                x.CreateSessionAsync(
-                    It.IsAny<UserEntity>(),
-                    It.IsAny<List<RolePermissionEntity>>(),
-                    It.IsAny<CancellationToken>()
-                ),
-            Times.Never
+        _authFactoryMock.Verify(
+            x => x.RegisterAsync(email, userName, password, It.IsAny<CancellationToken>()),
+            Times.Once
         );
+        _authFactoryMock.VerifyNoOtherCalls();
     }
 
     #endregion
@@ -212,14 +197,10 @@ public class PublicSignUpHandlerTests : BaseHandlerTest
 
         PublicSignUpCommand command = new(Email: email, UserName: userName, Password: password);
         PublicSignUpAuthData authData = new(User: user, UserPermissions: permissions);
-        SessionResult sessionResult = AuthTestHelpers.CreateDefaultSessionResult();
 
         _authFactoryMock
             .Setup(x => x.RegisterAsync(email, userName, password, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authData);
-        _sessionFactoryMock
-            .Setup(x => x.CreateSessionAsync(user, permissions, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(sessionResult);
 
         // Act
         await _handler.Handle(command, cts.Token);
@@ -229,7 +210,7 @@ public class PublicSignUpHandlerTests : BaseHandlerTest
     }
 
     [Fact]
-    public async Task Handle_WithCancellationToken_ShouldPassToSessionFactory()
+    public async Task Handle_WithCancellationToken_ShouldStillReturnMappedUser()
     {
         // Arrange
         string email = "newuser@example.com";
@@ -241,20 +222,17 @@ public class PublicSignUpHandlerTests : BaseHandlerTest
 
         PublicSignUpCommand command = new(Email: email, UserName: userName, Password: password);
         PublicSignUpAuthData authData = new(User: user, UserPermissions: permissions);
-        SessionResult sessionResult = AuthTestHelpers.CreateDefaultSessionResult();
 
         _authFactoryMock
             .Setup(x => x.RegisterAsync(email, userName, password, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authData);
-        _sessionFactoryMock
-            .Setup(x => x.CreateSessionAsync(user, permissions, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(sessionResult);
 
         // Act
-        await _handler.Handle(command, cts.Token);
+        PublicSignUpResult result = await _handler.Handle(command, cts.Token);
 
         // Assert
-        _sessionFactoryMock.Verify(x => x.CreateSessionAsync(user, permissions, cts.Token), Times.Once);
+        result.User.Id.Should().Be(user.Id);
+        result.VerificationRequired.Should().BeTrue();
     }
 
     #endregion

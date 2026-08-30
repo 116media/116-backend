@@ -48,6 +48,8 @@ public class AdminRefreshTokenHandler(
             userPermissions: authData.User.UserRoles.SelectMany(ur => ur.Role.RolePermissions).ToList(),
             isVerified: authData.User.IsVerified,
             isActive: authData.User.IsActive,
+            securityStamp: authData.TokenState.SecurityStamp,
+            tokenVersion: authData.TokenState.TokenVersion,
             authProvider: authData.User.AuthProvider
         );
 

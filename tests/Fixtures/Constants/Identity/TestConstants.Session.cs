@@ -55,6 +55,12 @@ public static partial class TestConstants
         public const int DefaultRefreshTokenExpirationDays = 30;
 
         /// <summary>
+        /// Test-owned. Production reads <c>JWT_SESSION_ABSOLUTE_LIFETIME_IN_DAYS</c> at startup,
+        /// so this value binds nothing in <c>src/</c>.
+        /// </summary>
+        public const int DefaultAbsoluteLifetimeDays = 30;
+
+        /// <summary>
         /// Test-owned loopback address used when a test does not care about the origin IP.
         /// </summary>
         public const string DefaultIpAddress = "127.0.0.1";

@@ -1,11 +1,18 @@
+using _116.Identity.Application.Shared.Cache;
 using _116.Identity.Domain.Entities;
 
 namespace _116.Identity.Application.Session.Factories.Contracts;
 
 /// <summary>
-/// Contains refreshed session data with user and new refresh token.
+/// Contains refreshed session data with user, new refresh token and the user's current
+/// token-invalidation markers.
 /// </summary>
-public record RefreshTokenData(UserEntity User, SessionEntity Session, string NewRefreshToken);
+public record RefreshTokenData(
+    UserEntity User,
+    SessionEntity Session,
+    string NewRefreshToken,
+    UserSecurityState TokenState
+);
 
 /// <summary>
 /// Factory for handling refresh token validation and rotation logic.

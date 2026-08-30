@@ -24,6 +24,7 @@ public class PublicResetPasswordAuthFactoryTests
     private readonly Mock<IAuthRepository> _authRepositoryMock;
     private readonly Mock<IPasswordService> _passwordServiceMock;
     private readonly Mock<ISessionRepository> _sessionRepositoryMock;
+    private readonly Mock<IUserTokenStateRepository> _tokenStateRepositoryMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
     private readonly PublicResetPasswordAuthFactory _factory;
 
@@ -32,11 +33,13 @@ public class PublicResetPasswordAuthFactoryTests
         _authRepositoryMock = new Mock<IAuthRepository>();
         _passwordServiceMock = new Mock<IPasswordService>();
         _sessionRepositoryMock = new Mock<ISessionRepository>();
+        _tokenStateRepositoryMock = new Mock<IUserTokenStateRepository>();
         _unitOfWorkMock = new Mock<IIdentityUnitOfWork>();
         _factory = new PublicResetPasswordAuthFactory(
             _authRepositoryMock.Object,
             _passwordServiceMock.Object,
             _sessionRepositoryMock.Object,
+            _tokenStateRepositoryMock.Object,
             _unitOfWorkMock.Object,
             TestErrorsFactory.CreateUserErrors()
         );
@@ -290,10 +293,10 @@ public class PublicResetPasswordAuthFactoryTests
 
     #endregion
 
-    #region Session Invalidation
+    #region Token Invalidation
 
     [Fact]
-    public async Task ResetPasswordAsync_ShouldRevokeEverySessionBeforeCommitting()
+    public async Task ResetPasswordAsync_ShouldRevokeSessionsBeforeCommitAndRotateStampAfterCommit()
     {
         // Arrange
         string newPassword = "NewPassword123!";
@@ -320,11 +323,16 @@ public class PublicResetPasswordAuthFactoryTests
             .Callback(() => callOrder.Add("commit"))
             .ReturnsAsync(1);
 
+        _tokenStateRepositoryMock
+            .Setup(x => x.RotateSecurityStampAsync(user.Id, It.IsAny<CancellationToken>()))
+            .Callback(() => callOrder.Add("rotate"))
+            .ReturnsAsync(Guid.NewGuid());
+
         // Act
         await _factory.ResetPasswordAsync(user, newPassword, CancellationToken.None);
 
         // Assert
-        callOrder.Should().Equal("revoke", "commit");
+        callOrder.Should().Equal("revoke", "commit", "rotate");
     }
 
     #endregion

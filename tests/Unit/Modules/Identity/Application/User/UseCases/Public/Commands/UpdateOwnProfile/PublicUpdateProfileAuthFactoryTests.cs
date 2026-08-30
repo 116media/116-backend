@@ -22,6 +22,7 @@ public class PublicUpdateProfileAuthFactoryTests
 {
     private readonly Mock<IAuthRepository> _authRepositoryMock;
     private readonly Mock<ISessionRepository> _sessionRepositoryMock;
+    private readonly Mock<IUserTokenStateRepository> _tokenStateRepositoryMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
     private readonly UserErrors _userErrors;
     private readonly PublicUpdateProfileAuthFactory _factory;
@@ -30,11 +31,13 @@ public class PublicUpdateProfileAuthFactoryTests
     {
         _authRepositoryMock = new Mock<IAuthRepository>();
         _sessionRepositoryMock = new Mock<ISessionRepository>();
+        _tokenStateRepositoryMock = new Mock<IUserTokenStateRepository>();
         _unitOfWorkMock = new Mock<IIdentityUnitOfWork>();
         _userErrors = TestErrorsFactory.CreateUserErrors();
         _factory = new PublicUpdateProfileAuthFactory(
             _authRepositoryMock.Object,
             _sessionRepositoryMock.Object,
+            _tokenStateRepositoryMock.Object,
             _unitOfWorkMock.Object,
             _userErrors
         );
@@ -514,10 +517,10 @@ public class PublicUpdateProfileAuthFactoryTests
 
     #endregion
 
-    #region Session Invalidation
+    #region Token Invalidation
 
     [Fact]
-    public async Task UpdateProfileAsync_WhenEmailChanges_ShouldRevokeEverySessionExceptTheActingOne()
+    public async Task UpdateProfileAsync_WhenEmailChanges_ShouldRevokeOtherSessionsAndRotateStampAfterCommit()
     {
         // Arrange
         var userId = Guid.NewGuid();
@@ -558,6 +561,11 @@ public class PublicUpdateProfileAuthFactoryTests
             .Callback(() => callOrder.Add("commit"))
             .ReturnsAsync(1);
 
+        _tokenStateRepositoryMock
+            .Setup(x => x.RotateSecurityStampAsync(userId, It.IsAny<CancellationToken>()))
+            .Callback(() => callOrder.Add("rotate"))
+            .ReturnsAsync(Guid.NewGuid());
+
         // Act
         await _factory.UpdateProfileAsync(
             userId,
@@ -572,11 +580,11 @@ public class PublicUpdateProfileAuthFactoryTests
         );
 
         // Assert
-        callOrder.Should().Equal("revoke", "commit");
+        callOrder.Should().Equal("revoke", "commit", "rotate");
     }
 
     [Fact]
-    public async Task UpdateProfileAsync_WhenEmailUnchanged_ShouldNotRevokeSessions()
+    public async Task UpdateProfileAsync_WhenEmailUnchanged_ShouldNotRevokeSessionsNorRotateStamp()
     {
         // Arrange
         var userId = Guid.NewGuid();
@@ -622,6 +630,10 @@ public class PublicUpdateProfileAuthFactoryTests
                     It.IsAny<Guid?>(),
                     It.IsAny<CancellationToken>()
                 ),
+            Times.Never
+        );
+        _tokenStateRepositoryMock.Verify(
+            x => x.RotateSecurityStampAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
             Times.Never
         );
     }

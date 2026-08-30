@@ -36,4 +36,14 @@ public static class JwtClaimsConstants
     /// Uses an obfuscated name for security purposes.
     /// </summary>
     public const string SessionId = "ref";
+
+    /// <summary>
+    /// Claim type for the user's security stamp.
+    /// </summary>
+    public const string SecurityStamp = "sstamp";
+
+    /// <summary>
+    /// Claim type for the user's token version.
+    /// </summary>
+    public const string TokenVersion = "tver";
 }

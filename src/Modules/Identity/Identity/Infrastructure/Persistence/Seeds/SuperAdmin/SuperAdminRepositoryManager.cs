@@ -98,6 +98,16 @@ public class SuperAdminRepositoryManager(IdentityDbContext context, ILogger<Supe
     }
 
     /// <summary>
+    /// Adds a token-invalidation record to the context.
+    /// </summary>
+    /// <param name="tokenState">The token-invalidation record to add.</param>
+    public void AddUserTokenState(UserTokenStateEntity tokenState)
+    {
+        context.UserTokenStates.Add(entity: tokenState);
+        logger.LogDebug("Added token state for user: {UserId}", tokenState.Id);
+    }
+
+    /// <summary>
     /// Adds a role-permission association to the context.
     /// </summary>
     /// <param name="rolePermission">The role-permission association to add.</param>

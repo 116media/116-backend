@@ -25,6 +25,7 @@ public class PublicChangePasswordHandlerTests
     private readonly Mock<IAuthRepository> _authRepositoryMock;
     private readonly Mock<IPasswordService> _passwordServiceMock;
     private readonly Mock<ISessionRepository> _sessionRepositoryMock;
+    private readonly Mock<IUserTokenStateRepository> _tokenStateRepositoryMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
     private readonly PublicChangePasswordHandler _handler;
 
@@ -33,12 +34,14 @@ public class PublicChangePasswordHandlerTests
         _authRepositoryMock = MockAuthRepository.Create();
         _passwordServiceMock = MockPasswordService.Create();
         _sessionRepositoryMock = MockSessionRepository.Create();
+        _tokenStateRepositoryMock = new Mock<IUserTokenStateRepository>();
         _unitOfWorkMock = MockIdentityUnitOfWork.Create();
 
         _handler = new PublicChangePasswordHandler(
             _authRepositoryMock.Object,
             _passwordServiceMock.Object,
             _sessionRepositoryMock.Object,
+            _tokenStateRepositoryMock.Object,
             _unitOfWorkMock.Object,
             TestErrorsFactory.CreateIdentityI18n()
         );
@@ -266,6 +269,10 @@ public class PublicChangePasswordHandlerTests
         // Assert
         await act.Should().ThrowAsync<BadRequestException>();
         _unitOfWorkMock.VerifyCommitNotCalled();
+        _tokenStateRepositoryMock.Verify(
+            x => x.RotateSecurityStampAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
     }
 
     #endregion
@@ -342,10 +349,10 @@ public class PublicChangePasswordHandlerTests
 
     #endregion
 
-    #region Session Invalidation
+    #region Token Invalidation
 
     [Fact]
-    public async Task Handle_ShouldRevokeEverySessionExceptTheActingOneBeforeCommitting()
+    public async Task Handle_ShouldRevokeOtherSessionsBeforeCommitAndRotateStampAfterCommit()
     {
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
@@ -380,11 +387,16 @@ public class PublicChangePasswordHandlerTests
             .Callback(() => callOrder.Add("commit"))
             .ReturnsAsync(1);
 
+        _tokenStateRepositoryMock
+            .Setup(x => x.RotateSecurityStampAsync(user.Id, It.IsAny<CancellationToken>()))
+            .Callback(() => callOrder.Add("rotate"))
+            .ReturnsAsync(Guid.NewGuid());
+
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        callOrder.Should().Equal("revoke", "commit");
+        callOrder.Should().Equal("revoke", "commit", "rotate");
     }
 
     #endregion

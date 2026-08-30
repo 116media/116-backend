@@ -27,6 +27,8 @@ public class JwtService : IJwtService
         ICollection<RolePermissionEntity> userPermissions,
         bool isVerified,
         bool isActive,
+        Guid securityStamp,
+        long tokenVersion,
         EnumAuthProvider authProvider
     )
     {
@@ -50,6 +52,8 @@ public class JwtService : IJwtService
             new(type: JwtRegisteredClaimNames.Iat, $"{now.ToUnixTimeSeconds()}", valueType: ClaimValueTypes.Integer64),
             new(type: JwtClaimsConstants.AuthProvider, $"{authProvider}"),
             new(type: JwtClaimsConstants.SessionId, $"{sessionId}"),
+            new(type: JwtClaimsConstants.SecurityStamp, $"{securityStamp}"),
+            new(type: JwtClaimsConstants.TokenVersion, $"{tokenVersion}", valueType: ClaimValueTypes.Integer64),
         };
 
         claims.AddRange(BuildAccountStatusClaims(isVerified: isVerified, isActive: isActive));

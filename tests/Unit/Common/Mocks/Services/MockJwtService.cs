@@ -41,6 +41,8 @@ public static class MockJwtService
                     It.IsAny<ICollection<RolePermissionEntity>>(),
                     It.IsAny<bool>(),
                     It.IsAny<bool>(),
+                    It.IsAny<Guid>(),
+                    It.IsAny<long>(),
                     It.IsAny<EnumAuthProvider>()
                 )
             )
@@ -82,6 +84,8 @@ public static class MockJwtService
                     It.IsAny<ICollection<RolePermissionEntity>>(),
                     It.IsAny<bool>(),
                     It.IsAny<bool>(),
+                    It.IsAny<Guid>(),
+                    It.IsAny<long>(),
                     It.IsAny<EnumAuthProvider>()
                 ),
             Times.Once
@@ -106,6 +110,8 @@ public static class MockJwtService
                     It.IsAny<ICollection<RolePermissionEntity>>(),
                     It.IsAny<bool>(),
                     It.IsAny<bool>(),
+                    It.IsAny<Guid>(),
+                    It.IsAny<long>(),
                     It.IsAny<EnumAuthProvider>()
                 ),
             Times.Once
@@ -129,6 +135,8 @@ public static class MockJwtService
                     It.IsAny<ICollection<RolePermissionEntity>>(),
                     It.IsAny<bool>(),
                     It.IsAny<bool>(),
+                    It.IsAny<Guid>(),
+                    It.IsAny<long>(),
                     It.IsAny<EnumAuthProvider>()
                 ),
             Times.Never
@@ -155,6 +163,8 @@ public static class MockJwtService
                     It.IsAny<ICollection<RolePermissionEntity>>(),
                     It.IsAny<bool>(),
                     It.IsAny<bool>(),
+                    It.IsAny<Guid>(),
+                    It.IsAny<long>(),
                     It.IsAny<EnumAuthProvider>()
                 )
             )

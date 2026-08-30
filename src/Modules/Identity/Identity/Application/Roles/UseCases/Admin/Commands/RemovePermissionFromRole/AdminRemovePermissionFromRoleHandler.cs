@@ -9,16 +9,19 @@ using MapsterMapper;
 namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.RemovePermissionFromRole;
 
 /// <summary>
-/// Handles the <see cref="AdminRemovePermissionFromRoleCommand" /> to remove a permission from a role.
+/// Handles the <see cref="AdminRemovePermissionFromRoleCommand" /> to remove a permission from a
+/// role, bumping every role member's token version.
 /// </summary>
 /// <param name="roleRepository">Repository for role data access operations.</param>
 /// <param name="rolePermissionRepository">Repository for role-permission data access operations.</param>
+/// <param name="tokenStateRepository">Repository bumping the role members' token versions.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 /// <param name="i18n">Single i18n entry point for the Identity module.</param>
 public class AdminRemovePermissionFromRoleHandler(
     IRoleRepository roleRepository,
     IRolePermissionRepository rolePermissionRepository,
+    IUserTokenStateRepository tokenStateRepository,
     IIdentityUnitOfWork unitOfWork,
     IMapper mapper,
     IdentityI18n i18n
@@ -53,6 +56,11 @@ public class AdminRemovePermissionFromRoleHandler(
             // Remove the association
             rolePermissionRepository.Delete(entity: rolePermission);
             await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+            await tokenStateRepository.BumpTokenVersionForRoleUsersAsync(
+                roleId: roleId,
+                cancellationToken: cancellationToken
+            );
 
             // Reload role with permissions to return updated data
             RoleEntity? role = await roleRepository.GetRoleByIdWithPermissionsOrThrowAsync(

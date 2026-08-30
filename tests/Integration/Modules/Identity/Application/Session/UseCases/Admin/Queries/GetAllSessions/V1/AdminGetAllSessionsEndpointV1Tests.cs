@@ -48,6 +48,7 @@ public class AdminGetAllSessionsEndpointV1Tests(PostgresFixture db) : BaseApiTes
             $"device-{Guid.NewGuid():N}"[..20],
             Guid.NewGuid().ToString("N"),
             DateTime.UtcNow.AddDays(30),
+            DateTime.UtcNow.AddDays(30),
             EnumBrowser.Chrome,
             EnumDevice.Desktop,
             EnumPlatform.Windows,

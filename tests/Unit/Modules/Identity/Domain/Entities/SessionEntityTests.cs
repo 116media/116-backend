@@ -1,6 +1,7 @@
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.Events;
+using _116.Tests.Fixtures.Builders.Entities.Identity;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Identity;
 using AwesomeAssertions;
@@ -24,6 +25,7 @@ public class SessionEntityTests
         string deviceId = TestConstants.Session.ValidDeviceId;
         string refreshTokenHash = TestConstants.Session.DefaultRefreshTokenHash;
         DateTime expiresAt = DateTime.UtcNow.AddDays(TestConstants.Session.DefaultRefreshTokenExpirationDays);
+        DateTime absoluteExpiresAt = DateTime.UtcNow.AddDays(TestConstants.Session.DefaultAbsoluteLifetimeDays);
         var browser = EnumBrowser.Chrome;
         var device = EnumDevice.Desktop;
         var platform = EnumPlatform.Windows;
@@ -38,6 +40,7 @@ public class SessionEntityTests
             deviceId,
             refreshTokenHash,
             expiresAt,
+            absoluteExpiresAt,
             browser,
             device,
             platform,
@@ -52,6 +55,7 @@ public class SessionEntityTests
         session.DeviceId.Should().Be(deviceId);
         session.RefreshTokenHash.Should().Be(refreshTokenHash);
         session.ExpiresAt.Should().Be(expiresAt);
+        session.AbsoluteExpiresAt.Should().Be(absoluteExpiresAt);
         session.Browser.Should().Be(browser);
         session.Device.Should().Be(device);
         session.Platform.Should().Be(platform);
@@ -71,6 +75,7 @@ public class SessionEntityTests
         string deviceId = TestConstants.Session.ValidDeviceId;
         string refreshTokenHash = TestConstants.Session.DefaultRefreshTokenHash;
         DateTime expiresAt = DateTime.UtcNow.AddDays(30);
+        DateTime absoluteExpiresAt = DateTime.UtcNow.AddDays(TestConstants.Session.DefaultAbsoluteLifetimeDays);
 
         // Act
         var session = SessionEntity.Create(
@@ -79,6 +84,7 @@ public class SessionEntityTests
             deviceId,
             refreshTokenHash,
             expiresAt,
+            absoluteExpiresAt,
             EnumBrowser.Chrome,
             EnumDevice.Desktop,
             EnumPlatform.Windows,
@@ -158,6 +164,7 @@ public class SessionEntityTests
         SessionEntity session = SessionFactory.Create();
         string newRefreshTokenHash = "new_refresh_token_hash_value";
         DateTime newExpiresAt = DateTime.UtcNow.AddDays(60);
+        DateTime originalAbsoluteExpiresAt = session.AbsoluteExpiresAt;
 
         // Act
         session.UpdateRefreshToken(newRefreshTokenHash, newExpiresAt);
@@ -165,6 +172,7 @@ public class SessionEntityTests
         // Assert
         session.RefreshTokenHash.Should().Be(newRefreshTokenHash);
         session.ExpiresAt.Should().Be(newExpiresAt);
+        session.AbsoluteExpiresAt.Should().Be(originalAbsoluteExpiresAt);
     }
 
     [Fact]
@@ -182,6 +190,51 @@ public class SessionEntityTests
         session.RefreshTokenHash.Should().Be(newRefreshTokenHash);
         session.ExpiresAt.Should().Be(newExpiresAt);
         // Note: A revoked session would still be revoked even with a new expiration
+    }
+
+    #endregion
+
+    #region Absolute Expiry Tests
+
+    [Fact]
+    public void HasReachedAbsoluteExpiry_WhenCeilingIsInTheFuture_ShouldReturnFalse()
+    {
+        // Arrange
+        SessionEntity session = new SessionBuilder().WithAbsoluteExpiresAt(DateTime.UtcNow.AddDays(1)).Build();
+
+        // Act
+        bool result = session.HasReachedAbsoluteExpiry();
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void HasReachedAbsoluteExpiry_WhenCeilingHasPassed_ShouldReturnTrue()
+    {
+        // Arrange
+        SessionEntity session = new SessionBuilder().WithAbsoluteExpiresAt(DateTime.UtcNow.AddDays(-1)).Build();
+
+        // Act
+        bool result = session.HasReachedAbsoluteExpiry();
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Reactivate_ShouldResetAbsoluteExpiry()
+    {
+        // Arrange
+        SessionEntity session = new SessionBuilder().WithAbsoluteExpiresAt(DateTime.UtcNow.AddDays(-1)).Build();
+        DateTime newAbsoluteExpiresAt = DateTime.UtcNow.AddDays(TestConstants.Session.DefaultAbsoluteLifetimeDays);
+
+        // Act
+        session.Reactivate("new_hash", DateTime.UtcNow.AddDays(30), newAbsoluteExpiresAt);
+
+        // Assert
+        session.AbsoluteExpiresAt.Should().Be(newAbsoluteExpiresAt);
+        session.HasReachedAbsoluteExpiry().Should().BeFalse();
     }
 
     #endregion
@@ -278,6 +331,7 @@ public class SessionEntityTests
             deviceId: TestConstants.Session.ValidDeviceId,
             refreshTokenHash: TestConstants.Session.DefaultRefreshTokenHash,
             expiresAt: DateTime.UtcNow.AddDays(TestConstants.Session.DefaultRefreshTokenExpirationDays),
+            absoluteExpiresAt: DateTime.UtcNow.AddDays(TestConstants.Session.DefaultAbsoluteLifetimeDays),
             browser: EnumBrowser.Chrome,
             device: EnumDevice.Desktop,
             platform: EnumPlatform.Windows,
@@ -335,7 +389,7 @@ public class SessionEntityTests
         session.ClearDomainEvents();
 
         // Act
-        session.Reactivate("new_hash", DateTime.UtcNow.AddDays(30));
+        session.Reactivate("new_hash", DateTime.UtcNow.AddDays(30), DateTime.UtcNow.AddDays(60));
 
         // Assert
         SessionReactivatedEvent raised = session.DomainEvents.OfType<SessionReactivatedEvent>().Single();

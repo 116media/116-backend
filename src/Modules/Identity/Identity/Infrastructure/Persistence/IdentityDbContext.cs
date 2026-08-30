@@ -61,6 +61,12 @@ public class IdentityDbContext(DbContextOptions<IdentityDbContext> options) : Db
     public DbSet<SessionEntity> Sessions => Set<SessionEntity>();
 
     /// <summary>
+    /// Gets the collection of per-user token-invalidation records.
+    /// </summary>
+    /// <value>DbSet of UserTokenStateEntity for managing token-invalidation markers</value>
+    public DbSet<UserTokenStateEntity> UserTokenStates => Set<UserTokenStateEntity>();
+
+    /// <summary>
     /// Configures the model for the context using Fluent API.
     /// </summary>
     /// <param name="modelBuilder">The builder used to construct the model for the context.</param>

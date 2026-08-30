@@ -19,6 +19,7 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp;
 /// <param name="otpRepository">Repository for OTP data access operations.</param>
 /// <param name="passwordService">Service for hashing passwords.</param>
 /// <param name="otpService">Service for generating OTP codes.</param>
+/// <param name="tokenStateRepository">Repository creating the user's token-invalidation record.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="userErrors">User domain error factory for generating domain exceptions.</param>
 /// <param name="mailer">Outbox mailer delivering the verification code.</param>
@@ -27,6 +28,7 @@ public class PublicSignUpAuthFactory(
     IOtpRepository otpRepository,
     IPasswordService passwordService,
     IOtpService otpService,
+    IUserTokenStateRepository tokenStateRepository,
     IIdentityUnitOfWork unitOfWork,
     UserErrors userErrors,
     IMailer mailer
@@ -60,6 +62,11 @@ public class PublicSignUpAuthFactory(
 
         await authRepository.AddAsync(user: newUser, cancellationToken: cancellationToken);
         await authRepository.AssignVisitorRoleAsync(userId: newUser.Id, cancellationToken: cancellationToken);
+
+        await tokenStateRepository.AddAsync(
+            state: UserTokenStateEntity.Create(userId: newUser.Id),
+            cancellationToken: cancellationToken
+        );
 
         OtpCreationResult verificationOtp = otpService.CreateOtp(
             userId: newUser.Id,

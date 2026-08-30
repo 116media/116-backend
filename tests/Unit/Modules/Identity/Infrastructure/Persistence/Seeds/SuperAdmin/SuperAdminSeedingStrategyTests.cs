@@ -246,6 +246,30 @@ public class SuperAdminSeedingStrategyTests : IDisposable
     }
 
     [Fact]
+    public async Task ExecuteSeedingAsync_ShouldCreateTheUserTokenState()
+    {
+        // Arrange
+        DbContextOptions<IdentityDbContext> options = CreateOptions();
+        await using var context = new IdentityDbContext(options);
+
+        var repositoryManager = new SuperAdminRepositoryManager(context, _repositoryLoggerMock.Object);
+        var entityFactory = new SuperAdminEntityFactory(_passwordServiceMock.Object, _userErrors);
+        var strategy = new SuperAdminSeedingStrategy(entityFactory, repositoryManager, _loggerMock.Object);
+
+        // Act
+        await strategy.ExecuteSeedingAsync();
+        await repositoryManager.SaveChangesAsync();
+
+        // Assert
+        UserEntity user = await context.Users.FirstAsync();
+        UserTokenStateEntity? tokenState = await context.UserTokenStates.FirstOrDefaultAsync();
+        tokenState.Should().NotBeNull();
+        tokenState!.Id.Should().Be(user.Id);
+        tokenState.SecurityStamp.Should().NotBe(Guid.Empty);
+        tokenState.TokenVersion.Should().Be(0);
+    }
+
+    [Fact]
     public async Task ExecuteSeedingAsync_WhenUserRoleDoesNotExist_ShouldCreateAssociation()
     {
         // Arrange
