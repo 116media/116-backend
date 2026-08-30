@@ -20,7 +20,7 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetVideoByS
 /// <param name="ArtistSlug">
 /// The linked artist profile's slug, or null when the video has no linked profile.
 /// </param>
-public record PublicGetVideoBySlugResponse(VideoDetailDto Video, string? ArtistSlug);
+public record PublicGetVideoBySlugResponse(PublicVideoDetailDto Video, string? ArtistSlug);
 
 /// <summary>
 /// Defines the public get video by slug endpoint.
