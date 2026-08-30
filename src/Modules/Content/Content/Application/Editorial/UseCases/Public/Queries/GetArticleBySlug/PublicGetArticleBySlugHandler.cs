@@ -58,7 +58,7 @@ public class PublicGetArticleBySlugHandler(
             );
         }
 
-        var dto = await article.ToArticleDetailDtoAsync(
+        var dto = await article.ToPublicArticleDetailDtoAsync(
             mapper,
             fileRepository,
             cancellationToken,
