@@ -4,7 +4,6 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
 using _116.Shared.Contracts.Application.CQRS;
-using MapsterMapper;
 
 namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPromotedArticles;
 
@@ -14,12 +13,10 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPromoted
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="articleInteractionRepository">Repository for article interaction data access operations.</param>
 /// <param name="fileRepository">Repository for resolving file URLs.</param>
-/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class PublicGetPromotedArticlesHandler(
     IArticleRepository articleRepository,
     IArticleInteractionRepository articleInteractionRepository,
-    IFileRepository fileRepository,
-    IMapper mapper
+    IFileRepository fileRepository
 ) : IQueryHandler<PublicGetPromotedArticlesQuery, PublicGetPromotedArticlesResult>
 {
     /// <inheritdoc />
@@ -40,8 +37,7 @@ public class PublicGetPromotedArticlesHandler(
                 cancellationToken: cancellationToken
             );
 
-        IReadOnlyList<ArticleSummaryDto> dtoList = await articles.ToArticleSummaryDtosAsync(
-            mapper,
+        IReadOnlyList<PublicArticleSummaryDto> dtoList = await articles.ToPublicArticleSummaryDtosAsync(
             fileRepository,
             liked,
             bookmarked,
