@@ -36,4 +36,4 @@ public record PublicGetPromotedArticlesQuery(Guid? CurrentUserId = null)
 /// Result of the <see cref="PublicGetPromotedArticlesQuery" /> containing promoted article summaries.
 /// </summary>
 /// <param name="Articles">The list of promoted article summary DTOs.</param>
-public record PublicGetPromotedArticlesResult(IReadOnlyList<ArticleSummaryDto> Articles);
+public record PublicGetPromotedArticlesResult(IReadOnlyList<PublicArticleSummaryDto> Articles);
