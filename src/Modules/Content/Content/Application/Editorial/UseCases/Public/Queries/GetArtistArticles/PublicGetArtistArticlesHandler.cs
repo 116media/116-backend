@@ -6,7 +6,6 @@ using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
-using MapsterMapper;
 
 namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetArtistArticles;
 
@@ -16,13 +15,11 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetArtistAr
 /// </summary>
 /// <param name="artistRepository">Repository for artist profile data access operations.</param>
 /// <param name="articleRepository">Repository for article data access operations.</param>
-/// <param name="mapper">The Mapster mapper used for article tags.</param>
 /// <param name="fileRepository">Repository for resolving cover image file URLs.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class PublicGetArtistArticlesHandler(
     IArtistRepository artistRepository,
     IArticleRepository articleRepository,
-    IMapper mapper,
     IFileRepository fileRepository,
     ContentI18n i18n
 ) : IQueryHandler<PublicGetArtistArticlesQuery, PublicGetArtistArticlesResult>
@@ -50,11 +47,11 @@ public class PublicGetArtistArticlesHandler(
             cancellationToken: cancellationToken
         );
 
-        IReadOnlyList<ArticleSummaryDto> articleDtos = await articles
+        IReadOnlyList<PublicArticleSummaryDto> articleDtos = await articles
             .AsReadOnly()
-            .ToArticleSummaryDtosAsync(mapper, fileRepository, cancellationToken);
+            .ToPublicArticleSummaryDtosAsync(fileRepository, cancellationToken);
 
-        var result = new PaginatedResult<ArticleSummaryDto>(
+        var result = new PaginatedResult<PublicArticleSummaryDto>(
             pageIndex: query.Page.PageIndex,
             pageSize: query.Page.PageSize,
             count: totalCount,
