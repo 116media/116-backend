@@ -18,4 +18,4 @@ public record PublicGetLyricsByVideoIdQuery(string VideoId, Guid? CurrentUserId 
 /// Result of the <see cref="PublicGetLyricsByVideoIdQuery" /> containing the matching lyrics page.
 /// </summary>
 /// <param name="Lyrics">The lyrics information linked to the video.</param>
-public record PublicGetLyricsByVideoIdResult(LyricsDetailDto Lyrics);
+public record PublicGetLyricsByVideoIdResult(PublicLyricsDetailDto Lyrics);
