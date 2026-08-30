@@ -60,7 +60,7 @@ public class PublicGetShortsFeedHandler(
                 cancellationToken: cancellationToken
             );
 
-        IReadOnlyList<ShortVideoDto> items = await shortVideos.ToShortVideoDtosAsync(
+        IReadOnlyList<PublicShortVideoDto> items = await shortVideos.ToPublicShortVideoDtosAsync(
             mapper,
             userLookup,
             fileRepository,
