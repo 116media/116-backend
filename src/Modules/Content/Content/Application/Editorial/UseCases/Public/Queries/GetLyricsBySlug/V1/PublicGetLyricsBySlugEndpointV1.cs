@@ -34,7 +34,7 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetLyricsBy
 /// album track and a standalone single, either curated or generated.
 /// </param>
 public record PublicGetLyricsBySlugResponse(
-    LyricsDetailDto Lyrics,
+    PublicLyricsDetailDto Lyrics,
     string? VideoSlug,
     string? ArtistSlug,
     IReadOnlyList<AlbumTrackDto> AlbumTracks,
