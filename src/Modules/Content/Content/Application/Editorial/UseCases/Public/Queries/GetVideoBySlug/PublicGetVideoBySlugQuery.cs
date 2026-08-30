@@ -25,4 +25,4 @@ public record PublicGetVideoBySlugQuery(string Slug, Guid? CurrentUserId = null)
 /// the artist page when present and plain text otherwise, and never slugifies a name
 /// client-side.
 /// </param>
-public record PublicGetVideoBySlugResult(VideoDetailDto Video, string? ArtistSlug);
+public record PublicGetVideoBySlugResult(PublicVideoDetailDto Video, string? ArtistSlug);
