@@ -11,7 +11,7 @@ namespace _116.Content.Application.Shared.DTOs;
 /// <param name="RatedStars">The user's current rating, for rated-video results.</param>
 /// <param name="LastShareChannel">The channel used by the user's latest share, when reported.</param>
 public record UserVideoActivityDto(
-    VideoSummaryDto Video,
+    PublicVideoSummaryDto Video,
     DateTimeOffset LastInteractedAt,
     int InteractionCount,
     short? RatedStars = null,
