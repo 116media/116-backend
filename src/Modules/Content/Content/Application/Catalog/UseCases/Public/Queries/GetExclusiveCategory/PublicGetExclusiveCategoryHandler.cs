@@ -57,13 +57,12 @@ public class PublicGetExclusiveCategoryHandler(
             cancellationToken: cancellationToken
         );
 
-        IReadOnlyList<VideoSummaryDto> videoDtos = await videos.ToVideoSummaryDtosAsync(
-            mapper,
+        IReadOnlyList<PublicVideoSummaryDto> videoDtos = await videos.ToPublicVideoSummaryDtosAsync(
             fileRepository,
             cancellationToken
         );
 
-        var paginatedVideos = new PaginatedResult<VideoSummaryDto>(
+        var paginatedVideos = new PaginatedResult<PublicVideoSummaryDto>(
             items: videoDtos,
             count: totalCount,
             pageSize: pageSize,
