@@ -19,4 +19,4 @@ public record PublicGetArticleBySlugQuery(string Slug, Guid? CurrentUserId = nul
 /// Result of the <see cref="PublicGetArticleBySlugQuery" /> containing the full article details.
 /// </summary>
 /// <param name="Article">The detailed article information.</param>
-public record PublicGetArticleBySlugResult(ArticleDetailDto Article);
+public record PublicGetArticleBySlugResult(PublicArticleDetailDto Article);
