@@ -38,4 +38,4 @@ public record PublicGetPopularArticlesQuery(int Limit, Guid? CategoryId, Guid? E
 /// article summaries.
 /// </summary>
 /// <param name="Articles">The popular articles ordered by engagement score descending.</param>
-public record PublicGetPopularArticlesResult(IReadOnlyList<ArticleSummaryDto> Articles);
+public record PublicGetPopularArticlesResult(IReadOnlyList<PublicArticleSummaryDto> Articles);
