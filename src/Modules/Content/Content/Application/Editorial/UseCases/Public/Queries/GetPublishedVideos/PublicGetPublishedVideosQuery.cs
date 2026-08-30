@@ -42,4 +42,4 @@ public record PublicGetPublishedVideosQuery(
 /// Result of the <see cref="PublicGetPublishedVideosQuery" /> containing a paginated list of video summaries.
 /// </summary>
 /// <param name="Videos">The paginated result containing video summary DTOs.</param>
-public record PublicGetPublishedVideosResult(PaginatedResult<VideoSummaryDto> Videos);
+public record PublicGetPublishedVideosResult(PaginatedResult<PublicVideoSummaryDto> Videos);
