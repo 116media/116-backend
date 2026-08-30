@@ -48,8 +48,8 @@ public record PublicGetArtistBySlugQuery(string Slug, PaginatedRequest LyricsPag
 public record PublicGetArtistBySlugResult(
     ArtistDto Artist,
     ArtistTotalsDto Totals,
-    PaginatedResult<LyricsSummaryDto> Lyrics,
-    PaginatedResult<VideoSummaryDto> Videos
+    PaginatedResult<PublicLyricsSummaryDto> Lyrics,
+    PaginatedResult<PublicVideoSummaryDto> Videos
 );
 
 /// <summary>
