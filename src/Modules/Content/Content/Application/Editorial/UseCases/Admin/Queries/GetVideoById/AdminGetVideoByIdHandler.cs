@@ -39,7 +39,7 @@ public class AdminGetVideoByIdHandler(
 
         AuthorInfo? authorInfo = await userLookup.GetAuthorInfoByIdAsync(userId: video.AuthorId, ct: cancellationToken);
 
-        AuthorDto? author = null;
+        AdminAuthorDto? author = null;
         if (authorInfo is not null)
         {
             string? avatarUrl = null;
@@ -52,7 +52,7 @@ public class AdminGetVideoByIdHandler(
                 avatarUrl = avatarFile?.StorageUrl;
             }
 
-            author = new AuthorDto(
+            author = new AdminAuthorDto(
                 UserName: authorInfo.UserName,
                 Email: authorInfo.Email,
                 AvatarUrl: avatarUrl,
