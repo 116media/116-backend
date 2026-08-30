@@ -43,7 +43,7 @@ public record ArticleCommentDto(
     Guid UserId,
     string? Body,
     bool IsDeleted,
-    AuthorDto? Author = null,
+    AdminAuthorDto? Author = null,
     Guid? ParentCommentId = null,
     int ReplyCount = 0,
     IReadOnlyList<ArticleCommentDto>? Replies = null,
