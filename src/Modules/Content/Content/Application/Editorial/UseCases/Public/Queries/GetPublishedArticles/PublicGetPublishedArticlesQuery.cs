@@ -49,4 +49,4 @@ public record PublicGetPublishedArticlesQuery(
 /// Result of the <see cref="PublicGetPublishedArticlesQuery" /> containing a paginated list of article summaries.
 /// </summary>
 /// <param name="Articles">The paginated result containing article summary DTOs.</param>
-public record PublicGetPublishedArticlesResult(PaginatedResult<ArticleSummaryDto> Articles);
+public record PublicGetPublishedArticlesResult(PaginatedResult<PublicArticleSummaryDto> Articles);
