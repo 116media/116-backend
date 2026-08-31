@@ -36,10 +36,6 @@ public static class ArticleMapper
             .Map(dest => dest.Id, src => src.Tag.Id)
             .Map(dest => dest.Name, src => src.Tag.Name)
             .Map(dest => dest.Slug, src => src.Tag.Slug);
-
-        config
-            .NewConfig<ArticleCommentEntity, ArticleCommentDto>()
-            .Map(dest => dest.Body, src => src.IsDeleted ? null : src.Body);
     }
 
     /// <summary>
@@ -189,121 +185,6 @@ public static class ArticleMapper
                         : null
                 )
             )
-            .ToList();
-    }
-
-    /// <summary>
-    /// Maps an <see cref="ArticleEntity" /> to an <see cref="ArticleSummaryDto" />, stamping the
-    /// current user's interaction flags from the supplied liked/bookmarked id sets. Pass empty
-    /// sets for an anonymous request.
-    /// </summary>
-    /// <param name="entity">The article to map.</param>
-    /// <param name="mapper">The Mapster mapper.</param>
-    /// <param name="fileRepository">Repository used to resolve the cover image URL.</param>
-    /// <param name="likedArticleIds">Ids the current user has liked.</param>
-    /// <param name="bookmarkedArticleIds">Ids the current user has bookmarked.</param>
-    /// <param name="ct">Token to observe for cancellation requests.</param>
-    /// <returns>The mapped summary with interaction flags applied.</returns>
-    public static async Task<ArticleSummaryDto> ToArticleSummaryDtoAsync(
-        this ArticleEntity entity,
-        IMapper mapper,
-        IFileRepository fileRepository,
-        IReadOnlySet<Guid> likedArticleIds,
-        IReadOnlySet<Guid> bookmarkedArticleIds,
-        CancellationToken ct = default
-    )
-    {
-        ArticleSummaryDto dto = await entity.ToArticleSummaryDtoAsync(mapper, fileRepository, ct);
-        return dto with
-        {
-            IsLiked = likedArticleIds.Contains(entity.Id),
-            IsBookmarked = bookmarkedArticleIds.Contains(entity.Id),
-        };
-    }
-
-    /// <summary>
-    /// Maps a list of articles to summaries, stamping each with the current user's interaction
-    /// flags from the supplied liked/bookmarked id sets. Pass empty sets for an anonymous request.
-    /// </summary>
-    /// <param name="entities">The articles to map.</param>
-    /// <param name="mapper">The Mapster mapper.</param>
-    /// <param name="fileRepository">Repository used to resolve cover image URLs.</param>
-    /// <param name="likedArticleIds">Ids the current user has liked.</param>
-    /// <param name="bookmarkedArticleIds">Ids the current user has bookmarked.</param>
-    /// <param name="ct">Token to observe for cancellation requests.</param>
-    /// <returns>The mapped summaries with interaction flags applied.</returns>
-    public static async Task<IReadOnlyList<ArticleSummaryDto>> ToArticleSummaryDtosAsync(
-        this IReadOnlyList<ArticleEntity> entities,
-        IMapper mapper,
-        IFileRepository fileRepository,
-        IReadOnlySet<Guid> likedArticleIds,
-        IReadOnlySet<Guid> bookmarkedArticleIds,
-        CancellationToken ct = default
-    )
-    {
-        IReadOnlyList<ArticleSummaryDto> summaries = await entities.ToArticleSummaryDtosAsync(
-            mapper,
-            fileRepository,
-            ct
-        );
-
-        return summaries
-            .Select(dto =>
-                dto with
-                {
-                    IsLiked = likedArticleIds.Contains(dto.Id),
-                    IsBookmarked = bookmarkedArticleIds.Contains(dto.Id),
-                }
-            )
-            .ToList();
-    }
-
-    /// <summary>
-    /// Maps an <see cref="ArticleCommentEntity" /> to an <see cref="ArticleCommentDto" />.
-    /// </summary>
-    public static ArticleCommentDto ToArticleCommentDto(this ArticleCommentEntity entity, IMapper mapper)
-    {
-        var dto = mapper.Map<ArticleCommentDto>(entity);
-        return dto with { Body = entity.IsDeleted ? null : entity.Body };
-    }
-
-    /// <summary>
-    /// Maps a list of <see cref="ArticleCommentEntity" /> to a list of
-    /// <see cref="ArticleCommentDto" />, attaching each commenter's resolved author profile.
-    /// Deleted comments carry a null body and a null author; commenters absent from
-    /// <paramref name="authorsByUserId" /> also carry a null author.
-    /// </summary>
-    /// <param name="entities">
-    /// The comment entities to map.
-    /// </param>
-    /// <param name="mapper">
-    /// The Mapster mapper.
-    /// </param>
-    /// <param name="authorsByUserId">
-    /// The resolved author profiles keyed by commenter user ID.
-    /// </param>
-    /// <returns>
-    /// The mapped comment DTOs with authors attached.
-    /// </returns>
-    public static IReadOnlyList<ArticleCommentDto> ToArticleCommentDtos(
-        this IReadOnlyList<ArticleCommentEntity> entities,
-        IMapper mapper,
-        IReadOnlyDictionary<Guid, AdminAuthorDto> authorsByUserId
-    )
-    {
-        return entities
-            .Select(entity =>
-            {
-                ArticleCommentDto dto = entity.ToArticleCommentDto(mapper);
-
-                if (entity.IsDeleted)
-                {
-                    return dto;
-                }
-
-                AdminAuthorDto? author = authorsByUserId.GetValueOrDefault(entity.UserId);
-                return dto with { Author = author };
-            })
             .ToList();
     }
 
