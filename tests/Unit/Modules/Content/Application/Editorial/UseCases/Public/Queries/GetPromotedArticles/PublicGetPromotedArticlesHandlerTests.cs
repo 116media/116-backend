@@ -35,8 +35,7 @@ public class PublicGetPromotedArticlesHandlerTests : BaseContentHandlerTest
         _handler = new PublicGetPromotedArticlesHandler(
             _articleRepositoryMock.Object,
             _articleInteractionRepositoryMock.Object,
-            _fileRepositoryMock.Object,
-            Mapper
+            _fileRepositoryMock.Object
         );
     }
 
