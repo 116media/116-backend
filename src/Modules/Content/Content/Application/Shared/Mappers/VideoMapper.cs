@@ -36,45 +36,6 @@ public static class VideoMapper
     }
 
     /// <summary>
-    /// Maps a <see cref="VideoEntity" /> to a <see cref="VideoSummaryDto" />,
-    /// resolving the thumbnail URL from the associated FileEntity.
-    /// </summary>
-    public static async Task<VideoSummaryDto> ToVideoSummaryDtoAsync(
-        this VideoEntity entity,
-        IMapper mapper,
-        IFileRepository fileRepository,
-        CancellationToken ct = default
-    )
-    {
-        string? thumbnailUrl = await ResolveThumbnailUrlAsync(entity, fileRepository, ct);
-
-        return new VideoSummaryDto(
-            entity.Id,
-            entity.CategoryId,
-            entity.Category != null ? entity.Category.Name : string.Empty,
-            entity.Title,
-            entity.Slug,
-            thumbnailUrl,
-            entity.AuthorId.ToString(),
-            entity.Status,
-            entity.YoutubeVideoUrl,
-            entity.IsPromoted,
-            entity.HasLyrics,
-            entity.PublishedAt,
-            entity.ShootingScheduledAt,
-            entity.ShareCount,
-            entity.RatingAverage,
-            entity.RatingCount
-        )
-        {
-            CreatedAt = entity.CreatedAt,
-            CreatedBy = entity.CreatedBy,
-            UpdatedAt = entity.UpdatedAt,
-            UpdatedBy = entity.UpdatedBy,
-        };
-    }
-
-    /// <summary>
     /// Maps a <see cref="VideoEntity" /> to a <see cref="VideoDetailDto" />,
     /// resolving the thumbnail URL from the associated FileEntity.
     /// </summary>
@@ -265,20 +226,6 @@ public static class VideoMapper
             ct
         );
 
-        return entities.Select(entity => entity.ToVideoSummaryDto(mapper, files)).ToList();
-    }
-
-    /// <summary>
-    /// Maps a list of <see cref="VideoEntity" /> to <see cref="VideoSummaryDto" /> using a
-    /// pre-fetched file map. Performs no IO — intended for batch mapping where files are loaded
-    /// once up front via <c>IFileRepository.GetByIdsAsync</c>.
-    /// </summary>
-    public static IReadOnlyList<VideoSummaryDto> ToVideoSummaryDtos(
-        this IReadOnlyList<VideoEntity> entities,
-        IMapper mapper,
-        IReadOnlyDictionary<Guid, FileEntity> files
-    )
-    {
         return entities.Select(entity => entity.ToVideoSummaryDto(mapper, files)).ToList();
     }
 
