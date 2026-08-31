@@ -4,7 +4,6 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Core.Application.Shared.Repositories;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
-using MapsterMapper;
 
 namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetOwnArticleBookmarks;
 
@@ -13,11 +12,9 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetOwnAr
 /// </summary>
 /// <param name="articleInteractionRepository">Repository for article interaction data access operations.</param>
 /// <param name="fileRepository">Repository for resolving file URLs.</param>
-/// <param name="mapper">The Mapster mapper instance.</param>
 public class PublicGetOwnArticleBookmarksHandler(
     IArticleInteractionRepository articleInteractionRepository,
-    IFileRepository fileRepository,
-    IMapper mapper
+    IFileRepository fileRepository
 ) : IQueryHandler<PublicGetOwnArticleBookmarksQuery, PublicGetOwnArticleBookmarksResult>
 {
     /// <inheritdoc />
@@ -48,8 +45,7 @@ public class PublicGetOwnArticleBookmarksHandler(
         var dtoList = new List<UserBookmarkedArticleDto>(activities.Count);
         foreach (BookmarkedArticleActivity activity in activities)
         {
-            ArticleSummaryDto article = await activity.Article.ToArticleSummaryDtoAsync(
-                mapper,
+            PublicArticleSummaryDto article = await activity.Article.ToPublicArticleSummaryDtoAsync(
                 fileRepository,
                 cancellationToken
             );
