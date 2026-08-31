@@ -2,9 +2,11 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
+using _116.Core.Domain.Entities;
 using _116.Shared.Application.DTOs;
 using _116.Tests.Fixtures.Builders.Entities.Content;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Factories.Core;
 using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
 using AwesomeAssertions;
@@ -612,4 +614,40 @@ public class VideoMapperTests : BaseContentHandlerTest
     }
 
     #endregion
+
+    [Fact]
+    public void ToVideoSummaryDtos_WithPreFetchedFiles_ShouldMapEveryEntity()
+    {
+        // Arrange
+        VideoEntity video = VideoFactory.Create(CategoryId);
+        FileEntity thumbnail = FileFactory.CreateWithStorageUrl("https://cdn.116.test/thumbs/clip.jpg");
+        video.SetThumbnailFileId(thumbnail.Id);
+        IReadOnlyDictionary<Guid, FileEntity> files = new Dictionary<Guid, FileEntity> { [thumbnail.Id] = thumbnail };
+
+        IReadOnlyList<VideoEntity> videos = [video];
+
+        // Act
+        IReadOnlyList<VideoSummaryDto> dtos = videos.ToVideoSummaryDtos(Mapper, files);
+
+        // Assert
+        dtos.Should().ContainSingle().Which.ThumbnailUrl.Should().Be(thumbnail.StorageUrl);
+    }
+
+    [Fact]
+    public async Task ToVideoSummaryDtoAsync_WithThumbnail_ShouldResolveTheStorageUrl()
+    {
+        // Arrange
+        VideoEntity video = VideoFactory.Create(CategoryId);
+        FileEntity thumbnail = FileFactory.CreateWithStorageUrl("https://cdn.116.test/thumbs/clip.jpg");
+        video.SetThumbnailFileId(thumbnail.Id);
+        _fileRepositoryMock
+            .Setup(x => x.GetByIdAsync(thumbnail.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(thumbnail);
+
+        // Act
+        VideoSummaryDto dto = await video.ToVideoSummaryDtoAsync(Mapper, _fileRepositoryMock.Object);
+
+        // Assert
+        dto.ThumbnailUrl.Should().Be(thumbnail.StorageUrl);
+    }
 }
