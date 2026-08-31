@@ -18,7 +18,7 @@ namespace _116.Identity.Application.Roles.UseCases.Public.Queries.GetOwnRoles.V1
 /// Response model for the authenticated user's roles and permissions.
 /// </summary>
 /// <param name="Roles">The list of roles assigned to the user, each with their full permission set.</param>
-public record PublicGetOwnRolesResponse(IReadOnlyList<RoleWithPermissionsDto> Roles);
+public record PublicGetOwnRolesResponse(IReadOnlyList<PublicRoleWithPermissionsDto> Roles);
 
 /// <summary>
 /// Defines the public get own roles' endpoint.
