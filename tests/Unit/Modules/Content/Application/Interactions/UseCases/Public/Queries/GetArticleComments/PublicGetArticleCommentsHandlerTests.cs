@@ -36,8 +36,7 @@ public class PublicGetArticleCommentsHandlerTests : BaseContentHandlerTest
         _handler = new PublicGetArticleCommentsHandler(
             _articleCommentRepositoryMock.Object,
             _userLookupMock.Object,
-            _fileRepositoryMock.Object,
-            Mapper
+            _fileRepositoryMock.Object
         );
     }
 
@@ -67,10 +66,9 @@ public class PublicGetArticleCommentsHandlerTests : BaseContentHandlerTest
         PublicGetArticleCommentsResult result = await _handler.Handle(Query(), CancellationToken.None);
 
         // Assert
-        ArticleCommentDto dto = result.Comments.Items.Single();
+        PublicArticleCommentDto dto = result.Comments.Items.Single();
         dto.Author.Should().NotBeNull();
         dto.Author!.UserName.Should().Be("jane");
-        dto.Author.Role.Should().Be("Visitor");
     }
 
     [Fact]
@@ -82,7 +80,8 @@ public class PublicGetArticleCommentsHandlerTests : BaseContentHandlerTest
 
         PublicGetArticleCommentsResult result = await _handler.Handle(Query(), CancellationToken.None);
 
-        result.Comments.Items.Single().Author!.Email.Should().BeNull();
+        // The public author shape carries no email member; the type system enforces the absence.
+        result.Comments.Items.Single().Author.Should().BeOfType<PublicAuthorDto>();
     }
 
     [Fact]
@@ -126,7 +125,7 @@ public class PublicGetArticleCommentsHandlerTests : BaseContentHandlerTest
 
         PublicGetArticleCommentsResult result = await _handler.Handle(Query(), CancellationToken.None);
 
-        ArticleCommentDto dto = result.Comments.Items.Single();
+        PublicArticleCommentDto dto = result.Comments.Items.Single();
         dto.Body.Should().BeNull();
         dto.Author.Should().BeNull();
         _userLookupMock.Verify(
