@@ -31,14 +31,14 @@ public record PublicGetVideoPromotionFeedQuery(int StripSize = EditorialFeedCons
 /// </summary>
 /// <param name="Position">The column label: <c>"a"</c> or <c>"b"</c>.</param>
 /// <param name="Videos">The videos assigned to this column.</param>
-public record VideoPromotionSlotDto(string Position, IReadOnlyList<VideoSummaryDto> Videos);
+public record VideoPromotionSlotDto(string Position, IReadOnlyList<PublicVideoSummaryDto> Videos);
 
 /// <summary>
 /// A simple promotion spot (1 or 2) with its list of videos.
 /// </summary>
 /// <param name="SpotPriority">The spot priority number (1 or 2).</param>
 /// <param name="Videos">The videos displayed in this spot.</param>
-public record VideoPromotionSpotDto(int SpotPriority, IReadOnlyList<VideoSummaryDto> Videos);
+public record VideoPromotionSpotDto(int SpotPriority, IReadOnlyList<PublicVideoSummaryDto> Videos);
 
 /// <summary>
 /// The special spot 3 layout, which distributes videos across two columns.
@@ -58,5 +58,5 @@ public record PublicGetVideoPromotionFeedResult(
     VideoPromotionSpotDto Spot1,
     VideoPromotionSpotDto Spot2,
     VideoPromotionSpot3Dto Spot3,
-    IReadOnlyList<VideoSummaryDto> FreeVideoStrip
+    IReadOnlyList<PublicVideoSummaryDto> FreeVideoStrip
 );
