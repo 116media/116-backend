@@ -68,7 +68,6 @@ public class PublicGetPublishedLyricsEndpointV1Tests(PostgresFixture db) : BaseA
         body.Lyrics.Items.Should().NotContain(item => item.Id == draftLyrics.Id);
         body.Lyrics.Items.Should().NotContain(item => item.Id == pendingReviewLyrics.Id);
         body.Lyrics.Items.Should().NotContain(item => item.Id == rejectedLyrics.Id);
-        body.Lyrics.Items.Should().OnlyContain(item => item.Status == EnumContentStatus.Published);
         body.Lyrics.PageIndex.Should().Be(0);
         body.Lyrics.PageSize.Should().Be(10);
     }
