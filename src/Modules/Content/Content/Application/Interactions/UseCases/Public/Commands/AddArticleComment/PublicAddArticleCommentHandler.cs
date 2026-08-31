@@ -3,7 +3,6 @@ using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
-using MapsterMapper;
 
 namespace _116.Content.Application.Interactions.UseCases.Public.Commands.AddArticleComment;
 
@@ -12,11 +11,9 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.AddArti
 /// </summary>
 /// <param name="articleCommentRepository">Repository for article comment data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="mapper">The mapper used to project entities to DTOs.</param>
 public class PublicAddArticleCommentHandler(
     IArticleCommentRepository articleCommentRepository,
-    IContentUnitOfWork unitOfWork,
-    IMapper mapper
+    IContentUnitOfWork unitOfWork
 ) : ICommandHandler<PublicAddArticleCommentCommand, PublicAddArticleCommentResult>
 {
     /// <inheritdoc />
@@ -41,7 +38,7 @@ public class PublicAddArticleCommentHandler(
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
-        var dto = comment.ToArticleCommentDto(mapper);
+        var dto = comment.ToPublicArticleCommentDto();
         return new PublicAddArticleCommentResult(Comment: dto);
     }
 }
