@@ -16,4 +16,4 @@ public record PublicGetOwnSessionsQuery(Guid UserId, Guid CurrentSessionId, bool
 /// The result of executing a <see cref="PublicGetOwnSessionsQuery" />.
 /// </summary>
 /// <param name="Sessions">List of user sessions with metadata.</param>
-public record PublicGetOwnSessionsResult(IReadOnlyCollection<SessionDto> Sessions);
+public record PublicGetOwnSessionsResult(IReadOnlyCollection<PublicSessionDto> Sessions);
