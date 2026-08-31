@@ -1,5 +1,6 @@
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
+using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
@@ -50,7 +51,13 @@ public class PublicGetOwnProfileHandler(IAuthRepository authRepository, IFileRep
         );
 
         var avatarDto = avatarFile?.ToFileDto(mapper);
-        var userDto = user.ToUserResponseDto(mapper: mapper, roles: roles, permissions: permissions, avatar: avatarDto);
+        PublicUserResponseDto userDto = user.ToUserResponseDto(
+                mapper: mapper,
+                roles: roles,
+                permissions: permissions,
+                avatar: avatarDto
+            )
+            .ToPublicUserResponseDto();
 
         return new PublicGetOwnProfileResult(User: userDto);
     }
