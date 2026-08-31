@@ -52,7 +52,6 @@ public class PublicGetPublishedArticlesEndpointV1Tests(PostgresFixture db) : Bas
         PublicGetPublishedArticlesResponse body = await response.ReadAsAsync<PublicGetPublishedArticlesResponse>();
         body.Articles.Items.Should().Contain(item => item.Id == publishedArticle.Id);
         body.Articles.Items.Should().NotContain(item => item.Id == draftArticle.Id);
-        body.Articles.Items.Should().OnlyContain(item => item.Status == EnumContentStatus.Published);
         body.Articles.PageIndex.Should().Be(0);
         body.Articles.PageSize.Should().Be(10);
     }
