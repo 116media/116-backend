@@ -33,7 +33,7 @@ public class PublicGetPopularVideosHandlerTests : BaseContentHandlerTest
         _fileRepositoryMock = MockFileRepository.Create();
         FileEntity thumbnailFile = FileFactory.CreateImage();
         _fileRepositoryMock.SetupGetById(thumbnailFile);
-        _handler = new PublicGetPopularVideosHandler(_videoRepositoryMock.Object, _fileRepositoryMock.Object, Mapper);
+        _handler = new PublicGetPopularVideosHandler(_videoRepositoryMock.Object, _fileRepositoryMock.Object);
     }
 
     [Fact]
