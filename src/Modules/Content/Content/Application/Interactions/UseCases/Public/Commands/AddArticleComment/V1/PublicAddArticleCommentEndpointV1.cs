@@ -25,7 +25,7 @@ public record PublicAddArticleCommentRequest(string Body);
 /// Response model for a successful PublicAddArticleComment operation.
 /// </summary>
 /// <param name="Comment">The newly created comment DTO.</param>
-public record PublicAddArticleCommentResponse(ArticleCommentDto Comment);
+public record PublicAddArticleCommentResponse(PublicArticleCommentDto Comment);
 
 /// <summary>
 /// Defines the add article comment endpoint.
