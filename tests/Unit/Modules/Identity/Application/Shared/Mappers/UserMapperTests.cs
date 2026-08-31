@@ -236,4 +236,44 @@ public class UserMapperTests
         result.CreatedAt.Should().Be(createdAt);
         result.UpdatedAt.Should().Be(updatedAt);
     }
+
+    [Fact]
+    public void ToPublicUserResponseDto_WithRolesAndPermissions_ShouldProjectEachGrant()
+    {
+        // Arrange
+        var role = new RoleDto(
+            Guid.NewGuid(),
+            "Visitor",
+            "Standard public user",
+            IsActive: true,
+            IsDeleted: false,
+            DeletedAt: null
+        );
+        var permission = new PermissionDto(
+            Guid.NewGuid(),
+            "articles",
+            "read",
+            "Read published articles",
+            IsActive: true,
+            IsDeleted: false,
+            DeletedAt: null
+        );
+        UserEntity user = UserFactory.Create();
+        UserResponseDto dto = user.ToUserResponseDto(_mapper, roles: [role], permissions: [permission]);
+
+        // Act
+        PublicUserResponseDto result = dto.ToPublicUserResponseDto();
+
+        // Assert
+        result
+            .Roles.Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(new PublicRoleDto(role.Id, role.Name, role.Description));
+        result
+            .Permissions.Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(new PublicPermissionDto(permission.Id, permission.Resource, permission.Action, permission.Description));
+    }
 }
