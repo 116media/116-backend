@@ -19,7 +19,7 @@ public class VideoMapperTests(PostgresFixture postgres) : BaseRepositoryTest(pos
     private readonly IMapper _mapper = new Mapper(ContentMappingRegistration.CreateConfiguration());
 
     [Fact]
-    public async Task ToVideoSummaryDtoAsync_ShouldMapAllFields()
+    public async Task ToVideoSummaryDtosAsync_ShouldMapAllFields()
     {
         await using var seedContext = CreateDbContext<ContentDbContext>();
         var contentType = ContentTypeFactory.Create("Video");
@@ -38,7 +38,8 @@ public class VideoMapperTests(PostgresFixture postgres) : BaseRepositoryTest(pos
         VideoEntity loaded = await readContext.Videos.Include(v => v.Category).FirstAsync(v => v.Id == video.Id);
 
         var fileRepository = Resolve<IFileRepository>();
-        VideoSummaryDto dto = await loaded.ToVideoSummaryDtoAsync(_mapper, fileRepository);
+        IReadOnlyList<VideoEntity> videos = [loaded];
+        VideoSummaryDto dto = (await videos.ToVideoSummaryDtosAsync(_mapper, fileRepository)).Single();
 
         dto.Id.Should().Be(loaded.Id);
         dto.CategoryId.Should().Be(category.Id);
@@ -49,7 +50,7 @@ public class VideoMapperTests(PostgresFixture postgres) : BaseRepositoryTest(pos
     }
 
     [Fact]
-    public async Task ToVideoSummaryDtoAsync_WithNoThumbnail_ShouldMapThumbnailUrlAsNull()
+    public async Task ToVideoSummaryDtosAsync_WithNoThumbnail_ShouldMapThumbnailUrlAsNull()
     {
         await using var seedContext = CreateDbContext<ContentDbContext>();
         var contentType = ContentTypeFactory.Create("Video");
@@ -68,7 +69,8 @@ public class VideoMapperTests(PostgresFixture postgres) : BaseRepositoryTest(pos
         VideoEntity loaded = await readContext.Videos.Include(v => v.Category).FirstAsync(v => v.Id == video.Id);
 
         var fileRepository = Resolve<IFileRepository>();
-        VideoSummaryDto dto = await loaded.ToVideoSummaryDtoAsync(_mapper, fileRepository);
+        IReadOnlyList<VideoEntity> videos = [loaded];
+        VideoSummaryDto dto = (await videos.ToVideoSummaryDtosAsync(_mapper, fileRepository)).Single();
 
         dto.ThumbnailUrl.Should().BeNull();
     }
