@@ -4,7 +4,6 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Core.Application.Shared.Repositories;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
-using MapsterMapper;
 
 namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetOwnLikedArticles;
 
@@ -13,8 +12,7 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetOwnLi
 /// </summary>
 public class PublicGetOwnLikedArticlesHandler(
     IArticleInteractionRepository articleInteractionRepository,
-    IFileRepository fileRepository,
-    IMapper mapper
+    IFileRepository fileRepository
 ) : IQueryHandler<PublicGetOwnLikedArticlesQuery, PublicGetOwnLikedArticlesResult>
 {
     /// <inheritdoc />
@@ -43,8 +41,7 @@ public class PublicGetOwnLikedArticlesHandler(
         var items = new List<UserArticleActivityDto>(activities.Count);
         foreach (ArticleActivity activity in activities)
         {
-            ArticleSummaryDto article = await activity.Article.ToArticleSummaryDtoAsync(
-                mapper,
+            PublicArticleSummaryDto article = await activity.Article.ToPublicArticleSummaryDtoAsync(
                 fileRepository,
                 cancellationToken
             );
