@@ -26,7 +26,7 @@ public record PublicSignUpRequest(string Email, string UserName, string Password
 /// </summary>
 /// <param name="User">The created user information.</param>
 /// <param name="VerificationRequired">Indicates that email verification must happen before login.</param>
-public record PublicSignUpResponse(UserResponseDto User, bool VerificationRequired);
+public record PublicSignUpResponse(PublicUserResponseDto User, bool VerificationRequired);
 
 /// <summary>
 /// Defines the public signup endpoint for new user registration, directing the user to email
