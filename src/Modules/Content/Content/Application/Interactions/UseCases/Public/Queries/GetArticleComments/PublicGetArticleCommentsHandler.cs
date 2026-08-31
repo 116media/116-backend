@@ -6,7 +6,6 @@ using _116.Core.Application.Shared.Repositories;
 using _116.Identity.Contracts.Application;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
-using MapsterMapper;
 
 namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetArticleComments;
 
@@ -21,12 +20,10 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetArtic
 /// <param name="articleCommentRepository">Repository for article comment data access operations.</param>
 /// <param name="userLookup">Cross-module service for resolving commenter profiles.</param>
 /// <param name="fileRepository">Repository for resolving avatar file URLs.</param>
-/// <param name="mapper">The mapper used to project entities to DTOs.</param>
 public class PublicGetArticleCommentsHandler(
     IArticleCommentRepository articleCommentRepository,
     IUserLookupService userLookup,
-    IFileRepository fileRepository,
-    IMapper mapper
+    IFileRepository fileRepository
 ) : IQueryHandler<PublicGetArticleCommentsQuery, PublicGetArticleCommentsResult>
 {
     /// <inheritdoc />
@@ -45,15 +42,20 @@ public class PublicGetArticleCommentsHandler(
             cancellationToken: cancellationToken
         );
 
-        IReadOnlyDictionary<Guid, AuthorDto> authorsByUserId = await ResolveAuthorsAsync(comments, cancellationToken);
+        IReadOnlyDictionary<Guid, PublicAuthorDto> authorsByUserId = await ResolveAuthorsAsync(
+            comments,
+            cancellationToken
+        );
 
-        IReadOnlyList<ArticleCommentDto> dtoList = comments.AsReadOnly().ToArticleCommentDtos(mapper, authorsByUserId);
+        IReadOnlyList<PublicArticleCommentDto> dtoList = comments
+            .AsReadOnly()
+            .ToPublicArticleCommentDtos(authorsByUserId);
 
         dtoList = await StampReplyCountsAsync(comments, dtoList, cancellationToken);
 
         dtoList = await StampViewerLikesAsync(comments, dtoList, query.ViewerUserId, cancellationToken);
 
-        var paginated = new PaginatedResult<ArticleCommentDto>(
+        var paginated = new PaginatedResult<PublicArticleCommentDto>(
             pageIndex: pageIndex,
             pageSize: pageSize,
             count: totalCount,
@@ -72,7 +74,7 @@ public class PublicGetArticleCommentsHandler(
     /// <param name="comments">The page of comment entities.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Resolved author profiles keyed by commenter user id.</returns>
-    private async Task<IReadOnlyDictionary<Guid, AuthorDto>> ResolveAuthorsAsync(
+    private async Task<IReadOnlyDictionary<Guid, PublicAuthorDto>> ResolveAuthorsAsync(
         IReadOnlyList<ArticleCommentEntity> comments,
         CancellationToken cancellationToken
     )
@@ -81,7 +83,7 @@ public class PublicGetArticleCommentsHandler(
 
         if (userIds.Length == 0)
         {
-            return new Dictionary<Guid, AuthorDto>();
+            return new Dictionary<Guid, PublicAuthorDto>();
         }
 
         IReadOnlyDictionary<Guid, AuthorInfo> authorInfos = await userLookup.GetAuthorInfosByIdsAsync(
@@ -109,7 +111,7 @@ public class PublicGetArticleCommentsHandler(
                     ? avatarUrls.GetValueOrDefault(info.AvatarFileId.Value)
                     : null;
 
-                return new AuthorDto(UserName: info.UserName, Email: null, AvatarUrl: avatarUrl, Role: info.Role);
+                return new PublicAuthorDto(UserName: info.UserName, AvatarUrl: avatarUrl);
             }
         );
     }
@@ -122,9 +124,9 @@ public class PublicGetArticleCommentsHandler(
     /// <param name="dtoList">The mapped comment DTOs to stamp.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The comment DTOs with reply counts applied.</returns>
-    private async Task<IReadOnlyList<ArticleCommentDto>> StampReplyCountsAsync(
+    private async Task<IReadOnlyList<PublicArticleCommentDto>> StampReplyCountsAsync(
         IReadOnlyList<ArticleCommentEntity> comments,
-        IReadOnlyList<ArticleCommentDto> dtoList,
+        IReadOnlyList<PublicArticleCommentDto> dtoList,
         CancellationToken cancellationToken
     )
     {
@@ -159,9 +161,9 @@ public class PublicGetArticleCommentsHandler(
     /// <param name="viewerUserId">The current viewer's user id, or null when anonymous.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The comment DTOs with the viewer's like state applied.</returns>
-    private async Task<IReadOnlyList<ArticleCommentDto>> StampViewerLikesAsync(
+    private async Task<IReadOnlyList<PublicArticleCommentDto>> StampViewerLikesAsync(
         IReadOnlyList<ArticleCommentEntity> comments,
-        IReadOnlyList<ArticleCommentDto> dtoList,
+        IReadOnlyList<PublicArticleCommentDto> dtoList,
         Guid? viewerUserId,
         CancellationToken cancellationToken
     )
