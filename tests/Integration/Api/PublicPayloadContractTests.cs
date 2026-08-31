@@ -10,7 +10,7 @@ namespace _116.Integration.Tests.Api;
 /// types hides extra fields, which is how the audit and staff-data leak had green tests — so
 /// these tests walk the raw document and fail on any forbidden property, at any depth.
 /// </summary>
-public class PublicPayloadAbsenceTests(PostgresFixture db) : BaseApiTest(db)
+public class PublicPayloadContractTests(PostgresFixture db) : BaseApiTest(db)
 {
     /// <summary>
     /// Properties no public payload may carry: the audit trail, staff identifiers, commercial
@@ -80,6 +80,7 @@ public class PublicPayloadAbsenceTests(PostgresFixture db) : BaseApiTest(db)
     [Fact]
     public async Task ArticleBySlug_AsAnonymous_CarriesNoAuditCommercialOrStaffData()
     {
+        // Arrange
         Guid categoryId = await SeedCategoryAsync();
         ArticleEntity article = await SeedAsync<ContentDbContext, ArticleEntity>(ctx =>
         {
@@ -89,9 +90,12 @@ public class PublicPayloadAbsenceTests(PostgresFixture db) : BaseApiTest(db)
         });
 
         Client.ClearAuthentication();
-        var response = await Client.GetAsync($"{ApiRoutes.Public.Articles}/{article.Slug}");
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
 
+        // Act
+        var response = await Client.GetAsync($"{ApiRoutes.Public.Articles}/{article.Slug}");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
         using JsonDocument body = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
         AssertNoForbiddenProperties(body.RootElement, "$");
     }
@@ -99,13 +103,17 @@ public class PublicPayloadAbsenceTests(PostgresFixture db) : BaseApiTest(db)
     [Fact]
     public async Task PublishedArticles_AsAnonymous_CarryNoAuditCommercialOrStaffData()
     {
+        // Arrange
         Guid categoryId = await SeedCategoryAsync();
         await SeedAsync<ContentDbContext>(ctx => ctx.Articles.Add(ArticleFactory.CreatePublished(categoryId)));
 
         Client.ClearAuthentication();
-        var response = await Client.GetAsync($"{ApiRoutes.Public.Articles}?pageIndex=0&pageSize=10");
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
 
+        // Act
+        var response = await Client.GetAsync($"{ApiRoutes.Public.Articles}?pageIndex=0&pageSize=10");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
         using JsonDocument body = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
         AssertNoForbiddenProperties(body.RootElement, "$");
     }
@@ -113,12 +121,15 @@ public class PublicPayloadAbsenceTests(PostgresFixture db) : BaseApiTest(db)
     [Fact]
     public async Task ContentTypes_AsVisitor_CarryNoAuditData()
     {
+        // Arrange
         await SeedAsync<ContentDbContext>(ctx => ctx.ContentTypes.Add(ContentTypeFactory.Create()));
-
         Client.AuthenticateAsVisitor();
-        var response = await Client.GetAsync(ApiRoutes.Public.ContentTypes);
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
 
+        // Act
+        var response = await Client.GetAsync(ApiRoutes.Public.ContentTypes);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
         using JsonDocument body = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
         AssertNoForbiddenProperties(body.RootElement, "$");
     }
@@ -126,10 +137,14 @@ public class PublicPayloadAbsenceTests(PostgresFixture db) : BaseApiTest(db)
     [Fact]
     public async Task OwnProfile_AsVisitor_CarriesNoAuditData()
     {
+        // Arrange
         Client.AuthenticateAsVisitor();
-        var response = await Client.GetAsync(Routes.Public.Me.Profile());
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
 
+        // Act
+        var response = await Client.GetAsync(Routes.Public.Me.Profile());
+
+        // Assert — the profile legitimately shows the user their own email at the user level.
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
         using JsonDocument body = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
         JsonElement user = body.RootElement.GetProperty("user");
         AssertNoForbiddenProperties(user, "$", allow: ["email"]);
@@ -138,10 +153,14 @@ public class PublicPayloadAbsenceTests(PostgresFixture db) : BaseApiTest(db)
     [Fact]
     public async Task OwnSessions_AsVisitor_CarryNoAuditData()
     {
+        // Arrange
         Client.AuthenticateAsVisitor();
-        var response = await Client.GetAsync($"{ApiRoutes.BaseUrl}/{ApiRoutes.ApiVersion}/public/me/sessions");
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
 
+        // Act
+        var response = await Client.GetAsync($"{ApiRoutes.BaseUrl}/{ApiRoutes.ApiVersion}/public/me/sessions");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
         using JsonDocument body = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
         AssertNoForbiddenProperties(body.RootElement, "$");
     }
@@ -149,10 +168,14 @@ public class PublicPayloadAbsenceTests(PostgresFixture db) : BaseApiTest(db)
     [Fact]
     public async Task OwnRoles_AsVisitor_CarryNoAuditOrLifecycleData()
     {
+        // Arrange
         Client.AuthenticateAsVisitor();
-        var response = await Client.GetAsync(Routes.Public.Me.Roles());
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
 
+        // Act
+        var response = await Client.GetAsync(Routes.Public.Me.Roles());
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
         using JsonDocument body = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
         AssertNoForbiddenProperties(body.RootElement, "$");
         body.RootElement.GetRawText().Should().NotContain("isDeleted").And.NotContain("deletedAt");
