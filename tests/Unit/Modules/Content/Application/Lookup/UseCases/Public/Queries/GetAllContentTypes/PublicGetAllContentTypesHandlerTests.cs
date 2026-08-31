@@ -22,7 +22,7 @@ public class PublicGetAllContentTypesHandlerTests : BaseContentHandlerTest
     public PublicGetAllContentTypesHandlerTests()
     {
         _contentTypeRepositoryMock = MockContentTypeRepository.Create();
-        _handler = new PublicGetAllContentTypesHandler(_contentTypeRepositoryMock.Object, Mapper);
+        _handler = new PublicGetAllContentTypesHandler(_contentTypeRepositoryMock.Object);
     }
 
     #region Success Cases
