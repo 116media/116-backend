@@ -24,4 +24,4 @@ public record PublicUpdateAvatarCommand(Guid UserId, Guid SessionId, IFormFile? 
 /// <remarks>
 /// Contains the complete user information including the new avatar details.
 /// </remarks>
-public record PublicUpdateAvatarResult(UserResponseDto User);
+public record PublicUpdateAvatarResult(PublicUserResponseDto User);
