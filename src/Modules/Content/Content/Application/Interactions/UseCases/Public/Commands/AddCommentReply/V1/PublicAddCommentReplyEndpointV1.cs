@@ -25,7 +25,7 @@ public record PublicAddCommentReplyRequest(string Body);
 /// Response model for a successful PublicAddCommentReply operation.
 /// </summary>
 /// <param name="Reply">The newly created reply DTO.</param>
-public record PublicAddCommentReplyResponse(ArticleCommentDto Reply);
+public record PublicAddCommentReplyResponse(PublicArticleCommentDto Reply);
 
 /// <summary>
 /// Defines the reply-to-comment endpoint.
