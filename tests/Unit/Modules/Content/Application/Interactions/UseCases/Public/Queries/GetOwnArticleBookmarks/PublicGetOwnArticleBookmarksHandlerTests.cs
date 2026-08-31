@@ -34,8 +34,7 @@ public class PublicGetOwnArticleBookmarksHandlerTests : BaseContentHandlerTest
         _fileRepositoryMock.SetupGetById(coverFile);
         _handler = new PublicGetOwnArticleBookmarksHandler(
             _articleInteractionRepositoryMock.Object,
-            _fileRepositoryMock.Object,
-            Mapper
+            _fileRepositoryMock.Object
         );
     }
 
