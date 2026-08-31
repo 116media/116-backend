@@ -289,10 +289,10 @@ public class PublicGetArticlePromotionFeedHandlerTests : BaseContentHandlerTest
     public void Response_ShouldMapFromResultFields()
     {
         // Arrange
-        var spot1 = new ArticlePromotionSpotDto(1, new List<ArticleSummaryDto>());
-        var spot2 = new ArticlePromotionSpotDto(2, new List<ArticleSummaryDto>());
+        var spot1 = new ArticlePromotionSpotDto(1, new List<PublicArticleSummaryDto>());
+        var spot2 = new ArticlePromotionSpotDto(2, new List<PublicArticleSummaryDto>());
         var spot3 = new ArticlePromotionSpot3Dto(3, new List<ArticlePromotionSlotDto>());
-        IReadOnlyList<ArticleSummaryDto> gossipStrip = new List<ArticleSummaryDto>();
+        IReadOnlyList<PublicArticleSummaryDto> gossipStrip = new List<PublicArticleSummaryDto>();
 
         // Act
         var response = new PublicGetArticlePromotionFeedResponse(spot1, spot2, spot3, gossipStrip);
@@ -396,7 +396,7 @@ public class PublicGetArticlePromotionFeedHandlerTests : BaseContentHandlerTest
         );
 
         // Assert
-        IEnumerable<ArticleSummaryDto> allSummaries = result
+        IEnumerable<PublicArticleSummaryDto> allSummaries = result
             .Spot1.Articles.Concat(result.Spot2.Articles)
             .Concat(result.Spot3.Slots.SelectMany(slot => slot.Articles))
             .Concat(result.GossipStrip);
