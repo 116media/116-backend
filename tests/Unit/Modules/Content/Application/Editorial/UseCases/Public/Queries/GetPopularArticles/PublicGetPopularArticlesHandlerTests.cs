@@ -33,11 +33,7 @@ public class PublicGetPopularArticlesHandlerTests : BaseContentHandlerTest
         _fileRepositoryMock = MockFileRepository.Create();
         FileEntity coverFile = FileFactory.CreateImage();
         _fileRepositoryMock.SetupGetById(coverFile);
-        _handler = new PublicGetPopularArticlesHandler(
-            _articleRepositoryMock.Object,
-            _fileRepositoryMock.Object,
-            Mapper
-        );
+        _handler = new PublicGetPopularArticlesHandler(_articleRepositoryMock.Object, _fileRepositoryMock.Object);
     }
 
     [Fact]
