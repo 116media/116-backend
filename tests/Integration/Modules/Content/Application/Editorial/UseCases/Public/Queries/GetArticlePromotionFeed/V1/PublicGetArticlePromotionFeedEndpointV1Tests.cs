@@ -75,7 +75,7 @@ public class PublicGetArticlePromotionFeedEndpointV1Tests(PostgresFixture db) : 
         PublicGetArticlePromotionFeedResponse body =
             await response.ReadAsAsync<PublicGetArticlePromotionFeedResponse>();
 
-        IEnumerable<ArticleSummaryDto> allFeedArticles = body
+        IEnumerable<PublicArticleSummaryDto> allFeedArticles = body
             .Spot1.Articles.Concat(body.Spot2.Articles)
             .Concat(body.Spot3.Slots.SelectMany(slot => slot.Articles))
             .Concat(body.GossipStrip);
@@ -117,13 +117,13 @@ public class PublicGetArticlePromotionFeedEndpointV1Tests(PostgresFixture db) : 
         PublicGetArticlePromotionFeedResponse body =
             await response.ReadAsAsync<PublicGetArticlePromotionFeedResponse>();
 
-        List<ArticleSummaryDto> allFeedArticles = body
+        List<PublicArticleSummaryDto> allFeedArticles = body
             .Spot1.Articles.Concat(body.Spot2.Articles)
             .Concat(body.Spot3.Slots.SelectMany(slot => slot.Articles))
             .Concat(body.GossipStrip)
             .ToList();
 
-        ArticleSummaryDto stamped = allFeedArticles.Single(item => item.Id == likedArticle.Id);
+        PublicArticleSummaryDto stamped = allFeedArticles.Single(item => item.Id == likedArticle.Id);
         stamped.IsLiked.Should().BeTrue();
         stamped.IsBookmarked.Should().BeFalse();
     }
