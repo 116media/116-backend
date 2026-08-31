@@ -93,7 +93,9 @@ public class PublicGetVideoFeedHandler(
             }
 
             CategoryDto categoryDto = category.ToCategoryDto(mapper, files);
-            IReadOnlyList<VideoSummaryDto> videoDtos = videos.Select(v => v.ToVideoSummaryDto(mapper, files)).ToList();
+            IReadOnlyList<PublicVideoSummaryDto> videoDtos = videos
+                .Select(v => v.ToPublicVideoSummaryDto(files))
+                .ToList();
 
             sections.Add(new VideoFeedSectionDto(Category: categoryDto, Videos: videoDtos));
         }
