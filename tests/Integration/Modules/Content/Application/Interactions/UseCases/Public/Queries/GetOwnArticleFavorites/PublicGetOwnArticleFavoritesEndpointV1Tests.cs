@@ -173,7 +173,9 @@ public class PublicGetOwnArticleFavoritesEndpointV1Tests(PostgresFixture db) : B
         HttpResponseMessage response = await Client.GetAsync(MineUrl(article.Id));
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        PaginatedResult<ArticleCommentDto> body = await response.ReadAsAsync<PaginatedResult<ArticleCommentDto>>();
+        PaginatedResult<PublicArticleCommentDto> body = await response.ReadAsAsync<
+            PaginatedResult<PublicArticleCommentDto>
+        >();
         body.Count.Should().Be(2);
         body.Items.Should().OnlyContain(comment => comment.UserId == TestUser.VisitorId && !comment.IsDeleted);
         body.Items.Should().Contain(comment => comment.ParentCommentId == parentId);
