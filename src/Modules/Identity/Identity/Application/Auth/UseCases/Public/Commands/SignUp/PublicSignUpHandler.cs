@@ -36,6 +36,6 @@ public class PublicSignUpHandler(IPublicSignUpAuthFactory authFactory, IMapper m
             permissions: authData.User.UserRoles.ToPermissionDtos(mapper)
         );
 
-        return new PublicSignUpResult(User: userDto, VerificationRequired: true);
+        return new PublicSignUpResult(User: userDto.ToPublicUserResponseDto(), VerificationRequired: true);
     }
 }
