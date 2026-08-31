@@ -65,7 +65,7 @@ public class PublicGetCommentRepliesEndpointV1 : ICarterModule
             .WithDescription(description: PublicGetCommentRepliesMetaField.GetCommentReplies.Description)
             .AllowAnonymous()
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
-            .Produces<PaginatedResult<ArticleCommentDto>>(statusCode: StatusCodes.Status200OK)
+            .Produces<PaginatedResult<PublicArticleCommentDto>>(statusCode: StatusCodes.Status200OK)
             .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
     }
 }
