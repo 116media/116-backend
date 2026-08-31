@@ -4,7 +4,6 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Core.Application.Shared.Repositories;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
-using MapsterMapper;
 
 namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetOwnCommentedArticles;
 
@@ -14,8 +13,7 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetOwnCo
 public class PublicGetOwnCommentedArticlesHandler(
     IArticleCommentRepository articleCommentRepository,
     IArticleInteractionRepository articleInteractionRepository,
-    IFileRepository fileRepository,
-    IMapper mapper
+    IFileRepository fileRepository
 ) : IQueryHandler<PublicGetOwnCommentedArticlesQuery, PublicGetOwnCommentedArticlesResult>
 {
     /// <inheritdoc />
@@ -45,8 +43,7 @@ public class PublicGetOwnCommentedArticlesHandler(
         var items = new List<UserCommentedArticleDto>(activities.Count);
         foreach (CommentedArticleActivity activity in activities)
         {
-            ArticleSummaryDto article = await activity.Article.ToArticleSummaryDtoAsync(
-                mapper,
+            PublicArticleSummaryDto article = await activity.Article.ToPublicArticleSummaryDtoAsync(
                 fileRepository,
                 cancellationToken
             );
@@ -55,7 +52,7 @@ public class PublicGetOwnCommentedArticlesHandler(
                 IsLiked = liked.Contains(activity.Article.Id),
                 IsBookmarked = bookmarked.Contains(activity.Article.Id),
             };
-            ArticleCommentDto comment = activity.LatestComment.ToArticleCommentDto(mapper);
+            PublicArticleCommentDto comment = activity.LatestComment.ToPublicArticleCommentDto();
             items.Add(new UserCommentedArticleDto(article, comment, activity.CommentCount, activity.LastCommentedAt));
         }
 
