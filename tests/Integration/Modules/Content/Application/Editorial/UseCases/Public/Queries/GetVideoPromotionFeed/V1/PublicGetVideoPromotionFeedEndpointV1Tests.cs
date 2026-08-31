@@ -59,7 +59,7 @@ public class PublicGetVideoPromotionFeedEndpointV1Tests(PostgresFixture db) : Ba
 
         PublicGetVideoPromotionFeedResponse body = await response.ReadAsAsync<PublicGetVideoPromotionFeedResponse>();
 
-        IEnumerable<VideoSummaryDto> allFeedVideos = body
+        IEnumerable<PublicVideoSummaryDto> allFeedVideos = body
             .Spot1.Videos.Concat(body.Spot2.Videos)
             .Concat(body.Spot3.Slots.SelectMany(slot => slot.Videos))
             .Concat(body.FreeVideoStrip);
