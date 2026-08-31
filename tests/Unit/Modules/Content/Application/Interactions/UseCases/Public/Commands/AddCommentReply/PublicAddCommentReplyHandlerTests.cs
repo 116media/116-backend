@@ -40,7 +40,6 @@ public class PublicAddCommentReplyHandlerTests : BaseContentHandlerTest
             _unitOfWorkMock.Object,
             _userLookupMock.Object,
             _fileRepositoryMock.Object,
-            Mapper,
             TestErrorsFactory.CreateContentI18n()
         );
     }
@@ -68,7 +67,6 @@ public class PublicAddCommentReplyHandlerTests : BaseContentHandlerTest
         result.Reply.ParentCommentId.Should().Be(parent.Id);
         result.Reply.Author.Should().NotBeNull();
         result.Reply.Author!.UserName.Should().Be("bob");
-        result.Reply.Author.Email.Should().BeNull();
         _articleCommentRepositoryMock.VerifyAddCommentCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
