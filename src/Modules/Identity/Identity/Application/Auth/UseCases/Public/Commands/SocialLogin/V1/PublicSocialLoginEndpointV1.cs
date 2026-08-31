@@ -2,6 +2,7 @@ using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Auth.Constants;
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Shared.DTOs;
+using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
@@ -31,7 +32,7 @@ public record PublicSocialLoginRequest(string Provider, string IdToken);
 /// <param name="RefreshTokenExpiresAt">Date and time when the refresh token expires in UTC.</param>
 /// <param name="TokenType">Type of token (typically "Bearer").</param>
 public record PublicSocialLoginMobileResponse(
-    UserResponseDto User,
+    PublicUserResponseDto User,
     string AccessToken,
     DateTime AccessTokenExpiresAt,
     string RefreshToken,
@@ -43,7 +44,7 @@ public record PublicSocialLoginMobileResponse(
 /// Response model for web client social login (tokens delivered via HttpOnly cookies).
 /// </summary>
 /// <param name="User">The authenticated user information.</param>
-public record PublicSocialLoginWebResponse(UserResponseDto User);
+public record PublicSocialLoginWebResponse(PublicUserResponseDto User);
 
 /// <summary>
 /// Defines the social login endpoint for external provider authentication.
@@ -81,12 +82,14 @@ public class PublicSocialLoginEndpointV1 : ICarterModule
                     if (tokenDelivery.IsWebClient())
                     {
                         tokenDelivery.SetTokenCookies(authResult: result.Authentication);
-                        var webResponse = new PublicSocialLoginWebResponse(User: result.Authentication.User);
+                        var webResponse = new PublicSocialLoginWebResponse(
+                            User: result.Authentication.User.ToPublicUserResponseDto()
+                        );
                         return Results.Ok(value: webResponse);
                     }
 
                     var mobileResponse = new PublicSocialLoginMobileResponse(
-                        User: result.Authentication.User,
+                        User: result.Authentication.User.ToPublicUserResponseDto(),
                         AccessToken: result.Authentication.AccessToken,
                         AccessTokenExpiresAt: result.Authentication.AccessTokenExpiresAt,
                         RefreshToken: result.Authentication.RefreshToken,
