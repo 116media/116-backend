@@ -65,10 +65,10 @@ public class PublicLikeArticleCommentEndpointV1Tests(PostgresFixture db) : BaseA
 
         // The comment list reflects isLiked=true and likeCount=1 for the viewer
         var listResponse = await Client.GetAsync(Routes.Public.Articles.Comments(article.Id));
-        PaginatedResult<ArticleCommentDto> listed = await listResponse.ReadAsAsync<
-            PaginatedResult<ArticleCommentDto>
+        PaginatedResult<PublicArticleCommentDto> listed = await listResponse.ReadAsAsync<
+            PaginatedResult<PublicArticleCommentDto>
         >();
-        ArticleCommentDto dto = listed.Items.Single(c => c.Id == comment.Id);
+        PublicArticleCommentDto dto = listed.Items.Single(c => c.Id == comment.Id);
         dto.IsLiked.Should().BeTrue();
         dto.LikeCount.Should().Be(1);
 
@@ -108,7 +108,9 @@ public class PublicLikeArticleCommentEndpointV1Tests(PostgresFixture db) : BaseA
         Client.AuthenticateAsVisitor();
         var response = await Client.GetAsync(Routes.Public.Articles.Comments(article.Id));
 
-        PaginatedResult<ArticleCommentDto> body = await response.ReadAsAsync<PaginatedResult<ArticleCommentDto>>();
+        PaginatedResult<PublicArticleCommentDto> body = await response.ReadAsAsync<
+            PaginatedResult<PublicArticleCommentDto>
+        >();
         body.Items.Single(c => c.Id == comment.Id).IsLiked.Should().BeFalse();
     }
 }
