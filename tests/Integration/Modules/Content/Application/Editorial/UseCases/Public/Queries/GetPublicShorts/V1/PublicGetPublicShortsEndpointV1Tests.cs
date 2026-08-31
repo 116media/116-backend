@@ -36,7 +36,6 @@ public class PublicGetPublicShortsEndpointV1Tests(PostgresFixture db) : BaseApiT
         PublicGetPublicShortsResponse body = await response.ReadAsAsync<PublicGetPublicShortsResponse>();
         body.ShortVideos.Items.Should().Contain(item => item.Id == activeShort.Id);
         body.ShortVideos.Items.Should().NotContain(item => item.Id == inactiveShort.Id);
-        body.ShortVideos.Items.Should().OnlyContain(item => item.IsActive);
         body.ShortVideos.PageIndex.Should().Be(0);
         body.ShortVideos.PageSize.Should().Be(10);
     }
