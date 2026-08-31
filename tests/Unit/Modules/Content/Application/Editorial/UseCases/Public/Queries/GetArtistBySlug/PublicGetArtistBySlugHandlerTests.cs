@@ -36,7 +36,6 @@ public class PublicGetArtistBySlugHandlerTests : BaseContentHandlerTest
             _artistRepositoryMock.Object,
             _lyricsRepositoryMock.Object,
             _videoRepositoryMock.Object,
-            Mapper,
             fileRepositoryMock.Object,
             TestErrorsFactory.CreateContentI18n()
         );
