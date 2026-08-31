@@ -22,7 +22,7 @@ public record PublicGetVideoPromotionFeedResponse(
     VideoPromotionSpotDto Spot1,
     VideoPromotionSpotDto Spot2,
     VideoPromotionSpot3Dto Spot3,
-    IReadOnlyList<VideoSummaryDto> FreeVideoStrip
+    IReadOnlyList<PublicVideoSummaryDto> FreeVideoStrip
 );
 
 /// <summary>
