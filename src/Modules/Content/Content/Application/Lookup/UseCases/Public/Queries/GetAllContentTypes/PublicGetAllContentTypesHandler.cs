@@ -3,7 +3,6 @@ using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
-using MapsterMapper;
 
 namespace _116.Content.Application.Lookup.UseCases.Public.Queries.GetAllContentTypes;
 
@@ -11,8 +10,7 @@ namespace _116.Content.Application.Lookup.UseCases.Public.Queries.GetAllContentT
 /// Handles the <see cref="PublicGetAllContentTypesQuery" /> to retrieve all content types.
 /// </summary>
 /// <param name="contentTypeRepository">Repository for content type data access operations.</param>
-/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-public class PublicGetAllContentTypesHandler(IContentTypeRepository contentTypeRepository, IMapper mapper)
+public class PublicGetAllContentTypesHandler(IContentTypeRepository contentTypeRepository)
     : IQueryHandler<PublicGetAllContentTypesQuery, PublicGetAllContentTypesResult>
 {
     /// <inheritdoc />
@@ -25,7 +23,7 @@ public class PublicGetAllContentTypesHandler(IContentTypeRepository contentTypeR
             cancellationToken: cancellationToken
         );
 
-        IReadOnlyList<ContentTypeDto> dtoList = contentTypes.ToContentTypeDtos(mapper);
+        IReadOnlyList<PublicContentTypeDto> dtoList = contentTypes.ToPublicContentTypeDtos();
         return new PublicGetAllContentTypesResult(ContentTypes: dtoList);
     }
 }
