@@ -15,7 +15,7 @@ namespace _116.Content.Application.Lookup.UseCases.Public.Queries.GetAllContentT
 /// Response model for listing all public content types.
 /// </summary>
 /// <param name="ContentTypes">The list of content types.</param>
-public record PublicGetAllContentTypesResponse(IReadOnlyList<ContentTypeDto> ContentTypes);
+public record PublicGetAllContentTypesResponse(IReadOnlyList<PublicContentTypeDto> ContentTypes);
 
 /// <summary>
 /// Defines the public get all content types endpoint.
