@@ -23,4 +23,4 @@ public record PublicGetArticleCommentsQuery(
 /// Result of the <see cref="PublicGetArticleCommentsQuery" /> containing paginated comments.
 /// </summary>
 /// <param name="Comments">Paginated result containing article comment DTOs.</param>
-public record PublicGetArticleCommentsResult(PaginatedResult<ArticleCommentDto> Comments);
+public record PublicGetArticleCommentsResult(PaginatedResult<PublicArticleCommentDto> Comments);
