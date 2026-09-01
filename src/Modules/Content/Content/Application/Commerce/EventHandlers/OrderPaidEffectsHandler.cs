@@ -43,6 +43,22 @@ public class OrderPaidEffectsHandler(
     /// <inheritdoc />
     public async Task Handle(OrderPaidEvent domainEvent, CancellationToken cancellationToken = default)
     {
+        // Every item's effect lands in one transaction: a failure part-way cannot leave some
+        // items of a paid order stamped and the rest untouched.
+        await unitOfWork.ExecuteInTransactionAsync(
+            async ct => await ApplyEffectsAsync(domainEvent: domainEvent, cancellationToken: ct),
+            cancellationToken: cancellationToken
+        );
+    }
+
+    /// <summary>
+    /// Applies every paid item's effect to the content record fulfilling it. Runs inside the
+    /// caller's transaction; the single commit belongs to that transaction.
+    /// </summary>
+    /// <param name="domainEvent">The paid order and its item effects.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    private async Task ApplyEffectsAsync(OrderPaidEvent domainEvent, CancellationToken cancellationToken)
+    {
         foreach (PaidItemEffect effect in domainEvent.Items)
         {
             bool applied =
@@ -74,7 +90,7 @@ public class OrderPaidEffectsHandler(
 
     /// <summary>
     /// Applies the effect to the article fulfilling the order item, when one
-    /// exists. Commits only when the article state actually changed.
+    /// exists, staging the change for the caller's single commit.
     /// </summary>
     /// <param name="effect">The paid item effect to apply.</param>
     /// <param name="paidAt">The instant the order was marked paid.</param>
@@ -125,7 +141,6 @@ public class OrderPaidEffectsHandler(
         if (changed)
         {
             articleRepository.Update(article: article);
-            await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
         }
 
         return true;
@@ -133,7 +148,7 @@ public class OrderPaidEffectsHandler(
 
     /// <summary>
     /// Applies the effect to the video fulfilling the order item, when one
-    /// exists. Commits only when the video state actually changed.
+    /// exists, staging the change for the caller's single commit.
     /// </summary>
     /// <param name="effect">The paid item effect to apply.</param>
     /// <param name="paidAt">The instant the order was marked paid.</param>
@@ -184,7 +199,6 @@ public class OrderPaidEffectsHandler(
         if (changed)
         {
             videoRepository.Update(video: video);
-            await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
         }
 
         return true;
@@ -236,7 +250,6 @@ public class OrderPaidEffectsHandler(
         if (changed)
         {
             lyricsRepository.Update(lyrics: lyrics);
-            await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
         }
 
         return true;
