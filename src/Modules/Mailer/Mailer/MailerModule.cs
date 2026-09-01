@@ -60,8 +60,7 @@ public static class MailerModule
         services.AddScoped(typeof(IMailerRepository<>), typeof(MailerRepository<>));
         services.AddScoped<IProcessedDomainEventStore, MailerProcessedDomainEventStore>();
 
-        // Replay is the delivery path for events raised inside an explicit transaction, not
-        // only a safety net for failed dispatches, so it runs from the first deploy.
+        // Replay delivers events raised inside a transaction, not just retries failed dispatches.
         services.AddScheduledJob<MailerOutboxReplayJob>(cronExpression: "0 */1 * * * ?");
         services.AddScoped<IOutboxEmailRepository, OutboxEmailRepository>();
         services.AddScoped<INewsletterRepository, NewsletterRepository>();
