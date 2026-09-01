@@ -1,23 +1,56 @@
 namespace _116.Shared.Domain;
 
 /// <summary>
-/// Represents a domain event that occurred within the business domain.
-/// Contains metadata about when and what type of event was created.
+/// A fact the domain records at the moment it happens. Identity and timestamp are stamped once
+/// at construction so the event can be stored, deduplicated and replayed.
 /// </summary>
 public interface IDomainEvent
 {
     /// <summary>
-    /// Gets the unique identifier for the domain event.
+    /// The event's stable unique identifier.
     /// </summary>
-    Guid EventId => Guid.NewGuid();
+    Guid EventId { get; }
 
     /// <summary>
-    /// Gets the timestamp when the domain event was created.
+    /// When the event occurred, in UTC.
     /// </summary>
-    public DateTime CreatedAt => DateTime.Now;
+    DateTime OccurredOn { get; }
 
     /// <summary>
-    /// Gets the fully qualified name of the event type.
+    /// The fully qualified name of the event type.
     /// </summary>
+    string EventType { get; }
+}
+
+/// <summary>
+/// Base record for all domain events; stamps identity and time exactly once.
+/// </summary>
+public abstract record DomainEvent : IDomainEvent
+{
+    /// <inheritdoc />
+    public Guid EventId { get; } = Guid.NewGuid();
+
+    /// <inheritdoc />
+    public DateTime OccurredOn { get; } = DateTime.UtcNow;
+
+    /// <inheritdoc />
     public string EventType => GetType().AssemblyQualifiedName!;
+
+    /// <summary>
+    /// Compares only the event's type, leaving the derived record's synthesized equality to
+    /// compare the payload. The stamped id and time are delivery metadata, so two events
+    /// describing the same fact stay equal.
+    /// </summary>
+    /// <param name="other">The event to compare against.</param>
+    /// <returns>True when both events are of the same type.</returns>
+    public virtual bool Equals(DomainEvent? other)
+    {
+        return other is not null && EqualityContract == other.EqualityContract;
+    }
+
+    /// <inheritdoc />
+    public override int GetHashCode()
+    {
+        return EqualityContract.GetHashCode();
+    }
 }
