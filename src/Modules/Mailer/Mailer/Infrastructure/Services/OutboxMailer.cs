@@ -8,11 +8,8 @@ using _116.Mailer.Domain.Entities;
 namespace _116.Mailer.Infrastructure.Services;
 
 /// <summary>
-/// The <see cref="IMailer" /> implementation: renders the template and
-/// persists a self-contained pending outbox row in the Mailer module's own
-/// context. The write commits immediately — callers enqueue after their own
-/// business change has committed, so a rolled-back operation never leaves an
-/// email behind.
+/// The <see cref="IMailer" /> implementation: renders the template and persists a self-contained
+/// pending outbox row in the Mailer module's own context.
 /// </summary>
 /// <param name="renderer">The template renderer.</param>
 /// <param name="outboxRepository">The outbox persistence port.</param>
