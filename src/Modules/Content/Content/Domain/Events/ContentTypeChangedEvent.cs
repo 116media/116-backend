@@ -7,4 +7,4 @@ namespace _116.Content.Domain.Events;
 /// invalidation; the consumer is idempotent, so repeated raises cost only a cache miss.
 /// </summary>
 /// <param name="ContentTypeId">The content type that changed.</param>
-public record ContentTypeChangedEvent(Guid ContentTypeId) : IDomainEvent;
+public record ContentTypeChangedEvent(Guid ContentTypeId) : DomainEvent;
