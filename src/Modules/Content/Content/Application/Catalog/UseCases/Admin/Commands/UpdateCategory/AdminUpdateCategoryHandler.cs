@@ -60,17 +60,6 @@ public class AdminUpdateCategoryHandler(
             {
                 throw i18n.Category.OnlyVideoCategoryCanBeExclusive();
             }
-
-            CategoryEntity? currentExclusive = await categoryRepository.GetExclusiveCategoryAsync(
-                cancellationToken: cancellationToken
-            );
-
-            if (currentExclusive is not null && currentExclusive.Id != category.Id)
-            {
-                currentExclusive.ClearExclusive();
-                categoryRepository.Update(category: category);
-                await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-            }
         }
 
         if (command.IsDefaultForLyrics)
@@ -84,28 +73,50 @@ public class AdminUpdateCategoryHandler(
             {
                 throw i18n.Category.OnlyLyricsCategoryCanBeDefault();
             }
-
-            CategoryEntity? currentDefault = await categoryRepository.GetDefaultLyricsCategoryAsync(
-                cancellationToken: cancellationToken
-            );
-
-            if (currentDefault is not null && currentDefault.Id != category.Id)
-            {
-                currentDefault.ClearDefaultForLyrics();
-                await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-            }
         }
 
-        category.Update(
-            name: command.Name,
-            slug: command.Slug,
-            description: command.Description,
-            isGossip: command.IsGossip,
-            isExclusive: command.IsExclusive,
-            isDefaultForLyrics: command.IsDefaultForLyrics
-        );
+        // Releasing each mutex and re-taking it share one transaction with the update, so no
+        // reader can observe either flag unset in between.
+        await unitOfWork.ExecuteInTransactionAsync(
+            async ct =>
+            {
+                if (command.IsExclusive)
+                {
+                    CategoryEntity? currentExclusive = await categoryRepository.GetExclusiveCategoryAsync(
+                        cancellationToken: ct
+                    );
 
-        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+                    if (currentExclusive is not null && currentExclusive.Id != category.Id)
+                    {
+                        currentExclusive.ClearExclusive();
+                        categoryRepository.Update(category: currentExclusive);
+                    }
+                }
+
+                if (command.IsDefaultForLyrics)
+                {
+                    CategoryEntity? currentDefault = await categoryRepository.GetDefaultLyricsCategoryAsync(
+                        cancellationToken: ct
+                    );
+
+                    if (currentDefault is not null && currentDefault.Id != category.Id)
+                    {
+                        currentDefault.ClearDefaultForLyrics();
+                        categoryRepository.Update(category: currentDefault);
+                    }
+                }
+
+                category.Update(
+                    name: command.Name,
+                    slug: command.Slug,
+                    description: command.Description,
+                    isGossip: command.IsGossip,
+                    isExclusive: command.IsExclusive,
+                    isDefaultForLyrics: command.IsDefaultForLyrics
+                );
+            },
+            cancellationToken: cancellationToken
+        );
 
         CategoryEntity updated = await categoryRepository.GetByIdOrThrowAsync(
             id: id,
