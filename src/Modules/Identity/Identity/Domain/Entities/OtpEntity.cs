@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Domain.Enums;
+using _116.Identity.Domain.Events;
 using _116.Shared.Domain;
 
 namespace _116.Identity.Domain.Entities;
@@ -82,6 +83,18 @@ public class OtpEntity : Aggregate<Guid>
             Purpose = purpose,
             ExpiresAt = expiresAt,
         };
+    }
+
+    /// <summary>
+    /// Records that the code still owes the user a delivery, carrying the plaintext the row
+    /// itself never stores. Raised before the save so the code is delivered only if the flow
+    /// that issued it commits.
+    /// </summary>
+    /// <param name="plainCode">The code to deliver.</param>
+    /// <param name="culture">The culture the delivery should be rendered in.</param>
+    public void MarkIssued(string plainCode, string culture)
+    {
+        AddDomainEvent(new OtpIssuedEvent(UserId: UserId, PlainCode: plainCode, Purpose: Purpose, Culture: culture));
     }
 
     /// <summary>
