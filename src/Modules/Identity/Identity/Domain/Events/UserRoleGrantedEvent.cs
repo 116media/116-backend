@@ -10,4 +10,4 @@ namespace _116.Identity.Domain.Events;
 /// <param name="UserId">The user who received the role.</param>
 /// <param name="RoleId">The granted role.</param>
 /// <param name="RoleName">The granted role's name, captured at grant time.</param>
-public record UserRoleGrantedEvent(Guid UserId, Guid RoleId, string RoleName) : IDomainEvent;
+public record UserRoleGrantedEvent(Guid UserId, Guid RoleId, string RoleName) : DomainEvent;
