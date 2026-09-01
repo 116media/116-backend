@@ -85,16 +85,22 @@ public class AdminAddItemTierFactory(
                 priceSnapshotUsd: categoryPricing.PriceUsd
             );
 
-            await contentOrderRepository.AddItemTierAsync(tier: tier, ct: cancellationToken);
-            await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+            // Attaching the tier and re-totalling the order share one transaction, so the order
+            // can never be read with the tier attached but its total stale.
+            await unitOfWork.ExecuteInTransactionAsync(
+                async ct =>
+                {
+                    await contentOrderRepository.AddItemTierAsync(tier: tier, ct: ct);
 
-            ContentOrderEntity updated =
-                await contentOrderRepository.GetByIdWithItemsAsync(id: orderId, ct: cancellationToken)
-                ?? throw contentOrderErrors.NotFound(id: orderId);
+                    ContentOrderEntity updated =
+                        await contentOrderRepository.GetByIdWithItemsAsync(id: orderId, ct: ct)
+                        ?? throw contentOrderErrors.NotFound(id: orderId);
 
-            updated.RecalculateTotalFromItems();
-            await contentOrderRepository.UpdateAsync(order: updated, ct: cancellationToken);
-            await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+                    updated.RecalculateTotalFromItems();
+                    await contentOrderRepository.UpdateAsync(order: updated, ct: ct);
+                },
+                cancellationToken: cancellationToken
+            );
 
             return (tier, pricingTier.Name);
         }
