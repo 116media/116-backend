@@ -10,4 +10,4 @@ namespace _116.Content.Domain.Events;
 /// </summary>
 /// <param name="CommentId">The comment the like targets.</param>
 /// <param name="Delta"><c>+1</c> for a created like row, <c>-1</c> for a removed one.</param>
-public record CommentEngagedEvent(Guid CommentId, int Delta) : IDomainEvent;
+public record CommentEngagedEvent(Guid CommentId, int Delta) : DomainEvent;
