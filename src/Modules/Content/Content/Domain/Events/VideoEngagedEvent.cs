@@ -17,4 +17,4 @@ namespace _116.Content.Domain.Events;
 /// in-place change (a restarred rating). Ignored for ratings, whose aggregates are recomputed
 /// from the rows.
 /// </param>
-public record VideoEngagedEvent(Guid VideoId, EnumEngagementKind Kind, int Delta) : IDomainEvent;
+public record VideoEngagedEvent(Guid VideoId, EnumEngagementKind Kind, int Delta) : DomainEvent;
