@@ -78,12 +78,18 @@ public class AdminApproveLyricsSubmissionHandler(
             authorId: command.ReviewerId
         );
 
-        await lyricsRepository.AddAsync(lyrics: lyrics, cancellationToken: cancellationToken);
-        await unitOfWork.CommitAsync(cancellationToken: cancellationToken); // step 1 — safe to retry alone
+        // Publishing the lyrics and retiring the submission share one transaction: a failure
+        // between them would otherwise leave a published page no submission points at.
+        await unitOfWork.ExecuteInTransactionAsync(
+            async ct =>
+            {
+                await lyricsRepository.AddAsync(lyrics: lyrics, cancellationToken: ct);
 
-        submission.Approve(reviewedByUserId: command.ReviewerId, publishedLyricsId: lyrics.Id);
-        submissionRepository.Update(submission: submission);
-        await unitOfWork.CommitAsync(cancellationToken: cancellationToken); // step 2
+                submission.Approve(reviewedByUserId: command.ReviewerId, publishedLyricsId: lyrics.Id);
+                submissionRepository.Update(submission: submission);
+            },
+            cancellationToken: cancellationToken
+        );
 
         return new AdminApproveLyricsSubmissionResult(IsSuccess: true, LyricsId: lyrics.Id);
     }
