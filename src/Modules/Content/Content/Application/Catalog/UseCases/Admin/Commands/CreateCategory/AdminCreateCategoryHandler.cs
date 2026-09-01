@@ -64,9 +64,10 @@ public class AdminCreateCategoryHandler(
 
             if (currentExclusive is not null)
             {
-                // Clear the previous exclusive first
+                // Released in the same transaction the new category is created in, so the mutex
+                // is never observed empty.
                 currentExclusive.ClearExclusive();
-                await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+                categoryRepository.Update(category: currentExclusive);
             }
         }
 
