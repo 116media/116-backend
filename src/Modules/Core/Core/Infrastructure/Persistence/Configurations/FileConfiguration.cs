@@ -41,10 +41,15 @@ public class FileConfiguration : IEntityTypeConfiguration<FileEntity>
 
         builder.Property(f => f.DeletedAt).IsRequired(false);
 
+        builder.Property(f => f.ClaimedAt).IsRequired(false);
+
         // Indexes
         // Unique among active rows only; soft-deleted rows keep their file_name on replace.
         builder.HasIndex(f => f.FileName).IsUnique().HasFilter("is_deleted = false");
 
         builder.HasIndex(f => f.IsDeleted);
+
+        // The reaper's scan: uploads still waiting to be claimed, oldest first.
+        builder.HasIndex(f => f.CreatedAt).HasFilter("claimed_at IS NULL AND is_deleted = false");
     }
 }
