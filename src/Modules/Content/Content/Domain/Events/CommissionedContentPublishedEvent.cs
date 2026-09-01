@@ -19,4 +19,4 @@ public record CommissionedContentPublishedEvent(
     Guid? CustomerId,
     string Title,
     string Slug
-) : IDomainEvent;
+) : DomainEvent;
