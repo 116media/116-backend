@@ -62,6 +62,7 @@ using _116.Identity.Infrastructure.Adapters.SocialAuth;
 using _116.Identity.Infrastructure.Adapters.Wangkanai.Detection;
 using _116.Identity.Infrastructure.BackgroundJobs;
 using _116.Identity.Infrastructure.Cache;
+using _116.Identity.Infrastructure.Outbox;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
 using _116.Identity.Infrastructure.Persistence.Seeds.Visitor;
@@ -137,6 +138,11 @@ public static class IdentityModule
         services.AddDetection();
         services.AddScoped<IIdentityUnitOfWork, IdentityUnitOfWork>();
         services.AddScoped(typeof(IIdentityRepository<>), typeof(IdentityRepository<>));
+        services.AddScoped<IProcessedDomainEventStore, IdentityProcessedDomainEventStore>();
+
+        // Replay is the delivery path for events raised inside an explicit transaction, not
+        // only a safety net for failed dispatches, so it runs from the first deploy.
+        services.AddScheduledJob<IdentityOutboxReplayJob>(cronExpression: "0 */1 * * * ?");
 
         // Register adapters
         services.AddScoped<IClientOriginDetectionAdapter, WangkanaiClientOriginDetectionAdapter>();
