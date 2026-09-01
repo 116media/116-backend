@@ -8,6 +8,7 @@ namespace _116.Core.Infrastructure.Persistence;
 /// Unit of Work implementation for the Core module.
 /// Coordinates saving changes across all repositories that share the CoreDbContext.
 /// </summary>
+/// <param name="context">The Core module database context.</param>
 public class CoreUnitOfWork(CoreDbContext context) : ICoreUnitOfWork
 {
     /// <inheritdoc />
