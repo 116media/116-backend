@@ -44,16 +44,22 @@ public class AdminRemoveItemTierHandler(
             ct: cancellationToken
         );
 
-        await contentOrderRepository.RemoveItemTierAsync(tier: tier, ct: cancellationToken);
-        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+        // Removing the tier and re-totalling the order share one transaction, so the order can
+        // never be read with a removed tier still counted in its total.
+        await unitOfWork.ExecuteInTransactionAsync(
+            async ct =>
+            {
+                await contentOrderRepository.RemoveItemTierAsync(tier: tier, ct: ct);
 
-        ContentOrderEntity updated =
-            await contentOrderRepository.GetByIdWithItemsAsync(id: orderId, ct: cancellationToken)
-            ?? throw i18n.ContentOrder.NotFound(id: orderId);
+                ContentOrderEntity updated =
+                    await contentOrderRepository.GetByIdWithItemsAsync(id: orderId, ct: ct)
+                    ?? throw i18n.ContentOrder.NotFound(id: orderId);
 
-        updated.RecalculateTotalFromItems();
-        await contentOrderRepository.UpdateAsync(order: updated, ct: cancellationToken);
-        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+                updated.RecalculateTotalFromItems();
+                await contentOrderRepository.UpdateAsync(order: updated, ct: ct);
+            },
+            cancellationToken: cancellationToken
+        );
 
         return new AdminRemoveItemTierResult(IsSuccess: true);
     }
