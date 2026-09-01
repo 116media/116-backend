@@ -13,4 +13,4 @@ namespace _116.Content.Domain.Events;
 /// <param name="CoverFileId">The cover image file record, or <c>null</c> when the article had no cover.</param>
 /// <param name="BodyImageStorageKeys">The storage keys of the body images captured before removal.</param>
 public record ArticleDeletedEvent(Guid ArticleId, Guid? CoverFileId, IReadOnlyList<string> BodyImageStorageKeys)
-    : IDomainEvent;
+    : DomainEvent;
