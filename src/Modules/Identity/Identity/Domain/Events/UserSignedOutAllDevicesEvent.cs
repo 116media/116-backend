@@ -10,4 +10,4 @@ namespace _116.Identity.Domain.Events;
 /// </summary>
 /// <param name="UserId">The user whose sessions were terminated.</param>
 /// <param name="ByAdmin">Whether an administrator drove the termination.</param>
-public record UserSignedOutAllDevicesEvent(Guid UserId, bool ByAdmin) : IDomainEvent;
+public record UserSignedOutAllDevicesEvent(Guid UserId, bool ByAdmin) : DomainEvent;
