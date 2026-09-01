@@ -9,4 +9,4 @@ namespace _116.Content.Domain.Events;
 /// </summary>
 /// <param name="ArtistId">The verified artist profile.</param>
 /// <param name="UserId">The identity user UUID that now owns the profile.</param>
-public record ArtistOwnershipVerifiedEvent(Guid ArtistId, Guid UserId) : IDomainEvent;
+public record ArtistOwnershipVerifiedEvent(Guid ArtistId, Guid UserId) : DomainEvent;
