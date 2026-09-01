@@ -27,6 +27,7 @@ using _116.Content.Application.Shared.Services;
 using _116.Content.Domain.Constants;
 using _116.Content.Domain.Events;
 using _116.Content.Infrastructure.BackgroundJobs;
+using _116.Content.Infrastructure.Outbox;
 using _116.Content.Infrastructure.Persistence;
 using _116.Content.Infrastructure.Persistence.Seeds.ContentTypes;
 using _116.Content.Infrastructure.Repositories;
@@ -130,6 +131,11 @@ public static class ContentModule
 
         services.AddScoped<IContentUnitOfWork, ContentUnitOfWork>();
         services.AddScoped(typeof(IContentRepository<>), typeof(ContentRepository<>));
+        services.AddScoped<IProcessedDomainEventStore, ContentProcessedDomainEventStore>();
+
+        // Replay is the delivery path for events raised inside an explicit transaction, not
+        // only a safety net for failed dispatches, so it runs from the first deploy.
+        services.AddScheduledJob<ContentOutboxReplayJob>(cronExpression: "0 */1 * * * ?");
         services.AddScoped<IContentTypeRepository, ContentTypeRepository>();
         services.AddScoped<IPricingTierRepository, PricingTierRepository>();
         services.AddScoped<IPromotionLevelRepository, PromotionLevelRepository>();
