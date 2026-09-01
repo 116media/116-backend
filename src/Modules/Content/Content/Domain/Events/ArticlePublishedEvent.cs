@@ -8,4 +8,4 @@ namespace _116.Content.Domain.Events;
 /// membership on the next read.
 /// </summary>
 /// <param name="ArticleId">The article that was published.</param>
-public record ArticlePublishedEvent(Guid ArticleId) : IDomainEvent;
+public record ArticlePublishedEvent(Guid ArticleId) : DomainEvent;
