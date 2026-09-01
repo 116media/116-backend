@@ -7,4 +7,4 @@ namespace _116.Content.Domain.Events;
 /// invalidation; the consumer is idempotent, so repeated raises cost only a cache miss.
 /// </summary>
 /// <param name="PromotionLevelId">The promotion level that changed.</param>
-public record PromotionLevelChangedEvent(Guid PromotionLevelId) : IDomainEvent;
+public record PromotionLevelChangedEvent(Guid PromotionLevelId) : DomainEvent;
