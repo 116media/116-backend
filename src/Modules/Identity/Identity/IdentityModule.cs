@@ -140,8 +140,7 @@ public static class IdentityModule
         services.AddScoped(typeof(IIdentityRepository<>), typeof(IdentityRepository<>));
         services.AddScoped<IProcessedDomainEventStore, IdentityProcessedDomainEventStore>();
 
-        // Replay is the delivery path for events raised inside an explicit transaction, not
-        // only a safety net for failed dispatches, so it runs from the first deploy.
+        // Replay delivers events raised inside a transaction, not just retries failed dispatches.
         services.AddScheduledJob<IdentityOutboxReplayJob>(cronExpression: "0 */1 * * * ?");
 
         // Register adapters
@@ -228,6 +227,7 @@ public static class IdentityModule
 
         // Register domain event handlers: welcome and security notifications
         services.AddScoped<IDomainEventHandler<UserVerifiedEvent>, UserVerifiedWelcomeEmailHandler>();
+        services.AddScoped<IDomainEventHandler<OtpIssuedEvent>, OtpIssuedEmailHandler>();
         services.AddScoped<IDomainEventHandler<UserPasswordChangedEvent>, UserPasswordChangedNotificationsHandler>();
         services.AddScoped<IDomainEventHandler<UserEmailChangedEvent>, UserEmailChangedNotificationsHandler>();
         services.AddScoped<IDomainEventHandler<UserRoleGrantedEvent>, UserRoleGrantedNotificationsHandler>();
