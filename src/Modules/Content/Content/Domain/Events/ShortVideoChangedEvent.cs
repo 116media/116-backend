@@ -8,4 +8,4 @@ namespace _116.Content.Domain.Events;
 /// raises cost only a cache miss.
 /// </summary>
 /// <param name="ShortVideoId">The short video that changed.</param>
-public record ShortVideoChangedEvent(Guid ShortVideoId) : IDomainEvent;
+public record ShortVideoChangedEvent(Guid ShortVideoId) : DomainEvent;
