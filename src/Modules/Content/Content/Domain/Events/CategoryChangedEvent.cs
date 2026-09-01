@@ -7,4 +7,4 @@ namespace _116.Content.Domain.Events;
 /// invalidation; the consumer is idempotent, so repeated raises cost only a cache miss.
 /// </summary>
 /// <param name="CategoryId">The category that changed.</param>
-public record CategoryChangedEvent(Guid CategoryId) : IDomainEvent;
+public record CategoryChangedEvent(Guid CategoryId) : DomainEvent;
