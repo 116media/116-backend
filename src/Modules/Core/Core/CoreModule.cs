@@ -67,9 +67,11 @@ public static class CoreModule
         services.AddScoped(typeof(ICoreRepository<>), typeof(CoreRepository<>));
         services.AddScoped<IProcessedDomainEventStore, CoreProcessedDomainEventStore>();
 
-        // Replay is the delivery path for events raised inside an explicit transaction, not
-        // only a safety net for failed dispatches, so it runs from the first deploy.
+        // Replay delivers events raised inside a transaction, not just retries failed dispatches.
         services.AddScheduledJob<CoreOutboxReplayJob>(cronExpression: "0 */1 * * * ?");
+
+        // Sweeps uploads no referencing write ever claimed; the two cannot share a transaction.
+        services.AddScheduledJob<UnclaimedFileReaperJob>(cronExpression: CoreConstants.UnclaimedFileReapCron);
 
         // Register core repositories
         services.AddScoped<IFileRepository, FileRepository>();
