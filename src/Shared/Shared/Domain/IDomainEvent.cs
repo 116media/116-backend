@@ -25,13 +25,18 @@ public interface IDomainEvent
 /// <summary>
 /// Base record for all domain events; stamps identity and time exactly once.
 /// </summary>
+/// <remarks>
+/// Identity and time are settable only at construction so rebuilding an event from its stored
+/// payload restores the stamp it was raised with. A replayed event that minted a fresh id would
+/// defeat the processed-event guard, and every non-idempotent handler would run twice.
+/// </remarks>
 public abstract record DomainEvent : IDomainEvent
 {
     /// <inheritdoc />
-    public Guid EventId { get; } = Guid.NewGuid();
+    public Guid EventId { get; init; } = Guid.NewGuid();
 
     /// <inheritdoc />
-    public DateTime OccurredOn { get; } = DateTime.UtcNow;
+    public DateTime OccurredOn { get; init; } = DateTime.UtcNow;
 
     /// <inheritdoc />
     public string EventType => GetType().AssemblyQualifiedName!;
