@@ -83,6 +83,12 @@ public static class MailerConstants
     public const string DispatchCron = "0/15 * * * * ?";
 
     /// <summary>
+    /// How long a dispatcher's claim on a batch holds before another run may
+    /// re-claim the rows. Sized well above one batch of provider calls.
+    /// </summary>
+    public static readonly TimeSpan ClaimLease = TimeSpan.FromMinutes(2);
+
+    /// <summary>
     /// Maximum length persisted for a provider error message on an outbox row.
     /// </summary>
     public const int MaxLastErrorLength = 1000;
