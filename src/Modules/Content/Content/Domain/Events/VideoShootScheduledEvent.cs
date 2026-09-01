@@ -10,4 +10,4 @@ namespace _116.Content.Domain.Events;
 /// <param name="Title">The video's display title at scheduling time.</param>
 /// <param name="ShootDate">The scheduled shoot date.</param>
 public record VideoShootScheduledEvent(Guid VideoId, Guid? CustomerId, string Title, DateTimeOffset ShootDate)
-    : IDomainEvent;
+    : DomainEvent;
