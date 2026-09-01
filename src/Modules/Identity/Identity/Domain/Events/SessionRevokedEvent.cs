@@ -11,4 +11,4 @@ namespace _116.Identity.Domain.Events;
 /// <param name="UserId">The user who owned the session.</param>
 /// <param name="SessionId">The revoked session.</param>
 /// <param name="Reason">Why the session was revoked.</param>
-public record SessionRevokedEvent(Guid UserId, Guid SessionId, EnumSessionRevokeReason Reason) : IDomainEvent;
+public record SessionRevokedEvent(Guid UserId, Guid SessionId, EnumSessionRevokeReason Reason) : DomainEvent;
