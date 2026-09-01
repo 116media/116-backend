@@ -1,6 +1,7 @@
 using System.Reflection;
 using _116.Core.Domain.Constants;
 using _116.Core.Domain.Entities;
+using _116.Shared.Infrastructure.Outbox;
 using Microsoft.EntityFrameworkCore;
 
 namespace _116.Core.Infrastructure.Persistence;
@@ -33,6 +34,8 @@ public class CoreDbContext(DbContextOptions<CoreDbContext> options) : DbContext(
     {
         modelBuilder.HasDefaultSchema(CoreConstants.SchemaName);
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+        modelBuilder.ApplyConfiguration(new OutboxEventConfiguration());
+        modelBuilder.ApplyConfiguration(new ProcessedDomainEventConfiguration());
 
         // Soft-deleted files never resolve for consumers; no read path renders deleted files.
         modelBuilder.Entity<FileEntity>().HasQueryFilter(file => !file.IsDeleted);
