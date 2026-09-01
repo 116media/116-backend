@@ -9,12 +9,12 @@ namespace _116.Unit.Tests.Shared.Domain;
 /// </summary>
 public class DomainEventTests
 {
-    private class TestDomainEvent : IDomainEvent
+    private record TestDomainEvent : DomainEvent
     {
         public string Message { get; init; } = string.Empty;
     }
 
-    private class AnotherDomainEvent : IDomainEvent
+    private record AnotherDomainEvent : DomainEvent
     {
         public int Value { get; init; }
     }
@@ -33,19 +33,38 @@ public class DomainEventTests
     }
 
     [Fact]
-    public void CreatedAt_ShouldBeCurrentDateTime()
+    public void OccurredOn_ShouldBeStampedInUtcAtConstruction()
     {
         // Arrange
-        DateTime before = DateTime.Now;
+        DateTime before = DateTime.UtcNow;
 
         // Act
         IDomainEvent domainEvent = new TestDomainEvent();
-        DateTime createdAt = domainEvent.CreatedAt; // Cache the value since property returns DateTime.Now on each access
 
         // Assert
-        DateTime after = DateTime.Now;
-        createdAt.Should().BeOnOrAfter(before);
-        createdAt.Should().BeOnOrBefore(after.AddMilliseconds(10)); // Add tolerance for timing precision
+        domainEvent.OccurredOn.Should().BeOnOrAfter(before);
+        domainEvent.OccurredOn.Should().BeOnOrBefore(DateTime.UtcNow);
+        domainEvent.OccurredOn.Kind.Should().Be(DateTimeKind.Utc);
+    }
+
+    [Fact]
+    public void EventId_ReadTwice_ShouldReturnTheSameValue()
+    {
+        // Arrange — default interface members re-evaluated per read, defeating dedup and replay
+        IDomainEvent domainEvent = new TestDomainEvent();
+
+        // Assert
+        domainEvent.EventId.Should().Be(domainEvent.EventId);
+    }
+
+    [Fact]
+    public void OccurredOn_ReadTwice_ShouldReturnTheSameValue()
+    {
+        // Arrange
+        IDomainEvent domainEvent = new TestDomainEvent();
+
+        // Assert
+        domainEvent.OccurredOn.Should().Be(domainEvent.OccurredOn);
     }
 
     [Fact]
