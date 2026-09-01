@@ -11,4 +11,4 @@ namespace _116.Identity.Domain.Events;
 /// </summary>
 /// <param name="UserId">The user whose password changed.</param>
 /// <param name="Origin">The flow that replaced the password.</param>
-public record UserPasswordChangedEvent(Guid UserId, EnumPasswordChangeOrigin Origin) : IDomainEvent;
+public record UserPasswordChangedEvent(Guid UserId, EnumPasswordChangeOrigin Origin) : DomainEvent;
