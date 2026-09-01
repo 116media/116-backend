@@ -10,11 +10,13 @@ using _116.Mailer.Application.Templates.Messages;
 using _116.Mailer.Contracts.Application;
 using _116.Mailer.Domain.Constants;
 using _116.Mailer.Infrastructure.BackgroundJobs;
+using _116.Mailer.Infrastructure.Outbox;
 using _116.Mailer.Infrastructure.Persistence;
 using _116.Mailer.Infrastructure.Repositories;
 using _116.Mailer.Infrastructure.Services;
 using _116.Shared.Application.Configurations.Schemas;
 using _116.Shared.Application.Extensions;
+using _116.Shared.Application.Services;
 using _116.Shared.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -56,6 +58,11 @@ public static class MailerModule
 
         services.AddScoped<IMailerUnitOfWork, MailerUnitOfWork>();
         services.AddScoped(typeof(IMailerRepository<>), typeof(MailerRepository<>));
+        services.AddScoped<IProcessedDomainEventStore, MailerProcessedDomainEventStore>();
+
+        // Replay is the delivery path for events raised inside an explicit transaction, not
+        // only a safety net for failed dispatches, so it runs from the first deploy.
+        services.AddScheduledJob<MailerOutboxReplayJob>(cronExpression: "0 */1 * * * ?");
         services.AddScoped<IOutboxEmailRepository, OutboxEmailRepository>();
         services.AddScoped<INewsletterRepository, NewsletterRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
