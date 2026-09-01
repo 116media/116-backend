@@ -11,4 +11,4 @@ namespace _116.Content.Domain.Events;
 /// <param name="ShortVideoId">The short video that was removed.</param>
 /// <param name="VideoFileId">The video file record, or <c>null</c> when no video file was uploaded.</param>
 /// <param name="ThumbnailFileId">The thumbnail file record, or <c>null</c> when the short video had no thumbnail.</param>
-public record ShortVideoDeletedEvent(Guid ShortVideoId, Guid? VideoFileId, Guid? ThumbnailFileId) : IDomainEvent;
+public record ShortVideoDeletedEvent(Guid ShortVideoId, Guid? VideoFileId, Guid? ThumbnailFileId) : DomainEvent;
