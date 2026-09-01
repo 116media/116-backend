@@ -8,4 +8,4 @@ namespace _116.Identity.Domain.Events;
 /// cost only a cache miss.
 /// </summary>
 /// <param name="PermissionId">The permission that changed.</param>
-public record PermissionChangedEvent(Guid PermissionId) : IDomainEvent;
+public record PermissionChangedEvent(Guid PermissionId) : DomainEvent;
