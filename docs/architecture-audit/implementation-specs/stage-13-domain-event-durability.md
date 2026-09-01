@@ -157,6 +157,16 @@ no second transaction, no torn enqueue. Post-commit dispatch (unchanged mechanic
 
 ### 13.3 Replay
 
+> **Deviation at implementation time — replay is a delivery path, not only a safety net.** The
+> interceptor dispatches at save completion, which inside `ExecuteInTransactionAsync` (Part C)
+> is *before* the commit: handlers would observe uncommitted state and a rollback would leave
+> reactions behind — the hazard the interceptor's own remarks already documented. Since the
+> outbox row is durable at that point, a save inside an explicit transaction now **skips**
+> in-process dispatch and leaves delivery to the replay job, which by construction runs after
+> the commit. Consequently the job ships **enabled** from the first deploy rather than dark for
+> one release, and its cadence is one minute rather than five.
+
+
 One Quartz job (clustered per Stage 10), per module context:
 
 ```csharp
@@ -275,8 +285,8 @@ the integration suite as unsent mail.
 ## Rollout
 
 Two migrations per module tree (`domain_event_outbox`, `processed_domain_events`) — generated,
-left unapplied per house rule. The replay job ships disabled for one deploy (rows accumulate
-dispatched-inline as normal), then enabled once the table is confirmed filling correctly.
+left unapplied per house rule. The replay job ships **enabled** — see the 13.3 deviation: it is the delivery path for events
+raised inside a transaction, not merely a retry for failed dispatches.
 
 ---
 
