@@ -10,4 +10,4 @@ namespace _116.Identity.Domain.Events;
 /// </summary>
 /// <param name="UserId">The user whose revoked token was replayed.</param>
 /// <param name="SessionId">The revoked session the replayed token belonged to.</param>
-public record RefreshTokenReplayDetectedEvent(Guid UserId, Guid SessionId) : IDomainEvent;
+public record RefreshTokenReplayDetectedEvent(Guid UserId, Guid SessionId) : DomainEvent;
