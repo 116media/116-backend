@@ -67,6 +67,37 @@ public class FileRepository(CoreDbContext context, IFileService fileService, IIm
     }
 
     /// <inheritdoc />
+    public async Task<bool> ClaimAsync(Guid fileId, CancellationToken cancellationToken = default)
+    {
+        FileEntity? file = await Context.Files.FirstOrDefaultAsync(
+            candidate => candidate.Id == fileId,
+            cancellationToken
+        );
+
+        if (file is null || !file.Claim())
+        {
+            return false;
+        }
+
+        await Context.SaveChangesAsync(cancellationToken);
+        return true;
+    }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<FileEntity>> GetUnclaimedBeforeAsync(
+        DateTime olderThan,
+        int batchSize,
+        CancellationToken cancellationToken = default
+    )
+    {
+        return await Context
+            .Files.Where(file => file.ClaimedAt == null && !file.IsDeleted && file.CreatedAt < olderThan)
+            .OrderBy(file => file.CreatedAt)
+            .Take(batchSize)
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
     public async Task<FileEntity?> GetAvatarFileAsync(Guid? avatarFileId, CancellationToken cancellationToken = default)
     {
         return avatarFileId.HasValue ? await GetByIdAsync(avatarFileId.Value, cancellationToken) : null;
