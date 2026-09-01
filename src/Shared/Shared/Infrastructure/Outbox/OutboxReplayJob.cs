@@ -40,6 +40,7 @@ public abstract class OutboxReplayJob<TContext>(IServiceScopeFactory scopeFactor
 
         List<OutboxEventEntity> pending = await dbContext
             .Set<OutboxEventEntity>()
+            .AsTracking()
             .Where(row => row.DispatchedAt == null && row.AttemptCount < MaxAttempts)
             .OrderBy(row => row.OccurredOn)
             .Take(BatchSize)
