@@ -12,4 +12,4 @@ namespace _116.Identity.Domain.Events;
 /// <param name="UserId">The user whose email changed.</param>
 /// <param name="OldEmail">The address the account had before the change, when one existed.</param>
 /// <param name="NewEmail">The address the account holds after the change.</param>
-public record UserEmailChangedEvent(Guid UserId, string? OldEmail, string NewEmail) : IDomainEvent;
+public record UserEmailChangedEvent(Guid UserId, string? OldEmail, string NewEmail) : DomainEvent;
