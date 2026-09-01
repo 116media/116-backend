@@ -26,7 +26,7 @@ public class DispatchDomainEventsInterceptorTests
         }
     }
 
-    private class TestDomainEvent : IDomainEvent
+    private record TestDomainEvent : DomainEvent
     {
         public string Message { get; init; } = string.Empty;
     }
