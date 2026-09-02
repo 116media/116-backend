@@ -215,7 +215,7 @@ public class ContentModuleTests : IDisposable
     [Fact]
     public void AddContentModule_ShouldRegisterOdesliResolutionServiceWithItsTypedClient()
     {
-        // Arrange — the odesli adapter reads configuration, which the module does not register.
+        // Arrange
         _services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
 
         // Act — resolving the port builds the typed HttpClient, which runs the timeout
