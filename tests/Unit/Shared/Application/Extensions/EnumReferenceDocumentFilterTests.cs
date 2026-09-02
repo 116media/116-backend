@@ -184,7 +184,7 @@ public class EnumReferenceDocumentFilterTests
     [Fact]
     public void Apply_WithSchemaWithNullProperties_ShouldNotThrow()
     {
-        // Arrange — force Properties to null to cover the null-guard branch
+        // Arrange
         var schemaWithNullProps = new OpenApiSchema { Type = "object" };
         schemaWithNullProps.Properties = null!;
 
@@ -210,7 +210,7 @@ public class EnumReferenceDocumentFilterTests
     [Fact]
     public void Apply_ShouldMatchByValuesRegardlessOfOrder()
     {
-        // Arrange — component has values in a different order than the inline property
+        // Arrange
         var doc = new OpenApiDocument
         {
             Components = new OpenApiComponents
