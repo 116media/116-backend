@@ -77,7 +77,7 @@ public class AdminRestoreRoleHandlerTests : BaseHandlerTest
     [Fact]
     public async Task Handle_WithDeletedRole_ShouldNotAutomaticallyActivate()
     {
-        // Arrange - Deleted roles are also inactive
+        // Arrange
         RoleEntity deletedRole = RoleFactory.CreateDeleted();
 
         AdminRestoreRoleCommand command = new(RoleId: deletedRole.Id.ToString());
