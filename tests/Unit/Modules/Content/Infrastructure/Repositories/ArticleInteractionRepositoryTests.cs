@@ -240,7 +240,7 @@ public class ArticleInteractionRepositoryTests : IDisposable
     [Fact]
     public async Task GetLikedAndBookmarkedIdsAsync_ShouldReturnOnlyIdsTheUserInteractedWith()
     {
-        // Arrange — user liked first and third, bookmarked second; another user liked/bookmarked the rest
+        // Arrange
         Guid userId = Guid.NewGuid();
         Guid otherUserId = Guid.NewGuid();
         Guid categoryId = await SeedCategoryAsync();
@@ -273,7 +273,7 @@ public class ArticleInteractionRepositoryTests : IDisposable
     [Fact]
     public async Task GetLikedAndBookmarkedIdsAsync_ShouldNotReturnIdsOutsideTheInputList()
     {
-        // Arrange — user liked and bookmarked both, but only the first is in the candidate list
+        // Arrange
         Guid userId = Guid.NewGuid();
         Guid categoryId = await SeedCategoryAsync();
         List<ArticleEntity> articles = ArticleFactory.CreateManyPublished(categoryId, 2);
@@ -302,7 +302,7 @@ public class ArticleInteractionRepositoryTests : IDisposable
     [Fact]
     public async Task GetLikedAndBookmarkedIdsAsync_WithNullUser_ShouldReturnEmptySets()
     {
-        // Arrange — the article has interactions from other users
+        // Arrange
         Guid categoryId = await SeedCategoryAsync();
         ArticleEntity article = ArticleFactory.CreatePublished(categoryId);
         _context.Articles.Add(article);
