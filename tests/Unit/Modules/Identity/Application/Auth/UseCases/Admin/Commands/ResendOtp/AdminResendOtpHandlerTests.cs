@@ -21,7 +21,6 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Auth.UseCases.Admin.Comma
 /// </summary>
 public class AdminResendOtpHandlerTests
 {
-    private readonly Mock<IMailer> _mailerMock = new();
     private readonly Mock<IAdminResendOtpFactory> _otpFactoryMock;
     private readonly Mock<IAuthRepository> _authRepositoryMock;
     private readonly AdminResendOtpHandler _handler;
@@ -31,7 +30,7 @@ public class AdminResendOtpHandlerTests
         _otpFactoryMock = new Mock<IAdminResendOtpFactory>();
         _authRepositoryMock = MockAuthRepository.Create();
 
-        _handler = new AdminResendOtpHandler(_otpFactoryMock.Object, _authRepositoryMock.Object, _mailerMock.Object);
+        _handler = new AdminResendOtpHandler(_otpFactoryMock.Object, _authRepositoryMock.Object);
     }
 
     #region Success Cases
@@ -59,19 +58,6 @@ public class AdminResendOtpHandlerTests
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _mailerMock.Verify(
-            x =>
-                x.EnqueueAsync(
-                    It.IsAny<EnumEmailTemplate>(),
-                    It.IsAny<EmailRecipient>(),
-                    It.Is<IReadOnlyDictionary<string, string>>(t =>
-                        t["otpCode"] == TestConstants.Otp.DefaultCode && t["otpCode"] != otp.CodeHash
-                    ),
-                    It.IsAny<string>(),
-                    It.IsAny<CancellationToken>()
-                ),
-            Times.Once
-        );
         otp.CodeHash.Should().NotBe(TestConstants.Otp.DefaultCode);
     }
 
@@ -127,17 +113,6 @@ public class AdminResendOtpHandlerTests
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        _mailerMock.Verify(
-            x =>
-                x.EnqueueAsync(
-                    It.IsAny<EnumEmailTemplate>(),
-                    It.IsAny<EmailRecipient>(),
-                    It.IsAny<IReadOnlyDictionary<string, string>>(),
-                    It.IsAny<string>(),
-                    It.IsAny<CancellationToken>()
-                ),
-            Times.Never
-        );
     }
 
     [Fact]
