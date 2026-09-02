@@ -191,7 +191,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
     [Fact]
     public async Task ToArticleSummaryDtoAsync_WhenPromotionLevelIsNull_ShouldNotThrow()
     {
-        // Arrange — article with IsPromoted=true but PromotionLevel nav not loaded (null)
+        // Arrange
         ArticleEntity article = ArticleFactory.Create(CategoryId);
         article.StampPromotion(Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(7));
         // PromotionLevel nav property remains null (EF not loaded)
@@ -457,7 +457,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
     [Fact]
     public async Task ToArticleDetailDtoAsync_WhenPromotionLevelIsNull_ShouldNotThrow()
     {
-        // Arrange — article has IsPromoted=true but PromotionLevel nav not loaded
+        // Arrange
         ArticleEntity article = ArticleFactory.Create(CategoryId);
         article.StampPromotion(Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(7));
 
@@ -614,7 +614,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
     [Fact]
     public async Task ToArticleDetailDtoAsync_WhenCustomerNavIsNull_ShouldMapCustomerNameAsNull()
     {
-        // Arrange — CustomerId is set but Customer nav not loaded
+        // Arrange
         Guid customerId = Guid.NewGuid();
         Guid orderItemId = Guid.NewGuid();
         ArticleEntity article = ArticleFactory.CreatePaid(CategoryId, customerId, orderItemId);
