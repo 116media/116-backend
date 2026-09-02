@@ -145,8 +145,6 @@ public class DispatchDomainEventsInterceptor : SaveChangesInterceptor
         List<IDomainEvent> buffer = BufferedEvents.GetOrCreateValue(context);
         List<OutboxEventEntity> outboxRows = BufferedOutboxRows.GetOrCreateValue(context);
 
-        // Contexts that do not map the outbox (tooling, focused tests) still dispatch in
-        // process; only their durability guarantee is absent.
         bool hasOutbox = context.Model.FindEntityType(typeof(OutboxEventEntity)) is not null;
 
         foreach (IAggregate aggregate in aggregates)
@@ -160,8 +158,6 @@ public class DispatchDomainEventsInterceptor : SaveChangesInterceptor
                     continue;
                 }
 
-                // The row joins this same SaveChanges, so the event is durable exactly when the
-                // state change is — a dispatch that dies after the commit replays from here.
                 OutboxEventEntity row = OutboxEventEntity.Create(domainEvent);
                 context.Set<OutboxEventEntity>().Add(row);
                 outboxRows.Add(row);
@@ -191,8 +187,6 @@ public class DispatchDomainEventsInterceptor : SaveChangesInterceptor
 
         if (context.Database.CurrentTransaction is not null)
         {
-            // The enclosing transaction has not committed yet. The outbox rows carry the events
-            // durably, so replay delivers them after the commit instead of publishing early.
             BufferedEvents.Remove(context);
             BufferedOutboxRows.Remove(context);
             return;
