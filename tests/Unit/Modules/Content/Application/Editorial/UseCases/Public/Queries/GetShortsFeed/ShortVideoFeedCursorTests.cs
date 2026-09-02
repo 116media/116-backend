@@ -13,7 +13,7 @@ public class ShortVideoFeedCursorTests
     [Fact]
     public void Encode_ThenTryDecode_ShouldRoundTripAllComponents()
     {
-        // Arrange — negative AfterKey exercises the full signed 64-bit range
+        // Arrange
         var cursor = new ShortVideoFeedCursor(Seed: 987654L, AfterKey: -1234567890123L);
 
         // Act
@@ -82,7 +82,7 @@ public class ShortVideoFeedCursorTests
     [Fact]
     public void TryDecode_WhenWrongComponentCount_ShouldReturnFalse()
     {
-        // Arrange — base64url of "42|100|200" (three parts instead of two)
+        // Arrange
         string token = ToBase64Url("42|100|200");
 
         // Act
