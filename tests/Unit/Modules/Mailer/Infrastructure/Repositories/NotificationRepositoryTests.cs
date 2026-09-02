@@ -138,7 +138,7 @@ public class NotificationRepositoryTests
     [Fact]
     public async Task GetForUserAsync_ShouldRefuseAnotherUsersNotification()
     {
-        // Arrange — knowing an id must not be enough to read someone else's notification
+        // Arrange
         NotificationEntity seeded = Seed(_userId);
 
         // Act
