@@ -282,7 +282,7 @@ public class PromotionLevelEntityTests
     [Fact]
     public void Activate_WhenAlreadyActive_ShouldRaiseNothing()
     {
-        // Arrange — a no-op transition must not evict the lookup cache
+        // Arrange
         var entity = PromotionLevelEntity.Create(Guid.NewGuid(), "Homepage Spot", 7, 50m, 1);
         entity.ClearDomainEvents();
 
