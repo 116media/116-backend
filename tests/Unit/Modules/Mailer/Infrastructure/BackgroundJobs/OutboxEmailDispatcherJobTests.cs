@@ -81,7 +81,14 @@ public class OutboxEmailDispatcherJobTests
     private void SetupBatch(params OutboxEmailEntity[] batch)
     {
         _repositoryMock
-            .Setup(r => r.ClaimDueBatchAsync(It.IsAny<int>(), It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
+            .Setup(r =>
+                r.ClaimDueBatchAsync(
+                    It.IsAny<int>(),
+                    It.IsAny<DateTime>(),
+                    It.IsAny<DateTime>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
             .ReturnsAsync(batch);
     }
 
