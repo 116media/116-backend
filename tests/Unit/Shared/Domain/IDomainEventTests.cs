@@ -29,7 +29,7 @@ public class DomainEventTests
         // Assert
         event1.EventId.Should().NotBe(Guid.Empty);
         event2.EventId.Should().NotBe(Guid.Empty);
-        // Note: EventId generates new Guid each time accessed, so they will always be different
+        event1.EventId.Should().NotBe(event2.EventId);
     }
 
     [Fact]
@@ -50,7 +50,7 @@ public class DomainEventTests
     [Fact]
     public void EventId_ReadTwice_ShouldReturnTheSameValue()
     {
-        // Arrange — default interface members re-evaluated per read, defeating dedup and replay
+        // Arrange
         IDomainEvent domainEvent = new TestDomainEvent();
 
         // Assert
