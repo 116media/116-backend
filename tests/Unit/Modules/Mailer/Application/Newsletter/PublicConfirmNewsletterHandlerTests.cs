@@ -81,7 +81,7 @@ public class PublicConfirmNewsletterHandlerTests
     [Fact]
     public async Task Handle_ReClick_ShouldChangeNothingAndSendNoSecondWelcome()
     {
-        // Arrange — the subscriber already confirmed through an earlier click
+        // Arrange
         var subscriber = NewsletterSubscriberEntity.Subscribe(Guid.NewGuid(), "fan@example.com");
         subscriber.Confirm(DateTime.UtcNow);
         _repository
@@ -103,7 +103,7 @@ public class PublicConfirmNewsletterHandlerTests
     [Fact]
     public async Task Handle_UnsubscribedRow_ShouldReportNotSubscribed()
     {
-        // Arrange — confirming an opted-out row must not resurrect the subscription
+        // Arrange
         var subscriber = NewsletterSubscriberEntity.Subscribe(Guid.NewGuid(), "fan@example.com");
         subscriber.Confirm(DateTime.UtcNow);
         subscriber.Unsubscribe(DateTime.UtcNow);
