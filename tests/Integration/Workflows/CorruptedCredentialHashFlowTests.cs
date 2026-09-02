@@ -114,7 +114,7 @@ public class CorruptedCredentialHashFlowTests(PostgresFixture db) : BaseApiTest(
     [Fact]
     public async Task Login_WithAStoredPasswordHashOfTheWrongLength_IsRefused()
     {
-        // Arrange — the prefix and base64 are well formed, but the payload is too short to split
+        // Arrange
         // into a salt and a hash
         string email = await SeedAccountWithStoredPasswordHashAsync($"v2:{Convert.ToBase64String(new byte[10])}");
 
@@ -147,7 +147,7 @@ public class CorruptedCredentialHashFlowTests(PostgresFixture db) : BaseApiTest(
     [Fact]
     public async Task VerifyOtp_WithAStoredCodeHashFromAnUnknownScheme_IsRefused()
     {
-        // Arrange — a row predating the keyed OTP scheme still carries the password prefix
+        // Arrange
         string email = await SeedAccountWithStoredCodeHashAsync($"v1:{Convert.ToBase64String(new byte[48])}");
 
         // Act
