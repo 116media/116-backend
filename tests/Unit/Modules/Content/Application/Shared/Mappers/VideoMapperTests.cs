@@ -181,7 +181,7 @@ public class VideoMapperTests : BaseContentHandlerTest
     [Fact]
     public async Task ToVideoSummaryDtosAsync_WhenPromotionLevelIsNull_ShouldNotThrow()
     {
-        // Arrange — video with IsPromoted=true but PromotionLevel nav not loaded (null)
+        // Arrange
         VideoEntity video = VideoFactory.Create(CategoryId);
         video.StampPromotion(Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(7));
 
@@ -430,7 +430,7 @@ public class VideoMapperTests : BaseContentHandlerTest
     [Fact]
     public async Task ToVideoDetailDtoAsync_WhenPromotionLevelIsNull_ShouldNotThrow()
     {
-        // Arrange — video has IsPromoted=true but PromotionLevel nav not loaded
+        // Arrange
         VideoEntity video = VideoFactory.Create(CategoryId);
         video.StampPromotion(Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(7));
 
@@ -575,7 +575,7 @@ public class VideoMapperTests : BaseContentHandlerTest
     [Fact]
     public async Task ToVideoDetailDtoAsync_WhenCustomerNavIsNull_ShouldMapCustomerNameAsNull()
     {
-        // Arrange — CustomerId is set but Customer nav not loaded
+        // Arrange
         Guid customerId = Guid.NewGuid();
         Guid orderItemId = Guid.NewGuid();
         VideoEntity video = VideoFactory.CreatePaid(CategoryId, customerId, orderItemId);
