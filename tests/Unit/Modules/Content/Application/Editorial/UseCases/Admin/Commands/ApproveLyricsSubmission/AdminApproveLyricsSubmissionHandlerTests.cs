@@ -83,7 +83,7 @@ public class AdminApproveLyricsSubmissionHandlerTests
         submission.ReviewNote.Should().BeNull();
         _lyricsRepositoryMock.VerifyAddCalled();
         _submissionRepositoryMock.VerifyUpdateCalled(submission);
-        _unitOfWorkMock.VerifyCommitCalled(2);
+        _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 
     [Fact]
