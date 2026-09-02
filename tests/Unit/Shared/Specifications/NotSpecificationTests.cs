@@ -121,7 +121,7 @@ public class NotSpecificationTests
     [Fact]
     public void IsSatisfiedBy_WithBoundaryValue_ShouldNegateCorrectly()
     {
-        // Arrange - value = 5, inner spec checks > 5, so inner returns false
+        // Arrange
         GreaterThanSpecification inner = new(5);
         NotSpecification<TestEntity> notSpec = new(inner);
         TestEntity entity = new() { Value = 5 };
@@ -210,7 +210,7 @@ public class NotSpecificationTests
     [Fact]
     public void ToExpression_CompiledWithLinq_ShouldFilterCorrectly()
     {
-        // Arrange - NOT(value > 10) = value <= 10
+        // Arrange
         GreaterThanSpecification inner = new(10);
         NotSpecification<TestEntity> notSpec = new(inner);
 
@@ -239,7 +239,7 @@ public class NotSpecificationTests
     [Fact]
     public void Composition_NotWithAnd_ShouldWorkCorrectly()
     {
-        // Arrange - NOT(value > 5) AND isActive = (value <= 5) AND isActive
+        // Arrange
         GreaterThanSpecification greaterThan5 = new(5);
         NotSpecification<TestEntity> notGreaterThan5 = new(greaterThan5);
         IsActiveSpecification isActive = new();
@@ -258,7 +258,7 @@ public class NotSpecificationTests
     [Fact]
     public void Composition_NotWithOr_ShouldWorkCorrectly()
     {
-        // Arrange - NOT(value > 10) OR name contains "Test"
+        // Arrange
         GreaterThanSpecification greaterThan10 = new(10);
         NotSpecification<TestEntity> notGreaterThan10 = new(greaterThan10);
         NameContainsSpecification nameContainsTest = new("Test");
@@ -277,7 +277,7 @@ public class NotSpecificationTests
     [Fact]
     public void Composition_NotOfAnd_ShouldWorkCorrectly()
     {
-        // Arrange - NOT(value > 5 AND value < 15) = (value <= 5 OR value >= 15)
+        // Arrange
         GreaterThanSpecification greaterThan5 = new(5);
         LessThanSpecification lessThan15 = new(15);
         AndSpecification<TestEntity> andSpec = new(greaterThan5, lessThan15);
@@ -296,7 +296,7 @@ public class NotSpecificationTests
     [Fact]
     public void Composition_NotOfOr_ShouldWorkCorrectly()
     {
-        // Arrange - NOT(value > 20 OR name contains "Test") = (value <= 20 AND name doesn't contain "Test")
+        // Arrange
         GreaterThanSpecification greaterThan20 = new(20);
         NameContainsSpecification nameContainsTest = new("Test");
         OrSpecification<TestEntity> orSpec = new(greaterThan20, nameContainsTest);
