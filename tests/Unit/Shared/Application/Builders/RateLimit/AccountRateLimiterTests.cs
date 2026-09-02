@@ -45,7 +45,7 @@ public class AccountRateLimiterTests
     [Fact]
     public async Task EnsureWithinLimit_ForADifferentAccount_IsUnaffected()
     {
-        // Arrange — exhaust account A
+        // Arrange
         await using var limiter = new AccountRateLimiter();
         await ConsumeAsync(
             limiter,
@@ -69,7 +69,7 @@ public class AccountRateLimiterTests
     [Fact]
     public async Task EnsureWithinLimit_NormalizesKey_SoCasingAndWhitespaceShareBucket()
     {
-        // Arrange — exhaust the window using the plain lowercase form
+        // Arrange
         await using var limiter = new AccountRateLimiter();
         await ConsumeAsync(
             limiter,
