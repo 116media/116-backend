@@ -458,7 +458,7 @@ public class ContentOrderEntityTests
     [Fact]
     public void AddItem_AfterATieredItem_ShouldIncludeEveryItemInTheTotal()
     {
-        // Arrange — the audit's reproduction: item A with a tier, then item B carrying only a
+        // Arrange
         // promotion price; the total must not freeze before B is counted
         ContentOrderEntity order = ContentOrderFactory.Create();
         ContentOrderItemEntity itemA = ContentOrderItemFactory.Create(order.Id, Guid.NewGuid());
