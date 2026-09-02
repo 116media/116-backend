@@ -109,7 +109,7 @@ public class UserTokenStateRepositoryTests
     [Fact]
     public async Task BumpTokenVersionForRoleUsersAsync_WithNoUsersInTheRole_ShouldTouchNothing()
     {
-        // Arrange — an unused role means there is no marker to bump and no cache entry to evict
+        // Arrange
         var record = UserTokenStateEntity.Create(Guid.NewGuid());
         _context.UserTokenStates.Add(record);
         await _context.SaveChangesAsync();
