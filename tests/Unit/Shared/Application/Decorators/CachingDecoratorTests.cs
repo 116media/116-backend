@@ -188,7 +188,7 @@ public class CachingDecoratorTests
     [Fact]
     public async Task Handle_WithConcurrentMissesOnOneKey_ShouldRunTheHandlerOnce()
     {
-        // Arrange — a slow handler so every concurrent caller arrives during the first fill
+        // Arrange
         int calls = 0;
         Mock<IRequestHandler<CacheableRequest, TestResponse>> handlerMock = new();
         handlerMock
