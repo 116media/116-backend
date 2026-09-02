@@ -313,7 +313,7 @@ public class ContentOrderRepositoryTests : IDisposable
     [Fact]
     public async Task GetAllAsync_OrderByAscending_ShouldOrderByCreatedAtAsc()
     {
-        // Arrange — seed 2 orders
+        // Arrange
         await SeedOrderAsync();
         await SeedOrderAsync();
 
