@@ -264,7 +264,6 @@ public class ContentDbContext(DbContextOptions<ContentDbContext> options) : DbCo
         modelBuilder.HasDefaultSchema(ContentConstants.SchemaName);
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         modelBuilder.ApplyConfiguration(new OutboxEventConfiguration());
-        modelBuilder.ApplyConfiguration(new ProcessedDomainEventConfiguration());
 
         // Soft-deleted comments are invisible by default; the threaded listing opts back in
         // with IgnoreQueryFilters because it renders tombstones for reply continuity.
