@@ -65,7 +65,7 @@ public class VideoEngagementHandlerTests
     [Fact]
     public async Task Handle_WhenRated_ShouldWriteTheRecomputedAverageNotTheDelta()
     {
-        // Arrange — three ratings averaging 4.00; the event's delta is irrelevant.
+        // Arrange
         VideoEntity video = VideoFactory.CreatePublished(CategoryId);
         List<VideoRatingEntity> ratings =
         [
@@ -102,7 +102,7 @@ public class VideoEngagementHandlerTests
     [Fact]
     public async Task Handle_WhenRatedWithNoRatingsLeft_ShouldWriteZero()
     {
-        // Arrange — the last rating was withdrawn, so the average resets rather than dividing by 0.
+        // Arrange
         var videoId = Guid.NewGuid();
         _videoRepositoryMock.SetupGetAllRatingsForVideoAsync([]);
         _videoRepositoryMock
@@ -119,7 +119,7 @@ public class VideoEngagementHandlerTests
     [Fact]
     public async Task Handle_WhenNoRowIsUpdated_ShouldStillInvalidate()
     {
-        // Arrange — the video vanished between the interaction commit and the dispatch.
+        // Arrange
         var videoId = Guid.NewGuid();
         _videoRepositoryMock
             .Setup(x =>
