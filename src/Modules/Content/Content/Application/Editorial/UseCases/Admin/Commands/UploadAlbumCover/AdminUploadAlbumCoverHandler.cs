@@ -56,6 +56,8 @@ public class AdminUploadAlbumCoverHandler(
         albumRepository.Update(album: album);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
+        await fileRepository.ClaimAsync(fileId: fileEntity.Id, cancellationToken: cancellationToken);
+
         return new AdminUploadAlbumCoverResult(
             CoverImageUrl: fileEntity.StorageUrl,
             CoverImageStorageKey: fileEntity.StorageKey!
