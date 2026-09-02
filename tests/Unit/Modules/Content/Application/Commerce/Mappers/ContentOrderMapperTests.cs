@@ -117,7 +117,7 @@ public class ContentOrderMapperTests : BaseContentHandlerTest, IDisposable
     [Fact]
     public async Task ToContentOrderSummaryDto_ShouldMapCustomerNameAndStatus()
     {
-        // Arrange — seed customer + order in InMemory DB to get navigation properties
+        // Arrange
         CustomerEntity customer = CustomerFactory.CreateDefault();
         _context.Customers.Add(customer);
         await _context.SaveChangesAsync();
@@ -149,7 +149,7 @@ public class ContentOrderMapperTests : BaseContentHandlerTest, IDisposable
     [Fact]
     public async Task ToOrderItemDto_ShouldMapCategoryName()
     {
-        // Arrange — seed content type, category, order, item
+        // Arrange
         ContentTypeEntity contentType = ContentTypeFactory.Create("Article");
         _context.ContentTypes.Add(contentType);
         await _context.SaveChangesAsync();
