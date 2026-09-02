@@ -63,6 +63,8 @@ public class AdminAttachPaymentProofHandler(
         await contentOrderRepository.UpdatePaymentAsync(payment: payment, ct: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
+        await fileRepository.ClaimAsync(fileId: proofFile.Id, cancellationToken: cancellationToken);
+
         var proofDto = proofFile.ToFileDto(mapper);
         return new AdminAttachPaymentProofResult(Proof: proofDto!);
     }
