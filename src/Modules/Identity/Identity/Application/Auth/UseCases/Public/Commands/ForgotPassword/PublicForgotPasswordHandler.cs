@@ -17,12 +17,10 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.ForgotPassword
 /// </summary>
 /// <param name="otpFactory">Factory for handling forgot password OTP creation.</param>
 /// <param name="authRepository">Repository for user data access operations.</param>
-/// <param name="mailer">Outbox mailer delivering the reset code.</param>
 /// <param name="logger">Logger recording why a request was refused, since the caller is not told.</param>
 public class PublicForgotPasswordHandler(
     IPublicForgotPasswordOtpFactory otpFactory,
     IAuthRepository authRepository,
-    IMailer mailer,
     ILogger<PublicForgotPasswordHandler> logger
 ) : ICommandHandler<PublicForgotPasswordCommand, PublicForgotPasswordResult>
 {
@@ -55,26 +53,7 @@ public class PublicForgotPasswordHandler(
             return new PublicForgotPasswordResult(IsSuccess: true, Email: command.Email);
         }
 
-        OtpCreationResult passwordResetOtp = await otpFactory.CreatePasswordResetOtpAsync(
-            userId: user!.Id,
-            cancellationToken: cancellationToken
-        );
-
-        if (user.Email is not null)
-        {
-            await mailer.EnqueueAsync(
-                template: EnumEmailTemplate.PasswordResetOtp,
-                to: new EmailRecipient(Address: user.Email, DisplayName: user.UserName),
-                tokens: new Dictionary<string, string>
-                {
-                    ["userName"] = user.UserName,
-                    ["otpCode"] = passwordResetOtp.PlainCode,
-                    ["expiryMinutes"] = UserConstants.OtpExpirationMinutes.ToString(),
-                },
-                culture: EmailCulture.Current(),
-                cancellationToken: cancellationToken
-            );
-        }
+        await otpFactory.CreatePasswordResetOtpAsync(userId: user!.Id, cancellationToken: cancellationToken);
 
         return new PublicForgotPasswordResult(IsSuccess: true, Email: command.Email);
     }
