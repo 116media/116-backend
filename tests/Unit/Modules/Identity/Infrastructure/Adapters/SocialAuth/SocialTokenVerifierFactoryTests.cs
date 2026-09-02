@@ -39,7 +39,7 @@ public class SocialTokenVerifierFactoryTests
     [Fact]
     public void For_WithUnregisteredProvider_ThrowsUnsupportedProvider()
     {
-        // Arrange — only Google is registered, so Facebook has no verifier
+        // Arrange
         SocialTokenVerifierFactory factory = Factory(EnumAuthProvider.Google);
 
         // Act
