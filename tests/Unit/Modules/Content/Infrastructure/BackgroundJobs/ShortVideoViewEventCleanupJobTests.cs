@@ -80,7 +80,7 @@ public class ShortVideoViewEventCleanupJobTests
     [Fact]
     public async Task Execute_WhenTheRepositoryThrows_ShouldSwallowTheFailure()
     {
-        // Arrange — a Quartz job must never surface an exception into the scheduler
+        // Arrange
         _shortVideoRepositoryMock
             .Setup(r => r.PruneUncountedViewEventsAsync(It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("connection lost"));
