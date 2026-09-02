@@ -104,7 +104,7 @@ public class StreamingLinkFactoryTests
     [Fact]
     public void CreateStreamingLinks_WhenCuratedLinkMissingForPlatform_ShouldFallBackToGeneratedUrlForThatPlatformOnly()
     {
-        // Arrange — only Spotify has a curated link; every other platform must fall back.
+        // Arrange
         const string curatedUrl = "https://open.spotify.com/album/curated-abc123";
         var curated = new Dictionary<EnumStreamingPlatform, string> { [EnumStreamingPlatform.Spotify] = curatedUrl };
 
@@ -165,7 +165,7 @@ public class StreamingLinkFactoryTests
     [Fact]
     public void CreateStreamingLinks_ShouldUrlEncodeTheArtistAndReleaseInTheGeneratedSearchQuery()
     {
-        // Arrange — names containing characters that must be escaped in a query string.
+        // Arrange
         const string artistName = "Koffi & Quartier";
         const string releaseName = "Effrakata / Mopao";
         var curated = new Dictionary<EnumStreamingPlatform, string>();
