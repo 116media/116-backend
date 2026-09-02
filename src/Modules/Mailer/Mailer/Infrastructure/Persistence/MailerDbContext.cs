@@ -34,7 +34,6 @@ public class MailerDbContext(DbContextOptions<MailerDbContext> options) : DbCont
         modelBuilder.HasDefaultSchema(MailerConstants.SchemaName);
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         modelBuilder.ApplyConfiguration(new OutboxEventConfiguration());
-        modelBuilder.ApplyConfiguration(new ProcessedDomainEventConfiguration());
         base.OnModelCreating(modelBuilder);
     }
 }
