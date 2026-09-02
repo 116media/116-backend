@@ -138,7 +138,7 @@ public class DomainRuleExceptionStrategyTests
     [Fact]
     public void CreateProblemDetails_ForAnUnmappedCode_ShouldDegradeToTheCodeAsA400()
     {
-        // Arrange — a rule added before its strategy arm must stay a refusal, never a 500
+        // Arrange
         DefaultHttpContext context = CreateContext();
         var exception = new ContentRuleException("content.some-future-rule", "x");
 
