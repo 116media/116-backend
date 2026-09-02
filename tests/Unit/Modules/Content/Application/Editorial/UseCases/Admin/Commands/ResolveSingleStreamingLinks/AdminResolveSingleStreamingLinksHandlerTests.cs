@@ -76,7 +76,7 @@ public class AdminResolveSingleStreamingLinksHandlerTests
     [Fact]
     public async Task Handle_WhenSongBelongsToAlbum_ShouldRejectBeforeCallingTheProvider()
     {
-        // Arrange — the album's links are the release's links; same rule as the manual upsert.
+        // Arrange
         LyricsEntity lyrics = LyricsFactory.CreateForAlbum(Guid.NewGuid(), Guid.NewGuid());
         _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
 
