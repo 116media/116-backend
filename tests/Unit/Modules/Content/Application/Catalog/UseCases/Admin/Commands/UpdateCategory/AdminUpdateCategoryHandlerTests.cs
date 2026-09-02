@@ -76,7 +76,7 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
         // Assert
         result.Category.Name.Should().Be(newName);
         result.Category.Slug.Should().Be(newSlug);
-        _unitOfWorkMock.VerifyCommitCalled();
+        _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 
     [Fact]
