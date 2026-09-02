@@ -82,7 +82,7 @@ public class ContentTypeSeederTests : IDisposable
     [Fact]
     public async Task SeedAsync_WhenAlreadySeeded_ShouldNotAddMoreContentTypes()
     {
-        // Arrange — seed once
+        // Arrange
         await _seeder.SeedAsync();
 
         // Act — seed again
@@ -107,7 +107,7 @@ public class ContentTypeSeederTests : IDisposable
     [Fact]
     public async Task SeedAsync_WhenOneTypeIsMissing_ShouldSeedOnlyTheMissingOne()
     {
-        // Arrange — a database first seeded before Lyrics existed
+        // Arrange
         await _seeder.SeedAsync();
         ContentTypeEntity lyrics = await _context.ContentTypes.SingleAsync(c => c.Name == "Lyrics");
         _context.ContentTypes.Remove(lyrics);
