@@ -498,7 +498,7 @@ public class ArticleSpecificationsTests
     [Fact]
     public void ArticleByArtistSpecification_WithDraftTaggedArticle_ShouldReturnFalse()
     {
-        // Arrange — the tag exists, but a draft never surfaces publicly.
+        // Arrange
         var artistId = Guid.NewGuid();
         ArticleEntity draft = ArticleFactory.Create(Guid.NewGuid());
         ArticleArtistEntity join = ArticleArtistEntity.Create(Guid.NewGuid(), draft.Id, artistId);
@@ -511,7 +511,7 @@ public class ArticleSpecificationsTests
     [Fact]
     public void ArticleByArtistSpecification_WithUntaggedPublishedArticle_ShouldReturnFalse()
     {
-        // Arrange — published, but tagged to nobody.
+        // Arrange
         ArticleEntity article = ArticleFactory.CreatePublished(Guid.NewGuid());
         var spec = new ArticleByArtistSpecification(Guid.NewGuid(), Array.Empty<ArticleArtistEntity>().AsQueryable());
 
