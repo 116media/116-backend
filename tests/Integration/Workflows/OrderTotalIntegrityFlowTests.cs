@@ -17,7 +17,7 @@ public class OrderTotalIntegrityFlowTests(PostgresFixture db) : BaseApiTest(db)
     [Fact]
     public async Task Submit_AfterAddingATieredItemAndAPromoOnlyItem_FreezesTheFullTotalIntoThePayment()
     {
-        // Arrange — a draft order plus the catalog rows the flow needs
+        // Arrange
         CustomerEntity customer = CustomerFactory.Create();
         ContentTypeEntity contentType = ContentTypeFactory.Create();
         CategoryEntity category = CategoryFactory.Create(contentType.Id);
@@ -83,7 +83,7 @@ public class OrderTotalIntegrityFlowTests(PostgresFixture db) : BaseApiTest(db)
     [Fact]
     public async Task Submit_WhenAnyItemHasNoTier_IsRefused()
     {
-        // Arrange — one tiered item and one without; the old Any guard let this through
+        // Arrange
         CustomerEntity customer = CustomerFactory.Create();
         ContentTypeEntity contentType = ContentTypeFactory.Create();
         CategoryEntity category = CategoryFactory.Create(contentType.Id);
