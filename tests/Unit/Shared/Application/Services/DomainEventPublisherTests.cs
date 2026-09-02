@@ -108,7 +108,7 @@ public class DomainEventPublisherTests
     [Fact]
     public async Task Publish_WhenTheHandlerAlreadyRanForTheEvent_SkipsIt()
     {
-        // Arrange — a replayed event must not re-apply a non-idempotent reaction
+        // Arrange
         var handlerMock = new Mock<IDomainEventHandler<TestDomainEvent>>();
         DomainEventPublisher publisher = CreatePublisher(
             services => services.AddScoped<IDomainEventHandler<TestDomainEvent>>(_ => handlerMock.Object),
