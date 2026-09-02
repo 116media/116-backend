@@ -126,7 +126,8 @@ public class ApiFixture(PostgresFixture db) : WebApplicationFactory<Program>
         Environment.SetEnvironmentVariable("JWT_ACCESS_TOKEN_EXPIRATION", "60");
         Environment.SetEnvironmentVariable("JWT_REFRESH_TOKEN_EXPIRATION", "43200");
 
-        Environment.SetEnvironmentVariable("DEFAULT_USER_PASSWORD", "Test@12345");
+        Environment.SetEnvironmentVariable("DEFAULT_USER_PASSWORD", "Test@12345Abc");
+        Environment.SetEnvironmentVariable("OTP_PEPPER", Otp.Pepper);
 
         Environment.SetEnvironmentVariable("CLOUDINARY_CLOUD_NAME", "test-cloud");
         Environment.SetEnvironmentVariable("CLOUDINARY_API_KEY", "test-api-key");

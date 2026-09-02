@@ -1,3 +1,4 @@
+using _116.Identity.Application.Auth.Services;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Services;
@@ -15,10 +16,10 @@ namespace _116.Tests.Fixtures.Builders.Entities.Identity;
 public class OtpBuilder
 {
     /// <summary>
-    /// The production hashing service, so a built OTP stores its code exactly the way the
-    /// application does and the real verification path accepts the plaintext handed to the builder.
+    /// The production OTP service, so a built OTP stores its code exactly the way the application
+    /// does and the real verification path accepts the plaintext handed to the builder.
     /// </summary>
-    private static readonly PasswordService Hasher = new();
+    private static readonly IOtpService Hasher = new OtpService(TestConstants.Otp.Pepper, TimeProvider.System);
 
     private readonly Faker _faker = TestFaker.Create();
 
@@ -29,6 +30,7 @@ public class OtpBuilder
     private DateTime _expiresAt;
     private int _attemptCount;
     private bool _isUsed;
+    private bool _isConsumed;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OtpBuilder"/> class with random default values.
@@ -148,12 +150,23 @@ public class OtpBuilder
     }
 
     /// <summary>
+    /// Marks the OTP as spent or superseded, the state a code reaches once it can never be
+    /// presented again.
+    /// </summary>
+    /// <returns>The builder instance for chaining.</returns>
+    public OtpBuilder AsConsumed()
+    {
+        _isConsumed = true;
+        return this;
+    }
+
+    /// <summary>
     /// Builds the <see cref="OtpEntity"/> instance.
     /// </summary>
     /// <returns>A configured OtpEntity instance.</returns>
     public OtpEntity Build()
     {
-        var otp = OtpEntity.Create(_id, _userId, Hasher.Hash(_code), _purpose, _expiresAt);
+        var otp = OtpEntity.Create(_id, _userId, Hasher.Hash(code: _code), _purpose, _expiresAt);
 
         for (int i = 0; i < _attemptCount; i++)
         {
@@ -163,6 +176,11 @@ public class OtpBuilder
         if (_isUsed)
         {
             otp.MarkAsUsed();
+        }
+
+        if (_isConsumed)
+        {
+            otp.MarkAsConsumed();
         }
 
         return otp;

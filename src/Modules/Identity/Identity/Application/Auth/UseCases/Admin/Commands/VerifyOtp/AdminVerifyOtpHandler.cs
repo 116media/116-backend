@@ -2,6 +2,7 @@ using _116.Identity.Application.Auth.Repositories;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.ValueObjects;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Contracts.Application.CQRS;
@@ -13,10 +14,12 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.VerifyOtp;
 /// </summary>
 /// <param name="authRepository">Repository for user data access operations.</param>
 /// <param name="otpRepository">Repository for OTP data access operations.</param>
+/// <param name="lockoutRepository">Repository clearing the account OTP counter on success.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 public class AdminVerifyOtpHandler(
     IAuthRepository authRepository,
     IOtpRepository otpRepository,
+    IAccountLockoutRepository lockoutRepository,
     IIdentityUnitOfWork unitOfWork
 ) : ICommandHandler<AdminVerifyOtpCommand, AdminVerifyOtpResult>
 {
@@ -53,13 +56,21 @@ public class AdminVerifyOtpHandler(
         );
         // Mark OTP as used and user as verified
         otp.MarkAsUsed();
-        user.MarkAsVerified();
+
+        // Only an email-verification code proves the address; a reset or recovery code must not
+        // silently mark an unconfirmed address verified.
+        if (purpose.Value == EnumOtpPurpose.EmailVerification)
+        {
+            user.MarkAsVerified();
+        }
         // Invalidate any remaining OTPs for this purpose
         await otpRepository.InvalidateExistingOtpsAsync(
             userId: user.Id,
             purpose: purpose,
+            exceptOtpId: otp.Id,
             cancellationToken: cancellationToken
         );
+        await lockoutRepository.ClearFailedOtpAsync(userId: user.Id, cancellationToken: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
         return new AdminVerifyOtpResult(IsSuccess: true);
     }

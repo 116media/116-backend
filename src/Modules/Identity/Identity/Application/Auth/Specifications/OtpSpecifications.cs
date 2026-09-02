@@ -77,7 +77,8 @@ public class OtpForValidationSpecification(Guid userId, EnumOtpPurpose purpose) 
         var userSpec = new OtpByUserIdSpecification(userId: userId);
         var purposeSpec = new OtpByPurposeSpecification(purpose: purpose);
         var notUsedSpec = new OtpIsNotUsedSpecification();
-        return userSpec.And(other: purposeSpec).And(other: notUsedSpec).ToExpression();
+        var notConsumedSpec = new OtpIsNotConsumedSpecification();
+        return userSpec.And(other: purposeSpec).And(other: notUsedSpec).And(other: notConsumedSpec).ToExpression();
     }
 }
 
@@ -93,7 +94,19 @@ public class OtpForInvalidationSpecification(Guid userId, EnumOtpPurpose purpose
         var userSpec = new OtpByUserIdSpecification(userId: userId);
         var purposeSpec = new OtpByPurposeSpecification(purpose: purpose);
         var notUsedSpec = new OtpIsNotUsedSpecification();
-        return userSpec.And(other: purposeSpec).And(other: notUsedSpec).ToExpression();
+        var notConsumedSpec = new OtpIsNotConsumedSpecification();
+        return userSpec.And(other: purposeSpec).And(other: notUsedSpec).And(other: notConsumedSpec).ToExpression();
+    }
+}
+
+/// <summary>
+/// Specification matching OTPs that have not been spent or superseded.
+/// </summary>
+public class OtpIsNotConsumedSpecification : Specification<OtpEntity>
+{
+    public override Expression<Func<OtpEntity, bool>> ToExpression()
+    {
+        return otp => otp.ConsumedAt == null;
     }
 }
 
@@ -109,6 +122,7 @@ public class OtpForUsedValidationSpecification(Guid userId, EnumOtpPurpose purpo
         var userSpec = new OtpByUserIdSpecification(userId: userId);
         var purposeSpec = new OtpByPurposeSpecification(purpose: purpose);
         var usedSpec = new OtpIsUsedSpecification();
-        return userSpec.And(other: purposeSpec).And(other: usedSpec).ToExpression();
+        var notConsumedSpec = new OtpIsNotConsumedSpecification();
+        return userSpec.And(other: purposeSpec).And(other: usedSpec).And(other: notConsumedSpec).ToExpression();
     }
 }

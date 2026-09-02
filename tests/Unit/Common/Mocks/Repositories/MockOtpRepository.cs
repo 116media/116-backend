@@ -132,8 +132,29 @@ public static class MockOtpRepository
         EnumOtpPurpose purpose
     )
     {
-        mock.Setup(x => x.InvalidateExistingOtpsAsync(userId, purpose, It.IsAny<CancellationToken>()))
+        mock.Setup(x =>
+                x.InvalidateExistingOtpsAsync(userId, purpose, It.IsAny<Guid?>(), It.IsAny<CancellationToken>())
+            )
             .Returns(Task.CompletedTask);
+        return mock;
+    }
+
+    /// <summary>
+    /// Sets up CountRecentOtpsAsync to report the specified number of codes inside the resend window.
+    /// </summary>
+    /// <param name="mock">The mock instance.</param>
+    /// <param name="userId">The user ID.</param>
+    /// <param name="purpose">The OTP purpose.</param>
+    /// <param name="count">The number of codes already issued inside the window.</param>
+    /// <returns>The mock instance for chaining.</returns>
+    public static Mock<IOtpRepository> SetupCountRecentOtps(
+        this Mock<IOtpRepository> mock,
+        Guid userId,
+        EnumOtpPurpose purpose,
+        int count
+    )
+    {
+        mock.Setup(x => x.CountRecentOtpsAsync(userId, purpose, It.IsAny<CancellationToken>())).ReturnsAsync(count);
         return mock;
     }
 
@@ -181,7 +202,10 @@ public static class MockOtpRepository
         EnumOtpPurpose purpose
     )
     {
-        mock.Verify(x => x.InvalidateExistingOtpsAsync(userId, purpose, It.IsAny<CancellationToken>()), Times.Once);
+        mock.Verify(
+            x => x.InvalidateExistingOtpsAsync(userId, purpose, It.IsAny<Guid?>(), It.IsAny<CancellationToken>()),
+            Times.Once
+        );
     }
 
     /// <summary>
@@ -198,9 +222,16 @@ public static class MockOtpRepository
                 x.InvalidateExistingOtpsAsync(
                     It.IsAny<Guid>(),
                     It.IsAny<EnumOtpPurpose>(),
+                    It.IsAny<Guid?>(),
                     It.IsAny<CancellationToken>()
                 )
             )
             .Returns(Task.CompletedTask);
+
+        // No codes issued inside the resend window, so a test that exercises the cap has to say so.
+        mock.Setup(x =>
+                x.CountRecentOtpsAsync(It.IsAny<Guid>(), It.IsAny<EnumOtpPurpose>(), It.IsAny<CancellationToken>())
+            )
+            .ReturnsAsync(0);
     }
 }

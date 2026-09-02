@@ -80,9 +80,24 @@ public interface IOtpRepository : IRepository<OtpEntity>
     /// This method marks all existing OTPs for the user and purpose as used to prevent reuse.
     /// Useful when generating a new OTP to replace existing ones.
     /// </remarks>
+    /// <summary>
+    /// Counts the codes issued to an account for a purpose inside the resend window, so a caller
+    /// can refuse to mint more than the cap allows.
+    /// </summary>
+    /// <param name="userId">The account to count for.</param>
+    /// <param name="purpose">The OTP purpose to count.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>The number of codes issued inside the window.</returns>
+    Task<int> CountRecentOtpsAsync(Guid userId, EnumOtpPurpose purpose, CancellationToken cancellationToken = default);
+
+    /// <param name="exceptOtpId">
+    /// A code to leave untouched, used by verification so the code being redeemed is not consumed
+    /// alongside the ones it supersedes.
+    /// </param>
     Task InvalidateExistingOtpsAsync(
         Guid userId,
         EnumOtpPurpose purpose,
+        Guid? exceptOtpId = null,
         CancellationToken cancellationToken = default
     );
 

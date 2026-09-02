@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.Repositories;
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.ResendOtp.Contracts;
@@ -18,12 +19,25 @@ public class AdminResendOtpFactory(IOtpRepository otpRepository, IOtpService otp
     /// <summary>
     /// Invalidates existing OTPs and creates a new OTP for the specified purpose.
     /// </summary>
-    public async Task<OtpCreationResult> ResendOtpAsync(
+    public async Task<OtpCreationResult?> ResendOtpAsync(
         Guid userId,
         OtpPurpose purpose,
         CancellationToken cancellationToken
     )
     {
+        int issuedInWindow = await otpRepository.CountRecentOtpsAsync(
+            userId: userId,
+            purpose: purpose,
+            cancellationToken: cancellationToken
+        );
+
+        // Over the cap the caller still gets the neutral success, so the refusal cannot be used
+        // to tell an existing account from a missing one.
+        if (issuedInWindow >= UserConstants.MaxOtpResendsPerWindow)
+        {
+            return null;
+        }
+
         await otpRepository.InvalidateExistingOtpsAsync(
             userId: userId,
             purpose: purpose,

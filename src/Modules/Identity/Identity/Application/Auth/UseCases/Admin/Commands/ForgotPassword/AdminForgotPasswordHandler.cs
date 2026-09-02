@@ -1,11 +1,13 @@
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.ForgotPassword.Contracts;
+using _116.Identity.Application.Roles.Specifications;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.ValueObjects;
 using _116.Mailer.Contracts.Application;
 using _116.Shared.Contracts.Application.CQRS;
+using Microsoft.Extensions.Logging;
 
 namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.ForgotPassword;
 
@@ -15,10 +17,12 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.ForgotPassword;
 /// <param name="otpFactory">Factory for handling admin forgot password OTP creation.</param>
 /// <param name="authRepository">Repository for user data access operations.</param>
 /// <param name="mailer">Outbox mailer delivering the reset code.</param>
+/// <param name="logger">Logger recording why a request was refused, since the caller is not told.</param>
 public class AdminForgotPasswordHandler(
     IAdminForgotPasswordOtpFactory otpFactory,
     IAuthRepository authRepository,
-    IMailer mailer
+    IMailer mailer,
+    ILogger<AdminForgotPasswordHandler> logger
 ) : ICommandHandler<AdminForgotPasswordCommand, AdminForgotPasswordResult>
 {
     /// <summary>
@@ -41,8 +45,16 @@ public class AdminForgotPasswordHandler(
             cancellationToken: cancellationToken
         );
 
-        authRepository.IsUserAdmin(user!);
-        authRepository.IsUserAccountActive(user!);
+        // Answer identically whether the address is unknown, not an administrator, or inactive.
+        // Anything that changes the response here identifies privileged accounts.
+        bool isEligible = new UserHasAdminRoleSpecification().IsSatisfiedBy(entity: user!) && user!.IsActive;
+        if (!isEligible)
+        {
+            logger.LogInformation(
+                "Admin forgot-password refused for an ineligible account; answering with the neutral result."
+            );
+            return new AdminForgotPasswordResult(IsSuccess: true, Email: command.Email);
+        }
 
         OtpCreationResult passwordResetOtp = await otpFactory.CreatePasswordResetOtpAsync(
             userId: user!.Id,

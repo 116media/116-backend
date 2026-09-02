@@ -17,7 +17,9 @@ namespace _116.Identity.Application.Auth.Services;
 public record OtpCreationResult(OtpEntity Otp, string PlainCode);
 
 /// <summary>
-/// Service for OTP (One-Time Password) generation and management operations.
+/// Service for OTP (One-Time Password) generation, hashing, and management operations.
+/// Hashing is keyed rather than cost-based, because a short numeric code cannot be protected by
+/// work factor the way a password can.
 /// </summary>
 public interface IOtpService
 {
@@ -52,4 +54,19 @@ public interface IOtpService
     /// Uses the expiration minutes defined in UserConstants.OtpExpirationMinutes.
     /// </remarks>
     DateTime CalculateExpirationTime();
+
+    /// <summary>
+    /// Hashes a plaintext OTP code for storage.
+    /// </summary>
+    /// <param name="code">The plaintext code.</param>
+    /// <returns>The keyed hash to persist.</returns>
+    string Hash(string code);
+
+    /// <summary>
+    /// Verifies a supplied code against a stored hash in constant time.
+    /// </summary>
+    /// <param name="code">The supplied code.</param>
+    /// <param name="hash">The stored hash.</param>
+    /// <returns>True when the code matches.</returns>
+    bool Verify(string code, string? hash);
 }

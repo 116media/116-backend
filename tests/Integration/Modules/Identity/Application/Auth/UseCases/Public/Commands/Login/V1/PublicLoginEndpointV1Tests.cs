@@ -45,7 +45,7 @@ public class PublicLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
     }
 
     [Fact]
-    public async Task Login_WithNonExistentCredentials_ReturnsError()
+    public async Task Login_WithNonExistentCredentials_ReturnsInvalidCredentialsUnauthorized()
     {
         Client.ClearAuthentication();
         var request = new PublicLoginRequestBuilder()
@@ -55,9 +55,9 @@ public class PublicLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.PostAsJsonAsync(Routes.Public.Auth.Login(), request);
 
-        await response.ShouldBeProblem<NotFoundException>(
-            HttpStatusCode.NotFound,
-            Localized<SharedExceptionMessage>(m => m.EntityNotFound("User"))
+        await response.ShouldBeProblem<AuthenticationException>(
+            HttpStatusCode.Unauthorized,
+            Localized<AuthenticationErrorMessage>(m => m.InvalidCredentials())
         );
     }
 
@@ -337,15 +337,13 @@ public class PublicLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.SendAsync(httpRequest);
 
-        await response.ShouldBeProblem<NotFoundException>(
-            HttpStatusCode.NotFound,
-            Localized<SharedExceptionMessage>(m => m.EntityNotFound("User"), LocalizedMessage.EnglishCulture)
+        await response.ShouldBeProblem<AuthenticationException>(
+            HttpStatusCode.Unauthorized,
+            Localized<AuthenticationErrorMessage>(m => m.InvalidCredentials(), LocalizedMessage.EnglishCulture)
         );
 
         ProblemDetails problem = await response.ReadAsAsync<ProblemDetails>();
-        problem.Detail.Should().Contain("user account");
         problem.Detail.Should().NotContain(email);
-        problem.Detail.Should().NotContain("credentials");
         problem.Detail.Should().NotContain("User with");
     }
 
@@ -367,14 +365,12 @@ public class PublicLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.SendAsync(httpRequest);
 
-        await response.ShouldBeProblem<NotFoundException>(
-            HttpStatusCode.NotFound,
-            Localized<SharedExceptionMessage>(m => m.EntityNotFound("User"))
+        await response.ShouldBeProblem<AuthenticationException>(
+            HttpStatusCode.Unauthorized,
+            Localized<AuthenticationErrorMessage>(m => m.InvalidCredentials())
         );
 
         ProblemDetails problem = await response.ReadAsAsync<ProblemDetails>();
-        problem.Detail.Should().Contain("Impossible de trouver");
-        problem.Detail.Should().Contain("compte utilisateur");
         problem.Detail.Should().NotContain(email);
     }
 }

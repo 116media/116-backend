@@ -29,7 +29,7 @@ public class PasswordServiceTests
 
         // Assert
         hash.Should().NotBeNullOrEmpty();
-        hash.Should().StartWith("v1:");
+        hash.Should().StartWith("v2:");
     }
 
     [Fact]
@@ -57,7 +57,7 @@ public class PasswordServiceTests
 
         // Assert
         hash.Should().NotBeNullOrEmpty();
-        hash.Should().StartWith("v1:");
+        hash.Should().StartWith("v2:");
     }
 
     [Fact]
@@ -71,7 +71,7 @@ public class PasswordServiceTests
 
         // Assert
         hash.Should().NotBeNullOrEmpty();
-        hash.Should().StartWith("v1:");
+        hash.Should().StartWith("v2:");
     }
 
     [Fact]
@@ -85,7 +85,7 @@ public class PasswordServiceTests
 
         // Assert
         hash.Should().NotBeNullOrEmpty();
-        hash.Should().StartWith("v1:");
+        hash.Should().StartWith("v2:");
     }
 
     [Fact]
@@ -99,7 +99,7 @@ public class PasswordServiceTests
 
         // Assert
         hash.Should().NotBeNullOrEmpty();
-        hash.Should().StartWith("v1:");
+        hash.Should().StartWith("v2:");
     }
 
     #endregion
@@ -284,7 +284,7 @@ public class PasswordServiceTests
         // Arrange
         string password = "TestPassword123!";
         string hash = _sut.Hash(password);
-        string wrongVersionHash = "v2:" + hash[3..];
+        string wrongVersionHash = "v9:" + hash[3..];
 
         // Act
         bool result = _sut.Verify(password, wrongVersionHash);
@@ -303,6 +303,94 @@ public class PasswordServiceTests
 
         // Act
         bool result = _sut.Verify(password, shortHash);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region VerifyOrDummy Tests
+
+    [Fact]
+    public void VerifyOrDummy_WithCorrectPassword_ShouldReturnTrue()
+    {
+        // Arrange
+        string password = "TestPassword123!";
+        string hash = _sut.Hash(password);
+
+        // Act
+        bool result = _sut.VerifyOrDummy(password, hash);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public void VerifyOrDummy_WithIncorrectPassword_ShouldReturnFalse()
+    {
+        // Arrange
+        string hash = _sut.Hash("TestPassword123!");
+
+        // Act
+        bool result = _sut.VerifyOrDummy("AnotherPassword123!", hash);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData("no-version-prefix")]
+    public void VerifyOrDummy_WithNoUsableHash_ShouldReturnFalse(string? hash)
+    {
+        // Act
+        bool result = _sut.VerifyOrDummy("TestPassword123!", hash);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region NeedsRehash Tests
+
+    [Fact]
+    public void NeedsRehash_WithACurrentHash_ShouldReturnFalse()
+    {
+        // Arrange
+        string hash = _sut.Hash("TestPassword123!");
+
+        // Act
+        bool result = _sut.NeedsRehash(hash);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void NeedsRehash_WithALegacyHash_ShouldReturnTrue()
+    {
+        // Arrange
+        string legacyHash = "v1:" + Convert.ToBase64String(new byte[48]);
+
+        // Act
+        bool result = _sut.NeedsRehash(legacyHash);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void NeedsRehash_WithNoStoredHash_ShouldReturnFalse(string? hash)
+    {
+        // Act — there is nothing to upgrade, so a re-hash must not be claimed
+        bool result = _sut.NeedsRehash(hash);
 
         // Assert
         result.Should().BeFalse();

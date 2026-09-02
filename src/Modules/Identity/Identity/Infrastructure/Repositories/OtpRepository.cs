@@ -1,7 +1,9 @@
+using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.Repositories;
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.Specifications;
 using _116.Identity.Application.Shared.Errors;
+using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence;
@@ -15,12 +17,17 @@ namespace _116.Identity.Infrastructure.Repositories;
 /// </summary>
 /// <param name="context">The identity database context.</param>
 /// <param name="userErrors">User domain error factory for generating localized domain exceptions.</param>
-/// <param name="passwordService">
-/// Hashing service used to compare a supplied code against the stored hash. Codes are salted,
-/// so the comparison cannot be pushed into the query and happens once a candidate row is loaded.
+/// <param name="otpService">
+/// Service whose keyed hashing compares a supplied code against the stored hash. The pepper cannot
+/// be pushed into the query, so the comparison happens once a candidate row is loaded.
 /// </param>
-public class OtpRepository(IdentityDbContext context, UserErrors userErrors, IPasswordService passwordService)
-    : IOtpRepository
+/// <param name="lockoutRepository">Repository recording failed OTP attempts against the account.</param>
+public class OtpRepository(
+    IdentityDbContext context,
+    UserErrors userErrors,
+    IOtpService otpService,
+    IAccountLockoutRepository lockoutRepository
+) : IOtpRepository
 {
     /// <inheritdoc />
     public async Task AddAsync(OtpEntity otp, CancellationToken cancellationToken = default)
@@ -62,12 +69,13 @@ public class OtpRepository(IdentityDbContext context, UserErrors userErrors, IPa
         }
 
         // Then compare the supplied code against the stored hash
-        if (passwordService.Verify(password: code, hash: candidateOtp.CodeHash))
+        if (otpService.Verify(code: code, hash: candidateOtp.CodeHash))
         {
             return candidateOtp;
         }
 
-        // Now increment the attempt count
+        // Now increment both the per-code allowance and the account counter that survives a resend
+        await lockoutRepository.RegisterFailedOtpAsync(userId: userId, cancellationToken: cancellationToken);
         candidateOtp.IncrementAttemptCount();
 
         context.Otps.Update(entity: candidateOtp);
@@ -97,9 +105,11 @@ public class OtpRepository(IdentityDbContext context, UserErrors userErrors, IPa
             .OrderByDescending(o => o.CreatedAt)
             .FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
-        // Check if a consumed OTP exists and that it is the one the caller presented
-        if (matchingOtp == null || !passwordService.Verify(password: code, hash: matchingOtp.CodeHash))
+        // Check if a verified OTP exists and that it is the one the caller presented. A miss is
+        // metered against the account, so guessing here costs the same as guessing at verify-otp.
+        if (matchingOtp == null || !otpService.Verify(code: code, hash: matchingOtp.CodeHash))
         {
+            await lockoutRepository.RegisterFailedOtpAsync(userId: userId, cancellationToken: cancellationToken);
             throw userErrors.OtpNotYetVerified();
         }
 
@@ -113,20 +123,40 @@ public class OtpRepository(IdentityDbContext context, UserErrors userErrors, IPa
     }
 
     /// <inheritdoc />
-    public async Task InvalidateExistingOtpsAsync(
+    public async Task<int> CountRecentOtpsAsync(
         Guid userId,
         EnumOtpPurpose purpose,
         CancellationToken cancellationToken = default
     )
     {
+        DateTime windowStart = DateTime.UtcNow.AddMinutes(value: -UserConstants.OtpResendWindowMinutes);
+
+        return await context.Otps.CountAsync(
+            o => o.UserId == userId && o.Purpose == purpose && o.CreatedAt >= windowStart,
+            cancellationToken: cancellationToken
+        );
+    }
+
+    /// <inheritdoc />
+    public async Task InvalidateExistingOtpsAsync(
+        Guid userId,
+        EnumOtpPurpose purpose,
+        Guid? exceptOtpId = null,
+        CancellationToken cancellationToken = default
+    )
+    {
         var specification = new OtpForInvalidationSpecification(userId: userId, purpose: purpose);
+
+        // The redeemed code is only marked used in memory at this point, so it still matches the
+        // not-used predicate; excluding it by id stops verification consuming its own code.
         List<OtpEntity> expiredOtpList = await context
             .Otps.ApplySpecification(specification: specification)
+            .Where(o => exceptOtpId == null || o.Id != exceptOtpId)
             .ToListAsync(cancellationToken: cancellationToken);
 
         foreach (OtpEntity otp in expiredOtpList)
         {
-            otp.MarkAsUsed();
+            otp.MarkAsConsumed();
         }
     }
 

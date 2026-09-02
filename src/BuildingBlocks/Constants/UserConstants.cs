@@ -93,9 +93,40 @@ public static class UserConstants
     public const int OtpExpirationMinutes = 60;
 
     /// <summary>
-    /// Maximum number of OTP verification attempts.
+    /// Maximum number of OTP verification attempts against a single code.
     /// </summary>
     public const int MaxOtpAttempts = 3;
+
+    /// <summary>
+    /// Maximum failed OTP attempts an account tolerates before its OTP flows lock. Unlike
+    /// <see cref="MaxOtpAttempts" /> this counter survives a resend.
+    /// </summary>
+    public const int MaxAccountOtpAttempts = 5;
+
+    /// <summary>
+    /// How long OTP verification stays locked once the account attempt cap is reached.
+    /// </summary>
+    public const int OtpLockoutMinutes = 15;
+
+    /// <summary>
+    /// Maximum OTP codes an account may request per purpose inside the resend window.
+    /// </summary>
+    public const int MaxOtpResendsPerWindow = 3;
+
+    /// <summary>
+    /// The window over which OTP resends are counted.
+    /// </summary>
+    public const int OtpResendWindowMinutes = 15;
+
+    /// <summary>
+    /// Maximum consecutive failed logins an account tolerates before it locks.
+    /// </summary>
+    public const int MaxLoginAttempts = 5;
+
+    /// <summary>
+    /// How long login stays locked once the attempt cap is reached.
+    /// </summary>
+    public const int LoginLockoutMinutes = 15;
 
     /// <summary>
     /// Length of generated OTP codes.

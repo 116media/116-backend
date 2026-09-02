@@ -59,6 +59,20 @@ public class AppEnvironment
     }
 
     /// <summary>
+    /// The server-side pepper mixed into every stored OTP hash, read from <c>OTP_PEPPER</c>.
+    /// </summary>
+    /// <remarks>
+    /// A numeric OTP is small enough to brute-force offline from a database dump, so the hash is
+    /// keyed rather than merely salted. The key lives only in the environment.
+    /// </remarks>
+    /// <returns>The configured pepper, or <c>null</c> if the environment variable is not set.</returns>
+    public static string? OtpPepper()
+    {
+        string? pepper = Environment.GetEnvironmentVariable("OTP_PEPPER");
+        return pepper;
+    }
+
+    /// <summary>
     /// Retrieves JWT configuration values from environment variables.
     /// </summary>
     /// <remarks>

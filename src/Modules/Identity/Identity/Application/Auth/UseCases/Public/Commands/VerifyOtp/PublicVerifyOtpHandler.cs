@@ -17,11 +17,13 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.VerifyOtp;
 /// </summary>
 /// <param name="authRepository">Repository for user data access operations.</param>
 /// <param name="otpRepository">Repository for OTP data access operations.</param>
+/// <param name="lockoutRepository">Repository clearing the account OTP counter on success.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="i18n">Single i18n entry point for the Identity module.</param>
 public class PublicVerifyOtpHandler(
     IAuthRepository authRepository,
     IOtpRepository otpRepository,
+    IAccountLockoutRepository lockoutRepository,
     IIdentityUnitOfWork unitOfWork,
     IdentityI18n i18n
 ) : ICommandHandler<PublicVerifyOtpCommand, PublicVerifyOtpResult>
@@ -63,14 +65,22 @@ public class PublicVerifyOtpHandler(
 
         // Mark OTP as used and user as verified
         otp.MarkAsUsed();
-        user.MarkAsVerified();
+
+        // Only an email-verification code proves the address; a reset or recovery code must not
+        // silently mark an unconfirmed address verified.
+        if (purpose.Value == EnumOtpPurpose.EmailVerification)
+        {
+            user.MarkAsVerified();
+        }
 
         // Invalidate any remaining OTPs for this purpose
         await otpRepository.InvalidateExistingOtpsAsync(
             userId: user.Id,
             purpose: purpose,
+            exceptOtpId: otp.Id,
             cancellationToken: cancellationToken
         );
+        await lockoutRepository.ClearFailedOtpAsync(userId: user.Id, cancellationToken: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new PublicVerifyOtpResult(IsSuccess: true);

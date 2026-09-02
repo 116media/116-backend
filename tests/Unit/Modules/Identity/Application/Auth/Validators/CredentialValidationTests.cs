@@ -307,17 +307,18 @@ public class CredentialValidationTests
             { "      ", FailureBranch.PasswordRequired },
             { "Ab1", FailureBranch.PasswordTooShort },
             { new string('A', UserConstants.MinPasswordLength - 1), FailureBranch.PasswordTooShort },
-            { "secure1pass", FailureBranch.PasswordComplexity },
-            { "SECURE1PASS", FailureBranch.PasswordComplexity },
-            { "SecurePass", FailureBranch.PasswordComplexity },
-            { "Abcdef", FailureBranch.PasswordComplexity },
+            { "secure1password", FailureBranch.PasswordComplexity },
+            { "SECURE1PASSWORD", FailureBranch.PasswordComplexity },
+            { "SecurePassword", FailureBranch.PasswordComplexity },
+            { "Abcdefghijkl", FailureBranch.PasswordComplexity },
         };
 
     /// <summary>
     /// Inputs the strong-password rule must accept, including the minimum-length boundary.
     /// </summary>
     /// <returns>Candidate password per row.</returns>
-    public static TheoryData<string> AcceptedStrongPasswords() => new() { "SecureP@ss1", "Abc1de", "Abc1def" };
+    public static TheoryData<string> AcceptedStrongPasswords() =>
+        new() { "SecureP@ssw0rd", "Abc1defghijk", "Abc1defghijkl" };
 
     [Theory]
     [MemberData(nameof(RejectedStrongPasswords))]
@@ -618,7 +619,7 @@ public class CredentialValidationTests
     }
 
     [Theory]
-    [InlineData("AnyPassword1")]
+    [InlineData("AnyPassword123")]
     [InlineData("x")]
     public void ValidOldPassword_ShouldAccept(string oldPassword)
     {

@@ -58,7 +58,7 @@ public class AdminForgotPasswordOtpFactoryTests
         _otpRepositoryMock.Verify(
             x =>
                 x.AddAsync(
-                    It.Is<OtpEntity>(o => o == result.Otp && o.CodeHash.StartsWith("v1:")),
+                    It.Is<OtpEntity>(o => o == result.Otp && o.CodeHash != result.PlainCode),
                     It.IsAny<CancellationToken>()
                 ),
             Times.Once

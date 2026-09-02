@@ -52,19 +52,39 @@ public class PublicResendOtpFactoryTests
         _otpServiceMock.SetupCreateOtpReturns(otp, TestConstants.Otp.DefaultCode);
 
         // Act
-        OtpCreationResult result = await _factory.ResendOtpAsync(userId, purpose, CancellationToken.None);
+        OtpCreationResult? result = await _factory.ResendOtpAsync(userId, purpose, CancellationToken.None);
 
         // Assert
-        result.PlainCode.Should().Be(TestConstants.Otp.DefaultCode);
+        result.Should().NotBeNull();
+        result!.PlainCode.Should().Be(TestConstants.Otp.DefaultCode);
         result.Otp.CodeHash.Should().NotBe(result.PlainCode);
         _otpRepositoryMock.Verify(
             x =>
                 x.AddAsync(
-                    It.Is<OtpEntity>(o => o == result.Otp && o.CodeHash.StartsWith("v1:")),
+                    It.Is<OtpEntity>(o => o == result.Otp && o.CodeHash != result.PlainCode),
                     It.IsAny<CancellationToken>()
                 ),
             Times.Once
         );
+    }
+
+    [Fact]
+    public async Task ResendOtpAsync_WhenTheResendCapIsReached_ShouldMintNothing()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        OtpPurpose purpose = EnumOtpPurpose.EmailVerification;
+
+        _otpRepositoryMock.SetupCountRecentOtps(userId, purpose, TestConstants.Otp.MaxResendsPerWindow);
+
+        // Act
+        OtpCreationResult? result = await _factory.ResendOtpAsync(userId, purpose, CancellationToken.None);
+
+        // Assert
+        result.Should().BeNull();
+        _otpServiceMock.Verify(x => x.CreateOtp(It.IsAny<Guid>(), It.IsAny<EnumOtpPurpose>()), Times.Never);
+        _otpRepositoryMock.Verify(x => x.AddAsync(It.IsAny<OtpEntity>(), It.IsAny<CancellationToken>()), Times.Never);
+        _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -78,10 +98,11 @@ public class PublicResendOtpFactoryTests
         _otpServiceMock.SetupCreateOtpReturns(otp);
 
         // Act
-        OtpCreationResult result = await _factory.ResendOtpAsync(userId, purpose, CancellationToken.None);
+        OtpCreationResult? result = await _factory.ResendOtpAsync(userId, purpose, CancellationToken.None);
 
         // Assert
-        result.Otp.UserId.Should().Be(userId);
+        result.Should().NotBeNull();
+        result!.Otp.UserId.Should().Be(userId);
     }
 
     [Fact]
@@ -99,7 +120,7 @@ public class PublicResendOtpFactoryTests
 
         // Assert
         _otpRepositoryMock.Verify(
-            x => x.InvalidateExistingOtpsAsync(userId, purpose, It.IsAny<CancellationToken>()),
+            x => x.InvalidateExistingOtpsAsync(userId, purpose, It.IsAny<Guid?>(), It.IsAny<CancellationToken>()),
             Times.Once
         );
     }
@@ -171,10 +192,11 @@ public class PublicResendOtpFactoryTests
         _otpServiceMock.SetupCreateOtpReturns(otp);
 
         // Act
-        OtpCreationResult result = await _factory.ResendOtpAsync(userId, purpose, CancellationToken.None);
+        OtpCreationResult? result = await _factory.ResendOtpAsync(userId, purpose, CancellationToken.None);
 
         // Assert
-        result.Otp.UserId.Should().Be(userId);
+        result.Should().NotBeNull();
+        result!.Otp.UserId.Should().Be(userId);
         result.Otp.Purpose.Should().Be(purposeEnum);
     }
 
@@ -197,7 +219,10 @@ public class PublicResendOtpFactoryTests
         await _factory.ResendOtpAsync(userId, purpose, cts.Token);
 
         // Assert
-        _otpRepositoryMock.Verify(x => x.InvalidateExistingOtpsAsync(userId, purpose, cts.Token), Times.Once);
+        _otpRepositoryMock.Verify(
+            x => x.InvalidateExistingOtpsAsync(userId, purpose, It.IsAny<Guid?>(), cts.Token),
+            Times.Once
+        );
         _otpRepositoryMock.Verify(x => x.AddAsync(otp, cts.Token), Times.Once);
         _unitOfWorkMock.Verify(x => x.CommitAsync(cts.Token), Times.Once);
     }

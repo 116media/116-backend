@@ -22,6 +22,7 @@ public class AdminVerifyOtpHandlerTests
 {
     private readonly Mock<IAuthRepository> _authRepositoryMock;
     private readonly Mock<IOtpRepository> _otpRepositoryMock;
+    private readonly Mock<IAccountLockoutRepository> _lockoutRepositoryMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
     private readonly AdminVerifyOtpHandler _handler;
 
@@ -29,11 +30,13 @@ public class AdminVerifyOtpHandlerTests
     {
         _authRepositoryMock = MockAuthRepository.Create();
         _otpRepositoryMock = MockOtpRepository.Create();
+        _lockoutRepositoryMock = new Mock<IAccountLockoutRepository>();
         _unitOfWorkMock = MockIdentityUnitOfWork.Create();
 
         _handler = new AdminVerifyOtpHandler(
             _authRepositoryMock.Object,
             _otpRepositoryMock.Object,
+            _lockoutRepositoryMock.Object,
             _unitOfWorkMock.Object
         );
     }
@@ -65,6 +68,79 @@ public class AdminVerifyOtpHandlerTests
     }
 
     [Fact]
+    public async Task Handle_ShouldMarkUserAsVerified()
+    {
+        // Arrange
+        string email = "admin@example.com";
+        string code = "123456";
+        string purpose = EnumOtpPurpose.EmailVerification.ToString();
+        UserEntity user = UserFactory.CreateUnverified();
+        OtpEntity otp = OtpFactory.Create(user.Id, code);
+
+        AdminVerifyOtpCommand command = new(Email: email, Code: code, Purpose: purpose);
+
+        _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
+        _authRepositoryMock.SetupIsUserAdminReturnsTrue();
+        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
+        _otpRepositoryMock.SetupValidateOtp(otp);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        user.IsVerified.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Handle_WithAPasswordResetPurpose_ShouldNotMarkUserAsVerified()
+    {
+        // Arrange
+        string email = "admin@example.com";
+        string code = "123456";
+        string purpose = EnumOtpPurpose.PasswordReset.ToString();
+        UserEntity user = UserFactory.CreateUnverified();
+        OtpEntity otp = OtpFactory.Create(user.Id, code, EnumOtpPurpose.PasswordReset);
+
+        AdminVerifyOtpCommand command = new(Email: email, Code: code, Purpose: purpose);
+
+        _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
+        _authRepositoryMock.SetupIsUserAdminReturnsTrue();
+        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
+        _otpRepositoryMock.SetupValidateOtp(otp);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        user.IsVerified.Should().BeFalse();
+        otp.IsUsed.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Handle_ShouldClearTheAccountOtpFailureCounter()
+    {
+        // Arrange
+        string email = "admin@example.com";
+        string code = "123456";
+        string purpose = EnumOtpPurpose.EmailVerification.ToString();
+        UserEntity user = UserFactory.CreateVerifiedActive();
+        OtpEntity otp = OtpFactory.Create(user.Id, code);
+
+        AdminVerifyOtpCommand command = new(Email: email, Code: code, Purpose: purpose);
+
+        _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
+        _authRepositoryMock.SetupIsUserAdminReturnsTrue();
+        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
+        _otpRepositoryMock.SetupValidateOtp(otp);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        _lockoutRepositoryMock.Verify(x => x.ClearFailedOtpAsync(user.Id, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
     public async Task Handle_ShouldInvalidateExistingOtps()
     {
         // Arrange
@@ -86,7 +162,13 @@ public class AdminVerifyOtpHandlerTests
 
         // Assert
         _otpRepositoryMock.Verify(
-            x => x.InvalidateExistingOtpsAsync(user.Id, It.IsAny<EnumOtpPurpose>(), It.IsAny<CancellationToken>()),
+            x =>
+                x.InvalidateExistingOtpsAsync(
+                    user.Id,
+                    It.IsAny<EnumOtpPurpose>(),
+                    It.IsAny<Guid?>(),
+                    It.IsAny<CancellationToken>()
+                ),
             Times.Once
         );
     }

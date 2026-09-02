@@ -67,6 +67,12 @@ public class IdentityDbContext(DbContextOptions<IdentityDbContext> options) : Db
     public DbSet<UserTokenStateEntity> UserTokenStates => Set<UserTokenStateEntity>();
 
     /// <summary>
+    /// Gets the collection of per-user OTP throttling records.
+    /// </summary>
+    /// <value>DbSet of UserOtpStateEntity for managing OTP attempt counters</value>
+    public DbSet<UserOtpStateEntity> UserOtpStates => Set<UserOtpStateEntity>();
+
+    /// <summary>
     /// Configures the model for the context using Fluent API.
     /// </summary>
     /// <param name="modelBuilder">The builder used to construct the model for the context.</param>

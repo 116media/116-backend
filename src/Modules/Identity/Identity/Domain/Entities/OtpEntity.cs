@@ -49,6 +49,16 @@ public class OtpEntity : Aggregate<Guid>
     public DateTime? UsedAt { get; private set; }
 
     /// <summary>
+    /// The date and time at which the code was spent or superseded, in UTC.
+    /// </summary>
+    /// <remarks>
+    /// Distinct from <see cref="IsUsed" />, which only records that the owner verified the code.
+    /// A consumed code is never valid again, so superseding a code on resend and spending one on a
+    /// password reset cannot be mistaken for a verification.
+    /// </remarks>
+    public DateTime? ConsumedAt { get; private set; }
+
+    /// <summary>
     /// Navigation property for the associated user.
     /// </summary>
     public UserEntity User { get; private set; } = null!;
@@ -107,5 +117,22 @@ public class OtpEntity : Aggregate<Guid>
     public bool HasMaxAttemptsReached()
     {
         return AttemptCount >= UserConstants.MaxOtpAttempts;
+    }
+
+    /// <summary>
+    /// Marks the code spent or superseded, so it can never be presented again.
+    /// </summary>
+    public void MarkAsConsumed()
+    {
+        ConsumedAt ??= DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Checks whether the code has already been spent or superseded.
+    /// </summary>
+    /// <returns>True once consumed, otherwise false.</returns>
+    public bool IsConsumed()
+    {
+        return ConsumedAt is not null;
     }
 }

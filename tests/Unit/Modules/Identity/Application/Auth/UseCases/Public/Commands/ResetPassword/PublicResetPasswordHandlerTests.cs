@@ -39,7 +39,7 @@ public class PublicResetPasswordHandlerTests
         string code = "123456";
         string newPassword = "NewPassword123!";
         UserEntity user = UserFactory.CreateVerifiedActive();
-        OtpEntity otp = OtpFactory.CreateUsed(user.Id);
+        OtpEntity otp = OtpFactory.CreateUsed(user.Id, EnumOtpPurpose.PasswordReset);
 
         PublicResetPasswordCommand command = new(Email: email, Code: code, NewPassword: newPassword);
         PublicResetPasswordAuthData authData = new(User: user);
@@ -67,7 +67,7 @@ public class PublicResetPasswordHandlerTests
         string code = "123456";
         string newPassword = "NewPassword123!";
         UserEntity user = UserFactory.CreateVerifiedActive();
-        OtpEntity otp = OtpFactory.CreateUsed(user.Id);
+        OtpEntity otp = OtpFactory.CreateUsed(user.Id, EnumOtpPurpose.PasswordReset);
 
         PublicResetPasswordCommand command = new(Email: email, Code: code, NewPassword: newPassword);
         PublicResetPasswordAuthData authData = new(User: user);
@@ -98,7 +98,7 @@ public class PublicResetPasswordHandlerTests
         string code = "123456";
         string newPassword = "NewPassword123!";
         UserEntity user = UserFactory.CreateVerifiedActive();
-        OtpEntity otp = OtpFactory.CreateUsed(user.Id);
+        OtpEntity otp = OtpFactory.CreateUsed(user.Id, EnumOtpPurpose.PasswordReset);
 
         PublicResetPasswordCommand command = new(Email: email, Code: code, NewPassword: newPassword);
         PublicResetPasswordAuthData authData = new(User: user);
@@ -213,7 +213,7 @@ public class PublicResetPasswordHandlerTests
         string code = "123456";
         string newPassword = "NewPassword123!";
         UserEntity user = UserFactory.CreateVerifiedActive();
-        OtpEntity otp = OtpFactory.CreateUsed(user.Id);
+        OtpEntity otp = OtpFactory.CreateUsed(user.Id, EnumOtpPurpose.PasswordReset);
         using CancellationTokenSource cts = new();
 
         PublicResetPasswordCommand command = new(Email: email, Code: code, NewPassword: newPassword);
@@ -242,7 +242,7 @@ public class PublicResetPasswordHandlerTests
         string code = "123456";
         string newPassword = "NewPassword123!";
         UserEntity user = UserFactory.CreateVerifiedActive();
-        OtpEntity otp = OtpFactory.CreateUsed(user.Id);
+        OtpEntity otp = OtpFactory.CreateUsed(user.Id, EnumOtpPurpose.PasswordReset);
         using CancellationTokenSource cts = new();
 
         PublicResetPasswordCommand command = new(Email: email, Code: code, NewPassword: newPassword);

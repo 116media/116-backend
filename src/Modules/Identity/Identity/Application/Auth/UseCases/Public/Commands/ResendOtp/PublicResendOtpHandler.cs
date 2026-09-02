@@ -43,7 +43,7 @@ public class PublicResendOtpHandler(IPublicResendOtpFactory otpFactory, IAuthRep
         );
         authRepository.IsUserAccountActive(user!);
 
-        OtpCreationResult resentOtp = await otpFactory.ResendOtpAsync(
+        OtpCreationResult? resentOtp = await otpFactory.ResendOtpAsync(
             userId: user!.Id,
             purpose: purpose,
             cancellationToken: cancellationToken
@@ -58,7 +58,7 @@ public class PublicResendOtpHandler(IPublicResendOtpFactory otpFactory, IAuthRep
             _ => null,
         };
 
-        if (template is not null && user.Email is not null)
+        if (resentOtp is not null && template is not null && user.Email is not null)
         {
             await mailer.EnqueueAsync(
                 template: template.Value,

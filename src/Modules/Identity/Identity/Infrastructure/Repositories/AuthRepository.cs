@@ -279,6 +279,42 @@ public class AuthRepository(IdentityDbContext context, UserErrors userErrors, Se
         user?.AssignRole(userRole: userRole, errors: userErrors);
     }
 
+    /// <inheritdoc />
+    public async Task<UserEntity?> GetUserWithRolesAndPermissionsByCredentialsAsync(
+        string credentials,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var specification = new UserByCredentialsSpecification(credentials: credentials);
+
+        return await context
+            .Users.ApplySpecification(specification: specification)
+            .Include(u => u.UserRoles)
+                .ThenInclude(ur => ur.Role)
+                    .ThenInclude(r => r.RolePermissions)
+                        .ThenInclude(rp => rp.Permission)
+            .AsSplitQuery()
+            .FirstOrDefaultAsync(cancellationToken: cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<UserEntity?> GetUserWithRolesAndPermissionsByEmailAsync(
+        Email email,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var specification = new UserByEmailSpecification(email: email.Value);
+
+        return await context
+            .Users.ApplySpecification(specification: specification)
+            .Include(u => u.UserRoles)
+                .ThenInclude(ur => ur.Role)
+                    .ThenInclude(r => r.RolePermissions)
+                        .ThenInclude(rp => rp.Permission)
+            .AsSplitQuery()
+            .FirstOrDefaultAsync(cancellationToken: cancellationToken);
+    }
+
     /// <inheritdoc cref="IClaimsProvider.GetUserIdFromClaims" />
     public Guid GetUserIdFromClaims(ClaimsPrincipal user)
     {

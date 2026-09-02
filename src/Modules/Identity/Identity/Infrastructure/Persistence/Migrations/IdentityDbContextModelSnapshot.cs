@@ -42,6 +42,10 @@ namespace _116.Identity.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(100)")
                         .HasColumnName("code_hash");
 
+                    b.Property<DateTime?>("ConsumedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("consumed_at");
+
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -442,6 +446,10 @@ namespace _116.Identity.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(254)")
                         .HasColumnName("email");
 
+                    b.Property<int>("FailedLoginAttempts")
+                        .HasColumnType("integer")
+                        .HasColumnName("failed_login_attempts");
+
                     b.Property<string>("FullPhoneNumber")
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
@@ -458,6 +466,10 @@ namespace _116.Identity.Infrastructure.Persistence.Migrations
                         .HasColumnType("boolean")
                         .HasDefaultValue(false)
                         .HasColumnName("is_verified");
+
+                    b.Property<DateTime?>("LockedUntil")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("locked_until");
 
                     b.Property<string>("PartialPhoneNumber")
                         .HasMaxLength(50)
@@ -504,6 +516,44 @@ namespace _116.Identity.Infrastructure.Persistence.Migrations
                         .HasFilter("provider_subject_id IS NOT NULL");
 
                     b.ToTable("users", "identity");
+                });
+
+            modelBuilder.Entity("_116.Identity.Domain.Entities.UserOtpStateEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<int>("FailedAttempts")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("failed_attempts");
+
+                    b.Property<DateTime?>("LockedUntil")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("locked_until");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_user_otp_state");
+
+                    b.ToTable("user_otp_state", "identity");
                 });
 
             modelBuilder.Entity("_116.Identity.Domain.Entities.UserRoleEntity", b =>
@@ -631,6 +681,16 @@ namespace _116.Identity.Infrastructure.Persistence.Migrations
                         .HasConstraintName("fk_sessions_users_user_id");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("_116.Identity.Domain.Entities.UserOtpStateEntity", b =>
+                {
+                    b.HasOne("_116.Identity.Domain.Entities.UserEntity", null)
+                        .WithOne()
+                        .HasForeignKey("_116.Identity.Domain.Entities.UserOtpStateEntity", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_user_otp_state_users_user_id");
                 });
 
             modelBuilder.Entity("_116.Identity.Domain.Entities.UserRoleEntity", b =>

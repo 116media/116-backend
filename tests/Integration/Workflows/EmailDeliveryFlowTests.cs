@@ -67,7 +67,7 @@ public class EmailDeliveryFlowTests(PostgresFixture db) : BaseApiTest(db)
                 .Otps.Where(o => o.User.Email == email)
                 .Select(o => o.CodeHash)
                 .SingleAsync();
-            codeHash.Should().StartWith("v1:");
+            codeHash.Should().StartWith("h1:");
             codeHash.Should().NotBe(deliveredCode);
         }
 
