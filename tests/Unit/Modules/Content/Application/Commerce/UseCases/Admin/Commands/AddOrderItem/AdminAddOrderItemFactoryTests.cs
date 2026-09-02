@@ -216,7 +216,7 @@ public class AdminAddOrderItemFactoryTests
     [Fact]
     public async Task CreateItemAsync_WhenCategoryNotCommissionable_ShouldThrowNotFoundException()
     {
-        // Arrange — free category is not commissionable
+        // Arrange
         ContentOrderEntity order = ContentOrderFactory.Create();
         Guid contentTypeId = Guid.NewGuid();
         CategoryEntity freeCategory = CategoryFactory.CreateFree(contentTypeId);
