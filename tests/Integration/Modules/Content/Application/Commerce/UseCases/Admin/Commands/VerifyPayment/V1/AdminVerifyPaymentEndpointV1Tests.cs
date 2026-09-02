@@ -54,7 +54,7 @@ public class AdminVerifyPaymentEndpointV1Tests(PostgresFixture db) : BaseApiTest
     [Fact]
     public async Task VerifyPayment_WithoutProofAttached_ReturnsBadRequestAndLeavesTheOrderUnpaid()
     {
-        // Arrange — an unevidenced payment must not flip the order to paid
+        // Arrange
         ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
         CustomerEntity customer = CustomerFactory.CreateWithId(order.CustomerId);
         ContentPaymentEntity payment = ContentPaymentFactory.Create(order.Id);
