@@ -86,7 +86,6 @@ public class IdentityDbContext(DbContextOptions<IdentityDbContext> options) : Db
         modelBuilder.HasDefaultSchema(schema: IdentityConstants.SchemaName);
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         modelBuilder.ApplyConfiguration(new OutboxEventConfiguration());
-        modelBuilder.ApplyConfiguration(new ProcessedDomainEventConfiguration());
         base.OnModelCreating(modelBuilder: modelBuilder);
     }
 }
