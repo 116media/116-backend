@@ -52,6 +52,9 @@ public class AdminUploadShortVideoFileHandler(
         shortVideoRepository.Update(shortVideo: shortVideo);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
+        // The referencing row is committed, so the upload is no longer reapable.
+        await fileRepository.ClaimAsync(fileId: fileEntity.Id, cancellationToken: cancellationToken);
+
         return new AdminUploadShortVideoFileResult(
             VideoUrl: fileEntity.StorageUrl,
             VideoStorageKey: fileEntity.StorageKey!
