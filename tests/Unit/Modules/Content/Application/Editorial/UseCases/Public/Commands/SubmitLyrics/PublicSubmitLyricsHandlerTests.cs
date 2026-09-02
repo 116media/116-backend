@@ -49,7 +49,7 @@ public class PublicSubmitLyricsHandlerTests
     [Fact]
     public async Task Handle_WhenSubmitterOwnsClaimedArtist_ShouldSkipQueueAndAttributeToOwnedArtistIdentity()
     {
-        // Arrange — the owned artist's real name is deliberately different from the ArtistName
+        // Arrange
         // the client sends, to prove the fast path is identity-gated, never string-based.
         var userId = Guid.NewGuid();
         ArtistEntity ownedArtist = ArtistFactory.Create("Fally Ipupa", "fally-ipupa");
