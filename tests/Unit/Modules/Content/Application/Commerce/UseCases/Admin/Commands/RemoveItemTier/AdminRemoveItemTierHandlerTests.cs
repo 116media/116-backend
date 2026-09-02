@@ -75,7 +75,7 @@ public class AdminRemoveItemTierHandlerTests
         orderWithItems.TotalAmountUsd.Should().Be(remainingTier.PriceSnapshotUsd);
         _orderRepositoryMock.Verify(x => x.RemoveItemTierAsync(tier, It.IsAny<CancellationToken>()), Times.Once);
         _orderRepositoryMock.VerifyUpdateCalled(orderWithItems);
-        _unitOfWorkMock.VerifyCommitCalled(times: 2);
+        _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 
     #endregion
@@ -263,7 +263,7 @@ public class AdminRemoveItemTierHandlerTests
             x => x.UpdateAsync(It.IsAny<ContentOrderEntity>(), It.IsAny<CancellationToken>()),
             Times.Never
         );
-        _unitOfWorkMock.VerifyCommitCalled(times: 1);
+        _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 
     #endregion
