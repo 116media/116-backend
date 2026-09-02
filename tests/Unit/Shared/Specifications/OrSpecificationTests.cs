@@ -152,7 +152,7 @@ public class OrSpecificationTests
     [Fact]
     public void IsSatisfiedBy_WithBoundaryValueOnLeft_ShouldStillCheckRight()
     {
-        // Arrange - value exactly at boundary (5), should fail left but check right
+        // Arrange
         GreaterThanSpecification left = new(5);
         NameContainsSpecification right = new("Test");
         OrSpecification<TestEntity> orSpec = new(left, right);
@@ -250,7 +250,7 @@ public class OrSpecificationTests
     [Fact]
     public void MixedComposition_OrWithinAnd_ShouldWorkCorrectly()
     {
-        // Arrange - (value > 5 OR name contains "Test") AND value < 20
+        // Arrange
         GreaterThanSpecification greaterThan5 = new(5);
         NameContainsSpecification nameContainsTest = new("Test");
         LessThanSpecification lessThan20 = new(20);
