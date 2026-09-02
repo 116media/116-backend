@@ -58,7 +58,7 @@ public class CommentEngagementHandlerTests
     [Fact]
     public async Task Handle_WhenNoRowIsUpdated_ShouldNotThrow()
     {
-        // Arrange — the comment vanished between the interaction commit and the dispatch, which is
+        // Arrange
         // a race, not an error.
         var commentId = Guid.NewGuid();
         _articleCommentRepositoryMock
