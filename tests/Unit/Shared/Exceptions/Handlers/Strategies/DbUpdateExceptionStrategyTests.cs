@@ -73,7 +73,7 @@ public class DbUpdateExceptionStrategyTests
     [Fact]
     public void CreateProblemDetails_ForAnotherSqlState_ShouldStayA500()
     {
-        // Arrange — a foreign-key violation is a defect, not a client conflict
+        // Arrange
         DefaultHttpContext context = CreateContext();
         var exception = new DbUpdateException("update failed", PostgresError(PostgresErrorCodes.ForeignKeyViolation));
 
