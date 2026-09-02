@@ -81,7 +81,7 @@ public class ExternalAccountLinkingFlowTests(PostgresFixture db) : BaseApiTest(d
     [Fact]
     public async Task SocialLogin_WithADisplayNameLongerThanAUsername_IsRefused()
     {
-        // Arrange — the provider's display name is adopted as the username, so it has to satisfy
+        // Arrange
         // the same length rule
         UserEntity user = await SeedUnlinkedExternalAccountAsync();
         var overLongName = new string('n', UserConstants.MaxUserNameLength + 1);
@@ -117,7 +117,7 @@ public class ExternalAccountLinkingFlowTests(PostgresFixture db) : BaseApiTest(d
     [Fact]
     public async Task SocialLogin_ForANewAccountWithABlankDisplayName_IsRefused()
     {
-        // Arrange — a blank name is not null, so it survives the fallback to the email address
+        // Arrange
         await SeedAsync<IdentityDbContext>(context =>
             context.Roles.Add(RoleFactory.CreateWithId(Guid.NewGuid(), "Visitor"))
         );
