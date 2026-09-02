@@ -48,8 +48,6 @@ public class UnclaimedFileReaperJob(IServiceScopeFactory scopeFactory, ILogger<U
 
         foreach (FileEntity file in abandoned)
         {
-            // Soft-deleting raises the file's own cleanup event, so the remote asset is removed
-            // by the same handler that clears deliberately deleted files.
             file.Delete();
         }
 
