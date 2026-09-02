@@ -92,7 +92,7 @@ public class PublicGetArtistsHandlerTests
     [Fact]
     public async Task Handle_WithAClaimedProfile_ShouldReportTheArtistVerified()
     {
-        // Arrange — the verified badge is identity-based: a claimed, verified profile earns it
+        // Arrange
         ArtistEntity artist = ArtistFactory.Create();
         artist.ClaimOwnership(Guid.NewGuid());
         SetupDirectory(1, [], new ArtistDirectoryRow(artist, ContentCount: 0));
