@@ -10,7 +10,6 @@ using _116.Mailer.Application.Templates.Messages;
 using _116.Mailer.Contracts.Application;
 using _116.Mailer.Domain.Constants;
 using _116.Mailer.Infrastructure.BackgroundJobs;
-using _116.Mailer.Infrastructure.Outbox;
 using _116.Mailer.Infrastructure.Persistence;
 using _116.Mailer.Infrastructure.Repositories;
 using _116.Mailer.Infrastructure.Services;
@@ -58,7 +57,6 @@ public static class MailerModule
 
         services.AddScoped<IMailerUnitOfWork, MailerUnitOfWork>();
         services.AddScoped(typeof(IMailerRepository<>), typeof(MailerRepository<>));
-        services.AddScoped<IProcessedDomainEventStore, MailerProcessedDomainEventStore>();
 
         // Replay delivers events raised inside a transaction, not just retries failed dispatches.
         services.AddScheduledJob<MailerOutboxReplayJob>(cronExpression: "0 */1 * * * ?");
