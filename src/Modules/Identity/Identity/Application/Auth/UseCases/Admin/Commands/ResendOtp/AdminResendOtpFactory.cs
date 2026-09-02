@@ -4,6 +4,7 @@ using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.ResendOtp.Contracts;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Domain.ValueObjects;
+using _116.Shared.Application.Localization;
 
 namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.ResendOtp;
 
@@ -31,8 +32,6 @@ public class AdminResendOtpFactory(IOtpRepository otpRepository, IOtpService otp
             cancellationToken: cancellationToken
         );
 
-        // Over the cap the caller still gets the neutral success, so the refusal cannot be used
-        // to tell an existing account from a missing one.
         if (issuedInWindow >= UserConstants.MaxOtpResendsPerWindow)
         {
             return null;
@@ -47,6 +46,8 @@ public class AdminResendOtpFactory(IOtpRepository otpRepository, IOtpService otp
         OtpCreationResult newOtp = otpService.CreateOtp(userId: userId, purpose: purpose);
 
         await otpRepository.AddAsync(otp: newOtp.Otp, cancellationToken: cancellationToken);
+
+        newOtp.Otp.MarkIssued(plainCode: newOtp.PlainCode, culture: EmailCulture.Current());
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return newOtp;
