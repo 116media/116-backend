@@ -256,7 +256,7 @@ public class ArtistRepositoryTests : IDisposable
     [Fact]
     public async Task GetSocialLinksAsync_ShouldReturnLinksOrderedByPlatform()
     {
-        // Arrange — inserted out of order; the row must come back platform-ordered.
+        // Arrange
         ArtistEntity artist = ArtistFactory.Create();
         _context.Artists.Add(artist);
         _context.ArtistSocialLinks.AddRange(
@@ -332,7 +332,7 @@ public class ArtistRepositoryTests : IDisposable
     [Fact]
     public async Task GetTotalsAsync_ShouldCountEachSurfaceSeparately()
     {
-        // Arrange — one item per surface, plus non-counting rows (draft song, EP).
+        // Arrange
         ArtistEntity artist = ArtistFactory.Create();
         var categoryId = Guid.NewGuid();
         _context.Artists.Add(artist);
@@ -364,7 +364,7 @@ public class ArtistRepositoryTests : IDisposable
     [Fact]
     public async Task GetAvailableLettersAsync_ShouldReturnDistinctLettersOfListedArtistsOnly()
     {
-        // Arrange — one artist with content, one stub without.
+        // Arrange
         var categoryId = Guid.NewGuid();
         ArtistEntity listed = ArtistFactory.Create("Fally Ipupa", $"listed-{Guid.NewGuid():N}");
         ArtistEntity stub = ArtistFactory.Create("Zed Stub", $"stub-{Guid.NewGuid():N}");
