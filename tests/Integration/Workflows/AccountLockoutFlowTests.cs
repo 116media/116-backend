@@ -87,7 +87,7 @@ public class AccountLockoutFlowTests(PostgresFixture db) : BaseApiTest(db)
     [Fact]
     public async Task Login_WithTheCorrectPassword_ClearsTheFailureCounter()
     {
-        // Arrange — stay one attempt below the cap
+        // Arrange
         string email = await RegisterVerifiedAccountAsync();
 
         for (int attempt = 0; attempt < UserConstants.MaxLoginAttempts - 1; attempt++)
