@@ -38,24 +38,6 @@ public class ArtistRepositoryTests : IDisposable
 
     #region GetBySlugAsync Tests
 
-    [Fact(
-        Skip = "ArtistBySlugSpecification uses EF.Functions.ILike which is not supported by InMemoryDatabase — tested in integration tests"
-    )]
-    public async Task GetBySlugAsync_WhenArtistExists_ShouldReturnArtist()
-    {
-        // Arrange
-        ArtistEntity artist = ArtistFactory.CreateWithSlug("fally-ipupa");
-        _context.Artists.Add(artist);
-        await _context.SaveChangesAsync();
-
-        // Act
-        ArtistEntity? result = await _repository.GetBySlugAsync("fally-ipupa");
-
-        // Assert
-        result.Should().NotBeNull();
-        result.Slug.Should().Be("fally-ipupa");
-    }
-
     [Fact]
     public async Task GetBySlugAsync_WhenNoArtistsExist_ShouldReturnNull()
     {
@@ -224,27 +206,6 @@ public class ArtistRepositoryTests : IDisposable
         // Assert
         artists.Should().BeEmpty();
         totalCount.Should().Be(0);
-    }
-
-    [Fact(
-        Skip = "ArtistSearchSpecification uses EF.Functions.ILike which is not supported by InMemoryDatabase — tested in integration tests"
-    )]
-    public async Task GetAllAsync_WithSearch_ShouldFilterByNameOrBio()
-    {
-        // Arrange
-        _context.Artists.AddRange(ArtistFactory.Create("Awilo", "awilo"), ArtistFactory.Create("Koffi", "koffi"));
-        await _context.SaveChangesAsync();
-
-        // Act
-        (List<ArtistEntity> artists, int totalCount) = await _repository.GetAllAsync(
-            page: 1,
-            pageSize: 10,
-            search: "Awilo"
-        );
-
-        // Assert
-        artists.Should().ContainSingle();
-        totalCount.Should().Be(1);
     }
 
     #endregion

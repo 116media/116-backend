@@ -35,7 +35,7 @@ jobs:
                   dotnet test tests/Unit \
                     --configuration Release \
                     --no-restore \
-                    --settings tests/coverage.runsettings \
+                    --settings tests/coverage.unit.runsettings \
                     --collect:"XPlat Code Coverage" \
                     --results-directory ./coverage/unit \
                     --logger "trx;LogFileName=unit-test-results.trx"

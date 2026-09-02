@@ -120,6 +120,42 @@ public class ContentDbContextTests
 
     #endregion
 
+    #region DbSet Properties
+
+    /// <summary>
+    /// Enumerates the public <see cref="DbSet{TEntity}"/> properties the context declares.
+    /// Reflection walks the type system here, matching the discovery style of the theories above.
+    /// </summary>
+    /// <returns>The DbSet property infos, ordered by name for stable test output.</returns>
+    private static IReadOnlyList<System.Reflection.PropertyInfo> DbSetProperties() =>
+        typeof(ContentDbContext)
+            .GetProperties()
+            .Where(p => p.PropertyType.IsGenericType && p.PropertyType.GetGenericTypeDefinition() == typeof(DbSet<>))
+            .OrderBy(p => p.Name)
+            .ToList();
+
+    [Fact]
+    public void DbSetProperties_ShouldExposeOneSetPerDomainEntity()
+    {
+        // Arrange & Act — the count guard keeps the getter sweep below from silently shrinking
+        DbSetProperties().Count.Should().Be(DomainEntityCount);
+    }
+
+    [Fact]
+    public void Context_ShouldReturnAUsableDbSetFromEveryDeclaredSetProperty()
+    {
+        // Arrange
+        using var context = new ContentDbContext(CreateOptions());
+
+        // Act & Assert
+        foreach (System.Reflection.PropertyInfo property in DbSetProperties())
+        {
+            property.GetValue(context).Should().NotBeNull($"{property.Name} must expose a usable DbSet");
+        }
+    }
+
+    #endregion
+
     #region Schema and Configuration
 
     [Fact]

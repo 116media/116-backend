@@ -120,25 +120,6 @@ public class CustomerRepositoryTests : IDisposable
 
     #region GetByEmailAsync Tests
 
-    [Fact(
-        Skip = "CustomerByEmailSpecification uses EF.Functions.ILike which is not supported by InMemoryDatabase — tested in integration tests"
-    )]
-    public async Task GetByEmailAsync_WhenFound_ShouldReturnEntity()
-    {
-        // Arrange
-        string email = TestConstants.Customer.ValidEmail;
-        CustomerEntity customer = CustomerFactory.Create(email);
-        _context.Customers.Add(customer);
-        await _context.SaveChangesAsync();
-
-        // Act
-        CustomerEntity? result = await _repository.GetByEmailAsync(email);
-
-        // Assert
-        result.Should().NotBeNull();
-        result.Email.Should().Be(email);
-    }
-
     [Fact]
     public async Task GetByEmailAsync_WhenNotFound_ShouldReturnNull()
     {

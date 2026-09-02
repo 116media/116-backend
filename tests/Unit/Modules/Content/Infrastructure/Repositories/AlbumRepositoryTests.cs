@@ -144,27 +144,6 @@ public class AlbumRepositoryTests : IDisposable
         totalCount.Should().Be(0);
     }
 
-    [Fact(
-        Skip = "AlbumSearchSpecification uses EF.Functions.ILike which is not supported by InMemoryDatabase — tested in integration tests"
-    )]
-    public async Task GetAllAsync_WithSearch_ShouldFilterByNameOrLabel()
-    {
-        // Arrange
-        _context.Albums.AddRange(AlbumFactory.CreateWithName("Anthem"), AlbumFactory.CreateWithName("Zenith"));
-        await _context.SaveChangesAsync();
-
-        // Act
-        (List<AlbumEntity> albums, int totalCount) = await _repository.GetAllAsync(
-            page: 1,
-            pageSize: 10,
-            search: "Anthem"
-        );
-
-        // Assert
-        albums.Should().ContainSingle();
-        totalCount.Should().Be(1);
-    }
-
     #endregion
 
     #region AddAsync Tests
