@@ -114,7 +114,7 @@ public class AdminArchiveArticleEndpointV1Tests(PostgresFixture db) : BaseApiTes
     [Fact]
     public async Task ArchiveArticle_WhenDraft_ReturnsBadRequest()
     {
-        // Arrange — archiving something never reviewed used to silently succeed
+        // Arrange
         ArticleEntity article = await SeedArticleAsync(ArticleFactory.Create);
         Client.AuthenticateAsSuperAdmin();
 
