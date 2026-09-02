@@ -77,7 +77,7 @@ public class DispatchDomainEventsInterceptorTests
 
         // Assert
         publisherMock.Verify(
-            p => p.Publish(It.Is<IDomainEvent>(e => e == domainEvent), It.IsAny<CancellationToken>()),
+            p => p.Publish(It.Is<IDomainEvent>(e => ReferenceEquals(e, domainEvent)), It.IsAny<CancellationToken>()),
             Times.Once
         );
     }
@@ -179,7 +179,7 @@ public class DispatchDomainEventsInterceptorTests
 
         // Assert
         publisherMock.Verify(
-            p => p.Publish(It.Is<IDomainEvent>(e => e == domainEvent), It.IsAny<CancellationToken>()),
+            p => p.Publish(It.Is<IDomainEvent>(e => ReferenceEquals(e, domainEvent)), It.IsAny<CancellationToken>()),
             Times.Once
         );
         aggregate.DomainEvents.Should().BeEmpty();
