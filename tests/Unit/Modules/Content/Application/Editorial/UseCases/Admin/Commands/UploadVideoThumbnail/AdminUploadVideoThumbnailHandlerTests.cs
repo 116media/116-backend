@@ -65,6 +65,7 @@ public class AdminUploadVideoThumbnailHandlerTests
         result.ThumbnailUrl.Should().Be(uploadedFile.StorageUrl);
         result.ThumbnailStorageKey.Should().Be(uploadedFile.StorageKey);
         _fileRepositoryMock.VerifyReplaceImageFileCalled();
+        _fileRepositoryMock.VerifyClaimed(uploadedFile.Id);
         _videoRepositoryMock.VerifyUpdateCalled(video);
         _unitOfWorkMock.VerifyCommitCalled();
     }
