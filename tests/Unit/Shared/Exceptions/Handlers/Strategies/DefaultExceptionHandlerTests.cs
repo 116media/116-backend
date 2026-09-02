@@ -83,7 +83,7 @@ public class DefaultExceptionHandlerTests
     [Fact]
     public void CreateProblemDetails_OutsideDevelopment_ShouldWithholdRawDetailAndSanitizeTitle()
     {
-        // Arrange — the raw message carries secrets that must never reach a client outside Development
+        // Arrange
         Exception exception = new("connection host=db-primary password=hunter2 database=116");
         DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext(Environments.Production);
 
