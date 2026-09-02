@@ -209,7 +209,7 @@ public class AdminGetAllSessionsHandlerTests : BaseHandlerTest
     [Fact]
     public async Task Handle_ShouldAdjustPageIndexForRepository()
     {
-        // Arrange - PageIndex is 0-based in query but 1-based for repository
+        // Arrange
         PaginatedRequest paginatedRequest = new(0, 10);
         AdminGetAllSessionsQuery query = new(PaginatedRequest: paginatedRequest);
         _sessionRepositoryMock.SetupGetAllWithPaginationEmpty();
