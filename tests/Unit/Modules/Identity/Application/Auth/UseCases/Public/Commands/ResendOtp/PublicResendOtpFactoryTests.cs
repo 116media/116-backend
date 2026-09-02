@@ -4,6 +4,7 @@ using _116.Identity.Application.Auth.UseCases.Public.Commands.ResendOtp;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
+using _116.Identity.Domain.Events;
 using _116.Identity.Domain.ValueObjects;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Identity;
@@ -228,4 +229,25 @@ public class PublicResendOtpFactoryTests
     }
 
     #endregion
+
+    [Fact]
+    public async Task ResendOtpAsync_ShouldRaiseTheIssuedEventCarryingThePlainCode()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        OtpPurpose purpose = EnumOtpPurpose.EmailVerification;
+        OtpEntity otp = OtpFactory.CreateForEmailVerification(userId);
+
+        _otpServiceMock.SetupCreateOtpReturns(otp, TestConstants.Otp.DefaultCode);
+
+        // Act
+        await _factory.ResendOtpAsync(userId, purpose, CancellationToken.None);
+
+        // Assert
+        OtpIssuedEvent issued = otp.DomainEvents.OfType<OtpIssuedEvent>().Should().ContainSingle().Subject;
+
+        issued.PlainCode.Should().Be(TestConstants.Otp.DefaultCode);
+        issued.UserId.Should().Be(userId);
+        issued.Culture.Should().NotBeNullOrWhiteSpace();
+    }
 }
