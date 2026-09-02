@@ -194,7 +194,7 @@ public class UserEntityTests
     [Fact]
     public void LinkProviderSubject_WhenNoSubjectYet_ShouldSetIt()
     {
-        // Arrange — an external account that predates subject-id tracking has a null subject id.
+        // Arrange
         var user = UserEntity.CreateExternal(
             Guid.NewGuid(),
             TestConstants.User.ValidUserName,
