@@ -189,7 +189,7 @@ public class AlbumEntityTests
     [Fact]
     public void Update_ShouldNeverExposeArtistIdChange()
     {
-        // Arrange — Update has no ArtistId parameter at all; linking is a separate concern.
+        // Arrange
         AlbumEntity album = AlbumEntity.Create(
             Guid.NewGuid(),
             TestConstants.Album.ValidName,
