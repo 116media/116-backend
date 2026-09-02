@@ -52,7 +52,7 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
     [Fact]
     public async Task ToShortVideoDtoAsync_WhenNoVideoFile_ShouldMapUrlsAsNull()
     {
-        // Arrange — draft short video has neither a video file nor a thumbnail file
+        // Arrange
         ShortVideoEntity entity = ShortVideoFactory.CreateDraft();
 
         // Act
@@ -74,7 +74,7 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
     [Fact]
     public async Task ToShortVideoDtoAsync_WhenNoManualThumbnail_ShouldGenerateAutoThumbnailUrl()
     {
-        // Arrange — a short video with a Cloudinary video file but no uploaded thumbnail
+        // Arrange
         ShortVideoEntity entity = ShortVideoFactory.Create();
         entity.ThumbnailFileId.Should().BeNull();
 
@@ -96,7 +96,7 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
     [Fact]
     public async Task ToShortVideoDtoAsync_WhenManualThumbnailExists_ShouldUseUploadedThumbnailUrl()
     {
-        // Arrange — a short video with both a video file and an uploaded thumbnail file
+        // Arrange
         ShortVideoEntity entity = ShortVideoFactory.CreateWithThumbnail();
         const string videoUrl = "https://res.cloudinary.com/demo/video/upload/v1/shorts/sample.mp4";
         const string thumbnailUrl = "https://res.cloudinary.com/demo/image/upload/v1/shorts/custom-thumb.jpg";
@@ -347,7 +347,7 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
     [Fact]
     public void ToShortVideoDto_IoFree_WhenThumbnailAndAvatarInMaps_ShouldResolveThem()
     {
-        // Arrange — an uploaded thumbnail takes precedence over the auto-generated URL,
+        // Arrange
         // and the author's avatar resolves from the same pre-fetched file map
         ShortVideoEntity entity = ShortVideoFactory.CreateWithThumbnail();
         var avatarFileId = Guid.NewGuid();
