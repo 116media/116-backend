@@ -50,6 +50,8 @@ public class AdminUploadArtistAvatarHandler(
         artistRepository.Update(artist: artist);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
+        await fileRepository.ClaimAsync(fileId: fileEntity.Id, cancellationToken: cancellationToken);
+
         return new AdminUploadArtistAvatarResult(
             AvatarUrl: fileEntity.StorageUrl,
             AvatarStorageKey: fileEntity.StorageKey!
