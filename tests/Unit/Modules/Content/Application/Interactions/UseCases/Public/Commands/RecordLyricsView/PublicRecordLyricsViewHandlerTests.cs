@@ -38,7 +38,7 @@ public class PublicRecordLyricsViewHandlerTests
     [Fact]
     public async Task Handle_ForVeryShortLyricsWithDwellAtAbsoluteFloor_ShouldCount()
     {
-        // Arrange — a one-word song has a near-zero expected read time, so the absolute
+        // Arrange
         // MinDwellFloor (not the word-count-derived requirement) is the binding constraint.
         LyricsEntity lyrics = CreateLyricsWithText("Yeah");
         _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
@@ -89,7 +89,7 @@ public class PublicRecordLyricsViewHandlerTests
     [Fact]
     public async Task Handle_ForVeryLongLyricsWithDwellAtMaxRequiredDwellCap_ShouldCount()
     {
-        // Arrange — a very long song's word-count-derived requirement would exceed
+        // Arrange
         // MaxRequiredDwell, so the cap (not the word count) is the binding constraint.
         string veryLongLyrics = string.Join(' ', Enumerable.Repeat("word", 2000));
         LyricsEntity lyrics = CreateLyricsWithText(veryLongLyrics);
@@ -198,7 +198,7 @@ public class PublicRecordLyricsViewHandlerTests
     [Fact]
     public async Task Handle_WithDwellJustBelowRequiredReadTimeRatio_ShouldNotCount()
     {
-        // Arrange — a mid-length song where the word-count-derived requirement (before the
+        // Arrange
         // MaxRequiredDwell cap kicks in) is the binding constraint.
         string lyricsText = string.Join(' ', Enumerable.Repeat("word", 100));
         LyricsEntity lyrics = CreateLyricsWithText(lyricsText);
@@ -265,7 +265,7 @@ public class PublicRecordLyricsViewHandlerTests
     [Fact]
     public async Task Handle_WhenReadTimeRuleFails_ShouldStillSucceedAndPersistRawEventUncounted()
     {
-        // Arrange — a bounce: negligible dwell and scroll depth.
+        // Arrange
         LyricsEntity lyrics = LyricsFactory.Create(Guid.NewGuid());
         _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
 
@@ -363,7 +363,7 @@ public class PublicRecordLyricsViewHandlerTests
     [Fact]
     public async Task Handle_WhenOnlyIpAddressIsAvailable_ShouldDeduplicateOnTheIpKey()
     {
-        // Arrange — no user id and no device id, so the IP address is the strongest signal left.
+        // Arrange
         LyricsEntity lyrics = LyricsFactory.Create(Guid.NewGuid());
         _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
 
@@ -393,7 +393,7 @@ public class PublicRecordLyricsViewHandlerTests
     [Fact]
     public async Task Handle_WhenUserIsAuthenticated_ShouldPreferTheUserDedupKeyOverDeviceAndIp()
     {
-        // Arrange — all three signals present; the user id must win.
+        // Arrange
         LyricsEntity lyrics = LyricsFactory.Create(Guid.NewGuid());
         _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
 
