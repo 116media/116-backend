@@ -33,7 +33,6 @@ public class PublicSignUpAuthFactoryTests
     private readonly Mock<IOtpService> _otpServiceMock;
     private readonly Mock<IUserTokenStateRepository> _tokenStateRepositoryMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
-    private readonly Mock<IMailer> _mailerMock = new();
     private readonly PublicSignUpAuthFactory _factory;
 
     public PublicSignUpAuthFactoryTests()
@@ -51,8 +50,7 @@ public class PublicSignUpAuthFactoryTests
             _passwordServiceMock.Object,
             _otpServiceMock.Object,
             _tokenStateRepositoryMock.Object,
-            _unitOfWorkMock.Object,
-            _mailerMock.Object
+            _unitOfWorkMock.Object
         );
     }
 
@@ -77,17 +75,6 @@ public class PublicSignUpAuthFactoryTests
         await _factory.RegisterAsync(email, userName, password, CancellationToken.None);
 
         // Assert
-        _mailerMock.Verify(
-            x =>
-                x.EnqueueAsync(
-                    EnumEmailTemplate.EmailVerificationOtp,
-                    It.IsAny<EmailRecipient>(),
-                    It.Is<IReadOnlyDictionary<string, string>>(t => t["otpCode"] == TestConstants.Otp.DefaultCode),
-                    It.IsAny<string>(),
-                    It.IsAny<CancellationToken>()
-                ),
-            Times.Once
-        );
         _otpRepositoryMock.Verify(
             x =>
                 x.AddAsync(
