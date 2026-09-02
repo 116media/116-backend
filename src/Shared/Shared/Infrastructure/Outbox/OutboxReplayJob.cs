@@ -59,7 +59,6 @@ public abstract class OutboxReplayJob<TContext>(IServiceScopeFactory scopeFactor
 
             if (domainEvent is null)
             {
-                // The event type no longer exists; retrying forever would never succeed.
                 row.MarkFailed($"Event type '{row.EventType}' could not be resolved.");
                 continue;
             }
