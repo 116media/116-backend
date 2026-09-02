@@ -60,7 +60,7 @@ public class AdminAttachPaymentProofEndpointV1Tests(PostgresFixture db) : BaseAp
     [Fact]
     public async Task AttachPaymentProof_WhenPaymentAlreadyVerified_ReturnsConflictAndKeepsTheOriginalProof()
     {
-        // Arrange — proof on a decided payment is the evidence the decision rests on
+        // Arrange
         CustomerEntity customer = CustomerFactory.Create();
         ContentOrderEntity order = ContentOrderFactory.CreateForCustomer(customer.Id);
         ContentPaymentEntity payment = ContentPaymentFactory.CreateVerified(order.Id);
