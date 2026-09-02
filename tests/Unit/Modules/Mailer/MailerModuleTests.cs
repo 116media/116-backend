@@ -212,7 +212,7 @@ public class MailerModuleTests : IDisposable
     [Fact]
     public void AddMailerModule_WithAnUppercaseProvider_ShouldStillMatchTheBranch()
     {
-        // Arrange — the switch lowercases the value, so casing never decides delivery.
+        // Arrange
         Environment.SetEnvironmentVariable(EmailProviderVariable, "SMTP");
 
         // Act
