@@ -47,7 +47,7 @@ public class OrderCancelledEmailHandlerTests
     [Fact]
     public async Task Handle_WhenOrderNotFound_ShouldSkipTheEmail()
     {
-        // Arrange — repository returns null by default
+        // Arrange
 
         // Act
         await _handler.Handle(new OrderCancelledEvent(Guid.NewGuid()), CancellationToken.None);
