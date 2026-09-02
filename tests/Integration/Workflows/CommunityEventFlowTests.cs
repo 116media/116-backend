@@ -5,7 +5,9 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.RejectLyricsSub
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.VerifyArtistOwner.V1;
 using _116.Content.Application.Interactions.UseCases.Public.Commands.AddCommentReply.V1;
 using _116.Content.Domain.Entities;
+using _116.Content.Infrastructure.BackgroundJobs;
 using _116.Content.Infrastructure.Persistence;
+using _116.Integration.Tests.Common.Stubs;
 using _116.Mailer.Contracts.Domain;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Infrastructure.Persistence;
@@ -78,6 +80,8 @@ public class CommunityEventFlowTests(PostgresFixture db) : BaseApiTest(db)
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        await RunContentReplayAsync();
 
         await using MailerDbContext mailerContext = CreateDbContext<MailerDbContext>();
         var outbox = await mailerContext
@@ -330,5 +334,16 @@ public class CommunityEventFlowTests(PostgresFixture db) : BaseApiTest(db)
             n.Type == EnumNotificationType.CommentReply
         );
         anyReplyNotification.Should().BeFalse();
+    }
+
+    /// <summary>
+    /// Runs the Content module's replay job once, delivering events raised inside a transaction.
+    /// </summary>
+    private async Task RunContentReplayAsync()
+    {
+        using IServiceScope scope = Api.Services.CreateScope();
+        var job = scope.ServiceProvider.GetRequiredService<ContentOutboxReplayJob>();
+
+        await job.Execute(new TestJobExecutionContext());
     }
 }
