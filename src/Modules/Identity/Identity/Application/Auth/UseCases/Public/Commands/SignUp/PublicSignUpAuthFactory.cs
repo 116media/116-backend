@@ -1,15 +1,11 @@
-using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.Repositories;
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp.Contracts;
-using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.ValueObjects;
-using _116.Mailer.Contracts.Application;
-using _116.Mailer.Contracts.Domain;
 using _116.Shared.Application.Localization;
 
 namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp;
@@ -23,15 +19,13 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp;
 /// <param name="otpService">Service for generating OTP codes.</param>
 /// <param name="tokenStateRepository">Repository creating the user's token-invalidation record.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="mailer">Outbox mailer delivering the verification code.</param>
 public class PublicSignUpAuthFactory(
     IAuthRepository authRepository,
     IOtpRepository otpRepository,
     IPasswordService passwordService,
     IOtpService otpService,
     IUserTokenStateRepository tokenStateRepository,
-    IIdentityUnitOfWork unitOfWork,
-    IMailer mailer
+    IIdentityUnitOfWork unitOfWork
 ) : IPublicSignUpAuthFactory
 {
     /// <summary>
@@ -68,20 +62,10 @@ public class PublicSignUpAuthFactory(
         );
 
         await otpRepository.AddAsync(otp: verificationOtp.Otp, cancellationToken: cancellationToken);
-        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
-        await mailer.EnqueueAsync(
-            template: EnumEmailTemplate.EmailVerificationOtp,
-            to: new EmailRecipient(Address: email, DisplayName: userName),
-            tokens: new Dictionary<string, string>
-            {
-                ["userName"] = userName,
-                ["otpCode"] = verificationOtp.PlainCode,
-                ["expiryMinutes"] = UserConstants.OtpExpirationMinutes.ToString(),
-            },
-            culture: EmailCulture.Current(),
-            cancellationToken: cancellationToken
-        );
+        verificationOtp.Otp.MarkIssued(plainCode: verificationOtp.PlainCode, culture: EmailCulture.Current());
+
+        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         // Get the newly created user with roles to generate token
         UserEntity? userWithRoles = await authRepository.GetUserWithRolesAndPermissionsByCredentialsOrThrow(
