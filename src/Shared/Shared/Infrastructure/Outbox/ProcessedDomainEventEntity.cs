@@ -4,6 +4,10 @@ namespace _116.Shared.Infrastructure.Outbox;
 /// Records that one handler completed for one event, so a replayed event cannot apply a
 /// non-idempotent reaction twice.
 /// </summary>
+/// <remarks>
+/// Rows are written by an atomic insert that ignores conflicts, never through the change
+/// tracker, so this type exists to shape the table rather than to be constructed.
+/// </remarks>
 public class ProcessedDomainEventEntity
 {
     /// <summary>
@@ -22,20 +26,4 @@ public class ProcessedDomainEventEntity
     public DateTime ProcessedAt { get; private set; }
 
     private ProcessedDomainEventEntity() { }
-
-    /// <summary>
-    /// Records a completed handler invocation.
-    /// </summary>
-    /// <param name="eventId">The handled event.</param>
-    /// <param name="handlerName">The handler that completed.</param>
-    /// <returns>The row to persist.</returns>
-    public static ProcessedDomainEventEntity Create(Guid eventId, string handlerName)
-    {
-        return new ProcessedDomainEventEntity
-        {
-            EventId = eventId,
-            HandlerName = handlerName,
-            ProcessedAt = DateTime.UtcNow,
-        };
-    }
 }
