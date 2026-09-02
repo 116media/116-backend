@@ -16,6 +16,7 @@ public static class MockIdentityUnitOfWork
     {
         Mock<IIdentityUnitOfWork> mock = new();
         SetupDefaultCommit(mock);
+        SetupExecuteInTransaction(mock);
         return mock;
     }
 
@@ -43,10 +44,6 @@ public static class MockIdentityUnitOfWork
         return mock;
     }
 
-    /// <summary>
-    /// Verifies that CommitAsync was called exactly once.
-    /// </summary>
-    /// <param name="mock">The mock instance.</param>
     /// <summary>
     /// Runs the transactional operation inline so handlers under test execute their body.
     /// </summary>
