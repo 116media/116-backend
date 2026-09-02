@@ -61,7 +61,7 @@ public class UserTokenStateRepositoryTests(PostgresFixture postgres) : BaseRepos
     [Fact]
     public async Task GetOrCreateAsync_ForAUserWithoutARecord_ProvisionsAndPersistsOne()
     {
-        // Arrange — strip the interceptor-provided record to reproduce a pre-migration account
+        // Arrange
         Guid userId = await SeedUserAsync();
         await using (IdentityDbContext arrangeContext = CreateDbContext<IdentityDbContext>())
         {
@@ -152,7 +152,7 @@ public class UserTokenStateRepositoryTests(PostgresFixture postgres) : BaseRepos
     [Fact]
     public async Task BumpTokenVersionForRoleUsersAsync_BumpsEveryMemberAndOnlyMembers()
     {
-        // Arrange — two users hold the role, one does not
+        // Arrange
         Guid memberOneId = await SeedUserAsync();
         Guid memberTwoId = await SeedUserAsync();
         Guid outsiderId = await SeedUserAsync();
