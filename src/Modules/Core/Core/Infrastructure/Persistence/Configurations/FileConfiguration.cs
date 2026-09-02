@@ -49,7 +49,6 @@ public class FileConfiguration : IEntityTypeConfiguration<FileEntity>
 
         builder.HasIndex(f => f.IsDeleted);
 
-        // The reaper's scan: uploads still waiting to be claimed, oldest first.
         builder.HasIndex(f => f.CreatedAt).HasFilter("claimed_at IS NULL AND is_deleted = false");
     }
 }
