@@ -117,7 +117,7 @@ public class MapperExtensionTests : BaseContentHandlerTest
     [Fact]
     public void ToPackageSlotDto_WithOpenSlot_ShouldMapWithNullCategoryName()
     {
-        // Arrange — open slot has no category (categoryId = null)
+        // Arrange
         PackageSlotEntity entity = PackageSlotFactory.CreateOpen(Guid.NewGuid());
 
         // Act
