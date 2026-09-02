@@ -53,6 +53,11 @@ public class PublicSocialLoginAuthFactory(
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
+        if (avatarFileEntity is not null)
+        {
+            await fileRepository.ClaimAsync(fileId: avatarFileEntity.Id, cancellationToken: cancellationToken);
+        }
+
         List<RolePermissionEntity> userPermissions = user.UserRoles.SelectMany(ur => ur.Role.RolePermissions).ToList();
 
         return new PublicSocialLoginAuthData(User: user, UserPermissions: userPermissions);
