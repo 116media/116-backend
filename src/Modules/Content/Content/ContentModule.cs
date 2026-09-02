@@ -27,7 +27,6 @@ using _116.Content.Application.Shared.Services;
 using _116.Content.Domain.Constants;
 using _116.Content.Domain.Events;
 using _116.Content.Infrastructure.BackgroundJobs;
-using _116.Content.Infrastructure.Outbox;
 using _116.Content.Infrastructure.Persistence;
 using _116.Content.Infrastructure.Persistence.Seeds.ContentTypes;
 using _116.Content.Infrastructure.Repositories;
@@ -131,7 +130,6 @@ public static class ContentModule
 
         services.AddScoped<IContentUnitOfWork, ContentUnitOfWork>();
         services.AddScoped(typeof(IContentRepository<>), typeof(ContentRepository<>));
-        services.AddScoped<IProcessedDomainEventStore, ContentProcessedDomainEventStore>();
 
         // Replay delivers events raised inside a transaction, not just retries failed dispatches.
         services.AddScheduledJob<ContentOutboxReplayJob>(cronExpression: "0 */1 * * * ?");
