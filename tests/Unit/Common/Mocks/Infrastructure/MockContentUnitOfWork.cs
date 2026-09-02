@@ -16,6 +16,7 @@ public static class MockContentUnitOfWork
     {
         Mock<IContentUnitOfWork> mock = new();
         SetupDefaultCommit(mock);
+        SetupExecuteInTransaction(mock);
         return mock;
     }
 
@@ -44,10 +45,6 @@ public static class MockContentUnitOfWork
     }
 
     /// <summary>
-    /// Verifies that CommitAsync was called exactly once.
-    /// </summary>
-    /// <param name="mock">The mock instance.</param>
-    /// <summary>
     /// Runs the transactional operation inline so handlers under test execute their body.
     /// </summary>
     /// <param name="mock">The mock instance.</param>
@@ -75,6 +72,10 @@ public static class MockContentUnitOfWork
         );
     }
 
+    /// <summary>
+    /// Verifies that CommitAsync was called exactly once.
+    /// </summary>
+    /// <param name="mock">The mock instance.</param>
     public static void VerifyCommitCalled(this Mock<IContentUnitOfWork> mock)
     {
         mock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
