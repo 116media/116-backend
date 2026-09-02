@@ -498,7 +498,7 @@ public class SpecificationTests
     [Fact]
     public void ComplexComposition_AndOrNot_ShouldWorkCorrectly()
     {
-        // Arrange - (Value > 5 AND Value < 15) OR Name contains "Special"
+        // Arrange
         GreaterThanSpecification greaterThan5 = new(5);
         LessThanSpecification lessThan15 = new(15);
         NameContainsSpecification nameContainsSpecial = new("Special");
@@ -518,7 +518,7 @@ public class SpecificationTests
     [Fact]
     public void ComplexComposition_NestedAnd_ShouldWorkCorrectly()
     {
-        // Arrange - ((Value > 5 AND Value < 15) AND Name contains "Test")
+        // Arrange
         GreaterThanSpecification greaterThan5 = new(5);
         LessThanSpecification lessThan15 = new(15);
         NameContainsSpecification nameContainsTest = new("Test");
