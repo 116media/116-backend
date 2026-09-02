@@ -333,7 +333,7 @@ public class ArtistEntityTests
     [Fact]
     public void Create_WithBlankAndDuplicateAliases_ShouldNormaliseThem()
     {
-        // Arrange — blanks dropped, whitespace trimmed, case-insensitive dedupe keeps first casing.
+        // Arrange
         ArtistEntity artist = ArtistEntity.Create(
             Guid.NewGuid(),
             TestConstants.Artist.ValidName,
