@@ -152,7 +152,7 @@ public class AndSpecificationTests
     [Fact]
     public void IsSatisfiedBy_WithBoundaryValueOnLeft_ShouldBehaveLikeGreaterThan()
     {
-        // Arrange - Testing exact boundary (value = 5, threshold = 5)
+        // Arrange
         GreaterThanSpecification left = new(5);
         LessThanSpecification right = new(15);
         AndSpecification<TestEntity> andSpec = new(left, right);
@@ -168,7 +168,7 @@ public class AndSpecificationTests
     [Fact]
     public void IsSatisfiedBy_WithBoundaryValueOnRight_ShouldBehaveLikeLessThan()
     {
-        // Arrange - Testing exact boundary (value = 15, threshold = 15)
+        // Arrange
         GreaterThanSpecification left = new(5);
         LessThanSpecification right = new(15);
         AndSpecification<TestEntity> andSpec = new(left, right);
