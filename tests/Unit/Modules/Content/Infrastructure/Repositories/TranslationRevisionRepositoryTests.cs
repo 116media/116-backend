@@ -147,7 +147,7 @@ public class TranslationRevisionRepositoryTests : IDisposable
     [Fact]
     public async Task GetAcceptedButUnappliedAsync_ShouldReturnOnlyAcceptedRevisionsNotYetAppliedToTheirTranslation()
     {
-        // Arrange — one accepted revision whose text differs from its translation (unapplied),
+        // Arrange
         // one accepted revision already applied, and one still pending
         var lyricsId = Guid.NewGuid();
         LyricsTranslationEntity unappliedTranslation = LyricsTranslationFactory.CreateWithText(
