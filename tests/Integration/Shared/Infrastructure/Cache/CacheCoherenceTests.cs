@@ -86,7 +86,7 @@ public sealed class CacheCoherenceTests : IAsyncLifetime
     [Fact]
     public async Task GetOrCreate_OnASecondInstance_ShouldServeTheEntryTheFirstInstanceStored()
     {
-        // Arrange — instance A fills the shared L2
+        // Arrange
         string key = $"coherence:share:{Guid.NewGuid():N}";
         int factoryACalls = 0;
         int factoryBCalls = 0;
@@ -121,7 +121,7 @@ public sealed class CacheCoherenceTests : IAsyncLifetime
     [Fact]
     public async Task RemoveByTag_OnOneInstance_ShouldReachAWarmInstanceThroughTheBackplane()
     {
-        // Arrange — instance A stores a tagged entry AND holds a warm local view of the tag,
+        // Arrange
         // which the hybrid cache never re-reads on its own. Without the backplane this test
         // fails: A would serve the entry until its TTL. This is the guarantee production
         // relies on — every instance subscribes at construction, so any later eviction
