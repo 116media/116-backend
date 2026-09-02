@@ -388,7 +388,7 @@ public class PermissionEntityTests
     [Fact]
     public void Activate_WhenAlreadyActive_ShouldRaiseNothing()
     {
-        // Arrange — a no-op transition must not evict the lookup cache
+        // Arrange
         var permission = PermissionEntity.Create(Guid.NewGuid(), "articles", "read", "Read articles");
         permission.ClearDomainEvents();
 
