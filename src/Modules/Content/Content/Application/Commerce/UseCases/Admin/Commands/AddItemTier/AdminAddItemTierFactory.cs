@@ -85,8 +85,6 @@ public class AdminAddItemTierFactory(
                 priceSnapshotUsd: categoryPricing.PriceUsd
             );
 
-            // Attaching the tier and re-totalling the order share one transaction, so the order
-            // can never be read with the tier attached but its total stale.
             await unitOfWork.ExecuteInTransactionAsync(
                 async ct =>
                 {
