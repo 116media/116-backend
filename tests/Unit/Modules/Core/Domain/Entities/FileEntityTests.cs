@@ -413,7 +413,6 @@ public class FileEntityTests
     public void Claim_CalledTwice_ShouldKeepTheFirstClaim()
     {
         // Arrange
-        // A retried request must not look like a fresh claim, or the audit trail moves.
         FileEntity file = FileFactory.CreateImage();
         file.Claim();
         DateTime? firstClaim = file.ClaimedAt;
@@ -430,7 +429,6 @@ public class FileEntityTests
     public void Claim_ShouldBeUnsetOnAnUploadNothingReferences()
     {
         // Arrange & Act
-        // Unclaimed is the state the reaper looks for, so a new upload must start there.
         FileEntity file = FileFactory.CreateImage();
 
         // Assert
