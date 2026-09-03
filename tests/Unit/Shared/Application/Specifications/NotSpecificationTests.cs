@@ -3,7 +3,7 @@ using _116.Shared.Application.Specifications;
 using AwesomeAssertions;
 using Xunit;
 
-namespace _116.Unit.Tests.Shared.Specifications;
+namespace _116.Unit.Tests.Shared.Application.Specifications;
 
 /// <summary>
 /// Unit tests for <see cref="NotSpecification{T}"/>.
