@@ -1,0 +1,850 @@
+// content schema — final applied state, generated from applied-full.sql.
+// This is DBML: paste it directly into the dbdiagram.io editor pane.
+
+Table "content"."albums" {
+  "id" uuid [pk]
+  "name" varchar(200) [not null]
+  "artist_id" uuid
+  "cover_image_file_id" uuid
+  "release_year" smallint
+  "label" varchar(100)
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+  "release_type" integer [not null, default: 0]
+  Indexes {
+    ("artist_id", "release_type")
+  }
+}
+
+Table "content"."article_artists" {
+  "id" uuid [pk]
+  "article_id" uuid [not null]
+  "artist_id" uuid [not null]
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+  Indexes {
+    ("article_id", "artist_id") [unique]
+  }
+}
+
+Table "content"."article_bookmarks" {
+  "id" uuid [pk]
+  "user_id" uuid [not null]
+  "article_id" uuid [not null]
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+  Indexes {
+    ("user_id", "article_id") [unique]
+  }
+}
+
+Table "content"."article_comment_likes" {
+  "id" uuid [pk]
+  "user_id" uuid [not null]
+  "comment_id" uuid [not null]
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+  Indexes {
+    ("comment_id", "user_id") [unique]
+  }
+}
+
+Table "content"."article_comments" {
+  "id" uuid [pk]
+  "user_id" uuid [not null]
+  "article_id" uuid [not null]
+  "body" varchar(1000) [not null]
+  "is_deleted" boolean [not null, default: false]
+  "deleted_at" timestamptz
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+  "like_count" integer [not null, default: 0]
+  "parent_comment_id" uuid
+  Indexes {
+    ("user_id", "is_deleted", "created_at", "article_id")
+  }
+}
+
+Table "content"."article_images" {
+  "id" uuid [pk]
+  "article_id" uuid [not null]
+  "storage_key" text [not null]
+  "url" varchar(500) [not null]
+  "image_type" text [not null, default: `'Cover'`]
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+}
+
+Table "content"."article_likes" {
+  "id" uuid [pk]
+  "user_id" uuid [not null]
+  "article_id" uuid [not null]
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+  Indexes {
+    ("user_id", "article_id") [unique]
+  }
+}
+
+Table "content"."article_shares" {
+  "id" uuid [pk]
+  "user_id" uuid
+  "article_id" uuid [not null]
+  "created_at" timestamptz [not null]
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+  "share_channel" varchar(50)
+  Indexes {
+    ("user_id", "created_at", "article_id")
+  }
+}
+
+Table "content"."article_tags" {
+  "id" uuid [pk]
+  "article_id" uuid [not null]
+  "tag_id" uuid [not null]
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+  Indexes {
+    ("article_id", "tag_id") [unique]
+  }
+}
+
+Table "content"."articles" {
+  "id" uuid [pk]
+  "customer_id" uuid
+  "order_item_id" uuid
+  "category_id" uuid [not null]
+  "title" varchar(100) [not null, unique]
+  "slug" varchar(220) [not null, unique]
+  "headline" varchar(500) [not null, default: `''`]
+  "body" text [not null, default: `''`]
+  "author_id" uuid [not null]
+  "social_boost" boolean [not null, default: false]
+  "is_promoted" boolean [not null, default: false]
+  "unpromoted_at" timestamptz
+  "status" text [not null, default: `'Draft'`]
+  "rejection_reason" varchar(500)
+  "published_at" timestamptz
+  "meta_title" varchar(70)
+  "meta_description" varchar(160)
+  "like_count" integer [not null, default: 0]
+  "comment_count" integer [not null, default: 0]
+  "share_count" integer [not null, default: 0]
+  "bookmark_count" integer [not null, default: 0]
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+  "promoted_until" timestamptz
+  "unpromoted_by" text
+  "unpromoted_reason" varchar(500)
+  "promotion_level_id" uuid
+  "cover_image_file_id" uuid
+  Indexes {
+    ("category_id", "status", "published_at")
+    ("status", "published_at")
+  }
+}
+
+Table "content"."artist_claim_requests" {
+  "id" uuid [pk]
+  "artist_id" uuid [not null]
+  "user_id" uuid [not null]
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+  Indexes {
+    ("artist_id", "user_id") [unique]
+  }
+}
+
+Table "content"."artist_social_links" {
+  "id" uuid [pk]
+  "artist_id" uuid [not null]
+  "platform" integer [not null]
+  "url" varchar(500) [not null]
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+  Indexes {
+    ("artist_id", "platform") [unique]
+  }
+}
+
+Table "content"."artists" {
+  "id" uuid [pk]
+  "name" varchar(100) [not null]
+  "slug" varchar(220) [not null, unique]
+  "bio" text
+  "avatar_file_id" uuid
+  "user_id" uuid
+  "verified_at" timestamptz
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+  "aliases" text[] [not null, default: `'{}'`]
+  "birthdate" date
+  "hometown" varchar(120)
+  "initial_letter" varchar(1) [not null, default: `''`]
+  "name_folded" varchar(100) [not null, default: `''`]
+  "real_name" varchar(150)
+  Indexes {
+    ("initial_letter", "name_folded")
+  }
+}
+
+Table "content"."categories" {
+  "id" uuid [pk]
+  "content_type_id" uuid [not null]
+  "name" varchar(60) [not null, unique]
+  "slug" varchar(80) [not null, unique]
+  "description" varchar(300) [not null]
+  "is_free" boolean [not null, default: false]
+  "is_active" boolean [not null, default: true]
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+  "is_gossip_fallback" boolean [not null, default: false]
+  "is_exclusive" boolean [not null, default: false]
+  "poster_file_id" uuid
+  "pinned_to_feed_at" timestamptz
+  "is_default_for_lyrics" boolean [not null, default: false]
+}
+
+Table "content"."category_pricing" {
+  "id" uuid [pk]
+  "category_id" uuid [not null]
+  "pricing_tier_id" uuid [not null]
+  "price_usd" numeric(10,2) [not null]
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+  Indexes {
+    ("category_id", "pricing_tier_id") [unique]
+  }
+}
+
+Table "content"."content_item_tiers" {
+  "id" uuid [pk]
+  "order_item_id" uuid [not null]
+  "pricing_tier_id" uuid [not null]
+  "price_snapshot_usd" numeric(10,2) [not null]
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+}
+
+Table "content"."content_order_items" {
+  "id" uuid [pk]
+  "order_id" uuid [not null]
+  "content_kind" integer [not null]
+  "category_id" uuid [not null]
+  "promotion_level_id" uuid
+  "promo_price_snapshot_usd" numeric(10,2)
+  "social_boost" boolean [not null]
+  "is_bonus" boolean [not null]
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+}
+
+Table "content"."content_orders" {
+  "id" uuid [pk]
+  "customer_id" uuid [not null]
+  "package_id" uuid
+  "total_amount_usd" numeric(10,2) [not null]
+  "status" integer [not null]
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+}
+
+Table "content"."content_payments" {
+  "id" uuid [pk]
+  "order_id" uuid [not null, unique]
+  "amount_usd" numeric(10,2) [not null]
+  "payment_method" integer
+  "payment_proof_file_id" uuid
+  "status" integer [not null]
+  "verified_by_id" uuid
+  "verified_at" timestamptz
+  "receipt_url" varchar(500)
+  "notes" varchar(1000)
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+}
+
+Table "content"."content_types" {
+  "id" uuid [pk]
+  "name" varchar(30) [not null, unique]
+  "is_active" boolean [not null, default: true]
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+}
+
+Table "content"."customers" {
+  "id" uuid [pk]
+  "full_name" varchar(100) [not null]
+  "email" varchar(200) [not null, unique]
+  "phone" varchar(30)
+  "company" varchar(100)
+  "notes" varchar(500)
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+}
+
+Table "content"."domain_event_outbox" {
+  "id" uuid [pk]
+  "event_type" varchar(500) [not null]
+  "payload" text [not null]
+  "occurred_on" timestamptz [not null]
+  "dispatched_at" timestamptz
+  "attempt_count" integer [not null, default: 0]
+  "last_error" text
+}
+
+Table "content"."lyrics" {
+  "id" uuid [pk]
+  "author_id" uuid [not null]
+  "video_id" uuid
+  "song_title" varchar(200) [not null]
+  "artist_name" varchar(100) [not null]
+  "lyrics_text" text [not null]
+  "language" varchar(5) [not null, default: `'fr'`]
+  "meta_title" varchar(70)
+  "meta_description" varchar(160)
+  "structured_data" jsonb
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+  "category_id" uuid [not null, default: `'00000000-0000-0000-0000-000000000000'`]
+  "customer_id" uuid
+  "order_item_id" uuid
+  "published_at" timestamptz
+  "rejection_reason" varchar(500)
+  "slug" varchar(220) [not null, default: `''`, unique]
+  "status" text [not null, default: `'Draft'`]
+  "album" varchar(200)
+  "cover_image_file_id" uuid
+  "label" varchar(100)
+  "producer" varchar(100)
+  "release_year" smallint
+  "songwriter" varchar(100)
+  "album_id" uuid
+  "artist_id" uuid
+  "is_promoted" boolean [not null, default: false]
+  "promoted_until" timestamptz
+  "unpromoted_at" timestamptz
+  "unpromoted_by" text
+  "unpromoted_reason" varchar(500)
+  "like_count" integer [not null, default: 0]
+  "share_count" integer [not null, default: 0]
+  "view_count" integer [not null, default: 0]
+  Indexes {
+    ("artist_id", "status")
+  }
+}
+
+Table "content"."lyrics_likes" {
+  "id" uuid [pk]
+  "user_id" uuid [not null]
+  "lyrics_id" uuid [not null]
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+  Indexes {
+    ("user_id", "lyrics_id") [unique]
+  }
+}
+
+Table "content"."lyrics_revision_votes" {
+  "id" uuid [pk]
+  "revision_id" uuid [not null]
+  "user_id" uuid [not null]
+  "vote" text [not null]
+  "comment" text
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+  Indexes {
+    ("revision_id", "user_id") [unique]
+  }
+}
+
+Table "content"."lyrics_revisions" {
+  "id" uuid [pk]
+  "lyrics_id" uuid [not null]
+  "proposed_text" text [not null]
+  "edit_summary" text
+  "proposed_by_user_id" uuid [not null]
+  "status" text [not null, default: `'Pending'`]
+  "decided_by_user_id" uuid
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+}
+
+Table "content"."lyrics_shares" {
+  "id" uuid [pk]
+  "user_id" uuid
+  "lyrics_id" uuid [not null]
+  "share_channel" varchar(50)
+  "created_at" timestamptz [not null]
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+  Indexes {
+    ("user_id", "created_at", "lyrics_id")
+  }
+}
+
+Table "content"."lyrics_submissions" {
+  "id" uuid [pk]
+  "song_title" varchar(200) [not null]
+  "artist_name" varchar(100) [not null]
+  "lyrics_text" text [not null]
+  "language" varchar(5) [not null]
+  "submitted_by_user_id" uuid [not null]
+  "status" text [not null, default: `'Pending'`]
+  "reviewed_by_user_id" uuid
+  "review_note" text
+  "published_lyrics_id" uuid
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+}
+
+Table "content"."lyrics_tags" {
+  "id" uuid [pk]
+  "lyrics_id" uuid [not null]
+  "tag_id" uuid [not null]
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+  Indexes {
+    ("lyrics_id", "tag_id") [unique]
+  }
+}
+
+Table "content"."lyrics_translation_revisions" {
+  "id" uuid [pk]
+  "translation_id" uuid [not null]
+  "proposed_text" text [not null]
+  "edit_summary" text
+  "proposed_by_user_id" uuid [not null]
+  "status" text [not null, default: `'Pending'`]
+  "decided_by_user_id" uuid
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+}
+
+Table "content"."lyrics_translation_votes" {
+  "id" uuid [pk]
+  "revision_id" uuid [not null]
+  "user_id" uuid [not null]
+  "vote" text [not null]
+  "comment" text
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+  Indexes {
+    ("revision_id", "user_id") [unique]
+  }
+}
+
+Table "content"."lyrics_translations" {
+  "id" uuid [pk]
+  "lyrics_id" uuid [not null]
+  "language" text [not null]
+  "text" text [not null]
+  "source" text [not null]
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+  Indexes {
+    ("lyrics_id", "language") [unique]
+  }
+}
+
+Table "content"."lyrics_view_events" {
+  "id" uuid [pk]
+  "lyrics_id" uuid [not null]
+  "user_id" uuid
+  "dedup_key" varchar(100) [not null]
+  "ip_address" varchar(64)
+  "user_agent" varchar(500)
+  "is_counted" boolean [not null]
+  "dwell_ms" integer [not null]
+  "scroll_depth_ratio" double [not null]
+  "created_at" timestamptz [not null]
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+  Indexes {
+    ("lyrics_id", "dedup_key", "created_at")
+  }
+}
+
+Table "content"."package_slots" {
+  "id" uuid [pk]
+  "package_id" uuid [not null]
+  "category_id" uuid
+  "is_required" boolean [not null]
+  "quantity" integer [not null]
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+}
+
+Table "content"."packages" {
+  "id" uuid [pk]
+  "name" varchar(100) [not null]
+  "description" varchar(500) [not null]
+  "is_active" boolean [not null, default: true]
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+}
+
+Table "content"."playlist_videos" {
+  "id" uuid [pk]
+  "playlist_id" uuid [not null]
+  "video_id" uuid [not null]
+  "sort_order" integer [not null]
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+  Indexes {
+    ("playlist_id", "video_id") [unique]
+  }
+}
+
+Table "content"."playlists" {
+  "id" uuid [pk]
+  "user_id" uuid [not null]
+  "name" varchar(100) [not null]
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+}
+
+Table "content"."pricing_tiers" {
+  "id" uuid [pk]
+  "name" varchar(40) [not null, unique]
+  "description" varchar(200) [not null]
+  "is_active" boolean [not null, default: true]
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+}
+
+Table "content"."promotion_levels" {
+  "id" uuid [pk]
+  "name" varchar(40) [not null, unique]
+  "duration_days" integer [not null]
+  "price_usd" numeric(10,2) [not null]
+  "is_active" boolean [not null, default: true]
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+  "spot_priority" integer
+  Note: 'CHECK: ck_promotion_levels_spot_priority'
+}
+
+Table "content"."short_video_bookmarks" {
+  "id" uuid [pk]
+  "user_id" uuid [not null]
+  "short_video_id" uuid [not null]
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+  Indexes {
+    ("user_id", "short_video_id") [unique]
+  }
+}
+
+Table "content"."short_video_likes" {
+  "id" uuid [pk]
+  "user_id" uuid [not null]
+  "short_video_id" uuid [not null]
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+  Indexes {
+    ("user_id", "short_video_id") [unique]
+  }
+}
+
+Table "content"."short_video_shares" {
+  "id" uuid [pk]
+  "user_id" uuid
+  "short_video_id" uuid [not null]
+  "created_at" timestamptz [not null]
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+  "share_channel" varchar(50)
+  Indexes {
+    ("user_id", "created_at", "short_video_id")
+  }
+}
+
+Table "content"."short_video_view_events" {
+  "id" uuid [pk]
+  "short_video_id" uuid [not null]
+  "user_id" uuid
+  "dedup_key" varchar(100) [not null]
+  "ip_address" varchar(64)
+  "user_agent" varchar(500)
+  "is_counted" boolean [not null]
+  "created_at" timestamptz [not null]
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+  Indexes {
+    ("short_video_id", "dedup_key", "created_at")
+  }
+}
+
+Table "content"."short_videos" {
+  "id" uuid [pk]
+  "title" varchar(200) [not null, unique]
+  "slug" varchar(220) [not null, unique]
+  "video_id" uuid
+  "has_full_video" boolean [not null, default: false]
+  "is_active" boolean [not null, default: true]
+  "view_count" integer [not null, default: 0]
+  "like_count" integer [not null, default: 0]
+  "share_count" integer [not null, default: 0]
+  "bookmark_count" integer [not null, default: 0]
+  "author_id" uuid [not null]
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+  "thumbnail_file_id" uuid
+  "video_file_id" uuid [default: `'00000000-0000-0000-0000-000000000000'`]
+  "feed_rank" bigint [not null, default: 0, unique]
+  Indexes {
+    ("is_active", "created_at")
+  }
+}
+
+Table "content"."streaming_links" {
+  "id" uuid [pk]
+  "album_id" uuid
+  "lyrics_id" uuid
+  "platform" integer [not null]
+  "url" varchar(500) [not null]
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+  Indexes {
+    ("album_id", "platform") [unique]
+    ("lyrics_id", "platform") [unique]
+  }
+  Note: 'CHECK: ck_streaming_links_exactly_one_target'
+}
+
+Table "content"."tags" {
+  "id" uuid [pk]
+  "name" varchar(50) [not null, unique]
+  "slug" varchar(60) [not null, unique]
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+}
+
+Table "content"."video_ratings" {
+  "id" uuid [pk]
+  "user_id" uuid [not null]
+  "video_id" uuid [not null]
+  "stars" smallint [not null]
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+  Indexes {
+    ("user_id", "video_id") [unique]
+  }
+}
+
+Table "content"."video_shares" {
+  "id" uuid [pk]
+  "user_id" uuid
+  "video_id" uuid [not null]
+  "created_at" timestamptz [not null]
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+  "share_channel" varchar(50)
+  Indexes {
+    ("user_id", "created_at", "video_id")
+  }
+}
+
+Table "content"."video_tags" {
+  "id" uuid [pk]
+  "video_id" uuid [not null]
+  "tag_id" uuid [not null]
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+  Indexes {
+    ("video_id", "tag_id") [unique]
+  }
+}
+
+Table "content"."videos" {
+  "id" uuid [pk]
+  "customer_id" uuid
+  "order_item_id" uuid
+  "category_id" uuid [not null]
+  "author_id" uuid [not null]
+  "title" varchar(100) [not null, unique]
+  "slug" varchar(220) [not null, unique]
+  "description" text [not null]
+  "social_boost" boolean [not null, default: false]
+  "is_promoted" boolean [not null, default: false]
+  "unpromoted_at" timestamptz
+  "has_lyrics" boolean [not null, default: false]
+  "status" text [not null, default: `'Draft'`]
+  "rejection_reason" varchar(500)
+  "shooting_scheduled_at" timestamptz
+  "published_at" timestamptz
+  "meta_title" varchar(70)
+  "meta_description" varchar(160)
+  "rating_average" numeric(3,2) [not null, default: 0.0]
+  "rating_count" integer [not null, default: 0]
+  "share_count" integer [not null, default: 0]
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+  "youtube_video_url" varchar(200)
+  "promoted_until" timestamptz
+  "unpromoted_by" text
+  "unpromoted_reason" varchar(500)
+  "promotion_level_id" uuid
+  "thumbnail_file_id" uuid
+  "artist_id" uuid
+  Indexes {
+    ("artist_id", "status")
+    ("status", "published_at")
+  }
+}
+
+Ref: "content"."albums"."artist_id" > "content"."artists"."id"
+Ref: "content"."article_artists"."article_id" > "content"."articles"."id" [delete: cascade]
+Ref: "content"."article_artists"."artist_id" > "content"."artists"."id" [delete: cascade]
+Ref: "content"."article_bookmarks"."article_id" > "content"."articles"."id" [delete: cascade]
+Ref: "content"."article_comment_likes"."comment_id" > "content"."article_comments"."id" [delete: cascade]
+Ref: "content"."article_comments"."parent_comment_id" > "content"."article_comments"."id"
+Ref: "content"."article_comments"."article_id" > "content"."articles"."id" [delete: cascade]
+Ref: "content"."article_images"."article_id" > "content"."articles"."id" [delete: cascade]
+Ref: "content"."article_likes"."article_id" > "content"."articles"."id" [delete: cascade]
+Ref: "content"."article_shares"."article_id" > "content"."articles"."id" [delete: cascade]
+Ref: "content"."article_tags"."article_id" > "content"."articles"."id" [delete: cascade]
+Ref: "content"."article_tags"."tag_id" > "content"."tags"."id" [delete: cascade]
+Ref: "content"."articles"."category_id" > "content"."categories"."id"
+Ref: "content"."articles"."customer_id" > "content"."customers"."id"
+Ref: "content"."articles"."promotion_level_id" > "content"."promotion_levels"."id"
+Ref: "content"."artist_social_links"."artist_id" > "content"."artists"."id" [delete: cascade]
+Ref: "content"."categories"."content_type_id" > "content"."content_types"."id"
+Ref: "content"."category_pricing"."category_id" > "content"."categories"."id" [delete: cascade]
+Ref: "content"."category_pricing"."pricing_tier_id" > "content"."pricing_tiers"."id"
+Ref: "content"."content_item_tiers"."order_item_id" > "content"."content_order_items"."id" [delete: cascade]
+Ref: "content"."content_item_tiers"."pricing_tier_id" > "content"."pricing_tiers"."id"
+Ref: "content"."content_order_items"."category_id" > "content"."categories"."id"
+Ref: "content"."content_order_items"."order_id" > "content"."content_orders"."id" [delete: cascade]
+Ref: "content"."content_order_items"."promotion_level_id" > "content"."promotion_levels"."id"
+Ref: "content"."content_orders"."customer_id" > "content"."customers"."id"
+Ref: "content"."content_orders"."package_id" > "content"."packages"."id"
+Ref: "content"."content_payments"."order_id" > "content"."content_orders"."id" [delete: cascade]
+Ref: "content"."lyrics"."album_id" > "content"."albums"."id"
+Ref: "content"."lyrics"."artist_id" > "content"."artists"."id"
+Ref: "content"."lyrics"."category_id" > "content"."categories"."id"
+Ref: "content"."lyrics"."customer_id" > "content"."customers"."id"
+Ref: "content"."lyrics_likes"."lyrics_id" > "content"."lyrics"."id" [delete: cascade]
+Ref: "content"."lyrics_revision_votes"."revision_id" > "content"."lyrics_revisions"."id" [delete: cascade]
+Ref: "content"."lyrics_revisions"."lyrics_id" > "content"."lyrics"."id" [delete: cascade]
+Ref: "content"."lyrics_shares"."lyrics_id" > "content"."lyrics"."id" [delete: cascade]
+Ref: "content"."lyrics_tags"."lyrics_id" > "content"."lyrics"."id" [delete: cascade]
+Ref: "content"."lyrics_tags"."tag_id" > "content"."tags"."id" [delete: cascade]
+Ref: "content"."lyrics_translation_revisions"."translation_id" > "content"."lyrics_translations"."id" [delete: cascade]
+Ref: "content"."lyrics_translation_votes"."revision_id" > "content"."lyrics_translation_revisions"."id" [delete: cascade]
+Ref: "content"."lyrics_translations"."lyrics_id" > "content"."lyrics"."id" [delete: cascade]
+Ref: "content"."lyrics"."video_id" > "content"."videos"."id"
+Ref: "content"."lyrics_view_events"."lyrics_id" > "content"."lyrics"."id" [delete: cascade]
+Ref: "content"."package_slots"."category_id" > "content"."categories"."id"
+Ref: "content"."package_slots"."package_id" > "content"."packages"."id" [delete: cascade]
+Ref: "content"."playlist_videos"."playlist_id" > "content"."playlists"."id" [delete: cascade]
+Ref: "content"."playlist_videos"."video_id" > "content"."videos"."id" [delete: cascade]
+Ref: "content"."short_video_bookmarks"."short_video_id" > "content"."short_videos"."id" [delete: cascade]
+Ref: "content"."short_video_likes"."short_video_id" > "content"."short_videos"."id" [delete: cascade]
+Ref: "content"."short_video_shares"."short_video_id" > "content"."short_videos"."id" [delete: cascade]
+Ref: "content"."short_video_view_events"."short_video_id" > "content"."short_videos"."id" [delete: cascade]
+Ref: "content"."short_videos"."video_id" > "content"."videos"."id"
+Ref: "content"."streaming_links"."album_id" > "content"."albums"."id" [delete: cascade]
+Ref: "content"."streaming_links"."lyrics_id" > "content"."lyrics"."id" [delete: cascade]
+Ref: "content"."video_ratings"."video_id" > "content"."videos"."id" [delete: cascade]
+Ref: "content"."video_shares"."video_id" > "content"."videos"."id" [delete: cascade]
+Ref: "content"."video_tags"."tag_id" > "content"."tags"."id" [delete: cascade]
+Ref: "content"."video_tags"."video_id" > "content"."videos"."id" [delete: cascade]
+Ref: "content"."videos"."artist_id" > "content"."artists"."id"
+Ref: "content"."videos"."category_id" > "content"."categories"."id"
+Ref: "content"."videos"."customer_id" > "content"."customers"."id"
+Ref: "content"."videos"."promotion_level_id" > "content"."promotion_levels"."id"
