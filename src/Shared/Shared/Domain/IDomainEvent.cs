@@ -36,7 +36,11 @@ public abstract record DomainEvent : IDomainEvent
     public Guid EventId { get; init; } = Guid.NewGuid();
 
     /// <inheritdoc />
-    public DateTime OccurredOn { get; init; } = DateTime.UtcNow;
+    /// <remarks>
+    /// Default until the dispatch interceptor stamps it; an event read before it is collected
+    /// carries no occurrence time.
+    /// </remarks>
+    public DateTime OccurredOn { get; init; }
 
     /// <inheritdoc />
     public string EventType => GetType().AssemblyQualifiedName!;
