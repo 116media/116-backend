@@ -78,8 +78,6 @@ public class AdminApproveLyricsSubmissionHandler(
             authorId: command.ReviewerId
         );
 
-        // Publishing the lyrics and retiring the submission share one transaction: a failure
-        // between them would otherwise leave a published page no submission points at.
         await unitOfWork.ExecuteInTransactionAsync(
             async ct =>
             {
