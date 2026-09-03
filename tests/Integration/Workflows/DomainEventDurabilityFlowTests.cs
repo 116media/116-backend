@@ -57,8 +57,6 @@ public class DomainEventDurabilityFlowTests(PostgresFixture db) : BaseApiTest(db
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        // The handler commits through one transaction, so in-process dispatch is skipped and the
-        // event exists only as a durable, undelivered outbox row.
         OutboxEventEntity row = await SingleDecisionRowAsync(submission.Id);
         row.DispatchedAt.Should().BeNull();
 
@@ -113,9 +111,6 @@ public class DomainEventDurabilityFlowTests(PostgresFixture db) : BaseApiTest(db
         (await SentEmailCountAsync(submitterEmail)).Should().Be(1);
 
         // Act
-        // Clearing the dispatch stamp is what a dispatcher that died before recording its outcome
-        // leaves behind, so replay picks the row up again and only the processed-event guard can
-        // keep the second delivery from happening.
         await ResetDispatchStampAsync(submission.Id);
         await RunContentReplayAsync();
 
