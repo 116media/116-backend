@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
 using Xunit;
 
-namespace _116.Unit.Tests.Shared.Exceptions.Handlers.Strategies;
+namespace _116.Unit.Tests.Shared.Application.Exceptions.Handlers.Strategies;
 
 /// <summary>
 /// Unit tests for <see cref="DefaultExceptionHandler" />.
