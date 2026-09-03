@@ -7,7 +7,7 @@ namespace _116.Shared.Domain;
 public abstract class Entity<T> : IEntity<T>
 {
     /// <inheritdoc />
-    public required T Id { get; set; }
+    public T Id { get; protected init; } = default!;
 
     /// <inheritdoc />
     public DateTime? CreatedAt { get; set; }
