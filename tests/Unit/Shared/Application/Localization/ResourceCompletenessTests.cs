@@ -11,7 +11,7 @@ using _116.Shared.Application.Exceptions.Messages;
 using AwesomeAssertions;
 using Xunit;
 
-namespace _116.Unit.Tests.Shared.Localization;
+namespace _116.Unit.Tests.Shared.Application.Localization;
 
 /// <summary>
 /// Asserts that every key defined in a neutral message catalogue is present and populated in the
