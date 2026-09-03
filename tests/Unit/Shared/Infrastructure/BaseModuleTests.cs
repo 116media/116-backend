@@ -73,7 +73,6 @@ public class BaseModuleTests
         context.Should().NotBeNull();
         context!.Lifetime.Should().Be(ServiceLifetime.Scoped);
 
-        // Pooling is what makes the options singleton; an unpooled registration scopes them.
         ServiceDescriptor? contextOptions = services.FirstOrDefault(s =>
             s.ServiceType == typeof(DbContextOptions<TestDbContext>)
         );
