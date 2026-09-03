@@ -15,7 +15,7 @@ namespace _116.Shared.Infrastructure.Repositories;
 /// <param name="context">The module database context.</param>
 public abstract class RepositoryBase<TContext, TEntity, TId>(TContext context) : IRepository<TEntity, TId>
     where TContext : DbContext
-    where TEntity : class, IEntity<TId>
+    where TEntity : class, IEntity<TId>, IAggregateRoot
     where TId : struct
 {
     /// <summary>
