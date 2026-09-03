@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
-namespace _116.Unit.Tests.Shared.Exceptions.Handlers;
+namespace _116.Unit.Tests.Shared.Application.Exceptions.Handlers;
 
 /// <summary>
 /// Unit tests for <see cref="ExceptionHandler"/>.
