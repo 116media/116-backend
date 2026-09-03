@@ -38,8 +38,6 @@ public class OutboxEventEntityTests
     public void ToDomainEvent_ShouldRebuildTheEventWithTheIdentityItWasRaisedWith()
     {
         // Arrange
-        // A rebuilt event that minted a fresh id would never match its own processed-event row,
-        // so every non-idempotent handler would run again on replay.
         var domainEvent = new TestArticleEvent(Guid.NewGuid(), "published");
         OutboxEventEntity row = OutboxEventEntity.Create(domainEvent);
 
@@ -68,5 +66,67 @@ public class OutboxEventEntityTests
 
         // Assert
         first!.EventId.Should().Be(second!.EventId);
+    }
+
+    [Fact]
+    public void MarkDispatched_ShouldRetireTheRowFromReplay()
+    {
+        // Arrange
+        OutboxEventEntity row = OutboxEventEntity.Create(new TestArticleEvent(Guid.NewGuid(), "published"));
+        DateTime before = DateTime.UtcNow;
+
+        // Act
+        row.MarkDispatched();
+
+        // Assert
+        row.DispatchedAt.Should().NotBeNull();
+        row.DispatchedAt!.Value.Should().BeOnOrAfter(before);
+        row.LastError.Should().BeNull();
+    }
+
+    [Fact]
+    public void MarkDispatched_AfterAFailure_ShouldClearTheRecordedError()
+    {
+        // Arrange
+        OutboxEventEntity row = OutboxEventEntity.Create(new TestArticleEvent(Guid.NewGuid(), "published"));
+        row.MarkFailed("transient provider failure");
+
+        // Act
+        row.MarkDispatched();
+
+        // Assert
+        row.LastError.Should().BeNull();
+        row.DispatchedAt.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void MarkFailed_ShouldCountTheAttemptAndKeepTheRowReplayable()
+    {
+        // Arrange
+        OutboxEventEntity row = OutboxEventEntity.Create(new TestArticleEvent(Guid.NewGuid(), "published"));
+
+        // Act
+        row.MarkFailed("handler threw");
+
+        // Assert
+        row.AttemptCount.Should().Be(1);
+        row.LastError.Should().Be("handler threw");
+        row.DispatchedAt.Should().BeNull();
+    }
+
+    [Fact]
+    public void MarkFailed_Repeatedly_ShouldAccumulateAttemptsSoReplayCanGiveUp()
+    {
+        // Arrange
+        OutboxEventEntity row = OutboxEventEntity.Create(new TestArticleEvent(Guid.NewGuid(), "published"));
+
+        // Act
+        row.MarkFailed("first");
+        row.MarkFailed("second");
+        row.MarkFailed("third");
+
+        // Assert
+        row.AttemptCount.Should().Be(3);
+        row.LastError.Should().Be("third");
     }
 }
