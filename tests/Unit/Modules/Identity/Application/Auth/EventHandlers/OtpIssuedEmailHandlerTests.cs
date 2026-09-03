@@ -77,8 +77,6 @@ public class OtpIssuedEmailHandlerTests
     public async Task Handle_ShouldSendInTheCultureTheEventCarries()
     {
         // Arrange
-        // Delivery runs in a fresh scope that no longer carries the request's culture, so the
-        // event's value is the only correct source.
         SetupRecipient("fan@example.com");
         var domainEvent = new OtpIssuedEvent(UserId, TestConstants.Otp.DefaultCode, EnumOtpPurpose.PasswordReset, "ln");
 
