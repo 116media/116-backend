@@ -303,27 +303,6 @@ namespace _116.Mailer.Infrastructure.Persistence.Migrations
 
                     b.ToTable("domain_event_outbox", "mailer");
                 });
-
-            modelBuilder.Entity("_116.Shared.Infrastructure.Outbox.ProcessedDomainEventEntity", b =>
-                {
-                    b.Property<Guid>("EventId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("event_id");
-
-                    b.Property<string>("HandlerName")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("handler_name");
-
-                    b.Property<DateTime>("ProcessedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("processed_at");
-
-                    b.HasKey("EventId", "HandlerName")
-                        .HasName("pk_processed_domain_events");
-
-                    b.ToTable("processed_domain_events", "mailer");
-                });
 #pragma warning restore 612, 618
         }
     }
