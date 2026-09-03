@@ -29,6 +29,15 @@ public class DispatchDomainEventsInterceptorPostCommitTests
         {
             return new TestAggregate { Id = id, Name = name };
         }
+
+        /// <summary>
+        /// Records an event on this aggregate.
+        /// </summary>
+        /// <param name="domainEvent">The event to record.</param>
+        public void Raise(IDomainEvent domainEvent)
+        {
+            AddDomainEvent(domainEvent);
+        }
     }
 
     private record TestDomainEvent(Guid AggregateId) : DomainEvent;
@@ -74,7 +83,8 @@ public class DispatchDomainEventsInterceptorPostCommitTests
         var serviceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
         var interceptor = new DispatchDomainEventsInterceptor(
             serviceScopeFactory,
-            NullLogger<DispatchDomainEventsInterceptor>.Instance
+            NullLogger<DispatchDomainEventsInterceptor>.Instance,
+            TimeProvider.System
         );
 
         DbContextOptions<TestDbContext> options = new DbContextOptionsBuilder<TestDbContext>()
@@ -112,7 +122,7 @@ public class DispatchDomainEventsInterceptorPostCommitTests
         );
 
         var aggregate = TestAggregate.Create(aggregateId, "Test");
-        aggregate.AddDomainEvent(new TestDomainEvent(aggregateId));
+        aggregate.Raise(new TestDomainEvent(aggregateId));
 
         // Act
         context.Aggregates.Add(aggregate);
@@ -136,7 +146,7 @@ public class DispatchDomainEventsInterceptorPostCommitTests
 
         var (context, scopedPublishers) = CreateContext(databaseName);
         var duplicate = TestAggregate.Create(aggregateId, "Duplicate");
-        duplicate.AddDomainEvent(new TestDomainEvent(aggregateId));
+        duplicate.Raise(new TestDomainEvent(aggregateId));
         context.Aggregates.Add(duplicate);
 
         // Act
@@ -161,7 +171,7 @@ public class DispatchDomainEventsInterceptorPostCommitTests
 
         var (context, scopedPublishers) = CreateContext(databaseName);
         var duplicate = TestAggregate.Create(aggregateId, "Duplicate");
-        duplicate.AddDomainEvent(new TestDomainEvent(aggregateId));
+        duplicate.Raise(new TestDomainEvent(aggregateId));
         context.Aggregates.Add(duplicate);
 
         // Act
@@ -186,7 +196,7 @@ public class DispatchDomainEventsInterceptorPostCommitTests
 
         var (context, scopedPublishers) = CreateContext(databaseName);
         var duplicate = TestAggregate.Create(aggregateId, "Duplicate");
-        duplicate.AddDomainEvent(new TestDomainEvent(aggregateId));
+        duplicate.Raise(new TestDomainEvent(aggregateId));
         context.Aggregates.Add(duplicate);
         Record.Exception(() => context.SaveChanges()).Should().NotBeNull();
 
@@ -207,7 +217,7 @@ public class DispatchDomainEventsInterceptorPostCommitTests
         var (context, scopedPublishers) = CreateContext(databaseName);
 
         var canceledAggregate = TestAggregate.Create(Guid.NewGuid(), "Canceled");
-        canceledAggregate.AddDomainEvent(new TestDomainEvent(canceledAggregate.Id));
+        canceledAggregate.Raise(new TestDomainEvent(canceledAggregate.Id));
         context.Aggregates.Add(canceledAggregate);
 
         using var tokenSource = new CancellationTokenSource();
@@ -235,8 +245,8 @@ public class DispatchDomainEventsInterceptorPostCommitTests
         var aggregate = TestAggregate.Create(Guid.NewGuid(), "Test");
         var firstEvent = new TestDomainEvent(aggregate.Id);
         var secondEvent = new TestDomainEvent(aggregate.Id);
-        aggregate.AddDomainEvent(firstEvent);
-        aggregate.AddDomainEvent(secondEvent);
+        aggregate.Raise(firstEvent);
+        aggregate.Raise(secondEvent);
 
         // Act
         context.Aggregates.Add(aggregate);
@@ -244,8 +254,8 @@ public class DispatchDomainEventsInterceptorPostCommitTests
 
         // Assert
         scopedPublishers.Should().HaveCount(2);
-        scopedPublishers[0].PublishedEvents.Should().ContainSingle().Which.Should().BeSameAs(firstEvent);
-        scopedPublishers[1].PublishedEvents.Should().ContainSingle().Which.Should().BeSameAs(secondEvent);
+        scopedPublishers[0].PublishedEvents.Should().ContainSingle().Which.EventId.Should().Be(firstEvent.EventId);
+        scopedPublishers[1].PublishedEvents.Should().ContainSingle().Which.EventId.Should().Be(secondEvent.EventId);
     }
 
     [Fact]
@@ -259,8 +269,8 @@ public class DispatchDomainEventsInterceptorPostCommitTests
         var secondAggregate = TestAggregate.Create(Guid.NewGuid(), "Second");
         var firstEvent = new TestDomainEvent(firstAggregate.Id);
         var secondEvent = new TestDomainEvent(secondAggregate.Id);
-        firstAggregate.AddDomainEvent(firstEvent);
-        secondAggregate.AddDomainEvent(secondEvent);
+        firstAggregate.Raise(firstEvent);
+        secondAggregate.Raise(secondEvent);
 
         // Act
         context.Aggregates.AddRange(firstAggregate, secondAggregate);
@@ -283,7 +293,7 @@ public class DispatchDomainEventsInterceptorPostCommitTests
         var (context, scopedPublishers) = CreateContext(databaseName);
 
         var aggregate = TestAggregate.Create(Guid.NewGuid(), "Test");
-        aggregate.AddDomainEvent(new TestDomainEvent(aggregate.Id));
+        aggregate.Raise(new TestDomainEvent(aggregate.Id));
         context.Aggregates.Add(aggregate);
 
         using var requestTokenSource = new CancellationTokenSource();
@@ -318,7 +328,8 @@ public class DispatchDomainEventsInterceptorPostCommitTests
         ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
         var interceptor = new DispatchDomainEventsInterceptor(
             serviceProvider.GetRequiredService<IServiceScopeFactory>(),
-            loggerMock.Object
+            loggerMock.Object,
+            TimeProvider.System
         );
 
         DbContextOptions<TestDbContext> options = new DbContextOptionsBuilder<TestDbContext>()
@@ -329,7 +340,7 @@ public class DispatchDomainEventsInterceptorPostCommitTests
         await using var context = new TestDbContext(options);
         var aggregateId = Guid.NewGuid();
         var aggregate = TestAggregate.Create(aggregateId, "Test");
-        aggregate.AddDomainEvent(new TestDomainEvent(aggregateId));
+        aggregate.Raise(new TestDomainEvent(aggregateId));
         context.Aggregates.Add(aggregate);
 
         // Act
