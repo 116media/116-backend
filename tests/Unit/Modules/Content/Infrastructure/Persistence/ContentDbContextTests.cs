@@ -114,8 +114,6 @@ public class ContentDbContextTests
     [Fact]
     public void Model_ShouldNotMapAnyTypeOutsideTheDomainEntities()
     {
-        // The shared outbox tables are infrastructure every module context maps, not domain
-        // entities, so they are named here rather than discovered from the domain assembly.
         string[] infrastructureTypes = [nameof(OutboxEventEntity), nameof(ProcessedDomainEventEntity)];
 
         IEnumerable<string> mapped = SharedModel
