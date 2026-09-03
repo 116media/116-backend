@@ -33,18 +33,32 @@ public class DomainEventTests
     }
 
     [Fact]
-    public void OccurredOn_ShouldBeStampedInUtcAtConstruction()
+    public void OccurredOn_AtConstruction_ShouldBeUnstampedUntilTheInterceptorCollectsIt()
     {
-        // Arrange
-        DateTime before = DateTime.UtcNow;
-
-        // Act
+        // Arrange & Act
         IDomainEvent domainEvent = new TestDomainEvent();
 
         // Assert
-        domainEvent.OccurredOn.Should().BeOnOrAfter(before);
-        domainEvent.OccurredOn.Should().BeOnOrBefore(DateTime.UtcNow);
-        domainEvent.OccurredOn.Kind.Should().Be(DateTimeKind.Utc);
+        domainEvent.OccurredOn.Should().Be(default);
+    }
+
+    [Fact]
+    public void OccurredOn_WhenStamped_ShouldSurviveTheCopyAndKeepThePayload()
+    {
+        // Arrange
+        var raised = new TestDomainEvent { Message = "payload" };
+        var stampedAt = new DateTime(2026, 9, 11, 10, 30, 0, DateTimeKind.Utc);
+
+        // Act
+        TestDomainEvent stamped = raised with
+        {
+            OccurredOn = stampedAt,
+        };
+
+        // Assert
+        stamped.OccurredOn.Should().Be(stampedAt);
+        stamped.EventId.Should().Be(raised.EventId);
+        stamped.Message.Should().Be("payload");
     }
 
     [Fact]
