@@ -11,7 +11,7 @@ namespace _116.Shared.Domain;
 /// <typeparam name="TEntity">The aggregate type.</typeparam>
 /// <typeparam name="TId">The aggregate's identifier type.</typeparam>
 public interface IRepository<TEntity, in TId>
-    where TEntity : class, IEntity<TId>
+    where TEntity : class, IEntity<TId>, IAggregateRoot
     where TId : struct
 {
     /// <summary>
