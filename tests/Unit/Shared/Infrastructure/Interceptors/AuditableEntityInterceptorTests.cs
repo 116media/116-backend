@@ -21,6 +21,23 @@ public class AuditableEntityInterceptorTests
     {
         public string Name { get; set; } = string.Empty;
         public OwnedEntity? OwnedData { get; set; }
+
+        /// <summary>
+        /// Creates a test entity with its identity assigned.
+        /// </summary>
+        /// <param name="id">The identity to assign.</param>
+        /// <param name="name">The entity name.</param>
+        /// <param name="ownedData">Optional owned value.</param>
+        /// <returns>The constructed entity.</returns>
+        public static TestEntity Create(Guid id, string name = "", OwnedEntity? ownedData = null)
+        {
+            return new TestEntity
+            {
+                Id = id,
+                Name = name,
+                OwnedData = ownedData,
+            };
+        }
     }
 
     [Owned]
@@ -73,7 +90,7 @@ public class AuditableEntityInterceptorTests
     {
         // Arrange
         using TestDbContext context = CreateInMemoryContext();
-        var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Test" };
+        var entity = TestEntity.Create(Guid.NewGuid(), "Test");
 
         // Act
         context.TestEntities.Add(entity);
@@ -89,7 +106,7 @@ public class AuditableEntityInterceptorTests
     {
         // Arrange
         using TestDbContext context = CreateInMemoryContext();
-        var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Test" };
+        var entity = TestEntity.Create(Guid.NewGuid(), "Test");
 
         // Act
         context.TestEntities.Add(entity);
@@ -105,7 +122,7 @@ public class AuditableEntityInterceptorTests
     {
         // Arrange
         using TestDbContext context = CreateInMemoryContext();
-        var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Original" };
+        var entity = TestEntity.Create(Guid.NewGuid(), "Original");
         context.TestEntities.Add(entity);
         context.SaveChanges();
 
@@ -126,7 +143,7 @@ public class AuditableEntityInterceptorTests
     {
         // Arrange
         using TestDbContext context = CreateInMemoryContext();
-        var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Original" };
+        var entity = TestEntity.Create(Guid.NewGuid(), "Original");
         context.TestEntities.Add(entity);
         context.SaveChanges();
 
@@ -147,7 +164,7 @@ public class AuditableEntityInterceptorTests
     {
         // Arrange
         using TestDbContext context = CreateInMemoryContext();
-        var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Test" };
+        var entity = TestEntity.Create(Guid.NewGuid(), "Test");
 
         // Act
         context.TestEntities.Add(entity);
@@ -163,7 +180,7 @@ public class AuditableEntityInterceptorTests
     {
         // Arrange
         using TestDbContext context = CreateInMemoryContext();
-        var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Original" };
+        var entity = TestEntity.Create(Guid.NewGuid(), "Original");
         context.TestEntities.Add(entity);
         await context.SaveChangesAsync();
 
@@ -184,7 +201,7 @@ public class AuditableEntityInterceptorTests
     {
         // Arrange
         using TestDbContext context = CreateInMemoryContext();
-        var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Test" };
+        var entity = TestEntity.Create(Guid.NewGuid(), "Test");
         context.TestEntities.Add(entity);
         context.SaveChanges();
 
@@ -205,8 +222,8 @@ public class AuditableEntityInterceptorTests
     {
         // Arrange
         using TestDbContext context = CreateInMemoryContext();
-        var entity1 = new TestEntity { Id = Guid.NewGuid(), Name = "Entity 1" };
-        var entity2 = new TestEntity { Id = Guid.NewGuid(), Name = "Entity 2" };
+        var entity1 = TestEntity.Create(Guid.NewGuid(), "Entity 1");
+        var entity2 = TestEntity.Create(Guid.NewGuid(), "Entity 2");
 
         // Act
         context.TestEntities.AddRange(entity1, entity2);
@@ -224,7 +241,7 @@ public class AuditableEntityInterceptorTests
     {
         // Arrange
         using TestDbContext context = CreateInMemoryContext();
-        var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Test" };
+        var entity = TestEntity.Create(Guid.NewGuid(), "Test");
         context.TestEntities.Add(entity);
         context.SaveChanges();
 
@@ -244,12 +261,7 @@ public class AuditableEntityInterceptorTests
     {
         // Arrange
         using TestDbContext context = CreateInMemoryContext();
-        var entity = new TestEntity
-        {
-            Id = Guid.NewGuid(),
-            Name = "Test",
-            OwnedData = new OwnedEntity { Value = "Original" },
-        };
+        var entity = TestEntity.Create(Guid.NewGuid(), "Test", new OwnedEntity { Value = "Original" });
         context.TestEntities.Add(entity);
         context.SaveChanges();
 
@@ -336,7 +348,7 @@ public class AuditableEntityInterceptorTests
             a.UserId == "user-abc" && a.IsAuthenticated == true && a.HasHttpContext == true
         );
         using TestDbContext context = CreateInMemoryContext(actor);
-        var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Test" };
+        var entity = TestEntity.Create(Guid.NewGuid(), "Test");
 
         // Act
         context.TestEntities.Add(entity);
@@ -355,7 +367,7 @@ public class AuditableEntityInterceptorTests
             a.UserId == null && a.IsAuthenticated == false && a.HasHttpContext == true
         );
         using TestDbContext context = CreateInMemoryContext(actor);
-        var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Test" };
+        var entity = TestEntity.Create(Guid.NewGuid(), "Test");
 
         // Act
         context.TestEntities.Add(entity);
@@ -374,7 +386,7 @@ public class AuditableEntityInterceptorTests
             a.UserId == null && a.IsAuthenticated == false && a.HasHttpContext == false
         );
         using TestDbContext context = CreateInMemoryContext(actor);
-        var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Test" };
+        var entity = TestEntity.Create(Guid.NewGuid(), "Test");
 
         // Act
         context.TestEntities.Add(entity);
@@ -393,7 +405,7 @@ public class AuditableEntityInterceptorTests
             a.UserId == "user-xyz" && a.IsAuthenticated == true && a.HasHttpContext == true
         );
         using TestDbContext context = CreateInMemoryContext(actor);
-        var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Test" };
+        var entity = TestEntity.Create(Guid.NewGuid(), "Test");
 
         // Act
         context.TestEntities.Add(entity);
