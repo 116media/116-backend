@@ -43,8 +43,6 @@ public class OrderPaidEffectsHandler(
     /// <inheritdoc />
     public async Task Handle(OrderPaidEvent domainEvent, CancellationToken cancellationToken = default)
     {
-        // Every item's effect lands in one transaction: a failure part-way cannot leave some
-        // items of a paid order stamped and the rest untouched.
         await unitOfWork.ExecuteInTransactionAsync(
             async ct => await ApplyEffectsAsync(domainEvent: domainEvent, cancellationToken: ct),
             cancellationToken: cancellationToken
