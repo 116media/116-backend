@@ -75,8 +75,6 @@ public class AdminUpdateCategoryHandler(
             }
         }
 
-        // Releasing each mutex and re-taking it share one transaction with the update, so no
-        // reader can observe either flag unset in between.
         await unitOfWork.ExecuteInTransactionAsync(
             async ct =>
             {
