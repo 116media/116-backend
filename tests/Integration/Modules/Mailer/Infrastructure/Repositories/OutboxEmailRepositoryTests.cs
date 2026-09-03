@@ -78,8 +78,6 @@ public class OutboxEmailRepositoryTests(PostgresFixture db) : BaseRepositoryTest
 
         var repository = Resolve<IOutboxEmailRepository>();
 
-        // A dispatcher claims the row and dies before recording an outcome: its lease is the
-        // only thing that returns the row to the pool.
         DateTime crashTime = now.AddMinutes(-5);
         await repository.ClaimDueBatchAsync(
             batchSize: MailerConstants.DispatchBatchSize,
