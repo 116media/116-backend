@@ -23,8 +23,6 @@ public class IdentityUnitOfWork(IdentityDbContext context) : IIdentityUnitOfWork
         CancellationToken cancellationToken = default
     )
     {
-        // The strategy owns the transaction so a transient-fault retry replays the whole
-        // operation rather than resuming a transaction the retry already lost.
         IExecutionStrategy strategy = context.Database.CreateExecutionStrategy();
 
         return strategy.ExecuteAsync(
