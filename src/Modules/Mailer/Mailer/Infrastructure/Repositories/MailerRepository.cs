@@ -14,4 +14,4 @@ namespace _116.Mailer.Infrastructure.Repositories;
 public class MailerRepository<TEntity>(MailerDbContext context)
     : RepositoryBase<MailerDbContext, TEntity, Guid>(context),
         IMailerRepository<TEntity>
-    where TEntity : class, IEntity<Guid>;
+    where TEntity : class, IEntity<Guid>, IAggregateRoot;
