@@ -19,7 +19,7 @@ using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Xunit;
 
-namespace _116.Unit.Tests.Shared.Exceptions.Handlers.Strategies;
+namespace _116.Unit.Tests.Shared.Application.Exceptions.Handlers.Strategies;
 
 /// <summary>
 /// Cross-file contract tests for every concrete <see cref="IExceptionStrategy" /> in the solution.
