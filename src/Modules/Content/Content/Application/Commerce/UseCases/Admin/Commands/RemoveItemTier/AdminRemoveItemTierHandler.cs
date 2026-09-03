@@ -44,8 +44,6 @@ public class AdminRemoveItemTierHandler(
             ct: cancellationToken
         );
 
-        // Removing the tier and re-totalling the order share one transaction, so the order can
-        // never be read with a removed tier still counted in its total.
         await unitOfWork.ExecuteInTransactionAsync(
             async ct =>
             {
