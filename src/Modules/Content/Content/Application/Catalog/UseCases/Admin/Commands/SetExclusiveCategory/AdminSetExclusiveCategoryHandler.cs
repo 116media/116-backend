@@ -50,8 +50,6 @@ public class AdminSetExclusiveCategoryHandler(
             throw i18n.Category.OnlyVideoCategoryCanBeExclusive();
         }
 
-        // Clearing the previous holder and setting the new one share one transaction, so no
-        // reader can observe the mutex empty between them.
         await unitOfWork.ExecuteInTransactionAsync(
             async ct =>
             {
