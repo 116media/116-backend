@@ -15,6 +15,15 @@ public class AggregateTests
         {
             return new TestAggregate { Id = id };
         }
+
+        /// <summary>
+        /// Records an event on this aggregate.
+        /// </summary>
+        /// <param name="domainEvent">The event to record.</param>
+        public void Raise(IDomainEvent domainEvent)
+        {
+            AddDomainEvent(domainEvent);
+        }
     }
 
     private record TestDomainEvent : DomainEvent
@@ -44,7 +53,7 @@ public class AggregateTests
         var domainEvent = new TestDomainEvent { Message = "Test event" };
 
         // Act
-        aggregate.AddDomainEvent(domainEvent);
+        aggregate.Raise(domainEvent);
 
         // Assert
         aggregate.DomainEvents.Should().ContainSingle();
@@ -61,9 +70,9 @@ public class AggregateTests
         var event3 = new TestDomainEvent { Message = "Third event" };
 
         // Act
-        aggregate.AddDomainEvent(event1);
-        aggregate.AddDomainEvent(event2);
-        aggregate.AddDomainEvent(event3);
+        aggregate.Raise(event1);
+        aggregate.Raise(event2);
+        aggregate.Raise(event3);
 
         // Assert
         aggregate.DomainEvents.Should().HaveCount(3);
@@ -79,8 +88,8 @@ public class AggregateTests
         var aggregate = TestAggregate.Create(Guid.NewGuid());
         var event1 = new TestDomainEvent { Message = "Event 1" };
         var event2 = new TestDomainEvent { Message = "Event 2" };
-        aggregate.AddDomainEvent(event1);
-        aggregate.AddDomainEvent(event2);
+        aggregate.Raise(event1);
+        aggregate.Raise(event2);
 
         // Act
         IDomainEvent[] clearedEvents = aggregate.ClearDomainEvents();
@@ -112,7 +121,7 @@ public class AggregateTests
     {
         // Arrange
         var aggregate = TestAggregate.Create(Guid.NewGuid());
-        aggregate.AddDomainEvent(new TestDomainEvent { Message = "Event" });
+        aggregate.Raise(new TestDomainEvent { Message = "Event" });
 
         // Act
         IDomainEvent[] firstClear = aggregate.ClearDomainEvents();
@@ -129,7 +138,7 @@ public class AggregateTests
     {
         // Arrange
         var aggregate = TestAggregate.Create(Guid.NewGuid());
-        aggregate.AddDomainEvent(new TestDomainEvent { Message = "Event" });
+        aggregate.Raise(new TestDomainEvent { Message = "Event" });
 
         // Act
         IReadOnlyList<IDomainEvent> events = aggregate.DomainEvents;
@@ -144,12 +153,12 @@ public class AggregateTests
     {
         // Arrange
         var aggregate = TestAggregate.Create(Guid.NewGuid());
-        aggregate.AddDomainEvent(new TestDomainEvent { Message = "Old event" });
+        aggregate.Raise(new TestDomainEvent { Message = "Old event" });
         aggregate.ClearDomainEvents();
 
         // Act
         var newEvent = new TestDomainEvent { Message = "New event" };
-        aggregate.AddDomainEvent(newEvent);
+        aggregate.Raise(newEvent);
 
         // Assert
         aggregate.DomainEvents.Should().ContainSingle();
