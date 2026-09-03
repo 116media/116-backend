@@ -64,8 +64,6 @@ public class AdminCreateCategoryHandler(
 
             if (currentExclusive is not null)
             {
-                // Released in the same transaction the new category is created in, so the mutex
-                // is never observed empty.
                 currentExclusive.ClearExclusive();
                 categoryRepository.Update(category: currentExclusive);
             }
