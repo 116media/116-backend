@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Xunit;
 
-namespace _116.Unit.Tests.Shared.Exceptions.Handlers;
+namespace _116.Unit.Tests.Shared.Application.Exceptions.Handlers;
 
 /// <summary>
 /// Unit tests for <see cref="ExceptionStrategyRegistry"/>.
