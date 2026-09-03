@@ -131,7 +131,8 @@ public class BaseModuleTests
         services.AddSingleton<ISaveChangesInterceptor, AuditableEntityInterceptor>();
         services.AddSingleton<ISaveChangesInterceptor>(sp => new DispatchDomainEventsInterceptor(
             sp.GetRequiredService<IServiceScopeFactory>(),
-            NullLogger<DispatchDomainEventsInterceptor>.Instance
+            NullLogger<DispatchDomainEventsInterceptor>.Instance,
+            TimeProvider.System
         ));
 
         var options = new ModuleOptions<TestDbContext> { ModuleName = "Test" };
