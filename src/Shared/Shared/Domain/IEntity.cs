@@ -7,9 +7,9 @@ namespace _116.Shared.Domain;
 public interface IEntity<T> : IEntity
 {
     /// <summary>
-    /// Gets or sets the identifier of the entity.
+    /// The identifier of the entity, assigned once when it is constructed.
     /// </summary>
-    public T Id { get; set; }
+    public T Id { get; }
 }
 
 /// <summary>
