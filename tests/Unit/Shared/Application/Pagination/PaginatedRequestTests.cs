@@ -2,7 +2,7 @@ using _116.Shared.Application.Pagination;
 using AwesomeAssertions;
 using Xunit;
 
-namespace _116.Unit.Tests.Shared.Pagination;
+namespace _116.Unit.Tests.Shared.Application.Pagination;
 
 /// <summary>
 /// Unit tests for <see cref="PaginatedRequest"/>, including the constructor-enforced bounds:
