@@ -3,7 +3,6 @@ using _116.Core.Domain.Constants;
 using _116.Core.Domain.Entities;
 using _116.Core.Domain.Events;
 using _116.Core.Infrastructure.BackgroundJobs;
-using _116.Shared.Domain;
 using _116.Tests.Fixtures.Factories.Core;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
@@ -66,8 +65,6 @@ public class UnclaimedFileReaperJobTests
     public async Task Execute_ShouldSoftDeleteTheAbandonedUploadAndRaiseItsCleanupEvent()
     {
         // Arrange
-        // Soft-deleting is what raises the event the asset-cleanup handler listens for, so the
-        // remote blob goes with the row.
         FileEntity abandoned = FileFactory.CreateImage();
         SetupAbandoned(abandoned);
 
@@ -84,8 +81,6 @@ public class UnclaimedFileReaperJobTests
     public async Task Execute_ShouldOnlyScanBeyondTheGracePeriod()
     {
         // Arrange
-        // Reaping inside the grace period would delete an upload whose referencing write is
-        // still in flight.
         DateTime before = DateTime.UtcNow - CoreConstants.UnclaimedFileGracePeriod;
         SetupAbandoned();
 
