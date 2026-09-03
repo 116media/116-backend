@@ -9,4 +9,4 @@ namespace _116.Mailer.Application.Shared.Repositories;
 /// </summary>
 /// <typeparam name="TEntity">The aggregate type.</typeparam>
 public interface IMailerRepository<TEntity> : IRepository<TEntity, Guid>
-    where TEntity : class, IEntity<Guid>;
+    where TEntity : class, IEntity<Guid>, IAggregateRoot;
