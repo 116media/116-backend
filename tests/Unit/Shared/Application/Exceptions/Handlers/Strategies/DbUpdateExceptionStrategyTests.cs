@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using Xunit;
 
-namespace _116.Unit.Tests.Shared.Exceptions.Handlers.Strategies;
+namespace _116.Unit.Tests.Shared.Application.Exceptions.Handlers.Strategies;
 
 /// <summary>
 /// Unit tests for <see cref="DbUpdateExceptionStrategy"/>: a lost unique-constraint race answers
