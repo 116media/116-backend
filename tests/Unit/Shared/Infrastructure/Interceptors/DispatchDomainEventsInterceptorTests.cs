@@ -25,6 +25,15 @@ public class DispatchDomainEventsInterceptorTests
         {
             return new TestAggregate { Id = id, Name = name };
         }
+
+        /// <summary>
+        /// Records an event on this aggregate.
+        /// </summary>
+        /// <param name="domainEvent">The event to record.</param>
+        public void Raise(IDomainEvent domainEvent)
+        {
+            AddDomainEvent(domainEvent);
+        }
     }
 
     private record TestDomainEvent : DomainEvent
@@ -74,7 +83,8 @@ public class DispatchDomainEventsInterceptorTests
 
         var interceptor = new DispatchDomainEventsInterceptor(
             serviceProvider.GetRequiredService<IServiceScopeFactory>(),
-            NullLogger<DispatchDomainEventsInterceptor>.Instance
+            NullLogger<DispatchDomainEventsInterceptor>.Instance,
+            TimeProvider.System
         );
 
         DbContextOptions<OutboxTestDbContext> options = new DbContextOptionsBuilder<OutboxTestDbContext>()
@@ -96,7 +106,8 @@ public class DispatchDomainEventsInterceptorTests
 
         var interceptor = new DispatchDomainEventsInterceptor(
             serviceScopeFactory,
-            NullLogger<DispatchDomainEventsInterceptor>.Instance
+            NullLogger<DispatchDomainEventsInterceptor>.Instance,
+            TimeProvider.System
         );
 
         DbContextOptions<TestDbContext> options = new DbContextOptionsBuilder<TestDbContext>()
@@ -115,7 +126,7 @@ public class DispatchDomainEventsInterceptorTests
         var (context, publisherMock) = CreateTestContext();
         var aggregate = TestAggregate.Create(Guid.NewGuid(), "Test");
         var domainEvent = new TestDomainEvent { Message = "Test event" };
-        aggregate.AddDomainEvent(domainEvent);
+        aggregate.Raise(domainEvent);
 
         // Act
         context.Aggregates.Add(aggregate);
@@ -123,7 +134,7 @@ public class DispatchDomainEventsInterceptorTests
 
         // Assert
         publisherMock.Verify(
-            p => p.Publish(It.Is<IDomainEvent>(e => ReferenceEquals(e, domainEvent)), It.IsAny<CancellationToken>()),
+            p => p.Publish(It.Is<IDomainEvent>(e => e.EventId == domainEvent.EventId), It.IsAny<CancellationToken>()),
             Times.Once
         );
     }
@@ -134,7 +145,7 @@ public class DispatchDomainEventsInterceptorTests
         // Arrange
         var (context, _) = CreateTestContext();
         var aggregate = TestAggregate.Create(Guid.NewGuid(), "Test");
-        aggregate.AddDomainEvent(new TestDomainEvent { Message = "Event" });
+        aggregate.Raise(new TestDomainEvent { Message = "Event" });
 
         // Act
         context.Aggregates.Add(aggregate);
@@ -154,9 +165,9 @@ public class DispatchDomainEventsInterceptorTests
         var event2 = new TestDomainEvent { Message = "Event 2" };
         var event3 = new TestDomainEvent { Message = "Event 3" };
 
-        aggregate.AddDomainEvent(event1);
-        aggregate.AddDomainEvent(event2);
-        aggregate.AddDomainEvent(event3);
+        aggregate.Raise(event1);
+        aggregate.Raise(event2);
+        aggregate.Raise(event3);
 
         // Act
         context.Aggregates.Add(aggregate);
@@ -180,8 +191,8 @@ public class DispatchDomainEventsInterceptorTests
         var event1 = new TestDomainEvent { Message = "Event from aggregate 1" };
         var event2 = new TestDomainEvent { Message = "Event from aggregate 2" };
 
-        aggregate1.AddDomainEvent(event1);
-        aggregate2.AddDomainEvent(event2);
+        aggregate1.Raise(event1);
+        aggregate2.Raise(event2);
 
         // Act
         context.Aggregates.AddRange(aggregate1, aggregate2);
@@ -217,7 +228,7 @@ public class DispatchDomainEventsInterceptorTests
         var (context, publisherMock) = CreateTestContext();
         var aggregate = TestAggregate.Create(Guid.NewGuid(), "Test");
         var domainEvent = new TestDomainEvent { Message = "Test event" };
-        aggregate.AddDomainEvent(domainEvent);
+        aggregate.Raise(domainEvent);
 
         // Act
         context.Aggregates.Add(aggregate);
@@ -225,7 +236,7 @@ public class DispatchDomainEventsInterceptorTests
 
         // Assert
         publisherMock.Verify(
-            p => p.Publish(It.Is<IDomainEvent>(e => ReferenceEquals(e, domainEvent)), It.IsAny<CancellationToken>()),
+            p => p.Publish(It.Is<IDomainEvent>(e => e.EventId == domainEvent.EventId), It.IsAny<CancellationToken>()),
             Times.Once
         );
         aggregate.DomainEvents.Should().BeEmpty();
@@ -240,8 +251,8 @@ public class DispatchDomainEventsInterceptorTests
         var event1 = new TestDomainEvent { Message = "Event 1" };
         var event2 = new TestDomainEvent { Message = "Event 2" };
 
-        aggregate.AddDomainEvent(event1);
-        aggregate.AddDomainEvent(event2);
+        aggregate.Raise(event1);
+        aggregate.Raise(event2);
 
         // Act
         context.Aggregates.Add(aggregate);
@@ -265,7 +276,7 @@ public class DispatchDomainEventsInterceptorTests
 
         // Add event after initial save
         var newEvent = new TestDomainEvent { Message = "New event" };
-        aggregate.AddDomainEvent(newEvent);
+        aggregate.Raise(newEvent);
         aggregate.Name = "Modified";
 
         // Act
@@ -302,7 +313,8 @@ public class DispatchDomainEventsInterceptorTests
         ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
         var interceptor = new DispatchDomainEventsInterceptor(
             serviceProvider.GetRequiredService<IServiceScopeFactory>(),
-            NullLogger<DispatchDomainEventsInterceptor>.Instance
+            NullLogger<DispatchDomainEventsInterceptor>.Instance,
+            TimeProvider.System
         );
 
         var contextEventData = new DbContextEventData(eventDefinition: null!, messageGenerator: null!, context: null);
@@ -341,7 +353,7 @@ public class DispatchDomainEventsInterceptorTests
         var (context, _) = CreateOutboxContext();
         var aggregate = TestAggregate.Create(Guid.NewGuid(), "Test");
         var domainEvent = new TestDomainEvent { Message = "durable" };
-        aggregate.AddDomainEvent(domainEvent);
+        aggregate.Raise(domainEvent);
         context.Aggregates.Add(aggregate);
 
         // Act
@@ -359,7 +371,7 @@ public class DispatchDomainEventsInterceptorTests
         // Arrange
         var (context, _) = CreateOutboxContext();
         var aggregate = TestAggregate.Create(Guid.NewGuid(), "Test");
-        aggregate.AddDomainEvent(new TestDomainEvent { Message = "durable" });
+        aggregate.Raise(new TestDomainEvent { Message = "durable" });
         context.Aggregates.Add(aggregate);
 
         // Act
@@ -375,8 +387,8 @@ public class DispatchDomainEventsInterceptorTests
         // Arrange
         var (context, _) = CreateOutboxContext();
         var aggregate = TestAggregate.Create(Guid.NewGuid(), "Test");
-        aggregate.AddDomainEvent(new TestDomainEvent { Message = "first" });
-        aggregate.AddDomainEvent(new TestDomainEvent { Message = "second" });
+        aggregate.Raise(new TestDomainEvent { Message = "first" });
+        aggregate.Raise(new TestDomainEvent { Message = "second" });
         context.Aggregates.Add(aggregate);
 
         // Act
