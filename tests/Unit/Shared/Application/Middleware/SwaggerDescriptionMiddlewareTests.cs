@@ -4,7 +4,7 @@ using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
 using Xunit;
 
-namespace _116.Unit.Tests.Shared.Middleware;
+namespace _116.Unit.Tests.Shared.Application.Middleware;
 
 /// <summary>
 /// Unit tests for <see cref="SwaggerDescriptionMiddleware"/>.
