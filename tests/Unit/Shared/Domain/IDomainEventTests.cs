@@ -128,4 +128,53 @@ public class DomainEventTests
         // Assert
         domainEvent.Value.Should().Be(expectedValue);
     }
+
+    #region Equality
+
+    [Fact]
+    public void GetHashCode_ForTwoEventsOfOneType_ShouldMatch()
+    {
+        // Arrange
+        IDomainEvent first = new TestDomainEvent();
+        IDomainEvent second = new TestDomainEvent();
+
+        // Assert
+        first.GetHashCode().Should().Be(second.GetHashCode());
+    }
+
+    [Fact]
+    public void Equals_ForTwoEventsOfOneType_ShouldIgnoreTheStampedIdentity()
+    {
+        // Arrange
+        var first = new TestDomainEvent();
+        var second = new TestDomainEvent();
+
+        // Assert
+        first.EventId.Should().NotBe(second.EventId);
+        first.Should().Be(second);
+    }
+
+    [Fact]
+    public void Equals_AgainstNull_ShouldBeFalse()
+    {
+        // Arrange
+        var domainEvent = new TestDomainEvent();
+
+        // Assert
+        domainEvent.Equals(null).Should().BeFalse();
+    }
+
+    [Fact]
+    public void Equals_AcrossEventTypes_ShouldBeFalse()
+    {
+        // Arrange
+        DomainEvent first = new TestDomainEvent();
+        DomainEvent second = new AnotherDomainEvent();
+
+        // Assert
+        first.Equals(second).Should().BeFalse();
+        first.GetHashCode().Should().NotBe(second.GetHashCode());
+    }
+
+    #endregion
 }
