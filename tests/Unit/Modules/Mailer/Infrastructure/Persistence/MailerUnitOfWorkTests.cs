@@ -23,7 +23,7 @@ public class MailerUnitOfWorkTests
     {
         // Arrange
         await using var context = new MailerDbContext(CreateOptions());
-        var unitOfWork = new MailerUnitOfWork(context);
+        var unitOfWork = new MailerUnitOfWork(context, [context]);
 
         // Act
         int result = await unitOfWork.CommitAsync();
@@ -37,7 +37,7 @@ public class MailerUnitOfWorkTests
     {
         // Arrange
         await using var context = new MailerDbContext(CreateOptions());
-        var unitOfWork = new MailerUnitOfWork(context);
+        var unitOfWork = new MailerUnitOfWork(context, [context]);
         var subscriber = NewsletterSubscriberEntity.Subscribe(Guid.NewGuid(), "fan@example.com");
         context.NewsletterSubscribers.Add(subscriber);
 
@@ -67,7 +67,7 @@ public class MailerUnitOfWorkTests
     {
         // Arrange
         await using var context = new MailerDbContext(CreateTransactionalOptions());
-        var unitOfWork = new MailerUnitOfWork(context);
+        var unitOfWork = new MailerUnitOfWork(context, [context]);
         var ran = false;
 
         // Act
@@ -86,7 +86,7 @@ public class MailerUnitOfWorkTests
     {
         // Arrange
         await using var context = new MailerDbContext(CreateTransactionalOptions());
-        var unitOfWork = new MailerUnitOfWork(context);
+        var unitOfWork = new MailerUnitOfWork(context, [context]);
 
         // Act
         await unitOfWork.ExecuteInTransactionAsync(_ =>
@@ -107,7 +107,7 @@ public class MailerUnitOfWorkTests
     {
         // Arrange
         await using var context = new MailerDbContext(CreateTransactionalOptions());
-        var unitOfWork = new MailerUnitOfWork(context);
+        var unitOfWork = new MailerUnitOfWork(context, [context]);
         var failure = new InvalidOperationException("operation failed");
 
         // Act
@@ -124,7 +124,7 @@ public class MailerUnitOfWorkTests
     {
         // Arrange
         await using var context = new MailerDbContext(CreateTransactionalOptions());
-        var unitOfWork = new MailerUnitOfWork(context);
+        var unitOfWork = new MailerUnitOfWork(context, [context]);
         using var cts = new CancellationTokenSource();
         CancellationToken observed = default;
 
