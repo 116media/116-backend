@@ -2,7 +2,6 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadShortVide
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Repositories;
 using _116.Core.Application.Shared.Services;
 using _116.Core.Domain.Entities;
 using _116.Shared.Application.Exceptions;
@@ -24,7 +23,6 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 public class AdminUploadShortVideoThumbnailHandlerTests
 {
     private readonly Mock<IShortVideoRepository> _shortVideoRepositoryMock;
-    private readonly Mock<IFileRepository> _fileRepositoryMock;
     private readonly Mock<IFileUploadService> _fileUploadServiceMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminUploadShortVideoThumbnailHandler _handler;
@@ -32,16 +30,14 @@ public class AdminUploadShortVideoThumbnailHandlerTests
     public AdminUploadShortVideoThumbnailHandlerTests()
     {
         _shortVideoRepositoryMock = MockShortVideoRepository.Create();
-        _fileRepositoryMock = MockFileRepository.Create();
         _fileUploadServiceMock = MockFileUploadService.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
 
         FileEntity fileEntity = FileFactory.CreateImage();
-        _fileUploadServiceMock.SetupReplaceImageFile(fileEntity);
+        _fileUploadServiceMock.SetupUploadImage(fileEntity);
 
         _handler = new AdminUploadShortVideoThumbnailHandler(
             _shortVideoRepositoryMock.Object,
-            _fileRepositoryMock.Object,
             _fileUploadServiceMock.Object,
             _unitOfWorkMock.Object
         );
@@ -53,7 +49,7 @@ public class AdminUploadShortVideoThumbnailHandlerTests
         // Arrange
         ShortVideoEntity shortVideo = ShortVideoFactory.Create();
         FileEntity uploadedFile = FileFactory.CreateImage();
-        _fileUploadServiceMock.SetupReplaceImageFile(uploadedFile);
+        _fileUploadServiceMock.SetupUploadImage(uploadedFile);
         IFormFile fileMock = MockYoutubeThumbnailService.CreateMockFormFile();
         var command = new AdminUploadShortVideoThumbnailCommand(ShortVideoId: shortVideo.Id.ToString(), File: fileMock);
 
@@ -66,9 +62,9 @@ public class AdminUploadShortVideoThumbnailHandlerTests
         shortVideo.ThumbnailFileId.Should().Be(uploadedFile.Id);
         result.ThumbnailUrl.Should().Be(uploadedFile.StorageUrl);
         result.ThumbnailStorageKey.Should().Be(uploadedFile.StorageKey);
-        _fileUploadServiceMock.VerifyReplaceImageFileCalled();
+        _fileUploadServiceMock.VerifyUploadImageCalled();
         _shortVideoRepositoryMock.VerifyUpdateCalled(shortVideo);
-        _unitOfWorkMock.VerifyCommitCalled();
+        _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 
     [Fact]
@@ -77,7 +73,7 @@ public class AdminUploadShortVideoThumbnailHandlerTests
         // Arrange
         ShortVideoEntity shortVideo = ShortVideoFactory.CreateWithThumbnail();
         FileEntity uploadedFile = FileFactory.CreateImage();
-        _fileUploadServiceMock.SetupReplaceImageFile(uploadedFile);
+        _fileUploadServiceMock.SetupUploadImage(uploadedFile);
         IFormFile fileMock = MockYoutubeThumbnailService.CreateMockFormFile();
         var command = new AdminUploadShortVideoThumbnailCommand(ShortVideoId: shortVideo.Id.ToString(), File: fileMock);
 
@@ -90,9 +86,9 @@ public class AdminUploadShortVideoThumbnailHandlerTests
         shortVideo.ThumbnailFileId.Should().Be(uploadedFile.Id);
         result.ThumbnailUrl.Should().Be(uploadedFile.StorageUrl);
         result.ThumbnailStorageKey.Should().Be(uploadedFile.StorageKey);
-        _fileUploadServiceMock.VerifyReplaceImageFileCalled();
+        _fileUploadServiceMock.VerifyUploadImageCalled();
         _shortVideoRepositoryMock.VerifyUpdateCalled(shortVideo);
-        _unitOfWorkMock.VerifyCommitCalled();
+        _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 
     [Fact]
@@ -109,6 +105,6 @@ public class AdminUploadShortVideoThumbnailHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
-        _unitOfWorkMock.VerifyCommitNotCalled();
+        _unitOfWorkMock.VerifyExecutedInTransaction(0);
     }
 }
