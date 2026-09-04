@@ -2,6 +2,7 @@ using _116.Core.Application.Shared.Repositories;
 using _116.Core.Application.Shared.Services;
 using _116.Core.Domain.Entities;
 using _116.Identity.Application.Shared.Mappers;
+using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.User.UseCases.Admin.Commands.UpdateAvatar.Contracts;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
@@ -14,12 +15,14 @@ namespace _116.Identity.Application.User.UseCases.Admin.Commands.UpdateAvatar;
 /// </summary>
 /// <param name="authFactory">Factory for handling admin user avatar update logic.</param>
 /// <param name="fileRepository">Repository for file data access operations.</param>
-/// <param name=\"fileUploadService\">Uploads and replaces stored assets.</param>
+/// <param name="fileUploadService">Uploads and replaces stored assets.</param>
+/// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class AdminUpdateAvatarHandler(
     IAdminUpdateAvatarAuthFactory authFactory,
     IFileRepository fileRepository,
     IFileUploadService fileUploadService,
+    IIdentityUnitOfWork unitOfWork,
     IMapper mapper
 ) : ICommandHandler<AdminUpdateAvatarCommand, AdminUpdateAvatarResult>
 {
@@ -42,22 +45,31 @@ public class AdminUpdateAvatarHandler(
 
         IFormFile file = command.AvatarFile!;
 
-        FileEntity fileEntity = await fileUploadService.UpdateAvatarFromFileAsync(
+        FileEntity uploaded = await fileUploadService.UploadAvatarAsync(
             avatarFile: file,
-            currentAvatarFileId: userData.User.AvatarFileId,
             userId: command.UserId.ToString(),
             originalFileName: file.FileName,
             mimeType: file.ContentType,
             cancellationToken: cancellationToken
         );
 
-        AdminUpdateAvatarAuthData authData = await authFactory.UpdateAvatarAsync(
-            user: userData.User,
-            avatarFileId: fileEntity.Id,
+        AdminUpdateAvatarAuthData authData = await unitOfWork.ExecuteInTransactionAsync(
+            async ct =>
+            {
+                await fileUploadService.RecordAsync(
+                    file: uploaded,
+                    supersededFileId: userData.User.AvatarFileId,
+                    cancellationToken: ct
+                );
+
+                return await authFactory.UpdateAvatarAsync(
+                    user: userData.User,
+                    avatarFileId: uploaded.Id,
+                    cancellationToken: ct
+                );
+            },
             cancellationToken: cancellationToken
         );
-
-        await fileRepository.ClaimAsync(fileId: fileEntity.Id, cancellationToken: cancellationToken);
 
         FileEntity? avatarFile = await fileRepository.GetAvatarFileAsync(
             avatarFileId: authData.User.AvatarFileId,
