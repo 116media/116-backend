@@ -32,6 +32,8 @@ public class FileUploadService(
         CancellationToken cancellationToken = default
     )
     {
+        GuardMetadata(originalFileName, mimeType);
+
         FileUploadResult upload = await fileService.UploadFileAsync(
             file: file,
             publicId: publicId,
@@ -65,6 +67,8 @@ public class FileUploadService(
         CancellationToken cancellationToken = default
     )
     {
+        GuardMetadata(originalFileName, mimeType);
+
         FileUploadResult upload = await fileService.UploadVideoFileAsync(
             file: file,
             publicId: publicId,
@@ -85,6 +89,8 @@ public class FileUploadService(
         CancellationToken cancellationToken = default
     )
     {
+        GuardMetadata(originalFileName, mimeType);
+
         FileUploadResult upload = await fileService.UploadRawFileAsync(
             file: file,
             publicId: publicId,
@@ -104,6 +110,8 @@ public class FileUploadService(
         CancellationToken cancellationToken = default
     )
     {
+        GuardMetadata(originalFileName, mimeType);
+
         FileUploadResult upload = await fileService.UploadFileAsync(
             file: avatarFile,
             publicId: userId,
@@ -159,6 +167,26 @@ public class FileUploadService(
         await fileRepository.AddAsync(file, cancellationToken);
 
         return file;
+    }
+
+    /// <summary>
+    /// Rejects metadata the file row could not be built from, before the upload spends a network
+    /// call on an asset that would then be orphaned by the throw.
+    /// </summary>
+    /// <param name="originalFileName">The filename as submitted.</param>
+    /// <param name="mimeType">The uploaded file's MIME type.</param>
+    /// <exception cref="CoreRuleException">Either value is missing.</exception>
+    private static void GuardMetadata(string originalFileName, string mimeType)
+    {
+        if (string.IsNullOrWhiteSpace(originalFileName))
+        {
+            throw new CoreRuleException(CoreRuleCodes.OriginalFileNameRequired);
+        }
+
+        if (string.IsNullOrWhiteSpace(mimeType))
+        {
+            throw new CoreRuleException(CoreRuleCodes.MimeTypeRequired);
+        }
     }
 
     /// <summary>
