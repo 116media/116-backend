@@ -108,10 +108,11 @@ public class AdminUpdateShortVideoHandlerTests : BaseContentHandlerTest
     }
 
     [Fact]
-    public async Task Handle_ShouldNotUploadAnyVideoFile()
+    public async Task Handle_ShouldLeaveTheStoredVideoFileUntouched()
     {
         // Arrange
         ShortVideoEntity existing = ShortVideoFactory.Create();
+        Guid? originalVideoFileId = existing.VideoFileId;
         var command = BuildCommand(id: existing.Id.ToString());
 
         _shortVideoRepositoryMock
@@ -122,8 +123,8 @@ public class AdminUpdateShortVideoHandlerTests : BaseContentHandlerTest
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _fileRepositoryMock.VerifyUploadAndStoreVideoFileNotCalled();
         _unitOfWorkMock.VerifyCommitCalled();
+        existing.VideoFileId.Should().Be(originalVideoFileId);
     }
 
     #endregion
