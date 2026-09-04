@@ -24,4 +24,17 @@ public interface IUnitOfWork
         Func<CancellationToken, Task> operation,
         CancellationToken cancellationToken = default
     );
+
+    /// <summary>
+    /// Runs the operation inside one database transaction and returns its result, on the same
+    /// terms as the non-returning overload.
+    /// </summary>
+    /// <typeparam name="TResult">What the operation produces.</typeparam>
+    /// <param name="operation">The work to perform before the single commit.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>Whatever the operation returned, once the commit succeeded.</returns>
+    Task<TResult> ExecuteInTransactionAsync<TResult>(
+        Func<CancellationToken, Task<TResult>> operation,
+        CancellationToken cancellationToken = default
+    );
 }
