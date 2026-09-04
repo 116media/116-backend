@@ -1,7 +1,6 @@
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Repositories;
 using _116.Core.Application.Shared.Services;
 using _116.Core.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
@@ -15,12 +14,10 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadArtis
 /// the Core module.
 /// </summary>
 /// <param name="artistRepository">Repository for artist profile data access operations.</param>
-/// <param name="fileRepository">Repository for centralized file entity management.</param>
-/// <param name=\"fileUploadService\">Uploads and replaces stored assets.</param>
+/// <param name="fileUploadService">Uploads and replaces stored assets.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 public class AdminUploadArtistAvatarHandler(
     IArtistRepository artistRepository,
-    IFileRepository fileRepository,
     IFileUploadService fileUploadService,
     IContentUnitOfWork unitOfWork
 ) : ICommandHandler<AdminUploadArtistAvatarCommand, AdminUploadArtistAvatarResult>
@@ -38,8 +35,7 @@ public class AdminUploadArtistAvatarHandler(
 
         IFormFile file = command.File!;
 
-        FileEntity fileEntity = await fileUploadService.ReplaceImageFileAsync(
-            currentFileId: artist.AvatarFileId,
+        FileEntity uploaded = await fileUploadService.UploadImageAsync(
             file: file,
             publicId: command.ArtistId.ToString(),
             folder: "content/artist-avatars",
@@ -48,16 +44,25 @@ public class AdminUploadArtistAvatarHandler(
             cancellationToken: cancellationToken
         );
 
-        artist.SetAvatarFileId(avatarFileId: fileEntity.Id);
+        await unitOfWork.ExecuteInTransactionAsync(
+            async ct =>
+            {
+                await fileUploadService.RecordAsync(
+                    file: uploaded,
+                    supersededFileId: artist.AvatarFileId,
+                    cancellationToken: ct
+                );
 
-        artistRepository.Update(artist: artist);
-        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+                artist.SetAvatarFileId(avatarFileId: uploaded.Id);
 
-        await fileRepository.ClaimAsync(fileId: fileEntity.Id, cancellationToken: cancellationToken);
+                artistRepository.Update(artist: artist);
+            },
+            cancellationToken: cancellationToken
+        );
 
         return new AdminUploadArtistAvatarResult(
-            AvatarUrl: fileEntity.StorageUrl,
-            AvatarStorageKey: fileEntity.StorageKey!
+            AvatarUrl: uploaded.StorageUrl,
+            AvatarStorageKey: uploaded.StorageKey!
         );
     }
 }
