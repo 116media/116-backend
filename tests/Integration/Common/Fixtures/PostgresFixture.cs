@@ -14,11 +14,17 @@ public class PostgresFixture : IAsyncLifetime
     private Respawner? _respawner;
     private ApiFixture? _apiFixture;
     private string _connectionString = string.Empty;
+    private string _redisConnectionString = string.Empty;
 
     /// <summary>
     /// The connection string to this fixture's database on the shared Testcontainer.
     /// </summary>
     public string ConnectionString => _connectionString;
+
+    /// <summary>
+    /// The Redis the host caches into, started alongside the database.
+    /// </summary>
+    public string RedisConnectionString => _redisConnectionString;
 
     /// <summary>
     /// The shared API fixture (WebApplicationFactory) for this collection.
@@ -36,6 +42,7 @@ public class PostgresFixture : IAsyncLifetime
     public async ValueTask InitializeAsync()
     {
         _connectionString = await TestPostgresContainer.LeaseDatabaseAsync(DatabaseName);
+        _redisConnectionString = await TestRedisContainer.ConnectionStringAsync();
         await CreateRespawnerAsync();
 
         _apiFixture = CreateApiFixture();
