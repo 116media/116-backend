@@ -67,38 +67,6 @@ public class FileRepository(CoreDbContext context, TimeProvider timeProvider)
     }
 
     /// <inheritdoc />
-    public async Task<bool> ClaimAsync(Guid fileId, CancellationToken cancellationToken = default)
-    {
-        FileEntity? file = await Context.Files.FirstOrDefaultAsync(
-            candidate => candidate.Id == fileId,
-            cancellationToken
-        );
-
-        if (file is null || !file.Claim(timeProvider.GetUtcNow().UtcDateTime))
-        {
-            return false;
-        }
-
-        await Context.SaveChangesAsync(cancellationToken);
-
-        return true;
-    }
-
-    /// <inheritdoc />
-    public async Task<IReadOnlyList<FileEntity>> GetUnclaimedBeforeAsync(
-        DateTime olderThan,
-        int batchSize,
-        CancellationToken cancellationToken = default
-    )
-    {
-        return await Context
-            .Files.Where(file => file.State == EnumFileState.Unclaimed && file.CreatedAt < olderThan)
-            .OrderBy(file => file.CreatedAt)
-            .Take(batchSize)
-            .ToListAsync(cancellationToken);
-    }
-
-    /// <inheritdoc />
     public async Task<FileEntity?> GetAvatarFileAsync(Guid? avatarFileId, CancellationToken cancellationToken = default)
     {
         return avatarFileId.HasValue ? await GetByIdAsync(avatarFileId.Value, cancellationToken) : null;
@@ -113,8 +81,6 @@ public class FileRepository(CoreDbContext context, TimeProvider timeProvider)
         {
             return false;
         }
-
-        await Context.SaveChangesAsync(cancellationToken);
 
         return true;
     }
