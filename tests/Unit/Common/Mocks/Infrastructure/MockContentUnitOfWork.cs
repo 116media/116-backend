@@ -60,6 +60,26 @@ public static class MockContentUnitOfWork
     }
 
     /// <summary>
+    /// Runs the result-returning transactional operation inline so handlers under test execute
+    /// their body and receive what it produced.
+    /// </summary>
+    /// <typeparam name="TResult">What the operation produces.</typeparam>
+    /// <param name="mock">The mock instance.</param>
+    /// <returns>The mock, for chaining.</returns>
+    public static Mock<IContentUnitOfWork> SetupExecuteInTransaction<TResult>(this Mock<IContentUnitOfWork> mock)
+    {
+        mock.Setup(x =>
+                x.ExecuteInTransactionAsync(
+                    It.IsAny<Func<CancellationToken, Task<TResult>>>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .Returns((Func<CancellationToken, Task<TResult>> operation, CancellationToken ct) => operation(ct));
+
+        return mock;
+    }
+
+    /// <summary>
     /// Verifies the handler ran its work inside one transaction.
     /// </summary>
     /// <param name="mock">The mock instance.</param>
@@ -68,6 +88,24 @@ public static class MockContentUnitOfWork
     {
         mock.Verify(
             x => x.ExecuteInTransactionAsync(It.IsAny<Func<CancellationToken, Task>>(), It.IsAny<CancellationToken>()),
+            Times.Exactly(times)
+        );
+    }
+
+    /// <summary>
+    /// Verifies the handler ran its result-returning work inside one transaction.
+    /// </summary>
+    /// <typeparam name="TResult">What the operation produced.</typeparam>
+    /// <param name="mock">The mock instance.</param>
+    /// <param name="times">How many transactions were expected.</param>
+    public static void VerifyExecutedInTransaction<TResult>(this Mock<IContentUnitOfWork> mock, int times = 1)
+    {
+        mock.Verify(
+            x =>
+                x.ExecuteInTransactionAsync(
+                    It.IsAny<Func<CancellationToken, Task<TResult>>>(),
+                    It.IsAny<CancellationToken>()
+                ),
             Times.Exactly(times)
         );
     }
