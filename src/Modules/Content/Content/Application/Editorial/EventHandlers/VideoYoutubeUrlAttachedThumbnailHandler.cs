@@ -5,6 +5,7 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Events;
 using _116.Core.Application.Shared.Repositories;
+using _116.Core.Application.Shared.Services;
 using _116.Core.Domain.Entities;
 using _116.Shared.Application.Services;
 using Microsoft.AspNetCore.Http;
@@ -22,12 +23,14 @@ namespace _116.Content.Application.Editorial.EventHandlers;
 /// <param name="videoRepository">Repository for video data access operations.</param>
 /// <param name="unitOfWork">Unit of Work committing the thumbnail attachment.</param>
 /// <param name="fileRepository">Repository for centralized file entity management.</param>
+/// <param name=\"fileUploadService\">Uploads and replaces stored assets.</param>
 /// <param name="youtubeThumbnailService">Service for downloading YouTube video thumbnails.</param>
 /// <param name="logger">Logger for skipped thumbnail resolutions.</param>
 public class VideoYoutubeUrlAttachedThumbnailHandler(
     IVideoRepository videoRepository,
     IContentUnitOfWork unitOfWork,
     IFileRepository fileRepository,
+    IFileUploadService fileUploadService,
     IYoutubeThumbnailService youtubeThumbnailService,
     ILogger<VideoYoutubeUrlAttachedThumbnailHandler> logger
 ) : IDomainEventHandler<VideoYoutubeUrlAttachedEvent>
@@ -63,7 +66,7 @@ public class VideoYoutubeUrlAttachedThumbnailHandler(
             cancellationToken: cancellationToken
         );
 
-        FileEntity fileEntity = await fileRepository.ReplaceImageFileAsync(
+        FileEntity fileEntity = await fileUploadService.ReplaceImageFileAsync(
             currentFileId: video.ThumbnailFileId,
             file: thumbnail,
             publicId: video.Id.ToString(),
