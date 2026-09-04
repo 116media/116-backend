@@ -1,6 +1,7 @@
+using System.Data.Common;
 using _116.Core.Application.Shared.Persistence;
+using _116.Shared.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
 
 namespace _116.Core.Infrastructure.Persistence;
 
@@ -8,33 +9,8 @@ namespace _116.Core.Infrastructure.Persistence;
 /// Unit of Work implementation for the Core module.
 /// Coordinates saving changes across all repositories that share the CoreDbContext.
 /// </summary>
-/// <param name="context">The Core module database context.</param>
-public class CoreUnitOfWork(CoreDbContext context) : ICoreUnitOfWork
-{
-    /// <inheritdoc />
-    public async Task<int> CommitAsync(CancellationToken cancellationToken = default)
-    {
-        return await context.SaveChangesAsync(cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public Task ExecuteInTransactionAsync(
-        Func<CancellationToken, Task> operation,
-        CancellationToken cancellationToken = default
-    )
-    {
-        IExecutionStrategy strategy = context.Database.CreateExecutionStrategy();
-
-        return strategy.ExecuteAsync(
-            async ct =>
-            {
-                await using IDbContextTransaction transaction = await context.Database.BeginTransactionAsync(ct);
-
-                await operation(ct);
-                await context.SaveChangesAsync(ct);
-                await transaction.CommitAsync(ct);
-            },
-            cancellationToken
-        );
-    }
-}
+/// <param name="context">The core database context.</param>
+/// <param name="participants">The module contexts sharing this scope's connection.</param>
+public class CoreUnitOfWork(CoreDbContext context, IEnumerable<DbContext> participants)
+    : UnitOfWorkBase<CoreDbContext>(context, participants),
+        ICoreUnitOfWork;
