@@ -1,4 +1,5 @@
 using _116.Core.Application.Shared.Repositories;
+using _116.Core.Application.Shared.Services;
 using _116.Core.Domain.Entities;
 using _116.Identity.Application.Adapters.SocialAuth;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin.Contracts;
@@ -13,11 +14,13 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin;
 /// Factory implementation for handling social authentication logic.
 /// </summary>
 /// <param name="authRepository">Repository for user data access operations.</param>
+/// <param name="fileUploadService">Uploads and replaces stored assets.</param>
 /// <param name="fileRepository">Repository for accessing file metadata.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 public class PublicSocialLoginAuthFactory(
     IAuthRepository authRepository,
     IFileRepository fileRepository,
+    IFileUploadService fileUploadService,
     IIdentityUnitOfWork unitOfWork
 ) : IPublicSocialLoginAuthFactory
 {
@@ -36,15 +39,17 @@ public class PublicSocialLoginAuthFactory(
             cancellationToken: cancellationToken
         );
 
-        // Update avatar from the verified provider picture if allowed
-        bool isAvatarSourceManual = user!.AvatarSource == EnumAvatarSource.Manual;
-        FileEntity? avatarFileEntity = await fileRepository.UpdateAvatarUrlFromSourceAsync(
-            currentAvatarFileId: user.AvatarFileId,
-            avatarUrl: payload.PictureUrl,
-            user.Id.ToString(),
-            isAvatarSourceManual: isAvatarSourceManual,
-            cancellationToken: cancellationToken
-        );
+        FileEntity? avatarFileEntity = null;
+        bool hasManualAvatar = user!.AvatarSource == EnumAvatarSource.Manual;
+        if (!hasManualAvatar && !string.IsNullOrWhiteSpace(payload.PictureUrl))
+        {
+            avatarFileEntity = await fileUploadService.UpdateAvatarFromUrlAsync(
+                currentAvatarFileId: user.AvatarFileId,
+                newAvatarUrl: payload.PictureUrl!,
+                userId: user.Id.ToString(),
+                cancellationToken: cancellationToken
+            );
+        }
 
         if (avatarFileEntity != null)
         {
