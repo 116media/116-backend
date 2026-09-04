@@ -79,6 +79,28 @@ namespace _116.Core.Infrastructure.Persistence.Migrations
                 schema: "core",
                 table: "files",
                 column: "is_deleted");
+
+            // Dropping state took every index filtering on it, so both are rebuilt on is_deleted.
+            migrationBuilder.Sql(
+                """
+                DROP INDEX IF EXISTS core.ix_files_file_name;
+                DROP INDEX IF EXISTS core.ix_files_created_at;
+                """);
+
+            migrationBuilder.CreateIndex(
+                name: "ix_files_file_name",
+                schema: "core",
+                table: "files",
+                column: "file_name",
+                unique: true,
+                filter: "is_deleted = false");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_files_created_at",
+                schema: "core",
+                table: "files",
+                column: "created_at",
+                filter: "claimed_at IS NULL AND is_deleted = false");
         }
     }
 }
