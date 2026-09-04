@@ -1,3 +1,4 @@
+using System.Data.Common;
 using System.Threading.RateLimiting;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Content.Application.Editorial.Services;
@@ -23,7 +24,9 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Internal;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Npgsql;
 using Quartz;
 
 namespace _116.Integration.Tests.Common.Fixtures;
@@ -114,6 +117,12 @@ public class ApiFixture(PostgresFixture db) : WebApplicationFactory<Program>
     {
         Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Testing");
 
+        // The developer .env points this at a docker-network hostname, and `Env.NoClobber()`
+        // restores it whenever the process variable is cleared, so it is overridden rather than
+        // unset. The multiplexer connects eagerly: an unreachable host fails every cached handler.
+        // The override keeps to its own database index, so a run never touches the dev cache.
+        Environment.SetEnvironmentVariable("REDIS_URL", TestRedis.ConnectionString);
+
         var connParts = ParseConnectionString(_db.ConnectionString);
         Environment.SetEnvironmentVariable("POSTGRES_HOST", connParts.host);
         Environment.SetEnvironmentVariable("POSTGRES_PORT", connParts.port);
@@ -175,6 +184,7 @@ public class ApiFixture(PostgresFixture db) : WebApplicationFactory<Program>
             typeof(IDbContextPool<TDbContext>),
             typeof(IScopedDbContextLease<TDbContext>),
             typeof(IDbContextOptionsConfiguration<TDbContext>),
+            typeof(DbConnection),
         ];
 
         List<ServiceDescriptor> existing = services
@@ -186,13 +196,19 @@ public class ApiFixture(PostgresFixture db) : WebApplicationFactory<Program>
             services.Remove(descriptor);
         }
 
-        services.AddDbContextPool<TDbContext>(
+        // Mirrors production: every module context in a scope binds the same connection, so a
+        // transaction started by one unit of work also covers the others.
+        services.TryAddScoped<DbConnection>(_ => new NpgsqlConnection(_db.ConnectionString));
+
+        services.AddDbContext<TDbContext>(
             (serviceProvider, options) =>
             {
                 options.AddInterceptors(serviceProvider.GetServices<ISaveChangesInterceptor>());
-                options.UseNpgsql(_db.ConnectionString).UseSnakeCaseNamingConvention();
+                options.UseNpgsql(serviceProvider.GetRequiredService<DbConnection>()).UseSnakeCaseNamingConvention();
             }
         );
+
+        services.AddScoped<DbContext>(serviceProvider => serviceProvider.GetRequiredService<TDbContext>());
     }
 
     /// <summary>
