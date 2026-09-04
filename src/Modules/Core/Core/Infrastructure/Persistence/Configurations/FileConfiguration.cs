@@ -38,18 +38,14 @@ public class FileConfiguration : IEntityTypeConfiguration<FileEntity>
 
         builder.Property(f => f.ForegroundColorHex).HasMaxLength(FileConstants.ColorHexLength).IsRequired(false);
 
-        builder.Property(f => f.State).HasDefaultValue(EnumFileState.Unclaimed).IsRequired();
+        builder.Property(f => f.State).HasDefaultValue(EnumFileState.Stored).IsRequired();
 
         builder.Property(f => f.DeletedAt).IsRequired(false);
 
-        builder.Property(f => f.ClaimedAt).IsRequired(false);
-
         // Indexes
-        // Unique among active rows only; soft-deleted rows keep their file_name on replace.
-        builder.HasIndex(f => f.FileName).IsUnique().HasFilter("is_deleted = false");
+        // Unique among stored rows only; deleted and replaced rows keep their file_name.
+        builder.HasIndex(f => f.FileName).IsUnique().HasFilter("state = 0");
 
         builder.HasIndex(f => f.State);
-
-        builder.HasIndex(f => f.CreatedAt).HasFilter("claimed_at IS NULL AND is_deleted = false");
     }
 }
