@@ -1,4 +1,5 @@
 using _116.Core.Application.Shared.Repositories;
+using _116.Core.Application.Shared.Services;
 using _116.Core.Domain.Entities;
 using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Application.User.UseCases.Admin.Commands.UpdateAvatar.Contracts;
@@ -13,10 +14,12 @@ namespace _116.Identity.Application.User.UseCases.Admin.Commands.UpdateAvatar;
 /// </summary>
 /// <param name="authFactory">Factory for handling admin user avatar update logic.</param>
 /// <param name="fileRepository">Repository for file data access operations.</param>
+/// <param name=\"fileUploadService\">Uploads and replaces stored assets.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class AdminUpdateAvatarHandler(
     IAdminUpdateAvatarAuthFactory authFactory,
     IFileRepository fileRepository,
+    IFileUploadService fileUploadService,
     IMapper mapper
 ) : ICommandHandler<AdminUpdateAvatarCommand, AdminUpdateAvatarResult>
 {
@@ -39,10 +42,10 @@ public class AdminUpdateAvatarHandler(
 
         IFormFile file = command.AvatarFile!;
 
-        FileEntity fileEntity = await fileRepository.UpdateAvatarFromFileAsync(
-            currentAvatarFileId: userData.User.AvatarFileId,
+        FileEntity fileEntity = await fileUploadService.UpdateAvatarFromFileAsync(
             avatarFile: file,
-            command.UserId.ToString(),
+            currentAvatarFileId: userData.User.AvatarFileId,
+            userId: command.UserId.ToString(),
             originalFileName: file.FileName,
             mimeType: file.ContentType,
             cancellationToken: cancellationToken
