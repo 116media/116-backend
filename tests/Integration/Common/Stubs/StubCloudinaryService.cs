@@ -22,11 +22,18 @@ public class StubCloudinaryService : ICloudinaryService, IResettableStub
     /// </summary>
     public List<string> DeletedPublicIds { get; } = [];
 
+    /// <summary>
+    /// Every public id handed to an upload call, in call order, so a test can assert that a
+    /// request rejected on its way in never reached storage.
+    /// </summary>
+    public List<string> UploadedPublicIds { get; } = [];
+
     /// <inheritdoc />
     public void Reset()
     {
         NextDeleteFailure = null;
         DeletedPublicIds.Clear();
+        UploadedPublicIds.Clear();
     }
 
     /// <inheritdoc />
@@ -37,6 +44,8 @@ public class StubCloudinaryService : ICloudinaryService, IResettableStub
         CancellationToken cancellationToken = default
     )
     {
+        UploadedPublicIds.Add(publicId);
+
         return Task.FromResult(CreateResult(publicId, folder, "image", "jpg"));
     }
 
@@ -48,6 +57,8 @@ public class StubCloudinaryService : ICloudinaryService, IResettableStub
         CancellationToken cancellationToken = default
     )
     {
+        UploadedPublicIds.Add(publicId);
+
         return Task.FromResult(CreateResult(publicId, folder, "raw", "pdf"));
     }
 
@@ -59,6 +70,8 @@ public class StubCloudinaryService : ICloudinaryService, IResettableStub
         CancellationToken cancellationToken = default
     )
     {
+        UploadedPublicIds.Add(publicId);
+
         return Task.FromResult(CreateResult(publicId, folder, "video", "mp4"));
     }
 
