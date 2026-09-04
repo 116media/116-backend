@@ -41,5 +41,10 @@ public sealed class FileRuleProblems : IRuleProblemCatalog
                 nameof(BadRequestException),
                 (ctx, _) => ctx.Resolve<ValidationErrorMessage>().FileSizeMustBeGreaterThanZero()
             ),
+            [CoreRuleCodes.FileAlreadyRecorded] = new(
+                StatusCodes.Status409Conflict,
+                nameof(ConflictException),
+                (ctx, _) => ctx.Resolve<ValidationErrorMessage>().FileAlreadyRecorded()
+            ),
         };
 }
