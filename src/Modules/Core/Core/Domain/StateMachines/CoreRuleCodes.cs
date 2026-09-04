@@ -30,4 +30,9 @@ public static class CoreRuleCodes
     /// A file size must be greater than zero. Args: none.
     /// </summary>
     public const string FileSizeMustBePositive = "core.file.size-must-be-positive";
+
+    /// <summary>
+    /// A file that already has a row was handed in to be recorded again. Args: none.
+    /// </summary>
+    public const string FileAlreadyRecorded = "core.file.already-recorded";
 }
