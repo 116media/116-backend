@@ -25,7 +25,7 @@ public class FileIsDeletedSpecification : Specification<FileEntity>
 {
     public override Expression<Func<FileEntity, bool>> ToExpression()
     {
-        return file => (file.State == EnumFileState.Deleted || file.State == EnumFileState.Replaced);
+        return file => file.State == EnumFileState.Deleted || file.State == EnumFileState.Replaced;
     }
 }
 
