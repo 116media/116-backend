@@ -3,6 +3,7 @@ using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
+using _116.Core.Application.Shared.Services;
 using _116.Core.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
@@ -10,6 +11,7 @@ using _116.Tests.Fixtures.Factories.Core;
 using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
+using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
 using Moq;
@@ -24,6 +26,7 @@ public class AdminUploadAlbumCoverHandlerTests
 {
     private readonly Mock<IAlbumRepository> _albumRepositoryMock;
     private readonly Mock<IFileRepository> _fileRepositoryMock;
+    private readonly Mock<IFileUploadService> _fileUploadServiceMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminUploadAlbumCoverHandler _handler;
 
@@ -31,10 +34,12 @@ public class AdminUploadAlbumCoverHandlerTests
     {
         _albumRepositoryMock = MockAlbumRepository.Create();
         _fileRepositoryMock = MockFileRepository.Create();
+        _fileUploadServiceMock = MockFileUploadService.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _handler = new AdminUploadAlbumCoverHandler(
             _albumRepositoryMock.Object,
             _fileRepositoryMock.Object,
+            _fileUploadServiceMock.Object,
             _unitOfWorkMock.Object
         );
     }
@@ -47,7 +52,7 @@ public class AdminUploadAlbumCoverHandlerTests
         _albumRepositoryMock.SetupGetByIdOrThrow(album);
 
         FileEntity fileEntity = FileFactory.CreateImage();
-        _fileRepositoryMock.SetupReplaceImageFile(fileEntity);
+        _fileUploadServiceMock.SetupReplaceImageFile(fileEntity);
 
         Mock<IFormFile> fileMock = new();
         fileMock.Setup(f => f.FileName).Returns("cover.png");
@@ -77,7 +82,7 @@ public class AdminUploadAlbumCoverHandlerTests
         _albumRepositoryMock.SetupGetByIdOrThrow(album);
 
         FileEntity fileEntity = FileFactory.CreateImage();
-        _fileRepositoryMock.SetupReplaceImageFile(fileEntity);
+        _fileUploadServiceMock.SetupReplaceImageFile(fileEntity);
 
         Mock<IFormFile> fileMock = new();
         fileMock.Setup(f => f.FileName).Returns("cover.png");
