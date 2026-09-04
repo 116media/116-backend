@@ -3,6 +3,7 @@ using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
+using _116.Core.Application.Shared.Services;
 using _116.Core.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
@@ -10,6 +11,7 @@ using _116.Tests.Fixtures.Factories.Core;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
+using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
 using Moq;
@@ -24,6 +26,7 @@ public class AdminUploadCategoryPosterHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<ICategoryRepository> _categoryRepositoryMock;
     private readonly Mock<IFileRepository> _fileRepositoryMock;
+    private readonly Mock<IFileUploadService> _fileUploadServiceMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminUploadCategoryPosterHandler _handler;
 
@@ -31,10 +34,12 @@ public class AdminUploadCategoryPosterHandlerTests : BaseContentHandlerTest
     {
         _categoryRepositoryMock = MockCategoryRepository.Create();
         _fileRepositoryMock = MockFileRepository.Create();
+        _fileUploadServiceMock = MockFileUploadService.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _handler = new AdminUploadCategoryPosterHandler(
             _categoryRepositoryMock.Object,
             _fileRepositoryMock.Object,
+            _fileUploadServiceMock.Object,
             _unitOfWorkMock.Object,
             Mapper
         );
@@ -54,14 +59,14 @@ public class AdminUploadCategoryPosterHandlerTests : BaseContentHandlerTest
         var command = new AdminUploadCategoryPosterCommand(Id: category.Id.ToString(), File: file);
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-        _fileRepositoryMock.SetupReplaceImageFile(fileEntity);
+        _fileUploadServiceMock.SetupReplaceImageFile(fileEntity);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         category.PosterFileId.Should().Be(fileEntity.Id);
-        _fileRepositoryMock.VerifyReplaceImageFileCalled();
+        _fileUploadServiceMock.VerifyReplaceImageFileCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -80,7 +85,7 @@ public class AdminUploadCategoryPosterHandlerTests : BaseContentHandlerTest
         var command = new AdminUploadCategoryPosterCommand(Id: category.Id.ToString(), File: file);
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-        _fileRepositoryMock.SetupReplaceImageFile(newFileEntity);
+        _fileUploadServiceMock.SetupReplaceImageFile(newFileEntity);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
