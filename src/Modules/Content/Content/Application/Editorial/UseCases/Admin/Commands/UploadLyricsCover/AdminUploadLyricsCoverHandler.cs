@@ -1,7 +1,6 @@
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Repositories;
 using _116.Core.Application.Shared.Services;
 using _116.Core.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
@@ -15,12 +14,10 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadLyric
 /// the Core module.
 /// </summary>
 /// <param name="lyricsRepository">Repository for lyrics data access operations.</param>
-/// <param name="fileRepository">Repository for centralized file entity management.</param>
-/// <param name=\"fileUploadService\">Uploads and replaces stored assets.</param>
+/// <param name="fileUploadService">Uploads and replaces stored assets.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 public class AdminUploadLyricsCoverHandler(
     ILyricsRepository lyricsRepository,
-    IFileRepository fileRepository,
     IFileUploadService fileUploadService,
     IContentUnitOfWork unitOfWork
 ) : ICommandHandler<AdminUploadLyricsCoverCommand, AdminUploadLyricsCoverResult>
@@ -38,8 +35,7 @@ public class AdminUploadLyricsCoverHandler(
 
         IFormFile file = command.File!;
 
-        FileEntity fileEntity = await fileUploadService.ReplaceImageFileAsync(
-            currentFileId: lyrics.CoverImageFileId,
+        FileEntity uploaded = await fileUploadService.UploadImageAsync(
             file: file,
             publicId: command.LyricsId.ToString(),
             folder: "content/lyrics-covers",
@@ -48,16 +44,25 @@ public class AdminUploadLyricsCoverHandler(
             cancellationToken: cancellationToken
         );
 
-        lyrics.SetCoverImageFileId(coverImageFileId: fileEntity.Id);
+        await unitOfWork.ExecuteInTransactionAsync(
+            async ct =>
+            {
+                await fileUploadService.RecordAsync(
+                    file: uploaded,
+                    supersededFileId: lyrics.CoverImageFileId,
+                    cancellationToken: ct
+                );
 
-        lyricsRepository.Update(lyrics: lyrics);
-        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+                lyrics.SetCoverImageFileId(coverImageFileId: uploaded.Id);
 
-        await fileRepository.ClaimAsync(fileId: fileEntity.Id, cancellationToken: cancellationToken);
+                lyricsRepository.Update(lyrics: lyrics);
+            },
+            cancellationToken: cancellationToken
+        );
 
         return new AdminUploadLyricsCoverResult(
-            CoverImageUrl: fileEntity.StorageUrl,
-            CoverImageStorageKey: fileEntity.StorageKey!
+            CoverImageUrl: uploaded.StorageUrl,
+            CoverImageStorageKey: uploaded.StorageKey!
         );
     }
 }
