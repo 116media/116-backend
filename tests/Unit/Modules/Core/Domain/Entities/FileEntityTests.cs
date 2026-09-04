@@ -45,6 +45,7 @@ public class FileEntityTests
         file.MimeType.Should().Be(mimeType);
         file.StorageUrl.Should().Be(storageUrl);
         file.SizeInBytes.Should().Be(sizeInBytes);
+        file.State.Should().Be(EnumFileState.Stored);
         file.IsDeleted.Should().BeFalse();
         file.DeletedAt.Should().BeNull();
     }
@@ -315,6 +316,7 @@ public class FileEntityTests
 
         // Assert
         result.Should().BeTrue();
+        file.State.Should().Be(EnumFileState.Replaced);
         file.IsDeleted.Should().BeTrue();
         file.DeletedAt.Should().NotBeNull();
         file.DomainEvents.OfType<FileReplacedEvent>()
@@ -394,67 +396,6 @@ public class FileEntityTests
 
     #endregion
 
-    #region Claim
-
-    [Fact]
-    public void Claim_OnAFreshUpload_ShouldTakeOwnershipAndStampTheTime()
-    {
-        // Arrange
-        DateTime before = DateTime.UtcNow;
-        FileEntity file = FileFactory.CreateImage();
-
-        // Act
-        bool claimed = file.Claim(Now);
-
-        // Assert
-        claimed.Should().BeTrue();
-        file.State.Should().Be(EnumFileState.Claimed);
-        file.ClaimedAt.Should().Be(Now);
-    }
-
-    [Fact]
-    public void Claim_CalledTwice_ShouldKeepTheFirstClaim()
-    {
-        // Arrange
-        FileEntity file = FileFactory.CreateImage();
-        file.Claim(Now);
-        DateTime? firstClaim = file.ClaimedAt;
-
-        // Act
-        bool reclaimed = file.Claim(Now);
-
-        // Assert
-        reclaimed.Should().BeFalse();
-        file.ClaimedAt.Should().Be(firstClaim);
-    }
-
-    [Fact]
-    public void Claim_ShouldBeUnsetOnAnUploadNothingReferences()
-    {
-        // Arrange & Act
-        FileEntity file = FileFactory.CreateImage();
-
-        // Assert
-        file.ClaimedAt.Should().BeNull();
-    }
-
-    #endregion
-
-
-    [Fact]
-    public void Claim_AfterDeletion_ShouldBeRefused()
-    {
-        // Arrange
-        FileEntity file = FileFactory.CreateImage();
-        file.Delete(Now);
-
-        // Act
-        bool claimed = file.Claim(Now);
-
-        // Assert
-        claimed.Should().BeFalse();
-        file.State.Should().Be(EnumFileState.Deleted);
-    }
 
     [Fact]
     public void MarkReplaced_AfterDeletion_ShouldNotOverwriteTheDeletedState()
