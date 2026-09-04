@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using _116.Core.Domain.Entities;
+using _116.Core.Domain.Enums;
 using _116.Shared.Application.Specifications;
 
 namespace _116.Core.Application.Shared.Specifications;
@@ -12,7 +13,7 @@ public class FileIsNotDeletedSpecification : Specification<FileEntity>
 {
     public override Expression<Func<FileEntity, bool>> ToExpression()
     {
-        return file => !file.IsDeleted;
+        return file => file.State != EnumFileState.Deleted && file.State != EnumFileState.Replaced;
     }
 }
 
@@ -24,7 +25,7 @@ public class FileIsDeletedSpecification : Specification<FileEntity>
 {
     public override Expression<Func<FileEntity, bool>> ToExpression()
     {
-        return file => file.IsDeleted;
+        return file => (file.State == EnumFileState.Deleted || file.State == EnumFileState.Replaced);
     }
 }
 
