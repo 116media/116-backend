@@ -1,3 +1,4 @@
+using _116.Core.Application.Shared.Persistence;
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Constants;
 using _116.Core.Domain.Entities;
@@ -30,8 +31,12 @@ public class UnclaimedFileReaperJob(IServiceScopeFactory scopeFactory, ILogger<U
         await using AsyncServiceScope scope = scopeFactory.CreateAsyncScope();
 
         var fileRepository = scope.ServiceProvider.GetRequiredService<IFileRepository>();
+        var unitOfWork = scope.ServiceProvider.GetRequiredService<ICoreUnitOfWork>();
+        var timeProvider = scope.ServiceProvider.GetRequiredService<TimeProvider>();
 
-        DateTime olderThan = DateTime.UtcNow - CoreConstants.UnclaimedFileGracePeriod;
+        DateTime now = timeProvider.GetUtcNow().UtcDateTime;
+
+        DateTime olderThan = now - CoreConstants.UnclaimedFileGracePeriod;
 
         IReadOnlyList<FileEntity> abandoned = await fileRepository.GetUnclaimedBeforeAsync(
             olderThan: olderThan,
@@ -48,9 +53,9 @@ public class UnclaimedFileReaperJob(IServiceScopeFactory scopeFactory, ILogger<U
 
         foreach (FileEntity file in abandoned)
         {
-            file.Delete();
+            file.Delete(now);
         }
 
-        await fileRepository.SaveChangesAsync(context.CancellationToken);
+        await unitOfWork.CommitAsync(context.CancellationToken);
     }
 }
