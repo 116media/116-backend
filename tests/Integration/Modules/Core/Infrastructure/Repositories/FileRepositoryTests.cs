@@ -170,18 +170,17 @@ public class FileRepositoryTests(PostgresFixture postgres) : BaseRepositoryTest(
     }
 
     [Fact]
-    public async Task SaveChangesAsync_PersistsModifications()
+    public async Task SoftDeleteByIdAsync_PersistsTheSoftDeleteAcrossContexts()
     {
         await using var context = CreateDbContext<CoreDbContext>();
         var file = FileFactory.Create();
         context.Files.Add(file);
         await context.SaveChangesAsync();
 
-        var (repo, db) = CreateScopedRepository<IFileRepository, CoreDbContext>();
-        var loaded = await db.Files.FindAsync(file.Id);
-        loaded!.Delete();
-        await repo.UpdateAsync(loaded);
-        await repo.SaveChangesAsync();
+        var (repo, _) = CreateScopedRepository<IFileRepository, CoreDbContext>();
+        bool deleted = await repo.SoftDeleteByIdAsync(file.Id);
+
+        deleted.Should().BeTrue();
 
         await using var verifyContext = CreateDbContext<CoreDbContext>();
         FileEntity? updated = await verifyContext.Files.IgnoreQueryFilters().FirstOrDefaultAsync(f => f.Id == file.Id);
