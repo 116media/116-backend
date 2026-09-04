@@ -96,9 +96,7 @@ public class VisitorRoleSeederTests
         permissionCount.Should().Be(29);
     }
 
-    [Fact(
-        Skip = "Static PermissionEntity instances cause EF Core change tracking issues across test runs - requires production code refactoring"
-    )]
+    [Fact]
     public async Task SeedAsync_WhenVisitorRoleDoesNotExist_ShouldCreateRolePermissionAssociations()
     {
         // Arrange
