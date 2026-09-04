@@ -30,10 +30,6 @@ namespace _116.Core.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<DateTime?>("ClaimedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("claimed_at");
-
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -106,14 +102,10 @@ namespace _116.Core.Infrastructure.Persistence.Migrations
                     b.HasKey("Id")
                         .HasName("pk_files");
 
-                    b.HasIndex("CreatedAt")
-                        .HasDatabaseName("ix_files_created_at")
-                        .HasFilter("claimed_at IS NULL AND is_deleted = false");
-
                     b.HasIndex("FileName")
                         .IsUnique()
                         .HasDatabaseName("ix_files_file_name")
-                        .HasFilter("is_deleted = false");
+                        .HasFilter("state = 0");
 
                     b.HasIndex("State")
                         .HasDatabaseName("ix_files_state");
