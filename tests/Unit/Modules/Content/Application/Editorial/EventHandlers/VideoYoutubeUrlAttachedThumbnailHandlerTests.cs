@@ -5,6 +5,7 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Events;
 using _116.Core.Application.Shared.Repositories;
+using _116.Core.Application.Shared.Services;
 using _116.Core.Domain.Entities;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Factories.Core;
@@ -29,6 +30,7 @@ public class VideoYoutubeUrlAttachedThumbnailHandlerTests
     private readonly Mock<IVideoRepository> _videoRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly Mock<IFileRepository> _fileRepositoryMock;
+    private readonly Mock<IFileUploadService> _fileUploadServiceMock;
     private readonly Mock<IYoutubeThumbnailService> _youtubeThumbnailMock;
     private readonly FileEntity _uploadedFile;
     private readonly VideoYoutubeUrlAttachedThumbnailHandler _handler;
@@ -40,15 +42,17 @@ public class VideoYoutubeUrlAttachedThumbnailHandlerTests
         _videoRepositoryMock = MockVideoRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _fileRepositoryMock = MockFileRepository.Create();
+        _fileUploadServiceMock = MockFileUploadService.Create();
         _youtubeThumbnailMock = MockYoutubeThumbnailService.Create();
 
         _uploadedFile = FileFactory.CreateImage();
-        _fileRepositoryMock.SetupReplaceImageFile(_uploadedFile);
+        _fileUploadServiceMock.SetupReplaceImageFile(_uploadedFile);
 
         _handler = new VideoYoutubeUrlAttachedThumbnailHandler(
             _videoRepositoryMock.Object,
             _unitOfWorkMock.Object,
             _fileRepositoryMock.Object,
+            _fileUploadServiceMock.Object,
             _youtubeThumbnailMock.Object,
             Mock.Of<ILogger<VideoYoutubeUrlAttachedThumbnailHandler>>()
         );
@@ -72,7 +76,7 @@ public class VideoYoutubeUrlAttachedThumbnailHandlerTests
             x => x.DownloadThumbnailAsync("dQw4w9WgXcQ", It.IsAny<CancellationToken>()),
             Times.Once
         );
-        _fileRepositoryMock.VerifyReplaceImageFileCalled();
+        _fileUploadServiceMock.VerifyReplaceImageFileCalled();
         video.ThumbnailFileId.Should().Be(_uploadedFile.Id);
         _videoRepositoryMock.VerifyUpdateCalled(video);
         _unitOfWorkMock.VerifyCommitCalled();
@@ -93,7 +97,7 @@ public class VideoYoutubeUrlAttachedThumbnailHandlerTests
         );
 
         // Assert
-        _fileRepositoryMock.Verify(
+        _fileUploadServiceMock.Verify(
             x =>
                 x.ReplaceImageFileAsync(
                     previousThumbnailFileId,
@@ -128,7 +132,7 @@ public class VideoYoutubeUrlAttachedThumbnailHandlerTests
             x => x.DownloadThumbnailAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
             Times.Never
         );
-        _fileRepositoryMock.VerifyReplaceImageFileNotCalled();
+        _fileUploadServiceMock.VerifyReplaceImageFileNotCalled();
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
