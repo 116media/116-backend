@@ -50,10 +50,11 @@ public class OutboxOccurredOnStampTests(PostgresFixture db) : BaseRepositoryTest
         // Arrange
         Guid fileId = await SeedFileAsync();
         DateTime beforeDelete = DateTime.UtcNow.AddMinutes(-1);
-        var repository = Resolve<IFileRepository>();
+        var (repository, context) = CreateScopedRepository<IFileRepository, CoreDbContext>();
 
         // Act
         await repository.SoftDeleteByIdAsync(fileId);
+        await context.SaveChangesAsync();
 
         // Assert
         OutboxEventEntity? row = await ReadOutboxRowAsync(fileId);
@@ -69,11 +70,14 @@ public class OutboxOccurredOnStampTests(PostgresFixture db) : BaseRepositoryTest
         // Arrange
         Guid firstFile = await SeedFileAsync();
         Guid secondFile = await SeedFileAsync();
-        var repository = Resolve<IFileRepository>();
+        var (repository, context) = CreateScopedRepository<IFileRepository, CoreDbContext>();
 
         // Act
         await repository.SoftDeleteByIdAsync(firstFile);
+        await context.SaveChangesAsync();
+
         await repository.SoftDeleteByIdAsync(secondFile);
+        await context.SaveChangesAsync();
 
         // Assert
         OutboxEventEntity? firstRow = await ReadOutboxRowAsync(firstFile);
