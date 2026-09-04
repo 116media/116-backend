@@ -22,12 +22,14 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadArtic
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="cloudinaryService">Service for uploading Cloudinary image assets.</param>
 /// <param name="fileRepository">Repository for centralized file entity management.</param>
+/// <param name=\"fileUploadService\">Uploads and replaces stored assets.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class AdminUploadArticleImageHandler(
     IArticleRepository articleRepository,
     ICloudinaryService cloudinaryService,
     IFileRepository fileRepository,
+    IFileUploadService fileUploadService,
     IContentUnitOfWork unitOfWork,
     IMapper mapper
 ) : ICommandHandler<AdminUploadArticleImageCommand, AdminUploadArticleImageResult>
@@ -81,7 +83,7 @@ public class AdminUploadArticleImageHandler(
             articleRepository.RemoveImages(images: [oldCover]);
         }
 
-        FileEntity fileEntity = await fileRepository.ReplaceImageFileAsync(
+        FileEntity fileEntity = await fileUploadService.ReplaceImageFileAsync(
             currentFileId: article.CoverImageFileId,
             file: file,
             publicId: articleId.ToString(),
