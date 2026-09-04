@@ -28,7 +28,7 @@ public class ContentUnitOfWorkTests
         // Arrange
         DbContextOptions<ContentDbContext> options = CreateOptions();
         await using var context = new ContentDbContext(options);
-        var unitOfWork = new ContentUnitOfWork(context);
+        var unitOfWork = new ContentUnitOfWork(context, [context]);
 
         // Act
         int result = await unitOfWork.CommitAsync();
@@ -43,7 +43,7 @@ public class ContentUnitOfWorkTests
         // Arrange
         DbContextOptions<ContentDbContext> options = CreateOptions();
         await using var context = new ContentDbContext(options);
-        var unitOfWork = new ContentUnitOfWork(context);
+        var unitOfWork = new ContentUnitOfWork(context, [context]);
         CancellationToken cancellationToken = new();
 
         // Act
@@ -59,7 +59,7 @@ public class ContentUnitOfWorkTests
         // Arrange
         DbContextOptions<ContentDbContext> options = CreateOptions();
         await using var context = new ContentDbContext(options);
-        var unitOfWork = new ContentUnitOfWork(context);
+        var unitOfWork = new ContentUnitOfWork(context, [context]);
 
         // Act
         int result = await unitOfWork.CommitAsync();
@@ -74,7 +74,7 @@ public class ContentUnitOfWorkTests
         // Arrange
         DbContextOptions<ContentDbContext> options = CreateOptions();
         await using var context = new ContentDbContext(options);
-        var unitOfWork = new ContentUnitOfWork(context);
+        var unitOfWork = new ContentUnitOfWork(context, [context]);
 
         // Act
         int result = await unitOfWork.CommitAsync();
@@ -89,7 +89,7 @@ public class ContentUnitOfWorkTests
         // Arrange
         DbContextOptions<ContentDbContext> options = CreateOptions();
         await using var context = new ContentDbContext(options);
-        var unitOfWork = new ContentUnitOfWork(context);
+        var unitOfWork = new ContentUnitOfWork(context, [context]);
 
         // Act
         int result1 = await unitOfWork.CommitAsync();
@@ -106,7 +106,7 @@ public class ContentUnitOfWorkTests
         // Arrange
         DbContextOptions<ContentDbContext> options = CreateOptions();
         await using var context = new ContentDbContext(options);
-        var unitOfWork = new ContentUnitOfWork(context);
+        var unitOfWork = new ContentUnitOfWork(context, [context]);
 
         var contentType = ContentTypeEntity.Create(id: Guid.NewGuid(), name: "Video");
         await context.ContentTypes.AddAsync(contentType);
@@ -136,7 +136,7 @@ public class ContentUnitOfWorkTests
     {
         // Arrange
         await using var context = new ContentDbContext(CreateTransactionalOptions());
-        var unitOfWork = new ContentUnitOfWork(context);
+        var unitOfWork = new ContentUnitOfWork(context, [context]);
         var ran = false;
 
         // Act
@@ -156,7 +156,7 @@ public class ContentUnitOfWorkTests
         // Arrange
         // The seam commits once at the end, so the operation itself never saves.
         await using var context = new ContentDbContext(CreateTransactionalOptions());
-        var unitOfWork = new ContentUnitOfWork(context);
+        var unitOfWork = new ContentUnitOfWork(context, [context]);
 
         // Act
         await unitOfWork.ExecuteInTransactionAsync(_ =>
@@ -176,7 +176,7 @@ public class ContentUnitOfWorkTests
         // Arrange
         // A failure has to reach the caller; swallowing it would commit a half-applied change.
         await using var context = new ContentDbContext(CreateTransactionalOptions());
-        var unitOfWork = new ContentUnitOfWork(context);
+        var unitOfWork = new ContentUnitOfWork(context, [context]);
         var failure = new InvalidOperationException("operation failed");
 
         // Act
@@ -193,7 +193,7 @@ public class ContentUnitOfWorkTests
     {
         // Arrange
         await using var context = new ContentDbContext(CreateTransactionalOptions());
-        var unitOfWork = new ContentUnitOfWork(context);
+        var unitOfWork = new ContentUnitOfWork(context, [context]);
         using var cts = new CancellationTokenSource();
         CancellationToken observed = default;
 
