@@ -74,7 +74,7 @@ public class FileEntity : Aggregate<Guid>
     /// <summary>
     /// The file's lifecycle position. Mapped, so read paths can filter on it in SQL.
     /// </summary>
-    public EnumFileState State { get; private set; } = EnumFileState.Unclaimed;
+    public EnumFileState State { get; private set; } = EnumFileState.Stored;
 
     /// <summary>
     /// Whether the row is soft-deleted, by deletion or replacement.
@@ -83,20 +83,16 @@ public class FileEntity : Aggregate<Guid>
     public bool IsDeleted => State is EnumFileState.Deleted or EnumFileState.Replaced;
 
     /// <summary>
+    /// Whether a row already stands behind this file. The audit stamp lands on first save, so a
+    /// file built from a fresh upload and not yet recorded reads false.
+    /// </summary>
+    [NotMapped]
+    public bool IsRecorded => CreatedAt is not null;
+
+    /// <summary>
     /// Date and time when the file was deleted, in UTC.
     /// </summary>
     public DateTime? DeletedAt { get; private set; }
-
-    /// <summary>
-    /// When something took ownership of this file, in UTC. Null while the upload is not yet
-    /// referenced by anything.
-    /// </summary>
-    /// <remarks>
-    /// An upload and the row that references it are written by two modules and cannot share a
-    /// transaction. A row that stays unclaimed past the grace period is therefore an upload whose
-    /// referencing write never landed, and the reaper removes it.
-    /// </remarks>
-    public DateTime? ClaimedAt { get; private set; }
 
     /// <summary>
     /// Creates a new file entity.
@@ -158,24 +154,6 @@ public class FileEntity : Aggregate<Guid>
             DominantColorHex = dominantColorHex,
             ForegroundColorHex = foregroundColorHex,
         };
-    }
-
-    /// <summary>
-    /// Records that something now references this file, taking it out of the reaper's reach.
-    /// Idempotent: re-claiming keeps the first claim's timestamp.
-    /// </summary>
-    /// <returns>True when this call took ownership, false when the file was already claimed.</returns>
-    public bool Claim(DateTime now)
-    {
-        if (State != EnumFileState.Unclaimed)
-        {
-            return false;
-        }
-
-        State = EnumFileState.Claimed;
-        ClaimedAt = now;
-
-        return true;
     }
 
     /// <summary>
