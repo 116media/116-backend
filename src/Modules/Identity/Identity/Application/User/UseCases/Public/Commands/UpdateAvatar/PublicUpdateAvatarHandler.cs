@@ -1,4 +1,5 @@
 using _116.Core.Application.Shared.Repositories;
+using _116.Core.Application.Shared.Services;
 using _116.Core.Domain.Entities;
 using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Application.User.UseCases.Public.Commands.UpdateAvatar.Contracts;
@@ -13,10 +14,12 @@ namespace _116.Identity.Application.User.UseCases.Public.Commands.UpdateAvatar;
 /// </summary>
 /// <param name="authFactory">Factory for handling user avatar update logic.</param>
 /// <param name="fileRepository">Repository for file data access operations.</param>
+/// <param name=\"fileUploadService\">Uploads and replaces stored assets.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class PublicUpdateAvatarHandler(
     IPublicUpdateAvatarAuthFactory authFactory,
     IFileRepository fileRepository,
+    IFileUploadService fileUploadService,
     IMapper mapper
 ) : ICommandHandler<PublicUpdateAvatarCommand, PublicUpdateAvatarResult>
 {
@@ -39,7 +42,7 @@ public class PublicUpdateAvatarHandler(
 
         IFormFile file = command.AvatarFile!;
 
-        FileEntity fileEntity = await fileRepository.UpdateAvatarFromFileAsync(
+        FileEntity fileEntity = await fileUploadService.UpdateAvatarFromFileAsync(
             currentAvatarFileId: userData.User.AvatarFileId,
             avatarFile: file,
             command.UserId.ToString(),
