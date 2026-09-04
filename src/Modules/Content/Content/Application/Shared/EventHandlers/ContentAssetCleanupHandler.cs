@@ -23,7 +23,7 @@ namespace _116.Content.Application.Shared.EventHandlers;
 /// <param name="cloudinaryService">Service deleting keyed image assets from cloud storage.</param>
 /// <param name="fileRepository">Repository soft-deleting tracked file rows.</param>
 /// <param name="articleRepository">Repository for article image rows.</param>
-/// <param name="unitOfWork">Unit of Work committing the orphaned-row removal.</param>
+/// <param name="unitOfWork">Unit of Work committing the soft deletions and the orphaned-row removal.</param>
 public class ContentAssetCleanupHandler(
     ICloudinaryService cloudinaryService,
     IFileRepository fileRepository,
@@ -40,10 +40,7 @@ public class ContentAssetCleanupHandler(
     {
         if (domainEvent.CoverFileId.HasValue)
         {
-            await fileRepository.SoftDeleteByIdAsync(
-                fileId: domainEvent.CoverFileId.Value,
-                cancellationToken: cancellationToken
-            );
+            await SoftDeleteFilesAsync([domainEvent.CoverFileId.Value], cancellationToken);
         }
 
         if (domainEvent.BodyImageStorageKeys.Count > 0)
@@ -60,31 +57,39 @@ public class ContentAssetCleanupHandler(
     {
         if (domainEvent.ThumbnailFileId.HasValue)
         {
-            await fileRepository.SoftDeleteByIdAsync(
-                fileId: domainEvent.ThumbnailFileId.Value,
-                cancellationToken: cancellationToken
-            );
+            await SoftDeleteFilesAsync([domainEvent.ThumbnailFileId.Value], cancellationToken);
         }
     }
 
     /// <inheritdoc />
     public async Task Handle(ShortVideoDeletedEvent domainEvent, CancellationToken cancellationToken = default)
     {
-        if (domainEvent.VideoFileId.HasValue)
-        {
-            await fileRepository.SoftDeleteByIdAsync(
-                fileId: domainEvent.VideoFileId.Value,
-                cancellationToken: cancellationToken
-            );
-        }
+        Guid[] fileIds = [.. new[] { domainEvent.VideoFileId, domainEvent.ThumbnailFileId }.OfType<Guid>()];
 
-        if (domainEvent.ThumbnailFileId.HasValue)
+        if (fileIds.Length > 0)
         {
-            await fileRepository.SoftDeleteByIdAsync(
-                fileId: domainEvent.ThumbnailFileId.Value,
-                cancellationToken: cancellationToken
-            );
+            await SoftDeleteFilesAsync(fileIds, cancellationToken);
         }
+    }
+
+    /// <summary>
+    /// Soft-deletes the files in one transaction, so a short video's clip and thumbnail cannot
+    /// half-disappear.
+    /// </summary>
+    /// <param name="fileIds">The files to soft-delete.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    private Task SoftDeleteFilesAsync(IReadOnlyCollection<Guid> fileIds, CancellationToken cancellationToken)
+    {
+        return unitOfWork.ExecuteInTransactionAsync(
+            async transactionToken =>
+            {
+                foreach (Guid fileId in fileIds)
+                {
+                    await fileRepository.SoftDeleteByIdAsync(fileId: fileId, cancellationToken: transactionToken);
+                }
+            },
+            cancellationToken: cancellationToken
+        );
     }
 
     /// <inheritdoc />
