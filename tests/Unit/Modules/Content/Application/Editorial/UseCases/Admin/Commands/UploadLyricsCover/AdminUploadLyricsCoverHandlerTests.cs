@@ -2,7 +2,6 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadLyricsCov
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Repositories;
 using _116.Core.Application.Shared.Services;
 using _116.Core.Domain.Entities;
 using _116.Shared.Application.Exceptions;
@@ -24,7 +23,6 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 public class AdminUploadLyricsCoverHandlerTests
 {
     private readonly Mock<ILyricsRepository> _lyricsRepositoryMock;
-    private readonly Mock<IFileRepository> _fileRepositoryMock;
     private readonly Mock<IFileUploadService> _fileUploadServiceMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminUploadLyricsCoverHandler _handler;
@@ -34,16 +32,14 @@ public class AdminUploadLyricsCoverHandlerTests
     public AdminUploadLyricsCoverHandlerTests()
     {
         _lyricsRepositoryMock = MockLyricsRepository.Create();
-        _fileRepositoryMock = MockFileRepository.Create();
         _fileUploadServiceMock = MockFileUploadService.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
 
         FileEntity fileEntity = FileFactory.CreateImage();
-        _fileUploadServiceMock.SetupReplaceImageFile(fileEntity);
+        _fileUploadServiceMock.SetupUploadImage(fileEntity);
 
         _handler = new AdminUploadLyricsCoverHandler(
             _lyricsRepositoryMock.Object,
-            _fileRepositoryMock.Object,
             _fileUploadServiceMock.Object,
             _unitOfWorkMock.Object
         );
@@ -55,7 +51,7 @@ public class AdminUploadLyricsCoverHandlerTests
         // Arrange
         LyricsEntity lyrics = LyricsFactory.Create(CategoryId);
         FileEntity uploadedFile = FileFactory.CreateImage();
-        _fileUploadServiceMock.SetupReplaceImageFile(uploadedFile);
+        _fileUploadServiceMock.SetupUploadImage(uploadedFile);
         IFormFile fileMock = MockYoutubeThumbnailService.CreateMockFormFile();
         var command = new AdminUploadLyricsCoverCommand(LyricsId: lyrics.Id, File: fileMock);
 
@@ -68,10 +64,9 @@ public class AdminUploadLyricsCoverHandlerTests
         lyrics.CoverImageFileId.Should().Be(uploadedFile.Id);
         result.CoverImageUrl.Should().Be(uploadedFile.StorageUrl);
         result.CoverImageStorageKey.Should().Be(uploadedFile.StorageKey);
-        _fileUploadServiceMock.VerifyReplaceImageFileCalled();
-        _fileRepositoryMock.VerifyClaimed(uploadedFile.Id);
+        _fileUploadServiceMock.VerifyUploadImageCalled();
         _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
-        _unitOfWorkMock.VerifyCommitCalled();
+        _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 
     [Fact]
@@ -81,7 +76,7 @@ public class AdminUploadLyricsCoverHandlerTests
         LyricsEntity lyrics = LyricsFactory.Create(CategoryId);
         lyrics.SetCoverImageFileId(Guid.NewGuid());
         FileEntity replacementFile = FileFactory.CreateImage();
-        _fileUploadServiceMock.SetupReplaceImageFile(replacementFile);
+        _fileUploadServiceMock.SetupUploadImage(replacementFile);
         IFormFile fileMock = MockYoutubeThumbnailService.CreateMockFormFile();
         var command = new AdminUploadLyricsCoverCommand(LyricsId: lyrics.Id, File: fileMock);
 
@@ -94,9 +89,9 @@ public class AdminUploadLyricsCoverHandlerTests
         lyrics.CoverImageFileId.Should().Be(replacementFile.Id);
         result.CoverImageUrl.Should().Be(replacementFile.StorageUrl);
         result.CoverImageStorageKey.Should().Be(replacementFile.StorageKey);
-        _fileUploadServiceMock.VerifyReplaceImageFileCalled();
+        _fileUploadServiceMock.VerifyUploadImageCalled();
         _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
-        _unitOfWorkMock.VerifyCommitCalled();
+        _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 
     [Fact]
@@ -113,6 +108,6 @@ public class AdminUploadLyricsCoverHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
-        _unitOfWorkMock.VerifyCommitNotCalled();
+        _unitOfWorkMock.VerifyExecutedInTransaction(0);
     }
 }
