@@ -120,8 +120,7 @@ public class ApiFixture(PostgresFixture db) : WebApplicationFactory<Program>
         // The developer .env points this at a docker-network hostname, and `Env.NoClobber()`
         // restores it whenever the process variable is cleared, so it is overridden rather than
         // unset. The multiplexer connects eagerly: an unreachable host fails every cached handler.
-        // The override keeps to its own database index, so a run never touches the dev cache.
-        Environment.SetEnvironmentVariable("REDIS_URL", TestRedis.ConnectionString);
+        Environment.SetEnvironmentVariable("REDIS_URL", _db.RedisConnectionString);
 
         var connParts = ParseConnectionString(_db.ConnectionString);
         Environment.SetEnvironmentVariable("POSTGRES_HOST", connParts.host);
