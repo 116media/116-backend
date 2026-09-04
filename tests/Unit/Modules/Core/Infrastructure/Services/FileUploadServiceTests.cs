@@ -413,4 +413,58 @@ public class FileUploadServiceTests : IDisposable
             .ThrowAsync<CoreRuleException>()
             .Where(exception => exception.Code == CoreRuleCodes.FileAlreadyRecorded);
     }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task UploadImageAsync_WithoutAMimeType_ShouldRejectBeforeReachingStorage(string mimeType)
+    {
+        // Arrange
+        SetupUpload();
+
+        // Act
+        Func<Task> act = async () =>
+            await _service.UploadImageAsync(FakeFile(), "poster", "posters", "poster.jpg", mimeType);
+
+        // Assert
+        await act.Should()
+            .ThrowAsync<CoreRuleException>()
+            .Where(exception => exception.Code == CoreRuleCodes.MimeTypeRequired);
+        _fileServiceMock.Verify(
+            x =>
+                x.UploadFileAsync(
+                    It.IsAny<IFormFile>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Never
+        );
+    }
+
+    [Fact]
+    public async Task UploadImageAsync_WithoutAnOriginalFileName_ShouldRejectBeforeReachingStorage()
+    {
+        // Arrange
+        SetupUpload();
+
+        // Act
+        Func<Task> act = async () =>
+            await _service.UploadImageAsync(FakeFile(), "poster", "posters", " ", "image/jpeg");
+
+        // Assert
+        await act.Should()
+            .ThrowAsync<CoreRuleException>()
+            .Where(exception => exception.Code == CoreRuleCodes.OriginalFileNameRequired);
+        _fileServiceMock.Verify(
+            x =>
+                x.UploadFileAsync(
+                    It.IsAny<IFormFile>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Never
+        );
+    }
 }
