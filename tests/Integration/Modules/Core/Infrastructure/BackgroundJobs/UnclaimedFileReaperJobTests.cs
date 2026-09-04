@@ -38,7 +38,7 @@ public class UnclaimedFileReaperJobTests(PostgresFixture db) : BaseRepositoryTes
         FileEntity file = FileFactory.CreateImage();
         if (claimed)
         {
-            file.Claim();
+            file.Claim(DateTime.UtcNow);
         }
 
         context.Files.Add(file);
@@ -64,7 +64,7 @@ public class UnclaimedFileReaperJobTests(PostgresFixture db) : BaseRepositoryTes
     {
         await using CoreDbContext context = CreateDbContext<CoreDbContext>();
 
-        return await context.Files.AnyAsync(file => file.Id == fileId && !file.IsDeleted);
+        return await context.Files.AnyAsync(file => file.Id == fileId);
     }
 
     [Fact]
