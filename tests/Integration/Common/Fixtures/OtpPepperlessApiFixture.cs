@@ -17,6 +17,12 @@ public class OtpPepperlessApiFixture(PostgresFixture db) : ApiFixture(db)
     /// </summary>
     private const string OtpPepperVariable = "OTP_PEPPER";
 
+    /// <summary>
+    /// Blanks the variable without removing it: clearing it outright lets <c>Env.NoClobber()</c>
+    /// refill it from the developer's <c>.env</c>, and whitespace already reads as missing.
+    /// </summary>
+    private const string BlankPepper = " ";
+
     private string? _previousOtpPepper;
 
     /// <inheritdoc />
@@ -25,7 +31,7 @@ public class OtpPepperlessApiFixture(PostgresFixture db) : ApiFixture(db)
         base.ConfigureEnvironment();
 
         _previousOtpPepper = Environment.GetEnvironmentVariable(OtpPepperVariable);
-        Environment.SetEnvironmentVariable(OtpPepperVariable, null);
+        Environment.SetEnvironmentVariable(OtpPepperVariable, BlankPepper);
     }
 
     /// <inheritdoc />
