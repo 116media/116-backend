@@ -1,8 +1,6 @@
-using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Repositories;
 using _116.Core.Application.Shared.Services;
 using _116.Core.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
@@ -15,12 +13,10 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadAlbum
 /// cover art image. The cover file is tracked via <see cref="FileEntity" /> in the Core module.
 /// </summary>
 /// <param name="albumRepository">Repository for album data access operations.</param>
-/// <param name="fileRepository">Repository for centralized file entity management.</param>
-/// <param name=\"fileUploadService\">Uploads and replaces stored assets.</param>
+/// <param name="fileUploadService">Uploads and replaces stored assets.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 public class AdminUploadAlbumCoverHandler(
     IAlbumRepository albumRepository,
-    IFileRepository fileRepository,
     IFileUploadService fileUploadService,
     IContentUnitOfWork unitOfWork
 ) : ICommandHandler<AdminUploadAlbumCoverCommand, AdminUploadAlbumCoverResult>
@@ -38,8 +34,7 @@ public class AdminUploadAlbumCoverHandler(
 
         IFormFile file = command.File!;
 
-        FileEntity fileEntity = await fileUploadService.ReplaceImageFileAsync(
-            currentFileId: album.CoverImageFileId,
+        FileEntity uploaded = await fileUploadService.UploadImageAsync(
             file: file,
             publicId: command.AlbumId.ToString(),
             folder: "content/album-covers",
@@ -48,22 +43,31 @@ public class AdminUploadAlbumCoverHandler(
             cancellationToken: cancellationToken
         );
 
-        album.Update(
-            name: album.Name,
-            coverImageFileId: fileEntity.Id,
-            releaseYear: album.ReleaseYear,
-            label: album.Label,
-            releaseType: album.ReleaseType
+        await unitOfWork.ExecuteInTransactionAsync(
+            async ct =>
+            {
+                await fileUploadService.RecordAsync(
+                    file: uploaded,
+                    supersededFileId: album.CoverImageFileId,
+                    cancellationToken: ct
+                );
+
+                album.Update(
+                    name: album.Name,
+                    coverImageFileId: uploaded.Id,
+                    releaseYear: album.ReleaseYear,
+                    label: album.Label,
+                    releaseType: album.ReleaseType
+                );
+
+                albumRepository.Update(album: album);
+            },
+            cancellationToken: cancellationToken
         );
 
-        albumRepository.Update(album: album);
-        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-
-        await fileRepository.ClaimAsync(fileId: fileEntity.Id, cancellationToken: cancellationToken);
-
         return new AdminUploadAlbumCoverResult(
-            CoverImageUrl: fileEntity.StorageUrl,
-            CoverImageStorageKey: fileEntity.StorageKey!
+            CoverImageUrl: uploaded.StorageUrl,
+            CoverImageStorageKey: uploaded.StorageKey!
         );
     }
 }
