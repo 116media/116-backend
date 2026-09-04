@@ -216,7 +216,7 @@ public abstract class BaseApiTest : IAsyncLifetime
 
         foreach (EndPoint endpoint in multiplexer.GetEndPoints())
         {
-            await multiplexer.GetServer(endpoint).FlushDatabaseAsync(TestRedis.DatabaseIndex);
+            await multiplexer.GetServer(endpoint).FlushDatabaseAsync();
         }
     }
 
