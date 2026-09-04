@@ -1,5 +1,6 @@
 using _116.Core.Application.Shared.Errors.Facade;
 using _116.Core.Domain.Entities;
+using _116.Core.Domain.Enums;
 using _116.Core.Domain.Events;
 using _116.Core.Domain.Exceptions;
 using _116.Core.Domain.StateMachines;
@@ -17,6 +18,8 @@ namespace _116.Unit.Tests.Modules.Core.Domain.Entities;
 /// </summary>
 public class FileEntityTests
 {
+    private static readonly DateTime Now = new(2026, 9, 11, 12, 0, 0, DateTimeKind.Utc);
+
     private readonly CoreI18n _coreErrors = TestErrorsFactory.CreateCoreI18n();
 
     #region Create Tests
@@ -216,13 +219,13 @@ public class FileEntityTests
         FileEntity file = FileFactory.Create();
 
         // Act
-        bool result = file.Delete();
+        bool result = file.Delete(Now);
 
         // Assert
         result.Should().BeTrue();
+        file.State.Should().Be(EnumFileState.Deleted);
         file.IsDeleted.Should().BeTrue();
-        file.DeletedAt.Should().NotBeNull();
-        file.DeletedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+        file.DeletedAt.Should().Be(Now);
     }
 
     [Fact]
@@ -232,7 +235,7 @@ public class FileEntityTests
         FileEntity file = FileFactory.CreateDeleted();
 
         // Act
-        bool result = file.Delete();
+        bool result = file.Delete(Now);
 
         // Assert
         result.Should().BeFalse();
@@ -247,7 +250,7 @@ public class FileEntityTests
         DateTime? originalDeletedAt = file.DeletedAt;
 
         // Act
-        file.Delete();
+        file.Delete(Now);
 
         // Assert
         file.DeletedAt.Should().Be(originalDeletedAt);
@@ -260,7 +263,7 @@ public class FileEntityTests
         FileEntity file = FileFactory.CreateWithStorageKey("avatars/user-1");
 
         // Act
-        file.Delete();
+        file.Delete(Now);
 
         // Assert
         file.DomainEvents.OfType<FileSoftDeletedEvent>()
@@ -277,7 +280,7 @@ public class FileEntityTests
         FileEntity file = FileFactory.Create();
 
         // Act
-        file.Delete();
+        file.Delete(Now);
 
         // Assert
         file.DomainEvents.OfType<FileSoftDeletedEvent>().Should().ContainSingle().Which.StorageKey.Should().BeNull();
@@ -291,7 +294,7 @@ public class FileEntityTests
         file.ClearDomainEvents();
 
         // Act
-        file.Delete();
+        file.Delete(Now);
 
         // Assert
         file.DomainEvents.Should().BeEmpty();
@@ -308,7 +311,7 @@ public class FileEntityTests
         FileEntity file = FileFactory.CreateWithStorageKey("content/covers/cover-1");
 
         // Act
-        bool result = file.MarkReplaced();
+        bool result = file.MarkReplaced(Now);
 
         // Assert
         result.Should().BeTrue();
@@ -329,7 +332,7 @@ public class FileEntityTests
         FileEntity file = FileFactory.Create();
 
         // Act
-        bool result = file.MarkReplaced();
+        bool result = file.MarkReplaced(Now);
 
         // Assert
         result.Should().BeTrue();
@@ -344,7 +347,7 @@ public class FileEntityTests
         file.ClearDomainEvents();
 
         // Act
-        bool result = file.MarkReplaced();
+        bool result = file.MarkReplaced(Now);
 
         // Assert
         result.Should().BeFalse();
@@ -401,12 +404,12 @@ public class FileEntityTests
         FileEntity file = FileFactory.CreateImage();
 
         // Act
-        bool claimed = file.Claim();
+        bool claimed = file.Claim(Now);
 
         // Assert
         claimed.Should().BeTrue();
-        file.ClaimedAt.Should().NotBeNull();
-        file.ClaimedAt.Should().BeOnOrAfter(before);
+        file.State.Should().Be(EnumFileState.Claimed);
+        file.ClaimedAt.Should().Be(Now);
     }
 
     [Fact]
@@ -414,11 +417,11 @@ public class FileEntityTests
     {
         // Arrange
         FileEntity file = FileFactory.CreateImage();
-        file.Claim();
+        file.Claim(Now);
         DateTime? firstClaim = file.ClaimedAt;
 
         // Act
-        bool reclaimed = file.Claim();
+        bool reclaimed = file.Claim(Now);
 
         // Assert
         reclaimed.Should().BeFalse();
@@ -436,4 +439,36 @@ public class FileEntityTests
     }
 
     #endregion
+
+
+    [Fact]
+    public void Claim_AfterDeletion_ShouldBeRefused()
+    {
+        // Arrange
+        FileEntity file = FileFactory.CreateImage();
+        file.Delete(Now);
+
+        // Act
+        bool claimed = file.Claim(Now);
+
+        // Assert
+        claimed.Should().BeFalse();
+        file.State.Should().Be(EnumFileState.Deleted);
+    }
+
+    [Fact]
+    public void MarkReplaced_AfterDeletion_ShouldNotOverwriteTheDeletedState()
+    {
+        // Arrange
+        FileEntity file = FileFactory.CreateImage();
+        file.Delete(Now);
+
+        // Act
+        bool replaced = file.MarkReplaced(Now.AddMinutes(5));
+
+        // Assert
+        replaced.Should().BeFalse();
+        file.State.Should().Be(EnumFileState.Deleted);
+        file.DeletedAt.Should().Be(Now);
+    }
 }
