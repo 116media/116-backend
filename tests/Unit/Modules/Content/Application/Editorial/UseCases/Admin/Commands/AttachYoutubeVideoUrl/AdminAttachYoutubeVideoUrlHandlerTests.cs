@@ -120,7 +120,7 @@ public class AdminAttachYoutubeVideoUrlHandlerTests : BaseContentHandlerTest
             .ContainSingle()
             .Which.Should()
             .Be(new VideoYoutubeUrlAttachedEvent(VideoId: video.Id, YoutubeVideoUrl: command.YoutubeVideoUrl));
-        _fileUploadServiceMock.VerifyReplaceImageFileNotCalled();
+        _fileUploadServiceMock.VerifyUploadImageNotCalled();
     }
 
     #endregion
