@@ -62,12 +62,6 @@ namespace _116.Core.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(7)")
                         .HasColumnName("foreground_color_hex");
 
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnName("is_deleted");
-
                     b.Property<string>("MimeType")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -83,6 +77,12 @@ namespace _116.Core.Infrastructure.Persistence.Migrations
                     b.Property<long>("SizeInBytes")
                         .HasColumnType("bigint")
                         .HasColumnName("size_in_bytes");
+
+                    b.Property<int>("State")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("state");
 
                     b.Property<string>("StorageKey")
                         .HasMaxLength(100)
@@ -115,8 +115,8 @@ namespace _116.Core.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_files_file_name")
                         .HasFilter("is_deleted = false");
 
-                    b.HasIndex("IsDeleted")
-                        .HasDatabaseName("ix_files_is_deleted");
+                    b.HasIndex("State")
+                        .HasDatabaseName("ix_files_state");
 
                     b.ToTable("files", "core");
                 });
