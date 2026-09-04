@@ -62,6 +62,14 @@ public class ValidationErrorMessage(IStringLocalizer<ValidationErrorMessage> loc
     }
 
     /// <summary>
+    /// Error message indicating that the file has already been recorded.
+    /// </summary>
+    public string FileAlreadyRecorded()
+    {
+        return localizer["FileAlreadyRecorded"];
+    }
+
+    /// <summary>
     /// Gets the error message for invalid file URL format.
     /// </summary>
     /// <param name="fileUrl">The invalid file URL.</param>
