@@ -3,7 +3,6 @@ using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
-using _116.Core.Application.Shared.Repositories;
 using _116.Core.Application.Shared.Services;
 using _116.Core.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
@@ -21,14 +20,12 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadArtic
 /// </summary>
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="cloudinaryService">Service for uploading Cloudinary image assets.</param>
-/// <param name="fileRepository">Repository for centralized file entity management.</param>
-/// <param name=\"fileUploadService\">Uploads and replaces stored assets.</param>
+/// <param name="fileUploadService">Uploads and replaces stored assets.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class AdminUploadArticleImageHandler(
     IArticleRepository articleRepository,
     ICloudinaryService cloudinaryService,
-    IFileRepository fileRepository,
     IFileUploadService fileUploadService,
     IContentUnitOfWork unitOfWork,
     IMapper mapper
@@ -83,8 +80,7 @@ public class AdminUploadArticleImageHandler(
             articleRepository.RemoveImages(images: [oldCover]);
         }
 
-        FileEntity fileEntity = await fileUploadService.ReplaceImageFileAsync(
-            currentFileId: article.CoverImageFileId,
+        FileEntity uploaded = await fileUploadService.UploadImageAsync(
             file: file,
             publicId: articleId.ToString(),
             folder: "content/article-images",
@@ -93,21 +89,30 @@ public class AdminUploadArticleImageHandler(
             cancellationToken: cancellationToken
         );
 
-        article.UpdateCoverImage(coverImageFileId: fileEntity.Id);
-        articleRepository.Update(article: article);
-
         var image = ArticleImageEntity.Create(
             id: Guid.NewGuid(),
             articleId: articleId,
-            storageKey: fileEntity.StorageKey ?? string.Empty,
-            url: fileEntity.StorageUrl,
+            storageKey: uploaded.StorageKey ?? string.Empty,
+            url: uploaded.StorageUrl,
             imageType: EnumArticleImageType.Cover
         );
 
-        await articleRepository.AddImageAsync(image: image, cancellationToken: cancellationToken);
-        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+        await unitOfWork.ExecuteInTransactionAsync(
+            async ct =>
+            {
+                await fileUploadService.RecordAsync(
+                    file: uploaded,
+                    supersededFileId: article.CoverImageFileId,
+                    cancellationToken: ct
+                );
 
-        await fileRepository.ClaimAsync(fileId: fileEntity.Id, cancellationToken: cancellationToken);
+                article.UpdateCoverImage(coverImageFileId: uploaded.Id);
+                articleRepository.Update(article: article);
+
+                await articleRepository.AddImageAsync(image: image, cancellationToken: ct);
+            },
+            cancellationToken: cancellationToken
+        );
 
         var dto = mapper.Map<ArticleImageDto>(image);
         return new AdminUploadArticleImageResult(Image: dto);
