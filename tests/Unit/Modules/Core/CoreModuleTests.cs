@@ -7,6 +7,7 @@ using _116.Core.Infrastructure.Repositories;
 using _116.Core.Infrastructure.Services;
 using _116.Shared.Application.Configurations;
 using _116.Unit.Tests.Common;
+using _116.Unit.Tests.Common.Helpers;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
@@ -24,6 +25,7 @@ namespace _116.Unit.Tests.Modules.Core;
 public class CoreModuleTests : IDisposable
 {
     private readonly ServiceCollection _services;
+    private readonly TestDatabaseEnvironment _environment = new();
     private readonly CloudinarySettings _cloudinarySettings;
 
     public CoreModuleTests()
@@ -43,6 +45,7 @@ public class CoreModuleTests : IDisposable
 
     public void Dispose()
     {
+        _environment.Dispose();
         GC.SuppressFinalize(this);
     }
 
