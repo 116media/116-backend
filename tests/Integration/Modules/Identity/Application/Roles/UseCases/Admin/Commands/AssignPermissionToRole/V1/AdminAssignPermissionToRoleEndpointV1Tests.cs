@@ -141,7 +141,7 @@ public class AdminAssignPermissionToRoleEndpointV1Tests(PostgresFixture db) : Ba
         {
             ctx.Roles.Add(RoleFactory.CreateWithId(roleId, $"rpa_{Guid.NewGuid():N}"[..20]));
             ctx.Permissions.Add(PermissionFactory.CreateWithId(permissionId, $"rpa_{Guid.NewGuid():N}"[..15], "read"));
-            ctx.RolePermissions.Add(RolePermissionEntity.Create(Guid.NewGuid(), roleId, permissionId));
+            ctx.RolePermissions.Add(RolePermissionFactory.Create(roleId, permissionId));
         });
 
         Client.AuthenticateAsSuperAdmin();
