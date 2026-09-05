@@ -214,7 +214,7 @@ public class UserBuilder
 
         foreach (RoleEntity role in _roles)
         {
-            user.GrantRoleBootstrap(roleId: role.Id);
+            user.GrantInitialRole(roleId: role.Id);
 
             UserRoleEntity userRole = user.UserRoles.First(ur => ur.RoleId == role.Id);
             typeof(UserRoleEntity).GetProperty(nameof(UserRoleEntity.Role))!.SetValue(userRole, role);
