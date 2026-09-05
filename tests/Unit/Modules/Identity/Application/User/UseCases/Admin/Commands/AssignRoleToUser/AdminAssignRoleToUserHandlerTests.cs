@@ -199,7 +199,7 @@ public class AdminAssignRoleToUserHandlerTests : BaseHandlerTest
         // Arrange
         RoleEntity role = RoleFactory.Create("Admin", "Administrator role");
         UserEntity user = UserFactory.Create("test@example.com");
-        user.GrantRoleBootstrap(role.Id);
+        user.GrantInitialRole(role.Id);
         AdminAssignRoleToUserCommand command = new(UserId: user.Id.ToString(), RoleId: role.Id);
 
         _roleRepositoryMock.SetupGetByIdOrThrow(role);
@@ -218,7 +218,7 @@ public class AdminAssignRoleToUserHandlerTests : BaseHandlerTest
         // Arrange
         RoleEntity role = RoleFactory.Create("Admin", "Administrator role");
         UserEntity user = UserFactory.Create("test@example.com");
-        user.GrantRoleBootstrap(role.Id);
+        user.GrantInitialRole(role.Id);
         AdminAssignRoleToUserCommand command = new(UserId: user.Id.ToString(), RoleId: role.Id);
 
         _roleRepositoryMock.SetupGetByIdOrThrow(role);
