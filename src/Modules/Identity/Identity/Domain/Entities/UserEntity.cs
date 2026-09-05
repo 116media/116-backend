@@ -381,17 +381,60 @@ public class UserEntity : Aggregate<Guid>
 
     // Role Methods
     /// <summary>
-    /// Assigns a role to this user. Throws if the role is already assigned.
+    /// Grants a role to this user and raises <see cref="UserRoleGrantedEvent" /> carrying the
+    /// role name. Idempotent: a role already granted reports <c>false</c> and raises nothing.
     /// </summary>
-    public void AssignRole(UserRoleEntity userRole)
+    /// <param name="roleId">The ID of the role to grant.</param>
+    /// <param name="roleName">The granted role's name, carried by the event.</param>
+    /// <returns><c>true</c> if the role was granted; <c>false</c> if already granted.</returns>
+    public bool GrantRole(Guid roleId, string roleName)
     {
-        ArgumentNullException.ThrowIfNull(argument: userRole);
-        if (HasRole(roleId: userRole.RoleId))
+        if (!GrantRoleBootstrap(roleId: roleId))
         {
-            throw new IdentityRuleException(IdentityRuleCodes.RoleAlreadyAssignedToUser);
+            return false;
         }
 
-        UserRoles.Add(item: userRole);
+        AddDomainEvent(new UserRoleGrantedEvent(UserId: Id, RoleId: roleId, RoleName: roleName));
+        return true;
+    }
+
+    /// <summary>
+    /// Grants a role without raising the grant event. This is the bootstrap path — the signup
+    /// visitor assignment and the seeders — where the grant is a same-transaction invariant
+    /// rather than a notifiable fact.
+    /// </summary>
+    /// <param name="roleId">The ID of the role to grant.</param>
+    /// <returns><c>true</c> if the role was granted; <c>false</c> if already granted.</returns>
+    public bool GrantRoleBootstrap(Guid roleId)
+    {
+        if (HasRole(roleId: roleId))
+        {
+            return false;
+        }
+
+        UserRoles.Add(item: UserRoleEntity.Create(userId: Id, roleId: roleId));
+        return true;
+    }
+
+    /// <summary>
+    /// Revokes a role from this user and raises <see cref="UserRoleRevokedEvent" /> carrying the
+    /// role name. Idempotent: a role not granted reports <c>false</c> and raises nothing.
+    /// </summary>
+    /// <param name="roleId">The ID of the role to revoke.</param>
+    /// <param name="roleName">The revoked role's name, carried by the event.</param>
+    /// <returns><c>true</c> if the role was revoked; <c>false</c> if it was not granted.</returns>
+    public bool RevokeRole(Guid roleId, string roleName)
+    {
+        UserRoleEntity? userRole = UserRoles.FirstOrDefault(ur => ur.RoleId == roleId);
+        if (userRole is null)
+        {
+            return false;
+        }
+
+        UserRoles.Remove(item: userRole);
+
+        AddDomainEvent(new UserRoleRevokedEvent(UserId: Id, RoleId: roleId, RoleName: roleName));
+        return true;
     }
 
     /// <summary>
