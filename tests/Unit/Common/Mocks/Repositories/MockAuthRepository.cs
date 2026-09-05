@@ -82,6 +82,24 @@ public static class MockAuthRepository
     }
 
     /// <summary>
+    /// Sets up GetActiveAdminByEmailAsync to return the specified user, or null when the
+    /// address belongs to no eligible administrator.
+    /// </summary>
+    /// <param name="mock">The mock instance.</param>
+    /// <param name="email">The email to match.</param>
+    /// <param name="user">The user to return, or null for an ineligible address.</param>
+    /// <returns>The mock instance for chaining.</returns>
+    public static Mock<IAuthRepository> SetupGetActiveAdminByEmail(
+        this Mock<IAuthRepository> mock,
+        Email email,
+        UserEntity? user
+    )
+    {
+        mock.Setup(x => x.GetActiveAdminByEmailAsync(email, It.IsAny<CancellationToken>())).ReturnsAsync(user);
+        return mock;
+    }
+
+    /// <summary>
     /// Sets up GetUserWithRolesByIdOrThrow to return the specified user.
     /// </summary>
     /// <param name="mock">The mock instance.</param>
