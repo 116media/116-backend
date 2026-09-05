@@ -1,7 +1,5 @@
 using _116.Identity.Application.Shared.Exceptions;
 using _116.Identity.Application.Shared.Repositories;
-using _116.Identity.Domain.Exceptions;
-using _116.Identity.Domain.StateMachines;
 using _116.Identity.Domain.ValueObjects;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Shared.Application.Exceptions;
@@ -235,7 +233,7 @@ public class AuthRepositoryTests(PostgresFixture postgres) : BaseRepositoryTest(
     }
 
     [Fact]
-    public async Task AssignVisitorRoleAsync_CalledTwiceInOneScope_ShouldThrowTheRoleAlreadyAssignedRule()
+    public async Task AssignVisitorRoleAsync_CalledTwiceInOneScope_ShouldKeepASingleAssociation()
     {
         // Arrange
         await using var seedContext = CreateDbContext<IdentityDbContext>();
@@ -249,13 +247,12 @@ public class AuthRepositoryTests(PostgresFixture postgres) : BaseRepositoryTest(
         var repo = Resolve<IAuthRepository>();
         await repo.AssignVisitorRoleAsync(user.Id);
 
-        // Act
-        var act = () => repo.AssignVisitorRoleAsync(user.Id);
+        // Act — the bootstrap grant is an idempotent no-op on a repeat
+        await repo.AssignVisitorRoleAsync(user.Id);
 
-        // Assert — the repository surfaces the domain rule; the strategy titles it a conflict
-        (await act.Should().ThrowAsync<IdentityRuleException>())
-            .Which.Code.Should()
-            .Be(IdentityRuleCodes.RoleAlreadyAssignedToUser);
+        // Assert
+        var attached = await repo.FindUserByIdOrThrow(user.Id);
+        attached!.UserRoles.Should().ContainSingle(ur => ur.RoleId == visitorRole.Id);
     }
 
     [Fact]
