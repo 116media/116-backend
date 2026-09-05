@@ -75,74 +75,6 @@ public class UserRoleSpecificationsTests
 
     #endregion
 
-    #region UserHasRoleSpecification Tests
-
-    [Fact]
-    public void UserHasRoleSpecification_WithMatchingRole_ShouldReturnTrue()
-    {
-        // Arrange
-        RoleEntity moderatorRole = RoleFactory.Create("Moderator");
-        UserEntity user = UserFactory.CreateWithRole(moderatorRole);
-        UserHasRoleSpecification spec = new("Moderator");
-
-        // Act
-        bool result = spec.IsSatisfiedBy(user);
-
-        // Assert
-        result.Should().BeTrue();
-    }
-
-    [Fact]
-    public void UserHasRoleSpecification_WithDifferentRole_ShouldReturnFalse()
-    {
-        // Arrange
-        RoleEntity visitorRole = RoleFactory.Create("Visitor");
-        UserEntity user = UserFactory.CreateWithRole(visitorRole);
-        UserHasRoleSpecification spec = new("Admin");
-
-        // Act
-        bool result = spec.IsSatisfiedBy(user);
-
-        // Assert
-        result.Should().BeFalse();
-    }
-
-    #endregion
-
-    #region UserHasVisitorRoleSpecification Tests
-
-    [Fact]
-    public void UserHasVisitorRoleSpecification_WithVisitorRole_ShouldReturnTrue()
-    {
-        // Arrange
-        RoleEntity visitorRole = RoleFactory.CreateVisitor();
-        UserEntity user = UserFactory.CreateWithRole(visitorRole);
-        UserHasVisitorRoleSpecification spec = new();
-
-        // Act
-        bool result = spec.IsSatisfiedBy(user);
-
-        // Assert
-        result.Should().BeTrue();
-    }
-
-    [Fact]
-    public void UserHasVisitorRoleSpecification_WithAdminRole_ShouldReturnFalse()
-    {
-        // Arrange
-        RoleEntity adminRole = RoleFactory.CreateAdmin();
-        UserEntity user = UserFactory.CreateWithRole(adminRole);
-        UserHasVisitorRoleSpecification spec = new();
-
-        // Act
-        bool result = spec.IsSatisfiedBy(user);
-
-        // Assert
-        result.Should().BeFalse();
-    }
-
-    #endregion
-
     #region UserIsActiveAdminSpecification Tests
 
     [Fact]
@@ -181,7 +113,7 @@ public class UserRoleSpecificationsTests
         // Arrange
         RoleEntity adminRole = RoleFactory.CreateAdmin();
         UserEntity user = UserFactory.CreateInactive();
-        user.GrantRoleBootstrap(adminRole.Id);
+        user.GrantInitialRole(adminRole.Id);
         UserIsActiveAdminSpecification spec = new();
 
         // Act
