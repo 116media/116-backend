@@ -5,8 +5,6 @@ using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.ValueObjects;
 using _116.Mailer.Contracts.Application;
-using _116.Mailer.Contracts.Domain;
-using _116.Tests.Fixtures.Builders.Entities.Identity;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Identity;
 using _116.Unit.Tests.Common.Mocks.Repositories;
@@ -18,7 +16,9 @@ using Xunit;
 namespace _116.Unit.Tests.Modules.Identity.Application.Auth.UseCases.Admin.Commands.ForgotPassword;
 
 /// <summary>
-/// Unit tests for <see cref="AdminForgotPasswordHandler"/>.
+/// Unit tests for <see cref="AdminForgotPasswordHandler"/>. Eligibility is decided by the
+/// repository query, so an ineligible address reaches the handler as a null user; which kind of
+/// ineligibility it was is covered by the repository's own integration tests.
 /// </summary>
 public class AdminForgotPasswordHandlerTests
 {
@@ -50,8 +50,7 @@ public class AdminForgotPasswordHandlerTests
         AdminForgotPasswordCommand command = new(Email: email);
         OtpEntity otp = OtpFactory.CreateForPasswordReset(user.Id);
 
-        _authRepositoryMock.SetupExistsByEmail(new Email(email), true);
-        _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
+        _authRepositoryMock.SetupGetActiveAdminByEmail(new Email(email), user);
         _otpFactoryMock
             .Setup(x => x.CreatePasswordResetOtpAsync(user.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new OtpCreationResult(otp, TestConstants.Otp.DefaultCode));
@@ -64,15 +63,14 @@ public class AdminForgotPasswordHandlerTests
     }
 
     [Fact]
-    public async Task Handle_WhenUserExists_ShouldReturnSuccess()
+    public async Task Handle_WhenTheAddressBelongsToAnActiveAdmin_ShouldReturnSuccess()
     {
         // Arrange
         string email = "admin@example.com";
         UserEntity user = UserFactory.CreateAdmin();
         AdminForgotPasswordCommand command = new(Email: email);
 
-        _authRepositoryMock.SetupExistsByEmail(new Email(email), true);
-        _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
+        _authRepositoryMock.SetupGetActiveAdminByEmail(new Email(email), user);
         _otpFactoryMock
             .Setup(x => x.CreatePasswordResetOtpAsync(user.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(
@@ -88,15 +86,14 @@ public class AdminForgotPasswordHandlerTests
     }
 
     [Fact]
-    public async Task Handle_WhenUserExists_ShouldCreatePasswordResetOtp()
+    public async Task Handle_WhenTheAddressBelongsToAnActiveAdmin_ShouldCreatePasswordResetOtp()
     {
         // Arrange
         string email = "admin@example.com";
         UserEntity user = UserFactory.CreateAdmin();
         AdminForgotPasswordCommand command = new(Email: email);
 
-        _authRepositoryMock.SetupExistsByEmail(new Email(email), true);
-        _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
+        _authRepositoryMock.SetupGetActiveAdminByEmail(new Email(email), user);
         _otpFactoryMock
             .Setup(x => x.CreatePasswordResetOtpAsync(user.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(
@@ -110,75 +107,18 @@ public class AdminForgotPasswordHandlerTests
         _otpFactoryMock.Verify(x => x.CreatePasswordResetOtpAsync(user.Id, It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    [Fact]
-    public async Task Handle_WhenUserDoesNotExist_ShouldStillReturnSuccess()
-    {
-        // Arrange
-        string email = "nonexistent@example.com";
-        AdminForgotPasswordCommand command = new(Email: email);
-
-        _authRepositoryMock.SetupExistsByEmail(new Email(email), false);
-
-        // Act
-        AdminForgotPasswordResult result = await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        result.IsSuccess.Should().BeTrue();
-        result.Email.Should().Be(email);
-    }
-
-    [Fact]
-    public async Task Handle_WhenUserDoesNotExist_ShouldNotCreateOtp()
-    {
-        // Arrange
-        string email = "nonexistent@example.com";
-        AdminForgotPasswordCommand command = new(Email: email);
-
-        _authRepositoryMock.SetupExistsByEmail(new Email(email), false);
-
-        // Act
-        await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        _otpFactoryMock.Verify(
-            x => x.CreatePasswordResetOtpAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
-            Times.Never
-        );
-    }
-
-    [Fact]
-    public async Task Handle_ShouldCheckIfEmailExists()
-    {
-        // Arrange
-        string email = "admin@example.com";
-        AdminForgotPasswordCommand command = new(Email: email);
-
-        _authRepositoryMock.SetupExistsByEmail(new Email(email), false);
-
-        // Act
-        await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        _authRepositoryMock.Verify(
-            x => x.ExistsByEmailAsync(It.IsAny<Email>(), It.IsAny<CancellationToken>()),
-            Times.Once
-        );
-    }
-
     #endregion
 
     #region Ineligible Account Cases
 
     [Fact]
-    public async Task Handle_WhenAccountHasNoAdminRole_ShouldReturnTheSameNeutralResult()
+    public async Task Handle_WhenNoEligibleAdminOwnsTheAddress_ShouldReturnTheSameNeutralResult()
     {
         // Arrange
-        string email = "user@example.com";
-        UserEntity user = UserFactory.CreateVerifiedActive();
+        string email = "nonexistent@example.com";
         AdminForgotPasswordCommand command = new(Email: email);
 
-        _authRepositoryMock.SetupExistsByEmail(new Email(email), true);
-        _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
+        _authRepositoryMock.SetupGetActiveAdminByEmail(new Email(email), user: null);
 
         // Act
         AdminForgotPasswordResult result = await _handler.Handle(command, CancellationToken.None);
@@ -189,72 +129,13 @@ public class AdminForgotPasswordHandlerTests
     }
 
     [Fact]
-    public async Task Handle_WhenAccountHasNoAdminRole_ShouldNotCreateOtp()
+    public async Task Handle_WhenNoEligibleAdminOwnsTheAddress_ShouldNotCreateOtp()
     {
         // Arrange
-        string email = "user@example.com";
-        UserEntity user = UserFactory.CreateVerifiedActive();
+        string email = "nonexistent@example.com";
         AdminForgotPasswordCommand command = new(Email: email);
 
-        _authRepositoryMock.SetupExistsByEmail(new Email(email), true);
-        _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
-
-        // Act
-        await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        _otpFactoryMock.Verify(
-            x => x.CreatePasswordResetOtpAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
-            Times.Never
-        );
-    }
-
-    [Fact]
-    public async Task Handle_WhenAccountHasNoAdminRole_ShouldNotEnqueueMail()
-    {
-        // Arrange
-        string email = "user@example.com";
-        UserEntity user = UserFactory.CreateVerifiedActive();
-        AdminForgotPasswordCommand command = new(Email: email);
-
-        _authRepositoryMock.SetupExistsByEmail(new Email(email), true);
-        _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
-
-        // Act
-        await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-    }
-
-    [Fact]
-    public async Task Handle_WhenAdminAccountIsInactive_ShouldReturnTheSameNeutralResult()
-    {
-        // Arrange
-        string email = "admin@example.com";
-        UserEntity user = CreateInactiveAdmin();
-        AdminForgotPasswordCommand command = new(Email: email);
-
-        _authRepositoryMock.SetupExistsByEmail(new Email(email), true);
-        _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
-
-        // Act
-        AdminForgotPasswordResult result = await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        result.IsSuccess.Should().BeTrue();
-        result.Email.Should().Be(email);
-    }
-
-    [Fact]
-    public async Task Handle_WhenAdminAccountIsInactive_ShouldNotCreateOtp()
-    {
-        // Arrange
-        string email = "admin@example.com";
-        UserEntity user = CreateInactiveAdmin();
-        AdminForgotPasswordCommand command = new(Email: email);
-
-        _authRepositoryMock.SetupExistsByEmail(new Email(email), true);
-        _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
+        _authRepositoryMock.SetupGetActiveAdminByEmail(new Email(email), user: null);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
@@ -278,13 +159,13 @@ public class AdminForgotPasswordHandlerTests
         AdminForgotPasswordCommand command = new(Email: email);
         using CancellationTokenSource cts = new();
 
-        _authRepositoryMock.SetupExistsByEmail(new Email(email), false);
+        _authRepositoryMock.SetupGetActiveAdminByEmail(new Email(email), user: null);
 
         // Act
         await _handler.Handle(command, cts.Token);
 
         // Assert
-        _authRepositoryMock.Verify(x => x.ExistsByEmailAsync(It.IsAny<Email>(), cts.Token), Times.Once);
+        _authRepositoryMock.Verify(x => x.GetActiveAdminByEmailAsync(It.IsAny<Email>(), cts.Token), Times.Once);
     }
 
     [Fact]
@@ -296,8 +177,7 @@ public class AdminForgotPasswordHandlerTests
         AdminForgotPasswordCommand command = new(Email: email);
         using CancellationTokenSource cts = new();
 
-        _authRepositoryMock.SetupExistsByEmail(new Email(email), true);
-        _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
+        _authRepositoryMock.SetupGetActiveAdminByEmail(new Email(email), user);
         _otpFactoryMock
             .Setup(x => x.CreatePasswordResetOtpAsync(user.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(
@@ -312,19 +192,4 @@ public class AdminForgotPasswordHandlerTests
     }
 
     #endregion
-
-    /// <summary>
-    /// Builds an administrator whose account has been deactivated, the one admin shape
-    /// <see cref="UserFactory"/> does not name.
-    /// </summary>
-    /// <returns>An inactive user carrying the Admin role.</returns>
-    private static UserEntity CreateInactiveAdmin()
-    {
-        return new UserBuilder()
-            .WithEmail(TestConstants.User.AdminEmail)
-            .AsVerified()
-            .AsInactive()
-            .WithRole(RoleFactory.CreateAdmin())
-            .Build();
-    }
 }
