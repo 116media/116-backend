@@ -517,7 +517,7 @@ public class UserEntityTests
         // Arrange
         var roleId = Guid.NewGuid();
         UserEntity user = UserFactory.Create();
-        user.GrantRoleBootstrap(roleId);
+        user.GrantInitialRole(roleId);
 
         // Act
         bool result = user.HasRole(roleId);
@@ -578,14 +578,14 @@ public class UserEntityTests
     }
 
     [Fact]
-    public void GrantRoleBootstrap_ShouldAddMemberWithoutRaisingAnyEvent()
+    public void GrantInitialRole_ShouldAddMemberWithoutRaisingAnyEvent()
     {
         // Arrange
         UserEntity user = UserFactory.Create();
         var roleId = Guid.NewGuid();
 
         // Act
-        bool granted = user.GrantRoleBootstrap(roleId);
+        bool granted = user.GrantInitialRole(roleId);
 
         // Assert
         granted.Should().BeTrue();
@@ -594,15 +594,15 @@ public class UserEntityTests
     }
 
     [Fact]
-    public void GrantRoleBootstrap_WhenRoleAlreadyGranted_ShouldReportFalse()
+    public void GrantInitialRole_WhenRoleAlreadyGranted_ShouldReportFalse()
     {
         // Arrange
         var roleId = Guid.NewGuid();
         UserEntity user = UserFactory.Create();
-        user.GrantRoleBootstrap(roleId);
+        user.GrantInitialRole(roleId);
 
         // Act
-        bool granted = user.GrantRoleBootstrap(roleId);
+        bool granted = user.GrantInitialRole(roleId);
 
         // Assert
         granted.Should().BeFalse();
@@ -615,7 +615,7 @@ public class UserEntityTests
         // Arrange
         var roleId = Guid.NewGuid();
         UserEntity user = UserFactory.Create();
-        user.GrantRoleBootstrap(roleId);
+        user.GrantInitialRole(roleId);
 
         // Act
         bool revoked = user.RevokeRole(roleId, "Admin");
