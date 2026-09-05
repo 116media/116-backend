@@ -205,7 +205,7 @@ public class SuperAdminSeedingStrategyTests : IDisposable
         // Pre-seed everything
         var permission = PermissionEntity.Create(Guid.NewGuid(), "system", "all", "Test");
         var role = RoleEntity.Create(Guid.NewGuid(), "SuperAdmin", "Test");
-        var rolePermission = RolePermissionEntity.Create(Guid.NewGuid(), role.Id, permission.Id);
+        var rolePermission = RolePermissionEntity.Create(role.Id, permission.Id);
         await context.Permissions.AddAsync(permission);
         await context.Roles.AddAsync(role);
         await context.RolePermissions.AddAsync(rolePermission);
