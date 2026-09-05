@@ -67,8 +67,8 @@ public class SessionRepositoryTests : IDisposable
         UserEntity user = UserFactory.Create();
         RoleEntity role = RoleFactory.CreateAdmin();
         PermissionEntity permission = PermissionFactory.Create("article", "read");
-        var userRole = UserRoleEntity.CreateBootstrap(Guid.NewGuid(), user.Id, role.Id);
-        var rolePermission = RolePermissionEntity.Create(Guid.NewGuid(), role.Id, permission.Id);
+        var userRole = UserRoleEntity.Create(user.Id, role.Id);
+        var rolePermission = RolePermissionEntity.Create(role.Id, permission.Id);
 
         SessionEntity session = CreateSessionWithCreatedAt(user.Id);
 
