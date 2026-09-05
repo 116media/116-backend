@@ -82,6 +82,31 @@ public static class MockAuthRepository
     }
 
     /// <summary>
+    /// Sets up GetUserWithRolesByIdOrThrow to return the specified user.
+    /// </summary>
+    /// <param name="mock">The mock instance.</param>
+    /// <param name="user">The user to return.</param>
+    /// <returns>The mock instance for chaining.</returns>
+    public static Mock<IAuthRepository> SetupGetUserWithRolesById(this Mock<IAuthRepository> mock, UserEntity user)
+    {
+        mock.Setup(x => x.GetUserWithRolesByIdOrThrow(user.Id, It.IsAny<CancellationToken>())).ReturnsAsync(user);
+        return mock;
+    }
+
+    /// <summary>
+    /// Sets up GetUserWithRolesByIdOrThrow to throw NotFoundException.
+    /// </summary>
+    /// <param name="mock">The mock instance.</param>
+    /// <param name="userId">The user identifier that should throw.</param>
+    /// <returns>The mock instance for chaining.</returns>
+    public static Mock<IAuthRepository> SetupGetUserWithRolesByIdNotFound(this Mock<IAuthRepository> mock, Guid userId)
+    {
+        mock.Setup(x => x.GetUserWithRolesByIdOrThrow(userId, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new NotFoundException($"User with id '{userId}' was not found."));
+        return mock;
+    }
+
+    /// <summary>
     /// Sets up GetUserWithRolesAndPermissionsByIdOrThrow to return the specified user.
     /// </summary>
     /// <param name="mock">The mock instance.</param>
