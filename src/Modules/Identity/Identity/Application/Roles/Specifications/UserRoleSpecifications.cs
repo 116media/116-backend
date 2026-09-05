@@ -22,28 +22,6 @@ public class UserHasAdminRoleSpecification : Specification<UserEntity>
 }
 
 /// <summary>
-/// Specification that matches users with a specific role.
-/// </summary>
-public class UserHasRoleSpecification(string roleName) : Specification<UserEntity>
-{
-    public override Expression<Func<UserEntity, bool>> ToExpression()
-    {
-        return user => user.UserRoles.Any(ur => ur.Role.Name == roleName);
-    }
-}
-
-/// <summary>
-/// Specification that matches users with the Visitor role.
-/// </summary>
-public class UserHasVisitorRoleSpecification : Specification<UserEntity>
-{
-    public override Expression<Func<UserEntity, bool>> ToExpression()
-    {
-        return user => user.UserRoles.Any(ur => ur.Role.Name == nameof(EnumCoreUserRole.Visitor));
-    }
-}
-
-/// <summary>
 /// Composite specification for active admin users.
 /// Combines IsActive and HasAdminRole specifications, commonly used for admin authentication flows.
 /// </summary>
