@@ -1,5 +1,7 @@
 using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.Exceptions;
+using _116.Identity.Domain.StateMachines;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Identity;
@@ -27,7 +29,7 @@ public class RoleEntityTests
         string description = TestConstants.Role.ValidDescription;
 
         // Act
-        var role = RoleEntity.Create(id, name, description, TestErrorsFactory.CreateUserErrors());
+        var role = RoleEntity.Create(id, name, description);
 
         // Assert
         role.Id.Should().Be(id);
@@ -49,10 +51,10 @@ public class RoleEntityTests
         string description = TestConstants.Role.ValidDescription;
 
         // Act
-        Action act = () => RoleEntity.Create(id, invalidName!, description, TestErrorsFactory.CreateUserErrors());
+        Action act = () => RoleEntity.Create(id, invalidName!, description);
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<IdentityRuleException>().Which.Code.Should().Be(IdentityRuleCodes.RoleNameRequired);
     }
 
     [Theory]
@@ -66,10 +68,10 @@ public class RoleEntityTests
         string name = TestConstants.Role.ValidName;
 
         // Act
-        Action act = () => RoleEntity.Create(id, name, invalidDescription!, TestErrorsFactory.CreateUserErrors());
+        Action act = () => RoleEntity.Create(id, name, invalidDescription!);
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<IdentityRuleException>().Which.Code.Should().Be(IdentityRuleCodes.RoleDescriptionRequired);
     }
 
     #endregion
@@ -85,7 +87,7 @@ public class RoleEntityTests
         string newDescription = "Updated role description for testing purposes.";
 
         // Act
-        role.Update(newName, newDescription, _userErrors);
+        role.Update(newName, newDescription);
 
         // Assert
         role.Name.Should().Be(newName);
@@ -102,10 +104,10 @@ public class RoleEntityTests
         RoleEntity role = RoleFactory.Create();
 
         // Act
-        Action act = () => role.Update(invalidName!, TestConstants.Role.ValidDescription, _userErrors);
+        Action act = () => role.Update(invalidName!, TestConstants.Role.ValidDescription);
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<IdentityRuleException>().Which.Code.Should().Be(IdentityRuleCodes.RoleNameRequired);
     }
 
     [Theory]
@@ -118,10 +120,10 @@ public class RoleEntityTests
         RoleEntity role = RoleFactory.Create();
 
         // Act
-        Action act = () => role.Update(TestConstants.Role.ValidName, invalidDescription!, _userErrors);
+        Action act = () => role.Update(TestConstants.Role.ValidName, invalidDescription!);
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<IdentityRuleException>().Which.Code.Should().Be(IdentityRuleCodes.RoleDescriptionRequired);
     }
 
     #endregion

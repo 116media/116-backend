@@ -182,11 +182,10 @@ public class UserBuilder
     /// <returns>A configured UserEntity instance.</returns>
     public UserEntity Build()
     {
-        var errors = TestErrorsFactory.CreateUserErrors();
         UserEntity user =
             _authProvider == EnumAuthProvider.Local
-                ? UserEntity.Create(_id, _email!, _userName, _passwordHash, errors)
-                : UserEntity.CreateExternal(_id, _userName, _authProvider, _providerSubjectId, errors, _email);
+                ? UserEntity.Create(_id, _email!, _userName, _passwordHash)
+                : UserEntity.CreateExternal(_id, _userName, _authProvider, _providerSubjectId, _email);
 
         if (_isVerified)
         {
@@ -218,7 +217,7 @@ public class UserBuilder
             var userRole = UserRoleEntity.CreateBootstrap(Guid.NewGuid(), _id, role.Id);
 
             typeof(UserRoleEntity).GetProperty(nameof(UserRoleEntity.Role))!.SetValue(userRole, role);
-            user.AssignRole(userRole, errors);
+            user.AssignRole(userRole);
         }
 
         return user;

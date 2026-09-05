@@ -1,4 +1,3 @@
-using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Domain.Entities;
 
 namespace _116.Identity.Domain.ValueObjects;
@@ -15,293 +14,263 @@ public static class VisitorPermissions
     /// <summary>
     /// Returns content-related permissions for visitors.
     /// </summary>
-    public static PermissionEntity[] GetContent(UserErrors errors) =>
+    public static PermissionEntity[] GetContent() =>
         [
             PermissionEntity.Create(
                 Guid.NewGuid(),
                 "articles",
                 "read",
-                "Allows visitors to view and read published articles",
-                errors
+                "Allows visitors to view and read published articles"
             ),
             PermissionEntity.Create(
                 Guid.NewGuid(),
                 "videos",
                 "read",
-                "Grants access to watch published video content streaming",
-                errors
+                "Grants access to watch published video content streaming"
             ),
             PermissionEntity.Create(
                 Guid.NewGuid(),
                 "contents",
                 "read",
-                "Provides broad access to view all published content",
-                errors
+                "Provides broad access to view all published content"
             ),
         ];
 
     /// <summary>
     /// Returns profile-related permissions for visitors.
     /// </summary>
-    public static PermissionEntity[] GetProfile(UserErrors errors) =>
+    public static PermissionEntity[] GetProfile() =>
         [
             PermissionEntity.Create(
                 Guid.NewGuid(),
                 "own_profile",
                 "read",
-                "Enables visitors to view and read their own profile information",
-                errors
+                "Enables visitors to view and read their own profile information"
             ),
             PermissionEntity.Create(
                 Guid.NewGuid(),
                 "own_profile",
                 "update",
-                "Allows visitors to modify their own profile information",
-                errors
+                "Allows visitors to modify their own profile information"
             ),
         ];
 
     /// <summary>
     /// Returns like-related permissions for visitors.
     /// </summary>
-    public static PermissionEntity[] GetLikes(UserErrors errors) =>
+    public static PermissionEntity[] GetLikes() =>
         [
             PermissionEntity.Create(
                 Guid.NewGuid(),
                 "likes",
                 "create",
-                "Grants ability to express appreciation by creating likes",
-                errors
+                "Grants ability to express appreciation by creating likes"
             ),
             PermissionEntity.Create(
                 Guid.NewGuid(),
                 "own_likes",
                 "delete",
-                "Allows visitors to remove their previously created likes",
-                errors
+                "Allows visitors to remove their previously created likes"
             ),
             PermissionEntity.Create(
                 Guid.NewGuid(),
                 "likes",
                 "read",
-                "Enables viewing like counts and engagement metrics content",
-                errors
+                "Enables viewing like counts and engagement metrics content"
             ),
         ];
 
     /// <summary>
     /// Returns comment-related permissions for visitors.
     /// </summary>
-    public static PermissionEntity[] GetComments(UserErrors errors) =>
+    public static PermissionEntity[] GetComments() =>
         [
             PermissionEntity.Create(
                 Guid.NewGuid(),
                 "comments",
                 "read",
-                "Provides access to view comments and community discussions",
-                errors
+                "Provides access to view comments and community discussions"
             ),
             PermissionEntity.Create(
                 Guid.NewGuid(),
                 "comments",
                 "create",
-                "Enables visitors to participate by posting new comments",
-                errors
+                "Enables visitors to participate by posting new comments"
             ),
             PermissionEntity.Create(
                 Guid.NewGuid(),
                 "own_comments",
                 "update",
-                "Allows visitors to edit their own posted comments",
-                errors
+                "Allows visitors to edit their own posted comments"
             ),
             PermissionEntity.Create(
                 Guid.NewGuid(),
                 "own_comments",
                 "delete",
-                "Grants ability to remove their own posted comments",
-                errors
+                "Grants ability to remove their own posted comments"
             ),
         ];
 
     /// <summary>
     /// Returns bookmark-related permissions for visitors.
     /// </summary>
-    public static PermissionEntity[] GetBookmarks(UserErrors errors) =>
+    public static PermissionEntity[] GetBookmarks() =>
         [
             PermissionEntity.Create(
                 Guid.NewGuid(),
                 "bookmarks",
                 "create",
-                "Enables saving interesting content for later reference access",
-                errors
+                "Enables saving interesting content for later reference access"
             ),
             PermissionEntity.Create(
                 Guid.NewGuid(),
                 "own_bookmarks",
                 "delete",
-                "Allows removing items from personal bookmark collection management",
-                errors
+                "Allows removing items from personal bookmark collection management"
             ),
             PermissionEntity.Create(
                 Guid.NewGuid(),
                 "own_bookmarks",
                 "read",
-                "Grants access to view personal saved bookmark collections",
-                errors
+                "Grants access to view personal saved bookmark collections"
             ),
             PermissionEntity.Create(
                 Guid.NewGuid(),
                 "bookmarks",
                 "read",
-                "Provides access to view public community bookmark collections",
-                errors
+                "Provides access to view public community bookmark collections"
             ),
         ];
 
     /// <summary>
     /// Returns navigation-related permissions for visitors.
     /// </summary>
-    public static PermissionEntity[] GetNavigation(UserErrors errors) =>
+    public static PermissionEntity[] GetNavigation() =>
         [
             PermissionEntity.Create(
                 Guid.NewGuid(),
                 "tags",
                 "read",
-                "Enables browsing content tags for topic based navigation",
-                errors
+                "Enables browsing content tags for topic based navigation"
             ),
             PermissionEntity.Create(
                 Guid.NewGuid(),
                 "categories",
                 "read",
-                "Provides access to browse organized content category structures",
-                errors
+                "Provides access to browse organized content category structures"
             ),
         ];
 
     /// <summary>
     /// Returns playlist-related permissions for visitors.
     /// </summary>
-    public static PermissionEntity[] GetPlaylists(UserErrors errors) =>
+    public static PermissionEntity[] GetPlaylists() =>
         [
             PermissionEntity.Create(
                 Guid.NewGuid(),
                 "playlists",
                 "create",
-                "Grants ability to create custom personalized content playlists",
-                errors
+                "Grants ability to create custom personalized content playlists"
             ),
             PermissionEntity.Create(
                 Guid.NewGuid(),
                 "own_playlists",
                 "update",
-                "Allows modifying personal playlists including adding removing content",
-                errors
+                "Allows modifying personal playlists including adding removing content"
             ),
             PermissionEntity.Create(
                 Guid.NewGuid(),
                 "own_playlists",
                 "delete",
-                "Enables removing personal playlists when no longer needed",
-                errors
+                "Enables removing personal playlists when no longer needed"
             ),
             PermissionEntity.Create(
                 Guid.NewGuid(),
                 "own_playlists",
                 "read",
-                "Provides access to view personal created playlist collections",
-                errors
+                "Provides access to view personal created playlist collections"
             ),
         ];
 
     /// <summary>
     /// Returns advertisement-related permissions for visitors.
     /// </summary>
-    public static PermissionEntity[] GetAds(UserErrors errors) =>
+    public static PermissionEntity[] GetAds() =>
         [
             PermissionEntity.Create(
                 Guid.NewGuid(),
                 "ads_banners",
                 "read",
-                "Allows viewing banner advertisements throughout the entire platform",
-                errors
+                "Allows viewing banner advertisements throughout the entire platform"
             ),
             PermissionEntity.Create(
                 Guid.NewGuid(),
                 "ads_stories",
                 "read",
-                "Enables viewing story format advertisements in content feeds",
-                errors
+                "Enables viewing story format advertisements in content feeds"
             ),
         ];
 
     /// <summary>
     /// Returns rating-related permissions for visitors.
     /// </summary>
-    public static PermissionEntity[] GetRates(UserErrors errors) =>
+    public static PermissionEntity[] GetRates() =>
         [
             PermissionEntity.Create(
                 Guid.NewGuid(),
                 "rates",
                 "create",
-                "Grants ability to rate content using evaluation mechanisms",
-                errors
+                "Grants ability to rate content using evaluation mechanisms"
             ),
             PermissionEntity.Create(
                 Guid.NewGuid(),
                 "rates",
                 "read",
-                "Provides access to view ratings and community assessment",
-                errors
+                "Provides access to view ratings and community assessment"
             ),
         ];
 
     /// <summary>
     /// Returns share-related permissions for visitors.
     /// </summary>
-    public static PermissionEntity[] GetShares(UserErrors errors) =>
+    public static PermissionEntity[] GetShares() =>
         [
             PermissionEntity.Create(
                 Guid.NewGuid(),
                 "shares",
                 "create",
-                "Enables sharing content through various social media mechanisms",
-                errors
+                "Enables sharing content through various social media mechanisms"
             ),
             PermissionEntity.Create(
                 Guid.NewGuid(),
                 "shares",
                 "read",
-                "Provides access to view sharing statistics and metadata",
-                errors
+                "Provides access to view sharing statistics and metadata"
             ),
             PermissionEntity.Create(
                 Guid.NewGuid(),
                 "own_shares",
                 "read",
-                "Grants access to view personal sharing history statistics",
-                errors
+                "Grants access to view personal sharing history statistics"
             ),
         ];
 
     /// <summary>
     /// Gets all visitor permissions as a single flattened array of PermissionEntity.
     /// </summary>
-    /// <param name="errors">The user errors factory used for entity validation.</param>
     /// <returns>All permissions for the Visitor role as typed entities.</returns>
-    public static PermissionEntity[] GetAllPermissions(UserErrors errors)
+    public static PermissionEntity[] GetAllPermissions()
     {
-        return GetContent(errors)
-            .Concat(GetProfile(errors))
-            .Concat(GetLikes(errors))
-            .Concat(GetComments(errors))
-            .Concat(GetBookmarks(errors))
-            .Concat(GetNavigation(errors))
-            .Concat(GetPlaylists(errors))
-            .Concat(GetAds(errors))
-            .Concat(GetRates(errors))
-            .Concat(GetShares(errors))
+        return GetContent()
+            .Concat(GetProfile())
+            .Concat(GetLikes())
+            .Concat(GetComments())
+            .Concat(GetBookmarks())
+            .Concat(GetNavigation())
+            .Concat(GetPlaylists())
+            .Concat(GetAds())
+            .Concat(GetRates())
+            .Concat(GetShares())
             .ToArray();
     }
 }

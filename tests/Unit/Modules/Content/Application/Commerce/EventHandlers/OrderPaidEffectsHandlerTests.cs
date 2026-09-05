@@ -246,11 +246,7 @@ public class OrderPaidEffectsHandlerTests
         Guid promotionLevelId = Guid.NewGuid();
         ArticleEntity article = ArticleFactory.CreatePublished(Guid.NewGuid());
         article.StampPromotion(promotionLevelId, PaidAt.AddDays(14));
-        article.ForceUnpromote(
-            unpromotedBy: "super-admin-uuid",
-            reason: "policy violation",
-            errors: TestErrorsFactory.CreateArticleErrors()
-        );
+        article.ForceUnpromote(unpromotedBy: "super-admin-uuid", reason: "policy violation");
         _articleRepositoryMock.SetupGetByOrderItemIdAsync(orderItemId, article);
 
         // Act
@@ -278,11 +274,7 @@ public class OrderPaidEffectsHandlerTests
         DateTimeOffset promotionUntil = laterPaidAt.AddDays(14);
         ArticleEntity article = ArticleFactory.CreatePublished(Guid.NewGuid());
         article.StampPromotion(Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(-1));
-        article.ForceUnpromote(
-            unpromotedBy: "super-admin-uuid",
-            reason: "policy violation",
-            errors: TestErrorsFactory.CreateArticleErrors()
-        );
+        article.ForceUnpromote(unpromotedBy: "super-admin-uuid", reason: "policy violation");
         _articleRepositoryMock.SetupGetByOrderItemIdAsync(orderItemId, article);
 
         // Act
@@ -310,11 +302,7 @@ public class OrderPaidEffectsHandlerTests
         DateTimeOffset promotionUntil = PaidAt.AddDays(7);
         LyricsEntity lyrics = LyricsFactory.Create(Guid.NewGuid());
         lyrics.StampPromotion(Guid.NewGuid(), promotionUntil);
-        lyrics.ForceUnpromote(
-            unpromotedBy: "super-admin-uuid",
-            reason: "policy violation",
-            errors: TestErrorsFactory.CreateLyricsErrors()
-        );
+        lyrics.ForceUnpromote(unpromotedBy: "super-admin-uuid", reason: "policy violation");
         _articleRepositoryMock.SetupGetByOrderItemIdAsync(orderItemId, null);
         _videoRepositoryMock.SetupGetByOrderItemIdAsync(orderItemId, null);
         _lyricsRepositoryMock.SetupGetByOrderItemIdAsync(orderItemId, lyrics);

@@ -1,4 +1,6 @@
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Exceptions;
+using _116.Content.Domain.StateMachines;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
@@ -31,9 +33,9 @@ public class CategoryEntityTests
         Guid contentTypeId = Guid.NewGuid();
         var errors = TestErrorsFactory.CreateCategoryErrors();
 
-        Action act = () => CategoryEntity.Create(id, contentTypeId, "   ", "valid-slug", "desc", false, errors);
+        Action act = () => CategoryEntity.Create(id, contentTypeId, "   ", "valid-slug", "desc", false);
 
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.CategoryNameRequired);
     }
 
     [Fact]
@@ -43,9 +45,9 @@ public class CategoryEntityTests
         Guid contentTypeId = Guid.NewGuid();
         var errors = TestErrorsFactory.CreateCategoryErrors();
 
-        Action act = () => CategoryEntity.Create(id, contentTypeId, "Valid Name", "", "desc", false, errors);
+        Action act = () => CategoryEntity.Create(id, contentTypeId, "Valid Name", "", "desc", false);
 
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.CategorySlugRequired);
     }
 
     [Fact]
@@ -62,7 +64,6 @@ public class CategoryEntityTests
             "test",
             "desc",
             false,
-            errors,
             isExclusive: true
         );
 
@@ -89,7 +90,7 @@ public class CategoryEntityTests
         CategoryEntity category = CategoryFactory.Create(contentTypeId);
         var errors = TestErrorsFactory.CreateCategoryErrors();
 
-        category.Update("New Name", "new-slug", "New description", false, false, false, errors);
+        category.Update("New Name", "new-slug", "New description", false, false, false);
 
         category.Name.Should().Be("New Name");
         category.Slug.Should().Be("new-slug");
@@ -103,9 +104,9 @@ public class CategoryEntityTests
         CategoryEntity category = CategoryFactory.Create(contentTypeId);
         var errors = TestErrorsFactory.CreateCategoryErrors();
 
-        Action act = () => category.Update("", "valid-slug", "desc", false, false, false, errors);
+        Action act = () => category.Update("", "valid-slug", "desc", false, false, false);
 
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.CategoryNameRequired);
     }
 
     [Fact]
@@ -115,9 +116,9 @@ public class CategoryEntityTests
         CategoryEntity category = CategoryFactory.Create(contentTypeId);
         var errors = TestErrorsFactory.CreateCategoryErrors();
 
-        Action act = () => category.Update("Valid Name", "  ", "desc", false, false, false, errors);
+        Action act = () => category.Update("Valid Name", "  ", "desc", false, false, false);
 
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.CategorySlugRequired);
     }
 
     #endregion
@@ -130,7 +131,7 @@ public class CategoryEntityTests
         Guid contentTypeId = Guid.NewGuid();
         CategoryEntity category = CategoryFactory.CreatePaid(contentTypeId);
 
-        Action act = () => category.EnsureCommissionable(TestErrorsFactory.CreateCategoryErrors());
+        Action act = () => category.EnsureCommissionable();
 
         act.Should().NotThrow();
     }
@@ -141,9 +142,9 @@ public class CategoryEntityTests
         Guid contentTypeId = Guid.NewGuid();
         CategoryEntity category = CategoryFactory.CreateInactive(contentTypeId);
 
-        Action act = () => category.EnsureCommissionable(TestErrorsFactory.CreateCategoryErrors());
+        Action act = () => category.EnsureCommissionable();
 
-        act.Should().Throw<NotFoundException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.CategoryNotFound);
     }
 
     [Fact]
@@ -152,9 +153,9 @@ public class CategoryEntityTests
         Guid contentTypeId = Guid.NewGuid();
         CategoryEntity category = CategoryFactory.CreateFree(contentTypeId);
 
-        Action act = () => category.EnsureCommissionable(TestErrorsFactory.CreateCategoryErrors());
+        Action act = () => category.EnsureCommissionable();
 
-        act.Should().Throw<NotFoundException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.CategoryNotFound);
     }
 
     #endregion
@@ -222,7 +223,7 @@ public class CategoryEntityTests
         CategoryEntity category = CategoryFactory.Create(contentTypeId);
         var errors = TestErrorsFactory.CreateCategoryErrors();
 
-        category.Update("Name", "slug", "desc", false, true, false, errors);
+        category.Update("Name", "slug", "desc", false, true, false);
 
         category.IsExclusive.Should().BeTrue();
     }
@@ -370,7 +371,6 @@ public class CategoryEntityTests
             "test",
             "desc",
             false,
-            errors,
             isDefaultForLyrics: true
         );
 
@@ -407,7 +407,7 @@ public class CategoryEntityTests
         CategoryEntity category = CategoryFactory.Create(contentTypeId);
         var errors = TestErrorsFactory.CreateCategoryErrors();
 
-        category.Update("Name", "slug", "desc", false, false, isDefaultForLyrics: true, errors: errors);
+        category.Update("Name", "slug", "desc", false, false, isDefaultForLyrics: true);
 
         category.IsDefaultForLyrics.Should().BeTrue();
     }

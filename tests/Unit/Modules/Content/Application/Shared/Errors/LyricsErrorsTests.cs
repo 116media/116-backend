@@ -30,30 +30,12 @@ public class LyricsErrorsTests
     }
 
     [Fact]
-    public void SongTitleRequired_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.SongTitleRequired();
-
-        exception.Should().NotBeNull();
-        exception.Message.Should().Contain(_message.SongTitleRequired());
-    }
-
-    [Fact]
     public void ArtistNameRequired_ShouldReturnBadRequestException()
     {
         BadRequestException exception = _errors.ArtistNameRequired();
 
         exception.Should().NotBeNull();
         exception.Message.Should().Contain(_message.ArtistNameRequired());
-    }
-
-    [Fact]
-    public void LyricsTextRequired_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.LyricsTextRequired();
-
-        exception.Should().NotBeNull();
-        exception.Message.Should().Contain(_message.LyricsTextRequired());
     }
 
     [Fact]

@@ -14,12 +14,10 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArtis
 /// <param name="artistRepository">Repository for artist profile data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="fileRepository">Repository for resolving avatar file URLs.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminUpdateArtistHandler(
     IArtistRepository artistRepository,
     IContentUnitOfWork unitOfWork,
-    IFileRepository fileRepository,
-    ContentI18n i18n
+    IFileRepository fileRepository
 ) : ICommandHandler<AdminUpdateArtistCommand, AdminUpdateArtistResult>
 {
     /// <inheritdoc />
@@ -39,8 +37,7 @@ public class AdminUpdateArtistHandler(
             realName: command.RealName,
             aliases: command.Aliases,
             birthdate: command.Birthdate,
-            hometown: command.Hometown,
-            errors: i18n.Artist
+            hometown: command.Hometown
         );
 
         artistRepository.Update(artist: artist);

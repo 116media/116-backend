@@ -45,7 +45,7 @@ public class AdminUpdatePricingTierHandler(
             throw i18n.PricingTier.AlreadyExists(name: command.Name);
         }
 
-        pricingTier.Update(name: command.Name, description: command.Description, errors: i18n.PricingTier);
+        pricingTier.Update(name: command.Name, description: command.Description);
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 

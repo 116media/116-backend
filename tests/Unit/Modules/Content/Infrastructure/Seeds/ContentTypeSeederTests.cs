@@ -26,7 +26,7 @@ public class ContentTypeSeederTests : IDisposable
 
         _context = new ContentDbContext(options);
         var loggerMock = new Mock<ILogger<ContentTypeSeeder>>();
-        _seeder = new ContentTypeSeeder(_context, loggerMock.Object, TestErrorsFactory.CreateContentTypeErrors());
+        _seeder = new ContentTypeSeeder(_context, loggerMock.Object);
     }
 
     public void Dispose()

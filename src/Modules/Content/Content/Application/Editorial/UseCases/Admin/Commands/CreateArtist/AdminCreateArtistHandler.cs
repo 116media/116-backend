@@ -46,8 +46,7 @@ public class AdminCreateArtistHandler(
             realName: command.RealName,
             aliases: command.Aliases,
             birthdate: command.Birthdate,
-            hometown: command.Hometown,
-            errors: i18n.Artist
+            hometown: command.Hometown
         );
 
         await artistRepository.AddAsync(artist: artist, cancellationToken: cancellationToken);

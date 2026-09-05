@@ -35,7 +35,7 @@ public class AdminCreateTagHandler(
             throw i18n.Tag.SlugAlreadyExists(slug: command.Slug);
         }
 
-        var tag = TagEntity.Create(id: Guid.NewGuid(), name: command.Name, slug: command.Slug, errors: i18n.Tag);
+        var tag = TagEntity.Create(id: Guid.NewGuid(), name: command.Name, slug: command.Slug);
 
         await lookupRepository.AddTagAsync(tag: tag, cancellationToken: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);

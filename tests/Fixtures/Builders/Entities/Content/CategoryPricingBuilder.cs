@@ -41,12 +41,6 @@ public class CategoryPricingBuilder
     /// </summary>
     public CategoryPricingEntity Build()
     {
-        return CategoryPricingEntity.Create(
-            _id,
-            _categoryId,
-            _pricingTierId,
-            _priceUsd,
-            TestErrorsFactory.CreateCategoryErrors()
-        );
+        return CategoryPricingEntity.Create(_id, _categoryId, _pricingTierId, _priceUsd);
     }
 }

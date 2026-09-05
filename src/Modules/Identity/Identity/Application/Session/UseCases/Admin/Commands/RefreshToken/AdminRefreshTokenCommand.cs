@@ -1,4 +1,4 @@
-using _116.Identity.Domain.Results;
+using _116.Identity.Application.Shared.DTOs;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Identity.Application.Session.UseCases.Admin.Commands.RefreshToken;
@@ -16,5 +16,5 @@ public record AdminRefreshTokenCommand(string RefreshToken) : ICommand<AdminRefr
 /// <summary>
 /// The result of executing an <see cref="AdminRefreshTokenCommand" />.
 /// </summary>
-/// <param name="AuthenticationResult">The authentication result with new tokens.</param>
-public record AdminRefreshTokenResult(AuthenticationResult AuthenticationResult);
+/// <param name="Authentication">The authenticated user with new tokens.</param>
+public record AdminRefreshTokenResult(AuthenticationDto Authentication);

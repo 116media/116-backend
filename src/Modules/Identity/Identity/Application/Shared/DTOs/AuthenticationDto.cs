@@ -1,10 +1,9 @@
-using _116.Identity.Application.Shared.DTOs;
-
-namespace _116.Identity.Domain.Results;
+namespace _116.Identity.Application.Shared.DTOs;
 
 /// <summary>
-/// Data transfer object representing the result of a successful authentication operation.
-/// Contains user information, access token (JWT), and refresh token for session management.
+/// Carries a successful authentication between the application's pieces: the user, the issued
+/// tokens and their expiry. Handlers produce it, the token delivery service reads it, and
+/// endpoints project it onto their own response shapes.
 /// </summary>
 /// <param name="User">Complete user information including roles, permissions, and avatar</param>
 /// <param name="AccessToken">JWT access token for authenticating API requests</param>
@@ -12,7 +11,7 @@ namespace _116.Identity.Domain.Results;
 /// <param name="RefreshToken">Refresh token for obtaining new access tokens</param>
 /// <param name="RefreshTokenExpiresAt">Date and time when the refresh token expires in UTC</param>
 /// <param name="TokenType">Type of token (typically "Bearer")</param>
-public record AuthenticationResult(
+public record AuthenticationDto(
     UserResponseDto User,
     string AccessToken,
     DateTime AccessTokenExpiresAt,

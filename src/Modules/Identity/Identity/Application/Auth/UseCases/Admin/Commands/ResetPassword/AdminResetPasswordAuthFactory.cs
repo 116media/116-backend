@@ -66,11 +66,7 @@ public class AdminResetPasswordAuthFactory(
         }
 
         string hashedPassword = passwordService.Hash(password: newPassword);
-        user.UpdatePassword(
-            errors: userErrors,
-            newPasswordHash: hashedPassword,
-            origin: EnumPasswordChangeOrigin.Reset
-        );
+        user.UpdatePassword(newPasswordHash: hashedPassword, origin: EnumPasswordChangeOrigin.Reset);
 
         await sessionRepository.DeleteAllByUserIdAsync(
             userId: user.Id,

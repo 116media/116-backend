@@ -1,4 +1,4 @@
-using _116.Identity.Domain.Results;
+using _116.Identity.Application.Shared.DTOs;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin;
@@ -18,9 +18,9 @@ public record PublicSocialLoginCommand(string Provider, string IdToken) : IComma
 /// <summary>
 /// Result of the <see cref="PublicSocialLoginCommand" /> containing authentication details.
 /// </summary>
-/// <param name="AuthenticationResult">The authentication result with user info and JWT token.</param>
+/// <param name="Authentication">The authenticated user with user info and JWT token.</param>
 /// <remarks>
 /// Contains authentication information for social login.
 /// For new users, the account is automatically verified and activated.
 /// </remarks>
-public record PublicSocialLoginResult(AuthenticationResult AuthenticationResult);
+public record PublicSocialLoginResult(AuthenticationDto Authentication);

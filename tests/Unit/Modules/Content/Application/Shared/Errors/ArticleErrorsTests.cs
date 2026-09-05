@@ -44,24 +44,6 @@ public class ArticleErrorsTests
     }
 
     [Fact]
-    public void TitleRequired_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.TitleRequired();
-
-        exception.Should().NotBeNull();
-        exception.Message.Should().Contain(_message.TitleRequired());
-    }
-
-    [Fact]
-    public void SlugRequired_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.SlugRequired();
-
-        exception.Should().NotBeNull();
-        exception.Message.Should().Contain(_message.SlugRequired());
-    }
-
-    [Fact]
     public void AlreadySubmitted_ShouldReturnConflictException()
     {
         ConflictException exception = _errors.AlreadySubmitted();

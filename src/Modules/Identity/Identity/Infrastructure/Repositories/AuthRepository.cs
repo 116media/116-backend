@@ -276,7 +276,7 @@ public class AuthRepository(IdentityDbContext context, UserErrors userErrors, Se
         var userRole = UserRoleEntity.CreateBootstrap(Guid.NewGuid(), userId: userId, roleId: visitorRole.Id);
 
         // Use the domain method to assign the role
-        user?.AssignRole(userRole: userRole, errors: userErrors);
+        user?.AssignRole(userRole: userRole);
     }
 
     /// <inheritdoc />
@@ -362,7 +362,7 @@ public class AuthRepository(IdentityDbContext context, UserErrors userErrors, Se
             }
 
             // Existing external row: link if unlinked, reject if it belongs to another subject.
-            user.LinkProviderSubject(providerSubjectId: providerSubjectId, errors: userErrors);
+            user.LinkProviderSubject(providerSubjectId: providerSubjectId);
 
             // Update username if a new, still-available one is provided.
             if (!string.IsNullOrWhiteSpace(value: userName) && user.UserName != userName)
@@ -373,7 +373,7 @@ public class AuthRepository(IdentityDbContext context, UserErrors userErrors, Se
                 );
                 if (!usernameExists)
                 {
-                    user.UpdateUserName(newUserName: userName, errors: userErrors);
+                    user.UpdateUserName(newUserName: userName);
                 }
             }
 
@@ -388,7 +388,6 @@ public class AuthRepository(IdentityDbContext context, UserErrors userErrors, Se
                 userName!,
                 authProvider: authProvider.Value,
                 providerSubjectId: providerSubjectId,
-                errors: userErrors,
                 email: email
             );
 
@@ -450,6 +449,6 @@ public class AuthRepository(IdentityDbContext context, UserErrors userErrors, Se
             throw userErrors.PasswordOnlyForExternalAuth();
         }
 
-        user.SetPasswordAndChangeToLocal(passwordHash: hashedPassword, errors: userErrors);
+        user.SetPasswordAndChangeToLocal(passwordHash: hashedPassword);
     }
 }

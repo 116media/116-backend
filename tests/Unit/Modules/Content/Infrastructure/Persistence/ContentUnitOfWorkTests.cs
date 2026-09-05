@@ -105,11 +105,7 @@ public class ContentUnitOfWorkTests
         await using var context = new ContentDbContext(options);
         var unitOfWork = new ContentUnitOfWork(context);
 
-        var contentType = ContentTypeEntity.Create(
-            id: Guid.NewGuid(),
-            name: "Video",
-            errors: TestErrorsFactory.CreateContentTypeErrors()
-        );
+        var contentType = ContentTypeEntity.Create(id: Guid.NewGuid(), name: "Video");
         await context.ContentTypes.AddAsync(contentType);
 
         // Act

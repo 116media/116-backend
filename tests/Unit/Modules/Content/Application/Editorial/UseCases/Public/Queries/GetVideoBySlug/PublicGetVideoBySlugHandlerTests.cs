@@ -50,7 +50,7 @@ public class PublicGetVideoBySlugHandlerTests : BaseContentHandlerTest
         // Arrange
         CategoryEntity category = CategoryFactory.Create(CategoryId);
         VideoEntity video = VideoFactory.CreateWithCategory(CategoryId, category);
-        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl, _videoErrors);
+        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl);
         video.MarkPendingReview();
         video.Approve();
         video.Publish();
@@ -74,7 +74,7 @@ public class PublicGetVideoBySlugHandlerTests : BaseContentHandlerTest
         // Arrange
         CategoryEntity category = CategoryFactory.Create(CategoryId);
         VideoEntity video = VideoFactory.CreateWithCategory(CategoryId, category);
-        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl, _videoErrors);
+        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl);
         video.MarkPendingReview();
         video.Approve();
         video.Publish();
@@ -97,7 +97,7 @@ public class PublicGetVideoBySlugHandlerTests : BaseContentHandlerTest
         // Arrange
         CategoryEntity category = CategoryFactory.Create(CategoryId);
         VideoEntity video = VideoFactory.CreateWithCategory(CategoryId, category);
-        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl, _videoErrors);
+        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl);
         video.MarkPendingReview();
         video.Approve();
         video.Publish();

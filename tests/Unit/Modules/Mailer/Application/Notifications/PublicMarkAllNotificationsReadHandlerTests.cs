@@ -1,7 +1,7 @@
 using _116.Mailer.Application.Notifications.UseCases.Public.Commands.MarkAllNotificationsRead;
 using _116.Mailer.Application.Shared.Persistence;
 using _116.Mailer.Application.Shared.Repositories;
-using _116.Mailer.Contracts.Application;
+using _116.Mailer.Contracts.Domain;
 using _116.Mailer.Domain.Entities;
 using AwesomeAssertions;
 using Moq;

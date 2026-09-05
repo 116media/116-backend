@@ -1,6 +1,6 @@
 using _116.Mailer.Application.Notifications.UseCases.Public.Queries.GetNotifications;
 using _116.Mailer.Application.Shared.Repositories;
-using _116.Mailer.Contracts.Application;
+using _116.Mailer.Contracts.Domain;
 using _116.Mailer.Domain.Entities;
 using _116.Shared.Application.Pagination;
 using AwesomeAssertions;

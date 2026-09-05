@@ -2,6 +2,7 @@ using _116.Content.Application.Commerce.Services;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Mailer.Contracts.Application;
+using _116.Mailer.Contracts.Domain;
 using _116.Tests.Fixtures.Factories.Content;
 using AwesomeAssertions;
 using Moq;

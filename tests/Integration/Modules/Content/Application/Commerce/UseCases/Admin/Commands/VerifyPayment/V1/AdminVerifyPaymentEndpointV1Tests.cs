@@ -376,8 +376,7 @@ public class AdminVerifyPaymentEndpointV1Tests(PostgresFixture db) : BaseApiTest
                 toLink.Language,
                 toLink.VideoId,
                 customer.Id,
-                orderItem.Id,
-                TestErrorsFactory.CreateLyricsErrors()
+                orderItem.Id
             );
             await linkCtx.SaveChangesAsync();
         }

@@ -39,7 +39,7 @@ public class AdminEditOrderItemHandler(
             await contentOrderRepository.GetByIdWithItemsAsync(id: orderId, ct: cancellationToken)
             ?? throw i18n.ContentOrder.NotFound(id: orderId);
 
-        order.EnsureDraft(i18n.ContentOrder);
+        order.EnsureDraft();
 
         ContentOrderItemEntity item = await contentOrderRepository.GetItemByIdOrThrowAsync(
             orderId: orderId,
@@ -56,7 +56,7 @@ public class AdminEditOrderItemHandler(
                 cancellationToken: cancellationToken
             );
 
-            category.EnsureCommissionable(i18n.Category);
+            category.EnsureCommissionable();
         }
 
         decimal? promoPriceSnapshot = null;
@@ -68,7 +68,7 @@ public class AdminEditOrderItemHandler(
                 cancellationToken: cancellationToken
             );
 
-            promoLevel.EnsureActive(i18n.PromotionLevel);
+            promoLevel.EnsureActive();
             promoPriceSnapshot = promoLevel.PriceUsd;
         }
 

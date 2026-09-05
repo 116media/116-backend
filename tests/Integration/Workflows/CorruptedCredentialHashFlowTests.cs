@@ -35,7 +35,7 @@ public class CorruptedCredentialHashFlowTests(PostgresFixture db) : BaseApiTest(
         UserEntity user = UserFactory.Create(email);
         user.MarkAsVerified();
         user.Activate();
-        user.InitializePasswordHash(passwordService.Hash(TestAuth.ValidPassword), errors);
+        user.InitializePasswordHash(passwordService.Hash(TestAuth.ValidPassword));
 
         await SeedAsync<IdentityDbContext>(context => context.Users.Add(user));
 

@@ -1,5 +1,7 @@
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Events;
+using _116.Content.Domain.Exceptions;
+using _116.Content.Domain.StateMachines;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Helpers;
@@ -20,8 +22,7 @@ public class ShortVideoEntityTests
             Guid.NewGuid(),
             TestConstants.ShortVideo.ValidTitle,
             TestConstants.ShortVideo.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateShortVideoErrors()
+            AuthorId
         );
 
     #region CreateStandalone Tests
@@ -35,13 +36,7 @@ public class ShortVideoEntityTests
         const string slug = TestConstants.ShortVideo.ValidSlug;
 
         // Act
-        ShortVideoEntity shortVideo = ShortVideoEntity.CreateStandalone(
-            id,
-            title,
-            slug,
-            AuthorId,
-            TestErrorsFactory.CreateShortVideoErrors()
-        );
+        ShortVideoEntity shortVideo = ShortVideoEntity.CreateStandalone(id, title, slug, AuthorId);
 
         // Assert
         shortVideo.Id.Should().Be(id);
@@ -67,12 +62,11 @@ public class ShortVideoEntityTests
                 Guid.NewGuid(),
                 invalidTitle!,
                 TestConstants.ShortVideo.ValidSlug,
-                AuthorId,
-                TestErrorsFactory.CreateShortVideoErrors()
+                AuthorId
             );
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.ShortVideoTitleRequired);
     }
 
     #endregion
@@ -91,8 +85,7 @@ public class ShortVideoEntityTests
             TestConstants.ShortVideo.ValidTitle,
             TestConstants.ShortVideo.ValidSlug,
             videoId,
-            AuthorId,
-            TestErrorsFactory.CreateShortVideoErrors()
+            AuthorId
         );
 
         // Assert
@@ -114,12 +107,11 @@ public class ShortVideoEntityTests
                 invalidTitle!,
                 TestConstants.ShortVideo.ValidSlug,
                 Guid.NewGuid(),
-                AuthorId,
-                TestErrorsFactory.CreateShortVideoErrors()
+                AuthorId
             );
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.ShortVideoTitleRequired);
     }
 
     #endregion
@@ -132,7 +124,7 @@ public class ShortVideoEntityTests
         // Arrange
         ShortVideoEntity shortVideo = CreateStandalone();
         shortVideo.ReplaceVideoFile(Guid.NewGuid());
-        shortVideo.Activate(TestErrorsFactory.CreateShortVideoErrors());
+        shortVideo.Activate();
 
         // Act
         bool result = shortVideo.Deactivate();
@@ -163,7 +155,7 @@ public class ShortVideoEntityTests
         shortVideo.ReplaceVideoFile(Guid.NewGuid());
 
         // Act
-        bool result = shortVideo.Activate(TestErrorsFactory.CreateShortVideoErrors());
+        bool result = shortVideo.Activate();
 
         // Assert
         result.Should().BeTrue();
@@ -176,10 +168,10 @@ public class ShortVideoEntityTests
         // Arrange
         ShortVideoEntity shortVideo = CreateStandalone();
         shortVideo.ReplaceVideoFile(Guid.NewGuid());
-        shortVideo.Activate(TestErrorsFactory.CreateShortVideoErrors());
+        shortVideo.Activate();
 
         // Act
-        bool result = shortVideo.Activate(TestErrorsFactory.CreateShortVideoErrors());
+        bool result = shortVideo.Activate();
 
         // Assert
         result.Should().BeFalse();
@@ -192,10 +184,10 @@ public class ShortVideoEntityTests
         ShortVideoEntity shortVideo = CreateStandalone();
 
         // Act
-        Action act = () => shortVideo.Activate(TestErrorsFactory.CreateShortVideoErrors());
+        Action act = () => shortVideo.Activate();
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.ShortVideoFileRequired);
         shortVideo.IsActive.Should().BeFalse();
     }
 
@@ -342,7 +334,7 @@ public class ShortVideoEntityTests
         ShortVideoEntity shortVideo = CreateStandalone();
 
         // Act
-        shortVideo.Update("New Title", null, TestErrorsFactory.CreateShortVideoErrors());
+        shortVideo.Update("New Title", null);
 
         // Assert
         shortVideo.Title.Should().Be("New Title");
@@ -359,7 +351,7 @@ public class ShortVideoEntityTests
         Guid parentVideoId = Guid.NewGuid();
 
         // Act
-        shortVideo.Update("Updated", parentVideoId, TestErrorsFactory.CreateShortVideoErrors());
+        shortVideo.Update("Updated", parentVideoId);
 
         // Assert
         shortVideo.VideoId.Should().Be(parentVideoId);
@@ -376,12 +368,11 @@ public class ShortVideoEntityTests
             TestConstants.ShortVideo.ValidTitle,
             TestConstants.ShortVideo.ValidSlug,
             parentVideoId,
-            AuthorId,
-            TestErrorsFactory.CreateShortVideoErrors()
+            AuthorId
         );
 
         // Act
-        shortVideo.Update("Standalone Now", null, TestErrorsFactory.CreateShortVideoErrors());
+        shortVideo.Update("Standalone Now", null);
 
         // Assert
         shortVideo.VideoId.Should().BeNull();
@@ -398,10 +389,10 @@ public class ShortVideoEntityTests
         ShortVideoEntity shortVideo = CreateStandalone();
 
         // Act
-        Action act = () => shortVideo.Update(invalidTitle!, null, TestErrorsFactory.CreateShortVideoErrors());
+        Action act = () => shortVideo.Update(invalidTitle!, null);
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.ShortVideoTitleRequired);
     }
 
     #endregion

@@ -16,12 +16,10 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPaymen
 /// <param name="lookupRepository">Repository for lookup data access operations.</param>
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="contentOrderErrors">Content order domain error factory.</param>
 public class AdminVerifyPaymentFactory(
     ILookupRepository lookupRepository,
     IContentOrderRepository contentOrderRepository,
-    IContentUnitOfWork unitOfWork,
-    ContentOrderErrors contentOrderErrors
+    IContentUnitOfWork unitOfWork
 ) : IVerifyPaymentFactory
 {
     /// <inheritdoc />
@@ -33,7 +31,7 @@ public class AdminVerifyPaymentFactory(
         CancellationToken cancellationToken
     )
     {
-        payment.Verify(adminUserId: adminUserId, receiptUrl: receiptUrl, errors: contentOrderErrors);
+        payment.Verify(adminUserId: adminUserId, receiptUrl: receiptUrl);
 
         IReadOnlyDictionary<Guid, int> promotionDurations = await ResolvePromotionDurationsAsync(
             order: order,
@@ -43,8 +41,7 @@ public class AdminVerifyPaymentFactory(
         order.MarkPaid(
             paymentId: payment.Id,
             verifiedAt: payment.VerifiedAt!.Value,
-            promotionDurationsByLevelId: promotionDurations,
-            errors: contentOrderErrors
+            promotionDurationsByLevelId: promotionDurations
         );
 
         await contentOrderRepository.UpdatePaymentAsync(payment: payment, ct: cancellationToken);

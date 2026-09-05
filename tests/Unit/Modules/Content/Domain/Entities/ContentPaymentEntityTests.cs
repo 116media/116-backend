@@ -2,6 +2,8 @@ using _116.Content.Application.Shared.Errors;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Domain.Events;
+using _116.Content.Domain.Exceptions;
+using _116.Content.Domain.StateMachines;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
@@ -45,7 +47,7 @@ public class ContentPaymentEntityTests
         ContentPaymentEntity payment = ContentPaymentFactory.CreateDefault();
         Guid proofFileId = Guid.NewGuid();
 
-        payment.AttachProof(proofFileId, EnumPaymentMethod.BankTransfer, _errors);
+        payment.AttachProof(proofFileId, EnumPaymentMethod.BankTransfer);
 
         payment.PaymentProofFileId.Should().Be(proofFileId);
         payment.PaymentMethod.Should().Be(EnumPaymentMethod.BankTransfer);
@@ -62,10 +64,10 @@ public class ContentPaymentEntityTests
         ContentPaymentEntity payment = ContentPaymentFactory.CreateDefault();
 
         // Act
-        Action act = () => payment.Verify(Guid.NewGuid(), "https://receipts.example.com/r.pdf", _errors);
+        Action act = () => payment.Verify(Guid.NewGuid(), "https://receipts.example.com/r.pdf");
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.PaymentProofRequired);
         payment.Status.Should().Be(EnumPaymentStatus.Pending);
     }
 
@@ -77,7 +79,7 @@ public class ContentPaymentEntityTests
         Guid proofFileId = Guid.NewGuid();
 
         // Act
-        payment.AttachProof(proofFileId, EnumPaymentMethod.BankTransfer, _errors);
+        payment.AttachProof(proofFileId, EnumPaymentMethod.BankTransfer);
 
         // Assert
         payment.PaymentProofFileId.Should().Be(proofFileId);
@@ -91,14 +93,14 @@ public class ContentPaymentEntityTests
         // verification was based on
         Guid originalProofId = Guid.NewGuid();
         ContentPaymentEntity payment = ContentPaymentFactory.CreateDefault();
-        payment.AttachProof(originalProofId, EnumPaymentMethod.BankTransfer, _errors);
-        payment.Verify(Guid.NewGuid(), "https://receipts.example.com/r.pdf", _errors);
+        payment.AttachProof(originalProofId, EnumPaymentMethod.BankTransfer);
+        payment.Verify(Guid.NewGuid(), "https://receipts.example.com/r.pdf");
 
         // Act
-        Action act = () => payment.AttachProof(Guid.NewGuid(), EnumPaymentMethod.MobileMoney, _errors);
+        Action act = () => payment.AttachProof(Guid.NewGuid(), EnumPaymentMethod.MobileMoney);
 
         // Assert
-        act.Should().Throw<ConflictException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.PaymentAlreadyDecided);
         payment.PaymentProofFileId.Should().Be(originalProofId);
     }
 
@@ -107,24 +109,24 @@ public class ContentPaymentEntityTests
     {
         // Arrange
         ContentPaymentEntity payment = ContentPaymentFactory.CreateDefault();
-        payment.Reject(notes: null, errors: _errors);
+        payment.Reject(notes: null);
 
         // Act
-        Action act = () => payment.AttachProof(Guid.NewGuid(), EnumPaymentMethod.BankTransfer, _errors);
+        Action act = () => payment.AttachProof(Guid.NewGuid(), EnumPaymentMethod.BankTransfer);
 
         // Assert
-        act.Should().Throw<ConflictException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.PaymentAlreadyDecided);
     }
 
     [Fact]
     public void Verify_WhenPending_ShouldTransitionToVerified_AndSetFields()
     {
         ContentPaymentEntity payment = ContentPaymentFactory.CreateDefault();
-        payment.AttachProof(Guid.NewGuid(), EnumPaymentMethod.BankTransfer, _errors);
+        payment.AttachProof(Guid.NewGuid(), EnumPaymentMethod.BankTransfer);
         Guid adminId = Guid.NewGuid();
         const string receiptUrl = "https://receipts.example.com/receipt-123.pdf";
 
-        payment.Verify(adminId, receiptUrl, _errors);
+        payment.Verify(adminId, receiptUrl);
 
         payment.Status.Should().Be(EnumPaymentStatus.Verified);
         payment.VerifiedById.Should().Be(adminId);
@@ -137,9 +139,9 @@ public class ContentPaymentEntityTests
     {
         ContentPaymentEntity payment = ContentPaymentFactory.CreateVerified(Guid.NewGuid());
 
-        Action act = () => payment.Verify(Guid.NewGuid(), "https://receipts.example.com/receipt.pdf", _errors);
+        Action act = () => payment.Verify(Guid.NewGuid(), "https://receipts.example.com/receipt.pdf");
 
-        act.Should().Throw<ConflictException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.PaymentAlreadyVerified);
     }
 
     [Fact]
@@ -147,9 +149,9 @@ public class ContentPaymentEntityTests
     {
         ContentPaymentEntity payment = ContentPaymentFactory.CreateRejected(Guid.NewGuid());
 
-        Action act = () => payment.Verify(Guid.NewGuid(), "https://receipts.example.com/receipt.pdf", _errors);
+        Action act = () => payment.Verify(Guid.NewGuid(), "https://receipts.example.com/receipt.pdf");
 
-        act.Should().Throw<ConflictException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.PaymentAlreadyRejected);
     }
 
     #endregion
@@ -162,7 +164,7 @@ public class ContentPaymentEntityTests
         ContentPaymentEntity payment = ContentPaymentFactory.CreateDefault();
         const string notes = "Proof is not legible.";
 
-        payment.Reject(notes, _errors);
+        payment.Reject(notes);
 
         payment.Status.Should().Be(EnumPaymentStatus.Rejected);
         payment.Notes.Should().Be(notes);
@@ -174,7 +176,7 @@ public class ContentPaymentEntityTests
         ContentPaymentEntity payment = ContentPaymentFactory.CreateDefault();
         const string notes = "Proof is not legible.";
 
-        payment.Reject(notes, _errors);
+        payment.Reject(notes);
 
         payment
             .DomainEvents.OfType<PaymentRejectedEvent>()
@@ -189,7 +191,7 @@ public class ContentPaymentEntityTests
     {
         ContentPaymentEntity payment = ContentPaymentFactory.CreateDefault();
 
-        payment.Reject(null, _errors);
+        payment.Reject(null);
 
         payment.DomainEvents.OfType<PaymentRejectedEvent>().Should().ContainSingle().Which.Notes.Should().BeNull();
     }
@@ -200,9 +202,9 @@ public class ContentPaymentEntityTests
         ContentPaymentEntity payment = ContentPaymentFactory.CreateVerified(Guid.NewGuid());
         payment.ClearDomainEvents();
 
-        Action act = () => payment.Reject("notes", _errors);
+        Action act = () => payment.Reject("notes");
 
-        act.Should().Throw<ConflictException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.PaymentAlreadyVerified);
         payment.DomainEvents.Should().BeEmpty();
     }
 
@@ -211,9 +213,9 @@ public class ContentPaymentEntityTests
     {
         ContentPaymentEntity payment = ContentPaymentFactory.CreateRejected(Guid.NewGuid());
 
-        Action act = () => payment.Reject("notes", _errors);
+        Action act = () => payment.Reject("notes");
 
-        act.Should().Throw<ConflictException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.PaymentAlreadyRejected);
     }
 
     #endregion

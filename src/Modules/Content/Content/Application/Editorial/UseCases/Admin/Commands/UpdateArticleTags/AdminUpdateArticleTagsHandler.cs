@@ -15,12 +15,10 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArtic
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="lookupRepository">Repository for lookup entities including tags.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminUpdateArticleTagsHandler(
     IArticleRepository articleRepository,
     ILookupRepository lookupRepository,
-    IContentUnitOfWork unitOfWork,
-    ContentI18n i18n
+    IContentUnitOfWork unitOfWork
 ) : ICommandHandler<AdminUpdateArticleTagsCommand, AdminUpdateArticleTagsResult>
 {
     /// <inheritdoc />
@@ -45,7 +43,7 @@ public class AdminUpdateArticleTagsHandler(
             if (existing is null)
             {
                 string uniqueSlug = SlugHelper.ToUniqueSlug(name);
-                existing = TagEntity.Create(id: Guid.NewGuid(), name: name, slug: uniqueSlug, errors: i18n.Tag);
+                existing = TagEntity.Create(id: Guid.NewGuid(), name: name, slug: uniqueSlug);
                 await lookupRepository.AddTagAsync(tag: existing, cancellationToken: cancellationToken);
             }
 

@@ -31,7 +31,7 @@ public class AdminActivateShortVideoHandler(
             cancellationToken: cancellationToken
         );
 
-        bool activated = shortVideo.Activate(i18n.ShortVideo);
+        bool activated = shortVideo.Activate();
 
         if (!activated)
         {

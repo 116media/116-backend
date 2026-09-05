@@ -3,6 +3,8 @@ using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Application.Shared.Exceptions;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
+using _116.Identity.Domain.Exceptions;
+using _116.Identity.Domain.StateMachines;
 using _116.Identity.Domain.ValueObjects;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Repositories;
@@ -844,7 +846,6 @@ public class AuthRepositoryTests : IDisposable
             "existinguser",
             EnumAuthProvider.Google,
             "google-subject-2",
-            TestErrorsFactory.CreateUserErrors(),
             "external@example.com"
         );
 
@@ -898,7 +899,6 @@ public class AuthRepositoryTests : IDisposable
             "existinguser",
             EnumAuthProvider.Google,
             "google-subject-4",
-            TestErrorsFactory.CreateUserErrors(),
             "external@example.com"
         );
 
@@ -930,7 +930,6 @@ public class AuthRepositoryTests : IDisposable
             "existinguser",
             EnumAuthProvider.Google,
             "subject-original",
-            TestErrorsFactory.CreateUserErrors(),
             "external@example.com"
         );
 
@@ -948,7 +947,9 @@ public class AuthRepositoryTests : IDisposable
             );
 
         // Assert
-        await act.Should().ThrowAsync<ConflictException>();
+        (await act.Should().ThrowAsync<IdentityRuleException>())
+            .Which.Code.Should()
+            .Be(IdentityRuleCodes.ProviderMismatch);
     }
 
     [Fact]
@@ -961,7 +962,6 @@ public class AuthRepositoryTests : IDisposable
             "originalusername",
             EnumAuthProvider.Google,
             "google-subject-6",
-            TestErrorsFactory.CreateUserErrors(),
             "external@example.com"
         );
 
@@ -995,7 +995,6 @@ public class AuthRepositoryTests : IDisposable
             "externaluser",
             EnumAuthProvider.Google,
             $"sub-{Guid.NewGuid():N}",
-            TestErrorsFactory.CreateUserErrors(),
             "external@example.com"
         );
 

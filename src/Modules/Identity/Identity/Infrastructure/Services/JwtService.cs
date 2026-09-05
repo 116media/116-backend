@@ -4,9 +4,9 @@ using System.Text;
 using System.Text.Json;
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.Services;
+using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
-using _116.Identity.Domain.Results;
 using _116.Shared.Application.Configurations;
 using Microsoft.IdentityModel.Tokens;
 
@@ -18,7 +18,7 @@ namespace _116.Identity.Infrastructure.Services;
 public class JwtService : IJwtService
 {
     /// <inheritdoc />
-    public JwtGenerationResult GenerateToken(
+    public JwtGenerationDto GenerateToken(
         Guid userId,
         Guid sessionId,
         string email,
@@ -77,7 +77,7 @@ public class JwtService : IJwtService
         var handler = new JwtSecurityTokenHandler();
         string? token = handler.WriteToken(handler.CreateToken(tokenDescriptor: descriptor));
 
-        return new JwtGenerationResult(Token: token, ExpiresAt: expiresAt);
+        return new JwtGenerationDto(Token: token, ExpiresAt: expiresAt);
     }
 
     /// <summary>

@@ -68,11 +68,7 @@ public class AdminChangePasswordHandler(
         }
 
         string hashedNewPassword = passwordService.Hash(password: command.NewPassword);
-        user.UpdatePassword(
-            errors: i18n.User,
-            newPasswordHash: hashedNewPassword,
-            origin: EnumPasswordChangeOrigin.Changed
-        );
+        user.UpdatePassword(newPasswordHash: hashedNewPassword, origin: EnumPasswordChangeOrigin.Changed);
 
         // The acting session survives its own password change; every other session of the
         // account loses the credential in the same transaction as the new hash.

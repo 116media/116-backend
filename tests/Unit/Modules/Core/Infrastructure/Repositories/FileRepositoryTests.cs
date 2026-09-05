@@ -33,9 +33,7 @@ public class FileRepositoryTests : IDisposable
         _mockFileService = new Mock<IFileService>();
         _mockImageColorService = new Mock<IImageColorService>();
 
-        CoreI18n coreI18n = TestErrorsFactory.CreateCoreI18n();
-
-        _repository = new FileRepository(_context, _mockFileService.Object, _mockImageColorService.Object, coreI18n);
+        _repository = new FileRepository(_context, _mockFileService.Object, _mockImageColorService.Object);
     }
 
     public void Dispose()

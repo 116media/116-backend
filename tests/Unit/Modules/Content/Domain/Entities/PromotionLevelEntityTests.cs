@@ -1,4 +1,6 @@
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Exceptions;
+using _116.Content.Domain.StateMachines;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
@@ -28,9 +30,9 @@ public class PromotionLevelEntityTests
     {
         var errors = TestErrorsFactory.CreatePromotionLevelErrors();
 
-        Action act = () => PromotionLevelEntity.Create(Guid.NewGuid(), "   ", 7, 50m, 1, errors);
+        Action act = () => PromotionLevelEntity.Create(Guid.NewGuid(), "   ", 7, 50m, 1);
 
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.PromotionLevelNameRequired);
     }
 
     [Fact]
@@ -38,9 +40,12 @@ public class PromotionLevelEntityTests
     {
         var errors = TestErrorsFactory.CreatePromotionLevelErrors();
 
-        Action act = () => PromotionLevelEntity.Create(Guid.NewGuid(), "Valid Name", 0, 50m, 1, errors);
+        Action act = () => PromotionLevelEntity.Create(Guid.NewGuid(), "Valid Name", 0, 50m, 1);
 
-        act.Should().Throw<BadRequestException>();
+        act.Should()
+            .Throw<ContentRuleException>()
+            .Which.Code.Should()
+            .Be(ContentRuleCodes.PromotionLevelDurationMustBePositive);
     }
 
     [Fact]
@@ -48,9 +53,12 @@ public class PromotionLevelEntityTests
     {
         var errors = TestErrorsFactory.CreatePromotionLevelErrors();
 
-        Action act = () => PromotionLevelEntity.Create(Guid.NewGuid(), "Valid Name", -1, 50m, 1, errors);
+        Action act = () => PromotionLevelEntity.Create(Guid.NewGuid(), "Valid Name", -1, 50m, 1);
 
-        act.Should().Throw<BadRequestException>();
+        act.Should()
+            .Throw<ContentRuleException>()
+            .Which.Code.Should()
+            .Be(ContentRuleCodes.PromotionLevelDurationMustBePositive);
     }
 
     [Fact]
@@ -58,9 +66,12 @@ public class PromotionLevelEntityTests
     {
         var errors = TestErrorsFactory.CreatePromotionLevelErrors();
 
-        Action act = () => PromotionLevelEntity.Create(Guid.NewGuid(), "Valid Name", 7, -0.01m, 1, errors);
+        Action act = () => PromotionLevelEntity.Create(Guid.NewGuid(), "Valid Name", 7, -0.01m, 1);
 
-        act.Should().Throw<BadRequestException>();
+        act.Should()
+            .Throw<ContentRuleException>()
+            .Which.Code.Should()
+            .Be(ContentRuleCodes.PromotionLevelPriceMustBeNonNegative);
     }
 
     [Fact]
@@ -68,9 +79,12 @@ public class PromotionLevelEntityTests
     {
         var errors = TestErrorsFactory.CreatePromotionLevelErrors();
 
-        Action act = () => PromotionLevelEntity.Create(Guid.NewGuid(), "Valid Name", 7, 50m, 0, errors);
+        Action act = () => PromotionLevelEntity.Create(Guid.NewGuid(), "Valid Name", 7, 50m, 0);
 
-        act.Should().Throw<BadRequestException>();
+        act.Should()
+            .Throw<ContentRuleException>()
+            .Which.Code.Should()
+            .Be(ContentRuleCodes.PromotionLevelInvalidSpotPriority);
     }
 
     [Fact]
@@ -78,9 +92,12 @@ public class PromotionLevelEntityTests
     {
         var errors = TestErrorsFactory.CreatePromotionLevelErrors();
 
-        Action act = () => PromotionLevelEntity.Create(Guid.NewGuid(), "Valid Name", 7, 50m, 4, errors);
+        Action act = () => PromotionLevelEntity.Create(Guid.NewGuid(), "Valid Name", 7, 50m, 4);
 
-        act.Should().Throw<BadRequestException>();
+        act.Should()
+            .Throw<ContentRuleException>()
+            .Which.Code.Should()
+            .Be(ContentRuleCodes.PromotionLevelInvalidSpotPriority);
     }
 
     #endregion
@@ -93,7 +110,7 @@ public class PromotionLevelEntityTests
         PromotionLevelEntity promoLevel = PromotionLevelFactory.CreateDefault();
         var errors = TestErrorsFactory.CreatePromotionLevelErrors();
 
-        promoLevel.Update("New Name", 14, 99.99m, 2, errors);
+        promoLevel.Update("New Name", 14, 99.99m, 2);
 
         promoLevel.Name.Should().Be("New Name");
         promoLevel.DurationDays.Should().Be(14);
@@ -107,9 +124,9 @@ public class PromotionLevelEntityTests
         PromotionLevelEntity promoLevel = PromotionLevelFactory.CreateDefault();
         var errors = TestErrorsFactory.CreatePromotionLevelErrors();
 
-        Action act = () => promoLevel.Update("", 7, 50m, 1, errors);
+        Action act = () => promoLevel.Update("", 7, 50m, 1);
 
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.PromotionLevelNameRequired);
     }
 
     [Fact]
@@ -118,9 +135,12 @@ public class PromotionLevelEntityTests
         PromotionLevelEntity promoLevel = PromotionLevelFactory.CreateDefault();
         var errors = TestErrorsFactory.CreatePromotionLevelErrors();
 
-        Action act = () => promoLevel.Update("Name", 0, 50m, 1, errors);
+        Action act = () => promoLevel.Update("Name", 0, 50m, 1);
 
-        act.Should().Throw<BadRequestException>();
+        act.Should()
+            .Throw<ContentRuleException>()
+            .Which.Code.Should()
+            .Be(ContentRuleCodes.PromotionLevelDurationMustBePositive);
     }
 
     [Fact]
@@ -129,9 +149,12 @@ public class PromotionLevelEntityTests
         PromotionLevelEntity promoLevel = PromotionLevelFactory.CreateDefault();
         var errors = TestErrorsFactory.CreatePromotionLevelErrors();
 
-        Action act = () => promoLevel.Update("Name", 7, -1m, 1, errors);
+        Action act = () => promoLevel.Update("Name", 7, -1m, 1);
 
-        act.Should().Throw<BadRequestException>();
+        act.Should()
+            .Throw<ContentRuleException>()
+            .Which.Code.Should()
+            .Be(ContentRuleCodes.PromotionLevelPriceMustBeNonNegative);
     }
 
     [Fact]
@@ -140,9 +163,12 @@ public class PromotionLevelEntityTests
         PromotionLevelEntity promoLevel = PromotionLevelFactory.CreateDefault();
         var errors = TestErrorsFactory.CreatePromotionLevelErrors();
 
-        Action act = () => promoLevel.Update("Name", 7, 50m, 5, errors);
+        Action act = () => promoLevel.Update("Name", 7, 50m, 5);
 
-        act.Should().Throw<BadRequestException>();
+        act.Should()
+            .Throw<ContentRuleException>()
+            .Which.Code.Should()
+            .Be(ContentRuleCodes.PromotionLevelInvalidSpotPriority);
     }
 
     #endregion
@@ -154,7 +180,7 @@ public class PromotionLevelEntityTests
     {
         PromotionLevelEntity promoLevel = PromotionLevelFactory.CreateDefault();
 
-        Action act = () => promoLevel.EnsureActive(TestErrorsFactory.CreatePromotionLevelErrors());
+        Action act = () => promoLevel.EnsureActive();
 
         act.Should().NotThrow();
     }
@@ -164,9 +190,9 @@ public class PromotionLevelEntityTests
     {
         PromotionLevelEntity promoLevel = PromotionLevelFactory.CreateInactive();
 
-        Action act = () => promoLevel.EnsureActive(TestErrorsFactory.CreatePromotionLevelErrors());
+        Action act = () => promoLevel.EnsureActive();
 
-        act.Should().Throw<NotFoundException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.PromotionLevelNotFound);
     }
 
     #endregion

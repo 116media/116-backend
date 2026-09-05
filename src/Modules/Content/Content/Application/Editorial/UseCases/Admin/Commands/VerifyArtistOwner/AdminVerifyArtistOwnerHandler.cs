@@ -15,12 +15,10 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.VerifyArtis
 /// <param name="artistRepository">Repository for artist profile data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="fileRepository">Repository for resolving avatar file URLs.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminVerifyArtistOwnerHandler(
     IArtistRepository artistRepository,
     IContentUnitOfWork unitOfWork,
-    IFileRepository fileRepository,
-    ContentI18n i18n
+    IFileRepository fileRepository
 ) : ICommandHandler<AdminVerifyArtistOwnerCommand, AdminVerifyArtistOwnerResult>
 {
     /// <inheritdoc />
@@ -34,7 +32,7 @@ public class AdminVerifyArtistOwnerHandler(
             cancellationToken: cancellationToken
         );
 
-        artist.ClaimOwnership(userId: command.UserId, errors: i18n.Artist);
+        artist.ClaimOwnership(userId: command.UserId);
 
         artistRepository.Update(artist: artist);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);

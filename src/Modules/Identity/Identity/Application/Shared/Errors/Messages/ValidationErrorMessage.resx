@@ -249,4 +249,7 @@
   <data name="UnsupportedProvider" xml:space="preserve">
     <value>The social provider '{0}' is not supported.</value>
   </data>
+  <data name="ClientPlatformInvalid" xml:space="preserve">
+    <value>The client platform '{0}' is not a known platform.</value>
+  </data>
 </root>

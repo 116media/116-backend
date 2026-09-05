@@ -177,7 +177,7 @@ public class AdminLoginAuthFactoryTests
         string email = "admin@example.com";
         string password = "ValidPassword123!";
         UserEntity user = UserFactory.CreateAdmin();
-        user.InitializePasswordHash(newPasswordHash: LegacyPasswordHash, errors: _userErrors);
+        user.InitializePasswordHash(newPasswordHash: LegacyPasswordHash);
 
         _authRepositoryMock.SetupGetUserWithRolesByEmailAsync(user);
         _passwordServiceMock.SetupVerifyOrDummySuccess(password, user.PasswordHash);
@@ -200,7 +200,7 @@ public class AdminLoginAuthFactoryTests
         string email = "admin@example.com";
         string password = "ValidPassword123!";
         UserEntity user = UserFactory.CreateAdmin();
-        user.InitializePasswordHash(newPasswordHash: CurrentPasswordHash, errors: _userErrors);
+        user.InitializePasswordHash(newPasswordHash: CurrentPasswordHash);
 
         _authRepositoryMock.SetupGetUserWithRolesByEmailAsync(user);
         _passwordServiceMock.SetupVerifyOrDummySuccess(password, user.PasswordHash);

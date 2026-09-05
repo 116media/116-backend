@@ -1,4 +1,6 @@
 using _116.Identity.Domain.Enums;
+using _116.Identity.Domain.Exceptions;
+using _116.Identity.Domain.StateMachines;
 using _116.Identity.Domain.ValueObjects;
 using AwesomeAssertions;
 using AwesomeAssertions.Specialized;
@@ -49,8 +51,10 @@ public class AuthProviderTests
 
         // Act & Assert
         Action act = () => new AuthProvider(invalidEnum);
-        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
-        exception.Which.Message.Should().Contain("Invalid auth provider");
+        act.Should()
+            .ThrowExactly<IdentityRuleException>()
+            .Which.Code.Should()
+            .Be(IdentityRuleCodes.InvalidAuthProvider);
     }
 
     #endregion
@@ -102,8 +106,10 @@ public class AuthProviderTests
     {
         // Act & Assert
         Action act = () => new AuthProvider("InvalidProvider");
-        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
-        exception.Which.Message.Should().Contain("Invalid auth provider");
+        act.Should()
+            .ThrowExactly<IdentityRuleException>()
+            .Which.Code.Should()
+            .Be(IdentityRuleCodes.InvalidAuthProvider);
     }
 
     [Fact]
@@ -111,8 +117,10 @@ public class AuthProviderTests
     {
         // Act & Assert
         Action act = () => new AuthProvider(string.Empty);
-        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
-        exception.Which.Message.Should().Contain("Invalid auth provider");
+        act.Should()
+            .ThrowExactly<IdentityRuleException>()
+            .Which.Code.Should()
+            .Be(IdentityRuleCodes.InvalidAuthProvider);
     }
 
     [Fact]
@@ -120,8 +128,10 @@ public class AuthProviderTests
     {
         // Act & Assert
         Action act = () => new AuthProvider((string)null!);
-        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
-        exception.Which.Message.Should().Contain("Invalid auth provider");
+        act.Should()
+            .ThrowExactly<IdentityRuleException>()
+            .Which.Code.Should()
+            .Be(IdentityRuleCodes.InvalidAuthProvider);
     }
 
     #endregion
@@ -193,7 +203,10 @@ public class AuthProviderTests
         {
             AuthProvider provider = invalidProvider;
         };
-        act.Should().ThrowExactly<ArgumentException>();
+        act.Should()
+            .ThrowExactly<IdentityRuleException>()
+            .Which.Code.Should()
+            .Be(IdentityRuleCodes.InvalidAuthProvider);
     }
 
     #endregion

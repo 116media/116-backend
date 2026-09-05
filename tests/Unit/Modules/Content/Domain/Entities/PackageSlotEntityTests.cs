@@ -1,4 +1,6 @@
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Exceptions;
+using _116.Content.Domain.StateMachines;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Helpers;
@@ -24,14 +26,7 @@ public class PackageSlotEntityTests
         int quantity = TestConstants.PackageSlot.ValidQuantity;
 
         // Act
-        var entity = PackageSlotEntity.Create(
-            id,
-            packageId,
-            categoryId,
-            isRequired: true,
-            quantity,
-            TestErrorsFactory.CreatePackageErrors()
-        );
+        var entity = PackageSlotEntity.Create(id, packageId, categoryId, isRequired: true, quantity);
 
         // Assert
         entity.Id.Should().Be(id);
@@ -50,8 +45,7 @@ public class PackageSlotEntityTests
             Guid.NewGuid(),
             null,
             false,
-            TestConstants.PackageSlot.ValidQuantity,
-            TestErrorsFactory.CreatePackageErrors()
+            TestConstants.PackageSlot.ValidQuantity
         );
 
         // Assert
@@ -68,8 +62,7 @@ public class PackageSlotEntityTests
             Guid.NewGuid(),
             null,
             false,
-            TestConstants.PackageSlot.AnotherValidQuantity,
-            TestErrorsFactory.CreatePackageErrors()
+            TestConstants.PackageSlot.AnotherValidQuantity
         );
 
         // Assert
@@ -83,18 +76,13 @@ public class PackageSlotEntityTests
     public void Create_WithQuantityLessThanOrEqualToZero_ShouldThrowBadRequestException(int invalidQuantity)
     {
         // Act
-        Action act = () =>
-            PackageSlotEntity.Create(
-                Guid.NewGuid(),
-                Guid.NewGuid(),
-                null,
-                false,
-                invalidQuantity,
-                TestErrorsFactory.CreatePackageErrors()
-            );
+        Action act = () => PackageSlotEntity.Create(Guid.NewGuid(), Guid.NewGuid(), null, false, invalidQuantity);
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should()
+            .Throw<ContentRuleException>()
+            .Which.Code.Should()
+            .Be(ContentRuleCodes.PackageSlotQuantityMustBePositive);
     }
 
     #endregion

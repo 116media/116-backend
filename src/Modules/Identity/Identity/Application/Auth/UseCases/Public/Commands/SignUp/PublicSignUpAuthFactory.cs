@@ -9,6 +9,8 @@ using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.ValueObjects;
 using _116.Mailer.Contracts.Application;
+using _116.Mailer.Contracts.Domain;
+using _116.Shared.Application.Localization;
 
 namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp;
 
@@ -21,7 +23,6 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp;
 /// <param name="otpService">Service for generating OTP codes.</param>
 /// <param name="tokenStateRepository">Repository creating the user's token-invalidation record.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="userErrors">User domain error factory for generating domain exceptions.</param>
 /// <param name="mailer">Outbox mailer delivering the verification code.</param>
 public class PublicSignUpAuthFactory(
     IAuthRepository authRepository,
@@ -30,7 +31,6 @@ public class PublicSignUpAuthFactory(
     IOtpService otpService,
     IUserTokenStateRepository tokenStateRepository,
     IIdentityUnitOfWork unitOfWork,
-    UserErrors userErrors,
     IMailer mailer
 ) : IPublicSignUpAuthFactory
 {
@@ -52,13 +52,7 @@ public class PublicSignUpAuthFactory(
 
         string hashedPassword = passwordService.Hash(password: password);
 
-        var newUser = UserEntity.Create(
-            Guid.NewGuid(),
-            userName: userName,
-            passwordHash: hashedPassword,
-            email: email,
-            errors: userErrors
-        );
+        var newUser = UserEntity.Create(Guid.NewGuid(), userName: userName, passwordHash: hashedPassword, email: email);
 
         await authRepository.AddAsync(user: newUser, cancellationToken: cancellationToken);
         await authRepository.AssignVisitorRoleAsync(userId: newUser.Id, cancellationToken: cancellationToken);

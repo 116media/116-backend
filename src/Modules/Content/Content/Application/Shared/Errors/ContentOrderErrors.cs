@@ -47,46 +47,6 @@ public class ContentOrderErrors(ContentOrderErrorMessage i18n)
     }
 
     /// <summary>
-    /// Throws when the order has already been submitted and cannot be submitted again.
-    /// </summary>
-    public ConflictException AlreadySubmitted()
-    {
-        return new ConflictException(i18n.AlreadySubmitted());
-    }
-
-    /// <summary>
-    /// Throws when the order has already been paid and cannot be marked as paid again.
-    /// </summary>
-    public ConflictException AlreadyPaid()
-    {
-        return new ConflictException(i18n.AlreadyPaid());
-    }
-
-    /// <summary>
-    /// Throws when the order has already been cancelled.
-    /// </summary>
-    public ConflictException AlreadyCancelled()
-    {
-        return new ConflictException(i18n.AlreadyCancelled());
-    }
-
-    /// <summary>
-    /// Throws when an attempt is made to cancel an order that has already been paid.
-    /// </summary>
-    public BadRequestException CannotCancelPaidOrder()
-    {
-        return new BadRequestException(i18n.CannotCancelPaidOrder());
-    }
-
-    /// <summary>
-    /// Throws when an attempt is made to add an item to an order that is not in Draft status.
-    /// </summary>
-    public BadRequestException CannotAddItemToNonDraftOrder()
-    {
-        return new BadRequestException(i18n.CannotAddItemToNonDraftOrder());
-    }
-
-    /// <summary>
     /// Throws when an order is submitted without at least one item that has at least one pricing tier.
     /// </summary>
     public BadRequestException MustHaveAtLeastOneItemWithTier()
@@ -103,45 +63,10 @@ public class ContentOrderErrors(ContentOrderErrorMessage i18n)
     }
 
     /// <summary>
-    /// Throws when the payment has already been verified and cannot be verified again.
+    /// Throws when an attempt is made to add an item to an order that is not in Draft status.
     /// </summary>
-    public ConflictException PaymentAlreadyVerified()
+    public BadRequestException CannotAddItemToNonDraftOrder()
     {
-        return new ConflictException(i18n.PaymentAlreadyVerified());
-    }
-
-    /// <summary>
-    /// Throws when the payment has already been rejected and cannot be rejected again.
-    /// </summary>
-    public ConflictException PaymentAlreadyRejected()
-    {
-        return new ConflictException(i18n.PaymentAlreadyRejected());
-    }
-
-    /// <summary>
-    /// Throws when a payment is verified without an attached proof and method.
-    /// </summary>
-    /// <returns>A <see cref="BadRequestException" /> with a localized message.</returns>
-    public BadRequestException PaymentProofRequired()
-    {
-        return new BadRequestException(i18n.PaymentProofRequired());
-    }
-
-    /// <summary>
-    /// Throws when proof is attached to a payment that is no longer pending.
-    /// </summary>
-    /// <returns>A <see cref="ConflictException" /> with a localized message.</returns>
-    public ConflictException PaymentAlreadyDecided()
-    {
-        return new ConflictException(i18n.PaymentAlreadyDecided());
-    }
-
-    /// <summary>
-    /// Throws when the promotion duration of a level purchased by an order item
-    /// cannot be resolved, so the item's promotion window cannot be computed.
-    /// </summary>
-    public BadRequestException PromotionDurationUnavailable()
-    {
-        return new BadRequestException(i18n.PromotionDurationUnavailable());
+        return new BadRequestException(i18n.CannotAddItemToNonDraftOrder());
     }
 }

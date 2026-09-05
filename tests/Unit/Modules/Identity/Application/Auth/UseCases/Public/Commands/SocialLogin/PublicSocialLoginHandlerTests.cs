@@ -66,7 +66,7 @@ public class PublicSocialLoginHandlerTests : BaseHandlerTest
     #region Success Cases
 
     [Fact]
-    public async Task Handle_WithVerifiedToken_ShouldReturnAuthenticationResult()
+    public async Task Handle_WithVerifiedToken_ShouldReturnAuthenticationDto()
     {
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
@@ -91,9 +91,9 @@ public class PublicSocialLoginHandlerTests : BaseHandlerTest
         PublicSocialLoginResult result = await _handler.Handle(Command(), CancellationToken.None);
 
         // Assert
-        result.AuthenticationResult.AccessToken.Should().Be("access-token");
-        result.AuthenticationResult.RefreshToken.Should().Be("refresh-token");
-        result.AuthenticationResult.User.Id.Should().Be(user.Id);
+        result.Authentication.AccessToken.Should().Be("access-token");
+        result.Authentication.RefreshToken.Should().Be("refresh-token");
+        result.Authentication.User.Id.Should().Be(user.Id);
     }
 
     #endregion

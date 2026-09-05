@@ -13,12 +13,10 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.RejectPaymen
 /// <param name="orderPaymentFactory">Shared factory for fetching and validating payment records.</param>
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminRejectPaymentHandler(
     IOrderPaymentFactory orderPaymentFactory,
     IContentOrderRepository contentOrderRepository,
-    IContentUnitOfWork unitOfWork,
-    ContentI18n i18n
+    IContentUnitOfWork unitOfWork
 ) : ICommandHandler<AdminRejectPaymentCommand, AdminRejectPaymentResult>
 {
     /// <inheritdoc />
@@ -36,7 +34,7 @@ public class AdminRejectPaymentHandler(
             ct: cancellationToken
         );
 
-        payment.Reject(notes: command.Notes, errors: i18n.ContentOrder);
+        payment.Reject(notes: command.Notes);
 
         await contentOrderRepository.UpdatePaymentAsync(payment: payment, ct: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);

@@ -1,7 +1,8 @@
 using System.ComponentModel.DataAnnotations;
-using _116.Content.Application.Shared.Errors;
 using _116.Content.Domain.Constants;
 using _116.Content.Domain.Enums;
+using _116.Content.Domain.Exceptions;
+using _116.Content.Domain.StateMachines;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -64,7 +65,6 @@ public class AlbumEntity : Aggregate<Guid>
     /// <param name="releaseYear">The release year, if known.</param>
     /// <param name="label">The record label, if known.</param>
     /// <param name="releaseType">What kind of release this is.</param>
-    /// <param name="errors">The errors factory instance.</param>
     /// <returns>A new <see cref="AlbumEntity" />.</returns>
     public static AlbumEntity Create(
         Guid id,
@@ -73,13 +73,12 @@ public class AlbumEntity : Aggregate<Guid>
         Guid? coverImageFileId,
         short? releaseYear,
         string? label,
-        EnumReleaseType releaseType,
-        AlbumErrors errors
+        EnumReleaseType releaseType
     )
     {
         if (string.IsNullOrWhiteSpace(value: name))
         {
-            throw errors.NameRequired();
+            throw new ContentRuleException(ContentRuleCodes.AlbumNameRequired);
         }
 
         return new AlbumEntity
@@ -102,19 +101,17 @@ public class AlbumEntity : Aggregate<Guid>
     /// <param name="releaseYear">The release year, or null to clear it.</param>
     /// <param name="label">The record label, or null to clear it.</param>
     /// <param name="releaseType">What kind of release this is.</param>
-    /// <param name="errors">The errors factory instance.</param>
     public void Update(
         string name,
         Guid? coverImageFileId,
         short? releaseYear,
         string? label,
-        EnumReleaseType releaseType,
-        AlbumErrors errors
+        EnumReleaseType releaseType
     )
     {
         if (string.IsNullOrWhiteSpace(value: name))
         {
-            throw errors.NameRequired();
+            throw new ContentRuleException(ContentRuleCodes.AlbumNameRequired);
         }
 
         Name = name;

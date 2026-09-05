@@ -1,6 +1,7 @@
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Domain.Events;
+using _116.Content.Domain.Exceptions;
 using _116.Content.Domain.StateMachines;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Domain.Exceptions;
@@ -30,14 +31,7 @@ public class ArticleEntityTests
         const string slug = TestConstants.Article.ValidSlug;
 
         // Act
-        ArticleEntity article = ArticleEntity.CreateFree(
-            id,
-            CategoryId,
-            title,
-            slug,
-            AuthorId,
-            TestErrorsFactory.CreateArticleErrors()
-        );
+        ArticleEntity article = ArticleEntity.CreateFree(id, CategoryId, title, slug, AuthorId);
 
         // Assert
         article.Id.Should().Be(id);
@@ -63,12 +57,11 @@ public class ArticleEntityTests
                 CategoryId,
                 invalidTitle!,
                 TestConstants.Article.ValidSlug,
-                AuthorId,
-                TestErrorsFactory.CreateArticleErrors()
+                AuthorId
             );
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.ArticleTitleRequired);
     }
 
     [Theory]
@@ -84,12 +77,11 @@ public class ArticleEntityTests
                 CategoryId,
                 TestConstants.Article.ValidTitle,
                 invalidSlug!,
-                AuthorId,
-                TestErrorsFactory.CreateArticleErrors()
+                AuthorId
             );
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.ArticleSlugRequired);
     }
 
     #endregion
@@ -111,8 +103,7 @@ public class ArticleEntityTests
             CategoryId,
             TestConstants.Article.ValidTitle,
             TestConstants.Article.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateArticleErrors()
+            AuthorId
         );
 
         // Assert
@@ -135,12 +126,11 @@ public class ArticleEntityTests
                 CategoryId,
                 invalidTitle!,
                 TestConstants.Article.ValidSlug,
-                AuthorId,
-                TestErrorsFactory.CreateArticleErrors()
+                AuthorId
             );
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.ArticleTitleRequired);
     }
 
     [Theory]
@@ -157,12 +147,11 @@ public class ArticleEntityTests
                 CategoryId,
                 TestConstants.Article.ValidTitle,
                 invalidSlug!,
-                AuthorId,
-                TestErrorsFactory.CreateArticleErrors()
+                AuthorId
             );
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.ArticleSlugRequired);
     }
 
     #endregion
@@ -178,8 +167,7 @@ public class ArticleEntityTests
             CategoryId,
             TestConstants.Article.ValidTitle,
             TestConstants.Article.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateArticleErrors()
+            AuthorId
         );
 
         // Act
@@ -199,8 +187,7 @@ public class ArticleEntityTests
             CategoryId,
             TestConstants.Article.ValidTitle,
             TestConstants.Article.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateArticleErrors()
+            AuthorId
         );
         article.Submit();
 
@@ -221,8 +208,7 @@ public class ArticleEntityTests
             CategoryId,
             TestConstants.Article.ValidTitle,
             TestConstants.Article.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateArticleErrors()
+            AuthorId
         );
         article.MarkPendingReview();
         article.Approve();
@@ -245,8 +231,7 @@ public class ArticleEntityTests
             CategoryId,
             TestConstants.Article.ValidTitle,
             TestConstants.Article.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateArticleErrors()
+            AuthorId
         );
 
         // Act
@@ -266,8 +251,7 @@ public class ArticleEntityTests
             CategoryId,
             TestConstants.Article.ValidTitle,
             TestConstants.Article.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateArticleErrors()
+            AuthorId
         );
         article.MarkPendingReview();
 
@@ -287,8 +271,7 @@ public class ArticleEntityTests
             CategoryId,
             TestConstants.Article.ValidTitle,
             TestConstants.Article.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateArticleErrors()
+            AuthorId
         );
         article.MarkPendingReview();
         article.Approve();
@@ -312,8 +295,7 @@ public class ArticleEntityTests
             CategoryId,
             TestConstants.Article.ValidTitle,
             TestConstants.Article.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateArticleErrors()
+            AuthorId
         );
         article.MarkPendingReview();
         article.Approve();
@@ -335,8 +317,7 @@ public class ArticleEntityTests
             CategoryId,
             TestConstants.Article.ValidTitle,
             TestConstants.Article.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateArticleErrors()
+            AuthorId
         );
         article.MarkPendingReview();
         article.Reject("needs sources");
@@ -358,8 +339,7 @@ public class ArticleEntityTests
             CategoryId,
             TestConstants.Article.ValidTitle,
             TestConstants.Article.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateArticleErrors()
+            AuthorId
         );
         article.MarkPendingReview();
 
@@ -380,8 +360,7 @@ public class ArticleEntityTests
             CategoryId,
             TestConstants.Article.ValidTitle,
             TestConstants.Article.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateArticleErrors()
+            AuthorId
         );
         article.MarkPendingReview();
         article.Approve();
@@ -402,8 +381,7 @@ public class ArticleEntityTests
             CategoryId,
             TestConstants.Article.ValidTitle,
             TestConstants.Article.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateArticleErrors()
+            AuthorId
         );
         article.MarkPendingReview();
         article.Approve();
@@ -426,8 +404,7 @@ public class ArticleEntityTests
             CategoryId,
             TestConstants.Article.ValidTitle,
             TestConstants.Article.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateArticleErrors()
+            AuthorId
         );
         article.MarkPendingReview();
         article.Approve();
@@ -449,8 +426,7 @@ public class ArticleEntityTests
             CategoryId,
             TestConstants.Article.ValidTitle,
             TestConstants.Article.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateArticleErrors()
+            AuthorId
         );
         article.MarkPendingReview();
         article.Approve();
@@ -485,8 +461,7 @@ public class ArticleEntityTests
             CategoryId,
             TestConstants.Article.ValidTitle,
             TestConstants.Article.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateArticleErrors()
+            AuthorId
         );
         article.MarkPendingReview();
         article.Approve();
@@ -509,8 +484,7 @@ public class ArticleEntityTests
             CategoryId,
             TestConstants.Article.ValidTitle,
             TestConstants.Article.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateArticleErrors()
+            AuthorId
         );
         const string reason = TestConstants.Article.ValidRejectionReason;
         article.MarkPendingReview();
@@ -533,8 +507,7 @@ public class ArticleEntityTests
             CategoryId,
             TestConstants.Article.ValidTitle,
             TestConstants.Article.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateArticleErrors()
+            AuthorId
         );
         article.MarkPendingReview();
         article.Reject(TestConstants.Article.ValidRejectionReason);
@@ -555,8 +528,7 @@ public class ArticleEntityTests
             CategoryId,
             TestConstants.Article.ValidTitle,
             TestConstants.Article.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateArticleErrors()
+            AuthorId
         );
         const string reason = TestConstants.Article.ValidRejectionReason;
         article.MarkPendingReview();
@@ -590,8 +562,7 @@ public class ArticleEntityTests
             CategoryId,
             TestConstants.Article.ValidTitle,
             TestConstants.Article.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateArticleErrors()
+            AuthorId
         );
         article.MarkPendingReview();
         article.Approve();
@@ -614,8 +585,7 @@ public class ArticleEntityTests
             CategoryId,
             TestConstants.Article.ValidTitle,
             TestConstants.Article.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateArticleErrors()
+            AuthorId
         );
         article.MarkPendingReview();
         article.Approve();
@@ -642,8 +612,7 @@ public class ArticleEntityTests
             CategoryId,
             TestConstants.Article.ValidTitle,
             TestConstants.Article.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateArticleErrors()
+            AuthorId
         );
 
         // Act
@@ -662,8 +631,7 @@ public class ArticleEntityTests
             CategoryId,
             TestConstants.Article.ValidTitle,
             TestConstants.Article.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateArticleErrors()
+            AuthorId
         );
         DateTimeOffset until = DateTimeOffset.UtcNow.AddDays(7);
 
@@ -691,15 +659,14 @@ public class ArticleEntityTests
             CategoryId,
             TestConstants.Article.ValidTitle,
             TestConstants.Article.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateArticleErrors()
+            AuthorId
         );
         article.StampPromotion(Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(7));
 
         DateTimeOffset before = DateTimeOffset.UtcNow;
 
         // Act
-        article.ForceUnpromote(superAdminId, reason, TestErrorsFactory.CreateArticleErrors());
+        article.ForceUnpromote(superAdminId, reason);
 
         // Assert
         article.IsPromoted.Should().BeFalse();
@@ -721,14 +688,13 @@ public class ArticleEntityTests
             CategoryId,
             TestConstants.Article.ValidTitle,
             TestConstants.Article.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateArticleErrors()
+            AuthorId
         );
         article.StampPromotion(Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(7));
         article.ClearDomainEvents();
 
         // Act
-        article.ForceUnpromote("super-admin-uuid", reason, TestErrorsFactory.CreateArticleErrors());
+        article.ForceUnpromote("super-admin-uuid", reason);
 
         // Assert
         article
@@ -756,16 +722,14 @@ public class ArticleEntityTests
             CategoryId,
             TestConstants.Article.ValidTitle,
             TestConstants.Article.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateArticleErrors()
+            AuthorId
         );
 
         // Act
-        Action act = () =>
-            article.ForceUnpromote("super-admin-uuid", "reason", TestErrorsFactory.CreateArticleErrors());
+        Action act = () => article.ForceUnpromote("super-admin-uuid", "reason");
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.ArticleNotPromoted);
     }
 
     [Fact]
@@ -777,8 +741,7 @@ public class ArticleEntityTests
             CategoryId,
             TestConstants.Article.ValidTitle,
             TestConstants.Article.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateArticleErrors()
+            AuthorId
         );
         article.MarkPendingReview();
         article.Approve();
@@ -787,7 +750,7 @@ public class ArticleEntityTests
         article.StampPromotion(Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(7));
 
         // Act
-        article.ForceUnpromote("super-admin-uuid", "reason", TestErrorsFactory.CreateArticleErrors());
+        article.ForceUnpromote("super-admin-uuid", "reason");
 
         // Assert
         article.Status.Should().Be(EnumContentStatus.Published);
@@ -809,8 +772,7 @@ public class ArticleEntityTests
             CategoryId,
             TestConstants.Article.ValidTitle,
             TestConstants.Article.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateArticleErrors()
+            AuthorId
         );
 
         // Act
@@ -829,8 +791,7 @@ public class ArticleEntityTests
             CategoryId,
             TestConstants.Article.ValidTitle,
             TestConstants.Article.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateArticleErrors()
+            AuthorId
         );
         article.IncrementLikeCount();
 
@@ -850,8 +811,7 @@ public class ArticleEntityTests
             CategoryId,
             TestConstants.Article.ValidTitle,
             TestConstants.Article.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateArticleErrors()
+            AuthorId
         );
 
         // Act
@@ -870,8 +830,7 @@ public class ArticleEntityTests
             CategoryId,
             TestConstants.Article.ValidTitle,
             TestConstants.Article.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateArticleErrors()
+            AuthorId
         );
 
         // Act
@@ -890,8 +849,7 @@ public class ArticleEntityTests
             CategoryId,
             TestConstants.Article.ValidTitle,
             TestConstants.Article.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateArticleErrors()
+            AuthorId
         );
 
         // Act
@@ -910,8 +868,7 @@ public class ArticleEntityTests
             CategoryId,
             TestConstants.Article.ValidTitle,
             TestConstants.Article.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateArticleErrors()
+            AuthorId
         );
 
         // Act
@@ -930,8 +887,7 @@ public class ArticleEntityTests
             CategoryId,
             TestConstants.Article.ValidTitle,
             TestConstants.Article.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateArticleErrors()
+            AuthorId
         );
 
         // Act
@@ -950,8 +906,7 @@ public class ArticleEntityTests
             CategoryId,
             TestConstants.Article.ValidTitle,
             TestConstants.Article.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateArticleErrors()
+            AuthorId
         );
 
         // Act
@@ -974,8 +929,7 @@ public class ArticleEntityTests
             CategoryId,
             TestConstants.Article.ValidTitle,
             TestConstants.Article.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateArticleErrors()
+            AuthorId
         );
 
         // Act
@@ -995,8 +949,7 @@ public class ArticleEntityTests
             CategoryId,
             TestConstants.Article.ValidTitle,
             TestConstants.Article.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateArticleErrors()
+            AuthorId
         );
         Guid coverImageFileId = Guid.NewGuid();
 
@@ -1016,8 +969,7 @@ public class ArticleEntityTests
             CategoryId,
             TestConstants.Article.ValidTitle,
             TestConstants.Article.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateArticleErrors()
+            AuthorId
         );
         Guid newCategoryId = Guid.NewGuid();
         Guid customerId = Guid.NewGuid();
@@ -1060,8 +1012,7 @@ public class ArticleEntityTests
             CategoryId,
             TestConstants.Article.ValidTitle,
             TestConstants.Article.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateArticleErrors()
+            AuthorId
         );
         List<string> orphanedKeys = ["content/articles/image-0", "content/articles/image-1"];
 
@@ -1098,8 +1049,7 @@ public class ArticleEntityTests
             CategoryId,
             TestConstants.Article.ValidTitle,
             TestConstants.Article.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateArticleErrors()
+            AuthorId
         );
 
         // Act
@@ -1132,8 +1082,7 @@ public class ArticleEntityTests
             CategoryId,
             TestConstants.Article.ValidTitle,
             TestConstants.Article.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateArticleErrors()
+            AuthorId
         );
         article.MarkPendingReview();
         article.Approve();
@@ -1160,8 +1109,7 @@ public class ArticleEntityTests
             CategoryId,
             TestConstants.Article.ValidTitle,
             TestConstants.Article.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateArticleErrors()
+            AuthorId
         );
         article.MarkPendingReview();
         article.Approve();
@@ -1190,8 +1138,7 @@ public class ArticleEntityTests
             CategoryId,
             TestConstants.Article.ValidTitle,
             TestConstants.Article.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateArticleErrors()
+            AuthorId
         );
         article.MarkPendingReview();
         article.ClearDomainEvents();
@@ -1213,8 +1160,7 @@ public class ArticleEntityTests
             CategoryId,
             TestConstants.Article.ValidTitle,
             TestConstants.Article.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateArticleErrors()
+            AuthorId
         );
         article.MarkPendingReview();
         article.Approve();
@@ -1242,8 +1188,7 @@ public class ArticleEntityTests
             CategoryId,
             TestConstants.Article.ValidTitle,
             TestConstants.Article.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateArticleErrors()
+            AuthorId
         );
         article.ClearDomainEvents();
         article.MarkPendingReview();
@@ -1266,8 +1211,7 @@ public class ArticleEntityTests
             CategoryId,
             TestConstants.Article.ValidTitle,
             TestConstants.Article.ValidSlug,
-            AuthorId,
-            TestErrorsFactory.CreateArticleErrors()
+            AuthorId
         );
         article.UpdateCoverImage(coverFileId);
         article.ClearDomainEvents();

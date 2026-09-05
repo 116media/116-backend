@@ -40,7 +40,7 @@ public class AdminEditOrderHandler(
             await customerRepository.GetByIdOrThrowAsync(id: newCustomerId.Value, cancellationToken: cancellationToken);
         }
 
-        order.Update(customerId: newCustomerId, packageId: command.PackageId, errors: i18n.ContentOrder);
+        order.Update(customerId: newCustomerId, packageId: command.PackageId);
 
         await contentOrderRepository.UpdateAsync(order: order, ct: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);

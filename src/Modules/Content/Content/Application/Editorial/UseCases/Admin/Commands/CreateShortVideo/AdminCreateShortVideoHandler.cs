@@ -52,8 +52,7 @@ public class AdminCreateShortVideoHandler(
                 title: command.Title,
                 slug: command.Slug,
                 videoId: command.VideoId.Value,
-                authorId: command.AuthorId,
-                errors: i18n.ShortVideo
+                authorId: command.AuthorId
             );
         }
         else
@@ -62,8 +61,7 @@ public class AdminCreateShortVideoHandler(
                 id: Guid.NewGuid(),
                 title: command.Title,
                 slug: command.Slug,
-                authorId: command.AuthorId,
-                errors: i18n.ShortVideo
+                authorId: command.AuthorId
             );
         }
 

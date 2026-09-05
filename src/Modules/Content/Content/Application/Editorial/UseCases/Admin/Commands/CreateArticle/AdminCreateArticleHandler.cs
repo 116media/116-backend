@@ -76,16 +76,14 @@ public class AdminCreateArticleHandler(
                 categoryId: command.CategoryId,
                 title: command.Title,
                 slug: command.Slug,
-                authorId: command.AuthorId,
-                errors: i18n.Article
+                authorId: command.AuthorId
             )
             : ArticleEntity.CreateFree(
                 id: Guid.NewGuid(),
                 categoryId: command.CategoryId,
                 title: command.Title,
                 slug: command.Slug,
-                authorId: command.AuthorId,
-                errors: i18n.Article
+                authorId: command.AuthorId
             );
     }
 }

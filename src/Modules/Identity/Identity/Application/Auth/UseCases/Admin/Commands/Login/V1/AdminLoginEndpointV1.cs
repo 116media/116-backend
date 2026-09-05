@@ -51,9 +51,9 @@ public class AdminLoginEndpointV1 : ICarterModule
                     var command = new AdminLoginCommand(Email: request.Email, Password: request.Password);
                     AdminLoginResult result = await dispatcher.Send(request: command);
 
-                    tokenDelivery.SetTokenCookies(authResult: result.AuthenticationResult);
+                    tokenDelivery.SetTokenCookies(authResult: result.Authentication);
 
-                    var response = new AdminLoginResponse(User: result.AuthenticationResult.User);
+                    var response = new AdminLoginResponse(User: result.Authentication.User);
 
                     return Results.Ok(value: response);
                 }

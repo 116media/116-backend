@@ -54,6 +54,6 @@ public class TagBuilder
     /// </summary>
     public TagEntity Build()
     {
-        return TagEntity.Create(_id, _name, _slug, TestErrorsFactory.CreateTagErrors());
+        return TagEntity.Create(_id, _name, _slug);
     }
 }

@@ -231,7 +231,6 @@ public class VideoBuilder
     /// </summary>
     public VideoEntity Build()
     {
-        VideoErrors errors = TestErrorsFactory.CreateVideoErrors();
         VideoEntity entity = _customerId.HasValue
             ? VideoEntity.CreatePaid(
                 id: _id,
@@ -241,8 +240,7 @@ public class VideoBuilder
                 title: _title,
                 slug: _slug,
                 authorId: _authorId,
-                description: _description,
-                errors: errors
+                description: _description
             )
             : VideoEntity.CreateFree(
                 id: _id,
@@ -250,8 +248,7 @@ public class VideoBuilder
                 title: _title,
                 slug: _slug,
                 authorId: _authorId,
-                description: _description,
-                errors: errors
+                description: _description
             );
 
         if (_shootingScheduledAt.HasValue)
@@ -261,7 +258,7 @@ public class VideoBuilder
 
         if (_youtubeVideoUrl is not null)
         {
-            entity.AttachYoutubeVideoUrl(_youtubeVideoUrl, errors);
+            entity.AttachYoutubeVideoUrl(_youtubeVideoUrl);
         }
 
         if (_thumbnailFileId.HasValue)
@@ -269,7 +266,7 @@ public class VideoBuilder
             entity.SetThumbnailFileId(_thumbnailFileId);
         }
 
-        ApplyStatusTransition(entity, errors);
+        ApplyStatusTransition(entity);
 
         if (_promotedUntil.HasValue)
         {
@@ -310,7 +307,7 @@ public class VideoBuilder
         return entity;
     }
 
-    private void ApplyStatusTransition(VideoEntity entity, VideoErrors errors)
+    private void ApplyStatusTransition(VideoEntity entity)
     {
         switch (_targetStatus)
         {

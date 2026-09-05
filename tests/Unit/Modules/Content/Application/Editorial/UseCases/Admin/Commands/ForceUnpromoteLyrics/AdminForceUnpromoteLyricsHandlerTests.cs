@@ -4,6 +4,8 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Domain.Events;
+using _116.Content.Domain.Exceptions;
+using _116.Content.Domain.StateMachines;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Services;
 using _116.Tests.Fixtures.Factories.Content;
@@ -40,8 +42,7 @@ public class AdminForceUnpromoteLyricsHandlerTests
         _handler = new AdminForceUnpromoteLyricsHandler(
             _lyricsRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            currentActor,
-            TestErrorsFactory.CreateContentI18n()
+            currentActor
         );
     }
 
@@ -132,7 +133,9 @@ public class AdminForceUnpromoteLyricsHandlerTests
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        await act.Should().ThrowAsync<BadRequestException>();
+        (await act.Should().ThrowAsync<ContentRuleException>())
+            .Which.Code.Should()
+            .Be(ContentRuleCodes.LyricsNotPromoted);
         lyrics.IsPromoted.Should().BeFalse();
         lyrics.UnpromotedAt.Should().BeNull();
         lyrics.UnpromotedBy.Should().BeNull();

@@ -1,4 +1,6 @@
 using System.Net.Mail;
+using _116.Identity.Domain.Exceptions;
+using _116.Identity.Domain.StateMachines;
 
 namespace _116.Identity.Domain.ValueObjects;
 
@@ -16,7 +18,7 @@ public record Email
     /// Initializes a new instance of the <see cref="Email" /> record with validation.
     /// </summary>
     /// <param name="value">The email address strings to validate and store.</param>
-    /// <exception cref="ArgumentException">
+    /// <exception cref="IdentityRuleException">
     /// Thrown if the <paramref name="value" /> is null, empty, whitespace,
     /// or not a valid email format.
     /// </exception>
@@ -24,12 +26,12 @@ public record Email
     {
         if (string.IsNullOrWhiteSpace(value: value))
         {
-            throw new ArgumentException("Email cannot be empty", nameof(value));
+            throw new IdentityRuleException(IdentityRuleCodes.InvalidEmail, value);
         }
 
         if (!IsValidEmail(email: value))
         {
-            throw new ArgumentException("Invalid email format", nameof(value));
+            throw new IdentityRuleException(IdentityRuleCodes.InvalidEmail, value);
         }
 
         Value = value.ToLowerInvariant();
@@ -71,7 +73,7 @@ public record Email
     /// Implicitly converts a <see cref="string" /> to an <see cref="Email" /> instance.
     /// </summary>
     /// <param name="email">The email string to convert.</param>
-    /// <exception cref="ArgumentException">
+    /// <exception cref="IdentityRuleException">
     /// Thrown if the <paramref name="email" /> is not valid.
     /// </exception>
     public static implicit operator Email(string email)

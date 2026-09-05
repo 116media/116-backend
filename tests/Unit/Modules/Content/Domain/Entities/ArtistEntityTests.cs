@@ -1,5 +1,7 @@
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Events;
+using _116.Content.Domain.Exceptions;
+using _116.Content.Domain.StateMachines;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Helpers;
@@ -25,17 +27,7 @@ public class ArtistEntityTests
         const string bio = TestConstants.Artist.ValidBio;
 
         // Act
-        ArtistEntity artist = ArtistEntity.Create(
-            id,
-            name,
-            slug,
-            bio,
-            null,
-            null,
-            null,
-            null,
-            TestErrorsFactory.CreateArtistErrors()
-        );
+        ArtistEntity artist = ArtistEntity.Create(id, name, slug, bio, null, null, null, null);
 
         // Assert
         artist.Id.Should().Be(id);
@@ -59,8 +51,7 @@ public class ArtistEntityTests
             null,
             null,
             null,
-            null,
-            TestErrorsFactory.CreateArtistErrors()
+            null
         );
 
         // Assert
@@ -83,12 +74,11 @@ public class ArtistEntityTests
                 null,
                 null,
                 null,
-                null,
-                TestErrorsFactory.CreateArtistErrors()
+                null
             );
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.ArtistNameRequired);
     }
 
     [Theory]
@@ -107,12 +97,11 @@ public class ArtistEntityTests
                 null,
                 null,
                 null,
-                null,
-                TestErrorsFactory.CreateArtistErrors()
+                null
             );
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.ArtistSlugRequired);
     }
 
     #endregion
@@ -126,7 +115,7 @@ public class ArtistEntityTests
         ArtistEntity artist = CreateArtist();
 
         // Act
-        artist.Update("Updated Name", "Updated Bio", null, null, null, null, TestErrorsFactory.CreateArtistErrors());
+        artist.Update("Updated Name", "Updated Bio", null, null, null, null);
 
         // Assert
         artist.Name.Should().Be("Updated Name");
@@ -141,7 +130,7 @@ public class ArtistEntityTests
         string originalSlug = artist.Slug;
 
         // Act
-        artist.Update("Updated Name", "Updated Bio", null, null, null, null, TestErrorsFactory.CreateArtistErrors());
+        artist.Update("Updated Name", "Updated Bio", null, null, null, null);
 
         // Assert
         artist.Slug.Should().Be(originalSlug);
@@ -159,12 +148,11 @@ public class ArtistEntityTests
             null,
             null,
             null,
-            null,
-            TestErrorsFactory.CreateArtistErrors()
+            null
         );
 
         // Act
-        artist.Update(artist.Name, null, null, null, null, null, TestErrorsFactory.CreateArtistErrors());
+        artist.Update(artist.Name, null, null, null, null, null);
 
         // Assert
         artist.Bio.Should().BeNull();
@@ -180,11 +168,10 @@ public class ArtistEntityTests
         ArtistEntity artist = CreateArtist();
 
         // Act
-        Action act = () =>
-            artist.Update(invalidName!, "Bio", null, null, null, null, TestErrorsFactory.CreateArtistErrors());
+        Action act = () => artist.Update(invalidName!, "Bio", null, null, null, null);
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.ArtistNameRequired);
     }
 
     #endregion
@@ -232,7 +219,7 @@ public class ArtistEntityTests
         DateTimeOffset before = DateTimeOffset.UtcNow;
 
         // Act
-        artist.ClaimOwnership(userId, TestErrorsFactory.CreateArtistErrors());
+        artist.ClaimOwnership(userId);
 
         // Assert
         artist.UserId.Should().Be(userId);
@@ -248,7 +235,7 @@ public class ArtistEntityTests
         Guid userId = Guid.NewGuid();
 
         // Act
-        artist.ClaimOwnership(userId, TestErrorsFactory.CreateArtistErrors());
+        artist.ClaimOwnership(userId);
 
         // Assert
         artist
@@ -264,14 +251,14 @@ public class ArtistEntityTests
     {
         // Arrange
         ArtistEntity artist = CreateArtist();
-        artist.ClaimOwnership(Guid.NewGuid(), TestErrorsFactory.CreateArtistErrors());
+        artist.ClaimOwnership(Guid.NewGuid());
         artist.ClearDomainEvents();
 
         // Act
-        Action act = () => artist.ClaimOwnership(Guid.NewGuid(), TestErrorsFactory.CreateArtistErrors());
+        Action act = () => artist.ClaimOwnership(Guid.NewGuid());
 
         // Assert
-        act.Should().Throw<ConflictException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.ArtistAlreadyClaimed);
         artist.DomainEvents.OfType<ArtistOwnershipVerifiedEvent>().Should().BeEmpty();
     }
 
@@ -280,13 +267,13 @@ public class ArtistEntityTests
     {
         // Arrange
         ArtistEntity artist = CreateArtist();
-        artist.ClaimOwnership(Guid.NewGuid(), TestErrorsFactory.CreateArtistErrors());
+        artist.ClaimOwnership(Guid.NewGuid());
 
         // Act
-        Action act = () => artist.ClaimOwnership(Guid.NewGuid(), TestErrorsFactory.CreateArtistErrors());
+        Action act = () => artist.ClaimOwnership(Guid.NewGuid());
 
         // Assert
-        act.Should().Throw<ConflictException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.ArtistAlreadyClaimed);
     }
 
     [Fact]
@@ -295,13 +282,13 @@ public class ArtistEntityTests
         // Arrange
         ArtistEntity artist = CreateArtist();
         Guid originalOwnerId = Guid.NewGuid();
-        artist.ClaimOwnership(originalOwnerId, TestErrorsFactory.CreateArtistErrors());
+        artist.ClaimOwnership(originalOwnerId);
 
         // Act
-        Action act = () => artist.ClaimOwnership(Guid.NewGuid(), TestErrorsFactory.CreateArtistErrors());
+        Action act = () => artist.ClaimOwnership(Guid.NewGuid());
 
         // Assert
-        act.Should().Throw<ConflictException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.ArtistAlreadyClaimed);
         artist.UserId.Should().Be(originalOwnerId);
     }
 
@@ -324,8 +311,7 @@ public class ArtistEntityTests
             "Aubrey Drake Graham",
             ["Drizzy", "Champagne Papi"],
             birthdate,
-            "Toronto, Canada",
-            TestErrorsFactory.CreateArtistErrors()
+            "Toronto, Canada"
         );
 
         // Assert
@@ -356,8 +342,7 @@ public class ArtistEntityTests
             null,
             ["  Drizzy  ", "", "   ", "drizzy", "Champagne Papi"],
             null,
-            null,
-            TestErrorsFactory.CreateArtistErrors()
+            null
         );
 
         // Assert
@@ -380,12 +365,11 @@ public class ArtistEntityTests
                 null,
                 aliases,
                 null,
-                null,
-                TestErrorsFactory.CreateArtistErrors()
+                null
             );
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.ArtistTooManyAliases);
     }
 
     [Fact]
@@ -401,12 +385,11 @@ public class ArtistEntityTests
                 null,
                 [new string('a', 101)],
                 null,
-                null,
-                TestErrorsFactory.CreateArtistErrors()
+                null
             );
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.ArtistAliasTooLong);
     }
 
     [Fact]
@@ -425,12 +408,11 @@ public class ArtistEntityTests
                 null,
                 null,
                 future,
-                null,
-                TestErrorsFactory.CreateArtistErrors()
+                null
             );
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.ArtistBirthdateInFuture);
     }
 
     [Fact]
@@ -445,12 +427,11 @@ public class ArtistEntityTests
             "Real Name",
             ["Alias"],
             new DateOnly(1990, 1, 1),
-            "Kinshasa, RDC",
-            TestErrorsFactory.CreateArtistErrors()
+            "Kinshasa, RDC"
         );
 
         // Act
-        artist.Update(artist.Name, null, null, null, null, null, TestErrorsFactory.CreateArtistErrors());
+        artist.Update(artist.Name, null, null, null, null, null);
 
         // Assert
         artist.RealName.Should().BeNull();
@@ -495,8 +476,7 @@ public class ArtistEntityTests
             null,
             null,
             null,
-            null,
-            TestErrorsFactory.CreateArtistErrors()
+            null
         );
 
         // Assert
@@ -511,7 +491,7 @@ public class ArtistEntityTests
         ArtistEntity artist = CreateArtist();
 
         // Act
-        artist.Update("Élodie", null, null, null, null, null, TestErrorsFactory.CreateArtistErrors());
+        artist.Update("Élodie", null, null, null, null, null);
 
         // Assert — the artist moves bucket with the rename.
         artist.NameFolded.Should().Be("ELODIE");
@@ -530,8 +510,7 @@ public class ArtistEntityTests
             null,
             null,
             null,
-            null,
-            TestErrorsFactory.CreateArtistErrors()
+            null
         );
     }
 }

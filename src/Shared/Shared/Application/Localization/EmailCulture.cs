@@ -1,10 +1,10 @@
 using System.Globalization;
 
-namespace _116.Mailer.Contracts.Application;
+namespace _116.Shared.Application.Localization;
 
 /// <summary>
-/// Resolves the culture argument for <see cref="IMailer.EnqueueAsync" /> from
-/// the ambient request culture, so every consumer localizes the same way.
+/// Resolves the culture argument mail and notification ports take, from the ambient request
+/// culture, so every caller localizes the same way.
 /// </summary>
 public static class EmailCulture
 {

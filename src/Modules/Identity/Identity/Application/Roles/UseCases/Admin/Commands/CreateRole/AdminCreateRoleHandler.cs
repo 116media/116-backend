@@ -40,12 +40,7 @@ public class AdminCreateRoleHandler(
             throw i18n.User.RoleAlreadyExists(roleName: command.Name);
         }
 
-        var role = RoleEntity.Create(
-            id: Guid.NewGuid(),
-            name: command.Name,
-            description: command.Description,
-            errors: i18n.User
-        );
+        var role = RoleEntity.Create(id: Guid.NewGuid(), name: command.Name, description: command.Description);
 
         await roleRepository.AddAsync(role: role, cancellationToken: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);

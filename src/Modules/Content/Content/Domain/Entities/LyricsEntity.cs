@@ -1,10 +1,9 @@
 using System.ComponentModel.DataAnnotations;
-using _116.Content.Application.Shared.Errors;
 using _116.Content.Domain.Constants;
 using _116.Content.Domain.Enums;
 using _116.Content.Domain.Events;
+using _116.Content.Domain.Exceptions;
 using _116.Content.Domain.StateMachines;
-using _116.Shared.Application.Exceptions;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -200,7 +199,7 @@ public class LyricsEntity : Aggregate<Guid>
     /// Reason recorded when a SuperAdmin force-unpromoted this lyrics page (max 500 chars).
     /// Used as evidence for future refund processing.
     /// </summary>
-    [MaxLength(500)]
+    [MaxLength(length: ContentConstants.MaxUnpromotedReasonLength)]
     public string? UnpromotedReason { get; private set; }
 
     // Maintained by application-level event handlers — not by DB triggers.
@@ -257,7 +256,6 @@ public class LyricsEntity : Aggregate<Guid>
     /// <param name="language">ISO 639-1 language code.</param>
     /// <param name="slug">The URL-safe slug.</param>
     /// <param name="authorId">The identity user UUID from JWT claims.</param>
-    /// <param name="errors">The errors factory instance.</param>
     /// <returns>A new <see cref="LyricsEntity" /> in <c>Draft</c> status.</returns>
     public static LyricsEntity CreateFree(
         Guid id,
@@ -268,15 +266,14 @@ public class LyricsEntity : Aggregate<Guid>
         string lyricsText,
         string language,
         string slug,
-        Guid authorId,
-        LyricsErrors errors
+        Guid authorId
     )
     {
-        ValidateRequiredFields(songTitle: songTitle, artistName: artistName, lyricsText: lyricsText, errors: errors);
+        ValidateRequiredFields(songTitle: songTitle, artistName: artistName, lyricsText: lyricsText);
 
         if (string.IsNullOrWhiteSpace(value: slug))
         {
-            throw errors.SlugRequired();
+            throw new ContentRuleException(ContentRuleCodes.LyricsSlugRequired);
         }
 
         return new LyricsEntity
@@ -309,7 +306,6 @@ public class LyricsEntity : Aggregate<Guid>
     /// <param name="language">ISO 639-1 language code.</param>
     /// <param name="slug">The URL-safe slug.</param>
     /// <param name="authorId">The identity user UUID from JWT claims.</param>
-    /// <param name="errors">The errors factory instance.</param>
     /// <returns>A new <see cref="LyricsEntity" /> in <c>Draft</c> status.</returns>
     public static LyricsEntity CreatePaid(
         Guid id,
@@ -322,15 +318,14 @@ public class LyricsEntity : Aggregate<Guid>
         string lyricsText,
         string language,
         string slug,
-        Guid authorId,
-        LyricsErrors errors
+        Guid authorId
     )
     {
-        ValidateRequiredFields(songTitle: songTitle, artistName: artistName, lyricsText: lyricsText, errors: errors);
+        ValidateRequiredFields(songTitle: songTitle, artistName: artistName, lyricsText: lyricsText);
 
         if (string.IsNullOrWhiteSpace(value: slug))
         {
-            throw errors.SlugRequired();
+            throw new ContentRuleException(ContentRuleCodes.LyricsSlugRequired);
         }
 
         return new LyricsEntity
@@ -394,15 +389,14 @@ public class LyricsEntity : Aggregate<Guid>
         string language,
         Guid? videoId,
         Guid? customerId,
-        Guid? orderItemId,
-        LyricsErrors errors
+        Guid? orderItemId
     )
     {
-        ValidateRequiredFields(songTitle, artistName, lyricsText, errors);
+        ValidateRequiredFields(songTitle, artistName, lyricsText);
 
         if (string.IsNullOrWhiteSpace(value: slug))
         {
-            throw errors.SlugRequired();
+            throw new ContentRuleException(ContentRuleCodes.LyricsSlugRequired);
         }
 
         CategoryId = categoryId;
@@ -680,15 +674,14 @@ public class LyricsEntity : Aggregate<Guid>
     /// <param name="reason">
     /// Mandatory reason for the force-unpromote (e.g. "government request", "policy violation").
     /// </param>
-    /// <param name="errors">The errors factory instance.</param>
-    /// <exception cref="BadRequestException">
+    /// <exception cref="ContentRuleException">
     /// Thrown when the lyrics page does not have an active promotion.
     /// </exception>
-    public void ForceUnpromote(string unpromotedBy, string reason, LyricsErrors errors)
+    public void ForceUnpromote(string unpromotedBy, string reason)
     {
         if (!IsPromoted)
         {
-            throw errors.NotPromoted();
+            throw new ContentRuleException(ContentRuleCodes.LyricsNotPromoted);
         }
 
         IsPromoted = false;
@@ -734,26 +727,21 @@ public class LyricsEntity : Aggregate<Guid>
     /// </summary>
     public void ReplaceLyricsText(string lyricsText) => LyricsText = lyricsText;
 
-    private static void ValidateRequiredFields(
-        string songTitle,
-        string artistName,
-        string lyricsText,
-        LyricsErrors errors
-    )
+    private static void ValidateRequiredFields(string songTitle, string artistName, string lyricsText)
     {
         if (string.IsNullOrWhiteSpace(value: songTitle))
         {
-            throw errors.SongTitleRequired();
+            throw new ContentRuleException(ContentRuleCodes.SongTitleRequired);
         }
 
         if (string.IsNullOrWhiteSpace(value: artistName))
         {
-            throw errors.ArtistNameRequired();
+            throw new ContentRuleException(ContentRuleCodes.LyricsArtistNameRequired);
         }
 
         if (string.IsNullOrWhiteSpace(value: lyricsText))
         {
-            throw errors.LyricsTextRequired();
+            throw new ContentRuleException(ContentRuleCodes.LyricsTextRequired);
         }
     }
 }

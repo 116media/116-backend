@@ -62,24 +62,6 @@ public class CategoryErrorsTests
     }
 
     [Fact]
-    public void NameRequired_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.NameRequired();
-
-        exception.Should().NotBeNull();
-        exception.Message.Should().Contain(_message.NameRequired());
-    }
-
-    [Fact]
-    public void SlugRequired_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.SlugRequired();
-
-        exception.Should().NotBeNull();
-        exception.Message.Should().Contain(_message.SlugRequired());
-    }
-
-    [Fact]
     public void PricingAlreadyExists_ShouldReturnConflictException()
     {
         ConflictException exception = _errors.PricingAlreadyExists();
@@ -101,14 +83,5 @@ public class CategoryErrorsTests
         // Assert
         exception.Should().BeOfType<NotFoundException>();
         exception.Message.Should().NotBeNullOrEmpty();
-    }
-
-    [Fact]
-    public void PriceMustBeNonNegative_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.PriceMustBeNonNegative();
-
-        exception.Should().NotBeNull();
-        exception.Message.Should().Contain(_message.PriceMustBeNonNegative());
     }
 }

@@ -256,6 +256,7 @@ public static class IdentityModule
         // Register custom exception handlers for this module
         services.AddSingleton<IExceptionStrategy, AccountInactiveExceptionHandler>();
         services.AddSingleton<IExceptionStrategy, AccountNotVerifiedExceptionHandler>();
+        services.AddSingleton<IExceptionStrategy, DomainRuleExceptionStrategy>();
         services.AddSingleton<IExceptionStrategy, OtpAttemptsLimitExceptionHandler>();
         services.AddSingleton<IExceptionStrategy, OtpExpirationExceptionHandler>();
         services.AddSingleton<IExceptionStrategy, SocialTokenVerificationExceptionHandler>();

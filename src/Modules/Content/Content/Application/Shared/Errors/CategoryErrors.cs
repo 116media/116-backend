@@ -58,22 +58,6 @@ public class CategoryErrors(CategoryErrorMessage i18n)
     }
 
     /// <summary>
-    /// Throws when a category name is required but not provided.
-    /// </summary>
-    public BadRequestException NameRequired()
-    {
-        return new BadRequestException(i18n.NameRequired());
-    }
-
-    /// <summary>
-    /// Throws when a category slug is required but not provided.
-    /// </summary>
-    public BadRequestException SlugRequired()
-    {
-        return new BadRequestException(i18n.SlugRequired());
-    }
-
-    /// <summary>
     /// Throws when the pricing tier is already configured for the category.
     /// </summary>
     public ConflictException PricingAlreadyExists()
@@ -87,14 +71,6 @@ public class CategoryErrors(CategoryErrorMessage i18n)
     public NotFoundException PricingNotFound(Guid categoryId, Guid tierId)
     {
         return new NotFoundException("CategoryPricing", "categoryId+tierId", keyValue: $"{categoryId}/{tierId}");
-    }
-
-    /// <summary>
-    /// Throws when a price is negative.
-    /// </summary>
-    public BadRequestException PriceMustBeNonNegative()
-    {
-        return new BadRequestException(i18n.PriceMustBeNonNegative());
     }
 
     /// <summary>

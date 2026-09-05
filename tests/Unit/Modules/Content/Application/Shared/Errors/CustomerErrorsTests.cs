@@ -42,22 +42,4 @@ public class CustomerErrorsTests
         exception.Should().BeOfType<NotFoundException>();
         exception.Message.Should().Contain(id.ToString());
     }
-
-    [Fact]
-    public void FullNameRequired_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.FullNameRequired();
-
-        exception.Should().NotBeNull();
-        exception.Message.Should().Contain(_message.FullNameRequired());
-    }
-
-    [Fact]
-    public void EmailRequired_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.EmailRequired();
-
-        exception.Should().NotBeNull();
-        exception.Message.Should().Contain(_message.EmailRequired());
-    }
 }

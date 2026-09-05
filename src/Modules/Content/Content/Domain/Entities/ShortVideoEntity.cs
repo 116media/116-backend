@@ -1,7 +1,8 @@
 using System.ComponentModel.DataAnnotations;
-using _116.Content.Application.Shared.Errors;
 using _116.Content.Domain.Constants;
 using _116.Content.Domain.Events;
+using _116.Content.Domain.Exceptions;
+using _116.Content.Domain.StateMachines;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -121,19 +122,12 @@ public class ShortVideoEntity : Aggregate<Guid>
     /// <param name="title">The display title.</param>
     /// <param name="slug">The URL-safe slug for the short video permalink.</param>
     /// <param name="authorId">The identity user UUID of the admin uploading this short video.</param>
-    /// <param name="errors">The errors factory instance.</param>
     /// <returns>A new inactive draft <see cref="ShortVideoEntity" />.</returns>
-    public static ShortVideoEntity CreateStandalone(
-        Guid id,
-        string title,
-        string slug,
-        Guid authorId,
-        ShortVideoErrors errors
-    )
+    public static ShortVideoEntity CreateStandalone(Guid id, string title, string slug, Guid authorId)
     {
         if (string.IsNullOrWhiteSpace(value: title))
         {
-            throw errors.TitleRequired();
+            throw new ContentRuleException(ContentRuleCodes.ShortVideoTitleRequired);
         }
 
         return new ShortVideoEntity
@@ -156,20 +150,12 @@ public class ShortVideoEntity : Aggregate<Guid>
     /// <param name="slug">The URL-safe slug for the short video permalink.</param>
     /// <param name="videoId">The parent full video this clip previews.</param>
     /// <param name="authorId">The identity user UUID of the admin uploading this short video.</param>
-    /// <param name="errors">The errors factory instance.</param>
     /// <returns>A new inactive draft <see cref="ShortVideoEntity" /> linked to a parent video.</returns>
-    public static ShortVideoEntity CreateTeaser(
-        Guid id,
-        string title,
-        string slug,
-        Guid videoId,
-        Guid authorId,
-        ShortVideoErrors errors
-    )
+    public static ShortVideoEntity CreateTeaser(Guid id, string title, string slug, Guid videoId, Guid authorId)
     {
         if (string.IsNullOrWhiteSpace(value: title))
         {
-            throw errors.TitleRequired();
+            throw new ContentRuleException(ContentRuleCodes.ShortVideoTitleRequired);
         }
 
         return new ShortVideoEntity
@@ -191,12 +177,11 @@ public class ShortVideoEntity : Aggregate<Guid>
     /// </summary>
     /// <param name="title">The new display title.</param>
     /// <param name="videoId">Optional parent full video ID. <c>null</c> to make standalone.</param>
-    /// <param name="errors">The errors factory instance.</param>
-    public void Update(string title, Guid? videoId, ShortVideoErrors errors)
+    public void Update(string title, Guid? videoId)
     {
         if (string.IsNullOrWhiteSpace(value: title))
         {
-            throw errors.TitleRequired();
+            throw new ContentRuleException(ContentRuleCodes.ShortVideoTitleRequired);
         }
 
         Title = title;
@@ -230,13 +215,12 @@ public class ShortVideoEntity : Aggregate<Guid>
     /// Makes the short video visible on the public feed. A short video cannot be activated
     /// until its video file has been uploaded.
     /// </summary>
-    /// <param name="errors">The errors factory instance.</param>
     /// <returns><c>true</c> if activated; <c>false</c> if already active.</returns>
-    public bool Activate(ShortVideoErrors errors)
+    public bool Activate()
     {
         if (VideoFileId is null)
         {
-            throw errors.VideoFileRequired();
+            throw new ContentRuleException(ContentRuleCodes.ShortVideoFileRequired);
         }
 
         if (IsActive)

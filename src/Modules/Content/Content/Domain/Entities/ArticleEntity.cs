@@ -1,10 +1,9 @@
 using System.ComponentModel.DataAnnotations;
-using _116.Content.Application.Shared.Errors;
 using _116.Content.Domain.Constants;
 using _116.Content.Domain.Enums;
 using _116.Content.Domain.Events;
+using _116.Content.Domain.Exceptions;
 using _116.Content.Domain.StateMachines;
-using _116.Shared.Application.Exceptions;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -134,7 +133,7 @@ public class ArticleEntity : Aggregate<Guid>
     /// Reason recorded when a SuperAdmin force-unpromoted this article (max 500 chars).
     /// Used as evidence for future refund processing.
     /// </summary>
-    [MaxLength(500)]
+    [MaxLength(length: ContentConstants.MaxUnpromotedReasonLength)]
     public string? UnpromotedReason { get; private set; }
 
     /// <summary>
@@ -225,23 +224,16 @@ public class ArticleEntity : Aggregate<Guid>
     /// <param name="slug">The URL-safe slug.</param>
     /// <param name="authorId">The identity user UUID from JWT claims.</param>
     /// <returns>A new <see cref="ArticleEntity" /> in <c>Draft</c> status.</returns>
-    public static ArticleEntity CreateFree(
-        Guid id,
-        Guid categoryId,
-        string title,
-        string slug,
-        Guid authorId,
-        ArticleErrors errors
-    )
+    public static ArticleEntity CreateFree(Guid id, Guid categoryId, string title, string slug, Guid authorId)
     {
         if (string.IsNullOrWhiteSpace(value: title))
         {
-            throw errors.TitleRequired();
+            throw new ContentRuleException(ContentRuleCodes.ArticleTitleRequired);
         }
 
         if (string.IsNullOrWhiteSpace(value: slug))
         {
-            throw errors.SlugRequired();
+            throw new ContentRuleException(ContentRuleCodes.ArticleSlugRequired);
         }
 
         return new ArticleEntity
@@ -266,7 +258,6 @@ public class ArticleEntity : Aggregate<Guid>
     /// <param name="title">The article title.</param>
     /// <param name="slug">The URL-safe slug.</param>
     /// <param name="authorId">The identity user UUID from JWT claims.</param>
-    /// <param name="errors">The errors factory instance.</param>
     /// <returns>A new <see cref="ArticleEntity" /> in <c>Draft</c> status.</returns>
     public static ArticleEntity CreatePaid(
         Guid id,
@@ -275,18 +266,17 @@ public class ArticleEntity : Aggregate<Guid>
         Guid categoryId,
         string title,
         string slug,
-        Guid authorId,
-        ArticleErrors errors
+        Guid authorId
     )
     {
         if (string.IsNullOrWhiteSpace(value: title))
         {
-            throw errors.TitleRequired();
+            throw new ContentRuleException(ContentRuleCodes.ArticleTitleRequired);
         }
 
         if (string.IsNullOrWhiteSpace(value: slug))
         {
-            throw errors.SlugRequired();
+            throw new ContentRuleException(ContentRuleCodes.ArticleSlugRequired);
         }
 
         return new ArticleEntity
@@ -615,15 +605,14 @@ public class ArticleEntity : Aggregate<Guid>
     /// <param name="reason">
     /// Mandatory reason for the force-unpromote (e.g. "government request", "policy violation").
     /// </param>
-    /// <param name="errors">The errors factory instance.</param>
-    /// <exception cref="BadRequestException">
+    /// <exception cref="ContentRuleException">
     /// Thrown when the article does not have an active promotion.
     /// </exception>
-    public void ForceUnpromote(string unpromotedBy, string reason, ArticleErrors errors)
+    public void ForceUnpromote(string unpromotedBy, string reason)
     {
         if (!IsPromoted)
         {
-            throw errors.NotPromoted();
+            throw new ContentRuleException(ContentRuleCodes.ArticleNotPromoted);
         }
 
         IsPromoted = false;

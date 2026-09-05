@@ -21,12 +21,4 @@ public class AlbumErrors(AlbumErrorMessage i18n)
     {
         return new NotFoundException("Album", "id", keyValue: id);
     }
-
-    /// <summary>
-    /// Throws when an album name is required but not provided.
-    /// </summary>
-    public BadRequestException NameRequired()
-    {
-        return new BadRequestException(i18n.NameRequired());
-    }
 }

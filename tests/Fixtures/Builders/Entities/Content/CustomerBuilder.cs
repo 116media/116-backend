@@ -75,8 +75,7 @@ public class CustomerBuilder
             email: _email,
             phone: null,
             company: _company,
-            notes: null,
-            errors: TestErrorsFactory.CreateCustomerErrors()
+            notes: null
         );
     }
 }

@@ -1,4 +1,6 @@
 using _116.Identity.Domain.Enums;
+using _116.Identity.Domain.Exceptions;
+using _116.Identity.Domain.StateMachines;
 using _116.Identity.Domain.ValueObjects;
 using AwesomeAssertions;
 using AwesomeAssertions.Specialized;
@@ -48,8 +50,10 @@ public class SessionStatusTests
 
         // Act & Assert
         Action act = () => new SessionStatus(invalidEnum);
-        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
-        exception.Which.Message.Should().Contain("Invalid session status");
+        act.Should()
+            .ThrowExactly<IdentityRuleException>()
+            .Which.Code.Should()
+            .Be(IdentityRuleCodes.InvalidSessionStatus);
     }
 
     #endregion
@@ -100,8 +104,10 @@ public class SessionStatusTests
     {
         // Act & Assert
         Action act = () => new SessionStatus("InvalidStatus");
-        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
-        exception.Which.Message.Should().Contain("Invalid session status");
+        act.Should()
+            .ThrowExactly<IdentityRuleException>()
+            .Which.Code.Should()
+            .Be(IdentityRuleCodes.InvalidSessionStatus);
     }
 
     [Fact]
@@ -109,8 +115,10 @@ public class SessionStatusTests
     {
         // Act & Assert
         Action act = () => new SessionStatus(string.Empty);
-        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
-        exception.Which.Message.Should().Contain("Invalid session status");
+        act.Should()
+            .ThrowExactly<IdentityRuleException>()
+            .Which.Code.Should()
+            .Be(IdentityRuleCodes.InvalidSessionStatus);
     }
 
     [Fact]
@@ -118,8 +126,10 @@ public class SessionStatusTests
     {
         // Act & Assert
         Action act = () => new SessionStatus((string)null!);
-        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
-        exception.Which.Message.Should().Contain("Invalid session status");
+        act.Should()
+            .ThrowExactly<IdentityRuleException>()
+            .Which.Code.Should()
+            .Be(IdentityRuleCodes.InvalidSessionStatus);
     }
 
     #endregion
@@ -191,7 +201,10 @@ public class SessionStatusTests
         {
             SessionStatus status = invalidStatus;
         };
-        act.Should().ThrowExactly<ArgumentException>();
+        act.Should()
+            .ThrowExactly<IdentityRuleException>()
+            .Which.Code.Should()
+            .Be(IdentityRuleCodes.InvalidSessionStatus);
     }
 
     #endregion

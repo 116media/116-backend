@@ -2,6 +2,8 @@ using _116.Content.Application.Shared.Errors;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Domain.Events;
+using _116.Content.Domain.Exceptions;
+using _116.Content.Domain.StateMachines;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
@@ -53,7 +55,7 @@ public class ContentOrderEntityTests
     {
         ContentOrderEntity order = ContentOrderFactory.Create();
 
-        Action act = () => order.EnsureDraft(_errors);
+        Action act = () => order.EnsureDraft();
 
         act.Should().NotThrow();
     }
@@ -63,9 +65,12 @@ public class ContentOrderEntityTests
     {
         ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
 
-        Action act = () => order.EnsureDraft(_errors);
+        Action act = () => order.EnsureDraft();
 
-        act.Should().Throw<BadRequestException>();
+        act.Should()
+            .Throw<ContentRuleException>()
+            .Which.Code.Should()
+            .Be(ContentRuleCodes.CannotAddItemToNonDraftOrder);
     }
 
     [Fact]
@@ -73,9 +78,12 @@ public class ContentOrderEntityTests
     {
         ContentOrderEntity order = ContentOrderFactory.CreatePaid();
 
-        Action act = () => order.EnsureDraft(_errors);
+        Action act = () => order.EnsureDraft();
 
-        act.Should().Throw<BadRequestException>();
+        act.Should()
+            .Throw<ContentRuleException>()
+            .Which.Code.Should()
+            .Be(ContentRuleCodes.CannotAddItemToNonDraftOrder);
     }
 
     #endregion
@@ -114,7 +122,7 @@ public class ContentOrderEntityTests
     {
         ContentOrderEntity order = ContentOrderFactory.Create();
 
-        order.Submit(_errors);
+        order.Submit();
 
         order.Status.Should().Be(EnumOrderStatus.PendingPayment);
     }
@@ -124,7 +132,7 @@ public class ContentOrderEntityTests
     {
         ContentOrderEntity order = ContentOrderFactory.Create();
 
-        order.Submit(_errors);
+        order.Submit();
 
         order
             .DomainEvents.OfType<OrderSubmittedEvent>()
@@ -140,9 +148,9 @@ public class ContentOrderEntityTests
         ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
         order.ClearDomainEvents();
 
-        Action act = () => order.Submit(_errors);
+        Action act = () => order.Submit();
 
-        act.Should().Throw<ConflictException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.OrderAlreadySubmitted);
         order.DomainEvents.Should().BeEmpty();
     }
 
@@ -158,8 +166,7 @@ public class ContentOrderEntityTests
         order.MarkPaid(
             paymentId: Guid.NewGuid(),
             verifiedAt: DateTimeOffset.UtcNow,
-            promotionDurationsByLevelId: new Dictionary<Guid, int>(),
-            errors: _errors
+            promotionDurationsByLevelId: new Dictionary<Guid, int>()
         );
 
         order.Status.Should().Be(EnumOrderStatus.Paid);
@@ -179,8 +186,7 @@ public class ContentOrderEntityTests
         order.MarkPaid(
             paymentId: paymentId,
             verifiedAt: DateTimeOffset.UtcNow,
-            promotionDurationsByLevelId: new Dictionary<Guid, int>(),
-            errors: _errors
+            promotionDurationsByLevelId: new Dictionary<Guid, int>()
         );
 
         OrderPaidEvent paidEvent = order.DomainEvents.OfType<OrderPaidEvent>().Should().ContainSingle().Which;
@@ -216,8 +222,7 @@ public class ContentOrderEntityTests
         order.MarkPaid(
             paymentId: Guid.NewGuid(),
             verifiedAt: verifiedAt,
-            promotionDurationsByLevelId: new Dictionary<Guid, int> { [promotionLevelId] = durationDays },
-            errors: _errors
+            promotionDurationsByLevelId: new Dictionary<Guid, int> { [promotionLevelId] = durationDays }
         );
 
         OrderPaidEvent paidEvent = order.DomainEvents.OfType<OrderPaidEvent>().Should().ContainSingle().Which;
@@ -247,8 +252,7 @@ public class ContentOrderEntityTests
         order.MarkPaid(
             paymentId: Guid.NewGuid(),
             verifiedAt: verifiedAt,
-            promotionDurationsByLevelId: new Dictionary<Guid, int> { [promotionLevelId] = durationDays },
-            errors: _errors
+            promotionDurationsByLevelId: new Dictionary<Guid, int> { [promotionLevelId] = durationDays }
         );
 
         // The persisted timestamptz keeps microseconds, so a millisecond-aligned
@@ -278,11 +282,13 @@ public class ContentOrderEntityTests
             order.MarkPaid(
                 paymentId: Guid.NewGuid(),
                 verifiedAt: DateTimeOffset.UtcNow,
-                promotionDurationsByLevelId: new Dictionary<Guid, int>(),
-                errors: _errors
+                promotionDurationsByLevelId: new Dictionary<Guid, int>()
             );
 
-        act.Should().Throw<BadRequestException>();
+        act.Should()
+            .Throw<ContentRuleException>()
+            .Which.Code.Should()
+            .Be(ContentRuleCodes.PromotionDurationUnavailable);
         order.DomainEvents.Should().BeEmpty();
     }
 
@@ -295,11 +301,10 @@ public class ContentOrderEntityTests
             order.MarkPaid(
                 paymentId: Guid.NewGuid(),
                 verifiedAt: DateTimeOffset.UtcNow,
-                promotionDurationsByLevelId: new Dictionary<Guid, int>(),
-                errors: _errors
+                promotionDurationsByLevelId: new Dictionary<Guid, int>()
             );
 
-        act.Should().Throw<ConflictException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.OrderAlreadyPaid);
         order.DomainEvents.Should().BeEmpty();
     }
 
@@ -312,7 +317,7 @@ public class ContentOrderEntityTests
     {
         ContentOrderEntity order = ContentOrderFactory.Create();
 
-        order.Cancel(_errors);
+        order.Cancel();
 
         order.Status.Should().Be(EnumOrderStatus.Cancelled);
     }
@@ -322,7 +327,7 @@ public class ContentOrderEntityTests
     {
         ContentOrderEntity order = ContentOrderFactory.Create();
 
-        order.Cancel(_errors);
+        order.Cancel();
 
         order
             .DomainEvents.OfType<OrderCancelledEvent>()
@@ -338,9 +343,9 @@ public class ContentOrderEntityTests
         ContentOrderEntity order = ContentOrderFactory.CreatePaid();
         order.ClearDomainEvents();
 
-        Action act = () => order.Cancel(_errors);
+        Action act = () => order.Cancel();
 
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.CannotCancelPaidOrder);
         order.DomainEvents.Should().BeEmpty();
     }
 
@@ -349,7 +354,7 @@ public class ContentOrderEntityTests
     {
         ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
 
-        order.Cancel(_errors);
+        order.Cancel();
 
         order.Status.Should().Be(EnumOrderStatus.Cancelled);
     }
@@ -359,9 +364,9 @@ public class ContentOrderEntityTests
     {
         ContentOrderEntity order = ContentOrderFactory.CreateCancelled();
 
-        Action act = () => order.Cancel(_errors);
+        Action act = () => order.Cancel();
 
-        act.Should().Throw<ConflictException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.OrderAlreadyCancelled);
     }
 
     #endregion
@@ -376,7 +381,7 @@ public class ContentOrderEntityTests
         Guid newCustomerId = Guid.NewGuid();
 
         // Act
-        order.Update(customerId: newCustomerId, packageId: null, _errors);
+        order.Update(customerId: newCustomerId, packageId: null);
 
         // Assert
         order.CustomerId.Should().Be(newCustomerId);
@@ -390,7 +395,7 @@ public class ContentOrderEntityTests
         Guid newPackageId = Guid.NewGuid();
 
         // Act
-        order.Update(customerId: null, packageId: newPackageId, _errors);
+        order.Update(customerId: null, packageId: newPackageId);
 
         // Assert
         order.PackageId.Should().Be(newPackageId);
@@ -404,7 +409,7 @@ public class ContentOrderEntityTests
         Guid originalCustomerId = order.CustomerId;
 
         // Act
-        order.Update(customerId: null, packageId: null, _errors);
+        order.Update(customerId: null, packageId: null);
 
         // Assert
         order.CustomerId.Should().Be(originalCustomerId);
@@ -417,10 +422,13 @@ public class ContentOrderEntityTests
         ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
 
         // Act
-        Action act = () => order.Update(customerId: Guid.NewGuid(), packageId: null, _errors);
+        Action act = () => order.Update(customerId: Guid.NewGuid(), packageId: null);
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should()
+            .Throw<ContentRuleException>()
+            .Which.Code.Should()
+            .Be(ContentRuleCodes.CannotAddItemToNonDraftOrder);
     }
 
     #endregion

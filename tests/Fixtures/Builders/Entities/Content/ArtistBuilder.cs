@@ -106,13 +106,12 @@ public class ArtistBuilder
             realName: _realName,
             aliases: _aliases,
             birthdate: _birthdate,
-            hometown: _hometown,
-            errors: TestErrorsFactory.CreateArtistErrors()
+            hometown: _hometown
         );
 
         if (_userId.HasValue)
         {
-            entity.ClaimOwnership(_userId.Value, TestErrorsFactory.CreateArtistErrors());
+            entity.ClaimOwnership(_userId.Value);
         }
 
         entity.CreatedAt = DateTime.UtcNow;

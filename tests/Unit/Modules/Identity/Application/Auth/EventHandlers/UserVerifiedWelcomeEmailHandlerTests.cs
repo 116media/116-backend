@@ -2,6 +2,7 @@ using _116.Identity.Application.Auth.EventHandlers;
 using _116.Identity.Contracts.Application;
 using _116.Identity.Domain.Events;
 using _116.Mailer.Contracts.Application;
+using _116.Mailer.Contracts.Domain;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;

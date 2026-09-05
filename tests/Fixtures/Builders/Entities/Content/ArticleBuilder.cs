@@ -175,7 +175,6 @@ public class ArticleBuilder
     /// </summary>
     public ArticleEntity Build()
     {
-        var errors = TestErrorsFactory.CreateArticleErrors();
         ArticleEntity entity = _customerId.HasValue
             ? ArticleEntity.CreatePaid(
                 id: _id,
@@ -184,16 +183,14 @@ public class ArticleBuilder
                 categoryId: _categoryId,
                 title: _title,
                 slug: _slug,
-                authorId: _authorId,
-                errors: errors
+                authorId: _authorId
             )
             : ArticleEntity.CreateFree(
                 id: _id,
                 categoryId: _categoryId,
                 title: _title,
                 slug: _slug,
-                authorId: _authorId,
-                errors: errors
+                authorId: _authorId
             );
 
         ApplyStatusTransition(entity);

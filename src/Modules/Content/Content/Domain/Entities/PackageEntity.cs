@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
-using _116.Content.Application.Shared.Errors;
 using _116.Content.Domain.Constants;
+using _116.Content.Domain.Exceptions;
+using _116.Content.Domain.StateMachines;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -46,11 +47,11 @@ public class PackageEntity : Aggregate<Guid>
     /// <param name="name">The display name of the package.</param>
     /// <param name="description">The description of the package.</param>
     /// <returns>A new <see cref="PackageEntity" /> instance.</returns>
-    public static PackageEntity Create(Guid id, string name, string description, PackageErrors errors)
+    public static PackageEntity Create(Guid id, string name, string description)
     {
         if (string.IsNullOrWhiteSpace(value: name))
         {
-            throw errors.NameRequired();
+            throw new ContentRuleException(ContentRuleCodes.PackageNameRequired);
         }
 
         return new PackageEntity

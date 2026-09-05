@@ -1,4 +1,6 @@
 using _116.Identity.Domain.Enums;
+using _116.Identity.Domain.Exceptions;
+using _116.Identity.Domain.StateMachines;
 using _116.Identity.Domain.ValueObjects;
 using AwesomeAssertions;
 using AwesomeAssertions.Specialized;
@@ -48,8 +50,10 @@ public class ExportFormatTests
 
         // Act & Assert
         Action act = () => new ExportFormat(invalidEnum);
-        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
-        exception.Which.Message.Should().Contain("Invalid export format");
+        act.Should()
+            .ThrowExactly<IdentityRuleException>()
+            .Which.Code.Should()
+            .Be(IdentityRuleCodes.InvalidExportFormat);
     }
 
     #endregion
@@ -100,8 +104,10 @@ public class ExportFormatTests
     {
         // Act & Assert
         Action act = () => new ExportFormat("InvalidFormat");
-        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
-        exception.Which.Message.Should().Contain("Invalid export format");
+        act.Should()
+            .ThrowExactly<IdentityRuleException>()
+            .Which.Code.Should()
+            .Be(IdentityRuleCodes.InvalidExportFormat);
     }
 
     [Fact]
@@ -109,8 +115,10 @@ public class ExportFormatTests
     {
         // Act & Assert
         Action act = () => new ExportFormat(string.Empty);
-        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
-        exception.Which.Message.Should().Contain("Invalid export format");
+        act.Should()
+            .ThrowExactly<IdentityRuleException>()
+            .Which.Code.Should()
+            .Be(IdentityRuleCodes.InvalidExportFormat);
     }
 
     [Fact]
@@ -118,8 +126,10 @@ public class ExportFormatTests
     {
         // Act & Assert
         Action act = () => new ExportFormat((string)null!);
-        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
-        exception.Which.Message.Should().Contain("Invalid export format");
+        act.Should()
+            .ThrowExactly<IdentityRuleException>()
+            .Which.Code.Should()
+            .Be(IdentityRuleCodes.InvalidExportFormat);
     }
 
     #endregion
@@ -191,7 +201,10 @@ public class ExportFormatTests
         {
             ExportFormat format = invalidFormat;
         };
-        act.Should().ThrowExactly<ArgumentException>();
+        act.Should()
+            .ThrowExactly<IdentityRuleException>()
+            .Which.Code.Should()
+            .Be(IdentityRuleCodes.InvalidExportFormat);
     }
 
     #endregion

@@ -1,4 +1,5 @@
-using _116.Content.Application.Shared.Errors;
+using _116.Content.Domain.Exceptions;
+using _116.Content.Domain.StateMachines;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -47,17 +48,11 @@ public class CategoryPricingEntity : Aggregate<Guid>
     /// <param name="pricingTierId">The identifier of the pricing tier.</param>
     /// <param name="priceUsd">The price in USD (must be >= 0).</param>
     /// <returns>A new <see cref="CategoryPricingEntity" /> instance.</returns>
-    public static CategoryPricingEntity Create(
-        Guid id,
-        Guid categoryId,
-        Guid pricingTierId,
-        decimal priceUsd,
-        CategoryErrors errors
-    )
+    public static CategoryPricingEntity Create(Guid id, Guid categoryId, Guid pricingTierId, decimal priceUsd)
     {
         if (priceUsd < 0)
         {
-            throw errors.PriceMustBeNonNegative();
+            throw new ContentRuleException(ContentRuleCodes.CategoryPriceMustBeNonNegative);
         }
 
         return new CategoryPricingEntity
@@ -73,12 +68,11 @@ public class CategoryPricingEntity : Aggregate<Guid>
     /// Updates the price for this pricing tier within the category.
     /// </summary>
     /// <param name="priceUsd">The new price in USD (must be >= 0).</param>
-    /// <param name="errors">The errors factory instance.</param>
-    public void UpdatePrice(decimal priceUsd, CategoryErrors errors)
+    public void UpdatePrice(decimal priceUsd)
     {
         if (priceUsd < 0)
         {
-            throw errors.PriceMustBeNonNegative();
+            throw new ContentRuleException(ContentRuleCodes.CategoryPriceMustBeNonNegative);
         }
 
         PriceUsd = priceUsd;

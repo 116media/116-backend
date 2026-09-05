@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using _116.BuildingBlocks.Constants;
-using _116.Core.Application.Shared.Errors.Facade;
 using _116.Core.Domain.Events;
-using _116.Shared.Application.Exceptions;
+using _116.Core.Domain.Exceptions;
+using _116.Core.Domain.StateMachines;
 using _116.Shared.Domain;
 
 namespace _116.Core.Domain.Entities;
@@ -88,7 +88,6 @@ public class FileEntity : Aggregate<Guid>
     /// <param name="mimeType">MIME type of the file.</param>
     /// <param name="storageUrl">Storage URL or path.</param>
     /// <param name="sizeInBytes">File size in bytes.</param>
-    /// <param name="i18n">Localized error factory used for validation failures.</param>
     /// <param name="storageKey">Provider-agnostic storage key (e.g. Cloudinary public ID).</param>
     /// <param name="dominantColorHex">Optional dominant color as <c>#RRGGBB</c> (background).</param>
     /// <param name="foregroundColorHex">Optional contrasting foreground color as <c>#RRGGBB</c> (text).</param>
@@ -100,19 +99,26 @@ public class FileEntity : Aggregate<Guid>
         string mimeType,
         string storageUrl,
         long sizeInBytes,
-        CoreI18n i18n,
         string? storageKey = null,
         string? dominantColorHex = null,
         string? foregroundColorHex = null
     )
     {
-        BadRequestException? error = (fileName, originalFileName, mimeType, storageUrl, sizeInBytes) switch
+        Exception? error = (fileName, originalFileName, mimeType, storageUrl, sizeInBytes) switch
         {
-            var (f, _, _, _, _) when string.IsNullOrWhiteSpace(f) => i18n.File.FileNameRequired(),
-            var (_, o, _, _, _) when string.IsNullOrWhiteSpace(o) => i18n.File.OriginalFileNameRequired(),
-            var (_, _, m, _, _) when string.IsNullOrWhiteSpace(m) => i18n.File.MimeTypeRequired(),
-            var (_, _, _, s, _) when string.IsNullOrWhiteSpace(s) => i18n.File.StorageUrlRequired(),
-            (_, _, _, _, <= 0) => i18n.File.FileSizeMustBeGreaterThanZero(),
+            var (f, _, _, _, _) when string.IsNullOrWhiteSpace(f) => new CoreRuleException(
+                CoreRuleCodes.FileNameRequired
+            ),
+            var (_, o, _, _, _) when string.IsNullOrWhiteSpace(o) => new CoreRuleException(
+                CoreRuleCodes.OriginalFileNameRequired
+            ),
+            var (_, _, m, _, _) when string.IsNullOrWhiteSpace(m) => new CoreRuleException(
+                CoreRuleCodes.MimeTypeRequired
+            ),
+            var (_, _, _, s, _) when string.IsNullOrWhiteSpace(s) => new CoreRuleException(
+                CoreRuleCodes.StorageUrlRequired
+            ),
+            (_, _, _, _, <= 0) => new CoreRuleException(CoreRuleCodes.FileSizeMustBePositive),
             _ => null,
         };
 

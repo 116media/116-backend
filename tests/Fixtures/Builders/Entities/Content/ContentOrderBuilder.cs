@@ -84,12 +84,11 @@ public class ContentOrderBuilder
 
     public ContentOrderEntity Build()
     {
-        var errors = TestErrorsFactory.CreateContentOrderErrors();
         var order = ContentOrderEntity.Create(_id, _customerId, _packageId);
 
         if (_submitted)
         {
-            order.Submit(errors);
+            order.Submit();
         }
 
         if (_paid)
@@ -97,14 +96,13 @@ public class ContentOrderBuilder
             order.MarkPaid(
                 paymentId: Guid.NewGuid(),
                 verifiedAt: DateTimeOffset.UtcNow,
-                promotionDurationsByLevelId: new Dictionary<Guid, int>(),
-                errors: errors
+                promotionDurationsByLevelId: new Dictionary<Guid, int>()
             );
         }
 
         if (_cancelled)
         {
-            order.Cancel(errors);
+            order.Cancel();
         }
 
         if (_customer is not null)

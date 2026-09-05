@@ -44,33 +44,6 @@ public class VideoErrorsTests
     }
 
     [Fact]
-    public void TitleRequired_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.TitleRequired();
-
-        exception.Should().NotBeNull();
-        exception.Message.Should().Contain(_message.TitleRequired());
-    }
-
-    [Fact]
-    public void SlugRequired_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.SlugRequired();
-
-        exception.Should().NotBeNull();
-        exception.Message.Should().Contain(_message.SlugRequired());
-    }
-
-    [Fact]
-    public void CannotPublishWithoutYoutubeUrl_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.CannotPublishWithoutYoutubeUrl();
-
-        exception.Should().NotBeNull();
-        exception.Message.Should().Contain(_message.CannotPublishWithoutYoutubeUrl());
-    }
-
-    [Fact]
     public void CannotDeletePublishedVideo_ShouldReturnBadRequestException()
     {
         BadRequestException exception = _errors.CannotDeletePublishedVideo();
@@ -140,19 +113,5 @@ public class VideoErrorsTests
 
         exception.Should().NotBeNull();
         exception.Message.Should().Contain(_message.InvalidStatusTransition("Draft", "Published"));
-    }
-
-    [Fact]
-    public void CannotAttachYoutubeUrlBeforeShoot_ShouldReturnBadRequestExceptionWithShootDate()
-    {
-        // Arrange
-        DateTimeOffset shootDate = new DateTimeOffset(2026, 6, 15, 0, 0, 0, TimeSpan.Zero);
-
-        // Act
-        BadRequestException exception = _errors.CannotAttachYoutubeUrlBeforeShoot(shootDate);
-
-        // Assert
-        exception.Should().NotBeNull();
-        exception.Message.Should().Contain(_message.CannotAttachYoutubeUrlBeforeShoot(shootDate));
     }
 }

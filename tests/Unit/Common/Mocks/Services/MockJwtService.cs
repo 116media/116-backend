@@ -1,7 +1,7 @@
 using _116.Identity.Application.Auth.Services;
+using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
-using _116.Identity.Domain.Results;
 using _116.Tests.Fixtures.Constants;
 using Moq;
 
@@ -29,7 +29,7 @@ public static class MockJwtService
     /// <param name="mock">The mock instance.</param>
     /// <param name="result">The JWT generation result to return.</param>
     /// <returns>The mock instance for chaining.</returns>
-    public static Mock<IJwtService> SetupGenerateToken(this Mock<IJwtService> mock, JwtGenerationResult result)
+    public static Mock<IJwtService> SetupGenerateToken(this Mock<IJwtService> mock, JwtGenerationDto result)
     {
         mock.Setup(x =>
                 x.GenerateToken(
@@ -63,7 +63,7 @@ public static class MockJwtService
         DateTime? expiresAt = null
     )
     {
-        JwtGenerationResult result = new(token, expiresAt ?? DateTime.UtcNow.AddHours(1));
+        JwtGenerationDto result = new(token, expiresAt ?? DateTime.UtcNow.AddHours(1));
         return mock.SetupGenerateToken(result);
     }
 
@@ -148,7 +148,7 @@ public static class MockJwtService
     /// </summary>
     private static void SetupDefaults(Mock<IJwtService> mock)
     {
-        JwtGenerationResult defaultResult = new(
+        JwtGenerationDto defaultResult = new(
             TestConstants.Jwt.ValidAccessToken,
             DateTime.UtcNow.AddMinutes(TestConstants.Jwt.AccessTokenExpirationMinutes)
         );

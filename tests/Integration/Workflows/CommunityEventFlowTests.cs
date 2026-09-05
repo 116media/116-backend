@@ -6,7 +6,7 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.VerifyArtistOwn
 using _116.Content.Application.Interactions.UseCases.Public.Commands.AddCommentReply.V1;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
-using _116.Mailer.Contracts.Application;
+using _116.Mailer.Contracts.Domain;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;

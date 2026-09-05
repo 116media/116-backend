@@ -92,8 +92,7 @@ public class PublicSubmitLyricsHandler(
             lyricsText: command.LyricsText,
             language: command.Language,
             slug: command.Slug,
-            authorId: command.UserId,
-            errors: i18n.Lyrics
+            authorId: command.UserId
         );
         lyrics.LinkArtist(artistId: ownedArtist.Id);
 

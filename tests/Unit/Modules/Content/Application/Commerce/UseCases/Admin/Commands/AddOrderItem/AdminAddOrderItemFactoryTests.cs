@@ -3,6 +3,8 @@ using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
+using _116.Content.Domain.Exceptions;
+using _116.Content.Domain.StateMachines;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
@@ -39,9 +41,7 @@ public class AdminAddOrderItemFactoryTests
             _packageRepositoryMock.Object,
             _orderRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateCategoryErrors(),
-            TestErrorsFactory.CreateContentOrderErrors(),
-            TestErrorsFactory.CreatePromotionLevelErrors()
+            TestErrorsFactory.CreateCategoryErrors()
         );
     }
 
@@ -128,7 +128,9 @@ public class AdminAddOrderItemFactoryTests
             );
 
         // Assert
-        await act.Should().ThrowAsync<BadRequestException>();
+        (await act.Should().ThrowAsync<ContentRuleException>())
+            .Which.Code.Should()
+            .Be(ContentRuleCodes.CannotAddItemToNonDraftOrder);
     }
 
     [Fact]
@@ -206,7 +208,9 @@ public class AdminAddOrderItemFactoryTests
             );
 
         // Assert
-        await act.Should().ThrowAsync<NotFoundException>();
+        (await act.Should().ThrowAsync<ContentRuleException>())
+            .Which.Code.Should()
+            .Be(ContentRuleCodes.PromotionLevelNotFound);
     }
 
     [Fact]
@@ -231,7 +235,9 @@ public class AdminAddOrderItemFactoryTests
             );
 
         // Assert
-        await act.Should().ThrowAsync<NotFoundException>();
+        (await act.Should().ThrowAsync<ContentRuleException>())
+            .Which.Code.Should()
+            .Be(ContentRuleCodes.CategoryNotFound);
     }
 
     #endregion

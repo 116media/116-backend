@@ -1,4 +1,6 @@
 using _116.Identity.Domain.Enums;
+using _116.Identity.Domain.Exceptions;
+using _116.Identity.Domain.StateMachines;
 using _116.Identity.Domain.ValueObjects;
 using AwesomeAssertions;
 using AwesomeAssertions.Specialized;
@@ -48,8 +50,10 @@ public class ClientTests
 
         // Act & Assert
         Action act = () => new Client(invalidEnum);
-        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
-        exception.Which.Message.Should().Contain("Invalid client platform");
+        act.Should()
+            .ThrowExactly<IdentityRuleException>()
+            .Which.Code.Should()
+            .Be(IdentityRuleCodes.InvalidClientPlatform);
     }
 
     #endregion
@@ -95,31 +99,18 @@ public class ClientTests
         client.Value.Should().Be(EnumClient.WebApp);
     }
 
-    [Fact]
-    public void Constructor_WithInvalidStringValue_ShouldThrowArgumentException()
+    [Theory]
+    [InlineData("InvalidClient")]
+    [InlineData("")]
+    [InlineData(null)]
+    public void Constructor_WithInvalidStringValue_ShouldThrowTheInvalidPlatformRule(string? invalid)
     {
         // Act & Assert
-        Action act = () => new Client("InvalidClient");
-        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
-        exception.Which.Message.Should().Contain("Invalid client platform");
-    }
-
-    [Fact]
-    public void Constructor_WithEmptyString_ShouldThrowArgumentException()
-    {
-        // Act & Assert
-        Action act = () => new Client(string.Empty);
-        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
-        exception.Which.Message.Should().Contain("Invalid client platform");
-    }
-
-    [Fact]
-    public void Constructor_WithNullString_ShouldThrowArgumentException()
-    {
-        // Act & Assert
-        Action act = () => new Client((string)null!);
-        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
-        exception.Which.Message.Should().Contain("Invalid client platform");
+        Action act = () => new Client(invalid!);
+        act.Should()
+            .ThrowExactly<IdentityRuleException>()
+            .Which.Code.Should()
+            .Be(IdentityRuleCodes.InvalidClientPlatform);
     }
 
     #endregion
@@ -181,7 +172,7 @@ public class ClientTests
     }
 
     [Fact]
-    public void ImplicitConversionFromString_WithInvalidValue_ShouldThrowArgumentException()
+    public void ImplicitConversionFromString_WithInvalidValue_ShouldThrowTheInvalidPlatformRule()
     {
         // Arrange
         string invalidClient = "InvalidClient";
@@ -191,7 +182,10 @@ public class ClientTests
         {
             Client client = invalidClient;
         };
-        act.Should().ThrowExactly<ArgumentException>();
+        act.Should()
+            .ThrowExactly<IdentityRuleException>()
+            .Which.Code.Should()
+            .Be(IdentityRuleCodes.InvalidClientPlatform);
     }
 
     #endregion
@@ -233,6 +227,35 @@ public class ClientTests
 
         // Assert
         hash1.Should().Be(hash2);
+    }
+
+    #endregion
+
+    #region TryFrom (untrusted boundary)
+
+    [Theory]
+    [InlineData("MobileApp", EnumClient.MobileApp)]
+    [InlineData("webapp", EnumClient.WebApp)]
+    [InlineData("Dashboard", EnumClient.Dashboard)]
+    public void TryFrom_WithKnownLabel_ShouldReturnThePlatform(string label, EnumClient expected)
+    {
+        // Act
+        Client? client = Client.TryFrom(label);
+
+        // Assert
+        client.Should().NotBeNull();
+        client!.Value.Should().Be(expected);
+    }
+
+    [Theory]
+    [InlineData("InvalidClient")]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData(null)]
+    public void TryFrom_WhenMissingOrUnknown_ShouldReturnNull(string? label)
+    {
+        // Act & Assert — the header is optional and untrusted, so it never rejects
+        Client.TryFrom(label).Should().BeNull();
     }
 
     #endregion

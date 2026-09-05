@@ -1,6 +1,6 @@
 using _116.Mailer.Application.Notifications.UseCases.Public.Commands.MarkNotificationRead.V1;
 using _116.Mailer.Application.Shared.Errors.Messages;
-using _116.Mailer.Contracts.Application;
+using _116.Mailer.Contracts.Domain;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Infrastructure.Persistence;
 using _116.Shared.Application.Exceptions;

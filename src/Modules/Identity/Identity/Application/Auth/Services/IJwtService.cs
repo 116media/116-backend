@@ -1,6 +1,6 @@
+using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
-using _116.Identity.Domain.Results;
 
 namespace _116.Identity.Application.Auth.Services;
 
@@ -29,7 +29,7 @@ public interface IJwtService
     /// <remarks>
     /// This provides both the JWT token and its expiration time for creating complete authentication results.
     /// </remarks>
-    JwtGenerationResult GenerateToken(
+    JwtGenerationDto GenerateToken(
         Guid userId,
         Guid sessionId,
         string email,

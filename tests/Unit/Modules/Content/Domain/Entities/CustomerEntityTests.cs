@@ -1,4 +1,6 @@
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Exceptions;
+using _116.Content.Domain.StateMachines;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Helpers;
@@ -23,15 +25,7 @@ public class CustomerEntityTests
         string email = TestConstants.Customer.ValidEmail;
 
         // Act
-        var entity = CustomerEntity.Create(
-            id,
-            fullName,
-            email,
-            null,
-            null,
-            null,
-            TestErrorsFactory.CreateCustomerErrors()
-        );
+        var entity = CustomerEntity.Create(id, fullName, email, null, null, null);
 
         // Assert
         entity.Id.Should().Be(id);
@@ -52,8 +46,7 @@ public class CustomerEntityTests
             TestConstants.Customer.ValidEmail,
             TestConstants.Customer.ValidPhone,
             TestConstants.Customer.ValidCompany,
-            TestConstants.Customer.ValidNotes,
-            TestErrorsFactory.CreateCustomerErrors()
+            TestConstants.Customer.ValidNotes
         );
 
         // Assert
@@ -76,12 +69,11 @@ public class CustomerEntityTests
                 TestConstants.Customer.ValidEmail,
                 null,
                 null,
-                null,
-                TestErrorsFactory.CreateCustomerErrors()
+                null
             );
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.CustomerFullNameRequired);
     }
 
     [Theory]
@@ -98,12 +90,11 @@ public class CustomerEntityTests
                 invalidEmail!,
                 null,
                 null,
-                null,
-                TestErrorsFactory.CreateCustomerErrors()
+                null
             );
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.CustomerEmailRequired);
     }
 
     #endregion
@@ -120,19 +111,11 @@ public class CustomerEntityTests
             TestConstants.Customer.ValidEmail,
             null,
             null,
-            null,
-            TestErrorsFactory.CreateCustomerErrors()
+            null
         );
 
         // Act
-        entity.Update(
-            "New Name",
-            "new@example.com",
-            TestConstants.Customer.ValidPhone,
-            "New Company",
-            "Some notes",
-            TestErrorsFactory.CreateCustomerErrors()
-        );
+        entity.Update("New Name", "new@example.com", TestConstants.Customer.ValidPhone, "New Company", "Some notes");
 
         // Assert
         entity.FullName.Should().Be("New Name");
@@ -152,12 +135,11 @@ public class CustomerEntityTests
             TestConstants.Customer.ValidEmail,
             null,
             null,
-            null,
-            TestErrorsFactory.CreateCustomerErrors()
+            null
         );
 
         // Act
-        entity.Update("New Name", "updated@example.com", null, null, null, TestErrorsFactory.CreateCustomerErrors());
+        entity.Update("New Name", "updated@example.com", null, null, null);
 
         // Assert
         entity.Email.Should().Be("updated@example.com");
@@ -176,23 +158,14 @@ public class CustomerEntityTests
             TestConstants.Customer.ValidEmail,
             null,
             null,
-            null,
-            TestErrorsFactory.CreateCustomerErrors()
+            null
         );
 
         // Act
-        Action act = () =>
-            entity.Update(
-                invalidFullName!,
-                TestConstants.Customer.ValidEmail,
-                null,
-                null,
-                null,
-                TestErrorsFactory.CreateCustomerErrors()
-            );
+        Action act = () => entity.Update(invalidFullName!, TestConstants.Customer.ValidEmail, null, null, null);
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.CustomerFullNameRequired);
     }
 
     [Theory]
@@ -208,23 +181,14 @@ public class CustomerEntityTests
             TestConstants.Customer.ValidEmail,
             null,
             null,
-            null,
-            TestErrorsFactory.CreateCustomerErrors()
+            null
         );
 
         // Act
-        Action act = () =>
-            entity.Update(
-                TestConstants.Customer.ValidFullName,
-                invalidEmail!,
-                null,
-                null,
-                null,
-                TestErrorsFactory.CreateCustomerErrors()
-            );
+        Action act = () => entity.Update(TestConstants.Customer.ValidFullName, invalidEmail!, null, null, null);
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.CustomerEmailRequired);
     }
 
     [Fact]
@@ -237,19 +201,11 @@ public class CustomerEntityTests
             TestConstants.Customer.ValidEmail,
             TestConstants.Customer.ValidPhone,
             TestConstants.Customer.ValidCompany,
-            TestConstants.Customer.ValidNotes,
-            TestErrorsFactory.CreateCustomerErrors()
+            TestConstants.Customer.ValidNotes
         );
 
         // Act
-        entity.Update(
-            "Updated Name",
-            "updated@example.com",
-            null,
-            null,
-            null,
-            TestErrorsFactory.CreateCustomerErrors()
-        );
+        entity.Update("Updated Name", "updated@example.com", null, null, null);
 
         // Assert
         entity.FullName.Should().Be("Updated Name");

@@ -1,6 +1,8 @@
 using _116.Identity.Contracts.Application;
 using _116.Identity.Domain.Events;
 using _116.Mailer.Contracts.Application;
+using _116.Mailer.Contracts.Domain;
+using _116.Shared.Application.Localization;
 using _116.Shared.Application.Services;
 using Microsoft.Extensions.Logging;
 

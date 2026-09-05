@@ -4,12 +4,12 @@ using _116.Identity.Application.Session.Factories.Contracts;
 using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Session.Services;
 using _116.Identity.Application.Shared.Cache;
+using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
-using _116.Identity.Domain.Results;
 using _116.Tests.Fixtures.Factories.Identity;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
@@ -88,7 +88,7 @@ public class SessionFactoryTests : IDisposable
         string ipAddress = "192.168.1.1";
         string userAgent = "Mozilla/5.0";
         var clientOrigin = new ClientOriginInfo(EnumBrowser.Chrome, EnumDevice.Desktop, EnumPlatform.Windows);
-        var jwtResult = new JwtGenerationResult("access_token", DateTime.UtcNow.AddHours(1));
+        var jwtResult = new JwtGenerationDto("access_token", DateTime.UtcNow.AddHours(1));
 
         _sessionMetadataServiceMock.Setup(x => x.ExtractDeviceId()).Returns(deviceId);
 
@@ -154,7 +154,7 @@ public class SessionFactoryTests : IDisposable
         string refreshTokenHash = "hashed_refresh_token";
         string deviceId = "device_123";
         SessionEntity existingSession = SessionFactory.Create(Guid.NewGuid(), deviceId);
-        var jwtResult = new JwtGenerationResult("access_token", DateTime.UtcNow.AddHours(1));
+        var jwtResult = new JwtGenerationDto("access_token", DateTime.UtcNow.AddHours(1));
 
         _sessionMetadataServiceMock.Setup(x => x.ExtractDeviceId()).Returns(deviceId);
 
@@ -249,7 +249,7 @@ public class SessionFactoryTests : IDisposable
                     It.IsAny<EnumAuthProvider>()
                 )
             )
-            .Returns(new JwtGenerationResult("token", DateTime.UtcNow.AddHours(1)));
+            .Returns(new JwtGenerationDto("token", DateTime.UtcNow.AddHours(1)));
 
         // Act
         await _factory.CreateSessionAsync(user, userPermissions, CancellationToken.None);
@@ -312,7 +312,7 @@ public class SessionFactoryTests : IDisposable
                     It.IsAny<EnumAuthProvider>()
                 )
             )
-            .Returns(new JwtGenerationResult("token", DateTime.UtcNow.AddHours(1)));
+            .Returns(new JwtGenerationDto("token", DateTime.UtcNow.AddHours(1)));
 
         // Act
         await _factory.CreateSessionAsync(user, userPermissions, CancellationToken.None);
@@ -377,7 +377,7 @@ public class SessionFactoryTests : IDisposable
                     It.IsAny<EnumAuthProvider>()
                 )
             )
-            .Returns(new JwtGenerationResult("token", DateTime.UtcNow.AddHours(1)));
+            .Returns(new JwtGenerationDto("token", DateTime.UtcNow.AddHours(1)));
 
         // Act
         await _factory.CreateSessionAsync(user, userPermissions, CancellationToken.None);
@@ -442,7 +442,7 @@ public class SessionFactoryTests : IDisposable
                     It.IsAny<EnumAuthProvider>()
                 )
             )
-            .Returns(new JwtGenerationResult("token", DateTime.UtcNow.AddHours(1)));
+            .Returns(new JwtGenerationDto("token", DateTime.UtcNow.AddHours(1)));
 
         // Act
         await _factory.CreateSessionAsync(user, userPermissions, CancellationToken.None);
@@ -503,7 +503,7 @@ public class SessionFactoryTests : IDisposable
                     user.AuthProvider
                 )
             )
-            .Returns(new JwtGenerationResult("access_token", DateTime.UtcNow.AddHours(1)));
+            .Returns(new JwtGenerationDto("access_token", DateTime.UtcNow.AddHours(1)));
 
         // Act
         await _factory.CreateSessionAsync(user, userPermissions, CancellationToken.None);
@@ -576,7 +576,7 @@ public class SessionFactoryTests : IDisposable
                     It.IsAny<EnumAuthProvider>()
                 )
             )
-            .Returns(new JwtGenerationResult("token", DateTime.UtcNow.AddHours(1)));
+            .Returns(new JwtGenerationDto("token", DateTime.UtcNow.AddHours(1)));
 
         // Act
         await _factory.CreateSessionAsync(user, userPermissions, cancellationToken);

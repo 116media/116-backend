@@ -60,40 +60,4 @@ public class PromotionLevelErrorsTests
         exception.Should().NotBeNull();
         exception.Message.Should().Contain(_message.AlreadyInactive());
     }
-
-    [Fact]
-    public void NameRequired_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.NameRequired();
-
-        exception.Should().NotBeNull();
-        exception.Message.Should().Contain(_message.NameRequired());
-    }
-
-    [Fact]
-    public void DurationMustBePositive_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.DurationMustBePositive();
-
-        exception.Should().NotBeNull();
-        exception.Message.Should().Contain(_message.DurationMustBePositive());
-    }
-
-    [Fact]
-    public void PriceMustBeNonNegative_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.PriceMustBeNonNegative();
-
-        exception.Should().NotBeNull();
-        exception.Message.Should().Contain(_message.PriceMustBeNonNegative());
-    }
-
-    [Fact]
-    public void InvalidSpotPriority_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.InvalidSpotPriority();
-
-        exception.Should().NotBeNull();
-        exception.Message.Should().Contain(_message.InvalidSpotPriority());
-    }
 }

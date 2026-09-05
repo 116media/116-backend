@@ -3,6 +3,8 @@ using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Events;
+using _116.Content.Domain.Exceptions;
+using _116.Content.Domain.StateMachines;
 using _116.Core.Application.Shared.Repositories;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Builders.Entities.Content;
@@ -40,8 +42,7 @@ public class AdminAttachYoutubeVideoUrlHandlerTests : BaseContentHandlerTest
             _videoRepositoryMock.Object,
             _unitOfWorkMock.Object,
             _fileRepositoryMock.Object,
-            Mapper,
-            TestErrorsFactory.CreateContentI18n()
+            Mapper
         );
     }
 
@@ -157,9 +158,9 @@ public class AdminAttachYoutubeVideoUrlHandlerTests : BaseContentHandlerTest
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        await act.Should()
-            .ThrowAsync<BadRequestException>()
-            .WithMessage("*YouTube URL cannot be added before the shooting date*");
+        (await act.Should().ThrowAsync<ContentRuleException>())
+            .Which.Code.Should()
+            .Be(ContentRuleCodes.CannotAttachYoutubeUrlBeforeShoot);
         video.YoutubeVideoUrl.Should().BeNull();
         video.DomainEvents.Should().BeEmpty();
         _unitOfWorkMock.VerifyCommitNotCalled();

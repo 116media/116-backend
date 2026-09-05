@@ -5,12 +5,12 @@ using _116.Identity.Application.Session.Factories.Contracts;
 using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Session.Services;
 using _116.Identity.Application.Shared.Cache;
+using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
-using _116.Identity.Domain.Results;
 using _116.Shared.Application.Configurations;
 
 namespace _116.Identity.Application.Session.Factories;
@@ -113,7 +113,7 @@ public class SessionFactory(
             cancellationToken: cancellationToken
         );
 
-        JwtGenerationResult accessToken = jwtService.GenerateToken(
+        JwtGenerationDto accessToken = jwtService.GenerateToken(
             userId: user.Id,
             sessionId: sessionId,
             email: user.Email!,

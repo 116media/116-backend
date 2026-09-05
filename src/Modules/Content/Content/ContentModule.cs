@@ -102,6 +102,7 @@ public static class ContentModule
         services.AddScoped<SubmissionErrorMessage>();
         services.AddScoped<LyricsRevisionErrorMessage>();
         services.AddScoped<StreamingLinkErrorMessage>();
+        services.AddScoped<ShareErrorMessage>();
         services.AddSingleton<IExceptionStrategy, StreamingLinkResolutionExceptionHandler>();
         services.AddSingleton<IExceptionStrategy, DomainRuleExceptionStrategy>();
 

@@ -57,8 +57,7 @@ public class AdminCreateVideoHandler(
                 title: command.Title,
                 slug: command.Slug,
                 authorId: command.AuthorId,
-                description: command.Description,
-                errors: i18n.Video
+                description: command.Description
             );
         }
         else
@@ -69,8 +68,7 @@ public class AdminCreateVideoHandler(
                 title: command.Title,
                 slug: command.Slug,
                 authorId: command.AuthorId,
-                description: command.Description,
-                errors: i18n.Video
+                description: command.Description
             );
         }
 

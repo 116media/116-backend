@@ -29,20 +29,4 @@ public class TagErrors(TagErrorMessage i18n)
     {
         return new NotFoundException("Tag", "id", keyValue: id);
     }
-
-    /// <summary>
-    /// Throws when a tag name is required but not provided.
-    /// </summary>
-    public BadRequestException NameRequired()
-    {
-        return new BadRequestException(i18n.NameRequired());
-    }
-
-    /// <summary>
-    /// Throws when a tag slug is required but not provided.
-    /// </summary>
-    public BadRequestException SlugRequired()
-    {
-        return new BadRequestException(i18n.SlugRequired());
-    }
 }

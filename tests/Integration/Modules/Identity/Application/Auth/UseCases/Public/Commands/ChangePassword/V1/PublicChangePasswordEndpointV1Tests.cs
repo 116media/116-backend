@@ -59,7 +59,7 @@ public class PublicChangePasswordEndpointV1Tests(PostgresFixture db) : BaseApiTe
         var user = UserFactory.CreateWithId(userId, $"chg-ok-{userId:N}@test.com");
         user.MarkAsVerified();
         user.Activate();
-        user.InitializePasswordHash(hashedPassword, errors);
+        user.InitializePasswordHash(hashedPassword);
 
         var sessionId = Guid.NewGuid();
         var session = SessionFactory.CreateWithId(sessionId, userId);
@@ -101,7 +101,7 @@ public class PublicChangePasswordEndpointV1Tests(PostgresFixture db) : BaseApiTe
         var user = UserFactory.CreateWithId(userId, $"chg-wrong-{userId:N}@test.com");
         user.MarkAsVerified();
         user.Activate();
-        user.InitializePasswordHash(hashedPassword, errors);
+        user.InitializePasswordHash(hashedPassword);
 
         var sessionId = Guid.NewGuid();
         var session = SessionFactory.CreateWithId(sessionId, userId);
@@ -138,7 +138,7 @@ public class PublicChangePasswordEndpointV1Tests(PostgresFixture db) : BaseApiTe
         var user = UserFactory.CreateWithId(userId, $"chg-same-{userId:N}@test.com");
         user.MarkAsVerified();
         user.Activate();
-        user.InitializePasswordHash(hashedPassword, errors);
+        user.InitializePasswordHash(hashedPassword);
 
         var sessionId = Guid.NewGuid();
         var session = SessionFactory.CreateWithId(sessionId, userId);

@@ -31,7 +31,7 @@ public class AdminRemoveOrderItemHandler(
             await contentOrderRepository.GetByIdWithItemsAsync(id: orderId, ct: cancellationToken)
             ?? throw i18n.ContentOrder.NotFound(id: orderId);
 
-        order.EnsureDraft(i18n.ContentOrder);
+        order.EnsureDraft();
 
         ContentOrderItemEntity item = await contentOrderRepository.GetItemByIdOrThrowAsync(
             orderId: orderId,

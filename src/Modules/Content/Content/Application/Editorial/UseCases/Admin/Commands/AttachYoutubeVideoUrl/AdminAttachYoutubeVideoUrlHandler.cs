@@ -27,15 +27,11 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.AttachYoutu
 /// <param name="mapper">
 /// Mapster mapper for entity-to-DTO transformations.
 /// </param>
-/// <param name="i18n">
-/// Video domain error factory.
-/// </param>
 public class AdminAttachYoutubeVideoUrlHandler(
     IVideoRepository videoRepository,
     IContentUnitOfWork unitOfWork,
     IFileRepository fileRepository,
-    IMapper mapper,
-    ContentI18n i18n
+    IMapper mapper
 ) : ICommandHandler<AdminAttachYoutubeVideoUrlCommand, AdminAttachYoutubeVideoUrlResult>
 {
     /// <inheritdoc />
@@ -51,7 +47,7 @@ public class AdminAttachYoutubeVideoUrlHandler(
             cancellationToken: cancellationToken
         );
 
-        video.AttachYoutubeVideoUrl(youtubeVideoUrl: command.YoutubeVideoUrl, errors: i18n.Video);
+        video.AttachYoutubeVideoUrl(youtubeVideoUrl: command.YoutubeVideoUrl);
 
         videoRepository.Update(video: video);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);

@@ -89,7 +89,7 @@ public class AdminChangePasswordEndpointV1Tests(PostgresFixture db) : BaseApiTes
         var user = UserFactory.Create(email);
         user.MarkAsVerified();
         user.Activate();
-        user.InitializePasswordHash(hashedPassword, errors);
+        user.InitializePasswordHash(hashedPassword);
         var userRole = UserRoleFactory.Create(user.Id, adminRole.Id);
 
         var sessionId = Guid.NewGuid();

@@ -466,8 +466,7 @@ public class PublicRecordLyricsViewHandlerTests
             language: lyrics.Language,
             videoId: lyrics.VideoId,
             customerId: lyrics.CustomerId,
-            orderItemId: lyrics.OrderItemId,
-            errors: TestErrorsFactory.CreateLyricsErrors()
+            orderItemId: lyrics.OrderItemId
         );
         return lyrics;
     }

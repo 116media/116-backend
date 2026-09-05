@@ -181,7 +181,7 @@ public class UserRoleSpecificationsTests
         // Arrange
         RoleEntity adminRole = RoleFactory.CreateAdmin();
         UserEntity user = UserFactory.CreateInactive();
-        user.AssignRole(UserRoleFactory.Create(user.Id, adminRole.Id), TestErrorsFactory.CreateUserErrors());
+        user.AssignRole(UserRoleFactory.Create(user.Id, adminRole.Id));
         UserIsActiveAdminSpecification spec = new();
 
         // Act

@@ -42,22 +42,4 @@ public class TagErrorsTests
         exception.Should().BeOfType<NotFoundException>();
         exception.Message.Should().Contain(id.ToString());
     }
-
-    [Fact]
-    public void NameRequired_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.NameRequired();
-
-        exception.Should().NotBeNull();
-        exception.Message.Should().Contain(_message.NameRequired());
-    }
-
-    [Fact]
-    public void SlugRequired_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.SlugRequired();
-
-        exception.Should().NotBeNull();
-        exception.Message.Should().Contain(_message.SlugRequired());
-    }
 }

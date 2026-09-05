@@ -45,36 +45,4 @@ public class PromotionLevelErrors(PromotionLevelErrorMessage i18n)
     {
         return new ConflictException(i18n.AlreadyInactive());
     }
-
-    /// <summary>
-    /// Throws when a promotion level name is required but not provided.
-    /// </summary>
-    public BadRequestException NameRequired()
-    {
-        return new BadRequestException(i18n.NameRequired());
-    }
-
-    /// <summary>
-    /// Throws when the promotion level duration is not a positive number.
-    /// </summary>
-    public BadRequestException DurationMustBePositive()
-    {
-        return new BadRequestException(i18n.DurationMustBePositive());
-    }
-
-    /// <summary>
-    /// Throws when the promotion level price is negative.
-    /// </summary>
-    public BadRequestException PriceMustBeNonNegative()
-    {
-        return new BadRequestException(i18n.PriceMustBeNonNegative());
-    }
-
-    /// <summary>
-    /// Throws when the spot priority is not a valid homepage grid position (must be 1, 2, or 3).
-    /// </summary>
-    public BadRequestException InvalidSpotPriority()
-    {
-        return new BadRequestException(i18n.InvalidSpotPriority());
-    }
 }

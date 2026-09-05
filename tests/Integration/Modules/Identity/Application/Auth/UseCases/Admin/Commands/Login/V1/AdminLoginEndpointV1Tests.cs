@@ -92,7 +92,7 @@ public class AdminLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
         var user = UserFactory.Create(email);
         user.MarkAsVerified();
         user.Activate();
-        user.InitializePasswordHash(hashedPassword, errors);
+        user.InitializePasswordHash(hashedPassword);
         var userRole = UserRoleFactory.Create(user.Id, adminRole.Id);
 
         await using var seedContext = CreateDbContext<IdentityDbContext>();
@@ -131,7 +131,7 @@ public class AdminLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
         var user = UserFactory.Create(email);
         user.MarkAsVerified();
         user.Activate();
-        user.InitializePasswordHash(passwordService.Hash(TestAuth.ValidPassword), errors);
+        user.InitializePasswordHash(passwordService.Hash(TestAuth.ValidPassword));
         var userRole = UserRoleFactory.Create(user.Id, visitorRole.Id);
 
         await SeedAsync<IdentityDbContext>(context =>
@@ -169,7 +169,7 @@ public class AdminLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
         var user = UserFactory.Create(email);
         user.MarkAsVerified();
         user.Activate();
-        user.InitializePasswordHash(passwordService.Hash(TestAuth.ValidPassword), errors);
+        user.InitializePasswordHash(passwordService.Hash(TestAuth.ValidPassword));
         var userRole = UserRoleFactory.Create(user.Id, adminRole.Id);
 
         await SeedAsync<IdentityDbContext>(context =>

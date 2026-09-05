@@ -1,5 +1,5 @@
 using _116.BuildingBlocks.Constants.RateLimit;
-using _116.Identity.Domain.Results;
+using _116.Identity.Application.Shared.DTOs;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.Login;
@@ -25,8 +25,8 @@ public record AdminLoginCommand(string Email, string Password) : ICommand<AdminL
 /// <summary>
 /// Result of the <see cref="AdminLoginCommand" /> containing admin authentication details.
 /// </summary>
-/// <param name="AuthenticationResult">The authentication result with admin user info and JWT token.</param>
+/// <param name="Authentication">The authenticated user with admin user info and JWT token.</param>
 /// <remarks>
 /// Contains admin-specific authentication information including elevated permissions.
 /// </remarks>
-public record AdminLoginResult(AuthenticationResult AuthenticationResult);
+public record AdminLoginResult(AuthenticationDto Authentication);

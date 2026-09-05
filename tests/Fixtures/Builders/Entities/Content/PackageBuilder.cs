@@ -52,7 +52,7 @@ public class PackageBuilder
     /// </summary>
     public PackageEntity Build()
     {
-        var entity = PackageEntity.Create(_id, _name, _description, TestErrorsFactory.CreatePackageErrors());
+        var entity = PackageEntity.Create(_id, _name, _description);
 
         if (!_isActive)
         {

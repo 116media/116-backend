@@ -1,4 +1,4 @@
-namespace _116.Mailer.Contracts.Application;
+namespace _116.Mailer.Contracts.Domain;
 
 /// <summary>
 /// Catalog of every templated email the platform sends. Each member maps to a

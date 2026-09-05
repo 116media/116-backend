@@ -5,6 +5,7 @@ using _116.Identity.Contracts.Application;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.Events;
 using _116.Mailer.Contracts.Application;
+using _116.Mailer.Contracts.Domain;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using Microsoft.Extensions.Logging.Abstractions;

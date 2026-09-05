@@ -45,21 +45,6 @@ public class AlbumErrorsTests
     }
 
     [Fact]
-    public void NameRequired_ShouldReturnBadRequestExceptionWithLocalizedMessage()
-    {
-        // Arrange & Act
-        BadRequestException ex = _errors.NameRequired();
-
-        // Assert
-        ex.Should().BeOfType<BadRequestException>();
-        ex.Message.Should().NotBeNullOrWhiteSpace().And.Contain(_message.NameRequired());
-    }
-
-    #endregion
-
-    #region AlbumErrorMessage
-
-    [Fact]
     public void Localizer_ShouldBeUsableForValidationExtensions()
     {
         // Arrange & Act

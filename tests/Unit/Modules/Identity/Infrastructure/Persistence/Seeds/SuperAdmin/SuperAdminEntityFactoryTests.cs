@@ -25,7 +25,7 @@ public class SuperAdminEntityFactoryTests : IDisposable
     public SuperAdminEntityFactoryTests()
     {
         _passwordServiceMock = new Mock<IPasswordService>();
-        _factory = new SuperAdminEntityFactory(_passwordServiceMock.Object, TestErrorsFactory.CreateUserErrors());
+        _factory = new SuperAdminEntityFactory(_passwordServiceMock.Object);
 
         // Setup default password environment variable
         _originalPassword = Environment.GetEnvironmentVariable(DefaultPasswordVariable);

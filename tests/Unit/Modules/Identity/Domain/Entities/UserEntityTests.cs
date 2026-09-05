@@ -2,6 +2,8 @@ using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.Events;
+using _116.Identity.Domain.Exceptions;
+using _116.Identity.Domain.StateMachines;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Builders.Entities.Identity;
 using _116.Tests.Fixtures.Constants;
@@ -31,7 +33,7 @@ public class UserEntityTests
         string passwordHash = TestConstants.User.DefaultPasswordHash;
 
         // Act
-        var user = UserEntity.Create(id, email, userName, passwordHash, TestErrorsFactory.CreateUserErrors());
+        var user = UserEntity.Create(id, email, userName, passwordHash);
 
         // Assert
         user.Id.Should().Be(id);
@@ -58,8 +60,7 @@ public class UserEntityTests
                 id,
                 invalidEmail!,
                 TestConstants.User.ValidUserName,
-                TestConstants.User.DefaultPasswordHash,
-                TestErrorsFactory.CreateUserErrors()
+                TestConstants.User.DefaultPasswordHash
             );
 
         // Assert
@@ -81,8 +82,7 @@ public class UserEntityTests
                 id,
                 TestConstants.User.ValidEmail,
                 invalidUserName!,
-                TestConstants.User.DefaultPasswordHash,
-                TestErrorsFactory.CreateUserErrors()
+                TestConstants.User.DefaultPasswordHash
             );
 
         // Assert
@@ -104,8 +104,7 @@ public class UserEntityTests
                 id,
                 TestConstants.User.ValidEmail,
                 TestConstants.User.ValidUserName,
-                invalidPasswordHash!,
-                TestErrorsFactory.CreateUserErrors()
+                invalidPasswordHash!
             );
 
         // Assert
@@ -125,14 +124,7 @@ public class UserEntityTests
         string email = TestConstants.User.ValidEmail;
 
         // Act
-        var user = UserEntity.CreateExternal(
-            id,
-            userName,
-            EnumAuthProvider.Google,
-            $"sub-{Guid.NewGuid():N}",
-            TestErrorsFactory.CreateUserErrors(),
-            email
-        );
+        var user = UserEntity.CreateExternal(id, userName, EnumAuthProvider.Google, $"sub-{Guid.NewGuid():N}", email);
 
         // Assert
         user.Id.Should().Be(id);
@@ -154,8 +146,7 @@ public class UserEntityTests
             Guid.NewGuid(),
             TestConstants.User.ValidUserName,
             EnumAuthProvider.Google,
-            subjectId,
-            TestErrorsFactory.CreateUserErrors()
+            subjectId
         );
 
         // Assert
@@ -170,13 +161,7 @@ public class UserEntityTests
         string userName = TestConstants.User.ValidUserName;
 
         // Act
-        var user = UserEntity.CreateExternal(
-            id,
-            userName,
-            EnumAuthProvider.Facebook,
-            $"sub-{Guid.NewGuid():N}",
-            TestErrorsFactory.CreateUserErrors()
-        );
+        var user = UserEntity.CreateExternal(id, userName, EnumAuthProvider.Facebook, $"sub-{Guid.NewGuid():N}");
 
         // Assert
         user.Id.Should().Be(id);
@@ -196,13 +181,7 @@ public class UserEntityTests
 
         // Act
         Action act = () =>
-            UserEntity.CreateExternal(
-                id,
-                invalidUserName!,
-                EnumAuthProvider.Google,
-                $"sub-{Guid.NewGuid():N}",
-                TestErrorsFactory.CreateUserErrors()
-            );
+            UserEntity.CreateExternal(id, invalidUserName!, EnumAuthProvider.Google, $"sub-{Guid.NewGuid():N}");
 
         // Assert
         act.Should().Throw<Exception>();
@@ -220,13 +199,12 @@ public class UserEntityTests
             Guid.NewGuid(),
             TestConstants.User.ValidUserName,
             EnumAuthProvider.Google,
-            providerSubjectId: null!,
-            TestErrorsFactory.CreateUserErrors()
+            providerSubjectId: null!
         );
         string subjectId = $"sub-{Guid.NewGuid():N}";
 
         // Act
-        user.LinkProviderSubject(subjectId, _userErrors);
+        user.LinkProviderSubject(subjectId);
 
         // Assert
         user.ProviderSubjectId.Should().Be(subjectId);
@@ -241,12 +219,11 @@ public class UserEntityTests
             Guid.NewGuid(),
             TestConstants.User.ValidUserName,
             EnumAuthProvider.Google,
-            subjectId,
-            TestErrorsFactory.CreateUserErrors()
+            subjectId
         );
 
         // Act
-        user.LinkProviderSubject(subjectId, _userErrors);
+        user.LinkProviderSubject(subjectId);
 
         // Assert
         user.ProviderSubjectId.Should().Be(subjectId);
@@ -260,15 +237,14 @@ public class UserEntityTests
             Guid.NewGuid(),
             TestConstants.User.ValidUserName,
             EnumAuthProvider.Google,
-            $"sub-{Guid.NewGuid():N}",
-            TestErrorsFactory.CreateUserErrors()
+            $"sub-{Guid.NewGuid():N}"
         );
 
         // Act
-        Action act = () => user.LinkProviderSubject($"sub-{Guid.NewGuid():N}", _userErrors);
+        Action act = () => user.LinkProviderSubject($"sub-{Guid.NewGuid():N}");
 
         // Assert
-        act.Should().Throw<ConflictException>();
+        act.Should().Throw<IdentityRuleException>().Which.Code.Should().Be(IdentityRuleCodes.ProviderMismatch);
     }
 
     #endregion
@@ -283,7 +259,7 @@ public class UserEntityTests
         string newEmail = "newemail@example.com";
 
         // Act
-        user.UpdateEmail(newEmail, _userErrors);
+        user.UpdateEmail(newEmail);
 
         // Assert
         user.Email.Should().Be(newEmail.ToLowerInvariant());
@@ -300,7 +276,7 @@ public class UserEntityTests
         UserEntity user = UserFactory.Create();
 
         // Act
-        Action act = () => user.UpdateEmail(invalidEmail!, _userErrors);
+        Action act = () => user.UpdateEmail(invalidEmail!);
 
         // Assert
         act.Should().Throw<Exception>();
@@ -318,7 +294,7 @@ public class UserEntityTests
         string newPasswordHash = "new_hashed_password_value";
 
         // Act
-        user.InitializePasswordHash(newPasswordHash, _userErrors);
+        user.InitializePasswordHash(newPasswordHash);
 
         // Assert
         user.PasswordHash.Should().Be(newPasswordHash);
@@ -334,7 +310,7 @@ public class UserEntityTests
         UserEntity user = UserFactory.Create();
 
         // Act
-        Action act = () => user.InitializePasswordHash(invalidHash!, _userErrors);
+        Action act = () => user.InitializePasswordHash(invalidHash!);
 
         // Assert
         act.Should().Throw<Exception>();
@@ -347,10 +323,13 @@ public class UserEntityTests
         UserEntity user = UserFactory.CreateExternalWithoutEmail(EnumAuthProvider.Google);
 
         // Act
-        Action act = () => user.InitializePasswordHash("new_password_hash", _userErrors);
+        Action act = () => user.InitializePasswordHash("new_password_hash");
 
         // Assert
-        act.Should().Throw<BadRequestException>().WithMessage("An email address is required to set a password.");
+        act.Should()
+            .Throw<IdentityRuleException>()
+            .Which.Code.Should()
+            .Be(IdentityRuleCodes.EmailRequiredToSetPassword);
     }
 
     #endregion
@@ -365,7 +344,7 @@ public class UserEntityTests
         string passwordHash = "valid_password_hash";
 
         // Act
-        user.SetPasswordAndChangeToLocal(passwordHash, _userErrors);
+        user.SetPasswordAndChangeToLocal(passwordHash);
 
         // Assert
         user.PasswordHash.Should().Be(passwordHash);
@@ -382,10 +361,10 @@ public class UserEntityTests
         UserEntity user = UserFactory.CreateExternal(EnumAuthProvider.Google);
 
         // Act
-        Action act = () => user.SetPasswordAndChangeToLocal(invalidPassword!, _userErrors);
+        Action act = () => user.SetPasswordAndChangeToLocal(invalidPassword!);
 
         // Assert
-        act.Should().Throw<Exception>().WithMessage("*Password does not meet security requirements.*");
+        act.Should().Throw<IdentityRuleException>().Which.Code.Should().Be(IdentityRuleCodes.InvalidPasswordFormat);
     }
 
     [Fact]
@@ -395,10 +374,13 @@ public class UserEntityTests
         UserEntity user = UserFactory.CreateExternalWithoutEmail(EnumAuthProvider.Facebook);
 
         // Act
-        Action act = () => user.SetPasswordAndChangeToLocal("valid_password_hash", _userErrors);
+        Action act = () => user.SetPasswordAndChangeToLocal("valid_password_hash");
 
         // Assert
-        act.Should().Throw<BadRequestException>().WithMessage("An email address is required to set a password.");
+        act.Should()
+            .Throw<IdentityRuleException>()
+            .Which.Code.Should()
+            .Be(IdentityRuleCodes.EmailRequiredToSetPassword);
     }
 
     #endregion
@@ -413,7 +395,7 @@ public class UserEntityTests
         string newUserName = "newusername";
 
         // Act
-        user.UpdateUserName(newUserName, _userErrors);
+        user.UpdateUserName(newUserName);
 
         // Assert
         user.UserName.Should().Be(newUserName);
@@ -429,7 +411,7 @@ public class UserEntityTests
         UserEntity user = UserFactory.Create();
 
         // Act
-        Action act = () => user.UpdateUserName(invalidUserName!, _userErrors);
+        Action act = () => user.UpdateUserName(invalidUserName!);
 
         // Assert
         act.Should().Throw<Exception>();
@@ -493,7 +475,7 @@ public class UserEntityTests
         UserEntity user = UserFactory.CreateVerifiedActive();
 
         // Act
-        Action act = () => user.ValidateCanLogin(_userErrors);
+        Action act = () => user.ValidateCanLogin();
 
         // Assert
         act.Should().NotThrow();
@@ -506,7 +488,7 @@ public class UserEntityTests
         UserEntity user = new UserBuilder().AsInactive().AsVerified().Build();
 
         // Act
-        Action act = () => user.ValidateCanLogin(_userErrors);
+        Action act = () => user.ValidateCanLogin();
 
         // Assert
         act.Should().Throw<Exception>();
@@ -519,7 +501,7 @@ public class UserEntityTests
         UserEntity user = UserFactory.CreateUnverified(); // Not verified, Local auth
 
         // Act
-        Action act = () => user.ValidateCanLogin(_userErrors);
+        Action act = () => user.ValidateCanLogin();
 
         // Assert
         act.Should().Throw<Exception>();
@@ -536,7 +518,7 @@ public class UserEntityTests
         var roleId = Guid.NewGuid();
         UserRoleEntity userRole = UserRoleFactory.CreateWithRoleId(roleId);
         UserEntity user = UserFactory.Create();
-        user.AssignRole(userRole, TestErrorsFactory.CreateUserErrors());
+        user.AssignRole(userRole);
 
         // Act
         bool result = user.HasRole(roleId);
@@ -567,7 +549,7 @@ public class UserEntityTests
         UserRoleEntity userRole = UserRoleFactory.Create(user.Id, roleId);
 
         // Act
-        user.AssignRole(userRole, TestErrorsFactory.CreateUserErrors());
+        user.AssignRole(userRole);
 
         // Assert
         user.HasRole(roleId).Should().BeTrue();
@@ -581,12 +563,12 @@ public class UserEntityTests
         var roleId = Guid.NewGuid();
         UserRoleEntity userRole = UserRoleFactory.CreateWithRoleId(roleId);
         UserEntity user = UserFactory.Create();
-        user.AssignRole(userRole, TestErrorsFactory.CreateUserErrors());
+        user.AssignRole(userRole);
 
         UserRoleEntity duplicateRole = UserRoleFactory.CreateWithRoleId(roleId);
 
         // Act
-        Action act = () => user.AssignRole(duplicateRole, TestErrorsFactory.CreateUserErrors());
+        Action act = () => user.AssignRole(duplicateRole);
 
         // Assert
         act.Should().Throw<Exception>();
@@ -712,7 +694,7 @@ public class UserEntityTests
         UserEntity user = UserFactory.Create();
 
         // Act
-        user.UpdatePassword("new_hashed_password_value", _userErrors, EnumPasswordChangeOrigin.Changed);
+        user.UpdatePassword("new_hashed_password_value", EnumPasswordChangeOrigin.Changed);
 
         // Assert
         UserPasswordChangedEvent raised = user.DomainEvents.OfType<UserPasswordChangedEvent>().Single();
@@ -727,7 +709,7 @@ public class UserEntityTests
         UserEntity user = UserFactory.Create();
 
         // Act
-        user.UpdatePassword("new_hashed_password_value", _userErrors, EnumPasswordChangeOrigin.Reset);
+        user.UpdatePassword("new_hashed_password_value", EnumPasswordChangeOrigin.Reset);
 
         // Assert
         UserPasswordChangedEvent raised = user.DomainEvents.OfType<UserPasswordChangedEvent>().Single();
@@ -741,7 +723,7 @@ public class UserEntityTests
         UserEntity user = UserFactory.Create();
 
         // Act
-        user.InitializePasswordHash("new_hashed_password_value", _userErrors);
+        user.InitializePasswordHash("new_hashed_password_value");
 
         // Assert
         user.PasswordHash.Should().Be("new_hashed_password_value");
@@ -755,7 +737,7 @@ public class UserEntityTests
         UserEntity user = UserFactory.CreateExternal(EnumAuthProvider.Google);
 
         // Act
-        user.SetPasswordAndChangeToLocal("hashed_password_value", _userErrors);
+        user.SetPasswordAndChangeToLocal("hashed_password_value");
 
         // Assert
         UserPasswordChangedEvent raised = user.DomainEvents.OfType<UserPasswordChangedEvent>().Single();
@@ -771,7 +753,7 @@ public class UserEntityTests
         string? oldEmail = user.Email;
 
         // Act
-        user.UpdateEmail("changed@example.com", _userErrors);
+        user.UpdateEmail("changed@example.com");
 
         // Assert
         UserEmailChangedEvent raised = user.DomainEvents.OfType<UserEmailChangedEvent>().Single();

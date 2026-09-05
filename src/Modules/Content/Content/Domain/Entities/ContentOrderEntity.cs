@@ -1,6 +1,7 @@
-using _116.Content.Application.Shared.Errors;
 using _116.Content.Domain.Enums;
 using _116.Content.Domain.Events;
+using _116.Content.Domain.Exceptions;
+using _116.Content.Domain.StateMachines;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -84,14 +85,14 @@ public class ContentOrderEntity : Aggregate<Guid>
     /// Guards that the order is in <c>Draft</c> status.
     /// Called before any mutation that is only permitted while the order is still being built.
     /// </summary>
-    /// <exception cref="_116.Shared.Application.Exceptions.BadRequestException">
+    /// <exception cref="ContentRuleException">
     /// Thrown when the order is not in <c>Draft</c> status.
     /// </exception>
-    public void EnsureDraft(ContentOrderErrors errors)
+    public void EnsureDraft()
     {
         if (Status != EnumOrderStatus.Draft)
         {
-            throw errors.CannotAddItemToNonDraftOrder();
+            throw new ContentRuleException(ContentRuleCodes.CannotAddItemToNonDraftOrder);
         }
     }
 
@@ -100,9 +101,9 @@ public class ContentOrderEntity : Aggregate<Guid>
     /// </summary>
     /// <param name="customerId">The new customer ID, or null to keep the current one.</param>
     /// <param name="packageId">The new package ID, or null to clear it.</param>
-    public void Update(Guid? customerId, Guid? packageId, ContentOrderErrors errors)
+    public void Update(Guid? customerId, Guid? packageId)
     {
-        EnsureDraft(errors);
+        EnsureDraft();
 
         if (customerId.HasValue)
         {
@@ -166,14 +167,14 @@ public class ContentOrderEntity : Aggregate<Guid>
     /// Submits the order, transitioning it from <c>Draft</c> to <c>PendingPayment</c>.
     /// After submission, no new items or tiers may be added.
     /// </summary>
-    /// <exception cref="_116.Shared.Application.Exceptions.ConflictException">
+    /// <exception cref="ContentRuleException">
     /// Thrown when the order is already submitted or in a later status.
     /// </exception>
-    public void Submit(ContentOrderErrors errors)
+    public void Submit()
     {
         if (Status != EnumOrderStatus.Draft)
         {
-            throw errors.AlreadySubmitted();
+            throw new ContentRuleException(ContentRuleCodes.OrderAlreadySubmitted);
         }
 
         Status = EnumOrderStatus.PendingPayment;
@@ -198,24 +199,22 @@ public class ContentOrderEntity : Aggregate<Guid>
     /// Promotion duration in days per promotion level id, covering every level
     /// referenced by this order's items.
     /// </param>
-    /// <param name="errors">The errors factory instance.</param>
-    /// <exception cref="_116.Shared.Application.Exceptions.ConflictException">
+    /// <exception cref="ContentRuleException">
     /// Thrown when the order is not in <c>PendingPayment</c> status.
     /// </exception>
-    /// <exception cref="_116.Shared.Application.Exceptions.BadRequestException">
+    /// <exception cref="ContentRuleException">
     /// Thrown when an item references a promotion level absent from
     /// <paramref name="promotionDurationsByLevelId" />.
     /// </exception>
     public void MarkPaid(
         Guid paymentId,
         DateTimeOffset verifiedAt,
-        IReadOnlyDictionary<Guid, int> promotionDurationsByLevelId,
-        ContentOrderErrors errors
+        IReadOnlyDictionary<Guid, int> promotionDurationsByLevelId
     )
     {
         if (Status != EnumOrderStatus.PendingPayment)
         {
-            throw errors.AlreadyPaid();
+            throw new ContentRuleException(ContentRuleCodes.OrderAlreadyPaid);
         }
 
         Status = EnumOrderStatus.Paid;
@@ -229,8 +228,7 @@ public class ContentOrderEntity : Aggregate<Guid>
                 PromotionUntil: ResolvePromotionUntil(
                     paidAt: paidAt,
                     promotionLevelId: item.PromotionLevelId,
-                    promotionDurationsByLevelId: promotionDurationsByLevelId,
-                    errors: errors
+                    promotionDurationsByLevelId: promotionDurationsByLevelId
                 ),
                 SocialBoost: item.SocialBoost
             )),
@@ -246,16 +244,14 @@ public class ContentOrderEntity : Aggregate<Guid>
     /// <param name="paidAt">The truncated instant the order was paid.</param>
     /// <param name="promotionLevelId">The item's purchased promotion level, if any.</param>
     /// <param name="promotionDurationsByLevelId">Promotion duration in days per promotion level id.</param>
-    /// <param name="errors">The errors factory instance.</param>
     /// <returns>The promotion expiry, or <c>null</c> when the item carries no promotion.</returns>
-    /// <exception cref="_116.Shared.Application.Exceptions.BadRequestException">
+    /// <exception cref="ContentRuleException">
     /// Thrown when the level's duration is missing from the supplied map.
     /// </exception>
     private static DateTimeOffset? ResolvePromotionUntil(
         DateTimeOffset paidAt,
         Guid? promotionLevelId,
-        IReadOnlyDictionary<Guid, int> promotionDurationsByLevelId,
-        ContentOrderErrors errors
+        IReadOnlyDictionary<Guid, int> promotionDurationsByLevelId
     )
     {
         if (!promotionLevelId.HasValue)
@@ -265,7 +261,7 @@ public class ContentOrderEntity : Aggregate<Guid>
 
         if (!promotionDurationsByLevelId.TryGetValue(promotionLevelId.Value, out int durationDays))
         {
-            throw errors.PromotionDurationUnavailable();
+            throw new ContentRuleException(ContentRuleCodes.PromotionDurationUnavailable);
         }
 
         return paidAt.AddDays(durationDays);
@@ -286,19 +282,18 @@ public class ContentOrderEntity : Aggregate<Guid>
     /// Cancels the order. Allowed from <c>Draft</c> or <c>PendingPayment</c> status only.
     /// Paid orders cannot be cancelled because the content creation workflow has already started.
     /// </summary>
-    /// <param name="errors">The errors factory instance.</param>
-    /// <exception cref="_116.Shared.Application.Exceptions.BadRequestException">
+    /// <exception cref="ContentRuleException">
     /// Thrown when the order is already <c>Paid</c>.
     /// </exception>
-    /// <exception cref="_116.Shared.Application.Exceptions.ConflictException">
+    /// <exception cref="ContentRuleException">
     /// Thrown when the order is already <c>Cancelled</c>.
     /// </exception>
-    public void Cancel(ContentOrderErrors errors)
+    public void Cancel()
     {
         Status = Status switch
         {
-            EnumOrderStatus.Paid => throw errors.CannotCancelPaidOrder(),
-            EnumOrderStatus.Cancelled => throw errors.AlreadyCancelled(),
+            EnumOrderStatus.Paid => throw new ContentRuleException(ContentRuleCodes.CannotCancelPaidOrder),
+            EnumOrderStatus.Cancelled => throw new ContentRuleException(ContentRuleCodes.OrderAlreadyCancelled),
             _ => EnumOrderStatus.Cancelled,
         };
 

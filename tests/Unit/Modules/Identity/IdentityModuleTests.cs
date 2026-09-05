@@ -242,8 +242,7 @@ public class IdentityModuleTests
         ));
         services.AddScoped(serviceProvider => new VisitorRoleSeeder(
             seedContext,
-            serviceProvider.GetRequiredService<ILogger<VisitorRoleSeeder>>(),
-            serviceProvider.GetRequiredService<UserErrors>()
+            serviceProvider.GetRequiredService<ILogger<VisitorRoleSeeder>>()
         ));
 
         ServiceProvider provider = services.BuildServiceProvider();

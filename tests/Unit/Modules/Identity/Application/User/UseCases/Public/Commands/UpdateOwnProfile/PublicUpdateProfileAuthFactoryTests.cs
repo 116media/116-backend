@@ -265,7 +265,7 @@ public class PublicUpdateProfileAuthFactoryTests
         var sessionId = Guid.NewGuid();
         string newUserName = "newusername";
         UserEntity user = UserFactory.CreateWithId(userId);
-        user.UpdateUserName("oldusername", _userErrors);
+        user.UpdateUserName("oldusername");
 
         _authRepositoryMock
             .Setup(x => x.GetUserWithRolesAndPermissionsByIdOrThrow(userId, It.IsAny<CancellationToken>()))
@@ -312,7 +312,7 @@ public class PublicUpdateProfileAuthFactoryTests
         var sessionId = Guid.NewGuid();
         string userName = "sameusername";
         UserEntity user = UserFactory.CreateWithId(userId);
-        user.UpdateUserName(userName, _userErrors);
+        user.UpdateUserName(userName);
 
         _authRepositoryMock
             .Setup(x => x.GetUserWithRolesAndPermissionsByIdOrThrow(userId, It.IsAny<CancellationToken>()))

@@ -53,12 +53,4 @@ public class PricingTierErrors(PricingTierErrorMessage i18n)
     {
         return new BadRequestException(i18n.IsInactive());
     }
-
-    /// <summary>
-    /// Throws when a pricing tier name is required but not provided.
-    /// </summary>
-    public BadRequestException NameRequired()
-    {
-        return new BadRequestException(i18n.NameRequired());
-    }
 }

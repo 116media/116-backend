@@ -13,12 +13,8 @@ namespace _116.Core.Infrastructure.Repositories;
 /// <summary>
 /// Implementation of <see cref="IFileRepository"/> using Entity Framework Core.
 /// </summary>
-public class FileRepository(
-    CoreDbContext context,
-    IFileService fileService,
-    IImageColorService imageColorService,
-    CoreI18n i18n
-) : IFileRepository
+public class FileRepository(CoreDbContext context, IFileService fileService, IImageColorService imageColorService)
+    : IFileRepository
 {
     /// <inheritdoc />
     public async Task<FileEntity?> GetByIdAsync(Guid fileId, CancellationToken cancellationToken = default)
@@ -118,7 +114,6 @@ public class FileRepository(
             mimeType: mimeType,
             storageUrl: uploadResult.SecureUrl,
             sizeInBytes: uploadResult.Bytes,
-            i18n: i18n,
             storageKey: uploadResult.PublicId
         );
 
@@ -146,8 +141,7 @@ public class FileRepository(
             originalFileName: downloadResult.OriginalFileName,
             mimeType: downloadResult.MimeType,
             storageUrl: downloadResult.StorageUrl,
-            sizeInBytes: downloadResult.SizeInBytes,
-            i18n: i18n
+            sizeInBytes: downloadResult.SizeInBytes
         );
 
         // Persist to Database
@@ -273,7 +267,6 @@ public class FileRepository(
             mimeType: mimeType,
             storageUrl: uploadResult.SecureUrl,
             sizeInBytes: uploadResult.Bytes,
-            i18n: i18n,
             storageKey: uploadResult.PublicId
         );
 
@@ -311,7 +304,6 @@ public class FileRepository(
             mimeType: mimeType,
             storageUrl: uploadResult.SecureUrl,
             sizeInBytes: uploadResult.Bytes,
-            i18n: i18n,
             storageKey: uploadResult.PublicId,
             dominantColorHex: colors?.DominantColorHex,
             foregroundColorHex: colors?.ForegroundColorHex
@@ -347,7 +339,6 @@ public class FileRepository(
             mimeType: mimeType,
             storageUrl: uploadResult.SecureUrl,
             sizeInBytes: uploadResult.Bytes,
-            i18n: i18n,
             storageKey: uploadResult.PublicId
         );
 

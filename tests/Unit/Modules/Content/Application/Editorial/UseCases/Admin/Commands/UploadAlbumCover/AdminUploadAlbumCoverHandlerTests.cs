@@ -35,8 +35,7 @@ public class AdminUploadAlbumCoverHandlerTests
         _handler = new AdminUploadAlbumCoverHandler(
             _albumRepositoryMock.Object,
             _fileRepositoryMock.Object,
-            _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateContentI18n()
+            _unitOfWorkMock.Object
         );
     }
 

@@ -1,5 +1,5 @@
 using _116.Content.Domain.Enums;
-using _116.Shared.Domain.Exceptions;
+using _116.Content.Domain.Exceptions;
 
 namespace _116.Content.Domain.StateMachines;
 
@@ -52,7 +52,7 @@ public static class ContentPublicationState
     }
 
     /// <summary>
-    /// Throws <see cref="DomainRuleException" /> when the requested move is not in the
+    /// Throws <see cref="ContentRuleException" /> when the requested move is not in the
     /// transition table.
     /// </summary>
     /// <param name="from">The current state.</param>
@@ -62,7 +62,7 @@ public static class ContentPublicationState
     {
         if (!CanMove(from: from, to: to))
         {
-            throw new DomainRuleException(
+            throw new ContentRuleException(
                 ContentRuleCodes.InvalidStatusTransition,
                 contentType.ToString(),
                 from.ToString(),
@@ -72,7 +72,7 @@ public static class ContentPublicationState
     }
 
     /// <summary>
-    /// Throws <see cref="DomainRuleException" /> when the content has moved past review
+    /// Throws <see cref="ContentRuleException" /> when the content has moved past review
     /// and can no longer be edited.
     /// </summary>
     /// <param name="status">The current state.</param>
@@ -81,7 +81,7 @@ public static class ContentPublicationState
     {
         if (Array.IndexOf(Editable, status) < 0)
         {
-            throw new DomainRuleException(ContentRuleCodes.NotEditable, contentType.ToString(), status.ToString());
+            throw new ContentRuleException(ContentRuleCodes.NotEditable, contentType.ToString(), status.ToString());
         }
     }
 }

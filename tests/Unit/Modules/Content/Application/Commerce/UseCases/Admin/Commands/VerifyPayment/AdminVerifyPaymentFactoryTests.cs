@@ -4,6 +4,8 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Domain.Events;
+using _116.Content.Domain.Exceptions;
+using _116.Content.Domain.StateMachines;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
@@ -37,8 +39,7 @@ public class AdminVerifyPaymentFactoryTests
         _factory = new AdminVerifyPaymentFactory(
             _lookupRepositoryMock.Object,
             _orderRepositoryMock.Object,
-            _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateContentOrderErrors()
+            _unitOfWorkMock.Object
         );
     }
 
@@ -147,7 +148,9 @@ public class AdminVerifyPaymentFactoryTests
         Func<Task> act = () => _factory.VerifyAsync(order, payment, AdminUserId, ReceiptUrl, CancellationToken.None);
 
         // Assert
-        await act.Should().ThrowAsync<ConflictException>();
+        (await act.Should().ThrowAsync<ContentRuleException>())
+            .Which.Code.Should()
+            .Be(ContentRuleCodes.PaymentAlreadyVerified);
         payment.Status.Should().Be(EnumPaymentStatus.Verified);
         order.Status.Should().Be(EnumOrderStatus.PendingPayment);
         order.DomainEvents.Should().BeEmpty();
@@ -166,7 +169,9 @@ public class AdminVerifyPaymentFactoryTests
         Func<Task> act = () => _factory.VerifyAsync(order, payment, AdminUserId, ReceiptUrl, CancellationToken.None);
 
         // Assert
-        await act.Should().ThrowAsync<ConflictException>();
+        (await act.Should().ThrowAsync<ContentRuleException>())
+            .Which.Code.Should()
+            .Be(ContentRuleCodes.PaymentAlreadyRejected);
         payment.Status.Should().Be(EnumPaymentStatus.Rejected);
         order.Status.Should().Be(EnumOrderStatus.PendingPayment);
         order.DomainEvents.Should().BeEmpty();
@@ -185,7 +190,9 @@ public class AdminVerifyPaymentFactoryTests
         Func<Task> act = () => _factory.VerifyAsync(order, payment, AdminUserId, ReceiptUrl, CancellationToken.None);
 
         // Assert
-        await act.Should().ThrowAsync<ConflictException>();
+        (await act.Should().ThrowAsync<ContentRuleException>())
+            .Which.Code.Should()
+            .Be(ContentRuleCodes.OrderAlreadyPaid);
         order.Status.Should().Be(EnumOrderStatus.Paid);
         order.DomainEvents.Should().BeEmpty();
         _unitOfWorkMock.VerifyCommitNotCalled();

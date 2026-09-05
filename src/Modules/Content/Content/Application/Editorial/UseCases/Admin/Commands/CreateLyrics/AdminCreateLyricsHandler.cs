@@ -95,8 +95,7 @@ public class AdminCreateLyricsHandler(
                 lyricsText: command.LyricsText,
                 language: command.Language,
                 slug: command.Slug,
-                authorId: command.AuthorId,
-                errors: i18n.Lyrics
+                authorId: command.AuthorId
             )
             : LyricsEntity.CreateFree(
                 id: Guid.NewGuid(),
@@ -107,8 +106,7 @@ public class AdminCreateLyricsHandler(
                 lyricsText: command.LyricsText,
                 language: command.Language,
                 slug: command.Slug,
-                authorId: command.AuthorId,
-                errors: i18n.Lyrics
+                authorId: command.AuthorId
             );
     }
 }

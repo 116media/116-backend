@@ -13,6 +13,7 @@ using _116.Tests.Fixtures.Builders.Requests.Identity;
 using _116.Tests.Fixtures.Factories.Identity;
 using FluentValidation;
 using FluentValidation.Results;
+using CoreValidationErrorMessage = _116.Core.Application.Shared.Errors.Messages.ValidationErrorMessage;
 using InternalServerErrorMessage = _116.Core.Application.Shared.Errors.Messages.InternalServerErrorMessage;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin.V1;
@@ -207,8 +208,6 @@ public class PublicSocialLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         Client.ClearAuthentication();
         Client.DefaultRequestHeaders.Add("X-Device-Id", Guid.NewGuid().ToString());
 
-        // The cloud metadata endpoint (link-local) must be refused by the guard before any request,
-        // and surfaced as a generic error that reveals neither the URL nor the reason.
         var email = $"social-{Guid.NewGuid():N}@test.com";
         Verifier.NextPayload = Payload(
             email,
@@ -225,12 +224,30 @@ public class PublicSocialLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(
     }
 
     [Fact]
+    public async Task SocialLogin_WithMalformedProviderPicture_ReportsTheInvalidUrl()
+    {
+        await SeedVisitorRoleAsync();
+        Client.ClearAuthentication();
+        Client.DefaultRequestHeaders.Add("X-Device-Id", Guid.NewGuid().ToString());
+
+        const string malformedPicture = "not-an-absolute-url";
+        var email = $"social-{Guid.NewGuid():N}@test.com";
+        Verifier.NextPayload = Payload(email, subjectId: $"sub-{Guid.NewGuid():N}", pictureUrl: malformedPicture);
+
+        var response = await Client.PostAsJsonAsync(Routes.Public.Auth.SocialLogin(), GoogleRequest());
+
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<CoreValidationErrorMessage>(m => m.InvalidFileUrl(malformedPicture))
+        );
+    }
+
+    [Fact]
     public async Task SocialLogin_WithInvalidToken_ReturnsUnauthorized()
     {
         Client.ClearAuthentication();
         Client.DefaultRequestHeaders.Add("X-Device-Id", Guid.NewGuid().ToString());
 
-        // The provider could not verify the token — the verifier throws, the pipeline maps it.
         Verifier.ThrowInvalid = true;
 
         var response = await Client.PostAsJsonAsync(Routes.Public.Auth.SocialLogin(), GoogleRequest());

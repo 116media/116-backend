@@ -49,42 +49,6 @@ public class ContentOrderErrorsTests
     }
 
     [Fact]
-    public void AlreadySubmitted_ShouldReturnConflictException()
-    {
-        ConflictException ex = _errors.AlreadySubmitted();
-
-        ex.Should().NotBeNull();
-        ex.Message.Should().Contain(_message.AlreadySubmitted());
-    }
-
-    [Fact]
-    public void AlreadyPaid_ShouldReturnConflictException()
-    {
-        ConflictException ex = _errors.AlreadyPaid();
-
-        ex.Should().NotBeNull();
-        ex.Message.Should().Contain(_message.AlreadyPaid());
-    }
-
-    [Fact]
-    public void AlreadyCancelled_ShouldReturnConflictException()
-    {
-        ConflictException ex = _errors.AlreadyCancelled();
-
-        ex.Should().NotBeNull();
-        ex.Message.Should().Contain(_message.AlreadyCancelled());
-    }
-
-    [Fact]
-    public void CannotCancelPaidOrder_ShouldReturnBadRequestException()
-    {
-        BadRequestException ex = _errors.CannotCancelPaidOrder();
-
-        ex.Should().NotBeNull();
-        ex.Message.Should().Contain(_message.CannotCancelPaidOrder());
-    }
-
-    [Fact]
     public void CannotAddItemToNonDraftOrder_ShouldReturnBadRequestException()
     {
         BadRequestException ex = _errors.CannotAddItemToNonDraftOrder();
@@ -100,32 +64,5 @@ public class ContentOrderErrorsTests
 
         ex.Should().NotBeNull();
         ex.Message.Should().Contain(_message.MustHaveAtLeastOneItemWithTier());
-    }
-
-    [Fact]
-    public void PaymentAlreadyVerified_ShouldReturnConflictException()
-    {
-        ConflictException ex = _errors.PaymentAlreadyVerified();
-
-        ex.Should().NotBeNull();
-        ex.Message.Should().Contain(_message.PaymentAlreadyVerified());
-    }
-
-    [Fact]
-    public void PaymentAlreadyRejected_ShouldReturnConflictException()
-    {
-        ConflictException ex = _errors.PaymentAlreadyRejected();
-
-        ex.Should().NotBeNull();
-        ex.Message.Should().Contain(_message.PaymentAlreadyRejected());
-    }
-
-    [Fact]
-    public void PromotionDurationUnavailable_ShouldReturnBadRequestException()
-    {
-        BadRequestException ex = _errors.PromotionDurationUnavailable();
-
-        ex.Should().NotBeNull();
-        ex.Message.Should().Contain(_message.PromotionDurationUnavailable());
     }
 }

@@ -1,12 +1,10 @@
 using System.ComponentModel.DataAnnotations;
-using _116.Content.Application.Shared.Errors;
 using _116.Content.Domain.Constants;
 using _116.Content.Domain.Enums;
 using _116.Content.Domain.Events;
+using _116.Content.Domain.Exceptions;
 using _116.Content.Domain.StateMachines;
-using _116.Shared.Application.Exceptions;
 using _116.Shared.Domain;
-using _116.Shared.Domain.Exceptions;
 
 namespace _116.Content.Domain.Entities;
 
@@ -123,7 +121,7 @@ public class VideoEntity : Aggregate<Guid>
     /// Reason recorded when a SuperAdmin force-unpromoted this video (max 500 chars).
     /// Used as evidence for future refund processing.
     /// </summary>
-    [MaxLength(500)]
+    [MaxLength(length: ContentConstants.MaxUnpromotedReasonLength)]
     public string? UnpromotedReason { get; private set; }
 
     /// <summary>
@@ -228,18 +226,17 @@ public class VideoEntity : Aggregate<Guid>
         string title,
         string slug,
         Guid authorId,
-        string description,
-        VideoErrors errors
+        string description
     )
     {
         if (string.IsNullOrWhiteSpace(value: title))
         {
-            throw errors.TitleRequired();
+            throw new ContentRuleException(ContentRuleCodes.VideoTitleRequired);
         }
 
         if (string.IsNullOrWhiteSpace(value: slug))
         {
-            throw errors.SlugRequired();
+            throw new ContentRuleException(ContentRuleCodes.VideoSlugRequired);
         }
 
         return new VideoEntity
@@ -265,7 +262,6 @@ public class VideoEntity : Aggregate<Guid>
     /// <param name="slug">The URL-safe slug.</param>
     /// <param name="authorId">The identity user UUID from JWT claims.</param>
     /// <param name="description">The description.</param>
-    /// <param name="errors">The errors factory instance.</param>
     /// <returns>A new <see cref="VideoEntity" /> in <c>Draft</c> status.</returns>
     public static VideoEntity CreatePaid(
         Guid id,
@@ -275,18 +271,17 @@ public class VideoEntity : Aggregate<Guid>
         string title,
         string slug,
         Guid authorId,
-        string description,
-        VideoErrors errors
+        string description
     )
     {
         if (string.IsNullOrWhiteSpace(value: title))
         {
-            throw errors.TitleRequired();
+            throw new ContentRuleException(ContentRuleCodes.VideoTitleRequired);
         }
 
         if (string.IsNullOrWhiteSpace(value: slug))
         {
-            throw errors.SlugRequired();
+            throw new ContentRuleException(ContentRuleCodes.VideoSlugRequired);
         }
 
         return new VideoEntity
@@ -355,15 +350,17 @@ public class VideoEntity : Aggregate<Guid>
     /// <param name="youtubeVideoUrl">
     /// The full YouTube video URL (e.g., "https://www.youtube.com/watch?v=dQw4w9WgXcQ").
     /// </param>
-    /// <param name="errors">The errors factory instance.</param>
-    /// <exception cref="BadRequestException">
+    /// <exception cref="ContentRuleException">
     /// Thrown when a shooting is scheduled in the future, meaning the video has not yet been shot.
     /// </exception>
-    public void AttachYoutubeVideoUrl(string youtubeVideoUrl, VideoErrors errors)
+    public void AttachYoutubeVideoUrl(string youtubeVideoUrl)
     {
         if (ShootingScheduledAt.HasValue && ShootingScheduledAt.Value > DateTimeOffset.UtcNow)
         {
-            throw errors.CannotAttachYoutubeUrlBeforeShoot(ShootingScheduledAt.Value);
+            throw new ContentRuleException(
+                ContentRuleCodes.CannotAttachYoutubeUrlBeforeShoot,
+                ShootingScheduledAt.Value.ToString("O")
+            );
         }
 
         YoutubeVideoUrl = youtubeVideoUrl;
@@ -493,7 +490,7 @@ public class VideoEntity : Aggregate<Guid>
 
         if (string.IsNullOrWhiteSpace(YoutubeVideoUrl))
         {
-            throw new DomainRuleException(ContentRuleCodes.PublicationRequiresYoutubeUrl);
+            throw new ContentRuleException(ContentRuleCodes.PublicationRequiresYoutubeUrl);
         }
 
         Status = EnumContentStatus.Published;
@@ -629,15 +626,14 @@ public class VideoEntity : Aggregate<Guid>
     /// <param name="reason">
     /// Mandatory reason for the force-unpromote (e.g. "government request", "policy violation").
     /// </param>
-    /// <param name="errors">The errors factory instance.</param>
-    /// <exception cref="BadRequestException">
+    /// <exception cref="ContentRuleException">
     /// Thrown when the video does not have an active promotion.
     /// </exception>
-    public void ForceUnpromote(string unpromotedBy, string reason, VideoErrors errors)
+    public void ForceUnpromote(string unpromotedBy, string reason)
     {
         if (!IsPromoted)
         {
-            throw errors.NotPromoted();
+            throw new ContentRuleException(ContentRuleCodes.VideoNotPromoted);
         }
 
         IsPromoted = false;

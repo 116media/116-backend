@@ -69,8 +69,7 @@ public class AdminUpdateLyricsHandler(
             language: command.Language,
             videoId: command.VideoId,
             customerId: command.CustomerId,
-            orderItemId: command.OrderItemId,
-            errors: i18n.Lyrics
+            orderItemId: command.OrderItemId
         );
 
         if (previousVideoId != command.VideoId && previousVideoId.HasValue)

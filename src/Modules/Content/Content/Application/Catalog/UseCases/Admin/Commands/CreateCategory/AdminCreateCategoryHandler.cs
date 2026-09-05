@@ -77,7 +77,6 @@ public class AdminCreateCategoryHandler(
             slug: command.Slug,
             description: command.Description,
             isFree: command.IsFree,
-            errors: i18n.Category,
             isGossip: command.IsGossip,
             isExclusive: command.IsExclusive
         );

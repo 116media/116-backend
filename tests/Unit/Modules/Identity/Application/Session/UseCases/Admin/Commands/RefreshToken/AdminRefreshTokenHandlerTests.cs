@@ -3,9 +3,9 @@ using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Session.Factories.Contracts;
 using _116.Identity.Application.Session.UseCases.Admin.Commands.RefreshToken;
 using _116.Identity.Application.Shared.Cache;
+using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
-using _116.Identity.Domain.Results;
 using _116.Tests.Fixtures.Factories.Identity;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Repositories;
@@ -42,7 +42,7 @@ public class AdminRefreshTokenHandlerTests : BaseHandlerTest
     #region Success Cases
 
     [Fact]
-    public async Task Handle_WithValidRefreshToken_ShouldReturnAuthenticationResult()
+    public async Task Handle_WithValidRefreshToken_ShouldReturnAuthenticationDto()
     {
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
@@ -54,7 +54,7 @@ public class AdminRefreshTokenHandlerTests : BaseHandlerTest
 
         AdminRefreshTokenCommand command = new(RefreshToken: refreshToken);
         RefreshTokenData authData = new(user, session, newRefreshToken, new UserSecurityState(Guid.NewGuid(), 1));
-        JwtGenerationResult jwtResult = new(accessToken, accessTokenExpiry);
+        JwtGenerationDto jwtResult = new(accessToken, accessTokenExpiry);
 
         _refreshTokenFactoryMock
             .Setup(x => x.RefreshTokenAsync(refreshToken, It.IsAny<CancellationToken>()))
@@ -82,8 +82,8 @@ public class AdminRefreshTokenHandlerTests : BaseHandlerTest
         AdminRefreshTokenResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.AuthenticationResult.AccessToken.Should().Be(accessToken);
-        result.AuthenticationResult.RefreshToken.Should().Be(newRefreshToken);
+        result.Authentication.AccessToken.Should().Be(accessToken);
+        result.Authentication.RefreshToken.Should().Be(newRefreshToken);
     }
 
     [Fact]
@@ -96,7 +96,7 @@ public class AdminRefreshTokenHandlerTests : BaseHandlerTest
 
         AdminRefreshTokenCommand command = new(RefreshToken: refreshToken);
         RefreshTokenData authData = new(user, session, "new-token", new UserSecurityState(Guid.NewGuid(), 1));
-        JwtGenerationResult jwtResult = new("token", DateTime.UtcNow.AddHours(1));
+        JwtGenerationDto jwtResult = new("token", DateTime.UtcNow.AddHours(1));
 
         _refreshTokenFactoryMock
             .Setup(x => x.RefreshTokenAsync(refreshToken, It.IsAny<CancellationToken>()))
@@ -140,7 +140,7 @@ public class AdminRefreshTokenHandlerTests : BaseHandlerTest
 
         AdminRefreshTokenCommand command = new(RefreshToken: refreshToken);
         RefreshTokenData authData = new(user, session, "new-token", new UserSecurityState(Guid.NewGuid(), 1));
-        JwtGenerationResult jwtResult = new("token", DateTime.UtcNow.AddHours(1));
+        JwtGenerationDto jwtResult = new("token", DateTime.UtcNow.AddHours(1));
 
         _refreshTokenFactoryMock
             .Setup(x => x.RefreshTokenAsync(refreshToken, It.IsAny<CancellationToken>()))
@@ -197,7 +197,7 @@ public class AdminRefreshTokenHandlerTests : BaseHandlerTest
 
         AdminRefreshTokenCommand command = new(RefreshToken: refreshToken);
         RefreshTokenData authData = new(user, session, "new-token", new UserSecurityState(Guid.NewGuid(), 1));
-        JwtGenerationResult jwtResult = new("token", DateTime.UtcNow.AddHours(1));
+        JwtGenerationDto jwtResult = new("token", DateTime.UtcNow.AddHours(1));
 
         _refreshTokenFactoryMock
             .Setup(x => x.RefreshTokenAsync(refreshToken, It.IsAny<CancellationToken>()))
@@ -241,7 +241,7 @@ public class AdminRefreshTokenHandlerTests : BaseHandlerTest
 
         AdminRefreshTokenCommand command = new(RefreshToken: refreshToken);
         RefreshTokenData authData = new(user, session, "new-token", new UserSecurityState(Guid.NewGuid(), 1));
-        JwtGenerationResult jwtResult = new("token", DateTime.UtcNow.AddHours(1));
+        JwtGenerationDto jwtResult = new("token", DateTime.UtcNow.AddHours(1));
 
         _refreshTokenFactoryMock
             .Setup(x => x.RefreshTokenAsync(refreshToken, It.IsAny<CancellationToken>()))
@@ -269,7 +269,7 @@ public class AdminRefreshTokenHandlerTests : BaseHandlerTest
         AdminRefreshTokenResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.AuthenticationResult.User.Id.Should().Be(user.Id);
+        result.Authentication.User.Id.Should().Be(user.Id);
     }
 
     #endregion
@@ -287,7 +287,7 @@ public class AdminRefreshTokenHandlerTests : BaseHandlerTest
 
         AdminRefreshTokenCommand command = new(RefreshToken: refreshToken);
         RefreshTokenData authData = new(user, session, "new-token", new UserSecurityState(Guid.NewGuid(), 1));
-        JwtGenerationResult jwtResult = new("token", DateTime.UtcNow.AddHours(1));
+        JwtGenerationDto jwtResult = new("token", DateTime.UtcNow.AddHours(1));
 
         _refreshTokenFactoryMock
             .Setup(x => x.RefreshTokenAsync(refreshToken, It.IsAny<CancellationToken>()))
@@ -329,7 +329,7 @@ public class AdminRefreshTokenHandlerTests : BaseHandlerTest
 
         AdminRefreshTokenCommand command = new(RefreshToken: refreshToken);
         RefreshTokenData authData = new(user, session, "new-token", new UserSecurityState(Guid.NewGuid(), 1));
-        JwtGenerationResult jwtResult = new("token", DateTime.UtcNow.AddHours(1));
+        JwtGenerationDto jwtResult = new("token", DateTime.UtcNow.AddHours(1));
 
         _refreshTokenFactoryMock
             .Setup(x => x.RefreshTokenAsync(refreshToken, It.IsAny<CancellationToken>()))

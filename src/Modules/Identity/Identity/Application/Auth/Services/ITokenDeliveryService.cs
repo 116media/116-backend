@@ -1,4 +1,4 @@
-using _116.Identity.Domain.Results;
+using _116.Identity.Application.Shared.DTOs;
 
 namespace _116.Identity.Application.Auth.Services;
 
@@ -23,7 +23,7 @@ public interface ITokenDeliveryService
     /// <param name="authResult">
     /// The authentication result containing tokens and expiration times.
     /// </param>
-    void SetTokenCookies(AuthenticationResult authResult);
+    void SetTokenCookies(AuthenticationDto authResult);
 
     /// <summary>
     /// Clears the access and refresh token cookies from the current HTTP response.

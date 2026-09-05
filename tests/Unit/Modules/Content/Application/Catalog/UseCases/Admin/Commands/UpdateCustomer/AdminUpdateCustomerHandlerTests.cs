@@ -27,12 +27,7 @@ public class AdminUpdateCustomerHandlerTests : BaseContentHandlerTest
     {
         _customerRepositoryMock = MockCustomerRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _handler = new AdminUpdateCustomerHandler(
-            _customerRepositoryMock.Object,
-            _unitOfWorkMock.Object,
-            Mapper,
-            TestErrorsFactory.CreateContentI18n()
-        );
+        _handler = new AdminUpdateCustomerHandler(_customerRepositoryMock.Object, _unitOfWorkMock.Object, Mapper);
     }
 
     #region Success Cases

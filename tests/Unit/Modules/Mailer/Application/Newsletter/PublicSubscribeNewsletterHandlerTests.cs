@@ -2,6 +2,7 @@ using _116.Mailer.Application.Newsletter.UseCases.Public.Commands.SubscribeNewsl
 using _116.Mailer.Application.Shared.Persistence;
 using _116.Mailer.Application.Shared.Repositories;
 using _116.Mailer.Contracts.Application;
+using _116.Mailer.Contracts.Domain;
 using _116.Mailer.Domain.Entities;
 using AwesomeAssertions;
 using Moq;

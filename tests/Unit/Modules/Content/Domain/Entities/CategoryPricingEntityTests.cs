@@ -1,4 +1,6 @@
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Exceptions;
+using _116.Content.Domain.StateMachines;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Helpers;
@@ -24,13 +26,7 @@ public class CategoryPricingEntityTests
         decimal price = TestConstants.CategoryPricing.ValidPriceUsd;
 
         // Act
-        var entity = CategoryPricingEntity.Create(
-            id,
-            categoryId,
-            tierId,
-            price,
-            TestErrorsFactory.CreateCategoryErrors()
-        );
+        var entity = CategoryPricingEntity.Create(id, categoryId, tierId, price);
 
         // Assert
         entity.Id.Should().Be(id);
@@ -47,8 +43,7 @@ public class CategoryPricingEntityTests
             Guid.NewGuid(),
             Guid.NewGuid(),
             Guid.NewGuid(),
-            TestConstants.CategoryPricing.ZeroPriceUsd,
-            TestErrorsFactory.CreateCategoryErrors()
+            TestConstants.CategoryPricing.ZeroPriceUsd
         );
 
         // Assert
@@ -61,17 +56,13 @@ public class CategoryPricingEntityTests
     public void Create_WithNegativePrice_ShouldThrowBadRequestException(decimal invalidPrice)
     {
         // Act
-        Action act = () =>
-            CategoryPricingEntity.Create(
-                Guid.NewGuid(),
-                Guid.NewGuid(),
-                Guid.NewGuid(),
-                invalidPrice,
-                TestErrorsFactory.CreateCategoryErrors()
-            );
+        Action act = () => CategoryPricingEntity.Create(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), invalidPrice);
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should()
+            .Throw<ContentRuleException>()
+            .Which.Code.Should()
+            .Be(ContentRuleCodes.CategoryPriceMustBeNonNegative);
     }
 
     #endregion
@@ -86,12 +77,11 @@ public class CategoryPricingEntityTests
             Guid.NewGuid(),
             Guid.NewGuid(),
             Guid.NewGuid(),
-            TestConstants.CategoryPricing.ValidPriceUsd,
-            TestErrorsFactory.CreateCategoryErrors()
+            TestConstants.CategoryPricing.ValidPriceUsd
         );
 
         // Act
-        entity.UpdatePrice(TestConstants.CategoryPricing.UpdatedPriceUsd, TestErrorsFactory.CreateCategoryErrors());
+        entity.UpdatePrice(TestConstants.CategoryPricing.UpdatedPriceUsd);
 
         // Assert
         entity.PriceUsd.Should().Be(TestConstants.CategoryPricing.UpdatedPriceUsd);
@@ -105,12 +95,11 @@ public class CategoryPricingEntityTests
             Guid.NewGuid(),
             Guid.NewGuid(),
             Guid.NewGuid(),
-            TestConstants.CategoryPricing.ValidPriceUsd,
-            TestErrorsFactory.CreateCategoryErrors()
+            TestConstants.CategoryPricing.ValidPriceUsd
         );
 
         // Act
-        entity.UpdatePrice(0m, TestErrorsFactory.CreateCategoryErrors());
+        entity.UpdatePrice(0m);
 
         // Assert
         entity.PriceUsd.Should().Be(0m);
@@ -126,15 +115,17 @@ public class CategoryPricingEntityTests
             Guid.NewGuid(),
             Guid.NewGuid(),
             Guid.NewGuid(),
-            TestConstants.CategoryPricing.ValidPriceUsd,
-            TestErrorsFactory.CreateCategoryErrors()
+            TestConstants.CategoryPricing.ValidPriceUsd
         );
 
         // Act
-        Action act = () => entity.UpdatePrice(invalidPrice, TestErrorsFactory.CreateCategoryErrors());
+        Action act = () => entity.UpdatePrice(invalidPrice);
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should()
+            .Throw<ContentRuleException>()
+            .Which.Code.Should()
+            .Be(ContentRuleCodes.CategoryPriceMustBeNonNegative);
     }
 
     #endregion

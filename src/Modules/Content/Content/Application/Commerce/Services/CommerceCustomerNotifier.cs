@@ -2,6 +2,7 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Mailer.Contracts.Application;
+using _116.Mailer.Contracts.Domain;
 
 namespace _116.Content.Application.Commerce.Services;
 

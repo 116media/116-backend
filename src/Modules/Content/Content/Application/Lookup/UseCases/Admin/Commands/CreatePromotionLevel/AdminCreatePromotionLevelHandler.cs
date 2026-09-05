@@ -43,8 +43,7 @@ public class AdminCreatePromotionLevelHandler(
             name: command.Name,
             durationDays: command.DurationDays,
             priceUsd: command.PriceUsd,
-            spotPriority: command.SpotPriority,
-            errors: i18n.PromotionLevel
+            spotPriority: command.SpotPriority
         );
 
         await lookupRepository.AddPromotionLevelAsync(

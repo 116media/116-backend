@@ -22,14 +22,12 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.AttachPaymen
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminAttachPaymentProofHandler(
     IOrderPaymentFactory orderPaymentFactory,
     IFileRepository fileRepository,
     IContentOrderRepository contentOrderRepository,
     IContentUnitOfWork unitOfWork,
-    IMapper mapper,
-    ContentI18n i18n
+    IMapper mapper
 ) : ICommandHandler<AdminAttachPaymentProofCommand, AdminAttachPaymentProofResult>
 {
     /// <inheritdoc />
@@ -60,7 +58,7 @@ public class AdminAttachPaymentProofHandler(
             cancellationToken: cancellationToken
         );
 
-        payment.AttachProof(proofFileId: proofFile.Id, paymentMethod: command.PaymentMethod, errors: i18n.ContentOrder);
+        payment.AttachProof(proofFileId: proofFile.Id, paymentMethod: command.PaymentMethod);
 
         await contentOrderRepository.UpdatePaymentAsync(payment: payment, ct: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
