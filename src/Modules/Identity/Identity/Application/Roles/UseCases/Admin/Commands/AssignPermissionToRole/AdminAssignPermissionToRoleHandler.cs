@@ -40,14 +40,11 @@ public class AdminAssignPermissionToRoleHandler(
     {
         Guid roleId = Guid.Parse(input: command.RoleId);
 
-        // Load the role with its permissions so the grant goes through the aggregate
         RoleEntity? role = await roleRepository.GetRoleByIdWithPermissionsOrThrowAsync(
             roleId: roleId,
             cancellationToken: cancellationToken
         );
 
-        // Soft deletion also clears IsActive, so the deleted state is checked first to keep the
-        // more specific error reachable.
         if (role!.IsDeleted)
         {
             throw i18n.User.RoleIsDeleted();
@@ -64,8 +61,6 @@ public class AdminAssignPermissionToRoleHandler(
             cancellationToken: cancellationToken
         );
 
-        // Soft deletion also clears IsActive, so the deleted state is checked first to keep the
-        // more specific error reachable.
         if (permission!.IsDeleted)
         {
             throw i18n.User.PermissionIsDeleted();
