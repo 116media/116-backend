@@ -78,7 +78,13 @@ public class RolePermissionBuilder
     /// <returns>A configured RolePermissionEntity instance.</returns>
     public RolePermissionEntity Build()
     {
-        var rolePermission = RolePermissionEntity.Create(_id, _roleId, _permissionId);
+        var rolePermission = RolePermissionEntity.Create(_roleId, _permissionId);
+
+        // The factory leaves the key unset for EF's client-side generator; tests that need a
+        // deterministic key get it through the init-only property here.
+        typeof(RolePermissionEntity)
+            .GetProperty(nameof(RolePermissionEntity.Id), BindingFlags.Public | BindingFlags.Instance)!
+            .SetValue(rolePermission, _id);
 
         if (_permission is not null)
         {
