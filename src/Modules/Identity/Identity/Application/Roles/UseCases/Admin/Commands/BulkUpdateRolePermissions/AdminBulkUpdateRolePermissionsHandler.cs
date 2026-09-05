@@ -35,7 +35,6 @@ public class AdminBulkUpdateRolePermissionsHandler(
     {
         Guid roleId = Guid.Parse(input: command.RoleId);
 
-        // Load the role with its permissions so the reconciliation goes through the aggregate
         RoleEntity? role = await roleRepository.GetRoleByIdWithPermissionsOrThrowAsync(
             roleId: roleId,
             cancellationToken: cancellationToken
