@@ -389,7 +389,7 @@ public class UserEntity : Aggregate<Guid>
     /// <returns><c>true</c> if the role was granted; <c>false</c> if already granted.</returns>
     public bool GrantRole(Guid roleId, string roleName)
     {
-        if (!GrantRoleBootstrap(roleId: roleId))
+        if (!GrantInitialRole(roleId: roleId))
         {
             return false;
         }
@@ -399,13 +399,13 @@ public class UserEntity : Aggregate<Guid>
     }
 
     /// <summary>
-    /// Grants a role without raising the grant event. This is the bootstrap path — the signup
-    /// visitor assignment and the seeders — where the grant is a same-transaction invariant
-    /// rather than a notifiable fact.
+    /// Grants a role as part of creating the account, raising no event: the visitor grant on
+    /// signup is a same-transaction invariant, not a fact worth notifying the new user about.
+    /// Idempotent: a role already granted reports <c>false</c>.
     /// </summary>
     /// <param name="roleId">The ID of the role to grant.</param>
     /// <returns><c>true</c> if the role was granted; <c>false</c> if already granted.</returns>
-    public bool GrantRoleBootstrap(Guid roleId)
+    public bool GrantInitialRole(Guid roleId)
     {
         if (HasRole(roleId: roleId))
         {
