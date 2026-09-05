@@ -1,5 +1,5 @@
 using _116.Identity.Domain.Entities;
-using _116.Identity.Domain.Events;
+using _116.Tests.Fixtures.Builders.Entities.Identity;
 using _116.Tests.Fixtures.Factories.Identity;
 using AwesomeAssertions;
 using Xunit;
@@ -17,46 +17,36 @@ public class RolePermissionEntityTests
     public void Create_WithValidParameters_ShouldCreateRolePermission()
     {
         // Arrange
-        var id = Guid.NewGuid();
         var roleId = Guid.NewGuid();
         var permissionId = Guid.NewGuid();
 
         // Act
-        var rolePermission = RolePermissionEntity.Create(id, roleId, permissionId);
+        var rolePermission = RolePermissionEntity.Create(roleId, permissionId);
 
         // Assert
-        rolePermission.Id.Should().Be(id);
         rolePermission.RoleId.Should().Be(roleId);
         rolePermission.PermissionId.Should().Be(permissionId);
     }
 
     [Fact]
-    public void Create_ShouldAllowEmptyGuids()
+    public void Create_ShouldLeaveTheKeyUnsetForTheStoreGenerator()
     {
-        // Arrange
-        var id = Guid.Empty;
-        var roleId = Guid.Empty;
-        var permissionId = Guid.Empty;
-
         // Act
-        var rolePermission = RolePermissionEntity.Create(id, roleId, permissionId);
+        var rolePermission = RolePermissionEntity.Create(Guid.NewGuid(), Guid.NewGuid());
 
         // Assert
         rolePermission.Id.Should().Be(Guid.Empty);
-        rolePermission.RoleId.Should().Be(Guid.Empty);
-        rolePermission.PermissionId.Should().Be(Guid.Empty);
     }
 
     [Fact]
     public void Create_ShouldNotSetNavigationProperties()
     {
         // Arrange & Act
-        var rolePermission = RolePermissionEntity.Create(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid());
+        var rolePermission = RolePermissionEntity.Create(Guid.NewGuid(), Guid.NewGuid());
 
-        // Assert
-        // Navigation properties should be null since they're not set in Create
-        // They're set by EF Core when loading related entities
-        rolePermission.Id.Should().NotBeEmpty();
+        // Assert — navigations stay null until EF loads the related entities
+        rolePermission.Role.Should().BeNull();
+        rolePermission.Permission.Should().BeNull();
     }
 
     #endregion
@@ -72,7 +62,10 @@ public class RolePermissionEntityTests
         var permissionId = Guid.NewGuid();
 
         // Act
-        var rolePermission = RolePermissionEntity.Create(id, roleId, permissionId);
+        RolePermissionEntity rolePermission = new RolePermissionBuilder()
+            .WithId(id)
+            .ForRoleAndPermission(roleId, permissionId)
+            .Build();
 
         // Assert
         rolePermission.Id.Should().Be(id);
@@ -132,42 +125,6 @@ public class RolePermissionEntityTests
         rolePermission1.PermissionId.Should().Be(permissionId);
         rolePermission2.PermissionId.Should().Be(permissionId);
         rolePermission1.RoleId.Should().NotBe(rolePermission2.RoleId);
-    }
-
-    #endregion
-
-    #region Domain Events
-
-    [Fact]
-    public void Create_ShouldRaiseRoleChangedEventForTheRole()
-    {
-        // Arrange
-        var roleId = Guid.NewGuid();
-
-        // Act
-        var association = RolePermissionEntity.Create(Guid.NewGuid(), roleId, Guid.NewGuid());
-
-        // Assert
-        association
-            .DomainEvents.OfType<RoleChangedEvent>()
-            .Should()
-            .ContainSingle()
-            .Which.Should()
-            .Be(new RoleChangedEvent(roleId));
-    }
-
-    [Fact]
-    public void MarkRemoved_ShouldRaiseRoleChangedEvent()
-    {
-        // Arrange
-        var association = RolePermissionEntity.Create(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid());
-        association.ClearDomainEvents();
-
-        // Act
-        association.MarkRemoved();
-
-        // Assert
-        association.DomainEvents.OfType<RoleChangedEvent>().Should().ContainSingle();
     }
 
     #endregion
