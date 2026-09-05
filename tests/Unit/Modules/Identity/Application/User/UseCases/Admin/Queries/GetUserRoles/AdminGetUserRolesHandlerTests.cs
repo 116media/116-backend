@@ -1,6 +1,8 @@
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Application.User.UseCases.Admin.Queries.GetUserRoles;
 using _116.Identity.Domain.Entities;
+using _116.Shared.Application.Exceptions;
+using _116.Tests.Fixtures.Builders.Entities.Identity;
 using _116.Tests.Fixtures.Factories.Identity;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Repositories;
@@ -15,14 +17,14 @@ namespace _116.Unit.Tests.Modules.Identity.Application.User.UseCases.Admin.Queri
 /// </summary>
 public class AdminGetUserRolesHandlerTests : BaseHandlerTest
 {
-    private readonly Mock<IUserRoleRepository> _userRoleRepositoryMock;
+    private readonly Mock<IAuthRepository> _authRepositoryMock;
     private readonly AdminGetUserRolesHandler _handler;
 
     public AdminGetUserRolesHandlerTests()
     {
-        _userRoleRepositoryMock = MockUserRoleRepository.Create();
+        _authRepositoryMock = MockAuthRepository.Create();
 
-        _handler = new AdminGetUserRolesHandler(_userRoleRepositoryMock.Object, Mapper);
+        _handler = new AdminGetUserRolesHandler(_authRepositoryMock.Object, Mapper);
     }
 
     #region Success Cases
@@ -31,19 +33,12 @@ public class AdminGetUserRolesHandlerTests : BaseHandlerTest
     public async Task Handle_WithUserRoles_ShouldReturnRoleDtos()
     {
         // Arrange
-        var userId = Guid.NewGuid();
-        AdminGetUserRolesQuery query = new(UserId: userId);
-
         RoleEntity role1 = RoleFactory.Create("Admin", "Administrator role");
         RoleEntity role2 = RoleFactory.Create("User", "Regular user role");
+        UserEntity user = new UserBuilder().WithRole(role1).WithRole(role2).Build();
+        AdminGetUserRolesQuery query = new(UserId: user.Id);
 
-        List<UserRoleEntity> userRoles =
-        [
-            UserRoleFactory.CreateWithRole(userId, role1),
-            UserRoleFactory.CreateWithRole(userId, role2),
-        ];
-
-        _userRoleRepositoryMock.SetupGetUserRolesWithRole(userId, userRoles);
+        _authRepositoryMock.SetupGetUserWithRolesById(user);
 
         // Act
         AdminGetUserRolesResult result = await _handler.Handle(query, CancellationToken.None);
@@ -56,10 +51,10 @@ public class AdminGetUserRolesHandlerTests : BaseHandlerTest
     public async Task Handle_WithNoRoles_ShouldReturnEmptyList()
     {
         // Arrange
-        var userId = Guid.NewGuid();
-        AdminGetUserRolesQuery query = new(UserId: userId);
+        UserEntity user = UserFactory.Create("test@example.com");
+        AdminGetUserRolesQuery query = new(UserId: user.Id);
 
-        _userRoleRepositoryMock.SetupGetUserRolesWithRoleEmpty(userId);
+        _authRepositoryMock.SetupGetUserWithRolesById(user);
 
         // Act
         AdminGetUserRolesResult result = await _handler.Handle(query, CancellationToken.None);
@@ -69,35 +64,14 @@ public class AdminGetUserRolesHandlerTests : BaseHandlerTest
     }
 
     [Fact]
-    public async Task Handle_ShouldCallRepositoryWithCorrectUserId()
-    {
-        // Arrange
-        var userId = Guid.NewGuid();
-        AdminGetUserRolesQuery query = new(UserId: userId);
-
-        _userRoleRepositoryMock.SetupGetUserRolesWithRoleEmpty(userId);
-
-        // Act
-        await _handler.Handle(query, CancellationToken.None);
-
-        // Assert
-        _userRoleRepositoryMock.Verify(
-            x => x.GetUserRolesWithRoleAsync(userId, It.IsAny<CancellationToken>()),
-            Times.Once
-        );
-    }
-
-    [Fact]
     public async Task Handle_ShouldMapRolesToDtos()
     {
         // Arrange
-        var userId = Guid.NewGuid();
-        AdminGetUserRolesQuery query = new(UserId: userId);
-
         RoleEntity role = RoleFactory.Create("TestRole", "Test role description");
-        List<UserRoleEntity> userRoles = [UserRoleFactory.CreateWithRole(userId, role)];
+        UserEntity user = new UserBuilder().WithRole(role).Build();
+        AdminGetUserRolesQuery query = new(UserId: user.Id);
 
-        _userRoleRepositoryMock.SetupGetUserRolesWithRole(userId, userRoles);
+        _authRepositoryMock.SetupGetUserWithRolesById(user);
 
         // Act
         AdminGetUserRolesResult result = await _handler.Handle(query, CancellationToken.None);
@@ -110,23 +84,43 @@ public class AdminGetUserRolesHandlerTests : BaseHandlerTest
 
     #endregion
 
+    #region Failure Cases
+
+    [Fact]
+    public async Task Handle_WhenUserNotFound_ShouldThrowNotFoundException()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        AdminGetUserRolesQuery query = new(UserId: userId);
+
+        _authRepositoryMock.SetupGetUserWithRolesByIdNotFound(userId);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
+    }
+
+    #endregion
+
     #region Cancellation Token Tests
 
     [Fact]
     public async Task Handle_WithCancellationToken_ShouldPassToRepository()
     {
         // Arrange
-        var userId = Guid.NewGuid();
-        AdminGetUserRolesQuery query = new(UserId: userId);
+        UserEntity user = UserFactory.Create("test@example.com");
+        AdminGetUserRolesQuery query = new(UserId: user.Id);
         using CancellationTokenSource cts = new();
 
-        _userRoleRepositoryMock.SetupGetUserRolesWithRoleEmpty(userId);
+        _authRepositoryMock.SetupGetUserWithRolesById(user);
 
         // Act
         await _handler.Handle(query, cts.Token);
 
         // Assert
-        _userRoleRepositoryMock.Verify(x => x.GetUserRolesWithRoleAsync(userId, cts.Token), Times.Once);
+        _authRepositoryMock.Verify(x => x.GetUserWithRolesByIdOrThrow(user.Id, cts.Token), Times.Once);
     }
 
     #endregion
