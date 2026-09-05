@@ -10,9 +10,9 @@ namespace _116.Identity.Application.User.UseCases.Admin.Queries.GetUserRoles;
 /// <summary>
 /// Handles the <see cref="AdminGetUserRolesQuery" /> to get all roles assigned to a user.
 /// </summary>
-/// <param name="userRoleRepository">Repository for user-role data access operations.</param>
+/// <param name="authRepository">Repository loading the user aggregate with its roles.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-public class AdminGetUserRolesHandler(IUserRoleRepository userRoleRepository, IMapper mapper)
+public class AdminGetUserRolesHandler(IAuthRepository authRepository, IMapper mapper)
     : IQueryHandler<AdminGetUserRolesQuery, AdminGetUserRolesResult>
 {
     /// <summary>
@@ -23,12 +23,12 @@ public class AdminGetUserRolesHandler(IUserRoleRepository userRoleRepository, IM
     /// <returns>A <see cref="AdminGetUserRolesResult" /> containing the user's roles.</returns>
     public async Task<AdminGetUserRolesResult> Handle(AdminGetUserRolesQuery query, CancellationToken cancellationToken)
     {
-        List<UserRoleEntity> userRoles = await userRoleRepository.GetUserRolesWithRoleAsync(
+        UserEntity? user = await authRepository.GetUserWithRolesByIdOrThrow(
             userId: query.UserId,
             cancellationToken: cancellationToken
         );
 
-        IReadOnlyCollection<RoleDto> roles = userRoles.Select(ur => ur.Role.ToRoleDto(mapper)).ToList();
+        IReadOnlyCollection<RoleDto> roles = user!.UserRoles.ToRoleDtos(mapper);
         return new AdminGetUserRolesResult(Roles: roles);
     }
 }
