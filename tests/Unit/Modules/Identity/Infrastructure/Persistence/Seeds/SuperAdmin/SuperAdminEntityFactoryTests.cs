@@ -284,7 +284,7 @@ public class SuperAdminEntityFactoryTests : IDisposable
     }
 
     [Fact]
-    public void CreateUserRoleAssociation_ShouldGenerateNewGuid()
+    public void CreateUserRoleAssociation_ShouldLeaveTheKeyUnsetForTheStoreGenerator()
     {
         // Arrange
         var userId = Guid.NewGuid();
@@ -294,22 +294,7 @@ public class SuperAdminEntityFactoryTests : IDisposable
         UserRoleEntity result = SuperAdminEntityFactory.CreateUserRoleAssociation(userId, roleId);
 
         // Assert
-        result.Id.Should().NotBe(Guid.Empty);
-    }
-
-    [Fact]
-    public void CreateUserRoleAssociation_MultipleInvocations_ShouldGenerateUniqueIds()
-    {
-        // Arrange
-        var userId = Guid.NewGuid();
-        var roleId = Guid.NewGuid();
-
-        // Act
-        UserRoleEntity association1 = SuperAdminEntityFactory.CreateUserRoleAssociation(userId, roleId);
-        UserRoleEntity association2 = SuperAdminEntityFactory.CreateUserRoleAssociation(userId, roleId);
-
-        // Assert
-        association1.Id.Should().NotBe(association2.Id);
+        result.Id.Should().Be(Guid.Empty);
     }
 
     #endregion
@@ -345,7 +330,7 @@ public class SuperAdminEntityFactoryTests : IDisposable
     }
 
     [Fact]
-    public void CreateRolePermissionAssociation_ShouldGenerateNewGuid()
+    public void CreateRolePermissionAssociation_ShouldLeaveTheKeyUnsetForTheStoreGenerator()
     {
         // Arrange
         var roleId = Guid.NewGuid();
@@ -355,28 +340,7 @@ public class SuperAdminEntityFactoryTests : IDisposable
         RolePermissionEntity result = SuperAdminEntityFactory.CreateRolePermissionAssociation(roleId, permissionId);
 
         // Assert
-        result.Id.Should().NotBe(Guid.Empty);
-    }
-
-    [Fact]
-    public void CreateRolePermissionAssociation_MultipleInvocations_ShouldGenerateUniqueIds()
-    {
-        // Arrange
-        var roleId = Guid.NewGuid();
-        var permissionId = Guid.NewGuid();
-
-        // Act
-        RolePermissionEntity association1 = SuperAdminEntityFactory.CreateRolePermissionAssociation(
-            roleId,
-            permissionId
-        );
-        RolePermissionEntity association2 = SuperAdminEntityFactory.CreateRolePermissionAssociation(
-            roleId,
-            permissionId
-        );
-
-        // Assert
-        association1.Id.Should().NotBe(association2.Id);
+        result.Id.Should().Be(Guid.Empty);
     }
 
     #endregion
