@@ -37,14 +37,6 @@ public class AdminPublishArticleHandler(
             throw i18n.Article.AlreadyPublished();
         }
 
-        if (article.Status != EnumContentStatus.Approved)
-        {
-            throw i18n.Article.InvalidStatusTransition(
-                from: article.Status.ToString(),
-                to: nameof(EnumContentStatus.Published)
-            );
-        }
-
         article.Publish();
         articleRepository.Update(article: article);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);

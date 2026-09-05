@@ -36,6 +36,8 @@ public class PublicGetLyricsBySlugEndpointV1Tests(PostgresFixture db) : BaseApiT
         LyricsEntity lyrics = await SeedAsync<ContentDbContext, LyricsEntity>(ctx =>
         {
             LyricsEntity entity = LyricsFactory.CreateWithSlug(categoryId, slug);
+            entity.MarkPendingReview();
+            entity.Approve();
             entity.Publish();
             ctx.Lyrics.Add(entity);
             return entity;
@@ -127,6 +129,8 @@ public class PublicGetLyricsBySlugEndpointV1Tests(PostgresFixture db) : BaseApiT
             entity = LyricsFactory.CreateWithSlug(categoryId, slug);
             entity.MarkPendingReview();
             entity.Approve();
+            entity.MarkPendingReview();
+            entity.Approve();
             entity.Publish();
             ctx.Lyrics.Add(entity);
             return entity;
@@ -150,6 +154,8 @@ public class PublicGetLyricsBySlugEndpointV1Tests(PostgresFixture db) : BaseApiT
         await SeedAsync<ContentDbContext, LyricsEntity>(ctx =>
         {
             LyricsEntity entity = LyricsFactory.CreateWithSlug(categoryId, slug);
+            entity.MarkPendingReview();
+            entity.Approve();
             entity.MarkPendingReview();
             entity.Approve();
             entity.Publish();
@@ -181,6 +187,8 @@ public class PublicGetLyricsBySlugEndpointV1Tests(PostgresFixture db) : BaseApiT
             entity.LinkArtist(artist.Id);
             entity.MarkPendingReview();
             entity.Approve();
+            entity.MarkPendingReview();
+            entity.Approve();
             entity.Publish();
             ctx.Artists.Add(artist);
             ctx.Lyrics.Add(entity);
@@ -207,6 +215,8 @@ public class PublicGetLyricsBySlugEndpointV1Tests(PostgresFixture db) : BaseApiT
             ArtistEntity artist = ArtistFactory.Create();
             LyricsEntity entity = LyricsFactory.CreateWithSlug(categoryId, slug);
             entity.LinkArtist(artist.Id);
+            entity.MarkPendingReview();
+            entity.Approve();
             entity.MarkPendingReview();
             entity.Approve();
             entity.Publish();
@@ -244,6 +254,8 @@ public class PublicGetLyricsBySlugEndpointV1Tests(PostgresFixture db) : BaseApiT
             LyricsEntity entity = LyricsFactory.CreateWithSlug(categoryId, slug);
             entity.MarkPendingReview();
             entity.Approve();
+            entity.MarkPendingReview();
+            entity.Approve();
             entity.Publish();
             ctx.Lyrics.Add(entity);
             return entity;
@@ -267,6 +279,8 @@ public class PublicGetLyricsBySlugEndpointV1Tests(PostgresFixture db) : BaseApiT
         LyricsEntity lyrics = await SeedAsync<ContentDbContext, LyricsEntity>(ctx =>
         {
             LyricsEntity entity = LyricsFactory.CreateWithSlug(categoryId, slug);
+            entity.MarkPendingReview();
+            entity.Approve();
             entity.Publish();
             entity.IncrementViewCount();
             entity.IncrementViewCount();
@@ -297,6 +311,8 @@ public class PublicGetLyricsBySlugEndpointV1Tests(PostgresFixture db) : BaseApiT
         LyricsEntity lyrics = await SeedAsync<ContentDbContext, LyricsEntity>(ctx =>
         {
             LyricsEntity entity = LyricsFactory.CreateWithSlug(categoryId, slug);
+            entity.MarkPendingReview();
+            entity.Approve();
             entity.Publish();
             ctx.Lyrics.Add(entity);
             return entity;

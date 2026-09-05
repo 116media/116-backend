@@ -95,6 +95,18 @@ public static class MockCategoryRepository
         return mock;
     }
 
+    public static Mock<ICategoryRepository> SetupGetPricingByCategories(
+        this Mock<ICategoryRepository> mock,
+        IReadOnlyList<CategoryPricingEntity> list
+    )
+    {
+        mock.Setup(x =>
+                x.GetPricingByCategoriesAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>())
+            )
+            .ReturnsAsync(list);
+        return mock;
+    }
+
     public static Mock<ICategoryRepository> SetupGetPricing(
         this Mock<ICategoryRepository> mock,
         Guid categoryId,
@@ -149,6 +161,10 @@ public static class MockCategoryRepository
         mock.Setup(x => x.GetActiveByContentTypeAsync(It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<CategoryEntity>());
         mock.Setup(x => x.GetPricingByCategoryAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<CategoryPricingEntity>());
+        mock.Setup(x =>
+                x.GetPricingByCategoriesAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>())
+            )
             .ReturnsAsync(new List<CategoryPricingEntity>());
         mock.Setup(x => x.GetPinnedToFeedCategoriesAsync(It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<CategoryEntity>());

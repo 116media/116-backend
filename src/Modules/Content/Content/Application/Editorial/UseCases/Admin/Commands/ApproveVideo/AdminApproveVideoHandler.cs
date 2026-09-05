@@ -31,14 +31,6 @@ public class AdminApproveVideoHandler(IVideoRepository videoRepository, IContent
             throw i18n.Video.AlreadyApproved();
         }
 
-        if (video.Status != EnumContentStatus.PendingReview)
-        {
-            throw i18n.Video.InvalidStatusTransition(
-                from: video.Status.ToString(),
-                to: nameof(EnumContentStatus.Approved)
-            );
-        }
-
         video.Approve();
         videoRepository.Update(video: video);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);

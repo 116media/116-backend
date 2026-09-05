@@ -177,6 +177,7 @@ public class ContentOrderRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         ContentPaymentEntity payment = ContentPaymentFactory.Create(order.Id);
+        payment.AttachProof(Guid.NewGuid(), EnumPaymentMethod.BankTransfer, _errors);
         await _repository.AddPaymentAsync(payment);
         await _context.SaveChangesAsync();
 

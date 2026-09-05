@@ -34,14 +34,6 @@ public class AdminPublishLyricsHandler(
             throw i18n.Lyrics.AlreadyPublished();
         }
 
-        if (lyrics.Status != EnumContentStatus.Approved)
-        {
-            throw i18n.Lyrics.InvalidStatusTransition(
-                from: lyrics.Status.ToString(),
-                to: nameof(EnumContentStatus.Published)
-            );
-        }
-
         lyrics.Publish();
         lyricsRepository.Update(lyrics: lyrics);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);

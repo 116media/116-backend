@@ -45,6 +45,8 @@ public class PublicGetLyricsByVideoIdHandlerTests : BaseContentHandlerTest
         // Arrange
         Guid videoId = Guid.NewGuid();
         LyricsEntity lyrics = LyricsFactory.CreateForVideo(CategoryId, videoId);
+        lyrics.MarkPendingReview();
+        lyrics.Approve();
         lyrics.Publish();
         var query = new PublicGetLyricsByVideoIdQuery(VideoId: videoId.ToString());
 
@@ -94,6 +96,8 @@ public class PublicGetLyricsByVideoIdHandlerTests : BaseContentHandlerTest
         // Arrange
         Guid videoId = Guid.NewGuid();
         LyricsEntity lyrics = LyricsFactory.CreateForVideo(CategoryId, videoId);
+        lyrics.MarkPendingReview();
+        lyrics.Approve();
         lyrics.Publish();
         Guid currentUserId = Guid.NewGuid();
         var query = new PublicGetLyricsByVideoIdQuery(VideoId: videoId.ToString(), CurrentUserId: currentUserId);
@@ -114,6 +118,8 @@ public class PublicGetLyricsByVideoIdHandlerTests : BaseContentHandlerTest
         // Arrange
         Guid videoId = Guid.NewGuid();
         LyricsEntity lyrics = LyricsFactory.CreateForVideo(CategoryId, videoId);
+        lyrics.MarkPendingReview();
+        lyrics.Approve();
         lyrics.Publish();
         var query = new PublicGetLyricsByVideoIdQuery(VideoId: videoId.ToString(), CurrentUserId: null);
 
@@ -133,6 +139,8 @@ public class PublicGetLyricsByVideoIdHandlerTests : BaseContentHandlerTest
         // Arrange
         Guid videoId = Guid.NewGuid();
         LyricsEntity lyrics = LyricsFactory.CreateForVideo(CategoryId, videoId);
+        lyrics.MarkPendingReview();
+        lyrics.Approve();
         lyrics.Publish();
         lyrics.IncrementViewCount();
         lyrics.IncrementLikeCount();

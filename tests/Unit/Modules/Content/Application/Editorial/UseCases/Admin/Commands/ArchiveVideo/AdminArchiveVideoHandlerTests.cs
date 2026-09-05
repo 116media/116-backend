@@ -78,8 +78,10 @@ public class AdminArchiveVideoHandlerTests
     [Fact]
     public async Task Handle_WhenVideoIsNotPublished_ShouldArchiveWithoutUnpublishedEvent()
     {
-        // Arrange
+        // Arrange — approved but never published, the closest archivable pre-publication state
         VideoEntity video = VideoFactory.Create(CategoryId);
+        video.MarkPendingReview();
+        video.Approve();
         video.ClearDomainEvents();
         var command = new AdminArchiveVideoCommand(Id: video.Id.ToString());
         _videoRepositoryMock.SetupGetByIdOrThrow(video);

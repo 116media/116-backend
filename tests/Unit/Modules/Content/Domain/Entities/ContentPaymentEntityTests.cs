@@ -45,7 +45,7 @@ public class ContentPaymentEntityTests
         ContentPaymentEntity payment = ContentPaymentFactory.CreateDefault();
         Guid proofFileId = Guid.NewGuid();
 
-        payment.AttachProof(proofFileId, EnumPaymentMethod.BankTransfer);
+        payment.AttachProof(proofFileId, EnumPaymentMethod.BankTransfer, _errors);
 
         payment.PaymentProofFileId.Should().Be(proofFileId);
         payment.PaymentMethod.Should().Be(EnumPaymentMethod.BankTransfer);
@@ -56,9 +56,71 @@ public class ContentPaymentEntityTests
     #region Verify
 
     [Fact]
+    public void Verify_WithoutProofAttached_ShouldThrowPaymentProofRequired()
+    {
+        // Arrange — an unevidenced payment must never verify and flip the order to paid
+        ContentPaymentEntity payment = ContentPaymentFactory.CreateDefault();
+
+        // Act
+        Action act = () => payment.Verify(Guid.NewGuid(), "https://receipts.example.com/r.pdf", _errors);
+
+        // Assert
+        act.Should().Throw<BadRequestException>();
+        payment.Status.Should().Be(EnumPaymentStatus.Pending);
+    }
+
+    [Fact]
+    public void AttachProof_WhenPending_ShouldRecordProofAndMethod()
+    {
+        // Arrange
+        ContentPaymentEntity payment = ContentPaymentFactory.CreateDefault();
+        Guid proofFileId = Guid.NewGuid();
+
+        // Act
+        payment.AttachProof(proofFileId, EnumPaymentMethod.BankTransfer, _errors);
+
+        // Assert
+        payment.PaymentProofFileId.Should().Be(proofFileId);
+        payment.PaymentMethod.Should().Be(EnumPaymentMethod.BankTransfer);
+    }
+
+    [Fact]
+    public void AttachProof_WhenVerified_ShouldThrowAndKeepTheOriginalProof()
+    {
+        // Arrange — overwriting proof on a decided payment would destroy the evidence the
+        // verification was based on
+        Guid originalProofId = Guid.NewGuid();
+        ContentPaymentEntity payment = ContentPaymentFactory.CreateDefault();
+        payment.AttachProof(originalProofId, EnumPaymentMethod.BankTransfer, _errors);
+        payment.Verify(Guid.NewGuid(), "https://receipts.example.com/r.pdf", _errors);
+
+        // Act
+        Action act = () => payment.AttachProof(Guid.NewGuid(), EnumPaymentMethod.MobileMoney, _errors);
+
+        // Assert
+        act.Should().Throw<ConflictException>();
+        payment.PaymentProofFileId.Should().Be(originalProofId);
+    }
+
+    [Fact]
+    public void AttachProof_WhenRejected_ShouldThrowConflict()
+    {
+        // Arrange
+        ContentPaymentEntity payment = ContentPaymentFactory.CreateDefault();
+        payment.Reject(notes: null, errors: _errors);
+
+        // Act
+        Action act = () => payment.AttachProof(Guid.NewGuid(), EnumPaymentMethod.BankTransfer, _errors);
+
+        // Assert
+        act.Should().Throw<ConflictException>();
+    }
+
+    [Fact]
     public void Verify_WhenPending_ShouldTransitionToVerified_AndSetFields()
     {
         ContentPaymentEntity payment = ContentPaymentFactory.CreateDefault();
+        payment.AttachProof(Guid.NewGuid(), EnumPaymentMethod.BankTransfer, _errors);
         Guid adminId = Guid.NewGuid();
         const string receiptUrl = "https://receipts.example.com/receipt-123.pdf";
 

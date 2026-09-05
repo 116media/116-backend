@@ -512,6 +512,7 @@ public class LyricsEntityTests
         // Arrange
         LyricsEntity lyrics = CreateFreeLyrics();
         const string reason = TestConstants.Lyrics.ValidRejectionReason;
+        lyrics.MarkPendingReview();
 
         // Act
         bool result = lyrics.Reject(reason);
@@ -528,6 +529,7 @@ public class LyricsEntityTests
         // Arrange
         LyricsEntity lyrics = CreateFreeLyrics();
         const string reason = TestConstants.Lyrics.ValidRejectionReason;
+        lyrics.MarkPendingReview();
 
         // Act
         lyrics.Reject(reason);
@@ -554,6 +556,7 @@ public class LyricsEntityTests
     {
         // Arrange
         LyricsEntity lyrics = CreateFreeLyrics();
+        lyrics.MarkPendingReview();
         lyrics.Reject(TestConstants.Lyrics.ValidRejectionReason);
 
         // Act

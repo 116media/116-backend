@@ -3,8 +3,10 @@ using _116.Content.Application.Shared.Errors;
 using _116.Content.Domain.Constants;
 using _116.Content.Domain.Enums;
 using _116.Content.Domain.Events;
+using _116.Content.Domain.StateMachines;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Domain;
+using _116.Shared.Domain.Exceptions;
 
 namespace _116.Content.Domain.Entities;
 
@@ -317,6 +319,8 @@ public class VideoEntity : Aggregate<Guid>
         string? metaDescription
     )
     {
+        ContentPublicationState.EnsureEditable(status: Status, contentType: EnumCoreContentType.Video);
+
         CategoryId = categoryId;
         Title = title;
         Slug = slug;
@@ -411,7 +415,14 @@ public class VideoEntity : Aggregate<Guid>
             return false;
         }
 
+        ContentPublicationState.EnsureCanMove(
+            from: Status,
+            to: EnumContentStatus.PendingPayment,
+            contentType: EnumCoreContentType.Video
+        );
+
         Status = EnumContentStatus.PendingPayment;
+
         return true;
     }
 
@@ -452,26 +463,37 @@ public class VideoEntity : Aggregate<Guid>
             return false;
         }
 
+        ContentPublicationState.EnsureCanMove(
+            from: Status,
+            to: EnumContentStatus.Approved,
+            contentType: EnumCoreContentType.Video
+        );
+
         Status = EnumContentStatus.Approved;
         return true;
     }
 
     /// <summary>
-    /// Publishes the video. Throws if no YouTube ID has been attached —
+    /// Publishes the video. Throws if no YouTube URL has been attached —
     /// enforcing the YouTube gate at the domain level.
     /// </summary>
     /// <returns><c>true</c> if published; <c>false</c> if already published.</returns>
-    /// <exception cref="Exception">Thrown when <c>YoutubeVideoUrl</c> is null or empty.</exception>
-    public bool Publish(VideoErrors errors)
+    public bool Publish()
     {
         if (Status == EnumContentStatus.Published)
         {
             return false;
         }
 
+        ContentPublicationState.EnsureCanMove(
+            from: Status,
+            to: EnumContentStatus.Published,
+            contentType: EnumCoreContentType.Video
+        );
+
         if (string.IsNullOrWhiteSpace(YoutubeVideoUrl))
         {
-            throw errors.CannotPublishWithoutYoutubeUrl();
+            throw new DomainRuleException(ContentRuleCodes.PublicationRequiresYoutubeUrl);
         }
 
         Status = EnumContentStatus.Published;
@@ -501,6 +523,12 @@ public class VideoEntity : Aggregate<Guid>
         {
             return false;
         }
+
+        ContentPublicationState.EnsureCanMove(
+            from: Status,
+            to: EnumContentStatus.Rejected,
+            contentType: EnumCoreContentType.Video
+        );
 
         bool wasPublished = Status == EnumContentStatus.Published;
 
@@ -536,6 +564,12 @@ public class VideoEntity : Aggregate<Guid>
         {
             return false;
         }
+
+        ContentPublicationState.EnsureCanMove(
+            from: Status,
+            to: EnumContentStatus.Archived,
+            contentType: EnumCoreContentType.Video
+        );
 
         bool wasPublished = Status == EnumContentStatus.Published;
 

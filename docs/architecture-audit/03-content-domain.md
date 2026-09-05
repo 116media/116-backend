@@ -165,11 +165,11 @@ background job or replay.
 
 **Solution.** Invert it. Domain throws typed, culture-free exceptions; the presentation edge
 translates them.
-1. Add `Domain/Exceptions/DomainRuleViolationException.cs` carrying a stable `string Code`
+1. Add `Domain/Exceptions/DomainRuleException.cs` carrying a stable `string Code`
    and structured args — no message string.
-2. Rewrite guards as `throw new DomainRuleViolationException(LyricsRules.SongTitleRequired)`;
+2. Rewrite guards as `throw new DomainRuleException(LyricsRules.SongTitleRequired)`;
    drop the `errors` parameter from all 50 signatures.
-3. Add a `DomainRuleViolationExceptionStrategy` that maps `Code` → `IStringLocalizer` →
+3. Add a `DomainRuleExceptionStrategy` that maps `Code` → `IStringLocalizer` →
    `ProblemDetails`. The `.resx` files stay, re-keyed by `Code` — no i18n coverage lost.
 4. Pilot on `LyricsEntity` (12 guards, one file), then the other content entities, then split
    `Content.csproj` so the layering violation becomes a compile error (§[06 §14](06-content-application.md)).

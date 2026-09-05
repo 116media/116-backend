@@ -81,9 +81,17 @@ public class ContentPaymentBuilder
         var errors = TestErrorsFactory.CreateContentOrderErrors();
         var payment = ContentPaymentEntity.Create(_id, _orderId, _amountUsd);
 
+        // A decided payment must carry proof, so a builder asked for one without explicit
+        // proof attaches a default — the only state the domain can reach.
+        if (_verified && !_proofFileId.HasValue)
+        {
+            _proofFileId = Guid.NewGuid();
+            _paymentMethod = EnumPaymentMethod.BankTransfer;
+        }
+
         if (_proofFileId.HasValue && _paymentMethod.HasValue)
         {
-            payment.AttachProof(_proofFileId.Value, _paymentMethod.Value);
+            payment.AttachProof(_proofFileId.Value, _paymentMethod.Value, errors);
         }
 
         if (_verified)

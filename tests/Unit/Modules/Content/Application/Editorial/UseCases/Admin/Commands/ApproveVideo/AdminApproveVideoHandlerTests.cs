@@ -4,6 +4,7 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Shared.Application.Exceptions;
+using _116.Shared.Domain.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
@@ -87,7 +88,7 @@ public class AdminApproveVideoHandlerTests
     }
 
     [Fact]
-    public async Task Handle_WhenVideoInWrongStatus_ShouldThrowBadRequestException()
+    public async Task Handle_WhenVideoInWrongStatus_ShouldThrowDomainRuleException()
     {
         // Arrange
         VideoEntity video = VideoFactory.Create(CategoryId);
@@ -98,7 +99,7 @@ public class AdminApproveVideoHandlerTests
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        await act.Should().ThrowAsync<BadRequestException>();
+        await act.Should().ThrowAsync<DomainRuleException>();
         video.Status.Should().Be(EnumContentStatus.Draft);
         _unitOfWorkMock.VerifyCommitNotCalled();
     }

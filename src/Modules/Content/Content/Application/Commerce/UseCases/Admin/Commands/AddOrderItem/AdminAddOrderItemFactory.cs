@@ -98,6 +98,9 @@ public class AdminAddOrderItemFactory(
             );
 
             await contentOrderRepository.AddItemAsync(item: item, ct: cancellationToken);
+
+            order.AddItem(item);
+            await contentOrderRepository.UpdateAsync(order: order, ct: cancellationToken);
             await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
             return (item, category.Name, promoLevel?.Name);

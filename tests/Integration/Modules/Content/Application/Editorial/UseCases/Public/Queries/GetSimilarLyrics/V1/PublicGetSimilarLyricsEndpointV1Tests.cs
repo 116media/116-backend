@@ -129,14 +129,17 @@ public class PublicGetSimilarLyricsEndpointV1Tests(PostgresFixture db) : BaseApi
             ctx.Tags.AddRange(tagOne, tagTwo);
 
             LyricsEntity source = LyricsFactory.CreateWithTags(categoryId, tagOne.Id, tagTwo.Id);
+            source.MarkPendingReview();
+            source.Approve();
             source.Publish();
-
             LyricsEntity oneTagMatch = LyricsFactory.CreateWithTags(categoryId, tagOne.Id);
+            oneTagMatch.MarkPendingReview();
+            oneTagMatch.Approve();
             oneTagMatch.Publish();
-
             LyricsEntity twoTagsMatch = LyricsFactory.CreateWithTags(categoryId, tagOne.Id, tagTwo.Id);
+            twoTagsMatch.MarkPendingReview();
+            twoTagsMatch.Approve();
             twoTagsMatch.Publish();
-
             ctx.Lyrics.AddRange(source, oneTagMatch, twoTagsMatch);
             return (source, twoTagsMatch, oneTagMatch);
         });
@@ -174,8 +177,9 @@ public class PublicGetSimilarLyricsEndpointV1Tests(PostgresFixture db) : BaseApi
                 // Standalone (no video), so it is not a category peer — proves the empty category
                 // branch falls through to the shared-tags branch rather than stopping empty.
                 LyricsEntity tagMatch = LyricsFactory.CreateWithTags(categoryId, sharedTag.Id);
+                tagMatch.MarkPendingReview();
+                tagMatch.Approve();
                 tagMatch.Publish();
-
                 ctx.Lyrics.AddRange(source, tagMatch);
                 return (source, tagMatch);
             }

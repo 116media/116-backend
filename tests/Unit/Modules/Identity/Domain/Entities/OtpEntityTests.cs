@@ -145,45 +145,36 @@ public class OtpEntityTests
 
     #endregion
 
-    #region IsConsumed Tests
+    #region ConsumedAt Tests
 
     [Fact]
-    public void IsConsumed_WhenNotConsumed_ShouldReturnFalse()
+    public void ConsumedAt_WhenNotConsumed_ShouldBeNull()
     {
-        // Arrange
+        // Arrange & Act
         OtpEntity otp = OtpFactory.Create();
 
-        // Act
-        bool result = otp.IsConsumed();
-
         // Assert
-        result.Should().BeFalse();
+        otp.ConsumedAt.Should().BeNull();
     }
 
     [Fact]
-    public void IsConsumed_WhenConsumed_ShouldReturnTrue()
+    public void ConsumedAt_WhenConsumed_ShouldBeStamped()
     {
-        // Arrange
+        // Arrange & Act
         OtpEntity otp = new OtpBuilder().AsConsumed().Build();
 
-        // Act
-        bool result = otp.IsConsumed();
-
         // Assert
-        result.Should().BeTrue();
+        otp.ConsumedAt.Should().NotBeNull();
     }
 
     [Fact]
-    public void IsConsumed_WhenOnlyMarkedAsUsed_ShouldReturnFalse()
+    public void ConsumedAt_WhenOnlyMarkedAsUsed_ShouldStayNull()
     {
-        // Arrange
+        // Arrange & Act — consumption is a separate terminal state from verification
         OtpEntity otp = OtpFactory.CreateUsed();
 
-        // Act
-        bool result = otp.IsConsumed();
-
         // Assert
-        result.Should().BeFalse();
+        otp.ConsumedAt.Should().BeNull();
     }
 
     #endregion

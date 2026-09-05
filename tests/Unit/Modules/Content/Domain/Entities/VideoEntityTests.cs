@@ -1,7 +1,9 @@
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Domain.Events;
+using _116.Content.Domain.StateMachines;
 using _116.Shared.Application.Exceptions;
+using _116.Shared.Domain.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
@@ -219,6 +221,32 @@ public class VideoEntityTests
     }
 
     [Fact]
+    public void Submit_WhenPublished_ShouldThrow()
+    {
+        // Arrange
+        VideoEntity video = VideoEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Video.ValidTitle,
+            TestConstants.Video.ValidSlug,
+            AuthorId,
+            Description,
+            TestErrorsFactory.CreateVideoErrors()
+        );
+        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl, TestErrorsFactory.CreateVideoErrors());
+        video.MarkPendingReview();
+        video.Approve();
+        video.Publish();
+
+        // Act
+        Action act = () => video.Submit();
+
+        // Assert
+        act.Should().Throw<DomainRuleException>().Which.Code.Should().Be(ContentRuleCodes.InvalidStatusTransition);
+        video.Status.Should().Be(EnumContentStatus.Published);
+    }
+
+    [Fact]
     public void Approve_ShouldTransitionToApproved()
     {
         // Arrange
@@ -282,7 +310,7 @@ public class VideoEntityTests
         video.Approve();
 
         // Act
-        bool result = video.Publish(TestErrorsFactory.CreateVideoErrors());
+        bool result = video.Publish();
 
         // Assert
         result.Should().BeTrue();
@@ -309,7 +337,7 @@ public class VideoEntityTests
         video.ClearDomainEvents();
 
         // Act
-        video.Publish(TestErrorsFactory.CreateVideoErrors());
+        video.Publish();
 
         // Assert
         video
@@ -345,10 +373,13 @@ public class VideoEntityTests
         video.Approve();
 
         // Act
-        Action act = () => video.Publish(TestErrorsFactory.CreateVideoErrors());
+        Action act = () => video.Publish();
 
         // Assert
-        act.Should().Throw<BadRequestException>();
+        act.Should()
+            .Throw<DomainRuleException>()
+            .Which.Code.Should()
+            .Be(ContentRuleCodes.PublicationRequiresYoutubeUrl);
     }
 
     [Fact]
@@ -367,10 +398,10 @@ public class VideoEntityTests
         video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl, TestErrorsFactory.CreateVideoErrors());
         video.MarkPendingReview();
         video.Approve();
-        video.Publish(TestErrorsFactory.CreateVideoErrors());
+        video.Publish();
 
         // Act
-        bool result = video.Publish(TestErrorsFactory.CreateVideoErrors());
+        bool result = video.Publish();
 
         // Assert
         result.Should().BeFalse();
@@ -390,6 +421,7 @@ public class VideoEntityTests
             TestErrorsFactory.CreateVideoErrors()
         );
         const string reason = TestConstants.Video.ValidRejectionReason;
+        video.MarkPendingReview();
 
         // Act
         bool result = video.Reject(reason);
@@ -414,6 +446,7 @@ public class VideoEntityTests
             TestErrorsFactory.CreateVideoErrors()
         );
         const string reason = TestConstants.Video.ValidRejectionReason;
+        video.MarkPendingReview();
 
         // Act
         video.Reject(reason);
@@ -448,6 +481,7 @@ public class VideoEntityTests
             Description,
             TestErrorsFactory.CreateVideoErrors()
         );
+        video.MarkPendingReview();
         video.Reject(TestConstants.Video.ValidRejectionReason);
 
         // Act
@@ -473,7 +507,7 @@ public class VideoEntityTests
         video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl, TestErrorsFactory.CreateVideoErrors());
         video.MarkPendingReview();
         video.Approve();
-        video.Publish(TestErrorsFactory.CreateVideoErrors());
+        video.Publish();
 
         // Act
         bool result = video.Archive();
@@ -499,7 +533,7 @@ public class VideoEntityTests
         video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl, TestErrorsFactory.CreateVideoErrors());
         video.MarkPendingReview();
         video.Approve();
-        video.Publish(TestErrorsFactory.CreateVideoErrors());
+        video.Publish();
         video.Archive();
 
         // Act
@@ -875,7 +909,7 @@ public class VideoEntityTests
         video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl, TestErrorsFactory.CreateVideoErrors());
         video.MarkPendingReview();
         video.Approve();
-        video.Publish(TestErrorsFactory.CreateVideoErrors());
+        video.Publish();
         video.StampSocialBoost();
         video.StampPromotion(Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(7));
 
@@ -1034,7 +1068,7 @@ public class VideoEntityTests
         video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl, TestErrorsFactory.CreateVideoErrors());
         video.MarkPendingReview();
         video.Approve();
-        video.Publish(TestErrorsFactory.CreateVideoErrors());
+        video.Publish();
 
         // Act
         bool result = video.MarkPendingReview();
@@ -1181,7 +1215,7 @@ public class VideoEntityTests
         video.ClearDomainEvents();
 
         // Act
-        video.Publish(TestErrorsFactory.CreateVideoErrors());
+        video.Publish();
 
         // Assert
         video
@@ -1208,8 +1242,9 @@ public class VideoEntityTests
         video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl, TestErrorsFactory.CreateVideoErrors());
         video.MarkPendingReview();
         video.Approve();
-        video.Publish(TestErrorsFactory.CreateVideoErrors());
+        video.Publish();
         video.ClearDomainEvents();
+        video.MarkPendingReview();
 
         // Act
         video.Reject("not suitable anymore");
@@ -1238,6 +1273,7 @@ public class VideoEntityTests
         );
         video.MarkPendingReview();
         video.ClearDomainEvents();
+        video.MarkPendingReview();
 
         // Act
         video.Reject("not suitable");
@@ -1262,7 +1298,7 @@ public class VideoEntityTests
         video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl, TestErrorsFactory.CreateVideoErrors());
         video.MarkPendingReview();
         video.Approve();
-        video.Publish(TestErrorsFactory.CreateVideoErrors());
+        video.Publish();
         video.ClearDomainEvents();
 
         // Act
@@ -1291,6 +1327,8 @@ public class VideoEntityTests
             TestErrorsFactory.CreateVideoErrors()
         );
         video.ClearDomainEvents();
+        video.MarkPendingReview();
+        video.Approve();
 
         // Act
         video.Archive();

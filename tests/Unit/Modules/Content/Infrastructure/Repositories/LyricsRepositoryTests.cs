@@ -331,8 +331,12 @@ public class LyricsRepositoryTests : IDisposable
         // Arrange
         Guid sharedTagId = Guid.NewGuid();
         LyricsEntity source = LyricsFactory.CreateWithTags(_categoryId, sharedTagId);
+        source.MarkPendingReview();
+        source.Approve();
         source.Publish();
         LyricsEntity tagMatch = LyricsFactory.CreateWithTags(_categoryId, sharedTagId);
+        tagMatch.MarkPendingReview();
+        tagMatch.Approve();
         tagMatch.Publish();
         _context.Lyrics.AddRange(source, tagMatch);
         await _context.SaveChangesAsync();
@@ -376,8 +380,9 @@ public class LyricsRepositoryTests : IDisposable
         // other lyrics page is linked to a video in this category) falls through to tags rather
         // than stopping empty.
         LyricsEntity tagMatch = LyricsFactory.CreateWithTags(_categoryId, sharedTagId);
+        tagMatch.MarkPendingReview();
+        tagMatch.Approve();
         tagMatch.Publish();
-
         _context.Lyrics.AddRange(source, tagMatch);
         await _context.SaveChangesAsync();
 

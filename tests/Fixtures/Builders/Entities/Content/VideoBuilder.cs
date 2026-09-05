@@ -327,15 +327,16 @@ public class VideoBuilder
             case EnumContentStatus.Published:
                 entity.MarkPendingReview();
                 entity.Approve();
-                entity.Publish(errors);
+                entity.Publish();
                 break;
             case EnumContentStatus.Rejected:
+                entity.MarkPendingReview();
                 entity.Reject(_rejectionReason ?? TestConstants.Video.ValidRejectionReason);
                 break;
             case EnumContentStatus.Archived:
                 entity.MarkPendingReview();
                 entity.Approve();
-                entity.Publish(errors);
+                entity.Publish();
                 entity.Archive();
                 break;
         }

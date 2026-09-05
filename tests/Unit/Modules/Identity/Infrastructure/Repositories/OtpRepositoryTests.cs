@@ -511,13 +511,13 @@ public class OtpRepositoryTests : IDisposable
 
         // Assert
         OtpEntity? updatedOtp1 = await _context.Otps.FirstOrDefaultAsync(o => o.Id == otp1.Id);
-        updatedOtp1!.IsConsumed().Should().BeTrue();
+        updatedOtp1!.ConsumedAt.Should().NotBeNull();
 
         OtpEntity? updatedOtp2 = await _context.Otps.FirstOrDefaultAsync(o => o.Id == otp2.Id);
-        updatedOtp2!.IsConsumed().Should().BeTrue();
+        updatedOtp2!.ConsumedAt.Should().NotBeNull();
 
         OtpEntity? updatedOtherUserOtp = await _context.Otps.FirstOrDefaultAsync(o => o.Id == otherUserOtp.Id);
-        updatedOtherUserOtp!.IsConsumed().Should().BeFalse();
+        updatedOtherUserOtp!.ConsumedAt.Should().BeNull();
     }
 
     [Fact]
@@ -577,10 +577,10 @@ public class OtpRepositoryTests : IDisposable
 
         // Assert
         OtpEntity? updatedEmailOtp = await _context.Otps.FirstOrDefaultAsync(o => o.Id == emailVerificationOtp.Id);
-        updatedEmailOtp!.IsConsumed().Should().BeTrue();
+        updatedEmailOtp!.ConsumedAt.Should().NotBeNull();
 
         OtpEntity? updatedPasswordOtp = await _context.Otps.FirstOrDefaultAsync(o => o.Id == passwordResetOtp.Id);
-        updatedPasswordOtp!.IsConsumed().Should().BeFalse();
+        updatedPasswordOtp!.ConsumedAt.Should().BeNull();
     }
 
     #endregion

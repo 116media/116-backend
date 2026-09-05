@@ -138,4 +138,7 @@
   <data name="RequestCancelled" xml:space="preserve">
     <value>La requête a été annulée.</value>
   </data>
+  <data name="DuplicateResourceConflict" xml:space="preserve">
+    <value>Cette action a déjà été effectuée, ou la ressource existe déjà.</value>
+  </data>
 </root>

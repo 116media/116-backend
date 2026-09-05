@@ -1,4 +1,5 @@
 using _116.Content.Application.Commerce.Factories;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -21,12 +22,14 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.AttachPaymen
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminAttachPaymentProofHandler(
     IOrderPaymentFactory orderPaymentFactory,
     IFileRepository fileRepository,
     IContentOrderRepository contentOrderRepository,
     IContentUnitOfWork unitOfWork,
-    IMapper mapper
+    IMapper mapper,
+    ContentI18n i18n
 ) : ICommandHandler<AdminAttachPaymentProofCommand, AdminAttachPaymentProofResult>
 {
     /// <inheritdoc />
@@ -50,14 +53,14 @@ public class AdminAttachPaymentProofHandler(
 
         FileEntity proofFile = await fileRepository.UploadAndStoreRawFileAsync(
             file: file,
+            mimeType: mimeType,
             publicId: command.OrderId,
             folder: "content/payment-proofs",
             originalFileName: file.FileName,
-            mimeType: mimeType,
             cancellationToken: cancellationToken
         );
 
-        payment.AttachProof(proofFileId: proofFile.Id, paymentMethod: command.PaymentMethod);
+        payment.AttachProof(proofFileId: proofFile.Id, paymentMethod: command.PaymentMethod, errors: i18n.ContentOrder);
 
         await contentOrderRepository.UpdatePaymentAsync(payment: payment, ct: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);

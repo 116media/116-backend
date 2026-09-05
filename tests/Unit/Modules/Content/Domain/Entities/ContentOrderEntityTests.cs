@@ -425,6 +425,77 @@ public class ContentOrderEntityTests
 
     #endregion
 
+    #region AddItem / RemoveItem
+
+    [Fact]
+    public void AddItem_ShouldRecalculateTheTotal()
+    {
+        // Arrange
+        ContentOrderEntity order = ContentOrderFactory.Create();
+        ContentOrderItemEntity item = ContentOrderItemFactory.CreateWithPromo(
+            order.Id,
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            200m
+        );
+
+        // Act
+        order.AddItem(item);
+
+        // Assert
+        order.Items.Should().Contain(item);
+        order.TotalAmountUsd.Should().Be(200m);
+    }
+
+    [Fact]
+    public void AddItem_AfterATieredItem_ShouldIncludeEveryItemInTheTotal()
+    {
+        // Arrange — the audit's reproduction: item A with a tier, then item B carrying only a
+        // promotion price; the total must not freeze before B is counted
+        ContentOrderEntity order = ContentOrderFactory.Create();
+        ContentOrderItemEntity itemA = ContentOrderItemFactory.Create(order.Id, Guid.NewGuid());
+        itemA.Tiers.Add(ContentItemTierFactory.Create(itemA.Id, Guid.NewGuid(), 100m));
+        ContentOrderItemEntity itemB = ContentOrderItemFactory.CreateWithPromo(
+            order.Id,
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            200m
+        );
+
+        // Act
+        order.AddItem(itemA);
+        order.AddItem(itemB);
+
+        // Assert
+        order.TotalAmountUsd.Should().Be(300m);
+    }
+
+    [Fact]
+    public void RemoveItem_ShouldRecalculateTheTotal()
+    {
+        // Arrange
+        ContentOrderEntity order = ContentOrderFactory.Create();
+        ContentOrderItemEntity kept = ContentOrderItemFactory.Create(order.Id, Guid.NewGuid());
+        kept.Tiers.Add(ContentItemTierFactory.Create(kept.Id, Guid.NewGuid(), 100m));
+        ContentOrderItemEntity removed = ContentOrderItemFactory.CreateWithPromo(
+            order.Id,
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            200m
+        );
+        order.AddItem(kept);
+        order.AddItem(removed);
+
+        // Act
+        order.RemoveItem(removed);
+
+        // Assert
+        order.Items.Should().NotContain(removed);
+        order.TotalAmountUsd.Should().Be(100m);
+    }
+
+    #endregion
+
     #region RecalculateTotalFromItems
 
     [Fact]

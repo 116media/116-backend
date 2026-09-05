@@ -31,15 +31,7 @@ public class AdminPublishVideoHandler(IVideoRepository videoRepository, IContent
             throw i18n.Video.AlreadyPublished();
         }
 
-        if (video.Status != EnumContentStatus.Approved)
-        {
-            throw i18n.Video.InvalidStatusTransition(
-                from: video.Status.ToString(),
-                to: nameof(EnumContentStatus.Published)
-            );
-        }
-
-        video.Publish(i18n.Video);
+        video.Publish();
         videoRepository.Update(video: video);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 

@@ -21,7 +21,8 @@ public class AdminSubmitOrderFactory(
     /// <inheritdoc />
     public async Task SubmitAsync(ContentOrderEntity order, CancellationToken cancellationToken)
     {
-        if (!order.Items.Any(i => i.Tiers.Count > 0))
+        // Every item needs a tier before submission, or the frozen total under-bills the order.
+        if (order.Items.Count == 0 || !order.Items.All(i => i.Tiers.Count > 0))
         {
             throw contentOrderErrors.MustHaveAtLeastOneItemWithTier();
         }

@@ -56,6 +56,12 @@ public class SharedExceptionMessage(IStringLocalizer<SharedExceptionMessage> loc
     public string RequestCancelled() => localizer["RequestCancelled"];
 
     /// <summary>
+    /// User-friendly, localized message for a write refused by a uniqueness constraint —
+    /// the resource already exists. Never echoes the constraint or column names.
+    /// </summary>
+    public string DuplicateResourceConflict() => localizer["DuplicateResourceConflict"];
+
+    /// <summary>
     /// Maps a technical entity name to its friendly localized label (keyed
     /// <c>Entity_{entityName}</c> in the resources), falling back to a generic
     /// "requested resource" label when no specific label is defined.

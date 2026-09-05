@@ -6,6 +6,7 @@ using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Exceptions.Messages;
+using _116.Shared.Domain.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.PublishArticle.V1;
@@ -111,6 +112,48 @@ public class AdminPublishArticleEndpointV1Tests(PostgresFixture db) : BaseApiTes
     }
 
     [Fact]
+    public async Task PublishArticle_WhenPendingPayment_ReturnsBadRequestAndStaysUnpublished()
+    {
+        // Arrange — the money hole: a commissioned article whose order was never paid must not
+        // be publishable, and before this guard nothing between the handler and the row said so
+        CustomerEntity customer = CustomerFactory.Create();
+        ContentOrderEntity order = ContentOrderFactory.CreateForCustomer(customer.Id);
+        ArticleEntity article = await SeedAsync<ContentDbContext, ArticleEntity>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            CategoryEntity category = CategoryFactory.Create(contentType.Id);
+            ContentOrderItemEntity orderItem = ContentOrderItemFactory.Create(order.Id, category.Id);
+            ArticleEntity created = ArticleFactory.CreatePendingPayment(category.Id, customer.Id, orderItem.Id);
+            ctx.ContentTypes.Add(contentType);
+            ctx.Categories.Add(category);
+            ctx.Customers.Add(customer);
+            ctx.ContentOrders.Add(order);
+            ctx.ContentOrderItems.Add(orderItem);
+            ctx.Articles.Add(created);
+            return created;
+        });
+        Client.AuthenticateAsSuperAdmin();
+
+        // Act
+        var response = await Client.PatchAsync(
+            Routes.Admin.Editorial.Publish(EditorialRouteConstants.Articles, article.Id),
+            null
+        );
+
+        // Assert
+        await response.ShouldBeProblem<DomainRuleException>(
+            HttpStatusCode.BadRequest,
+            Localized<ArticleErrorMessage>(m =>
+                m.InvalidStatusTransition(
+                    from: nameof(EnumContentStatus.PendingPayment),
+                    to: nameof(EnumContentStatus.Published)
+                )
+            )
+        );
+        (await GetArticleAsync(article.Id)).Status.Should().Be(EnumContentStatus.PendingPayment);
+    }
+
+    [Fact]
     public async Task PublishArticle_WhenDraft_ReturnsBadRequest()
     {
         ArticleEntity article = await SeedArticleAsync(ArticleFactory.Create);
@@ -121,7 +164,7 @@ public class AdminPublishArticleEndpointV1Tests(PostgresFixture db) : BaseApiTes
             null
         );
 
-        await response.ShouldBeProblem<BadRequestException>(
+        await response.ShouldBeProblem<DomainRuleException>(
             HttpStatusCode.BadRequest,
             Localized<ArticleErrorMessage>(m =>
                 m.InvalidStatusTransition(

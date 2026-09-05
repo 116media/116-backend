@@ -3,6 +3,7 @@ using _116.Content.Application.Shared.Errors;
 using _116.Content.Domain.Constants;
 using _116.Content.Domain.Enums;
 using _116.Content.Domain.Events;
+using _116.Content.Domain.StateMachines;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Domain;
 
@@ -341,6 +342,8 @@ public class ArticleEntity : Aggregate<Guid>
         IReadOnlyList<string>? orphanedBodyImageStorageKeys = null
     )
     {
+        ContentPublicationState.EnsureEditable(status: Status, contentType: EnumCoreContentType.Article);
+
         CategoryId = categoryId;
         Title = title;
         Slug = slug;
@@ -393,7 +396,14 @@ public class ArticleEntity : Aggregate<Guid>
             return false;
         }
 
+        ContentPublicationState.EnsureCanMove(
+            from: Status,
+            to: EnumContentStatus.PendingPayment,
+            contentType: EnumCoreContentType.Article
+        );
+
         Status = EnumContentStatus.PendingPayment;
+
         return true;
     }
 
@@ -434,6 +444,12 @@ public class ArticleEntity : Aggregate<Guid>
             return false;
         }
 
+        ContentPublicationState.EnsureCanMove(
+            from: Status,
+            to: EnumContentStatus.Approved,
+            contentType: EnumCoreContentType.Article
+        );
+
         Status = EnumContentStatus.Approved;
         return true;
     }
@@ -448,6 +464,12 @@ public class ArticleEntity : Aggregate<Guid>
         {
             return false;
         }
+
+        ContentPublicationState.EnsureCanMove(
+            from: Status,
+            to: EnumContentStatus.Published,
+            contentType: EnumCoreContentType.Article
+        );
 
         Status = EnumContentStatus.Published;
         PublishedAt = DateTimeOffset.UtcNow;
@@ -478,6 +500,12 @@ public class ArticleEntity : Aggregate<Guid>
         {
             return false;
         }
+
+        ContentPublicationState.EnsureCanMove(
+            from: Status,
+            to: EnumContentStatus.Rejected,
+            contentType: EnumCoreContentType.Article
+        );
 
         bool wasPublished = Status == EnumContentStatus.Published;
 
@@ -513,6 +541,12 @@ public class ArticleEntity : Aggregate<Guid>
         {
             return false;
         }
+
+        ContentPublicationState.EnsureCanMove(
+            from: Status,
+            to: EnumContentStatus.Archived,
+            contentType: EnumCoreContentType.Article
+        );
 
         bool wasPublished = Status == EnumContentStatus.Published;
 

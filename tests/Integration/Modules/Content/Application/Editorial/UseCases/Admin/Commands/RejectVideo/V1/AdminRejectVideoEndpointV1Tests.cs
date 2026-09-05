@@ -6,6 +6,7 @@ using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Exceptions.Messages;
+using _116.Shared.Domain.Exceptions;
 using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -125,7 +126,7 @@ public class AdminRejectVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
             request
         );
 
-        await response.ShouldBeProblem<BadRequestException>(
+        await response.ShouldBeProblem<DomainRuleException>(
             HttpStatusCode.BadRequest,
             Localized<VideoErrorMessage>(m =>
                 m.InvalidStatusTransition(from: nameof(EnumContentStatus.Draft), to: nameof(EnumContentStatus.Rejected))
@@ -138,6 +139,25 @@ public class AdminRejectVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
     public async Task RejectVideo_AsSuperAdmin_PendingReviewVideo_ReturnsOk()
     {
         VideoEntity video = await SeedVideoAsync(categoryId => VideoFactory.CreatePendingReview(categoryId));
+        Client.AuthenticateAsSuperAdmin();
+        AdminRejectVideoRequest request = new AdminRejectVideoRequestBuilder().Build();
+
+        var response = await Client.PatchAsJsonAsync(
+            Routes.Admin.Editorial.Reject(EditorialRouteConstants.Videos, video.Id),
+            request
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        VideoEntity persisted = await GetVideoAsync(video.Id);
+        persisted.Status.Should().Be(EnumContentStatus.Rejected);
+        persisted.RejectionReason.Should().Be(request.Reason);
+    }
+
+    [Fact]
+    public async Task RejectVideo_AsSuperAdmin_PublishedVideo_UnpublishesIt()
+    {
+        VideoEntity video = await SeedVideoAsync(VideoFactory.CreatePublished);
         Client.AuthenticateAsSuperAdmin();
         AdminRejectVideoRequest request = new AdminRejectVideoRequestBuilder().Build();
 

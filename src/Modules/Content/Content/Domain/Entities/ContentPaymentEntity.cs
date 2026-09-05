@@ -98,8 +98,18 @@ public class ContentPaymentEntity : Aggregate<Guid>
     /// </summary>
     /// <param name="proofFileId">The ID of the file record stored in <c>core.files</c>.</param>
     /// <param name="paymentMethod">The payment method used by the customer.</param>
-    public void AttachProof(Guid proofFileId, EnumPaymentMethod paymentMethod)
+    /// <param name="errors">The errors factory instance.</param>
+    /// <exception cref="_116.Shared.Application.Exceptions.ConflictException">
+    /// Thrown when the payment is no longer pending — proof must not be overwritten
+    /// once a decision was made against it.
+    /// </exception>
+    public void AttachProof(Guid proofFileId, EnumPaymentMethod paymentMethod, ContentOrderErrors errors)
     {
+        if (Status != EnumPaymentStatus.Pending)
+        {
+            throw errors.PaymentAlreadyDecided();
+        }
+
         PaymentProofFileId = proofFileId;
         PaymentMethod = paymentMethod;
     }
@@ -124,6 +134,11 @@ public class ContentPaymentEntity : Aggregate<Guid>
         if (Status == EnumPaymentStatus.Rejected)
         {
             throw errors.PaymentAlreadyRejected();
+        }
+
+        if (PaymentProofFileId is null || PaymentMethod is null)
+        {
+            throw errors.PaymentProofRequired();
         }
 
         Status = EnumPaymentStatus.Verified;

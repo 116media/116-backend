@@ -56,10 +56,12 @@ public class AdminArchiveLyricsHandlerTests
     }
 
     [Fact]
-    public async Task Handle_WhenLyricsIsDraft_ShouldTransitionToArchived()
+    public async Task Handle_WhenLyricsIsApproved_ShouldTransitionToArchived()
     {
         // Arrange
         LyricsEntity lyrics = LyricsFactory.Create(CategoryId);
+        lyrics.MarkPendingReview();
+        lyrics.Approve();
         var command = new AdminArchiveLyricsCommand(Id: lyrics.Id.ToString());
         _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
 

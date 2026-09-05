@@ -1,5 +1,6 @@
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.AddOrderItem.Contracts;
 using _116.Content.Application.Shared.DTOs;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
@@ -11,9 +12,11 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.AddOrderItem
 /// </summary>
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
 /// <param name="addOrderItemFactory">Factory for the order item creation flow.</param>
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminAddOrderItemHandler(
     IContentOrderRepository contentOrderRepository,
-    IAddOrderItemFactory addOrderItemFactory
+    IAddOrderItemFactory addOrderItemFactory,
+    ContentI18n i18n
 ) : ICommandHandler<AdminAddOrderItemCommand, AdminAddOrderItemResult>
 {
     /// <inheritdoc />
@@ -25,13 +28,22 @@ public class AdminAddOrderItemHandler(
         Guid orderId = Guid.Parse(command.OrderId);
         Guid categoryId = Guid.Parse(command.CategoryId);
 
-        ContentOrderEntity order = await contentOrderRepository.GetByIdOrThrowAsync(id: orderId, ct: cancellationToken);
+        // Items and tiers are loaded so the factory's total recalculation sees the whole order.
+        ContentOrderEntity? order = await contentOrderRepository.GetByIdWithItemsAsync(
+            id: orderId,
+            ct: cancellationToken
+        );
+
+        if (order is null)
+        {
+            throw i18n.ContentOrder.NotFound(id: orderId);
+        }
 
         (ContentOrderItemEntity item, string categoryName, string? promotionLevelName) =
             await addOrderItemFactory.CreateItemAsync(
                 order: order,
-                contentKind: command.ContentKind,
                 categoryId: categoryId,
+                contentKind: command.ContentKind,
                 promotionLevelId: command.PromotionLevelId,
                 socialBoost: command.SocialBoost,
                 isBonus: command.IsBonus,
@@ -40,9 +52,9 @@ public class AdminAddOrderItemHandler(
 
         var dto = new OrderItemDto(
             Id: item.Id,
-            ContentKind: item.ContentKind,
-            CategoryId: item.CategoryId,
             CategoryName: categoryName,
+            CategoryId: item.CategoryId,
+            ContentKind: item.ContentKind,
             PromotionLevelId: item.PromotionLevelId,
             PromotionLevelName: promotionLevelName,
             PromoPriceUsd: item.PromoPriceSnapshotUsd,

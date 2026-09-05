@@ -39,15 +39,12 @@ public class AdminRemoveOrderItemHandler(
             ct: cancellationToken
         );
 
+        // Same scope, so this is the tracked instance inside order.Items; the navigation removal
+        // recalculates the total and the repository call deletes the row, in one transaction.
+        order.RemoveItem(item);
         await contentOrderRepository.RemoveItemAsync(item: item, ct: cancellationToken);
-        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
-        ContentOrderEntity updated =
-            await contentOrderRepository.GetByIdWithItemsAsync(id: orderId, ct: cancellationToken)
-            ?? throw i18n.ContentOrder.NotFound(id: orderId);
-
-        updated.RecalculateTotalFromItems();
-        await contentOrderRepository.UpdateAsync(order: updated, ct: cancellationToken);
+        await contentOrderRepository.UpdateAsync(order: order, ct: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminRemoveOrderItemResult(IsSuccess: true);

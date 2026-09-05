@@ -113,10 +113,46 @@ public class ContentOrderEntity : Aggregate<Guid>
     }
 
     /// <summary>
+    /// Adds an item to the order and recalculates the total, so no call site can
+    /// add an item while leaving <see cref="TotalAmountUsd" /> stale.
+    /// </summary>
+    /// <param name="item">The item to add.</param>
+    public void AddItem(ContentOrderItemEntity item)
+    {
+        Items.Add(item);
+        RecalculateTotalFromItems();
+    }
+
+    /// <summary>
+    /// Adds several items and recalculates the total once. Adding in a loop with
+    /// <see cref="AddItem" /> would rescan every item and tier per addition.
+    /// </summary>
+    /// <param name="items">The items to add.</param>
+    public void AddItems(IEnumerable<ContentOrderItemEntity> items)
+    {
+        foreach (ContentOrderItemEntity item in items)
+        {
+            Items.Add(item);
+        }
+
+        RecalculateTotalFromItems();
+    }
+
+    /// <summary>
+    /// Removes an item from the order and recalculates the total.
+    /// </summary>
+    /// <param name="item">The item to remove.</param>
+    public void RemoveItem(ContentOrderItemEntity item)
+    {
+        Items.Remove(item);
+        RecalculateTotalFromItems();
+    }
+
+    /// <summary>
     /// Recalculates the order total from scratch using all existing items and their tiers.
-    /// Bonus items (<see cref="ContentOrderItemEntity.IsBonus" /> = true) are excluded
-    /// from the total — they are complimentary and do not contribute to the price.
-    /// Called after removing an item or tier.
+    /// Bonus items (<see cref="ContentOrderItemEntity.IsBonus" /> = true) are excluded from the
+    /// total. Item mutations go through <see cref="AddItem" />/<see cref="RemoveItem" />; this
+    /// stays callable for tier-level mutations only.
     /// </summary>
     public void RecalculateTotalFromItems()
     {

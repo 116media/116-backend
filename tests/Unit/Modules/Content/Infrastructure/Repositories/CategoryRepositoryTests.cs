@@ -357,6 +357,46 @@ public class CategoryRepositoryTests : IDisposable
     }
 
     [Fact]
+    public async Task GetPricingByCategoriesAsync_ShouldReturnPricingForEveryRequestedCategoryOnly()
+    {
+        // Arrange
+        ContentTypeEntity contentType = await AddContentTypeAsync();
+        CategoryEntity requestedOne = CategoryFactory.Create(contentType.Id);
+        CategoryEntity requestedTwo = CategoryFactory.Create(contentType.Id);
+        CategoryEntity unrequested = CategoryFactory.Create(contentType.Id);
+        PricingTierEntity tier = PricingTierFactory.Create("tier-one");
+
+        _context.Categories.AddRange(requestedOne, requestedTwo, unrequested);
+        _context.PricingTiers.Add(tier);
+        _context.CategoryPricing.AddRange(
+            CategoryPricingFactory.Create(requestedOne.Id, tier.Id),
+            CategoryPricingFactory.Create(requestedTwo.Id, tier.Id),
+            CategoryPricingFactory.Create(unrequested.Id, tier.Id)
+        );
+        await _context.SaveChangesAsync();
+
+        // Act
+        IReadOnlyList<CategoryPricingEntity> result = await _repository.GetPricingByCategoriesAsync([
+            requestedOne.Id,
+            requestedTwo.Id,
+        ]);
+
+        // Assert
+        result.Should().HaveCount(2);
+        result.Select(p => p.CategoryId).Should().BeEquivalentTo([requestedOne.Id, requestedTwo.Id]);
+    }
+
+    [Fact]
+    public async Task GetPricingByCategoriesAsync_WithNoCategories_ShouldReturnEmptyWithoutQuerying()
+    {
+        // Act
+        IReadOnlyList<CategoryPricingEntity> result = await _repository.GetPricingByCategoriesAsync([]);
+
+        // Assert
+        result.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task RemovePricing_ShouldDeleteEntityFromDatabase()
     {
         // Arrange

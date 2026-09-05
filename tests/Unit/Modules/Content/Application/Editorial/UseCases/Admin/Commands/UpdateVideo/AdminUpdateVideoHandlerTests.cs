@@ -5,6 +5,7 @@ using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Core.Application.Shared.Repositories;
 using _116.Shared.Application.Exceptions;
+using _116.Shared.Domain.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
@@ -115,7 +116,7 @@ public class AdminUpdateVideoHandlerTests : BaseContentHandlerTest
     }
 
     [Fact]
-    public async Task Handle_WhenVideoIsApproved_ShouldThrowBadRequestException()
+    public async Task Handle_WhenVideoIsApproved_ShouldThrowDomainRuleException()
     {
         // Arrange
         VideoEntity video = VideoFactory.CreateApproved(CategoryId);
@@ -128,7 +129,7 @@ public class AdminUpdateVideoHandlerTests : BaseContentHandlerTest
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        await act.Should().ThrowAsync<BadRequestException>();
+        await act.Should().ThrowAsync<DomainRuleException>();
         video.Status.Should().Be(EnumContentStatus.Approved);
         video.Title.Should().Be(originalTitle);
         video.Slug.Should().Be(originalSlug);

@@ -1,7 +1,9 @@
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Domain.Events;
+using _116.Content.Domain.StateMachines;
 using _116.Shared.Application.Exceptions;
+using _116.Shared.Domain.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
@@ -208,6 +210,30 @@ public class ArticleEntityTests
         // Assert
         result.Should().BeFalse();
         article.Status.Should().Be(EnumContentStatus.PendingPayment);
+    }
+
+    [Fact]
+    public void Submit_WhenPublished_ShouldThrow()
+    {
+        // Arrange
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
+            AuthorId,
+            TestErrorsFactory.CreateArticleErrors()
+        );
+        article.MarkPendingReview();
+        article.Approve();
+        article.Publish();
+
+        // Act
+        Action act = () => article.Submit();
+
+        // Assert
+        act.Should().Throw<DomainRuleException>().Which.Code.Should().Be(ContentRuleCodes.InvalidStatusTransition);
+        article.Status.Should().Be(EnumContentStatus.Published);
     }
 
     [Fact]
@@ -487,6 +513,7 @@ public class ArticleEntityTests
             TestErrorsFactory.CreateArticleErrors()
         );
         const string reason = TestConstants.Article.ValidRejectionReason;
+        article.MarkPendingReview();
 
         // Act
         bool result = article.Reject(reason);
@@ -509,6 +536,7 @@ public class ArticleEntityTests
             AuthorId,
             TestErrorsFactory.CreateArticleErrors()
         );
+        article.MarkPendingReview();
         article.Reject(TestConstants.Article.ValidRejectionReason);
 
         // Act
@@ -531,6 +559,7 @@ public class ArticleEntityTests
             TestErrorsFactory.CreateArticleErrors()
         );
         const string reason = TestConstants.Article.ValidRejectionReason;
+        article.MarkPendingReview();
 
         // Act
         article.Reject(reason);
@@ -1138,6 +1167,7 @@ public class ArticleEntityTests
         article.Approve();
         article.Publish();
         article.ClearDomainEvents();
+        article.MarkPendingReview();
 
         // Act
         article.Reject("not suitable anymore");
@@ -1165,6 +1195,7 @@ public class ArticleEntityTests
         );
         article.MarkPendingReview();
         article.ClearDomainEvents();
+        article.MarkPendingReview();
 
         // Act
         article.Reject("not suitable");
@@ -1215,6 +1246,8 @@ public class ArticleEntityTests
             TestErrorsFactory.CreateArticleErrors()
         );
         article.ClearDomainEvents();
+        article.MarkPendingReview();
+        article.Approve();
 
         // Act
         article.Archive();

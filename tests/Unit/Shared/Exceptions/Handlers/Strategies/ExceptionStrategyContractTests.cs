@@ -13,6 +13,8 @@ using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using Xunit;
 
 namespace _116.Unit.Tests.Shared.Exceptions.Handlers.Strategies;
@@ -35,7 +37,7 @@ public class ExceptionStrategyContractTests
     /// deliberately when a strategy is added; the failure is the notification that the new strategy
     /// needs a contract entry.
     /// </summary>
-    private const int ExpectedStrategyCount = 23;
+    private const int ExpectedStrategyCount = 24;
 
     /// <summary>
     /// The production assemblies scanned for strategy implementations, each anchored on a type rather
@@ -114,6 +116,17 @@ public class ExceptionStrategyContractTests
             () => new ConflictException("Resource already exists"),
             StatusCodes.Status409Conflict,
             nameof(ConflictException),
+            CarriesTraceExtensions: true
+        ),
+        [typeof(DbUpdateExceptionStrategy)] = new StrategyContract(
+            typeof(DbUpdateException),
+            () =>
+                new DbUpdateException(
+                    "update failed",
+                    new PostgresException("duplicate key", "ERROR", "ERROR", PostgresErrorCodes.UniqueViolation)
+                ),
+            StatusCodes.Status409Conflict,
+            "ConflictException",
             CarriesTraceExtensions: true
         ),
         [typeof(DefaultExceptionHandler)] = new StrategyContract(
@@ -299,7 +312,7 @@ public class ExceptionStrategyContractTests
             .Should()
             .HaveCount(
                 ExpectedStrategyCount,
-                "the Shared assembly declares 14 strategies and the Identity module adds 9"
+                "the Shared assembly declares 15 strategies and the Identity module adds 9"
             );
     }
 

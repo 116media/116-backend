@@ -252,6 +252,7 @@ public class ArticleBuilder
                 entity.Publish();
                 break;
             case EnumContentStatus.Rejected:
+                entity.MarkPendingReview();
                 entity.Reject(_rejectionReason ?? TestConstants.Article.ValidRejectionReason);
                 break;
             case EnumContentStatus.Archived:

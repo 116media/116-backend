@@ -45,22 +45,14 @@ public class AdminRemoveOrderItemHandlerTests
         ContentOrderEntity order = new ContentOrderBuilder().WithCustomer(customer).Build();
 
         ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, Guid.NewGuid());
-        order.Items.Add(item);
-
-        ContentOrderEntity orderAfterRemoval = new ContentOrderBuilder()
-            .WithId(order.Id)
-            .WithCustomer(customer)
-            .Build();
         ContentOrderItemEntity remainingItem = ContentOrderItemFactory.Create(order.Id, Guid.NewGuid());
         remainingItem.Tiers.Add(
             ContentItemTierFactory.Create(remainingItem.Id, Guid.NewGuid(), TestConstants.Commerce.ValidTierPriceUsd)
         );
-        orderAfterRemoval.Items.Add(remainingItem);
+        order.Items.Add(item);
+        order.Items.Add(remainingItem);
 
-        _orderRepositoryMock
-            .SetupSequence(x => x.GetByIdWithItemsAsync(order.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(order)
-            .ReturnsAsync(orderAfterRemoval);
+        _orderRepositoryMock.SetupGetByIdWithItems(order);
         _orderRepositoryMock.SetupGetItemByIdOrThrow(item);
 
         var command = new AdminRemoveOrderItemCommand(OrderId: order.Id.ToString(), ItemId: item.Id.ToString());
@@ -68,11 +60,12 @@ public class AdminRemoveOrderItemHandlerTests
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
-        // Assert
-        orderAfterRemoval.TotalAmountUsd.Should().Be(TestConstants.Commerce.ValidTierPriceUsd);
+        // Assert — the removal and the recalculated total commit together
+        order.Items.Should().NotContain(item);
+        order.TotalAmountUsd.Should().Be(TestConstants.Commerce.ValidTierPriceUsd);
         _orderRepositoryMock.Verify(x => x.RemoveItemAsync(item, It.IsAny<CancellationToken>()), Times.Once);
-        _orderRepositoryMock.VerifyUpdateCalled(orderAfterRemoval);
-        _unitOfWorkMock.VerifyCommitCalled(times: 2);
+        _orderRepositoryMock.VerifyUpdateCalled(order);
+        _unitOfWorkMock.VerifyCommitCalled(times: 1);
     }
 
     #endregion

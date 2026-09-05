@@ -135,4 +135,35 @@ public class AdminRejectPaymentEndpointV1Tests(PostgresFixture db) : BaseApiTest
             Localized<ContentOrderErrorMessage>(m => m.PaymentAlreadyRejected())
         );
     }
+
+    [Fact]
+    public async Task RejectPayment_WhenAlreadyVerified_ReturnsConflictAndLeavesThePaymentVerified()
+    {
+        ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
+        CustomerEntity customer = CustomerFactory.CreateWithId(order.CustomerId);
+        ContentPaymentEntity payment = ContentPaymentFactory.CreateVerified(order.Id);
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            ctx.Customers.Add(customer);
+            ctx.ContentOrders.Add(order);
+            ctx.ContentPayments.Add(payment);
+        });
+
+        Client.AuthenticateAsSuperAdmin();
+        var request = new { Notes = "Rejecting a payment that was already verified" };
+        var msg = new HttpRequestMessage(HttpMethod.Patch, Routes.Admin.Orders.RejectPayment(order.Id))
+        {
+            Content = JsonContent.Create(request),
+        };
+
+        var response = await Client.SendAsync(msg);
+
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<ContentOrderErrorMessage>(m => m.PaymentAlreadyVerified())
+        );
+
+        await using ContentDbContext db = CreateDbContext<ContentDbContext>();
+        (await db.ContentPayments.FindAsync(payment.Id))!.Status.Should().Be(EnumPaymentStatus.Verified);
+    }
 }

@@ -48,14 +48,6 @@ public partial class AdminUpdateArticleHandler(
             cancellationToken: cancellationToken
         );
 
-        if (article.Status is EnumContentStatus.Approved or EnumContentStatus.Published or EnumContentStatus.Archived)
-        {
-            throw i18n.Article.InvalidStatusTransition(
-                from: article.Status.ToString(),
-                to: "Draft/PendingPayment/PendingReview/Rejected (editable)"
-            );
-        }
-
         await categoryRepository.GetByIdOrThrowAsync(id: command.CategoryId, cancellationToken: cancellationToken);
 
         if (command.Slug != article.Slug)

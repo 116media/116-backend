@@ -44,9 +44,7 @@ public class AdminCreateOrderFactoryTests
         package.Slots.Add(slot);
 
         CategoryPricingEntity pricing = CategoryPricingFactory.Create(category.Id, Guid.NewGuid(), 50m);
-        _categoryRepositoryMock
-            .Setup(x => x.GetPricingByCategoryAsync(category.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<CategoryPricingEntity> { pricing });
+        _categoryRepositoryMock.SetupGetPricingByCategories(new List<CategoryPricingEntity> { pricing });
 
         // Act
         int count = await _factory.PopulateFromPackageAsync(order, package, CancellationToken.None);
@@ -74,9 +72,7 @@ public class AdminCreateOrderFactoryTests
             .Build();
         package.Slots.Add(slot);
 
-        _categoryRepositoryMock
-            .Setup(x => x.GetPricingByCategoryAsync(category.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<CategoryPricingEntity>());
+        _categoryRepositoryMock.SetupGetPricingByCategories(new List<CategoryPricingEntity>());
 
         // Act
         int count = await _factory.PopulateFromPackageAsync(order, package, CancellationToken.None);
@@ -123,9 +119,7 @@ public class AdminCreateOrderFactoryTests
             .Build();
         package.Slots.Add(slot);
 
-        _categoryRepositoryMock
-            .Setup(x => x.GetPricingByCategoryAsync(category.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<CategoryPricingEntity>());
+        _categoryRepositoryMock.SetupGetPricingByCategories(new List<CategoryPricingEntity>());
 
         // Act
         int count = await _factory.PopulateFromPackageAsync(order, package, CancellationToken.None);
@@ -151,9 +145,7 @@ public class AdminCreateOrderFactoryTests
         package.Slots.Add(slot);
 
         CategoryPricingEntity pricing = CategoryPricingFactory.Create(category.Id, Guid.NewGuid(), 100m);
-        _categoryRepositoryMock
-            .Setup(x => x.GetPricingByCategoryAsync(category.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<CategoryPricingEntity> { pricing });
+        _categoryRepositoryMock.SetupGetPricingByCategories(new List<CategoryPricingEntity> { pricing });
 
         // Act
         await _factory.PopulateFromPackageAsync(order, package, CancellationToken.None);
@@ -177,9 +169,7 @@ public class AdminCreateOrderFactoryTests
             .Build();
         package.Slots.Add(slot);
 
-        _categoryRepositoryMock
-            .Setup(x => x.GetPricingByCategoryAsync(category.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<CategoryPricingEntity>());
+        _categoryRepositoryMock.SetupGetPricingByCategories(new List<CategoryPricingEntity>());
 
         // Act
         await _factory.PopulateFromPackageAsync(order, package, CancellationToken.None);

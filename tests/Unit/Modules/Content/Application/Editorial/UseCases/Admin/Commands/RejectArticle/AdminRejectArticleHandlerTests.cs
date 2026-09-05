@@ -5,6 +5,7 @@ using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Domain.Events;
 using _116.Shared.Application.Exceptions;
+using _116.Shared.Domain.Exceptions;
 using _116.Tests.Fixtures.Builders.Entities.Content;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
@@ -141,7 +142,7 @@ public class AdminRejectArticleHandlerTests
     }
 
     [Fact]
-    public async Task Handle_WhenArticleInWrongStatus_ShouldThrowBadRequestException()
+    public async Task Handle_WhenArticleInWrongStatus_ShouldThrowDomainRuleException()
     {
         // Arrange
         ArticleEntity article = ArticleFactory.Create(CategoryId);
@@ -156,7 +157,7 @@ public class AdminRejectArticleHandlerTests
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        await act.Should().ThrowAsync<BadRequestException>();
+        await act.Should().ThrowAsync<DomainRuleException>();
         article.Status.Should().Be(EnumContentStatus.Draft);
         article.DomainEvents.Should().BeEmpty();
         _unitOfWorkMock.VerifyCommitNotCalled();

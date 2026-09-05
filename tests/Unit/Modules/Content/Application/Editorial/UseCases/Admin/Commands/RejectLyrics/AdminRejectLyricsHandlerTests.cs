@@ -5,6 +5,7 @@ using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Domain.Events;
 using _116.Shared.Application.Exceptions;
+using _116.Shared.Domain.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
@@ -139,7 +140,7 @@ public class AdminRejectLyricsHandlerTests
     }
 
     [Fact]
-    public async Task Handle_WhenLyricsInWrongStatus_ShouldThrowBadRequestException()
+    public async Task Handle_WhenLyricsInWrongStatus_ShouldThrowDomainRuleException()
     {
         // Arrange
         LyricsEntity lyrics = LyricsFactory.Create(CategoryId);
@@ -154,7 +155,7 @@ public class AdminRejectLyricsHandlerTests
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        await act.Should().ThrowAsync<BadRequestException>();
+        await act.Should().ThrowAsync<DomainRuleException>();
         lyrics.Status.Should().Be(EnumContentStatus.Draft);
         lyrics.RejectionReason.Should().BeNull();
         lyrics.DomainEvents.Should().BeEmpty();

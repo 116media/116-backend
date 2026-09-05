@@ -58,6 +58,43 @@ public class AdminAttachPaymentProofEndpointV1Tests(PostgresFixture db) : BaseAp
     }
 
     [Fact]
+    public async Task AttachPaymentProof_WhenPaymentAlreadyVerified_ReturnsConflictAndKeepsTheOriginalProof()
+    {
+        // Arrange — proof on a decided payment is the evidence the decision rests on
+        CustomerEntity customer = CustomerFactory.Create();
+        ContentOrderEntity order = ContentOrderFactory.CreateForCustomer(customer.Id);
+        ContentPaymentEntity payment = ContentPaymentFactory.CreateVerified(order.Id);
+        Guid originalProofId = payment.PaymentProofFileId!.Value;
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            ctx.Customers.Add(customer);
+            ctx.ContentOrders.Add(order);
+            ctx.ContentPayments.Add(payment);
+        });
+
+        Client.AuthenticateAsSuperAdmin();
+        using var content = new MultipartFormDataContent();
+        var fileContent = new ByteArrayContent(new byte[] { 0xFF, 0xD8, 0xFF, 0xE0 });
+        fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
+        content.Add(fileContent, "file", "proof.jpg");
+
+        // Act
+        var response = await Client.PostAsync(
+            $"{Routes.Admin.Orders.PaymentProof(order.Id)}?paymentMethod=MobileMoney",
+            content
+        );
+
+        // Assert
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<ContentOrderErrorMessage>(m => m.PaymentAlreadyDecided())
+        );
+
+        await using ContentDbContext verifyDb = CreateDbContext<ContentDbContext>();
+        (await verifyDb.ContentPayments.FindAsync(payment.Id))!.PaymentProofFileId.Should().Be(originalProofId);
+    }
+
+    [Fact]
     public async Task AttachPaymentProof_WithUnknownOrderId_ReturnsOrderNotFound()
     {
         Client.AuthenticateAsSuperAdmin();

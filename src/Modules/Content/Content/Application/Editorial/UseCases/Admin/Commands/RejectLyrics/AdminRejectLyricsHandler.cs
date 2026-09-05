@@ -34,14 +34,6 @@ public class AdminRejectLyricsHandler(
             throw i18n.Lyrics.AlreadyRejected();
         }
 
-        if (lyrics.Status != EnumContentStatus.PendingReview)
-        {
-            throw i18n.Lyrics.InvalidStatusTransition(
-                from: lyrics.Status.ToString(),
-                to: nameof(EnumContentStatus.Rejected)
-            );
-        }
-
         lyrics.Reject(reason: command.Reason);
         lyricsRepository.Update(lyrics: lyrics);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);

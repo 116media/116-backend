@@ -40,8 +40,10 @@ public class AdminUpdateProfileAuthFactory(
         authRepository.IsUserAccountActive(user!);
         await authRepository.IsSessionValidAsync(sessionId, cancellationToken);
 
-        bool isPhoneUpdated = !string.IsNullOrEmpty(value: partialPhoneNumber);
-        bool isUsernameUpdated = !string.IsNullOrEmpty(value: userName) && user!.UserName != userName;
+        // Blank means "not supplied", matching the optional validators, which skip their rules
+        // when the value is whitespace.
+        bool isPhoneUpdated = !string.IsNullOrWhiteSpace(value: partialPhoneNumber);
+        bool isUsernameUpdated = !string.IsNullOrWhiteSpace(value: userName) && user!.UserName != userName;
 
         if (isUsernameUpdated)
         {
@@ -71,6 +73,14 @@ public class AdminUpdateProfileAuthFactory(
         return new AdminUpdateProfileAuthData(User: user!);
     }
 
+    /// <summary>
+    /// Refuses a username already registered to an account.
+    /// </summary>
+    /// <param name="username">The requested username.</param>
+    /// <param name="cancellationToken">Token to cancel the operation.</param>
+    /// <exception cref="_116.Shared.Application.Exceptions.ConflictException">
+    /// Thrown when the username is taken.
+    /// </exception>
     private async Task EnsureUsernameUnique(string username, CancellationToken cancellationToken)
     {
         if (await authRepository.ExistsByUserNameAsync(userName: username, cancellationToken: cancellationToken))
@@ -79,6 +89,17 @@ public class AdminUpdateProfileAuthFactory(
         }
     }
 
+    /// <summary>
+    /// Refuses a phone number held by a different account; the caller keeping its own number is
+    /// not a conflict.
+    /// </summary>
+    /// <param name="userId">The account being updated.</param>
+    /// <param name="countryDialCode">The dial code the number is prefixed with.</param>
+    /// <param name="partialPhoneNumber">The local part of the number.</param>
+    /// <param name="cancellationToken">Token to cancel the operation.</param>
+    /// <exception cref="_116.Shared.Application.Exceptions.ConflictException">
+    /// Thrown when another account holds the number.
+    /// </exception>
     private async Task EnsurePhoneUnique(
         Guid userId,
         string countryDialCode,
