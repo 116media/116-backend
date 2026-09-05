@@ -406,4 +406,41 @@ public class VideoRepository(ContentDbContext context) : IVideoRepository
 
         return (videos, totalCount);
     }
+
+    /// <inheritdoc />
+    public async Task<int?> ApplyEngagementDeltaAsync(
+        Guid videoId,
+        EnumEngagementKind kind,
+        int delta,
+        CancellationToken cancellationToken = default
+    )
+    {
+        IQueryable<VideoEntity> row = context.Videos.Where(e => e.Id == videoId);
+
+        // Math.Max reaches PostgreSQL as GREATEST, so a racing unlike cannot go negative.
+        return kind switch
+        {
+            EnumEngagementKind.Share => await row.ExecuteUpdateAsync(
+                setters => setters.SetProperty(e => e.ShareCount, e => Math.Max(0, e.ShareCount + delta)),
+                cancellationToken: cancellationToken
+            ),
+            _ => null,
+        };
+    }
+
+    /// <inheritdoc />
+    public Task<int> SetRatingAsync(
+        Guid videoId,
+        decimal average,
+        int count,
+        CancellationToken cancellationToken = default
+    )
+    {
+        return context
+            .Videos.Where(v => v.Id == videoId)
+            .ExecuteUpdateAsync(
+                setters => setters.SetProperty(v => v.RatingAverage, average).SetProperty(v => v.RatingCount, count),
+                cancellationToken: cancellationToken
+            );
+    }
 }

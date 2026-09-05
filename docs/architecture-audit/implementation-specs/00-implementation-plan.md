@@ -19,8 +19,8 @@ shippable work. **Rules of engagement:**
 - [x] **Stage 4 — Session revocation, verified signup & account-status enforcement** → [`stage-04-session-revocation-and-account-status.md`](stage-04-session-revocation-and-account-status.md)
 - [ ] **Stage 5 — Password & OTP security** → [`stage-05-password-and-otp-security.md`](stage-05-password-and-otp-security.md)
 - [ ] **Stage 6 — Domain state-machine guards, order total & payment proof** → [`stage-06-publication-state-and-order-integrity.md`](stage-06-publication-state-and-order-integrity.md)
-- [ ] **Stage 7 — Invert localization-in-domain (DomainRuleException sweep)**
-- [ ] **Stage 8 — Atomic engagement counters & audit-trail integrity**
+- [ ] **Stage 7 — Invert localization-in-domain (DomainRuleException sweep)** → [`stage-07-domain-rule-exception-sweep.md`](stage-07-domain-rule-exception-sweep.md)
+- [ ] **Stage 8 — Atomic engagement counters & audit-trail integrity** → [`stage-08-atomic-engagement-counters.md`](stage-08-atomic-engagement-counters.md)
 - [ ] **Stage 9 — Query performance (split queries, no-tracking, indexes, soft-delete, N+1)**
 - [ ] **Stage 10 — Multi-instance readiness (distributed cache, clustered jobs, seeding, migrations)**
 - [ ] **Stage 11 — CancellationToken, typed configuration & observability**

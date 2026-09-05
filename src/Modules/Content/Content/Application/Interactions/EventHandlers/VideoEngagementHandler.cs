@@ -1,5 +1,4 @@
 using _116.Content.Application.Shared.Cache;
-using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
@@ -20,12 +19,10 @@ namespace _116.Content.Application.Interactions.EventHandlers;
 /// and the dispatch is skipped: the counter dies with the row.
 /// </summary>
 /// <param name="videoRepository">Repository for video data access operations.</param>
-/// <param name="unitOfWork">Unit of Work committing the counter mutation.</param>
 /// <param name="cacheInvalidator">Token source evicting all popular-videos cache entries.</param>
 /// <param name="logger">Logger recording events whose video no longer exists.</param>
 public class VideoEngagementHandler(
     IVideoRepository videoRepository,
-    IContentUnitOfWork unitOfWork,
     IPopularVideosCacheInvalidator cacheInvalidator,
     ILogger<VideoEngagementHandler> logger
 ) : IDomainEventHandler<VideoEngagedEvent>
@@ -33,57 +30,52 @@ public class VideoEngagementHandler(
     /// <inheritdoc />
     public async Task Handle(VideoEngagedEvent domainEvent, CancellationToken cancellationToken = default)
     {
-        VideoEntity? video = await videoRepository.GetByIdAsync(
-            id: domainEvent.VideoId,
-            cancellationToken: cancellationToken
-        );
+        // A rating is a recomputed average, never a delta, so it takes its own set-based write.
+        int? updated =
+            domainEvent.Kind == EnumEngagementKind.Rating
+                ? await RefreshRatingAsync(videoId: domainEvent.VideoId, cancellationToken: cancellationToken)
+                : await videoRepository.ApplyEngagementDeltaAsync(
+                    videoId: domainEvent.VideoId,
+                    kind: domainEvent.Kind,
+                    delta: domainEvent.Delta,
+                    cancellationToken: cancellationToken
+                );
 
-        if (video is null)
+        // null means this entity carries no counter for the kind, which is routine; 0 means the
+        // row was deleted between the interaction commit and this post-commit dispatch.
+        if (updated == 0)
         {
             logger.LogDebug(
                 "Engagement counter skipped for video {VideoId}: the video no longer exists.",
                 domainEvent.VideoId
             );
-
-            return;
         }
-
-        switch (domainEvent.Kind, domainEvent.Delta)
-        {
-            case (EnumEngagementKind.Share, > 0):
-                video.IncrementShareCount();
-                break;
-            case (EnumEngagementKind.Rating, _):
-                await RecomputeRatingAsync(video: video, cancellationToken: cancellationToken);
-                break;
-            default:
-                cacheInvalidator.Invalidate();
-                return;
-        }
-
-        videoRepository.Update(video: video);
-        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         cacheInvalidator.Invalidate();
     }
 
     /// <summary>
-    /// Recomputes the video's cached rating average and count from the
-    /// committed rating rows. Reading the rows post-commit guarantees the
-    /// freshly created or restarred rating is included.
+    /// Recomputes the cached rating from the committed rating rows and writes it set-based.
+    /// The event's delta is never trusted for ratings.
     /// </summary>
-    /// <param name="video">The video whose rating aggregates are recomputed.</param>
+    /// <param name="videoId">The video whose rating is refreshed.</param>
     /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
-    private async Task RecomputeRatingAsync(VideoEntity video, CancellationToken cancellationToken)
+    /// <returns>Rows updated; <c>0</c> when the video no longer exists.</returns>
+    private async Task<int> RefreshRatingAsync(Guid videoId, CancellationToken cancellationToken)
     {
         List<VideoRatingEntity> allRatings = await videoRepository.GetAllRatingsForVideoAsync(
-            videoId: video.Id,
+            videoId: videoId,
             cancellationToken: cancellationToken
         );
 
         int count = allRatings.Count;
         decimal average = count > 0 ? (decimal)allRatings.Sum(r => r.Stars) / count : 0m;
 
-        video.UpdateRating(average: Math.Round(average, 2), count: count);
+        return await videoRepository.SetRatingAsync(
+            videoId: videoId,
+            average: Math.Round(average, 2),
+            count: count,
+            cancellationToken: cancellationToken
+        );
     }
 }

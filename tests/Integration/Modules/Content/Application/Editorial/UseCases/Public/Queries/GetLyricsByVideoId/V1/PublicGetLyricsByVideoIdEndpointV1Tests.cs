@@ -4,6 +4,7 @@ using _116.Content.Infrastructure.Persistence;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Helpers;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Public.Queries.GetLyricsByVideoId.V1;
 
@@ -134,9 +135,8 @@ public class PublicGetLyricsByVideoIdEndpointV1Tests(PostgresFixture db) : BaseA
             entity.MarkPendingReview();
             entity.Approve();
             entity.Publish();
-            entity.IncrementViewCount();
-            entity.IncrementShareCount();
-            entity.IncrementShareCount();
+            entity.WithViewCount(1);
+            entity.WithShareCount(2);
             ctx.Lyrics.Add(entity);
             return entity;
         });

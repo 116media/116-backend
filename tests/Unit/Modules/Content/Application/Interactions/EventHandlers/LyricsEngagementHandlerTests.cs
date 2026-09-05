@@ -1,11 +1,7 @@
 using _116.Content.Application.Interactions.EventHandlers;
-using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
-using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Domain.Events;
-using _116.Tests.Fixtures.Factories.Content;
-using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -15,123 +11,67 @@ using Xunit;
 namespace _116.Unit.Tests.Modules.Content.Application.Interactions.EventHandlers;
 
 /// <summary>
-/// Unit tests for <see cref="LyricsEngagementHandler"/>.
+/// Unit tests for <see cref="LyricsEngagementHandler"/>. The counter itself is applied in SQL, so these assert
+/// the delta the handler forwards; the arithmetic is proven against the database in the
+/// repository and workflow integration tests.
 /// </summary>
 public class LyricsEngagementHandlerTests
 {
-    private readonly Mock<ILyricsRepository> _lyricsRepositoryMock;
-    private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
+    private readonly Mock<ILyricsRepository> _repositoryMock;
     private readonly LyricsEngagementHandler _handler;
 
     public LyricsEngagementHandlerTests()
     {
-        _lyricsRepositoryMock = MockLyricsRepository.Create();
-        _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _handler = new LyricsEngagementHandler(
-            _lyricsRepositoryMock.Object,
-            _unitOfWorkMock.Object,
-            NullLogger<LyricsEngagementHandler>.Instance
+        _repositoryMock = MockLyricsRepository.Create();
+        _handler = new LyricsEngagementHandler(_repositoryMock.Object, NullLogger<LyricsEngagementHandler>.Instance);
+    }
+
+    [Theory]
+    [InlineData(EnumEngagementKind.Like, 1)]
+    [InlineData(EnumEngagementKind.Like, -1)]
+    [InlineData(EnumEngagementKind.Share, 1)]
+    [InlineData(EnumEngagementKind.View, 1)]
+    public async Task Handle_ShouldForwardTheKindAndDeltaThenSkipTracking(EnumEngagementKind kind, int delta)
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        _repositoryMock
+            .Setup(x => x.ApplyEngagementDeltaAsync(id, kind, delta, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(1);
+
+        // Act
+        await _handler.Handle(new LyricsEngagedEvent(id, kind, delta), CancellationToken.None);
+
+        // Assert — loading to mutate is the race stage 8 removed; the counter moves in SQL only.
+        _repositoryMock.Verify(
+            x => x.ApplyEngagementDeltaAsync(id, kind, delta, It.IsAny<CancellationToken>()),
+            Times.Once
         );
+        _repositoryMock.Verify(x => x.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
-    public async Task Handle_WhenLikeAdded_ShouldIncrementLikeCountAndCommit()
+    public async Task Handle_WhenNoRowIsUpdated_ShouldNotThrow()
     {
-        // Arrange
-        LyricsEntity lyrics = LyricsFactory.Create(Guid.NewGuid());
-        _lyricsRepositoryMock.SetupGetByIdAsync(lyrics.Id, lyrics);
+        // Arrange — the row vanished between the interaction commit and the dispatch, which is a
+        // race, not an error.
+        var id = Guid.NewGuid();
+        _repositoryMock
+            .Setup(x =>
+                x.ApplyEngagementDeltaAsync(
+                    id,
+                    It.IsAny<EnumEngagementKind>(),
+                    It.IsAny<int>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync(0);
 
         // Act
-        await _handler.Handle(new LyricsEngagedEvent(lyrics.Id, EnumEngagementKind.Like, 1), CancellationToken.None);
+        Func<Task> act = async () =>
+            await _handler.Handle(new LyricsEngagedEvent(id, EnumEngagementKind.Like, 1), CancellationToken.None);
 
         // Assert
-        lyrics.LikeCount.Should().Be(1);
-        _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
-        _unitOfWorkMock.VerifyCommitCalled();
-    }
-
-    [Fact]
-    public async Task Handle_WhenLikeRemoved_ShouldDecrementLikeCountAndCommit()
-    {
-        // Arrange
-        LyricsEntity lyrics = LyricsFactory.Create(Guid.NewGuid());
-        lyrics.IncrementLikeCount();
-        _lyricsRepositoryMock.SetupGetByIdAsync(lyrics.Id, lyrics);
-
-        // Act
-        await _handler.Handle(new LyricsEngagedEvent(lyrics.Id, EnumEngagementKind.Like, -1), CancellationToken.None);
-
-        // Assert
-        lyrics.LikeCount.Should().Be(0);
-        _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
-        _unitOfWorkMock.VerifyCommitCalled();
-    }
-
-    [Fact]
-    public async Task Handle_WhenShared_ShouldIncrementShareCountAndCommit()
-    {
-        // Arrange
-        LyricsEntity lyrics = LyricsFactory.Create(Guid.NewGuid());
-        _lyricsRepositoryMock.SetupGetByIdAsync(lyrics.Id, lyrics);
-
-        // Act
-        await _handler.Handle(new LyricsEngagedEvent(lyrics.Id, EnumEngagementKind.Share, 1), CancellationToken.None);
-
-        // Assert
-        lyrics.ShareCount.Should().Be(1);
-        _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
-        _unitOfWorkMock.VerifyCommitCalled();
-    }
-
-    [Fact]
-    public async Task Handle_WhenCountedView_ShouldIncrementViewCountAndCommit()
-    {
-        // Arrange
-        LyricsEntity lyrics = LyricsFactory.Create(Guid.NewGuid());
-        _lyricsRepositoryMock.SetupGetByIdAsync(lyrics.Id, lyrics);
-
-        // Act
-        await _handler.Handle(new LyricsEngagedEvent(lyrics.Id, EnumEngagementKind.View, 1), CancellationToken.None);
-
-        // Assert
-        lyrics.ViewCount.Should().Be(1);
-        _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
-        _unitOfWorkMock.VerifyCommitCalled();
-    }
-
-    [Fact]
-    public async Task Handle_WithKindWithoutLyricsCounter_ShouldNotCommit()
-    {
-        // Arrange
-        LyricsEntity lyrics = LyricsFactory.Create(Guid.NewGuid());
-        _lyricsRepositoryMock.SetupGetByIdAsync(lyrics.Id, lyrics);
-
-        // Act
-        await _handler.Handle(
-            new LyricsEngagedEvent(lyrics.Id, EnumEngagementKind.Bookmark, 1),
-            CancellationToken.None
-        );
-
-        // Assert
-        lyrics.LikeCount.Should().Be(0);
-        lyrics.ShareCount.Should().Be(0);
-        lyrics.ViewCount.Should().Be(0);
-        _lyricsRepositoryMock.VerifyUpdateNotCalled();
-        _unitOfWorkMock.VerifyCommitNotCalled();
-    }
-
-    [Fact]
-    public async Task Handle_WhenLyricsMissing_ShouldSkipWithoutCommit()
-    {
-        // Arrange
-        Guid lyricsId = Guid.NewGuid();
-        _lyricsRepositoryMock.SetupGetByIdAsync(lyricsId, null);
-
-        // Act
-        await _handler.Handle(new LyricsEngagedEvent(lyricsId, EnumEngagementKind.Like, 1), CancellationToken.None);
-
-        // Assert
-        _lyricsRepositoryMock.Verify(x => x.Update(It.IsAny<LyricsEntity>()), Times.Never);
-        _unitOfWorkMock.VerifyCommitNotCalled();
+        await act.Should().NotThrowAsync();
     }
 }

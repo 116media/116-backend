@@ -4,6 +4,7 @@ using _116.Content.Infrastructure.Persistence;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Helpers;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Public.Queries.GetLyricsBySlug.V1;
 
@@ -282,9 +283,8 @@ public class PublicGetLyricsBySlugEndpointV1Tests(PostgresFixture db) : BaseApiT
             entity.MarkPendingReview();
             entity.Approve();
             entity.Publish();
-            entity.IncrementViewCount();
-            entity.IncrementViewCount();
-            entity.IncrementShareCount();
+            entity.WithViewCount(2);
+            entity.WithShareCount(1);
             ctx.Lyrics.Add(entity);
             return entity;
         });

@@ -632,39 +632,4 @@ public class ArticleEntity : Aggregate<Guid>
             )
         );
     }
-
-    /// <summary>
-    /// Increments the cached like count.
-    /// </summary>
-    public void IncrementLikeCount() => LikeCount++;
-
-    /// <summary>
-    /// Decrements the cached like count, floor at zero.
-    /// </summary>
-    public void DecrementLikeCount() => LikeCount = Math.Max(0, LikeCount - 1);
-
-    /// <summary>
-    /// Increments the cached comment count.
-    /// </summary>
-    public void IncrementCommentCount() => CommentCount++;
-
-    /// <summary>
-    /// Decrements the cached comment count, floor at zero.
-    /// </summary>
-    public void DecrementCommentCount() => CommentCount = Math.Max(0, CommentCount - 1);
-
-    /// <summary>
-    /// Increments the cached share count.
-    /// </summary>
-    public void IncrementShareCount() => ShareCount++;
-
-    /// <summary>
-    /// Increments the cached bookmark count.
-    /// </summary>
-    public void IncrementBookmarkCount() => BookmarkCount++;
-
-    /// <summary>
-    /// Decrements the cached bookmark count, floor at zero.
-    /// </summary>
-    public void DecrementBookmarkCount() => BookmarkCount = Math.Max(0, BookmarkCount - 1);
 }

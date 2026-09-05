@@ -762,4 +762,52 @@ public class ArticleRepository(ContentDbContext context) : IArticleRepository
             .Take(limit)
             .ToListAsync(cancellationToken);
     }
+
+    /// <inheritdoc />
+    public async Task<int?> ApplyEngagementDeltaAsync(
+        Guid articleId,
+        EnumEngagementKind kind,
+        int delta,
+        CancellationToken cancellationToken = default
+    )
+    {
+        IQueryable<ArticleEntity> row = context.Articles.Where(e => e.Id == articleId);
+
+        // Math.Max reaches PostgreSQL as GREATEST, so a racing unlike cannot go negative.
+        return kind switch
+        {
+            EnumEngagementKind.Like => await row.ExecuteUpdateAsync(
+                setters => setters.SetProperty(e => e.LikeCount, e => Math.Max(0, e.LikeCount + delta)),
+                cancellationToken: cancellationToken
+            ),
+            EnumEngagementKind.Bookmark => await row.ExecuteUpdateAsync(
+                setters => setters.SetProperty(e => e.BookmarkCount, e => Math.Max(0, e.BookmarkCount + delta)),
+                cancellationToken: cancellationToken
+            ),
+            EnumEngagementKind.Comment => await row.ExecuteUpdateAsync(
+                setters => setters.SetProperty(e => e.CommentCount, e => Math.Max(0, e.CommentCount + delta)),
+                cancellationToken: cancellationToken
+            ),
+            EnumEngagementKind.Share => await row.ExecuteUpdateAsync(
+                setters => setters.SetProperty(e => e.ShareCount, e => Math.Max(0, e.ShareCount + delta)),
+                cancellationToken: cancellationToken
+            ),
+            _ => null,
+        };
+    }
+
+    /// <inheritdoc />
+    public Task<int> ApplyCommentLikeDeltaAsync(
+        Guid commentId,
+        int delta,
+        CancellationToken cancellationToken = default
+    )
+    {
+        return context
+            .ArticleComments.Where(c => c.Id == commentId)
+            .ExecuteUpdateAsync(
+                setters => setters.SetProperty(c => c.LikeCount, c => Math.Max(0, c.LikeCount + delta)),
+                cancellationToken: cancellationToken
+            );
+    }
 }

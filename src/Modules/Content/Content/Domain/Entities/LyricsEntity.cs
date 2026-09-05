@@ -702,26 +702,6 @@ public class LyricsEntity : Aggregate<Guid>
     }
 
     /// <summary>
-    /// Increments the cached view count.
-    /// </summary>
-    public void IncrementViewCount() => ViewCount++;
-
-    /// <summary>
-    /// Increments the cached like count.
-    /// </summary>
-    public void IncrementLikeCount() => LikeCount++;
-
-    /// <summary>
-    /// Decrements the cached like count, floor at zero.
-    /// </summary>
-    public void DecrementLikeCount() => LikeCount = Math.Max(0, LikeCount - 1);
-
-    /// <summary>
-    /// Increments the cached share count.
-    /// </summary>
-    public void IncrementShareCount() => ShareCount++;
-
-    /// <summary>
     /// Replaces the canonical lyrics text — used when a community correction is accepted.
     /// Distinct from the full <see cref="Update" /> call, which requires re-supplying every field.
     /// </summary>

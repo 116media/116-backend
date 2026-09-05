@@ -260,34 +260,4 @@ public class ShortVideoEntity : Aggregate<Guid>
             new ShortVideoDeletedEvent(ShortVideoId: Id, VideoFileId: VideoFileId, ThumbnailFileId: ThumbnailFileId)
         );
     }
-
-    /// <summary>
-    /// Increments the cached view count.
-    /// </summary>
-    public void IncrementViewCount() => ViewCount++;
-
-    /// <summary>
-    /// Increments the cached like count.
-    /// </summary>
-    public void IncrementLikeCount() => LikeCount++;
-
-    /// <summary>
-    /// Decrements the cached like count, floor at zero.
-    /// </summary>
-    public void DecrementLikeCount() => LikeCount = Math.Max(0, LikeCount - 1);
-
-    /// <summary>
-    /// Increments the cached share count.
-    /// </summary>
-    public void IncrementShareCount() => ShareCount++;
-
-    /// <summary>
-    /// Increments the cached bookmark count.
-    /// </summary>
-    public void IncrementBookmarkCount() => BookmarkCount++;
-
-    /// <summary>
-    /// Decrements the cached bookmark count, floor at zero.
-    /// </summary>
-    public void DecrementBookmarkCount() => BookmarkCount = Math.Max(0, BookmarkCount - 1);
 }

@@ -4,6 +4,7 @@ using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Helpers;
 
 namespace _116.Integration.Tests.Modules.Content.Infrastructure.Repositories;
 
@@ -363,12 +364,10 @@ public class LyricsRepositoryTests(PostgresFixture postgres) : BaseRepositoryTes
         await context.SaveChangesAsync();
 
         var mostViewed = LyricsFactory.CreatePublished(category.Id);
-        mostViewed.IncrementViewCount();
-        mostViewed.IncrementViewCount();
-        mostViewed.IncrementViewCount();
+        mostViewed.WithViewCount(3);
         var leastViewed = LyricsFactory.CreatePublished(category.Id);
         var midViewed = LyricsFactory.CreatePublished(category.Id);
-        midViewed.IncrementViewCount();
+        midViewed.WithViewCount(1);
 
         // Inserted in an order that disagrees with both recency and view count, so only a
         // genuine ViewCount-descending sort produces the expected order.
@@ -395,11 +394,10 @@ public class LyricsRepositoryTests(PostgresFixture postgres) : BaseRepositoryTes
         await context.SaveChangesAsync();
 
         var mostLiked = LyricsFactory.CreatePublished(category.Id);
-        mostLiked.IncrementLikeCount();
-        mostLiked.IncrementLikeCount();
+        mostLiked.WithLikeCount(2);
         var leastLiked = LyricsFactory.CreatePublished(category.Id);
         var midLiked = LyricsFactory.CreatePublished(category.Id);
-        midLiked.IncrementLikeCount();
+        midLiked.WithLikeCount(1);
 
         context.Lyrics.AddRange(leastLiked, mostLiked, midLiked);
         await context.SaveChangesAsync();
@@ -424,11 +422,10 @@ public class LyricsRepositoryTests(PostgresFixture postgres) : BaseRepositoryTes
         await context.SaveChangesAsync();
 
         var mostShared = LyricsFactory.CreatePublished(category.Id);
-        mostShared.IncrementShareCount();
-        mostShared.IncrementShareCount();
+        mostShared.WithShareCount(2);
         var leastShared = LyricsFactory.CreatePublished(category.Id);
         var midShared = LyricsFactory.CreatePublished(category.Id);
-        midShared.IncrementShareCount();
+        midShared.WithShareCount(1);
 
         context.Lyrics.AddRange(leastShared, mostShared, midShared);
         await context.SaveChangesAsync();
@@ -455,8 +452,7 @@ public class LyricsRepositoryTests(PostgresFixture postgres) : BaseRepositoryTes
         var promotedFewerViews = LyricsFactory.CreatePublished(category.Id);
         promotedFewerViews.StampPromotion(Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(7));
         var notPromotedMoreViews = LyricsFactory.CreatePublished(category.Id);
-        notPromotedMoreViews.IncrementViewCount();
-        notPromotedMoreViews.IncrementViewCount();
+        notPromotedMoreViews.WithViewCount(2);
 
         context.Lyrics.AddRange(promotedFewerViews, notPromotedMoreViews);
         await context.SaveChangesAsync();

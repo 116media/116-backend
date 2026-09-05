@@ -142,9 +142,8 @@ public class PublicGetLyricsByVideoIdHandlerTests : BaseContentHandlerTest
         lyrics.MarkPendingReview();
         lyrics.Approve();
         lyrics.Publish();
-        lyrics.IncrementViewCount();
-        lyrics.IncrementLikeCount();
-        lyrics.IncrementLikeCount();
+        lyrics.WithViewCount(1);
+        lyrics.WithLikeCount(2);
         var query = new PublicGetLyricsByVideoIdQuery(VideoId: videoId.ToString());
 
         _lyricsRepositoryMock.SetupGetByVideoIdAsync(videoId, lyrics);

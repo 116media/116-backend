@@ -6,6 +6,7 @@ using _116.Content.Domain.Enums;
 using _116.Core.Application.Shared.Repositories;
 using _116.Shared.Application.Pagination;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
 using Moq;
@@ -300,11 +301,9 @@ public class PublicGetPublishedLyricsHandlerTests
     {
         // Arrange
         LyricsEntity lyrics = LyricsFactory.CreatePublished(CategoryId);
-        lyrics.IncrementViewCount();
-        lyrics.IncrementViewCount();
-        lyrics.IncrementViewCount();
-        lyrics.IncrementLikeCount();
-        lyrics.IncrementShareCount();
+        lyrics.WithViewCount(3);
+        lyrics.WithLikeCount(1);
+        lyrics.WithShareCount(1);
         var query = new PublicGetPublishedLyricsQuery(
             PaginatedRequest: new PaginatedRequest(0, 10),
             Search: null,

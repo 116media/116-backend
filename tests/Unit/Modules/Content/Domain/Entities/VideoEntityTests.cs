@@ -727,26 +727,6 @@ public class VideoEntityTests
     }
 
     [Fact]
-    public void IncrementShareCount_ShouldIncrement()
-    {
-        // Arrange
-        VideoEntity video = VideoEntity.CreateFree(
-            Guid.NewGuid(),
-            CategoryId,
-            TestConstants.Video.ValidTitle,
-            TestConstants.Video.ValidSlug,
-            AuthorId,
-            Description
-        );
-
-        // Act
-        video.IncrementShareCount();
-
-        // Assert
-        video.ShareCount.Should().Be(1);
-    }
-
-    [Fact]
     public void StampPromotion_ShouldSetIsPromotedAndPromotedUntil()
     {
         // Arrange

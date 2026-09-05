@@ -2,6 +2,7 @@ using _116.Content.Application.Editorial.Builders;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -67,10 +68,7 @@ public class PopularVideosQueryBuilderTests : IAsyncLifetime
             video.UpdateRating(average: ratingAverage, count: ratingCount);
         }
 
-        for (int index = 0; index < shares; index++)
-        {
-            video.IncrementShareCount();
-        }
+        video.WithShareCount(shares);
 
         _context.Videos.Add(video);
         await _context.SaveChangesAsync();

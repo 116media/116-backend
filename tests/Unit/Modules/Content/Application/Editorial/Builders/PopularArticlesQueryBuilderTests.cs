@@ -2,6 +2,7 @@ using _116.Content.Application.Editorial.Builders;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -63,25 +64,13 @@ public class PopularArticlesQueryBuilderTests : IAsyncLifetime
     {
         ArticleEntity article = ArticleFactory.CreatePublished(categoryId);
 
-        for (int index = 0; index < likes; index++)
-        {
-            article.IncrementLikeCount();
-        }
+        article.WithLikeCount(likes);
 
-        for (int index = 0; index < comments; index++)
-        {
-            article.IncrementCommentCount();
-        }
+        article.WithCommentCount(comments);
 
-        for (int index = 0; index < shares; index++)
-        {
-            article.IncrementShareCount();
-        }
+        article.WithShareCount(shares);
 
-        for (int index = 0; index < bookmarks; index++)
-        {
-            article.IncrementBookmarkCount();
-        }
+        article.WithBookmarkCount(bookmarks);
 
         _context.Articles.Add(article);
         await _context.SaveChangesAsync();

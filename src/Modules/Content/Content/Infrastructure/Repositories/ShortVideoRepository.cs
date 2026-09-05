@@ -2,6 +2,7 @@ using _116.Content.Application.Editorial.Builders;
 using _116.Content.Application.Editorial.Specifications;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Shared.Application.Specifications;
 using _116.Shared.Infrastructure.Extensions;
@@ -362,5 +363,38 @@ public class ShortVideoRepository(ContentDbContext context) : IShortVideoReposit
         return await context
             .ShortVideoViewEvents.Where(x => !x.IsCounted && x.CreatedAt < cutoff)
             .ExecuteDeleteAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<int?> ApplyEngagementDeltaAsync(
+        Guid shortVideoId,
+        EnumEngagementKind kind,
+        int delta,
+        CancellationToken cancellationToken = default
+    )
+    {
+        IQueryable<ShortVideoEntity> row = context.ShortVideos.Where(e => e.Id == shortVideoId);
+
+        // Math.Max reaches PostgreSQL as GREATEST, so a racing unlike cannot go negative.
+        return kind switch
+        {
+            EnumEngagementKind.Like => await row.ExecuteUpdateAsync(
+                setters => setters.SetProperty(e => e.LikeCount, e => Math.Max(0, e.LikeCount + delta)),
+                cancellationToken: cancellationToken
+            ),
+            EnumEngagementKind.Bookmark => await row.ExecuteUpdateAsync(
+                setters => setters.SetProperty(e => e.BookmarkCount, e => Math.Max(0, e.BookmarkCount + delta)),
+                cancellationToken: cancellationToken
+            ),
+            EnumEngagementKind.Share => await row.ExecuteUpdateAsync(
+                setters => setters.SetProperty(e => e.ShareCount, e => Math.Max(0, e.ShareCount + delta)),
+                cancellationToken: cancellationToken
+            ),
+            EnumEngagementKind.View => await row.ExecuteUpdateAsync(
+                setters => setters.SetProperty(e => e.ViewCount, e => Math.Max(0, e.ViewCount + delta)),
+                cancellationToken: cancellationToken
+            ),
+            _ => null,
+        };
     }
 }

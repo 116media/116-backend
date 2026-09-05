@@ -359,4 +359,33 @@ public class LyricsRepository(ContentDbContext context) : ILyricsRepository
             .Take(10)
             .ToListAsync(cancellationToken);
     }
+
+    /// <inheritdoc />
+    public async Task<int?> ApplyEngagementDeltaAsync(
+        Guid lyricsId,
+        EnumEngagementKind kind,
+        int delta,
+        CancellationToken cancellationToken = default
+    )
+    {
+        IQueryable<LyricsEntity> row = context.Lyrics.Where(e => e.Id == lyricsId);
+
+        // Math.Max reaches PostgreSQL as GREATEST, so a racing unlike cannot go negative.
+        return kind switch
+        {
+            EnumEngagementKind.Like => await row.ExecuteUpdateAsync(
+                setters => setters.SetProperty(e => e.LikeCount, e => Math.Max(0, e.LikeCount + delta)),
+                cancellationToken: cancellationToken
+            ),
+            EnumEngagementKind.Share => await row.ExecuteUpdateAsync(
+                setters => setters.SetProperty(e => e.ShareCount, e => Math.Max(0, e.ShareCount + delta)),
+                cancellationToken: cancellationToken
+            ),
+            EnumEngagementKind.View => await row.ExecuteUpdateAsync(
+                setters => setters.SetProperty(e => e.ViewCount, e => Math.Max(0, e.ViewCount + delta)),
+                cancellationToken: cancellationToken
+            ),
+            _ => null,
+        };
+    }
 }

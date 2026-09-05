@@ -7,6 +7,7 @@ using _116.Content.Application.Lookup.UseCases.Public.Queries.GetPopularTags.V1;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Helpers;
 
 namespace _116.Integration.Tests.Workflows;
 
@@ -97,7 +98,7 @@ public class CacheInvalidationRegressionTests(PostgresFixture db) : BaseApiTest(
         ArticleEntity article = await SeedAsync<ContentDbContext, ArticleEntity>(ctx =>
         {
             ArticleEntity entity = ArticleFactory.CreatePublished(categoryId);
-            entity.IncrementCommentCount();
+            entity.WithCommentCount(1);
             ctx.Articles.Add(entity);
             return entity;
         });
@@ -119,9 +120,7 @@ public class CacheInvalidationRegressionTests(PostgresFixture db) : BaseApiTest(
         await using (ContentDbContext ctx = CreateDbContext<ContentDbContext>())
         {
             ArticleEntity tracked = await ctx.Articles.FirstAsync(a => a.Id == article.Id);
-            tracked.IncrementLikeCount();
-            tracked.IncrementLikeCount();
-            tracked.IncrementLikeCount();
+            tracked.WithLikeCount(3);
             await ctx.SaveChangesAsync();
         }
 
@@ -159,7 +158,7 @@ public class CacheInvalidationRegressionTests(PostgresFixture db) : BaseApiTest(
         >(ctx =>
         {
             ArticleEntity published = ArticleFactory.CreatePublished(categoryId);
-            published.IncrementLikeCount();
+            published.WithLikeCount(1);
             ArticleEntity draft = ArticleFactory.Create(categoryId);
             ctx.Articles.AddRange(published, draft);
             return (published, draft);
@@ -175,10 +174,7 @@ public class CacheInvalidationRegressionTests(PostgresFixture db) : BaseApiTest(
         await using (ContentDbContext ctx = CreateDbContext<ContentDbContext>())
         {
             ArticleEntity tracked = await ctx.Articles.FirstAsync(a => a.Id == published.Id);
-            while (tracked.LikeCount < 5)
-            {
-                tracked.IncrementLikeCount();
-            }
+            tracked.WithLikeCount(5);
 
             await ctx.SaveChangesAsync();
         }
@@ -206,7 +202,7 @@ public class CacheInvalidationRegressionTests(PostgresFixture db) : BaseApiTest(
             ctx =>
             {
                 VideoEntity published = VideoFactory.CreatePublished(categoryId);
-                published.IncrementShareCount();
+                published.WithShareCount(1);
                 VideoEntity draft = VideoFactory.Create(categoryId);
                 ctx.Videos.AddRange(published, draft);
                 return (published, draft);
@@ -222,10 +218,7 @@ public class CacheInvalidationRegressionTests(PostgresFixture db) : BaseApiTest(
         await using (ContentDbContext ctx = CreateDbContext<ContentDbContext>())
         {
             VideoEntity tracked = await ctx.Videos.FirstAsync(v => v.Id == published.Id);
-            while (tracked.ShareCount < 4)
-            {
-                tracked.IncrementShareCount();
-            }
+            tracked.WithShareCount(4);
 
             await ctx.SaveChangesAsync();
         }
