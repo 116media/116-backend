@@ -72,6 +72,78 @@ public class AuthRepositoryTests(PostgresFixture postgres) : BaseRepositoryTest(
         result.UserRoles.First().Role.Should().NotBeNull();
     }
 
+    /// <summary>
+    /// Covers <c>UserIsActiveAdminSpecification</c>, which the query applies in SQL.
+    /// </summary>
+    [Fact]
+    public async Task GetActiveAdminByEmailAsync_ActiveAdmin_ShouldReturnTheUser()
+    {
+        // Arrange
+        await using var seedContext = CreateDbContext<IdentityDbContext>();
+        var user = UserFactory.CreateAdmin();
+        seedContext.Users.Add(user);
+        await seedContext.SaveChangesAsync();
+
+        var repo = Resolve<IAuthRepository>();
+
+        // Act
+        var result = await repo.GetActiveAdminByEmailAsync(user.Email!);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Id.Should().Be(user.Id);
+    }
+
+    [Fact]
+    public async Task GetActiveAdminByEmailAsync_UserWithoutAnAdminRole_ShouldReturnNull()
+    {
+        // Arrange
+        await using var seedContext = CreateDbContext<IdentityDbContext>();
+        var user = UserFactory.CreateVisitor();
+        seedContext.Users.Add(user);
+        await seedContext.SaveChangesAsync();
+
+        var repo = Resolve<IAuthRepository>();
+
+        // Act
+        var result = await repo.GetActiveAdminByEmailAsync(user.Email!);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetActiveAdminByEmailAsync_InactiveAdmin_ShouldReturnNull()
+    {
+        // Arrange
+        await using var seedContext = CreateDbContext<IdentityDbContext>();
+        var user = UserFactory.CreateAdmin();
+        user.Deactivate();
+        seedContext.Users.Add(user);
+        await seedContext.SaveChangesAsync();
+
+        var repo = Resolve<IAuthRepository>();
+
+        // Act
+        var result = await repo.GetActiveAdminByEmailAsync(user.Email!);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetActiveAdminByEmailAsync_UnknownEmail_ShouldReturnNull()
+    {
+        // Arrange
+        var repo = Resolve<IAuthRepository>();
+
+        // Act
+        var result = await repo.GetActiveAdminByEmailAsync(new Email("no-such-admin@example.com"));
+
+        // Assert
+        result.Should().BeNull();
+    }
+
     [Fact]
     public async Task ExistsByEmailAsync_ExistingEmail_ShouldReturnTrue()
     {
@@ -247,7 +319,7 @@ public class AuthRepositoryTests(PostgresFixture postgres) : BaseRepositoryTest(
         var repo = Resolve<IAuthRepository>();
         await repo.AssignVisitorRoleAsync(user.Id);
 
-        // Act — the bootstrap grant is an idempotent no-op on a repeat
+        // Act
         await repo.AssignVisitorRoleAsync(user.Id);
 
         // Assert
