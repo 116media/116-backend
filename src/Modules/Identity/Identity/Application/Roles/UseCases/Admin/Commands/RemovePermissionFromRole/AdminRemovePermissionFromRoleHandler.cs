@@ -50,7 +50,6 @@ public class AdminRemovePermissionFromRoleHandler(
             throw i18n.User.PermissionNotAssignedToRole();
         }
 
-        // The orphaned association row is cascade-deleted on commit.
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         await tokenStateRepository.BumpTokenVersionForRoleUsersAsync(
