@@ -62,6 +62,21 @@ public class AuthRepository(IdentityDbContext context, UserErrors userErrors, Se
     }
 
     /// <inheritdoc />
+    public async Task<UserEntity?> GetActiveAdminByEmailAsync(
+        Email email,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var emailSpecification = new UserByEmailSpecification(email: email.Value);
+        var activeAdminSpecification = new UserIsActiveAdminSpecification();
+
+        return await Context
+            .Users.ApplySpecification(specification: emailSpecification)
+            .ApplySpecification(specification: activeAdminSpecification)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
     public async Task<UserEntity?> GetUserWithRolesAndPermissionsByIdOrThrow(
         Guid userId,
         CancellationToken cancellationToken = default
@@ -281,8 +296,7 @@ public class AuthRepository(IdentityDbContext context, UserErrors userErrors, Se
             throw userErrors.RoleNotFoundByName(nameof(EnumCoreUserRole.Visitor));
         }
 
-        // Bootstrap grant: a same-transaction invariant of signup, so no grant event is raised.
-        user?.GrantRoleBootstrap(roleId: visitorRole.Id);
+        user?.GrantInitialRole(roleId: visitorRole.Id);
     }
 
     /// <inheritdoc />
