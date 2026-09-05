@@ -41,6 +41,15 @@ public interface IAuthRepository : IClaimsProvider
     Task<UserEntity?> GetUserWithRolesByEmailOrThrow(Email email, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Retrieves a user with their associated roles by unique identifier.
+    /// </summary>
+    /// <param name="userId">The unique identifier of the user.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>The user entity with roles loaded.</returns>
+    /// <exception cref="NotFoundException">Thrown when no user is found with the specified identifier.</exception>
+    Task<UserEntity?> GetUserWithRolesByIdOrThrow(Guid userId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Retrieves a user with their associated roles and permissions by unique identifier.
     /// </summary>
     /// <param name="userId">The unique identifier of the user.</param>
