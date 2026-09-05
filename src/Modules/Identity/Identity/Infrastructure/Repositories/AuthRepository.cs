@@ -48,6 +48,20 @@ public class AuthRepository(IdentityDbContext context, UserErrors userErrors, Se
     }
 
     /// <inheritdoc />
+    public async Task<UserEntity?> GetUserWithRolesByIdOrThrow(
+        Guid userId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var specification = new UserByIdSpecification(userId: userId);
+        return await Context
+            .Users.ApplySpecification(specification: specification)
+            .Include(u => u.UserRoles)
+                .ThenInclude(ur => ur.Role)
+            .FirstDefaultOrThrowAsync(keyValue: userId, cancellationToken: cancellationToken);
+    }
+
+    /// <inheritdoc />
     public async Task<UserEntity?> GetUserWithRolesAndPermissionsByIdOrThrow(
         Guid userId,
         CancellationToken cancellationToken = default
@@ -267,11 +281,8 @@ public class AuthRepository(IdentityDbContext context, UserErrors userErrors, Se
             throw userErrors.RoleNotFoundByName(nameof(EnumCoreUserRole.Visitor));
         }
 
-        // Create user-role association using the static factory method
-        var userRole = UserRoleEntity.CreateBootstrap(Guid.NewGuid(), userId: userId, roleId: visitorRole.Id);
-
-        // Use the domain method to assign the role
-        user?.AssignRole(userRole: userRole);
+        // Bootstrap grant: a same-transaction invariant of signup, so no grant event is raised.
+        user?.GrantRoleBootstrap(roleId: visitorRole.Id);
     }
 
     /// <inheritdoc />
