@@ -66,7 +66,7 @@ public class SuperAdminEntityFactory(IPasswordService passwordService)
     /// <returns>A <see cref="UserRoleEntity" /> linking the user and role.</returns>
     public static UserRoleEntity CreateUserRoleAssociation(Guid userId, Guid roleId)
     {
-        return UserRoleEntity.CreateBootstrap(Guid.NewGuid(), userId: userId, roleId: roleId);
+        return UserRoleEntity.Create(userId: userId, roleId: roleId);
     }
 
     /// <summary>
@@ -77,7 +77,7 @@ public class SuperAdminEntityFactory(IPasswordService passwordService)
     /// <returns>A <see cref="RolePermissionEntity" /> linking the role and permission.</returns>
     public static RolePermissionEntity CreateRolePermissionAssociation(Guid roleId, Guid permissionId)
     {
-        return RolePermissionEntity.Create(Guid.NewGuid(), roleId: roleId, permissionId: permissionId);
+        return RolePermissionEntity.Create(roleId: roleId, permissionId: permissionId);
     }
 
     /// <summary>
