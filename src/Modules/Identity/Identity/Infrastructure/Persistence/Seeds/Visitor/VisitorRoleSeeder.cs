@@ -60,7 +60,7 @@ public class VisitorRoleSeeder(IdentityDbContext context, ILogger<VisitorRoleSee
         PermissionEntity[] visitorPermissions = VisitorPermissions.GetAllPermissions();
         // Prepare role-permission associations
         RolePermissionEntity[] rolePermissions = visitorPermissions
-            .Select(p => RolePermissionEntity.Create(Guid.NewGuid(), roleId: visitorRole.Id, permissionId: p.Id))
+            .Select(p => RolePermissionEntity.Create(roleId: visitorRole.Id, permissionId: p.Id))
             .ToArray();
         // Add everything in bulk
         await context.Roles.AddAsync(entity: visitorRole);
