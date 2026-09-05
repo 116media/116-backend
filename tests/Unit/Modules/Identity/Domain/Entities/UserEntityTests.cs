@@ -516,9 +516,8 @@ public class UserEntityTests
     {
         // Arrange
         var roleId = Guid.NewGuid();
-        UserRoleEntity userRole = UserRoleFactory.CreateWithRoleId(roleId);
         UserEntity user = UserFactory.Create();
-        user.AssignRole(userRole);
+        user.GrantRoleBootstrap(roleId);
 
         // Act
         bool result = user.HasRole(roleId);
@@ -541,37 +540,108 @@ public class UserEntityTests
     }
 
     [Fact]
-    public void AssignRole_WhenRoleNotAssigned_ShouldAddRole()
+    public void GrantRole_WhenRoleNotGranted_ShouldAddMemberAndRaiseGrantEvent()
     {
         // Arrange
         UserEntity user = UserFactory.Create();
         var roleId = Guid.NewGuid();
-        UserRoleEntity userRole = UserRoleFactory.Create(user.Id, roleId);
 
         // Act
-        user.AssignRole(userRole);
+        bool granted = user.GrantRole(roleId, "Admin");
 
         // Assert
-        user.HasRole(roleId).Should().BeTrue();
+        granted.Should().BeTrue();
+        user.UserRoles.Should().ContainSingle(ur => ur.RoleId == roleId && ur.UserId == user.Id);
+
+        UserRoleGrantedEvent raised = user.DomainEvents.OfType<UserRoleGrantedEvent>().Single();
+        raised.UserId.Should().Be(user.Id);
+        raised.RoleId.Should().Be(roleId);
+        raised.RoleName.Should().Be("Admin");
+    }
+
+    [Fact]
+    public void GrantRole_WhenRoleAlreadyGranted_ShouldReportFalseAndRaiseNothing()
+    {
+        // Arrange
+        var roleId = Guid.NewGuid();
+        UserEntity user = UserFactory.Create();
+        user.GrantRole(roleId, "Admin");
+        int eventCountAfterFirstGrant = user.DomainEvents.Count;
+
+        // Act
+        bool granted = user.GrantRole(roleId, "Admin");
+
+        // Assert
+        granted.Should().BeFalse();
+        user.UserRoles.Should().ContainSingle();
+        user.DomainEvents.Count.Should().Be(eventCountAfterFirstGrant);
+    }
+
+    [Fact]
+    public void GrantRoleBootstrap_ShouldAddMemberWithoutRaisingAnyEvent()
+    {
+        // Arrange
+        UserEntity user = UserFactory.Create();
+        var roleId = Guid.NewGuid();
+
+        // Act
+        bool granted = user.GrantRoleBootstrap(roleId);
+
+        // Assert
+        granted.Should().BeTrue();
+        user.UserRoles.Should().ContainSingle(ur => ur.RoleId == roleId && ur.UserId == user.Id);
+        user.DomainEvents.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void GrantRoleBootstrap_WhenRoleAlreadyGranted_ShouldReportFalse()
+    {
+        // Arrange
+        var roleId = Guid.NewGuid();
+        UserEntity user = UserFactory.Create();
+        user.GrantRoleBootstrap(roleId);
+
+        // Act
+        bool granted = user.GrantRoleBootstrap(roleId);
+
+        // Assert
+        granted.Should().BeFalse();
         user.UserRoles.Should().ContainSingle();
     }
 
     [Fact]
-    public void AssignRole_WhenRoleAlreadyAssigned_ShouldThrowException()
+    public void RevokeRole_WhenRoleGranted_ShouldRemoveMemberAndRaiseRevokeEvent()
     {
         // Arrange
         var roleId = Guid.NewGuid();
-        UserRoleEntity userRole = UserRoleFactory.CreateWithRoleId(roleId);
         UserEntity user = UserFactory.Create();
-        user.AssignRole(userRole);
-
-        UserRoleEntity duplicateRole = UserRoleFactory.CreateWithRoleId(roleId);
+        user.GrantRoleBootstrap(roleId);
 
         // Act
-        Action act = () => user.AssignRole(duplicateRole);
+        bool revoked = user.RevokeRole(roleId, "Admin");
 
         // Assert
-        act.Should().Throw<Exception>();
+        revoked.Should().BeTrue();
+        user.UserRoles.Should().BeEmpty();
+
+        UserRoleRevokedEvent raised = user.DomainEvents.OfType<UserRoleRevokedEvent>().Single();
+        raised.UserId.Should().Be(user.Id);
+        raised.RoleId.Should().Be(roleId);
+        raised.RoleName.Should().Be("Admin");
+    }
+
+    [Fact]
+    public void RevokeRole_WhenRoleNotGranted_ShouldReportFalseAndRaiseNothing()
+    {
+        // Arrange
+        UserEntity user = UserFactory.Create();
+
+        // Act
+        bool revoked = user.RevokeRole(Guid.NewGuid(), "Admin");
+
+        // Assert
+        revoked.Should().BeFalse();
+        user.DomainEvents.Should().BeEmpty();
     }
 
     #endregion
