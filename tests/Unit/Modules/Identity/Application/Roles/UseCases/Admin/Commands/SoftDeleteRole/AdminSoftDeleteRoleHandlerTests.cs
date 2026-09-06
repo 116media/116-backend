@@ -36,7 +36,8 @@ public class AdminSoftDeleteRoleHandlerTests : BaseHandlerTest
             _roleRepositoryMock.Object,
             _unitOfWorkMock.Object,
             Mapper,
-            _userErrors
+            _userErrors,
+            TimeProvider.System
         );
     }
 
