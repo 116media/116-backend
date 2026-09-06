@@ -26,7 +26,11 @@ public class PublicResetPasswordHandlerTests
         _authFactoryMock = new Mock<IPublicResetPasswordAuthFactory>();
         _otpRepositoryMock = MockOtpRepository.Create();
 
-        _handler = new PublicResetPasswordHandler(_authFactoryMock.Object, _otpRepositoryMock.Object);
+        _handler = new PublicResetPasswordHandler(
+            _authFactoryMock.Object,
+            _otpRepositoryMock.Object,
+            TimeProvider.System
+        );
     }
 
     #region Success Cases
