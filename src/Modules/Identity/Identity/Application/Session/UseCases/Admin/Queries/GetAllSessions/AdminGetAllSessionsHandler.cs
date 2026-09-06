@@ -12,7 +12,7 @@ namespace _116.Identity.Application.Session.UseCases.Admin.Queries.GetAllSession
 /// </summary>
 /// <param name="sessionRepository">Repository for session data access operations.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-public class AdminGetAllSessionsHandler(ISessionRepository sessionRepository, IMapper mapper)
+public class AdminGetAllSessionsHandler(ISessionRepository sessionRepository, IMapper mapper, TimeProvider timeProvider)
     : IQueryHandler<AdminGetAllSessionsQuery, AdminGetAllSessionsResult>
 {
     /// <summary>
@@ -48,7 +48,9 @@ public class AdminGetAllSessionsHandler(ISessionRepository sessionRepository, IM
             cancellationToken: cancellationToken
         );
 
-        List<SessionDto> sessionDtos = sessions.Select(s => s.ToSessionDto(mapper)).ToList();
+        List<SessionDto> sessionDtos = sessions
+            .Select(s => s.ToSessionDto(mapper, now: timeProvider.GetUtcNow().UtcDateTime))
+            .ToList();
 
         var paginatedResult = new PaginatedResult<SessionDto>(
             pageIndex: pageIndex,
