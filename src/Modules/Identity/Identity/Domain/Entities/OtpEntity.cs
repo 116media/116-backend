@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.Events;
+using _116.Identity.Domain.ValueObjects;
 using _116.Shared.Domain;
 
 namespace _116.Identity.Domain.Entities;
@@ -27,7 +28,7 @@ public class OtpEntity : Aggregate<Guid>
     /// <summary>
     /// The purpose of the OTP (EmailVerification, PasswordReset, etc.).
     /// </summary>
-    public EnumOtpPurpose Purpose { get; private set; }
+    public OtpPurpose Purpose { get; private set; } = null!;
 
     /// <summary>
     /// The date and time when the OTP expires, in UTC.
@@ -80,7 +81,7 @@ public class OtpEntity : Aggregate<Guid>
             Id = id,
             UserId = userId,
             CodeHash = codeHash,
-            Purpose = purpose,
+            Purpose = new OtpPurpose(value: purpose),
             ExpiresAt = expiresAt,
         };
     }
@@ -98,29 +99,62 @@ public class OtpEntity : Aggregate<Guid>
     }
 
     /// <summary>
-    /// Marks the OTP as used.
+    /// Marks the OTP as used. Idempotent: an OTP already used reports <c>false</c> and keeps its
+    /// original stamp.
     /// </summary>
-    public void MarkAsUsed()
+    /// <param name="now">The current UTC instant, stamped as the usage time.</param>
+    /// <returns><c>true</c> if the OTP transitioned; <c>false</c> if already used.</returns>
+    public bool MarkAsUsed(DateTime now)
     {
+        if (IsUsed)
+        {
+            return false;
+        }
+
         IsUsed = true;
-        UsedAt = DateTime.UtcNow;
+        UsedAt = now;
+        return true;
     }
 
     /// <summary>
-    /// Increments the attempt count.
+    /// Judges a presented code against this OTP, consuming an attempt on a mismatch. Expiry is
+    /// checked before the code so an expired OTP never reveals whether the code was right.
     /// </summary>
-    public void IncrementAttemptCount()
+    /// <param name="suppliedCodeMatches">Whether the presented code matches the stored hash.</param>
+    /// <param name="now">The current UTC instant.</param>
+    /// <returns>The verification status of the presented code.</returns>
+    public EnumOtpVerificationStatus Verify(bool suppliedCodeMatches, DateTime now)
     {
+        if (IsExpired(now: now))
+        {
+            return EnumOtpVerificationStatus.Expired;
+        }
+
+        if (HasMaxAttemptsReached())
+        {
+            return EnumOtpVerificationStatus.AttemptsExhausted;
+        }
+
+        if (suppliedCodeMatches)
+        {
+            return EnumOtpVerificationStatus.Valid;
+        }
+
         AttemptCount++;
+
+        return HasMaxAttemptsReached()
+            ? EnumOtpVerificationStatus.AttemptsExhausted
+            : EnumOtpVerificationStatus.Mismatch;
     }
 
     /// <summary>
-    /// Checks if the OTP has expired.
+    /// Checks if the OTP has expired at the supplied instant.
     /// </summary>
+    /// <param name="now">The current UTC instant.</param>
     /// <returns>True if the OTP has expired, otherwise false.</returns>
-    public bool IsExpired()
+    public bool IsExpired(DateTime now)
     {
-        return DateTime.UtcNow > ExpiresAt;
+        return now > ExpiresAt;
     }
 
     /// <summary>
@@ -133,10 +167,12 @@ public class OtpEntity : Aggregate<Guid>
     }
 
     /// <summary>
-    /// Marks the code spent or superseded, so it can never be presented again.
+    /// Marks the code spent or superseded, so it can never be presented again. Idempotent: a
+    /// consumed code keeps its first stamp.
     /// </summary>
-    public void MarkAsConsumed()
+    /// <param name="now">The current UTC instant, stamped on the first call only.</param>
+    public void MarkAsConsumed(DateTime now)
     {
-        ConsumedAt ??= DateTime.UtcNow;
+        ConsumedAt ??= now;
     }
 }
