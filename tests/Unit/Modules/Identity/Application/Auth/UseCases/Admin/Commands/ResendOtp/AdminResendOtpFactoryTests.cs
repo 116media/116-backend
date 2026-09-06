@@ -193,7 +193,7 @@ public class AdminResendOtpFactoryTests
         // Assert
         result.Should().NotBeNull();
         result!.Otp.UserId.Should().Be(userId);
-        result.Otp.Purpose.Should().Be(purposeEnum);
+        result.Otp.Purpose.Value.Should().Be(purposeEnum);
     }
 
     #endregion
