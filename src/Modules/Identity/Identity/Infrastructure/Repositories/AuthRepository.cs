@@ -19,9 +19,12 @@ namespace _116.Identity.Infrastructure.Repositories;
 /// <summary>
 /// Implementation of <see cref="IAuthRepository" /> using Entity Framework Core.
 /// </summary>
-public class AuthRepository(IdentityDbContext context, UserErrors userErrors, SessionErrors sessionErrors)
-    : IdentityRepository<UserEntity>(context),
-        IAuthRepository
+public class AuthRepository(
+    IdentityDbContext context,
+    UserErrors userErrors,
+    SessionErrors sessionErrors,
+    TimeProvider timeProvider
+) : IdentityRepository<UserEntity>(context), IAuthRepository
 {
     /// <inheritdoc />
     public async Task<UserEntity?> FindUserByIdOrThrow(Guid userId, CancellationToken cancellationToken = default)
@@ -188,7 +191,7 @@ public class AuthRepository(IdentityDbContext context, UserErrors userErrors, Se
     {
         if (!user.IsActive)
         {
-            throw userErrors.AccountInactive(user.Email!);
+            throw userErrors.AccountInactive(user.Email?.Value ?? string.Empty);
         }
 
         return true;
@@ -199,7 +202,7 @@ public class AuthRepository(IdentityDbContext context, UserErrors userErrors, Se
     {
         if (user is { AuthProvider: EnumAuthProvider.Local, IsVerified: false })
         {
-            throw userErrors.AccountNotVerified(user.Email!);
+            throw userErrors.AccountNotVerified(user.Email?.Value ?? string.Empty);
         }
 
         return true;
@@ -214,7 +217,7 @@ public class AuthRepository(IdentityDbContext context, UserErrors userErrors, Se
             .ApplySpecification(specification: specification)
             .FirstOrDefaultAsync(cancellationToken);
 
-        if (session is null || !session.IsActive())
+        if (session is null || !session.IsActive(now: timeProvider.GetUtcNow().UtcDateTime))
         {
             throw sessionErrors.InvalidRefreshToken();
         }
@@ -458,7 +461,7 @@ public class AuthRepository(IdentityDbContext context, UserErrors userErrors, Se
     public void SetPasswordForExternalUser(UserEntity user, string hashedPassword)
     {
         // Check if user has an email address
-        if (string.IsNullOrEmpty(value: user.Email))
+        if (user.Email is null)
         {
             throw userErrors.EmailRequiredToSetPassword();
         }
