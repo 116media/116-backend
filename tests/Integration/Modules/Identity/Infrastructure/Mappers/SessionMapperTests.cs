@@ -30,7 +30,7 @@ public class SessionMapperTests(PostgresFixture postgres) : BaseRepositoryTest(p
         await using var readContext = CreateDbContext<IdentityDbContext>();
         SessionEntity loaded = await readContext.Sessions.FirstAsync(s => s.Id == session.Id);
 
-        SessionDto dto = loaded.ToSessionDto(_mapper);
+        SessionDto dto = loaded.ToSessionDto(_mapper, now: DateTime.UtcNow);
 
         dto.Id.Should().Be(loaded.Id);
         dto.IpAddress.Should().Be(loaded.IpAddress);
@@ -38,7 +38,7 @@ public class SessionMapperTests(PostgresFixture postgres) : BaseRepositoryTest(p
         dto.Browser.Should().Be(loaded.Browser);
         dto.Device.Should().Be(loaded.Device);
         dto.Platform.Should().Be(loaded.Platform);
-        dto.Client.Should().Be(loaded.Client);
+        dto.Client.Should().Be(loaded.Client.Value);
         dto.ExpiresAt.Should().Be(loaded.ExpiresAt);
         dto.IsActive.Should().BeTrue();
         dto.IsCurrent.Should().BeFalse();
@@ -57,7 +57,7 @@ public class SessionMapperTests(PostgresFixture postgres) : BaseRepositoryTest(p
         await using var readContext = CreateDbContext<IdentityDbContext>();
         SessionEntity loaded = await readContext.Sessions.FirstAsync(s => s.Id == session.Id);
 
-        SessionDto dto = loaded.ToSessionDto(_mapper, loaded.Id);
+        SessionDto dto = loaded.ToSessionDto(_mapper, now: DateTime.UtcNow, currentSessionId: loaded.Id);
 
         dto.IsCurrent.Should().BeTrue();
     }
@@ -75,7 +75,7 @@ public class SessionMapperTests(PostgresFixture postgres) : BaseRepositoryTest(p
         await using var readContext = CreateDbContext<IdentityDbContext>();
         SessionEntity loaded = await readContext.Sessions.FirstAsync(s => s.Id == session.Id);
 
-        SessionDto dto = loaded.ToSessionDto(_mapper);
+        SessionDto dto = loaded.ToSessionDto(_mapper, now: DateTime.UtcNow);
 
         dto.IsActive.Should().BeFalse();
     }
@@ -94,7 +94,7 @@ public class SessionMapperTests(PostgresFixture postgres) : BaseRepositoryTest(p
         await using var readContext = CreateDbContext<IdentityDbContext>();
         List<SessionEntity> loaded = await readContext.Sessions.Where(s => s.UserId == user.Id).ToListAsync();
 
-        List<SessionExportDto> dtos = loaded.ToSessionExportDtos(_mapper);
+        List<SessionExportDto> dtos = loaded.ToSessionExportDtos(_mapper, now: DateTime.UtcNow);
 
         dtos.Should().HaveCount(2);
         dtos.Select(d => d.Id).Should().BeEquivalentTo([session1.Id, session2.Id]);
