@@ -12,8 +12,11 @@ namespace _116.Identity.Application.Session.UseCases.Admin.Queries.ExportSession
 /// </summary>
 /// <param name="sessionRepository">Repository for session data access operations.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-public class AdminExportSessionDataHandler(ISessionRepository sessionRepository, IMapper mapper)
-    : IQueryHandler<AdminExportSessionDataQuery, AdminExportSessionDataResult>
+public class AdminExportSessionDataHandler(
+    ISessionRepository sessionRepository,
+    IMapper mapper,
+    TimeProvider timeProvider
+) : IQueryHandler<AdminExportSessionDataQuery, AdminExportSessionDataResult>
 {
     /// <summary>
     /// Handles the query by fetching session data with optional filtering.
@@ -33,7 +36,10 @@ public class AdminExportSessionDataHandler(ISessionRepository sessionRepository,
             cancellationToken: cancellationToken
         );
 
-        List<SessionExportDto> sessionData = sessions.ToSessionExportDtos(mapper);
+        List<SessionExportDto> sessionData = sessions.ToSessionExportDtos(
+            mapper,
+            now: timeProvider.GetUtcNow().UtcDateTime
+        );
         return new AdminExportSessionDataResult(SessionData: sessionData);
     }
 }
