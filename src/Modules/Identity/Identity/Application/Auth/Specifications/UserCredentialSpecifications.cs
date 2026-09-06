@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.ValueObjects;
 using _116.Shared.Application.Specifications;
 
 namespace _116.Identity.Application.Auth.Specifications;
@@ -12,7 +13,9 @@ public class UserByEmailSpecification(string email) : Specification<UserEntity>
 {
     public override Expression<Func<UserEntity, bool>> ToExpression()
     {
-        return user => user.Email == email;
+        // Parsed once outside the expression so the query compares value objects directly.
+        var target = new Email(value: email);
+        return user => user.Email == target;
     }
 }
 
@@ -61,7 +64,9 @@ public class UserByCredentialsSpecification(string credentials) : Specification<
 {
     public override Expression<Func<UserEntity, bool>> ToExpression()
     {
-        bool isEmail = credentials.Contains('@') && credentials.Contains('.');
-        return isEmail ? user => user.Email == credentials : user => user.UserName == credentials;
+        // A credential that does not parse as an address can only be a username; parsing
+        // outside the expression keeps the throwing conversion out of query translation.
+        Email? asEmail = Email.TryFrom(value: credentials);
+        return asEmail != null ? user => user.Email == asEmail : user => user.UserName == credentials;
     }
 }
