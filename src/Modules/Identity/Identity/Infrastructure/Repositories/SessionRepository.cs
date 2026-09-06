@@ -13,7 +13,9 @@ namespace _116.Identity.Infrastructure.Repositories;
 /// <summary>
 /// Repository implementation for managing user login sessions with soft delete support.
 /// </summary>
-public class SessionRepository(IdentityDbContext context)
+/// <param name="context">The identity database context.</param>
+/// <param name="timeProvider">Clock stamping revocation times.</param>
+public class SessionRepository(IdentityDbContext context, TimeProvider timeProvider)
     : IdentityRepository<SessionEntity>(context),
         ISessionRepository
 {
@@ -55,7 +57,7 @@ public class SessionRepository(IdentityDbContext context)
             .Sessions.Where(spec.ToExpression())
             .FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
-        session?.Revoke(reason: reason);
+        session?.Revoke(reason: reason, now: timeProvider.GetUtcNow().UtcDateTime);
     }
 
     /// <inheritdoc />
@@ -71,6 +73,7 @@ public class SessionRepository(IdentityDbContext context)
             .Sessions.Where(spec.ToExpression())
             .ToListAsync(cancellationToken: cancellationToken);
 
+        DateTime now = timeProvider.GetUtcNow().UtcDateTime;
         foreach (SessionEntity session in sessions)
         {
             if (exemptSessionId.HasValue && session.Id == exemptSessionId.Value)
@@ -78,7 +81,7 @@ public class SessionRepository(IdentityDbContext context)
                 continue;
             }
 
-            session.Revoke(reason: reason);
+            session.Revoke(reason: reason, now: now);
         }
     }
 
@@ -106,9 +109,10 @@ public class SessionRepository(IdentityDbContext context)
             .Sessions.Where(spec.ToExpression())
             .ToListAsync(cancellationToken: cancellationToken);
 
+        DateTime now = timeProvider.GetUtcNow().UtcDateTime;
         foreach (SessionEntity session in expiredSessions)
         {
-            session.Revoke(reason: EnumSessionRevokeReason.Expiry);
+            session.Revoke(reason: EnumSessionRevokeReason.Expiry, now: now);
         }
 
         return expiredSessions.Count;
@@ -264,7 +268,7 @@ public class SessionRepository(IdentityDbContext context)
             .Sessions.Where(activeSpec.ToExpression())
             .ToListAsync(cancellationToken: cancellationToken);
 
-        return activeSessions.GroupBy(s => s.Client).ToDictionary(g => g.Key, g => g.Count());
+        return activeSessions.GroupBy(s => s.Client.Value).ToDictionary(g => g.Key, g => g.Count());
     }
 
     /// <inheritdoc />
