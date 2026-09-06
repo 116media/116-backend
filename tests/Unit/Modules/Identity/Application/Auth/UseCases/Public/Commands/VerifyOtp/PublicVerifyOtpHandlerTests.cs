@@ -1,4 +1,7 @@
+using _116.Identity.Application.Auth.Exceptions;
+using _116.Identity.Application.Auth.Factories;
 using _116.Identity.Application.Auth.Repositories;
+using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.VerifyOtp;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
@@ -10,6 +13,7 @@ using _116.Tests.Fixtures.Factories.Identity;
 using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
+using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -23,6 +27,7 @@ public class PublicVerifyOtpHandlerTests
 {
     private readonly Mock<IAuthRepository> _authRepositoryMock;
     private readonly Mock<IOtpRepository> _otpRepositoryMock;
+    private readonly Mock<IOtpService> _otpServiceMock;
     private readonly Mock<IAccountLockoutRepository> _lockoutRepositoryMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
     private readonly PublicVerifyOtpHandler _handler;
@@ -31,14 +36,25 @@ public class PublicVerifyOtpHandlerTests
     {
         _authRepositoryMock = MockAuthRepository.Create();
         _otpRepositoryMock = MockOtpRepository.Create();
+        _otpServiceMock = MockOtpService.Create();
         _lockoutRepositoryMock = new Mock<IAccountLockoutRepository>();
         _unitOfWorkMock = MockIdentityUnitOfWork.Create();
+
+        var otpVerificationFactory = new OtpVerificationFactory(
+            _otpServiceMock.Object,
+            _lockoutRepositoryMock.Object,
+            _unitOfWorkMock.Object,
+            TimeProvider.System,
+            TestErrorsFactory.CreateIdentityI18n()
+        );
 
         _handler = new PublicVerifyOtpHandler(
             _authRepositoryMock.Object,
             _otpRepositoryMock.Object,
+            otpVerificationFactory,
             _lockoutRepositoryMock.Object,
             _unitOfWorkMock.Object,
+            TimeProvider.System,
             TestErrorsFactory.CreateIdentityI18n()
         );
     }
@@ -58,7 +74,8 @@ public class PublicVerifyOtpHandlerTests
         PublicVerifyOtpCommand command = new(Email: email, Code: code, Purpose: purpose);
 
         _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
-        _otpRepositoryMock.SetupValidateOtp(otp);
+        _otpRepositoryMock.SetupGetLatestOutstandingOtp(otp);
+        _otpServiceMock.SetupVerifySuccess(code);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
@@ -80,7 +97,8 @@ public class PublicVerifyOtpHandlerTests
         PublicVerifyOtpCommand command = new(Email: email, Code: code, Purpose: purpose);
 
         _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
-        _otpRepositoryMock.SetupValidateOtp(otp);
+        _otpRepositoryMock.SetupGetLatestOutstandingOtp(otp);
+        _otpServiceMock.SetupVerifySuccess(code);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
@@ -102,7 +120,8 @@ public class PublicVerifyOtpHandlerTests
         PublicVerifyOtpCommand command = new(Email: email, Code: code, Purpose: purpose);
 
         _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
-        _otpRepositoryMock.SetupValidateOtp(otp);
+        _otpRepositoryMock.SetupGetLatestOutstandingOtp(otp);
+        _otpServiceMock.SetupVerifySuccess(code);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
@@ -125,7 +144,8 @@ public class PublicVerifyOtpHandlerTests
         PublicVerifyOtpCommand command = new(Email: email, Code: code, Purpose: purpose);
 
         _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
-        _otpRepositoryMock.SetupValidateOtp(otp);
+        _otpRepositoryMock.SetupGetLatestOutstandingOtp(otp);
+        _otpServiceMock.SetupVerifySuccess(code);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
@@ -147,7 +167,8 @@ public class PublicVerifyOtpHandlerTests
         PublicVerifyOtpCommand command = new(Email: email, Code: code, Purpose: purpose);
 
         _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
-        _otpRepositoryMock.SetupValidateOtp(otp);
+        _otpRepositoryMock.SetupGetLatestOutstandingOtp(otp);
+        _otpServiceMock.SetupVerifySuccess(code);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
@@ -178,7 +199,8 @@ public class PublicVerifyOtpHandlerTests
         PublicVerifyOtpCommand command = new(Email: email, Code: code, Purpose: purpose);
 
         _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
-        _otpRepositoryMock.SetupValidateOtp(otp);
+        _otpRepositoryMock.SetupGetLatestOutstandingOtp(otp);
+        _otpServiceMock.SetupVerifySuccess(code);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
@@ -238,18 +260,27 @@ public class PublicVerifyOtpHandlerTests
 
         PublicVerifyOtpCommand command = new(Email: email, Code: code, Purpose: purpose);
 
+        OtpEntity otp = OtpFactory.Create(user.Id, "123456");
+
         _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
-        _otpRepositoryMock.SetupValidateOtpInvalidCode(user.Id, code, EnumOtpPurpose.EmailVerification);
+        _otpRepositoryMock.SetupGetLatestOutstandingOtp(otp);
+        _otpServiceMock.SetupVerifyFailure(code);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
-        // Assert
+        // Assert — the consumed attempt is metered and committed before the throw
         await act.Should().ThrowAsync<BadRequestException>();
+        otp.AttemptCount.Should().Be(1);
+        _lockoutRepositoryMock.Verify(
+            x => x.RegisterFailedOtpAsync(user.Id, It.IsAny<CancellationToken>()),
+            Times.Once
+        );
+        _unitOfWorkMock.VerifyCommitCalled();
     }
 
     [Fact]
-    public async Task Handle_WhenOtpExpired_ShouldThrowAuthenticationException()
+    public async Task Handle_WhenOtpExpired_ShouldThrowOtpExpirationException()
     {
         // Arrange
         string code = "123456";
@@ -259,14 +290,19 @@ public class PublicVerifyOtpHandlerTests
 
         PublicVerifyOtpCommand command = new(Email: email, Code: code, Purpose: purpose);
 
+        OtpEntity otp = OtpFactory.CreateExpired(user.Id, EnumOtpPurpose.EmailVerification);
+
         _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
-        _otpRepositoryMock.SetupValidateOtpExpired(user.Id, code, EnumOtpPurpose.EmailVerification);
+        _otpRepositoryMock.SetupGetLatestOutstandingOtp(otp);
+        _otpServiceMock.SetupVerifySuccess(code);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
-        // Assert
-        await act.Should().ThrowAsync<AuthenticationException>();
+        // Assert — expiry is judged before the code and consumes nothing
+        await act.Should().ThrowAsync<OtpExpirationException>();
+        otp.AttemptCount.Should().Be(0);
+        _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     #endregion
@@ -287,7 +323,8 @@ public class PublicVerifyOtpHandlerTests
         PublicVerifyOtpCommand command = new(Email: email, Code: code, Purpose: purpose);
 
         _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
-        _otpRepositoryMock.SetupValidateOtp(otp);
+        _otpRepositoryMock.SetupGetLatestOutstandingOtp(otp);
+        _otpServiceMock.SetupVerifySuccess(code);
 
         // Act
         await _handler.Handle(command, cts.Token);
@@ -310,7 +347,8 @@ public class PublicVerifyOtpHandlerTests
         PublicVerifyOtpCommand command = new(Email: email, Code: code, Purpose: purpose);
 
         _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
-        _otpRepositoryMock.SetupValidateOtp(otp);
+        _otpRepositoryMock.SetupGetLatestOutstandingOtp(otp);
+        _otpServiceMock.SetupVerifySuccess(code);
 
         // Act
         await _handler.Handle(command, cts.Token);
