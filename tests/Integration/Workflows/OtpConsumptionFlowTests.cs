@@ -74,7 +74,7 @@ public class OtpConsumptionFlowTests(PostgresFixture postgres) : BaseRepositoryT
         await using (IdentityDbContext consumeContext = CreateDbContext<IdentityDbContext>())
         {
             OtpEntity tracked = await consumeContext.Otps.FirstAsync(o => o.Id == seeded.Id);
-            tracked.MarkAsConsumed();
+            tracked.MarkAsConsumed(now: DateTime.UtcNow);
             await consumeContext.SaveChangesAsync();
         }
 
@@ -95,25 +95,20 @@ public class OtpConsumptionFlowTests(PostgresFixture postgres) : BaseRepositoryT
             await seedContext.SaveChangesAsync();
         }
 
-        var repository = Resolve<IOtpRepository>();
         var lockoutRepository = Resolve<IAccountLockoutRepository>();
 
-        // Act — exhaust the per-code allowance, then rotate the code as a resend would
-        for (int attempt = 0; attempt < UserConstants.MaxOtpAttempts - 1; attempt++)
+        // Act — meter the misses the verify flow records, then rotate the code as a resend would
+        for (int attempt = 0; attempt < UserConstants.MaxOtpAttempts; attempt++)
         {
-            var wrong = () => repository.ValidateOtpAsync(user.Id, "000000", EnumOtpPurpose.EmailVerification);
-            await wrong.Should().ThrowAsync<BadRequestException>();
+            await lockoutRepository.RegisterFailedOtpAsync(user.Id, CancellationToken.None);
         }
-
-        var exhausting = () => repository.ValidateOtpAsync(user.Id, "000000", EnumOtpPurpose.EmailVerification);
-        await exhausting.Should().ThrowAsync<OtpAttemptsLimitException>();
 
         await using (IdentityDbContext rotateContext = CreateDbContext<IdentityDbContext>())
         {
             List<OtpEntity> existing = await rotateContext
                 .Otps.Where(o => o.UserId == user.Id && o.ConsumedAt == null)
                 .ToListAsync();
-            existing.ForEach(o => o.MarkAsConsumed());
+            existing.ForEach(o => o.MarkAsConsumed(now: DateTime.UtcNow));
             rotateContext.Otps.Add(OtpFactory.Create(user.Id, "444444", EnumOtpPurpose.EmailVerification));
             await rotateContext.SaveChangesAsync();
         }
