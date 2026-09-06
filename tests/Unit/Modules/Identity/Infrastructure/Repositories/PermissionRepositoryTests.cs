@@ -286,7 +286,7 @@ public class PermissionRepositoryTests : IDisposable
         PermissionEntity inactiveNotDeleted = PermissionFactory.Create("inactiveNotDeleted", "read");
         inactiveNotDeleted.Deactivate();
         PermissionEntity activeDeleted = PermissionFactory.Create("activeDeleted", "read");
-        activeDeleted.SoftDelete();
+        activeDeleted.SoftDelete(now: DateTime.UtcNow);
 
         _context.Permissions.AddRange(activeNotDeleted, inactiveNotDeleted, activeDeleted);
         await _context.SaveChangesAsync();
