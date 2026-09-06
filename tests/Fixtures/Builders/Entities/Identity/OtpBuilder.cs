@@ -168,19 +168,21 @@ public class OtpBuilder
     {
         var otp = OtpEntity.Create(_id, _userId, Hasher.Hash(code: _code), _purpose, _expiresAt);
 
-        for (int i = 0; i < _attemptCount; i++)
+        if (_attemptCount > 0)
         {
-            otp.IncrementAttemptCount();
+            // Attempts are consumed through Verify in production; arranging a preloaded count
+            // goes through the private setter so expired arrangements stay expressible.
+            typeof(OtpEntity).GetProperty(nameof(OtpEntity.AttemptCount))!.SetValue(otp, _attemptCount);
         }
 
         if (_isUsed)
         {
-            otp.MarkAsUsed();
+            otp.MarkAsUsed(now: DateTime.UtcNow);
         }
 
         if (_isConsumed)
         {
-            otp.MarkAsConsumed();
+            otp.MarkAsConsumed(now: DateTime.UtcNow);
         }
 
         return otp;
