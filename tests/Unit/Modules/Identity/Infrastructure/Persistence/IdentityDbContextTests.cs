@@ -146,6 +146,20 @@ public class IdentityDbContextTests
     }
 
     [Fact]
+    public void UserLoginStates_ShouldReturnDbSet()
+    {
+        // Arrange
+        DbContextOptions<IdentityDbContext> options = CreateOptions();
+        using var context = new IdentityDbContext(options);
+
+        // Act
+        DbSet<UserLoginStateEntity> result = context.UserLoginStates;
+
+        // Assert
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
     public void OnModelCreating_ShouldApplyConfigurationsFromAssembly()
     {
         // Arrange
