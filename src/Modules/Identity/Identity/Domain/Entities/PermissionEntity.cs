@@ -97,12 +97,15 @@ public class PermissionEntity : Aggregate<Guid>
     }
 
     /// <summary>
-    /// Updates the permission's resource, action, and description.
+    /// Updates the permission's resource, action, and description, raising
+    /// <see cref="PermissionChangedEvent" /> only when a value actually changed.
+    /// Idempotent: identical values report <c>false</c>.
     /// </summary>
     /// <param name="resource">The new resource name.</param>
     /// <param name="action">The new action name.</param>
     /// <param name="description">The new description.</param>
-    public void Update(string resource, string action, string description)
+    /// <returns><c>true</c> if a value changed; <c>false</c> otherwise.</returns>
+    public bool Update(string resource, string action, string description)
     {
         Exception? error = (resource, action, description) switch
         {
@@ -123,10 +126,16 @@ public class PermissionEntity : Aggregate<Guid>
             throw error;
         }
 
+        if (Resource == resource && Action == action && Description == description)
+        {
+            return false;
+        }
+
         Resource = resource;
         Action = action;
         Description = description;
         AddDomainEvent(new PermissionChangedEvent(PermissionId: Id));
+        return true;
     }
 
     /// <summary>
@@ -166,8 +175,9 @@ public class PermissionEntity : Aggregate<Guid>
     /// <summary>
     /// Marks the permission as deleted (soft delete).
     /// </summary>
+    /// <param name="now">The current UTC instant, stamped as the deletion time.</param>
     /// <returns>True if the permission was soft-deleted, false if already deleted.</returns>
-    public bool SoftDelete()
+    public bool SoftDelete(DateTime now)
     {
         if (IsDeleted)
         {
@@ -176,7 +186,7 @@ public class PermissionEntity : Aggregate<Guid>
 
         IsDeleted = true;
         IsActive = false;
-        DeletedAt = DateTime.UtcNow;
+        DeletedAt = now;
         AddDomainEvent(new PermissionChangedEvent(PermissionId: Id));
 
         return true;
@@ -202,7 +212,8 @@ public class PermissionEntity : Aggregate<Guid>
 
     /// <summary>
     /// Raises the permission-changed fact for this permission's permanent removal, so cached
-    /// lookup projections refresh once the deletion commits.
+    /// lookup projections refresh once the deletion commits. The fact is declared here because
+    /// the removal destroys the aggregate itself, leaving no state to transition (D14).
     /// </summary>
     public void MarkHardDeleted()
     {
