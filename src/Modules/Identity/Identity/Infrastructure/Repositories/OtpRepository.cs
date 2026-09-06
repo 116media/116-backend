@@ -6,6 +6,7 @@ using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
+using _116.Identity.Domain.ValueObjects;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Shared.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
@@ -22,23 +23,24 @@ namespace _116.Identity.Infrastructure.Repositories;
 /// be pushed into the query, so the comparison happens once a candidate row is loaded.
 /// </param>
 /// <param name="lockoutRepository">Repository recording failed OTP attempts against the account.</param>
+/// <param name="timeProvider">Clock supplying the instant expiry judgements are made against.</param>
 public class OtpRepository(
     IdentityDbContext context,
     UserErrors userErrors,
     IOtpService otpService,
-    IAccountLockoutRepository lockoutRepository
+    IAccountLockoutRepository lockoutRepository,
+    TimeProvider timeProvider
 ) : IdentityRepository<OtpEntity>(context), IOtpRepository
 {
     /// <inheritdoc />
-    public async Task<OtpEntity> ValidateOtpAsync(
+    public async Task<OtpEntity> GetLatestOutstandingOtpOrThrowAsync(
         Guid userId,
-        string code,
         EnumOtpPurpose purpose,
         CancellationToken cancellationToken = default
     )
     {
-        // Load the outstanding OTP for this user and purpose; the code itself cannot take part
-        // in the query because the stored value is salted.
+        // The code itself cannot take part in the query because the stored value is salted;
+        // judging the presented code against this row is the domain's job (OtpEntity.Verify).
         var specification = new OtpForValidationSpecification(userId: userId, purpose: purpose);
         OtpEntity? candidateOtp = await Context
             .Otps.ApplySpecification(specification: specification)
@@ -50,37 +52,7 @@ public class OtpRepository(
             throw userErrors.NoValidOtpFound();
         }
 
-        // First check if the otp is not expired
-        if (candidateOtp.IsExpired())
-        {
-            throw userErrors.OtpExpired();
-        }
-
-        // Then check if the max attempts are not reached
-        if (candidateOtp.HasMaxAttemptsReached())
-        {
-            throw userErrors.MaxOtpAttemptsReached();
-        }
-
-        // Then compare the supplied code against the stored hash
-        if (otpService.Verify(code: code, hash: candidateOtp.CodeHash))
-        {
-            return candidateOtp;
-        }
-
-        // Now increment both the per-code allowance and the account counter that survives a resend
-        await lockoutRepository.RegisterFailedOtpAsync(userId: userId, cancellationToken: cancellationToken);
-        candidateOtp.IncrementAttemptCount();
-
-        Context.Otps.Update(entity: candidateOtp);
-        await Context.SaveChangesAsync(cancellationToken: cancellationToken);
-
-        if (candidateOtp.HasMaxAttemptsReached())
-        {
-            throw userErrors.MaxOtpAttemptsReached();
-        }
-
-        throw userErrors.InvalidOtpCode();
+        return candidateOtp;
     }
 
     /// <inheritdoc />
@@ -108,7 +80,7 @@ public class OtpRepository(
         }
 
         // Check if the OTP has expired
-        if (matchingOtp.IsExpired())
+        if (matchingOtp.IsExpired(now: timeProvider.GetUtcNow().UtcDateTime))
         {
             throw userErrors.OtpExpired();
         }
@@ -123,10 +95,13 @@ public class OtpRepository(
         CancellationToken cancellationToken = default
     )
     {
-        DateTime windowStart = DateTime.UtcNow.AddMinutes(value: -UserConstants.OtpResendWindowMinutes);
+        DateTime windowStart = timeProvider
+            .GetUtcNow()
+            .UtcDateTime.AddMinutes(value: -UserConstants.OtpResendWindowMinutes);
 
+        var target = new OtpPurpose(value: purpose);
         return await Context.Otps.CountAsync(
-            o => o.UserId == userId && o.Purpose == purpose && o.CreatedAt >= windowStart,
+            o => o.UserId == userId && o.Purpose == target && o.CreatedAt >= windowStart,
             cancellationToken: cancellationToken
         );
     }
@@ -148,9 +123,10 @@ public class OtpRepository(
             .Where(o => exceptOtpId == null || o.Id != exceptOtpId)
             .ToListAsync(cancellationToken: cancellationToken);
 
+        DateTime now = timeProvider.GetUtcNow().UtcDateTime;
         foreach (OtpEntity otp in expiredOtpList)
         {
-            otp.MarkAsConsumed();
+            otp.MarkAsConsumed(now: now);
         }
     }
 
