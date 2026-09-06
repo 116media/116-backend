@@ -77,7 +77,7 @@ public class UserMapperTests
 
         // Assert
         result.Id.Should().Be(user.Id);
-        result.Email.Should().Be(user.Email);
+        result.Email.Should().Be(user.Email!.Value);
         result.UserName.Should().Be(user.UserName);
         result.IsActive.Should().Be(user.IsActive);
         result.IsVerified.Should().Be(user.IsVerified);
@@ -102,7 +102,7 @@ public class UserMapperTests
 
         // Assert
         result.Id.Should().Be(user.Id);
-        result.Email.Should().Be(user.Email);
+        result.Email.Should().Be(user.Email!.Value);
         result.UserName.Should().Be(user.UserName);
         result.Avatar.Should().BeNull();
         result.Roles.Should().BeEmpty();
