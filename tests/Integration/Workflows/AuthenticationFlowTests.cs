@@ -1,5 +1,6 @@
 using System.Net.Http.Headers;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.Login.V1;
+using _116.Identity.Application.Auth.UseCases.Public.Commands.SignOut.V1;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp.V1;
 using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Application.Shared.Exceptions;
@@ -132,6 +133,69 @@ public class AuthenticationFlowTests(PostgresFixture db) : BaseApiTest(db)
 
         PublicGetOwnProfileResponse profile = await protectedResponse.ReadAsAsync<PublicGetOwnProfileResponse>();
         profile.User.Email.Should().Be(email, "the endpoint resolved the caller from the issued token's claims");
+    }
+
+    [Fact]
+    public async Task Login_AfterSignOutOnTheSameDevice_ReactivatesTheRevokedSession()
+    {
+        await SeedAsync<IdentityDbContext>(context =>
+            context.Roles.Add(RoleFactory.CreateWithId(Guid.NewGuid(), nameof(EnumCoreUserRole.Visitor)))
+        );
+
+        Client.ClearAuthentication();
+        Client.DefaultRequestHeaders.Add("X-Device-Id", Guid.NewGuid().ToString());
+
+        string email = $"revive-{Guid.NewGuid():N}@test.com";
+        string userName = $"u{Guid.NewGuid():N}"[..10];
+        var signupRequest = new PublicSignUpRequest(Email: email, UserName: userName, Password: TestAuth.ValidPassword);
+        HttpResponseMessage signupResponse = await Client.PostAsJsonAsync(Routes.Public.Auth.SignUp(), signupRequest);
+        signupResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        Guid userId;
+        await using (IdentityDbContext seedContext = CreateDbContext<IdentityDbContext>())
+        {
+            UserEntity user = await seedContext.Users.FirstAsync(u => u.UserName == userName);
+            user.MarkAsVerified();
+            user.Activate();
+            await seedContext.SaveChangesAsync();
+            userId = user.Id;
+        }
+
+        var loginRequest = new PublicLoginRequest(Credentials: email, Password: TestAuth.ValidPassword);
+        HttpResponseMessage firstLogin = await Client.PostAsJsonAsync(Routes.Public.Auth.Login(), loginRequest);
+        firstLogin.StatusCode.Should().Be(HttpStatusCode.OK);
+        PublicLoginMobileResponse firstBody = await firstLogin.ReadAsAsync<PublicLoginMobileResponse>();
+
+        Guid sessionId;
+        await using (IdentityDbContext verifyContext = CreateDbContext<IdentityDbContext>())
+        {
+            SessionEntity session = await verifyContext.Sessions.SingleAsync(s => s.UserId == userId);
+            sessionId = session.Id;
+        }
+
+        Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", firstBody.AccessToken);
+        var signOutRequest = new PublicSignOutRequest(RefreshToken: firstBody.RefreshToken);
+        HttpResponseMessage signOutResponse = await Client.PostAsJsonAsync(
+            Routes.Public.Auth.SignOut(),
+            signOutRequest
+        );
+        signOutResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        await using (IdentityDbContext verifyContext = CreateDbContext<IdentityDbContext>())
+        {
+            (await verifyContext.Sessions.SingleAsync(s => s.Id == sessionId)).IsRevoked.Should().BeTrue();
+        }
+
+        // Act — logging in again on the same device revives the revoked session row
+        Client.DefaultRequestHeaders.Authorization = null;
+        HttpResponseMessage secondLogin = await Client.PostAsJsonAsync(Routes.Public.Auth.Login(), loginRequest);
+        secondLogin.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        await using IdentityDbContext finalContext = CreateDbContext<IdentityDbContext>();
+        SessionEntity revived = await finalContext.Sessions.SingleAsync(s => s.UserId == userId);
+        revived.Id.Should().Be(sessionId, "the (user, device) unique row is reused instead of inserted");
+        revived.IsRevoked.Should().BeFalse();
+        revived.RevokedAt.Should().BeNull();
     }
 
     [Fact]
