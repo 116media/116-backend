@@ -18,13 +18,10 @@ public static class SessionMapper
     /// <param name="config">The TypeAdapterConfig to register mappings into.</param>
     public static void Register(TypeAdapterConfig config)
     {
-        config
-            .NewConfig<SessionEntity, SessionDto>()
-            .Map(dest => dest.IsActive, src => !src.IsRevoked && src.ExpiresAt > DateTime.UtcNow);
-
-        config
-            .NewConfig<SessionEntity, SessionExportDto>()
-            .Map(dest => dest.IsActive, src => !src.IsRevoked && src.ExpiresAt > DateTime.UtcNow);
+        // IsActive is owned by ToSessionDto/ToSessionExportDtos, which judge it through
+        // SessionEntity.IsActive against the caller-supplied instant.
+        config.NewConfig<SessionEntity, SessionDto>().Map(dest => dest.Client, src => src.Client.Value);
+        config.NewConfig<SessionEntity, SessionExportDto>().Map(dest => dest.Client, src => src.Client.Value);
     }
 
     /// <summary>
@@ -32,14 +29,20 @@ public static class SessionMapper
     /// </summary>
     /// <param name="session">The session entity to map.</param>
     /// <param name="mapper">Injected IMapper instance.</param>
+    /// <param name="now">The current UTC instant activity is judged at.</param>
     /// <param name="currentSessionId">The ID of the requesting session, used to flag the current session.</param>
     /// <returns>A SessionDto containing session information.</returns>
-    public static SessionDto ToSessionDto(this SessionEntity session, IMapper mapper, Guid? currentSessionId = null)
+    public static SessionDto ToSessionDto(
+        this SessionEntity session,
+        IMapper mapper,
+        DateTime now,
+        Guid? currentSessionId = null
+    )
     {
         var dto = mapper.Map<SessionDto>(session);
         return dto with
         {
-            IsActive = session.IsActive(),
+            IsActive = session.IsActive(now: now),
             IsCurrent = currentSessionId.HasValue && session.Id == currentSessionId.Value,
         };
     }
@@ -49,14 +52,19 @@ public static class SessionMapper
     /// </summary>
     /// <param name="sessions">The session entities to map.</param>
     /// <param name="mapper">Injected IMapper instance.</param>
+    /// <param name="now">The current UTC instant activity is judged at.</param>
     /// <returns>A list of SessionExportDto containing session export data.</returns>
-    public static List<SessionExportDto> ToSessionExportDtos(this List<SessionEntity> sessions, IMapper mapper)
+    public static List<SessionExportDto> ToSessionExportDtos(
+        this List<SessionEntity> sessions,
+        IMapper mapper,
+        DateTime now
+    )
     {
         return sessions
             .Select(s =>
             {
                 var dto = mapper.Map<SessionExportDto>(s);
-                return dto with { IsActive = s.IsActive() };
+                return dto with { IsActive = s.IsActive(now: now) };
             })
             .ToList();
     }
