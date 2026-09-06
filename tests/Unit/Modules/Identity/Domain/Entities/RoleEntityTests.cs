@@ -129,6 +129,21 @@ public class RoleEntityTests
 
     #endregion
 
+    [Fact]
+    public void Update_WithIdenticalValues_ShouldReportFalseAndRaiseNothing()
+    {
+        // Arrange
+        RoleEntity role = RoleFactory.Create("Editor", "Edits content");
+        role.ClearDomainEvents();
+
+        // Act
+        bool changed = role.Update("Editor", "Edits content");
+
+        // Assert
+        changed.Should().BeFalse();
+        role.DomainEvents.Should().BeEmpty();
+    }
+
     #region Activate Tests
 
     [Fact]
@@ -202,7 +217,7 @@ public class RoleEntityTests
         RoleEntity role = RoleFactory.Create();
 
         // Act
-        bool result = role.SoftDelete();
+        bool result = role.SoftDelete(now: DateTime.UtcNow);
 
         // Assert
         result.Should().BeTrue();
@@ -219,7 +234,7 @@ public class RoleEntityTests
         RoleEntity role = RoleFactory.CreateDeleted();
 
         // Act
-        bool result = role.SoftDelete();
+        bool result = role.SoftDelete(now: DateTime.UtcNow);
 
         // Assert
         result.Should().BeFalse();
@@ -299,7 +314,7 @@ public class RoleEntityTests
         role.ClearDomainEvents();
 
         // Act
-        role.SoftDelete();
+        role.SoftDelete(now: DateTime.UtcNow);
 
         // Assert
         role.DomainEvents.OfType<RoleChangedEvent>().Should().ContainSingle();
