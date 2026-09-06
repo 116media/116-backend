@@ -1,5 +1,6 @@
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -23,7 +24,11 @@ public class OtpConfiguration : IEntityTypeConfiguration<OtpEntity>
         // Properties configuration
         builder.Property(o => o.UserId).IsRequired();
         builder.Property(o => o.CodeHash).HasMaxLength(maxLength: UserConstants.OtpCodeHashLength).IsRequired();
-        builder.Property(o => o.Purpose).HasConversion<string>().IsRequired();
+        // The value object rides the existing text column holding the enum name.
+        builder
+            .Property(o => o.Purpose)
+            .HasConversion(purpose => purpose.Value.ToString(), value => new OtpPurpose(value))
+            .IsRequired();
         builder.Property(o => o.ExpiresAt).IsRequired();
         builder.Property(o => o.AttemptCount).HasDefaultValue(0).IsRequired();
         builder.Property(o => o.IsUsed).HasDefaultValue(false).IsRequired();
