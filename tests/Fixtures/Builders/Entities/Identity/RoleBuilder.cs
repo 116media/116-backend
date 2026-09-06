@@ -115,7 +115,7 @@ public class RoleBuilder
 
         if (_isDeleted)
         {
-            role.SoftDelete();
+            role.SoftDelete(now: DateTime.UtcNow);
         }
 
         foreach (
