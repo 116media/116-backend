@@ -58,6 +58,7 @@ public class RefreshTokenFactoryTests : IDisposable
             _tokenStateRepositoryMock.Object,
             _unitOfWorkMock.Object,
             sessionErrors,
+            TimeProvider.System,
             NullLogger<RefreshTokenFactory>.Instance
         );
     }
