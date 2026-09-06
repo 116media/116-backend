@@ -132,7 +132,7 @@ public class PermissionSpecificationsTests
     {
         // Arrange
         PermissionEntity permission = PermissionFactory.Create();
-        permission.SoftDelete();
+        permission.SoftDelete(now: DateTime.UtcNow);
         PermissionIsDeletedSpecification spec = new();
 
         // Act
@@ -179,7 +179,7 @@ public class PermissionSpecificationsTests
     {
         // Arrange
         PermissionEntity permission = PermissionFactory.Create();
-        permission.SoftDelete();
+        permission.SoftDelete(now: DateTime.UtcNow);
         PermissionNotDeletedSpecification spec = new();
 
         // Act
@@ -229,7 +229,7 @@ public class PermissionSpecificationsTests
         // Arrange
         PermissionEntity permission = PermissionFactory.Create();
         permission.Activate();
-        permission.SoftDelete();
+        permission.SoftDelete(now: DateTime.UtcNow);
         ActivePermissionSpecification spec = new();
 
         // Act
@@ -335,7 +335,7 @@ public class PermissionSpecificationsTests
         inactivePermission.Deactivate();
 
         PermissionEntity deletedPermission = PermissionFactory.Create("comments", "delete");
-        deletedPermission.SoftDelete();
+        deletedPermission.SoftDelete(now: DateTime.UtcNow);
 
         List<PermissionEntity> permissions = [activePermission, inactivePermission, deletedPermission];
         ActivePermissionSpecification spec = new();
