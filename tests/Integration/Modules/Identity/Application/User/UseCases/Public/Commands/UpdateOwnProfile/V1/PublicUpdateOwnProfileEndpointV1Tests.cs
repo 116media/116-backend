@@ -153,7 +153,7 @@ public class PublicUpdateOwnProfileEndpointV1Tests(PostgresFixture db) : BaseApi
 
         await using var verifyContext = CreateDbContext<IdentityDbContext>();
         UserEntity? caller = await verifyContext.Users.FindAsync(TestUser.VisitorId);
-        caller!.Email.Should().Be(TestUser.VisitorEmail);
+        caller!.Email!.Value.Should().Be(TestUser.VisitorEmail);
     }
 
     [Fact]
