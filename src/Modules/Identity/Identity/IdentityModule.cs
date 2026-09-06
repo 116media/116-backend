@@ -3,6 +3,8 @@ using _116.Identity.Application.Adapters.SocialAuth;
 using _116.Identity.Application.Adapters.Wangkanai.Detection;
 using _116.Identity.Application.Auth.EventHandlers;
 using _116.Identity.Application.Auth.Exceptions.Handlers;
+using _116.Identity.Application.Auth.Factories;
+using _116.Identity.Application.Auth.Factories.Contracts;
 using _116.Identity.Application.Auth.Repositories;
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.ForgotPassword;
@@ -67,15 +69,12 @@ using _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
 using _116.Identity.Infrastructure.Persistence.Seeds.Visitor;
 using _116.Identity.Infrastructure.Repositories;
 using _116.Identity.Infrastructure.Services;
-using _116.Shared.Application.Configurations;
 using _116.Shared.Application.Configurations.Schemas;
 using _116.Shared.Application.Exceptions.Handlers.Contracts;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Application.Services;
 using _116.Shared.Infrastructure;
 using _116.Shared.Infrastructure.Seed;
-using Mapster;
-using MapsterMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -129,9 +128,8 @@ public static class IdentityModule
         services.AddScoped<SessionErrors>();
         services.AddScoped<IdentityI18n>();
 
-        // Register Mapster configuration and IMapper (thread-safe, no global state)
-        services.AddSingleton(MappingRegistration.CreateConfiguration());
-        services.AddScoped<IMapper>(sp => new Mapper(sp.GetRequiredService<TypeAdapterConfig>()));
+        // Contribute Identity mappings to the shared cross-module Mapster config
+        services.AddModuleMappings(new MappingRegistration());
 
         services.AddHttpContextAccessor();
         services.AddDetection();
@@ -170,6 +168,7 @@ public static class IdentityModule
 
         // Register authentication factories
         services.AddScoped<ISessionFactory, SessionFactory>();
+        services.AddScoped<IOtpVerificationFactory, OtpVerificationFactory>();
         services.AddScoped<IPublicSignUpAuthFactory, PublicSignUpAuthFactory>();
         services.AddScoped<IAdminLoginAuthFactory, AdminLoginAuthFactory>();
         services.AddScoped<IPublicLoginAuthFactory, PublicLoginAuthFactory>();
@@ -210,9 +209,6 @@ public static class IdentityModule
 
         services.AddScheduledJob<ExpiredOtpCleanupJob>(cronExpression: IdentityConstants.ExpiredOtpCleanupCron);
 
-        // Seeders run from the advisory-locked seeding hosted service. The concrete types stay
-        // registered for direct resolution; Testing hosts register no IDataSeeder, so the
-        // hosted service is a no-op there.
         services.AddScoped<SuperAdminSeeder>();
         services.AddScoped<VisitorRoleSeeder>();
         if (!environment.IsEnvironment("Testing"))
@@ -233,13 +229,10 @@ public static class IdentityModule
             UserSignedOutAllDevicesNotificationsHandler
         >();
 
-        // Register domain event handlers: refresh token replay response
+        // Register domain event handlers
         services.AddScoped<IDomainEventHandler<RefreshTokenReplayDetectedEvent>, RefreshTokenReplaySecurityHandler>();
-
-        // Register domain event handlers: session revocation audit slot
+        services.AddScoped<IDomainEventHandler<UserDeactivatedEvent>, UserDeactivatedSecurityHandler>();
         services.AddScoped<IDomainEventHandler<SessionRevokedEvent>, SessionRevokedLogHandler>();
-
-        // Cache invalidation domain event handlers
         services.AddScoped<IDomainEventHandler<RoleChangedEvent>, IdentityLookupCacheHandler>();
         services.AddScoped<IDomainEventHandler<PermissionChangedEvent>, IdentityLookupCacheHandler>();
 
