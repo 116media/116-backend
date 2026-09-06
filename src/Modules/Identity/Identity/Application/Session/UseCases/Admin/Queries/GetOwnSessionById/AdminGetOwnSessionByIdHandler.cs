@@ -13,8 +13,12 @@ namespace _116.Identity.Application.Session.UseCases.Admin.Queries.GetOwnSession
 /// <param name="sessionRepository">Repository for session data access operations.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 /// <param name="i18n">Single i18n entry point for the Identity module.</param>
-public class AdminGetOwnSessionByIdHandler(ISessionRepository sessionRepository, IMapper mapper, IdentityI18n i18n)
-    : IQueryHandler<AdminGetOwnSessionByIdQuery, AdminGetOwnSessionByIdResult>
+public class AdminGetOwnSessionByIdHandler(
+    ISessionRepository sessionRepository,
+    IMapper mapper,
+    IdentityI18n i18n,
+    TimeProvider timeProvider
+) : IQueryHandler<AdminGetOwnSessionByIdQuery, AdminGetOwnSessionByIdResult>
 {
     /// <summary>
     /// Handles the query by fetching the session by ID and verifying ownership.
@@ -38,7 +42,7 @@ public class AdminGetOwnSessionByIdHandler(ISessionRepository sessionRepository,
             throw i18n.Session.SessionNotFound(sessionId: query.SessionId);
         }
 
-        var sessionDto = session.ToSessionDto(mapper);
+        var sessionDto = session.ToSessionDto(mapper, now: timeProvider.GetUtcNow().UtcDateTime);
 
         return new AdminGetOwnSessionByIdResult(Session: sessionDto);
     }
