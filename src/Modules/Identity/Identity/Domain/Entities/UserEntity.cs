@@ -4,6 +4,7 @@ using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.Events;
 using _116.Identity.Domain.Exceptions;
 using _116.Identity.Domain.StateMachines;
+using _116.Identity.Domain.ValueObjects;
 using _116.Shared.Domain;
 
 namespace _116.Identity.Domain.Entities;
@@ -18,8 +19,7 @@ public class UserEntity : Aggregate<Guid>
     /// <summary>
     /// User's email address. Required for local auth, optional for social providers.
     /// </summary>
-    [MaxLength(length: UserConstants.MaxEmailLength)]
-    public string? Email { get; private set; }
+    public Email? Email { get; private set; }
 
     /// <summary>
     /// Unique username for the user.
@@ -54,18 +54,6 @@ public class UserEntity : Aggregate<Guid>
     /// Whether the account is active. Inactive users cannot log in.
     /// </summary>
     public bool IsActive { get; private set; } = UserConstants.DefaultIsActive;
-
-    // Login brute-force counters. Moved by atomic SQL through IAccountLockoutRepository, never by
-    // a tracked mutation, so an increment survives the exception the failed attempt throws.
-    /// <summary>
-    /// Consecutive failed login attempts since the last success.
-    /// </summary>
-    public int FailedLoginAttempts { get; private set; }
-
-    /// <summary>
-    /// UTC instant until which login is refused, or null when the account is not locked.
-    /// </summary>
-    public DateTime? LockedUntil { get; private set; }
 
     // Profile Data
     /// <summary>
@@ -125,15 +113,11 @@ public class UserEntity : Aggregate<Guid>
     /// </summary>
     public static UserEntity Create(Guid id, string email, string userName, string passwordHash)
     {
-        Exception? error = (email, userName, passwordHash) switch
+        Exception? error = (userName, passwordHash) switch
         {
-            var (e, _, _) when string.IsNullOrWhiteSpace(value: e) => new IdentityRuleException(
-                IdentityRuleCodes.InvalidEmailFormat,
-                e
-            ),
-            var (_, u, _) when string.IsNullOrWhiteSpace(value: u) || u.Length > UserConstants.MaxUserNameLength =>
+            var (u, _) when string.IsNullOrWhiteSpace(value: u) || u.Length > UserConstants.MaxUserNameLength =>
                 new IdentityRuleException(IdentityRuleCodes.InvalidUsernameFormat, u),
-            var (_, _, p) when string.IsNullOrWhiteSpace(value: p) => new IdentityRuleException(
+            var (_, p) when string.IsNullOrWhiteSpace(value: p) => new IdentityRuleException(
                 IdentityRuleCodes.InvalidPasswordFormat
             ),
             _ => null,
@@ -146,7 +130,7 @@ public class UserEntity : Aggregate<Guid>
         return new UserEntity
         {
             Id = id,
-            Email = email.ToLowerInvariant(),
+            Email = new Email(value: email),
             UserName = userName,
             PasswordHash = passwordHash,
             AuthProvider = EnumAuthProvider.Local,
@@ -173,7 +157,7 @@ public class UserEntity : Aggregate<Guid>
         return new UserEntity
         {
             Id = id,
-            Email = email?.ToLowerInvariant(),
+            Email = email is null ? null : new Email(value: email),
             UserName = userName,
             AuthProvider = authProvider,
             ProviderSubjectId = providerSubjectId,
@@ -204,16 +188,11 @@ public class UserEntity : Aggregate<Guid>
     /// <param name="newEmail">The new email address.</param>
     public void UpdateEmail(string newEmail)
     {
-        if (string.IsNullOrWhiteSpace(value: newEmail))
-        {
-            throw new IdentityRuleException(IdentityRuleCodes.InvalidEmailFormat, newEmail);
-        }
-
-        string? oldEmail = Email;
-        Email = newEmail.ToLowerInvariant();
+        string? oldEmail = Email?.Value;
+        Email = new Email(value: newEmail);
         IsVerified = UserConstants.EmailUpdatedVerificationStatus;
 
-        AddDomainEvent(new UserEmailChangedEvent(UserId: Id, OldEmail: oldEmail, NewEmail: Email));
+        AddDomainEvent(new UserEmailChangedEvent(UserId: Id, OldEmail: oldEmail, NewEmail: Email.Value));
     }
 
     /// <summary>
@@ -230,7 +209,7 @@ public class UserEntity : Aggregate<Guid>
             throw new IdentityRuleException(IdentityRuleCodes.InvalidPasswordFormat);
         }
 
-        if (AuthProvider != EnumAuthProvider.Local && string.IsNullOrEmpty(value: Email))
+        if (AuthProvider != EnumAuthProvider.Local && Email is null)
         {
             throw new IdentityRuleException(IdentityRuleCodes.EmailRequiredToSetPassword);
         }
@@ -264,7 +243,7 @@ public class UserEntity : Aggregate<Guid>
             throw new IdentityRuleException(IdentityRuleCodes.InvalidPasswordFormat);
         }
 
-        if (string.IsNullOrEmpty(value: Email))
+        if (Email is null)
         {
             throw new IdentityRuleException(IdentityRuleCodes.EmailRequiredToSetPassword);
         }
@@ -306,9 +285,27 @@ public class UserEntity : Aggregate<Guid>
     }
 
     /// <summary>
+    /// Marks the email as verified when the presented code proves the address. Only an
+    /// email-verification purpose may flip <see cref="IsVerified" />; a reset or recovery code
+    /// must not silently confirm an unproven address.
+    /// </summary>
+    /// <param name="purpose">The purpose of the code that was just verified.</param>
+    /// <returns><c>true</c> if the account transitioned to verified; <c>false</c> otherwise.</returns>
+    public bool MarkVerifiedByOtp(EnumOtpPurpose purpose)
+    {
+        if (purpose != EnumOtpPurpose.EmailVerification || IsVerified)
+        {
+            return false;
+        }
+
+        MarkAsVerified();
+        return true;
+    }
+
+    /// <summary>
     /// Records that every session on this account was terminated at once. The session rows are
-    /// revoked by the caller in the same transaction; this method only declares the account-level
-    /// fact by raising <see cref="UserSignedOutAllDevicesEvent" />.
+    /// revoked by the caller in the same transaction; the account-level fact is raised here
+    /// because the session family has no single aggregate to raise one event from (D14).
     /// </summary>
     /// <param name="byAdmin">Whether an administrator drove the termination.</param>
     public void RecordMassSignOut(bool byAdmin)
@@ -317,20 +314,41 @@ public class UserEntity : Aggregate<Guid>
     }
 
     /// <summary>
-    /// Activates the account. User can now log in.
+    /// Activates the account so the user can log in again, raising
+    /// <see cref="UserActivatedEvent" />. Idempotent: an active account reports <c>false</c>
+    /// and raises nothing.
     /// </summary>
-    public void Activate()
+    /// <returns><c>true</c> if the account transitioned; <c>false</c> if already active.</returns>
+    public bool Activate()
     {
+        if (IsActive)
+        {
+            return false;
+        }
+
         IsActive = UserConstants.ActivatedStatus;
+
+        AddDomainEvent(new UserActivatedEvent(UserId: Id));
+        return true;
     }
 
     /// <summary>
-    /// Deactivates the account. User cannot log in anymore.
-    /// You should also invalidate all their sessions separately.
+    /// Deactivates the account so the user can no longer log in, raising
+    /// <see cref="UserDeactivatedEvent" />; consumers revoke the account's live sessions.
+    /// Idempotent: an inactive account reports <c>false</c> and raises nothing.
     /// </summary>
-    public void Deactivate()
+    /// <returns><c>true</c> if the account transitioned; <c>false</c> if already inactive.</returns>
+    public bool Deactivate()
     {
+        if (!IsActive)
+        {
+            return false;
+        }
+
         IsActive = UserConstants.DeactivatedStatus;
+
+        AddDomainEvent(new UserDeactivatedEvent(UserId: Id));
+        return true;
     }
 
     /// <summary>
@@ -341,12 +359,12 @@ public class UserEntity : Aggregate<Guid>
     {
         if (!IsActive)
         {
-            throw new IdentityRuleException(IdentityRuleCodes.AccountInactive, Email!);
+            throw new IdentityRuleException(IdentityRuleCodes.AccountInactive, Email?.Value ?? string.Empty);
         }
 
         if (AuthProvider == EnumAuthProvider.Local && !IsVerified)
         {
-            throw new IdentityRuleException(IdentityRuleCodes.AccountNotVerified, Email!);
+            throw new IdentityRuleException(IdentityRuleCodes.AccountNotVerified, Email?.Value ?? string.Empty);
         }
     }
 
