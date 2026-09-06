@@ -1,3 +1,4 @@
+using _116.Identity.Application.Auth.Factories.Contracts;
 using _116.Identity.Application.Auth.Repositories;
 using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Persistence;
@@ -17,14 +18,18 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.VerifyOtp;
 /// </summary>
 /// <param name="authRepository">Repository for user data access operations.</param>
 /// <param name="otpRepository">Repository for OTP data access operations.</param>
-/// <param name="lockoutRepository">Repository clearing the account OTP counter on success.</param>
+/// <param name="otpVerificationFactory">Factory validating the presented code and metering misses.</param>
+/// <param name="lockoutRepository">Repository clearing the failure counter on success.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
+/// <param name="timeProvider">Clock supplying the instant the code is judged against.</param>
 /// <param name="i18n">Single i18n entry point for the Identity module.</param>
 public class PublicVerifyOtpHandler(
     IAuthRepository authRepository,
     IOtpRepository otpRepository,
+    IOtpVerificationFactory otpVerificationFactory,
     IAccountLockoutRepository lockoutRepository,
     IIdentityUnitOfWork unitOfWork,
+    TimeProvider timeProvider,
     IdentityI18n i18n
 ) : ICommandHandler<PublicVerifyOtpCommand, PublicVerifyOtpResult>
 {
@@ -34,9 +39,8 @@ public class PublicVerifyOtpHandler(
     /// <param name="command">The OTP verification command containing email and code.</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
     /// <returns>A <see cref="PublicVerifyOtpResult" /> containing verification status and message.</returns>
-    /// <exception cref="NotFoundException">Thrown when no user is found with the specified email.</exception>
+    /// <exception cref="NotFoundException">Thrown when no user or outstanding OTP is found.</exception>
     /// <exception cref="ConflictException">Thrown when the account is already verified.</exception>
-    /// <exception cref="NotFoundException">Thrown when no valid OTP is found.</exception>
     /// <exception cref="BadRequestException">Thrown when OTP code is invalid.</exception>
     /// <exception cref="AuthenticationException">Thrown when OTP is expired.</exception>
     /// <exception cref="AuthorizationException">Thrown when max attempts are reached.</exception>
@@ -55,23 +59,21 @@ public class PublicVerifyOtpHandler(
             throw i18n.User.AccountAlreadyVerified();
         }
 
-        // Validate the OTP (throws appropriate exceptions on failure)
-        OtpEntity otp = await otpRepository.ValidateOtpAsync(
+        OtpEntity otp = await otpRepository.GetLatestOutstandingOtpOrThrowAsync(
             userId: user.Id,
-            code: command.Code,
             purpose: purpose,
             cancellationToken: cancellationToken
         );
 
-        // Mark OTP as used and user as verified
-        otp.MarkAsUsed();
+        await otpVerificationFactory.ValidateOtpAsync(
+            otp: otp,
+            code: command.Code,
+            userId: user.Id,
+            cancellationToken: cancellationToken
+        );
 
-        // Only an email-verification code proves the address; a reset or recovery code must not
-        // silently mark an unconfirmed address verified.
-        if (purpose.Value == EnumOtpPurpose.EmailVerification)
-        {
-            user.MarkAsVerified();
-        }
+        otp.MarkAsUsed(now: timeProvider.GetUtcNow().UtcDateTime);
+        user.MarkVerifiedByOtp(purpose: purpose);
 
         // Invalidate any remaining OTPs for this purpose
         await otpRepository.InvalidateExistingOtpsAsync(
