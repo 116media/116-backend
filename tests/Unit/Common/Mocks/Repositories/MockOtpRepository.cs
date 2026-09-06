@@ -24,80 +24,33 @@ public static class MockOtpRepository
     }
 
     /// <summary>
-    /// Sets up ValidateOtpAsync to return the specified OTP entity.
+    /// Sets up GetLatestOutstandingOtpOrThrowAsync to return the specified OTP entity.
     /// </summary>
     /// <param name="mock">The mock instance.</param>
     /// <param name="otp">The OTP entity to return.</param>
-    /// <param name="code">The plaintext code the caller is expected to submit.</param>
     /// <returns>The mock instance for chaining.</returns>
-    public static Mock<IOtpRepository> SetupValidateOtp(
-        this Mock<IOtpRepository> mock,
-        OtpEntity otp,
-        string code = TestConstants.Otp.ValidCode
-    )
+    public static Mock<IOtpRepository> SetupGetLatestOutstandingOtp(this Mock<IOtpRepository> mock, OtpEntity otp)
     {
-        mock.Setup(x => x.ValidateOtpAsync(otp.UserId, code, otp.Purpose, It.IsAny<CancellationToken>()))
+        mock.Setup(x => x.GetLatestOutstandingOtpOrThrowAsync(otp.UserId, otp.Purpose, It.IsAny<CancellationToken>()))
             .ReturnsAsync(otp);
         return mock;
     }
 
     /// <summary>
-    /// Sets up ValidateOtpAsync to throw NotFoundException.
+    /// Sets up GetLatestOutstandingOtpOrThrowAsync to throw NotFoundException.
     /// </summary>
     /// <param name="mock">The mock instance.</param>
     /// <param name="userId">The user ID.</param>
-    /// <param name="code">The OTP code.</param>
     /// <param name="purpose">The OTP purpose.</param>
     /// <returns>The mock instance for chaining.</returns>
-    public static Mock<IOtpRepository> SetupValidateOtpNotFound(
+    public static Mock<IOtpRepository> SetupGetLatestOutstandingOtpNotFound(
         this Mock<IOtpRepository> mock,
         Guid userId,
-        string code,
         EnumOtpPurpose purpose
     )
     {
-        mock.Setup(x => x.ValidateOtpAsync(userId, code, purpose, It.IsAny<CancellationToken>()))
+        mock.Setup(x => x.GetLatestOutstandingOtpOrThrowAsync(userId, purpose, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new NotFoundException("OTP not found."));
-        return mock;
-    }
-
-    /// <summary>
-    /// Sets up ValidateOtpAsync to throw BadRequestException for invalid code.
-    /// </summary>
-    /// <param name="mock">The mock instance.</param>
-    /// <param name="userId">The user ID.</param>
-    /// <param name="code">The OTP code.</param>
-    /// <param name="purpose">The OTP purpose.</param>
-    /// <returns>The mock instance for chaining.</returns>
-    public static Mock<IOtpRepository> SetupValidateOtpInvalidCode(
-        this Mock<IOtpRepository> mock,
-        Guid userId,
-        string code,
-        EnumOtpPurpose purpose
-    )
-    {
-        mock.Setup(x => x.ValidateOtpAsync(userId, code, purpose, It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new BadRequestException("Invalid OTP code."));
-        return mock;
-    }
-
-    /// <summary>
-    /// Sets up ValidateOtpAsync to throw AuthenticationException for expired OTP.
-    /// </summary>
-    /// <param name="mock">The mock instance.</param>
-    /// <param name="userId">The user ID.</param>
-    /// <param name="code">The OTP code.</param>
-    /// <param name="purpose">The OTP purpose.</param>
-    /// <returns>The mock instance for chaining.</returns>
-    public static Mock<IOtpRepository> SetupValidateOtpExpired(
-        this Mock<IOtpRepository> mock,
-        Guid userId,
-        string code,
-        EnumOtpPurpose purpose
-    )
-    {
-        mock.Setup(x => x.ValidateOtpAsync(userId, code, purpose, It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new AuthenticationException("OTP has expired."));
         return mock;
     }
 
