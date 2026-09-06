@@ -2,6 +2,8 @@ using _116.Core.Application.Shared.DTOs;
 using _116.Core.Domain.Entities;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.Enums;
+using _116.Identity.Domain.ValueObjects;
 using Mapster;
 using MapsterMapper;
 
@@ -20,9 +22,16 @@ public static class UserMapper
     /// <param name="config">The TypeAdapterConfig to register mappings into.</param>
     public static void Register(TypeAdapterConfig config)
     {
+        // The value objects unwrap to their primitives wherever they are mapped, so every DTO
+        // keeps its wire contract; record-constructor mapping resolves through these.
+        config.NewConfig<Email, string>().MapWith(email => email.Value);
+        config.NewConfig<OtpPurpose, EnumOtpPurpose>().MapWith(purpose => purpose.Value);
+        config.NewConfig<Client, EnumClient>().MapWith(client => client.Value);
+
         // Configure UserEntity to UserResponseDto
         config
             .NewConfig<UserEntity, UserResponseDto>()
+            .Map(dest => dest.Email, src => src.Email == null ? null : src.Email.Value)
             .Map(dest => dest.Roles, _ => new List<RoleDto>())
             .Map(dest => dest.Permissions, _ => new List<PermissionDto>())
             .Map(dest => dest.Avatar, _ => (FileDto?)null);
