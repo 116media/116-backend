@@ -24,7 +24,7 @@ public class PublicLikeArticleHandler(
         CancellationToken cancellationToken
     )
     {
-        await articleRepository.GetByIdOrThrowAsync(id: command.ArticleId, cancellationToken: cancellationToken);
+        await articleRepository.ExistsOrThrowAsync(articleId: command.ArticleId, cancellationToken: cancellationToken);
 
         bool alreadyLiked = await articleRepository.HasLikedAsync(
             userId: command.UserId,

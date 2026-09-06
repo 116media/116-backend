@@ -24,7 +24,7 @@ public class PublicUnlikeLyricsHandler(
         CancellationToken cancellationToken
     )
     {
-        await lyricsRepository.GetByIdOrThrowAsync(id: command.LyricsId, cancellationToken: cancellationToken);
+        await lyricsRepository.ExistsOrThrowAsync(lyricsId: command.LyricsId, cancellationToken: cancellationToken);
 
         bool hasLiked = await lyricsRepository.HasLikedAsync(
             userId: command.UserId,

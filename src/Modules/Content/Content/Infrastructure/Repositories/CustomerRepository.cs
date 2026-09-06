@@ -46,7 +46,8 @@ public class CustomerRepository(ContentDbContext context) : ICustomerRepository
     {
         var specification = new CustomerByIdSpecification(id: id);
         return await context
-            .Customers.ApplySpecification(specification: specification)
+            .Customers.AsTracking()
+            .ApplySpecification(specification: specification)
             .FirstDefaultOrThrowAsync(keyValue: id, cancellationToken: cancellationToken);
     }
 
@@ -64,5 +65,11 @@ public class CustomerRepository(ContentDbContext context) : ICustomerRepository
     public async Task AddAsync(CustomerEntity customer, CancellationToken cancellationToken = default)
     {
         await context.Customers.AddAsync(customer, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public void Update(CustomerEntity customer)
+    {
+        context.Customers.Update(customer);
     }
 }

@@ -26,6 +26,7 @@ public static class MockShortVideoRepository
     )
     {
         mock.Setup(x => x.GetByIdOrThrowAsync(entity.Id, It.IsAny<CancellationToken>())).ReturnsAsync(entity);
+        mock.Setup(x => x.ExistsOrThrowAsync(entity.Id, It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
         return mock;
     }
 
@@ -36,6 +37,8 @@ public static class MockShortVideoRepository
     {
         mock.Setup(x => x.GetByIdOrThrowAsync(id, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new NotFoundException($"Short video with id '{id}' was not found."));
+        mock.Setup(x => x.ExistsOrThrowAsync(id, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new NotFoundException(nameof(ShortVideoEntity), id));
         return mock;
     }
 

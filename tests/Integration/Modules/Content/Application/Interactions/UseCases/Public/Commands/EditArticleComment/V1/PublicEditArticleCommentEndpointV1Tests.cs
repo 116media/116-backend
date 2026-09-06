@@ -54,6 +54,30 @@ public class PublicEditArticleCommentEndpointV1Tests(PostgresFixture db) : BaseA
     }
 
     [Fact]
+    public async Task EditArticleComment_OnASoftDeletedComment_ReturnsNotFound()
+    {
+        // A tombstoned comment stays visible in the thread, but it is no longer editable —
+        // the soft-delete query filter hides it from the edit path's lookup.
+        ArticleEntity article = await SeedArticleAsync();
+        ArticleCommentEntity deleted = await SeedAsync<ContentDbContext, ArticleCommentEntity>(ctx =>
+        {
+            ArticleCommentEntity comment = ArticleCommentFactory.CreateDeleted(article.Id, User.VisitorId);
+            ctx.ArticleComments.Add(comment);
+            return comment;
+        });
+
+        Client.AuthenticateAsVisitor();
+        PublicEditArticleCommentRequest request = new PublicEditArticleCommentRequestBuilder().Build();
+
+        var response = await Client.PutAsJsonAsync(Routes.Public.Articles.Comment(article.Id, deleted.Id), request);
+
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("ArticleComment"))
+        );
+    }
+
+    [Fact]
     public async Task EditArticleComment_AsVisitor_NonExistentComment_ReturnsNotFound()
     {
         Client.AuthenticateAsVisitor();

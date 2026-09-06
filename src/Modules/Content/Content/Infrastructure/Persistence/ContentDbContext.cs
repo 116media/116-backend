@@ -262,6 +262,11 @@ public class ContentDbContext(DbContextOptions<ContentDbContext> options) : DbCo
     {
         modelBuilder.HasDefaultSchema(ContentConstants.SchemaName);
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+
+        // Soft-deleted comments are invisible by default; the threaded listing opts back in
+        // with IgnoreQueryFilters because it renders tombstones for reply continuity.
+        modelBuilder.Entity<ArticleCommentEntity>().HasQueryFilter(comment => !comment.IsDeleted);
+
         base.OnModelCreating(modelBuilder);
     }
 }

@@ -19,7 +19,7 @@ public class PublicShareArticleHandler(IArticleRepository articleRepository, ICo
         CancellationToken cancellationToken
     )
     {
-        await articleRepository.GetByIdOrThrowAsync(id: command.ArticleId, cancellationToken: cancellationToken);
+        await articleRepository.ExistsOrThrowAsync(articleId: command.ArticleId, cancellationToken: cancellationToken);
 
         var share = ArticleShareEntity.Create(
             id: Guid.NewGuid(),

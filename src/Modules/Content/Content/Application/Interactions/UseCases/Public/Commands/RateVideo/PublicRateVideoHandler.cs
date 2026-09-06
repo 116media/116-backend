@@ -16,7 +16,7 @@ public class PublicRateVideoHandler(IVideoRepository videoRepository, IContentUn
     /// <inheritdoc />
     public async Task<PublicRateVideoResult> Handle(PublicRateVideoCommand command, CancellationToken cancellationToken)
     {
-        await videoRepository.GetByIdOrThrowAsync(id: command.VideoId, cancellationToken: cancellationToken);
+        await videoRepository.ExistsOrThrowAsync(videoId: command.VideoId, cancellationToken: cancellationToken);
 
         VideoRatingEntity? existingRating = await videoRepository.GetRatingAsync(
             userId: command.UserId,

@@ -24,7 +24,10 @@ public class PublicBookmarkShortVideoHandler(
         CancellationToken cancellationToken
     )
     {
-        await shortVideoRepository.GetByIdOrThrowAsync(id: command.ShortVideoId, cancellationToken: cancellationToken);
+        await shortVideoRepository.ExistsOrThrowAsync(
+            shortVideoId: command.ShortVideoId,
+            cancellationToken: cancellationToken
+        );
 
         bool alreadyBookmarked = await shortVideoRepository.HasBookmarkedAsync(
             userId: command.UserId,

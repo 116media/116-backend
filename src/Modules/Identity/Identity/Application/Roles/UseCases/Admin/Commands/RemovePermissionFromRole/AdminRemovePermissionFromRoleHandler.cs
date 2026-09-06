@@ -41,8 +41,7 @@ public class AdminRemovePermissionFromRoleHandler(
         Guid roleId = Guid.Parse(input: command.RoleId);
         Guid permissionId = Guid.Parse(input: command.PermissionId);
 
-        // Validate role exists
-        await roleRepository.GetRoleByIdOrThrowAsync(roleId: roleId, cancellationToken: cancellationToken);
+        await roleRepository.ExistsByIdOrThrowAsync(roleId: roleId, cancellationToken: cancellationToken);
 
         // Get the role-permission association
         RolePermissionEntity? rolePermission = await rolePermissionRepository.GetByRoleAndPermissionAsync(

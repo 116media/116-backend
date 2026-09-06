@@ -66,6 +66,7 @@ public static class ContentModule
             SchemaName = ContentConstants.SchemaName,
             EnableMigrations = enableSeeding,
             EnableSeeding = enableSeeding,
+            UseNoTrackingByDefault = true,
         };
     }
 

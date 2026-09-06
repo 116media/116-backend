@@ -95,7 +95,7 @@ public class CoreUnitOfWorkTests : IDisposable
         // Assert
         result.Should().Be(1);
 
-        FileEntity? updatedFile = await _context.Files.FirstOrDefaultAsync(f => f.Id == file.Id);
+        FileEntity? updatedFile = await _context.Files.IgnoreQueryFilters().FirstOrDefaultAsync(f => f.Id == file.Id);
         updatedFile.Should().NotBeNull();
         updatedFile.IsDeleted.Should().BeTrue();
     }
@@ -139,7 +139,8 @@ public class CoreUnitOfWorkTests : IDisposable
         // Assert
         result.Should().Be(2); // 1 insert + 1 update
 
-        List<FileEntity> files = await _context.Files.ToListAsync();
+        List<FileEntity> files = await _context.Files.IgnoreQueryFilters().ToListAsync();
         files.Should().HaveCount(2);
+        files.Should().ContainSingle(f => f.IsDeleted);
     }
 }

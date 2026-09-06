@@ -4,6 +4,7 @@ using _116.Identity.Application.Roles.Specifications;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Specifications;
 using _116.Shared.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
@@ -45,6 +46,17 @@ public class RoleRepository(IdentityDbContext context) : IRoleRepository
     {
         var specification = new RoleByNameSpecification(roleName: name);
         return await context.Roles.ApplySpecification(specification: specification).AnyAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task ExistsByIdOrThrowAsync(Guid roleId, CancellationToken cancellationToken = default)
+    {
+        bool exists = await context.Roles.AnyAsync(role => role.Id == roleId, cancellationToken);
+
+        if (!exists)
+        {
+            throw new NotFoundException(nameof(RoleEntity), roleId);
+        }
     }
 
     /// <inheritdoc />

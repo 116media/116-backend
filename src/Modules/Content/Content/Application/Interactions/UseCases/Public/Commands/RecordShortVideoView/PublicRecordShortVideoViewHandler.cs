@@ -29,7 +29,10 @@ public class PublicRecordShortVideoViewHandler(
         CancellationToken cancellationToken
     )
     {
-        await shortVideoRepository.GetByIdOrThrowAsync(id: command.ShortVideoId, cancellationToken: cancellationToken);
+        await shortVideoRepository.ExistsOrThrowAsync(
+            shortVideoId: command.ShortVideoId,
+            cancellationToken: cancellationToken
+        );
 
         string dedupKey = ResolveDedupKey(command: command);
 

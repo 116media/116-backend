@@ -443,14 +443,16 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                     b.HasKey("Id")
                         .HasName("pk_articles");
 
-                    b.HasIndex("CategoryId")
-                        .HasDatabaseName("ix_articles_category_id");
-
                     b.HasIndex("CustomerId")
                         .HasDatabaseName("ix_articles_customer_id");
 
                     b.HasIndex("PromotionLevelId")
                         .HasDatabaseName("ix_articles_promotion_level_id");
+
+                    b.HasIndex("PublishedAt")
+                        .IsDescending()
+                        .HasDatabaseName("ix_articles_promoted_published_at")
+                        .HasFilter("is_promoted = true");
 
                     b.HasIndex("Slug")
                         .IsUnique()
@@ -462,6 +464,13 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                     b.HasIndex("Title")
                         .IsUnique()
                         .HasDatabaseName("ix_articles_title");
+
+                    b.HasIndex("Status", "PublishedAt")
+                        .IsDescending(false, true)
+                        .HasDatabaseName("ix_articles_status_published_at");
+
+                    b.HasIndex("CategoryId", "Status", "PublishedAt")
+                        .HasDatabaseName("ix_articles_category_status_published_at");
 
                     b.ToTable("articles", "content");
                 });
@@ -2724,6 +2733,10 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                     b.HasKey("Id")
                         .HasName("pk_short_video_view_events");
 
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("ix_short_video_view_events_uncounted_created_at")
+                        .HasFilter("is_counted = false");
+
                     b.HasIndex("ShortVideoId", "DedupKey", "CreatedAt")
                         .HasDatabaseName("ix_short_video_view_events_short_video_id_dedup_key_created_at");
 
@@ -3016,6 +3029,10 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("ArtistId", "Status")
                         .HasDatabaseName("ix_videos_artist_id_status");
+
+                    b.HasIndex("Status", "PublishedAt")
+                        .IsDescending(false, true)
+                        .HasDatabaseName("ix_videos_status_published_at");
 
                     b.ToTable("videos", "content");
                 });

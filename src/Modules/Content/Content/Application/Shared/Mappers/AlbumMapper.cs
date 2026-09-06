@@ -22,6 +22,15 @@ public static class AlbumMapper
     {
         string? coverImageUrl = await ResolveCoverImageUrlAsync(entity, fileRepository, ct);
 
+        return entity.ToAlbumDto(coverImageUrl: coverImageUrl);
+    }
+
+    /// <summary>
+    /// Maps an <see cref="AlbumEntity" /> to an <see cref="AlbumDto" /> from an already
+    /// resolved cover URL. Performs no IO — the batch list mapping resolves files up front.
+    /// </summary>
+    public static AlbumDto ToAlbumDto(this AlbumEntity entity, string? coverImageUrl)
+    {
         return new AlbumDto(
             entity.Id,
             entity.Name,
@@ -43,12 +52,20 @@ public static class AlbumMapper
         CancellationToken ct = default
     )
     {
-        var results = new List<AlbumDto>(entities.Count);
-        foreach (AlbumEntity entity in entities)
-        {
-            results.Add(await entity.ToAlbumDtoAsync(fileRepository, ct));
-        }
-        return results;
+        IReadOnlyDictionary<Guid, FileEntity> files = await fileRepository.GetByIdsAsync(
+            entities.Where(e => e.CoverImageFileId.HasValue).Select(e => e.CoverImageFileId!.Value).Distinct().ToList(),
+            ct
+        );
+
+        return entities
+            .Select(entity =>
+                entity.ToAlbumDto(
+                    coverImageUrl: entity.CoverImageFileId.HasValue
+                        ? files.GetValueOrDefault(entity.CoverImageFileId.Value)?.StorageUrl
+                        : null
+                )
+            )
+            .ToList();
     }
 
     /// <summary>

@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
@@ -11,6 +12,13 @@ namespace _116.Unit.Tests.Common.Mocks.Repositories;
 /// </summary>
 public static class MockLookupRepository
 {
+    /// <summary>
+    /// Tags registered through <see cref="SetupGetTagByName" />, per mock instance, keyed by
+    /// lower-cased name so the batch lookup serves the same arrangement as the single one.
+    /// </summary>
+    private static readonly ConditionalWeakTable<Mock<ILookupRepository>, Dictionary<string, TagEntity>> KnownTags =
+        new();
+
     /// <summary>
     /// Creates a new mock instance of ILookupRepository with default setups.
     /// </summary>
@@ -237,6 +245,17 @@ public static class MockLookupRepository
     )
     {
         mock.Setup(x => x.GetTagByNameAsync(name, It.IsAny<CancellationToken>())).ReturnsAsync(tag);
+
+        Dictionary<string, TagEntity> known = KnownTags.GetOrCreateValue(mock);
+        if (tag is not null)
+        {
+            known[name.ToLower()] = tag;
+        }
+        else
+        {
+            known.Remove(name.ToLower());
+        }
+
         return mock;
     }
 
@@ -297,6 +316,19 @@ public static class MockLookupRepository
     /// <param name="mock">The repository mock to configure.</param>
     private static void SetupDefaults(Mock<ILookupRepository> mock)
     {
+        Dictionary<string, TagEntity> known = KnownTags.GetOrCreateValue(mock);
+
+        mock.Setup(x => x.GetTagsByNamesAsync(It.IsAny<IReadOnlyCollection<string>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(
+                (IReadOnlyCollection<string> names, CancellationToken _) =>
+                    (IReadOnlyDictionary<string, TagEntity>)
+                        names
+                            .Select(name => name.ToLower())
+                            .Distinct()
+                            .Where(known.ContainsKey)
+                            .ToDictionary(name => name, name => known[name])
+            );
+
         // ContentType
         mock.Setup(x => x.ContentTypeExistsByNameAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);

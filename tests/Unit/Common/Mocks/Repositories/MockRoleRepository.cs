@@ -30,6 +30,7 @@ public static class MockRoleRepository
     public static Mock<IRoleRepository> SetupGetByIdOrThrow(this Mock<IRoleRepository> mock, RoleEntity role)
     {
         mock.Setup(x => x.GetRoleByIdOrThrowAsync(role.Id, It.IsAny<CancellationToken>())).ReturnsAsync(role);
+        mock.Setup(x => x.ExistsByIdOrThrowAsync(role.Id, It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
         return mock;
     }
 
@@ -43,6 +44,8 @@ public static class MockRoleRepository
     {
         mock.Setup(x => x.GetRoleByIdOrThrowAsync(roleId, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new NotFoundException($"Role with ID '{roleId}' was not found."));
+        mock.Setup(x => x.ExistsByIdOrThrowAsync(roleId, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new NotFoundException(nameof(RoleEntity), roleId));
         return mock;
     }
 
@@ -57,6 +60,7 @@ public static class MockRoleRepository
         RoleEntity role
     )
     {
+        mock.Setup(x => x.ExistsByIdOrThrowAsync(role.Id, It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
         mock.Setup(x => x.GetRoleByIdWithPermissionsOrThrowAsync(role.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(role);
         return mock;
@@ -75,6 +79,8 @@ public static class MockRoleRepository
     {
         mock.Setup(x => x.GetRoleByIdWithPermissionsOrThrowAsync(roleId, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new NotFoundException($"Role with ID '{roleId}' was not found."));
+        mock.Setup(x => x.ExistsByIdOrThrowAsync(roleId, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new NotFoundException(nameof(RoleEntity), roleId));
         return mock;
     }
 

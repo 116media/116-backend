@@ -50,6 +50,7 @@ public static class BaseModule
                 (serviceProvider, dbOptions) =>
                 {
                     ConfigureDbContextOptions(serviceProvider, dbOptions, connectionString);
+                    ApplyTrackingDefault(dbOptions, options.UseNoTrackingByDefault);
                 }
             );
         }
@@ -59,6 +60,7 @@ public static class BaseModule
                 (serviceProvider, dbOptions) =>
                 {
                     ConfigureDbContextOptions(serviceProvider, dbOptions, connectionString);
+                    ApplyTrackingDefault(dbOptions, options.UseNoTrackingByDefault);
                 }
             );
         }
@@ -154,6 +156,20 @@ public static class BaseModule
     /// <param name="serviceProvider">The service provider</param>
     /// <param name="options">The DbContext options builder</param>
     /// <param name="connectionString">The database connection string</param>
+    /// <summary>
+    /// Applies the module's query-tracking default. No-tracking modules opt their write-path
+    /// repository methods back in with AsTracking.
+    /// </summary>
+    /// <param name="options">The DbContext options builder</param>
+    /// <param name="useNoTrackingByDefault">Whether queries default to no-tracking</param>
+    private static void ApplyTrackingDefault(DbContextOptionsBuilder options, bool useNoTrackingByDefault)
+    {
+        if (useNoTrackingByDefault)
+        {
+            options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+        }
+    }
+
     private static void ConfigureDbContextOptions(
         IServiceProvider serviceProvider,
         DbContextOptionsBuilder options,

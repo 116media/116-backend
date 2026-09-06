@@ -139,12 +139,12 @@ public static class VideoMapper
         CancellationToken ct = default
     )
     {
-        var results = new List<VideoSummaryDto>(entities.Count);
-        foreach (VideoEntity entity in entities)
-        {
-            results.Add(await entity.ToVideoSummaryDtoAsync(mapper, fileRepository, ct));
-        }
-        return results;
+        IReadOnlyDictionary<Guid, FileEntity> files = await fileRepository.GetByIdsAsync(
+            entities.Where(e => e.ThumbnailFileId.HasValue).Select(e => e.ThumbnailFileId!.Value).Distinct().ToList(),
+            ct
+        );
+
+        return entities.Select(entity => entity.ToVideoSummaryDto(mapper, files)).ToList();
     }
 
     /// <summary>

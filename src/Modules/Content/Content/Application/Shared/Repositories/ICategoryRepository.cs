@@ -153,4 +153,11 @@ public interface ICategoryRepository : IRepository<CategoryEntity>
         Guid? contentTypeId = null,
         CancellationToken cancellationToken = default
     );
+
+    /// <summary>
+    /// Stages a modified category for the next commit. The write is explicit so it
+    /// does not depend on the change tracker having observed the mutation.
+    /// </summary>
+    /// <param name="category">The modified category.</param>
+    void Update(CategoryEntity category);
 }

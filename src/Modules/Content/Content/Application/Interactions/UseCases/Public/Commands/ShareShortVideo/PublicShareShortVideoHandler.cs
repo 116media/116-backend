@@ -19,7 +19,10 @@ public class PublicShareShortVideoHandler(IShortVideoRepository shortVideoReposi
         CancellationToken cancellationToken
     )
     {
-        await shortVideoRepository.GetByIdOrThrowAsync(id: command.ShortVideoId, cancellationToken: cancellationToken);
+        await shortVideoRepository.ExistsOrThrowAsync(
+            shortVideoId: command.ShortVideoId,
+            cancellationToken: cancellationToken
+        );
 
         var share = ShortVideoShareEntity.Create(
             id: Guid.NewGuid(),

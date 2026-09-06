@@ -43,4 +43,11 @@ public interface ICustomerRepository : IRepository<CustomerEntity>
     /// Adds a new customer to the repository.
     /// </summary>
     Task AddAsync(CustomerEntity customer, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Stages a modified customer for the next commit. The write is explicit so it
+    /// does not depend on the change tracker having observed the mutation.
+    /// </summary>
+    /// <param name="customer">The modified customer.</param>
+    void Update(CustomerEntity customer);
 }

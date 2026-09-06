@@ -25,7 +25,7 @@ public class PublicAddArticleCommentHandler(
         CancellationToken cancellationToken
     )
     {
-        await articleRepository.GetByIdOrThrowAsync(id: command.ArticleId, cancellationToken: cancellationToken);
+        await articleRepository.ExistsOrThrowAsync(articleId: command.ArticleId, cancellationToken: cancellationToken);
 
         var comment = ArticleCommentEntity.Create(
             id: Guid.NewGuid(),

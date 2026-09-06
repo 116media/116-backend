@@ -41,5 +41,12 @@ public class ShortVideoViewEventConfiguration : IEntityTypeConfiguration<ShortVi
             x.DedupKey,
             x.CreatedAt,
         });
+
+        // The nightly cleanup deletes uncounted rows older than the cutoff; the filtered index
+        // keeps that scan off the fastest-growing table's full heap.
+        builder
+            .HasIndex(x => x.CreatedAt)
+            .HasDatabaseName("ix_short_video_view_events_uncounted_created_at")
+            .HasFilter("is_counted = false");
     }
 }

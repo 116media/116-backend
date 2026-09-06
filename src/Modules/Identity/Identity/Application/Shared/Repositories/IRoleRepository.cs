@@ -43,6 +43,13 @@ public interface IRoleRepository : IRepository<RoleEntity>
     Task<bool> ExistsByNameAsync(string name, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Throws when no role row exists, without materializing the aggregate.
+    /// </summary>
+    /// <param name="roleId">The role identifier.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    Task ExistsByIdOrThrowAsync(Guid roleId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Adds a new role entity to the repository.
     /// </summary>
     /// <param name="role">The role entity to add.</param>

@@ -19,7 +19,7 @@ public class PublicShareLyricsHandler(ILyricsRepository lyricsRepository, IConte
         CancellationToken cancellationToken
     )
     {
-        await lyricsRepository.GetByIdOrThrowAsync(id: command.LyricsId, cancellationToken: cancellationToken);
+        await lyricsRepository.ExistsOrThrowAsync(lyricsId: command.LyricsId, cancellationToken: cancellationToken);
 
         var share = LyricsShareEntity.Create(
             id: Guid.NewGuid(),

@@ -4,6 +4,7 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Specifications;
 using _116.Shared.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
@@ -95,7 +96,8 @@ public class LyricsRepository(ContentDbContext context) : ILyricsRepository
     {
         var specification = new LyricsByIdSpecification(id: id);
         return await context
-            .Lyrics.ApplySpecification(specification: specification)
+            .Lyrics.AsTracking()
+            .ApplySpecification(specification: specification)
             .Include(l => l.Category)
             .Include(l => l.Customer)
             .Include(l => l.Tags)
@@ -153,7 +155,8 @@ public class LyricsRepository(ContentDbContext context) : ILyricsRepository
         int totalCount = await query.CountAsync(cancellationToken);
 
         List<LyricsEntity> lyrics = await query
-            .OrderByDescending(l => l.PublishedAt ?? l.CreatedAt)
+            .OrderByDescending(l => l.PublishedAt)
+            .ThenByDescending(l => l.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(cancellationToken);
@@ -187,7 +190,8 @@ public class LyricsRepository(ContentDbContext context) : ILyricsRepository
     {
         var specification = new LyricsByOrderItemIdSpecification(orderItemId: orderItemId);
         return await context
-            .Lyrics.ApplySpecification(specification: specification)
+            .Lyrics.AsTracking()
+            .ApplySpecification(specification: specification)
             .FirstOrDefaultAsync(cancellationToken);
     }
 
@@ -199,7 +203,8 @@ public class LyricsRepository(ContentDbContext context) : ILyricsRepository
     )
     {
         List<LyricsTagEntity> existingTags = await context
-            .LyricsTags.Where(t => t.LyricsId == lyricsId)
+            .LyricsTags.AsTracking()
+            .Where(t => t.LyricsId == lyricsId)
             .ToListAsync(cancellationToken);
 
         foreach (LyricsTagEntity existingTag in existingTags)
@@ -236,7 +241,8 @@ public class LyricsRepository(ContentDbContext context) : ILyricsRepository
     {
         var specification = new LyricsLikeByUserAndLyricsSpecification(userId: userId, lyricsId: lyricsId);
         LyricsLikeEntity? like = await context
-            .LyricsLikes.ApplySpecification(specification: specification)
+            .LyricsLikes.AsTracking()
+            .ApplySpecification(specification: specification)
             .FirstOrDefaultAsync(cancellationToken);
 
         if (like is not null)
@@ -358,6 +364,17 @@ public class LyricsRepository(ContentDbContext context) : ILyricsRepository
             .OrderByDescending(l => l.CreatedAt)
             .Take(10)
             .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task ExistsOrThrowAsync(Guid lyricsId, CancellationToken cancellationToken = default)
+    {
+        bool exists = await context.Lyrics.AnyAsync(l => l.Id == lyricsId, cancellationToken);
+
+        if (!exists)
+        {
+            throw new NotFoundException(nameof(LyricsEntity), lyricsId);
+        }
     }
 
     /// <inheritdoc />

@@ -42,6 +42,8 @@ public class AdminDeactivateContentTypeHandler(
             throw i18n.ContentType.AlreadyInactive();
         }
 
+        lookupRepository.UpdateContentType(contentType: contentType);
+
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         var dto = contentType.ToContentTypeDto(mapper);

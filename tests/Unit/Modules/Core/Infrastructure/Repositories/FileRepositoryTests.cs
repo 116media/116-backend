@@ -129,7 +129,7 @@ public class FileRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Assert
-        FileEntity? updatedFile = await _context.Files.FirstOrDefaultAsync(f => f.Id == file.Id);
+        FileEntity? updatedFile = await _context.Files.IgnoreQueryFilters().FirstOrDefaultAsync(f => f.Id == file.Id);
         updatedFile.Should().NotBeNull();
         updatedFile.IsDeleted.Should().BeTrue();
     }
@@ -404,7 +404,9 @@ public class FileRepositoryTests : IDisposable
         result.Id.Should().Be(downloadResult.FileId);
         result.StorageUrl.Should().Be(newAvatarUrl);
 
-        FileEntity? replacedFile = await _context.Files.FirstOrDefaultAsync(f => f.Id == oldFile.Id);
+        FileEntity? replacedFile = await _context
+            .Files.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(f => f.Id == oldFile.Id);
         replacedFile.Should().NotBeNull();
         replacedFile.IsDeleted.Should().BeTrue();
 
@@ -529,7 +531,9 @@ public class FileRepositoryTests : IDisposable
         result.Should().NotBeNull();
         result.Id.Should().Be(uploadResult.FileId);
 
-        FileEntity? replacedFile = await _context.Files.FirstOrDefaultAsync(f => f.Id == oldFile.Id);
+        FileEntity? replacedFile = await _context
+            .Files.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(f => f.Id == oldFile.Id);
         replacedFile.Should().NotBeNull();
         replacedFile.IsDeleted.Should().BeTrue();
 

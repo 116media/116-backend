@@ -28,7 +28,8 @@ public class LyricsRevisionRepository(ContentDbContext context) : ILyricsRevisio
     {
         var specification = new LyricsRevisionByIdSpecification(id: id);
         return await context
-            .LyricsRevisions.ApplySpecification(specification: specification)
+            .LyricsRevisions.AsTracking()
+            .ApplySpecification(specification: specification)
             .FirstDefaultOrThrowAsync(keyValue: id, cancellationToken: cancellationToken);
     }
 

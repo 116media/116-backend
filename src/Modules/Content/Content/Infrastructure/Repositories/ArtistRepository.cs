@@ -40,7 +40,8 @@ public class ArtistRepository(ContentDbContext context) : IArtistRepository
     {
         var specification = new ArtistByIdSpecification(id: id);
         return await context
-            .Artists.ApplySpecification(specification: specification)
+            .Artists.AsTracking()
+            .ApplySpecification(specification: specification)
             .FirstDefaultOrThrowAsync(keyValue: id, cancellationToken: cancellationToken);
     }
 
@@ -208,10 +209,12 @@ public class ArtistRepository(ContentDbContext context) : IArtistRepository
         CancellationToken cancellationToken = default
     )
     {
-        return await context.ArtistSocialLinks.FirstOrDefaultAsync(
-            link => link.ArtistId == artistId && link.Platform == platform,
-            cancellationToken: cancellationToken
-        );
+        return await context
+            .ArtistSocialLinks.AsTracking()
+            .FirstOrDefaultAsync(
+                link => link.ArtistId == artistId && link.Platform == platform,
+                cancellationToken: cancellationToken
+            );
     }
 
     /// <inheritdoc />

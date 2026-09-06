@@ -24,6 +24,7 @@ public static class MockLyricsRepository
     public static Mock<ILyricsRepository> SetupGetByIdOrThrow(this Mock<ILyricsRepository> mock, LyricsEntity entity)
     {
         mock.Setup(x => x.GetByIdOrThrowAsync(entity.Id, It.IsAny<CancellationToken>())).ReturnsAsync(entity);
+        mock.Setup(x => x.ExistsOrThrowAsync(entity.Id, It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
         return mock;
     }
 
@@ -31,6 +32,8 @@ public static class MockLyricsRepository
     {
         mock.Setup(x => x.GetByIdOrThrowAsync(id, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new NotFoundException($"Lyrics with id '{id}' was not found."));
+        mock.Setup(x => x.ExistsOrThrowAsync(id, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new NotFoundException(nameof(LyricsEntity), id));
         return mock;
     }
 

@@ -55,6 +55,19 @@ public static class ArticleMapper
     {
         string? coverImageUrl = await ResolveCoverImageUrlAsync(entity, fileRepository, ct);
 
+        return entity.ToArticleSummaryDto(mapper, coverImageUrl: coverImageUrl);
+    }
+
+    /// <summary>
+    /// Maps an <see cref="ArticleEntity" /> to an <see cref="ArticleSummaryDto" /> from an
+    /// already resolved cover URL. Performs no IO — batch mappings resolve files up front.
+    /// </summary>
+    public static ArticleSummaryDto ToArticleSummaryDto(
+        this ArticleEntity entity,
+        IMapper mapper,
+        string? coverImageUrl
+    )
+    {
         return new ArticleSummaryDto(
             entity.Id,
             entity.CategoryId,
@@ -162,12 +175,21 @@ public static class ArticleMapper
         CancellationToken ct = default
     )
     {
-        var results = new List<ArticleSummaryDto>(entities.Count);
-        foreach (ArticleEntity entity in entities)
-        {
-            results.Add(await entity.ToArticleSummaryDtoAsync(mapper, fileRepository, ct));
-        }
-        return results;
+        IReadOnlyDictionary<Guid, FileEntity> files = await fileRepository.GetByIdsAsync(
+            entities.Where(e => e.CoverImageFileId.HasValue).Select(e => e.CoverImageFileId!.Value).Distinct().ToList(),
+            ct
+        );
+
+        return entities
+            .Select(entity =>
+                entity.ToArticleSummaryDto(
+                    mapper,
+                    coverImageUrl: entity.CoverImageFileId.HasValue
+                        ? files.GetValueOrDefault(entity.CoverImageFileId.Value)?.StorageUrl
+                        : null
+                )
+            )
+            .ToList();
     }
 
     /// <summary>
@@ -219,14 +241,21 @@ public static class ArticleMapper
         CancellationToken ct = default
     )
     {
-        var results = new List<ArticleSummaryDto>(entities.Count);
-        foreach (ArticleEntity entity in entities)
-        {
-            results.Add(
-                await entity.ToArticleSummaryDtoAsync(mapper, fileRepository, likedArticleIds, bookmarkedArticleIds, ct)
-            );
-        }
-        return results;
+        IReadOnlyList<ArticleSummaryDto> summaries = await entities.ToArticleSummaryDtosAsync(
+            mapper,
+            fileRepository,
+            ct
+        );
+
+        return summaries
+            .Select(dto =>
+                dto with
+                {
+                    IsLiked = likedArticleIds.Contains(dto.Id),
+                    IsBookmarked = bookmarkedArticleIds.Contains(dto.Id),
+                }
+            )
+            .ToList();
     }
 
     /// <summary>

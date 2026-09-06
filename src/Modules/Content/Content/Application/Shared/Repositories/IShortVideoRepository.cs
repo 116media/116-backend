@@ -198,6 +198,13 @@ public interface IShortVideoRepository : IRepository<ShortVideoEntity>
     Task<int> PruneUncountedViewEventsAsync(DateTime cutoff, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Throws when no short video row exists, without materializing the aggregate.
+    /// </summary>
+    /// <param name="shortVideoId">The short video identifier.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    Task ExistsOrThrowAsync(Guid shortVideoId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Applies a signed delta to one engagement counter in a single statement, clamped at zero.
     /// Set-based by design: two concurrent likes cannot both read the same value and write the
     /// same increment, and the change tracker never sees the row, so the audit columns keep

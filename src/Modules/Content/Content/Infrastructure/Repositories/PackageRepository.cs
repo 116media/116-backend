@@ -58,6 +58,7 @@ public class PackageRepository(ContentDbContext context) : IPackageRepository
             .Include(p => p.Slots)
                 .ThenInclude(s => s.Category)
                     .ThenInclude(c => c!.ContentType)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(cancellationToken);
     }
 
@@ -69,13 +70,15 @@ public class PackageRepository(ContentDbContext context) : IPackageRepository
     {
         var specification = new PackageByIdSpecification(id: id);
         return await context
-            .Packages.ApplySpecification(specification: specification)
+            .Packages.AsTracking()
+            .ApplySpecification(specification: specification)
             .Include(p => p.Slots)
                 .ThenInclude(s => s.Category)
                     .ThenInclude(c => c!.Pricing)
             .Include(p => p.Slots)
                 .ThenInclude(s => s.Category)
                     .ThenInclude(c => c!.ContentType)
+            .AsSplitQuery()
             .FirstDefaultOrThrowAsync(keyValue: id, cancellationToken: cancellationToken);
     }
 
@@ -89,10 +92,9 @@ public class PackageRepository(ContentDbContext context) : IPackageRepository
     public async Task<PackageSlotEntity?> GetSlotByIdAsync(Guid slotId, CancellationToken cancellationToken = default)
     {
         var specification = new PackageSlotByIdSpecification(slotId: slotId);
-        return await context.PackageSlots.FirstOrDefaultBySpecificationAsync(
-            specification: specification,
-            cancellationToken: cancellationToken
-        );
+        return await context
+            .PackageSlots.AsTracking()
+            .FirstOrDefaultBySpecificationAsync(specification: specification, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
@@ -103,10 +105,9 @@ public class PackageRepository(ContentDbContext context) : IPackageRepository
     )
     {
         var specification = new PackageSlotByIdInPackageSpecification(slotId: slotId, packageId: packageId);
-        return await context.PackageSlots.FirstOrDefaultBySpecificationAsync(
-            specification: specification,
-            cancellationToken: cancellationToken
-        );
+        return await context
+            .PackageSlots.AsTracking()
+            .FirstOrDefaultBySpecificationAsync(specification: specification, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
@@ -119,5 +120,11 @@ public class PackageRepository(ContentDbContext context) : IPackageRepository
     public void RemoveSlot(PackageSlotEntity slot)
     {
         context.PackageSlots.Remove(slot);
+    }
+
+    /// <inheritdoc />
+    public void Update(PackageEntity package)
+    {
+        context.Packages.Update(package);
     }
 }

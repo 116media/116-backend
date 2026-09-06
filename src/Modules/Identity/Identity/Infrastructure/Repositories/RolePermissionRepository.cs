@@ -69,4 +69,16 @@ public class RolePermissionRepository(IdentityDbContext context) : IRolePermissi
             .Select(rp => rp.PermissionId)
             .ToListAsync(cancellationToken);
     }
+
+    /// <inheritdoc />
+    public Task<List<RolePermissionEntity>> GetByRoleAndPermissionIdsAsync(
+        Guid roleId,
+        IReadOnlyCollection<Guid> permissionIds,
+        CancellationToken cancellationToken = default
+    )
+    {
+        return context
+            .RolePermissions.Where(rp => rp.RoleId == roleId && permissionIds.Contains(rp.PermissionId))
+            .ToListAsync(cancellationToken);
+    }
 }

@@ -24,7 +24,7 @@ public class PublicUnbookmarkArticleHandler(
         CancellationToken cancellationToken
     )
     {
-        await articleRepository.GetByIdOrThrowAsync(id: command.ArticleId, cancellationToken: cancellationToken);
+        await articleRepository.ExistsOrThrowAsync(articleId: command.ArticleId, cancellationToken: cancellationToken);
 
         bool hasBookmarked = await articleRepository.HasBookmarkedAsync(
             userId: command.UserId,

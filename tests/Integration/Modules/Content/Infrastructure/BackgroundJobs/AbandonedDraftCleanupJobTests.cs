@@ -98,7 +98,9 @@ public class AbandonedDraftCleanupJobTests(PostgresFixture db) : BaseApiTest(db)
         (await contentCtx.Articles.FindAsync(publishedArticle.Id)).Should().NotBeNull();
 
         await using CoreDbContext coreCtx = CreateDbContext<CoreDbContext>();
-        FileEntity? persistedCover = await coreCtx.Files.FindAsync(coverFile.Id);
+        FileEntity? persistedCover = await coreCtx
+            .Files.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(f => f.Id == coverFile.Id);
         persistedCover!.IsDeleted.Should().BeTrue();
 
         CloudinaryStub.DeletedPublicIds.Should().Contain([firstBodyKey, secondBodyKey]);

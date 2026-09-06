@@ -31,7 +31,8 @@ public class TranslationRepository(ContentDbContext context) : ITranslationRepos
     {
         var specification = new TranslationByIdSpecification(id: id);
         return await context
-            .LyricsTranslations.ApplySpecification(specification: specification)
+            .LyricsTranslations.AsTracking()
+            .ApplySpecification(specification: specification)
             .FirstDefaultOrThrowAsync(keyValue: id, cancellationToken: cancellationToken);
     }
 

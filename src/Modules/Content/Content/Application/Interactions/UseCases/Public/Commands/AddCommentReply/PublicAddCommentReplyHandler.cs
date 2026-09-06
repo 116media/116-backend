@@ -40,7 +40,7 @@ public class PublicAddCommentReplyHandler(
         CancellationToken cancellationToken
     )
     {
-        await articleRepository.GetByIdOrThrowAsync(id: command.ArticleId, cancellationToken: cancellationToken);
+        await articleRepository.ExistsOrThrowAsync(articleId: command.ArticleId, cancellationToken: cancellationToken);
 
         ArticleCommentEntity? parent = await articleRepository.GetCommentByIdAsync(
             commentId: command.ParentCommentId,

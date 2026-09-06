@@ -219,7 +219,11 @@ public class AdminUpdateArticleTagsHandlerTests
         created[0].Name.Should().Be("Café & Crème");
         created[0].Slug.Should().StartWith("cafe-creme-");
         _lookupRepositoryMock.Verify(
-            x => x.GetTagByNameAsync("Café & Crème", It.IsAny<CancellationToken>()),
+            x =>
+                x.GetTagsByNamesAsync(
+                    It.Is<IReadOnlyCollection<string>>(names => names.Contains("Café & Crème")),
+                    It.IsAny<CancellationToken>()
+                ),
             Times.Once
         );
     }

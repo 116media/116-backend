@@ -57,6 +57,7 @@ public class AdminSetExclusiveCategoryHandler(
         if (currentExclusive is not null && currentExclusive.Id != id)
         {
             currentExclusive.ClearExclusive();
+            categoryRepository.Update(category: category);
             await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
         }
 

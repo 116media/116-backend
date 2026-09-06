@@ -32,7 +32,8 @@ public class LyricsSubmissionRepository(ContentDbContext context) : ILyricsSubmi
     {
         var specification = new SubmissionByIdSpecification(id: id);
         return await context
-            .LyricsSubmissions.ApplySpecification(specification: specification)
+            .LyricsSubmissions.AsTracking()
+            .ApplySpecification(specification: specification)
             .FirstDefaultOrThrowAsync(keyValue: id, cancellationToken: cancellationToken);
     }
 

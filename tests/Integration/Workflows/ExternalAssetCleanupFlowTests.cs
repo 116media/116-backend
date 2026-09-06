@@ -76,7 +76,7 @@ public class ExternalAssetCleanupFlowTests(PostgresFixture db) : BaseApiTest(db)
         (await contentCtx.ArticleImages.CountAsync(img => img.ArticleId == article.Id)).Should().Be(0);
 
         await using CoreDbContext coreCtx = CreateDbContext<CoreDbContext>();
-        FileEntity? cover = await coreCtx.Files.FindAsync(coverFile.Id);
+        FileEntity? cover = await coreCtx.Files.IgnoreQueryFilters().FirstOrDefaultAsync(f => f.Id == coverFile.Id);
         cover!.IsDeleted.Should().BeTrue();
     }
 
@@ -139,7 +139,9 @@ public class ExternalAssetCleanupFlowTests(PostgresFixture db) : BaseApiTest(db)
         (await contentCtx.Videos.FindAsync(video.Id)).Should().BeNull();
 
         await using CoreDbContext coreCtx = CreateDbContext<CoreDbContext>();
-        FileEntity? thumbnail = await coreCtx.Files.FindAsync(thumbnailFile.Id);
+        FileEntity? thumbnail = await coreCtx
+            .Files.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(f => f.Id == thumbnailFile.Id);
         thumbnail!.IsDeleted.Should().BeTrue();
     }
 
@@ -168,8 +170,12 @@ public class ExternalAssetCleanupFlowTests(PostgresFixture db) : BaseApiTest(db)
         (await contentCtx.ShortVideos.FindAsync(shortVideo.Id)).Should().BeNull();
 
         await using CoreDbContext coreCtx = CreateDbContext<CoreDbContext>();
-        (await coreCtx.Files.FindAsync(videoFile.Id))!.IsDeleted.Should().BeTrue();
-        (await coreCtx.Files.FindAsync(thumbnailFile.Id))!.IsDeleted.Should().BeTrue();
+        (await coreCtx.Files.IgnoreQueryFilters().FirstOrDefaultAsync(f => f.Id == videoFile.Id))!
+            .IsDeleted.Should()
+            .BeTrue();
+        (await coreCtx.Files.IgnoreQueryFilters().FirstOrDefaultAsync(f => f.Id == thumbnailFile.Id))!
+            .IsDeleted.Should()
+            .BeTrue();
     }
 
     [Fact]
@@ -205,7 +211,9 @@ public class ExternalAssetCleanupFlowTests(PostgresFixture db) : BaseApiTest(db)
         persisted.ThumbnailFileId.Should().NotBe(oldThumbnail.Id);
 
         await using CoreDbContext coreCtx = CreateDbContext<CoreDbContext>();
-        (await coreCtx.Files.FindAsync(oldThumbnail.Id))!.IsDeleted.Should().BeTrue();
+        (await coreCtx.Files.IgnoreQueryFilters().FirstOrDefaultAsync(f => f.Id == oldThumbnail.Id))!
+            .IsDeleted.Should()
+            .BeTrue();
     }
 
     [Fact]
@@ -239,7 +247,9 @@ public class ExternalAssetCleanupFlowTests(PostgresFixture db) : BaseApiTest(db)
         updatedUser.AvatarFileId.Should().NotBe(firstAvatarFileId);
 
         await using CoreDbContext coreCtx = CreateDbContext<CoreDbContext>();
-        FileEntity? oldAvatar = await coreCtx.Files.FindAsync(firstAvatarFileId);
+        FileEntity? oldAvatar = await coreCtx
+            .Files.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(f => f.Id == firstAvatarFileId);
         oldAvatar!.IsDeleted.Should().BeTrue();
     }
 
