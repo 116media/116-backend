@@ -232,7 +232,7 @@ public class OtpSpecificationsTests
         var userId = Guid.NewGuid();
         var purpose = EnumOtpPurpose.EmailVerification;
         OtpEntity otp = OtpFactory.Create(userId, "123456", purpose);
-        otp.MarkAsUsed();
+        otp.MarkAsUsed(now: DateTime.UtcNow);
         OtpForValidationSpecification spec = new(userId, purpose);
 
         // Act
@@ -300,7 +300,7 @@ public class OtpSpecificationsTests
         var userId = Guid.NewGuid();
         var purpose = EnumOtpPurpose.PasswordReset;
         OtpEntity otp = OtpFactory.CreateForPasswordReset(userId);
-        otp.MarkAsUsed();
+        otp.MarkAsUsed(now: DateTime.UtcNow);
         OtpForInvalidationSpecification spec = new(userId, purpose);
 
         // Act
@@ -337,7 +337,7 @@ public class OtpSpecificationsTests
         var userId = Guid.NewGuid();
         var purpose = EnumOtpPurpose.TwoFactorAuthentication;
         OtpEntity otp = OtpFactory.Create(userId, "123456", purpose);
-        otp.MarkAsUsed();
+        otp.MarkAsUsed(now: DateTime.UtcNow);
         OtpForUsedValidationSpecification spec = new(userId, purpose);
 
         // Act
