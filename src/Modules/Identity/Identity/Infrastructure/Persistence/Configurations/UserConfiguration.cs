@@ -1,5 +1,6 @@
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -21,7 +22,13 @@ public class UserConfiguration : IEntityTypeConfiguration<UserEntity>
         builder.HasKey(u => u.Id);
 
         // Properties configuration
-        builder.Property(u => u.Email).HasMaxLength(maxLength: UserConstants.MaxEmailLength).IsRequired(false); // Can be null for external auth providers
+        // The value object rides the existing varchar column; null stays null for external
+        // auth providers, so the unique index semantics are unchanged.
+        builder
+            .Property(u => u.Email)
+            .HasConversion(email => email!.Value, value => new Email(value))
+            .HasMaxLength(maxLength: UserConstants.MaxEmailLength)
+            .IsRequired(false);
         builder.Property(u => u.UserName).HasMaxLength(maxLength: UserConstants.MaxUserNameLength).IsRequired();
         builder.Property(u => u.PasswordHash).IsRequired(false); // Can be null for external auth providers
         builder.Property(u => u.AuthProvider).HasConversion<string>().IsRequired();
