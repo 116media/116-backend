@@ -48,7 +48,7 @@ public class SessionMapperTests
         var session = SessionFactory.Create();
 
         // Act
-        var dto = session.ToSessionDto(_mapper);
+        var dto = session.ToSessionDto(_mapper, now: DateTime.UtcNow);
 
         // Assert
         dto.Id.Should().Be(session.Id);
@@ -64,7 +64,7 @@ public class SessionMapperTests
         var session = SessionFactory.CreateWithBrowser(EnumBrowser.Chrome);
 
         // Act
-        var dto = session.ToSessionDto(_mapper);
+        var dto = session.ToSessionDto(_mapper, now: DateTime.UtcNow);
 
         // Assert
         dto.Browser.Should().Be(session.Browser);
@@ -80,7 +80,7 @@ public class SessionMapperTests
         var session = SessionFactory.Create();
 
         // Act
-        var dto = session.ToSessionDto(_mapper);
+        var dto = session.ToSessionDto(_mapper, now: DateTime.UtcNow);
 
         // Assert
         dto.IsActive.Should().BeTrue();
@@ -93,7 +93,7 @@ public class SessionMapperTests
         var session = SessionFactory.CreateRevoked();
 
         // Act
-        var dto = session.ToSessionDto(_mapper);
+        var dto = session.ToSessionDto(_mapper, now: DateTime.UtcNow);
 
         // Assert
         dto.IsActive.Should().BeFalse();
@@ -106,7 +106,7 @@ public class SessionMapperTests
         var session = SessionFactory.CreateExpired();
 
         // Act
-        var dto = session.ToSessionDto(_mapper);
+        var dto = session.ToSessionDto(_mapper, now: DateTime.UtcNow);
 
         // Assert
         dto.IsActive.Should().BeFalse();
@@ -123,7 +123,7 @@ public class SessionMapperTests
         var session = SessionFactory.Create();
 
         // Act
-        var dto = session.ToSessionDto(_mapper);
+        var dto = session.ToSessionDto(_mapper, now: DateTime.UtcNow);
 
         // Assert
         dto.Should().BeAssignableTo<AuditableDto>();
@@ -138,7 +138,7 @@ public class SessionMapperTests
         session.CreatedAt = createdAt;
 
         // Act
-        var dto = session.ToSessionDto(_mapper);
+        var dto = session.ToSessionDto(_mapper, now: DateTime.UtcNow);
 
         // Assert
         dto.CreatedAt.Should().Be(createdAt);
@@ -153,7 +153,7 @@ public class SessionMapperTests
         session.UpdatedAt = updatedAt;
 
         // Act
-        var dto = session.ToSessionDto(_mapper);
+        var dto = session.ToSessionDto(_mapper, now: DateTime.UtcNow);
 
         // Assert
         dto.UpdatedAt.Should().Be(updatedAt);
@@ -167,7 +167,7 @@ public class SessionMapperTests
         session.CreatedBy = "system";
 
         // Act
-        var dto = session.ToSessionDto(_mapper);
+        var dto = session.ToSessionDto(_mapper, now: DateTime.UtcNow);
 
         // Assert
         dto.CreatedBy.Should().Be("system");
@@ -181,7 +181,7 @@ public class SessionMapperTests
         session.UpdatedBy = "admin-user";
 
         // Act
-        var dto = session.ToSessionDto(_mapper);
+        var dto = session.ToSessionDto(_mapper, now: DateTime.UtcNow);
 
         // Assert
         dto.UpdatedBy.Should().Be("admin-user");
@@ -196,7 +196,7 @@ public class SessionMapperTests
         session.UpdatedBy = null;
 
         // Act
-        var dto = session.ToSessionDto(_mapper);
+        var dto = session.ToSessionDto(_mapper, now: DateTime.UtcNow);
 
         // Assert
         dto.CreatedBy.Should().BeNull();
@@ -214,7 +214,7 @@ public class SessionMapperTests
         var sessions = SessionFactory.CreateMany(1);
 
         // Act
-        var dtos = sessions.ToSessionExportDtos(_mapper);
+        var dtos = sessions.ToSessionExportDtos(_mapper, now: DateTime.UtcNow);
 
         // Assert
         dtos.Should().ContainSingle();
@@ -230,7 +230,7 @@ public class SessionMapperTests
         session.CreatedAt = createdAt;
 
         // Act
-        var dtos = new List<SessionEntity> { session }.ToSessionExportDtos(_mapper);
+        var dtos = new List<SessionEntity> { session }.ToSessionExportDtos(_mapper, now: DateTime.UtcNow);
 
         // Assert
         dtos[0].CreatedAt.Should().Be(createdAt);
@@ -245,7 +245,7 @@ public class SessionMapperTests
         session.UpdatedAt = updatedAt;
 
         // Act
-        var dtos = new List<SessionEntity> { session }.ToSessionExportDtos(_mapper);
+        var dtos = new List<SessionEntity> { session }.ToSessionExportDtos(_mapper, now: DateTime.UtcNow);
 
         // Assert
         dtos[0].UpdatedAt.Should().Be(updatedAt);
@@ -259,7 +259,7 @@ public class SessionMapperTests
         session.CreatedBy = "system";
 
         // Act
-        var dtos = new List<SessionEntity> { session }.ToSessionExportDtos(_mapper);
+        var dtos = new List<SessionEntity> { session }.ToSessionExportDtos(_mapper, now: DateTime.UtcNow);
 
         // Assert
         dtos[0].CreatedBy.Should().Be("system");
@@ -272,7 +272,7 @@ public class SessionMapperTests
         var session = SessionFactory.Create();
 
         // Act
-        var dtos = new List<SessionEntity> { session }.ToSessionExportDtos(_mapper);
+        var dtos = new List<SessionEntity> { session }.ToSessionExportDtos(_mapper, now: DateTime.UtcNow);
 
         // Assert
         var dto = dtos[0];
@@ -289,7 +289,7 @@ public class SessionMapperTests
         var sessions = SessionFactory.CreateMany(3);
 
         // Act
-        var dtos = sessions.ToSessionExportDtos(_mapper);
+        var dtos = sessions.ToSessionExportDtos(_mapper, now: DateTime.UtcNow);
 
         // Assert
         dtos.Should().HaveCount(3);
