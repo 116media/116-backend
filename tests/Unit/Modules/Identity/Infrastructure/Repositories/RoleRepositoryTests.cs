@@ -245,7 +245,7 @@ public class RoleRepositoryTests : IDisposable
         // Arrange
         RoleEntity normalRole = RoleFactory.Create("NormalRole");
         RoleEntity deletedRole = RoleFactory.Create("DeletedRole");
-        deletedRole.SoftDelete();
+        deletedRole.SoftDelete(now: DateTime.UtcNow);
 
         _context.Roles.AddRange(normalRole, deletedRole);
         await _context.SaveChangesAsync();
