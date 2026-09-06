@@ -42,7 +42,7 @@ public class PublicRefreshTokenHandler(
         JwtGenerationDto jwtResult = jwtService.GenerateToken(
             userId: authData.User.Id,
             sessionId: authData.Session.Id,
-            email: authData.User.Email!,
+            email: authData.User.Email!.Value,
             userName: authData.User.UserName,
             userRoles: authData.User.UserRoles,
             userPermissions: authData.User.UserRoles.SelectMany(ur => ur.Role.RolePermissions).ToList(),
