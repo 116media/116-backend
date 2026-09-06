@@ -106,7 +106,7 @@ public class PermissionBuilder
 
         if (_isDeleted)
         {
-            permission.SoftDelete();
+            permission.SoftDelete(now: DateTime.UtcNow);
         }
 
         return permission;
