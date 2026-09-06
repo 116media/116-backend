@@ -251,7 +251,7 @@ public class SessionBuilder
 
         if (_isRevoked)
         {
-            session.Revoke();
+            session.Revoke(reason: EnumSessionRevokeReason.SelfSignOut, now: DateTime.UtcNow);
         }
 
         if (_createdAt.HasValue)
