@@ -13,8 +13,11 @@ namespace _116.Identity.Application.Session.UseCases.Public.Queries.GetOwnSessio
 /// </summary>
 /// <param name="sessionRepository">Repository for session data access operations.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-public class PublicGetOwnSessionsHandler(ISessionRepository sessionRepository, IMapper mapper)
-    : IQueryHandler<PublicGetOwnSessionsQuery, PublicGetOwnSessionsResult>
+public class PublicGetOwnSessionsHandler(
+    ISessionRepository sessionRepository,
+    IMapper mapper,
+    TimeProvider timeProvider
+) : IQueryHandler<PublicGetOwnSessionsQuery, PublicGetOwnSessionsResult>
 {
     /// <summary>
     /// Handles the get own sessions query by retrieving all sessions for the user.
@@ -33,8 +36,11 @@ public class PublicGetOwnSessionsHandler(ISessionRepository sessionRepository, I
             cancellationToken: cancellationToken
         );
 
+        DateTime now = timeProvider.GetUtcNow().UtcDateTime;
         ReadOnlyCollection<PublicSessionDto> sessionDtos = sessions
-            .Select(s => s.ToSessionDto(mapper, currentSessionId: query.CurrentSessionId).ToPublicSessionDto())
+            .Select(s =>
+                s.ToSessionDto(mapper, now: now, currentSessionId: query.CurrentSessionId).ToPublicSessionDto()
+            )
             .ToList()
             .AsReadOnly();
 
