@@ -15,11 +15,13 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.SoftDeleteRole
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 /// <param name="i18n">Single i18n entry point for the Identity module.</param>
+/// <param name="timeProvider">Clock stamping the deletion time.</param>
 public class AdminSoftDeleteRoleHandler(
     IRoleRepository roleRepository,
     IIdentityUnitOfWork unitOfWork,
     IMapper mapper,
-    IdentityI18n i18n
+    IdentityI18n i18n,
+    TimeProvider timeProvider
 ) : ICommandHandler<AdminSoftDeleteRoleCommand, AdminSoftDeleteRoleResult>
 {
     /// <summary>
@@ -40,7 +42,7 @@ public class AdminSoftDeleteRoleHandler(
             cancellationToken: cancellationToken
         );
 
-        bool wasSoftDeleted = role!.SoftDelete();
+        bool wasSoftDeleted = role!.SoftDelete(now: timeProvider.GetUtcNow().UtcDateTime);
 
         if (!wasSoftDeleted)
         {
