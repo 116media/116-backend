@@ -34,7 +34,7 @@ public class UserLookupService(IdentityDbContext context) : IUserLookupService
 
         return new AuthorInfo(
             user.UserName,
-            user.Email,
+            user.Email?.Value,
             user.AvatarFileId,
             user.UserRoles.Select(ur => ur.Role.Name).FirstOrDefault()
         );
@@ -63,7 +63,7 @@ public class UserLookupService(IdentityDbContext context) : IUserLookupService
             user => user.Id,
             user => new AuthorInfo(
                 user.UserName,
-                user.Email,
+                user.Email?.Value,
                 user.AvatarFileId,
                 user.UserRoles.Select(ur => ur.Role.Name).FirstOrDefault()
             )
