@@ -43,6 +43,17 @@ public record Email
     public string Value { get; init; }
 
     /// <summary>
+    /// Parses a candidate that may not be an address at all, returning null instead of
+    /// throwing. Used where a credential can be either an email or a username.
+    /// </summary>
+    /// <param name="value">The candidate address, possibly absent or not an email.</param>
+    /// <returns>The parsed address, or null when the candidate is not a valid email.</returns>
+    public static Email? TryFrom(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value: value) || !IsValidEmail(email: value) ? null : new Email(value);
+    }
+
+    /// <summary>
     /// Determines whether the specified string is a valid email address.
     /// </summary>
     /// <param name="email">The email-string to validate.</param>
