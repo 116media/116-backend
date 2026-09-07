@@ -1,6 +1,6 @@
-using _116.Core.Application.Shared.Repositories;
-using _116.Core.Domain.Entities;
+using _116.Core.Contracts.Application.DTOs;
 using _116.Identity.Application.Shared.Mappers;
+using _116.Identity.Application.User.Services;
 using _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfile.Contracts;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Contracts.Application.CQRS;
@@ -13,11 +13,11 @@ namespace _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfi
 /// This endpoint requires user authentication - only logged-in users can update their own profile.
 /// </summary>
 /// <param name="authFactory">Factory for handling user profile update logic.</param>
-/// <param name="fileRepository">Repository for accessing file metadata.</param>
+/// <param name="avatarService">Resolves and stores the user's avatar.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class PublicUpdateOwnProfileHandler(
     IPublicUpdateProfileAuthFactory authFactory,
-    IFileRepository fileRepository,
+    IAvatarService avatarService,
     IMapper mapper
 ) : ICommandHandler<PublicUpdateOwnProfileCommand, PublicUpdateOwnProfileResult>
 {
@@ -47,12 +47,10 @@ public class PublicUpdateOwnProfileHandler(
             cancellationToken: cancellationToken
         );
 
-        FileEntity? avatarFile = await fileRepository.GetAvatarFileAsync(
+        FileDto? avatarDto = await avatarService.GetAvatarAsync(
             avatarFileId: authData.User.AvatarFileId,
             cancellationToken: cancellationToken
         );
-
-        var avatarDto = avatarFile?.ToFileDto(mapper);
         var userDto = authData.User.ToUserResponseDto(
             mapper: mapper,
             avatar: avatarDto,
