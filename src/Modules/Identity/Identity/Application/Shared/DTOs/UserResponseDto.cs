@@ -1,4 +1,4 @@
-using _116.Core.Application.Shared.DTOs;
+using _116.Core.Contracts.Application.DTOs;
 using _116.Identity.Domain.Enums;
 using _116.Shared.Application.DTOs;
 
