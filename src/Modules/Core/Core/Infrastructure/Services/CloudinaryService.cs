@@ -1,6 +1,7 @@
 using _116.BuildingBlocks.Constants;
 using _116.Core.Application.Shared.Errors.Facade;
 using _116.Core.Application.Shared.Services;
+using _116.Core.Contracts.Domain.Enums;
 using _116.Shared.Application.Configurations;
 using _116.Shared.Application.Exceptions;
 using CloudinaryDotNet;
@@ -88,11 +89,15 @@ public class CloudinaryService : ICloudinaryService
     }
 
     /// <inheritdoc />
-    public async Task<bool> DeleteImageAsync(string publicId, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteAsync(
+        string publicId,
+        EnumStoredFileKind kind,
+        CancellationToken cancellationToken = default
+    )
     {
         try
         {
-            var deletionParams = new DeletionParams(publicId);
+            var deletionParams = new DeletionParams(publicId) { ResourceType = ToResourceType(kind) };
             DeletionResult result = await _cloudinary.DestroyAsync(deletionParams);
 
             if (result.Error != null)
@@ -121,8 +126,9 @@ public class CloudinaryService : ICloudinaryService
     }
 
     /// <inheritdoc />
-    public async Task<bool> DeleteImagesAsync(
+    public async Task<bool> DeleteManyAsync(
         IEnumerable<string> publicIds,
+        EnumStoredFileKind kind,
         CancellationToken cancellationToken = default
     )
     {
@@ -143,7 +149,7 @@ public class CloudinaryService : ICloudinaryService
             .Select(batchIndex =>
             {
                 List<string> batch = keys.Skip(batchIndex * batchSize).Take(batchSize).ToList();
-                return DeleteBatchAsync(batch, batchIndex);
+                return DeleteBatchAsync(batch, batchIndex, kind);
             });
 
         bool[] results = await Task.WhenAll(batchTasks);
@@ -153,7 +159,7 @@ public class CloudinaryService : ICloudinaryService
     /// <summary>
     /// Sends a single Cloudinary batch-delete request for up to 100 public IDs.
     /// </summary>
-    private async Task<bool> DeleteBatchAsync(List<string> batch, int batchIndex)
+    private async Task<bool> DeleteBatchAsync(List<string> batch, int batchIndex, EnumStoredFileKind kind)
     {
         try
         {
@@ -161,7 +167,7 @@ public class CloudinaryService : ICloudinaryService
             {
                 PublicIds = batch,
                 Type = "upload",
-                ResourceType = ResourceType.Image,
+                ResourceType = ToResourceType(kind),
             };
 
             DelResResult result = await _cloudinary.DeleteResourcesAsync(delParams);
@@ -336,6 +342,22 @@ public class CloudinaryService : ICloudinaryService
             _logger.LogError(ex, "Unexpected error during Cloudinary video upload");
             throw _i18n.File.FileUploadFailed(ex.Message);
         }
+    }
+
+    /// <summary>
+    /// Maps a storage class to the Cloudinary resource type it was stored under. Deleting with
+    /// the wrong resource type silently leaves the asset in place.
+    /// </summary>
+    /// <param name="kind">The storage class.</param>
+    /// <returns>The matching Cloudinary resource type.</returns>
+    private static ResourceType ToResourceType(EnumStoredFileKind kind)
+    {
+        return kind switch
+        {
+            EnumStoredFileKind.Video => ResourceType.Video,
+            EnumStoredFileKind.Raw => ResourceType.Raw,
+            _ => ResourceType.Image,
+        };
     }
 
     /// <summary>
