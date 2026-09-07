@@ -162,6 +162,7 @@ public class ArtistEntity : Aggregate<Guid>
 
         artist.ReplaceAliases(aliases: aliases);
         artist.RecomputeNameIndexes();
+        artist.AddDomainEvent(new ArtistChangedEvent(ArtistId: id));
 
         return artist;
     }
@@ -200,6 +201,7 @@ public class ArtistEntity : Aggregate<Guid>
         Hometown = hometown;
 
         RecomputeNameIndexes();
+        AddDomainEvent(new ArtistChangedEvent(ArtistId: Id));
     }
 
     /// <summary>
@@ -302,7 +304,11 @@ public class ArtistEntity : Aggregate<Guid>
     /// Sets or clears the avatar file reference.
     /// </summary>
     /// <param name="avatarFileId">The FileEntity ID, or null to clear it.</param>
-    public void SetAvatarFileId(Guid? avatarFileId) => AvatarFileId = avatarFileId;
+    public void SetAvatarFileId(Guid? avatarFileId)
+    {
+        AvatarFileId = avatarFileId;
+        AddDomainEvent(new ArtistChangedEvent(ArtistId: Id));
+    }
 
     /// <summary>
     /// Links this profile to a verified artist account. One profile can be claimed by

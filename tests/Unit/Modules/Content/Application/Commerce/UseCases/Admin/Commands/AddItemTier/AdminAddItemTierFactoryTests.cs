@@ -20,7 +20,7 @@ public class AdminAddItemTierFactoryTests
 {
     private readonly Mock<IContentOrderRepository> _orderRepositoryMock;
     private readonly Mock<ICategoryRepository> _categoryRepositoryMock;
-    private readonly Mock<ILookupRepository> _lookupRepositoryMock;
+    private readonly Mock<IPricingTierRepository> _pricingTierRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminAddItemTierFactory _factory;
 
@@ -28,12 +28,12 @@ public class AdminAddItemTierFactoryTests
     {
         _orderRepositoryMock = MockContentOrderRepository.Create();
         _categoryRepositoryMock = MockCategoryRepository.Create();
-        _lookupRepositoryMock = MockLookupRepository.Create();
+        _pricingTierRepositoryMock = MockPricingTierRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _factory = new AdminAddItemTierFactory(
             _orderRepositoryMock.Object,
             _categoryRepositoryMock.Object,
-            _lookupRepositoryMock.Object,
+            _pricingTierRepositoryMock.Object,
             _unitOfWorkMock.Object,
             TestErrorsFactory.CreateContentOrderErrors(),
             TestErrorsFactory.CreateCategoryErrors()
@@ -58,7 +58,7 @@ public class AdminAddItemTierFactoryTests
 
         _orderRepositoryMock.SetupGetByIdWithItems(order);
         _orderRepositoryMock.SetupGetItemById(order.Id, item.Id, item);
-        _lookupRepositoryMock.SetupGetPricingTierByIdOrThrow(pricingTier);
+        _pricingTierRepositoryMock.SetupGetPricingTierByIdOrThrow(pricingTier);
         _categoryRepositoryMock.SetupGetPricing(category.Id, pricingTier.Id, categoryPricing);
 
         // Act
@@ -144,7 +144,7 @@ public class AdminAddItemTierFactoryTests
 
         _orderRepositoryMock.SetupGetByIdWithItems(order);
         _orderRepositoryMock.SetupGetItemById(order.Id, item.Id, item);
-        _lookupRepositoryMock.SetupGetPricingTierByIdOrThrow(pricingTier);
+        _pricingTierRepositoryMock.SetupGetPricingTierByIdOrThrow(pricingTier);
         _categoryRepositoryMock.SetupGetPricing(category.Id, pricingTier.Id, null);
 
         // Act

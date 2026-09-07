@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Cache;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetTranslationRevisions;
@@ -7,7 +8,19 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetTranslat
 /// rejected revisions alike.
 /// </summary>
 /// <param name="TranslationId">The translation whose revision history is being listed.</param>
-public record PublicGetTranslationRevisionsQuery(Guid TranslationId) : IQuery<PublicGetTranslationRevisionsResult>;
+public record PublicGetTranslationRevisionsQuery(Guid TranslationId)
+    : IQuery<PublicGetTranslationRevisionsResult>,
+        ICacheableRequest
+{
+    /// <inheritdoc />
+    public string CacheKey => $"translation_revisions:{TranslationId}";
+
+    /// <inheritdoc />
+    public TimeSpan Ttl => TimeSpan.FromMinutes(10);
+
+    /// <inheritdoc />
+    public IReadOnlyList<string> CacheTags => [ContentCacheTags.Lyrics];
+}
 
 /// <summary>
 /// A single proposed revision in a translation's review history.

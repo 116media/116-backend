@@ -26,8 +26,8 @@ public class TestDataSeeder
         using IServiceScope scope = _services.CreateScope();
         IServiceProvider sp = scope.ServiceProvider;
 
-        await sp.GetRequiredService<SuperAdminSeeder>().SeedAllAsync();
-        await sp.GetRequiredService<VisitorRoleSeeder>().SeedAllAsync();
+        await sp.GetRequiredService<SuperAdminSeeder>().SeedAsync();
+        await sp.GetRequiredService<VisitorRoleSeeder>().SeedAsync();
     }
 
     /// <summary>
@@ -39,7 +39,7 @@ public class TestDataSeeder
         using IServiceScope scope = _services.CreateScope();
         IServiceProvider sp = scope.ServiceProvider;
 
-        await sp.GetRequiredService<ContentTypeSeeder>().SeedAllAsync();
+        await sp.GetRequiredService<ContentTypeSeeder>().SeedAsync();
     }
 
     /// <summary>

@@ -187,6 +187,7 @@ public class ShortVideoEntity : Aggregate<Guid>
         Title = title;
         VideoId = videoId;
         HasFullVideo = videoId.HasValue;
+        AddDomainEvent(new ShortVideoChangedEvent(ShortVideoId: Id));
     }
 
     /// <summary>
@@ -198,6 +199,7 @@ public class ShortVideoEntity : Aggregate<Guid>
     public void ReplaceVideoFile(Guid videoFileId)
     {
         VideoFileId = videoFileId;
+        AddDomainEvent(new ShortVideoChangedEvent(ShortVideoId: Id));
     }
 
     /// <summary>
@@ -209,6 +211,7 @@ public class ShortVideoEntity : Aggregate<Guid>
     public void SetThumbnailFileId(Guid? thumbnailFileId)
     {
         ThumbnailFileId = thumbnailFileId;
+        AddDomainEvent(new ShortVideoChangedEvent(ShortVideoId: Id));
     }
 
     /// <summary>
@@ -229,6 +232,8 @@ public class ShortVideoEntity : Aggregate<Guid>
         }
 
         IsActive = true;
+        AddDomainEvent(new ShortVideoChangedEvent(ShortVideoId: Id));
+
         return true;
     }
 
@@ -245,6 +250,8 @@ public class ShortVideoEntity : Aggregate<Guid>
         }
 
         IsActive = false;
+        AddDomainEvent(new ShortVideoChangedEvent(ShortVideoId: Id));
+
         return true;
     }
 

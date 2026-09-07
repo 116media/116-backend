@@ -216,6 +216,11 @@ cluster lock makes `[DisallowConcurrentExecution]` cluster-wide. Minimum viable 
 a Postgres advisory lock at the top of each job's `Execute`. Do the job fix first — job
 duplication corrupts data; cache staleness only annoys.
 
+> **Cache half superseded by [16 §16.4].** The version-key remedy above is a hand-built version
+> of what `HybridCache` ships: L1+L2 behind one API, `RemoveByTagAsync` instead of version
+> composition, and stampede protection. The job-clustering half stands as written. Both land in
+> **Stage 10 — Caching, concurrency and data access** (Parts A and B).
+
 ---
 
 ## 4.9 Seeding is unguarded at startup, and the `ContentTypeSeeder` short-circuit permanently withholds the `Lyrics` content type
@@ -286,6 +291,13 @@ UoW still commits them together). Split `LookupRepository` into four. Move the u
 orchestration out of `FileRepository` into a `FileUploadService`, DB-row-first with
 compensation on failure; delete `IFileRepository.SaveChangesAsync`. Move the query builders
 into `Infrastructure/Queries/` so Application stops referencing `ContentDbContext`.
+
+> **Split across three stages, because two clauses belong to work already specified elsewhere.**
+> The repository splits and the missing base class are **Stage 10 Part D** (10.13–10.17), which also
+> adds the `RepositoryBase` and the `Query()` hydration seam this finding implies but does not name.
+> `FileRepository`'s upload orchestration is **Stage 14.5** (the file-pipeline rewrite). The query
+> builders are **Stage 15**, tracked with the specification cleanup, because moving them is the
+> `Application → Infrastructure` layering fix `[06 §14]`.
 
 ---
 

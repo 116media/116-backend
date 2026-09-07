@@ -36,13 +36,13 @@ public class ContentTypeSeederTests : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    #region SeedAllAsync — Empty Database
+    #region SeedAsync — Empty Database
 
     [Fact]
-    public async Task SeedAllAsync_WhenDatabaseIsEmpty_ShouldCreateFourContentTypes()
+    public async Task SeedAsync_WhenDatabaseIsEmpty_ShouldCreateFourContentTypes()
     {
         // Act
-        await _seeder.SeedAllAsync();
+        await _seeder.SeedAsync();
 
         // Assert
         List<ContentTypeEntity> contentTypes = await _context.ContentTypes.ToListAsync();
@@ -50,10 +50,10 @@ public class ContentTypeSeederTests : IDisposable
     }
 
     [Fact]
-    public async Task SeedAllAsync_WhenDatabaseIsEmpty_ShouldCreateArticleVideoShortLyrics()
+    public async Task SeedAsync_WhenDatabaseIsEmpty_ShouldCreateArticleVideoShortLyrics()
     {
         // Act
-        await _seeder.SeedAllAsync();
+        await _seeder.SeedAsync();
 
         // Assert
         List<string> names = await _context.ContentTypes.Select(c => c.Name).ToListAsync();
@@ -64,10 +64,10 @@ public class ContentTypeSeederTests : IDisposable
     }
 
     [Fact]
-    public async Task SeedAllAsync_WhenDatabaseIsEmpty_ShouldAssignUniqueIds()
+    public async Task SeedAsync_WhenDatabaseIsEmpty_ShouldAssignUniqueIds()
     {
         // Act
-        await _seeder.SeedAllAsync();
+        await _seeder.SeedAsync();
 
         // Assert
         List<Guid> ids = await _context.ContentTypes.Select(c => c.Id).ToListAsync();
@@ -77,16 +77,16 @@ public class ContentTypeSeederTests : IDisposable
 
     #endregion
 
-    #region SeedAllAsync — Already Seeded (Idempotency)
+    #region SeedAsync — Idempotency
 
     [Fact]
-    public async Task SeedAllAsync_WhenAlreadySeeded_ShouldNotAddMoreContentTypes()
+    public async Task SeedAsync_WhenAlreadySeeded_ShouldNotAddMoreContentTypes()
     {
         // Arrange — seed once
-        await _seeder.SeedAllAsync();
+        await _seeder.SeedAsync();
 
         // Act — seed again
-        await _seeder.SeedAllAsync();
+        await _seeder.SeedAsync();
 
         // Assert — still only 4
         int count = await _context.ContentTypes.CountAsync();
@@ -94,14 +94,32 @@ public class ContentTypeSeederTests : IDisposable
     }
 
     [Fact]
-    public async Task SeedAllAsync_WhenAlreadySeeded_ShouldCompleteWithoutError()
+    public async Task SeedAsync_WhenAlreadySeeded_ShouldCompleteWithoutError()
     {
         // Arrange
-        await _seeder.SeedAllAsync();
+        await _seeder.SeedAsync();
 
         // Act & Assert — second call should not throw
-        Func<Task> act = async () => await _seeder.SeedAllAsync();
+        Func<Task> act = async () => await _seeder.SeedAsync();
         await act.Should().NotThrowAsync();
+    }
+
+    [Fact]
+    public async Task SeedAsync_WhenOneTypeIsMissing_ShouldSeedOnlyTheMissingOne()
+    {
+        // Arrange — a database first seeded before Lyrics existed
+        await _seeder.SeedAsync();
+        ContentTypeEntity lyrics = await _context.ContentTypes.SingleAsync(c => c.Name == "Lyrics");
+        _context.ContentTypes.Remove(lyrics);
+        await _context.SaveChangesAsync();
+
+        // Act
+        await _seeder.SeedAsync();
+
+        // Assert — the missing row heals; the surviving rows are untouched
+        List<string> names = await _context.ContentTypes.Select(c => c.Name).ToListAsync();
+        names.Should().HaveCount(4);
+        names.Should().Contain("Lyrics");
     }
 
     #endregion

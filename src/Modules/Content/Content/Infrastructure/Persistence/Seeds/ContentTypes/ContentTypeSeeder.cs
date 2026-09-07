@@ -1,4 +1,3 @@
-using _116.Content.Application.Shared.Errors;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Shared.Infrastructure.Seed;
@@ -13,7 +12,8 @@ namespace _116.Content.Infrastructure.Persistence.Seeds.ContentTypes;
 /// <remarks>
 /// These are structural constants required by the entire content system.
 /// Every category and content item must belong to one of these types.
-/// This seeder is idempotent — it skips execution if any content types already exist.
+/// Idempotency is per row, so a type added to the list later is seeded into databases that
+/// were first seeded before it existed.
 /// </remarks>
 public class ContentTypeSeeder(ContentDbContext context, ILogger<ContentTypeSeeder> logger) : IDataSeeder
 {
@@ -26,45 +26,27 @@ public class ContentTypeSeeder(ContentDbContext context, ILogger<ContentTypeSeed
     ];
 
     /// <inheritdoc />
-    public async Task SeedAllAsync()
+    public async Task SeedAsync(CancellationToken cancellationToken = default)
     {
-        try
+        List<string> existing = await context
+            .ContentTypes.Where(t => ContentTypeNames.Contains(t.Name))
+            .Select(t => t.Name)
+            .ToListAsync(cancellationToken);
+
+        string[] missing = ContentTypeNames.Except(existing).ToArray();
+
+        if (missing.Length == 0)
         {
-            logger.LogInformation("Starting content type seeding process...");
-
-            bool alreadySeeded = await context.ContentTypes.AnyAsync();
-            if (alreadySeeded)
-            {
-                logger.LogInformation("Content types already exist. Skipping seeding.");
-                return;
-            }
-
-            await ExecuteSeedingAsync();
-            logger.LogInformation("Content type seeding completed successfully!");
+            return;
         }
-        catch (Exception ex)
+
+        foreach (string name in missing)
         {
-            logger.LogError(exception: ex, "Failed to seed content type data");
-            throw;
+            context.ContentTypes.Add(ContentTypeEntity.Create(id: Guid.NewGuid(), name: name));
         }
-    }
 
-    /// <summary>
-    /// Creates the Article, Video, and Short content types.
-    /// </summary>
-    private async Task ExecuteSeedingAsync()
-    {
-        ContentTypeEntity[] contentTypes = ContentTypeNames
-            .Select(name => ContentTypeEntity.Create(id: Guid.NewGuid(), name: name))
-            .ToArray();
+        await context.SaveChangesAsync(cancellationToken);
 
-        await context.ContentTypes.AddRangeAsync(contentTypes);
-        await context.SaveChangesAsync();
-
-        logger.LogInformation(
-            "Created {Count} content types: {Names}",
-            contentTypes.Length,
-            string.Join(", ", ContentTypeNames)
-        );
+        logger.LogInformation("Seeded {Count} content types: {Names}", missing.Length, string.Join(", ", missing));
     }
 }

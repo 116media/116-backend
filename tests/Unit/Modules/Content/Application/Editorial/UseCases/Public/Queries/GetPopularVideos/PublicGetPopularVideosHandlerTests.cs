@@ -7,25 +7,22 @@ using _116.Core.Domain.Entities;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Factories.Core;
 using _116.Unit.Tests.Common;
-using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
 namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Public.Queries.GetPopularVideos;
 
 /// <summary>
-/// Unit tests for <see cref="PublicGetPopularVideosHandler"/>.
+/// Unit tests for <see cref="PublicGetPopularVideosHandler"/>. Caching lives in the
+/// CQRS caching decorator, so these cover the projection only; the cache-key contract
+/// the decorator relies on is asserted on the query record.
 /// </summary>
 public class PublicGetPopularVideosHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<IVideoRepository> _videoRepositoryMock;
     private readonly Mock<IFileRepository> _fileRepositoryMock;
-    private readonly Mock<IPopularVideosCacheInvalidator> _cacheInvalidatorMock;
-    private readonly IMemoryCache _cache;
     private readonly PublicGetPopularVideosHandler _handler;
 
     private static readonly Guid CategoryId = Guid.NewGuid();
@@ -34,17 +31,9 @@ public class PublicGetPopularVideosHandlerTests : BaseContentHandlerTest
     {
         _videoRepositoryMock = MockVideoRepository.Create();
         _fileRepositoryMock = MockFileRepository.Create();
-        _cacheInvalidatorMock = MockPopularVideosCacheInvalidator.Create();
-        _cache = new MemoryCache(Options.Create(new MemoryCacheOptions()));
         FileEntity thumbnailFile = FileFactory.CreateImage();
         _fileRepositoryMock.SetupGetById(thumbnailFile);
-        _handler = new PublicGetPopularVideosHandler(
-            _videoRepositoryMock.Object,
-            _fileRepositoryMock.Object,
-            _cache,
-            _cacheInvalidatorMock.Object,
-            Mapper
-        );
+        _handler = new PublicGetPopularVideosHandler(_videoRepositoryMock.Object, _fileRepositoryMock.Object, Mapper);
     }
 
     [Fact]
@@ -99,75 +88,42 @@ public class PublicGetPopularVideosHandlerTests : BaseContentHandlerTest
     }
 
     [Fact]
-    public async Task Handle_CalledTwiceWithSameArgs_ShouldHitRepositoryOnce()
+    public void CacheKey_WithSameArguments_ShouldBeStable()
     {
         // Arrange
-        _videoRepositoryMock.SetupGetPopularVideosAsync(VideoFactory.CreateManyPublished(CategoryId, 3));
+        var categoryId = Guid.NewGuid();
+        var first = new PublicGetPopularVideosQuery(Limit: 5, CategoryId: categoryId, ExcludeId: null);
+        var second = new PublicGetPopularVideosQuery(Limit: 5, CategoryId: categoryId, ExcludeId: null);
+
+        // Assert
+        first.CacheKey.Should().Be(second.CacheKey);
+    }
+
+    [Fact]
+    public void CacheKey_WithDifferentArguments_ShouldDiffer()
+    {
+        // Arrange
+        var baseline = new PublicGetPopularVideosQuery(Limit: 5, CategoryId: null, ExcludeId: null);
+
+        // Assert — every parameter participates in the key
+        new PublicGetPopularVideosQuery(Limit: 7, CategoryId: null, ExcludeId: null)
+            .CacheKey.Should()
+            .NotBe(baseline.CacheKey);
+        new PublicGetPopularVideosQuery(Limit: 5, CategoryId: Guid.NewGuid(), ExcludeId: null)
+            .CacheKey.Should()
+            .NotBe(baseline.CacheKey);
+        new PublicGetPopularVideosQuery(Limit: 5, CategoryId: null, ExcludeId: Guid.NewGuid())
+            .CacheKey.Should()
+            .NotBe(baseline.CacheKey);
+    }
+
+    [Fact]
+    public void CacheTags_ShouldCarryThePopularVideosTag()
+    {
+        // Arrange
         var query = new PublicGetPopularVideosQuery(Limit: 5, CategoryId: null, ExcludeId: null);
 
-        // Act
-        await _handler.Handle(query, CancellationToken.None);
-        await _handler.Handle(query, CancellationToken.None);
-
         // Assert
-        _videoRepositoryMock.Verify(
-            x => x.GetPopularVideosAsync(5, null, null, It.IsAny<CancellationToken>()),
-            Times.Once
-        );
-    }
-
-    [Fact]
-    public async Task Handle_CalledWithDifferentExcludeId_ShouldHitRepositoryTwice()
-    {
-        // Arrange
-        _videoRepositoryMock.SetupGetPopularVideosAsync(VideoFactory.CreateManyPublished(CategoryId, 3));
-        Guid firstExcludeId = Guid.NewGuid();
-        Guid secondExcludeId = Guid.NewGuid();
-
-        // Act
-        await _handler.Handle(
-            new PublicGetPopularVideosQuery(Limit: 5, CategoryId: null, ExcludeId: firstExcludeId),
-            CancellationToken.None
-        );
-        await _handler.Handle(
-            new PublicGetPopularVideosQuery(Limit: 5, CategoryId: null, ExcludeId: secondExcludeId),
-            CancellationToken.None
-        );
-
-        // Assert
-        _videoRepositoryMock.Verify(
-            x => x.GetPopularVideosAsync(5, null, firstExcludeId, It.IsAny<CancellationToken>()),
-            Times.Once
-        );
-        _videoRepositoryMock.Verify(
-            x => x.GetPopularVideosAsync(5, null, secondExcludeId, It.IsAny<CancellationToken>()),
-            Times.Once
-        );
-        _videoRepositoryMock.Verify(
-            x =>
-                x.GetPopularVideosAsync(
-                    It.IsAny<int>(),
-                    It.IsAny<Guid?>(),
-                    It.IsAny<Guid?>(),
-                    It.IsAny<CancellationToken>()
-                ),
-            Times.Exactly(2)
-        );
-    }
-
-    [Fact]
-    public async Task Handle_ShouldNotCallInvalidate()
-    {
-        // Arrange
-        _videoRepositoryMock.SetupGetPopularVideosAsync(VideoFactory.CreateManyPublished(CategoryId, 3));
-
-        // Act
-        await _handler.Handle(
-            new PublicGetPopularVideosQuery(Limit: 5, CategoryId: null, ExcludeId: null),
-            CancellationToken.None
-        );
-
-        // Assert
-        _cacheInvalidatorMock.VerifyInvalidateNotCalled();
+        query.CacheTags.Should().ContainSingle().Which.Should().Be(ContentCacheTags.PopularVideos);
     }
 }

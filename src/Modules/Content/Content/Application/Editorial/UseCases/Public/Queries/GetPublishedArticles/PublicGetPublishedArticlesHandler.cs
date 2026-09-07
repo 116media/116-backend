@@ -14,10 +14,12 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublishe
 /// Handles the <see cref="PublicGetPublishedArticlesQuery" /> to retrieve a paginated list of published articles.
 /// </summary>
 /// <param name="articleRepository">Repository for article data access operations.</param>
+/// <param name="articleInteractionRepository">Repository for article interaction data access operations.</param>
 /// <param name="fileRepository">Repository for resolving file URLs.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class PublicGetPublishedArticlesHandler(
     IArticleRepository articleRepository,
+    IArticleInteractionRepository articleInteractionRepository,
     IFileRepository fileRepository,
     IMapper mapper
 ) : IQueryHandler<PublicGetPublishedArticlesQuery, PublicGetPublishedArticlesResult>
@@ -42,7 +44,7 @@ public class PublicGetPublishedArticlesHandler(
 
         List<Guid> articleIds = articles.Select(article => article.Id).ToList();
         (IReadOnlySet<Guid> liked, IReadOnlySet<Guid> bookmarked) =
-            await articleRepository.GetLikedAndBookmarkedIdsAsync(
+            await articleInteractionRepository.GetLikedAndBookmarkedIdsAsync(
                 currentUserId: query.CurrentUserId,
                 articleIds: articleIds,
                 cancellationToken: cancellationToken

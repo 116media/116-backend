@@ -1,5 +1,4 @@
 using _116.Identity.Domain.Entities;
-using _116.Shared.Domain;
 
 namespace _116.Identity.Application.Shared.Repositories;
 
@@ -7,7 +6,7 @@ namespace _116.Identity.Application.Shared.Repositories;
 /// Repository interface for managing permission entities and permission-related operations.
 /// Provides methods for permission retrieval, validation, and data access.
 /// </summary>
-public interface IPermissionRepository : IRepository<PermissionEntity>
+public interface IPermissionRepository
 {
     /// <summary>
     /// Retrieves a permission by its unique identifier.

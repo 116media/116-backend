@@ -1,5 +1,6 @@
 using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.Events;
 using _116.Identity.Domain.Exceptions;
 using _116.Identity.Domain.StateMachines;
 using _116.Shared.Application.Exceptions;
@@ -270,6 +271,66 @@ public class RoleEntityTests
         // Assert
         role.IsDeleted.Should().BeFalse();
         role.IsActive.Should().BeFalse(); // Was deactivated by SoftDelete, should remain inactive
+    }
+
+    #endregion
+
+    #region Domain Events
+
+    [Fact]
+    public void Create_ShouldRaiseRoleChangedEvent()
+    {
+        // Act
+        var role = RoleEntity.Create(Guid.NewGuid(), "Editor", "Editorial staff role");
+
+        // Assert
+        role.DomainEvents.OfType<RoleChangedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(new RoleChangedEvent(role.Id));
+    }
+
+    [Fact]
+    public void SoftDelete_ShouldRaiseRoleChangedEvent()
+    {
+        // Arrange
+        var role = RoleEntity.Create(Guid.NewGuid(), "Editor", "Editorial staff role");
+        role.ClearDomainEvents();
+
+        // Act
+        role.SoftDelete();
+
+        // Assert
+        role.DomainEvents.OfType<RoleChangedEvent>().Should().ContainSingle();
+    }
+
+    [Fact]
+    public void MarkHardDeleted_ShouldRaiseRoleChangedEvent()
+    {
+        // Arrange
+        var role = RoleEntity.Create(Guid.NewGuid(), "Editor", "Editorial staff role");
+        role.ClearDomainEvents();
+
+        // Act
+        role.MarkHardDeleted();
+
+        // Assert
+        role.DomainEvents.OfType<RoleChangedEvent>().Should().ContainSingle();
+    }
+
+    [Fact]
+    public void Restore_WhenNotDeleted_ShouldRaiseNothing()
+    {
+        // Arrange — a no-op transition must not evict the lookup cache
+        var role = RoleEntity.Create(Guid.NewGuid(), "Editor", "Editorial staff role");
+        role.ClearDomainEvents();
+
+        // Act
+        role.Restore();
+
+        // Assert
+        role.DomainEvents.Should().BeEmpty();
     }
 
     #endregion

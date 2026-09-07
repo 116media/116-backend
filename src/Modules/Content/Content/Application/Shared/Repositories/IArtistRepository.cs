@@ -1,13 +1,12 @@
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
-using _116.Shared.Domain;
 
 namespace _116.Content.Application.Shared.Repositories;
 
 /// <summary>
 /// Repository interface for artist profile data access operations.
 /// </summary>
-public interface IArtistRepository : IRepository<ArtistEntity>
+public interface IArtistRepository
 {
     /// <summary>
     /// Retrieves an artist profile by its URL-safe slug. Returns null if not found.

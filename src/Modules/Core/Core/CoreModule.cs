@@ -14,7 +14,6 @@ using _116.Core.Infrastructure.Services;
 using _116.Shared.Application.Exceptions.Handlers.Contracts;
 using _116.Shared.Application.Services;
 using _116.Shared.Infrastructure;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -31,14 +30,8 @@ public static class CoreModule
     /// </summary>
     /// <param name="environment">The host environment the options are derived from.</param>
     /// <returns>The module options for the supplied environment.</returns>
-    private static ModuleOptions<CoreDbContext> GetModuleOptions(IHostEnvironment environment) =>
-        new()
-        {
-            ModuleName = CoreConstants.ModuleName,
-            SchemaName = CoreConstants.SchemaName,
-            EnableMigrations = !environment.IsEnvironment("Testing"),
-            EnableSeeding = false,
-        };
+    private static ModuleOptions<CoreDbContext> GetModuleOptions() =>
+        new() { ModuleName = CoreConstants.ModuleName, SchemaName = CoreConstants.SchemaName };
 
     /// <summary>
     /// Adds the Core module's services to the dependency injection container.
@@ -54,7 +47,7 @@ public static class CoreModule
     public static IServiceCollection AddCoreModule(this IServiceCollection services, IHostEnvironment environment)
     {
         // Register the database with base module infrastructure
-        services.AddModuleDatabase(GetModuleOptions(environment));
+        services.AddModuleDatabase(GetModuleOptions());
 
         // Register error message classes (IStringLocalizer-backed)
         services.AddScoped<ValidationErrorMessage>();
@@ -68,6 +61,7 @@ public static class CoreModule
 
         // Register Unit of Work for transaction management
         services.AddScoped<ICoreUnitOfWork, CoreUnitOfWork>();
+        services.AddScoped(typeof(ICoreRepository<>), typeof(CoreRepository<>));
 
         // Register core repositories
         services.AddScoped<IFileRepository, FileRepository>();
@@ -87,24 +81,5 @@ public static class CoreModule
         services.AddScoped<IDomainEventHandler<FileSoftDeletedEvent>, FileAssetCleanupHandler>();
 
         return services;
-    }
-
-    /// <summary>
-    /// Configures the Core module's middleware in the application pipeline.
-    /// </summary>
-    /// <param name="app">The application builder.</param>
-    /// <returns>The updated <see cref="IApplicationBuilder"/> for chaining.</returns>
-    /// <example>
-    /// <code>
-    /// app.UseCoreModule();
-    /// </code>
-    /// </example>
-    public static IApplicationBuilder UseCoreModule(this IApplicationBuilder app)
-    {
-        // Configure Http request pipeline.
-        IHostEnvironment environment = app.ApplicationServices.GetRequiredService<IHostEnvironment>();
-        app.UseModuleDatabase(GetModuleOptions(environment));
-
-        return app;
     }
 }

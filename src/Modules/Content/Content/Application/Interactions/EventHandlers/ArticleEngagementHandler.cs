@@ -2,6 +2,7 @@ using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Events;
 using _116.Shared.Application.Services;
+using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Logging;
 
 namespace _116.Content.Application.Interactions.EventHandlers;
@@ -15,19 +16,19 @@ namespace _116.Content.Application.Interactions.EventHandlers;
 /// of truth. An article that disappeared between the commit and the dispatch
 /// is skipped: the counter dies with the row.
 /// </summary>
-/// <param name="articleRepository">Repository for article data access operations.</param>
-/// <param name="cacheInvalidator">Token source evicting all popular-articles cache entries.</param>
+/// <param name="articleInteractionRepository">Repository for article interaction data access operations.</param>
+/// <param name="cache">The hybrid cache holding the popular-articles feeds.</param>
 /// <param name="logger">Logger recording events whose article no longer exists.</param>
 public class ArticleEngagementHandler(
-    IArticleRepository articleRepository,
-    IPopularArticlesCacheInvalidator cacheInvalidator,
+    IArticleInteractionRepository articleInteractionRepository,
+    HybridCache cache,
     ILogger<ArticleEngagementHandler> logger
 ) : IDomainEventHandler<ArticleEngagedEvent>
 {
     /// <inheritdoc />
     public async Task Handle(ArticleEngagedEvent domainEvent, CancellationToken cancellationToken = default)
     {
-        int? updated = await articleRepository.ApplyEngagementDeltaAsync(
+        int? updated = await articleInteractionRepository.ApplyEngagementDeltaAsync(
             articleId: domainEvent.ArticleId,
             kind: domainEvent.Kind,
             delta: domainEvent.Delta,
@@ -44,6 +45,6 @@ public class ArticleEngagementHandler(
             );
         }
 
-        cacheInvalidator.Invalidate();
+        await cache.RemoveByTagAsync(ContentCacheTags.PopularArticles, cancellationToken);
     }
 }

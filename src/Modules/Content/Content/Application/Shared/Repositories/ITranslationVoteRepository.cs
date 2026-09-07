@@ -1,12 +1,11 @@
 using _116.Content.Domain.Entities;
-using _116.Shared.Domain;
 
 namespace _116.Content.Application.Shared.Repositories;
 
 /// <summary>
 /// Repository interface for translation revision vote data access operations.
 /// </summary>
-public interface ITranslationVoteRepository : IRepository<LyricsTranslationVoteEntity>
+public interface ITranslationVoteRepository
 {
     /// <summary>
     /// Adds a new vote to the repository.

@@ -11,11 +11,11 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.LikeArt
 /// comment and bump its cached like count. Idempotent: a like on an already-liked comment
 /// makes no change and still reports success.
 /// </summary>
-/// <param name="articleRepository">Repository for article data access operations.</param>
+/// <param name="articleCommentRepository">Repository for article comment data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class PublicLikeArticleCommentHandler(
-    IArticleRepository articleRepository,
+    IArticleCommentRepository articleCommentRepository,
     IContentUnitOfWork unitOfWork,
     ContentI18n i18n
 ) : ICommandHandler<PublicLikeArticleCommentCommand, PublicLikeArticleCommentResult>
@@ -26,7 +26,7 @@ public class PublicLikeArticleCommentHandler(
         CancellationToken cancellationToken
     )
     {
-        ArticleCommentEntity? comment = await articleRepository.GetCommentByIdAsync(
+        ArticleCommentEntity? comment = await articleCommentRepository.GetCommentByIdAsync(
             commentId: command.CommentId,
             cancellationToken: cancellationToken
         );
@@ -36,7 +36,7 @@ public class PublicLikeArticleCommentHandler(
             throw i18n.ArticleInteraction.CommentNotFound(command.CommentId);
         }
 
-        bool alreadyLiked = await articleRepository.HasLikedCommentAsync(
+        bool alreadyLiked = await articleCommentRepository.HasLikedCommentAsync(
             userId: command.UserId,
             commentId: command.CommentId,
             cancellationToken: cancellationToken
@@ -53,7 +53,7 @@ public class PublicLikeArticleCommentHandler(
             commentId: command.CommentId
         );
 
-        await articleRepository.AddCommentLikeAsync(like: like, cancellationToken: cancellationToken);
+        await articleCommentRepository.AddCommentLikeAsync(like: like, cancellationToken: cancellationToken);
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 

@@ -22,7 +22,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Commerce.UseCases.Admin.Co
 public class AdminAddOrderItemFactoryTests
 {
     private readonly Mock<ICategoryRepository> _categoryRepositoryMock;
-    private readonly Mock<ILookupRepository> _lookupRepositoryMock;
+    private readonly Mock<IPromotionLevelRepository> _promotionLevelRepositoryMock;
     private readonly Mock<IPackageRepository> _packageRepositoryMock;
     private readonly Mock<IContentOrderRepository> _orderRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
@@ -31,13 +31,13 @@ public class AdminAddOrderItemFactoryTests
     public AdminAddOrderItemFactoryTests()
     {
         _categoryRepositoryMock = MockCategoryRepository.Create();
-        _lookupRepositoryMock = MockLookupRepository.Create();
+        _promotionLevelRepositoryMock = MockPromotionLevelRepository.Create();
         _packageRepositoryMock = MockPackageRepository.Create();
         _orderRepositoryMock = MockContentOrderRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _factory = new AdminAddOrderItemFactory(
             _categoryRepositoryMock.Object,
-            _lookupRepositoryMock.Object,
+            _promotionLevelRepositoryMock.Object,
             _packageRepositoryMock.Object,
             _orderRepositoryMock.Object,
             _unitOfWorkMock.Object,
@@ -85,7 +85,7 @@ public class AdminAddOrderItemFactoryTests
         CategoryEntity category = CategoryFactory.Create(contentTypeId);
         PromotionLevelEntity promoLevel = PromotionLevelFactory.CreateDefault();
         _categoryRepositoryMock.SetupGetByIdAsync(category.Id, category);
-        _lookupRepositoryMock.SetupGetPromotionLevelByIdOrThrow(promoLevel);
+        _promotionLevelRepositoryMock.SetupGetPromotionLevelByIdOrThrow(promoLevel);
 
         // Act
         (ContentOrderItemEntity item, string categoryName, string? promoName) = await _factory.CreateItemAsync(
@@ -166,7 +166,7 @@ public class AdminAddOrderItemFactoryTests
         CategoryEntity category = CategoryFactory.Create(contentTypeId);
         Guid missingPromoId = Guid.NewGuid();
         _categoryRepositoryMock.SetupGetByIdAsync(category.Id, category);
-        _lookupRepositoryMock.SetupGetPromotionLevelByIdOrThrowNotFound(missingPromoId);
+        _promotionLevelRepositoryMock.SetupGetPromotionLevelByIdOrThrowNotFound(missingPromoId);
 
         // Act
         Func<Task> act = async () =>
@@ -193,7 +193,7 @@ public class AdminAddOrderItemFactoryTests
         CategoryEntity category = CategoryFactory.Create(contentTypeId);
         PromotionLevelEntity inactivePromo = PromotionLevelFactory.CreateInactive();
         _categoryRepositoryMock.SetupGetByIdAsync(category.Id, category);
-        _lookupRepositoryMock.SetupGetPromotionLevelByIdOrThrow(inactivePromo);
+        _promotionLevelRepositoryMock.SetupGetPromotionLevelByIdOrThrow(inactivePromo);
 
         // Act
         Func<Task> act = async () =>

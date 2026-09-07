@@ -13,14 +13,10 @@ namespace _116.Content.Infrastructure.Repositories;
 /// correction revision vote entities.
 /// </summary>
 /// <param name="context">The Content module database context.</param>
-public class LyricsRevisionVoteRepository(ContentDbContext context) : ILyricsRevisionVoteRepository
+public class LyricsRevisionVoteRepository(ContentDbContext context)
+    : ContentRepository<LyricsRevisionVoteEntity>(context),
+        ILyricsRevisionVoteRepository
 {
-    /// <inheritdoc />
-    public async Task AddAsync(LyricsRevisionVoteEntity vote, CancellationToken cancellationToken = default)
-    {
-        await context.LyricsRevisionVotes.AddAsync(vote, cancellationToken);
-    }
-
     /// <inheritdoc />
     public async Task<bool> HasVotedAsync(Guid revisionId, Guid userId, CancellationToken cancellationToken = default)
     {
@@ -28,7 +24,7 @@ public class LyricsRevisionVoteRepository(ContentDbContext context) : ILyricsRev
             revisionId: revisionId,
             userId: userId
         );
-        return await context
+        return await Context
             .LyricsRevisionVotes.ApplySpecification(specification: specification)
             .AnyAsync(cancellationToken);
     }
@@ -37,7 +33,7 @@ public class LyricsRevisionVoteRepository(ContentDbContext context) : ILyricsRev
     public async Task<int> GetNetApprovalsAsync(Guid revisionId, CancellationToken cancellationToken = default)
     {
         var specification = new LyricsRevisionVoteByRevisionIdSpecification(revisionId: revisionId);
-        return await context
+        return await Context
             .LyricsRevisionVotes.ApplySpecification(specification: specification)
             .SumAsync(vote => vote.Vote == EnumVote.Approve ? 1 : -1, cancellationToken);
     }

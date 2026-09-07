@@ -9,11 +9,11 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.LikeArt
 /// <summary>
 /// Handles the <see cref="PublicLikeArticleCommand" /> to record a user's like on an article.
 /// </summary>
-/// <param name="articleRepository">Repository for article data access operations.</param>
+/// <param name="articleInteractionRepository">Repository for article interaction data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class PublicLikeArticleHandler(
-    IArticleRepository articleRepository,
+    IArticleInteractionRepository articleInteractionRepository,
     IContentUnitOfWork unitOfWork,
     ContentI18n i18n
 ) : ICommandHandler<PublicLikeArticleCommand, PublicLikeArticleResult>
@@ -24,9 +24,12 @@ public class PublicLikeArticleHandler(
         CancellationToken cancellationToken
     )
     {
-        await articleRepository.ExistsOrThrowAsync(articleId: command.ArticleId, cancellationToken: cancellationToken);
+        await articleInteractionRepository.ExistsOrThrowAsync(
+            articleId: command.ArticleId,
+            cancellationToken: cancellationToken
+        );
 
-        bool alreadyLiked = await articleRepository.HasLikedAsync(
+        bool alreadyLiked = await articleInteractionRepository.HasLikedAsync(
             userId: command.UserId,
             articleId: command.ArticleId,
             cancellationToken: cancellationToken
@@ -39,7 +42,7 @@ public class PublicLikeArticleHandler(
 
         var like = ArticleLikeEntity.Create(id: Guid.NewGuid(), userId: command.UserId, articleId: command.ArticleId);
 
-        await articleRepository.AddLikeAsync(like: like, cancellationToken: cancellationToken);
+        await articleInteractionRepository.AddLikeAsync(like: like, cancellationToken: cancellationToken);
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 

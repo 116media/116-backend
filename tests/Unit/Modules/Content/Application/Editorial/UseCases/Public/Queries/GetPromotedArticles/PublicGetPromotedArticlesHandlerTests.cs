@@ -19,6 +19,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Public.
 public class PublicGetPromotedArticlesHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<IArticleRepository> _articleRepositoryMock;
+    private readonly Mock<IArticleInteractionRepository> _articleInteractionRepositoryMock;
     private readonly Mock<IFileRepository> _fileRepositoryMock;
     private readonly PublicGetPromotedArticlesHandler _handler;
 
@@ -27,11 +28,13 @@ public class PublicGetPromotedArticlesHandlerTests : BaseContentHandlerTest
     public PublicGetPromotedArticlesHandlerTests()
     {
         _articleRepositoryMock = MockArticleRepository.Create();
+        _articleInteractionRepositoryMock = MockArticleInteractionRepository.Create();
         _fileRepositoryMock = MockFileRepository.Create();
         FileEntity coverFile = FileFactory.CreateImage();
         _fileRepositoryMock.SetupGetById(coverFile);
         _handler = new PublicGetPromotedArticlesHandler(
             _articleRepositoryMock.Object,
+            _articleInteractionRepositoryMock.Object,
             _fileRepositoryMock.Object,
             Mapper
         );
@@ -82,7 +85,7 @@ public class PublicGetPromotedArticlesHandlerTests : BaseContentHandlerTest
 
         // Assert
         result.Articles.Should().OnlyContain(article => !article.IsLiked && !article.IsBookmarked);
-        _articleRepositoryMock.VerifyGetLikedAndBookmarkedIdsCalledWithUser(Times.Never());
+        _articleInteractionRepositoryMock.VerifyGetLikedAndBookmarkedIdsCalledWithUser(Times.Never());
     }
 
     [Fact]
@@ -95,7 +98,7 @@ public class PublicGetPromotedArticlesHandlerTests : BaseContentHandlerTest
         var query = new PublicGetPromotedArticlesQuery(CurrentUserId: Guid.NewGuid());
 
         _articleRepositoryMock.SetupGetPromotedAsync(promoted);
-        _articleRepositoryMock.SetupGetLikedAndBookmarkedIds([likedId], [bookmarkedId]);
+        _articleInteractionRepositoryMock.SetupGetLikedAndBookmarkedIds([likedId], [bookmarkedId]);
 
         // Act
         PublicGetPromotedArticlesResult result = await _handler.Handle(query, CancellationToken.None);
@@ -106,6 +109,6 @@ public class PublicGetPromotedArticlesHandlerTests : BaseContentHandlerTest
         result.Articles.Single(article => article.Id == promoted[2].Id).IsLiked.Should().BeFalse();
         result.Articles.Single(article => article.Id == promoted[2].Id).IsBookmarked.Should().BeFalse();
 
-        _articleRepositoryMock.VerifyGetLikedAndBookmarkedIdsCalledWithUser(Times.Once());
+        _articleInteractionRepositoryMock.VerifyGetLikedAndBookmarkedIdsCalledWithUser(Times.Once());
     }
 }

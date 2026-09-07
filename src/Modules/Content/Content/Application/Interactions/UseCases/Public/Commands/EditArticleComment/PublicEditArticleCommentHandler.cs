@@ -11,11 +11,11 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.EditArt
 /// The comment is looked up scoped to the article in the route, so a comment reached
 /// through a different article's id is never edited.
 /// </summary>
-/// <param name="articleRepository">Repository for article data access operations.</param>
+/// <param name="articleCommentRepository">Repository for article comment data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class PublicEditArticleCommentHandler(
-    IArticleRepository articleRepository,
+    IArticleCommentRepository articleCommentRepository,
     IContentUnitOfWork unitOfWork,
     ContentI18n i18n
 ) : ICommandHandler<PublicEditArticleCommentCommand, PublicEditArticleCommentResult>
@@ -26,7 +26,7 @@ public class PublicEditArticleCommentHandler(
         CancellationToken cancellationToken
     )
     {
-        ArticleCommentEntity? comment = await articleRepository.GetCommentByIdAsync(
+        ArticleCommentEntity? comment = await articleCommentRepository.GetCommentByIdAsync(
             commentId: command.CommentId,
             articleId: command.ArticleId,
             cancellationToken: cancellationToken
@@ -43,7 +43,7 @@ public class PublicEditArticleCommentHandler(
         }
 
         comment.Edit(body: command.Body);
-        articleRepository.UpdateComment(comment: comment);
+        articleCommentRepository.UpdateComment(comment: comment);
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 

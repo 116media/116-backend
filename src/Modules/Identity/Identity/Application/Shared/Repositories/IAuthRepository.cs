@@ -2,7 +2,6 @@ using _116.Identity.Contracts.Application;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.ValueObjects;
 using _116.Shared.Application.Exceptions;
-using _116.Shared.Domain;
 
 namespace _116.Identity.Application.Shared.Repositories;
 
@@ -12,7 +11,7 @@ namespace _116.Identity.Application.Shared.Repositories;
 /// This repository handles auth flows like login, signup, password management, and OTP verification.
 /// For admin user CRUD operations, use I UserRepository instead.
 /// </summary>
-public interface IAuthRepository : IRepository<UserEntity>, IClaimsProvider
+public interface IAuthRepository : IClaimsProvider
 {
     /// <summary>
     /// Retrieves a user by their unique identifier.

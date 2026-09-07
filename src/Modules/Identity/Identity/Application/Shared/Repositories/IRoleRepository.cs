@@ -1,5 +1,4 @@
 using _116.Identity.Domain.Entities;
-using _116.Shared.Domain;
 
 namespace _116.Identity.Application.Shared.Repositories;
 
@@ -7,7 +6,7 @@ namespace _116.Identity.Application.Shared.Repositories;
 /// Repository interface for managing role entities and role-related operations.
 /// Provides methods for role retrieval, validation, and data aggregation.
 /// </summary>
-public interface IRoleRepository : IRepository<RoleEntity>
+public interface IRoleRepository
 {
     /// <summary>
     /// Retrieves a role by its unique identifier with its associated permissions.

@@ -12,7 +12,9 @@ namespace _116.Content.Infrastructure.Repositories;
 /// Implementation of <see cref="ICategoryRepository" /> for managing category and category pricing entities.
 /// </summary>
 /// <param name="context">The Content module database context.</param>
-public class CategoryRepository(ContentDbContext context) : ICategoryRepository
+public class CategoryRepository(ContentDbContext context)
+    : ContentRepository<CategoryEntity>(context),
+        ICategoryRepository
 {
     /// <inheritdoc />
     public async Task<(List<CategoryEntity> Categories, int TotalCount)> GetAllAsync(
@@ -23,7 +25,7 @@ public class CategoryRepository(ContentDbContext context) : ICategoryRepository
         CancellationToken cancellationToken = default
     )
     {
-        IQueryable<CategoryEntity> query = context
+        IQueryable<CategoryEntity> query = Context
             .Categories.Include(c => c.ContentType)
             .Include(c => c.Pricing)
                 .ThenInclude(p => p.PricingTier);
@@ -56,10 +58,10 @@ public class CategoryRepository(ContentDbContext context) : ICategoryRepository
     }
 
     /// <inheritdoc />
-    public async Task<CategoryEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public override async Task<CategoryEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var specification = new CategoryByIdSpecification(id: id);
-        return await context
+        return await Context
             .Categories.ApplySpecification(specification: specification)
             .Include(c => c.ContentType)
             .Include(c => c.Pricing)
@@ -68,10 +70,13 @@ public class CategoryRepository(ContentDbContext context) : ICategoryRepository
     }
 
     /// <inheritdoc />
-    public async Task<CategoryEntity> GetByIdOrThrowAsync(Guid id, CancellationToken cancellationToken = default)
+    public override async Task<CategoryEntity> GetByIdOrThrowAsync(
+        Guid id,
+        CancellationToken cancellationToken = default
+    )
     {
         var specification = new CategoryByIdSpecification(id: id);
-        return await context
+        return await Context
             .Categories.AsTracking()
             .ApplySpecification(specification: specification)
             .Include(c => c.ContentType)
@@ -84,7 +89,7 @@ public class CategoryRepository(ContentDbContext context) : ICategoryRepository
     public async Task<CategoryEntity?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default)
     {
         var specification = new CategoryBySlugSpecification(slug: slug);
-        return await context.Categories.FirstOrDefaultBySpecificationAsync(
+        return await Context.Categories.FirstOrDefaultBySpecificationAsync(
             specification: specification,
             cancellationToken: cancellationToken
         );
@@ -103,17 +108,11 @@ public class CategoryRepository(ContentDbContext context) : ICategoryRepository
             spec = spec.And(new CategoryByContentTypeSpecification(contentTypeId: contentTypeId.Value));
         }
 
-        return await context
+        return await Context
             .Categories.ApplySpecification(specification: spec)
             .Include(c => c.ContentType)
             .OrderBy(c => c.Name)
             .ToListAsync(cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public async Task AddAsync(CategoryEntity category, CancellationToken cancellationToken = default)
-    {
-        await context.Categories.AddAsync(category, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -123,7 +122,7 @@ public class CategoryRepository(ContentDbContext context) : ICategoryRepository
     )
     {
         var specification = new CategoryPricingByCategorySpecification(categoryId: categoryId);
-        return await context
+        return await Context
             .CategoryPricing.ApplySpecification(specification: specification)
             .Include(p => p.PricingTier)
             .ToListAsync(cancellationToken);
@@ -141,7 +140,7 @@ public class CategoryRepository(ContentDbContext context) : ICategoryRepository
         }
 
         var specification = new CategoryPricingByCategoriesSpecification(categoryIds: categoryIds);
-        return await context
+        return await Context
             .CategoryPricing.ApplySpecification(specification: specification)
             .Include(p => p.PricingTier)
             .ToListAsync(cancellationToken);
@@ -155,7 +154,7 @@ public class CategoryRepository(ContentDbContext context) : ICategoryRepository
     )
     {
         var specification = new CategoryPricingByIdsSpecification(categoryId: categoryId, pricingTierId: pricingTierId);
-        return await context
+        return await Context
             .CategoryPricing.AsTracking()
             .ApplySpecification(specification: specification)
             .Include(p => p.PricingTier)
@@ -165,20 +164,20 @@ public class CategoryRepository(ContentDbContext context) : ICategoryRepository
     /// <inheritdoc />
     public async Task AddPricingAsync(CategoryPricingEntity pricing, CancellationToken cancellationToken = default)
     {
-        await context.CategoryPricing.AddAsync(pricing, cancellationToken);
+        await Context.CategoryPricing.AddAsync(pricing, cancellationToken);
     }
 
     /// <inheritdoc />
     public void RemovePricing(CategoryPricingEntity pricing)
     {
-        context.CategoryPricing.Remove(pricing);
+        Context.CategoryPricing.Remove(pricing);
     }
 
     /// <inheritdoc />
     public async Task<CategoryEntity?> GetGossipCategoryAsync(CancellationToken cancellationToken = default)
     {
         var specification = new GossipCategorySpecification();
-        return await context
+        return await Context
             .Categories.ApplySpecification(specification: specification)
             .Include(c => c.ContentType)
             .FirstOrDefaultAsync(cancellationToken);
@@ -188,7 +187,7 @@ public class CategoryRepository(ContentDbContext context) : ICategoryRepository
     public async Task<CategoryEntity?> GetExclusiveCategoryAsync(CancellationToken cancellationToken = default)
     {
         var specification = new ExclusiveCategorySpecification();
-        return await context
+        return await Context
             .Categories.AsTracking()
             .ApplySpecification(specification: specification)
             .Include(c => c.ContentType)
@@ -199,7 +198,7 @@ public class CategoryRepository(ContentDbContext context) : ICategoryRepository
     public async Task<CategoryEntity?> GetDefaultLyricsCategoryAsync(CancellationToken cancellationToken = default)
     {
         var specification = new DefaultLyricsCategorySpecification();
-        return await context
+        return await Context
             .Categories.AsTracking()
             .ApplySpecification(specification: specification)
             .Include(c => c.ContentType)
@@ -213,17 +212,11 @@ public class CategoryRepository(ContentDbContext context) : ICategoryRepository
     )
     {
         var specification = new PinnedToFeedCategorySpecification(contentTypeId: contentTypeId);
-        return await context
+        return await Context
             .Categories.AsTracking()
             .ApplySpecification(specification: specification)
             .Include(c => c.ContentType)
             .OrderByDescending(c => c.PinnedToFeedAt)
             .ToListAsync(cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public void Update(CategoryEntity category)
-    {
-        context.Categories.Update(category);
     }
 }

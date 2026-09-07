@@ -1,12 +1,11 @@
 using _116.Content.Domain.Entities;
-using _116.Shared.Domain;
 
 namespace _116.Content.Application.Shared.Repositories;
 
 /// <summary>
 /// Repository interface for lyrics translation data access operations.
 /// </summary>
-public interface ITranslationRepository : IRepository<LyricsTranslationEntity>
+public interface ITranslationRepository
 {
     /// <summary>
     /// Retrieves a lyrics translation by its unique identifier.

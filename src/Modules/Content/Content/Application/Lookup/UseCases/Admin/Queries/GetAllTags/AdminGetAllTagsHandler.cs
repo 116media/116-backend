@@ -10,15 +10,15 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Queries.GetAllTags;
 /// <summary>
 /// Handles the <see cref="AdminGetAllTagsQuery" /> to retrieve all tags.
 /// </summary>
-/// <param name="lookupRepository">Repository for lookup data access operations.</param>
+/// <param name="tagRepository">Repository for tag data access operations.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-public class AdminGetAllTagsHandler(ILookupRepository lookupRepository, IMapper mapper)
+public class AdminGetAllTagsHandler(ITagRepository tagRepository, IMapper mapper)
     : IQueryHandler<AdminGetAllTagsQuery, AdminGetAllTagsResult>
 {
     /// <inheritdoc />
     public async Task<AdminGetAllTagsResult> Handle(AdminGetAllTagsQuery query, CancellationToken cancellationToken)
     {
-        IReadOnlyList<TagEntity> tags = await lookupRepository.GetAllTagsAsync(
+        IReadOnlyList<TagEntity> tags = await tagRepository.GetAllAsync(
             search: query.Search,
             cancellationToken: cancellationToken
         );

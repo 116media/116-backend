@@ -40,6 +40,7 @@ using _116.Identity.Application.Shared.Cache;
 using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Errors.Messages;
+using _116.Identity.Application.Shared.EventHandlers;
 using _116.Identity.Application.Shared.Exceptions.Handlers;
 using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Application.Shared.Persistence;
@@ -71,10 +72,10 @@ using _116.Shared.Application.Exceptions.Handlers.Contracts;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Application.Services;
 using _116.Shared.Infrastructure;
+using _116.Shared.Infrastructure.Seed;
 using Mapster;
 using MapsterMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
@@ -92,16 +93,12 @@ public static class IdentityModule
     /// </summary>
     /// <param name="environment">The host environment the options are derived from.</param>
     /// <returns>The module options for the supplied environment.</returns>
-    private static ModuleOptions<IdentityDbContext> GetModuleOptions(IHostEnvironment environment)
+    private static ModuleOptions<IdentityDbContext> GetModuleOptions()
     {
-        bool enableSeeding = !environment.IsEnvironment("Testing");
-
         return new ModuleOptions<IdentityDbContext>
         {
             ModuleName = IdentityConstants.ModuleName,
             SchemaName = IdentityConstants.SchemaName,
-            EnableMigrations = enableSeeding,
-            EnableSeeding = enableSeeding,
         };
     }
 
@@ -118,7 +115,7 @@ public static class IdentityModule
     /// </example>
     public static IServiceCollection AddIdentityModule(this IServiceCollection services, IHostEnvironment environment)
     {
-        services.AddModuleDatabase(GetModuleOptions(environment));
+        services.AddModuleDatabase(GetModuleOptions());
 
         // Register error message classes (IStringLocalizer-backed)
         services.AddScoped<ValidationErrorMessage>();
@@ -138,6 +135,7 @@ public static class IdentityModule
         services.AddHttpContextAccessor();
         services.AddDetection();
         services.AddScoped<IIdentityUnitOfWork, IdentityUnitOfWork>();
+        services.AddScoped(typeof(IIdentityRepository<>), typeof(IdentityRepository<>));
 
         // Register adapters
         services.AddScoped<IClientOriginDetectionAdapter, WangkanaiClientOriginDetectionAdapter>();
@@ -211,8 +209,16 @@ public static class IdentityModule
 
         services.AddScheduledJob<ExpiredOtpCleanupJob>(cronExpression: IdentityConstants.ExpiredOtpCleanupCron);
 
+        // Seeders run from the advisory-locked seeding hosted service. The concrete types stay
+        // registered for direct resolution; Testing hosts register no IDataSeeder, so the
+        // hosted service is a no-op there.
         services.AddScoped<SuperAdminSeeder>();
         services.AddScoped<VisitorRoleSeeder>();
+        if (!environment.IsEnvironment("Testing"))
+        {
+            services.AddScoped<IDataSeeder>(sp => sp.GetRequiredService<SuperAdminSeeder>());
+            services.AddScoped<IDataSeeder>(sp => sp.GetRequiredService<VisitorRoleSeeder>());
+        }
 
         // Register domain event handlers: welcome and security notifications
         services.AddScoped<IDomainEventHandler<UserVerifiedEvent>, UserVerifiedWelcomeEmailHandler>();
@@ -230,6 +236,10 @@ public static class IdentityModule
 
         // Register domain event handlers: session revocation audit slot
         services.AddScoped<IDomainEventHandler<SessionRevokedEvent>, SessionRevokedLogHandler>();
+
+        // Cache invalidation domain event handlers
+        services.AddScoped<IDomainEventHandler<RoleChangedEvent>, IdentityLookupCacheHandler>();
+        services.AddScoped<IDomainEventHandler<PermissionChangedEvent>, IdentityLookupCacheHandler>();
 
         var (secret, issuer, audience, _, _) = AppEnvironment.Jwt();
         services
@@ -266,31 +276,5 @@ public static class IdentityModule
         services.AddSingleton<IExceptionStrategy, RefreshTokenExpiryExceptionHandler>();
 
         return services;
-    }
-
-    /// <summary>
-    /// Configures the Identity module's middleware in the application pipeline.
-    /// </summary>
-    /// <param name="app">The application builder.</param>
-    /// <returns>The updated <see cref="IApplicationBuilder" /> for chaining.</returns>
-    /// <example>
-    /// <code>
-    /// app.UseIdentityModule();
-    /// </code>
-    /// </example>
-    public static IApplicationBuilder UseIdentityModule(this IApplicationBuilder app)
-    {
-        IHostEnvironment environment = app.ApplicationServices.GetRequiredService<IHostEnvironment>();
-        ModuleOptions<IdentityDbContext> options = GetModuleOptions(environment);
-        app.UseModuleDatabase(options);
-
-        if (options.EnableSeeding)
-        {
-            using IServiceScope scope = app.ApplicationServices.CreateScope();
-            scope.ServiceProvider.GetRequiredService<SuperAdminSeeder>().SeedAllAsync().GetAwaiter().GetResult();
-            scope.ServiceProvider.GetRequiredService<VisitorRoleSeeder>().SeedAllAsync().GetAwaiter().GetResult();
-        }
-
-        return app;
     }
 }

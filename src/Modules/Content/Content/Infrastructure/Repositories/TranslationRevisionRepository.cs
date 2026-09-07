@@ -13,28 +13,18 @@ namespace _116.Content.Infrastructure.Repositories;
 /// revision entities.
 /// </summary>
 /// <param name="context">The Content module database context.</param>
-public class TranslationRevisionRepository(ContentDbContext context) : ITranslationRevisionRepository
+public class TranslationRevisionRepository(ContentDbContext context)
+    : ContentRepository<LyricsTranslationRevisionEntity>(context),
+        ITranslationRevisionRepository
 {
     /// <inheritdoc />
-    public async Task<LyricsTranslationRevisionEntity?> GetByIdAsync(
+    public override async Task<LyricsTranslationRevisionEntity> GetByIdOrThrowAsync(
         Guid id,
         CancellationToken cancellationToken = default
     )
     {
         var specification = new TranslationRevisionByIdSpecification(id: id);
-        return await context
-            .LyricsTranslationRevisions.ApplySpecification(specification: specification)
-            .FirstOrDefaultAsync(cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public async Task<LyricsTranslationRevisionEntity> GetByIdOrThrowAsync(
-        Guid id,
-        CancellationToken cancellationToken = default
-    )
-    {
-        var specification = new TranslationRevisionByIdSpecification(id: id);
-        return await context
+        return await Context
             .LyricsTranslationRevisions.ApplySpecification(specification: specification)
             .FirstDefaultOrThrowAsync(keyValue: id, cancellationToken: cancellationToken);
     }
@@ -46,7 +36,7 @@ public class TranslationRevisionRepository(ContentDbContext context) : ITranslat
     )
     {
         var specification = new TranslationRevisionByTranslationIdSpecification(translationId: translationId);
-        return await context
+        return await Context
             .LyricsTranslationRevisions.ApplySpecification(specification: specification)
             .OrderByDescending(revision => revision.CreatedAt)
             .ToListAsync(cancellationToken);
@@ -58,22 +48,10 @@ public class TranslationRevisionRepository(ContentDbContext context) : ITranslat
     )
     {
         return await (
-            from revision in context.LyricsTranslationRevisions
-            join translation in context.LyricsTranslations on revision.TranslationId equals translation.Id
+            from revision in Context.LyricsTranslationRevisions
+            join translation in Context.LyricsTranslations on revision.TranslationId equals translation.Id
             where revision.Status == EnumRevisionStatus.Accepted && revision.ProposedText != translation.Text
             select revision
         ).ToListAsync(cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public async Task AddAsync(LyricsTranslationRevisionEntity revision, CancellationToken cancellationToken = default)
-    {
-        await context.LyricsTranslationRevisions.AddAsync(revision, cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public void Update(LyricsTranslationRevisionEntity revision)
-    {
-        context.LyricsTranslationRevisions.Update(revision);
     }
 }

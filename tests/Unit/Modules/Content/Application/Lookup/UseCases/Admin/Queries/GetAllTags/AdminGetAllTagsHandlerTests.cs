@@ -17,13 +17,13 @@ namespace _116.Unit.Tests.Modules.Content.Application.Lookup.UseCases.Admin.Quer
 /// </summary>
 public class AdminGetAllTagsHandlerTests : BaseContentHandlerTest
 {
-    private readonly Mock<ILookupRepository> _lookupRepositoryMock;
+    private readonly Mock<ITagRepository> _tagRepositoryMock;
     private readonly AdminGetAllTagsHandler _handler;
 
     public AdminGetAllTagsHandlerTests()
     {
-        _lookupRepositoryMock = MockLookupRepository.Create();
-        _handler = new AdminGetAllTagsHandler(_lookupRepositoryMock.Object, Mapper);
+        _tagRepositoryMock = MockTagRepository.Create();
+        _handler = new AdminGetAllTagsHandler(_tagRepositoryMock.Object, Mapper);
     }
 
     #region Success Cases
@@ -33,7 +33,7 @@ public class AdminGetAllTagsHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         List<TagEntity> tags = TagFactory.CreateMany(3);
-        _lookupRepositoryMock.SetupGetAllTags(tags);
+        _tagRepositoryMock.SetupGetAllTags(tags);
 
         var query = new AdminGetAllTagsQuery(Search: null);
 
@@ -50,7 +50,7 @@ public class AdminGetAllTagsHandlerTests : BaseContentHandlerTest
         // Arrange
         string searchTerm = TestConstants.Tag.ValidName;
         TagEntity tag = TagFactory.CreateDefault();
-        _lookupRepositoryMock.SetupGetAllTags(new List<TagEntity> { tag });
+        _tagRepositoryMock.SetupGetAllTags(new List<TagEntity> { tag });
 
         var query = new AdminGetAllTagsQuery(Search: searchTerm);
 
@@ -59,9 +59,9 @@ public class AdminGetAllTagsHandlerTests : BaseContentHandlerTest
 
         // Assert
         result.Tags.Should().ContainSingle();
-        _lookupRepositoryMock.Verify(
+        _tagRepositoryMock.Verify(
             x =>
-                x.GetAllTagsAsync(
+                x.GetAllAsync(
                     searchTerm,
                     It.IsAny<EnumCoreContentType?>(),
                     It.IsAny<int?>(),
@@ -75,7 +75,7 @@ public class AdminGetAllTagsHandlerTests : BaseContentHandlerTest
     public async Task Handle_WithEmptyList_ShouldReturnEmptyList()
     {
         // Arrange
-        _lookupRepositoryMock.SetupGetAllTags(new List<TagEntity>());
+        _tagRepositoryMock.SetupGetAllTags(new List<TagEntity>());
 
         var query = new AdminGetAllTagsQuery();
 
@@ -91,7 +91,7 @@ public class AdminGetAllTagsHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         TagEntity tag = TagFactory.CreateDefault();
-        _lookupRepositoryMock.SetupGetAllTags(new List<TagEntity> { tag });
+        _tagRepositoryMock.SetupGetAllTags(new List<TagEntity> { tag });
 
         var query = new AdminGetAllTagsQuery();
 

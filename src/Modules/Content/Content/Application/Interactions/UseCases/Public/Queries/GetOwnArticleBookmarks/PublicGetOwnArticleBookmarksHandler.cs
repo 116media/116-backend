@@ -11,11 +11,11 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetOwnAr
 /// <summary>
 /// Handles the <see cref="PublicGetOwnArticleBookmarksQuery" /> to retrieve the user's bookmarked articles.
 /// </summary>
-/// <param name="articleRepository">Repository for article data access operations.</param>
+/// <param name="articleInteractionRepository">Repository for article interaction data access operations.</param>
 /// <param name="fileRepository">Repository for resolving file URLs.</param>
 /// <param name="mapper">The Mapster mapper instance.</param>
 public class PublicGetOwnArticleBookmarksHandler(
-    IArticleRepository articleRepository,
+    IArticleInteractionRepository articleInteractionRepository,
     IFileRepository fileRepository,
     IMapper mapper
 ) : IQueryHandler<PublicGetOwnArticleBookmarksQuery, PublicGetOwnArticleBookmarksResult>
@@ -30,7 +30,7 @@ public class PublicGetOwnArticleBookmarksHandler(
         int pageSize = query.PaginatedRequest.PageSize;
 
         (List<BookmarkedArticleActivity> activities, int totalCount) =
-            await articleRepository.GetBookmarkedArticlesAsync(
+            await articleInteractionRepository.GetBookmarkedArticlesAsync(
                 userId: query.UserId,
                 page: pageIndex + 1,
                 pageSize: pageSize,
@@ -39,7 +39,11 @@ public class PublicGetOwnArticleBookmarksHandler(
 
         Guid[] articleIds = activities.Select(activity => activity.Article.Id).ToArray();
         (IReadOnlySet<Guid> liked, IReadOnlySet<Guid> bookmarked) =
-            await articleRepository.GetLikedAndBookmarkedIdsAsync(query.UserId, articleIds, cancellationToken);
+            await articleInteractionRepository.GetLikedAndBookmarkedIdsAsync(
+                query.UserId,
+                articleIds,
+                cancellationToken
+            );
 
         var dtoList = new List<UserBookmarkedArticleDto>(activities.Count);
         foreach (BookmarkedArticleActivity activity in activities)

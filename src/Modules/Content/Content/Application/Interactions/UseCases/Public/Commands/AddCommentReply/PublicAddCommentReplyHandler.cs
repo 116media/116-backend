@@ -19,14 +19,14 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.AddComm
 /// returned with its author resolved through the same cross-module mechanism used elsewhere.
 /// Notifying the parent comment's author happens post-commit, behind the reply's domain event.
 /// </summary>
-/// <param name="articleRepository">Repository for article data access operations.</param>
+/// <param name="articleCommentRepository">Repository for article comment data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="userLookup">Cross-module service for resolving the replier's profile.</param>
 /// <param name="fileRepository">Repository for resolving the replier's avatar URL.</param>
 /// <param name="mapper">The mapper used to project entities to DTOs.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class PublicAddCommentReplyHandler(
-    IArticleRepository articleRepository,
+    IArticleCommentRepository articleCommentRepository,
     IContentUnitOfWork unitOfWork,
     IUserLookupService userLookup,
     IFileRepository fileRepository,
@@ -40,9 +40,12 @@ public class PublicAddCommentReplyHandler(
         CancellationToken cancellationToken
     )
     {
-        await articleRepository.ExistsOrThrowAsync(articleId: command.ArticleId, cancellationToken: cancellationToken);
+        await articleCommentRepository.ExistsOrThrowAsync(
+            articleId: command.ArticleId,
+            cancellationToken: cancellationToken
+        );
 
-        ArticleCommentEntity? parent = await articleRepository.GetCommentByIdAsync(
+        ArticleCommentEntity? parent = await articleCommentRepository.GetCommentByIdAsync(
             commentId: command.ParentCommentId,
             cancellationToken: cancellationToken
         );
@@ -65,7 +68,7 @@ public class PublicAddCommentReplyHandler(
             body: command.Body
         );
 
-        await articleRepository.AddCommentAsync(comment: reply, cancellationToken: cancellationToken);
+        await articleCommentRepository.AddCommentAsync(comment: reply, cancellationToken: cancellationToken);
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 

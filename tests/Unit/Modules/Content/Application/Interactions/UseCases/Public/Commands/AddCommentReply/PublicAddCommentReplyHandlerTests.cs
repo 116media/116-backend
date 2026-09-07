@@ -23,7 +23,7 @@ public class PublicAddCommentReplyHandlerTests : BaseContentHandlerTest
 {
     private static readonly Guid CategoryId = Guid.NewGuid();
 
-    private readonly Mock<IArticleRepository> _articleRepositoryMock;
+    private readonly Mock<IArticleCommentRepository> _articleCommentRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly Mock<IUserLookupService> _userLookupMock;
     private readonly Mock<IFileRepository> _fileRepositoryMock;
@@ -31,12 +31,12 @@ public class PublicAddCommentReplyHandlerTests : BaseContentHandlerTest
 
     public PublicAddCommentReplyHandlerTests()
     {
-        _articleRepositoryMock = MockArticleRepository.Create();
+        _articleCommentRepositoryMock = MockArticleCommentRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _userLookupMock = new Mock<IUserLookupService>();
         _fileRepositoryMock = new Mock<IFileRepository>();
         _handler = new PublicAddCommentReplyHandler(
-            _articleRepositoryMock.Object,
+            _articleCommentRepositoryMock.Object,
             _unitOfWorkMock.Object,
             _userLookupMock.Object,
             _fileRepositoryMock.Object,
@@ -53,8 +53,8 @@ public class PublicAddCommentReplyHandlerTests : BaseContentHandlerTest
         ArticleCommentEntity parent = ArticleCommentFactory.Create(article.Id, Guid.NewGuid());
         Guid replierId = Guid.NewGuid();
 
-        _articleRepositoryMock.SetupGetByIdOrThrow(article);
-        _articleRepositoryMock.SetupGetCommentByIdAsync(parent);
+        _articleCommentRepositoryMock.SetupExistsOrThrow(article.Id);
+        _articleCommentRepositoryMock.SetupGetCommentByIdAsync(parent);
         _userLookupMock
             .Setup(x => x.GetAuthorInfoByIdAsync(replierId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new AuthorInfo("bob", "bob@example.com", null, "Visitor"));
@@ -69,7 +69,7 @@ public class PublicAddCommentReplyHandlerTests : BaseContentHandlerTest
         result.Reply.Author.Should().NotBeNull();
         result.Reply.Author!.UserName.Should().Be("bob");
         result.Reply.Author.Email.Should().BeNull();
-        _articleRepositoryMock.VerifyAddCommentCalled();
+        _articleCommentRepositoryMock.VerifyAddCommentCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -86,15 +86,15 @@ public class PublicAddCommentReplyHandlerTests : BaseContentHandlerTest
             body: "I am already a reply."
         );
 
-        _articleRepositoryMock.SetupGetByIdOrThrow(article);
-        _articleRepositoryMock.SetupGetCommentByIdAsync(parentReply);
+        _articleCommentRepositoryMock.SetupExistsOrThrow(article.Id);
+        _articleCommentRepositoryMock.SetupGetCommentByIdAsync(parentReply);
 
         var command = new PublicAddCommentReplyCommand(article.Id, parentReply.Id, Guid.NewGuid(), "nested reply");
 
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         await act.Should().ThrowAsync<BadRequestException>();
-        _articleRepositoryMock.Verify(
+        _articleCommentRepositoryMock.Verify(
             x => x.AddCommentAsync(It.IsAny<ArticleCommentEntity>(), It.IsAny<CancellationToken>()),
             Times.Never
         );
@@ -104,9 +104,9 @@ public class PublicAddCommentReplyHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenParentNotFound_ShouldThrowNotFound()
     {
         ArticleEntity article = ArticleFactory.CreatePublished(CategoryId);
-        _articleRepositoryMock.SetupGetByIdOrThrow(article);
+        _articleCommentRepositoryMock.SetupExistsOrThrow(article.Id);
         Guid missingParentId = Guid.NewGuid();
-        _articleRepositoryMock.SetupGetCommentByIdNotFound(missingParentId);
+        _articleCommentRepositoryMock.SetupGetCommentByIdNotFound(missingParentId);
 
         var command = new PublicAddCommentReplyCommand(article.Id, missingParentId, Guid.NewGuid(), "reply");
 
@@ -121,8 +121,8 @@ public class PublicAddCommentReplyHandlerTests : BaseContentHandlerTest
         ArticleEntity article = ArticleFactory.CreatePublished(CategoryId);
         ArticleCommentEntity parentOnOtherArticle = ArticleCommentFactory.Create(Guid.NewGuid(), Guid.NewGuid());
 
-        _articleRepositoryMock.SetupGetByIdOrThrow(article);
-        _articleRepositoryMock.SetupGetCommentByIdAsync(parentOnOtherArticle);
+        _articleCommentRepositoryMock.SetupExistsOrThrow(article.Id);
+        _articleCommentRepositoryMock.SetupGetCommentByIdAsync(parentOnOtherArticle);
 
         var command = new PublicAddCommentReplyCommand(article.Id, parentOnOtherArticle.Id, Guid.NewGuid(), "reply");
 

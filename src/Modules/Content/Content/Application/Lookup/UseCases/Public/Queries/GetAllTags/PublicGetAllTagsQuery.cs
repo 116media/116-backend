@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Enums;
 using _116.Shared.Contracts.Application.CQRS;
@@ -19,7 +20,25 @@ namespace _116.Content.Application.Lookup.UseCases.Public.Queries.GetAllTags;
 /// returned ordered by name. Defaults to <see langword="null" />.
 /// </param>
 public record PublicGetAllTagsQuery(string? Search = null, EnumCoreContentType? ContentType = null, int? Limit = null)
-    : IQuery<PublicGetAllTagsResult>;
+    : IQuery<PublicGetAllTagsResult>,
+        IConditionallyCacheableRequest
+{
+    /// <inheritdoc />
+    /// <remarks>
+    /// Free-text search produces an unbounded key space, so those results are never stored.
+    /// </remarks>
+    public bool IsCacheable => string.IsNullOrWhiteSpace(Search);
+
+    /// <inheritdoc />
+    public string CacheKey =>
+        $"all_tags:{Limit?.ToString() ?? "all"}:{ContentType?.ToString().ToLowerInvariant() ?? "any"}";
+
+    /// <inheritdoc />
+    public TimeSpan Ttl => TimeSpan.FromMinutes(10);
+
+    /// <inheritdoc />
+    public IReadOnlyList<string> CacheTags => [ContentCacheTags.Tags];
+}
 
 /// <summary>
 /// Result of the <see cref="PublicGetAllTagsQuery" /> containing all tags.

@@ -12,10 +12,12 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPromoted
 /// Handles the <see cref="PublicGetPromotedArticlesQuery" /> to retrieve all currently promoted published articles.
 /// </summary>
 /// <param name="articleRepository">Repository for article data access operations.</param>
+/// <param name="articleInteractionRepository">Repository for article interaction data access operations.</param>
 /// <param name="fileRepository">Repository for resolving file URLs.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class PublicGetPromotedArticlesHandler(
     IArticleRepository articleRepository,
+    IArticleInteractionRepository articleInteractionRepository,
     IFileRepository fileRepository,
     IMapper mapper
 ) : IQueryHandler<PublicGetPromotedArticlesQuery, PublicGetPromotedArticlesResult>
@@ -32,7 +34,7 @@ public class PublicGetPromotedArticlesHandler(
 
         List<Guid> articleIds = articles.Select(article => article.Id).ToList();
         (IReadOnlySet<Guid> liked, IReadOnlySet<Guid> bookmarked) =
-            await articleRepository.GetLikedAndBookmarkedIdsAsync(
+            await articleInteractionRepository.GetLikedAndBookmarkedIdsAsync(
                 currentUserId: query.CurrentUserId,
                 articleIds: articleIds,
                 cancellationToken: cancellationToken

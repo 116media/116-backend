@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using _116.Content.Domain.Constants;
+using _116.Content.Domain.Events;
 using _116.Content.Domain.Exceptions;
 using _116.Content.Domain.StateMachines;
 using _116.Shared.Domain;
@@ -82,7 +83,7 @@ public class PromotionLevelEntity : Aggregate<Guid>
             throw new ContentRuleException(ContentRuleCodes.PromotionLevelInvalidSpotPriority);
         }
 
-        return new PromotionLevelEntity
+        var promotionLevel = new PromotionLevelEntity
         {
             Id = id,
             Name = name,
@@ -90,6 +91,9 @@ public class PromotionLevelEntity : Aggregate<Guid>
             PriceUsd = priceUsd,
             SpotPriority = spotPriority,
         };
+        promotionLevel.AddDomainEvent(new PromotionLevelChangedEvent(PromotionLevelId: id));
+
+        return promotionLevel;
     }
 
     /// <summary>
@@ -124,6 +128,7 @@ public class PromotionLevelEntity : Aggregate<Guid>
         DurationDays = durationDays;
         PriceUsd = priceUsd;
         SpotPriority = spotPriority;
+        AddDomainEvent(new PromotionLevelChangedEvent(PromotionLevelId: Id));
     }
 
     /// <summary>
@@ -152,6 +157,8 @@ public class PromotionLevelEntity : Aggregate<Guid>
         }
 
         IsActive = true;
+        AddDomainEvent(new PromotionLevelChangedEvent(PromotionLevelId: Id));
+
         return true;
     }
 
@@ -167,6 +174,8 @@ public class PromotionLevelEntity : Aggregate<Guid>
         }
 
         IsActive = false;
+        AddDomainEvent(new PromotionLevelChangedEvent(PromotionLevelId: Id));
+
         return true;
     }
 }

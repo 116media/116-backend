@@ -33,7 +33,8 @@ public class AdminHardDeletePermissionHandler(
             cancellationToken: cancellationToken
         );
 
-        permissionRepository.Delete(entity: permission!);
+        permission!.MarkHardDeleted();
+        permissionRepository.Delete(entity: permission);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminHardDeletePermissionResult(IsSuccess: true);

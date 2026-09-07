@@ -12,13 +12,13 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.AddCategoryPr
 /// Handles the <see cref="AdminAddCategoryPricingCommand" /> to attach a pricing tier to a category.
 /// </summary>
 /// <param name="categoryRepository">Repository for category data access operations.</param>
-/// <param name="lookupRepository">Repository for verifying pricing tier existence and active status.</param>
+/// <param name="pricingTierRepository">Repository for verifying pricing tier existence and active status.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminAddCategoryPricingHandler(
     ICategoryRepository categoryRepository,
-    ILookupRepository lookupRepository,
+    IPricingTierRepository pricingTierRepository,
     IContentUnitOfWork unitOfWork,
     IMapper mapper,
     ContentI18n i18n
@@ -34,7 +34,7 @@ public class AdminAddCategoryPricingHandler(
 
         await categoryRepository.GetByIdOrThrowAsync(id: categoryId, cancellationToken: cancellationToken);
 
-        PricingTierEntity pricingTier = await lookupRepository.GetPricingTierByIdOrThrowAsync(
+        PricingTierEntity pricingTier = await pricingTierRepository.GetByIdOrThrowAsync(
             id: command.PricingTierId,
             cancellationToken: cancellationToken
         );

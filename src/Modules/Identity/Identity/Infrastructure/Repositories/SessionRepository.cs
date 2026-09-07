@@ -13,12 +13,14 @@ namespace _116.Identity.Infrastructure.Repositories;
 /// <summary>
 /// Repository implementation for managing user login sessions with soft delete support.
 /// </summary>
-public class SessionRepository(IdentityDbContext context) : ISessionRepository
+public class SessionRepository(IdentityDbContext context)
+    : IdentityRepository<SessionEntity>(context),
+        ISessionRepository
 {
     /// <inheritdoc />
     public async Task CreateAsync(SessionEntity session, CancellationToken cancellationToken = default)
     {
-        await context.Sessions.AddAsync(entity: session, cancellationToken: cancellationToken);
+        await Context.Sessions.AddAsync(entity: session, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
@@ -28,7 +30,7 @@ public class SessionRepository(IdentityDbContext context) : ISessionRepository
     )
     {
         var spec = new ValidRefreshTokenSessionSpecification(refreshTokenHash: refreshTokenHash);
-        return await context
+        return await Context
             .Sessions.Where(spec.ToExpression())
             .Include(s => s.User)
                 .ThenInclude(u => u.UserRoles)
@@ -49,7 +51,7 @@ public class SessionRepository(IdentityDbContext context) : ISessionRepository
         var notRevokedSpec = new SessionIsNotRevokedSpecification();
         Specification<SessionEntity> spec = idSpec.And(other: notRevokedSpec);
 
-        SessionEntity? session = await context
+        SessionEntity? session = await Context
             .Sessions.Where(spec.ToExpression())
             .FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
@@ -65,7 +67,7 @@ public class SessionRepository(IdentityDbContext context) : ISessionRepository
     )
     {
         var spec = new ActiveSessionsByUserIdSpecification(userId: userId);
-        List<SessionEntity> sessions = await context
+        List<SessionEntity> sessions = await Context
             .Sessions.Where(spec.ToExpression())
             .ToListAsync(cancellationToken: cancellationToken);
 
@@ -90,7 +92,7 @@ public class SessionRepository(IdentityDbContext context) : ISessionRepository
         var revokedSpec = new SessionIsRevokedSpecification();
         Specification<SessionEntity> spec = hashSpec.And(other: revokedSpec);
 
-        return await context.Sessions.Where(spec.ToExpression()).FirstOrDefaultAsync(cancellationToken);
+        return await Context.Sessions.Where(spec.ToExpression()).FirstOrDefaultAsync(cancellationToken);
     }
 
     /// <inheritdoc />
@@ -100,7 +102,7 @@ public class SessionRepository(IdentityDbContext context) : ISessionRepository
         var notRevokedSpec = new SessionIsNotRevokedSpecification();
         Specification<SessionEntity> spec = expiredSpec.And(other: notRevokedSpec);
 
-        List<SessionEntity> expiredSessions = await context
+        List<SessionEntity> expiredSessions = await Context
             .Sessions.Where(spec.ToExpression())
             .ToListAsync(cancellationToken: cancellationToken);
 
@@ -113,13 +115,16 @@ public class SessionRepository(IdentityDbContext context) : ISessionRepository
     }
 
     /// <inheritdoc />
-    public async Task<SessionEntity?> GetByIdAsync(Guid sessionId, CancellationToken cancellationToken = default)
+    public override async Task<SessionEntity?> GetByIdAsync(
+        Guid sessionId,
+        CancellationToken cancellationToken = default
+    )
     {
         var idSpec = new SessionByIdSpecification(sessionId: sessionId);
         var notRevokedSpec = new SessionIsNotRevokedSpecification();
         Specification<SessionEntity> spec = idSpec.And(other: notRevokedSpec);
 
-        return await context
+        return await Context
             .Sessions.Where(spec.ToExpression())
             .FirstOrDefaultAsync(cancellationToken: cancellationToken);
     }
@@ -133,7 +138,7 @@ public class SessionRepository(IdentityDbContext context) : ISessionRepository
     {
         var spec = new SessionIsActiveByUserIdAndDeviceIdSpecification(userId, deviceId);
 
-        return await context
+        return await Context
             .Sessions.Where(spec.ToExpression())
             .FirstOrDefaultAsync(cancellationToken: cancellationToken);
     }
@@ -147,7 +152,7 @@ public class SessionRepository(IdentityDbContext context) : ISessionRepository
     {
         var spec = new SessionByUserIdAndDeviceIdSpecification(userId, deviceId);
 
-        return await context
+        return await Context
             .Sessions.Where(spec.ToExpression())
             .FirstOrDefaultAsync(cancellationToken: cancellationToken);
     }
@@ -164,7 +169,7 @@ public class SessionRepository(IdentityDbContext context) : ISessionRepository
             .WithActiveStatus(isActive: isActive)
             .Build()!;
 
-        return await context
+        return await Context
             .Sessions.Where(spec.ToExpression())
             .OrderByDescending(s => s.CreatedAt)
             .ToListAsync(cancellationToken: cancellationToken);
@@ -196,8 +201,8 @@ public class SessionRepository(IdentityDbContext context) : ISessionRepository
         Specification<SessionEntity>? spec = builder.Build();
 
         IQueryable<SessionEntity> query = spec is not null
-            ? context.Sessions.Where(spec.ToExpression())
-            : context.Sessions;
+            ? Context.Sessions.Where(spec.ToExpression())
+            : Context.Sessions;
 
         int totalCount = await query.CountAsync(cancellationToken: cancellationToken);
 
@@ -216,7 +221,7 @@ public class SessionRepository(IdentityDbContext context) : ISessionRepository
     )
     {
         var activeSpec = new SessionIsActiveSpecification();
-        List<SessionEntity> activeSessions = await context
+        List<SessionEntity> activeSessions = await Context
             .Sessions.Where(activeSpec.ToExpression())
             .ToListAsync(cancellationToken: cancellationToken);
 
@@ -229,7 +234,7 @@ public class SessionRepository(IdentityDbContext context) : ISessionRepository
     )
     {
         var activeSpec = new SessionIsActiveSpecification();
-        List<SessionEntity> activeSessions = await context
+        List<SessionEntity> activeSessions = await Context
             .Sessions.Where(activeSpec.ToExpression())
             .ToListAsync(cancellationToken: cancellationToken);
 
@@ -242,7 +247,7 @@ public class SessionRepository(IdentityDbContext context) : ISessionRepository
     )
     {
         var activeSpec = new SessionIsActiveSpecification();
-        List<SessionEntity> activeSessions = await context
+        List<SessionEntity> activeSessions = await Context
             .Sessions.Where(activeSpec.ToExpression())
             .ToListAsync(cancellationToken: cancellationToken);
 
@@ -255,7 +260,7 @@ public class SessionRepository(IdentityDbContext context) : ISessionRepository
     )
     {
         var activeSpec = new SessionIsActiveSpecification();
-        List<SessionEntity> activeSessions = await context
+        List<SessionEntity> activeSessions = await Context
             .Sessions.Where(activeSpec.ToExpression())
             .ToListAsync(cancellationToken: cancellationToken);
 
@@ -266,14 +271,14 @@ public class SessionRepository(IdentityDbContext context) : ISessionRepository
     public async Task<int> GetTotalActiveSessionsCountAsync(CancellationToken cancellationToken = default)
     {
         var activeSpec = new SessionIsActiveSpecification();
-        return await context.Sessions.Where(activeSpec.ToExpression()).CountAsync(cancellationToken: cancellationToken);
+        return await Context.Sessions.Where(activeSpec.ToExpression()).CountAsync(cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
     public async Task<int> GetTotalActiveUsersCountAsync(CancellationToken cancellationToken = default)
     {
         var activeSpec = new SessionIsActiveSpecification();
-        return await context
+        return await Context
             .Sessions.Where(activeSpec.ToExpression())
             .Select(s => s.UserId)
             .Distinct()
@@ -295,8 +300,8 @@ public class SessionRepository(IdentityDbContext context) : ISessionRepository
             .Build();
 
         IQueryable<SessionEntity> query = spec is not null
-            ? context.Sessions.Where(spec.ToExpression())
-            : context.Sessions;
+            ? Context.Sessions.Where(spec.ToExpression())
+            : Context.Sessions;
 
         return await query.OrderByDescending(s => s.CreatedAt).ToListAsync(cancellationToken: cancellationToken);
     }
@@ -313,7 +318,7 @@ public class SessionRepository(IdentityDbContext context) : ISessionRepository
         var activeSpec = new SessionIsActiveSpecification();
         Specification<SessionEntity> spec = idSpec.And(other: activeSpec);
 
-        SessionEntity? session = await context
+        SessionEntity? session = await Context
             .Sessions.Where(spec.ToExpression())
             .FirstOrDefaultAsync(cancellationToken: cancellationToken);
 

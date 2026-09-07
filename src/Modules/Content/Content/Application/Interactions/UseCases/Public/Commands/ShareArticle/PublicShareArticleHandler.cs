@@ -8,10 +8,12 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.ShareAr
 /// <summary>
 /// Handles the <see cref="PublicShareArticleCommand" /> to record a share event on an article.
 /// </summary>
-/// <param name="articleRepository">Repository for article data access operations.</param>
+/// <param name="articleInteractionRepository">Repository for article interaction data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-public class PublicShareArticleHandler(IArticleRepository articleRepository, IContentUnitOfWork unitOfWork)
-    : ICommandHandler<PublicShareArticleCommand, PublicShareArticleResult>
+public class PublicShareArticleHandler(
+    IArticleInteractionRepository articleInteractionRepository,
+    IContentUnitOfWork unitOfWork
+) : ICommandHandler<PublicShareArticleCommand, PublicShareArticleResult>
 {
     /// <inheritdoc />
     public async Task<PublicShareArticleResult> Handle(
@@ -19,7 +21,10 @@ public class PublicShareArticleHandler(IArticleRepository articleRepository, ICo
         CancellationToken cancellationToken
     )
     {
-        await articleRepository.ExistsOrThrowAsync(articleId: command.ArticleId, cancellationToken: cancellationToken);
+        await articleInteractionRepository.ExistsOrThrowAsync(
+            articleId: command.ArticleId,
+            cancellationToken: cancellationToken
+        );
 
         var share = ArticleShareEntity.Create(
             id: Guid.NewGuid(),
@@ -28,7 +33,7 @@ public class PublicShareArticleHandler(IArticleRepository articleRepository, ICo
             shareChannel: command.ShareChannel
         );
 
-        await articleRepository.AddShareAsync(share: share, cancellationToken: cancellationToken);
+        await articleInteractionRepository.AddShareAsync(share: share, cancellationToken: cancellationToken);
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 

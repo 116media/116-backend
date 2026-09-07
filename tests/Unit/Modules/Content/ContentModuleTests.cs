@@ -8,6 +8,7 @@ using _116.Content.Infrastructure.Persistence;
 using _116.Content.Infrastructure.Persistence.Seeds.ContentTypes;
 using _116.Content.Infrastructure.Repositories;
 using _116.Content.Infrastructure.Services;
+using _116.Shared.Infrastructure.Seed;
 using _116.Unit.Tests.Common;
 using AwesomeAssertions;
 using Mapster;
@@ -78,9 +79,10 @@ public class ContentModuleTests : IDisposable
         ServiceProvider serviceProvider = _services.BuildServiceProvider();
 
         // Assert
-        var repository = serviceProvider.GetService<ILookupRepository>();
-        repository.Should().NotBeNull();
-        repository.Should().BeOfType<LookupRepository>();
+        serviceProvider.GetService<IContentTypeRepository>().Should().BeOfType<ContentTypeRepository>();
+        serviceProvider.GetService<IPricingTierRepository>().Should().BeOfType<PricingTierRepository>();
+        serviceProvider.GetService<IPromotionLevelRepository>().Should().BeOfType<PromotionLevelRepository>();
+        serviceProvider.GetService<ITagRepository>().Should().BeOfType<TagRepository>();
     }
 
     [Fact]
@@ -179,7 +181,7 @@ public class ContentModuleTests : IDisposable
         // Assert
         serviceProvider.GetService<ContentDbContext>().Should().NotBeNull();
         serviceProvider.GetService<IContentUnitOfWork>().Should().NotBeNull();
-        serviceProvider.GetService<ILookupRepository>().Should().NotBeNull();
+        serviceProvider.GetService<ITagRepository>().Should().NotBeNull();
         serviceProvider.GetService<ICategoryRepository>().Should().NotBeNull();
         serviceProvider.GetService<ICustomerRepository>().Should().NotBeNull();
         serviceProvider.GetService<IPackageRepository>().Should().NotBeNull();
@@ -194,65 +196,8 @@ public class ContentModuleTests : IDisposable
         ServiceProvider serviceProvider = _services.BuildServiceProvider();
 
         serviceProvider.GetService<IContentUnitOfWork>().Should().NotBeNull();
-        serviceProvider.GetService<ILookupRepository>().Should().NotBeNull();
+        serviceProvider.GetService<ITagRepository>().Should().NotBeNull();
         serviceProvider.GetService<ContentTypeSeeder>().Should().NotBeNull();
-    }
-
-    [Fact]
-    public void UseContentModule_WithTestingEnvironment_ShouldReturnAppBuilderEarly()
-    {
-        // Arrange — Testing env sets EnableMigrations=false and EnableSeeding=false, so
-        // UseModuleDatabase is a no-op and the method returns app at the EnableSeeding guard.
-        var services = new ServiceCollection();
-        services.AddSingleton<IHostEnvironment>(HostEnvironment("Testing"));
-
-        var appBuilderMock = new Mock<IApplicationBuilder>();
-        appBuilderMock.Setup(builder => builder.ApplicationServices).Returns(services.BuildServiceProvider());
-
-        // Act
-        IApplicationBuilder result = appBuilderMock.Object.UseContentModule();
-
-        // Assert
-        result.Should().NotBeNull();
-        result.Should().BeSameAs(appBuilderMock.Object);
-    }
-
-    [Fact]
-    public void UseContentModule_OutsideTheTestingEnvironment_ShouldSeedTheContentTypes()
-    {
-        // Arrange — Development enables migrations and seeding; the migrator is
-        // replaced so the startup migration completes without a database, and
-        // the seeder is bound to an in-memory store it can write to.
-        DbContextOptions<ContentDbContext> seedOptions = new DbContextOptionsBuilder<ContentDbContext>()
-            .UseInMemoryDatabase(Guid.NewGuid().ToString())
-            .Options;
-
-        using var seedContext = new ContentDbContext(seedOptions);
-
-        var services = new ServiceCollection();
-        services.AddLogging();
-        services.AddLocalization();
-        services.AddDbContext<ContentDbContext>(options =>
-            options
-                .UseNpgsql("Host=localhost;Port=5432;Database=unit;Username=unit;Password=unit")
-                .ReplaceService<IMigrator, NoOpMigrator>()
-        );
-        services.AddSingleton<IHostEnvironment>(HostEnvironment("Development"));
-        services.AddContentModule(HostEnvironment("Development"));
-        services.AddScoped(serviceProvider => new ContentTypeSeeder(
-            seedContext,
-            serviceProvider.GetRequiredService<ILogger<ContentTypeSeeder>>()
-        ));
-
-        ServiceProvider provider = services.BuildServiceProvider();
-        var app = new ApplicationBuilder(provider);
-
-        // Act
-        IApplicationBuilder result = app.UseContentModule();
-
-        // Assert
-        result.Should().BeSameAs(app);
-        seedContext.ContentTypes.Select(contentType => contentType.Name).Should().Contain("Article");
     }
 
     [Fact]
@@ -282,5 +227,25 @@ public class ContentModuleTests : IDisposable
         // Assert
         service.Should().NotBeNull();
         service.Should().BeOfType<OdesliStreamingLinkResolutionService>();
+    }
+
+    [Fact]
+    public void AddContentModule_WithTestingEnvironment_ShouldRegisterNoDataSeeder()
+    {
+        // Arrange & Act — Testing hosts seed through the test harness, never the hosted service
+        _services.AddContentModule(HostEnvironment("Testing"));
+
+        // Assert
+        _services.Should().NotContain(descriptor => descriptor.ServiceType == typeof(IDataSeeder));
+    }
+
+    [Fact]
+    public void AddContentModule_OutsideTheTestingEnvironment_ShouldRegisterTheContentTypeSeeder()
+    {
+        // Arrange & Act
+        _services.AddContentModule(HostEnvironment("Development"));
+
+        // Assert
+        _services.Should().Contain(descriptor => descriptor.ServiceType == typeof(IDataSeeder));
     }
 }

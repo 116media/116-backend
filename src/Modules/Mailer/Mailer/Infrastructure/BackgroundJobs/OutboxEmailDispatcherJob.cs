@@ -6,6 +6,7 @@ using _116.Mailer.Domain.Constants;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Infrastructure.Persistence;
 using _116.Shared.Application.Jobs;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -42,29 +43,36 @@ public class OutboxEmailDispatcherJob(IServiceScopeFactory scopeFactory, ILogger
         var repository = scope.ServiceProvider.GetRequiredService<IOutboxEmailRepository>();
         var sender = scope.ServiceProvider.GetRequiredService<IEmailSender>();
 
-        await using IDbContextTransaction transaction = await dbContext.Database.BeginTransactionAsync(
-            context.CancellationToken
-        );
+        // The retrying execution strategy owns the transaction: a transient replay re-claims the
+        // batch under SKIP LOCKED, so no email is dispatched twice by the same run.
+        IExecutionStrategy strategy = dbContext.Database.CreateExecutionStrategy();
 
-        IReadOnlyList<OutboxEmailEntity> batch = await repository.ClaimDueBatchAsync(
-            MailerConstants.DispatchBatchSize,
-            DateTime.UtcNow,
-            context.CancellationToken
-        );
-
-        if (batch.Count == 0)
+        await strategy.ExecuteAsync(async () =>
         {
-            await transaction.RollbackAsync(context.CancellationToken);
-            return;
-        }
+            await using IDbContextTransaction transaction = await dbContext.Database.BeginTransactionAsync(
+                context.CancellationToken
+            );
 
-        foreach (OutboxEmailEntity email in batch)
-        {
-            await DeliverAsync(email, sender, context.CancellationToken);
-        }
+            IReadOnlyList<OutboxEmailEntity> batch = await repository.ClaimDueBatchAsync(
+                MailerConstants.DispatchBatchSize,
+                DateTime.UtcNow,
+                context.CancellationToken
+            );
 
-        await dbContext.SaveChangesAsync(context.CancellationToken);
-        await transaction.CommitAsync(context.CancellationToken);
+            if (batch.Count == 0)
+            {
+                await transaction.RollbackAsync(context.CancellationToken);
+                return;
+            }
+
+            foreach (OutboxEmailEntity email in batch)
+            {
+                await DeliverAsync(email, sender, context.CancellationToken);
+            }
+
+            await dbContext.SaveChangesAsync(context.CancellationToken);
+            await transaction.CommitAsync(context.CancellationToken);
+        });
     }
 
     /// <summary>

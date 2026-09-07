@@ -13,28 +13,8 @@ namespace _116.Content.Infrastructure.Repositories;
 /// Implementation of <see cref="IAlbumRepository" /> for managing album entities.
 /// </summary>
 /// <param name="context">The Content module database context.</param>
-public class AlbumRepository(ContentDbContext context) : IAlbumRepository
+public class AlbumRepository(ContentDbContext context) : ContentRepository<AlbumEntity>(context), IAlbumRepository
 {
-    /// <inheritdoc />
-    public async Task<AlbumEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        var specification = new AlbumByIdSpecification(id: id);
-        return await context.Albums.FirstOrDefaultBySpecificationAsync(
-            specification: specification,
-            cancellationToken: cancellationToken
-        );
-    }
-
-    /// <inheritdoc />
-    public async Task<AlbumEntity> GetByIdOrThrowAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        var specification = new AlbumByIdSpecification(id: id);
-        return await context
-            .Albums.AsTracking()
-            .ApplySpecification(specification: specification)
-            .FirstDefaultOrThrowAsync(keyValue: id, cancellationToken: cancellationToken);
-    }
-
     /// <inheritdoc />
     public async Task<(List<AlbumEntity> Albums, int TotalCount)> GetAllAsync(
         int page,
@@ -43,7 +23,7 @@ public class AlbumRepository(ContentDbContext context) : IAlbumRepository
         CancellationToken cancellationToken = default
     )
     {
-        IQueryable<AlbumEntity> query = context.Albums;
+        IQueryable<AlbumEntity> query = Context.Albums;
 
         if (!string.IsNullOrWhiteSpace(search))
         {
@@ -75,7 +55,7 @@ public class AlbumRepository(ContentDbContext context) : IAlbumRepository
             new AlbumByReleaseTypeSpecification(releaseType: releaseType)
         );
 
-        IQueryable<AlbumEntity> query = context.Albums.ApplySpecification(specification: specification);
+        IQueryable<AlbumEntity> query = Context.Albums.ApplySpecification(specification: specification);
 
         int totalCount = await query.CountAsync(cancellationToken: cancellationToken);
 
@@ -91,17 +71,5 @@ public class AlbumRepository(ContentDbContext context) : IAlbumRepository
             .ToListAsync(cancellationToken: cancellationToken);
 
         return (albums, totalCount);
-    }
-
-    /// <inheritdoc />
-    public async Task AddAsync(AlbumEntity album, CancellationToken cancellationToken = default)
-    {
-        await context.Albums.AddAsync(album, cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public void Update(AlbumEntity album)
-    {
-        context.Albums.Update(album);
     }
 }

@@ -2,6 +2,7 @@ using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.EventHandlers;
 using _116.Content.Domain.Events;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
+using Microsoft.Extensions.Caching.Hybrid;
 using Moq;
 using Xunit;
 
@@ -12,13 +13,13 @@ namespace _116.Unit.Tests.Modules.Content.Application.Shared.EventHandlers;
 /// </summary>
 public class PopularVideosCacheHandlerTests
 {
-    private readonly Mock<IPopularVideosCacheInvalidator> _cacheInvalidatorMock;
+    private readonly Mock<HybridCache> _cacheMock;
     private readonly PopularVideosCacheHandler _handler;
 
     public PopularVideosCacheHandlerTests()
     {
-        _cacheInvalidatorMock = MockPopularVideosCacheInvalidator.Create();
-        _handler = new PopularVideosCacheHandler(_cacheInvalidatorMock.Object);
+        _cacheMock = MockHybridCache.Create();
+        _handler = new PopularVideosCacheHandler(_cacheMock.Object);
     }
 
     [Fact]
@@ -28,7 +29,7 @@ public class PopularVideosCacheHandlerTests
         await _handler.Handle(new VideoPublishedEvent(VideoId: Guid.NewGuid()), CancellationToken.None);
 
         // Assert
-        _cacheInvalidatorMock.VerifyInvalidateCalled();
+        _cacheMock.VerifyRemovedByTag(ContentCacheTags.PopularVideos);
     }
 
     [Fact]
@@ -38,7 +39,7 @@ public class PopularVideosCacheHandlerTests
         await _handler.Handle(new VideoUnpublishedEvent(VideoId: Guid.NewGuid()), CancellationToken.None);
 
         // Assert
-        _cacheInvalidatorMock.VerifyInvalidateCalled();
+        _cacheMock.VerifyRemovedByTag(ContentCacheTags.PopularVideos);
     }
 
     [Fact]
@@ -51,6 +52,6 @@ public class PopularVideosCacheHandlerTests
         );
 
         // Assert
-        _cacheInvalidatorMock.VerifyInvalidateCalled();
+        _cacheMock.VerifyRemovedByTag(ContentCacheTags.PopularVideos);
     }
 }

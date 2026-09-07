@@ -13,7 +13,9 @@ namespace _116.Content.Infrastructure.Repositories;
 /// link entities.
 /// </summary>
 /// <param name="context">The Content module database context.</param>
-public class StreamingLinkRepository(ContentDbContext context) : IStreamingLinkRepository
+public class StreamingLinkRepository(ContentDbContext context)
+    : ContentRepository<StreamingLinkEntity>(context),
+        IStreamingLinkRepository
 {
     /// <inheritdoc />
     public async Task<StreamingLinkEntity?> GetByAlbumAndPlatformAsync(
@@ -23,7 +25,7 @@ public class StreamingLinkRepository(ContentDbContext context) : IStreamingLinkR
     )
     {
         var specification = new StreamingLinkByAlbumAndPlatformSpecification(albumId: albumId, platform: platform);
-        return await context
+        return await Context
             .StreamingLinks.AsTracking()
             .ApplySpecification(specification: specification)
             .FirstOrDefaultAsync(cancellationToken);
@@ -36,7 +38,7 @@ public class StreamingLinkRepository(ContentDbContext context) : IStreamingLinkR
     )
     {
         var specification = new StreamingLinkByAlbumSpecification(albumId: albumId);
-        List<StreamingLinkEntity> links = await context
+        List<StreamingLinkEntity> links = await Context
             .StreamingLinks.ApplySpecification(specification: specification)
             .ToListAsync(cancellationToken);
 
@@ -51,7 +53,7 @@ public class StreamingLinkRepository(ContentDbContext context) : IStreamingLinkR
     )
     {
         var specification = new StreamingLinkByLyricsAndPlatformSpecification(lyricsId: lyricsId, platform: platform);
-        return await context
+        return await Context
             .StreamingLinks.AsTracking()
             .ApplySpecification(specification: specification)
             .FirstOrDefaultAsync(cancellationToken);
@@ -64,28 +66,10 @@ public class StreamingLinkRepository(ContentDbContext context) : IStreamingLinkR
     )
     {
         var specification = new StreamingLinkByLyricsSpecification(lyricsId: lyricsId);
-        List<StreamingLinkEntity> links = await context
+        List<StreamingLinkEntity> links = await Context
             .StreamingLinks.ApplySpecification(specification: specification)
             .ToListAsync(cancellationToken);
 
         return links.ToDictionary(link => link.Platform, link => link.Url);
-    }
-
-    /// <inheritdoc />
-    public async Task AddAsync(StreamingLinkEntity streamingLink, CancellationToken cancellationToken = default)
-    {
-        await context.StreamingLinks.AddAsync(streamingLink, cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public void Update(StreamingLinkEntity streamingLink)
-    {
-        context.StreamingLinks.Update(streamingLink);
-    }
-
-    /// <inheritdoc />
-    public void Remove(StreamingLinkEntity streamingLink)
-    {
-        context.StreamingLinks.Remove(streamingLink);
     }
 }

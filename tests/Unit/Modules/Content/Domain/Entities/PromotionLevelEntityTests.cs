@@ -1,4 +1,5 @@
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Events;
 using _116.Content.Domain.Exceptions;
 using _116.Content.Domain.StateMachines;
 using _116.Shared.Application.Exceptions;
@@ -243,6 +244,53 @@ public class PromotionLevelEntityTests
         bool result = promoLevel.Deactivate();
 
         result.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region Domain Events
+
+    [Fact]
+    public void Create_ShouldRaisePromotionLevelChangedEvent()
+    {
+        // Act
+        var entity = PromotionLevelEntity.Create(Guid.NewGuid(), "Homepage Spot", 7, 50m, 1);
+
+        // Assert
+        entity
+            .DomainEvents.OfType<PromotionLevelChangedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(new PromotionLevelChangedEvent(entity.Id));
+    }
+
+    [Fact]
+    public void Update_ShouldRaisePromotionLevelChangedEvent()
+    {
+        // Arrange
+        var entity = PromotionLevelEntity.Create(Guid.NewGuid(), "Homepage Spot", 7, 50m, 1);
+        entity.ClearDomainEvents();
+
+        // Act
+        entity.Update("Sidebar Spot", 14, 80m, 2);
+
+        // Assert
+        entity.DomainEvents.OfType<PromotionLevelChangedEvent>().Should().ContainSingle();
+    }
+
+    [Fact]
+    public void Activate_WhenAlreadyActive_ShouldRaiseNothing()
+    {
+        // Arrange — a no-op transition must not evict the lookup cache
+        var entity = PromotionLevelEntity.Create(Guid.NewGuid(), "Homepage Spot", 7, 50m, 1);
+        entity.ClearDomainEvents();
+
+        // Act
+        entity.Activate();
+
+        // Assert
+        entity.DomainEvents.Should().BeEmpty();
     }
 
     #endregion

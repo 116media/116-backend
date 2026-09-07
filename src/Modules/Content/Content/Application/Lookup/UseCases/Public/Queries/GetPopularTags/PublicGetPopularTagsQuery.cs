@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Enums;
 using _116.Shared.Contracts.Application.CQRS;
@@ -18,7 +19,19 @@ namespace _116.Content.Application.Lookup.UseCases.Public.Queries.GetPopularTags
 /// content types.
 /// </param>
 public record PublicGetPopularTagsQuery(int? Limit = null, EnumCoreContentType? ContentType = null)
-    : IQuery<PublicGetPopularTagsResult>;
+    : IQuery<PublicGetPopularTagsResult>,
+        ICacheableRequest
+{
+    /// <inheritdoc />
+    public string CacheKey =>
+        $"popular_tags:{Limit?.ToString() ?? "all"}:{ContentType?.ToString().ToLowerInvariant() ?? "any"}";
+
+    /// <inheritdoc />
+    public TimeSpan Ttl => TimeSpan.FromMinutes(10);
+
+    /// <inheritdoc />
+    public IReadOnlyList<string> CacheTags => [ContentCacheTags.Tags];
+}
 
 /// <summary>
 /// Result of the <see cref="PublicGetPopularTagsQuery" /> containing the most popular tags.

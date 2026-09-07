@@ -17,14 +17,14 @@ namespace _116.Unit.Tests.Modules.Content.Application.Interactions.EventHandlers
 /// </summary>
 public class CommentEngagementHandlerTests
 {
-    private readonly Mock<IArticleRepository> _articleRepositoryMock;
+    private readonly Mock<IArticleCommentRepository> _articleCommentRepositoryMock;
     private readonly CommentEngagementHandler _handler;
 
     public CommentEngagementHandlerTests()
     {
-        _articleRepositoryMock = MockArticleRepository.Create();
+        _articleCommentRepositoryMock = MockArticleCommentRepository.Create();
         _handler = new CommentEngagementHandler(
-            _articleRepositoryMock.Object,
+            _articleCommentRepositoryMock.Object,
             NullLogger<CommentEngagementHandler>.Instance
         );
     }
@@ -36,7 +36,7 @@ public class CommentEngagementHandlerTests
     {
         // Arrange
         var commentId = Guid.NewGuid();
-        _articleRepositoryMock
+        _articleCommentRepositoryMock
             .Setup(x => x.ApplyCommentLikeDeltaAsync(commentId, delta, It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
 
@@ -44,15 +44,15 @@ public class CommentEngagementHandlerTests
         await _handler.Handle(new CommentEngagedEvent(commentId, delta), CancellationToken.None);
 
         // Assert — loading to mutate is the race stage 8 removed; the counter moves in SQL only.
-        _articleRepositoryMock.Verify(
+        _articleCommentRepositoryMock.Verify(
             x => x.ApplyCommentLikeDeltaAsync(commentId, delta, It.IsAny<CancellationToken>()),
             Times.Once
         );
-        _articleRepositoryMock.Verify(
+        _articleCommentRepositoryMock.Verify(
             x => x.GetCommentByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
             Times.Never
         );
-        _articleRepositoryMock.Verify(x => x.UpdateComment(It.IsAny<ArticleCommentEntity>()), Times.Never);
+        _articleCommentRepositoryMock.Verify(x => x.UpdateComment(It.IsAny<ArticleCommentEntity>()), Times.Never);
     }
 
     [Fact]
@@ -61,7 +61,7 @@ public class CommentEngagementHandlerTests
         // Arrange — the comment vanished between the interaction commit and the dispatch, which is
         // a race, not an error.
         var commentId = Guid.NewGuid();
-        _articleRepositoryMock
+        _articleCommentRepositoryMock
             .Setup(x => x.ApplyCommentLikeDeltaAsync(commentId, It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(0);
 

@@ -1,13 +1,12 @@
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
-using _116.Shared.Domain;
 
 namespace _116.Content.Application.Shared.Repositories;
 
 /// <summary>
 /// Repository interface for community lyrics submission data access operations.
 /// </summary>
-public interface ILyricsSubmissionRepository : IRepository<LyricsSubmissionEntity>
+public interface ILyricsSubmissionRepository
 {
     /// <summary>
     /// Retrieves a lyrics submission by its unique identifier.

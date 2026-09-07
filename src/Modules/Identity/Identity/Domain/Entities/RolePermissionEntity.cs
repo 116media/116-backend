@@ -1,3 +1,4 @@
+using _116.Identity.Domain.Events;
 using _116.Shared.Domain;
 
 namespace _116.Identity.Domain.Entities;
@@ -36,11 +37,23 @@ public class RolePermissionEntity : Aggregate<Guid>
     /// <returns>A new <see cref="RolePermissionEntity" /> instance.</returns>
     public static RolePermissionEntity Create(Guid id, Guid roleId, Guid permissionId)
     {
-        return new RolePermissionEntity
+        var rolePermission = new RolePermissionEntity
         {
             Id = id,
             RoleId = roleId,
             PermissionId = permissionId,
         };
+        rolePermission.AddDomainEvent(new RoleChangedEvent(RoleId: roleId));
+
+        return rolePermission;
+    }
+
+    /// <summary>
+    /// Raises the role-changed fact for this association's removal, so cached role
+    /// projections refresh once the deletion commits.
+    /// </summary>
+    public void MarkRemoved()
+    {
+        AddDomainEvent(new RoleChangedEvent(RoleId: RoleId));
     }
 }

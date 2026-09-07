@@ -6,8 +6,9 @@ namespace _116.Shared.Infrastructure.Seed;
 public interface IDataSeeder
 {
     /// <summary>
-    /// Executes all configured seed operations asynchronously.
+    /// Executes the seed operations. Implementations are idempotent per row, so a re-run
+    /// inserts only what is missing.
     /// </summary>
-    /// <returns>A <see cref="Task"/> representing the asynchronous seeding operation.</returns>
-    Task SeedAllAsync();
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    Task SeedAsync(CancellationToken cancellationToken = default);
 }

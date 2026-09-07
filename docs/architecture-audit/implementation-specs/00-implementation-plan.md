@@ -24,7 +24,7 @@ shippable work. **Rules of engagement:**
 - [x] **Stage 7 — Invert localization-in-domain (DomainRuleException sweep)** → [`stage-07-domain-rule-exception-sweep.md`](stage-07-domain-rule-exception-sweep.md)
 - [x] **Stage 8 — Atomic engagement counters & audit-trail integrity** → [`stage-08-atomic-engagement-counters.md`](stage-08-atomic-engagement-counters.md)
 - [ ] **Stage 9 — Query performance (split queries, no-tracking, indexes, soft-delete, N+1)** → [`stage-09-query-performance.md`](stage-09-query-performance.md)
-- [ ] **Stage 10 — Multi-instance readiness (distributed cache, clustered jobs, seeding, migrations)** → [`stage-10-multi-instance-readiness.md`](stage-10-multi-instance-readiness.md)
+- [ ] **Stage 10 — Caching, concurrency and data access** → [`stage-10-caching-concurrency-and-data-access.md`](stage-10-caching-concurrency-and-data-access.md)
 - [ ] **Stage 11 — CancellationToken, typed configuration & observability** → [`stage-11-cancellation-config-observability.md`](stage-11-cancellation-config-observability.md)
 - [ ] **Stage 12 — Public/Admin DTO split & staff-data leak fixes** → [`stage-12-public-dto-split.md`](stage-12-public-dto-split.md)
 - [ ] **Stage 13 — Domain-event durability (identity + outbox + transaction boundary)** → [`stage-13-domain-event-durability.md`](stage-13-domain-event-durability.md)
@@ -34,6 +34,10 @@ shippable work. **Rules of engagement:**
 - [ ] **Stage 17 — Notifications, email & i18n overhaul** → [`stage-17-notifications-and-i18n.md`](stage-17-notifications-and-i18n.md)
 - [ ] **Stage 18 — Project restructure (SharedKernel/BuildingBlocks, layer projects, entity/behavior split)** → [`stage-18-project-restructure.md`](stage-18-project-restructure.md)
 - [ ] **Stage 19 — Documentation restructure** → [`stage-19-documentation-restructure.md`](stage-19-documentation-restructure.md)
+- [ ] **Stage 20 — Layer boundary hardening (Npgsql out of Application, web stack out of Mailer.Domain)** → [`stage-20-layer-boundary-hardening.md`](stage-20-layer-boundary-hardening.md)
+
+Stage 20 was added after Stage 9 shipped, from the [15] re-verification — it is numbered last but
+runs early: 20.1 must precede Stage 18, and 20.3 folds into Stage 11.
 
 Stages 15–17 were added after Stage 8 shipped: the original plan left ~35 findings unassigned
 (the domain-model structure findings, the API-surface hygiene, and doc 14's notification model).
@@ -129,16 +133,23 @@ Small, isolated, high-urgency fixes with no cross-module surgery. Full code in t
 - [ ] Identity sweep: the 2 discarded role existence loads + the bulk-permission N+1
 - **PR:** `perf(content): split queries, no-tracking reads, read indexes and batch lookups`
 
-### Stage 10 — Multi-instance readiness
+### Stage 10 — Caching, concurrency and data access
 
-- [ ] Redis distributed cache + version-key invalidation `[04 §8]`
+- [ ] `CachingDecorator<,>` + `ICacheableRequest` + `HybridCache`; the four handlers shed their
+      caching; `ICacheInvalidator` and its five types deleted `[16 §16.1 / §16.2 / §16.4]`
+- [ ] Lookup tables cached and tag-evicted — new capability, uncached today `[16 §16.3]`
+- [ ] Redis as `HybridCache`'s L2 (`AddStackExchangeRedisCache`) `[04 §8]`
 - [ ] Quartz clustering / advisory-lock jobs `[04 §8]`
 - [ ] Idempotent, advisory-locked seeders (fixes the missing `Lyrics` content type); remove or wire
       the dead `IDataSeeder` infra `[04 §9 / 01 §1.13]`
 - [ ] Move migrations out of the request pipeline; `EnableMigrations=false` in prod `[04 §10 / 01 §1.12]`
 - [ ] EF resilience: `EnableRetryOnFailure` + `CommandTimeout` + pool size `[04 §14]`
 - [ ] Fix the Dockerfile's missing Mailer projects `[01 §1.15]`
-- **PR:** `fix(infra): make the app safe to run on more than one instance`
+- [ ] Repository contracts: `IReadRepository`/`IWriteRepository`, `RepositoryBase`, the `Query()`
+      hydration seam; 33 repositories derive; `ILookupRepository` and `ArticleRepository`
+      split along aggregate lines `[04 §11 / 01 §1.9]`
+- **PRs:** `fix(infra): make the app safe to run on more than one instance` (Parts A–C);
+  `refactor(data): introduce repository contracts and a hydration seam` (Part D, splittable)
 
 ### Stage 11 — CancellationToken, typed configuration & observability
 
@@ -245,13 +256,15 @@ Small, isolated, high-urgency fixes with no cross-module surgery. Full code in t
 | 01 | 1.1 ✔3 · 1.2 ✔1 · 1.3 ✔1 · 1.4 →16 · 1.5 →11 · 1.6 →16 · 1.7 →13 · 1.8 →13 · 1.9 →18 · 1.10 →11 · 1.11 ✔3(CORS)+→11(rest) · 1.12 →10 · 1.13 →10 · 1.14 →11 · 1.15 →10 |
 | 02 | 2.1 →14 · 2.2 →19 · 2.3 →14 · 2.4 →14 · 2.5 →13 · 2.6 →14 · 2.7 →18 · 2.8 →9 · 2.9 →14 · 2.10 →18 · 2.11 →17 · 2.12 →14 · 2.13 →13 |
 | 03 | 3.1 →18 · 3.2 →15 · 3.3 ✔6 · 3.4 ✔6 · 3.5 ✔6 · 3.6 ✔7 · 3.7 →15 · 3.8 →15 · 3.9 →15 · 3.10 →15 · 3.11 →15 · 3.12 →15 · 3.13 →15 |
-| 04 | 4.1 ✔8 · 4.2 →9 · 4.3 →15 · 4.4 →9 · 4.5 →9 · 4.6 →9 · 4.7 →13 · 4.8 →10 · 4.9 →10 · 4.10 →10 · 4.11 →15 · 4.12 →15 · 4.13 →9 · 4.14 →10 · 4.15 ✔8 · 4.16 →16 |
+| 04 | 4.1 ✔8 · 4.2 →9 · 4.3 →15 · 4.4 →9 · 4.5 →9 · 4.6 →9 · 4.7 →13 · 4.8 →10 · 4.9 →10 · 4.10 →10 · 4.11 →10 (+14.5 file pipeline, +15 query builders) · 4.12 →15 · 4.13 →9 · 4.14 →10 · 4.15 ✔8 · 4.16 →16 |
 | 05 | 5.1 ✔2 · 5.2 →14 · 5.3 →14 · 5.4 →14 · 5.5 →14 · 5.6 →14 · 5.7 →14 · 5.8 →11 · 5.9 →11 · 5.10 →14 · 5.11 →17 · 5.12 →13 · 5.13 →13 · 5.14 →17 |
 | 06 | 6.1 →11 · 6.2 ✔1 · 6.3 →16 · 6.4 →9 · 6.5 ✔4 · 6.6 →12 · 6.7 →13 · 6.8 →16 · 6.9 →17 · 6.10 →16 · 6.11 →16 · 6.12 →16 · 6.13 →16 · 6.14 →15 · 6.15 ✔6 · 6.16 →15 |
 | 07 | S1 ✔2 · S2 ✔4 · S3 →16 · S4 ✔5 · S5 ✔5 · S6 ✔3 · S7 ✔5 · S8 ✔4 · S9 →12 · S10 ✔5 · S11 ✔4 · S12 →11 |
 | 08 | 8.1 ✔3 · 8.2 ✔1 · 8.3 ✔1 · 8.4 →11 · 8.5 →16 · 8.6 ✔1 · 8.7 →11 · 8.8 ✔3 · 8.9 ✔7 · 8.10 →11 · 8.11 →16 · 8.12 →11 · 8.13 →16 · 8.14 →16 · 8.15 →17 · 8.16 →17 · 8.17 →17 · 8.18 →17 · 8.19 →16 · 8.20 ✔3 |
 | 09 | 9.1–9.14 →19 |
 | 10–14 | doc 10 verdict →18 · doc 11 →18/14 · doc 12 →18 · doc 13 →14/18 · doc 14 →17 |
+| 15 | 15.1 →20 (fold into 11) · 15.2 →20 (before 18) |
+| 16 | 16.1 →10 · 16.2 →10 · 16.3 →10 · 16.4 →10 (supersedes the 4.8 cache remedy) |
 
 ---
 

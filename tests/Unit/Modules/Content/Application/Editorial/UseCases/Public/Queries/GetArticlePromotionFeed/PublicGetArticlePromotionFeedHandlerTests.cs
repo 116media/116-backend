@@ -21,6 +21,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Public.
 public class PublicGetArticlePromotionFeedHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<IArticleRepository> _articleRepositoryMock;
+    private readonly Mock<IArticleInteractionRepository> _articleInteractionRepositoryMock;
     private readonly Mock<ICategoryRepository> _categoryRepositoryMock;
     private readonly Mock<IFileRepository> _fileRepositoryMock;
     private readonly PublicGetArticlePromotionFeedHandler _handler;
@@ -30,12 +31,14 @@ public class PublicGetArticlePromotionFeedHandlerTests : BaseContentHandlerTest
     public PublicGetArticlePromotionFeedHandlerTests()
     {
         _articleRepositoryMock = MockArticleRepository.Create();
+        _articleInteractionRepositoryMock = MockArticleInteractionRepository.Create();
         _categoryRepositoryMock = MockCategoryRepository.Create();
         _fileRepositoryMock = MockFileRepository.Create();
         FileEntity coverFile = FileFactory.CreateImage();
         _fileRepositoryMock.SetupGetById(coverFile);
         _handler = new PublicGetArticlePromotionFeedHandler(
             _articleRepositoryMock.Object,
+            _articleInteractionRepositoryMock.Object,
             _categoryRepositoryMock.Object,
             _fileRepositoryMock.Object,
             Mapper
@@ -399,7 +402,7 @@ public class PublicGetArticlePromotionFeedHandlerTests : BaseContentHandlerTest
             .Concat(result.GossipStrip);
 
         allSummaries.Should().OnlyContain(article => !article.IsLiked && !article.IsBookmarked);
-        _articleRepositoryMock.VerifyGetLikedAndBookmarkedIdsCalledWithUser(Times.Never());
+        _articleInteractionRepositoryMock.VerifyGetLikedAndBookmarkedIdsCalledWithUser(Times.Never());
     }
 
     [Fact]
@@ -420,7 +423,7 @@ public class PublicGetArticlePromotionFeedHandlerTests : BaseContentHandlerTest
         _articleRepositoryMock.SetupGetActivePromotedBySpot(2, spot2);
         _articleRepositoryMock.SetupGetActivePromotedBySpot(3, spot3);
         _articleRepositoryMock.SetupGetGossipFallback(gossipPool);
-        _articleRepositoryMock.SetupGetLikedAndBookmarkedIds([likedSpot1Id], [bookmarkedGossipId]);
+        _articleInteractionRepositoryMock.SetupGetLikedAndBookmarkedIds([likedSpot1Id], [bookmarkedGossipId]);
 
         // Act
         PublicGetArticlePromotionFeedResult result = await _handler.Handle(
@@ -434,7 +437,7 @@ public class PublicGetArticlePromotionFeedHandlerTests : BaseContentHandlerTest
         result.Spot2.Articles.Should().OnlyContain(article => !article.IsLiked && !article.IsBookmarked);
 
         // The batch lookup runs exactly once across all sub-collections
-        _articleRepositoryMock.VerifyGetLikedAndBookmarkedIdsCalledWithUser(Times.Once());
+        _articleInteractionRepositoryMock.VerifyGetLikedAndBookmarkedIdsCalledWithUser(Times.Once());
     }
 
     #endregion

@@ -19,16 +19,16 @@ namespace _116.Unit.Tests.Modules.Content.Application.Lookup.UseCases.Admin.Comm
 /// </summary>
 public class AdminActivateContentTypeHandlerTests : BaseContentHandlerTest
 {
-    private readonly Mock<ILookupRepository> _lookupRepositoryMock;
+    private readonly Mock<IContentTypeRepository> _contentTypeRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminActivateContentTypeHandler _handler;
 
     public AdminActivateContentTypeHandlerTests()
     {
-        _lookupRepositoryMock = MockLookupRepository.Create();
+        _contentTypeRepositoryMock = MockContentTypeRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _handler = new AdminActivateContentTypeHandler(
-            _lookupRepositoryMock.Object,
+            _contentTypeRepositoryMock.Object,
             _unitOfWorkMock.Object,
             Mapper,
             TestErrorsFactory.CreateContentI18n()
@@ -44,7 +44,7 @@ public class AdminActivateContentTypeHandlerTests : BaseContentHandlerTest
         ContentTypeEntity inactive = ContentTypeFactory.CreateInactive();
         var command = new AdminActivateContentTypeCommand(Id: inactive.Id.ToString());
 
-        _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(inactive);
+        _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrow(inactive);
 
         // Act
         AdminActivateContentTypeResult result = await _handler.Handle(command, CancellationToken.None);
@@ -65,7 +65,7 @@ public class AdminActivateContentTypeHandlerTests : BaseContentHandlerTest
         ContentTypeEntity active = ContentTypeFactory.CreateDefault();
         var command = new AdminActivateContentTypeCommand(Id: active.Id.ToString());
 
-        _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(active);
+        _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrow(active);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
@@ -81,7 +81,7 @@ public class AdminActivateContentTypeHandlerTests : BaseContentHandlerTest
         ContentTypeEntity active = ContentTypeFactory.CreateDefault();
         var command = new AdminActivateContentTypeCommand(Id: active.Id.ToString());
 
-        _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(active);
+        _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrow(active);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
@@ -98,7 +98,7 @@ public class AdminActivateContentTypeHandlerTests : BaseContentHandlerTest
         var nonExistentId = Guid.NewGuid();
         var command = new AdminActivateContentTypeCommand(Id: nonExistentId.ToString());
 
-        _lookupRepositoryMock.SetupGetContentTypeByIdOrThrowNotFound(nonExistentId);
+        _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrowNotFound(nonExistentId);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);

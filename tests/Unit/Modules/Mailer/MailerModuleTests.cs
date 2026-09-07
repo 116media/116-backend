@@ -252,27 +252,4 @@ public class MailerModuleTests : IDisposable
     }
 
     #endregion
-
-    #region Pipeline
-
-    [Fact]
-    public void UseMailerModule_WithTestingEnvironment_ShouldReturnTheApplicationBuilder()
-    {
-        // Arrange — Testing disables migrations and the module never seeds, so
-        // UseModuleDatabase is a no-op and the builder is returned untouched.
-        var services = new ServiceCollection();
-        services.AddSingleton<IHostEnvironment>(HostEnvironment("Testing"));
-
-        var appBuilder = new Mock<IApplicationBuilder>();
-        appBuilder.Setup(builder => builder.ApplicationServices).Returns(services.BuildServiceProvider());
-
-        // Act
-        IApplicationBuilder result = appBuilder.Object.UseMailerModule();
-
-        // Assert
-        result.Should().NotBeNull();
-        result.Should().BeSameAs(appBuilder.Object);
-    }
-
-    #endregion
 }

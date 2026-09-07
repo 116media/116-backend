@@ -26,17 +26,6 @@ public class BaseModuleTests
     /// Seeder recording whether the pipeline executed it, standing in for a
     /// module's real seeders.
     /// </summary>
-    private sealed class RecordingSeeder : IDataSeeder
-    {
-        public bool WasExecuted { get; private set; }
-
-        public Task SeedAllAsync()
-        {
-            WasExecuted = true;
-            return Task.CompletedTask;
-        }
-    }
-
     [Fact]
     public void AddModuleDatabase_WithDefaultConnectionString_ShouldRegisterDbContext()
     {
@@ -181,104 +170,5 @@ public class BaseModuleTests
 
         // Assert
         result.Should().BeSameAs(services, "method should return the service collection for chaining");
-    }
-
-    [Fact]
-    public void UseModuleDatabase_WithMigrationsDisabled_ShouldReturnAppBuilder()
-    {
-        // Arrange
-        var services = new ServiceCollection();
-        services.AddDbContext<TestDbContext>(options => options.UseInMemoryDatabase(Guid.NewGuid().ToString()));
-
-        ServiceProvider serviceProvider = services.BuildServiceProvider();
-        var app = new ApplicationBuilder(serviceProvider);
-
-        var options = new ModuleOptions<TestDbContext>
-        {
-            ModuleName = "Test",
-            EnableMigrations = false,
-            EnableSeeding = false,
-        };
-
-        // Act
-        IApplicationBuilder result = app.UseModuleDatabase(options);
-
-        // Assert
-        result.Should().BeSameAs(app, "method should return the app builder for chaining");
-    }
-
-    [Fact]
-    public void UseModuleDatabase_WithMigrationsEnabled_ShouldMigrateAndReturnAppBuilder()
-    {
-        // Arrange — a relational provider, so the migration step is the real one.
-        var services = new ServiceCollection();
-        services.AddDbContext<TestDbContext>(options => options.UseSqlite("DataSource=:memory:"));
-
-        ServiceProvider serviceProvider = services.BuildServiceProvider();
-        var app = new ApplicationBuilder(serviceProvider);
-
-        var options = new ModuleOptions<TestDbContext>
-        {
-            ModuleName = "Test",
-            EnableMigrations = true,
-            EnableSeeding = false,
-        };
-
-        // Act
-        IApplicationBuilder result = app.UseModuleDatabase(options);
-
-        // Assert
-        result.Should().BeSameAs(app);
-    }
-
-    [Fact]
-    public void UseModuleDatabase_WithSeedingEnabled_ShouldRunTheRegisteredSeeders()
-    {
-        // Arrange
-        var seeder = new RecordingSeeder();
-        var services = new ServiceCollection();
-        services.AddDbContext<TestDbContext>(options => options.UseInMemoryDatabase(Guid.NewGuid().ToString()));
-        services.AddScoped<IDataSeeder>(_ => seeder);
-
-        ServiceProvider serviceProvider = services.BuildServiceProvider();
-        var app = new ApplicationBuilder(serviceProvider);
-
-        var options = new ModuleOptions<TestDbContext>
-        {
-            ModuleName = "Test",
-            EnableMigrations = false,
-            EnableSeeding = true,
-        };
-
-        // Act
-        IApplicationBuilder result = app.UseModuleDatabase(options);
-
-        // Assert
-        seeder.WasExecuted.Should().BeTrue();
-        result.Should().BeSameAs(app);
-    }
-
-    [Fact]
-    public void UseModuleDatabase_WithSeedingDisabled_ShouldReturnAppBuilder()
-    {
-        // Arrange
-        var services = new ServiceCollection();
-        services.AddDbContext<TestDbContext>(options => options.UseInMemoryDatabase(Guid.NewGuid().ToString()));
-
-        ServiceProvider serviceProvider = services.BuildServiceProvider();
-        var app = new ApplicationBuilder(serviceProvider);
-
-        var options = new ModuleOptions<TestDbContext>
-        {
-            ModuleName = "Test",
-            EnableMigrations = false,
-            EnableSeeding = false,
-        };
-
-        // Act
-        IApplicationBuilder result = app.UseModuleDatabase(options);
-
-        // Assert
-        result.Should().BeSameAs(app);
     }
 }

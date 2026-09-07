@@ -15,6 +15,7 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetOwnCo
 /// </summary>
 public class PublicGetOwnCommentsForArticleHandler(
     IArticleRepository articleRepository,
+    IArticleCommentRepository articleCommentRepository,
     IMapper mapper,
     ContentI18n i18n
 ) : IQueryHandler<PublicGetOwnCommentsForArticleQuery, PublicGetOwnCommentsForArticleResult>
@@ -33,13 +34,14 @@ public class PublicGetOwnCommentsForArticleHandler(
 
         int pageIndex = query.PaginatedRequest.PageIndex;
         int pageSize = query.PaginatedRequest.PageSize;
-        (List<ArticleCommentEntity> comments, int totalCount) = await articleRepository.GetOwnCommentsForArticleAsync(
-            query.UserId,
-            query.ArticleId,
-            pageIndex + 1,
-            pageSize,
-            cancellationToken
-        );
+        (List<ArticleCommentEntity> comments, int totalCount) =
+            await articleCommentRepository.GetOwnCommentsForArticleAsync(
+                query.UserId,
+                query.ArticleId,
+                pageIndex + 1,
+                pageSize,
+                cancellationToken
+            );
 
         IReadOnlyList<ArticleCommentDto> items = comments.ToArticleCommentDtos(
             mapper,

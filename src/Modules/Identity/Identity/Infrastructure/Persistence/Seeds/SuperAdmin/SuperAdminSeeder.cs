@@ -1,6 +1,7 @@
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Shared.Errors;
 using _116.Shared.Infrastructure.Seed;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 
@@ -41,7 +42,7 @@ public class SuperAdminSeeder : IDataSeeder
     /// Executes the Super Admin seeding process using the orchestrated components.
     /// Implements the Template Method pattern with proper error handling and transaction management.
     /// </summary>
-    public async Task SeedAllAsync()
+    public async Task SeedAsync(CancellationToken cancellationToken = default)
     {
         try
         {
@@ -70,21 +71,28 @@ public class SuperAdminSeeder : IDataSeeder
     /// </summary>
     private async Task ExecuteSeedingWithTransactionAsync()
     {
-        await using IDbContextTransaction transaction = await _repositoryManager.BeginTransactionAsync();
-        try
+        // The retrying execution strategy owns the transaction: a transient failure replays the
+        // whole delegate, which the existence check upstream keeps idempotent.
+        IExecutionStrategy strategy = _repositoryManager.CreateExecutionStrategy();
+
+        await strategy.ExecuteAsync(async () =>
         {
-            // Execute the seeding strategy
-            await _seedingStrategy.ExecuteSeedingAsync();
-            // Commit all changes
-            await _repositoryManager.SaveChangesAsync();
-            await transaction.CommitAsync();
-            _logger.LogInformation("Super Admin seeding transaction committed successfully");
-        }
-        catch (Exception ex)
-        {
-            await transaction.RollbackAsync();
-            _logger.LogError(exception: ex, "Error occurred during Super Admin seeding. Transaction rolled back.");
-            throw;
-        }
+            await using IDbContextTransaction transaction = await _repositoryManager.BeginTransactionAsync();
+            try
+            {
+                // Execute the seeding strategy
+                await _seedingStrategy.ExecuteSeedingAsync();
+                // Commit all changes
+                await _repositoryManager.SaveChangesAsync();
+                await transaction.CommitAsync();
+                _logger.LogInformation("Super Admin seeding transaction committed successfully");
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                _logger.LogError(exception: ex, "Error occurred during Super Admin seeding. Transaction rolled back.");
+                throw;
+            }
+        });
     }
 }

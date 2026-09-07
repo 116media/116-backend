@@ -159,7 +159,10 @@ Sequenced by exploitability and by dependency (several fixes are prerequisites f
 **Next — correctness and the ability to scale:**
 7. Fix forwarded-proxy trust, then partition the rate limiters. ([08 §20](08-cross-cutting.md) → [01 §1.1](01-composition-root-and-shared-kernel.md))
 8. Session revocation on the auth pipeline; stop issuing tokens to unverified signups. ([07 S2/S8](07-identity-and-security.md))
-9. Distributed cache + clustered jobs + advisory-locked, out-of-pipeline seeding/migration. ([04 §8–§10](04-content-infrastructure.md))
+9. Caching rewrite (`HybridCache` behind a CQRS decorator; 4 cached reads today, 26 candidates),
+   clustered jobs, advisory-locked out-of-pipeline seeding/migration, and the repository contracts.
+   ([04 §8–§11](04-content-infrastructure.md), [16](16-caching-architecture.md)) — one stage,
+   *Caching, concurrency and data access*.
 10. Thread `CancellationToken` through all endpoints. ([06 §1](06-content-application.md))
 11. Config as validated `IOptions` with `ValidateOnStart`; health checks. ([08 §10/§12](08-cross-cutting.md))
 12. Split public vs admin DTOs; stop leaking staff data. ([06 §6](06-content-application.md), [07 S9](07-identity-and-security.md))
@@ -167,11 +170,14 @@ Sequenced by exploitability and by dependency (several fixes are prerequisites f
 **Then — the structural refactors (large, sequence carefully):**
 13. `IDomainEvent` identity fix → domain-event outbox → transaction boundary. ([01 §1.8/§1.7](01-composition-root-and-shared-kernel.md), [04 §7](04-content-infrastructure.md))
 14. `Core.Contracts` extraction (4 PRs) + architecture tests + `internal`-ization. ([02 §1/§3/§4](02-module-boundaries.md))
-15. Invert the localization-in-domain (`DomainException` + strategy). ([03 §6](03-content-domain.md))
+15. Invert the localization-in-domain (`DomainException` + strategy). ([03 §6](03-content-domain.md)) —
+    **shipped in Stage 7**; verified at zero occurrences by [15](15-layer-dependency-verification.md).
 16. Split `Shared` and `Content` along the dependency rule; demote child entities. ([01 §1.9](01-composition-root-and-shared-kernel.md), [03 §1](03-content-domain.md), [06 §14](06-content-application.md))
+17. Layer-boundary cleanup: the Postgres driver out of the Application layer, the web stack out of
+    `Mailer.Domain`, and architecture tests that keep both out. ([15](15-layer-dependency-verification.md))
 
 **Continuously:**
-17. Restructure `docs/` (entry point, status front-matter, archive shipped specs, banner the executable
+18. Restructure `docs/` (entry point, status front-matter, archive shipped specs, banner the executable
     stale specs). ([09](09-documentation.md))
 
 ---

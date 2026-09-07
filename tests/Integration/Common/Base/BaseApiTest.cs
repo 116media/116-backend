@@ -1,4 +1,3 @@
-using _116.Content.Application.Shared.Cache;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Integration.Tests.Common.Stubs;
 using _116.Shared.Domain;
@@ -175,9 +174,6 @@ public abstract class BaseApiTest : IAsyncLifetime
         await Db.ResetAsync();
         ResetStubs();
         ClearMemoryCache();
-        InvalidateTagCache();
-        InvalidatePopularArticlesCache();
-        InvalidatePopularVideosCache();
         await SeedTestUsersAsync();
         await SeedAsync();
     }
@@ -198,7 +194,8 @@ public abstract class BaseApiTest : IAsyncLifetime
 
     /// <summary>
     /// Clears the shared in-process cache before each test, since it outlives the database reset
-    /// and security-state/denylist entries would otherwise leak into the next test.
+    /// and security-state, denylist and hybrid-cache L1 entries would otherwise leak into the
+    /// next test. The hybrid cache stores its L1 entries in this same <see cref="IMemoryCache" />.
     /// </summary>
     private void ClearMemoryCache()
     {
@@ -207,40 +204,6 @@ public abstract class BaseApiTest : IAsyncLifetime
         {
             memoryCache.Clear();
         }
-    }
-
-    /// <summary>
-    /// Clears the in-process tag cache before each test, since the shared
-    /// <see cref="IMemoryCache" /> is not touched by
-    /// <see cref="PostgresFixture.ResetAsync" />.
-    /// </summary>
-    private void InvalidateTagCache()
-    {
-        using var scope = Api.Services.CreateScope();
-        var invalidator = scope.ServiceProvider.GetRequiredService<IPopularTagsCacheInvalidator>();
-        invalidator.Invalidate();
-    }
-
-    /// <summary>
-    /// Clears the in-process popular-articles cache before each test, for the same reason as
-    /// <see cref="InvalidateTagCache" />.
-    /// </summary>
-    private void InvalidatePopularArticlesCache()
-    {
-        using var scope = Api.Services.CreateScope();
-        var invalidator = scope.ServiceProvider.GetRequiredService<IPopularArticlesCacheInvalidator>();
-        invalidator.Invalidate();
-    }
-
-    /// <summary>
-    /// Clears the in-process popular-videos cache before each test, for the same reason as
-    /// <see cref="InvalidateTagCache" />.
-    /// </summary>
-    private void InvalidatePopularVideosCache()
-    {
-        using var scope = Api.Services.CreateScope();
-        var invalidator = scope.ServiceProvider.GetRequiredService<IPopularVideosCacheInvalidator>();
-        invalidator.Invalidate();
     }
 
     /// <inheritdoc />

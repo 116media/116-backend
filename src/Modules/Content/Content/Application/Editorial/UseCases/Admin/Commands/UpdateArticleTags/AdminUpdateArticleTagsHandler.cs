@@ -13,11 +13,11 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArtic
 /// then removes existing article tag associations and adds the resolved set.
 /// </summary>
 /// <param name="articleRepository">Repository for article data access operations.</param>
-/// <param name="lookupRepository">Repository for lookup entities including tags.</param>
+/// <param name="tagRepository">Repository for lookup entities including tags.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 public class AdminUpdateArticleTagsHandler(
     IArticleRepository articleRepository,
-    ILookupRepository lookupRepository,
+    ITagRepository tagRepository,
     IContentUnitOfWork unitOfWork
 ) : ICommandHandler<AdminUpdateArticleTagsCommand, AdminUpdateArticleTagsResult>
 {
@@ -31,7 +31,7 @@ public class AdminUpdateArticleTagsHandler(
 
         await articleRepository.GetByIdOrThrowAsync(id: articleId, cancellationToken: cancellationToken);
 
-        IReadOnlyDictionary<string, TagEntity> existingTagsByName = await lookupRepository.GetTagsByNamesAsync(
+        IReadOnlyDictionary<string, TagEntity> existingTagsByName = await tagRepository.GetByNamesAsync(
             names: command.TagNames,
             cancellationToken: cancellationToken
         );
@@ -44,7 +44,7 @@ public class AdminUpdateArticleTagsHandler(
             {
                 string uniqueSlug = SlugHelper.ToUniqueSlug(name);
                 existing = TagEntity.Create(id: Guid.NewGuid(), name: name, slug: uniqueSlug);
-                await lookupRepository.AddTagAsync(tag: existing, cancellationToken: cancellationToken);
+                await tagRepository.AddAsync(tag: existing, cancellationToken: cancellationToken);
             }
 
             resolvedTagIds.Add(existing.Id);

@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.DTOs;
 using _116.Shared.Contracts.Application.CQRS;
 
@@ -18,7 +19,19 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPopularA
 /// sidebar to drop the article currently being viewed.
 /// </param>
 public record PublicGetPopularArticlesQuery(int Limit, Guid? CategoryId, Guid? ExcludeId)
-    : IQuery<PublicGetPopularArticlesResult>;
+    : IQuery<PublicGetPopularArticlesResult>,
+        ICacheableRequest
+{
+    /// <inheritdoc />
+    public string CacheKey =>
+        $"popular_articles:{Limit}:{CategoryId?.ToString() ?? "all"}:{ExcludeId?.ToString() ?? "none"}";
+
+    /// <inheritdoc />
+    public TimeSpan Ttl => TimeSpan.FromMinutes(10);
+
+    /// <inheritdoc />
+    public IReadOnlyList<string> CacheTags => [ContentCacheTags.PopularArticles];
+}
 
 /// <summary>
 /// Result of the <see cref="PublicGetPopularArticlesQuery" /> containing the ranked

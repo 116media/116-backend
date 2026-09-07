@@ -23,6 +23,16 @@ services:
         ports:
             - "1025:1025"
             - "8025:8025"
+    116_redis:
+        container_name: 116_redis
+        restart: always
+        ports:
+            - "6379:6379"
+        healthcheck:
+            test: ["CMD", "redis-cli", "ping"]
+            interval: 5s
+            timeout: 3s
+            retries: 5
     116_seq:
         container_name: 116_seq
         environment:
@@ -56,6 +66,7 @@ services:
             - EMAIL_FROM_NAME=${EMAIL_FROM_NAME}
             - SMTP_HOST=116_mailpit
             - SMTP_PORT=1025
+            - REDIS_URL=116_redis:6379
             - FRONTEND_BASE_URL=${FRONTEND_BASE_URL}
         restart: always
         ports:

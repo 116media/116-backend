@@ -13,14 +13,14 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.EditOrderIte
 /// </summary>
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
 /// <param name="categoryRepository">Repository for category data access operations.</param>
-/// <param name="lookupRepository">Repository for lookup data access operations.</param>
+/// <param name="promotionLevelRepository">Repository for promotion level data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapper for entity-to-DTO conversion.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminEditOrderItemHandler(
     IContentOrderRepository contentOrderRepository,
     ICategoryRepository categoryRepository,
-    ILookupRepository lookupRepository,
+    IPromotionLevelRepository promotionLevelRepository,
     IContentUnitOfWork unitOfWork,
     IMapper mapper,
     ContentI18n i18n
@@ -63,7 +63,7 @@ public class AdminEditOrderItemHandler(
 
         if (command.PromotionLevelId.HasValue)
         {
-            PromotionLevelEntity promoLevel = await lookupRepository.GetPromotionLevelByIdOrThrowAsync(
+            PromotionLevelEntity promoLevel = await promotionLevelRepository.GetByIdOrThrowAsync(
                 id: command.PromotionLevelId.Value,
                 cancellationToken: cancellationToken
             );

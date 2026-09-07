@@ -1,5 +1,4 @@
 using _116.Core.Domain.Entities;
-using _116.Shared.Domain;
 using Microsoft.AspNetCore.Http;
 
 namespace _116.Core.Application.Shared.Repositories;
@@ -7,7 +6,7 @@ namespace _116.Core.Application.Shared.Repositories;
 /// <summary>
 /// Repository interface for managing file entities and their metadata.
 /// </summary>
-public interface IFileRepository : IRepository<FileEntity>
+public interface IFileRepository
 {
     /// <summary>
     /// Gets a file by its unique identifier.

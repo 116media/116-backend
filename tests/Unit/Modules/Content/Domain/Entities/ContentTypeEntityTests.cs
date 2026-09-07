@@ -1,4 +1,5 @@
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Events;
 using _116.Content.Domain.Exceptions;
 using _116.Content.Domain.StateMachines;
 using _116.Shared.Application.Exceptions;
@@ -143,6 +144,67 @@ public class ContentTypeEntityTests
         // Assert
         result.Should().BeFalse();
         entity.IsActive.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region Domain Events
+
+    [Fact]
+    public void Create_ShouldRaiseContentTypeChangedEvent()
+    {
+        // Act
+        var entity = ContentTypeEntity.Create(Guid.NewGuid(), TestConstants.ContentType.ValidName);
+
+        // Assert
+        entity
+            .DomainEvents.OfType<ContentTypeChangedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(new ContentTypeChangedEvent(entity.Id));
+    }
+
+    [Fact]
+    public void Update_ShouldRaiseContentTypeChangedEvent()
+    {
+        // Arrange
+        var entity = ContentTypeEntity.Create(Guid.NewGuid(), TestConstants.ContentType.ValidName);
+        entity.ClearDomainEvents();
+
+        // Act
+        entity.Update("Podcast");
+
+        // Assert
+        entity.DomainEvents.OfType<ContentTypeChangedEvent>().Should().ContainSingle();
+    }
+
+    [Fact]
+    public void Deactivate_ShouldRaiseContentTypeChangedEvent()
+    {
+        // Arrange
+        var entity = ContentTypeEntity.Create(Guid.NewGuid(), TestConstants.ContentType.ValidName);
+        entity.ClearDomainEvents();
+
+        // Act
+        entity.Deactivate();
+
+        // Assert
+        entity.DomainEvents.OfType<ContentTypeChangedEvent>().Should().ContainSingle();
+    }
+
+    [Fact]
+    public void Activate_WhenAlreadyActive_ShouldRaiseNothing()
+    {
+        // Arrange — a no-op transition must not evict the lookup cache
+        var entity = ContentTypeEntity.Create(Guid.NewGuid(), TestConstants.ContentType.ValidName);
+        entity.ClearDomainEvents();
+
+        // Act
+        entity.Activate();
+
+        // Assert
+        entity.DomainEvents.Should().BeEmpty();
     }
 
     #endregion

@@ -13,11 +13,13 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetArticleB
 /// Handles the <see cref="PublicGetArticleBySlugQuery" /> to retrieve a single published article by its slug.
 /// </summary>
 /// <param name="articleRepository">Repository for article data access operations.</param>
+/// <param name="articleInteractionRepository">Repository for article interaction data access operations.</param>
 /// <param name="fileRepository">Repository for resolving file URLs.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class PublicGetArticleBySlugHandler(
     IArticleRepository articleRepository,
+    IArticleInteractionRepository articleInteractionRepository,
     IFileRepository fileRepository,
     IMapper mapper,
     ContentI18n i18n
@@ -44,12 +46,12 @@ public class PublicGetArticleBySlugHandler(
 
         if (query.CurrentUserId is Guid userId)
         {
-            isLiked = await articleRepository.HasLikedAsync(
+            isLiked = await articleInteractionRepository.HasLikedAsync(
                 userId: userId,
                 articleId: article.Id,
                 cancellationToken: cancellationToken
             );
-            isBookmarked = await articleRepository.HasBookmarkedAsync(
+            isBookmarked = await articleInteractionRepository.HasBookmarkedAsync(
                 userId: userId,
                 articleId: article.Id,
                 cancellationToken: cancellationToken

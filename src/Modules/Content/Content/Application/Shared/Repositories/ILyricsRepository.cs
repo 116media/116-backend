@@ -1,13 +1,12 @@
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
-using _116.Shared.Domain;
 
 namespace _116.Content.Application.Shared.Repositories;
 
 /// <summary>
 /// Repository interface for lyrics data access operations.
 /// </summary>
-public interface ILyricsRepository : IRepository<LyricsEntity>
+public interface ILyricsRepository
 {
     /// <summary>
     /// Retrieves a paginated list of lyrics with optional filters.

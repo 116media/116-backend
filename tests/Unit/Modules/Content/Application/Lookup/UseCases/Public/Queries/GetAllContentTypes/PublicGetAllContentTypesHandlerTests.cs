@@ -16,13 +16,13 @@ namespace _116.Unit.Tests.Modules.Content.Application.Lookup.UseCases.Public.Que
 /// </summary>
 public class PublicGetAllContentTypesHandlerTests : BaseContentHandlerTest
 {
-    private readonly Mock<ILookupRepository> _lookupRepositoryMock;
+    private readonly Mock<IContentTypeRepository> _contentTypeRepositoryMock;
     private readonly PublicGetAllContentTypesHandler _handler;
 
     public PublicGetAllContentTypesHandlerTests()
     {
-        _lookupRepositoryMock = MockLookupRepository.Create();
-        _handler = new PublicGetAllContentTypesHandler(_lookupRepositoryMock.Object, Mapper);
+        _contentTypeRepositoryMock = MockContentTypeRepository.Create();
+        _handler = new PublicGetAllContentTypesHandler(_contentTypeRepositoryMock.Object, Mapper);
     }
 
     #region Success Cases
@@ -32,7 +32,7 @@ public class PublicGetAllContentTypesHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         List<ContentTypeEntity> activeList = ContentTypeFactory.CreateMany(3);
-        _lookupRepositoryMock.SetupGetActiveContentTypes(activeList);
+        _contentTypeRepositoryMock.SetupGetActiveContentTypes(activeList);
 
         var query = new PublicGetAllContentTypesQuery();
 
@@ -47,7 +47,7 @@ public class PublicGetAllContentTypesHandlerTests : BaseContentHandlerTest
     public async Task Handle_WithEmptyList_ShouldReturnEmptyList()
     {
         // Arrange
-        _lookupRepositoryMock.SetupGetActiveContentTypes(new List<ContentTypeEntity>());
+        _contentTypeRepositoryMock.SetupGetActiveContentTypes(new List<ContentTypeEntity>());
 
         var query = new PublicGetAllContentTypesQuery();
 
@@ -62,7 +62,7 @@ public class PublicGetAllContentTypesHandlerTests : BaseContentHandlerTest
     public async Task Handle_ShouldCallGetActiveContentTypesOnce()
     {
         // Arrange
-        _lookupRepositoryMock.SetupGetActiveContentTypes(new List<ContentTypeEntity>());
+        _contentTypeRepositoryMock.SetupGetActiveContentTypes(new List<ContentTypeEntity>());
 
         var query = new PublicGetAllContentTypesQuery();
 
@@ -70,7 +70,7 @@ public class PublicGetAllContentTypesHandlerTests : BaseContentHandlerTest
         await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        _lookupRepositoryMock.Verify(x => x.GetActiveContentTypesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _contentTypeRepositoryMock.Verify(x => x.GetActiveAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -78,7 +78,7 @@ public class PublicGetAllContentTypesHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         ContentTypeEntity contentType = ContentTypeFactory.CreateDefault();
-        _lookupRepositoryMock.SetupGetActiveContentTypes(new List<ContentTypeEntity> { contentType });
+        _contentTypeRepositoryMock.SetupGetActiveContentTypes(new List<ContentTypeEntity> { contentType });
 
         var query = new PublicGetAllContentTypesQuery();
 

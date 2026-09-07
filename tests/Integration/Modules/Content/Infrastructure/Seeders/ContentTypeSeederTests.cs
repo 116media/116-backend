@@ -17,7 +17,7 @@ public class ContentTypeSeederTests(PostgresFixture postgres) : BaseRepositoryTe
     {
         var seeder = Resolve<ContentTypeSeeder>();
 
-        await seeder.SeedAllAsync();
+        await seeder.SeedAsync();
 
         await using var context = CreateDbContext<ContentDbContext>();
         List<ContentTypeEntity> types = await context.ContentTypes.ToListAsync();
@@ -38,8 +38,8 @@ public class ContentTypeSeederTests(PostgresFixture postgres) : BaseRepositoryTe
     {
         var seeder = Resolve<ContentTypeSeeder>();
 
-        await seeder.SeedAllAsync();
-        await seeder.SeedAllAsync();
+        await seeder.SeedAsync();
+        await seeder.SeedAsync();
 
         await using var context = CreateDbContext<ContentDbContext>();
         int count = await context.ContentTypes.CountAsync();
@@ -52,7 +52,7 @@ public class ContentTypeSeederTests(PostgresFixture postgres) : BaseRepositoryTe
     {
         var seeder = Resolve<ContentTypeSeeder>();
 
-        await seeder.SeedAllAsync();
+        await seeder.SeedAsync();
 
         await using var context = CreateDbContext<ContentDbContext>();
         List<ContentTypeEntity> types = await context.ContentTypes.ToListAsync();
@@ -65,7 +65,7 @@ public class ContentTypeSeederTests(PostgresFixture postgres) : BaseRepositoryTe
     {
         var seeder = Resolve<ContentTypeSeeder>();
 
-        await seeder.SeedAllAsync();
+        await seeder.SeedAsync();
 
         await using var context = CreateDbContext<ContentDbContext>();
         List<ContentTypeEntity> types = await context.ContentTypes.ToListAsync();

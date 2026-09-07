@@ -53,6 +53,7 @@ public class AdminRemovePermissionFromRoleHandler(
         if (rolePermission is not null)
         {
             // Remove the association
+            rolePermission.MarkRemoved();
             rolePermissionRepository.Delete(entity: rolePermission);
             await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 

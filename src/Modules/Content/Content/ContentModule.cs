@@ -15,7 +15,6 @@ using _116.Content.Application.Editorial.EventHandlers;
 using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Interactions.EventHandlers;
 using _116.Content.Application.Interactions.Persistence;
-using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.Errors;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Errors.Messages;
@@ -28,7 +27,6 @@ using _116.Content.Application.Shared.Services;
 using _116.Content.Domain.Constants;
 using _116.Content.Domain.Events;
 using _116.Content.Infrastructure.BackgroundJobs;
-using _116.Content.Infrastructure.Cache;
 using _116.Content.Infrastructure.Persistence;
 using _116.Content.Infrastructure.Persistence.Seeds.ContentTypes;
 using _116.Content.Infrastructure.Repositories;
@@ -37,9 +35,9 @@ using _116.Shared.Application.Exceptions.Handlers.Contracts;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Application.Services;
 using _116.Shared.Infrastructure;
+using _116.Shared.Infrastructure.Seed;
 using Mapster;
 using MapsterMapper;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -52,20 +50,13 @@ public static class ContentModule
 {
     /// <summary>
     /// Gets the shared module configuration options for the Content module.
-    /// Migrations and seeding run in every environment except Testing.
     /// </summary>
-    /// <param name="environment">The host environment the options are derived from.</param>
-    /// <returns>The module options for the supplied environment.</returns>
-    private static ModuleOptions<ContentDbContext> GetModuleOptions(IHostEnvironment environment)
+    private static ModuleOptions<ContentDbContext> GetModuleOptions()
     {
-        bool enableSeeding = !environment.IsEnvironment("Testing");
-
         return new ModuleOptions<ContentDbContext>
         {
             ModuleName = ContentConstants.ModuleName,
             SchemaName = ContentConstants.SchemaName,
-            EnableMigrations = enableSeeding,
-            EnableSeeding = enableSeeding,
             UseNoTrackingByDefault = true,
         };
     }
@@ -78,7 +69,7 @@ public static class ContentModule
     /// <returns>The updated <see cref="IServiceCollection" /> for chaining.</returns>
     public static IServiceCollection AddContentModule(this IServiceCollection services, IHostEnvironment environment)
     {
-        services.AddModuleDatabase(GetModuleOptions(environment));
+        services.AddModuleDatabase(GetModuleOptions());
 
         // Register error message classes (IStringLocalizer-backed)
         services.AddScoped<ArticleErrorMessage>();
@@ -137,16 +128,18 @@ public static class ContentModule
         services.AddSingleton(mappingConfig);
         services.AddScoped<IMapper>(sp => new Mapper(sp.GetRequiredService<TypeAdapterConfig>()));
 
-        services.AddSingleton<IPopularTagsCacheInvalidator, PopularTagsCacheInvalidator>();
-        services.AddSingleton<IPopularArticlesCacheInvalidator, PopularArticlesCacheInvalidator>();
-        services.AddSingleton<IPopularVideosCacheInvalidator, PopularVideosCacheInvalidator>();
-
         services.AddScoped<IContentUnitOfWork, ContentUnitOfWork>();
-        services.AddScoped<ILookupRepository, LookupRepository>();
+        services.AddScoped(typeof(IContentRepository<>), typeof(ContentRepository<>));
+        services.AddScoped<IContentTypeRepository, ContentTypeRepository>();
+        services.AddScoped<IPricingTierRepository, PricingTierRepository>();
+        services.AddScoped<IPromotionLevelRepository, PromotionLevelRepository>();
+        services.AddScoped<ITagRepository, TagRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<ICustomerRepository, CustomerRepository>();
         services.AddScoped<IPackageRepository, PackageRepository>();
         services.AddScoped<IArticleRepository, ArticleRepository>();
+        services.AddScoped<IArticleCommentRepository, ArticleCommentRepository>();
+        services.AddScoped<IArticleInteractionRepository, ArticleInteractionRepository>();
         services.AddScoped<IVideoRepository, VideoRepository>();
         services.AddScoped<IShortVideoRepository, ShortVideoRepository>();
         services.AddScoped<ILyricsRepository, LyricsRepository>();
@@ -183,6 +176,10 @@ public static class ContentModule
         services.AddScoped<IDomainEventHandler<VideoShootScheduledEvent>, VideoShootScheduledEmailHandler>();
 
         // Cache invalidation domain event handlers
+        services.AddScoped<IDomainEventHandler<ContentTypeChangedEvent>, LookupCacheHandler>();
+        services.AddScoped<IDomainEventHandler<PricingTierChangedEvent>, LookupCacheHandler>();
+        services.AddScoped<IDomainEventHandler<PromotionLevelChangedEvent>, LookupCacheHandler>();
+        services.AddScoped<IDomainEventHandler<CategoryChangedEvent>, LookupCacheHandler>();
         services.AddScoped<IDomainEventHandler<ArticlePublishedEvent>, PopularArticlesCacheHandler>();
         services.AddScoped<IDomainEventHandler<ArticleUnpublishedEvent>, PopularArticlesCacheHandler>();
         services.AddScoped<IDomainEventHandler<ArticleDeletedEvent>, PopularArticlesCacheHandler>();
@@ -190,6 +187,16 @@ public static class ContentModule
         services.AddScoped<IDomainEventHandler<VideoUnpublishedEvent>, PopularVideosCacheHandler>();
         services.AddScoped<IDomainEventHandler<VideoDeletedEvent>, PopularVideosCacheHandler>();
         services.AddScoped<IDomainEventHandler<TagGraphChangedEvent>, PopularTagsCacheHandler>();
+        services.AddScoped<IDomainEventHandler<ShortVideoChangedEvent>, ContentFeedCacheHandler>();
+        services.AddScoped<IDomainEventHandler<ShortVideoDeletedEvent>, ContentFeedCacheHandler>();
+        services.AddScoped<IDomainEventHandler<ArtistChangedEvent>, ContentFeedCacheHandler>();
+        services.AddScoped<IDomainEventHandler<ArtistOwnershipVerifiedEvent>, ContentFeedCacheHandler>();
+        services.AddScoped<IDomainEventHandler<LyricsRevisionDecidedEvent>, ContentFeedCacheHandler>();
+        services.AddScoped<IDomainEventHandler<TranslationRevisionDecidedEvent>, ContentFeedCacheHandler>();
+        services.AddScoped<IDomainEventHandler<CommissionedContentPublishedEvent>, ContentFeedCacheHandler>();
+        services.AddScoped<IDomainEventHandler<CommissionedContentRejectedEvent>, ContentFeedCacheHandler>();
+        services.AddScoped<IDomainEventHandler<ContentPromotionRemovedEvent>, ContentFeedCacheHandler>();
+        services.AddScoped<IDomainEventHandler<OrderPaidEvent>, ContentFeedCacheHandler>();
 
         // External-asset cleanup domain event handlers
         services.AddScoped<IDomainEventHandler<ArticleDeletedEvent>, ContentAssetCleanupHandler>();
@@ -248,28 +255,16 @@ public static class ContentModule
             .ConfigureHttpClient(client => client.Timeout = TimeSpan.FromSeconds(10));
         services.AddScheduledJob<AbandonedDraftCleanupJob>(cronExpression: "0 0 * * * ?");
         services.AddScheduledJob<ShortVideoViewEventCleanupJob>(cronExpression: "0 0 3 * * ?");
+
+        // Seeders run from the advisory-locked seeding hosted service. The concrete type stays
+        // registered for direct resolution; Testing hosts register no IDataSeeder, so the
+        // hosted service is a no-op there.
         services.AddScoped<ContentTypeSeeder>();
-
-        return services;
-    }
-
-    /// <summary>
-    /// Configures the Content module's middleware in the application pipeline.
-    /// </summary>
-    /// <param name="app">The application builder.</param>
-    /// <returns>The updated <see cref="IApplicationBuilder" /> for chaining.</returns>
-    public static IApplicationBuilder UseContentModule(this IApplicationBuilder app)
-    {
-        IHostEnvironment environment = app.ApplicationServices.GetRequiredService<IHostEnvironment>();
-        ModuleOptions<ContentDbContext> options = GetModuleOptions(environment);
-        app.UseModuleDatabase(options);
-
-        if (options.EnableSeeding)
+        if (!environment.IsEnvironment("Testing"))
         {
-            using IServiceScope scope = app.ApplicationServices.CreateScope();
-            scope.ServiceProvider.GetRequiredService<ContentTypeSeeder>().SeedAllAsync().GetAwaiter().GetResult();
+            services.AddScoped<IDataSeeder>(sp => sp.GetRequiredService<ContentTypeSeeder>());
         }
 
-        return app;
+        return services;
     }
 }

@@ -20,12 +20,13 @@ namespace _116.Identity.Infrastructure.Repositories;
 /// Implementation of <see cref="IAuthRepository" /> using Entity Framework Core.
 /// </summary>
 public class AuthRepository(IdentityDbContext context, UserErrors userErrors, SessionErrors sessionErrors)
-    : IAuthRepository
+    : IdentityRepository<UserEntity>(context),
+        IAuthRepository
 {
     /// <inheritdoc />
     public async Task<UserEntity?> FindUserByIdOrThrow(Guid userId, CancellationToken cancellationToken = default)
     {
-        return await context.Users.FindOrThrowAsync([userId], cancellationToken: cancellationToken);
+        return await Context.Users.FindOrThrowAsync([userId], cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
@@ -35,7 +36,7 @@ public class AuthRepository(IdentityDbContext context, UserErrors userErrors, Se
     )
     {
         var specification = new UserByEmailSpecification(email: email.Value);
-        return await context
+        return await Context
             .Users.ApplySpecification(specification: specification)
             .Include(u => u.UserRoles)
                 .ThenInclude(ur => ur.Role)
@@ -53,7 +54,7 @@ public class AuthRepository(IdentityDbContext context, UserErrors userErrors, Se
     )
     {
         var specification = new UserByIdSpecification(userId: userId);
-        return await context
+        return await Context
             .Users.ApplySpecification(specification: specification)
             .Include(u => u.UserRoles)
                 .ThenInclude(ur => ur.Role)
@@ -70,7 +71,7 @@ public class AuthRepository(IdentityDbContext context, UserErrors userErrors, Se
     )
     {
         var specification = new UserByIdSpecification(userId: userId);
-        return await context
+        return await Context
             .Users.ApplySpecification(specification: specification)
             .Include(u => u.Sessions)
             .FirstDefaultOrThrowAsync(keyValue: userId, cancellationToken: cancellationToken);
@@ -83,7 +84,7 @@ public class AuthRepository(IdentityDbContext context, UserErrors userErrors, Se
     )
     {
         var specification = new UserByEmailSpecification(email: email.Value);
-        return await context
+        return await Context
             .Users.ApplySpecification(specification: specification)
             .Include(u => u.UserRoles)
                 .ThenInclude(ur => ur.Role)
@@ -103,7 +104,7 @@ public class AuthRepository(IdentityDbContext context, UserErrors userErrors, Se
         var specification = new UserByCredentialsSpecification(credentials: credentials);
 
         // Get the user by email or username without any status checks
-        return await context
+        return await Context
             .Users.ApplySpecification(specification: specification)
             .Include(u => u.UserRoles)
                 .ThenInclude(ur => ur.Role)
@@ -122,7 +123,7 @@ public class AuthRepository(IdentityDbContext context, UserErrors userErrors, Se
     {
         var specification = new UserByEmailSpecification(email: email.Value);
 
-        return await context.Users.AnyBySpecificationAsync(
+        return await Context.Users.AnyBySpecificationAsync(
             specification: specification,
             cancellationToken: cancellationToken
         );
@@ -133,7 +134,7 @@ public class AuthRepository(IdentityDbContext context, UserErrors userErrors, Se
     {
         var specification = new UserByUserNameSpecification(userName: userName);
 
-        return await context.Users.AnyBySpecificationAsync(
+        return await Context.Users.AnyBySpecificationAsync(
             specification: specification,
             cancellationToken: cancellationToken
         );
@@ -147,16 +148,10 @@ public class AuthRepository(IdentityDbContext context, UserErrors userErrors, Se
     {
         var specification = new UserByPhoneNumberSpecification(phoneNumber: phoneNumber);
 
-        return await context.Users.FirstOrDefaultBySpecificationAsync(
+        return await Context.Users.FirstOrDefaultBySpecificationAsync(
             specification: specification,
             cancellationToken: cancellationToken
         );
-    }
-
-    /// <inheritdoc />
-    public async Task AddAsync(UserEntity user, CancellationToken cancellationToken = default)
-    {
-        await context.Users.AddAsync(entity: user, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
@@ -185,7 +180,7 @@ public class AuthRepository(IdentityDbContext context, UserErrors userErrors, Se
     public async Task<bool> IsSessionValidAsync(Guid sessionId, CancellationToken cancellationToken = default)
     {
         var specification = new SessionByIdSpecification(sessionId: sessionId);
-        SessionEntity? session = await context
+        SessionEntity? session = await Context
             .Sessions.AsNoTracking()
             .ApplySpecification(specification: specification)
             .FirstOrDefaultAsync(cancellationToken);
@@ -231,7 +226,7 @@ public class AuthRepository(IdentityDbContext context, UserErrors userErrors, Se
     {
         // Check for existing email first using specification
         var emailSpec = new UserByEmailSpecification(email: email.Value);
-        bool emailExists = await context.Users.AnyBySpecificationAsync(
+        bool emailExists = await Context.Users.AnyBySpecificationAsync(
             specification: emailSpec,
             cancellationToken: cancellationToken
         );
@@ -243,7 +238,7 @@ public class AuthRepository(IdentityDbContext context, UserErrors userErrors, Se
 
         // Check for existing username second using specification
         var usernameSpec = new UserByUserNameSpecification(userName: userName);
-        bool usernameExists = await context.Users.AnyBySpecificationAsync(
+        bool usernameExists = await Context.Users.AnyBySpecificationAsync(
             specification: usernameSpec,
             cancellationToken: cancellationToken
         );
@@ -258,11 +253,11 @@ public class AuthRepository(IdentityDbContext context, UserErrors userErrors, Se
     public async Task AssignVisitorRoleAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         // Find the user
-        UserEntity? user = await context.Users.FindAsync([userId], cancellationToken: cancellationToken);
+        UserEntity? user = await Context.Users.FindAsync([userId], cancellationToken: cancellationToken);
 
         // Find the Visitor role using specification
         var roleSpec = new RoleByNameSpecification(nameof(EnumCoreUserRole.Visitor));
-        RoleEntity? visitorRole = await context.Roles.FirstOrDefaultBySpecificationAsync(
+        RoleEntity? visitorRole = await Context.Roles.FirstOrDefaultBySpecificationAsync(
             specification: roleSpec,
             cancellationToken: cancellationToken
         );
@@ -287,7 +282,7 @@ public class AuthRepository(IdentityDbContext context, UserErrors userErrors, Se
     {
         var specification = new UserByCredentialsSpecification(credentials: credentials);
 
-        return await context
+        return await Context
             .Users.ApplySpecification(specification: specification)
             .Include(u => u.UserRoles)
                 .ThenInclude(ur => ur.Role)
@@ -305,7 +300,7 @@ public class AuthRepository(IdentityDbContext context, UserErrors userErrors, Se
     {
         var specification = new UserByEmailSpecification(email: email.Value);
 
-        return await context
+        return await Context
             .Users.ApplySpecification(specification: specification)
             .Include(u => u.UserRoles)
                 .ThenInclude(ur => ur.Role)
@@ -377,7 +372,7 @@ public class AuthRepository(IdentityDbContext context, UserErrors userErrors, Se
                 }
             }
 
-            await context.SaveChangesAsync(cancellationToken: cancellationToken);
+            await Context.SaveChangesAsync(cancellationToken: cancellationToken);
             return user;
         }
         catch (NotFoundException)
@@ -391,15 +386,15 @@ public class AuthRepository(IdentityDbContext context, UserErrors userErrors, Se
                 email: email
             );
 
-            await AddAsync(user: user, cancellationToken: cancellationToken);
+            await AddAsync(entity: user, cancellationToken: cancellationToken);
             await AssignVisitorRoleAsync(userId: user.Id, cancellationToken: cancellationToken);
 
-            await context.UserTokenStates.AddAsync(
+            await Context.UserTokenStates.AddAsync(
                 entity: UserTokenStateEntity.Create(userId: user.Id),
                 cancellationToken: cancellationToken
             );
 
-            await context.SaveChangesAsync(cancellationToken: cancellationToken);
+            await Context.SaveChangesAsync(cancellationToken: cancellationToken);
 
             // Reload with roles and permissions after creation.
             return await GetUserWithRolesAndPermissionsByProviderSubjectAsync(
@@ -424,7 +419,7 @@ public class AuthRepository(IdentityDbContext context, UserErrors userErrors, Se
         CancellationToken cancellationToken = default
     )
     {
-        return await context
+        return await Context
             .Users.Where(u => u.AuthProvider == authProvider && u.ProviderSubjectId == providerSubjectId)
             .Include(u => u.UserRoles)
                 .ThenInclude(ur => ur.Role)

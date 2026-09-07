@@ -1,13 +1,12 @@
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
-using _116.Shared.Domain;
 
 namespace _116.Content.Application.Shared.Repositories;
 
 /// <summary>
 /// Repository interface for album data access operations.
 /// </summary>
-public interface IAlbumRepository : IRepository<AlbumEntity>
+public interface IAlbumRepository
 {
     /// <summary>
     /// Retrieves an album by its unique identifier. Returns null if not found.

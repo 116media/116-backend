@@ -18,7 +18,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Interactions.UseCases.Admi
 /// </summary>
 public class AdminDeleteArticleCommentHandlerTests
 {
-    private readonly Mock<IArticleRepository> _articleRepositoryMock;
+    private readonly Mock<IArticleCommentRepository> _articleCommentRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminDeleteArticleCommentHandler _handler;
 
@@ -26,10 +26,10 @@ public class AdminDeleteArticleCommentHandlerTests
 
     public AdminDeleteArticleCommentHandlerTests()
     {
-        _articleRepositoryMock = MockArticleRepository.Create();
+        _articleCommentRepositoryMock = MockArticleCommentRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _handler = new AdminDeleteArticleCommentHandler(
-            _articleRepositoryMock.Object,
+            _articleCommentRepositoryMock.Object,
             _unitOfWorkMock.Object,
             TestErrorsFactory.CreateContentI18n()
         );
@@ -45,14 +45,14 @@ public class AdminDeleteArticleCommentHandlerTests
         Guid userId = Guid.NewGuid();
         ArticleCommentEntity comment = ArticleCommentFactory.Create(article.Id, userId);
         var command = new AdminDeleteArticleCommentCommand(ArticleId: article.Id, CommentId: comment.Id);
-        _articleRepositoryMock.SetupGetCommentByIdInArticleAsync(comment, article.Id);
+        _articleCommentRepositoryMock.SetupGetCommentByIdInArticleAsync(comment, article.Id);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         comment.IsDeleted.Should().BeTrue();
-        _articleRepositoryMock.VerifyUpdateCommentCalled();
+        _articleCommentRepositoryMock.VerifyUpdateCommentCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -65,14 +65,14 @@ public class AdminDeleteArticleCommentHandlerTests
         comment.SoftDelete();
         comment.ClearDomainEvents();
         var command = new AdminDeleteArticleCommentCommand(ArticleId: article.Id, CommentId: comment.Id);
-        _articleRepositoryMock.SetupGetCommentByIdInArticleAsync(comment, article.Id);
+        _articleCommentRepositoryMock.SetupGetCommentByIdInArticleAsync(comment, article.Id);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         comment.DomainEvents.Should().BeEmpty();
-        _articleRepositoryMock.Verify(x => x.UpdateComment(It.IsAny<ArticleCommentEntity>()), Times.Never);
+        _articleCommentRepositoryMock.Verify(x => x.UpdateComment(It.IsAny<ArticleCommentEntity>()), Times.Never);
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
@@ -85,7 +85,7 @@ public class AdminDeleteArticleCommentHandlerTests
     {
         // Arrange
         var command = new AdminDeleteArticleCommentCommand(ArticleId: Guid.NewGuid(), CommentId: Guid.NewGuid());
-        _articleRepositoryMock.SetupGetCommentByIdInArticleNotFound(command.CommentId, command.ArticleId);
+        _articleCommentRepositoryMock.SetupGetCommentByIdInArticleNotFound(command.CommentId, command.ArticleId);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);

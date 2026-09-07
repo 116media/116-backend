@@ -20,16 +20,16 @@ namespace _116.Unit.Tests.Modules.Content.Application.Lookup.UseCases.Admin.Comm
 /// </summary>
 public class AdminUpdateTagHandlerTests : BaseContentHandlerTest
 {
-    private readonly Mock<ILookupRepository> _lookupRepositoryMock;
+    private readonly Mock<ITagRepository> _tagRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminUpdateTagHandler _handler;
 
     public AdminUpdateTagHandlerTests()
     {
-        _lookupRepositoryMock = MockLookupRepository.Create();
+        _tagRepositoryMock = MockTagRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _handler = new AdminUpdateTagHandler(
-            _lookupRepositoryMock.Object,
+            _tagRepositoryMock.Object,
             _unitOfWorkMock.Object,
             Mapper,
             TestErrorsFactory.CreateContentI18n()
@@ -47,8 +47,8 @@ public class AdminUpdateTagHandlerTests : BaseContentHandlerTest
         string newSlug = TestConstants.Tag.AnotherValidSlug;
         var command = new AdminUpdateTagCommand(Id: tag.Id.ToString(), Name: newName, Slug: newSlug);
 
-        _lookupRepositoryMock.SetupGetTagByIdOrThrow(entity: tag);
-        _lookupRepositoryMock.SetupGetTagBySlug(slug: newSlug, tag: null);
+        _tagRepositoryMock.SetupGetTagByIdOrThrow(entity: tag);
+        _tagRepositoryMock.SetupGetTagBySlug(slug: newSlug, tag: null);
 
         // Act
         AdminUpdateTagResult result = await _handler.Handle(command, CancellationToken.None);
@@ -69,8 +69,8 @@ public class AdminUpdateTagHandlerTests : BaseContentHandlerTest
         string currentSlug = TestConstants.Tag.ValidSlug;
         var command = new AdminUpdateTagCommand(Id: tag.Id.ToString(), Name: newName, Slug: currentSlug);
 
-        _lookupRepositoryMock.SetupGetTagByIdOrThrow(entity: tag);
-        _lookupRepositoryMock.SetupGetTagBySlug(slug: currentSlug, tag: tag);
+        _tagRepositoryMock.SetupGetTagByIdOrThrow(entity: tag);
+        _tagRepositoryMock.SetupGetTagBySlug(slug: currentSlug, tag: tag);
 
         // Act
         AdminUpdateTagResult result = await _handler.Handle(command, CancellationToken.None);
@@ -93,8 +93,8 @@ public class AdminUpdateTagHandlerTests : BaseContentHandlerTest
             Slug: TestConstants.Tag.ValidSlug
         );
 
-        _lookupRepositoryMock.SetupGetTagByIdOrThrow(entity: tag);
-        _lookupRepositoryMock.SetupGetTagBySlug(slug: TestConstants.Tag.ValidSlug, tag: tag);
+        _tagRepositoryMock.SetupGetTagByIdOrThrow(entity: tag);
+        _tagRepositoryMock.SetupGetTagBySlug(slug: TestConstants.Tag.ValidSlug, tag: tag);
 
         // Act
         AdminUpdateTagResult result = await _handler.Handle(command, CancellationToken.None);
@@ -119,7 +119,7 @@ public class AdminUpdateTagHandlerTests : BaseContentHandlerTest
             Slug: TestConstants.Tag.ValidSlug
         );
 
-        _lookupRepositoryMock.SetupGetTagByIdOrThrowNotFound(id: nonExistentId);
+        _tagRepositoryMock.SetupGetTagByIdOrThrowNotFound(id: nonExistentId);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
@@ -142,8 +142,8 @@ public class AdminUpdateTagHandlerTests : BaseContentHandlerTest
 
         TagEntity existingTag = TagFactory.Create(name: TestConstants.Tag.AnotherValidName, slug: conflictingSlug);
 
-        _lookupRepositoryMock.SetupGetTagByIdOrThrow(entity: tag);
-        _lookupRepositoryMock.SetupGetTagBySlug(slug: conflictingSlug, tag: existingTag);
+        _tagRepositoryMock.SetupGetTagByIdOrThrow(entity: tag);
+        _tagRepositoryMock.SetupGetTagBySlug(slug: conflictingSlug, tag: existingTag);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
@@ -166,8 +166,8 @@ public class AdminUpdateTagHandlerTests : BaseContentHandlerTest
 
         TagEntity existingTag = TagFactory.Create(name: TestConstants.Tag.AnotherValidName, slug: conflictingSlug);
 
-        _lookupRepositoryMock.SetupGetTagByIdOrThrow(entity: tag);
-        _lookupRepositoryMock.SetupGetTagBySlug(slug: conflictingSlug, tag: existingTag);
+        _tagRepositoryMock.SetupGetTagByIdOrThrow(entity: tag);
+        _tagRepositoryMock.SetupGetTagBySlug(slug: conflictingSlug, tag: existingTag);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
@@ -193,16 +193,16 @@ public class AdminUpdateTagHandlerTests : BaseContentHandlerTest
             Slug: newSlug
         );
 
-        _lookupRepositoryMock.SetupGetTagByIdOrThrow(entity: tag);
-        _lookupRepositoryMock.SetupGetTagBySlug(slug: newSlug, tag: null);
+        _tagRepositoryMock.SetupGetTagByIdOrThrow(entity: tag);
+        _tagRepositoryMock.SetupGetTagBySlug(slug: newSlug, tag: null);
         using CancellationTokenSource cts = new();
 
         // Act
         await _handler.Handle(command, cts.Token);
 
         // Assert
-        _lookupRepositoryMock.Verify(x => x.GetTagByIdOrThrowAsync(tag.Id, cts.Token), Times.Once);
-        _lookupRepositoryMock.Verify(x => x.GetTagBySlugAsync(newSlug, cts.Token), Times.Once);
+        _tagRepositoryMock.Verify(x => x.GetByIdOrThrowAsync(tag.Id, cts.Token), Times.Once);
+        _tagRepositoryMock.Verify(x => x.GetBySlugAsync(newSlug, cts.Token), Times.Once);
     }
 
     #endregion

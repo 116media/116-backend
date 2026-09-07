@@ -24,7 +24,7 @@ public class AdminEditOrderItemHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<IContentOrderRepository> _orderRepositoryMock;
     private readonly Mock<ICategoryRepository> _categoryRepositoryMock;
-    private readonly Mock<ILookupRepository> _lookupRepositoryMock;
+    private readonly Mock<IPromotionLevelRepository> _promotionLevelRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminEditOrderItemHandler _handler;
 
@@ -32,12 +32,12 @@ public class AdminEditOrderItemHandlerTests : BaseContentHandlerTest
     {
         _orderRepositoryMock = MockContentOrderRepository.Create();
         _categoryRepositoryMock = MockCategoryRepository.Create();
-        _lookupRepositoryMock = MockLookupRepository.Create();
+        _promotionLevelRepositoryMock = MockPromotionLevelRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _handler = new AdminEditOrderItemHandler(
             _orderRepositoryMock.Object,
             _categoryRepositoryMock.Object,
-            _lookupRepositoryMock.Object,
+            _promotionLevelRepositoryMock.Object,
             _unitOfWorkMock.Object,
             Mapper,
             TestErrorsFactory.CreateContentI18n()

@@ -10,14 +10,10 @@ namespace _116.Content.Infrastructure.Repositories;
 /// claim request entities.
 /// </summary>
 /// <param name="context">The Content module database context.</param>
-public class ArtistClaimRequestRepository(ContentDbContext context) : IArtistClaimRequestRepository
+public class ArtistClaimRequestRepository(ContentDbContext context)
+    : ContentRepository<ArtistClaimRequestEntity>(context),
+        IArtistClaimRequestRepository
 {
-    /// <inheritdoc />
-    public async Task AddAsync(ArtistClaimRequestEntity claimRequest, CancellationToken cancellationToken = default)
-    {
-        await context.ArtistClaimRequests.AddAsync(claimRequest, cancellationToken);
-    }
-
     /// <inheritdoc />
     public async Task<bool> ExistsForArtistAndUserAsync(
         Guid artistId,
@@ -25,7 +21,7 @@ public class ArtistClaimRequestRepository(ContentDbContext context) : IArtistCla
         CancellationToken cancellationToken = default
     )
     {
-        return await context.ArtistClaimRequests.AnyAsync(
+        return await Context.ArtistClaimRequests.AnyAsync(
             request => request.ArtistId == artistId && request.UserId == userId,
             cancellationToken
         );

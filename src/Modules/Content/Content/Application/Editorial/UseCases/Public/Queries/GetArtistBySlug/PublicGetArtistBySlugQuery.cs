@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.DTOs;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
@@ -12,7 +13,25 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetArtistBy
 /// <param name="LyricsPage">Pagination parameters for the artist's published lyrics.</param>
 /// <param name="VideosPage">Pagination parameters for the artist's published videos.</param>
 public record PublicGetArtistBySlugQuery(string Slug, PaginatedRequest LyricsPage, PaginatedRequest VideosPage)
-    : IQuery<PublicGetArtistBySlugResult>;
+    : IQuery<PublicGetArtistBySlugResult>,
+        ICacheableRequest
+{
+    /// <inheritdoc />
+    public string CacheKey =>
+        $"artist:{Slug}:{LyricsPage.PageIndex}:{LyricsPage.PageSize}"
+        + $":{VideosPage.PageIndex}:{VideosPage.PageSize}";
+
+    /// <inheritdoc />
+    public TimeSpan Ttl => TimeSpan.FromMinutes(10);
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// The profile embeds lyrics and video listings, so those tags evict it alongside artist
+    /// changes.
+    /// </remarks>
+    public IReadOnlyList<string> CacheTags =>
+        [ContentCacheTags.Artists, ContentCacheTags.Lyrics, ContentCacheTags.Videos];
+}
 
 /// <summary>
 /// Result of the <see cref="PublicGetArtistBySlugQuery" /> containing the artist profile,

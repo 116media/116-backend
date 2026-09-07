@@ -1,4 +1,5 @@
 using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.Events;
 using _116.Tests.Fixtures.Factories.Identity;
 using AwesomeAssertions;
 using Xunit;
@@ -131,6 +132,42 @@ public class RolePermissionEntityTests
         rolePermission1.PermissionId.Should().Be(permissionId);
         rolePermission2.PermissionId.Should().Be(permissionId);
         rolePermission1.RoleId.Should().NotBe(rolePermission2.RoleId);
+    }
+
+    #endregion
+
+    #region Domain Events
+
+    [Fact]
+    public void Create_ShouldRaiseRoleChangedEventForTheRole()
+    {
+        // Arrange
+        var roleId = Guid.NewGuid();
+
+        // Act
+        var association = RolePermissionEntity.Create(Guid.NewGuid(), roleId, Guid.NewGuid());
+
+        // Assert
+        association
+            .DomainEvents.OfType<RoleChangedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(new RoleChangedEvent(roleId));
+    }
+
+    [Fact]
+    public void MarkRemoved_ShouldRaiseRoleChangedEvent()
+    {
+        // Arrange
+        var association = RolePermissionEntity.Create(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid());
+        association.ClearDomainEvents();
+
+        // Act
+        association.MarkRemoved();
+
+        // Assert
+        association.DomainEvents.OfType<RoleChangedEvent>().Should().ContainSingle();
     }
 
     #endregion

@@ -43,6 +43,7 @@ public class AdminHardDeleteRoleHandler(
             throw i18n.User.CoreRoleCannotBeDeleted(roleName: role.Name);
         }
 
+        role.MarkHardDeleted();
         roleRepository.Delete(entity: role);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 

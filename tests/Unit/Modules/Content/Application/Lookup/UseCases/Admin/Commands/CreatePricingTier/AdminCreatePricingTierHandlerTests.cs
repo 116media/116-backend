@@ -18,16 +18,16 @@ namespace _116.Unit.Tests.Modules.Content.Application.Lookup.UseCases.Admin.Comm
 /// </summary>
 public class AdminCreatePricingTierHandlerTests : BaseContentHandlerTest
 {
-    private readonly Mock<ILookupRepository> _lookupRepositoryMock;
+    private readonly Mock<IPricingTierRepository> _pricingTierRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminCreatePricingTierHandler _handler;
 
     public AdminCreatePricingTierHandlerTests()
     {
-        _lookupRepositoryMock = MockLookupRepository.Create();
+        _pricingTierRepositoryMock = MockPricingTierRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _handler = new AdminCreatePricingTierHandler(
-            _lookupRepositoryMock.Object,
+            _pricingTierRepositoryMock.Object,
             _unitOfWorkMock.Object,
             Mapper,
             TestErrorsFactory.CreateContentI18n()
@@ -46,7 +46,7 @@ public class AdminCreatePricingTierHandlerTests : BaseContentHandlerTest
             Description: TestConstants.PricingTier.ValidDescription
         );
 
-        _lookupRepositoryMock.SetupPricingTierExistsByName(name, false);
+        _pricingTierRepositoryMock.SetupPricingTierExistsByName(name, false);
 
         // Act
         AdminCreatePricingTierResult result = await _handler.Handle(command, CancellationToken.None);
@@ -55,7 +55,7 @@ public class AdminCreatePricingTierHandlerTests : BaseContentHandlerTest
         result.PricingTier.Name.Should().Be(name);
         result.PricingTier.IsActive.Should().BeTrue();
 
-        _lookupRepositoryMock.VerifyAddPricingTierCalled();
+        _pricingTierRepositoryMock.VerifyAddPricingTierCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -67,7 +67,7 @@ public class AdminCreatePricingTierHandlerTests : BaseContentHandlerTest
         string description = TestConstants.PricingTier.ValidDescription;
         var command = new AdminCreatePricingTierCommand(Name: name, Description: description);
 
-        _lookupRepositoryMock.SetupPricingTierExistsByName(name, false);
+        _pricingTierRepositoryMock.SetupPricingTierExistsByName(name, false);
 
         // Act
         AdminCreatePricingTierResult result = await _handler.Handle(command, CancellationToken.None);
@@ -90,7 +90,7 @@ public class AdminCreatePricingTierHandlerTests : BaseContentHandlerTest
             Description: TestConstants.PricingTier.ValidDescription
         );
 
-        _lookupRepositoryMock.SetupPricingTierExistsByName(name, true);
+        _pricingTierRepositoryMock.SetupPricingTierExistsByName(name, true);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
@@ -109,14 +109,14 @@ public class AdminCreatePricingTierHandlerTests : BaseContentHandlerTest
             Description: TestConstants.PricingTier.ValidDescription
         );
 
-        _lookupRepositoryMock.SetupPricingTierExistsByName(name, true);
+        _pricingTierRepositoryMock.SetupPricingTierExistsByName(name, true);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<ConflictException>();
-        _lookupRepositoryMock.VerifyAddPricingTierNotCalled();
+        _pricingTierRepositoryMock.VerifyAddPricingTierNotCalled();
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 

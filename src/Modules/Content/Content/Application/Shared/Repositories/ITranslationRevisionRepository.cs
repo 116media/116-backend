@@ -1,12 +1,11 @@
 using _116.Content.Domain.Entities;
-using _116.Shared.Domain;
 
 namespace _116.Content.Application.Shared.Repositories;
 
 /// <summary>
 /// Repository interface for translation revision data access operations.
 /// </summary>
-public interface ITranslationRevisionRepository : IRepository<LyricsTranslationRevisionEntity>
+public interface ITranslationRevisionRepository
 {
     /// <summary>
     /// Retrieves a translation revision by its unique identifier.

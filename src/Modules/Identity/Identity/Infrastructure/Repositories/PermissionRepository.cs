@@ -14,7 +14,9 @@ namespace _116.Identity.Infrastructure.Repositories;
 /// Implementation of <see cref="IPermissionRepository" /> for managing permission entities.
 /// </summary>
 /// <param name="context">The database context for accessing permission data.</param>
-public class PermissionRepository(IdentityDbContext context) : IPermissionRepository
+public class PermissionRepository(IdentityDbContext context)
+    : IdentityRepository<PermissionEntity>(context),
+        IPermissionRepository
 {
     /// <inheritdoc />
     public async Task<PermissionEntity?> GetPermissionByIdOrThrowAsync(
@@ -23,7 +25,7 @@ public class PermissionRepository(IdentityDbContext context) : IPermissionReposi
     )
     {
         var specification = new PermissionByIdSpecification(permissionId: permissionId);
-        return await context
+        return await Context
             .Permissions.ApplySpecification(specification: specification)
             .FirstDefaultOrThrowAsync(keyValue: permissionId, cancellationToken: cancellationToken);
     }
@@ -36,13 +38,7 @@ public class PermissionRepository(IdentityDbContext context) : IPermissionReposi
     )
     {
         var specification = new PermissionByResourceAndActionSpecification(resource: resource, action: action);
-        return await context.Permissions.ApplySpecification(specification: specification).AnyAsync(cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public async Task AddAsync(PermissionEntity permission, CancellationToken cancellationToken = default)
-    {
-        await context.Permissions.AddAsync(permission, cancellationToken);
+        return await Context.Permissions.ApplySpecification(specification: specification).AnyAsync(cancellationToken);
     }
 
     /// <inheritdoc />
@@ -63,8 +59,8 @@ public class PermissionRepository(IdentityDbContext context) : IPermissionReposi
         Specification<PermissionEntity>? spec = builder.Build();
 
         IQueryable<PermissionEntity> query = spec is not null
-            ? context.Permissions.Where(spec.ToExpression())
-            : context.Permissions;
+            ? Context.Permissions.Where(spec.ToExpression())
+            : Context.Permissions;
 
         int totalCount = await query.CountAsync(cancellationToken: cancellationToken);
 
@@ -80,6 +76,6 @@ public class PermissionRepository(IdentityDbContext context) : IPermissionReposi
     /// <inheritdoc />
     public void Delete(PermissionEntity entity)
     {
-        context.Permissions.Remove(entity);
+        Context.Permissions.Remove(entity);
     }
 }

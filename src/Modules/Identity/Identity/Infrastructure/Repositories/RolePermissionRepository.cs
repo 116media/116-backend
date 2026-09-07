@@ -11,7 +11,9 @@ namespace _116.Identity.Infrastructure.Repositories;
 /// Implementation of <see cref="IRolePermissionRepository" /> for managing role-permission associations.
 /// </summary>
 /// <param name="context">The database context for accessing role-permission data.</param>
-public class RolePermissionRepository(IdentityDbContext context) : IRolePermissionRepository
+public class RolePermissionRepository(IdentityDbContext context)
+    : IdentityRepository<RolePermissionEntity>(context),
+        IRolePermissionRepository
 {
     /// <inheritdoc />
     public async Task<bool> ExistsByRoleAndPermissionAsync(
@@ -24,7 +26,7 @@ public class RolePermissionRepository(IdentityDbContext context) : IRolePermissi
             roleId: roleId,
             permissionId: permissionId
         );
-        return await context
+        return await Context
             .RolePermissions.ApplySpecification(specification: specification)
             .AnyAsync(cancellationToken);
     }
@@ -40,21 +42,15 @@ public class RolePermissionRepository(IdentityDbContext context) : IRolePermissi
             roleId: roleId,
             permissionId: permissionId
         );
-        return await context
+        return await Context
             .RolePermissions.ApplySpecification(specification: specification)
             .FirstOrDefaultAsync(cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task AddAsync(RolePermissionEntity entity, CancellationToken cancellationToken = default)
-    {
-        await context.RolePermissions.AddAsync(entity, cancellationToken);
-    }
-
-    /// <inheritdoc />
     public void Delete(RolePermissionEntity entity)
     {
-        context.RolePermissions.Remove(entity);
+        Context.RolePermissions.Remove(entity);
     }
 
     /// <inheritdoc />
@@ -64,7 +60,7 @@ public class RolePermissionRepository(IdentityDbContext context) : IRolePermissi
     )
     {
         var specification = new RolePermissionByRoleIdSpecification(roleId: roleId);
-        return await context
+        return await Context
             .RolePermissions.ApplySpecification(specification: specification)
             .Select(rp => rp.PermissionId)
             .ToListAsync(cancellationToken);
@@ -77,7 +73,7 @@ public class RolePermissionRepository(IdentityDbContext context) : IRolePermissi
         CancellationToken cancellationToken = default
     )
     {
-        return context
+        return Context
             .RolePermissions.Where(rp => rp.RoleId == roleId && permissionIds.Contains(rp.PermissionId))
             .ToListAsync(cancellationToken);
     }

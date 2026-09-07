@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.DTOs;
 using _116.Shared.Contracts.Application.CQRS;
 
@@ -13,7 +14,25 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetSimilarL
 /// <c>IsLiked</c> flag on the returned summaries resolves to false.
 /// </param>
 public record PublicGetSimilarLyricsQuery(Guid LyricsId, Guid? CurrentUserId = null)
-    : IQuery<PublicGetSimilarLyricsResult>;
+    : IQuery<PublicGetSimilarLyricsResult>,
+        IConditionallyCacheableRequest
+{
+    /// <inheritdoc />
+    /// <remarks>
+    /// Only the anonymous projection is stored: an authenticated response carries per-user
+    /// interaction flags, and caching it would show one reader another reader's likes.
+    /// </remarks>
+    public bool IsCacheable => CurrentUserId is null;
+
+    /// <inheritdoc />
+    public string CacheKey => $"similar_lyrics:{LyricsId}";
+
+    /// <inheritdoc />
+    public TimeSpan Ttl => TimeSpan.FromMinutes(10);
+
+    /// <inheritdoc />
+    public IReadOnlyList<string> CacheTags => [ContentCacheTags.Lyrics];
+}
 
 /// <summary>
 /// Result of the <see cref="PublicGetSimilarLyricsQuery" />. Empty when no lyrics page matches

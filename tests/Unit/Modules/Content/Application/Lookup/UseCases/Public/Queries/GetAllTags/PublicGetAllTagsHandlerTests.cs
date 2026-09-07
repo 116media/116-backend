@@ -3,39 +3,30 @@ using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
-using _116.Content.Infrastructure.Cache;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
 namespace _116.Unit.Tests.Modules.Content.Application.Lookup.UseCases.Public.Queries.GetAllTags;
 
 /// <summary>
-/// Unit tests for <see cref="PublicGetAllTagsHandler"/>.
-/// Uses a real <see cref="MemoryCache"/> instance and a real <see cref="PopularTagsCacheInvalidator"/>
-/// so that search-aware caching behaviour is exercised without mocking — verifying that the
-/// repository is called only once per (limit, contentType) cache key for unfiltered requests,
-/// that search requests bypass the cache, and that invalidation forces a fresh repository read.
+/// Unit tests for <see cref="PublicGetAllTagsHandler"/>. Caching lives in the CQRS caching
+/// decorator, so these cover the projection only; the conditional-caching contract the
+/// decorator relies on is asserted on the query record.
 /// </summary>
 public class PublicGetAllTagsHandlerTests : BaseContentHandlerTest
 {
-    private readonly Mock<ILookupRepository> _lookupRepositoryMock;
-    private readonly IMemoryCache _cache;
-    private readonly PopularTagsCacheInvalidator _cacheInvalidator;
+    private readonly Mock<ITagRepository> _tagRepositoryMock;
     private readonly PublicGetAllTagsHandler _handler;
 
     public PublicGetAllTagsHandlerTests()
     {
-        _lookupRepositoryMock = MockLookupRepository.Create();
-        _cache = new MemoryCache(Options.Create(new MemoryCacheOptions()));
-        _cacheInvalidator = new PopularTagsCacheInvalidator();
-        _handler = new PublicGetAllTagsHandler(_lookupRepositoryMock.Object, _cache, _cacheInvalidator, Mapper);
+        _tagRepositoryMock = MockTagRepository.Create();
+        _handler = new PublicGetAllTagsHandler(_tagRepositoryMock.Object, Mapper);
     }
 
     #region Success Cases
@@ -45,7 +36,7 @@ public class PublicGetAllTagsHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         List<TagEntity> tags = TagFactory.CreateMany(3);
-        _lookupRepositoryMock.SetupGetAllTags(tags);
+        _tagRepositoryMock.SetupGetAllTags(tags);
 
         var query = new PublicGetAllTagsQuery(Search: null);
 
@@ -62,7 +53,7 @@ public class PublicGetAllTagsHandlerTests : BaseContentHandlerTest
         // Arrange
         string searchTerm = TestConstants.Tag.ValidName;
         TagEntity tag = TagFactory.CreateDefault();
-        _lookupRepositoryMock.SetupGetAllTags(new List<TagEntity> { tag });
+        _tagRepositoryMock.SetupGetAllTags(new List<TagEntity> { tag });
 
         var query = new PublicGetAllTagsQuery(Search: searchTerm);
 
@@ -71,9 +62,9 @@ public class PublicGetAllTagsHandlerTests : BaseContentHandlerTest
 
         // Assert
         result.Tags.Should().ContainSingle();
-        _lookupRepositoryMock.Verify(
+        _tagRepositoryMock.Verify(
             x =>
-                x.GetAllTagsAsync(
+                x.GetAllAsync(
                     searchTerm,
                     It.IsAny<EnumCoreContentType?>(),
                     It.IsAny<int?>(),
@@ -87,7 +78,7 @@ public class PublicGetAllTagsHandlerTests : BaseContentHandlerTest
     public async Task Handle_WithArticleContentType_ShouldPassContentTypeToRepository()
     {
         // Arrange
-        _lookupRepositoryMock.SetupGetAllTags(TagFactory.CreateMany(3));
+        _tagRepositoryMock.SetupGetAllTags(TagFactory.CreateMany(3));
 
         var query = new PublicGetAllTagsQuery(ContentType: EnumCoreContentType.Article);
 
@@ -95,9 +86,9 @@ public class PublicGetAllTagsHandlerTests : BaseContentHandlerTest
         await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        _lookupRepositoryMock.Verify(
+        _tagRepositoryMock.Verify(
             x =>
-                x.GetAllTagsAsync(
+                x.GetAllAsync(
                     It.IsAny<string?>(),
                     EnumCoreContentType.Article,
                     It.IsAny<int?>(),
@@ -111,7 +102,7 @@ public class PublicGetAllTagsHandlerTests : BaseContentHandlerTest
     public async Task Handle_WithVideoContentType_ShouldPassContentTypeToRepository()
     {
         // Arrange
-        _lookupRepositoryMock.SetupGetAllTags(TagFactory.CreateMany(3));
+        _tagRepositoryMock.SetupGetAllTags(TagFactory.CreateMany(3));
 
         var query = new PublicGetAllTagsQuery(ContentType: EnumCoreContentType.Video);
 
@@ -119,9 +110,9 @@ public class PublicGetAllTagsHandlerTests : BaseContentHandlerTest
         await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        _lookupRepositoryMock.Verify(
+        _tagRepositoryMock.Verify(
             x =>
-                x.GetAllTagsAsync(
+                x.GetAllAsync(
                     It.IsAny<string?>(),
                     EnumCoreContentType.Video,
                     It.IsAny<int?>(),
@@ -135,7 +126,7 @@ public class PublicGetAllTagsHandlerTests : BaseContentHandlerTest
     public async Task Handle_WithNullContentType_ShouldPassNullToRepository()
     {
         // Arrange
-        _lookupRepositoryMock.SetupGetAllTags(TagFactory.CreateMany(3));
+        _tagRepositoryMock.SetupGetAllTags(TagFactory.CreateMany(3));
 
         var query = new PublicGetAllTagsQuery(ContentType: null);
 
@@ -143,9 +134,9 @@ public class PublicGetAllTagsHandlerTests : BaseContentHandlerTest
         await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        _lookupRepositoryMock.Verify(
+        _tagRepositoryMock.Verify(
             x =>
-                x.GetAllTagsAsync(
+                x.GetAllAsync(
                     It.IsAny<string?>(),
                     (EnumCoreContentType?)null,
                     It.IsAny<int?>(),
@@ -159,7 +150,7 @@ public class PublicGetAllTagsHandlerTests : BaseContentHandlerTest
     public async Task Handle_WithLimit_ShouldPassLimitToRepository()
     {
         // Arrange
-        _lookupRepositoryMock.SetupGetAllTags(TagFactory.CreateMany(3));
+        _tagRepositoryMock.SetupGetAllTags(TagFactory.CreateMany(3));
 
         var query = new PublicGetAllTagsQuery(Limit: 5);
 
@@ -167,9 +158,9 @@ public class PublicGetAllTagsHandlerTests : BaseContentHandlerTest
         await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        _lookupRepositoryMock.Verify(
+        _tagRepositoryMock.Verify(
             x =>
-                x.GetAllTagsAsync(
+                x.GetAllAsync(
                     It.IsAny<string?>(),
                     It.IsAny<EnumCoreContentType?>(),
                     (int?)5,
@@ -183,7 +174,7 @@ public class PublicGetAllTagsHandlerTests : BaseContentHandlerTest
     public async Task Handle_WithEmptyList_ShouldReturnEmptyList()
     {
         // Arrange
-        _lookupRepositoryMock.SetupGetAllTags(new List<TagEntity>());
+        _tagRepositoryMock.SetupGetAllTags(new List<TagEntity>());
 
         var query = new PublicGetAllTagsQuery();
 
@@ -199,7 +190,7 @@ public class PublicGetAllTagsHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         TagEntity tag = TagFactory.CreateDefault();
-        _lookupRepositoryMock.SetupGetAllTags(new List<TagEntity> { tag });
+        _tagRepositoryMock.SetupGetAllTags(new List<TagEntity> { tag });
 
         var query = new PublicGetAllTagsQuery();
 
@@ -214,174 +205,53 @@ public class PublicGetAllTagsHandlerTests : BaseContentHandlerTest
 
     #endregion
 
-    #region Caching
+    #region Query cache contract
 
     [Fact]
-    public async Task Handle_CalledTwiceWithSameNullSearchQuery_ShouldHitRepositoryOnlyOnce()
+    public void IsCacheable_WithoutSearch_ShouldBeTrue()
     {
-        // Arrange
-        _lookupRepositoryMock.SetupGetAllTags(TagFactory.CreateMany(3));
-
-        var query = new PublicGetAllTagsQuery(Search: null);
-
-        // Act — two identical unfiltered calls; the second must be served from cache
-        await _handler.Handle(query, CancellationToken.None);
-        await _handler.Handle(query, CancellationToken.None);
-
-        // Assert
-        _lookupRepositoryMock.Verify(
-            x =>
-                x.GetAllTagsAsync(
-                    It.IsAny<string?>(),
-                    It.IsAny<EnumCoreContentType?>(),
-                    It.IsAny<int?>(),
-                    It.IsAny<CancellationToken>()
-                ),
-            Times.Once
-        );
+        new PublicGetAllTagsQuery(Search: null).IsCacheable.Should().BeTrue();
+        new PublicGetAllTagsQuery(Search: "  ").IsCacheable.Should().BeTrue();
     }
 
     [Fact]
-    public async Task Handle_CalledTwiceWithSearchTerm_ShouldBypassCacheAndHitRepositoryEachTime()
+    public void IsCacheable_WithSearchTerm_ShouldBeFalse()
     {
-        // Arrange
-        _lookupRepositoryMock.SetupGetAllTags(TagFactory.CreateMany(3));
-
-        var query = new PublicGetAllTagsQuery(Search: "afro");
-
-        // Act — search requests never cache, so both calls hit the repository
-        await _handler.Handle(query, CancellationToken.None);
-        await _handler.Handle(query, CancellationToken.None);
-
-        // Assert
-        _lookupRepositoryMock.Verify(
-            x =>
-                x.GetAllTagsAsync(
-                    "afro",
-                    It.IsAny<EnumCoreContentType?>(),
-                    It.IsAny<int?>(),
-                    It.IsAny<CancellationToken>()
-                ),
-            Times.Exactly(2)
-        );
+        // Free-text search produces an unbounded key space, so those results are never stored.
+        new PublicGetAllTagsQuery(Search: "afro")
+            .IsCacheable.Should()
+            .BeFalse();
     }
 
     [Fact]
-    public async Task Handle_CalledWithDifferentContentTypes_ShouldHitRepositoryForEach()
+    public void CacheKey_WithSameArguments_ShouldBeStable()
     {
-        // Arrange
-        _lookupRepositoryMock.SetupGetAllTags(TagFactory.CreateMany(3));
+        var first = new PublicGetAllTagsQuery(ContentType: EnumCoreContentType.Article, Limit: 5);
+        var second = new PublicGetAllTagsQuery(ContentType: EnumCoreContentType.Article, Limit: 5);
 
-        // Act
-        await _handler.Handle(
-            new PublicGetAllTagsQuery(ContentType: EnumCoreContentType.Article),
-            CancellationToken.None
-        );
-        await _handler.Handle(
-            new PublicGetAllTagsQuery(ContentType: EnumCoreContentType.Video),
-            CancellationToken.None
-        );
-
-        // Assert
-        _lookupRepositoryMock.Verify(
-            x =>
-                x.GetAllTagsAsync(
-                    It.IsAny<string?>(),
-                    EnumCoreContentType.Article,
-                    It.IsAny<int?>(),
-                    It.IsAny<CancellationToken>()
-                ),
-            Times.Once
-        );
-        _lookupRepositoryMock.Verify(
-            x =>
-                x.GetAllTagsAsync(
-                    It.IsAny<string?>(),
-                    EnumCoreContentType.Video,
-                    It.IsAny<int?>(),
-                    It.IsAny<CancellationToken>()
-                ),
-            Times.Once
-        );
-        _lookupRepositoryMock.Verify(
-            x =>
-                x.GetAllTagsAsync(
-                    It.IsAny<string?>(),
-                    It.IsAny<EnumCoreContentType?>(),
-                    It.IsAny<int?>(),
-                    It.IsAny<CancellationToken>()
-                ),
-            Times.Exactly(2)
-        );
+        first.CacheKey.Should().Be(second.CacheKey);
     }
 
     [Fact]
-    public async Task Handle_CalledWithDifferentLimits_ShouldHitRepositoryForEach()
+    public void CacheKey_WithDifferentArguments_ShouldDiffer()
     {
-        // Arrange
-        _lookupRepositoryMock.SetupGetAllTags(TagFactory.CreateMany(3));
+        var baseline = new PublicGetAllTagsQuery();
 
-        // Act
-        await _handler.Handle(new PublicGetAllTagsQuery(Limit: 5), CancellationToken.None);
-        await _handler.Handle(new PublicGetAllTagsQuery(Limit: 10), CancellationToken.None);
-
-        // Assert
-        _lookupRepositoryMock.Verify(
-            x =>
-                x.GetAllTagsAsync(
-                    It.IsAny<string?>(),
-                    It.IsAny<EnumCoreContentType?>(),
-                    (int?)5,
-                    It.IsAny<CancellationToken>()
-                ),
-            Times.Once
-        );
-        _lookupRepositoryMock.Verify(
-            x =>
-                x.GetAllTagsAsync(
-                    It.IsAny<string?>(),
-                    It.IsAny<EnumCoreContentType?>(),
-                    (int?)10,
-                    It.IsAny<CancellationToken>()
-                ),
-            Times.Once
-        );
-        _lookupRepositoryMock.Verify(
-            x =>
-                x.GetAllTagsAsync(
-                    It.IsAny<string?>(),
-                    It.IsAny<EnumCoreContentType?>(),
-                    It.IsAny<int?>(),
-                    It.IsAny<CancellationToken>()
-                ),
-            Times.Exactly(2)
-        );
+        // Every parameter that changes the result participates in the key.
+        new PublicGetAllTagsQuery(ContentType: EnumCoreContentType.Article)
+            .CacheKey.Should()
+            .NotBe(baseline.CacheKey);
+        new PublicGetAllTagsQuery(ContentType: EnumCoreContentType.Video)
+            .CacheKey.Should()
+            .NotBe(new PublicGetAllTagsQuery(ContentType: EnumCoreContentType.Article).CacheKey);
+        new PublicGetAllTagsQuery(Limit: 5).CacheKey.Should().NotBe(baseline.CacheKey);
+        new PublicGetAllTagsQuery(Limit: 10).CacheKey.Should().NotBe(new PublicGetAllTagsQuery(Limit: 5).CacheKey);
     }
 
     [Fact]
-    public async Task Handle_AfterInvalidation_ShouldHitRepositoryAgain()
+    public void CacheTags_ShouldCarryTheTagsTag()
     {
-        // Arrange
-        _lookupRepositoryMock.SetupGetAllTags(TagFactory.CreateMany(3));
-
-        var query = new PublicGetAllTagsQuery(Search: null);
-
-        // Act — cache the result, then invalidate the shared token before the next read
-        await _handler.Handle(query, CancellationToken.None);
-        _cacheInvalidator.Invalidate();
-        await _handler.Handle(query, CancellationToken.None);
-
-        // Assert — invalidation evicts the entry, forcing a fresh repository read
-        _lookupRepositoryMock.Verify(
-            x =>
-                x.GetAllTagsAsync(
-                    It.IsAny<string?>(),
-                    It.IsAny<EnumCoreContentType?>(),
-                    It.IsAny<int?>(),
-                    It.IsAny<CancellationToken>()
-                ),
-            Times.Exactly(2)
-        );
+        new PublicGetAllTagsQuery().CacheTags.Should().ContainSingle().Which.Should().Be(ContentCacheTags.Tags);
     }
 
     #endregion

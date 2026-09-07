@@ -9,11 +9,11 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.Unbookm
 /// <summary>
 /// Handles the <see cref="PublicUnbookmarkArticleCommand" /> to remove a user's bookmark from an article.
 /// </summary>
-/// <param name="articleRepository">Repository for article data access operations.</param>
+/// <param name="articleInteractionRepository">Repository for article interaction data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class PublicUnbookmarkArticleHandler(
-    IArticleRepository articleRepository,
+    IArticleInteractionRepository articleInteractionRepository,
     IContentUnitOfWork unitOfWork,
     ContentI18n i18n
 ) : ICommandHandler<PublicUnbookmarkArticleCommand, PublicUnbookmarkArticleResult>
@@ -24,9 +24,12 @@ public class PublicUnbookmarkArticleHandler(
         CancellationToken cancellationToken
     )
     {
-        await articleRepository.ExistsOrThrowAsync(articleId: command.ArticleId, cancellationToken: cancellationToken);
+        await articleInteractionRepository.ExistsOrThrowAsync(
+            articleId: command.ArticleId,
+            cancellationToken: cancellationToken
+        );
 
-        bool hasBookmarked = await articleRepository.HasBookmarkedAsync(
+        bool hasBookmarked = await articleInteractionRepository.HasBookmarkedAsync(
             userId: command.UserId,
             articleId: command.ArticleId,
             cancellationToken: cancellationToken
@@ -37,7 +40,7 @@ public class PublicUnbookmarkArticleHandler(
             throw i18n.ArticleInteraction.BookmarkNotFound();
         }
 
-        await articleRepository.RemoveBookmarkAsync(
+        await articleInteractionRepository.RemoveBookmarkAsync(
             userId: command.UserId,
             articleId: command.ArticleId,
             cancellationToken: cancellationToken

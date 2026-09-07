@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using _116.Content.Domain.Constants;
+using _116.Content.Domain.Events;
 using _116.Content.Domain.Exceptions;
 using _116.Content.Domain.StateMachines;
 using _116.Shared.Domain;
@@ -49,12 +50,15 @@ public class PricingTierEntity : Aggregate<Guid>
             throw new ContentRuleException(ContentRuleCodes.PricingTierNameRequired);
         }
 
-        return new PricingTierEntity
+        var pricingTier = new PricingTierEntity
         {
             Id = id,
             Name = name,
             Description = description,
         };
+        pricingTier.AddDomainEvent(new PricingTierChangedEvent(PricingTierId: id));
+
+        return pricingTier;
     }
 
     /// <summary>
@@ -71,6 +75,7 @@ public class PricingTierEntity : Aggregate<Guid>
 
         Name = name;
         Description = description;
+        AddDomainEvent(new PricingTierChangedEvent(PricingTierId: Id));
     }
 
     /// <summary>
@@ -85,6 +90,8 @@ public class PricingTierEntity : Aggregate<Guid>
         }
 
         IsActive = true;
+        AddDomainEvent(new PricingTierChangedEvent(PricingTierId: Id));
+
         return true;
     }
 
@@ -100,6 +107,8 @@ public class PricingTierEntity : Aggregate<Guid>
         }
 
         IsActive = false;
+        AddDomainEvent(new PricingTierChangedEvent(PricingTierId: Id));
+
         return true;
     }
 }

@@ -1,6 +1,5 @@
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
-using _116.Shared.Domain;
 
 namespace _116.Content.Application.Shared.Repositories;
 
@@ -17,7 +16,7 @@ public sealed record ShortVideoActivity(
 /// <summary>
 /// Repository interface for short video data access operations.
 /// </summary>
-public interface IShortVideoRepository : IRepository<ShortVideoEntity>
+public interface IShortVideoRepository
 {
     /// <summary>
     /// Retrieves a paginated list of short videos with an optional active filter.

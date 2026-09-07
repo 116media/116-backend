@@ -14,14 +14,15 @@ namespace _116.Core.Infrastructure.Repositories;
 /// Implementation of <see cref="IFileRepository"/> using Entity Framework Core.
 /// </summary>
 public class FileRepository(CoreDbContext context, IFileService fileService, IImageColorService imageColorService)
-    : IFileRepository
+    : CoreRepository<FileEntity>(context),
+        IFileRepository
 {
     /// <inheritdoc />
-    public async Task<FileEntity?> GetByIdAsync(Guid fileId, CancellationToken cancellationToken = default)
+    public override async Task<FileEntity?> GetByIdAsync(Guid fileId, CancellationToken cancellationToken = default)
     {
         var specification = new FileByIdNotDeletedSpecification(fileId);
 
-        return await context.Files.FirstOrDefaultBySpecificationAsync(specification, cancellationToken);
+        return await Context.Files.FirstOrDefaultBySpecificationAsync(specification, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -35,7 +36,7 @@ public class FileRepository(CoreDbContext context, IFileService fileService, IIm
             return new Dictionary<Guid, FileEntity>();
         }
 
-        return await context
+        return await Context
             .Files.Where(file => fileIds.Contains(file.Id) && !file.IsDeleted)
             .ToDictionaryAsync(file => file.Id, cancellationToken);
     }
@@ -53,28 +54,16 @@ public class FileRepository(CoreDbContext context, IFileService fileService, IIm
 
         Guid[] distinctIds = fileIds.Distinct().ToArray();
 
-        return await context
+        return await Context
             .Files.Where(file => distinctIds.Contains(file.Id) && !file.IsDeleted)
             .ToDictionaryAsync(file => file.Id, file => file.StorageUrl, cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task AddAsync(FileEntity file, CancellationToken cancellationToken = default)
-    {
-        await context.Files.AddAsync(file, cancellationToken);
-    }
-
-    /// <inheritdoc />
     public Task UpdateAsync(FileEntity file, CancellationToken cancellationToken = default)
     {
-        context.Files.Update(file);
+        Context.Files.Update(file);
         return Task.CompletedTask;
-    }
-
-    /// <inheritdoc />
-    public void Remove(FileEntity file)
-    {
-        context.Files.Remove(file);
     }
 
     /// <inheritdoc />
@@ -86,7 +75,7 @@ public class FileRepository(CoreDbContext context, IFileService fileService, IIm
     /// <inheritdoc />
     public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        await context.SaveChangesAsync(cancellationToken);
+        await Context.SaveChangesAsync(cancellationToken);
     }
 
     /// <inheritdoc />

@@ -1,3 +1,4 @@
+using _116.Content.Domain.Events;
 using _116.Content.Domain.Exceptions;
 using _116.Content.Domain.StateMachines;
 using _116.Shared.Domain;
@@ -55,13 +56,16 @@ public class CategoryPricingEntity : Aggregate<Guid>
             throw new ContentRuleException(ContentRuleCodes.CategoryPriceMustBeNonNegative);
         }
 
-        return new CategoryPricingEntity
+        var pricing = new CategoryPricingEntity
         {
             Id = id,
             CategoryId = categoryId,
             PricingTierId = pricingTierId,
             PriceUsd = priceUsd,
         };
+        pricing.AddDomainEvent(new CategoryChangedEvent(CategoryId: categoryId));
+
+        return pricing;
     }
 
     /// <summary>
@@ -76,5 +80,15 @@ public class CategoryPricingEntity : Aggregate<Guid>
         }
 
         PriceUsd = priceUsd;
+        AddDomainEvent(new CategoryChangedEvent(CategoryId: CategoryId));
+    }
+
+    /// <summary>
+    /// Raises the category-changed fact for this pricing row's removal, so cached lookup
+    /// projections refresh once the deletion commits.
+    /// </summary>
+    public void MarkRemoved()
+    {
+        AddDomainEvent(new CategoryChangedEvent(CategoryId: CategoryId));
     }
 }

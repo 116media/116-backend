@@ -10,14 +10,10 @@ namespace _116.Mailer.Infrastructure.Repositories;
 /// EF Core implementation of <see cref="INotificationRepository" />.
 /// </summary>
 /// <param name="context">The Mailer module database context.</param>
-public class NotificationRepository(MailerDbContext context) : INotificationRepository
+public class NotificationRepository(MailerDbContext context)
+    : MailerRepository<NotificationEntity>(context),
+        INotificationRepository
 {
-    /// <inheritdoc />
-    public async Task AddAsync(NotificationEntity notification, CancellationToken cancellationToken)
-    {
-        await context.Notifications.AddAsync(notification, cancellationToken);
-    }
-
     /// <inheritdoc />
     public async Task<PaginatedResult<NotificationEntity>> GetPagedForUserAsync(
         Guid userId,
@@ -27,7 +23,7 @@ public class NotificationRepository(MailerDbContext context) : INotificationRepo
         CancellationToken cancellationToken
     )
     {
-        IQueryable<NotificationEntity> query = context.Notifications.AsNoTracking().Where(x => x.UserId == userId);
+        IQueryable<NotificationEntity> query = Context.Notifications.AsNoTracking().Where(x => x.UserId == userId);
 
         if (unreadOnly)
         {
@@ -47,13 +43,13 @@ public class NotificationRepository(MailerDbContext context) : INotificationRepo
     /// <inheritdoc />
     public async Task<int> CountUnreadAsync(Guid userId, CancellationToken cancellationToken)
     {
-        return await context.Notifications.CountAsync(x => x.UserId == userId && x.ReadAt == null, cancellationToken);
+        return await Context.Notifications.CountAsync(x => x.UserId == userId && x.ReadAt == null, cancellationToken);
     }
 
     /// <inheritdoc />
     public async Task<NotificationEntity?> GetForUserAsync(Guid id, Guid userId, CancellationToken cancellationToken)
     {
-        return await context.Notifications.FirstOrDefaultAsync(
+        return await Context.Notifications.FirstOrDefaultAsync(
             x => x.Id == id && x.UserId == userId,
             cancellationToken
         );
@@ -65,7 +61,7 @@ public class NotificationRepository(MailerDbContext context) : INotificationRepo
         CancellationToken cancellationToken
     )
     {
-        return await context
+        return await Context
             .Notifications.Where(x => x.UserId == userId && x.ReadAt == null)
             .ToListAsync(cancellationToken);
     }

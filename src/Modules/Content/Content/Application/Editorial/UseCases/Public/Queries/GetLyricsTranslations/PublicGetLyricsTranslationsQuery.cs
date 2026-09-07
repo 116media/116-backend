@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Cache;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetLyricsTranslations;
@@ -6,7 +7,19 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetLyricsTr
 /// Query for retrieving every translation of a lyrics page, across all requested languages.
 /// </summary>
 /// <param name="LyricsId">The lyrics page whose translations are being listed.</param>
-public record PublicGetLyricsTranslationsQuery(Guid LyricsId) : IQuery<PublicGetLyricsTranslationsResult>;
+public record PublicGetLyricsTranslationsQuery(Guid LyricsId)
+    : IQuery<PublicGetLyricsTranslationsResult>,
+        ICacheableRequest
+{
+    /// <inheritdoc />
+    public string CacheKey => $"lyrics_translations:{LyricsId}";
+
+    /// <inheritdoc />
+    public TimeSpan Ttl => TimeSpan.FromMinutes(10);
+
+    /// <inheritdoc />
+    public IReadOnlyList<string> CacheTags => [ContentCacheTags.Lyrics];
+}
 
 /// <summary>
 /// A single translation of a lyrics page into one language.

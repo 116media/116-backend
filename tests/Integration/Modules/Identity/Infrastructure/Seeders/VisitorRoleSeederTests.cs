@@ -16,7 +16,7 @@ public class VisitorRoleSeederTests(PostgresFixture postgres) : BaseRepositoryTe
     {
         var seeder = Resolve<VisitorRoleSeeder>();
 
-        await seeder.SeedAllAsync();
+        await seeder.SeedAsync();
 
         await using var context = CreateDbContext<IdentityDbContext>();
         RoleEntity? visitor = await context
@@ -33,7 +33,7 @@ public class VisitorRoleSeederTests(PostgresFixture postgres) : BaseRepositoryTe
     {
         var seeder = Resolve<VisitorRoleSeeder>();
 
-        await seeder.SeedAllAsync();
+        await seeder.SeedAsync();
 
         await using var context = CreateDbContext<IdentityDbContext>();
         RoleEntity visitor = await context
@@ -50,8 +50,8 @@ public class VisitorRoleSeederTests(PostgresFixture postgres) : BaseRepositoryTe
     {
         var seeder = Resolve<VisitorRoleSeeder>();
 
-        await seeder.SeedAllAsync();
-        await seeder.SeedAllAsync();
+        await seeder.SeedAsync();
+        await seeder.SeedAsync();
 
         await using var context = CreateDbContext<IdentityDbContext>();
         int count = await context.Roles.CountAsync(r => r.Name == "Visitor");
@@ -64,7 +64,7 @@ public class VisitorRoleSeederTests(PostgresFixture postgres) : BaseRepositoryTe
     {
         var seeder = Resolve<VisitorRoleSeeder>();
 
-        await seeder.SeedAllAsync();
+        await seeder.SeedAsync();
 
         await using var context = CreateDbContext<IdentityDbContext>();
         List<PermissionEntity> permissions = await context.Permissions.ToListAsync();

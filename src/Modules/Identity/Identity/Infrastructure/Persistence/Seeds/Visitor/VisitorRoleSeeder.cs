@@ -18,13 +18,16 @@ namespace _116.Identity.Infrastructure.Persistence.Seeds.Visitor;
 public class VisitorRoleSeeder(IdentityDbContext context, ILogger<VisitorRoleSeeder> logger) : IDataSeeder
 {
     /// <inheritdoc />
-    public async Task SeedAllAsync()
+    public async Task SeedAsync(CancellationToken cancellationToken = default)
     {
         try
         {
             logger.LogInformation("Starting Visitor role seeding process...");
             // Check if the visitor role already exists
-            bool visitorRoleExists = await context.Roles.AnyAsync(r => r.Name == nameof(EnumCoreUserRole.Visitor));
+            bool visitorRoleExists = await context.Roles.AnyAsync(
+                r => r.Name == nameof(EnumCoreUserRole.Visitor),
+                cancellationToken
+            );
             if (visitorRoleExists)
             {
                 logger.LogInformation("Visitor role already exists. Skipping seeding.");

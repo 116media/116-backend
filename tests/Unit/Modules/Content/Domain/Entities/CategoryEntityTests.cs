@@ -1,4 +1,5 @@
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Events;
 using _116.Content.Domain.Exceptions;
 using _116.Content.Domain.StateMachines;
 using _116.Shared.Application.Exceptions;
@@ -410,6 +411,67 @@ public class CategoryEntityTests
         category.Update("Name", "slug", "desc", false, false, isDefaultForLyrics: true);
 
         category.IsDefaultForLyrics.Should().BeTrue();
+    }
+
+    #endregion
+
+    #region Domain Events
+
+    [Fact]
+    public void Create_ShouldRaiseCategoryChangedEvent()
+    {
+        // Act
+        var entity = CategoryEntity.Create(Guid.NewGuid(), Guid.NewGuid(), "Music", "music", "desc", isFree: true);
+
+        // Assert
+        entity
+            .DomainEvents.OfType<CategoryChangedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(new CategoryChangedEvent(entity.Id));
+    }
+
+    [Fact]
+    public void Update_ShouldRaiseCategoryChangedEvent()
+    {
+        // Arrange
+        var entity = CategoryEntity.Create(Guid.NewGuid(), Guid.NewGuid(), "Music", "music", "desc", isFree: true);
+        entity.ClearDomainEvents();
+
+        // Act
+        entity.Update("Culture", "culture", "desc", isGossip: false, isExclusive: false, isDefaultForLyrics: false);
+
+        // Assert
+        entity.DomainEvents.OfType<CategoryChangedEvent>().Should().ContainSingle();
+    }
+
+    [Fact]
+    public void PinToFeed_ShouldRaiseCategoryChangedEvent()
+    {
+        // Arrange
+        var entity = CategoryEntity.Create(Guid.NewGuid(), Guid.NewGuid(), "Music", "music", "desc", isFree: true);
+        entity.ClearDomainEvents();
+
+        // Act
+        entity.PinToFeed();
+
+        // Assert
+        entity.DomainEvents.OfType<CategoryChangedEvent>().Should().ContainSingle();
+    }
+
+    [Fact]
+    public void UnpinFromFeed_WhenNotPinned_ShouldRaiseNothing()
+    {
+        // Arrange — a no-op transition must not evict the lookup cache
+        var entity = CategoryEntity.Create(Guid.NewGuid(), Guid.NewGuid(), "Music", "music", "desc", isFree: true);
+        entity.ClearDomainEvents();
+
+        // Act
+        entity.UnpinFromFeed();
+
+        // Assert
+        entity.DomainEvents.Should().BeEmpty();
     }
 
     #endregion

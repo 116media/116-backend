@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.DTOs;
 using _116.Shared.Contracts.Application.CQRS;
 
@@ -11,7 +12,25 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetShortsFe
 /// <param name="PageSize">The number of short videos to return.</param>
 /// <param name="CurrentUserId">The requesting user id, or null when anonymous; seeds per-user flags.</param>
 public record PublicGetShortsFeedQuery(string? Cursor, int PageSize, Guid? CurrentUserId = null)
-    : IQuery<PublicGetShortsFeedResult>;
+    : IQuery<PublicGetShortsFeedResult>,
+        IConditionallyCacheableRequest
+{
+    /// <inheritdoc />
+    /// <remarks>
+    /// Only the anonymous first page is stored: cursors form an unbounded key space, and an
+    /// authenticated response carries per-user interaction flags.
+    /// </remarks>
+    public bool IsCacheable => CurrentUserId is null && Cursor is null;
+
+    /// <inheritdoc />
+    public string CacheKey => $"shorts_feed:first:{PageSize}";
+
+    /// <inheritdoc />
+    public TimeSpan Ttl => TimeSpan.FromMinutes(10);
+
+    /// <inheritdoc />
+    public IReadOnlyList<string> CacheTags => [ContentCacheTags.Shorts];
+}
 
 /// <summary>
 /// Result of the <see cref="PublicGetShortsFeedQuery" />.

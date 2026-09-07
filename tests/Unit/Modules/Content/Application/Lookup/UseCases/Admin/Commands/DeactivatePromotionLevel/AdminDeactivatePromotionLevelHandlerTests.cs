@@ -19,16 +19,16 @@ namespace _116.Unit.Tests.Modules.Content.Application.Lookup.UseCases.Admin.Comm
 /// </summary>
 public class AdminDeactivatePromotionLevelHandlerTests : BaseContentHandlerTest
 {
-    private readonly Mock<ILookupRepository> _lookupRepositoryMock;
+    private readonly Mock<IPromotionLevelRepository> _promotionLevelRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminDeactivatePromotionLevelHandler _handler;
 
     public AdminDeactivatePromotionLevelHandlerTests()
     {
-        _lookupRepositoryMock = MockLookupRepository.Create();
+        _promotionLevelRepositoryMock = MockPromotionLevelRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _handler = new AdminDeactivatePromotionLevelHandler(
-            _lookupRepositoryMock.Object,
+            _promotionLevelRepositoryMock.Object,
             _unitOfWorkMock.Object,
             Mapper,
             TestErrorsFactory.CreateContentI18n()
@@ -44,7 +44,7 @@ public class AdminDeactivatePromotionLevelHandlerTests : BaseContentHandlerTest
         PromotionLevelEntity active = PromotionLevelFactory.CreateDefault();
         var command = new AdminDeactivatePromotionLevelCommand(Id: active.Id.ToString());
 
-        _lookupRepositoryMock.SetupGetPromotionLevelByIdOrThrow(active);
+        _promotionLevelRepositoryMock.SetupGetPromotionLevelByIdOrThrow(active);
 
         // Act
         AdminDeactivatePromotionLevelResult result = await _handler.Handle(command, CancellationToken.None);
@@ -65,7 +65,7 @@ public class AdminDeactivatePromotionLevelHandlerTests : BaseContentHandlerTest
         PromotionLevelEntity inactive = PromotionLevelFactory.CreateInactive();
         var command = new AdminDeactivatePromotionLevelCommand(Id: inactive.Id.ToString());
 
-        _lookupRepositoryMock.SetupGetPromotionLevelByIdOrThrow(inactive);
+        _promotionLevelRepositoryMock.SetupGetPromotionLevelByIdOrThrow(inactive);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
@@ -81,7 +81,7 @@ public class AdminDeactivatePromotionLevelHandlerTests : BaseContentHandlerTest
         PromotionLevelEntity inactive = PromotionLevelFactory.CreateInactive();
         var command = new AdminDeactivatePromotionLevelCommand(Id: inactive.Id.ToString());
 
-        _lookupRepositoryMock.SetupGetPromotionLevelByIdOrThrow(inactive);
+        _promotionLevelRepositoryMock.SetupGetPromotionLevelByIdOrThrow(inactive);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
@@ -98,7 +98,7 @@ public class AdminDeactivatePromotionLevelHandlerTests : BaseContentHandlerTest
         var nonExistentId = Guid.NewGuid();
         var command = new AdminDeactivatePromotionLevelCommand(Id: nonExistentId.ToString());
 
-        _lookupRepositoryMock.SetupGetPromotionLevelByIdOrThrowNotFound(nonExistentId);
+        _promotionLevelRepositoryMock.SetupGetPromotionLevelByIdOrThrowNotFound(nonExistentId);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);

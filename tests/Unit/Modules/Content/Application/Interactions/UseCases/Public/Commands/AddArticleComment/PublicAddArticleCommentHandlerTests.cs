@@ -18,7 +18,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Interactions.UseCases.Publ
 /// </summary>
 public class PublicAddArticleCommentHandlerTests : BaseContentHandlerTest
 {
-    private readonly Mock<IArticleRepository> _articleRepositoryMock;
+    private readonly Mock<IArticleCommentRepository> _articleCommentRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly PublicAddArticleCommentHandler _handler;
 
@@ -26,9 +26,13 @@ public class PublicAddArticleCommentHandlerTests : BaseContentHandlerTest
 
     public PublicAddArticleCommentHandlerTests()
     {
-        _articleRepositoryMock = MockArticleRepository.Create();
+        _articleCommentRepositoryMock = MockArticleCommentRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _handler = new PublicAddArticleCommentHandler(_articleRepositoryMock.Object, _unitOfWorkMock.Object, Mapper);
+        _handler = new PublicAddArticleCommentHandler(
+            _articleCommentRepositoryMock.Object,
+            _unitOfWorkMock.Object,
+            Mapper
+        );
     }
 
     #region Success Cases
@@ -45,14 +49,14 @@ public class PublicAddArticleCommentHandlerTests : BaseContentHandlerTest
             UserId: userId,
             Body: "This is a valid test comment body."
         );
-        _articleRepositoryMock.SetupGetByIdOrThrow(article);
+        _articleCommentRepositoryMock.SetupExistsOrThrow(article.Id);
 
         // Act
         PublicAddArticleCommentResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         result.Comment.Body.Should().Be(command.Body);
-        _articleRepositoryMock.VerifyAddCommentCalled();
+        _articleCommentRepositoryMock.VerifyAddCommentCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -70,7 +74,7 @@ public class PublicAddArticleCommentHandlerTests : BaseContentHandlerTest
             UserId: Guid.NewGuid(),
             Body: "This is a valid test comment body."
         );
-        _articleRepositoryMock.SetupGetByIdOrThrowNotFound(articleId);
+        _articleCommentRepositoryMock.SetupExistsOrThrowNotFound(articleId);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);

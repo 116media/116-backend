@@ -22,6 +22,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Public.
 public class PublicGetArticleBySlugHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<IArticleRepository> _articleRepositoryMock;
+    private readonly Mock<IArticleInteractionRepository> _articleInteractionRepositoryMock;
     private readonly Mock<IFileRepository> _fileRepositoryMock;
     private readonly PublicGetArticleBySlugHandler _handler;
 
@@ -30,11 +31,13 @@ public class PublicGetArticleBySlugHandlerTests : BaseContentHandlerTest
     public PublicGetArticleBySlugHandlerTests()
     {
         _articleRepositoryMock = MockArticleRepository.Create();
+        _articleInteractionRepositoryMock = MockArticleInteractionRepository.Create();
         _fileRepositoryMock = MockFileRepository.Create();
         FileEntity coverFile = FileFactory.CreateImage();
         _fileRepositoryMock.SetupGetById(coverFile);
         _handler = new PublicGetArticleBySlugHandler(
             _articleRepositoryMock.Object,
+            _articleInteractionRepositoryMock.Object,
             _fileRepositoryMock.Object,
             Mapper,
             TestErrorsFactory.CreateContentI18n()
@@ -106,7 +109,7 @@ public class PublicGetArticleBySlugHandlerTests : BaseContentHandlerTest
         // Assert
         result.Article.IsLiked.Should().BeFalse();
         result.Article.IsBookmarked.Should().BeFalse();
-        _articleRepositoryMock.VerifyExistenceChecksNotCalled();
+        _articleInteractionRepositoryMock.VerifyExistenceChecksNotCalled();
     }
 
     [Fact]
@@ -118,8 +121,8 @@ public class PublicGetArticleBySlugHandlerTests : BaseContentHandlerTest
         var query = new PublicGetArticleBySlugQuery(Slug: article.Slug, CurrentUserId: userId);
 
         _articleRepositoryMock.SetupGetBySlug(article.Slug, article);
-        _articleRepositoryMock.SetupHasLikedAsync(userId, article.Id, result: true);
-        _articleRepositoryMock.SetupHasBookmarkedAsync(userId, article.Id, result: true);
+        _articleInteractionRepositoryMock.SetupHasLikedAsync(userId, article.Id, result: true);
+        _articleInteractionRepositoryMock.SetupHasBookmarkedAsync(userId, article.Id, result: true);
 
         // Act
         PublicGetArticleBySlugResult result = await _handler.Handle(query, CancellationToken.None);
@@ -138,8 +141,8 @@ public class PublicGetArticleBySlugHandlerTests : BaseContentHandlerTest
         var query = new PublicGetArticleBySlugQuery(Slug: article.Slug, CurrentUserId: userId);
 
         _articleRepositoryMock.SetupGetBySlug(article.Slug, article);
-        _articleRepositoryMock.SetupHasLikedAsync(userId, article.Id, result: true);
-        _articleRepositoryMock.SetupHasBookmarkedAsync(userId, article.Id, result: false);
+        _articleInteractionRepositoryMock.SetupHasLikedAsync(userId, article.Id, result: true);
+        _articleInteractionRepositoryMock.SetupHasBookmarkedAsync(userId, article.Id, result: false);
 
         // Act
         PublicGetArticleBySlugResult result = await _handler.Handle(query, CancellationToken.None);

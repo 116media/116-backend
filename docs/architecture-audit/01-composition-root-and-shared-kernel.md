@@ -264,7 +264,7 @@ Npgsql/EF, Quartz, Asp.Versioning, DotNetEnv, **Bogus** (a fake-data generator),
 **Problem.** A `Content.Domain.ArticleEntity` transitively references Npgsql, Carter,
 Swashbuckle and Quartz because `Aggregate<Guid>` lives in this project. The dependency
 rule exists in folder names only; the build graph does not enforce it. Bogus ships to
-production. `IRepository<T>` is inherited by 27 interfaces and adds nothing. `Entity.Id`'s
+production. `IRepository<T>` is inherited by 26 interfaces and adds nothing. `Entity.Id`'s
 public setter lets application code rewrite an aggregate's identity or forge `CreatedBy`.
 
 **Why it's a problem.** Nothing stops a domain entity typing a `DbContext` or
@@ -280,6 +280,13 @@ folder, so the move is largely mechanical; tighten module `.csproj` references o
 time and the compile errors are the dependency-rule violations. Move Bogus to the test
 fixtures project; pin Mapster to a stable release. Delete `IRepository<T>` or give it real
 members.
+
+> **The `IRepository<T>` half is Stage 10 Part D**, not Stage 18 (recount: 26 inheritors, not 27).
+> One of them, `ILookupRepository : IRepository<ContentTypeEntity>`, names a single aggregate while
+> actually serving four — which is why Stage 10.17 splits it. It becomes
+> `IReadRepository`/`IWriteRepository` and their union, backed by a `RepositoryBase` that absorbs
+> the members 33 repositories currently hand-write `[04 §11]`. The project split and the package
+> narrowing stay in Stage 18.
 
 ---
 

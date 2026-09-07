@@ -22,7 +22,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Catalog.UseCases.Admin.Com
 /// </summary>
 public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
 {
-    private readonly Mock<ILookupRepository> _lookupRepositoryMock;
+    private readonly Mock<IContentTypeRepository> _contentTypeRepositoryMock;
     private readonly Mock<ICategoryRepository> _categoryRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly Mock<IFileRepository> _fileRepositoryMock;
@@ -30,12 +30,12 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
 
     public AdminCreateCategoryHandlerTests()
     {
-        _lookupRepositoryMock = MockLookupRepository.Create();
+        _contentTypeRepositoryMock = MockContentTypeRepository.Create();
         _categoryRepositoryMock = MockCategoryRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _fileRepositoryMock = MockFileRepository.Create();
         _handler = new AdminCreateCategoryHandler(
-            _lookupRepositoryMock.Object,
+            _contentTypeRepositoryMock.Object,
             _categoryRepositoryMock.Object,
             _unitOfWorkMock.Object,
             _fileRepositoryMock.Object,
@@ -64,7 +64,7 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
             IsExclusive: false
         );
 
-        _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
+        _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
         _categoryRepositoryMock.SetupGetBySlug(slug, null);
 
         CategoryEntity created = CategoryFactory.Create(contentType.Id, name, slug);
@@ -100,7 +100,7 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
             IsExclusive: false
         );
 
-        _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
+        _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
         _categoryRepositoryMock.SetupGetBySlug(slug, null);
 
         CategoryEntity created = CategoryFactory.Create(contentType.Id);
@@ -130,7 +130,7 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
             IsExclusive: false
         );
 
-        _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
+        _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
         _categoryRepositoryMock.SetupGetBySlug(slug, null);
 
         CategoryEntity reloaded = CategoryFactory.Create(contentType.Id);
@@ -170,7 +170,7 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
             IsExclusive: true
         );
 
-        _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(videoType);
+        _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrow(videoType);
         _categoryRepositoryMock.SetupGetBySlug(TestConstants.Category.ValidSlug, null);
         _categoryRepositoryMock.SetupGetExclusiveCategory(currentExclusive);
 
@@ -202,7 +202,7 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
             IsExclusive: false
         );
 
-        _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
+        _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
         _categoryRepositoryMock.SetupGetBySlug(TestConstants.Category.ValidSlug, null);
 
         CategoryEntity created = CategoryFactory.Create(contentType.Id);
@@ -233,7 +233,7 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
             IsExclusive: true
         );
 
-        _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(videoType);
+        _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrow(videoType);
         _categoryRepositoryMock.SetupGetBySlug(TestConstants.Category.ValidSlug, null);
         _categoryRepositoryMock.SetupGetExclusiveCategory(null);
 
@@ -265,7 +265,7 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
             IsExclusive: true
         );
 
-        _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(articleType);
+        _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrow(articleType);
         _categoryRepositoryMock.SetupGetBySlug(TestConstants.Category.ValidSlug, null);
 
         // Act
@@ -295,7 +295,7 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
             IsExclusive: false
         );
 
-        _lookupRepositoryMock.SetupGetContentTypeByIdOrThrowNotFound(nonExistentId);
+        _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrowNotFound(nonExistentId);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
@@ -321,7 +321,7 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
             IsExclusive: false
         );
 
-        _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
+        _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
 
         CategoryEntity existing = CategoryFactory.Create(contentType.Id, "Other Name", slug);
         _categoryRepositoryMock.SetupGetBySlug(slug, existing);
@@ -350,7 +350,7 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
             IsExclusive: false
         );
 
-        _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
+        _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
 
         CategoryEntity existing = CategoryFactory.Create(contentType.Id, "Other Name", slug);
         _categoryRepositoryMock.SetupGetBySlug(slug, existing);

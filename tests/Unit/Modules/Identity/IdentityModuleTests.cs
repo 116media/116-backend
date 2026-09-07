@@ -11,6 +11,7 @@ using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
 using _116.Identity.Infrastructure.Persistence.Seeds.Visitor;
+using _116.Shared.Infrastructure.Seed;
 using _116.Tests.Fixtures.Factories.Identity;
 using _116.Unit.Tests.Common;
 using AwesomeAssertions;
@@ -190,74 +191,6 @@ public class IdentityModuleTests
     }
 
     [Fact]
-    public void UseIdentityModule_WithTestingEnvironment_ShouldReturnAppBuilderEarly()
-    {
-        // Arrange — Testing env sets EnableMigrations=false, EnableSeeding=false so
-        // UseModuleDatabase is a no-op and the method returns app before reaching the seeders.
-        var services = new ServiceCollection();
-        services.AddSingleton<IHostEnvironment>(HostEnvironment("Testing"));
-
-        var appBuilderMock = new Mock<IApplicationBuilder>();
-        appBuilderMock.Setup(builder => builder.ApplicationServices).Returns(services.BuildServiceProvider());
-
-        // Act
-        IApplicationBuilder result = appBuilderMock.Object.UseIdentityModule();
-
-        // Assert
-        result.Should().NotBeNull();
-        result.Should().BeSameAs(appBuilderMock.Object);
-    }
-
-    [Fact]
-    public void UseIdentityModule_OutsideTheTestingEnvironment_ShouldRunBothSeeders()
-    {
-        // Arrange — Development enables migrations and seeding; the migrator is
-        // replaced so the startup migration completes without a database, and
-        // the seeders are bound to an in-memory store they can write to.
-        DbContextOptions<IdentityDbContext> seedOptions = new DbContextOptionsBuilder<IdentityDbContext>()
-            .UseInMemoryDatabase(Guid.NewGuid().ToString())
-            .Options;
-
-        using var seedContext = new IdentityDbContext(seedOptions);
-        seedContext.Users.Add(UserFactory.Create(SuperAdminConfiguration.Email));
-        seedContext.SaveChanges();
-
-        var services = new ServiceCollection();
-        services.AddLogging();
-        services.AddLocalization();
-        services.AddDbContext<IdentityDbContext>(options =>
-            options
-                .UseNpgsql("Host=localhost;Port=5432;Database=unit;Username=unit;Password=unit")
-                .ReplaceService<IMigrator, NoOpMigrator>()
-        );
-        services.AddSingleton<IHostEnvironment>(HostEnvironment("Development"));
-        services.AddIdentityModule(HostEnvironment("Development"));
-        services.AddScoped(serviceProvider => new SuperAdminSeeder(
-            seedContext,
-            serviceProvider.GetRequiredService<IPasswordService>(),
-            serviceProvider.GetRequiredService<UserErrors>(),
-            serviceProvider.GetRequiredService<ILogger<SuperAdminSeeder>>(),
-            serviceProvider.GetRequiredService<ILogger<SuperAdminRepositoryManager>>(),
-            serviceProvider.GetRequiredService<ILogger<SuperAdminSeedingStrategy>>()
-        ));
-        services.AddScoped(serviceProvider => new VisitorRoleSeeder(
-            seedContext,
-            serviceProvider.GetRequiredService<ILogger<VisitorRoleSeeder>>()
-        ));
-
-        ServiceProvider provider = services.BuildServiceProvider();
-        var app = new ApplicationBuilder(provider);
-
-        // Act
-        IApplicationBuilder result = app.UseIdentityModule();
-
-        // Assert
-        result.Should().BeSameAs(app);
-        seedContext.Roles.Select(role => role.Name).Should().Contain(nameof(EnumCoreUserRole.Visitor));
-        seedContext.Users.Should().ContainSingle("the existing super admin must not be seeded twice");
-    }
-
-    [Fact]
     public void AddIdentityModule_ShouldNotThrow()
     {
         // Arrange
@@ -267,5 +200,33 @@ public class IdentityModuleTests
         // Act & Assert
         Exception? exception = Record.Exception(() => services.AddIdentityModule(HostEnvironment("Testing")));
         exception.Should().BeNull();
+    }
+
+    [Fact]
+    public void AddIdentityModule_WithTestingEnvironment_ShouldRegisterNoDataSeeder()
+    {
+        // Arrange — Testing hosts seed through the test harness, never the hosted service
+        var services = new ServiceCollection();
+        services.AddLogging();
+
+        // Act
+        services.AddIdentityModule(HostEnvironment("Testing"));
+
+        // Assert
+        services.Should().NotContain(descriptor => descriptor.ServiceType == typeof(IDataSeeder));
+    }
+
+    [Fact]
+    public void AddIdentityModule_OutsideTheTestingEnvironment_ShouldRegisterBothSeeders()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddLogging();
+
+        // Act
+        services.AddIdentityModule(HostEnvironment("Development"));
+
+        // Assert
+        services.Count(descriptor => descriptor.ServiceType == typeof(IDataSeeder)).Should().Be(2);
     }
 }

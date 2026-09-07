@@ -25,6 +25,7 @@ namespace _116.Content.Application.Interactions.EventHandlers;
 /// <param name="logger">Logger recording skipped deliveries.</param>
 public class CommentReplyAddedNotificationsHandler(
     IArticleRepository articleRepository,
+    IArticleCommentRepository articleCommentRepository,
     IUserLookupService userLookupService,
     IMailer mailer,
     INotifier notifier,
@@ -39,7 +40,7 @@ public class CommentReplyAddedNotificationsHandler(
     /// <inheritdoc />
     public async Task Handle(CommentReplyAddedEvent domainEvent, CancellationToken cancellationToken = default)
     {
-        ArticleCommentEntity? parent = await articleRepository.GetCommentByIdAsync(
+        ArticleCommentEntity? parent = await articleCommentRepository.GetCommentByIdAsync(
             commentId: domainEvent.ParentCommentId,
             cancellationToken: cancellationToken
         );
@@ -49,7 +50,7 @@ public class CommentReplyAddedNotificationsHandler(
             return;
         }
 
-        ArticleCommentEntity? reply = await articleRepository.GetCommentByIdAsync(
+        ArticleCommentEntity? reply = await articleCommentRepository.GetCommentByIdAsync(
             commentId: domainEvent.ReplyId,
             cancellationToken: cancellationToken
         );

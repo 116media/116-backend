@@ -59,9 +59,12 @@ public static class CqrsExtension
         // Register decorators using Scrutor. Decorate order is inner-to-outer: the account-rate-limit
         // decorator is applied first so it is innermost — the throttle runs after validation, on a
         // well-formed request, immediately before the handler. Validation then logging wrap it.
+        // Caching is outermost: a hit skips validation and logging entirely, which is acceptable
+        // because the key derives from an already-shaped query record.
         services.Decorate(typeof(IRequestHandler<,>), typeof(AccountRateLimitDecorator<,>));
         services.Decorate(typeof(IRequestHandler<,>), typeof(ValidationDecorator<,>));
         services.Decorate(typeof(IRequestHandler<,>), typeof(LoggingDecorator<,>));
+        services.Decorate(typeof(IRequestHandler<,>), typeof(CachingDecorator<,>));
 
         // Register FluentValidation validators
         services.AddValidatorsFromAssemblies(assemblies, includeInternalTypes: true);

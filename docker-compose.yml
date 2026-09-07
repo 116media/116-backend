@@ -1,6 +1,8 @@
 services:
     116_db:
         image: postgres
+    116_redis:
+        image: redis:7-alpine
     116_seq:
         image: datalust/seq:latest
     116_api:
@@ -10,6 +12,8 @@ services:
             dockerfile: Dockerfile
         depends_on:
             116_db:
+                condition: service_healthy
+            116_redis:
                 condition: service_healthy
             116_seq:
                 condition: service_started

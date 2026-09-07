@@ -12,11 +12,11 @@ namespace _116.Content.Application.Interactions.UseCases.Admin.Commands.DeleteAr
 /// so moderating a comment the owner already removed never decrements the
 /// article's cached comment count twice.
 /// </summary>
-/// <param name="articleRepository">Repository for article data access operations.</param>
+/// <param name="articleCommentRepository">Repository for article comment data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminDeleteArticleCommentHandler(
-    IArticleRepository articleRepository,
+    IArticleCommentRepository articleCommentRepository,
     IContentUnitOfWork unitOfWork,
     ContentI18n i18n
 ) : ICommandHandler<AdminDeleteArticleCommentCommand, AdminDeleteArticleCommentResult>
@@ -27,7 +27,7 @@ public class AdminDeleteArticleCommentHandler(
         CancellationToken cancellationToken
     )
     {
-        ArticleCommentEntity? comment = await articleRepository.GetCommentByIdAsync(
+        ArticleCommentEntity? comment = await articleCommentRepository.GetCommentByIdAsync(
             commentId: command.CommentId,
             articleId: command.ArticleId,
             cancellationToken: cancellationToken
@@ -40,7 +40,7 @@ public class AdminDeleteArticleCommentHandler(
 
         if (comment.SoftDelete())
         {
-            articleRepository.UpdateComment(comment: comment);
+            articleCommentRepository.UpdateComment(comment: comment);
             await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
         }
 

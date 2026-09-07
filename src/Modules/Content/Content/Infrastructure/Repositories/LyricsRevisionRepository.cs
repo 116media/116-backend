@@ -12,36 +12,6 @@ namespace _116.Content.Infrastructure.Repositories;
 /// community correction revision entities.
 /// </summary>
 /// <param name="context">The Content module database context.</param>
-public class LyricsRevisionRepository(ContentDbContext context) : ILyricsRevisionRepository
-{
-    /// <inheritdoc />
-    public async Task<LyricsRevisionEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        var specification = new LyricsRevisionByIdSpecification(id: id);
-        return await context
-            .LyricsRevisions.ApplySpecification(specification: specification)
-            .FirstOrDefaultAsync(cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public async Task<LyricsRevisionEntity> GetByIdOrThrowAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        var specification = new LyricsRevisionByIdSpecification(id: id);
-        return await context
-            .LyricsRevisions.AsTracking()
-            .ApplySpecification(specification: specification)
-            .FirstDefaultOrThrowAsync(keyValue: id, cancellationToken: cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public async Task AddAsync(LyricsRevisionEntity revision, CancellationToken cancellationToken = default)
-    {
-        await context.LyricsRevisions.AddAsync(revision, cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public void Update(LyricsRevisionEntity revision)
-    {
-        context.LyricsRevisions.Update(revision);
-    }
-}
+public class LyricsRevisionRepository(ContentDbContext context)
+    : ContentRepository<LyricsRevisionEntity>(context),
+        ILyricsRevisionRepository { }
