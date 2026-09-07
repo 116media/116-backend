@@ -1,3 +1,4 @@
+using _116.Core.Contracts.Domain.Enums;
 using _116.Shared.Domain;
 
 namespace _116.Core.Domain.Events;
@@ -9,5 +10,6 @@ namespace _116.Core.Domain.Events;
 /// external URL with nothing to delete remotely, and consumers skip it.
 /// </summary>
 /// <param name="FileId">The soft-deleted file row.</param>
+/// <param name="Kind">The storage class the deleted asset was stored under.</param>
 /// <param name="StorageKey">The storage key of the remote asset, or <c>null</c> for external-URL rows.</param>
-public record FileSoftDeletedEvent(Guid FileId, string? StorageKey) : DomainEvent;
+public record FileSoftDeletedEvent(Guid FileId, string? StorageKey, EnumStoredFileKind Kind) : DomainEvent;
