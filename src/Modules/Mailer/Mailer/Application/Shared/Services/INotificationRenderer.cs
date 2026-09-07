@@ -1,4 +1,4 @@
-using _116.Mailer.Contracts.Domain;
+using _116.Mailer.Contracts.Domain.Enums;
 
 namespace _116.Mailer.Application.Shared.Services;
 
