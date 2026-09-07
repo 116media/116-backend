@@ -149,4 +149,22 @@ public static class EnvVar
             parse: raw => int.TryParse(s: raw, out int parsed) ? (parsed, null) : (0, "must be an integer.")
         );
     }
+
+    /// <summary>
+    /// Declares a boolean variable that may be absent, in which case the default is used.
+    /// A present but unparsable value is a boot error.
+    /// </summary>
+    /// <param name="name">The environment variable name.</param>
+    /// <param name="default">The value used when the variable is absent.</param>
+    /// <returns>The registered descriptor.</returns>
+    public static EnvVar<bool> Bool(string name, bool @default)
+    {
+        return new EnvVar<bool>(
+            name,
+            required: false,
+            @default: @default,
+            parse: raw =>
+                bool.TryParse(value: raw, out bool parsed) ? (parsed, null) : (false, "must be true or false.")
+        );
+    }
 }
