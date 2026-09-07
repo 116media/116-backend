@@ -1,3 +1,4 @@
+using _116.Core.Contracts.Domain.Enums;
 using _116.Shared.Application.Exceptions;
 using Microsoft.AspNetCore.Http;
 
@@ -13,6 +14,7 @@ public interface ICloudinaryService
     /// </summary>
     /// <param name="file">The file to upload.</param>
     /// <param name="publicId">The public ID for the file (typically userId for avatars).</param>
+    /// <param name="kind">The storage class the asset was stored as.</param>
     /// <param name="folder">Optional folder path in Cloudinary (e.g., "avatars").</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Upload result containing the public URL, public ID, and metadata.</returns>
@@ -64,7 +66,7 @@ public interface ICloudinaryService
     /// <param name="publicId">The Cloudinary public ID of the file to delete.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns><c>true</c> if the resource was deleted; <c>false</c> if it was not found.</returns>
-    Task<bool> DeleteImageAsync(string publicId, CancellationToken cancellationToken = default);
+    Task<bool> DeleteAsync(string publicId, EnumStoredFileKind kind, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Deletes multiple files from Cloudinary in a single batch request.
@@ -72,9 +74,14 @@ public interface ICloudinaryService
     /// automatically splits larger collections into batches of 100.
     /// </summary>
     /// <param name="publicIds">The Cloudinary public IDs of the files to delete.</param>
+    /// <param name="kind">The storage class the assets were stored as.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns><c>true</c> if all deletions succeeded; <c>false</c> if any resource was not found.</returns>
-    Task<bool> DeleteImagesAsync(IEnumerable<string> publicIds, CancellationToken cancellationToken = default);
+    Task<bool> DeleteManyAsync(
+        IEnumerable<string> publicIds,
+        EnumStoredFileKind kind,
+        CancellationToken cancellationToken = default
+    );
 }
 
 /// <summary>
