@@ -24,8 +24,6 @@ public abstract class ProcessedDomainEventStore<TContext>(TContext context) : IP
         CancellationToken cancellationToken = default
     )
     {
-        // ON CONFLICT DO NOTHING makes the claim atomic: the row count tells the caller whether
-        // this invocation won the race or is replaying work another one already completed.
         string sql =
             $"INSERT INTO {SchemaName}.processed_domain_events (event_id, handler_name, processed_at) "
             + "VALUES ({0}, {1}, {2}) ON CONFLICT (event_id, handler_name) DO NOTHING";
