@@ -1,9 +1,9 @@
-using _116.Core.Application.Shared.Repositories;
-using _116.Core.Domain.Entities;
+using _116.Core.Contracts.Application.DTOs;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.Login.Contracts;
 using _116.Identity.Application.Session.Factories.Contracts;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Mappers;
+using _116.Identity.Application.User.Services;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
 
@@ -14,12 +14,12 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.Login;
 /// </summary>
 /// <param name="authFactory">Factory for handling admin user authentication logic.</param>
 /// <param name="sessionFactory">Factory for creating authentication sessions.</param>
-/// <param name="fileRepository">Repository for accessing file metadata.</param>
+/// <param name="avatarService">Resolves and stores the user's avatar.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class AdminLoginHandler(
     IAdminLoginAuthFactory authFactory,
     ISessionFactory sessionFactory,
-    IFileRepository fileRepository,
+    IAvatarService avatarService,
     IMapper mapper
 ) : ICommandHandler<AdminLoginCommand, AdminLoginResult>
 {
@@ -43,12 +43,10 @@ public class AdminLoginHandler(
         );
 
         // Fetch user avatar
-        FileEntity? avatarFile = await fileRepository.GetAvatarFileAsync(
+        FileDto? avatarDto = await avatarService.GetAvatarAsync(
             avatarFileId: authData.User.AvatarFileId,
             cancellationToken: cancellationToken
         );
-
-        var avatarDto = avatarFile?.ToFileDto(mapper);
         var userDto = authData.User.ToUserResponseDto(
             mapper: mapper,
             roles: authData.User.UserRoles.ToRoleDtos(mapper),
