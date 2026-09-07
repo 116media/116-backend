@@ -3,7 +3,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using _116.Mailer.Application.Shared.Services;
 using _116.Mailer.Application.Templates.Messages;
-using _116.Mailer.Contracts.Domain;
+using _116.Mailer.Contracts.Domain.Enums;
 
 namespace _116.Mailer.Application.Templates;
 
