@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <RootNamespace>_116.Core.Contracts</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="../../../Shared/Shared/Shared.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Core" />
+        <InternalsVisibleTo Include="_116.Unit.Tests" />
+        <InternalsVisibleTo Include="_116.Tests.Fixtures" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+</Project>
