@@ -1,7 +1,7 @@
 using _116.Mailer.Application.Shared.Exceptions;
 using _116.Mailer.Application.Shared.Repositories;
 using _116.Mailer.Application.Shared.Services;
-using _116.Mailer.Contracts.Application;
+using _116.Mailer.Contracts.Application.DTOs;
 using _116.Mailer.Domain.Constants;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Infrastructure.Persistence;
@@ -14,7 +14,7 @@ namespace _116.Mailer.Infrastructure.BackgroundJobs;
 
 /// <summary>
 /// Quartz scheduled job that delivers pending outbox emails through the
-/// configured <see cref="IEmailSender" />.
+/// configured <see cref="IEmailSenderService" />.
 /// </summary>
 /// <remarks>
 /// Every run claims a batch of due rows in one statement, performs one delivery attempt per row
@@ -39,7 +39,7 @@ public class OutboxEmailDispatcherJob(IServiceScopeFactory scopeFactory, ILogger
 
         var dbContext = scope.ServiceProvider.GetRequiredService<MailerDbContext>();
         var repository = scope.ServiceProvider.GetRequiredService<IOutboxEmailRepository>();
-        var sender = scope.ServiceProvider.GetRequiredService<IEmailSender>();
+        var sender = scope.ServiceProvider.GetRequiredService<IEmailSenderService>();
 
         DateTime now = DateTime.UtcNow;
 
@@ -67,12 +67,16 @@ public class OutboxEmailDispatcherJob(IServiceScopeFactory scopeFactory, ILogger
     /// Performs one delivery attempt for a claimed outbox email and records
     /// the outcome on the entity.
     /// </summary>
-    private async Task DeliverAsync(OutboxEmailEntity email, IEmailSender sender, CancellationToken cancellationToken)
+    private async Task DeliverAsync(
+        OutboxEmailEntity email,
+        IEmailSenderService sender,
+        CancellationToken cancellationToken
+    )
     {
         try
         {
             var message = new EmailMessage(
-                To: new EmailRecipient(email.RecipientAddress, email.RecipientName),
+                To: new EmailRecipientDto(email.RecipientAddress, email.RecipientName),
                 Subject: email.Subject,
                 HtmlBody: email.HtmlBody,
                 TextBody: email.TextBody
