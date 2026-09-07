@@ -1,51 +1,33 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-    </PropertyGroup>
-
-    <PropertyGroup>
         <RootNamespace>_116.Shared</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Asp.Versioning.Http" Version="8.1.0" />
-        <PackageReference Include="Bogus" Version="35.6.3" />
-        <PackageReference Include="Carter" Version="8.2.1" />
-        <PackageReference Include="DotNetEnv" Version="3.1.1" />
-        <PackageReference Include="EFCore.NamingConventions" Version="9.0.0" />
-        <PackageReference Include="FluentValidation" Version="12.0.0" />
-        <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
-        <PackageReference
-            Include="FluentValidation.DependencyInjectionExtensions"
-            Version="12.0.0"
-        />
-        <PackageReference Include="Mapster" Version="7.4.2-pre02" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.4" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.4">
+        <PackageReference Include="Asp.Versioning.Http" />
+        <PackageReference Include="Bogus" />
+        <PackageReference Include="Carter" />
+        <PackageReference Include="DotNetEnv" />
+        <PackageReference Include="EFCore.NamingConventions" />
+        <PackageReference Include="FluentValidation" />
+        <PackageReference Include="FluentValidation.AspNetCore" />
+        <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
+        <PackageReference Include="Mapster" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.Extensions.Caching.Hybrid" Version="9.10.0" />
-        <PackageReference
-            Include="Microsoft.Extensions.Caching.StackExchangeRedis"
-            Version="9.0.0"
-        />
-        <PackageReference
-            Include="Microsoft.Extensions.Configuration.Abstractions"
-            Version="9.0.4"
-        />
-        <PackageReference
-            Include="Microsoft.Extensions.DependencyInjection.Abstractions"
-            Version="9.0.10"
-        />
-        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.4" />
-        <PackageReference Include="Quartz.AspNetCore" Version="3.16.1" />
-        <PackageReference Include="Quartz.Serialization.SystemTextJson" Version="3.16.1" />
-        <PackageReference Include="Scrutor" Version="6.1.0" />
-        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="9.0.3" />
+        <PackageReference Include="Microsoft.Extensions.Caching.Hybrid" />
+        <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
+        <PackageReference Include="Quartz.AspNetCore" />
+        <PackageReference Include="Quartz.Serialization.SystemTextJson" />
+        <PackageReference Include="Scrutor" />
+        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" />
     </ItemGroup>
 
     <ItemGroup>
