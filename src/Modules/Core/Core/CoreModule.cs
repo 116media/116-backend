@@ -3,9 +3,11 @@ using _116.Core.Application.Shared.Errors.Facade;
 using _116.Core.Application.Shared.Errors.Messages;
 using _116.Core.Application.Shared.EventHandlers;
 using _116.Core.Application.Shared.Exceptions.Handlers;
+using _116.Core.Application.Shared.Mappers;
 using _116.Core.Application.Shared.Persistence;
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Application.Shared.Services;
+using _116.Core.Contracts.Application.Services;
 using _116.Core.Domain.Constants;
 using _116.Core.Domain.Events;
 using _116.Core.Infrastructure.BackgroundJobs;
@@ -73,6 +75,9 @@ public static class CoreModule
         // Sweeps uploads no referencing write ever claimed; the two cannot share a transaction.
 
         // Register core repositories
+        // Contribute Core mappings to the shared cross-module Mapster config
+        services.AddModuleMappings(new MappingRegistration());
+
         services.AddScoped<IFileRepository, FileRepository>();
 
         // Register core management services
@@ -85,6 +90,9 @@ public static class CoreModule
         services.AddScoped<ICloudinaryService, CloudinaryService>();
         services.AddScoped<IImageColorService, ImageColorService>();
         services.AddScoped<IFileUploadService, FileUploadService>();
+
+        // The cross-module storage contract; other modules see only this seam.
+        services.AddScoped<IFileStorageService, FileStorageService>();
 
         // File lifecycle domain event handlers
         services.AddScoped<IDomainEventHandler<FileReplacedEvent>, FileAssetCleanupHandler>();
