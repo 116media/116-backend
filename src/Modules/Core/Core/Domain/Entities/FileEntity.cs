@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using _116.BuildingBlocks.Constants;
+using _116.Core.Contracts.Domain.Enums;
 using _116.Core.Domain.Enums;
 using _116.Core.Domain.Events;
 using _116.Core.Domain.Exceptions;
@@ -81,6 +82,18 @@ public class FileEntity : Aggregate<Guid>
     /// </summary>
     [NotMapped]
     public bool IsDeleted => State is EnumFileState.Deleted or EnumFileState.Replaced;
+
+    /// <summary>
+    /// The storage class this asset was stored under, decided by its MIME type. Deleting with
+    /// any other class silently leaves the asset in place.
+    /// </summary>
+    public EnumStoredFileKind Kind =>
+        MimeType switch
+        {
+            not null when MimeType.StartsWith("image/", StringComparison.OrdinalIgnoreCase) => EnumStoredFileKind.Image,
+            not null when MimeType.StartsWith("video/", StringComparison.OrdinalIgnoreCase) => EnumStoredFileKind.Video,
+            _ => EnumStoredFileKind.Raw,
+        };
 
     /// <summary>
     /// Whether a row already stands behind this file. The audit stamp lands on first save, so a
@@ -175,7 +188,7 @@ public class FileEntity : Aggregate<Guid>
         State = EnumFileState.Deleted;
         DeletedAt = now;
 
-        AddDomainEvent(new FileSoftDeletedEvent(FileId: Id, StorageKey: StorageKey));
+        AddDomainEvent(new FileSoftDeletedEvent(FileId: Id, StorageKey: StorageKey, Kind: Kind));
 
         return true;
     }
@@ -197,7 +210,7 @@ public class FileEntity : Aggregate<Guid>
         State = EnumFileState.Replaced;
         DeletedAt = now;
 
-        AddDomainEvent(new FileReplacedEvent(FileId: Id, OldStorageKey: StorageKey));
+        AddDomainEvent(new FileReplacedEvent(FileId: Id, OldStorageKey: StorageKey, Kind: Kind));
 
         return true;
     }
