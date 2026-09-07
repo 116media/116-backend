@@ -48,6 +48,7 @@ using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Application.User.EventHandlers;
+using _116.Identity.Application.User.Services;
 using _116.Identity.Application.User.UseCases.Admin.Commands.UpdateAvatar;
 using _116.Identity.Application.User.UseCases.Admin.Commands.UpdateAvatar.Contracts;
 using _116.Identity.Application.User.UseCases.Admin.Commands.UpdateOwnProfile;
@@ -56,7 +57,7 @@ using _116.Identity.Application.User.UseCases.Public.Commands.UpdateAvatar;
 using _116.Identity.Application.User.UseCases.Public.Commands.UpdateAvatar.Contracts;
 using _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfile;
 using _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfile.Contracts;
-using _116.Identity.Contracts.Application;
+using _116.Identity.Contracts.Application.Services;
 using _116.Identity.Domain.Constants;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.Events;
@@ -149,6 +150,7 @@ public static class IdentityModule
         services.AddScoped<IAuthRepository, AuthRepository>();
         services.AddScoped<IClaimsProvider, AuthRepository>();
         services.AddScoped<IUserLookupService, UserLookupService>();
+        services.AddScoped<IAvatarService, AvatarService>();
         services.AddScoped<IRoleRepository, RoleRepository>();
         services.AddScoped<IPermissionRepository, PermissionRepository>();
         services.AddScoped<IOtpService>(sp => new OtpService(
