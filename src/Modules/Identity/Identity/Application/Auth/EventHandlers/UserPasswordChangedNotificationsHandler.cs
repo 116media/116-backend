@@ -1,8 +1,10 @@
-using _116.Identity.Contracts.Application;
+using _116.Identity.Contracts.Application.DTOs;
+using _116.Identity.Contracts.Application.Services;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.Events;
-using _116.Mailer.Contracts.Application;
-using _116.Mailer.Contracts.Domain;
+using _116.Mailer.Contracts.Application.DTOs;
+using _116.Mailer.Contracts.Application.Services;
+using _116.Mailer.Contracts.Domain.Enums;
 using _116.Shared.Application.Localization;
 using _116.Shared.Application.Services;
 using Microsoft.Extensions.Logging;
@@ -15,20 +17,20 @@ namespace _116.Identity.Application.Auth.EventHandlers;
 /// handled together because they share every lookup.
 /// </summary>
 /// <param name="userLookupService">Lookup resolving the recipient's name and address by id.</param>
-/// <param name="mailer">Outbox mailer sending the security confirmation.</param>
-/// <param name="notifier">Writer for the in-app notification row.</param>
+/// <param name="emailService">Outbox mailer sending the security confirmation.</param>
+/// <param name="notificationService">Writer for the in-app notification row.</param>
 /// <param name="logger">Logger recording skipped email deliveries.</param>
 public class UserPasswordChangedNotificationsHandler(
     IUserLookupService userLookupService,
-    IMailer mailer,
-    INotifier notifier,
+    IEmailService emailService,
+    INotificationService notificationService,
     ILogger<UserPasswordChangedNotificationsHandler> logger
 ) : IDomainEventHandler<UserPasswordChangedEvent>
 {
     /// <inheritdoc />
     public async Task Handle(UserPasswordChangedEvent domainEvent, CancellationToken cancellationToken = default)
     {
-        AuthorInfo? user = await userLookupService.GetAuthorInfoByIdAsync(
+        AuthorDto? user = await userLookupService.GetAuthorInfoByIdAsync(
             userId: domainEvent.UserId,
             ct: cancellationToken
         );
@@ -43,9 +45,9 @@ public class UserPasswordChangedNotificationsHandler(
 
         if (user.Email is not null)
         {
-            await mailer.EnqueueAsync(
+            await emailService.EnqueueAsync(
                 template: EmailTemplateFor(origin: domainEvent.Origin),
-                to: new EmailRecipient(Address: user.Email, DisplayName: user.UserName),
+                to: new EmailRecipientDto(Address: user.Email, DisplayName: user.UserName),
                 tokens: EmailTokensFor(origin: domainEvent.Origin, userName: user.UserName),
                 culture: culture,
                 cancellationToken: cancellationToken
@@ -56,7 +58,7 @@ public class UserPasswordChangedNotificationsHandler(
             logger.LogDebug("Password change email skipped: user {UserId} has no email address.", domainEvent.UserId);
         }
 
-        await notifier.NotifyAsync(
+        await notificationService.NotifyAsync(
             userId: domainEvent.UserId,
             type: NotificationTypeFor(origin: domainEvent.Origin),
             tokens: new Dictionary<string, string>(),
