@@ -1,6 +1,6 @@
 using _116.Shared.Application.DTOs;
 
-namespace _116.Core.Application.Shared.DTOs;
+namespace _116.Core.Contracts.Application.DTOs;
 
 /// <summary>
 /// Data transfer object representing file information for UI display.
