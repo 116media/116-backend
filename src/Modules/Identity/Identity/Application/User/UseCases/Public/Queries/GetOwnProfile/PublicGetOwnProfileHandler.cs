@@ -1,8 +1,8 @@
-using _116.Core.Application.Shared.Repositories;
-using _116.Core.Domain.Entities;
+using _116.Core.Contracts.Application.DTOs;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Application.Shared.Repositories;
+using _116.Identity.Application.User.Services;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Contracts.Application.CQRS;
@@ -15,9 +15,9 @@ namespace _116.Identity.Application.User.UseCases.Public.Queries.GetOwnProfile;
 /// </summary>
 /// <param name="authRepository">Repository for user data access operations.</param>
 /// <param name="roleRepository">Repository for role and permission data operations.</param>
-/// <param name="fileRepository">Repository for accessing file metadata.</param>
+/// <param name="avatarService">Resolves and stores the user's avatar.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-public class PublicGetOwnProfileHandler(IAuthRepository authRepository, IFileRepository fileRepository, IMapper mapper)
+public class PublicGetOwnProfileHandler(IAuthRepository authRepository, IAvatarService avatarService, IMapper mapper)
     : IQueryHandler<PublicGetOwnProfileQuery, PublicGetOwnProfileResult>
 {
     /// <summary>
@@ -45,12 +45,10 @@ public class PublicGetOwnProfileHandler(IAuthRepository authRepository, IFileRep
         var permissions = user.UserRoles.ToPermissionDtos(mapper);
 
         // Fetch the avatar file if the user has one
-        FileEntity? avatarFile = await fileRepository.GetAvatarFileAsync(
+        FileDto? avatarDto = await avatarService.GetAvatarAsync(
             avatarFileId: user.AvatarFileId,
             cancellationToken: cancellationToken
         );
-
-        var avatarDto = avatarFile?.ToFileDto(mapper);
         PublicUserResponseDto userDto = user.ToUserResponseDto(
                 mapper: mapper,
                 roles: roles,
