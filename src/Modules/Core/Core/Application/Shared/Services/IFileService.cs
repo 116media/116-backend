@@ -1,3 +1,4 @@
+using _116.Core.Contracts.Domain.Enums;
 using _116.Shared.Application.Exceptions;
 using Microsoft.AspNetCore.Http;
 
@@ -123,7 +124,12 @@ public interface IFileService
     /// Deletes a file from cloud storage by its storage key.
     /// </summary>
     /// <param name="storageKey">The provider-agnostic storage key (e.g., Cloudinary public ID).</param>
+    /// <param name="kind">The storage class the asset was stored as.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns><c>true</c> if the file was deleted; <c>false</c> if not found.</returns>
-    Task<bool> DeleteFileAsync(string storageKey, CancellationToken cancellationToken = default);
+    Task<bool> DeleteFileAsync(
+        string storageKey,
+        EnumStoredFileKind kind,
+        CancellationToken cancellationToken = default
+    );
 }
