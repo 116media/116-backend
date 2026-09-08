@@ -1,8 +1,9 @@
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
-using _116.Mailer.Contracts.Application;
-using _116.Mailer.Contracts.Domain;
+using _116.Mailer.Contracts.Application.DTOs;
+using _116.Mailer.Contracts.Application.Services;
+using _116.Mailer.Contracts.Domain.Enums;
 
 namespace _116.Content.Application.Commerce.Services;
 
@@ -12,9 +13,9 @@ namespace _116.Content.Application.Commerce.Services;
 /// records carry no language preference, and guessing from the admin's request
 /// culture would localize by the wrong person.
 /// </summary>
-/// <param name="mailer">The outbox mailer.</param>
+/// <param name="emailService">The outbox mailer.</param>
 /// <param name="customerRepository">Repository resolving customers by id.</param>
-public class CommerceCustomerNotifier(IMailer mailer, ICustomerRepository customerRepository)
+public class CommerceCustomerNotifier(IEmailService emailService, ICustomerRepository customerRepository)
     : ICommerceCustomerNotifier
 {
     /// <summary>
@@ -26,9 +27,9 @@ public class CommerceCustomerNotifier(IMailer mailer, ICustomerRepository custom
     /// <inheritdoc />
     public async Task NotifyOrderInvoiceAsync(ContentOrderEntity order, CancellationToken cancellationToken)
     {
-        await mailer.EnqueueAsync(
+        await emailService.EnqueueAsync(
             template: EnumEmailTemplate.OrderInvoice,
-            to: new EmailRecipient(Address: order.Customer.Email, DisplayName: order.Customer.FullName),
+            to: new EmailRecipientDto(Address: order.Customer.Email, DisplayName: order.Customer.FullName),
             tokens: new Dictionary<string, string>
             {
                 ["customerName"] = order.Customer.FullName,
@@ -49,9 +50,9 @@ public class CommerceCustomerNotifier(IMailer mailer, ICustomerRepository custom
         CancellationToken cancellationToken
     )
     {
-        await mailer.EnqueueAsync(
+        await emailService.EnqueueAsync(
             template: EnumEmailTemplate.PaymentReceipt,
-            to: new EmailRecipient(Address: order.Customer.Email, DisplayName: order.Customer.FullName),
+            to: new EmailRecipientDto(Address: order.Customer.Email, DisplayName: order.Customer.FullName),
             tokens: new Dictionary<string, string>
             {
                 ["customerName"] = order.Customer.FullName,
@@ -72,9 +73,9 @@ public class CommerceCustomerNotifier(IMailer mailer, ICustomerRepository custom
         CancellationToken cancellationToken
     )
     {
-        await mailer.EnqueueAsync(
+        await emailService.EnqueueAsync(
             template: EnumEmailTemplate.PaymentRejected,
-            to: new EmailRecipient(Address: order.Customer.Email, DisplayName: order.Customer.FullName),
+            to: new EmailRecipientDto(Address: order.Customer.Email, DisplayName: order.Customer.FullName),
             tokens: new Dictionary<string, string>
             {
                 ["customerName"] = order.Customer.FullName,
@@ -99,9 +100,9 @@ public class CommerceCustomerNotifier(IMailer mailer, ICustomerRepository custom
             return;
         }
 
-        await mailer.EnqueueAsync(
+        await emailService.EnqueueAsync(
             template: EnumEmailTemplate.OrderCancelled,
-            to: new EmailRecipient(Address: customer.Email, DisplayName: customer.FullName),
+            to: new EmailRecipientDto(Address: customer.Email, DisplayName: customer.FullName),
             tokens: new Dictionary<string, string>
             {
                 ["customerName"] = customer.FullName,
@@ -127,9 +128,9 @@ public class CommerceCustomerNotifier(IMailer mailer, ICustomerRepository custom
             return;
         }
 
-        await mailer.EnqueueAsync(
+        await emailService.EnqueueAsync(
             template: EnumEmailTemplate.PromotionForceRemoved,
-            to: new EmailRecipient(Address: customer.Email, DisplayName: customer.FullName),
+            to: new EmailRecipientDto(Address: customer.Email, DisplayName: customer.FullName),
             tokens: new Dictionary<string, string>
             {
                 ["customerName"] = customer.FullName,
@@ -157,9 +158,9 @@ public class CommerceCustomerNotifier(IMailer mailer, ICustomerRepository custom
             return;
         }
 
-        await mailer.EnqueueAsync(
+        await emailService.EnqueueAsync(
             template: EnumEmailTemplate.CommissionedContentPublished,
-            to: new EmailRecipient(Address: customer.Email, DisplayName: customer.FullName),
+            to: new EmailRecipientDto(Address: customer.Email, DisplayName: customer.FullName),
             tokens: new Dictionary<string, string>
             {
                 ["customerName"] = customer.FullName,
@@ -186,9 +187,9 @@ public class CommerceCustomerNotifier(IMailer mailer, ICustomerRepository custom
             return;
         }
 
-        await mailer.EnqueueAsync(
+        await emailService.EnqueueAsync(
             template: EnumEmailTemplate.CommissionedContentRejected,
-            to: new EmailRecipient(Address: customer.Email, DisplayName: customer.FullName),
+            to: new EmailRecipientDto(Address: customer.Email, DisplayName: customer.FullName),
             tokens: new Dictionary<string, string>
             {
                 ["customerName"] = customer.FullName,
@@ -215,9 +216,9 @@ public class CommerceCustomerNotifier(IMailer mailer, ICustomerRepository custom
             return;
         }
 
-        await mailer.EnqueueAsync(
+        await emailService.EnqueueAsync(
             template: EnumEmailTemplate.ShootScheduled,
-            to: new EmailRecipient(Address: customer.Email, DisplayName: customer.FullName),
+            to: new EmailRecipientDto(Address: customer.Email, DisplayName: customer.FullName),
             tokens: new Dictionary<string, string>
             {
                 ["customerName"] = customer.FullName,
