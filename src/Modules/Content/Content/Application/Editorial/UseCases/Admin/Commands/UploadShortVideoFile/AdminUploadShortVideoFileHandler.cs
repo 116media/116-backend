@@ -1,8 +1,9 @@
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Services;
-using _116.Core.Domain.Entities;
+using _116.Core.Contracts.Application.DTOs;
+using _116.Core.Contracts.Application.Services;
+using _116.Core.Contracts.Domain.Enums;
 using _116.Shared.Contracts.Application.CQRS;
 using Microsoft.AspNetCore.Http;
 
@@ -10,15 +11,14 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadShort
 
 /// <summary>
 /// Handles the <see cref="AdminUploadShortVideoFileCommand" /> to upload or replace a short video's file.
-/// The video file is tracked via <see cref="FileEntity" /> in the Core module. Uploading a file to a
+/// The video file is tracked via <see cref="FileReferenceDto" /> in the Core module. Uploading a file to a
 /// draft makes it eligible for activation.
 /// </summary>
 /// <param name="shortVideoRepository">Repository for short video data access operations.</param>
-/// <param name="fileUploadService">Uploads and replaces stored assets.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 public class AdminUploadShortVideoFileHandler(
     IShortVideoRepository shortVideoRepository,
-    IFileUploadService fileUploadService,
+    IFileStorageService fileStorage,
     IContentUnitOfWork unitOfWork
 ) : ICommandHandler<AdminUploadShortVideoFileCommand, AdminUploadShortVideoFileResult>
 {
@@ -37,25 +37,24 @@ public class AdminUploadShortVideoFileHandler(
 
         IFormFile file = command.File!;
 
-        FileEntity uploaded = await fileUploadService.UploadVideoAsync(
+        StoredFile uploaded = await fileStorage.UploadAsync(
             file: file,
             publicId: shortVideoId.ToString(),
             folder: "content/short-videos",
-            originalFileName: file.FileName,
-            mimeType: file.ContentType,
+            kind: EnumStoredFileKind.Video,
             cancellationToken: cancellationToken
         );
 
         await unitOfWork.ExecuteInTransactionAsync(
             async ct =>
             {
-                await fileUploadService.RecordAsync(
+                await fileStorage.RecordAsync(
                     file: uploaded,
                     supersededFileId: shortVideo.VideoFileId,
                     cancellationToken: ct
                 );
 
-                shortVideo.ReplaceVideoFile(videoFileId: uploaded.Id);
+                shortVideo.ReplaceVideoFile(videoFileId: uploaded.Reference.Id);
 
                 shortVideoRepository.Update(shortVideo: shortVideo);
             },
@@ -63,8 +62,8 @@ public class AdminUploadShortVideoFileHandler(
         );
 
         return new AdminUploadShortVideoFileResult(
-            VideoUrl: uploaded.StorageUrl,
-            VideoStorageKey: uploaded.StorageKey!
+            VideoUrl: uploaded.Reference.StorageUrl,
+            VideoStorageKey: uploaded.Reference.StorageKey!
         );
     }
 }
