@@ -4,8 +4,8 @@ using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
-using _116.Core.Application.Shared.Repositories;
-using _116.Identity.Contracts.Application;
+using _116.Core.Contracts.Application.Services;
+using _116.Identity.Contracts.Application.Services;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
 
@@ -21,7 +21,7 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetLyricsBy
 /// <param name="streamingLinkRepository">Repository for resolving curated streaming platform links.</param>
 /// <param name="mapper">The Mapster mapper used for tags.</param>
 /// <param name="userLookup">Service for resolving author profiles from the Identity module.</param>
-/// <param name="fileRepository">Repository for resolving avatar and cover image file URLs.</param>
+/// <param name="fileStorage">Core's storage contract.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class PublicGetLyricsBySlugHandler(
     ILyricsRepository lyricsRepository,
@@ -31,7 +31,7 @@ public class PublicGetLyricsBySlugHandler(
     IStreamingLinkRepository streamingLinkRepository,
     IMapper mapper,
     IUserLookupService userLookup,
-    IFileRepository fileRepository,
+    IFileStorageService fileStorage,
     ContentI18n i18n
 ) : IQueryHandler<PublicGetLyricsBySlugQuery, PublicGetLyricsBySlugResult>
 {
@@ -122,7 +122,7 @@ public class PublicGetLyricsBySlugHandler(
         var dto = await lyrics.ToPublicLyricsDetailDtoAsync(
             mapper,
             userLookup,
-            fileRepository,
+            fileStorage,
             cancellationToken,
             isLiked
         );
