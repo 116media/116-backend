@@ -3,7 +3,7 @@ using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.Services;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
 
@@ -21,7 +21,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.AttachYoutu
 /// <param name="unitOfWork">
 /// Unit of Work for managing database transactions.
 /// </param>
-/// <param name="fileRepository">
+/// <param name="fileStorage">
 /// Repository for resolving file URLs during DTO mapping.
 /// </param>
 /// <param name="mapper">
@@ -30,7 +30,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.AttachYoutu
 public class AdminAttachYoutubeVideoUrlHandler(
     IVideoRepository videoRepository,
     IContentUnitOfWork unitOfWork,
-    IFileRepository fileRepository,
+    IFileStorageService fileStorage,
     IMapper mapper
 ) : ICommandHandler<AdminAttachYoutubeVideoUrlCommand, AdminAttachYoutubeVideoUrlResult>
 {
@@ -57,7 +57,7 @@ public class AdminAttachYoutubeVideoUrlHandler(
             cancellationToken: cancellationToken
         );
 
-        var dto = await updated.ToVideoDetailDtoAsync(mapper, fileRepository, cancellationToken);
+        var dto = await updated.ToVideoDetailDtoAsync(mapper, fileStorage, cancellationToken);
         return new AdminAttachYoutubeVideoUrlResult(Video: dto);
     }
 }
