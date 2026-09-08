@@ -3,7 +3,7 @@ using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.Services;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateAlbum;
@@ -14,12 +14,12 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateAlbum
 /// <param name="albumRepository">Repository for album data access operations.</param>
 /// <param name="artistRepository">Repository for artist profile data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="fileRepository">Repository for resolving cover image URLs.</param>
+/// <param name="fileStorage">Core's storage contract.</param>
 public class AdminCreateAlbumHandler(
     IAlbumRepository albumRepository,
     IArtistRepository artistRepository,
     IContentUnitOfWork unitOfWork,
-    IFileRepository fileRepository
+    IFileStorageService fileStorage
 ) : ICommandHandler<AdminCreateAlbumCommand, AdminCreateAlbumResult>
 {
     /// <inheritdoc />
@@ -49,7 +49,7 @@ public class AdminCreateAlbumHandler(
         await albumRepository.AddAsync(album: album, cancellationToken: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
-        var dto = await album.ToAlbumDtoAsync(fileRepository, cancellationToken);
+        var dto = await album.ToAlbumDtoAsync(fileStorage, cancellationToken);
         return new AdminCreateAlbumResult(Album: dto);
     }
 }
