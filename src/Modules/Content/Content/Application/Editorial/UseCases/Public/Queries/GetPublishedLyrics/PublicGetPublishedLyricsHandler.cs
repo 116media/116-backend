@@ -3,7 +3,7 @@ using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
-using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.Services;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
 
@@ -13,8 +13,8 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublishe
 /// Handles the <see cref="PublicGetPublishedLyricsQuery" /> to retrieve a paginated list of published lyrics pages.
 /// </summary>
 /// <param name="lyricsRepository">Repository for lyrics data access operations.</param>
-/// <param name="fileRepository">Repository for resolving cover image URLs.</param>
-public class PublicGetPublishedLyricsHandler(ILyricsRepository lyricsRepository, IFileRepository fileRepository)
+/// <param name="fileStorage">Core's storage contract.</param>
+public class PublicGetPublishedLyricsHandler(ILyricsRepository lyricsRepository, IFileStorageService fileStorage)
     : IQueryHandler<PublicGetPublishedLyricsQuery, PublicGetPublishedLyricsResult>
 {
     /// <inheritdoc />
@@ -46,7 +46,7 @@ public class PublicGetPublishedLyricsHandler(ILyricsRepository lyricsRepository,
 
         IReadOnlyList<PublicLyricsSummaryDto> dtoList = await lyricsList
             .AsReadOnly()
-            .ToPublicLyricsSummaryDtosAsync(fileRepository, likedLyricsIds, cancellationToken);
+            .ToPublicLyricsSummaryDtosAsync(fileStorage, likedLyricsIds, cancellationToken);
 
         var paginatedResult = new PaginatedResult<PublicLyricsSummaryDto>(
             pageIndex: pageIndex,
