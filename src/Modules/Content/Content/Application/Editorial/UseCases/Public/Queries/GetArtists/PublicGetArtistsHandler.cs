@@ -1,7 +1,6 @@
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Repositories;
-using _116.Core.Application.Shared.Repositories;
-using _116.Core.Domain.Entities;
+using _116.Core.Contracts.Application.Services;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
 
@@ -13,8 +12,8 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetArtists;
 /// statement; this handler only resolves avatar URLs and shapes the page.
 /// </summary>
 /// <param name="artistRepository">Repository for artist profile data access operations.</param>
-/// <param name="fileRepository">Repository for resolving avatar file URLs.</param>
-public class PublicGetArtistsHandler(IArtistRepository artistRepository, IFileRepository fileRepository)
+/// <param name="fileStorage">Core's storage contract.</param>
+public class PublicGetArtistsHandler(IArtistRepository artistRepository, IFileStorageService fileStorage)
     : IQueryHandler<PublicGetArtistsQuery, PublicGetArtistsResult>
 {
     /// <inheritdoc />
@@ -32,7 +31,7 @@ public class PublicGetArtistsHandler(IArtistRepository artistRepository, IFileRe
             cancellationToken: cancellationToken
         );
 
-        IReadOnlyDictionary<Guid, string> avatarUrls = await fileRepository.GetStorageUrlsByIdsAsync(
+        IReadOnlyDictionary<Guid, string> avatarUrls = await fileStorage.ResolveUrlsAsync(
             rows.Where(r => r.Artist.AvatarFileId.HasValue).Select(r => r.Artist.AvatarFileId!.Value).ToHashSet(),
             cancellationToken
         );
