@@ -2,9 +2,11 @@ using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Events;
-using _116.Identity.Contracts.Application;
-using _116.Mailer.Contracts.Application;
-using _116.Mailer.Contracts.Domain;
+using _116.Identity.Contracts.Application.DTOs;
+using _116.Identity.Contracts.Application.Services;
+using _116.Mailer.Contracts.Application.DTOs;
+using _116.Mailer.Contracts.Application.Services;
+using _116.Mailer.Contracts.Domain.Enums;
 using _116.Shared.Application.Localization;
 using _116.Shared.Application.Services;
 using Microsoft.Extensions.Logging;
@@ -20,21 +22,21 @@ namespace _116.Content.Application.Editorial.EventHandlers;
 /// </summary>
 /// <param name="userLookupService">Lookup resolving the owner's name and address by id.</param>
 /// <param name="artistRepository">Repository resolving the verified artist profile.</param>
-/// <param name="mailer">Outbox mailer sending the verification notice.</param>
-/// <param name="notifier">Writer for the in-app notification row.</param>
+/// <param name="emailService">Outbox mailer sending the verification notice.</param>
+/// <param name="notificationService">Writer for the in-app notification row.</param>
 /// <param name="logger">Logger recording skipped deliveries.</param>
 public class ArtistOwnershipVerifiedNotificationsHandler(
     IUserLookupService userLookupService,
     IArtistRepository artistRepository,
-    IMailer mailer,
-    INotifier notifier,
+    IEmailService emailService,
+    INotificationService notificationService,
     ILogger<ArtistOwnershipVerifiedNotificationsHandler> logger
 ) : IDomainEventHandler<ArtistOwnershipVerifiedEvent>
 {
     /// <inheritdoc />
     public async Task Handle(ArtistOwnershipVerifiedEvent domainEvent, CancellationToken cancellationToken = default)
     {
-        AuthorInfo? owner = await userLookupService.GetAuthorInfoByIdAsync(
+        AuthorDto? owner = await userLookupService.GetAuthorInfoByIdAsync(
             userId: domainEvent.UserId,
             ct: cancellationToken
         );
@@ -63,9 +65,9 @@ public class ArtistOwnershipVerifiedNotificationsHandler(
 
         if (owner.Email is not null)
         {
-            await mailer.EnqueueAsync(
+            await emailService.EnqueueAsync(
                 template: EnumEmailTemplate.ArtistVerified,
-                to: new EmailRecipient(Address: owner.Email, DisplayName: owner.UserName),
+                to: new EmailRecipientDto(Address: owner.Email, DisplayName: owner.UserName),
                 tokens: new Dictionary<string, string>
                 {
                     ["userName"] = owner.UserName,
@@ -84,7 +86,7 @@ public class ArtistOwnershipVerifiedNotificationsHandler(
             );
         }
 
-        await notifier.NotifyAsync(
+        await notificationService.NotifyAsync(
             userId: domainEvent.UserId,
             type: EnumNotificationType.ArtistVerified,
             tokens: new Dictionary<string, string>
