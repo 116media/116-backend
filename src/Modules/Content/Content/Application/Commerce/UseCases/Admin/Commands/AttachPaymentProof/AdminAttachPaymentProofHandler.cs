@@ -4,8 +4,9 @@ using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Services;
-using _116.Core.Domain.Entities;
+using _116.Core.Contracts.Application.DTOs;
+using _116.Core.Contracts.Application.Services;
+using _116.Core.Contracts.Domain.Enums;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
 using Microsoft.AspNetCore.Http;
@@ -14,17 +15,16 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.AttachPaymen
 
 /// <summary>
 /// Handles the <see cref="AdminAttachPaymentProofCommand" /> to upload a payment proof file (image or PDF)
-/// to Cloudinary, persist a <c>FileEntity</c> in <c>core.files</c>, and attach the reference to the
+/// to Cloudinary, persist a <c>FileReferenceDto</c> in <c>core.files</c>, and attach the reference to the
 /// order's payment record.
 /// </summary>
 /// <param name="orderPaymentFactory">Shared factory for fetching and validating payment records.</param>
-/// <param name="fileUploadService">Uploads and replaces stored assets.</param>
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class AdminAttachPaymentProofHandler(
     IOrderPaymentFactory orderPaymentFactory,
-    IFileUploadService fileUploadService,
+    IFileStorageService fileStorage,
     IContentOrderRepository contentOrderRepository,
     IContentUnitOfWork unitOfWork,
     IMapper mapper
@@ -47,23 +47,20 @@ public class AdminAttachPaymentProofHandler(
 
         IFormFile file = command.File!;
 
-        string mimeType = file.ContentType.Split(';')[0].Trim().ToLowerInvariant();
-
-        FileEntity uploaded = await fileUploadService.UploadRawAsync(
+        StoredFile uploaded = await fileStorage.UploadAsync(
             file: file,
             publicId: command.OrderId,
             folder: "content/payment-proofs",
-            originalFileName: file.FileName,
-            mimeType: mimeType,
+            kind: EnumStoredFileKind.Raw,
             cancellationToken: cancellationToken
         );
 
-        FileEntity proofFile = await unitOfWork.ExecuteInTransactionAsync(
+        FileReferenceDto proofFile = await unitOfWork.ExecuteInTransactionAsync(
             async ct =>
             {
-                FileEntity recorded = await fileUploadService.RecordAsync(file: uploaded, cancellationToken: ct);
+                FileReferenceDto recorded = await fileStorage.RecordAsync(file: uploaded, cancellationToken: ct);
 
-                payment.AttachProof(proofFileId: uploaded.Id, paymentMethod: command.PaymentMethod);
+                payment.AttachProof(proofFileId: uploaded.Reference.Id, paymentMethod: command.PaymentMethod);
 
                 await contentOrderRepository.UpdatePaymentAsync(payment: payment, ct: ct);
 
