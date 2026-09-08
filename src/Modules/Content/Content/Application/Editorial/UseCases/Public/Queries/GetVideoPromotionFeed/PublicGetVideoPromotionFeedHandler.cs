@@ -3,7 +3,7 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.Services;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
 
@@ -15,11 +15,11 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetVideoPro
 /// empty spots.
 /// </summary>
 /// <param name="videoRepository">Repository for video data access operations.</param>
-/// <param name="fileRepository">Repository for resolving file URLs.</param>
+/// <param name="fileStorage">Core's storage contract.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class PublicGetVideoPromotionFeedHandler(
     IVideoRepository videoRepository,
-    IFileRepository fileRepository,
+    IFileStorageService fileStorage,
     IMapper mapper
 ) : IQueryHandler<PublicGetVideoPromotionFeedQuery, PublicGetVideoPromotionFeedResult>
 {
@@ -63,7 +63,7 @@ public class PublicGetVideoPromotionFeedHandler(
             freeQueue: freeQueue,
             usedIds: usedIds,
             mapper: mapper,
-            fileRepository: fileRepository,
+            fileStorage: fileStorage,
             cancellationToken: cancellationToken
         );
 
@@ -73,7 +73,7 @@ public class PublicGetVideoPromotionFeedHandler(
             freeQueue: freeQueue,
             usedIds: usedIds,
             mapper: mapper,
-            fileRepository: fileRepository,
+            fileStorage: fileStorage,
             cancellationToken: cancellationToken
         );
 
@@ -82,7 +82,7 @@ public class PublicGetVideoPromotionFeedHandler(
             freeQueue: freeQueue,
             usedIds: usedIds,
             mapper: mapper,
-            fileRepository: fileRepository,
+            fileStorage: fileStorage,
             cancellationToken: cancellationToken
         );
 
@@ -90,7 +90,7 @@ public class PublicGetVideoPromotionFeedHandler(
             freeQueue: freeQueue,
             stripSize: query.StripSize,
             mapper: mapper,
-            fileRepository: fileRepository,
+            fileStorage: fileStorage,
             cancellationToken: cancellationToken
         );
 
@@ -111,7 +111,7 @@ public class PublicGetVideoPromotionFeedHandler(
     /// <param name="freeQueue">Remaining free videos not yet consumed by earlier spots.</param>
     /// <param name="usedIds">Tracks all video IDs already placed in the feed to prevent duplicates.</param>
     /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-    /// <param name="fileRepository">Repository for resolving file URLs.</param>
+    /// <param name="fileStorage">Core's storage contract.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A <see cref="VideoPromotionSpotDto" /> with promoted videos or a single free video fallback.</returns>
     private static async Task<VideoPromotionSpotDto> BuildSimpleSpotAsync(
@@ -120,14 +120,14 @@ public class PublicGetVideoPromotionFeedHandler(
         Queue<VideoEntity> freeQueue,
         HashSet<Guid> usedIds,
         IMapper mapper,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         CancellationToken cancellationToken
     )
     {
         if (promoted.Count > 0)
         {
             IReadOnlyList<PublicVideoSummaryDto> dtos = await promoted.ToPublicVideoSummaryDtosAsync(
-                fileRepository,
+                fileStorage,
                 cancellationToken
             );
             return new VideoPromotionSpotDto(SpotPriority: spotPriority, Videos: dtos);
@@ -138,7 +138,7 @@ public class PublicGetVideoPromotionFeedHandler(
         if (freeQueue.TryDequeue(out VideoEntity? freeVideo))
         {
             usedIds.Add(freeVideo.Id);
-            fallback.Add(await freeVideo.ToPublicVideoSummaryDtoAsync(fileRepository, cancellationToken));
+            fallback.Add(await freeVideo.ToPublicVideoSummaryDtoAsync(fileStorage, cancellationToken));
         }
 
         return new VideoPromotionSpotDto(SpotPriority: spotPriority, Videos: fallback);
@@ -152,7 +152,7 @@ public class PublicGetVideoPromotionFeedHandler(
     /// <param name="freeQueue">Remaining free videos not yet consumed by earlier spots.</param>
     /// <param name="usedIds">Tracks all video IDs already placed in the feed to prevent duplicates.</param>
     /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-    /// <param name="fileRepository">Repository for resolving file URLs.</param>
+    /// <param name="fileStorage">Core's storage contract.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>
     /// A <see cref="VideoPromotionSpot3Dto" /> with two named slots (<c>"a"</c> and <c>"b"</c>),
@@ -163,7 +163,7 @@ public class PublicGetVideoPromotionFeedHandler(
         Queue<VideoEntity> freeQueue,
         HashSet<Guid> usedIds,
         IMapper mapper,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         CancellationToken cancellationToken
     )
     {
@@ -172,21 +172,20 @@ public class PublicGetVideoPromotionFeedHandler(
 
         for (int i = 0; i < promoted.Count; i++)
         {
-            PublicVideoSummaryDto dto = await promoted[i]
-                .ToPublicVideoSummaryDtoAsync(fileRepository, cancellationToken);
+            PublicVideoSummaryDto dto = await promoted[i].ToPublicVideoSummaryDtoAsync(fileStorage, cancellationToken);
             (i % 2 == 0 ? columnA : columnB).Add(dto);
         }
 
         if (columnA.Count == 0 && freeQueue.TryDequeue(out VideoEntity? freeA))
         {
             usedIds.Add(freeA.Id);
-            columnA.Add(await freeA.ToPublicVideoSummaryDtoAsync(fileRepository, cancellationToken));
+            columnA.Add(await freeA.ToPublicVideoSummaryDtoAsync(fileStorage, cancellationToken));
         }
 
         if (columnB.Count == 0 && freeQueue.TryDequeue(out VideoEntity? freeB))
         {
             usedIds.Add(freeB.Id);
-            columnB.Add(await freeB.ToPublicVideoSummaryDtoAsync(fileRepository, cancellationToken));
+            columnB.Add(await freeB.ToPublicVideoSummaryDtoAsync(fileStorage, cancellationToken));
         }
 
         var slots = new List<VideoPromotionSlotDto>
@@ -205,7 +204,7 @@ public class PublicGetVideoPromotionFeedHandler(
     /// <param name="freeQueue">Remaining free videos not yet consumed by spot fallbacks.</param>
     /// <param name="stripSize">Maximum number of videos to include in the strip.</param>
     /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-    /// <param name="fileRepository">Repository for resolving file URLs.</param>
+    /// <param name="fileStorage">Core's storage contract.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>
     /// An ordered list of up to <paramref name="stripSize" /> free video summaries.
@@ -215,7 +214,7 @@ public class PublicGetVideoPromotionFeedHandler(
         Queue<VideoEntity> freeQueue,
         int stripSize,
         IMapper mapper,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         CancellationToken cancellationToken
     )
     {
@@ -223,7 +222,7 @@ public class PublicGetVideoPromotionFeedHandler(
 
         while (strip.Count < stripSize && freeQueue.TryDequeue(out VideoEntity? video))
         {
-            strip.Add(await video.ToPublicVideoSummaryDtoAsync(fileRepository, cancellationToken));
+            strip.Add(await video.ToPublicVideoSummaryDtoAsync(fileStorage, cancellationToken));
         }
 
         return strip;
