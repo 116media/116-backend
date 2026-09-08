@@ -3,7 +3,7 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.Services;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
 
@@ -16,13 +16,13 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetArticleP
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="articleInteractionRepository">Repository for article interaction data access operations.</param>
 /// <param name="categoryRepository">Repository for category data access operations.</param>
-/// <param name="fileRepository">Repository for resolving file URLs.</param>
+/// <param name="fileStorage">Core's storage contract.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class PublicGetArticlePromotionFeedHandler(
     IArticleRepository articleRepository,
     IArticleInteractionRepository articleInteractionRepository,
     ICategoryRepository categoryRepository,
-    IFileRepository fileRepository,
+    IFileStorageService fileStorage,
     IMapper mapper
 ) : IQueryHandler<PublicGetArticlePromotionFeedQuery, PublicGetArticlePromotionFeedResult>
 {
@@ -85,7 +85,7 @@ public class PublicGetArticlePromotionFeedHandler(
             gossipQueue: gossipQueue,
             usedIds: usedIds,
             mapper: mapper,
-            fileRepository: fileRepository,
+            fileStorage: fileStorage,
             likedArticleIds: liked,
             bookmarkedArticleIds: bookmarked,
             cancellationToken: cancellationToken
@@ -97,7 +97,7 @@ public class PublicGetArticlePromotionFeedHandler(
             gossipQueue: gossipQueue,
             usedIds: usedIds,
             mapper: mapper,
-            fileRepository: fileRepository,
+            fileStorage: fileStorage,
             likedArticleIds: liked,
             bookmarkedArticleIds: bookmarked,
             cancellationToken: cancellationToken
@@ -108,7 +108,7 @@ public class PublicGetArticlePromotionFeedHandler(
             gossipQueue: gossipQueue,
             usedIds: usedIds,
             mapper: mapper,
-            fileRepository: fileRepository,
+            fileStorage: fileStorage,
             likedArticleIds: liked,
             bookmarkedArticleIds: bookmarked,
             cancellationToken: cancellationToken
@@ -118,7 +118,7 @@ public class PublicGetArticlePromotionFeedHandler(
             gossipQueue: gossipQueue,
             stripSize: query.StripSize,
             mapper: mapper,
-            fileRepository: fileRepository,
+            fileStorage: fileStorage,
             likedArticleIds: liked,
             bookmarkedArticleIds: bookmarked,
             cancellationToken: cancellationToken
@@ -141,7 +141,7 @@ public class PublicGetArticlePromotionFeedHandler(
     /// <param name="gossipQueue">Remaining gossip articles not yet consumed by earlier spots.</param>
     /// <param name="usedIds">Tracks all article IDs already placed in the feed to prevent duplicates.</param>
     /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-    /// <param name="fileRepository">Repository for resolving file URLs.</param>
+    /// <param name="fileStorage">Core's storage contract.</param>
     /// <param name="likedArticleIds">Ids the current user has liked.</param>
     /// <param name="bookmarkedArticleIds">Ids the current user has bookmarked.</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
@@ -152,7 +152,7 @@ public class PublicGetArticlePromotionFeedHandler(
         Queue<ArticleEntity> gossipQueue,
         HashSet<Guid> usedIds,
         IMapper mapper,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         IReadOnlySet<Guid> likedArticleIds,
         IReadOnlySet<Guid> bookmarkedArticleIds,
         CancellationToken cancellationToken
@@ -163,7 +163,7 @@ public class PublicGetArticlePromotionFeedHandler(
             return new ArticlePromotionSpotDto(
                 SpotPriority: spotPriority,
                 Articles: await promoted.ToPublicArticleSummaryDtosAsync(
-                    fileRepository,
+                    fileStorage,
                     likedArticleIds,
                     bookmarkedArticleIds,
                     cancellationToken
@@ -178,7 +178,7 @@ public class PublicGetArticlePromotionFeedHandler(
             usedIds.Add(gossip.Id);
             fallback.Add(
                 await gossip.ToPublicArticleSummaryDtoAsync(
-                    fileRepository,
+                    fileStorage,
                     likedArticleIds,
                     bookmarkedArticleIds,
                     cancellationToken
@@ -197,7 +197,7 @@ public class PublicGetArticlePromotionFeedHandler(
     /// <param name="gossipQueue">Remaining gossip articles not yet consumed by earlier spots.</param>
     /// <param name="usedIds">Tracks all article IDs already placed in the feed to prevent duplicates.</param>
     /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-    /// <param name="fileRepository">Repository for resolving file URLs.</param>
+    /// <param name="fileStorage">Core's storage contract.</param>
     /// <param name="likedArticleIds">Ids the current user has liked.</param>
     /// <param name="bookmarkedArticleIds">Ids the current user has bookmarked.</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
@@ -210,7 +210,7 @@ public class PublicGetArticlePromotionFeedHandler(
         Queue<ArticleEntity> gossipQueue,
         HashSet<Guid> usedIds,
         IMapper mapper,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         IReadOnlySet<Guid> likedArticleIds,
         IReadOnlySet<Guid> bookmarkedArticleIds,
         CancellationToken cancellationToken
@@ -222,12 +222,7 @@ public class PublicGetArticlePromotionFeedHandler(
         for (int i = 0; i < promoted.Count; i++)
         {
             PublicArticleSummaryDto dto = await promoted[i]
-                .ToPublicArticleSummaryDtoAsync(
-                    fileRepository,
-                    likedArticleIds,
-                    bookmarkedArticleIds,
-                    cancellationToken
-                );
+                .ToPublicArticleSummaryDtoAsync(fileStorage, likedArticleIds, bookmarkedArticleIds, cancellationToken);
             (i % 2 == 0 ? columnA : columnB).Add(dto);
         }
 
@@ -236,7 +231,7 @@ public class PublicGetArticlePromotionFeedHandler(
             usedIds.Add(gossipA.Id);
             columnA.Add(
                 await gossipA.ToPublicArticleSummaryDtoAsync(
-                    fileRepository,
+                    fileStorage,
                     likedArticleIds,
                     bookmarkedArticleIds,
                     cancellationToken
@@ -249,7 +244,7 @@ public class PublicGetArticlePromotionFeedHandler(
             usedIds.Add(gossipB.Id);
             columnB.Add(
                 await gossipB.ToPublicArticleSummaryDtoAsync(
-                    fileRepository,
+                    fileStorage,
                     likedArticleIds,
                     bookmarkedArticleIds,
                     cancellationToken
@@ -273,7 +268,7 @@ public class PublicGetArticlePromotionFeedHandler(
     /// <param name="gossipQueue">Remaining gossip articles not yet consumed by spot fallbacks.</param>
     /// <param name="stripSize">Maximum number of articles to include in the strip.</param>
     /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-    /// <param name="fileRepository">Repository for resolving file URLs.</param>
+    /// <param name="fileStorage">Core's storage contract.</param>
     /// <param name="likedArticleIds">Ids the current user has liked.</param>
     /// <param name="bookmarkedArticleIds">Ids the current user has bookmarked.</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
@@ -285,7 +280,7 @@ public class PublicGetArticlePromotionFeedHandler(
         Queue<ArticleEntity> gossipQueue,
         int stripSize,
         IMapper mapper,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         IReadOnlySet<Guid> likedArticleIds,
         IReadOnlySet<Guid> bookmarkedArticleIds,
         CancellationToken cancellationToken
@@ -297,7 +292,7 @@ public class PublicGetArticlePromotionFeedHandler(
         {
             strip.Add(
                 await article.ToPublicArticleSummaryDtoAsync(
-                    fileRepository,
+                    fileStorage,
                     likedArticleIds,
                     bookmarkedArticleIds,
                     cancellationToken
