@@ -2,7 +2,7 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.Services;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
 
@@ -12,8 +12,8 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Queries.GetAllLyrics
 /// Handles the <see cref="AdminGetAllLyricsQuery" /> to retrieve a paginated list of lyrics pages.
 /// </summary>
 /// <param name="lyricsRepository">Repository for lyrics data access operations.</param>
-/// <param name="fileRepository">Repository for resolving cover image URLs.</param>
-public class AdminGetAllLyricsHandler(ILyricsRepository lyricsRepository, IFileRepository fileRepository)
+/// <param name="fileStorage">Core's storage contract.</param>
+public class AdminGetAllLyricsHandler(ILyricsRepository lyricsRepository, IFileStorageService fileStorage)
     : IQueryHandler<AdminGetAllLyricsQuery, AdminGetAllLyricsResult>
 {
     /// <inheritdoc />
@@ -33,7 +33,7 @@ public class AdminGetAllLyricsHandler(ILyricsRepository lyricsRepository, IFileR
 
         IReadOnlyList<LyricsSummaryDto> dtoList = await lyricsList
             .AsReadOnly()
-            .ToLyricsSummaryDtosAsync(fileRepository, cancellationToken);
+            .ToLyricsSummaryDtosAsync(fileStorage, cancellationToken);
 
         var paginatedResult = new PaginatedResult<LyricsSummaryDto>(
             pageIndex: pageIndex,
