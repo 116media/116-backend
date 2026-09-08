@@ -3,7 +3,7 @@ using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.Services;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateArtist;
@@ -13,12 +13,12 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateArtis
 /// </summary>
 /// <param name="artistRepository">Repository for artist profile data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="fileRepository">Repository for resolving avatar file URLs.</param>
+/// <param name="fileStorage">Core's storage contract.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminCreateArtistHandler(
     IArtistRepository artistRepository,
     IContentUnitOfWork unitOfWork,
-    IFileRepository fileRepository,
+    IFileStorageService fileStorage,
     ContentI18n i18n
 ) : ICommandHandler<AdminCreateArtistCommand, AdminCreateArtistResult>
 {
@@ -52,7 +52,7 @@ public class AdminCreateArtistHandler(
         await artistRepository.AddAsync(artist: artist, cancellationToken: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
-        var dto = await artist.ToArtistDtoAsync(fileRepository, cancellationToken);
+        var dto = await artist.ToArtistDtoAsync(fileStorage, cancellationToken);
         return new AdminCreateArtistResult(Artist: dto);
     }
 }
