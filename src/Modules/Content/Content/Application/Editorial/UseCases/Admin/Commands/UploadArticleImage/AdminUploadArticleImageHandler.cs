@@ -3,8 +3,9 @@ using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
-using _116.Core.Application.Shared.Services;
-using _116.Core.Domain.Entities;
+using _116.Core.Contracts.Application.DTOs;
+using _116.Core.Contracts.Application.Services;
+using _116.Core.Contracts.Domain.Enums;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
 using Microsoft.AspNetCore.Http;
@@ -13,20 +14,17 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadArtic
 
 /// <summary>
 /// Handles the <see cref="AdminUploadArticleImageCommand" /> to upload an image for an article.
-/// For <c>Cover</c> images, the file is tracked via <see cref="FileEntity" /> and the article's
+/// For <c>Cover</c> images, the file is tracked via <see cref="FileReferenceDto" /> and the article's
 /// <c>CoverImageFileId</c> is updated.
 /// For <c>Body</c> images the public ID is <c>{articleId}-{imageId}</c> and the URL is returned
 /// for embedding in the article body HTML.
 /// </summary>
 /// <param name="articleRepository">Repository for article data access operations.</param>
-/// <param name="cloudinaryService">Service for uploading Cloudinary image assets.</param>
-/// <param name="fileUploadService">Uploads and replaces stored assets.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class AdminUploadArticleImageHandler(
     IArticleRepository articleRepository,
-    ICloudinaryService cloudinaryService,
-    IFileUploadService fileUploadService,
+    IFileStorageService fileStorage,
     IContentUnitOfWork unitOfWork,
     IMapper mapper
 ) : ICommandHandler<AdminUploadArticleImageCommand, AdminUploadArticleImageResult>
@@ -57,7 +55,7 @@ public class AdminUploadArticleImageHandler(
     }
 
     /// <summary>
-    /// Handles cover image upload via centralized FileEntity tracking.
+    /// Handles cover image upload via centralized FileReferenceDto tracking.
     /// </summary>
     private async Task<AdminUploadArticleImageResult> HandleCoverImage(
         ArticleEntity article,
@@ -80,33 +78,32 @@ public class AdminUploadArticleImageHandler(
             articleRepository.RemoveImages(images: [oldCover]);
         }
 
-        FileEntity uploaded = await fileUploadService.UploadImageAsync(
+        StoredFile uploaded = await fileStorage.UploadAsync(
             file: file,
             publicId: articleId.ToString(),
             folder: "content/article-images",
-            originalFileName: file.FileName,
-            mimeType: file.ContentType,
+            kind: EnumStoredFileKind.Image,
             cancellationToken: cancellationToken
         );
 
         var image = ArticleImageEntity.Create(
             id: Guid.NewGuid(),
             articleId: articleId,
-            storageKey: uploaded.StorageKey ?? string.Empty,
-            url: uploaded.StorageUrl,
+            storageKey: uploaded.Reference.StorageKey ?? string.Empty,
+            url: uploaded.Reference.StorageUrl,
             imageType: EnumArticleImageType.Cover
         );
 
         await unitOfWork.ExecuteInTransactionAsync(
             async ct =>
             {
-                await fileUploadService.RecordAsync(
+                await fileStorage.RecordAsync(
                     file: uploaded,
                     supersededFileId: article.CoverImageFileId,
                     cancellationToken: ct
                 );
 
-                article.UpdateCoverImage(coverImageFileId: uploaded.Id);
+                article.UpdateCoverImage(coverImageFileId: uploaded.Reference.Id);
                 articleRepository.Update(article: article);
 
                 await articleRepository.AddImageAsync(image: image, cancellationToken: ct);
@@ -119,7 +116,7 @@ public class AdminUploadArticleImageHandler(
     }
 
     /// <summary>
-    /// Handles body image upload via direct Cloudinary upload (not tracked by FileEntity).
+    /// Handles body image upload via direct Cloudinary upload (not tracked by FileReferenceDto).
     /// </summary>
     private async Task<AdminUploadArticleImageResult> HandleBodyImage(
         Guid articleId,
@@ -131,18 +128,19 @@ public class AdminUploadArticleImageHandler(
         var imageId = Guid.NewGuid();
         string publicId = $"{articleId}-{imageId}";
 
-        CloudinaryUploadResult uploadResult = await cloudinaryService.UploadImageAsync(
+        StoredFile uploaded = await fileStorage.UploadAsync(
             file: file,
             publicId: publicId,
             folder: "content/article-images",
+            kind: EnumStoredFileKind.Image,
             cancellationToken: cancellationToken
         );
 
         var image = ArticleImageEntity.Create(
             id: imageId,
             articleId: articleId,
-            storageKey: uploadResult.PublicId,
-            url: uploadResult.SecureUrl,
+            storageKey: uploaded.Reference.StorageKey ?? string.Empty,
+            url: uploaded.Reference.StorageUrl,
             imageType: imageType
         );
 
