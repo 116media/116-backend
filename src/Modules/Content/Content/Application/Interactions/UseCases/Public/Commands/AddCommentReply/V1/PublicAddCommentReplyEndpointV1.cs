@@ -49,6 +49,7 @@ public class PublicAddCommentReplyEndpointV1 : ICarterModule
                     ClaimsPrincipal user,
                     IClaimsProvider claimsProvider,
                     IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
                     HttpContext httpContext
                 ) =>
                 {
@@ -60,7 +61,10 @@ public class PublicAddCommentReplyEndpointV1 : ICarterModule
                         UserId: userId,
                         Body: request.Body
                     );
-                    PublicAddCommentReplyResult result = await dispatcher.Send(request: command);
+                    PublicAddCommentReplyResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicAddCommentReplyResponse(Reply: result.Reply);
                     string path =

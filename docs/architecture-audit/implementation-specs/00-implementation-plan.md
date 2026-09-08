@@ -25,7 +25,7 @@ shippable work. **Rules of engagement:**
 - [x] **Stage 8 — Atomic engagement counters & audit-trail integrity** → [`stage-08-atomic-engagement-counters.md`](stage-08-atomic-engagement-counters.md)
 - [ ] **Stage 9 — Query performance (split queries, no-tracking, indexes, soft-delete, N+1)** → [`stage-09-query-performance.md`](stage-09-query-performance.md)
 - [ ] **Stage 10 — Caching, concurrency and data access** → [`stage-10-caching-concurrency-and-data-access.md`](stage-10-caching-concurrency-and-data-access.md)
-- [ ] **Stage 11 — CancellationToken, typed configuration & observability** → [`stage-11-cancellation-config-observability.md`](stage-11-cancellation-config-observability.md)
+- [ ] **Stage 11 — CancellationToken, validated configuration & observability** → [`stage-11-cancellation-config-observability.md`](stage-11-cancellation-config-observability.md)
 - [ ] **Stage 12 — Public/Admin DTO split & staff-data leak fixes** → [`stage-12-public-dto-split.md`](stage-12-public-dto-split.md)
 - [ ] **Stage 13 — Domain-event durability (identity + outbox + transaction boundary)** → [`stage-13-domain-event-durability.md`](stage-13-domain-event-durability.md)
 - [ ] **Stage 14 — Storage contracts, file pipeline, architecture tests & packaging** → [`stage-14-storage-contracts-and-packaging.md`](stage-14-storage-contracts-and-packaging.md)
@@ -151,12 +151,12 @@ Small, isolated, high-urgency fixes with no cross-module surgery. Full code in t
 - **PRs:** `fix(infra): make the app safe to run on more than one instance` (Parts A–C);
   `refactor(data): introduce repository contracts and a hydration seam` (Part D, splittable)
 
-### Stage 11 — CancellationToken, typed configuration & observability
+### Stage 11 — CancellationToken, validated configuration & observability
 
 - [ ] Thread `CancellationToken` through every endpoint→handler→repository; drop the `= default` on
       `IDispatcher.Send` `[01 §1.5 / 06 §1]`
-- [ ] Typed `IOptions` with `ValidateOnStart` for DB/JWT/Cloudinary/CORS/SMTP/Resend
-      `[08 §10 / 01 §1.10 / 05 §8]`
+- [ ] `EnvVar<T>` descriptors in per-concern schemas + `EnvSchema.ValidateAtBoot()`; call sites
+      read typed non-nullable values; `Environment.cs` deleted `[08 §10 / 01 §1.10 / 05 §8]`
 - [ ] Health checks + OpenTelemetry + correlation middleware; fix Seq/env labels `[08 §12]`
 - [ ] Kestrel/form body limits so the 350 MB upload works; gate Swagger; security headers + HSTS
       `[05 §9 / 08 §4 / 08 §7 / 01 §1.11]`

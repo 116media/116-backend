@@ -43,6 +43,7 @@ public class PublicGetNotificationsEndpointV1 : ICarterModule
                     ClaimsPrincipal user,
                     IClaimsProvider claims,
                     IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
                     int pageIndex = 0,
                     int pageSize = 20,
                     bool unreadOnly = false
@@ -57,7 +58,10 @@ public class PublicGetNotificationsEndpointV1 : ICarterModule
                         UnreadOnly: unreadOnly
                     );
 
-                    PublicGetNotificationsResult result = await dispatcher.Send(request: query);
+                    PublicGetNotificationsResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicGetNotificationsResponse(Notifications: result.Notifications);
 

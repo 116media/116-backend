@@ -37,10 +37,13 @@ public class AdminDeactivatePackageEndpointV1 : ICarterModule
         group
             .MapPatch(
                 $"/{{id}}/{CatalogRouteConstants.Deactivate}",
-                async (string id, IDispatcher dispatcher) =>
+                async (string id, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var command = new AdminDeactivatePackageCommand(Id: id);
-                    AdminDeactivatePackageResult result = await dispatcher.Send(request: command);
+                    AdminDeactivatePackageResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminDeactivatePackageResponse(Package: result.Package);
                     return Results.Ok(response);

@@ -47,12 +47,16 @@ public class PublicCreatePlaylistEndpointV1 : ICarterModule
                     ClaimsPrincipal user,
                     IClaimsProvider claimsProvider,
                     IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
                     HttpContext httpContext
                 ) =>
                 {
                     Guid userId = claimsProvider.GetUserIdFromClaims(user: user);
                     var command = new PublicCreatePlaylistCommand(UserId: userId, Name: request.Name);
-                    PublicCreatePlaylistResult result = await dispatcher.Send(request: command);
+                    PublicCreatePlaylistResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicCreatePlaylistResponse(Playlist: result.Playlist);
 

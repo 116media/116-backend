@@ -39,7 +39,13 @@ public class PublicGetPublicShortBySlugEndpointV1 : ICarterModule
         group
             .MapGet(
                 "/{slug}",
-                async (string slug, ClaimsPrincipal user, IClaimsProvider claimsProvider, IDispatcher dispatcher) =>
+                async (
+                    string slug,
+                    ClaimsPrincipal user,
+                    IClaimsProvider claimsProvider,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     Guid? userId = null;
 
@@ -49,7 +55,10 @@ public class PublicGetPublicShortBySlugEndpointV1 : ICarterModule
                     }
 
                     var query = new PublicGetPublicShortBySlugQuery(Slug: slug, CurrentUserId: userId);
-                    PublicGetPublicShortBySlugResult result = await dispatcher.Send(request: query);
+                    PublicGetPublicShortBySlugResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicGetPublicShortBySlugResponse(ShortVideo: result.ShortVideo);
                     return Results.Ok(response);

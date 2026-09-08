@@ -51,7 +51,12 @@ public class AdminCreatePromotionLevelEndpointV1 : ICarterModule
         group
             .MapPost(
                 "/",
-                async (AdminCreatePromotionLevelRequest request, IDispatcher dispatcher, HttpContext httpContext) =>
+                async (
+                    AdminCreatePromotionLevelRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
+                    HttpContext httpContext
+                ) =>
                 {
                     var command = new AdminCreatePromotionLevelCommand(
                         Name: request.Name,
@@ -60,7 +65,10 @@ public class AdminCreatePromotionLevelEndpointV1 : ICarterModule
                         SpotPriority: request.SpotPriority
                     );
 
-                    AdminCreatePromotionLevelResult result = await dispatcher.Send(request: command);
+                    AdminCreatePromotionLevelResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminCreatePromotionLevelResponse(PromotionLevel: result.PromotionLevel);
                     Guid promotionLevelId = response.PromotionLevel.Id;

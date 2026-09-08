@@ -49,7 +49,8 @@ public class AdminDecideLyricsRevisionEndpointV1 : ICarterModule
                     AdminDecideLyricsRevisionRequest request,
                     ClaimsPrincipal user,
                     IClaimsProvider claimsProvider,
-                    IDispatcher dispatcher
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
                 ) =>
                 {
                     Guid adminUserId = claimsProvider.GetUserIdFromClaims(user: user);
@@ -59,7 +60,10 @@ public class AdminDecideLyricsRevisionEndpointV1 : ICarterModule
                         Accept: request.Accept,
                         DecidedByUserId: adminUserId
                     );
-                    AdminDecideLyricsRevisionResult result = await dispatcher.Send(request: command);
+                    AdminDecideLyricsRevisionResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminDecideLyricsRevisionResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);

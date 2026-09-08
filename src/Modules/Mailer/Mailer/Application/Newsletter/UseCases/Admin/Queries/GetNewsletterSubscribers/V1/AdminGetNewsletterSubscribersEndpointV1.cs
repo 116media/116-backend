@@ -40,6 +40,7 @@ public class AdminGetNewsletterSubscribersEndpointV1 : ICarterModule
                 pattern: "subscribers",
                 async (
                     IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
                     int pageIndex = 0,
                     int pageSize = 20,
                     EnumNewsletterStatus? status = null
@@ -51,7 +52,10 @@ public class AdminGetNewsletterSubscribersEndpointV1 : ICarterModule
                         Status: status
                     );
 
-                    AdminGetNewsletterSubscribersResult result = await dispatcher.Send(request: query);
+                    AdminGetNewsletterSubscribersResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminGetNewsletterSubscribersResponse(Subscribers: result.Subscribers);
 

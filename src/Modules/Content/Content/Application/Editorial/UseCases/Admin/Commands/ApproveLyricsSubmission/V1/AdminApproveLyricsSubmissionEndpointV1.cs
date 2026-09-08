@@ -50,7 +50,8 @@ public class AdminApproveLyricsSubmissionEndpointV1 : ICarterModule
                     AdminApproveLyricsSubmissionRequest request,
                     ClaimsPrincipal user,
                     IClaimsProvider claimsProvider,
-                    IDispatcher dispatcher
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
                 ) =>
                 {
                     Guid reviewerId = claimsProvider.GetUserIdFromClaims(user: user);
@@ -60,7 +61,10 @@ public class AdminApproveLyricsSubmissionEndpointV1 : ICarterModule
                         Slug: request.Slug,
                         ReviewerId: reviewerId
                     );
-                    AdminApproveLyricsSubmissionResult result = await dispatcher.Send(request: command);
+                    AdminApproveLyricsSubmissionResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminApproveLyricsSubmissionResponse(
                         IsSuccess: result.IsSuccess,

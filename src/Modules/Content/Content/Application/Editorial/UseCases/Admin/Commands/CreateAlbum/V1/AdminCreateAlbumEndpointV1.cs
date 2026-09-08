@@ -56,7 +56,12 @@ public class AdminCreateAlbumEndpointV1 : ICarterModule
         group
             .MapPost(
                 "/",
-                async (AdminCreateAlbumRequest request, IDispatcher dispatcher, HttpContext httpContext) =>
+                async (
+                    AdminCreateAlbumRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
+                    HttpContext httpContext
+                ) =>
                 {
                     var command = new AdminCreateAlbumCommand(
                         Name: request.Name,
@@ -66,7 +71,10 @@ public class AdminCreateAlbumEndpointV1 : ICarterModule
                         ReleaseType: request.ReleaseType
                     );
 
-                    AdminCreateAlbumResult result = await dispatcher.Send(request: command);
+                    AdminCreateAlbumResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminCreateAlbumResponse(Album: result.Album);
                     Guid albumId = response.Album.Id;

@@ -39,7 +39,8 @@ public class PublicRemoveVideoFromPlaylistEndpointV1 : ICarterModule
                     string videoId,
                     ClaimsPrincipal user,
                     IClaimsProvider claimsProvider,
-                    IDispatcher dispatcher
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
                 ) =>
                 {
                     Guid playlistId = Guid.Parse(id);
@@ -50,7 +51,10 @@ public class PublicRemoveVideoFromPlaylistEndpointV1 : ICarterModule
                         VideoId: parsedVideoId,
                         UserId: userId
                     );
-                    PublicRemoveVideoFromPlaylistResult result = await dispatcher.Send(request: command);
+                    PublicRemoveVideoFromPlaylistResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicRemoveVideoFromPlaylistResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);

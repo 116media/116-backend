@@ -62,7 +62,12 @@ public class AdminUpdateLyricsEndpointV1 : ICarterModule
         group
             .MapPut(
                 "/{id}",
-                async (string id, AdminUpdateLyricsRequest request, IDispatcher dispatcher) =>
+                async (
+                    string id,
+                    AdminUpdateLyricsRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new AdminUpdateLyricsCommand(
                         Id: id,
@@ -77,7 +82,10 @@ public class AdminUpdateLyricsEndpointV1 : ICarterModule
                         OrderItemId: request.OrderItemId
                     );
 
-                    AdminUpdateLyricsResult result = await dispatcher.Send(request: command);
+                    AdminUpdateLyricsResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminUpdateLyricsResponse(Lyrics: result.Lyrics);
                     return Results.Ok(response);

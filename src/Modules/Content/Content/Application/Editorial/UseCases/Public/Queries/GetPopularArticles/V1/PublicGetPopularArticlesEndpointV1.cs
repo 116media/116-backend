@@ -39,6 +39,7 @@ public class PublicGetPopularArticlesEndpointV1 : ICarterModule
                 "/",
                 async (
                     IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
                     int limit = PopularArticlesLimits.DefaultLimit,
                     Guid? categoryId = null,
                     Guid? excludeId = null
@@ -56,7 +57,10 @@ public class PublicGetPopularArticlesEndpointV1 : ICarterModule
                         ExcludeId: excludeId
                     );
 
-                    PublicGetPopularArticlesResult result = await dispatcher.Send(request: query);
+                    PublicGetPopularArticlesResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicGetPopularArticlesResponse(Articles: result.Articles);
                     return Results.Ok(response);

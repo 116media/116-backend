@@ -43,10 +43,18 @@ public class AdminRejectLyricsEndpointV1 : ICarterModule
         group
             .MapPatch(
                 $"/{{id}}/{EditorialRouteConstants.Reject}",
-                async (string id, AdminRejectLyricsRequest request, IDispatcher dispatcher) =>
+                async (
+                    string id,
+                    AdminRejectLyricsRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new AdminRejectLyricsCommand(Id: id, Reason: request.Reason);
-                    AdminRejectLyricsResult result = await dispatcher.Send(request: command);
+                    AdminRejectLyricsResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminRejectLyricsResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);

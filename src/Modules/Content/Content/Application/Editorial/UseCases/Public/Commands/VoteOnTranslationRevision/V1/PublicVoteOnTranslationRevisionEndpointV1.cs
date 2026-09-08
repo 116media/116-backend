@@ -50,7 +50,8 @@ public class PublicVoteOnTranslationRevisionEndpointV1 : ICarterModule
                     PublicVoteOnTranslationRevisionRequest request,
                     ClaimsPrincipal user,
                     IClaimsProvider claimsProvider,
-                    IDispatcher dispatcher
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
                 ) =>
                 {
                     Guid userId = claimsProvider.GetUserIdFromClaims(user: user);
@@ -61,7 +62,10 @@ public class PublicVoteOnTranslationRevisionEndpointV1 : ICarterModule
                         Comment: request.Comment,
                         UserId: userId
                     );
-                    PublicVoteOnTranslationRevisionResult result = await dispatcher.Send(request: command);
+                    PublicVoteOnTranslationRevisionResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicVoteOnTranslationRevisionResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);

@@ -43,10 +43,18 @@ public class AdminRejectArticleEndpointV1 : ICarterModule
         group
             .MapPatch(
                 $"/{{id}}/{EditorialRouteConstants.Reject}",
-                async (string id, AdminRejectArticleRequest request, IDispatcher dispatcher) =>
+                async (
+                    string id,
+                    AdminRejectArticleRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new AdminRejectArticleCommand(Id: id, Reason: request.Reason);
-                    AdminRejectArticleResult result = await dispatcher.Send(request: command);
+                    AdminRejectArticleResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminRejectArticleResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);

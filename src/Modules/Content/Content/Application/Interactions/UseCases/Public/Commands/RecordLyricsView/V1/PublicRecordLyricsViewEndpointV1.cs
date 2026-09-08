@@ -55,7 +55,8 @@ public class PublicRecordLyricsViewEndpointV1 : ICarterModule
                     HttpContext httpContext,
                     ClaimsPrincipal user,
                     IClaimsProvider claimsProvider,
-                    IDispatcher dispatcher
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
                 ) =>
                 {
                     Guid lyricsId = Guid.Parse(id);
@@ -87,7 +88,10 @@ public class PublicRecordLyricsViewEndpointV1 : ICarterModule
                         ScrollDepthRatio: request.ScrollDepthRatio
                     );
 
-                    PublicRecordLyricsViewResult result = await dispatcher.Send(request: command);
+                    PublicRecordLyricsViewResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicRecordLyricsViewResponse(
                         IsSuccess: result.IsSuccess,

@@ -40,12 +40,21 @@ public class PublicGetOwnSessionByIdEndpointV1 : ICarterModule
         group
             .MapGet(
                 "{id:guid}",
-                async (Guid id, ClaimsPrincipal user, IClaimsProvider authProvider, IDispatcher dispatcher) =>
+                async (
+                    Guid id,
+                    ClaimsPrincipal user,
+                    IClaimsProvider authProvider,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     Guid userId = authProvider.GetUserIdFromClaims(user: user);
 
                     var query = new PublicGetOwnSessionByIdQuery(UserId: userId, SessionId: id);
-                    PublicGetOwnSessionByIdResult result = await dispatcher.Send(request: query);
+                    PublicGetOwnSessionByIdResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicGetOwnSessionByIdResponse(Session: result.Session);
                     return Results.Ok(value: response);

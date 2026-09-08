@@ -8,6 +8,7 @@ using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Shared.Application.Configurations;
+using _116.Shared.Application.Configurations.Schemas;
 using Microsoft.Extensions.Logging;
 
 namespace _116.Identity.Application.Session.Factories;
@@ -129,11 +130,9 @@ public class RefreshTokenFactory(
     /// </summary>
     private (string token, string hash, DateTime expiresAt) GenerateNewRefreshToken()
     {
-        var (_, _, _, _, refreshTokenExpirationMinutes) = AppEnvironment.Jwt();
-
         string newRefreshToken = refreshTokenService.GenerateRefreshToken();
         string newRefreshTokenHash = refreshTokenService.HashRefreshToken(refreshToken: newRefreshToken);
-        DateTime newRefreshTokenExpiresAt = DateTime.UtcNow.AddMinutes(int.Parse(refreshTokenExpirationMinutes!));
+        DateTime newRefreshTokenExpiresAt = DateTime.UtcNow.AddMinutes(JwtEnv.RefreshTokenExpirationMinutes.Value);
 
         return (newRefreshToken, newRefreshTokenHash, newRefreshTokenExpiresAt);
     }

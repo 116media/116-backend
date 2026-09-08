@@ -8,6 +8,7 @@ using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Shared.Application.Configurations;
+using _116.Shared.Application.Configurations.Schemas;
 using Microsoft.IdentityModel.Tokens;
 
 namespace _116.Identity.Infrastructure.Services;
@@ -32,14 +33,8 @@ public class JwtService : IJwtService
         EnumAuthProvider authProvider
     )
     {
-        var (secret, issuer, audience, accessTokenExpiration, _) = AppEnvironment.Jwt();
-        if (string.IsNullOrWhiteSpace(value: secret))
-        {
-            throw new InvalidOperationException("JWT_SECRET env variable is missing or empty.");
-        }
-
         DateTimeOffset now = DateTimeOffset.UtcNow;
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(s: secret));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(s: JwtEnv.Secret.Value));
         var credentials = new SigningCredentials(key: key, algorithm: SecurityAlgorithms.HmacSha256);
 
         var claims = new List<Claim>
@@ -60,18 +55,15 @@ public class JwtService : IJwtService
         claims.AddRange(BuildRoleClaims(userRoles: userRoles));
         claims.AddRange(BuildPermissionsClaims(permissions: userPermissions));
 
-        int expirationMinutes = int.TryParse(s: accessTokenExpiration, out int parsed)
-            ? parsed
-            : JwtClaimsConstants.DefaultExpiration;
-        DateTime expiresAt = now.AddMinutes(minutes: expirationMinutes).UtcDateTime;
+        DateTime expiresAt = now.AddMinutes(minutes: JwtEnv.AccessTokenExpirationMinutes.Value).UtcDateTime;
 
         var descriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(claims: claims),
             Expires = expiresAt,
             SigningCredentials = credentials,
-            Issuer = issuer,
-            Audience = audience,
+            Issuer = JwtEnv.Issuer.Value,
+            Audience = JwtEnv.Audience.Value,
         };
 
         var handler = new JwtSecurityTokenHandler();

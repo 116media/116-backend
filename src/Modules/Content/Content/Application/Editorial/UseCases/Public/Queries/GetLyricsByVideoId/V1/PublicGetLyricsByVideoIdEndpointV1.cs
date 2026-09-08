@@ -39,7 +39,13 @@ public class PublicGetLyricsByVideoIdEndpointV1 : ICarterModule
         group
             .MapGet(
                 $"/{EditorialRouteConstants.Videos}/{{videoId}}",
-                async (string videoId, ClaimsPrincipal user, IClaimsProvider claimsProvider, IDispatcher dispatcher) =>
+                async (
+                    string videoId,
+                    ClaimsPrincipal user,
+                    IClaimsProvider claimsProvider,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     Guid? userId = null;
 
@@ -50,7 +56,10 @@ public class PublicGetLyricsByVideoIdEndpointV1 : ICarterModule
 
                     var query = new PublicGetLyricsByVideoIdQuery(VideoId: videoId, CurrentUserId: userId);
 
-                    PublicGetLyricsByVideoIdResult result = await dispatcher.Send(request: query);
+                    PublicGetLyricsByVideoIdResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicGetLyricsByVideoIdResponse(Lyrics: result.Lyrics);
                     return Results.Ok(response);

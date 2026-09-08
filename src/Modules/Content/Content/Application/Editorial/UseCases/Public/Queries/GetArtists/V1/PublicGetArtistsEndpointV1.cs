@@ -44,6 +44,7 @@ public class PublicGetArtistsEndpointV1 : ICarterModule
                 "/",
                 async (
                     IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
                     int pageIndex = 0,
                     int pageSize = 30,
                     string? letter = null,
@@ -56,7 +57,10 @@ public class PublicGetArtistsEndpointV1 : ICarterModule
                         Search: search
                     );
 
-                    PublicGetArtistsResult result = await dispatcher.Send(request: query);
+                    PublicGetArtistsResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicGetArtistsResponse(
                         Artists: result.Artists,

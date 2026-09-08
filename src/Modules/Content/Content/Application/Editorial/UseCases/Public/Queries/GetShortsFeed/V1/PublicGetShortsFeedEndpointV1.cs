@@ -47,6 +47,7 @@ public class PublicGetShortsFeedEndpointV1 : ICarterModule
                     ClaimsPrincipal user,
                     IClaimsProvider claimsProvider,
                     IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
                     string? cursor = null,
                     int pageSize = DefaultPageSize
                 ) =>
@@ -66,7 +67,10 @@ public class PublicGetShortsFeedEndpointV1 : ICarterModule
                         CurrentUserId: userId
                     );
 
-                    PublicGetShortsFeedResult result = await dispatcher.Send(request: query);
+                    PublicGetShortsFeedResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicGetShortsFeedResponse(Items: result.Items, NextCursor: result.NextCursor);
                     return Results.Ok(response);

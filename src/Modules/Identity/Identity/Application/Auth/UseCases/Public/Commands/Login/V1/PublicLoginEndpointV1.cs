@@ -64,10 +64,18 @@ public class PublicLoginEndpointV1 : ICarterModule
         group
             .MapPost(
                 pattern: AuthRouteConstants.Login,
-                async (PublicLoginRequest request, IDispatcher dispatcher, ITokenDeliveryService tokenDelivery) =>
+                async (
+                    PublicLoginRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
+                    ITokenDeliveryService tokenDelivery
+                ) =>
                 {
                     var command = new PublicLoginCommand(Credentials: request.Credentials, Password: request.Password);
-                    PublicLoginResult result = await dispatcher.Send(request: command);
+                    PublicLoginResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     if (tokenDelivery.IsWebClient())
                     {

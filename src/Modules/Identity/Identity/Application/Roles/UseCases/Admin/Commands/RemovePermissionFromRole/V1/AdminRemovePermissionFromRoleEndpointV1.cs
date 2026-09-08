@@ -39,11 +39,14 @@ public class AdminRemovePermissionFromRoleEndpointV1 : ICarterModule
         group
             .MapDelete(
                 $"{{id}}/{RoleRouteConstants.Permissions}/{{permissionId}}",
-                async (string id, string permissionId, IDispatcher dispatcher) =>
+                async (string id, string permissionId, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var command = new AdminRemovePermissionFromRoleCommand(RoleId: id, PermissionId: permissionId);
 
-                    AdminRemovePermissionFromRoleResult result = await dispatcher.Send(request: command);
+                    AdminRemovePermissionFromRoleResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminRemovePermissionFromRoleResponse(
                         Role: result.Role,

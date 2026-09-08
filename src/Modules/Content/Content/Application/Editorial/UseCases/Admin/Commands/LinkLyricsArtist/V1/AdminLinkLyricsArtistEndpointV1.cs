@@ -43,10 +43,18 @@ public class AdminLinkLyricsArtistEndpointV1 : ICarterModule
         group
             .MapPut(
                 $"/{{id}}/{EditorialRouteConstants.Artist}",
-                async (Guid id, AdminLinkLyricsArtistRequest request, IDispatcher dispatcher) =>
+                async (
+                    Guid id,
+                    AdminLinkLyricsArtistRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new AdminLinkLyricsArtistCommand(LyricsId: id, ArtistId: request.ArtistId);
-                    AdminLinkLyricsArtistResult result = await dispatcher.Send(request: command);
+                    AdminLinkLyricsArtistResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminLinkLyricsArtistResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);

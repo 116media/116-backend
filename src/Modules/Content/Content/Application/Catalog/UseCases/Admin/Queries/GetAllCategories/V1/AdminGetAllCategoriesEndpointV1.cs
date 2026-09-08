@@ -41,6 +41,7 @@ public class AdminGetAllCategoriesEndpointV1 : ICarterModule
                 "/",
                 async (
                     IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
                     int pageIndex = 0,
                     int pageSize = 10,
                     bool? isActive = null,
@@ -55,7 +56,10 @@ public class AdminGetAllCategoriesEndpointV1 : ICarterModule
                         IsFree: isFree
                     );
 
-                    AdminGetAllCategoriesResult result = await dispatcher.Send(request: query);
+                    AdminGetAllCategoriesResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminGetAllCategoriesResponse(Categories: result.Categories);
                     return Results.Ok(response);

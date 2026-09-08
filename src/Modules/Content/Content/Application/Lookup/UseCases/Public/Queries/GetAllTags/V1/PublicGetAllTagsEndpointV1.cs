@@ -38,7 +38,13 @@ public class PublicGetAllTagsEndpointV1 : ICarterModule
         group
             .MapGet(
                 "/",
-                async (IDispatcher dispatcher, string? search = null, string? contentType = null, int? limit = null) =>
+                async (
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
+                    string? search = null,
+                    string? contentType = null,
+                    int? limit = null
+                ) =>
                 {
                     EnumCoreContentType? parsedContentType = Enum.TryParse(
                         contentType,
@@ -50,7 +56,10 @@ public class PublicGetAllTagsEndpointV1 : ICarterModule
 
                     var query = new PublicGetAllTagsQuery(Search: search, ContentType: parsedContentType, Limit: limit);
 
-                    PublicGetAllTagsResult result = await dispatcher.Send(request: query);
+                    PublicGetAllTagsResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicGetAllTagsResponse(Tags: result.Tags);
                     return Results.Ok(response);

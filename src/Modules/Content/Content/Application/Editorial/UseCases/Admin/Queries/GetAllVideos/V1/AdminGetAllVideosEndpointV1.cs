@@ -42,6 +42,7 @@ public class AdminGetAllVideosEndpointV1 : ICarterModule
                 "/",
                 async (
                     IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
                     int pageIndex = 0,
                     int pageSize = 10,
                     string? search = null,
@@ -58,7 +59,10 @@ public class AdminGetAllVideosEndpointV1 : ICarterModule
                         CategoryId: categoryId
                     );
 
-                    AdminGetAllVideosResult result = await dispatcher.Send(request: query);
+                    AdminGetAllVideosResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminGetAllVideosResponse(Videos: result.Videos);
                     return Results.Ok(response);

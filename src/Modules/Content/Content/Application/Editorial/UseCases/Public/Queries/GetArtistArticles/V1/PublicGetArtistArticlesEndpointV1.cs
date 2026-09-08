@@ -38,14 +38,23 @@ public class PublicGetArtistArticlesEndpointV1 : ICarterModule
         group
             .MapGet(
                 $"/{{slug}}/{EditorialRouteConstants.Articles}",
-                async (string slug, IDispatcher dispatcher, int pageIndex = 0, int pageSize = 12) =>
+                async (
+                    string slug,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
+                    int pageIndex = 0,
+                    int pageSize = 12
+                ) =>
                 {
                     var query = new PublicGetArtistArticlesQuery(
                         Slug: slug,
                         Page: new PaginatedRequest(pageIndex, pageSize)
                     );
 
-                    PublicGetArtistArticlesResult result = await dispatcher.Send(request: query);
+                    PublicGetArtistArticlesResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicGetArtistArticlesResponse(Articles: result.Articles);
                     return Results.Ok(response);

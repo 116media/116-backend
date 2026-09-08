@@ -37,10 +37,13 @@ public class AdminPublishArticleEndpointV1 : ICarterModule
         group
             .MapPatch(
                 $"/{{id}}/{EditorialRouteConstants.Publish}",
-                async (string id, IDispatcher dispatcher) =>
+                async (string id, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var command = new AdminPublishArticleCommand(Id: id);
-                    AdminPublishArticleResult result = await dispatcher.Send(request: command);
+                    AdminPublishArticleResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminPublishArticleResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);

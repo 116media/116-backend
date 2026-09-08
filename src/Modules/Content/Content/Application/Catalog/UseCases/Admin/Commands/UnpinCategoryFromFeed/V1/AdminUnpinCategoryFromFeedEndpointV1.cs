@@ -38,11 +38,14 @@ public class AdminUnpinCategoryFromFeedEndpointV1 : ICarterModule
         group
             .MapPatch(
                 $"/{{id}}/{CatalogRouteConstants.UnpinFromFeed}",
-                async (string id, IDispatcher dispatcher) =>
+                async (string id, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var command = new AdminUnpinCategoryFromFeedCommand(Id: id);
 
-                    AdminUnpinCategoryFromFeedResult result = await dispatcher.Send(request: command);
+                    AdminUnpinCategoryFromFeedResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminUnpinCategoryFromFeedResponse(Category: result.Category);
                     return Results.Ok(response);

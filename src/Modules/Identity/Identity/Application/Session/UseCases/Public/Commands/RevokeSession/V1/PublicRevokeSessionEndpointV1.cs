@@ -39,12 +39,21 @@ public class PublicRevokeSessionEndpointV1 : ICarterModule
         group
             .MapPost(
                 $"{SessionRouteConstants.Revoke}/{{id}}",
-                async (string id, ClaimsPrincipal user, IClaimsProvider authProvider, IDispatcher dispatcher) =>
+                async (
+                    string id,
+                    ClaimsPrincipal user,
+                    IClaimsProvider authProvider,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     Guid userId = authProvider.GetUserIdFromClaims(user: user);
 
                     var command = new PublicRevokeSessionCommand(UserId: userId, SessionId: id);
-                    PublicRevokeSessionResult result = await dispatcher.Send(request: command);
+                    PublicRevokeSessionResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicRevokeSessionResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(value: response);

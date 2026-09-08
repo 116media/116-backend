@@ -34,6 +34,7 @@ public class PublicGetOwnLikedShortVideosEndpointV1 : ICarterModule
                     ClaimsPrincipal user,
                     IClaimsProvider claims,
                     IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
                     int pageIndex = 0,
                     int pageSize = 10
                 ) =>
@@ -43,7 +44,7 @@ public class PublicGetOwnLikedShortVideosEndpointV1 : ICarterModule
                         userId,
                         new PaginatedRequest(pageIndex, pageSize)
                     );
-                    PublicGetOwnLikedShortVideosResult result = await dispatcher.Send(query);
+                    PublicGetOwnLikedShortVideosResult result = await dispatcher.Send(query, cancellationToken);
                     return Results.Ok(result.ShortVideos);
                 }
             )

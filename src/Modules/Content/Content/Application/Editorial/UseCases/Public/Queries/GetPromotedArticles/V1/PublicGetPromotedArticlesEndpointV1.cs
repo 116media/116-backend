@@ -39,7 +39,12 @@ public class PublicGetPromotedArticlesEndpointV1 : ICarterModule
         group
             .MapGet(
                 $"/{EditorialRouteConstants.Promoted}",
-                async (ClaimsPrincipal user, IClaimsProvider claimsProvider, IDispatcher dispatcher) =>
+                async (
+                    ClaimsPrincipal user,
+                    IClaimsProvider claimsProvider,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     Guid? userId = null;
 
@@ -49,7 +54,10 @@ public class PublicGetPromotedArticlesEndpointV1 : ICarterModule
                     }
 
                     var query = new PublicGetPromotedArticlesQuery(CurrentUserId: userId);
-                    PublicGetPromotedArticlesResult result = await dispatcher.Send(request: query);
+                    PublicGetPromotedArticlesResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicGetPromotedArticlesResponse(Articles: result.Articles);
                     return Results.Ok(response);

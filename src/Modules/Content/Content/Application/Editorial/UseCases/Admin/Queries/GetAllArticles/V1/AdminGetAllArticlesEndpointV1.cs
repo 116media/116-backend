@@ -42,6 +42,7 @@ public class AdminGetAllArticlesEndpointV1 : ICarterModule
                 "/",
                 async (
                     IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
                     int pageIndex = 0,
                     int pageSize = 10,
                     string? search = null,
@@ -58,7 +59,10 @@ public class AdminGetAllArticlesEndpointV1 : ICarterModule
                         CategoryId: categoryId
                     );
 
-                    AdminGetAllArticlesResult result = await dispatcher.Send(request: query);
+                    AdminGetAllArticlesResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminGetAllArticlesResponse(Articles: result.Articles);
                     return Results.Ok(response);

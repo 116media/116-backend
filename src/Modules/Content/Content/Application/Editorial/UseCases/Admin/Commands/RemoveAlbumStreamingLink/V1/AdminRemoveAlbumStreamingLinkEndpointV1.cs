@@ -38,10 +38,18 @@ public class AdminRemoveAlbumStreamingLinkEndpointV1 : ICarterModule
         group
             .MapDelete(
                 $"/{{id}}/{EditorialRouteConstants.StreamingLinks}/{{platform}}",
-                async (Guid id, EnumStreamingPlatform platform, IDispatcher dispatcher) =>
+                async (
+                    Guid id,
+                    EnumStreamingPlatform platform,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new AdminRemoveAlbumStreamingLinkCommand(AlbumId: id, Platform: platform);
-                    AdminRemoveAlbumStreamingLinkResult result = await dispatcher.Send(request: command);
+                    AdminRemoveAlbumStreamingLinkResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminRemoveAlbumStreamingLinkResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);

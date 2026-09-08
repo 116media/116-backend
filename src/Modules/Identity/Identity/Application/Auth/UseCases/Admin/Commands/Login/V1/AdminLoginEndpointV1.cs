@@ -46,10 +46,18 @@ public class AdminLoginEndpointV1 : ICarterModule
         group
             .MapPost(
                 pattern: AuthRouteConstants.Login,
-                async (AdminLoginRequest request, IDispatcher dispatcher, ITokenDeliveryService tokenDelivery) =>
+                async (
+                    AdminLoginRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
+                    ITokenDeliveryService tokenDelivery
+                ) =>
                 {
                     var command = new AdminLoginCommand(Email: request.Email, Password: request.Password);
-                    AdminLoginResult result = await dispatcher.Send(request: command);
+                    AdminLoginResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     tokenDelivery.SetTokenCookies(authResult: result.Authentication);
 

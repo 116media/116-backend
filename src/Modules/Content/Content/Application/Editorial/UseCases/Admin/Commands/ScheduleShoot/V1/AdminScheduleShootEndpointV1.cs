@@ -43,13 +43,21 @@ public class AdminScheduleShootEndpointV1 : ICarterModule
         group
             .MapPatch(
                 $"/{{id}}/{EditorialRouteConstants.Shoot}",
-                async (string id, AdminScheduleShootRequest request, IDispatcher dispatcher) =>
+                async (
+                    string id,
+                    AdminScheduleShootRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new AdminScheduleShootCommand(
                         VideoId: id,
                         ShootingScheduledAt: request.ShootingScheduledAt
                     );
-                    AdminScheduleShootResult result = await dispatcher.Send(request: command);
+                    AdminScheduleShootResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminScheduleShootResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);

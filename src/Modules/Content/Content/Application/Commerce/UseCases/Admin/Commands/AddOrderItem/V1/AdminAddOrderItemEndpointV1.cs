@@ -51,7 +51,13 @@ public class AdminAddOrderItemEndpointV1 : ICarterModule
         group
             .MapPost(
                 $"/{{id}}/{CommerceRouteConstants.Items}",
-                async (string id, AdminAddOrderItemRequest request, IDispatcher dispatcher, HttpContext httpContext) =>
+                async (
+                    string id,
+                    AdminAddOrderItemRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
+                    HttpContext httpContext
+                ) =>
                 {
                     var command = new AdminAddOrderItemCommand(
                         OrderId: id,
@@ -62,7 +68,10 @@ public class AdminAddOrderItemEndpointV1 : ICarterModule
                         IsBonus: request.IsBonus
                     );
 
-                    AdminAddOrderItemResult result = await dispatcher.Send(request: command);
+                    AdminAddOrderItemResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminAddOrderItemResponse(Item: result.Item);
                     string path =

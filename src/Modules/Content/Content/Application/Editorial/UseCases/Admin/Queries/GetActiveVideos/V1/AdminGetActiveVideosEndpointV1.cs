@@ -44,10 +44,13 @@ public class AdminGetActiveVideosEndpointV1 : ICarterModule
         group
             .MapGet(
                 EditorialRouteConstants.Active,
-                async (IDispatcher dispatcher) =>
+                async (IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var query = new AdminGetActiveVideosQuery();
-                    AdminGetActiveVideosResult result = await dispatcher.Send(request: query);
+                    AdminGetActiveVideosResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminGetActiveVideosResponse(Videos: result.Videos);
                     return Results.Ok(response);

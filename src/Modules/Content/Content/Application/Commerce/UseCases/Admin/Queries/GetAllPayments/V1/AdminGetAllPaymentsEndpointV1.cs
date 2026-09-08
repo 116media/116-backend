@@ -37,6 +37,7 @@ public class AdminGetAllPaymentsEndpointV1 : ICarterModule
                 "/",
                 async (
                     IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
                     int pageIndex = 0,
                     int pageSize = 10,
                     EnumPaymentStatus? status = null,
@@ -52,7 +53,10 @@ public class AdminGetAllPaymentsEndpointV1 : ICarterModule
                         Search: search
                     );
 
-                    AdminGetAllPaymentsResult result = await dispatcher.Send(request: query);
+                    AdminGetAllPaymentsResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminGetAllPaymentsResponse(Payments: result.Payments);
                     return Results.Ok(response);

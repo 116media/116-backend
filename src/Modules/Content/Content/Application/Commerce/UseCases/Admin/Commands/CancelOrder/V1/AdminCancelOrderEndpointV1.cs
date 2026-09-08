@@ -32,10 +32,13 @@ public class AdminCancelOrderEndpointV1 : ICarterModule
         group
             .MapPatch(
                 $"/{{id}}/{CommerceRouteConstants.Cancel}",
-                async (string id, IDispatcher dispatcher) =>
+                async (string id, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var command = new AdminCancelOrderCommand(OrderId: id);
-                    AdminCancelOrderResult result = await dispatcher.Send(request: command);
+                    AdminCancelOrderResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminCancelOrderResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);

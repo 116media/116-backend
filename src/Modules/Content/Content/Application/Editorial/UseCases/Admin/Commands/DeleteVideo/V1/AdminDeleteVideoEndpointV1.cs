@@ -37,10 +37,13 @@ public class AdminDeleteVideoEndpointV1 : ICarterModule
         group
             .MapDelete(
                 "/{id}",
-                async (string id, IDispatcher dispatcher) =>
+                async (string id, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var command = new AdminDeleteVideoCommand(Id: id);
-                    AdminDeleteVideoResult result = await dispatcher.Send(request: command);
+                    AdminDeleteVideoResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminDeleteVideoResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);

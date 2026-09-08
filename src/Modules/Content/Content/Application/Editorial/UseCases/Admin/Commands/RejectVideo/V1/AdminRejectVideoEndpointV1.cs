@@ -43,10 +43,18 @@ public class AdminRejectVideoEndpointV1 : ICarterModule
         group
             .MapPatch(
                 $"/{{id}}/{EditorialRouteConstants.Reject}",
-                async (string id, AdminRejectVideoRequest request, IDispatcher dispatcher) =>
+                async (
+                    string id,
+                    AdminRejectVideoRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new AdminRejectVideoCommand(Id: id, Reason: request.Reason);
-                    AdminRejectVideoResult result = await dispatcher.Send(request: command);
+                    AdminRejectVideoResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminRejectVideoResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);

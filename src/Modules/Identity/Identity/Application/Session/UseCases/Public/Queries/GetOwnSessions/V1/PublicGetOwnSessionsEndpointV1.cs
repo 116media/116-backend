@@ -44,6 +44,7 @@ public class PublicGetOwnSessionsEndpointV1 : ICarterModule
                     ClaimsPrincipal user,
                     IClaimsProvider authProvider,
                     IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
                     bool? isActive = null
                 ) =>
                 {
@@ -55,7 +56,10 @@ public class PublicGetOwnSessionsEndpointV1 : ICarterModule
                         CurrentSessionId: sessionId,
                         IsActive: isActive
                     );
-                    PublicGetOwnSessionsResult result = await dispatcher.Send(request: query);
+                    PublicGetOwnSessionsResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicGetOwnSessionsResponse(Sessions: result.Sessions);
 

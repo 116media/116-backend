@@ -1,4 +1,4 @@
-using _116.Shared.Application.Configurations;
+using _116.Shared.Application.Configurations.Schemas;
 
 namespace _116.Mailer.Application.Newsletter.Services;
 
@@ -9,12 +9,6 @@ namespace _116.Mailer.Application.Newsletter.Services;
 /// </summary>
 public static class NewsletterLinkBuilder
 {
-    /// <summary>
-    /// Fallback base URL for local development when <c>FRONTEND_BASE_URL</c>
-    /// is not configured.
-    /// </summary>
-    private const string DefaultBaseUrl = "http://localhost:3000";
-
     /// <summary>
     /// Builds the double opt-in confirmation URL for a subscriber token.
     /// </summary>
@@ -40,6 +34,6 @@ public static class NewsletterLinkBuilder
     /// </summary>
     private static string BaseUrl()
     {
-        return AppEnvironment.FrontendBaseUrl() ?? DefaultBaseUrl;
+        return WebEnv.FrontendBase();
     }
 }

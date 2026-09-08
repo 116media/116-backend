@@ -46,11 +46,19 @@ public class AdminCreateTagEndpointV1 : ICarterModule
         group
             .MapPost(
                 "/",
-                async (AdminCreateTagRequest request, IDispatcher dispatcher, HttpContext httpContext) =>
+                async (
+                    AdminCreateTagRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
+                    HttpContext httpContext
+                ) =>
                 {
                     var command = new AdminCreateTagCommand(Name: request.Name, Slug: request.Slug);
 
-                    AdminCreateTagResult result = await dispatcher.Send(request: command);
+                    AdminCreateTagResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminCreateTagResponse(Tag: result.Tag);
 

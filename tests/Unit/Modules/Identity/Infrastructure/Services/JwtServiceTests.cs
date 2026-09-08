@@ -742,69 +742,6 @@ public class JwtServiceTests : IDisposable
 
     #region GenerateToken Failure Tests
 
-    [Fact]
-    public void GenerateToken_WithMissingSecret_ShouldThrowInvalidOperationException()
-    {
-        // Arrange
-        Environment.SetEnvironmentVariable("JWT_SECRET", "");
-        JwtService service = new();
-        var userId = Guid.NewGuid();
-        var sessionId = Guid.NewGuid();
-
-        // Act
-        Action act = () =>
-            service.GenerateToken(
-                userId,
-                sessionId,
-                "test@example.com",
-                "testuser",
-                [],
-                [],
-                isVerified: true,
-                isActive: true,
-                securityStamp: Guid.NewGuid(),
-                tokenVersion: 1,
-                EnumAuthProvider.Local
-            );
-
-        // Assert
-        act.Should().Throw<InvalidOperationException>().WithMessage("*JWT_SECRET*");
-
-        // Restore
-        Environment.SetEnvironmentVariable("JWT_SECRET", TestSecret);
-    }
-
-    [Fact]
-    public void GenerateToken_WithWhitespaceSecret_ShouldThrowInvalidOperationException()
-    {
-        // Arrange
-        Environment.SetEnvironmentVariable("JWT_SECRET", "   ");
-        JwtService service = new();
-        var userId = Guid.NewGuid();
-        var sessionId = Guid.NewGuid();
-
-        // Act
-        Action act = () =>
-            service.GenerateToken(
-                userId,
-                sessionId,
-                "test@example.com",
-                "testuser",
-                [],
-                [],
-                isVerified: true,
-                isActive: true,
-                securityStamp: Guid.NewGuid(),
-                tokenVersion: 1,
-                EnumAuthProvider.Local
-            );
-
-        // Assert
-        act.Should().Throw<InvalidOperationException>().WithMessage("*JWT_SECRET*");
-
-        // Restore
-        Environment.SetEnvironmentVariable("JWT_SECRET", TestSecret);
-    }
 
     #endregion
 }

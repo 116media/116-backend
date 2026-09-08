@@ -37,10 +37,13 @@ public class AdminActivatePromotionLevelEndpointV1 : ICarterModule
         group
             .MapPatch(
                 $"/{{id}}/{LookupRouteConstants.Activate}",
-                async (string id, IDispatcher dispatcher) =>
+                async (string id, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var command = new AdminActivatePromotionLevelCommand(Id: id);
-                    AdminActivatePromotionLevelResult result = await dispatcher.Send(request: command);
+                    AdminActivatePromotionLevelResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminActivatePromotionLevelResponse(PromotionLevel: result.PromotionLevel);
                     return Results.Ok(response);

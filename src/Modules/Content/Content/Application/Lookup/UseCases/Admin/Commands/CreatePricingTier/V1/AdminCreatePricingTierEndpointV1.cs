@@ -46,14 +46,22 @@ public class AdminCreatePricingTierEndpointV1 : ICarterModule
         group
             .MapPost(
                 "/",
-                async (AdminCreatePricingTierRequest request, IDispatcher dispatcher, HttpContext httpContext) =>
+                async (
+                    AdminCreatePricingTierRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
+                    HttpContext httpContext
+                ) =>
                 {
                     var command = new AdminCreatePricingTierCommand(
                         Name: request.Name,
                         Description: request.Description
                     );
 
-                    AdminCreatePricingTierResult result = await dispatcher.Send(request: command);
+                    AdminCreatePricingTierResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminCreatePricingTierResponse(PricingTier: result.PricingTier);
                     Guid priceTierId = response.PricingTier.Id;

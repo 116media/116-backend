@@ -45,7 +45,8 @@ public class PublicShareVideoEndpointV1 : ICarterModule
                     PublicShareVideoRequest? request,
                     ClaimsPrincipal user,
                     IClaimsProvider claimsProvider,
-                    IDispatcher dispatcher
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
                 ) =>
                 {
                     Guid videoId = Guid.Parse(id);
@@ -62,7 +63,10 @@ public class PublicShareVideoEndpointV1 : ICarterModule
                         ShareChannel: ShareChannel.TryFrom(request?.ShareChannel)?.Value
                     );
 
-                    PublicShareVideoResult result = await dispatcher.Send(request: command);
+                    PublicShareVideoResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicShareVideoResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);

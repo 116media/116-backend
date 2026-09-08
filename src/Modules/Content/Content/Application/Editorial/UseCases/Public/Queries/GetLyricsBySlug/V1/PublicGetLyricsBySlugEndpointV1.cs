@@ -61,7 +61,13 @@ public class PublicGetLyricsBySlugEndpointV1 : ICarterModule
         group
             .MapGet(
                 "/{slug}",
-                async (string slug, ClaimsPrincipal user, IClaimsProvider claimsProvider, IDispatcher dispatcher) =>
+                async (
+                    string slug,
+                    ClaimsPrincipal user,
+                    IClaimsProvider claimsProvider,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     Guid? userId = null;
 
@@ -72,7 +78,10 @@ public class PublicGetLyricsBySlugEndpointV1 : ICarterModule
 
                     var query = new PublicGetLyricsBySlugQuery(Slug: slug, CurrentUserId: userId);
 
-                    PublicGetLyricsBySlugResult result = await dispatcher.Send(request: query);
+                    PublicGetLyricsBySlugResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicGetLyricsBySlugResponse(
                         Lyrics: result.Lyrics,

@@ -46,7 +46,8 @@ public class PublicEditArticleCommentEndpointV1 : ICarterModule
                     PublicEditArticleCommentRequest request,
                     ClaimsPrincipal user,
                     IClaimsProvider claimsProvider,
-                    IDispatcher dispatcher
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
                 ) =>
                 {
                     Guid articleId = Guid.Parse(id);
@@ -60,7 +61,10 @@ public class PublicEditArticleCommentEndpointV1 : ICarterModule
                         Body: request.Body
                     );
 
-                    PublicEditArticleCommentResult result = await dispatcher.Send(request: command);
+                    PublicEditArticleCommentResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicEditArticleCommentResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);

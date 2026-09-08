@@ -45,7 +45,8 @@ public class PublicShareArticleEndpointV1 : ICarterModule
                     PublicShareArticleRequest? request,
                     ClaimsPrincipal user,
                     IClaimsProvider claimsProvider,
-                    IDispatcher dispatcher
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
                 ) =>
                 {
                     Guid? userId = null;
@@ -61,7 +62,10 @@ public class PublicShareArticleEndpointV1 : ICarterModule
                         ArticleId: articleId,
                         ShareChannel: ShareChannel.TryFrom(request?.ShareChannel)?.Value
                     );
-                    PublicShareArticleResult result = await dispatcher.Send(request: command);
+                    PublicShareArticleResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicShareArticleResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);

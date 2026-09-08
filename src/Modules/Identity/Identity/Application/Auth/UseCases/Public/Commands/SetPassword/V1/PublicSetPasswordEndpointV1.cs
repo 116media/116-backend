@@ -49,7 +49,8 @@ public class PublicSetPasswordEndpointV1 : ICarterModule
                     PublicSetPasswordRequest request,
                     ClaimsPrincipal user,
                     IClaimsProvider authProvider,
-                    IDispatcher dispatcher
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
                 ) =>
                 {
                     Guid userId = authProvider.GetUserIdFromClaims(user: user);
@@ -60,7 +61,10 @@ public class PublicSetPasswordEndpointV1 : ICarterModule
                         SessionId: sessionId,
                         Password: request.Password
                     );
-                    PublicSetPasswordResult result = await dispatcher.Send(request: command);
+                    PublicSetPasswordResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicSetPasswordResponse(IsSuccess: result.IsSuccess);
 

@@ -45,11 +45,19 @@ public class AdminCreateContentTypeEndpointV1 : ICarterModule
         group
             .MapPost(
                 "/",
-                async (AdminCreateContentTypeRequest request, IDispatcher dispatcher, HttpContext httpContext) =>
+                async (
+                    AdminCreateContentTypeRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
+                    HttpContext httpContext
+                ) =>
                 {
                     var command = new AdminCreateContentTypeCommand(Name: request.Name);
 
-                    AdminCreateContentTypeResult result = await dispatcher.Send(request: command);
+                    AdminCreateContentTypeResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminCreateContentTypeResponse(ContentType: result.ContentType);
                     Guid contentTypeId = response.ContentType.Id;

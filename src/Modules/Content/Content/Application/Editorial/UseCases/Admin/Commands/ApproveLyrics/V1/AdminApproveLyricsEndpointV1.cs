@@ -37,10 +37,13 @@ public class AdminApproveLyricsEndpointV1 : ICarterModule
         group
             .MapPatch(
                 $"/{{id}}/{EditorialRouteConstants.Approve}",
-                async (string id, IDispatcher dispatcher) =>
+                async (string id, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var command = new AdminApproveLyricsCommand(Id: id);
-                    AdminApproveLyricsResult result = await dispatcher.Send(request: command);
+                    AdminApproveLyricsResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminApproveLyricsResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);

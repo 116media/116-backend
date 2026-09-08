@@ -1,4 +1,5 @@
 using _116.Shared.Application.Configurations;
+using _116.Shared.Application.Configurations.Schemas;
 
 namespace _116.Content.Application.Editorial.Services;
 
@@ -8,12 +9,6 @@ namespace _116.Content.Application.Editorial.Services;
 /// </summary>
 public static class ContentPublicLinks
 {
-    /// <summary>
-    /// Fallback base URL for local development when <c>FRONTEND_BASE_URL</c>
-    /// is not configured.
-    /// </summary>
-    private const string DefaultBaseUrl = "http://localhost:3000";
-
     /// <summary>
     /// Builds the public URL of a published article.
     /// </summary>
@@ -47,6 +42,6 @@ public static class ContentPublicLinks
     /// </summary>
     private static string BaseUrl()
     {
-        return AppEnvironment.FrontendBaseUrl() ?? DefaultBaseUrl;
+        return WebEnv.FrontendBase();
     }
 }

@@ -44,10 +44,18 @@ public class AdminVerifyArtistOwnerEndpointV1 : ICarterModule
         group
             .MapPost(
                 $"/{{id}}/{EditorialRouteConstants.VerifyOwner}",
-                async (Guid id, AdminVerifyArtistOwnerRequest request, IDispatcher dispatcher) =>
+                async (
+                    Guid id,
+                    AdminVerifyArtistOwnerRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new AdminVerifyArtistOwnerCommand(ArtistId: id, UserId: request.UserId);
-                    AdminVerifyArtistOwnerResult result = await dispatcher.Send(request: command);
+                    AdminVerifyArtistOwnerResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminVerifyArtistOwnerResponse(Artist: result.Artist);
                     return Results.Ok(response);

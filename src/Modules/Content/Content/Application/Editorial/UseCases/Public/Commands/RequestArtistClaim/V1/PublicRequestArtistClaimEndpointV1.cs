@@ -38,12 +38,21 @@ public class PublicRequestArtistClaimEndpointV1 : ICarterModule
         group
             .MapPost(
                 $"/{{id}}/{EditorialRouteConstants.Claim}",
-                async (Guid id, ClaimsPrincipal user, IClaimsProvider claimsProvider, IDispatcher dispatcher) =>
+                async (
+                    Guid id,
+                    ClaimsPrincipal user,
+                    IClaimsProvider claimsProvider,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     Guid userId = claimsProvider.GetUserIdFromClaims(user: user);
 
                     var command = new PublicRequestArtistClaimCommand(ArtistId: id, UserId: userId);
-                    PublicRequestArtistClaimResult result = await dispatcher.Send(request: command);
+                    PublicRequestArtistClaimResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicRequestArtistClaimResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);

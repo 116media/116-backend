@@ -39,7 +39,13 @@ public class PublicGetSimilarLyricsEndpointV1 : ICarterModule
         group
             .MapGet(
                 $"/{{id}}/{EditorialRouteConstants.Similar}",
-                async (string id, ClaimsPrincipal user, IClaimsProvider claimsProvider, IDispatcher dispatcher) =>
+                async (
+                    string id,
+                    ClaimsPrincipal user,
+                    IClaimsProvider claimsProvider,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     Guid lyricsId = Guid.Parse(id);
                     Guid? userId = null;
@@ -51,7 +57,10 @@ public class PublicGetSimilarLyricsEndpointV1 : ICarterModule
 
                     var query = new PublicGetSimilarLyricsQuery(LyricsId: lyricsId, CurrentUserId: userId);
 
-                    PublicGetSimilarLyricsResult result = await dispatcher.Send(request: query);
+                    PublicGetSimilarLyricsResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicGetSimilarLyricsResponse(Lyrics: result.Lyrics);
                     return Results.Ok(response);

@@ -44,14 +44,22 @@ public class AdminAssignPermissionToRoleEndpointV1 : ICarterModule
         group
             .MapPost(
                 $"{{id}}/{RoleRouteConstants.Permissions}",
-                async (string id, AdminAssignPermissionToRoleRequest request, IDispatcher dispatcher) =>
+                async (
+                    string id,
+                    AdminAssignPermissionToRoleRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new AdminAssignPermissionToRoleCommand(
                         RoleId: id,
                         PermissionId: request.PermissionId
                     );
 
-                    AdminAssignPermissionToRoleResult result = await dispatcher.Send(request: command);
+                    AdminAssignPermissionToRoleResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminAssignPermissionToRoleResponse(Role: result.Role);
                     return Results.Ok(value: response);

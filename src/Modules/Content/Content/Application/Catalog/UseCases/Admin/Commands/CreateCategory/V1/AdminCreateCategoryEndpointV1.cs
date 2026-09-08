@@ -62,6 +62,7 @@ public class AdminCreateCategoryEndpointV1 : ICarterModule
                     string contentTypeId,
                     AdminCreateCategoryRequest request,
                     IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
                     HttpContext httpContext
                 ) =>
                 {
@@ -75,7 +76,10 @@ public class AdminCreateCategoryEndpointV1 : ICarterModule
                         IsExclusive: request.IsExclusive
                     );
 
-                    AdminCreateCategoryResult result = await dispatcher.Send(request: command);
+                    AdminCreateCategoryResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminCreateCategoryResponse(Category: result.Category);
                     Guid categoryId = response.Category.Id;

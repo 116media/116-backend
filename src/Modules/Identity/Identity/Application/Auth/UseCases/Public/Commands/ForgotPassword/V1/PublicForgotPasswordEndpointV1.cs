@@ -42,10 +42,17 @@ public class PublicForgotPasswordEndpointV1 : ICarterModule
         group
             .MapPost(
                 pattern: AuthRouteConstants.ForgotPassword,
-                async (PublicForgotPasswordRequest request, IDispatcher dispatcher) =>
+                async (
+                    PublicForgotPasswordRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new PublicForgotPasswordCommand(Email: request.Email);
-                    PublicForgotPasswordResult result = await dispatcher.Send(request: command);
+                    PublicForgotPasswordResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicForgotPasswordResponse(IsSuccess: result.IsSuccess, Email: request.Email);
 

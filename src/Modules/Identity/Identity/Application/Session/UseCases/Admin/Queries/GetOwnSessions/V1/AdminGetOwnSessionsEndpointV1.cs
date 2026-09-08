@@ -44,6 +44,7 @@ public class AdminGetOwnSessionsEndpointV1 : ICarterModule
                     ClaimsPrincipal user,
                     IClaimsProvider authProvider,
                     IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
                     bool? isActive = null
                 ) =>
                 {
@@ -55,7 +56,10 @@ public class AdminGetOwnSessionsEndpointV1 : ICarterModule
                         CurrentSessionId: sessionId,
                         IsActive: isActive
                     );
-                    AdminGetOwnSessionsResult result = await dispatcher.Send(request: query);
+                    AdminGetOwnSessionsResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminGetOwnSessionsResponse(Sessions: result.Sessions);
 

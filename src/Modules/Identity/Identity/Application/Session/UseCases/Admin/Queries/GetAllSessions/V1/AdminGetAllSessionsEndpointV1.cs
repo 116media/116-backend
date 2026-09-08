@@ -41,6 +41,7 @@ public class AdminGetAllSessionsEndpointV1 : ICarterModule
                 "/",
                 async (
                     IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
                     int pageIndex = 0,
                     int pageSize = 10,
                     string? status = null,
@@ -61,7 +62,10 @@ public class AdminGetAllSessionsEndpointV1 : ICarterModule
                         ToDate: toDate
                     );
 
-                    AdminGetAllSessionsResult result = await dispatcher.Send(request: query);
+                    AdminGetAllSessionsResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminGetAllSessionsResponse(Sessions: result.Sessions);
                     return Results.Ok(value: response);

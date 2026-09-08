@@ -48,7 +48,12 @@ public class PublicSignUpEndpointV1 : ICarterModule
         group
             .MapPost(
                 pattern: AuthRouteConstants.SignUp,
-                async (PublicSignUpRequest request, IDispatcher dispatcher, HttpContext httpContext) =>
+                async (
+                    PublicSignUpRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
+                    HttpContext httpContext
+                ) =>
                 {
                     var command = new PublicSignUpCommand(
                         Email: request.Email,
@@ -56,7 +61,10 @@ public class PublicSignUpEndpointV1 : ICarterModule
                         Password: request.Password
                     );
 
-                    PublicSignUpResult result = await dispatcher.Send(request: command);
+                    PublicSignUpResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     string userPath = $"{IdentityConstants.Public}/{UserRouteConstants.Endpoint}/{result.User.Id}";
                     string locationUrl = ApiVersionUrl.Build(context: httpContext, path: userPath);

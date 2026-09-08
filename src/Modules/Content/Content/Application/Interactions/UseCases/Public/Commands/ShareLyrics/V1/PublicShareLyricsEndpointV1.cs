@@ -45,7 +45,8 @@ public class PublicShareLyricsEndpointV1 : ICarterModule
                     PublicShareLyricsRequest? request,
                     ClaimsPrincipal user,
                     IClaimsProvider claimsProvider,
-                    IDispatcher dispatcher
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
                 ) =>
                 {
                     Guid? userId = null;
@@ -61,7 +62,10 @@ public class PublicShareLyricsEndpointV1 : ICarterModule
                         UserId: userId,
                         ShareChannel: ShareChannel.TryFrom(request?.ShareChannel)?.Value
                     );
-                    PublicShareLyricsResult result = await dispatcher.Send(request: command);
+                    PublicShareLyricsResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicShareLyricsResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);

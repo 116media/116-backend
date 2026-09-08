@@ -43,10 +43,18 @@ public class PublicRequestLyricsTranslationEndpointV1 : ICarterModule
         group
             .MapPost(
                 $"/{{id}}/{EditorialRouteConstants.Translations}",
-                async (Guid id, PublicRequestLyricsTranslationRequest request, IDispatcher dispatcher) =>
+                async (
+                    Guid id,
+                    PublicRequestLyricsTranslationRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new PublicRequestLyricsTranslationCommand(LyricsId: id, Language: request.Language);
-                    PublicRequestLyricsTranslationResult result = await dispatcher.Send(request: command);
+                    PublicRequestLyricsTranslationResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicRequestLyricsTranslationResponse(Text: result.Text, Source: result.Source);
                     return Results.Ok(response);

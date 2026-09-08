@@ -54,6 +54,7 @@ public class AdminSignOutEndpointV1 : ICarterModule
                     ClaimsPrincipal user,
                     IClaimsProvider authProvider,
                     IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
                     ITokenDeliveryService tokenDelivery
                 ) =>
                 {
@@ -61,7 +62,10 @@ public class AdminSignOutEndpointV1 : ICarterModule
                     string? refreshToken = tokenDelivery.ReadRefreshToken(bodyRefreshToken: request?.RefreshToken);
 
                     var command = new AdminSignOutCommand(UserId: userId, RefreshToken: refreshToken!);
-                    AdminSignOutResult result = await dispatcher.Send(request: command);
+                    AdminSignOutResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     tokenDelivery.ClearTokenCookies();
 

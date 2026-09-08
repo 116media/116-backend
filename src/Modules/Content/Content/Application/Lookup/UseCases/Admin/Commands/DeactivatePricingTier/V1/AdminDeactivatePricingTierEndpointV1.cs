@@ -37,10 +37,13 @@ public class AdminDeactivatePricingTierEndpointV1 : ICarterModule
         group
             .MapPatch(
                 $"/{{id}}/{LookupRouteConstants.Deactivate}",
-                async (string id, IDispatcher dispatcher) =>
+                async (string id, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var command = new AdminDeactivatePricingTierCommand(Id: id);
-                    AdminDeactivatePricingTierResult result = await dispatcher.Send(request: command);
+                    AdminDeactivatePricingTierResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminDeactivatePricingTierResponse(PricingTier: result.PricingTier);
                     return Results.Ok(response);

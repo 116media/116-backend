@@ -29,12 +29,20 @@ public class PublicGetOwnPlaylistsEndpointV1 : ICarterModule
         group
             .MapGet(
                 "/",
-                async (ClaimsPrincipal user, IClaimsProvider claimsProvider, IDispatcher dispatcher) =>
+                async (
+                    ClaimsPrincipal user,
+                    IClaimsProvider claimsProvider,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     Guid userId = claimsProvider.GetUserIdFromClaims(user: user);
                     var query = new PublicGetOwnPlaylistsQuery(UserId: userId);
 
-                    PublicGetOwnPlaylistsResult result = await dispatcher.Send(request: query);
+                    PublicGetOwnPlaylistsResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
                     return Results.Ok(result.Playlists);
                 }
             )

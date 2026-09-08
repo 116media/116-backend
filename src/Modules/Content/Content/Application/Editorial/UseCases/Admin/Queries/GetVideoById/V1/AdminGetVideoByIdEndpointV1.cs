@@ -38,10 +38,13 @@ public class AdminGetVideoByIdEndpointV1 : ICarterModule
         group
             .MapGet(
                 "/{id:guid}",
-                async (Guid id, IDispatcher dispatcher) =>
+                async (Guid id, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var query = new AdminGetVideoByIdQuery(Id: id);
-                    AdminGetVideoByIdResult result = await dispatcher.Send(request: query);
+                    AdminGetVideoByIdResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminGetVideoByIdResponse(Video: result.Video);
                     return Results.Ok(response);

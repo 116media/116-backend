@@ -70,6 +70,7 @@ public class AdminCreateLyricsEndpointV1 : ICarterModule
                     ClaimsPrincipal user,
                     IClaimsProvider claimsProvider,
                     IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
                     HttpContext httpContext
                 ) =>
                 {
@@ -88,7 +89,10 @@ public class AdminCreateLyricsEndpointV1 : ICarterModule
                         OrderItemId: request.OrderItemId
                     );
 
-                    AdminCreateLyricsResult result = await dispatcher.Send(request: command);
+                    AdminCreateLyricsResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminCreateLyricsResponse(Lyrics: result.Lyrics);
                     Guid lyricsId = response.Lyrics.Id;

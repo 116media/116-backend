@@ -1,4 +1,3 @@
-using System.Reflection;
 using _116.Shared.Application.Extensions;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Builder;
@@ -19,6 +18,7 @@ public class ApiVersioningExtensionsTests
         // Arrange
         WebApplicationBuilder builder = WebApplication.CreateBuilder();
         builder.Services.AddApiVersioning();
+        builder.Services.AddApiVersionGroupHolder();
         WebApplication app = builder.Build();
 
         // Act & Assert
@@ -32,6 +32,7 @@ public class ApiVersioningExtensionsTests
         // Arrange
         WebApplicationBuilder builder = WebApplication.CreateBuilder();
         builder.Services.AddApiVersioning();
+        builder.Services.AddApiVersionGroupHolder();
         WebApplication app = builder.Build();
 
         // Act
@@ -47,6 +48,7 @@ public class ApiVersioningExtensionsTests
         // Arrange
         WebApplicationBuilder builder = WebApplication.CreateBuilder();
         builder.Services.AddApiVersioning();
+        builder.Services.AddApiVersionGroupHolder();
         WebApplication app = builder.Build();
         app.UseApiVersioning();
 
@@ -63,6 +65,7 @@ public class ApiVersioningExtensionsTests
         // Arrange
         WebApplicationBuilder builder = WebApplication.CreateBuilder();
         builder.Services.AddApiVersioning();
+        builder.Services.AddApiVersionGroupHolder();
         WebApplication app = builder.Build();
         app.UseApiVersioning();
 
@@ -79,6 +82,7 @@ public class ApiVersioningExtensionsTests
         // Arrange
         WebApplicationBuilder builder = WebApplication.CreateBuilder();
         builder.Services.AddApiVersioning();
+        builder.Services.AddApiVersionGroupHolder();
         WebApplication app = builder.Build();
         app.UseApiVersioning();
 
@@ -95,6 +99,7 @@ public class ApiVersioningExtensionsTests
         // Arrange
         WebApplicationBuilder builder = WebApplication.CreateBuilder();
         builder.Services.AddApiVersioning();
+        builder.Services.AddApiVersionGroupHolder();
         WebApplication app = builder.Build();
         app.UseApiVersioning();
 
@@ -108,33 +113,15 @@ public class ApiVersioningExtensionsTests
     [Fact]
     public void MapApiVersionGroup_WithoutUseApiVersioning_ShouldThrowInvalidOperationException()
     {
-        // Covers the _rootVersionedGroup ?? throw branch.
-        // Reset the static field to null via reflection, test, then restore.
-        FieldInfo? field = typeof(ApiVersioningExtensions).GetField(
-            "_rootVersionedGroup",
-            BindingFlags.NonPublic | BindingFlags.Static
-        );
+        // The holder is registered but never initialized, so the Group getter throws.
+        WebApplicationBuilder builder = WebApplication.CreateBuilder();
+        builder.Services.AddApiVersionGroupHolder();
+        WebApplication app = builder.Build();
 
-        object? original = field?.GetValue(null);
-        try
-        {
-            field?.SetValue(null, null);
+        Action act = () => app.MapApiVersionGroup(1);
 
-            WebApplicationBuilder builder = WebApplication.CreateBuilder();
-            WebApplication app = builder.Build();
-
-            Action act = () => app.MapApiVersionGroup(1);
-
-            act.Should().Throw<InvalidOperationException>().WithMessage("*app.UseApiVersioning()*");
-        }
-        finally
-        {
-            field?.SetValue(null, original);
-        }
+        act.Should().Throw<InvalidOperationException>().WithMessage("*app.UseApiVersioning()*");
     }
-
-    // Note: Removed tests for static state checking as they interfere with other tests
-    // The static _rootVersionedGroup persists across test runs causing unpredictable behavior
 
     [Fact]
     public void MapApiVersionGroup_MultipleVersions_ShouldAllReturnBuilders()
@@ -142,6 +129,7 @@ public class ApiVersioningExtensionsTests
         // Arrange
         WebApplicationBuilder builder = WebApplication.CreateBuilder();
         builder.Services.AddApiVersioning();
+        builder.Services.AddApiVersionGroupHolder();
         WebApplication app = builder.Build();
         app.UseApiVersioning();
 
@@ -160,6 +148,7 @@ public class ApiVersioningExtensionsTests
         // Arrange
         WebApplicationBuilder builder = WebApplication.CreateBuilder();
         builder.Services.AddApiVersioning();
+        builder.Services.AddApiVersionGroupHolder();
         WebApplication app = builder.Build();
 
         // Act

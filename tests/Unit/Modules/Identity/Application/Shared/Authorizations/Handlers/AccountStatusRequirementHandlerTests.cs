@@ -8,6 +8,7 @@ using _116.Tests.Fixtures.Builders.Entities.Identity;
 using _116.Tests.Fixtures.Factories.Identity;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Moq;
 using Xunit;
 
@@ -16,12 +17,15 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Shared.Authorizations.Han
 public class AccountStatusRequirementHandlerTests
 {
     private readonly Mock<IAuthRepository> _authRepositoryMock;
+    private readonly Mock<IHttpContextAccessor> _httpContextAccessorMock;
     private readonly AccountStatusRequirementHandler _handler;
 
     public AccountStatusRequirementHandlerTests()
     {
         _authRepositoryMock = new Mock<IAuthRepository>();
-        _handler = new AccountStatusRequirementHandler(_authRepositoryMock.Object);
+        _httpContextAccessorMock = new Mock<IHttpContextAccessor>();
+        _httpContextAccessorMock.Setup(x => x.HttpContext).Returns(new DefaultHttpContext());
+        _handler = new AccountStatusRequirementHandler(_authRepositoryMock.Object, _httpContextAccessorMock.Object);
     }
 
     [Fact]
@@ -141,131 +145,8 @@ public class AccountStatusRequirementHandlerTests
         );
     }
 
-    [Fact]
-    public async Task HandleRequirementAsync_WithDbConnectivityError_ShouldFallbackToJwtClaims()
-    {
-        // Arrange
-        var userId = Guid.NewGuid();
-        var claims = new[]
-        {
-            new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
-            new Claim(JwtClaimsConstants.IsActive, "true"),
-        };
-        var user = new ClaimsPrincipal(new ClaimsIdentity(claims));
-        var requirement = new AccountStatusRequirement(JwtClaimsConstants.IsActive, "true");
-        var context = new AuthorizationHandlerContext([requirement], user, null);
-
-        _authRepositoryMock
-            .Setup(x => x.FindUserByIdOrThrow(It.Is<Guid>(id => id == userId), It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new TimeoutException("Database timeout"));
-
-        // Act
-        await _handler.HandleAsync(context);
-
-        // Assert
-        context.HasSucceeded.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task HandleRequirementAsync_WithDbError_AndNonMatchingClaim_ShouldNotSucceed()
-    {
-        // Arrange
-        var userId = Guid.NewGuid();
-        var claims = new[]
-        {
-            new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
-            new Claim(JwtClaimsConstants.IsActive, "false"),
-        };
-        var user = new ClaimsPrincipal(new ClaimsIdentity(claims));
-        var requirement = new AccountStatusRequirement(JwtClaimsConstants.IsActive, "true");
-        var context = new AuthorizationHandlerContext([requirement], user, null);
-
-        _authRepositoryMock
-            .Setup(x => x.FindUserByIdOrThrow(It.Is<Guid>(id => id == userId), It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new TimeoutException("Database timeout"));
-
-        // Act
-        await _handler.HandleAsync(context);
-
-        // Assert
-        context.HasSucceeded.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task HandleRequirementAsync_WithTaskCanceledException_ShouldFallbackToJwtClaims()
-    {
-        // Arrange
-        var userId = Guid.NewGuid();
-        var claims = new[]
-        {
-            new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
-            new Claim(JwtClaimsConstants.IsVerified, "true"),
-        };
-        var user = new ClaimsPrincipal(new ClaimsIdentity(claims));
-        var requirement = new AccountStatusRequirement(JwtClaimsConstants.IsVerified, "true");
-        var context = new AuthorizationHandlerContext([requirement], user, null);
-
-        _authRepositoryMock
-            .Setup(x => x.FindUserByIdOrThrow(It.Is<Guid>(id => id == userId), It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new TaskCanceledException("Request cancelled"));
-
-        // Act
-        await _handler.HandleAsync(context);
-
-        // Assert
-        context.HasSucceeded.Should().BeTrue("should fallback to JWT claims on task cancellation");
-    }
-
-    [Fact]
-    public async Task HandleRequirementAsync_WithOperationCanceledException_ShouldFallbackToJwtClaims()
-    {
-        // Arrange
-        var userId = Guid.NewGuid();
-        var claims = new[]
-        {
-            new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
-            new Claim(JwtClaimsConstants.IsActive, "true"),
-        };
-        var user = new ClaimsPrincipal(new ClaimsIdentity(claims));
-        var requirement = new AccountStatusRequirement(JwtClaimsConstants.IsActive, "true");
-        var context = new AuthorizationHandlerContext([requirement], user, null);
-
-        _authRepositoryMock
-            .Setup(x => x.FindUserByIdOrThrow(It.Is<Guid>(id => id == userId), It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new OperationCanceledException("Operation cancelled"));
-
-        // Act
-        await _handler.HandleAsync(context);
-
-        // Assert
-        context.HasSucceeded.Should().BeTrue("should fallback to JWT claims on operation cancellation");
-    }
-
     // Note: NpgsqlException tests are difficult to test via unit tests due to internal constructors
     // The error handling logic for Npgsql errors is covered by integration tests
-
-    [Fact]
-    public async Task HandleRequirementAsync_WithNonConnectivityException_ShouldNotFallback()
-    {
-        // Arrange
-        var userId = Guid.NewGuid();
-        var claims = new[]
-        {
-            new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
-            new Claim(JwtClaimsConstants.IsActive, "true"),
-        };
-        var user = new ClaimsPrincipal(new ClaimsIdentity(claims));
-        var requirement = new AccountStatusRequirement(JwtClaimsConstants.IsActive, "true");
-        var context = new AuthorizationHandlerContext([requirement], user, null);
-
-        _authRepositoryMock
-            .Setup(x => x.FindUserByIdOrThrow(It.Is<Guid>(id => id == userId), It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new InvalidOperationException("Some other error"));
-
-        // Act & Assert
-        Func<Task> act = async () => await _handler.HandleAsync(context);
-        await act.Should().ThrowExactlyAsync<InvalidOperationException>();
-    }
 
     [Fact]
     public async Task HandleRequirementAsync_WithNullUser_ShouldNotSucceed()
@@ -345,81 +226,6 @@ public class AccountStatusRequirementHandlerTests
     }
 
     [Fact]
-    public async Task HandleRequirementAsync_WithDbError_AndMissingClaim_ShouldNotSucceed()
-    {
-        // Arrange
-        var userId = Guid.NewGuid();
-        var claims = new[]
-        {
-            new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
-            // Missing IsActive claim
-        };
-        var user = new ClaimsPrincipal(new ClaimsIdentity(claims));
-        var requirement = new AccountStatusRequirement(JwtClaimsConstants.IsActive, "true");
-        var context = new AuthorizationHandlerContext([requirement], user, null);
-
-        _authRepositoryMock
-            .Setup(x => x.FindUserByIdOrThrow(It.Is<Guid>(id => id == userId), It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new TimeoutException("Database timeout"));
-
-        // Act
-        await _handler.HandleAsync(context);
-
-        // Assert
-        context.HasSucceeded.Should().BeFalse("should not succeed when claim is missing in fallback");
-    }
-
-    [Fact]
-    public async Task HandleRequirementAsync_WithDbError_AndEmptyClaim_ShouldNotSucceed()
-    {
-        // Arrange
-        var userId = Guid.NewGuid();
-        var claims = new[]
-        {
-            new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
-            new Claim(JwtClaimsConstants.IsActive, string.Empty),
-        };
-        var user = new ClaimsPrincipal(new ClaimsIdentity(claims));
-        var requirement = new AccountStatusRequirement(JwtClaimsConstants.IsActive, "true");
-        var context = new AuthorizationHandlerContext([requirement], user, null);
-
-        _authRepositoryMock
-            .Setup(x => x.FindUserByIdOrThrow(It.Is<Guid>(id => id == userId), It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new TimeoutException("Database timeout"));
-
-        // Act
-        await _handler.HandleAsync(context);
-
-        // Assert
-        context.HasSucceeded.Should().BeFalse("should not succeed when claim value is empty in fallback");
-    }
-
-    [Fact]
-    public async Task HandleRequirementAsync_WithDbError_AndCaseInsensitiveMatch_ShouldSucceed()
-    {
-        // Arrange
-        var userId = Guid.NewGuid();
-        var claims = new[]
-        {
-            new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
-            new Claim(JwtClaimsConstants.IsActive, "TRUE"), // Uppercase
-        };
-        var user = new ClaimsPrincipal(new ClaimsIdentity(claims));
-        var requirement = new AccountStatusRequirement(JwtClaimsConstants.IsActive, "true"); // Lowercase
-        var context = new AuthorizationHandlerContext([requirement], user, null);
-
-        _authRepositoryMock
-            .Setup(x => x.FindUserByIdOrThrow(It.Is<Guid>(id => id == userId), It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new TimeoutException("Database timeout"));
-
-        // Act
-        await _handler.HandleAsync(context);
-
-        // Assert
-        context.HasSucceeded.Should().BeTrue("claim comparison should be case-insensitive");
-    }
-
-    [Fact]
     public async Task HandleRequirementAsync_WithEmptyUserIdClaim_ShouldNotSucceed()
     {
         // Arrange
@@ -436,6 +242,66 @@ public class AccountStatusRequirementHandlerTests
         _authRepositoryMock.Verify(
             x => x.FindUserByIdOrThrow(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
             Times.Never
+        );
+    }
+
+    [Theory]
+    [InlineData(typeof(TimeoutException))]
+    [InlineData(typeof(TaskCanceledException))]
+    [InlineData(typeof(OperationCanceledException))]
+    public async Task HandleRequirementAsync_WithDbConnectivityError_ShouldFailClosed(Type exceptionType)
+    {
+        // Arrange — the token claims say active, but an unverifiable status must not be trusted.
+        var userId = Guid.NewGuid();
+        var claims = new[]
+        {
+            new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
+            new Claim(JwtClaimsConstants.IsActive, "true"),
+        };
+        var user = new ClaimsPrincipal(new ClaimsIdentity(claims));
+        var requirement = new AccountStatusRequirement(JwtClaimsConstants.IsActive, "true");
+        var context = new AuthorizationHandlerContext([requirement], user, null);
+
+        _authRepositoryMock
+            .Setup(x => x.FindUserByIdOrThrow(It.Is<Guid>(id => id == userId), It.IsAny<CancellationToken>()))
+            .ThrowsAsync((Exception)Activator.CreateInstance(exceptionType, "connectivity failure")!);
+
+        // Act
+        await _handler.HandleAsync(context);
+
+        // Assert
+        context.HasFailed.Should().BeTrue("an unverifiable account status fails closed");
+        context.HasSucceeded.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task HandleRequirementAsync_EvaluatedTwiceInOneRequest_ShouldQueryOnce()
+    {
+        // Arrange — two policies in one authorization pass share the request-cached entity.
+        var userId = Guid.NewGuid();
+        var claims = new[] { new Claim(ClaimTypes.NameIdentifier, userId.ToString()) };
+        var user = new ClaimsPrincipal(new ClaimsIdentity(claims));
+        UserEntity userEntity = new UserBuilder().WithId(userId).AsActive().AsVerified().Build();
+
+        _authRepositoryMock
+            .Setup(x => x.FindUserByIdOrThrow(It.Is<Guid>(id => id == userId), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(userEntity);
+
+        var activeRequirement = new AccountStatusRequirement(JwtClaimsConstants.IsActive, "true");
+        var verifiedRequirement = new AccountStatusRequirement(JwtClaimsConstants.IsVerified, "true");
+        var activeContext = new AuthorizationHandlerContext([activeRequirement], user, null);
+        var verifiedContext = new AuthorizationHandlerContext([verifiedRequirement], user, null);
+
+        // Act
+        await _handler.HandleAsync(activeContext);
+        await _handler.HandleAsync(verifiedContext);
+
+        // Assert
+        activeContext.HasSucceeded.Should().BeTrue();
+        verifiedContext.HasSucceeded.Should().BeTrue();
+        _authRepositoryMock.Verify(
+            x => x.FindUserByIdOrThrow(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+            Times.Once
         );
     }
 }

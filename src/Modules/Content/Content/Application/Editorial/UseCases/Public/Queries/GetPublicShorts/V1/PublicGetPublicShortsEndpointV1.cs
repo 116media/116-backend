@@ -44,6 +44,7 @@ public class PublicGetPublicShortsEndpointV1 : ICarterModule
                     ClaimsPrincipal user,
                     IClaimsProvider claimsProvider,
                     IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
                     int pageIndex = 0,
                     int pageSize = 10,
                     string? search = null
@@ -64,7 +65,10 @@ public class PublicGetPublicShortsEndpointV1 : ICarterModule
                         CurrentUserId: userId
                     );
 
-                    PublicGetPublicShortsResult result = await dispatcher.Send(request: query);
+                    PublicGetPublicShortsResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicGetPublicShortsResponse(ShortVideos: result.ShortVideos);
                     return Results.Ok(response);

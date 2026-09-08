@@ -66,6 +66,7 @@ public class AdminCreateVideoEndpointV1 : ICarterModule
                     ClaimsPrincipal user,
                     IClaimsProvider claimsProvider,
                     IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
                     HttpContext httpContext
                 ) =>
                 {
@@ -82,7 +83,10 @@ public class AdminCreateVideoEndpointV1 : ICarterModule
                         ShootingScheduledAt: request.ShootingScheduledAt
                     );
 
-                    AdminCreateVideoResult result = await dispatcher.Send(request: command);
+                    AdminCreateVideoResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminCreateVideoResponse(Video: result.Video);
                     Guid videoId = response.Video.Id;

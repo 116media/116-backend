@@ -39,6 +39,7 @@ public class PublicGetPopularVideosEndpointV1 : ICarterModule
                 $"/{EditorialRouteConstants.Popular}",
                 async (
                     IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
                     int limit = PopularVideosLimits.DefaultLimit,
                     Guid? categoryId = null,
                     Guid? excludeId = null
@@ -56,7 +57,10 @@ public class PublicGetPopularVideosEndpointV1 : ICarterModule
                         ExcludeId: excludeId
                     );
 
-                    PublicGetPopularVideosResult result = await dispatcher.Send(request: query);
+                    PublicGetPopularVideosResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicGetPopularVideosResponse(Videos: result.Videos);
                     return Results.Ok(response);

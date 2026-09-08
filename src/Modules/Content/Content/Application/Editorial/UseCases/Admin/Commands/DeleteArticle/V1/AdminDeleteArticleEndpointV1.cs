@@ -37,10 +37,13 @@ public class AdminDeleteArticleEndpointV1 : ICarterModule
         group
             .MapDelete(
                 "/{id}",
-                async (string id, IDispatcher dispatcher) =>
+                async (string id, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var command = new AdminDeleteArticleCommand(Id: id);
-                    AdminDeleteArticleResult result = await dispatcher.Send(request: command);
+                    AdminDeleteArticleResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminDeleteArticleResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);

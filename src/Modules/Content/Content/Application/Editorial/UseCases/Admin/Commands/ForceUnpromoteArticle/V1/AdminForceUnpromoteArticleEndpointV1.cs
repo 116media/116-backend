@@ -45,11 +45,19 @@ public class AdminForceUnpromoteArticleEndpointV1 : ICarterModule
         group
             .MapPatch(
                 $"/{{slug}}/{EditorialRouteConstants.Unpromote}",
-                async (string slug, AdminForceUnpromoteArticleRequest request, IDispatcher dispatcher) =>
+                async (
+                    string slug,
+                    AdminForceUnpromoteArticleRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new AdminForceUnpromoteArticleCommand(Slug: slug, Reason: request.Reason);
 
-                    AdminForceUnpromoteArticleResult result = await dispatcher.Send(request: command);
+                    AdminForceUnpromoteArticleResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminForceUnpromoteArticleResponse(
                         ArticleId: result.ArticleId,

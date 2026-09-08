@@ -67,6 +67,7 @@ public class PublicRefreshTokenEndpointV1 : ICarterModule
                 async (
                     PublicRefreshTokenRequest? request,
                     IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
                     ITokenDeliveryService tokenDelivery,
                     SessionErrors sessionErrors
                 ) =>
@@ -78,7 +79,10 @@ public class PublicRefreshTokenEndpointV1 : ICarterModule
                     }
 
                     var command = new PublicRefreshTokenCommand(RefreshToken: refreshToken);
-                    PublicRefreshTokenResult result = await dispatcher.Send(request: command);
+                    PublicRefreshTokenResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     if (tokenDelivery.IsWebClient())
                     {

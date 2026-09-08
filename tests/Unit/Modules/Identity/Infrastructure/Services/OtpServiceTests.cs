@@ -66,14 +66,14 @@ public class OtpServiceTests
     [Fact]
     public void GenerateOtpCode_ShouldPadWithZeros()
     {
-        // Act - Generate many codes to increase chance of getting one starting with 0
+        // Act
         List<string> codes = [];
         for (int i = 0; i < 1000; i++)
         {
             codes.Add(_sut.GenerateOtpCode());
         }
 
-        // Assert - All codes should have consistent length regardless of leading zeros
+        // Assert
         codes.Should().OnlyContain(c => c.Length == UserConstants.OtpCodeLength);
     }
 
@@ -231,10 +231,9 @@ public class OtpServiceTests
     #region Hash and Verify Tests
 
     [Theory]
-    [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
-    public void Constructor_WithoutAPepper_ShouldThrow(string? pepper)
+    public void Constructor_WithoutAPepper_ShouldThrow(string pepper)
     {
         // Act
         var construct = () => new OtpService(pepper, TimeProvider.System);
@@ -308,7 +307,7 @@ public class OtpServiceTests
     [Fact]
     public void Verify_UnderADifferentPepper_ShouldFail()
     {
-        // Arrange — a leaked table is worthless without the deployment key
+        // Arrange
         string hash = _sut.Hash(TestConstants.Otp.ValidCode);
         var otherKey = new OtpService("a-different-pepper", TimeProvider.System);
 

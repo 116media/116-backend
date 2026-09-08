@@ -37,10 +37,13 @@ public class AdminSubmitArticleEndpointV1 : ICarterModule
         group
             .MapPatch(
                 $"/{{id}}/{EditorialRouteConstants.Submit}",
-                async (string id, IDispatcher dispatcher) =>
+                async (string id, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var command = new AdminSubmitArticleCommand(Id: id);
-                    AdminSubmitArticleResult result = await dispatcher.Send(request: command);
+                    AdminSubmitArticleResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminSubmitArticleResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);

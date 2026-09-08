@@ -46,7 +46,8 @@ public class PublicAddVideoToPlaylistEndpointV1 : ICarterModule
                     PublicAddVideoToPlaylistRequest request,
                     ClaimsPrincipal user,
                     IClaimsProvider claimsProvider,
-                    IDispatcher dispatcher
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
                 ) =>
                 {
                     Guid playlistId = Guid.Parse(id);
@@ -59,7 +60,10 @@ public class PublicAddVideoToPlaylistEndpointV1 : ICarterModule
                         SortOrder: request.SortOrder
                     );
 
-                    PublicAddVideoToPlaylistResult result = await dispatcher.Send(request: command);
+                    PublicAddVideoToPlaylistResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicAddVideoToPlaylistResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);

@@ -44,14 +44,17 @@ public class PublicVerifyOtpEndpointV1 : ICarterModule
         group
             .MapPost(
                 pattern: AuthRouteConstants.VerifyOtp,
-                async (PublicVerifyOtpRequest request, IDispatcher dispatcher) =>
+                async (PublicVerifyOtpRequest request, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var command = new PublicVerifyOtpCommand(
                         Email: request.Email,
                         Code: request.Code,
                         Purpose: request.Purpose
                     );
-                    PublicVerifyOtpResult result = await dispatcher.Send(request: command);
+                    PublicVerifyOtpResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicVerifyOtpResponse(IsSuccess: result.IsSuccess);
 

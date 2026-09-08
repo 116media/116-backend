@@ -33,11 +33,14 @@ public class AdminGetOrderPaymentEndpointV1 : ICarterModule
         group
             .MapGet(
                 $"/{{id:guid}}/{CommerceRouteConstants.Payment}",
-                async (Guid id, IDispatcher dispatcher) =>
+                async (Guid id, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var query = new AdminGetOrderPaymentQuery(OrderId: id);
 
-                    AdminGetOrderPaymentResult result = await dispatcher.Send(request: query);
+                    AdminGetOrderPaymentResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminGetOrderPaymentResponse(Payment: result.Payment);
                     return Results.Ok(response);

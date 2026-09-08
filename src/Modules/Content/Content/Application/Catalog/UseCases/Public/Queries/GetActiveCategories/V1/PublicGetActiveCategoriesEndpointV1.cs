@@ -37,11 +37,14 @@ public class PublicGetActiveCategoriesEndpointV1 : ICarterModule
         group
             .MapGet(
                 "/",
-                async (IDispatcher dispatcher, Guid? contentTypeId = null) =>
+                async (IDispatcher dispatcher, CancellationToken cancellationToken, Guid? contentTypeId = null) =>
                 {
                     var query = new PublicGetActiveCategoriesQuery(ContentTypeId: contentTypeId);
 
-                    PublicGetActiveCategoriesResult result = await dispatcher.Send(request: query);
+                    PublicGetActiveCategoriesResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicGetActiveCategoriesResponse(Categories: result.Categories);
                     return Results.Ok(response);

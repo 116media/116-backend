@@ -39,7 +39,7 @@ public class ExceptionStrategyContractTests
     /// deliberately when a strategy is added; the failure is the notification that the new strategy
     /// needs a contract entry.
     /// </summary>
-    private const int ExpectedStrategyCount = 25;
+    private const int ExpectedStrategyCount = 26;
 
     /// <summary>
     /// The production assemblies scanned for strategy implementations, each anchored on a type rather
@@ -83,6 +83,13 @@ public class ExceptionStrategyContractTests
             () => new AccountNotVerifiedException("Account is not verified"),
             StatusCodes.Status403Forbidden,
             nameof(AccountNotVerifiedException),
+            CarriesTraceExtensions: true
+        ),
+        [typeof(RequestBodyLimitExceptionStrategy)] = new StrategyContract(
+            typeof(BadHttpRequestException),
+            () => new BadHttpRequestException("Request body too large.", StatusCodes.Status413PayloadTooLarge),
+            StatusCodes.Status413PayloadTooLarge,
+            "PayloadTooLarge",
             CarriesTraceExtensions: true
         ),
         [typeof(AuthenticationExceptionHandler)] = new StrategyContract(

@@ -46,11 +46,19 @@ public class AdminCreateRoleEndpointV1 : ICarterModule
         group
             .MapPost(
                 "/",
-                async (AdminCreateRoleRequest request, IDispatcher dispatcher, HttpContext httpContext) =>
+                async (
+                    AdminCreateRoleRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
+                    HttpContext httpContext
+                ) =>
                 {
                     var command = new AdminCreateRoleCommand(Name: request.Name, Description: request.Description);
 
-                    AdminCreateRoleResult result = await dispatcher.Send(request: command);
+                    AdminCreateRoleResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminCreateRoleResponse(Role: result.Role);
 

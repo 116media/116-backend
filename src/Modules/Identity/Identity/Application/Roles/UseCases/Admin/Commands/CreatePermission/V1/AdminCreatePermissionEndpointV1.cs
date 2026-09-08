@@ -47,7 +47,12 @@ public class AdminCreatePermissionEndpointV1 : ICarterModule
         group
             .MapPost(
                 "/",
-                async (AdminCreatePermissionRequest request, IDispatcher dispatcher, HttpContext httpContext) =>
+                async (
+                    AdminCreatePermissionRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
+                    HttpContext httpContext
+                ) =>
                 {
                     var command = new AdminCreatePermissionCommand(
                         Action: request.Action,
@@ -55,7 +60,10 @@ public class AdminCreatePermissionEndpointV1 : ICarterModule
                         Description: request.Description
                     );
 
-                    AdminCreatePermissionResult result = await dispatcher.Send(request: command);
+                    AdminCreatePermissionResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminCreatePermissionResponse(Permission: result.Permission);
 

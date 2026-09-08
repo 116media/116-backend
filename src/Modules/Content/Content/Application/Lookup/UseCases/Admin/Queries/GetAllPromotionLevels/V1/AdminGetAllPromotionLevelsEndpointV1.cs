@@ -38,11 +38,14 @@ public class AdminGetAllPromotionLevelsEndpointV1 : ICarterModule
         group
             .MapGet(
                 "/",
-                async (IDispatcher dispatcher, string? search = null) =>
+                async (IDispatcher dispatcher, CancellationToken cancellationToken, string? search = null) =>
                 {
                     var query = new AdminGetAllPromotionLevelsQuery(Search: search);
 
-                    AdminGetAllPromotionLevelsResult result = await dispatcher.Send(request: query);
+                    AdminGetAllPromotionLevelsResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminGetAllPromotionLevelsResponse(PromotionLevels: result.PromotionLevels);
                     return Results.Ok(response);

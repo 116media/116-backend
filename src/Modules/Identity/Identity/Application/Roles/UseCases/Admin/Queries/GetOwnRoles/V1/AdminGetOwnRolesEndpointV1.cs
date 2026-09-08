@@ -40,12 +40,20 @@ public class AdminGetOwnRolesEndpointV1 : ICarterModule
         group
             .MapGet(
                 RoleRouteConstants.Endpoint,
-                async (ClaimsPrincipal user, IClaimsProvider authProvider, IDispatcher dispatcher) =>
+                async (
+                    ClaimsPrincipal user,
+                    IClaimsProvider authProvider,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     Guid userId = authProvider.GetUserIdFromClaims(user: user);
 
                     var query = new AdminGetOwnRolesQuery(UserId: userId);
-                    AdminGetOwnRolesResult result = await dispatcher.Send(request: query);
+                    AdminGetOwnRolesResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminGetOwnRolesResponse(Roles: result.Roles);
                     return Results.Ok(value: response);

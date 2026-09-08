@@ -34,7 +34,13 @@ public class AdminAttachPaymentProofEndpointV1 : ICarterModule
         group
             .MapPost(
                 $"/{{id}}/{CommerceRouteConstants.Payment}/{CommerceRouteConstants.Proof}",
-                async (string id, IFormFile? file, EnumPaymentMethod paymentMethod, IDispatcher dispatcher) =>
+                async (
+                    string id,
+                    IFormFile? file,
+                    EnumPaymentMethod paymentMethod,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new AdminAttachPaymentProofCommand(
                         OrderId: id,
@@ -42,7 +48,10 @@ public class AdminAttachPaymentProofEndpointV1 : ICarterModule
                         PaymentMethod: paymentMethod
                     );
 
-                    AdminAttachPaymentProofResult result = await dispatcher.Send(request: command);
+                    AdminAttachPaymentProofResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminAttachPaymentProofResponse(Proof: result.Proof);
                     return Results.Ok(response);

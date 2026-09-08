@@ -56,7 +56,12 @@ public class AdminUpdateArtistEndpointV1 : ICarterModule
         group
             .MapPut(
                 "/{id}",
-                async (Guid id, AdminUpdateArtistRequest request, IDispatcher dispatcher) =>
+                async (
+                    Guid id,
+                    AdminUpdateArtistRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new AdminUpdateArtistCommand(
                         Id: id,
@@ -68,7 +73,10 @@ public class AdminUpdateArtistEndpointV1 : ICarterModule
                         Hometown: request.Hometown
                     );
 
-                    AdminUpdateArtistResult result = await dispatcher.Send(request: command);
+                    AdminUpdateArtistResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminUpdateArtistResponse(Artist: result.Artist);
                     return Results.Ok(response);

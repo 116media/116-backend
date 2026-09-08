@@ -40,7 +40,12 @@ public class AdminRefreshTokenEndpointV1 : ICarterModule
         group
             .MapPost(
                 pattern: SessionRouteConstants.RefreshToken,
-                async (IDispatcher dispatcher, ITokenDeliveryService tokenDelivery, SessionErrors sessionErrors) =>
+                async (
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
+                    ITokenDeliveryService tokenDelivery,
+                    SessionErrors sessionErrors
+                ) =>
                 {
                     string? refreshToken = tokenDelivery.ReadRefreshToken(bodyRefreshToken: null);
                     if (string.IsNullOrEmpty(refreshToken))
@@ -49,7 +54,10 @@ public class AdminRefreshTokenEndpointV1 : ICarterModule
                     }
 
                     var command = new AdminRefreshTokenCommand(RefreshToken: refreshToken);
-                    AdminRefreshTokenResult result = await dispatcher.Send(request: command);
+                    AdminRefreshTokenResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     tokenDelivery.SetTokenCookies(authResult: result.Authentication);
 

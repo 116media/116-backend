@@ -65,10 +65,18 @@ public class PublicSocialLoginEndpointV1 : ICarterModule
         group
             .MapPost(
                 pattern: AuthRouteConstants.SocialLogin,
-                async (PublicSocialLoginRequest request, IDispatcher dispatcher, ITokenDeliveryService tokenDelivery) =>
+                async (
+                    PublicSocialLoginRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
+                    ITokenDeliveryService tokenDelivery
+                ) =>
                 {
                     var command = new PublicSocialLoginCommand(Provider: request.Provider, IdToken: request.IdToken);
-                    PublicSocialLoginResult result = await dispatcher.Send(request: command);
+                    PublicSocialLoginResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     if (tokenDelivery.IsWebClient())
                     {

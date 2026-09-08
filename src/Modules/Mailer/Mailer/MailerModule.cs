@@ -13,7 +13,7 @@ using _116.Mailer.Infrastructure.BackgroundJobs;
 using _116.Mailer.Infrastructure.Persistence;
 using _116.Mailer.Infrastructure.Repositories;
 using _116.Mailer.Infrastructure.Services;
-using _116.Shared.Application.Configurations;
+using _116.Shared.Application.Configurations.Schemas;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
@@ -76,7 +76,7 @@ public static class MailerModule
     /// </summary>
     private static void RegisterEmailSender(IServiceCollection services)
     {
-        string provider = AppEnvironment.EmailProvider() ?? MailerConstants.EmailProviders.Smtp;
+        string provider = MailEnv.Provider.Value;
 
         switch (provider.ToLowerInvariant())
         {

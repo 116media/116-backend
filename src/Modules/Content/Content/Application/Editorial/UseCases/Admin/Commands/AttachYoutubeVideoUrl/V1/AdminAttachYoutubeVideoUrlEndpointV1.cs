@@ -46,14 +46,22 @@ public class AdminAttachYoutubeVideoUrlEndpointV1 : ICarterModule
         group
             .MapPatch(
                 $"/{{id}}/{EditorialRouteConstants.Youtube}",
-                async (string id, AdminAttachYoutubeVideoUrlRequest request, IDispatcher dispatcher) =>
+                async (
+                    string id,
+                    AdminAttachYoutubeVideoUrlRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new AdminAttachYoutubeVideoUrlCommand(
                         VideoId: id,
                         YoutubeVideoUrl: request.YoutubeVideoUrl
                     );
 
-                    AdminAttachYoutubeVideoUrlResult result = await dispatcher.Send(request: command);
+                    AdminAttachYoutubeVideoUrlResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminAttachYoutubeVideoUrlResponse(Video: result.Video);
                     return Results.Ok(response);

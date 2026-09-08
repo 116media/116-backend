@@ -137,6 +137,12 @@ public class ApiFixture(PostgresFixture db) : WebApplicationFactory<Program>
         Environment.SetEnvironmentVariable("EMAIL_FROM_ADDRESS", "no-reply@test.116");
         Environment.SetEnvironmentVariable("EMAIL_FROM_NAME", "116 Tests");
         Environment.SetEnvironmentVariable("FRONTEND_BASE_URL", "http://localhost:3000");
+        Environment.SetEnvironmentVariable("WEBAPP_ORIGIN", "http://localhost:3000");
+        Environment.SetEnvironmentVariable("DASHBOARD_ORIGIN", "http://localhost:3001");
+
+        Environment.SetEnvironmentVariable("GOOGLE_CLIENT_ID", "test-google-client-id");
+        Environment.SetEnvironmentVariable("FACEBOOK_APP_ID", "test-facebook-app-id");
+        Environment.SetEnvironmentVariable("FACEBOOK_APP_SECRET", "test-facebook-app-secret");
 
         Environment.SetEnvironmentVariable("TRUSTED_PROXY_NETWORKS", string.Empty);
     }

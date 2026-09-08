@@ -37,10 +37,13 @@ public class AdminDeactivatePromotionLevelEndpointV1 : ICarterModule
         group
             .MapPatch(
                 $"/{{id}}/{LookupRouteConstants.Deactivate}",
-                async (string id, IDispatcher dispatcher) =>
+                async (string id, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var command = new AdminDeactivatePromotionLevelCommand(Id: id);
-                    AdminDeactivatePromotionLevelResult result = await dispatcher.Send(request: command);
+                    AdminDeactivatePromotionLevelResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminDeactivatePromotionLevelResponse(PromotionLevel: result.PromotionLevel);
                     return Results.Ok(response);

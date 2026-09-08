@@ -38,10 +38,13 @@ public class AdminGetPermissionByIdEndpointV1 : ICarterModule
         group
             .MapGet(
                 "{id:guid}",
-                async (Guid id, IDispatcher dispatcher) =>
+                async (Guid id, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var query = new AdminGetPermissionByIdQuery(PermissionId: id);
-                    AdminGetPermissionByIdResult result = await dispatcher.Send(request: query);
+                    AdminGetPermissionByIdResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminGetPermissionByIdResponse(Permission: result.Permission);
                     return Results.Ok(value: response);

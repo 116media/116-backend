@@ -37,10 +37,13 @@ public class AdminDeactivateContentTypeEndpointV1 : ICarterModule
         group
             .MapPatch(
                 $"/{{id}}/{LookupRouteConstants.Deactivate}",
-                async (string id, IDispatcher dispatcher) =>
+                async (string id, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var command = new AdminDeactivateContentTypeCommand(Id: id);
-                    AdminDeactivateContentTypeResult result = await dispatcher.Send(request: command);
+                    AdminDeactivateContentTypeResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminDeactivateContentTypeResponse(ContentType: result.ContentType);
                     return Results.Ok(response);

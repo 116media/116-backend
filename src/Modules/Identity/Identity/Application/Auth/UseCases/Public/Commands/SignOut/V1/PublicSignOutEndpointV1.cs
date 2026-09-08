@@ -54,6 +54,7 @@ public class PublicSignOutEndpointV1 : ICarterModule
                     ClaimsPrincipal user,
                     IClaimsProvider authProvider,
                     IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
                     ITokenDeliveryService tokenDelivery
                 ) =>
                 {
@@ -61,7 +62,10 @@ public class PublicSignOutEndpointV1 : ICarterModule
                     string? refreshToken = tokenDelivery.ReadRefreshToken(bodyRefreshToken: request?.RefreshToken);
 
                     var command = new PublicSignOutCommand(UserId: userId, RefreshToken: refreshToken!);
-                    PublicSignOutResult result = await dispatcher.Send(request: command);
+                    PublicSignOutResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     if (tokenDelivery.IsWebClient())
                     {

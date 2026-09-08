@@ -43,10 +43,18 @@ public class AdminUpdateArticleTagsEndpointV1 : ICarterModule
         group
             .MapPut(
                 $"/{{id}}/{EditorialRouteConstants.Tags}",
-                async (string id, AdminUpdateArticleTagsRequest request, IDispatcher dispatcher) =>
+                async (
+                    string id,
+                    AdminUpdateArticleTagsRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     var command = new AdminUpdateArticleTagsCommand(ArticleId: id, TagNames: request.TagNames);
-                    AdminUpdateArticleTagsResult result = await dispatcher.Send(request: command);
+                    AdminUpdateArticleTagsResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminUpdateArticleTagsResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);

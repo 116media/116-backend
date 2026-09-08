@@ -34,12 +34,21 @@ public class PublicUnlikeArticleCommentEndpointV1 : ICarterModule
         group
             .MapDelete(
                 $"/{InteractionsRouteConstants.Comments}/{{commentId:guid}}/{InteractionsRouteConstants.Likes}",
-                async (Guid commentId, ClaimsPrincipal user, IClaimsProvider claimsProvider, IDispatcher dispatcher) =>
+                async (
+                    Guid commentId,
+                    ClaimsPrincipal user,
+                    IClaimsProvider claimsProvider,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     Guid userId = claimsProvider.GetUserIdFromClaims(user: user);
 
                     var command = new PublicUnlikeArticleCommentCommand(CommentId: commentId, UserId: userId);
-                    PublicUnlikeArticleCommentResult result = await dispatcher.Send(request: command);
+                    PublicUnlikeArticleCommentResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicUnlikeArticleCommentResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);

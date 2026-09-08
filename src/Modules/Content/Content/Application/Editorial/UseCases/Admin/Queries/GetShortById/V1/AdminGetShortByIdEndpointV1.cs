@@ -38,10 +38,13 @@ public class AdminGetShortByIdEndpointV1 : ICarterModule
         group
             .MapGet(
                 "/{id:guid}",
-                async (Guid id, IDispatcher dispatcher) =>
+                async (Guid id, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var query = new AdminGetShortByIdQuery(Id: id);
-                    AdminGetShortByIdResult result = await dispatcher.Send(request: query);
+                    AdminGetShortByIdResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminGetShortByIdResponse(ShortVideo: result.ShortVideo);
                     return Results.Ok(response);

@@ -1,4 +1,4 @@
-using _116.Shared.Application.Configurations;
+using _116.Shared.Application.Configurations.Schemas;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -22,17 +22,14 @@ public class DataSeedingHostedService(IServiceProvider serviceProvider, ILogger<
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         using IServiceScope scope = serviceProvider.CreateScope();
-        List<IDataSeeder> seeders = scope.ServiceProvider.GetServices<IDataSeeder>().ToList();
+        List<IDataSeeder> seeders = [.. scope.ServiceProvider.GetServices<IDataSeeder>()];
 
         if (seeders.Count == 0)
         {
             return;
         }
 
-        var (host, port, db, user, pass) = AppEnvironment.Database();
-        await using var connection = new NpgsqlConnection(
-            $"Host={host};Port={port};Database={db};Username={user};Password={pass};"
-        );
+        await using var connection = new NpgsqlConnection(DatabaseEnv.ConnectionString());
         await connection.OpenAsync(cancellationToken);
 
         await using (NpgsqlCommand acquire = new($"SELECT pg_advisory_lock({SeedLockKey})", connection))

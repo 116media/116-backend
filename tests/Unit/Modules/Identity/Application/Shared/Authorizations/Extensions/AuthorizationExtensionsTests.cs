@@ -30,6 +30,7 @@ public class AuthorizationExtensionsTests
         services.AddLogging(); // Required for handlers
         services.AddAuthorization(); // Required for IAuthorizationHandler registration
         services.AddScoped(_ => Mock.Of<IAuthRepository>()); // Required for AccountStatusRequirementHandler
+        services.AddHttpContextAccessor(); // Required for the per-request account-status cache
 
         // Act
         services.AddIdentityModuleAuthorization();

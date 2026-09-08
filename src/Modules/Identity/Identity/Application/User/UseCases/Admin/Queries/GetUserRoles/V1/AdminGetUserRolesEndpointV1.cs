@@ -37,11 +37,14 @@ public class AdminGetUserRolesEndpointV1 : ICarterModule
         group
             .MapGet(
                 "{id:guid}/roles",
-                async (Guid id, IDispatcher dispatcher) =>
+                async (Guid id, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var query = new AdminGetUserRolesQuery(UserId: id);
 
-                    AdminGetUserRolesResult result = await dispatcher.Send(request: query);
+                    AdminGetUserRolesResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminGetUserRolesResponse(Roles: result.Roles);
                     return Results.Ok(value: response);

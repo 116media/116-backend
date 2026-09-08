@@ -49,7 +49,8 @@ public class AdminDecideTranslationRevisionEndpointV1 : ICarterModule
                     AdminDecideTranslationRevisionRequest request,
                     ClaimsPrincipal user,
                     IClaimsProvider claimsProvider,
-                    IDispatcher dispatcher
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
                 ) =>
                 {
                     Guid adminUserId = claimsProvider.GetUserIdFromClaims(user: user);
@@ -59,7 +60,10 @@ public class AdminDecideTranslationRevisionEndpointV1 : ICarterModule
                         Accept: request.Accept,
                         DecidedByUserId: adminUserId
                     );
-                    AdminDecideTranslationRevisionResult result = await dispatcher.Send(request: command);
+                    AdminDecideTranslationRevisionResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminDecideTranslationRevisionResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);

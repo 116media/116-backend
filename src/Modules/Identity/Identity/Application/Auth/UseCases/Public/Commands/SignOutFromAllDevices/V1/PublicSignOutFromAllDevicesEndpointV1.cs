@@ -43,13 +43,17 @@ public class PublicSignOutFromAllDevicesEndpointV1 : ICarterModule
                     ClaimsPrincipal user,
                     IClaimsProvider authProvider,
                     IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
                     ITokenDeliveryService tokenDelivery
                 ) =>
                 {
                     Guid userId = authProvider.GetUserIdFromClaims(user: user);
 
                     var command = new PublicSignOutFromAllDevicesCommand(UserId: userId);
-                    PublicSignOutFromAllDevicesResult result = await dispatcher.Send(request: command);
+                    PublicSignOutFromAllDevicesResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     if (tokenDelivery.IsWebClient())
                     {

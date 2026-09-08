@@ -35,10 +35,13 @@ public class PublicGetLyricsTranslationsEndpointV1 : ICarterModule
         group
             .MapGet(
                 $"/{{id}}/{EditorialRouteConstants.Translations}",
-                async (Guid id, IDispatcher dispatcher) =>
+                async (Guid id, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var query = new PublicGetLyricsTranslationsQuery(LyricsId: id);
-                    PublicGetLyricsTranslationsResult result = await dispatcher.Send(request: query);
+                    PublicGetLyricsTranslationsResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicGetLyricsTranslationsResponse(Translations: result.Translations);
                     return Results.Ok(response);

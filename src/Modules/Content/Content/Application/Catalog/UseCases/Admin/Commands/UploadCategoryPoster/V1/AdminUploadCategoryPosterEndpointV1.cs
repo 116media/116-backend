@@ -38,11 +38,14 @@ public class AdminUploadCategoryPosterEndpointV1 : ICarterModule
         group
             .MapPut(
                 "/{id}/poster",
-                async (string id, IFormFile? file, IDispatcher dispatcher) =>
+                async (string id, IFormFile? file, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var command = new AdminUploadCategoryPosterCommand(Id: id, File: file);
 
-                    AdminUploadCategoryPosterResult result = await dispatcher.Send(request: command);
+                    AdminUploadCategoryPosterResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminUploadCategoryPosterResponse(Category: result.Category);
                     return Results.Ok(response);

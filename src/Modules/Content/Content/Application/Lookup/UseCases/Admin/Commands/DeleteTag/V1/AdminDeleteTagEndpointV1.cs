@@ -37,10 +37,13 @@ public class AdminDeleteTagEndpointV1 : ICarterModule
         group
             .MapDelete(
                 "/{id}",
-                async (string id, IDispatcher dispatcher) =>
+                async (string id, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var command = new AdminDeleteTagCommand(Id: id);
-                    AdminDeleteTagResult result = await dispatcher.Send(request: command);
+                    AdminDeleteTagResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminDeleteTagResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(response);

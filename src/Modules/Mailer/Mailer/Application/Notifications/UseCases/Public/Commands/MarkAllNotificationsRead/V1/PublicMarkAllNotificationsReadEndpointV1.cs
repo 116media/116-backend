@@ -37,12 +37,20 @@ public class PublicMarkAllNotificationsReadEndpointV1 : ICarterModule
         group
             .MapPatch(
                 pattern: "read-all",
-                async (ClaimsPrincipal user, IClaimsProvider claims, IDispatcher dispatcher) =>
+                async (
+                    ClaimsPrincipal user,
+                    IClaimsProvider claims,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
                 {
                     Guid userId = claims.GetUserIdFromClaims(user: user);
 
                     var command = new PublicMarkAllNotificationsReadCommand(UserId: userId);
-                    PublicMarkAllNotificationsReadResult result = await dispatcher.Send(request: command);
+                    PublicMarkAllNotificationsReadResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new PublicMarkAllNotificationsReadResponse(MarkedCount: result.MarkedCount);
 

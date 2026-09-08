@@ -62,6 +62,7 @@ public class AdminCreateArticleEndpointV1 : ICarterModule
                     ClaimsPrincipal user,
                     IClaimsProvider claimsProvider,
                     IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
                     HttpContext httpContext
                 ) =>
                 {
@@ -76,7 +77,10 @@ public class AdminCreateArticleEndpointV1 : ICarterModule
                         OrderItemId: request.OrderItemId
                     );
 
-                    AdminCreateArticleResult result = await dispatcher.Send(request: command);
+                    AdminCreateArticleResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
 
                     var response = new AdminCreateArticleResponse(Article: result.Article);
                     Guid articleId = response.Article.Id;
