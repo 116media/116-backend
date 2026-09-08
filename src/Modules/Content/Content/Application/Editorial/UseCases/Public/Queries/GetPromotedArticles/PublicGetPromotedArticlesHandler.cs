@@ -2,7 +2,7 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.Services;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPromotedArticles;
@@ -12,11 +12,11 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPromoted
 /// </summary>
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="articleInteractionRepository">Repository for article interaction data access operations.</param>
-/// <param name="fileRepository">Repository for resolving file URLs.</param>
+/// <param name="fileStorage">Core's storage contract.</param>
 public class PublicGetPromotedArticlesHandler(
     IArticleRepository articleRepository,
     IArticleInteractionRepository articleInteractionRepository,
-    IFileRepository fileRepository
+    IFileStorageService fileStorage
 ) : IQueryHandler<PublicGetPromotedArticlesQuery, PublicGetPromotedArticlesResult>
 {
     /// <inheritdoc />
@@ -38,7 +38,7 @@ public class PublicGetPromotedArticlesHandler(
             );
 
         IReadOnlyList<PublicArticleSummaryDto> dtoList = await articles.ToPublicArticleSummaryDtosAsync(
-            fileRepository,
+            fileStorage,
             liked,
             bookmarked,
             cancellationToken
