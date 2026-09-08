@@ -2,9 +2,11 @@ using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Events;
-using _116.Identity.Contracts.Application;
-using _116.Mailer.Contracts.Application;
-using _116.Mailer.Contracts.Domain;
+using _116.Identity.Contracts.Application.DTOs;
+using _116.Identity.Contracts.Application.Services;
+using _116.Mailer.Contracts.Application.DTOs;
+using _116.Mailer.Contracts.Application.Services;
+using _116.Mailer.Contracts.Domain.Enums;
 using _116.Shared.Application.Localization;
 using _116.Shared.Application.Services;
 using Microsoft.Extensions.Logging;
@@ -20,15 +22,15 @@ namespace _116.Content.Application.Interactions.EventHandlers;
 /// </summary>
 /// <param name="articleRepository">Repository resolving the reply, its parent comment, and the article.</param>
 /// <param name="userLookupService">Lookup resolving the parent author and the replier by id.</param>
-/// <param name="mailer">Outbox mailer sending the reply notice.</param>
-/// <param name="notifier">Writer for the in-app notification row.</param>
+/// <param name="emailService">Outbox mailer sending the reply notice.</param>
+/// <param name="notificationService">Writer for the in-app notification row.</param>
 /// <param name="logger">Logger recording skipped deliveries.</param>
 public class CommentReplyAddedNotificationsHandler(
     IArticleRepository articleRepository,
     IArticleCommentRepository articleCommentRepository,
     IUserLookupService userLookupService,
-    IMailer mailer,
-    INotifier notifier,
+    IEmailService emailService,
+    INotificationService notificationService,
     ILogger<CommentReplyAddedNotificationsHandler> logger
 ) : IDomainEventHandler<CommentReplyAddedEvent>
 {
@@ -70,7 +72,7 @@ public class CommentReplyAddedNotificationsHandler(
             return;
         }
 
-        AuthorInfo? parentAuthor = await userLookupService.GetAuthorInfoByIdAsync(
+        AuthorDto? parentAuthor = await userLookupService.GetAuthorInfoByIdAsync(
             userId: parent.UserId,
             ct: cancellationToken
         );
@@ -90,9 +92,9 @@ public class CommentReplyAddedNotificationsHandler(
 
         if (parentAuthor.Email is not null)
         {
-            await mailer.EnqueueAsync(
+            await emailService.EnqueueAsync(
                 template: EnumEmailTemplate.CommentReply,
-                to: new EmailRecipient(Address: parentAuthor.Email, DisplayName: parentAuthor.UserName),
+                to: new EmailRecipientDto(Address: parentAuthor.Email, DisplayName: parentAuthor.UserName),
                 tokens: new Dictionary<string, string>
                 {
                     ["userName"] = parentAuthor.UserName,
@@ -110,7 +112,7 @@ public class CommentReplyAddedNotificationsHandler(
             logger.LogDebug("Comment reply email skipped: user {UserId} has no email address.", parent.UserId);
         }
 
-        await notifier.NotifyAsync(
+        await notificationService.NotifyAsync(
             userId: parent.UserId,
             type: EnumNotificationType.CommentReply,
             tokens: new Dictionary<string, string>
