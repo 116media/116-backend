@@ -2,9 +2,10 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Repositories;
-using _116.Core.Domain.Entities;
-using _116.Identity.Contracts.Application;
+using _116.Core.Contracts.Application.DTOs;
+using _116.Core.Contracts.Application.Services;
+using _116.Identity.Contracts.Application.DTOs;
+using _116.Identity.Contracts.Application.Services;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
 
@@ -18,12 +19,12 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Queries.GetVideoById
 /// </summary>
 /// <param name="videoRepository">Repository for video data access operations.</param>
 /// <param name="userLookup">Cross-module service for resolving author profiles.</param>
-/// <param name="fileRepository">Repository for resolving avatar file URLs.</param>
+/// <param name="fileStorage">Core's storage contract.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class AdminGetVideoByIdHandler(
     IVideoRepository videoRepository,
     IUserLookupService userLookup,
-    IFileRepository fileRepository,
+    IFileStorageService fileStorage,
     IMapper mapper
 ) : IQueryHandler<AdminGetVideoByIdQuery, AdminGetVideoByIdResult>
 {
@@ -35,9 +36,9 @@ public class AdminGetVideoByIdHandler(
             cancellationToken: cancellationToken
         );
 
-        var dto = await video.ToVideoDetailDtoAsync(mapper, fileRepository, cancellationToken);
+        var dto = await video.ToVideoDetailDtoAsync(mapper, fileStorage, cancellationToken);
 
-        AuthorInfo? authorInfo = await userLookup.GetAuthorInfoByIdAsync(userId: video.AuthorId, ct: cancellationToken);
+        AuthorDto? authorInfo = await userLookup.GetAuthorInfoByIdAsync(userId: video.AuthorId, ct: cancellationToken);
 
         AdminAuthorDto? author = null;
         if (authorInfo is not null)
@@ -45,7 +46,7 @@ public class AdminGetVideoByIdHandler(
             string? avatarUrl = null;
             if (authorInfo.AvatarFileId.HasValue)
             {
-                FileEntity? avatarFile = await fileRepository.GetByIdAsync(
+                FileReferenceDto? avatarFile = await fileStorage.ResolveAsync(
                     authorInfo.AvatarFileId.Value,
                     cancellationToken
                 );
