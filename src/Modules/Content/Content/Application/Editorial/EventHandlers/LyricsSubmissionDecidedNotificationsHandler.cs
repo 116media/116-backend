@@ -2,9 +2,11 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Domain.Events;
-using _116.Identity.Contracts.Application;
-using _116.Mailer.Contracts.Application;
-using _116.Mailer.Contracts.Domain;
+using _116.Identity.Contracts.Application.DTOs;
+using _116.Identity.Contracts.Application.Services;
+using _116.Mailer.Contracts.Application.DTOs;
+using _116.Mailer.Contracts.Application.Services;
+using _116.Mailer.Contracts.Domain.Enums;
 using _116.Shared.Application.Localization;
 using _116.Shared.Application.Services;
 using Microsoft.Extensions.Logging;
@@ -23,22 +25,22 @@ namespace _116.Content.Application.Editorial.EventHandlers;
 /// <param name="userLookupService">Lookup resolving the submitter's name and address by id.</param>
 /// <param name="submissionRepository">Repository resolving the decided submission.</param>
 /// <param name="lyricsRepository">Repository resolving the published lyrics page on approval.</param>
-/// <param name="mailer">Outbox mailer sending the decision notice.</param>
-/// <param name="notifier">Writer for the in-app notification row.</param>
+/// <param name="emailService">Outbox mailer sending the decision notice.</param>
+/// <param name="notificationService">Writer for the in-app notification row.</param>
 /// <param name="logger">Logger recording skipped deliveries.</param>
 public class LyricsSubmissionDecidedNotificationsHandler(
     IUserLookupService userLookupService,
     ILyricsSubmissionRepository submissionRepository,
     ILyricsRepository lyricsRepository,
-    IMailer mailer,
-    INotifier notifier,
+    IEmailService emailService,
+    INotificationService notificationService,
     ILogger<LyricsSubmissionDecidedNotificationsHandler> logger
 ) : IDomainEventHandler<LyricsSubmissionDecidedEvent>
 {
     /// <inheritdoc />
     public async Task Handle(LyricsSubmissionDecidedEvent domainEvent, CancellationToken cancellationToken = default)
     {
-        AuthorInfo? submitter = await userLookupService.GetAuthorInfoByIdAsync(
+        AuthorDto? submitter = await userLookupService.GetAuthorInfoByIdAsync(
             userId: domainEvent.SubmittedByUserId,
             ct: cancellationToken
         );
@@ -71,9 +73,9 @@ public class LyricsSubmissionDecidedNotificationsHandler(
 
         if (submitter.Email is not null)
         {
-            await mailer.EnqueueAsync(
+            await emailService.EnqueueAsync(
                 template: EnumEmailTemplate.SubmissionDecided,
-                to: new EmailRecipient(Address: submitter.Email, DisplayName: submitter.UserName),
+                to: new EmailRecipientDto(Address: submitter.Email, DisplayName: submitter.UserName),
                 tokens: new Dictionary<string, string>
                 {
                     ["userName"] = submitter.UserName,
@@ -112,7 +114,7 @@ public class LyricsSubmissionDecidedNotificationsHandler(
             }
         }
 
-        await notifier.NotifyAsync(
+        await notificationService.NotifyAsync(
             userId: domainEvent.SubmittedByUserId,
             type: EnumNotificationType.SubmissionDecided,
             tokens: notificationTokens,
