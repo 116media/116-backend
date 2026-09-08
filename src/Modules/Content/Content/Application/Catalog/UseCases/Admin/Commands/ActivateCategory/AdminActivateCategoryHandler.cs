@@ -3,7 +3,7 @@ using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.Services;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
 
@@ -14,13 +14,13 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.ActivateCateg
 /// </summary>
 /// <param name="categoryRepository">Repository for category data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="fileRepository">Repository for file storage operations.</param>
+/// <param name="fileStorage">Core's storage contract.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminActivateCategoryHandler(
     ICategoryRepository categoryRepository,
     IContentUnitOfWork unitOfWork,
-    IFileRepository fileRepository,
+    IFileStorageService fileStorage,
     IMapper mapper,
     ContentI18n i18n
 ) : ICommandHandler<AdminActivateCategoryCommand, AdminActivateCategoryResult>
@@ -54,7 +54,7 @@ public class AdminActivateCategoryHandler(
             cancellationToken: cancellationToken
         );
 
-        var dto = await updated.ToCategoryDtoAsync(mapper, fileRepository, cancellationToken);
+        var dto = await updated.ToCategoryDtoAsync(mapper, fileStorage, cancellationToken);
         return new AdminActivateCategoryResult(Category: dto);
     }
 }
