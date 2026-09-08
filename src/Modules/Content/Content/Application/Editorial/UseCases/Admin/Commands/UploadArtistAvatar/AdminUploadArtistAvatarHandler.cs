@@ -1,8 +1,9 @@
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Services;
-using _116.Core.Domain.Entities;
+using _116.Core.Contracts.Application.DTOs;
+using _116.Core.Contracts.Application.Services;
+using _116.Core.Contracts.Domain.Enums;
 using _116.Shared.Contracts.Application.CQRS;
 using Microsoft.AspNetCore.Http;
 
@@ -10,15 +11,14 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadArtis
 
 /// <summary>
 /// Handles the <see cref="AdminUploadArtistAvatarCommand" /> to upload or replace an artist
-/// profile's avatar image. The avatar file is tracked via <see cref="FileEntity" /> in
+/// profile's avatar image. The avatar file is tracked via <see cref="FileReferenceDto" /> in
 /// the Core module.
 /// </summary>
 /// <param name="artistRepository">Repository for artist profile data access operations.</param>
-/// <param name="fileUploadService">Uploads and replaces stored assets.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 public class AdminUploadArtistAvatarHandler(
     IArtistRepository artistRepository,
-    IFileUploadService fileUploadService,
+    IFileStorageService fileStorage,
     IContentUnitOfWork unitOfWork
 ) : ICommandHandler<AdminUploadArtistAvatarCommand, AdminUploadArtistAvatarResult>
 {
@@ -35,25 +35,24 @@ public class AdminUploadArtistAvatarHandler(
 
         IFormFile file = command.File!;
 
-        FileEntity uploaded = await fileUploadService.UploadImageAsync(
+        StoredFile uploaded = await fileStorage.UploadAsync(
             file: file,
             publicId: command.ArtistId.ToString(),
             folder: "content/artist-avatars",
-            originalFileName: file.FileName,
-            mimeType: file.ContentType,
+            kind: EnumStoredFileKind.Image,
             cancellationToken: cancellationToken
         );
 
         await unitOfWork.ExecuteInTransactionAsync(
             async ct =>
             {
-                await fileUploadService.RecordAsync(
+                await fileStorage.RecordAsync(
                     file: uploaded,
                     supersededFileId: artist.AvatarFileId,
                     cancellationToken: ct
                 );
 
-                artist.SetAvatarFileId(avatarFileId: uploaded.Id);
+                artist.SetAvatarFileId(avatarFileId: uploaded.Reference.Id);
 
                 artistRepository.Update(artist: artist);
             },
@@ -61,8 +60,8 @@ public class AdminUploadArtistAvatarHandler(
         );
 
         return new AdminUploadArtistAvatarResult(
-            AvatarUrl: uploaded.StorageUrl,
-            AvatarStorageKey: uploaded.StorageKey!
+            AvatarUrl: uploaded.Reference.StorageUrl,
+            AvatarStorageKey: uploaded.Reference.StorageKey!
         );
     }
 }
