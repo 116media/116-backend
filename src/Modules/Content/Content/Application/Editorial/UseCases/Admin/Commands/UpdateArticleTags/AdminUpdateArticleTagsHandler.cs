@@ -1,8 +1,8 @@
 using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Shared.Helpers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Helpers;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArticleTags;
