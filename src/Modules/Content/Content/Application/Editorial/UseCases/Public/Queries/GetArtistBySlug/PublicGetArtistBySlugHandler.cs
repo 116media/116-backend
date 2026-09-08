@@ -3,7 +3,7 @@ using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.Services;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
 
@@ -16,13 +16,13 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetArtistBy
 /// <param name="artistRepository">Repository for artist profile data access operations.</param>
 /// <param name="lyricsRepository">Repository for lyrics data access operations.</param>
 /// <param name="videoRepository">Repository for video data access operations.</param>
-/// <param name="fileRepository">Repository for resolving avatar, cover, and thumbnail file URLs.</param>
+/// <param name="fileStorage">Core's storage contract.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class PublicGetArtistBySlugHandler(
     IArtistRepository artistRepository,
     ILyricsRepository lyricsRepository,
     IVideoRepository videoRepository,
-    IFileRepository fileRepository,
+    IFileStorageService fileStorage,
     ContentI18n i18n
 ) : IQueryHandler<PublicGetArtistBySlugQuery, PublicGetArtistBySlugResult>
 {
@@ -80,15 +80,15 @@ public class PublicGetArtistBySlugHandler(
             cancellationToken: cancellationToken
         );
 
-        ArtistDto artistDto = await artist.ToArtistDtoAsync(fileRepository, cancellationToken, socialLinks);
+        ArtistDto artistDto = await artist.ToArtistDtoAsync(fileStorage, cancellationToken, socialLinks);
 
         IReadOnlyList<PublicLyricsSummaryDto> lyricsDtos = await lyricsList
             .AsReadOnly()
-            .ToPublicLyricsSummaryDtosAsync(fileRepository, cancellationToken);
+            .ToPublicLyricsSummaryDtosAsync(fileStorage, cancellationToken);
 
         IReadOnlyList<PublicVideoSummaryDto> videoDtos = await videoList
             .AsReadOnly()
-            .ToPublicVideoSummaryDtosAsync(fileRepository, cancellationToken);
+            .ToPublicVideoSummaryDtosAsync(fileStorage, cancellationToken);
 
         var lyricsResult = new PaginatedResult<PublicLyricsSummaryDto>(
             pageIndex: lyricsPageIndex,
