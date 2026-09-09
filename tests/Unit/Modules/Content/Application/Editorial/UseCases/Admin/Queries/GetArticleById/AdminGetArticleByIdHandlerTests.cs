@@ -2,8 +2,11 @@ using _116.Content.Application.Editorial.UseCases.Admin.Queries.GetArticleById;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.DTOs;
+using _116.Core.Contracts.Application.Services;
 using _116.Core.Domain.Entities;
-using _116.Identity.Contracts.Application;
+using _116.Identity.Contracts.Application.DTOs;
+using _116.Identity.Contracts.Application.Services;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
@@ -24,7 +27,7 @@ public class AdminGetArticleByIdHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<IArticleRepository> _articleRepositoryMock;
     private readonly Mock<IUserLookupService> _userLookupMock;
-    private readonly Mock<IFileRepository> _fileRepositoryMock;
+    private readonly Mock<IFileStorageService> _fileStorageMock;
     private readonly AdminGetArticleByIdHandler _handler;
 
     private static readonly Guid CategoryId = Guid.NewGuid();
@@ -33,11 +36,11 @@ public class AdminGetArticleByIdHandlerTests : BaseContentHandlerTest
     {
         _articleRepositoryMock = MockArticleRepository.Create();
         _userLookupMock = MockUserLookupService.Create();
-        _fileRepositoryMock = MockFileRepository.Create();
+        _fileStorageMock = MockFileStorageService.Create();
         _handler = new AdminGetArticleByIdHandler(
             _articleRepositoryMock.Object,
             _userLookupMock.Object,
-            _fileRepositoryMock.Object,
+            _fileStorageMock.Object,
             Mapper
         );
     }
@@ -67,7 +70,7 @@ public class AdminGetArticleByIdHandlerTests : BaseContentHandlerTest
         var query = new AdminGetArticleByIdQuery(Id: article.Id);
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
 
-        var authorInfo = new AuthorInfo(
+        var authorInfo = new AuthorDto(
             TestConstants.User.ValidUserName,
             TestConstants.User.ValidEmail,
             null,
@@ -97,7 +100,7 @@ public class AdminGetArticleByIdHandlerTests : BaseContentHandlerTest
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
 
         Guid avatarFileId = Guid.NewGuid();
-        var authorInfo = new AuthorInfo(
+        var authorInfo = new AuthorDto(
             TestConstants.User.ValidUserName,
             TestConstants.User.ValidEmail,
             avatarFileId,
@@ -107,8 +110,8 @@ public class AdminGetArticleByIdHandlerTests : BaseContentHandlerTest
             .Setup(x => x.GetAuthorInfoByIdAsync(article.AuthorId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authorInfo);
 
-        FileEntity avatarFile = FileFactory.CreateWithId(avatarFileId);
-        _fileRepositoryMock.SetupGetById(avatarFile);
+        FileReferenceDto avatarFile = FileReferenceDtoFactory.CreateWithId(avatarFileId);
+        _fileStorageMock.SetupResolve(avatarFile);
 
         // Act
         AdminGetArticleByIdResult result = await _handler.Handle(query, CancellationToken.None);
@@ -129,14 +132,14 @@ public class AdminGetArticleByIdHandlerTests : BaseContentHandlerTest
 
         _userLookupMock
             .Setup(x => x.GetAuthorInfoByIdAsync(article.AuthorId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((AuthorInfo?)null);
+            .ReturnsAsync((AuthorDto?)null);
 
         // Act
         AdminGetArticleByIdResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
         result.Article.Author.Should().BeNull();
-        _fileRepositoryMock.Verify(x => x.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+        _fileStorageMock.Verify(x => x.ResolveAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -147,7 +150,7 @@ public class AdminGetArticleByIdHandlerTests : BaseContentHandlerTest
         var query = new AdminGetArticleByIdQuery(Id: article.Id);
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
 
-        var authorInfo = new AuthorInfo(TestConstants.User.ValidUserName, TestConstants.User.ValidEmail, null, "Admin");
+        var authorInfo = new AuthorDto(TestConstants.User.ValidUserName, TestConstants.User.ValidEmail, null, "Admin");
         _userLookupMock
             .Setup(x => x.GetAuthorInfoByIdAsync(article.AuthorId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authorInfo);
@@ -158,7 +161,7 @@ public class AdminGetArticleByIdHandlerTests : BaseContentHandlerTest
         // Assert
         result.Article.Author.Should().NotBeNull();
         result.Article.Author!.AvatarUrl.Should().BeNull();
-        _fileRepositoryMock.Verify(x => x.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+        _fileStorageMock.Verify(x => x.ResolveAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     #endregion
