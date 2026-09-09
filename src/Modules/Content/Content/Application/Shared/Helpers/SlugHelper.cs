@@ -1,7 +1,7 @@
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace _116.Core.Application.Shared.Helpers;
+namespace _116.Content.Application.Shared.Helpers;
 
 /// <summary>
 /// Provides compile-time slug generation for converting display names
