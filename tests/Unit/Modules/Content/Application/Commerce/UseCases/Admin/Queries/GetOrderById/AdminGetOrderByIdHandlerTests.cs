@@ -3,8 +3,10 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.DTOs;
+using _116.Core.Contracts.Application.Services;
 using _116.Core.Domain.Entities;
-using _116.Identity.Contracts.Application;
+using _116.Identity.Contracts.Application.Services;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Builders.Entities.Content;
 using _116.Tests.Fixtures.Constants;
@@ -26,18 +28,18 @@ namespace _116.Unit.Tests.Modules.Content.Application.Commerce.UseCases.Admin.Qu
 public class AdminGetOrderByIdHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<IContentOrderRepository> _orderRepositoryMock;
-    private readonly Mock<IFileRepository> _fileRepositoryMock;
+    private readonly Mock<IFileStorageService> _fileStorageMock;
     private readonly Mock<IUserLookupService> _userLookupMock;
     private readonly AdminGetOrderByIdHandler _handler;
 
     public AdminGetOrderByIdHandlerTests()
     {
         _orderRepositoryMock = MockContentOrderRepository.Create();
-        _fileRepositoryMock = MockFileRepository.Create();
+        _fileStorageMock = MockFileStorageService.Create();
         _userLookupMock = MockUserLookupService.Create();
         _handler = new AdminGetOrderByIdHandler(
             _orderRepositoryMock.Object,
-            _fileRepositoryMock.Object,
+            _fileStorageMock.Object,
             Mapper,
             _userLookupMock.Object,
             TestErrorsFactory.CreateContentI18n()
@@ -77,10 +79,10 @@ public class AdminGetOrderByIdHandlerTests : BaseContentHandlerTest
         Guid verifierId = payment.VerifiedById!.Value;
         ContentOrderEntity order = new ContentOrderBuilder().WithId(orderId).WithPayment(payment).Build();
 
-        FileEntity proofFile = FileFactory.CreateWithId(proofFileId);
+        FileReferenceDto proofFile = FileReferenceDtoFactory.CreateWithId(proofFileId);
 
         _orderRepositoryMock.SetupGetByIdWithItems(order);
-        _fileRepositoryMock.SetupGetById(proofFile);
+        _fileStorageMock.SetupResolve(proofFile);
         _userLookupMock.SetupGetUserNameById(verifierId, TestConstants.User.ValidUserName);
 
         var query = new AdminGetOrderByIdQuery(Id: orderId);
@@ -106,10 +108,10 @@ public class AdminGetOrderByIdHandlerTests : BaseContentHandlerTest
             .Build();
         ContentOrderEntity order = new ContentOrderBuilder().WithId(orderId).WithPayment(payment).Build();
 
-        FileEntity proofFile = FileFactory.CreateWithId(proofFileId);
+        FileReferenceDto proofFile = FileReferenceDtoFactory.CreateWithId(proofFileId);
 
         _orderRepositoryMock.SetupGetByIdWithItems(order);
-        _fileRepositoryMock.SetupGetById(proofFile);
+        _fileStorageMock.SetupResolve(proofFile);
 
         var query = new AdminGetOrderByIdQuery(Id: orderId);
 
