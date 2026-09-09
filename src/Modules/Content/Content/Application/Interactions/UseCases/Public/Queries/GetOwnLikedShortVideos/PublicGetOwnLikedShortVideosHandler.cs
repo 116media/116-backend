@@ -2,7 +2,7 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.Services;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
@@ -14,7 +14,7 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetOwnLi
 /// </summary>
 public class PublicGetOwnLikedShortVideosHandler(
     IShortVideoRepository shortVideoRepository,
-    IFileRepository fileRepository,
+    IFileStorageService fileStorage,
     IMapper mapper
 ) : IQueryHandler<PublicGetOwnLikedShortVideosQuery, PublicGetOwnLikedShortVideosResult>
 {
@@ -38,7 +38,7 @@ public class PublicGetOwnLikedShortVideosHandler(
             await shortVideoRepository.GetLikedAndBookmarkedIdsAsync(query.UserId, ids, cancellationToken);
         IReadOnlyList<PublicShortVideoDto> dtos = await shortVideos.ToPublicShortVideoDtosAsync(
             mapper,
-            fileRepository,
+            fileStorage,
             liked,
             bookmarked,
             cancellationToken
