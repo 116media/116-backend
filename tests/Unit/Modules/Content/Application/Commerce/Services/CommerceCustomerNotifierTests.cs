@@ -1,8 +1,9 @@
 using _116.Content.Application.Commerce.Services;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Mailer.Contracts.Application;
-using _116.Mailer.Contracts.Domain;
+using _116.Mailer.Contracts.Application.DTOs;
+using _116.Mailer.Contracts.Application.Services;
+using _116.Mailer.Contracts.Domain.Enums;
 using _116.Tests.Fixtures.Factories.Content;
 using AwesomeAssertions;
 using Moq;
@@ -17,7 +18,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Commerce.Services;
 /// </summary>
 public class CommerceCustomerNotifierTests
 {
-    private readonly Mock<IMailer> _mailerMock = new();
+    private readonly Mock<IEmailService> _mailerMock = new();
     private readonly Mock<ICustomerRepository> _customerRepositoryMock = new();
     private readonly CommerceCustomerNotifier _notifier;
 
@@ -106,7 +107,7 @@ public class CommerceCustomerNotifierTests
             x =>
                 x.EnqueueAsync(
                     EnumEmailTemplate.OrderCancelled,
-                    It.Is<EmailRecipient>(recipient => recipient.Address == "label@example.com"),
+                    It.Is<EmailRecipientDto>(recipient => recipient.Address == "label@example.com"),
                     It.Is<IReadOnlyDictionary<string, string>>(tokens =>
                         tokens["orderReference"] == CommerceCustomerNotifier.OrderReference(order.Id)
                     ),
