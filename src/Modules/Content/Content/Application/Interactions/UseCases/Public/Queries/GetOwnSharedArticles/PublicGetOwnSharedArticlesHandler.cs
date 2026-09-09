@@ -1,7 +1,7 @@
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
-using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.Services;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
 
@@ -12,7 +12,7 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetOwnSh
 /// </summary>
 public class PublicGetOwnSharedArticlesHandler(
     IArticleInteractionRepository articleInteractionRepository,
-    IFileRepository fileRepository
+    IFileStorageService fileStorage
 ) : IQueryHandler<PublicGetOwnSharedArticlesQuery, PublicGetOwnSharedArticlesResult>
 {
     /// <inheritdoc />
@@ -42,7 +42,7 @@ public class PublicGetOwnSharedArticlesHandler(
         foreach (ArticleActivity activity in activities)
         {
             PublicArticleSummaryDto article = await activity.Article.ToPublicArticleSummaryDtoAsync(
-                fileRepository,
+                fileStorage,
                 cancellationToken
             );
             article = article with
