@@ -4,12 +4,15 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.Services;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Factories.Core;
 using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
+using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -23,18 +26,18 @@ public class AdminSetExclusiveCategoryHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<ICategoryRepository> _categoryRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
-    private readonly Mock<IFileRepository> _fileRepositoryMock;
+    private readonly Mock<IFileStorageService> _fileStorageMock;
     private readonly AdminSetExclusiveCategoryHandler _handler;
 
     public AdminSetExclusiveCategoryHandlerTests()
     {
         _categoryRepositoryMock = MockCategoryRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _fileRepositoryMock = MockFileRepository.Create();
+        _fileStorageMock = MockFileStorageService.Create();
         _handler = new AdminSetExclusiveCategoryHandler(
             _categoryRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            _fileRepositoryMock.Object,
+            _fileStorageMock.Object,
             Mapper,
             TestErrorsFactory.CreateContentI18n()
         );
