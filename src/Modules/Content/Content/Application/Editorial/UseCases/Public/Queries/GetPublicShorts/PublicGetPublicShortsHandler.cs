@@ -50,7 +50,7 @@ public class PublicGetPublicShortsHandler(
                 cancellationToken: cancellationToken
             );
 
-        IReadOnlyList<ShortVideoDto> dtoList = await shortVideos.ToShortVideoDtosAsync(
+        IReadOnlyList<PublicShortVideoDto> dtoList = await shortVideos.ToPublicShortVideoDtosAsync(
             mapper,
             userLookup,
             fileRepository,
@@ -59,7 +59,7 @@ public class PublicGetPublicShortsHandler(
             cancellationToken
         );
 
-        var paginatedResult = new PaginatedResult<ShortVideoDto>(
+        var paginatedResult = new PaginatedResult<PublicShortVideoDto>(
             pageIndex: pageIndex,
             pageSize: pageSize,
             count: totalCount,

@@ -15,7 +15,7 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPromoted
 /// Response model for listing promoted videos.
 /// </summary>
 /// <param name="Videos">The list of promoted video summary DTOs.</param>
-public record PublicGetPromotedVideosResponse(IReadOnlyList<VideoSummaryDto> Videos);
+public record PublicGetPromotedVideosResponse(IReadOnlyList<PublicVideoSummaryDto> Videos);
 
 /// <summary>
 /// Defines the public get promoted videos endpoint.

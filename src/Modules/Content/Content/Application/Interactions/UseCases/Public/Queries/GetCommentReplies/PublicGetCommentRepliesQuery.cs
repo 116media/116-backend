@@ -20,4 +20,4 @@ public record PublicGetCommentRepliesQuery(Guid CommentId, PaginatedRequest Pagi
 /// Result of the <see cref="PublicGetCommentRepliesQuery" /> containing paginated replies.
 /// </summary>
 /// <param name="Replies">Paginated reply DTOs.</param>
-public record PublicGetCommentRepliesResult(PaginatedResult<ArticleCommentDto> Replies);
+public record PublicGetCommentRepliesResult(PaginatedResult<PublicArticleCommentDto> Replies);

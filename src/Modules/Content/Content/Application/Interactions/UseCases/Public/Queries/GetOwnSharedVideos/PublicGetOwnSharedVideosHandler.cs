@@ -5,18 +5,14 @@ using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
-using MapsterMapper;
 
 namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetOwnSharedVideos;
 
 /// <summary>
 /// Handles the current-user shared-video collection query.
 /// </summary>
-public class PublicGetOwnSharedVideosHandler(
-    IVideoRepository videoRepository,
-    IFileRepository fileRepository,
-    IMapper mapper
-) : IQueryHandler<PublicGetOwnSharedVideosQuery, PublicGetOwnSharedVideosResult>
+public class PublicGetOwnSharedVideosHandler(IVideoRepository videoRepository, IFileRepository fileRepository)
+    : IQueryHandler<PublicGetOwnSharedVideosQuery, PublicGetOwnSharedVideosResult>
 {
     /// <inheritdoc />
     public async Task<PublicGetOwnSharedVideosResult> Handle(
@@ -39,10 +35,10 @@ public class PublicGetOwnSharedVideosHandler(
             cancellationToken
         );
 
-        IReadOnlyList<VideoSummaryDto> videoDtos = activities
+        IReadOnlyList<PublicVideoSummaryDto> videoDtos = activities
             .Select(activity => activity.Video)
             .ToList()
-            .ToVideoSummaryDtos(mapper, files);
+            .ToPublicVideoSummaryDtos(files);
 
         IReadOnlyList<UserVideoActivityDto> items = activities
             .Select(

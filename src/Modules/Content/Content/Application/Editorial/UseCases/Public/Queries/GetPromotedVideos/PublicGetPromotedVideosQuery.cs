@@ -23,4 +23,4 @@ public record PublicGetPromotedVideosQuery() : IQuery<PublicGetPromotedVideosRes
 /// Result of the <see cref="PublicGetPromotedVideosQuery" /> containing promoted video summaries.
 /// </summary>
 /// <param name="Videos">The list of promoted video summary DTOs.</param>
-public record PublicGetPromotedVideosResult(IReadOnlyList<VideoSummaryDto> Videos);
+public record PublicGetPromotedVideosResult(IReadOnlyList<PublicVideoSummaryDto> Videos);

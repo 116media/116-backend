@@ -232,7 +232,7 @@ public static class LyricsMapper
 
         return dto with
         {
-            Author = new AuthorDto(
+            Author = new AdminAuthorDto(
                 UserName: authorInfo.UserName,
                 Email: authorInfo.Email,
                 AvatarUrl: avatarUrl,
@@ -259,6 +259,135 @@ public static class LyricsMapper
             results.Add(await entity.ToLyricsDetailDtoAsync(mapper, userLookup, fileRepository, ct));
         }
         return results;
+    }
+
+    /// <summary>
+    /// Maps a <see cref="LyricsEntity" /> to its public card projection from an already
+    /// resolved cover URL. Performs no IO — batch mappings resolve files up front.
+    /// </summary>
+    public static PublicLyricsSummaryDto ToPublicLyricsSummaryDto(this LyricsEntity entity, string? coverImageUrl)
+    {
+        return new PublicLyricsSummaryDto(
+            entity.Id,
+            entity.CategoryId,
+            entity.Category != null ? entity.Category.Name : string.Empty,
+            entity.SongTitle,
+            entity.ArtistName,
+            entity.Slug,
+            entity.Language,
+            entity.VideoId,
+            coverImageUrl,
+            entity.PublishedAt,
+            entity.ViewCount,
+            entity.LikeCount,
+            entity.ShareCount
+        );
+    }
+
+    /// <summary>
+    /// Maps a list of lyrics to their public card projection, cover URLs resolved in one
+    /// batch. Pass empty ids for an anonymous request.
+    /// </summary>
+    public static async Task<IReadOnlyList<PublicLyricsSummaryDto>> ToPublicLyricsSummaryDtosAsync(
+        this IReadOnlyList<LyricsEntity> entities,
+        IFileRepository fileRepository,
+        IReadOnlySet<Guid> likedLyricsIds,
+        CancellationToken ct = default
+    )
+    {
+        IReadOnlyDictionary<Guid, FileEntity> files = await fileRepository.GetByIdsAsync(
+            entities.Where(e => e.CoverImageFileId.HasValue).Select(e => e.CoverImageFileId!.Value).Distinct().ToList(),
+            ct
+        );
+
+        return entities
+            .Select(entity =>
+                entity.ToPublicLyricsSummaryDto(
+                    coverImageUrl: entity.CoverImageFileId.HasValue
+                        ? files.GetValueOrDefault(entity.CoverImageFileId.Value)?.StorageUrl
+                        : null
+                ) with
+                {
+                    IsLiked = likedLyricsIds.Contains(entity.Id),
+                }
+            )
+            .ToList();
+    }
+
+    /// <summary>
+    /// Maps a list of lyrics to their public card projection, cover URLs resolved in one
+    /// batch. <c>IsLiked</c> stays false on every item — anonymous requests.
+    /// </summary>
+    public static async Task<IReadOnlyList<PublicLyricsSummaryDto>> ToPublicLyricsSummaryDtosAsync(
+        this IReadOnlyList<LyricsEntity> entities,
+        IFileRepository fileRepository,
+        CancellationToken ct = default
+    )
+    {
+        return await entities.ToPublicLyricsSummaryDtosAsync(fileRepository, likedLyricsIds: new HashSet<Guid>(), ct);
+    }
+
+    /// <summary>
+    /// Maps a <see cref="LyricsEntity" /> to its public detail projection, resolving the cover
+    /// URL and the author's public profile from the Identity module.
+    /// </summary>
+    public static async Task<PublicLyricsDetailDto> ToPublicLyricsDetailDtoAsync(
+        this LyricsEntity entity,
+        IMapper mapper,
+        IUserLookupService userLookup,
+        IFileRepository fileRepository,
+        CancellationToken ct = default,
+        bool isLiked = false
+    )
+    {
+        string? coverImageUrl = await ResolveCoverImageUrlAsync(entity, fileRepository, ct);
+
+        var dto = new PublicLyricsDetailDto(
+            entity.Id,
+            entity.CategoryId,
+            entity.Category != null ? entity.Category.Name : string.Empty,
+            entity.SongTitle,
+            entity.ArtistName,
+            entity.Slug,
+            entity.LyricsText,
+            entity.Language,
+            entity.VideoId,
+            entity.PublishedAt,
+            entity.MetaTitle,
+            entity.MetaDescription,
+            coverImageUrl,
+            entity.Album,
+            entity.ReleaseYear,
+            entity.Label,
+            entity.Songwriter,
+            entity.Producer,
+            mapper.Map<IReadOnlyList<TagDto>>(entity.Tags),
+            entity.ViewCount,
+            entity.LikeCount,
+            entity.ShareCount
+        )
+        {
+            IsLiked = isLiked,
+        };
+
+        AuthorInfo? authorInfo = await userLookup.GetAuthorInfoByIdAsync(userId: entity.AuthorId, ct: ct);
+
+        if (authorInfo is null)
+        {
+            return dto;
+        }
+
+        string? avatarUrl = null;
+        if (authorInfo.AvatarFileId.HasValue)
+        {
+            FileEntity? avatarFile = await fileRepository.GetByIdAsync(authorInfo.AvatarFileId.Value, ct);
+            avatarUrl = avatarFile?.StorageUrl;
+        }
+
+        return dto with
+        {
+            Author = new PublicAuthorDto(UserName: authorInfo.UserName, AvatarUrl: avatarUrl),
+        };
     }
 
     /// <summary>

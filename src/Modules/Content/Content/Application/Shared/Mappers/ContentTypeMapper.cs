@@ -45,4 +45,22 @@ public static class ContentTypeMapper
     {
         return mapper.Map<IReadOnlyList<ContentTypeDto>>(entities);
     }
+
+    /// <summary>
+    /// Maps a <see cref="ContentTypeEntity" /> to its public projection.
+    /// </summary>
+    public static PublicContentTypeDto ToPublicContentTypeDto(this ContentTypeEntity entity)
+    {
+        return new PublicContentTypeDto(entity.Id, entity.Name);
+    }
+
+    /// <summary>
+    /// Maps a list of content types to their public projection.
+    /// </summary>
+    public static IReadOnlyList<PublicContentTypeDto> ToPublicContentTypeDtos(
+        this IReadOnlyList<ContentTypeEntity> entities
+    )
+    {
+        return entities.Select(entity => entity.ToPublicContentTypeDto()).ToList();
+    }
 }

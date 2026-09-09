@@ -51,7 +51,7 @@ public class PublicGetPublicShortBySlugHandler(
             isBookmarked = await shortVideoRepository.HasBookmarkedAsync(userId, shortVideo.Id, cancellationToken);
         }
 
-        ShortVideoDto dto = await shortVideo.ToShortVideoDtoAsync(
+        PublicShortVideoDto dto = await shortVideo.ToPublicShortVideoDtoAsync(
             mapper,
             userLookup,
             fileRepository,

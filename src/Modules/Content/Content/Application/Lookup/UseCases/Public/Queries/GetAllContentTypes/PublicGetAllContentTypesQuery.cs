@@ -23,4 +23,4 @@ public record PublicGetAllContentTypesQuery : IQuery<PublicGetAllContentTypesRes
 /// Result of the <see cref="PublicGetAllContentTypesQuery" /> containing all content types.
 /// </summary>
 /// <param name="ContentTypes">The list of all content types.</param>
-public record PublicGetAllContentTypesResult(IReadOnlyList<ContentTypeDto> ContentTypes);
+public record PublicGetAllContentTypesResult(IReadOnlyList<PublicContentTypeDto> ContentTypes);

@@ -17,4 +17,4 @@ public record PublicAddCommentReplyCommand(Guid ArticleId, Guid ParentCommentId,
 /// Result of the <see cref="PublicAddCommentReplyCommand" />.
 /// </summary>
 /// <param name="Reply">The newly created reply DTO, with its author resolved.</param>
-public record PublicAddCommentReplyResult(ArticleCommentDto Reply);
+public record PublicAddCommentReplyResult(PublicArticleCommentDto Reply);

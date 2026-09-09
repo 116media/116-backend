@@ -29,7 +29,7 @@ public record PublicGetVideoFeedQuery : IQuery<PublicGetVideoFeedResult>, ICache
 /// </summary>
 /// <param name="Category">The pinned category metadata.</param>
 /// <param name="Videos">Up to the section limit of latest published videos in the category, newest first.</param>
-public record VideoFeedSectionDto(CategoryDto Category, IReadOnlyList<VideoSummaryDto> Videos);
+public record VideoFeedSectionDto(CategoryDto Category, IReadOnlyList<PublicVideoSummaryDto> Videos);
 
 /// <summary>
 /// Result of the <see cref="PublicGetVideoFeedQuery" />.

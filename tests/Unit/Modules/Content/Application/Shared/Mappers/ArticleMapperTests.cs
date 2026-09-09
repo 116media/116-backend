@@ -748,46 +748,11 @@ public class ArticleMapperTests : BaseContentHandlerTest
 
     #endregion
 
-    #region ToArticleCommentDto — body nulling on deleted comments
+
+    #region ToPublicArticleCommentDtos — list mapping
 
     [Fact]
-    public void ToArticleCommentDto_WhenNotDeleted_ShouldReturnBody()
-    {
-        // Arrange
-        Guid articleId = Guid.NewGuid();
-        Guid userId = Guid.NewGuid();
-        ArticleCommentEntity comment = ArticleCommentFactory.Create(articleId, userId);
-
-        // Act
-        ArticleCommentDto dto = comment.ToArticleCommentDto(Mapper);
-
-        // Assert
-        dto.Body.Should().NotBeNull();
-        dto.IsDeleted.Should().BeFalse();
-    }
-
-    [Fact]
-    public void ToArticleCommentDto_WhenDeleted_ShouldReturnNullBody()
-    {
-        // Arrange
-        Guid articleId = Guid.NewGuid();
-        Guid userId = Guid.NewGuid();
-        ArticleCommentEntity comment = ArticleCommentFactory.CreateDeleted(articleId, userId);
-
-        // Act
-        ArticleCommentDto dto = comment.ToArticleCommentDto(Mapper);
-
-        // Assert
-        dto.Body.Should().BeNull();
-        dto.IsDeleted.Should().BeTrue();
-    }
-
-    #endregion
-
-    #region ToArticleCommentDtos — list mapping
-
-    [Fact]
-    public void ToArticleCommentDtos_ShouldMapEachComment()
+    public void ToPublicArticleCommentDtos_ShouldMapEachComment()
     {
         // Arrange
         Guid articleId = Guid.NewGuid();
@@ -799,10 +764,9 @@ public class ArticleMapperTests : BaseContentHandlerTest
         ];
 
         // Act
-        IReadOnlyList<ArticleCommentDto> dtos = comments.ToArticleCommentDtos(
-            Mapper,
-            new Dictionary<Guid, AuthorDto>()
-        );
+        IReadOnlyList<PublicArticleCommentDto> dtos = comments
+            .AsReadOnly()
+            .ToPublicArticleCommentDtos(new Dictionary<Guid, PublicAuthorDto>());
 
         // Assert
         dtos.Should().HaveCount(2);
@@ -811,15 +775,14 @@ public class ArticleMapperTests : BaseContentHandlerTest
     }
 
     [Fact]
-    public void ToArticleCommentDtos_WhenEmpty_ShouldReturnEmptyList()
+    public void ToPublicArticleCommentDtos_WhenEmpty_ShouldReturnEmptyList()
     {
         // Arrange
         IReadOnlyList<ArticleCommentEntity> comments = [];
 
         // Act
-        IReadOnlyList<ArticleCommentDto> dtos = comments.ToArticleCommentDtos(
-            Mapper,
-            new Dictionary<Guid, AuthorDto>()
+        IReadOnlyList<PublicArticleCommentDto> dtos = comments.ToPublicArticleCommentDtos(
+            new Dictionary<Guid, PublicAuthorDto>()
         );
 
         // Assert

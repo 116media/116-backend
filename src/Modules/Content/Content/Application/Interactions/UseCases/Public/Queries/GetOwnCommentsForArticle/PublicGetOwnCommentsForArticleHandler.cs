@@ -6,7 +6,6 @@ using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
-using MapsterMapper;
 
 namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetOwnCommentsForArticle;
 
@@ -16,7 +15,6 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetOwnCo
 public class PublicGetOwnCommentsForArticleHandler(
     IArticleRepository articleRepository,
     IArticleCommentRepository articleCommentRepository,
-    IMapper mapper,
     ContentI18n i18n
 ) : IQueryHandler<PublicGetOwnCommentsForArticleQuery, PublicGetOwnCommentsForArticleResult>
 {
@@ -43,13 +41,12 @@ public class PublicGetOwnCommentsForArticleHandler(
                 cancellationToken
             );
 
-        IReadOnlyList<ArticleCommentDto> items = comments.ToArticleCommentDtos(
-            mapper,
-            new Dictionary<Guid, AuthorDto>()
+        IReadOnlyList<PublicArticleCommentDto> items = comments.ToPublicArticleCommentDtos(
+            new Dictionary<Guid, PublicAuthorDto>()
         );
 
         return new PublicGetOwnCommentsForArticleResult(
-            new PaginatedResult<ArticleCommentDto>(pageIndex, pageSize, totalCount, items)
+            new PaginatedResult<PublicArticleCommentDto>(pageIndex, pageSize, totalCount, items)
         );
     }
 }

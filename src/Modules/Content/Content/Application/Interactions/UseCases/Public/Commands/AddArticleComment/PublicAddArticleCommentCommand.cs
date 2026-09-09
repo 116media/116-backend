@@ -16,4 +16,4 @@ public record PublicAddArticleCommentCommand(Guid ArticleId, Guid UserId, string
 /// Result of the <see cref="PublicAddArticleCommentCommand" />.
 /// </summary>
 /// <param name="Comment">The newly created comment DTO.</param>
-public record PublicAddArticleCommentResult(ArticleCommentDto Comment);
+public record PublicAddArticleCommentResult(PublicArticleCommentDto Comment);

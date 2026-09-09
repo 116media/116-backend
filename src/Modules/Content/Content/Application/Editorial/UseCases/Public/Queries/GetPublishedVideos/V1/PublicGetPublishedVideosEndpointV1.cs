@@ -16,7 +16,7 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublishe
 /// Response model for listing published videos.
 /// </summary>
 /// <param name="Videos">Paginated result containing video summary DTOs and pagination metadata.</param>
-public record PublicGetPublishedVideosResponse(PaginatedResult<VideoSummaryDto> Videos);
+public record PublicGetPublishedVideosResponse(PaginatedResult<PublicVideoSummaryDto> Videos);
 
 /// <summary>
 /// Defines the public get published videos endpoint.

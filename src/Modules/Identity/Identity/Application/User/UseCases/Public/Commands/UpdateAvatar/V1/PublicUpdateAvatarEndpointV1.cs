@@ -18,7 +18,7 @@ namespace _116.Identity.Application.User.UseCases.Public.Commands.UpdateAvatar.V
 /// Response model for updating user avatar.
 /// </summary>
 /// <param name="User">The updated user information with the new avatar.</param>
-public record PublicUpdateAvatarResponse(UserResponseDto User);
+public record PublicUpdateAvatarResponse(PublicUserResponseDto User);
 
 /// <summary>
 /// Defines the update avatar endpoint for authenticated public users.

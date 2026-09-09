@@ -18,7 +18,7 @@ namespace _116.Identity.Application.Session.UseCases.Public.Queries.GetOwnSessio
 /// Response model for user sessions.
 /// </summary>
 /// <param name="Sessions">List of user sessions with metadata.</param>
-public record PublicGetOwnSessionsResponse(IReadOnlyCollection<SessionDto> Sessions);
+public record PublicGetOwnSessionsResponse(IReadOnlyCollection<PublicSessionDto> Sessions);
 
 /// <summary>
 /// Defines the get own sessions endpoint for authenticated public users.

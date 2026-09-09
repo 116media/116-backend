@@ -136,7 +136,7 @@ public record ArticleDetailDto(
     Guid? CustomerId = null,
     string? CustomerName = null,
     Guid? OrderItemId = null,
-    AuthorDto? Author = null,
+    AdminAuthorDto? Author = null,
     bool IsLiked = false,
     bool IsBookmarked = false
 ) : AuditableDto;

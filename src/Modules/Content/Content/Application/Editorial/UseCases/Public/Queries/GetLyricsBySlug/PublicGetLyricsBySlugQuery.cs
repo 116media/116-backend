@@ -15,7 +15,7 @@ public record PublicGetLyricsBySlugQuery(string Slug, Guid? CurrentUserId = null
 
 /// <summary>
 /// Response-only summary of another track on the same album as the requested lyrics page.
-/// Not part of <see cref="LyricsDetailDto" /> — detail-page-specific, like <c>VideoSlug</c>/
+/// Not part of <see cref="PublicLyricsDetailDto" /> — detail-page-specific, like <c>VideoSlug</c>/
 /// <c>ArtistSlug</c>.
 /// </summary>
 /// <param name="Slug">The URL-safe slug of the sibling track's lyrics page.</param>
@@ -25,7 +25,7 @@ public record AlbumTrackDto(string Slug, string SongTitle);
 /// <summary>
 /// Response-only resolved streaming platform deep link for the requested lyrics page's release
 /// (either the parent album or the standalone single itself). Not part of
-/// <see cref="LyricsDetailDto" /> — detail-page-specific, like <c>VideoSlug</c>/<c>ArtistSlug</c>.
+/// <see cref="PublicLyricsDetailDto" /> — detail-page-specific, like <c>VideoSlug</c>/<c>ArtistSlug</c>.
 /// </summary>
 /// <param name="Platform">The streaming platform name (e.g. "Spotify", "AppleMusic").</param>
 /// <param name="Url">The curated deep link URL, or a generated search-query fallback.</param>
@@ -52,7 +52,7 @@ public record StreamingLinkDto(string Platform, string Url);
 /// album track and a standalone single, either curated or generated.
 /// </param>
 public record PublicGetLyricsBySlugResult(
-    LyricsDetailDto Lyrics,
+    PublicLyricsDetailDto Lyrics,
     string? VideoSlug,
     string? ArtistSlug,
     IReadOnlyList<AlbumTrackDto> AlbumTracks,

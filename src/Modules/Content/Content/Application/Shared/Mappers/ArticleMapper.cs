@@ -36,10 +36,6 @@ public static class ArticleMapper
             .Map(dest => dest.Id, src => src.Tag.Id)
             .Map(dest => dest.Name, src => src.Tag.Name)
             .Map(dest => dest.Slug, src => src.Tag.Slug);
-
-        config
-            .NewConfig<ArticleCommentEntity, ArticleCommentDto>()
-            .Map(dest => dest.Body, src => src.IsDeleted ? null : src.Body);
     }
 
     /// <summary>
@@ -193,56 +189,67 @@ public static class ArticleMapper
     }
 
     /// <summary>
-    /// Maps an <see cref="ArticleEntity" /> to an <see cref="ArticleSummaryDto" />, stamping the
-    /// current user's interaction flags from the supplied liked/bookmarked id sets. Pass empty
-    /// sets for an anonymous request.
+    /// Maps an <see cref="ArticleEntity" /> to its public projection from an already resolved
+    /// cover URL. Performs no IO — batch mappings resolve files up front.
     /// </summary>
-    /// <param name="entity">The article to map.</param>
-    /// <param name="mapper">The Mapster mapper.</param>
-    /// <param name="fileRepository">Repository used to resolve the cover image URL.</param>
-    /// <param name="likedArticleIds">Ids the current user has liked.</param>
-    /// <param name="bookmarkedArticleIds">Ids the current user has bookmarked.</param>
-    /// <param name="ct">Token to observe for cancellation requests.</param>
-    /// <returns>The mapped summary with interaction flags applied.</returns>
-    public static async Task<ArticleSummaryDto> ToArticleSummaryDtoAsync(
-        this ArticleEntity entity,
-        IMapper mapper,
-        IFileRepository fileRepository,
-        IReadOnlySet<Guid> likedArticleIds,
-        IReadOnlySet<Guid> bookmarkedArticleIds,
-        CancellationToken ct = default
-    )
+    public static PublicArticleSummaryDto ToPublicArticleSummaryDto(this ArticleEntity entity, string? coverImageUrl)
     {
-        ArticleSummaryDto dto = await entity.ToArticleSummaryDtoAsync(mapper, fileRepository, ct);
-        return dto with
-        {
-            IsLiked = likedArticleIds.Contains(entity.Id),
-            IsBookmarked = bookmarkedArticleIds.Contains(entity.Id),
-        };
+        return new PublicArticleSummaryDto(
+            entity.Id,
+            entity.CategoryId,
+            entity.Category != null ? entity.Category.Name : string.Empty,
+            entity.Title,
+            entity.Slug,
+            entity.Headline,
+            coverImageUrl,
+            entity.IsPromoted,
+            entity.PublishedAt,
+            entity.LikeCount,
+            entity.CommentCount,
+            entity.ShareCount,
+            entity.BookmarkCount
+        );
     }
 
     /// <summary>
-    /// Maps a list of articles to summaries, stamping each with the current user's interaction
-    /// flags from the supplied liked/bookmarked id sets. Pass empty sets for an anonymous request.
+    /// Maps a list of articles to their public card projection, cover URLs resolved in one
+    /// batch.
     /// </summary>
-    /// <param name="entities">The articles to map.</param>
-    /// <param name="mapper">The Mapster mapper.</param>
-    /// <param name="fileRepository">Repository used to resolve cover image URLs.</param>
-    /// <param name="likedArticleIds">Ids the current user has liked.</param>
-    /// <param name="bookmarkedArticleIds">Ids the current user has bookmarked.</param>
-    /// <param name="ct">Token to observe for cancellation requests.</param>
-    /// <returns>The mapped summaries with interaction flags applied.</returns>
-    public static async Task<IReadOnlyList<ArticleSummaryDto>> ToArticleSummaryDtosAsync(
+    public static async Task<IReadOnlyList<PublicArticleSummaryDto>> ToPublicArticleSummaryDtosAsync(
         this IReadOnlyList<ArticleEntity> entities,
-        IMapper mapper,
+        IFileRepository fileRepository,
+        CancellationToken ct = default
+    )
+    {
+        IReadOnlyDictionary<Guid, FileEntity> files = await fileRepository.GetByIdsAsync(
+            entities.Where(e => e.CoverImageFileId.HasValue).Select(e => e.CoverImageFileId!.Value).Distinct().ToList(),
+            ct
+        );
+
+        return entities
+            .Select(entity =>
+                entity.ToPublicArticleSummaryDto(
+                    coverImageUrl: entity.CoverImageFileId.HasValue
+                        ? files.GetValueOrDefault(entity.CoverImageFileId.Value)?.StorageUrl
+                        : null
+                )
+            )
+            .ToList();
+    }
+
+    /// <summary>
+    /// Maps a list of articles to their public card projection, stamping each with the current
+    /// user's interaction flags. Pass empty sets for an anonymous request.
+    /// </summary>
+    public static async Task<IReadOnlyList<PublicArticleSummaryDto>> ToPublicArticleSummaryDtosAsync(
+        this IReadOnlyList<ArticleEntity> entities,
         IFileRepository fileRepository,
         IReadOnlySet<Guid> likedArticleIds,
         IReadOnlySet<Guid> bookmarkedArticleIds,
         CancellationToken ct = default
     )
     {
-        IReadOnlyList<ArticleSummaryDto> summaries = await entities.ToArticleSummaryDtosAsync(
-            mapper,
+        IReadOnlyList<PublicArticleSummaryDto> summaries = await entities.ToPublicArticleSummaryDtosAsync(
             fileRepository,
             ct
         );
@@ -259,50 +266,126 @@ public static class ArticleMapper
     }
 
     /// <summary>
-    /// Maps an <see cref="ArticleCommentEntity" /> to an <see cref="ArticleCommentDto" />.
+    /// Maps an <see cref="ArticleEntity" /> to its public card projection, resolving the cover
+    /// image URL from the associated FileEntity.
     /// </summary>
-    public static ArticleCommentDto ToArticleCommentDto(this ArticleCommentEntity entity, IMapper mapper)
+    public static async Task<PublicArticleSummaryDto> ToPublicArticleSummaryDtoAsync(
+        this ArticleEntity entity,
+        IFileRepository fileRepository,
+        CancellationToken ct = default
+    )
     {
-        var dto = mapper.Map<ArticleCommentDto>(entity);
-        return dto with { Body = entity.IsDeleted ? null : entity.Body };
+        string? coverImageUrl = await ResolveCoverImageUrlAsync(entity, fileRepository, ct);
+        return entity.ToPublicArticleSummaryDto(coverImageUrl: coverImageUrl);
     }
 
     /// <summary>
-    /// Maps a list of <see cref="ArticleCommentEntity" /> to a list of
-    /// <see cref="ArticleCommentDto" />, attaching each commenter's resolved author profile.
-    /// Deleted comments carry a null body and a null author; commenters absent from
-    /// <paramref name="authorsByUserId" /> also carry a null author.
+    /// Maps an <see cref="ArticleEntity" /> to its public card projection, resolving the cover
+    /// URL and stamping the current user's interaction flags. Pass empty sets when anonymous.
     /// </summary>
-    /// <param name="entities">
-    /// The comment entities to map.
-    /// </param>
-    /// <param name="mapper">
-    /// The Mapster mapper.
-    /// </param>
-    /// <param name="authorsByUserId">
-    /// The resolved author profiles keyed by commenter user ID.
-    /// </param>
-    /// <returns>
-    /// The mapped comment DTOs with authors attached.
-    /// </returns>
-    public static IReadOnlyList<ArticleCommentDto> ToArticleCommentDtos(
-        this IReadOnlyList<ArticleCommentEntity> entities,
+    public static async Task<PublicArticleSummaryDto> ToPublicArticleSummaryDtoAsync(
+        this ArticleEntity entity,
+        IFileRepository fileRepository,
+        IReadOnlySet<Guid> likedArticleIds,
+        IReadOnlySet<Guid> bookmarkedArticleIds,
+        CancellationToken ct = default
+    )
+    {
+        string? coverImageUrl = await ResolveCoverImageUrlAsync(entity, fileRepository, ct);
+
+        return entity.ToPublicArticleSummaryDto(coverImageUrl: coverImageUrl) with
+        {
+            IsLiked = likedArticleIds.Contains(entity.Id),
+            IsBookmarked = bookmarkedArticleIds.Contains(entity.Id),
+        };
+    }
+
+    /// <summary>
+    /// Maps an <see cref="ArticleEntity" /> to its public detail projection, resolving the
+    /// cover image URL and stamping the current user's interaction flags.
+    /// </summary>
+    public static async Task<PublicArticleDetailDto> ToPublicArticleDetailDtoAsync(
+        this ArticleEntity entity,
         IMapper mapper,
-        IReadOnlyDictionary<Guid, AuthorDto> authorsByUserId
+        IFileRepository fileRepository,
+        CancellationToken ct = default,
+        bool isLiked = false,
+        bool isBookmarked = false
+    )
+    {
+        string? coverImageUrl = await ResolveCoverImageUrlAsync(entity, fileRepository, ct);
+
+        return new PublicArticleDetailDto(
+            entity.Id,
+            entity.CategoryId,
+            entity.Category != null ? entity.Category.Name : string.Empty,
+            entity.Title,
+            entity.Slug,
+            entity.Headline,
+            entity.Body,
+            coverImageUrl,
+            entity.IsPromoted,
+            entity.PublishedAt,
+            entity.MetaTitle,
+            entity.MetaDescription,
+            mapper.Map<IReadOnlyList<ArticleImageDto>>(entity.Images),
+            mapper.Map<IReadOnlyList<TagDto>>(entity.Tags),
+            Math.Max(
+                1,
+                (int)Math.Ceiling(entity.Body.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length / 200.0)
+            ),
+            entity.LikeCount,
+            entity.CommentCount,
+            entity.ShareCount,
+            entity.BookmarkCount
+        )
+        {
+            IsLiked = isLiked,
+            IsBookmarked = isBookmarked,
+        };
+    }
+
+    /// <summary>
+    /// Maps an <see cref="ArticleCommentEntity" /> to its public projection. Deleted comments
+    /// carry a null body.
+    /// </summary>
+    public static PublicArticleCommentDto ToPublicArticleCommentDto(this ArticleCommentEntity entity)
+    {
+        return new PublicArticleCommentDto(
+            entity.Id,
+            entity.UserId,
+            entity.IsDeleted ? null : entity.Body,
+            entity.IsDeleted,
+            entity.CreatedAt,
+            ParentCommentId: entity.ParentCommentId,
+            LikeCount: entity.LikeCount
+        );
+    }
+
+    /// <summary>
+    /// Maps a list of <see cref="ArticleCommentEntity" /> to their public projection, attaching
+    /// each commenter's resolved author profile. Deleted comments and commenters absent from
+    /// <paramref name="authorsByUserId" /> carry a null author.
+    /// </summary>
+    public static IReadOnlyList<PublicArticleCommentDto> ToPublicArticleCommentDtos(
+        this IReadOnlyList<ArticleCommentEntity> entities,
+        IReadOnlyDictionary<Guid, PublicAuthorDto> authorsByUserId
     )
     {
         return entities
             .Select(entity =>
             {
-                ArticleCommentDto dto = entity.ToArticleCommentDto(mapper);
+                PublicArticleCommentDto dto = entity.ToPublicArticleCommentDto();
 
                 if (entity.IsDeleted)
                 {
                     return dto;
                 }
 
-                AuthorDto? author = authorsByUserId.GetValueOrDefault(entity.UserId);
-                return dto with { Author = author };
+                return dto with
+                {
+                    Author = authorsByUserId.GetValueOrDefault(entity.UserId),
+                };
             })
             .ToList();
     }

@@ -35,7 +35,7 @@ public class PublicGetSimilarLyricsHandler(ILyricsRepository lyricsRepository, I
             cancellationToken: cancellationToken
         );
 
-        IReadOnlyList<LyricsSummaryDto> dtoList = await similar.ToLyricsSummaryDtosAsync(
+        IReadOnlyList<PublicLyricsSummaryDto> dtoList = await similar.ToPublicLyricsSummaryDtosAsync(
             fileRepository,
             likedLyricsIds,
             cancellationToken

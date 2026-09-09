@@ -4,7 +4,6 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
 using _116.Shared.Contracts.Application.CQRS;
-using MapsterMapper;
 
 namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPopularVideos;
 
@@ -14,12 +13,8 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPopularV
 /// </summary>
 /// <param name="videoRepository">Repository for video data access operations.</param>
 /// <param name="fileRepository">Repository for resolving thumbnail URLs.</param>
-/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-public class PublicGetPopularVideosHandler(
-    IVideoRepository videoRepository,
-    IFileRepository fileRepository,
-    IMapper mapper
-) : IQueryHandler<PublicGetPopularVideosQuery, PublicGetPopularVideosResult>
+public class PublicGetPopularVideosHandler(IVideoRepository videoRepository, IFileRepository fileRepository)
+    : IQueryHandler<PublicGetPopularVideosQuery, PublicGetPopularVideosResult>
 {
     /// <inheritdoc />
     public async Task<PublicGetPopularVideosResult> Handle(
@@ -34,8 +29,7 @@ public class PublicGetPopularVideosHandler(
             cancellationToken: cancellationToken
         );
 
-        IReadOnlyList<VideoSummaryDto> dtoList = await videos.ToVideoSummaryDtosAsync(
-            mapper,
+        IReadOnlyList<PublicVideoSummaryDto> dtoList = await videos.ToPublicVideoSummaryDtosAsync(
             fileRepository,
             cancellationToken
         );

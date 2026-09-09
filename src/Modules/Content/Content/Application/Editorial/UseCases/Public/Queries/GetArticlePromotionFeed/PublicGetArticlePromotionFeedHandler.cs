@@ -114,7 +114,7 @@ public class PublicGetArticlePromotionFeedHandler(
             cancellationToken: cancellationToken
         );
 
-        IReadOnlyList<ArticleSummaryDto> gossipStrip = await BuildGossipStripAsync(
+        IReadOnlyList<PublicArticleSummaryDto> gossipStrip = await BuildGossipStripAsync(
             gossipQueue: gossipQueue,
             stripSize: query.StripSize,
             mapper: mapper,
@@ -162,8 +162,7 @@ public class PublicGetArticlePromotionFeedHandler(
         {
             return new ArticlePromotionSpotDto(
                 SpotPriority: spotPriority,
-                Articles: await promoted.ToArticleSummaryDtosAsync(
-                    mapper,
+                Articles: await promoted.ToPublicArticleSummaryDtosAsync(
                     fileRepository,
                     likedArticleIds,
                     bookmarkedArticleIds,
@@ -172,14 +171,13 @@ public class PublicGetArticlePromotionFeedHandler(
             );
         }
 
-        var fallback = new List<ArticleSummaryDto>();
+        var fallback = new List<PublicArticleSummaryDto>();
 
         if (gossipQueue.TryDequeue(out ArticleEntity? gossip))
         {
             usedIds.Add(gossip.Id);
             fallback.Add(
-                await gossip.ToArticleSummaryDtoAsync(
-                    mapper,
+                await gossip.ToPublicArticleSummaryDtoAsync(
                     fileRepository,
                     likedArticleIds,
                     bookmarkedArticleIds,
@@ -218,14 +216,13 @@ public class PublicGetArticlePromotionFeedHandler(
         CancellationToken cancellationToken
     )
     {
-        var columnA = new List<ArticleSummaryDto>();
-        var columnB = new List<ArticleSummaryDto>();
+        var columnA = new List<PublicArticleSummaryDto>();
+        var columnB = new List<PublicArticleSummaryDto>();
 
         for (int i = 0; i < promoted.Count; i++)
         {
-            ArticleSummaryDto dto = await promoted[i]
-                .ToArticleSummaryDtoAsync(
-                    mapper,
+            PublicArticleSummaryDto dto = await promoted[i]
+                .ToPublicArticleSummaryDtoAsync(
                     fileRepository,
                     likedArticleIds,
                     bookmarkedArticleIds,
@@ -238,8 +235,7 @@ public class PublicGetArticlePromotionFeedHandler(
         {
             usedIds.Add(gossipA.Id);
             columnA.Add(
-                await gossipA.ToArticleSummaryDtoAsync(
-                    mapper,
+                await gossipA.ToPublicArticleSummaryDtoAsync(
                     fileRepository,
                     likedArticleIds,
                     bookmarkedArticleIds,
@@ -252,8 +248,7 @@ public class PublicGetArticlePromotionFeedHandler(
         {
             usedIds.Add(gossipB.Id);
             columnB.Add(
-                await gossipB.ToArticleSummaryDtoAsync(
-                    mapper,
+                await gossipB.ToPublicArticleSummaryDtoAsync(
                     fileRepository,
                     likedArticleIds,
                     bookmarkedArticleIds,
@@ -273,7 +268,7 @@ public class PublicGetArticlePromotionFeedHandler(
 
     /// <summary>
     /// Dequeues up to <paramref name="stripSize" /> articles from the remaining gossip pool and
-    /// maps them to <see cref="ArticleSummaryDto" /> for the horizontal gossip strip.
+    /// maps them to <see cref="PublicArticleSummaryDto" /> for the horizontal gossip strip.
     /// </summary>
     /// <param name="gossipQueue">Remaining gossip articles not yet consumed by spot fallbacks.</param>
     /// <param name="stripSize">Maximum number of articles to include in the strip.</param>
@@ -286,7 +281,7 @@ public class PublicGetArticlePromotionFeedHandler(
     /// An ordered list of up to <paramref name="stripSize" /> gossip article summaries.
     /// May be shorter if the queue is exhausted.
     /// </returns>
-    private static async Task<IReadOnlyList<ArticleSummaryDto>> BuildGossipStripAsync(
+    private static async Task<IReadOnlyList<PublicArticleSummaryDto>> BuildGossipStripAsync(
         Queue<ArticleEntity> gossipQueue,
         int stripSize,
         IMapper mapper,
@@ -296,13 +291,12 @@ public class PublicGetArticlePromotionFeedHandler(
         CancellationToken cancellationToken
     )
     {
-        var strip = new List<ArticleSummaryDto>();
+        var strip = new List<PublicArticleSummaryDto>();
 
         while (strip.Count < stripSize && gossipQueue.TryDequeue(out ArticleEntity? article))
         {
             strip.Add(
-                await article.ToArticleSummaryDtoAsync(
-                    mapper,
+                await article.ToPublicArticleSummaryDtoAsync(
                     fileRepository,
                     likedArticleIds,
                     bookmarkedArticleIds,

@@ -36,7 +36,7 @@ public class PublicGetOwnSharedShortVideosHandler(
         HashSet<Guid> ids = shortVideos.Select(shortVideo => shortVideo.Id).ToHashSet();
         (IReadOnlySet<Guid> liked, IReadOnlySet<Guid> bookmarked) =
             await shortVideoRepository.GetLikedAndBookmarkedIdsAsync(query.UserId, ids, cancellationToken);
-        IReadOnlyList<ShortVideoDto> dtos = await shortVideos.ToShortVideoDtosAsync(
+        IReadOnlyList<PublicShortVideoDto> dtos = await shortVideos.ToPublicShortVideoDtosAsync(
             mapper,
             fileRepository,
             liked,

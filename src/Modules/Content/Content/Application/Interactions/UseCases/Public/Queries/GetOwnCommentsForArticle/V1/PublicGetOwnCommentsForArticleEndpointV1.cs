@@ -55,7 +55,7 @@ public class PublicGetOwnCommentsForArticleEndpointV1 : ICarterModule
             .WithDescription(PublicGetOwnCommentsForArticleMetaField.GetOwnCommentsForArticle.Description)
             .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
             .RequireRateLimiting(RateLimitPolicies.ContentBrowsing)
-            .Produces<PaginatedResult<ArticleCommentDto>>(statusCode: StatusCodes.Status200OK)
+            .Produces<PaginatedResult<PublicArticleCommentDto>>(statusCode: StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status429TooManyRequests);

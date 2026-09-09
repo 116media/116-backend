@@ -8,7 +8,6 @@ using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
 using _116.Identity.Contracts.Application;
 using _116.Shared.Contracts.Application.CQRS;
-using MapsterMapper;
 
 namespace _116.Content.Application.Interactions.UseCases.Public.Commands.AddCommentReply;
 
@@ -23,14 +22,12 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.AddComm
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="userLookup">Cross-module service for resolving the replier's profile.</param>
 /// <param name="fileRepository">Repository for resolving the replier's avatar URL.</param>
-/// <param name="mapper">The mapper used to project entities to DTOs.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class PublicAddCommentReplyHandler(
     IArticleCommentRepository articleCommentRepository,
     IContentUnitOfWork unitOfWork,
     IUserLookupService userLookup,
     IFileRepository fileRepository,
-    IMapper mapper,
     ContentI18n i18n
 ) : ICommandHandler<PublicAddCommentReplyCommand, PublicAddCommentReplyResult>
 {
@@ -72,8 +69,8 @@ public class PublicAddCommentReplyHandler(
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
-        AuthorDto? author = await ResolveAuthorAsync(command.UserId, cancellationToken);
-        ArticleCommentDto dto = reply.ToArticleCommentDto(mapper) with { Author = author };
+        PublicAuthorDto? author = await ResolveAuthorAsync(command.UserId, cancellationToken);
+        PublicArticleCommentDto dto = reply.ToPublicArticleCommentDto() with { Author = author };
 
         return new PublicAddCommentReplyResult(Reply: dto);
     }
@@ -85,7 +82,7 @@ public class PublicAddCommentReplyHandler(
     /// <param name="userId">The replier's identity user id.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The resolved author DTO, or null.</returns>
-    private async Task<AuthorDto?> ResolveAuthorAsync(Guid userId, CancellationToken cancellationToken)
+    private async Task<PublicAuthorDto?> ResolveAuthorAsync(Guid userId, CancellationToken cancellationToken)
     {
         AuthorInfo? info = await userLookup.GetAuthorInfoByIdAsync(userId: userId, ct: cancellationToken);
 
@@ -101,6 +98,6 @@ public class PublicAddCommentReplyHandler(
             avatarUrl = avatarFile?.StorageUrl;
         }
 
-        return new AuthorDto(UserName: info.UserName, Email: null, AvatarUrl: avatarUrl, Role: info.Role);
+        return new PublicAuthorDto(UserName: info.UserName, AvatarUrl: avatarUrl);
     }
 }

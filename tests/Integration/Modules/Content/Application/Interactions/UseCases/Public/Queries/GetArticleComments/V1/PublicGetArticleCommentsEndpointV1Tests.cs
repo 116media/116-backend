@@ -46,7 +46,9 @@ public class PublicGetArticleCommentsEndpointV1Tests(PostgresFixture db) : BaseA
         var response = await Client.GetAsync(Routes.Public.Articles.Comments(Guid.NewGuid()));
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        PaginatedResult<ArticleCommentDto> body = await response.ReadAsAsync<PaginatedResult<ArticleCommentDto>>();
+        PaginatedResult<PublicArticleCommentDto> body = await response.ReadAsAsync<
+            PaginatedResult<PublicArticleCommentDto>
+        >();
         body.Items.Should().BeEmpty();
         body.Count.Should().Be(0);
     }
@@ -60,7 +62,9 @@ public class PublicGetArticleCommentsEndpointV1Tests(PostgresFixture db) : BaseA
         var response = await Client.GetAsync(Routes.Public.Articles.Comments(article.Id));
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        PaginatedResult<ArticleCommentDto> body = await response.ReadAsAsync<PaginatedResult<ArticleCommentDto>>();
+        PaginatedResult<PublicArticleCommentDto> body = await response.ReadAsAsync<
+            PaginatedResult<PublicArticleCommentDto>
+        >();
         body.Count.Should().Be(1);
         body.Items.Should().ContainSingle(c => c.Id == comment.Id && c.Body == comment.Body);
     }
@@ -74,7 +78,9 @@ public class PublicGetArticleCommentsEndpointV1Tests(PostgresFixture db) : BaseA
         var response = await Client.GetAsync($"{Routes.Public.Articles.Comments(article.Id)}?pageIndex=0&pageSize=5");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        PaginatedResult<ArticleCommentDto> body = await response.ReadAsAsync<PaginatedResult<ArticleCommentDto>>();
+        PaginatedResult<PublicArticleCommentDto> body = await response.ReadAsAsync<
+            PaginatedResult<PublicArticleCommentDto>
+        >();
         body.PageIndex.Should().Be(0);
         body.PageSize.Should().Be(5);
         body.Count.Should().Be(1);
@@ -89,8 +95,10 @@ public class PublicGetArticleCommentsEndpointV1Tests(PostgresFixture db) : BaseA
         var response = await Client.GetAsync(Routes.Public.Articles.Comments(article.Id));
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        PaginatedResult<ArticleCommentDto> body = await response.ReadAsAsync<PaginatedResult<ArticleCommentDto>>();
-        ArticleCommentDto dto = body.Items.Single(c => c.Id == comment.Id);
+        PaginatedResult<PublicArticleCommentDto> body = await response.ReadAsAsync<
+            PaginatedResult<PublicArticleCommentDto>
+        >();
+        PublicArticleCommentDto dto = body.Items.Single(c => c.Id == comment.Id);
         dto.Author.Should().NotBeNull();
         dto.Author!.UserName.Should().NotBeNullOrEmpty();
     }
@@ -103,8 +111,9 @@ public class PublicGetArticleCommentsEndpointV1Tests(PostgresFixture db) : BaseA
 
         var response = await Client.GetAsync(Routes.Public.Articles.Comments(article.Id));
 
-        PaginatedResult<ArticleCommentDto> body = await response.ReadAsAsync<PaginatedResult<ArticleCommentDto>>();
-        body.Items.Single(c => c.Id == comment.Id).Author!.Email.Should().BeNull();
+        // The public author shape carries no email member; the raw payload proves the absence.
+        string raw = await response.Content.ReadAsStringAsync();
+        raw.Should().NotContain("email");
     }
 
     [Fact]
@@ -123,8 +132,10 @@ public class PublicGetArticleCommentsEndpointV1Tests(PostgresFixture db) : BaseA
         Client.ClearAuthentication();
         var response = await Client.GetAsync(Routes.Public.Articles.Comments(article.Id));
 
-        PaginatedResult<ArticleCommentDto> body = await response.ReadAsAsync<PaginatedResult<ArticleCommentDto>>();
-        ArticleCommentDto dto = body.Items.Single(c => c.Id == deleted.Id);
+        PaginatedResult<PublicArticleCommentDto> body = await response.ReadAsAsync<
+            PaginatedResult<PublicArticleCommentDto>
+        >();
+        PublicArticleCommentDto dto = body.Items.Single(c => c.Id == deleted.Id);
         dto.Body.Should().BeNull();
         dto.Author.Should().BeNull();
     }
@@ -152,7 +163,9 @@ public class PublicGetArticleCommentsEndpointV1Tests(PostgresFixture db) : BaseA
         Client.ClearAuthentication();
         var response = await Client.GetAsync(Routes.Public.Articles.Comments(article.Id));
 
-        PaginatedResult<ArticleCommentDto> body = await response.ReadAsAsync<PaginatedResult<ArticleCommentDto>>();
+        PaginatedResult<PublicArticleCommentDto> body = await response.ReadAsAsync<
+            PaginatedResult<PublicArticleCommentDto>
+        >();
         body.Items.Single(c => c.Id == firstComment.Id).Author.Should().NotBeNull();
         body.Items.Single(c => c.Id == secondComment.Id).Author.Should().NotBeNull();
     }
@@ -178,7 +191,9 @@ public class PublicGetArticleCommentsEndpointV1Tests(PostgresFixture db) : BaseA
         Client.ClearAuthentication();
         var response = await Client.GetAsync(Routes.Public.Articles.Comments(article.Id));
 
-        PaginatedResult<ArticleCommentDto> body = await response.ReadAsAsync<PaginatedResult<ArticleCommentDto>>();
+        PaginatedResult<PublicArticleCommentDto> body = await response.ReadAsAsync<
+            PaginatedResult<PublicArticleCommentDto>
+        >();
         body.Items.Should().Contain(c => c.Id == topLevel.Id);
         body.Items.Should().NotContain(c => c.Id == reply.Id);
         body.Items.Single(c => c.Id == topLevel.Id).ReplyCount.Should().Be(1);

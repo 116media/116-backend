@@ -66,6 +66,6 @@ public class PublicUpdateAvatarHandler(
             permissions: authData.User.UserRoles.ToPermissionDtos(mapper),
             avatar: avatarDto
         );
-        return new PublicUpdateAvatarResult(User: userDto);
+        return new PublicUpdateAvatarResult(User: userDto.ToPublicUserResponseDto());
     }
 }

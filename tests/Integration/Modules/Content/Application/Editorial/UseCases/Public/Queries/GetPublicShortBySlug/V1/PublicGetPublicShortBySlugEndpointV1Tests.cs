@@ -33,7 +33,6 @@ public class PublicGetPublicShortBySlugEndpointV1Tests(PostgresFixture db) : Bas
         body.ShortVideo.Id.Should().Be(shortVideo.Id);
         body.ShortVideo.Slug.Should().Be(shortVideo.Slug);
         body.ShortVideo.Title.Should().Be(shortVideo.Title);
-        body.ShortVideo.IsActive.Should().BeTrue();
     }
 
     [Fact]

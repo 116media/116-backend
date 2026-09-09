@@ -17,7 +17,7 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetSimilarL
 /// Response model for retrieving similar lyrics pages.
 /// </summary>
 /// <param name="Lyrics">The matched similar lyrics pages, or an empty list.</param>
-public record PublicGetSimilarLyricsResponse(IReadOnlyList<LyricsSummaryDto> Lyrics);
+public record PublicGetSimilarLyricsResponse(IReadOnlyList<PublicLyricsSummaryDto> Lyrics);
 
 /// <summary>
 /// Defines the public get similar lyrics endpoint.

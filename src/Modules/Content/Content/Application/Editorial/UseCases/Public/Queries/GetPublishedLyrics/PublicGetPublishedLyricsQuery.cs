@@ -55,4 +55,4 @@ public record PublicGetPublishedLyricsQuery(
 /// Result of the <see cref="PublicGetPublishedLyricsQuery" /> containing a paginated list of lyrics summaries.
 /// </summary>
 /// <param name="Lyrics">The paginated result containing lyrics summary DTOs.</param>
-public record PublicGetPublishedLyricsResult(PaginatedResult<LyricsSummaryDto> Lyrics);
+public record PublicGetPublishedLyricsResult(PaginatedResult<PublicLyricsSummaryDto> Lyrics);

@@ -318,7 +318,7 @@ public class PublicGetPublishedLyricsHandlerTests
         PublicGetPublishedLyricsResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        LyricsSummaryDto dto = result.Lyrics.Items.Single();
+        PublicLyricsSummaryDto dto = result.Lyrics.Items.Single();
         dto.ViewCount.Should().Be(3);
         dto.LikeCount.Should().Be(1);
         dto.ShareCount.Should().Be(1);

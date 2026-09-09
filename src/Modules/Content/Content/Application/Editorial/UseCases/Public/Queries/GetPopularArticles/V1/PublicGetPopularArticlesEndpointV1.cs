@@ -15,7 +15,7 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPopularA
 /// Response model for listing popular articles.
 /// </summary>
 /// <param name="Articles">The articles ordered by engagement score descending.</param>
-public record PublicGetPopularArticlesResponse(IReadOnlyList<ArticleSummaryDto> Articles);
+public record PublicGetPopularArticlesResponse(IReadOnlyList<PublicArticleSummaryDto> Articles);
 
 /// <summary>
 /// Defines the public get popular articles endpoint.

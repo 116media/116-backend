@@ -131,7 +131,7 @@ public record VideoDetailDto(
     Guid? CustomerId = null,
     string? CustomerName = null,
     Guid? OrderItemId = null,
-    AuthorDto? Author = null,
+    AdminAuthorDto? Author = null,
     bool IsRated = false,
     short? RatedStars = null
 ) : AuditableDto;

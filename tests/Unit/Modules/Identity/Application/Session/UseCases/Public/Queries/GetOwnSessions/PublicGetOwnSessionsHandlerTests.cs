@@ -128,7 +128,7 @@ public class PublicGetOwnSessionsHandlerTests : BaseHandlerTest
         PublicGetOwnSessionsResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Sessions.Should().BeAssignableTo<IReadOnlyCollection<SessionDto>>();
+        result.Sessions.Should().BeAssignableTo<IReadOnlyCollection<PublicSessionDto>>();
     }
 
     #endregion

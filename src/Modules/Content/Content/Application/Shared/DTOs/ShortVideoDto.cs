@@ -46,7 +46,7 @@ public record ShortVideoDto(
     int ShareCount,
     int BookmarkCount,
     string AuthorId,
-    AuthorDto? Author = null,
+    AdminAuthorDto? Author = null,
     bool IsLiked = false,
     bool IsBookmarked = false
 ) : AuditableDto;

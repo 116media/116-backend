@@ -86,7 +86,7 @@ public class PublicGetVideoPromotionFeedHandler(
             cancellationToken: cancellationToken
         );
 
-        IReadOnlyList<VideoSummaryDto> freeVideoStrip = await BuildFreeVideoStripAsync(
+        IReadOnlyList<PublicVideoSummaryDto> freeVideoStrip = await BuildFreeVideoStripAsync(
             freeQueue: freeQueue,
             stripSize: query.StripSize,
             mapper: mapper,
@@ -126,20 +126,19 @@ public class PublicGetVideoPromotionFeedHandler(
     {
         if (promoted.Count > 0)
         {
-            IReadOnlyList<VideoSummaryDto> dtos = await promoted.ToVideoSummaryDtosAsync(
-                mapper,
+            IReadOnlyList<PublicVideoSummaryDto> dtos = await promoted.ToPublicVideoSummaryDtosAsync(
                 fileRepository,
                 cancellationToken
             );
             return new VideoPromotionSpotDto(SpotPriority: spotPriority, Videos: dtos);
         }
 
-        var fallback = new List<VideoSummaryDto>();
+        var fallback = new List<PublicVideoSummaryDto>();
 
         if (freeQueue.TryDequeue(out VideoEntity? freeVideo))
         {
             usedIds.Add(freeVideo.Id);
-            fallback.Add(await freeVideo.ToVideoSummaryDtoAsync(mapper, fileRepository, cancellationToken));
+            fallback.Add(await freeVideo.ToPublicVideoSummaryDtoAsync(fileRepository, cancellationToken));
         }
 
         return new VideoPromotionSpotDto(SpotPriority: spotPriority, Videos: fallback);
@@ -168,25 +167,26 @@ public class PublicGetVideoPromotionFeedHandler(
         CancellationToken cancellationToken
     )
     {
-        var columnA = new List<VideoSummaryDto>();
-        var columnB = new List<VideoSummaryDto>();
+        var columnA = new List<PublicVideoSummaryDto>();
+        var columnB = new List<PublicVideoSummaryDto>();
 
         for (int i = 0; i < promoted.Count; i++)
         {
-            VideoSummaryDto dto = await promoted[i].ToVideoSummaryDtoAsync(mapper, fileRepository, cancellationToken);
+            PublicVideoSummaryDto dto = await promoted[i]
+                .ToPublicVideoSummaryDtoAsync(fileRepository, cancellationToken);
             (i % 2 == 0 ? columnA : columnB).Add(dto);
         }
 
         if (columnA.Count == 0 && freeQueue.TryDequeue(out VideoEntity? freeA))
         {
             usedIds.Add(freeA.Id);
-            columnA.Add(await freeA.ToVideoSummaryDtoAsync(mapper, fileRepository, cancellationToken));
+            columnA.Add(await freeA.ToPublicVideoSummaryDtoAsync(fileRepository, cancellationToken));
         }
 
         if (columnB.Count == 0 && freeQueue.TryDequeue(out VideoEntity? freeB))
         {
             usedIds.Add(freeB.Id);
-            columnB.Add(await freeB.ToVideoSummaryDtoAsync(mapper, fileRepository, cancellationToken));
+            columnB.Add(await freeB.ToPublicVideoSummaryDtoAsync(fileRepository, cancellationToken));
         }
 
         var slots = new List<VideoPromotionSlotDto>
@@ -200,7 +200,7 @@ public class PublicGetVideoPromotionFeedHandler(
 
     /// <summary>
     /// Dequeues up to <paramref name="stripSize" /> videos from the remaining free pool and
-    /// maps them to <see cref="VideoSummaryDto" /> for the horizontal free-video strip.
+    /// maps them to <see cref="PublicVideoSummaryDto" /> for the horizontal free-video strip.
     /// </summary>
     /// <param name="freeQueue">Remaining free videos not yet consumed by spot fallbacks.</param>
     /// <param name="stripSize">Maximum number of videos to include in the strip.</param>
@@ -211,7 +211,7 @@ public class PublicGetVideoPromotionFeedHandler(
     /// An ordered list of up to <paramref name="stripSize" /> free video summaries.
     /// May be shorter if the queue is exhausted.
     /// </returns>
-    private static async Task<IReadOnlyList<VideoSummaryDto>> BuildFreeVideoStripAsync(
+    private static async Task<IReadOnlyList<PublicVideoSummaryDto>> BuildFreeVideoStripAsync(
         Queue<VideoEntity> freeQueue,
         int stripSize,
         IMapper mapper,
@@ -219,11 +219,11 @@ public class PublicGetVideoPromotionFeedHandler(
         CancellationToken cancellationToken
     )
     {
-        var strip = new List<VideoSummaryDto>();
+        var strip = new List<PublicVideoSummaryDto>();
 
         while (strip.Count < stripSize && freeQueue.TryDequeue(out VideoEntity? video))
         {
-            strip.Add(await video.ToVideoSummaryDtoAsync(mapper, fileRepository, cancellationToken));
+            strip.Add(await video.ToPublicVideoSummaryDtoAsync(fileRepository, cancellationToken));
         }
 
         return strip;

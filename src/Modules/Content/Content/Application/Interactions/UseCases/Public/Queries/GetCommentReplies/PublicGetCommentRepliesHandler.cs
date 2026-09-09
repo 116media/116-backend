@@ -6,7 +6,6 @@ using _116.Core.Application.Shared.Repositories;
 using _116.Identity.Contracts.Application;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
-using MapsterMapper;
 
 namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetCommentReplies;
 
@@ -18,12 +17,10 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetComme
 /// <param name="articleCommentRepository">Repository for article comment data access operations.</param>
 /// <param name="userLookup">Cross-module service for resolving commenter profiles.</param>
 /// <param name="fileRepository">Repository for resolving avatar file URLs.</param>
-/// <param name="mapper">The mapper used to project entities to DTOs.</param>
 public class PublicGetCommentRepliesHandler(
     IArticleCommentRepository articleCommentRepository,
     IUserLookupService userLookup,
-    IFileRepository fileRepository,
-    IMapper mapper
+    IFileRepository fileRepository
 ) : IQueryHandler<PublicGetCommentRepliesQuery, PublicGetCommentRepliesResult>
 {
     /// <inheritdoc />
@@ -42,13 +39,18 @@ public class PublicGetCommentRepliesHandler(
             cancellationToken: cancellationToken
         );
 
-        IReadOnlyDictionary<Guid, AuthorDto> authorsByUserId = await ResolveAuthorsAsync(replies, cancellationToken);
+        IReadOnlyDictionary<Guid, PublicAuthorDto> authorsByUserId = await ResolveAuthorsAsync(
+            replies,
+            cancellationToken
+        );
 
-        IReadOnlyList<ArticleCommentDto> dtoList = replies.AsReadOnly().ToArticleCommentDtos(mapper, authorsByUserId);
+        IReadOnlyList<PublicArticleCommentDto> dtoList = replies
+            .AsReadOnly()
+            .ToPublicArticleCommentDtos(authorsByUserId);
 
         dtoList = await StampViewerLikesAsync(replies, dtoList, query.ViewerUserId, cancellationToken);
 
-        var paginated = new PaginatedResult<ArticleCommentDto>(
+        var paginated = new PaginatedResult<PublicArticleCommentDto>(
             pageIndex: pageIndex,
             pageSize: pageSize,
             count: totalCount,
@@ -67,7 +69,7 @@ public class PublicGetCommentRepliesHandler(
     /// <param name="comments">The page of reply entities.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Resolved author profiles keyed by commenter user id.</returns>
-    private async Task<IReadOnlyDictionary<Guid, AuthorDto>> ResolveAuthorsAsync(
+    private async Task<IReadOnlyDictionary<Guid, PublicAuthorDto>> ResolveAuthorsAsync(
         IReadOnlyList<ArticleCommentEntity> comments,
         CancellationToken cancellationToken
     )
@@ -76,7 +78,7 @@ public class PublicGetCommentRepliesHandler(
 
         if (userIds.Length == 0)
         {
-            return new Dictionary<Guid, AuthorDto>();
+            return new Dictionary<Guid, PublicAuthorDto>();
         }
 
         IReadOnlyDictionary<Guid, AuthorInfo> authorInfos = await userLookup.GetAuthorInfosByIdsAsync(
@@ -104,7 +106,7 @@ public class PublicGetCommentRepliesHandler(
                     ? avatarUrls.GetValueOrDefault(info.AvatarFileId.Value)
                     : null;
 
-                return new AuthorDto(UserName: info.UserName, Email: null, AvatarUrl: avatarUrl, Role: info.Role);
+                return new PublicAuthorDto(UserName: info.UserName, AvatarUrl: avatarUrl);
             }
         );
     }
@@ -118,9 +120,9 @@ public class PublicGetCommentRepliesHandler(
     /// <param name="viewerUserId">The current viewer's user id, or null when anonymous.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The reply DTOs with the viewer's like state applied.</returns>
-    private async Task<IReadOnlyList<ArticleCommentDto>> StampViewerLikesAsync(
+    private async Task<IReadOnlyList<PublicArticleCommentDto>> StampViewerLikesAsync(
         IReadOnlyList<ArticleCommentEntity> replies,
-        IReadOnlyList<ArticleCommentDto> dtoList,
+        IReadOnlyList<PublicArticleCommentDto> dtoList,
         Guid? viewerUserId,
         CancellationToken cancellationToken
     )

@@ -13,4 +13,4 @@ public record PublicGetOwnCommentsForArticleQuery(Guid UserId, Guid ArticleId, P
 /// <summary>
 /// Contains the current user's comments for one published article.
 /// </summary>
-public record PublicGetOwnCommentsForArticleResult(PaginatedResult<ArticleCommentDto> Comments);
+public record PublicGetOwnCommentsForArticleResult(PaginatedResult<PublicArticleCommentDto> Comments);

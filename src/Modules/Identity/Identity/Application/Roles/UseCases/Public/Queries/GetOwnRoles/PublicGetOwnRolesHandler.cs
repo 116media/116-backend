@@ -23,8 +23,8 @@ public class PublicGetOwnRolesHandler(IAuthRepository authRepository, IMapper ma
             cancellationToken: cancellationToken
         );
 
-        IReadOnlyList<RoleWithPermissionsDto> roles = user!
-            .UserRoles.Select(ur => ur.Role.ToRoleWithPermissionsDto(mapper))
+        IReadOnlyList<PublicRoleWithPermissionsDto> roles = user!
+            .UserRoles.Select(ur => ur.Role.ToRoleWithPermissionsDto(mapper).ToPublicRoleWithPermissionsDto())
             .ToList();
 
         return new PublicGetOwnRolesResult(Roles: roles);

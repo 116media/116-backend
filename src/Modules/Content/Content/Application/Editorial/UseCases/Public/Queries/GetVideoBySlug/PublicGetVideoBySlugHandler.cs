@@ -63,7 +63,12 @@ public class PublicGetVideoBySlugHandler(
             artistSlug = artist?.Slug;
         }
 
-        var dto = await video.ToVideoDetailDtoAsync(mapper, fileRepository, cancellationToken, ratedStars: ratedStars);
+        var dto = await video.ToPublicVideoDetailDtoAsync(
+            mapper,
+            fileRepository,
+            cancellationToken,
+            ratedStars: ratedStars
+        );
         return new PublicGetVideoBySlugResult(Video: dto, ArtistSlug: artistSlug);
     }
 }

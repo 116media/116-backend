@@ -17,7 +17,7 @@ namespace _116.Content.Application.Catalog.UseCases.Public.Queries.GetExclusiveC
 /// </summary>
 /// <param name="Category">The exclusive category DTO.</param>
 /// <param name="Videos">Paginated list of published videos in the exclusive category.</param>
-public record PublicGetExclusiveCategoryResponse(CategoryDto Category, PaginatedResult<VideoSummaryDto> Videos);
+public record PublicGetExclusiveCategoryResponse(CategoryDto Category, PaginatedResult<PublicVideoSummaryDto> Videos);
 
 /// <summary>
 /// Defines the public get exclusive category endpoint.

@@ -37,7 +37,7 @@ public record PublicUpdateOwnProfileRequest(
 /// Response model for updating own profile.
 /// </summary>
 /// <param name="User">The updated user profile information.</param>
-public record PublicUpdateOwnProfileResponse(UserResponseDto User);
+public record PublicUpdateOwnProfileResponse(PublicUserResponseDto User);
 
 /// <summary>
 /// Defines the update own profile endpoint for authenticated public users.

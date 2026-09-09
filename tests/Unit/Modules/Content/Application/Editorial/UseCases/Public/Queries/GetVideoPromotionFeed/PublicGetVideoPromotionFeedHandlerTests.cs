@@ -274,10 +274,10 @@ public class PublicGetVideoPromotionFeedHandlerTests : BaseContentHandlerTest
     public void Response_ShouldMapFromResultFields()
     {
         // Arrange
-        var spot1 = new VideoPromotionSpotDto(1, new List<VideoSummaryDto>());
-        var spot2 = new VideoPromotionSpotDto(2, new List<VideoSummaryDto>());
+        var spot1 = new VideoPromotionSpotDto(1, new List<PublicVideoSummaryDto>());
+        var spot2 = new VideoPromotionSpotDto(2, new List<PublicVideoSummaryDto>());
         var spot3 = new VideoPromotionSpot3Dto(3, new List<VideoPromotionSlotDto>());
-        IReadOnlyList<VideoSummaryDto> freeVideoStrip = new List<VideoSummaryDto>();
+        IReadOnlyList<PublicVideoSummaryDto> freeVideoStrip = new List<PublicVideoSummaryDto>();
 
         // Act
         var response = new PublicGetVideoPromotionFeedResponse(spot1, spot2, spot3, freeVideoStrip);

@@ -31,7 +31,7 @@ public class PublicGetOwnSharedVideosHandlerTests : BaseContentHandlerTest
         _videoRepository
             .Setup(repository => repository.GetSharedVideosByUserAsync(userId, 1, 12, It.IsAny<CancellationToken>()))
             .ReturnsAsync((activities, 1));
-        var handler = new PublicGetOwnSharedVideosHandler(_videoRepository.Object, _fileRepository.Object, Mapper);
+        var handler = new PublicGetOwnSharedVideosHandler(_videoRepository.Object, _fileRepository.Object);
 
         PublicGetOwnSharedVideosResult result = await handler.Handle(
             new PublicGetOwnSharedVideosQuery(userId, new PaginatedRequest(0, 12)),
@@ -53,7 +53,7 @@ public class PublicGetOwnSharedVideosHandlerTests : BaseContentHandlerTest
         _videoRepository
             .Setup(repository => repository.GetSharedVideosByUserAsync(userId, 1, 10, It.IsAny<CancellationToken>()))
             .ReturnsAsync((Array.Empty<SharedVideoActivity>(), 0));
-        var handler = new PublicGetOwnSharedVideosHandler(_videoRepository.Object, _fileRepository.Object, Mapper);
+        var handler = new PublicGetOwnSharedVideosHandler(_videoRepository.Object, _fileRepository.Object);
 
         PublicGetOwnSharedVideosResult result = await handler.Handle(
             new PublicGetOwnSharedVideosQuery(userId, new PaginatedRequest(0, 10)),

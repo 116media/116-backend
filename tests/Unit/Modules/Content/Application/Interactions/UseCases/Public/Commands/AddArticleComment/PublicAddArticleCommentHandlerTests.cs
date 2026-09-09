@@ -28,11 +28,7 @@ public class PublicAddArticleCommentHandlerTests : BaseContentHandlerTest
     {
         _articleCommentRepositoryMock = MockArticleCommentRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _handler = new PublicAddArticleCommentHandler(
-            _articleCommentRepositoryMock.Object,
-            _unitOfWorkMock.Object,
-            Mapper
-        );
+        _handler = new PublicAddArticleCommentHandler(_articleCommentRepositoryMock.Object, _unitOfWorkMock.Object);
     }
 
     #region Success Cases

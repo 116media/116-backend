@@ -27,7 +27,7 @@ public class PublicGetPublishedVideosHandlerTests : BaseContentHandlerTest
     {
         _videoRepositoryMock = MockVideoRepository.Create();
         _fileRepositoryMock = MockFileRepository.Create();
-        _handler = new PublicGetPublishedVideosHandler(_videoRepositoryMock.Object, _fileRepositoryMock.Object, Mapper);
+        _handler = new PublicGetPublishedVideosHandler(_videoRepositoryMock.Object, _fileRepositoryMock.Object);
     }
 
     [Fact]

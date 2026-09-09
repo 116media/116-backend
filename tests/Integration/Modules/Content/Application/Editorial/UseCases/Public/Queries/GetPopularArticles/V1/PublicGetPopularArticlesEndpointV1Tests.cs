@@ -162,7 +162,6 @@ public class PublicGetPopularArticlesEndpointV1Tests(PostgresFixture db) : BaseA
 
         PublicGetPopularArticlesResponse body = await response.ReadAsAsync<PublicGetPopularArticlesResponse>();
         body.Articles.Should().NotContain(a => a.Id == draft.Id);
-        body.Articles.Should().OnlyContain(a => a.Status == EnumContentStatus.Published);
     }
 
     [Fact]

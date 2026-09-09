@@ -57,11 +57,10 @@ public class PublicGetOwnRolesHandlerTests : BaseHandlerTest
 
         // Assert
         result.Roles.Should().ContainSingle();
-        RoleWithPermissionsDto roleDto = result.Roles.First();
+        PublicRoleWithPermissionsDto roleDto = result.Roles.First();
         roleDto.Id.Should().Be(role.Id);
         roleDto.Name.Should().Be(role.Name);
         roleDto.Description.Should().Be(role.Description);
-        roleDto.IsActive.Should().Be(role.IsActive);
     }
 
     [Fact]

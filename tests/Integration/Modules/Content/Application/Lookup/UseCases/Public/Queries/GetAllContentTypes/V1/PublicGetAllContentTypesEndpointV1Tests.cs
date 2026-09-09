@@ -29,7 +29,6 @@ public class PublicGetAllContentTypesEndpointV1Tests(PostgresFixture db) : BaseA
 
         var body = await response.ReadAsAsync<PublicGetAllContentTypesResponse>();
         body.ContentTypes.Should().Contain(c => c.Id == active.Id);
-        body.ContentTypes.Should().OnlyContain(c => c.IsActive);
     }
 
     [Fact]
@@ -50,6 +49,5 @@ public class PublicGetAllContentTypesEndpointV1Tests(PostgresFixture db) : BaseA
 
         var body = await response.ReadAsAsync<PublicGetAllContentTypesResponse>();
         body.ContentTypes.Should().NotContain(c => c.Id == inactive.Id);
-        body.ContentTypes.Should().OnlyContain(c => c.IsActive);
     }
 }

@@ -8,7 +8,7 @@ namespace _116.Content.Application.Shared.DTOs;
 /// <param name="LastInteractedAt">When the user last performed the collection's interaction.</param>
 /// <param name="InteractionCount">How many matching interactions the user performed.</param>
 public record UserShortVideoActivityDto(
-    ShortVideoDto ShortVideo,
+    PublicShortVideoDto ShortVideo,
     DateTimeOffset LastInteractedAt,
     int InteractionCount
 );

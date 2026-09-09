@@ -1,4 +1,5 @@
 using _116.Identity.Application.Session.Repositories;
+using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Domain.Entities;
@@ -38,7 +39,7 @@ public class PublicGetOwnSessionByIdHandler(ISessionRepository sessionRepository
             throw i18n.Session.SessionNotFound(sessionId: query.SessionId);
         }
 
-        var sessionDto = session.ToSessionDto(mapper);
+        PublicSessionDto sessionDto = session.ToSessionDto(mapper).ToPublicSessionDto();
 
         return new PublicGetOwnSessionByIdResult(Session: sessionDto);
     }

@@ -17,7 +17,7 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetArticleB
 /// Response model for retrieving a published article by its slug.
 /// </summary>
 /// <param name="Article">The full article detail information.</param>
-public record PublicGetArticleBySlugResponse(ArticleDetailDto Article);
+public record PublicGetArticleBySlugResponse(PublicArticleDetailDto Article);
 
 /// <summary>
 /// Defines the public get article by slug endpoint.

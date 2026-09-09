@@ -16,4 +16,4 @@ public record PublicGetOwnRolesQuery(Guid UserId) : IQuery<PublicGetOwnRolesResu
 /// Result of the <see cref="PublicGetOwnRolesQuery" /> containing the user's roles with permissions.
 /// </summary>
 /// <param name="Roles">The list of roles assigned to the user, each with their full permission set.</param>
-public record PublicGetOwnRolesResult(IReadOnlyList<RoleWithPermissionsDto> Roles);
+public record PublicGetOwnRolesResult(IReadOnlyList<PublicRoleWithPermissionsDto> Roles);

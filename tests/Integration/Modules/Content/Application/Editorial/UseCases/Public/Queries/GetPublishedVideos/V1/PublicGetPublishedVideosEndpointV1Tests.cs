@@ -52,7 +52,6 @@ public class PublicGetPublishedVideosEndpointV1Tests(PostgresFixture db) : BaseA
         PublicGetPublishedVideosResponse body = await response.ReadAsAsync<PublicGetPublishedVideosResponse>();
         body.Videos.Items.Should().Contain(item => item.Id == publishedVideo.Id);
         body.Videos.Items.Should().NotContain(item => item.Id == draftVideo.Id);
-        body.Videos.Items.Should().OnlyContain(item => item.Status == EnumContentStatus.Published);
         body.Videos.PageIndex.Should().Be(0);
         body.Videos.PageSize.Should().Be(10);
     }

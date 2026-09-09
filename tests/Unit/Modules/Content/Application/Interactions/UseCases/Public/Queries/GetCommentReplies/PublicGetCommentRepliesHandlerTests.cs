@@ -36,8 +36,7 @@ public class PublicGetCommentRepliesHandlerTests : BaseContentHandlerTest
         _handler = new PublicGetCommentRepliesHandler(
             _articleCommentRepositoryMock.Object,
             _userLookupMock.Object,
-            _fileRepositoryMock.Object,
-            Mapper
+            _fileRepositoryMock.Object
         );
     }
 
@@ -65,7 +64,7 @@ public class PublicGetCommentRepliesHandlerTests : BaseContentHandlerTest
 
         PublicGetCommentRepliesResult result = await _handler.Handle(Query(), CancellationToken.None);
 
-        ArticleCommentDto dto = result.Replies.Items.Single();
+        PublicArticleCommentDto dto = result.Replies.Items.Single();
         dto.ParentCommentId.Should().Be(ParentId);
         dto.Author!.UserName.Should().Be("jane");
     }

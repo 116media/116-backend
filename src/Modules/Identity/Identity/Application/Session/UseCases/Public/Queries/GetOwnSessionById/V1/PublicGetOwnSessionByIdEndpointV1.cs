@@ -18,7 +18,7 @@ namespace _116.Identity.Application.Session.UseCases.Public.Queries.GetOwnSessio
 /// Response model for retrieving a single session.
 /// </summary>
 /// <param name="Session">The session DTO associated with the requested ID.</param>
-public record PublicGetOwnSessionByIdResponse(SessionDto Session);
+public record PublicGetOwnSessionByIdResponse(PublicSessionDto Session);
 
 /// <summary>
 /// Defines the get own session by ID endpoint for authenticated public users.

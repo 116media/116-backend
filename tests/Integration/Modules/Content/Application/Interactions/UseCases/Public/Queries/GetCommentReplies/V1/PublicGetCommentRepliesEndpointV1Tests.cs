@@ -57,8 +57,10 @@ public class PublicGetCommentRepliesEndpointV1Tests(PostgresFixture db) : BaseAp
         var response = await Client.GetAsync(Routes.Public.Articles.CommentRepliesList(parent.Id));
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        PaginatedResult<ArticleCommentDto> body = await response.ReadAsAsync<PaginatedResult<ArticleCommentDto>>();
-        ArticleCommentDto dto = body.Items.Single(c => c.Id == reply.Id);
+        PaginatedResult<PublicArticleCommentDto> body = await response.ReadAsAsync<
+            PaginatedResult<PublicArticleCommentDto>
+        >();
+        PublicArticleCommentDto dto = body.Items.Single(c => c.Id == reply.Id);
         dto.ParentCommentId.Should().Be(parent.Id);
         dto.Author.Should().NotBeNull();
     }
@@ -72,7 +74,9 @@ public class PublicGetCommentRepliesEndpointV1Tests(PostgresFixture db) : BaseAp
         var response = await Client.GetAsync(Routes.Public.Articles.CommentRepliesList(parent.Id));
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        PaginatedResult<ArticleCommentDto> body = await response.ReadAsAsync<PaginatedResult<ArticleCommentDto>>();
+        PaginatedResult<PublicArticleCommentDto> body = await response.ReadAsAsync<
+            PaginatedResult<PublicArticleCommentDto>
+        >();
         body.Items.Should().BeEmpty();
     }
 }

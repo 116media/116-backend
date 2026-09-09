@@ -6,7 +6,6 @@ using _116.Content.Domain.Enums;
 using _116.Core.Application.Shared.Repositories;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
-using MapsterMapper;
 
 namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublishedArticles;
 
@@ -16,12 +15,10 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublishe
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="articleInteractionRepository">Repository for article interaction data access operations.</param>
 /// <param name="fileRepository">Repository for resolving file URLs.</param>
-/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class PublicGetPublishedArticlesHandler(
     IArticleRepository articleRepository,
     IArticleInteractionRepository articleInteractionRepository,
-    IFileRepository fileRepository,
-    IMapper mapper
+    IFileRepository fileRepository
 ) : IQueryHandler<PublicGetPublishedArticlesQuery, PublicGetPublishedArticlesResult>
 {
     /// <inheritdoc />
@@ -50,15 +47,14 @@ public class PublicGetPublishedArticlesHandler(
                 cancellationToken: cancellationToken
             );
 
-        IReadOnlyList<ArticleSummaryDto> dtoList = await articles.ToArticleSummaryDtosAsync(
-            mapper,
+        IReadOnlyList<PublicArticleSummaryDto> dtoList = await articles.ToPublicArticleSummaryDtosAsync(
             fileRepository,
             liked,
             bookmarked,
             cancellationToken
         );
 
-        var paginatedResult = new PaginatedResult<ArticleSummaryDto>(
+        var paginatedResult = new PaginatedResult<PublicArticleSummaryDto>(
             pageIndex: pageIndex,
             pageSize: pageSize,
             count: totalCount,

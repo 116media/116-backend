@@ -14,4 +14,4 @@ public record PublicGetOwnSessionByIdQuery(Guid UserId, Guid SessionId) : IQuery
 /// The result of executing a <see cref="PublicGetOwnSessionByIdQuery" />.
 /// </summary>
 /// <param name="Session">The session data for the requested ID.</param>
-public record PublicGetOwnSessionByIdResult(SessionDto Session);
+public record PublicGetOwnSessionByIdResult(PublicSessionDto Session);

@@ -17,7 +17,7 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublicSh
 /// Response model for retrieving a public short video by its slug.
 /// </summary>
 /// <param name="ShortVideo">The short video detail information.</param>
-public record PublicGetPublicShortBySlugResponse(ShortVideoDto ShortVideo);
+public record PublicGetPublicShortBySlugResponse(PublicShortVideoDto ShortVideo);
 
 /// <summary>
 /// Defines the public get short video by slug endpoint.

@@ -165,8 +165,10 @@ Small, isolated, high-urgency fixes with no cross-module surgery. Full code in t
 
 ### Stage 12 — Public/Admin DTO split & staff-data leak fixes
 
-- [ ] `Public*Dto` records (no `AuditableDto`) + mappers for the leaking public endpoints `[06 §6]`
-- [ ] Drop `Email` from `AuthorInfo`/content `AuthorDto`; mail handlers fetch it separately `[07 S9]`
+- [ ] `Public*Dto` records (no `AuditableDto`) + mappers for the leaking public endpoints in
+      Content, Identity (profile/sessions/roles) and Core (files) `[06 §6]`
+- [ ] Drop `Email` from the serialized content `AuthorDto`; the in-process `AuthorInfo` keeps it
+      for the mail handler `[07 S9]`
 - **PR:** `fix(api): stop leaking audit, commercial and staff data on public endpoints`
 
 ### Stage 13 — Domain-event durability

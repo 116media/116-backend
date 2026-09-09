@@ -15,4 +15,4 @@ public record PublicGetPublicShortBySlugQuery(string Slug, Guid? CurrentUserId =
 /// Result of the <see cref="PublicGetPublicShortBySlugQuery" /> containing the short video details.
 /// </summary>
 /// <param name="ShortVideo">The short video information.</param>
-public record PublicGetPublicShortBySlugResult(ShortVideoDto ShortVideo);
+public record PublicGetPublicShortBySlugResult(PublicShortVideoDto ShortVideo);

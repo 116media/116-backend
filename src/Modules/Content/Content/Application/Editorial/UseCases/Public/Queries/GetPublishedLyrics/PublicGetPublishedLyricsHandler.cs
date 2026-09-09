@@ -44,11 +44,11 @@ public class PublicGetPublishedLyricsHandler(ILyricsRepository lyricsRepository,
             cancellationToken: cancellationToken
         );
 
-        IReadOnlyList<LyricsSummaryDto> dtoList = await lyricsList
+        IReadOnlyList<PublicLyricsSummaryDto> dtoList = await lyricsList
             .AsReadOnly()
-            .ToLyricsSummaryDtosAsync(fileRepository, likedLyricsIds, cancellationToken);
+            .ToPublicLyricsSummaryDtosAsync(fileRepository, likedLyricsIds, cancellationToken);
 
-        var paginatedResult = new PaginatedResult<LyricsSummaryDto>(
+        var paginatedResult = new PaginatedResult<PublicLyricsSummaryDto>(
             pageIndex: pageIndex,
             pageSize: pageSize,
             count: totalCount,

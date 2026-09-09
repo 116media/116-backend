@@ -15,7 +15,7 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPopularV
 /// Response model for listing popular videos.
 /// </summary>
 /// <param name="Videos">The videos ordered by engagement score descending.</param>
-public record PublicGetPopularVideosResponse(IReadOnlyList<VideoSummaryDto> Videos);
+public record PublicGetPopularVideosResponse(IReadOnlyList<PublicVideoSummaryDto> Videos);
 
 /// <summary>
 /// Defines the public get popular videos endpoint.

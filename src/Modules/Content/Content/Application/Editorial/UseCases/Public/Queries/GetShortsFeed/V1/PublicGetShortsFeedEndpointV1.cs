@@ -18,7 +18,7 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetShortsFe
 /// </summary>
 /// <param name="Items">The ordered short videos for this page.</param>
 /// <param name="NextCursor">The cursor for the next page, or null when the feed is exhausted.</param>
-public record PublicGetShortsFeedResponse(IReadOnlyList<ShortVideoDto> Items, string? NextCursor);
+public record PublicGetShortsFeedResponse(IReadOnlyList<PublicShortVideoDto> Items, string? NextCursor);
 
 /// <summary>
 /// Defines the public randomized short videos feed endpoint.

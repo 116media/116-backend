@@ -21,4 +21,4 @@ public record PublicSignUpCommand(string Email, string UserName, string Password
 /// </summary>
 /// <param name="User">The created user information.</param>
 /// <param name="VerificationRequired">Indicates that email verification must happen before login.</param>
-public record PublicSignUpResult(UserResponseDto User, bool VerificationRequired);
+public record PublicSignUpResult(PublicUserResponseDto User, bool VerificationRequired);

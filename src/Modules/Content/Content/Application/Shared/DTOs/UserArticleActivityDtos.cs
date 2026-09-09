@@ -5,14 +5,14 @@ namespace _116.Content.Application.Shared.DTOs;
 /// <summary>
 /// A published article together with the time the current user bookmarked it.
 /// </summary>
-public record UserBookmarkedArticleDto(ArticleSummaryDto Article, DateTimeOffset BookmarkedAt);
+public record UserBookmarkedArticleDto(PublicArticleSummaryDto Article, DateTimeOffset BookmarkedAt);
 
 /// <summary>
 /// A published article together with the current user's latest remaining comment activity.
 /// </summary>
 public record UserCommentedArticleDto(
-    ArticleSummaryDto Article,
-    ArticleCommentDto LatestComment,
+    PublicArticleSummaryDto Article,
+    PublicArticleCommentDto LatestComment,
     int CommentCount,
     DateTimeOffset LastCommentedAt
 );
@@ -21,7 +21,7 @@ public record UserCommentedArticleDto(
 /// A published article together with the current user's like or share activity.
 /// </summary>
 public record UserArticleActivityDto(
-    ArticleSummaryDto Article,
+    PublicArticleSummaryDto Article,
     DateTimeOffset LastInteractedAt,
     int InteractionCount,
     EnumShareChannel? LastShareChannel = null

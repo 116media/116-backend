@@ -156,7 +156,6 @@ public class PublicGetPopularVideosEndpointV1Tests(PostgresFixture db) : BaseApi
 
         PublicGetPopularVideosResponse body = await response.ReadAsAsync<PublicGetPopularVideosResponse>();
         body.Videos.Should().NotContain(v => v.Id == draft.Id);
-        body.Videos.Should().OnlyContain(v => v.Status == EnumContentStatus.Published);
     }
 
     [Fact]

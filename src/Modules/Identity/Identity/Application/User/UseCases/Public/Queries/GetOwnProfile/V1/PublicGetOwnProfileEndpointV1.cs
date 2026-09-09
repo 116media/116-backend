@@ -18,7 +18,7 @@ namespace _116.Identity.Application.User.UseCases.Public.Queries.GetOwnProfile.V
 /// Response model for user profile.
 /// </summary>
 /// <param name="User">The complete user profile information including roles and permissions.</param>
-public record PublicGetOwnProfileResponse(UserResponseDto User);
+public record PublicGetOwnProfileResponse(PublicUserResponseDto User);
 
 /// <summary>
 /// Defines the user profile endpoint for authenticated public users.

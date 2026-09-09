@@ -107,7 +107,7 @@ public static class ShortVideoMapper
 
         return dto with
         {
-            Author = new AuthorDto(
+            Author = new AdminAuthorDto(
                 UserName: authorInfo.UserName,
                 Email: authorInfo.Email,
                 AvatarUrl: avatarUrl,
@@ -147,7 +147,7 @@ public static class ShortVideoMapper
             thumbnailUrl = videoUrl is not null ? GenerateThumbnailUrl(videoUrl) : null;
         }
 
-        AuthorDto? author = null;
+        AdminAuthorDto? author = null;
         if (authors.TryGetValue(entity.AuthorId, out AuthorInfo? authorInfo))
         {
             string? avatarUrl =
@@ -155,7 +155,7 @@ public static class ShortVideoMapper
                     ? avatar.StorageUrl
                     : null;
 
-            author = new AuthorDto(
+            author = new AdminAuthorDto(
                 UserName: authorInfo.UserName,
                 Email: authorInfo.Email,
                 AvatarUrl: avatarUrl,
@@ -229,6 +229,107 @@ public static class ShortVideoMapper
         IReadOnlySet<Guid> bookmarkedShortVideoIds,
         CancellationToken ct = default
     ) => entities.BuildDtosAsync(mapper, userLookup, fileRepository, likedShortVideoIds, bookmarkedShortVideoIds, ct);
+
+    /// <summary>
+    /// Projects a mapped <see cref="ShortVideoDto" /> to its public shape, dropping the audit
+    /// trail, the staff identifier, lifecycle state and the author's contact details.
+    /// </summary>
+    public static PublicShortVideoDto ToPublicShortVideoDto(this ShortVideoDto dto)
+    {
+        return new PublicShortVideoDto(
+            dto.Id,
+            dto.Title,
+            dto.Slug,
+            dto.VideoUrl,
+            dto.ThumbnailUrl,
+            dto.VideoId,
+            dto.VideoSlug,
+            dto.HasFullVideo,
+            dto.ViewCount,
+            dto.LikeCount,
+            dto.ShareCount,
+            dto.BookmarkCount,
+            dto.Author is null ? null : new PublicAuthorDto(dto.Author.UserName, dto.Author.AvatarUrl),
+            dto.IsLiked,
+            dto.IsBookmarked
+        );
+    }
+
+    /// <summary>
+    /// Maps a <see cref="ShortVideoEntity" /> to its public projection with the author profile
+    /// and file URLs resolved, carrying the per-user flags through.
+    /// </summary>
+    public static async Task<PublicShortVideoDto> ToPublicShortVideoDtoAsync(
+        this ShortVideoEntity entity,
+        IMapper mapper,
+        IUserLookupService userLookup,
+        IFileRepository fileRepository,
+        CancellationToken ct = default,
+        bool isLiked = false,
+        bool isBookmarked = false
+    )
+    {
+        ShortVideoDto dto = await entity.ToShortVideoDtoAsync(
+            mapper,
+            userLookup,
+            fileRepository,
+            ct,
+            isLiked,
+            isBookmarked
+        );
+
+        return dto.ToPublicShortVideoDto();
+    }
+
+    /// <summary>
+    /// Maps a list of short videos to their public projection, file URLs resolved in a single
+    /// batch and per-user flags stamped from the supplied id sets (no author).
+    /// </summary>
+    public static async Task<IReadOnlyList<PublicShortVideoDto>> ToPublicShortVideoDtosAsync(
+        this IReadOnlyList<ShortVideoEntity> entities,
+        IMapper mapper,
+        IFileRepository fileRepository,
+        IReadOnlySet<Guid> likedShortVideoIds,
+        IReadOnlySet<Guid> bookmarkedShortVideoIds,
+        CancellationToken ct = default
+    )
+    {
+        IReadOnlyList<ShortVideoDto> dtos = await entities.ToShortVideoDtosAsync(
+            mapper,
+            fileRepository,
+            likedShortVideoIds,
+            bookmarkedShortVideoIds,
+            ct
+        );
+
+        return dtos.Select(dto => dto.ToPublicShortVideoDto()).ToList();
+    }
+
+    /// <summary>
+    /// Maps a list of short videos to their public projection with author profiles and file
+    /// URLs resolved in a single batch, per-user flags stamped from the supplied id sets.
+    /// </summary>
+    public static async Task<IReadOnlyList<PublicShortVideoDto>> ToPublicShortVideoDtosAsync(
+        this IReadOnlyList<ShortVideoEntity> entities,
+        IMapper mapper,
+        IUserLookupService userLookup,
+        IFileRepository fileRepository,
+        IReadOnlySet<Guid> likedShortVideoIds,
+        IReadOnlySet<Guid> bookmarkedShortVideoIds,
+        CancellationToken ct = default
+    )
+    {
+        IReadOnlyList<ShortVideoDto> dtos = await entities.ToShortVideoDtosAsync(
+            mapper,
+            userLookup,
+            fileRepository,
+            likedShortVideoIds,
+            bookmarkedShortVideoIds,
+            ct
+        );
+
+        return dtos.Select(dto => dto.ToPublicShortVideoDto()).ToList();
+    }
 
     /// <summary>
     /// Batch-maps a list of short videos: resolves author profiles (deduped) in one query and

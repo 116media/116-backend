@@ -45,7 +45,7 @@ public class AdminGetArticleByIdHandler(
             ct: cancellationToken
         );
 
-        AuthorDto? author = null;
+        AdminAuthorDto? author = null;
         if (authorInfo is not null)
         {
             string? avatarUrl = null;
@@ -58,7 +58,7 @@ public class AdminGetArticleByIdHandler(
                 avatarUrl = avatarFile?.StorageUrl;
             }
 
-            author = new AuthorDto(
+            author = new AdminAuthorDto(
                 UserName: authorInfo.UserName,
                 Email: authorInfo.Email,
                 AvatarUrl: avatarUrl,

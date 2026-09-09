@@ -17,7 +17,7 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPromoted
 /// Response model for listing promoted articles.
 /// </summary>
 /// <param name="Articles">The list of promoted article summary DTOs.</param>
-public record PublicGetPromotedArticlesResponse(IReadOnlyList<ArticleSummaryDto> Articles);
+public record PublicGetPromotedArticlesResponse(IReadOnlyList<PublicArticleSummaryDto> Articles);
 
 /// <summary>
 /// Defines the public get promoted articles endpoint.
