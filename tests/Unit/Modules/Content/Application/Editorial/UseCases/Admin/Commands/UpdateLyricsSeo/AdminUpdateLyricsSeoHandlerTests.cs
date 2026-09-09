@@ -3,7 +3,8 @@ using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
-using _116.Identity.Contracts.Application;
+using _116.Core.Contracts.Application.Services;
+using _116.Identity.Contracts.Application.Services;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Unit.Tests.Common;
@@ -30,13 +31,13 @@ public class AdminUpdateLyricsSeoHandlerTests : BaseContentHandlerTest
         _lyricsRepositoryMock = MockLyricsRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         Mock<IUserLookupService> userLookupMock = MockUserLookupService.Create();
-        Mock<IFileRepository> fileRepositoryMock = MockFileRepository.Create();
+        Mock<IFileStorageService> fileStorageMock = MockFileStorageService.Create();
         _handler = new AdminUpdateLyricsSeoHandler(
             _lyricsRepositoryMock.Object,
             _unitOfWorkMock.Object,
             Mapper,
             userLookupMock.Object,
-            fileRepositoryMock.Object
+            fileStorageMock.Object
         );
     }
 
