@@ -3,9 +3,9 @@ using _116.Content.Application.Shared.Mappers;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Content.Infrastructure.Repositories;
-using _116.Core.Application.Shared.DTOs;
+using _116.Core.Contracts.Application.DTOs;
 using _116.Core.Domain.Entities;
-using _116.Identity.Contracts.Application;
+using _116.Identity.Contracts.Application.Services;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Factories.Core;
 using _116.Tests.Fixtures.Helpers;
@@ -51,7 +51,7 @@ public class ContentOrderMapperTests : BaseContentHandlerTest, IDisposable
     {
         FileEntity? fileEntity = null;
 
-        FileDto? result = fileEntity.ToFileDto(Mapper);
+        FileDto? result = Mapper.Map<FileDto>(fileEntity!);
 
         result.Should().BeNull();
     }
@@ -59,9 +59,9 @@ public class ContentOrderMapperTests : BaseContentHandlerTest, IDisposable
     [Fact]
     public void ToFileDto_WhenEntityIsNotNull_ShouldMapToFileDto()
     {
-        FileEntity fileEntity = FileFactory.CreateWithTestValues();
+        FileReferenceDto fileEntity = FileReferenceDtoFactory.Create();
 
-        FileDto? result = fileEntity.ToFileDto(Mapper);
+        FileDto? result = Mapper.Map<FileDto>(fileEntity!);
 
         result.Should().NotBeNull();
         result!.Id.Should().Be(fileEntity.Id);
