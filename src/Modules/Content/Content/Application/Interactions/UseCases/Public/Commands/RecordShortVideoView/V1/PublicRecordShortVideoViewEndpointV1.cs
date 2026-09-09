@@ -2,7 +2,7 @@ using System.Security.Claims;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Content.Application.Interactions.Constants;
 using _116.Content.Domain.Constants;
-using _116.Identity.Contracts.Application;
+using _116.Identity.Contracts.Application.Services;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
 using Carter;
