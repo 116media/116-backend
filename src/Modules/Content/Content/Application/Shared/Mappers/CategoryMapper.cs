@@ -1,7 +1,7 @@
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Repositories;
-using _116.Core.Domain.Entities;
+using _116.Core.Contracts.Application.DTOs;
+using _116.Core.Contracts.Application.Services;
 using Mapster;
 using MapsterMapper;
 
@@ -9,7 +9,7 @@ namespace _116.Content.Application.Shared.Mappers;
 
 /// <summary>
 /// Mapster configuration for Category and CategoryPricing entity mappings.
-/// Poster URL is resolved from the associated FileEntity at mapping time
+/// Poster URL is resolved from the associated FileReferenceDto at mapping time
 /// rather than stored as a flat string on the entity.
 /// </summary>
 public static class CategoryMapper
@@ -42,19 +42,19 @@ public static class CategoryMapper
     /// </summary>
     /// <param name="posterFile">The poster file, or null when the category has no poster.</param>
     /// <returns>The color pair, or null when the file carries no extracted colors.</returns>
-    private static CategoryColorsDto? ResolveColors(FileEntity? posterFile) =>
+    private static CategoryColorsDto? ResolveColors(FileReferenceDto? posterFile) =>
         posterFile?.DominantColorHex is { } background && posterFile.ForegroundColorHex is { } foreground
             ? new CategoryColorsDto(background, foreground)
             : null;
 
     /// <summary>
     /// Maps a <see cref="CategoryEntity" /> to a <see cref="CategoryDto" />,
-    /// resolving the poster URL from the associated FileEntity record.
+    /// resolving the poster URL from the associated FileReferenceDto record.
     /// </summary>
     public static async Task<CategoryDto> ToCategoryDtoAsync(
         this CategoryEntity entity,
         IMapper mapper,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         CancellationToken ct = default
     )
     {
@@ -64,7 +64,7 @@ public static class CategoryMapper
         CategoryColorsDto? colors = null;
         if (entity.PosterFileId.HasValue)
         {
-            FileEntity? posterFile = await fileRepository.GetByIdAsync(entity.PosterFileId.Value, ct);
+            FileReferenceDto? posterFile = await fileStorage.ResolveAsync(entity.PosterFileId.Value, ct);
             posterUrl = posterFile?.StorageUrl;
             colors = ResolveColors(posterFile);
         }
@@ -79,19 +79,19 @@ public static class CategoryMapper
 
     /// <summary>
     /// Maps a collection of <see cref="CategoryEntity" /> to a list of <see cref="CategoryDto" />,
-    /// resolving poster URLs from associated FileEntity records.
+    /// resolving poster URLs from associated FileReferenceDto records.
     /// </summary>
     public static async Task<IReadOnlyList<CategoryDto>> ToCategoryDtosAsync(
         this IReadOnlyList<CategoryEntity> entities,
         IMapper mapper,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         CancellationToken ct = default
     )
     {
         var results = new List<CategoryDto>(entities.Count);
         foreach (CategoryEntity entity in entities)
         {
-            results.Add(await entity.ToCategoryDtoAsync(mapper, fileRepository, ct));
+            results.Add(await entity.ToCategoryDtoAsync(mapper, fileStorage, ct));
         }
 
         return results;
@@ -105,14 +105,14 @@ public static class CategoryMapper
     public static CategoryDto ToCategoryDto(
         this CategoryEntity entity,
         IMapper mapper,
-        IReadOnlyDictionary<Guid, FileEntity> files
+        IReadOnlyDictionary<Guid, FileReferenceDto> files
     )
     {
         var dto = mapper.Map<CategoryDto>(entity);
 
         string? posterUrl = null;
         CategoryColorsDto? colors = null;
-        if (entity.PosterFileId is { } posterId && files.TryGetValue(posterId, out FileEntity? poster))
+        if (entity.PosterFileId is { } posterId && files.TryGetValue(posterId, out FileReferenceDto? poster))
         {
             posterUrl = poster.StorageUrl;
             colors = ResolveColors(poster);
