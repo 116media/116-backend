@@ -1,7 +1,7 @@
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Repositories;
-using _116.Core.Domain.Entities;
+using _116.Core.Contracts.Application.DTOs;
+using _116.Core.Contracts.Application.Services;
 
 namespace _116.Content.Application.Shared.Mappers;
 
@@ -17,12 +17,12 @@ public static class ArtistMapper
     /// </summary>
     public static async Task<ArtistDto> ToArtistDtoAsync(
         this ArtistEntity entity,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         CancellationToken ct = default,
         IReadOnlyList<ArtistSocialLinkEntity>? socialLinks = null
     )
     {
-        string? avatarUrl = await ResolveAvatarUrlAsync(entity, fileRepository, ct);
+        string? avatarUrl = await ResolveAvatarUrlAsync(entity, fileStorage, ct);
 
         return entity.ToArtistDto(avatarUrl: avatarUrl, socialLinks: socialLinks);
     }
@@ -54,15 +54,15 @@ public static class ArtistMapper
 
     /// <summary>
     /// Maps a list of <see cref="ArtistEntity" /> to a list of <see cref="ArtistDto" />,
-    /// resolving avatar URLs from associated FileEntity records.
+    /// resolving avatar URLs from associated FileReferenceDto records.
     /// </summary>
     public static async Task<IReadOnlyList<ArtistDto>> ToArtistDtosAsync(
         this IReadOnlyList<ArtistEntity> entities,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         CancellationToken ct = default
     )
     {
-        IReadOnlyDictionary<Guid, FileEntity> files = await fileRepository.GetByIdsAsync(
+        IReadOnlyDictionary<Guid, FileReferenceDto> files = await fileStorage.ResolveManyAsync(
             entities.Where(e => e.AvatarFileId.HasValue).Select(e => e.AvatarFileId!.Value).Distinct().ToList(),
             ct
         );
@@ -84,7 +84,7 @@ public static class ArtistMapper
     /// </summary>
     private static async Task<string?> ResolveAvatarUrlAsync(
         ArtistEntity entity,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         CancellationToken ct
     )
     {
@@ -93,7 +93,7 @@ public static class ArtistMapper
             return null;
         }
 
-        FileEntity? avatarFile = await fileRepository.GetByIdAsync(entity.AvatarFileId.Value, ct);
+        FileReferenceDto? avatarFile = await fileStorage.ResolveAsync(entity.AvatarFileId.Value, ct);
         return avatarFile?.StorageUrl;
     }
 }
