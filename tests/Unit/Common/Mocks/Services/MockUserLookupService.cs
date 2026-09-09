@@ -1,4 +1,5 @@
-using _116.Identity.Contracts.Application;
+using _116.Identity.Contracts.Application.DTOs;
+using _116.Identity.Contracts.Application.Services;
 using Moq;
 
 namespace _116.Unit.Tests.Common.Mocks.Services;
@@ -59,7 +60,7 @@ public static class MockUserLookupService
     /// <returns>The mock instance for chaining.</returns>
     public static Mock<IUserLookupService> SetupGetAuthorInfosByIds(
         this Mock<IUserLookupService> mock,
-        IReadOnlyDictionary<Guid, AuthorInfo> authors
+        IReadOnlyDictionary<Guid, AuthorDto> authors
     )
     {
         mock.Setup(x =>
@@ -111,6 +112,6 @@ public static class MockUserLookupService
         mock.Setup(x =>
                 x.GetAuthorInfosByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>())
             )
-            .ReturnsAsync(new Dictionary<Guid, AuthorInfo>());
+            .ReturnsAsync(new Dictionary<Guid, AuthorDto>());
     }
 }
