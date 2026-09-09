@@ -1,7 +1,7 @@
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
-using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.Services;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
 
@@ -13,7 +13,7 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetOwnCo
 public class PublicGetOwnCommentedArticlesHandler(
     IArticleCommentRepository articleCommentRepository,
     IArticleInteractionRepository articleInteractionRepository,
-    IFileRepository fileRepository
+    IFileStorageService fileStorage
 ) : IQueryHandler<PublicGetOwnCommentedArticlesQuery, PublicGetOwnCommentedArticlesResult>
 {
     /// <inheritdoc />
@@ -44,7 +44,7 @@ public class PublicGetOwnCommentedArticlesHandler(
         foreach (CommentedArticleActivity activity in activities)
         {
             PublicArticleSummaryDto article = await activity.Article.ToPublicArticleSummaryDtoAsync(
-                fileRepository,
+                fileStorage,
                 cancellationToken
             );
             article = article with
