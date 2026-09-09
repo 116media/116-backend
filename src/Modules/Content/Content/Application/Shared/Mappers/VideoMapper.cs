@@ -1,7 +1,7 @@
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Repositories;
-using _116.Core.Domain.Entities;
+using _116.Core.Contracts.Application.DTOs;
+using _116.Core.Contracts.Application.Services;
 using Mapster;
 using MapsterMapper;
 
@@ -42,12 +42,12 @@ public static class VideoMapper
     public static async Task<VideoDetailDto> ToVideoDetailDtoAsync(
         this VideoEntity entity,
         IMapper mapper,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         CancellationToken ct = default,
         short? ratedStars = null
     )
     {
-        string? thumbnailUrl = await ResolveThumbnailUrlAsync(entity, fileRepository, ct);
+        string? thumbnailUrl = await ResolveThumbnailUrlAsync(entity, fileStorage, ct);
 
         return new VideoDetailDto(
             entity.Id,
@@ -95,11 +95,11 @@ public static class VideoMapper
     /// </summary>
     public static async Task<IReadOnlyList<PublicVideoSummaryDto>> ToPublicVideoSummaryDtosAsync(
         this IReadOnlyList<VideoEntity> entities,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         CancellationToken ct = default
     )
     {
-        IReadOnlyDictionary<Guid, FileEntity> files = await fileRepository.GetByIdsAsync(
+        IReadOnlyDictionary<Guid, FileReferenceDto> files = await fileStorage.ResolveManyAsync(
             entities.Where(e => e.ThumbnailFileId.HasValue).Select(e => e.ThumbnailFileId!.Value).Distinct().ToList(),
             ct
         );
@@ -113,7 +113,7 @@ public static class VideoMapper
     /// </summary>
     public static IReadOnlyList<PublicVideoSummaryDto> ToPublicVideoSummaryDtos(
         this IReadOnlyList<VideoEntity> entities,
-        IReadOnlyDictionary<Guid, FileEntity> files
+        IReadOnlyDictionary<Guid, FileReferenceDto> files
     )
     {
         return entities.Select(entity => entity.ToPublicVideoSummaryDto(files)).ToList();
@@ -125,11 +125,11 @@ public static class VideoMapper
     /// </summary>
     public static PublicVideoSummaryDto ToPublicVideoSummaryDto(
         this VideoEntity entity,
-        IReadOnlyDictionary<Guid, FileEntity> files
+        IReadOnlyDictionary<Guid, FileReferenceDto> files
     )
     {
         string? thumbnailUrl =
-            entity.ThumbnailFileId is { } thumbnailId && files.TryGetValue(thumbnailId, out FileEntity? thumbnail)
+            entity.ThumbnailFileId is { } thumbnailId && files.TryGetValue(thumbnailId, out FileReferenceDto? thumbnail)
                 ? thumbnail.StorageUrl
                 : null;
 
@@ -142,11 +142,11 @@ public static class VideoMapper
     /// </summary>
     public static async Task<PublicVideoSummaryDto> ToPublicVideoSummaryDtoAsync(
         this VideoEntity entity,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         CancellationToken ct = default
     )
     {
-        string? thumbnailUrl = await ResolveThumbnailUrlAsync(entity, fileRepository, ct);
+        string? thumbnailUrl = await ResolveThumbnailUrlAsync(entity, fileStorage, ct);
         return entity.ToPublicVideoSummaryDto(thumbnailUrl: thumbnailUrl);
     }
 
@@ -180,12 +180,12 @@ public static class VideoMapper
     public static async Task<PublicVideoDetailDto> ToPublicVideoDetailDtoAsync(
         this VideoEntity entity,
         IMapper mapper,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         CancellationToken ct = default,
         short? ratedStars = null
     )
     {
-        string? thumbnailUrl = await ResolveThumbnailUrlAsync(entity, fileRepository, ct);
+        string? thumbnailUrl = await ResolveThumbnailUrlAsync(entity, fileStorage, ct);
 
         return new PublicVideoDetailDto(
             entity.Id,
@@ -212,16 +212,16 @@ public static class VideoMapper
 
     /// <summary>
     /// Maps a list of <see cref="VideoEntity" /> to a list of <see cref="VideoSummaryDto" />,
-    /// resolving thumbnail URLs from associated FileEntity records.
+    /// resolving thumbnail URLs from associated FileReferenceDto records.
     /// </summary>
     public static async Task<IReadOnlyList<VideoSummaryDto>> ToVideoSummaryDtosAsync(
         this IReadOnlyList<VideoEntity> entities,
         IMapper mapper,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         CancellationToken ct = default
     )
     {
-        IReadOnlyDictionary<Guid, FileEntity> files = await fileRepository.GetByIdsAsync(
+        IReadOnlyDictionary<Guid, FileReferenceDto> files = await fileStorage.ResolveManyAsync(
             entities.Where(e => e.ThumbnailFileId.HasValue).Select(e => e.ThumbnailFileId!.Value).Distinct().ToList(),
             ct
         );
@@ -238,11 +238,11 @@ public static class VideoMapper
     public static VideoSummaryDto ToVideoSummaryDto(
         this VideoEntity entity,
         IMapper mapper,
-        IReadOnlyDictionary<Guid, FileEntity> files
+        IReadOnlyDictionary<Guid, FileReferenceDto> files
     )
     {
         string? thumbnailUrl =
-            entity.ThumbnailFileId is { } thumbnailId && files.TryGetValue(thumbnailId, out FileEntity? thumbnail)
+            entity.ThumbnailFileId is { } thumbnailId && files.TryGetValue(thumbnailId, out FileReferenceDto? thumbnail)
                 ? thumbnail.StorageUrl
                 : null;
 
@@ -273,12 +273,12 @@ public static class VideoMapper
     }
 
     /// <summary>
-    /// Resolves the thumbnail URL from the associated FileEntity, or returns null
+    /// Resolves the thumbnail URL from the associated FileReferenceDto, or returns null
     /// if no thumbnail has been uploaded.
     /// </summary>
     private static async Task<string?> ResolveThumbnailUrlAsync(
         VideoEntity entity,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         CancellationToken ct
     )
     {
@@ -287,7 +287,7 @@ public static class VideoMapper
             return null;
         }
 
-        FileEntity? thumbnailFile = await fileRepository.GetByIdAsync(entity.ThumbnailFileId.Value, ct);
+        FileReferenceDto? thumbnailFile = await fileStorage.ResolveAsync(entity.ThumbnailFileId.Value, ct);
         return thumbnailFile?.StorageUrl;
     }
 }
