@@ -3,13 +3,16 @@ using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.Services;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Factories.Core;
 using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
+using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
 using Moq;
@@ -23,19 +26,19 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 public class AdminCreateShortVideoHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<IShortVideoRepository> _shortVideoRepositoryMock;
-    private readonly Mock<IFileRepository> _fileRepositoryMock;
+    private readonly Mock<IFileStorageService> _fileStorageMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminCreateShortVideoHandler _handler;
 
     public AdminCreateShortVideoHandlerTests()
     {
         _shortVideoRepositoryMock = MockShortVideoRepository.Create();
-        _fileRepositoryMock = MockFileRepository.Create();
+        _fileStorageMock = MockFileStorageService.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
 
         _handler = new AdminCreateShortVideoHandler(
             _shortVideoRepositoryMock.Object,
-            _fileRepositoryMock.Object,
+            _fileStorageMock.Object,
             _unitOfWorkMock.Object,
             Mapper,
             TestErrorsFactory.CreateContentI18n()
