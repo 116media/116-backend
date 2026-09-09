@@ -5,6 +5,9 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Core.Application.Shared.Services;
+using _116.Core.Contracts.Application.DTOs;
+using _116.Core.Contracts.Application.Services;
+using _116.Core.Contracts.Domain.Enums;
 using _116.Core.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
@@ -27,21 +30,21 @@ namespace _116.Unit.Tests.Modules.Content.Application.Commerce.UseCases.Admin.Co
 /// </summary>
 public class AdminAttachPaymentProofHandlerTests : BaseContentHandlerTest
 {
+    private readonly Mock<IFileStorageService> _fileStorageMock;
     private readonly Mock<IOrderPaymentFactory> _orderPaymentFactoryMock;
-    private readonly Mock<IFileUploadService> _fileUploadServiceMock;
     private readonly Mock<IContentOrderRepository> _orderRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminAttachPaymentProofHandler _handler;
 
     public AdminAttachPaymentProofHandlerTests()
     {
+        _fileStorageMock = MockFileStorageService.Create();
         _orderPaymentFactoryMock = MockOrderPaymentFactory.Create();
-        _fileUploadServiceMock = MockFileUploadService.Create();
         _orderRepositoryMock = MockContentOrderRepository.Create();
-        _unitOfWorkMock = MockContentUnitOfWork.Create().SetupExecuteInTransaction<FileEntity>();
+        _unitOfWorkMock = MockContentUnitOfWork.Create().SetupExecuteInTransaction<FileReferenceDto>();
         _handler = new AdminAttachPaymentProofHandler(
             _orderPaymentFactoryMock.Object,
-            _fileUploadServiceMock.Object,
+            _fileStorageMock.Object,
             _orderRepositoryMock.Object,
             _unitOfWorkMock.Object,
             Mapper
@@ -56,20 +59,22 @@ public class AdminAttachPaymentProofHandlerTests : BaseContentHandlerTest
         // Arrange
         Guid orderId = Guid.NewGuid();
         ContentPaymentEntity payment = ContentPaymentFactory.Create(orderId);
-        FileEntity proofFile = FileFactory.CreateJpeg();
+        FileReferenceDto proofFile = FileReferenceDtoFactory.CreateJpeg();
 
         _orderPaymentFactoryMock.SetupGetByOrderId(orderId, payment);
-        _fileUploadServiceMock
+        _fileStorageMock
             .Setup(x =>
-                x.UploadRawAsync(
+                x.UploadAsync(
                     It.IsAny<IFormFile>(),
                     It.IsAny<string>(),
                     It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
+                    It.IsAny<EnumStoredFileKind>(),
                     It.IsAny<CancellationToken>()
                 )
             )
+            .ReturnsAsync(StoredFileFactory.From(proofFile));
+        _fileStorageMock
+            .Setup(x => x.RecordAsync(It.IsAny<StoredFile>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(proofFile);
 
         Mock<IFormFile> fileMock = new();
@@ -92,7 +97,7 @@ public class AdminAttachPaymentProofHandlerTests : BaseContentHandlerTest
         result.Proof.OriginalFileName.Should().Be(proofFile.OriginalFileName);
         result.Proof.StorageUrl.Should().Be(proofFile.StorageUrl);
         _orderRepositoryMock.Verify(x => x.UpdatePaymentAsync(payment, It.IsAny<CancellationToken>()), Times.Once);
-        _unitOfWorkMock.VerifyExecutedInTransaction<FileEntity>();
+        _unitOfWorkMock.VerifyExecutedInTransaction<FileReferenceDto>();
     }
 
     #endregion
@@ -121,7 +126,7 @@ public class AdminAttachPaymentProofHandlerTests : BaseContentHandlerTest
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
-        _unitOfWorkMock.VerifyExecutedInTransaction<FileEntity>(0);
+        _unitOfWorkMock.VerifyExecutedInTransaction<FileReferenceDto>(0);
     }
 
     [Fact]
@@ -150,63 +155,8 @@ public class AdminAttachPaymentProofHandlerTests : BaseContentHandlerTest
             x => x.GetByOrderIdOrThrowAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
             Times.Never
         );
-        _fileUploadServiceMock.Verify(
-            x =>
-                x.UploadRawAsync(
-                    It.IsAny<IFormFile>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<CancellationToken>()
-                ),
-            Times.Never
-        );
-        _unitOfWorkMock.VerifyExecutedInTransaction<FileEntity>(0);
-    }
 
-    [Fact]
-    public async Task Handle_ShouldExtractMimeTypeBeforeSemicolon()
-    {
-        // Arrange
-        Guid orderId = Guid.NewGuid();
-        ContentPaymentEntity payment = ContentPaymentFactory.Create(orderId);
-        FileEntity proofFile = FileFactory.CreateJpeg();
-
-        _orderPaymentFactoryMock.SetupGetByOrderId(orderId, payment);
-
-        string capturedMimeType = string.Empty;
-        _fileUploadServiceMock
-            .Setup(x =>
-                x.UploadRawAsync(
-                    It.IsAny<IFormFile>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<CancellationToken>()
-                )
-            )
-            .Callback<IFormFile, string, string, string, string, CancellationToken>(
-                (_, _, _, _, mime, _) => capturedMimeType = mime
-            )
-            .ReturnsAsync(proofFile);
-
-        Mock<IFormFile> fileMock = new();
-        fileMock.Setup(f => f.ContentType).Returns("image/jpeg; charset=utf-8");
-        fileMock.Setup(f => f.FileName).Returns("proof.jpg");
-
-        var command = new AdminAttachPaymentProofCommand(
-            OrderId: orderId.ToString(),
-            File: fileMock.Object,
-            PaymentMethod: EnumPaymentMethod.BankTransfer
-        );
-
-        // Act
-        await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        capturedMimeType.Should().Be("image/jpeg");
+        _unitOfWorkMock.VerifyExecutedInTransaction<FileReferenceDto>(0);
     }
 
     #endregion
