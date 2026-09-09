@@ -1,4 +1,5 @@
 using _116.Core.Application.Shared.Services;
+using _116.Core.Contracts.Domain.Enums;
 using Moq;
 
 namespace _116.Unit.Tests.Common.Mocks.Services;
@@ -14,7 +15,10 @@ public static class MockFileService
     public static Mock<IFileService> Create()
     {
         Mock<IFileService> mock = new();
-        mock.Setup(x => x.DeleteFileAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        mock.Setup(x =>
+                x.DeleteFileAsync(It.IsAny<string>(), It.IsAny<EnumStoredFileKind>(), It.IsAny<CancellationToken>())
+            )
+            .ReturnsAsync(true);
         return mock;
     }
 
@@ -24,7 +28,10 @@ public static class MockFileService
     /// <param name="mock">The mock instance.</param>
     public static void VerifyDeleteFileCalled(this Mock<IFileService> mock)
     {
-        mock.Verify(x => x.DeleteFileAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
+        mock.Verify(
+            x => x.DeleteFileAsync(It.IsAny<string>(), It.IsAny<EnumStoredFileKind>(), It.IsAny<CancellationToken>()),
+            Times.AtLeastOnce
+        );
     }
 
     /// <summary>
@@ -34,7 +41,10 @@ public static class MockFileService
     /// <param name="times">The expected number of calls.</param>
     public static void VerifyDeleteFileCalled(this Mock<IFileService> mock, Times times)
     {
-        mock.Verify(x => x.DeleteFileAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), times);
+        mock.Verify(
+            x => x.DeleteFileAsync(It.IsAny<string>(), It.IsAny<EnumStoredFileKind>(), It.IsAny<CancellationToken>()),
+            times
+        );
     }
 
     /// <summary>
@@ -43,6 +53,9 @@ public static class MockFileService
     /// <param name="mock">The mock instance.</param>
     public static void VerifyDeleteFileNotCalled(this Mock<IFileService> mock)
     {
-        mock.Verify(x => x.DeleteFileAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+        mock.Verify(
+            x => x.DeleteFileAsync(It.IsAny<string>(), It.IsAny<EnumStoredFileKind>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
     }
 }
