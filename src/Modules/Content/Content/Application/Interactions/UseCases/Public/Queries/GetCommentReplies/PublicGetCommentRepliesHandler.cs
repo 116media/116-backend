@@ -2,8 +2,9 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Repositories;
-using _116.Identity.Contracts.Application;
+using _116.Core.Contracts.Application.Services;
+using _116.Identity.Contracts.Application.DTOs;
+using _116.Identity.Contracts.Application.Services;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
 
@@ -16,11 +17,11 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetComme
 /// </summary>
 /// <param name="articleCommentRepository">Repository for article comment data access operations.</param>
 /// <param name="userLookup">Cross-module service for resolving commenter profiles.</param>
-/// <param name="fileRepository">Repository for resolving avatar file URLs.</param>
+/// <param name="fileStorage">Core's storage contract.</param>
 public class PublicGetCommentRepliesHandler(
     IArticleCommentRepository articleCommentRepository,
     IUserLookupService userLookup,
-    IFileRepository fileRepository
+    IFileStorageService fileStorage
 ) : IQueryHandler<PublicGetCommentRepliesQuery, PublicGetCommentRepliesResult>
 {
     /// <inheritdoc />
@@ -81,7 +82,7 @@ public class PublicGetCommentRepliesHandler(
             return new Dictionary<Guid, PublicAuthorDto>();
         }
 
-        IReadOnlyDictionary<Guid, AuthorInfo> authorInfos = await userLookup.GetAuthorInfosByIdsAsync(
+        IReadOnlyDictionary<Guid, AuthorDto> authorInfos = await userLookup.GetAuthorInfosByIdsAsync(
             userIds: userIds,
             ct: cancellationToken
         );
@@ -95,13 +96,13 @@ public class PublicGetCommentRepliesHandler(
         IReadOnlyDictionary<Guid, string> avatarUrls =
             avatarFileIds.Length == 0
                 ? new Dictionary<Guid, string>()
-                : await fileRepository.GetStorageUrlsByIdsAsync(avatarFileIds, cancellationToken);
+                : await fileStorage.ResolveUrlsAsync(avatarFileIds, cancellationToken);
 
         return authorInfos.ToDictionary(
             pair => pair.Key,
             pair =>
             {
-                AuthorInfo info = pair.Value;
+                AuthorDto info = pair.Value;
                 string? avatarUrl = info.AvatarFileId.HasValue
                     ? avatarUrls.GetValueOrDefault(info.AvatarFileId.Value)
                     : null;
