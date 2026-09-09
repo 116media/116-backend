@@ -1,8 +1,9 @@
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Repositories;
-using _116.Core.Domain.Entities;
-using _116.Identity.Contracts.Application;
+using _116.Core.Contracts.Application.DTOs;
+using _116.Core.Contracts.Application.Services;
+using _116.Identity.Contracts.Application.DTOs;
+using _116.Identity.Contracts.Application.Services;
 using Mapster;
 using MapsterMapper;
 
@@ -10,7 +11,7 @@ namespace _116.Content.Application.Shared.Mappers;
 
 /// <summary>
 /// Mapster configuration and extension methods for ShortVideo entity mappings.
-/// Video and thumbnail URLs are resolved from associated FileEntity records
+/// Video and thumbnail URLs are resolved from associated FileReferenceDto records
 /// rather than stored as flat strings on the entity.
 /// </summary>
 public static class ShortVideoMapper
@@ -18,7 +19,7 @@ public static class ShortVideoMapper
     /// <summary>
     /// Registers ShortVideo entity mappings into the provided TypeAdapterConfig.
     /// Ignores <c>VideoUrl</c> and <c>ThumbnailUrl</c> since they are resolved at mapping time
-    /// from associated FileEntity records.
+    /// from associated FileReferenceDto records.
     /// </summary>
     /// <param name="config">The TypeAdapterConfig to register mappings into.</param>
     public static void Register(TypeAdapterConfig config)
@@ -31,14 +32,14 @@ public static class ShortVideoMapper
 
     /// <summary>
     /// Maps a <see cref="ShortVideoEntity" /> to a <see cref="ShortVideoDto" />,
-    /// resolving the video and thumbnail URLs from associated FileEntity records.
+    /// resolving the video and thumbnail URLs from associated FileReferenceDto records.
     /// The per-user <paramref name="isLiked" /> and <paramref name="isBookmarked" /> flags
     /// default to false so anonymous and listing callers omit them.
     /// </summary>
     public static async Task<ShortVideoDto> ToShortVideoDtoAsync(
         this ShortVideoEntity entity,
         IMapper mapper,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         CancellationToken ct = default,
         bool isLiked = false,
         bool isBookmarked = false
@@ -49,14 +50,14 @@ public static class ShortVideoMapper
         string? videoUrl = null;
         if (entity.VideoFileId.HasValue)
         {
-            FileEntity? videoFile = await fileRepository.GetByIdAsync(entity.VideoFileId.Value, ct);
+            FileReferenceDto? videoFile = await fileStorage.ResolveAsync(entity.VideoFileId.Value, ct);
             videoUrl = videoFile?.StorageUrl;
         }
 
         string? thumbnailUrl = null;
         if (entity.ThumbnailFileId.HasValue)
         {
-            FileEntity? thumbnailFile = await fileRepository.GetByIdAsync(entity.ThumbnailFileId.Value, ct);
+            FileReferenceDto? thumbnailFile = await fileStorage.ResolveAsync(entity.ThumbnailFileId.Value, ct);
             thumbnailUrl = thumbnailFile?.StorageUrl;
         }
         else if (videoUrl is not null)
@@ -83,15 +84,15 @@ public static class ShortVideoMapper
         this ShortVideoEntity entity,
         IMapper mapper,
         IUserLookupService userLookup,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         CancellationToken ct = default,
         bool isLiked = false,
         bool isBookmarked = false
     )
     {
-        ShortVideoDto dto = await entity.ToShortVideoDtoAsync(mapper, fileRepository, ct, isLiked, isBookmarked);
+        ShortVideoDto dto = await entity.ToShortVideoDtoAsync(mapper, fileStorage, ct, isLiked, isBookmarked);
 
-        AuthorInfo? authorInfo = await userLookup.GetAuthorInfoByIdAsync(userId: entity.AuthorId, ct: ct);
+        AuthorDto? authorInfo = await userLookup.GetAuthorInfoByIdAsync(userId: entity.AuthorId, ct: ct);
 
         if (authorInfo is null)
         {
@@ -101,7 +102,7 @@ public static class ShortVideoMapper
         string? avatarUrl = null;
         if (authorInfo.AvatarFileId.HasValue)
         {
-            FileEntity? avatarFile = await fileRepository.GetByIdAsync(authorInfo.AvatarFileId.Value, ct);
+            FileReferenceDto? avatarFile = await fileStorage.ResolveAsync(authorInfo.AvatarFileId.Value, ct);
             avatarUrl = avatarFile?.StorageUrl;
         }
 
@@ -124,8 +125,8 @@ public static class ShortVideoMapper
     public static ShortVideoDto ToShortVideoDto(
         this ShortVideoEntity entity,
         IMapper mapper,
-        IReadOnlyDictionary<Guid, FileEntity> files,
-        IReadOnlyDictionary<Guid, AuthorInfo> authors,
+        IReadOnlyDictionary<Guid, FileReferenceDto> files,
+        IReadOnlyDictionary<Guid, AuthorDto> authors,
         IReadOnlySet<Guid> likedShortVideoIds,
         IReadOnlySet<Guid> bookmarkedShortVideoIds
     )
@@ -133,12 +134,15 @@ public static class ShortVideoMapper
         var dto = mapper.Map<ShortVideoDto>(entity);
 
         string? videoUrl =
-            entity.VideoFileId is { } videoFileId && files.TryGetValue(videoFileId, out FileEntity? videoFile)
+            entity.VideoFileId is { } videoFileId && files.TryGetValue(videoFileId, out FileReferenceDto? videoFile)
                 ? videoFile.StorageUrl
                 : null;
 
         string? thumbnailUrl;
-        if (entity.ThumbnailFileId is { } thumbnailFileId && files.TryGetValue(thumbnailFileId, out FileEntity? thumb))
+        if (
+            entity.ThumbnailFileId is { } thumbnailFileId
+            && files.TryGetValue(thumbnailFileId, out FileReferenceDto? thumb)
+        )
         {
             thumbnailUrl = thumb.StorageUrl;
         }
@@ -148,10 +152,11 @@ public static class ShortVideoMapper
         }
 
         AdminAuthorDto? author = null;
-        if (authors.TryGetValue(entity.AuthorId, out AuthorInfo? authorInfo))
+        if (authors.TryGetValue(entity.AuthorId, out AuthorDto? authorInfo))
         {
             string? avatarUrl =
-                authorInfo.AvatarFileId is { } avatarFileId && files.TryGetValue(avatarFileId, out FileEntity? avatar)
+                authorInfo.AvatarFileId is { } avatarFileId
+                && files.TryGetValue(avatarFileId, out FileReferenceDto? avatar)
                     ? avatar.StorageUrl
                     : null;
 
@@ -180,9 +185,9 @@ public static class ShortVideoMapper
     public static Task<IReadOnlyList<ShortVideoDto>> ToShortVideoDtosAsync(
         this IReadOnlyList<ShortVideoEntity> entities,
         IMapper mapper,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         CancellationToken ct = default
-    ) => entities.BuildDtosAsync(mapper, userLookup: null, fileRepository, EmptyIds, EmptyIds, ct);
+    ) => entities.BuildDtosAsync(mapper, userLookup: null, fileStorage, EmptyIds, EmptyIds, ct);
 
     /// <summary>
     /// Maps a list of short videos with file URLs resolved in a single batch, stamping
@@ -191,19 +196,12 @@ public static class ShortVideoMapper
     public static Task<IReadOnlyList<ShortVideoDto>> ToShortVideoDtosAsync(
         this IReadOnlyList<ShortVideoEntity> entities,
         IMapper mapper,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         IReadOnlySet<Guid> likedShortVideoIds,
         IReadOnlySet<Guid> bookmarkedShortVideoIds,
         CancellationToken ct = default
     ) =>
-        entities.BuildDtosAsync(
-            mapper,
-            userLookup: null,
-            fileRepository,
-            likedShortVideoIds,
-            bookmarkedShortVideoIds,
-            ct
-        );
+        entities.BuildDtosAsync(mapper, userLookup: null, fileStorage, likedShortVideoIds, bookmarkedShortVideoIds, ct);
 
     /// <summary>
     /// Maps a list of short videos with author profiles and file URLs resolved in a single batch.
@@ -212,9 +210,9 @@ public static class ShortVideoMapper
         this IReadOnlyList<ShortVideoEntity> entities,
         IMapper mapper,
         IUserLookupService userLookup,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         CancellationToken ct = default
-    ) => entities.BuildDtosAsync(mapper, userLookup, fileRepository, EmptyIds, EmptyIds, ct);
+    ) => entities.BuildDtosAsync(mapper, userLookup, fileStorage, EmptyIds, EmptyIds, ct);
 
     /// <summary>
     /// Maps a list of short videos with author profiles and file URLs resolved in a single
@@ -224,11 +222,11 @@ public static class ShortVideoMapper
         this IReadOnlyList<ShortVideoEntity> entities,
         IMapper mapper,
         IUserLookupService userLookup,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         IReadOnlySet<Guid> likedShortVideoIds,
         IReadOnlySet<Guid> bookmarkedShortVideoIds,
         CancellationToken ct = default
-    ) => entities.BuildDtosAsync(mapper, userLookup, fileRepository, likedShortVideoIds, bookmarkedShortVideoIds, ct);
+    ) => entities.BuildDtosAsync(mapper, userLookup, fileStorage, likedShortVideoIds, bookmarkedShortVideoIds, ct);
 
     /// <summary>
     /// Projects a mapped <see cref="ShortVideoDto" /> to its public shape, dropping the audit
@@ -263,7 +261,7 @@ public static class ShortVideoMapper
         this ShortVideoEntity entity,
         IMapper mapper,
         IUserLookupService userLookup,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         CancellationToken ct = default,
         bool isLiked = false,
         bool isBookmarked = false
@@ -272,7 +270,7 @@ public static class ShortVideoMapper
         ShortVideoDto dto = await entity.ToShortVideoDtoAsync(
             mapper,
             userLookup,
-            fileRepository,
+            fileStorage,
             ct,
             isLiked,
             isBookmarked
@@ -288,7 +286,7 @@ public static class ShortVideoMapper
     public static async Task<IReadOnlyList<PublicShortVideoDto>> ToPublicShortVideoDtosAsync(
         this IReadOnlyList<ShortVideoEntity> entities,
         IMapper mapper,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         IReadOnlySet<Guid> likedShortVideoIds,
         IReadOnlySet<Guid> bookmarkedShortVideoIds,
         CancellationToken ct = default
@@ -296,7 +294,7 @@ public static class ShortVideoMapper
     {
         IReadOnlyList<ShortVideoDto> dtos = await entities.ToShortVideoDtosAsync(
             mapper,
-            fileRepository,
+            fileStorage,
             likedShortVideoIds,
             bookmarkedShortVideoIds,
             ct
@@ -313,7 +311,7 @@ public static class ShortVideoMapper
         this IReadOnlyList<ShortVideoEntity> entities,
         IMapper mapper,
         IUserLookupService userLookup,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         IReadOnlySet<Guid> likedShortVideoIds,
         IReadOnlySet<Guid> bookmarkedShortVideoIds,
         CancellationToken ct = default
@@ -322,7 +320,7 @@ public static class ShortVideoMapper
         IReadOnlyList<ShortVideoDto> dtos = await entities.ToShortVideoDtosAsync(
             mapper,
             userLookup,
-            fileRepository,
+            fileStorage,
             likedShortVideoIds,
             bookmarkedShortVideoIds,
             ct
@@ -340,7 +338,7 @@ public static class ShortVideoMapper
         this IReadOnlyList<ShortVideoEntity> entities,
         IMapper mapper,
         IUserLookupService? userLookup,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         IReadOnlySet<Guid> likedShortVideoIds,
         IReadOnlySet<Guid> bookmarkedShortVideoIds,
         CancellationToken ct
@@ -351,7 +349,7 @@ public static class ShortVideoMapper
             return [];
         }
 
-        IReadOnlyDictionary<Guid, AuthorInfo> authors = EmptyAuthors;
+        IReadOnlyDictionary<Guid, AuthorDto> authors = EmptyAuthors;
         if (userLookup is not null)
         {
             List<Guid> authorIds = entities.Select(entity => entity.AuthorId).Distinct().ToList();
@@ -370,7 +368,7 @@ public static class ShortVideoMapper
                 fileIds.Add(thumbnailFileId);
             }
         }
-        foreach (AuthorInfo authorInfo in authors.Values)
+        foreach (AuthorDto authorInfo in authors.Values)
         {
             if (authorInfo.AvatarFileId is { } avatarFileId)
             {
@@ -378,8 +376,8 @@ public static class ShortVideoMapper
             }
         }
 
-        IReadOnlyDictionary<Guid, FileEntity> files =
-            fileIds.Count == 0 ? EmptyFiles : await fileRepository.GetByIdsAsync(fileIds, ct);
+        IReadOnlyDictionary<Guid, FileReferenceDto> files =
+            fileIds.Count == 0 ? EmptyFiles : await fileStorage.ResolveManyAsync(fileIds, ct);
 
         return entities
             .Select(entity =>
@@ -389,8 +387,9 @@ public static class ShortVideoMapper
     }
 
     private static readonly IReadOnlySet<Guid> EmptyIds = new HashSet<Guid>();
-    private static readonly IReadOnlyDictionary<Guid, AuthorInfo> EmptyAuthors = new Dictionary<Guid, AuthorInfo>();
-    private static readonly IReadOnlyDictionary<Guid, FileEntity> EmptyFiles = new Dictionary<Guid, FileEntity>();
+    private static readonly IReadOnlyDictionary<Guid, AuthorDto> EmptyAuthors = new Dictionary<Guid, AuthorDto>();
+    private static readonly IReadOnlyDictionary<Guid, FileReferenceDto> EmptyFiles =
+        new Dictionary<Guid, FileReferenceDto>();
 
     /// <summary>
     /// Generates an auto-thumbnail URL from a Cloudinary video URL by inserting
