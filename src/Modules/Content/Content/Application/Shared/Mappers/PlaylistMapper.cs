@@ -1,6 +1,7 @@
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.DTOs;
+using _116.Core.Contracts.Application.Services;
 using Mapster;
 using MapsterMapper;
 
@@ -42,12 +43,12 @@ public static class PlaylistMapper
 
     /// <summary>
     /// Maps a <see cref="PlaylistEntity" /> to a <see cref="PlaylistDetailDto" />,
-    /// resolving video thumbnail URLs from associated FileEntity records.
+    /// resolving video thumbnail URLs from associated FileReferenceDto records.
     /// </summary>
     public static async Task<PlaylistDetailDto> ToPlaylistDetailDtoAsync(
         this PlaylistEntity entity,
         IMapper mapper,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         CancellationToken ct = default
     )
     {
@@ -76,7 +77,7 @@ public static class PlaylistMapper
         IReadOnlyDictionary<Guid, string> thumbnailUrls =
             thumbnailFileIds.Length == 0
                 ? new Dictionary<Guid, string>()
-                : await fileRepository.GetStorageUrlsByIdsAsync(thumbnailFileIds, ct);
+                : await fileStorage.ResolveUrlsAsync(thumbnailFileIds, ct);
 
         var resolved = new List<VideoInPlaylistDto>(videoDtos.Count);
         for (int i = 0; i < videoDtos.Count; i++)
@@ -105,7 +106,7 @@ public static class PlaylistMapper
     public static async Task<IReadOnlyList<PlaylistDto>> ToPlaylistDtosAsync(
         this IReadOnlyList<PlaylistEntity> entities,
         IMapper mapper,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         CancellationToken ct = default
     )
     {
@@ -118,7 +119,7 @@ public static class PlaylistMapper
         IReadOnlyDictionary<Guid, string> thumbnailUrls =
             thumbnailFileIds.Length == 0
                 ? new Dictionary<Guid, string>()
-                : await fileRepository.GetStorageUrlsByIdsAsync(thumbnailFileIds, ct);
+                : await fileStorage.ResolveUrlsAsync(thumbnailFileIds, ct);
 
         return entities
             .Select(e =>
