@@ -1,8 +1,9 @@
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Repositories;
-using _116.Core.Domain.Entities;
-using _116.Identity.Contracts.Application;
+using _116.Core.Contracts.Application.DTOs;
+using _116.Core.Contracts.Application.Services;
+using _116.Identity.Contracts.Application.DTOs;
+using _116.Identity.Contracts.Application.Services;
 using Mapster;
 using MapsterMapper;
 
@@ -42,11 +43,11 @@ public static class LyricsMapper
     /// </summary>
     public static async Task<LyricsSummaryDto> ToLyricsSummaryDtoAsync(
         this LyricsEntity entity,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         CancellationToken ct = default
     )
     {
-        string? coverImageUrl = await ResolveCoverImageUrlAsync(entity, fileRepository, ct);
+        string? coverImageUrl = await ResolveCoverImageUrlAsync(entity, fileStorage, ct);
 
         return entity.ToLyricsSummaryDto(coverImageUrl: coverImageUrl);
     }
@@ -84,17 +85,17 @@ public static class LyricsMapper
 
     /// <summary>
     /// Maps a list of <see cref="LyricsEntity" /> to a list of <see cref="LyricsSummaryDto" />,
-    /// resolving cover image URLs from associated FileEntity records. <c>IsLiked</c> always
+    /// resolving cover image URLs from associated FileReferenceDto records. <c>IsLiked</c> always
     /// resolves to false on every item — use the overload taking
     /// <paramref name="likedLyricsIds" /> below to stamp per-caller interaction state.
     /// </summary>
     public static async Task<IReadOnlyList<LyricsSummaryDto>> ToLyricsSummaryDtosAsync(
         this IReadOnlyList<LyricsEntity> entities,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         CancellationToken ct = default
     )
     {
-        IReadOnlyDictionary<Guid, FileEntity> files = await fileRepository.GetByIdsAsync(
+        IReadOnlyDictionary<Guid, FileReferenceDto> files = await fileStorage.ResolveManyAsync(
             entities.Where(e => e.CoverImageFileId.HasValue).Select(e => e.CoverImageFileId!.Value).Distinct().ToList(),
             ct
         );
@@ -116,18 +117,18 @@ public static class LyricsMapper
     /// for an anonymous request or an admin context that does not need per-user state.
     /// </summary>
     /// <param name="entity">The lyrics page to map.</param>
-    /// <param name="fileRepository">Repository used to resolve the cover image URL.</param>
+    /// <param name="fileStorage">Core's storage contract.</param>
     /// <param name="likedLyricsIds">Ids the current user has liked.</param>
     /// <param name="ct">Token to observe for cancellation requests.</param>
     /// <returns>The mapped summary with the interaction flag applied.</returns>
     public static async Task<LyricsSummaryDto> ToLyricsSummaryDtoAsync(
         this LyricsEntity entity,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         IReadOnlySet<Guid> likedLyricsIds,
         CancellationToken ct = default
     )
     {
-        LyricsSummaryDto dto = await entity.ToLyricsSummaryDtoAsync(fileRepository, ct);
+        LyricsSummaryDto dto = await entity.ToLyricsSummaryDtoAsync(fileStorage, ct);
         return dto with { IsLiked = likedLyricsIds.Contains(entity.Id) };
     }
 
@@ -137,31 +138,31 @@ public static class LyricsMapper
     /// anonymous request or an admin context that does not need per-user state.
     /// </summary>
     /// <param name="entities">The lyrics pages to map.</param>
-    /// <param name="fileRepository">Repository used to resolve cover image URLs.</param>
+    /// <param name="fileStorage">Core's storage contract.</param>
     /// <param name="likedLyricsIds">Ids the current user has liked.</param>
     /// <param name="ct">Token to observe for cancellation requests.</param>
     /// <returns>The mapped summaries with the interaction flag applied.</returns>
     public static async Task<IReadOnlyList<LyricsSummaryDto>> ToLyricsSummaryDtosAsync(
         this IReadOnlyList<LyricsEntity> entities,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         IReadOnlySet<Guid> likedLyricsIds,
         CancellationToken ct = default
     )
     {
-        IReadOnlyList<LyricsSummaryDto> summaries = await entities.ToLyricsSummaryDtosAsync(fileRepository, ct);
+        IReadOnlyList<LyricsSummaryDto> summaries = await entities.ToLyricsSummaryDtosAsync(fileStorage, ct);
 
         return summaries.Select(dto => dto with { IsLiked = likedLyricsIds.Contains(dto.Id) }).ToList();
     }
 
     /// <summary>
     /// Maps a <see cref="LyricsEntity" /> to a <see cref="LyricsDetailDto" />,
-    /// resolving the cover image URL from the associated FileEntity and the author profile
+    /// resolving the cover image URL from the associated FileReferenceDto and the author profile
     /// from the Identity module.
     /// </summary>
     /// <param name="entity">The lyrics page to map.</param>
     /// <param name="mapper">The Mapster mapper used for tags.</param>
     /// <param name="userLookup">Service for resolving author profiles from the Identity module.</param>
-    /// <param name="fileRepository">Repository used to resolve the cover image URL.</param>
+    /// <param name="fileStorage">Core's storage contract.</param>
     /// <param name="ct">Token to observe for cancellation requests.</param>
     /// <param name="isLiked">
     /// Whether the current user has liked this lyrics page. False when anonymous.
@@ -171,12 +172,12 @@ public static class LyricsMapper
         this LyricsEntity entity,
         IMapper mapper,
         IUserLookupService userLookup,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         CancellationToken ct = default,
         bool isLiked = false
     )
     {
-        string? coverImageUrl = await ResolveCoverImageUrlAsync(entity, fileRepository, ct);
+        string? coverImageUrl = await ResolveCoverImageUrlAsync(entity, fileStorage, ct);
 
         var dto = new LyricsDetailDto(
             entity.Id,
@@ -216,7 +217,7 @@ public static class LyricsMapper
             IsLiked = isLiked,
         };
 
-        AuthorInfo? authorInfo = await userLookup.GetAuthorInfoByIdAsync(userId: entity.AuthorId, ct: ct);
+        AuthorDto? authorInfo = await userLookup.GetAuthorInfoByIdAsync(userId: entity.AuthorId, ct: ct);
 
         if (authorInfo is null)
         {
@@ -226,7 +227,7 @@ public static class LyricsMapper
         string? avatarUrl = null;
         if (authorInfo.AvatarFileId.HasValue)
         {
-            FileEntity? avatarFile = await fileRepository.GetByIdAsync(authorInfo.AvatarFileId.Value, ct);
+            FileReferenceDto? avatarFile = await fileStorage.ResolveAsync(authorInfo.AvatarFileId.Value, ct);
             avatarUrl = avatarFile?.StorageUrl;
         }
 
@@ -249,14 +250,14 @@ public static class LyricsMapper
         this IReadOnlyList<LyricsEntity> entities,
         IMapper mapper,
         IUserLookupService userLookup,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         CancellationToken ct = default
     )
     {
         var results = new List<LyricsDetailDto>(entities.Count);
         foreach (LyricsEntity entity in entities)
         {
-            results.Add(await entity.ToLyricsDetailDtoAsync(mapper, userLookup, fileRepository, ct));
+            results.Add(await entity.ToLyricsDetailDtoAsync(mapper, userLookup, fileStorage, ct));
         }
         return results;
     }
@@ -290,12 +291,12 @@ public static class LyricsMapper
     /// </summary>
     public static async Task<IReadOnlyList<PublicLyricsSummaryDto>> ToPublicLyricsSummaryDtosAsync(
         this IReadOnlyList<LyricsEntity> entities,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         IReadOnlySet<Guid> likedLyricsIds,
         CancellationToken ct = default
     )
     {
-        IReadOnlyDictionary<Guid, FileEntity> files = await fileRepository.GetByIdsAsync(
+        IReadOnlyDictionary<Guid, FileReferenceDto> files = await fileStorage.ResolveManyAsync(
             entities.Where(e => e.CoverImageFileId.HasValue).Select(e => e.CoverImageFileId!.Value).Distinct().ToList(),
             ct
         );
@@ -320,11 +321,11 @@ public static class LyricsMapper
     /// </summary>
     public static async Task<IReadOnlyList<PublicLyricsSummaryDto>> ToPublicLyricsSummaryDtosAsync(
         this IReadOnlyList<LyricsEntity> entities,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         CancellationToken ct = default
     )
     {
-        return await entities.ToPublicLyricsSummaryDtosAsync(fileRepository, likedLyricsIds: new HashSet<Guid>(), ct);
+        return await entities.ToPublicLyricsSummaryDtosAsync(fileStorage, likedLyricsIds: new HashSet<Guid>(), ct);
     }
 
     /// <summary>
@@ -335,12 +336,12 @@ public static class LyricsMapper
         this LyricsEntity entity,
         IMapper mapper,
         IUserLookupService userLookup,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         CancellationToken ct = default,
         bool isLiked = false
     )
     {
-        string? coverImageUrl = await ResolveCoverImageUrlAsync(entity, fileRepository, ct);
+        string? coverImageUrl = await ResolveCoverImageUrlAsync(entity, fileStorage, ct);
 
         var dto = new PublicLyricsDetailDto(
             entity.Id,
@@ -370,7 +371,7 @@ public static class LyricsMapper
             IsLiked = isLiked,
         };
 
-        AuthorInfo? authorInfo = await userLookup.GetAuthorInfoByIdAsync(userId: entity.AuthorId, ct: ct);
+        AuthorDto? authorInfo = await userLookup.GetAuthorInfoByIdAsync(userId: entity.AuthorId, ct: ct);
 
         if (authorInfo is null)
         {
@@ -380,7 +381,7 @@ public static class LyricsMapper
         string? avatarUrl = null;
         if (authorInfo.AvatarFileId.HasValue)
         {
-            FileEntity? avatarFile = await fileRepository.GetByIdAsync(authorInfo.AvatarFileId.Value, ct);
+            FileReferenceDto? avatarFile = await fileStorage.ResolveAsync(authorInfo.AvatarFileId.Value, ct);
             avatarUrl = avatarFile?.StorageUrl;
         }
 
@@ -396,7 +397,7 @@ public static class LyricsMapper
     /// </summary>
     private static async Task<string?> ResolveCoverImageUrlAsync(
         LyricsEntity entity,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         CancellationToken ct
     )
     {
@@ -405,7 +406,7 @@ public static class LyricsMapper
             return null;
         }
 
-        FileEntity? coverFile = await fileRepository.GetByIdAsync(entity.CoverImageFileId.Value, ct);
+        FileReferenceDto? coverFile = await fileStorage.ResolveAsync(entity.CoverImageFileId.Value, ct);
         return coverFile?.StorageUrl;
     }
 }
