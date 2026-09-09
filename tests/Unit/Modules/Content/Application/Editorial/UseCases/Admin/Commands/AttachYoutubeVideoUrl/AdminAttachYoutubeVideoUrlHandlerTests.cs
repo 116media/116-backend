@@ -7,10 +7,12 @@ using _116.Content.Domain.Exceptions;
 using _116.Content.Domain.StateMachines;
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Application.Shared.Services;
+using _116.Core.Contracts.Application.Services;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Builders.Entities.Content;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Factories.Core;
 using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
@@ -29,8 +31,7 @@ public class AdminAttachYoutubeVideoUrlHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<IVideoRepository> _videoRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
-    private readonly Mock<IFileRepository> _fileRepositoryMock;
-    private readonly Mock<IFileUploadService> _fileUploadServiceMock;
+    private readonly Mock<IFileStorageService> _fileStorageMock;
     private readonly AdminAttachYoutubeVideoUrlHandler _handler;
 
     private static readonly Guid CategoryId = Guid.NewGuid();
@@ -39,13 +40,12 @@ public class AdminAttachYoutubeVideoUrlHandlerTests : BaseContentHandlerTest
     {
         _videoRepositoryMock = MockVideoRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _fileRepositoryMock = MockFileRepository.Create();
-        _fileUploadServiceMock = MockFileUploadService.Create();
+        _fileStorageMock = MockFileStorageService.Create();
 
         _handler = new AdminAttachYoutubeVideoUrlHandler(
             _videoRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            _fileRepositoryMock.Object,
+            _fileStorageMock.Object,
             Mapper
         );
     }
@@ -120,7 +120,6 @@ public class AdminAttachYoutubeVideoUrlHandlerTests : BaseContentHandlerTest
             .ContainSingle()
             .Which.Should()
             .Be(new VideoYoutubeUrlAttachedEvent(VideoId: video.Id, YoutubeVideoUrl: command.YoutubeVideoUrl));
-        _fileUploadServiceMock.VerifyUploadImageNotCalled();
     }
 
     #endregion
