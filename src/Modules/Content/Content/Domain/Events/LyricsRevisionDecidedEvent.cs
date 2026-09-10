@@ -19,4 +19,4 @@ public record LyricsRevisionDecidedEvent(
     Guid ProposedByUserId,
     bool Accepted,
     bool ByModerator
-) : IDomainEvent;
+) : DomainEvent;

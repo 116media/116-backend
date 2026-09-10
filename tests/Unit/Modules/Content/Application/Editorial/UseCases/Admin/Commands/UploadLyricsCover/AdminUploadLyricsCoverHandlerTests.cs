@@ -65,6 +65,7 @@ public class AdminUploadLyricsCoverHandlerTests
         result.CoverImageUrl.Should().Be(uploadedFile.StorageUrl);
         result.CoverImageStorageKey.Should().Be(uploadedFile.StorageKey);
         _fileRepositoryMock.VerifyReplaceImageFileCalled();
+        _fileRepositoryMock.VerifyClaimed(uploadedFile.Id);
         _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
         _unitOfWorkMock.VerifyCommitCalled();
     }

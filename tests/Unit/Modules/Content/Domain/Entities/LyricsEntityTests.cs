@@ -375,7 +375,7 @@ public class LyricsEntityTests
     [Fact]
     public void MarkPendingReview_WhenAlreadyApproved_ShouldReturnFalseAndKeepApprovedStatus()
     {
-        // Arrange — a replayed paid-effects dispatch must not pull approved
+        // Arrange
         // content back into the review queue.
         LyricsEntity lyrics = CreateFreeLyrics();
         lyrics.MarkPendingReview();
@@ -966,7 +966,7 @@ public class LyricsEntityTests
     [Fact]
     public void StampPromotion_ShouldNotSetAnyUnpromotedAuditField()
     {
-        // Arrange — LyricsEntity has no SocialBoost concept (spec 12 scopes it to
+        // Arrange
         // IsPromoted/PromotedUntil only); this proves stamping promotion alone leaves the
         // force-unpromote audit trio untouched.
         LyricsEntity lyrics = CreateFreeLyrics();

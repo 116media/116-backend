@@ -254,7 +254,7 @@ public class SuperAdminSeederTests : IDisposable
     [Fact]
     public async Task SeedAsync_WhenExceptionOccurs_ShouldRethrowException()
     {
-        // Arrange — force exception inside the transaction via Hash()
+        // Arrange
         _passwordServiceMock
             .Setup(x => x.Hash(It.IsAny<string>()))
             .Throws(new InvalidOperationException("Hash failed"));

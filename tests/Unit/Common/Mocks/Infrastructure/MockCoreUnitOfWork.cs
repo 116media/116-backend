@@ -16,6 +16,7 @@ public static class MockCoreUnitOfWork
     {
         Mock<ICoreUnitOfWork> mock = new();
         SetupDefaultCommit(mock);
+        SetupExecuteInTransaction(mock);
         return mock;
     }
 
@@ -44,9 +45,33 @@ public static class MockCoreUnitOfWork
     }
 
     /// <summary>
-    /// Verifies that CommitAsync was called exactly once.
+    /// Runs the transactional operation inline so handlers under test execute their body.
     /// </summary>
     /// <param name="mock">The mock instance.</param>
+    /// <returns>The mock, for chaining.</returns>
+    public static Mock<ICoreUnitOfWork> SetupExecuteInTransaction(this Mock<ICoreUnitOfWork> mock)
+    {
+        mock.Setup(x =>
+                x.ExecuteInTransactionAsync(It.IsAny<Func<CancellationToken, Task>>(), It.IsAny<CancellationToken>())
+            )
+            .Returns((Func<CancellationToken, Task> operation, CancellationToken ct) => operation(ct));
+
+        return mock;
+    }
+
+    /// <summary>
+    /// Verifies the handler ran its work inside one transaction.
+    /// </summary>
+    /// <param name="mock">The mock instance.</param>
+    /// <param name="times">How many transactions were expected.</param>
+    public static void VerifyExecutedInTransaction(this Mock<ICoreUnitOfWork> mock, int times = 1)
+    {
+        mock.Verify(
+            x => x.ExecuteInTransactionAsync(It.IsAny<Func<CancellationToken, Task>>(), It.IsAny<CancellationToken>()),
+            Times.Exactly(times)
+        );
+    }
+
     public static void VerifyCommitCalled(this Mock<ICoreUnitOfWork> mock)
     {
         mock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);

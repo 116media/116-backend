@@ -645,7 +645,7 @@ public class JwtServiceTests : IDisposable
     [Fact]
     public void GenerateToken_WithNullExpirationSetting_ShouldUseDefaultExpiration()
     {
-        // Arrange — covers TryParse(null, ...) false branch
+        // Arrange
         Environment.SetEnvironmentVariable("JWT_ACCESS_TOKEN_EXPIRATION", null);
         JwtService service = new();
         var userId = Guid.NewGuid();

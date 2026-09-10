@@ -41,6 +41,28 @@ public interface IFileRepository
     );
 
     /// <summary>
+    /// Records that a referencing row now owns the file, so the reaper leaves it alone. Call it
+    /// once the write that references the file has committed.
+    /// </summary>
+    /// <param name="fileId">The file that is now referenced.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>True when the claim was recorded; false when the file is missing or already claimed.</returns>
+    Task<bool> ClaimAsync(Guid fileId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Reads the uploads that were never claimed within the grace period, oldest first.
+    /// </summary>
+    /// <param name="olderThan">Only files created before this moment are returned.</param>
+    /// <param name="batchSize">Maximum number of files to return.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>The abandoned uploads.</returns>
+    Task<IReadOnlyList<FileEntity>> GetUnclaimedBeforeAsync(
+        DateTime olderThan,
+        int batchSize,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
     /// Adds a new file entity to the repository.
     /// </summary>
     /// <param name="file">The file entity to add.</param>

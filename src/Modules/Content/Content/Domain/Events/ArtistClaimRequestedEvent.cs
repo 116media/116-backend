@@ -10,4 +10,4 @@ namespace _116.Content.Domain.Events;
 /// </summary>
 /// <param name="ArtistId">The artist profile being claimed.</param>
 /// <param name="UserId">The identity user UUID requesting the claim.</param>
-public record ArtistClaimRequestedEvent(Guid ArtistId, Guid UserId) : IDomainEvent;
+public record ArtistClaimRequestedEvent(Guid ArtistId, Guid UserId) : DomainEvent;

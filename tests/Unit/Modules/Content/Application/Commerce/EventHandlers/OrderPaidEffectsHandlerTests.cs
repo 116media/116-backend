@@ -63,7 +63,7 @@ public class OrderPaidEffectsHandlerTests
     }
 
     [Fact]
-    public async Task Handle_WhenArticleFulfilsItem_ShouldStampEffectsAndCommit()
+    public async Task Handle_WhenArticleFulfilsItem_ShouldStampEffectsInOneTransaction()
     {
         // Arrange
         Guid orderItemId = Guid.NewGuid();
@@ -84,7 +84,7 @@ public class OrderPaidEffectsHandlerTests
         article.PromotionLevelId.Should().Be(promotionLevelId);
         article.Status.Should().Be(EnumContentStatus.PendingReview);
         _articleRepositoryMock.VerifyUpdateCalled(article);
-        _unitOfWorkMock.VerifyCommitCalled();
+        _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 
     [Fact]
@@ -132,7 +132,7 @@ public class OrderPaidEffectsHandlerTests
     }
 
     [Fact]
-    public async Task Handle_WhenVideoFulfilsItem_ShouldStampEffectsAndCommit()
+    public async Task Handle_WhenVideoFulfilsItem_ShouldStampEffectsInOneTransaction()
     {
         // Arrange
         Guid orderItemId = Guid.NewGuid();
@@ -150,7 +150,7 @@ public class OrderPaidEffectsHandlerTests
         video.SocialBoost.Should().BeTrue();
         video.Status.Should().Be(EnumContentStatus.PendingReview);
         _videoRepositoryMock.VerifyUpdateCalled(video);
-        _unitOfWorkMock.VerifyCommitCalled();
+        _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 
     [Fact]
@@ -175,7 +175,7 @@ public class OrderPaidEffectsHandlerTests
         lyrics.PromotedUntil.Should().Be(promotionUntil);
         lyrics.Status.Should().Be(EnumContentStatus.PendingReview);
         _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
-        _unitOfWorkMock.VerifyCommitCalled();
+        _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 
     [Fact]
@@ -235,7 +235,7 @@ public class OrderPaidEffectsHandlerTests
         article.IsPromoted.Should().BeTrue();
         article.Status.Should().Be(EnumContentStatus.Published);
         _articleRepositoryMock.VerifyUpdateCalled(article);
-        _unitOfWorkMock.VerifyCommitCalled();
+        _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 
     [Fact]
@@ -291,7 +291,7 @@ public class OrderPaidEffectsHandlerTests
         article.PromotionLevelId.Should().Be(promotionLevelId);
         article.PromotedUntil.Should().Be(promotionUntil);
         _articleRepositoryMock.VerifyUpdateCalled(article);
-        _unitOfWorkMock.VerifyCommitCalled();
+        _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 
     [Fact]
@@ -319,7 +319,7 @@ public class OrderPaidEffectsHandlerTests
     }
 
     [Fact]
-    public async Task Handle_WithMultipleItems_ShouldCommitPerItem()
+    public async Task Handle_WithMultipleItems_ShouldApplyThemInOneTransaction()
     {
         // Arrange
         Guid firstItemId = Guid.NewGuid();
@@ -340,6 +340,6 @@ public class OrderPaidEffectsHandlerTests
         );
 
         // Assert
-        _unitOfWorkMock.VerifyCommitCalled(times: 2);
+        _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 }

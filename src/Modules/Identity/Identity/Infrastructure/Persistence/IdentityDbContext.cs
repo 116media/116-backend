@@ -1,6 +1,7 @@
 using System.Reflection;
 using _116.Identity.Domain.Constants;
 using _116.Identity.Domain.Entities;
+using _116.Shared.Infrastructure.Outbox;
 using Microsoft.EntityFrameworkCore;
 
 namespace _116.Identity.Infrastructure.Persistence;
@@ -84,6 +85,7 @@ public class IdentityDbContext(DbContextOptions<IdentityDbContext> options) : Db
     {
         modelBuilder.HasDefaultSchema(schema: IdentityConstants.SchemaName);
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+        modelBuilder.ApplyConfiguration(new OutboxEventConfiguration());
         base.OnModelCreating(modelBuilder: modelBuilder);
     }
 }

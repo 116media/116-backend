@@ -9,4 +9,4 @@ namespace _116.Identity.Domain.Events;
 /// </summary>
 /// <param name="SessionId">The reactivated session.</param>
 /// <param name="UserId">The user the session belongs to.</param>
-public record SessionReactivatedEvent(Guid SessionId, Guid UserId) : IDomainEvent;
+public record SessionReactivatedEvent(Guid SessionId, Guid UserId) : DomainEvent;

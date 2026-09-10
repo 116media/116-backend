@@ -133,7 +133,7 @@ public class ExceptionStrategyRegistryTests
     [Fact]
     public void CreateProblemDetails_WithDerivedExceptionType_ShouldUseBaseClassStrategy()
     {
-        // Arrange - Custom exception inheriting from BadRequestException
+        // Arrange
         CustomBadRequestException customException = new("Custom bad request");
 
         DefaultExceptionHandler defaultStrategy = new();

@@ -12,4 +12,4 @@ namespace _116.Content.Domain.Events;
 /// <param name="ArticleId">The article the interaction targets.</param>
 /// <param name="Kind">The kind of engagement performed.</param>
 /// <param name="Delta"><c>+1</c> for a created interaction row, <c>-1</c> for a removed one.</param>
-public record ArticleEngagedEvent(Guid ArticleId, EnumEngagementKind Kind, int Delta) : IDomainEvent;
+public record ArticleEngagedEvent(Guid ArticleId, EnumEngagementKind Kind, int Delta) : DomainEvent;

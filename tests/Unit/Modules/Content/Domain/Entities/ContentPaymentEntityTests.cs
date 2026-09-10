@@ -60,7 +60,7 @@ public class ContentPaymentEntityTests
     [Fact]
     public void Verify_WithoutProofAttached_ShouldThrowPaymentProofRequired()
     {
-        // Arrange — an unevidenced payment must never verify and flip the order to paid
+        // Arrange
         ContentPaymentEntity payment = ContentPaymentFactory.CreateDefault();
 
         // Act
@@ -89,7 +89,7 @@ public class ContentPaymentEntityTests
     [Fact]
     public void AttachProof_WhenVerified_ShouldThrowAndKeepTheOriginalProof()
     {
-        // Arrange — overwriting proof on a decided payment would destroy the evidence the
+        // Arrange
         // verification was based on
         Guid originalProofId = Guid.NewGuid();
         ContentPaymentEntity payment = ContentPaymentFactory.CreateDefault();

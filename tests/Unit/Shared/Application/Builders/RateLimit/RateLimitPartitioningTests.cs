@@ -46,7 +46,7 @@ public class RateLimitPartitioningTests
     [Fact]
     public void ResolvePartitionKey_WhenAnonymousWithNoIp_KeysByAnonymous()
     {
-        // Arrange — no principal and no remote IP
+        // Arrange
         var context = new DefaultHttpContext();
 
         // Act

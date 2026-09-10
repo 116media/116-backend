@@ -66,7 +66,7 @@ public class ArticleEngagementHandlerTests
     [Fact]
     public async Task Handle_ShouldNeverLoadOrTrackTheArticle()
     {
-        // Arrange — loading to mutate is the race stage 8 removed; the counter moves in SQL only.
+        // Arrange
         var articleId = Guid.NewGuid();
         _articleInteractionRepositoryMock
             .Setup(x =>
@@ -93,7 +93,7 @@ public class ArticleEngagementHandlerTests
     [Fact]
     public async Task Handle_WithKindWithoutArticleCounter_ShouldStillInvalidate()
     {
-        // Arrange — the repository answers 0 rows for a kind it has no column for.
+        // Arrange
         var articleId = Guid.NewGuid();
         _articleInteractionRepositoryMock
             .Setup(x =>
@@ -111,7 +111,7 @@ public class ArticleEngagementHandlerTests
     [Fact]
     public async Task Handle_WhenArticleMissing_ShouldStillInvalidate()
     {
-        // Arrange — the article vanished between the interaction commit and the dispatch, which is
+        // Arrange
         // a race, not an error. The ranked list is evicted regardless.
         var articleId = Guid.NewGuid();
         _articleInteractionRepositoryMock

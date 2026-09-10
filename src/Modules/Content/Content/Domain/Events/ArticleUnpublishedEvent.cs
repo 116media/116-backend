@@ -8,4 +8,4 @@ namespace _116.Content.Domain.Events;
 /// so the departed article stops appearing in the ranked list.
 /// </summary>
 /// <param name="ArticleId">The article that left the published set.</param>
-public record ArticleUnpublishedEvent(Guid ArticleId) : IDomainEvent;
+public record ArticleUnpublishedEvent(Guid ArticleId) : DomainEvent;

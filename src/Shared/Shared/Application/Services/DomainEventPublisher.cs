@@ -23,7 +23,8 @@ namespace _116.Shared.Application.Services;
 public class DomainEventPublisher(
     IServiceProvider serviceProvider,
     ILogger<DomainEventPublisher> logger,
-    IDomainEventHandlerRegistry handlerRegistry
+    IDomainEventHandlerRegistry handlerRegistry,
+    IProcessedDomainEventStore processedEvents
 ) : IDomainEventPublisher
 {
     /// <summary>
@@ -78,6 +79,26 @@ public class DomainEventPublisher(
             {
                 try
                 {
+                    string handlerName = handler.GetType().Name;
+
+                    // Counter deltas and mail sends are not naturally idempotent, so a replayed
+                    // event must not re-run a handler that already completed for it.
+                    bool fresh = await processedEvents.TryRecordAsync(
+                        eventId: domainEvent.EventId,
+                        handlerName: handlerName,
+                        cancellationToken: cancellationToken
+                    );
+
+                    if (!fresh)
+                    {
+                        logger.LogDebug(
+                            "Domain event handler {HandlerType} already ran for event {EventType}; skipping replay.",
+                            handlerName,
+                            eventType.Name
+                        );
+                        continue;
+                    }
+
                     await dispatchPlan.InvokeHandler(handler, domainEvent, cancellationToken);
                 }
                 catch (Exception exception)

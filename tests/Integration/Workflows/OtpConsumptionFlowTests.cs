@@ -33,7 +33,7 @@ public class OtpConsumptionFlowTests(PostgresFixture postgres) : BaseRepositoryT
     [Fact]
     public async Task ResetPassword_RefusesACodeThatWasOnlySupersededByAResend()
     {
-        // Arrange — a code the owner never verified, replaced by a newer one
+        // Arrange
         UserEntity user = await SeedUserAsync();
         const string supersededCode = "111111";
 
@@ -60,7 +60,7 @@ public class OtpConsumptionFlowTests(PostgresFixture postgres) : BaseRepositoryT
     [Fact]
     public async Task ResetPassword_RefusesACodeThatHasAlreadyBeenSpent()
     {
-        // Arrange — a verified code, as the reset flow requires
+        // Arrange
         UserEntity user = await SeedUserAsync();
         const string verifiedCode = "222222";
 

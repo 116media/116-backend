@@ -79,6 +79,12 @@ public class OutboxEmailEntity : Aggregate<Guid>
     public DateTime? SentAt { get; private set; }
 
     /// <summary>
+    /// When the current dispatcher's claim on this row lapses. Null unless the
+    /// row is claimed.
+    /// </summary>
+    public DateTime? LeaseExpiresAt { get; private set; }
+
+    /// <summary>
     /// Private parameterless constructor required by Entity Framework Core.
     /// </summary>
     private OutboxEmailEntity() { }
@@ -136,12 +142,14 @@ public class OutboxEmailEntity : Aggregate<Guid>
         Status = EnumOutboxEmailStatus.Sent;
         SentAt = now;
         LastError = null;
+        LeaseExpiresAt = null;
     }
 
     /// <summary>
-    /// Records a failed delivery attempt. Transient failures schedule the next
-    /// attempt from the backoff schedule until it is exhausted; permanent
-    /// failures (and exhaustion) mark the email failed.
+    /// Records a failed delivery attempt and releases the dispatcher's claim.
+    /// Transient failures schedule the next attempt from the backoff schedule
+    /// until it is exhausted; permanent failures (and exhaustion) mark the
+    /// email failed.
     /// </summary>
     /// <param name="error">The provider error, truncated for storage.</param>
     /// <param name="isTransient">Whether the failure is worth retrying.</param>
@@ -151,6 +159,7 @@ public class OutboxEmailEntity : Aggregate<Guid>
         AttemptCount++;
         LastError =
             error.Length > MailerConstants.MaxLastErrorLength ? error[..MailerConstants.MaxLastErrorLength] : error;
+        LeaseExpiresAt = null;
 
         if (!isTransient || AttemptCount >= MailerConstants.MaxAttempts)
         {
@@ -158,6 +167,7 @@ public class OutboxEmailEntity : Aggregate<Guid>
             return;
         }
 
+        Status = EnumOutboxEmailStatus.Pending;
         NextAttemptAt = now + MailerConstants.RetrySchedule[AttemptCount - 1];
     }
 }

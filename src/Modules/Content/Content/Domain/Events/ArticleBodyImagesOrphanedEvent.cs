@@ -11,4 +11,4 @@ namespace _116.Content.Domain.Events;
 /// </summary>
 /// <param name="ArticleId">The article whose body update orphaned the images.</param>
 /// <param name="StorageKeys">The storage keys of the body images that dropped out of the new body.</param>
-public record ArticleBodyImagesOrphanedEvent(Guid ArticleId, IReadOnlyList<string> StorageKeys) : IDomainEvent;
+public record ArticleBodyImagesOrphanedEvent(Guid ArticleId, IReadOnlyList<string> StorageKeys) : DomainEvent;

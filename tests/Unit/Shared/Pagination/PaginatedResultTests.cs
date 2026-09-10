@@ -294,7 +294,7 @@ public class PaginatedResultTests
     [Fact]
     public void Constructor_SecondPageOfThreePages_ShouldHaveCorrectValues()
     {
-        // Arrange - Simulating page 2 of 3 pages (total 25 items, 10 per page)
+        // Arrange
         int pageIndex = 1; // Zero-based, so page 2
         int pageSize = 10;
         long totalCount = 25;
@@ -318,7 +318,7 @@ public class PaginatedResultTests
     [Fact]
     public void Constructor_LastPageWithPartialItems_ShouldHaveCorrectValues()
     {
-        // Arrange - Simulating last page with only 5 items (total 25 items, 10 per page)
+        // Arrange
         int pageIndex = 2; // Page 3 (zero-based)
         int pageSize = 10;
         long totalCount = 25;

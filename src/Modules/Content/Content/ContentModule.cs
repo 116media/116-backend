@@ -130,6 +130,9 @@ public static class ContentModule
 
         services.AddScoped<IContentUnitOfWork, ContentUnitOfWork>();
         services.AddScoped(typeof(IContentRepository<>), typeof(ContentRepository<>));
+
+        // Replay delivers events raised inside a transaction, not just retries failed dispatches.
+        services.AddScheduledJob<ContentOutboxReplayJob>(cronExpression: "0 */1 * * * ?");
         services.AddScoped<IContentTypeRepository, ContentTypeRepository>();
         services.AddScoped<IPricingTierRepository, PricingTierRepository>();
         services.AddScoped<IPromotionLevelRepository, PromotionLevelRepository>();

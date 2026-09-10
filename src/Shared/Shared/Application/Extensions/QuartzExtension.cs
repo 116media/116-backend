@@ -2,6 +2,7 @@ using _116.Shared.Application.Configurations;
 using _116.Shared.Application.Configurations.Schemas;
 using _116.Shared.Application.Jobs;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Quartz;
 
 namespace _116.Shared.Application.Extensions;
@@ -26,6 +27,8 @@ public static class QuartzExtension
     public static IServiceCollection AddScheduledJob<TJob>(this IServiceCollection services, string cronExpression)
         where TJob : class, IScheduledJob
     {
+        services.TryAddTransient<TJob>();
+
         services.AddQuartz(q =>
         {
             var jobKey = new JobKey(typeof(TJob).Name);

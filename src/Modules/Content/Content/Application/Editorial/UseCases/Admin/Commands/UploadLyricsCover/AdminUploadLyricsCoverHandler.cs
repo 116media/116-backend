@@ -50,6 +50,8 @@ public class AdminUploadLyricsCoverHandler(
         lyricsRepository.Update(lyrics: lyrics);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
+        await fileRepository.ClaimAsync(fileId: fileEntity.Id, cancellationToken: cancellationToken);
+
         return new AdminUploadLyricsCoverResult(
             CoverImageUrl: fileEntity.StorageUrl,
             CoverImageStorageKey: fileEntity.StorageKey!

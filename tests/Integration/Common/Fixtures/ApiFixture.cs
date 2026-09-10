@@ -21,6 +21,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.Hosting;
 using Quartz;
@@ -173,6 +174,7 @@ public class ApiFixture(PostgresFixture db) : WebApplicationFactory<Program>
             typeof(TDbContext),
             typeof(IDbContextPool<TDbContext>),
             typeof(IScopedDbContextLease<TDbContext>),
+            typeof(IDbContextOptionsConfiguration<TDbContext>),
         ];
 
         List<ServiceDescriptor> existing = services

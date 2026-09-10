@@ -54,6 +54,8 @@ public class PublicUpdateAvatarHandler(
             cancellationToken: cancellationToken
         );
 
+        await fileRepository.ClaimAsync(fileId: fileEntity.Id, cancellationToken: cancellationToken);
+
         FileEntity? avatarFile = await fileRepository.GetAvatarFileAsync(
             avatarFileId: authData.User.AvatarFileId,
             cancellationToken: cancellationToken

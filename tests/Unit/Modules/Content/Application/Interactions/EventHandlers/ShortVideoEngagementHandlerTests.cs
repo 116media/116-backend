@@ -58,7 +58,7 @@ public class ShortVideoEngagementHandlerTests
     [Fact]
     public async Task Handle_WhenNoRowIsUpdated_ShouldNotThrow()
     {
-        // Arrange — the row vanished between the interaction commit and the dispatch, which is a
+        // Arrange
         // race, not an error.
         var id = Guid.NewGuid();
         _repositoryMock

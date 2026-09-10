@@ -18,21 +18,28 @@ public class OutboxEmailRepository(MailerDbContext context)
     public async Task<IReadOnlyList<OutboxEmailEntity>> ClaimDueBatchAsync(
         int batchSize,
         DateTime now,
+        DateTime leaseExpiresAt,
         CancellationToken cancellationToken
     )
     {
-        // FOR UPDATE SKIP LOCKED keeps concurrent dispatchers (multiple API
-        // replicas) from double-sending the same row: each claims a disjoint
-        // batch and the losers skip instead of blocking. The lock only holds
-        // while the dispatcher's surrounding transaction is open.
+        // Selecting and claiming in one statement is what lets the dispatcher send with no
+        // transaction open: the claim is already durable, so provider calls hold no row locks.
+        // FOR UPDATE SKIP LOCKED keeps concurrent replicas on disjoint batches, and the lapsed
+        // lease returns rows a dispatcher died holding.
         return await Context
             .OutboxEmails.FromSqlInterpolated(
                 $"""
-                SELECT * FROM mailer.outbox_emails
-                WHERE status = {nameof(EnumOutboxEmailStatus.Pending)} AND next_attempt_at <= {now}
-                ORDER BY next_attempt_at
-                LIMIT {batchSize}
-                FOR UPDATE SKIP LOCKED
+                UPDATE mailer.outbox_emails
+                SET status = {nameof(EnumOutboxEmailStatus.Claimed)}, lease_expires_at = {leaseExpiresAt}
+                WHERE id IN (
+                    SELECT id FROM mailer.outbox_emails
+                    WHERE (status = {nameof(EnumOutboxEmailStatus.Pending)} AND next_attempt_at <= {now})
+                       OR (status = {nameof(EnumOutboxEmailStatus.Claimed)} AND lease_expires_at <= {now})
+                    ORDER BY next_attempt_at
+                    LIMIT {batchSize}
+                    FOR UPDATE SKIP LOCKED
+                )
+                RETURNING *
                 """
             )
             .ToListAsync(cancellationToken);

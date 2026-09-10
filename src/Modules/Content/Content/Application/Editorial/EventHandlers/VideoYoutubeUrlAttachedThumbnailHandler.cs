@@ -77,5 +77,7 @@ public class VideoYoutubeUrlAttachedThumbnailHandler(
 
         videoRepository.Update(video: video);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+        await fileRepository.ClaimAsync(fileId: fileEntity.Id, cancellationToken: cancellationToken);
     }
 }

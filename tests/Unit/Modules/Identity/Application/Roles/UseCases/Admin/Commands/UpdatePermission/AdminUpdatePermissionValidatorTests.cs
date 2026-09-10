@@ -129,7 +129,7 @@ public class AdminUpdatePermissionValidatorTests
     [Fact]
     public async Task Validate_WithEmptyResource_ShouldNotHaveErrors()
     {
-        // Arrange - Update commands allow empty/null for optional updates
+        // Arrange
         AdminUpdatePermissionCommand command = new(
             PermissionId: _validPermissionId.ToString(),
             Resource: string.Empty,
@@ -147,7 +147,7 @@ public class AdminUpdatePermissionValidatorTests
     [Fact]
     public async Task Validate_WithWhitespaceResource_ShouldNotHaveErrors()
     {
-        // Arrange - Whitespace-only is treated as "not provided"
+        // Arrange
         AdminUpdatePermissionCommand command = new(
             PermissionId: _validPermissionId.ToString(),
             Resource: "   ",
@@ -193,7 +193,7 @@ public class AdminUpdatePermissionValidatorTests
     [Fact]
     public async Task Validate_WithEmptyAction_ShouldNotHaveErrors()
     {
-        // Arrange - Update commands allow empty/null for optional updates
+        // Arrange
         AdminUpdatePermissionCommand command = new(
             PermissionId: _validPermissionId.ToString(),
             Resource: TestConstants.Permission.ValidResource,
@@ -211,7 +211,7 @@ public class AdminUpdatePermissionValidatorTests
     [Fact]
     public async Task Validate_WithWhitespaceAction_ShouldNotHaveErrors()
     {
-        // Arrange - Whitespace-only is treated as "not provided"
+        // Arrange
         AdminUpdatePermissionCommand command = new(
             PermissionId: _validPermissionId.ToString(),
             Resource: TestConstants.Permission.ValidResource,
@@ -257,7 +257,7 @@ public class AdminUpdatePermissionValidatorTests
     [Fact]
     public async Task Validate_WithEmptyDescription_ShouldNotHaveErrors()
     {
-        // Arrange - Update commands allow empty/null for optional updates
+        // Arrange
         AdminUpdatePermissionCommand command = new(
             PermissionId: _validPermissionId.ToString(),
             Resource: TestConstants.Permission.ValidResource,
@@ -275,7 +275,7 @@ public class AdminUpdatePermissionValidatorTests
     [Fact]
     public async Task Validate_WithWhitespaceDescription_ShouldNotHaveErrors()
     {
-        // Arrange - Whitespace-only is treated as "not provided"
+        // Arrange
         AdminUpdatePermissionCommand command = new(
             PermissionId: _validPermissionId.ToString(),
             Resource: TestConstants.Permission.ValidResource,

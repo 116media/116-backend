@@ -131,7 +131,7 @@ public class ArticleCommentEntityTests
     [Fact]
     public void SoftDelete_WhenAlreadyDeleted_ShouldReturnFalseAndRaiseNothing()
     {
-        // Arrange — the owner deleted the comment, then an admin moderates the
+        // Arrange
         // same row: a second decrement would drift the article's counter.
         ArticleCommentEntity comment = ArticleCommentEntity.Create(
             Guid.NewGuid(),

@@ -37,7 +37,7 @@ public class TokenInvalidationFlowTests(PostgresFixture db) : BaseApiTest(db)
     [Fact]
     public async Task SignOut_OverRealHttp_RejectsTheStillUnexpiredAccessToken()
     {
-        // Arrange — a session whose id rides the access token's ref claim
+        // Arrange
         var rawRefreshToken = $"invalidation-signout-{Guid.NewGuid():N}";
         var session = await SeedAsync<IdentityDbContext, SessionEntity>(ctx =>
         {
@@ -68,7 +68,7 @@ public class TokenInvalidationFlowTests(PostgresFixture db) : BaseApiTest(db)
     [Fact]
     public async Task PermissionRevocation_OverRealHttp_InvalidatesTheTokenAndRefreshRecovers()
     {
-        // Arrange — the visitor holds a role with a permission, and owns a live session
+        // Arrange
         var rawRefreshToken = $"invalidation-tver-{Guid.NewGuid():N}";
         var (role, permission) = await SeedAsync<IdentityDbContext, (RoleEntity, PermissionEntity)>(ctx =>
         {
@@ -121,7 +121,7 @@ public class TokenInvalidationFlowTests(PostgresFixture db) : BaseApiTest(db)
     [Fact]
     public async Task PasswordReset_OverRealHttp_RejectsTheTokenAndTheRefresh()
     {
-        // Arrange — a verified active user with a live session and a usable reset code
+        // Arrange
         var userId = Guid.NewGuid();
         string email = $"invalidation-sstamp-{userId:N}@test.com";
         var rawRefreshToken = $"invalidation-sstamp-{Guid.NewGuid():N}";
@@ -169,7 +169,7 @@ public class TokenInvalidationFlowTests(PostgresFixture db) : BaseApiTest(db)
     [Fact]
     public async Task Request_WithATokenMissingTheSecurityMarkers_IsRejected()
     {
-        // Arrange — a correctly signed token minted before invalidation markers shipped
+        // Arrange
         Client.AuthenticateWithoutSecurityMarkers(TestUser.VisitorId, "Visitor");
 
         // Act
@@ -182,7 +182,7 @@ public class TokenInvalidationFlowTests(PostgresFixture db) : BaseApiTest(db)
     [Fact]
     public async Task Request_WithAForeignSecurityStamp_IsRejected()
     {
-        // Arrange — a correctly signed token whose stamp does not match the user's current one
+        // Arrange
         Client.AuthenticateWithSecurityMarkers(TestUser.VisitorId, "Visitor", securityStamp: Guid.NewGuid());
 
         // Act
@@ -210,7 +210,7 @@ public class TokenInvalidationFlowTests(PostgresFixture db) : BaseApiTest(db)
     [Fact]
     public async Task RefreshToken_ForADeactivatedAccount_IsRefusedAndRevokesTheSession()
     {
-        // Arrange — a deactivated account still holding a live refresh token
+        // Arrange
         var userId = Guid.NewGuid();
         var rawRefreshToken = $"invalidation-deactivated-{Guid.NewGuid():N}";
 
@@ -245,7 +245,7 @@ public class TokenInvalidationFlowTests(PostgresFixture db) : BaseApiTest(db)
     [Fact]
     public async Task RefreshToken_PastTheAbsoluteLifetime_IsRefusedAndRevokesTheSession()
     {
-        // Arrange — a session whose sliding expiry is fine but whose absolute ceiling has passed
+        // Arrange
         var rawRefreshToken = $"invalidation-absolute-{Guid.NewGuid():N}";
 
         var session = await SeedAsync<IdentityDbContext, SessionEntity>(ctx =>

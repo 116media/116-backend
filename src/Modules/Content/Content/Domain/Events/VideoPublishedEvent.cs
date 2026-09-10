@@ -8,4 +8,4 @@ namespace _116.Content.Domain.Events;
 /// membership on the next read.
 /// </summary>
 /// <param name="VideoId">The video that was published.</param>
-public record VideoPublishedEvent(Guid VideoId) : IDomainEvent;
+public record VideoPublishedEvent(Guid VideoId) : DomainEvent;

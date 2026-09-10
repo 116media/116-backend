@@ -12,4 +12,4 @@ namespace _116.Content.Domain.Events;
 /// </summary>
 /// <param name="VideoId">The video the URL was attached to.</param>
 /// <param name="YoutubeVideoUrl">The full YouTube video URL that was attached.</param>
-public record VideoYoutubeUrlAttachedEvent(Guid VideoId, string YoutubeVideoUrl) : IDomainEvent;
+public record VideoYoutubeUrlAttachedEvent(Guid VideoId, string YoutubeVideoUrl) : DomainEvent;

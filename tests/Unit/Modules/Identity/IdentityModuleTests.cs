@@ -205,7 +205,7 @@ public class IdentityModuleTests
     [Fact]
     public void AddIdentityModule_WithTestingEnvironment_ShouldRegisterNoDataSeeder()
     {
-        // Arrange — Testing hosts seed through the test harness, never the hosted service
+        // Arrange
         var services = new ServiceCollection();
         services.AddLogging();
 

@@ -306,7 +306,7 @@ public class ArticleRepositoryTests : IDisposable
     [Fact]
     public async Task GetAbandonedDraftsAsync_WhenNoneMatchCriteria_ShouldReturnEmptyList()
     {
-        // Arrange — published article should not be returned
+        // Arrange
         Guid categoryId = await SeedCategoryAsync();
         ArticleEntity published = ArticleFactory.CreatePublished(categoryId);
         published.CreatedAt = DateTime.UtcNow.AddDays(-10);

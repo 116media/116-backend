@@ -9,4 +9,4 @@ namespace _116.Content.Domain.Events;
 /// <param name="OrderId">The order whose payment was rejected.</param>
 /// <param name="PaymentId">The rejected payment.</param>
 /// <param name="Notes">The reviewer's notes explaining the rejection, or <c>null</c> when none were provided.</param>
-public record PaymentRejectedEvent(Guid OrderId, Guid PaymentId, string? Notes) : IDomainEvent;
+public record PaymentRejectedEvent(Guid OrderId, Guid PaymentId, string? Notes) : DomainEvent;

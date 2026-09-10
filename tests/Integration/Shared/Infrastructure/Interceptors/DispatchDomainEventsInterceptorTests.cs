@@ -39,4 +39,45 @@ public class DispatchDomainEventsInterceptorTests(PostgresFixture db) : BaseApiT
         RoleEntity? persisted = await queryContext.Roles.FindAsync(role.Id);
         persisted.Should().NotBeNull("the save should commit through the dispatch interceptor without faulting");
     }
+
+    [Fact]
+    public void SaveChanges_Synchronously_ShouldClearDomainEventsAfterDispatch()
+    {
+        // Arrange
+        // Seeders and migrations save synchronously, so the sync path has to collect and
+        // dispatch exactly like the async one.
+        using var context = CreateDbContext<IdentityDbContext>();
+        var role = RoleFactory.Create();
+        context.Roles.Add(role);
+
+        // Act
+        context.SaveChanges();
+
+        // Assert
+        role.DomainEvents.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task SaveChangesAsync_WhenTheSaveFails_ShouldLeaveTheAggregateClean()
+    {
+        // Arrange
+        // Role names are unique, so a second role of the same name fails at the database. A
+        // failed save must leave no reaction behind and no stale event for a later save.
+        string name = $"dup-{Guid.NewGuid():N}"[..20];
+
+        await using var context = CreateDbContext<IdentityDbContext>();
+        context.Roles.Add(RoleFactory.Create(name));
+        await context.SaveChangesAsync();
+
+        await using var conflicting = CreateDbContext<IdentityDbContext>();
+        RoleEntity duplicate = RoleFactory.Create(name);
+        conflicting.Roles.Add(duplicate);
+
+        // Act
+        Func<Task> act = async () => await conflicting.SaveChangesAsync();
+
+        // Assert
+        await act.Should().ThrowAsync<DbUpdateException>();
+        duplicate.DomainEvents.Should().BeEmpty();
+    }
 }

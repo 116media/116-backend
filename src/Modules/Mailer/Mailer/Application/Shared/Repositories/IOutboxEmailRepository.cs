@@ -15,17 +15,20 @@ public interface IOutboxEmailRepository
     Task AddAsync(OutboxEmailEntity email, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Claims the next batch of due pending emails for delivery, ordered by
-    /// next attempt time. Rows are locked with skip-locked semantics so
-    /// concurrent dispatchers never double-send.
+    /// Claims the next batch of due emails for delivery in one statement,
+    /// stamping a lease that expires. Rows are locked with skip-locked
+    /// semantics so concurrent dispatchers never double-send, and a row whose
+    /// lease has lapsed is claimable again.
     /// </summary>
     /// <param name="batchSize">Maximum number of emails to claim.</param>
     /// <param name="now">The current UTC time; only rows due by now are claimed.</param>
+    /// <param name="leaseExpiresAt">When this dispatcher's claim lapses.</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
-    /// <returns>The claimed pending emails, oldest due first.</returns>
+    /// <returns>The claimed emails, oldest due first.</returns>
     Task<IReadOnlyList<OutboxEmailEntity>> ClaimDueBatchAsync(
         int batchSize,
         DateTime now,
+        DateTime leaseExpiresAt,
         CancellationToken cancellationToken
     );
 }

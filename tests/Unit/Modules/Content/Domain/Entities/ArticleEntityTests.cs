@@ -288,7 +288,7 @@ public class ArticleEntityTests
     [Fact]
     public void MarkPendingReview_WhenAlreadyApproved_ShouldReturnFalseAndKeepApprovedStatus()
     {
-        // Arrange — a replayed paid-effects dispatch must not pull approved
+        // Arrange
         // content back into the review queue.
         ArticleEntity article = ArticleEntity.CreateFree(
             Guid.NewGuid(),

@@ -20,4 +20,4 @@ public record CommissionedContentRejectedEvent(
     Guid? CustomerId,
     string Title,
     string Reason
-) : IDomainEvent;
+) : DomainEvent;

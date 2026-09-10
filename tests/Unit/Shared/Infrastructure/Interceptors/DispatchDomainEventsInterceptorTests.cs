@@ -1,6 +1,7 @@
 using _116.Shared.Application.Services;
 using _116.Shared.Domain;
 using _116.Shared.Infrastructure.interceptors;
+using _116.Shared.Infrastructure.Outbox;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -26,7 +27,7 @@ public class DispatchDomainEventsInterceptorTests
         }
     }
 
-    private class TestDomainEvent : IDomainEvent
+    private record TestDomainEvent : DomainEvent
     {
         public string Message { get; init; } = string.Empty;
     }
@@ -37,6 +38,51 @@ public class DispatchDomainEventsInterceptorTests
 
         public TestDbContext(DbContextOptions<TestDbContext> options)
             : base(options) { }
+    }
+
+    /// <summary>
+    /// A context that maps the outbox, so the interceptor writes the durable row rather than
+    /// taking the "context does not map it" shortcut.
+    /// </summary>
+    private class OutboxTestDbContext : DbContext
+    {
+        public DbSet<TestAggregate> Aggregates { get; set; } = null!;
+
+        public DbSet<OutboxEventEntity> OutboxEvents { get; set; } = null!;
+
+        public OutboxTestDbContext(DbContextOptions<OutboxTestDbContext> options)
+            : base(options) { }
+
+        /// <inheritdoc />
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<OutboxEventEntity>().HasKey(row => row.Id);
+        }
+    }
+
+    /// <summary>
+    /// Builds a context whose model maps the outbox, wired to a real interceptor.
+    /// </summary>
+    /// <returns>The context and the publisher it dispatches through.</returns>
+    private static (OutboxTestDbContext context, Mock<IDomainEventPublisher> publisherMock) CreateOutboxContext()
+    {
+        var publisherMock = new Mock<IDomainEventPublisher>();
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddScoped(_ => publisherMock.Object);
+
+        ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
+
+        var interceptor = new DispatchDomainEventsInterceptor(
+            serviceProvider.GetRequiredService<IServiceScopeFactory>(),
+            NullLogger<DispatchDomainEventsInterceptor>.Instance
+        );
+
+        DbContextOptions<OutboxTestDbContext> options = new DbContextOptionsBuilder<OutboxTestDbContext>()
+            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+            .AddInterceptors(interceptor)
+            .Options;
+
+        return (new OutboxTestDbContext(options), publisherMock);
     }
 
     private (TestDbContext context, Mock<IDomainEventPublisher> publisherMock) CreateTestContext()
@@ -77,7 +123,7 @@ public class DispatchDomainEventsInterceptorTests
 
         // Assert
         publisherMock.Verify(
-            p => p.Publish(It.Is<IDomainEvent>(e => e == domainEvent), It.IsAny<CancellationToken>()),
+            p => p.Publish(It.Is<IDomainEvent>(e => ReferenceEquals(e, domainEvent)), It.IsAny<CancellationToken>()),
             Times.Once
         );
     }
@@ -179,7 +225,7 @@ public class DispatchDomainEventsInterceptorTests
 
         // Assert
         publisherMock.Verify(
-            p => p.Publish(It.Is<IDomainEvent>(e => e == domainEvent), It.IsAny<CancellationToken>()),
+            p => p.Publish(It.Is<IDomainEvent>(e => ReferenceEquals(e, domainEvent)), It.IsAny<CancellationToken>()),
             Times.Once
         );
         aggregate.DomainEvents.Should().BeEmpty();
@@ -283,4 +329,62 @@ public class DispatchDomainEventsInterceptorTests
         exception.Should().BeNull();
         publisherMock.Verify(p => p.Publish(It.IsAny<IDomainEvent>(), It.IsAny<CancellationToken>()), Times.Never);
     }
+
+    #region Durable outbox rows
+
+    [Fact]
+    public async Task SavingChanges_WhenTheContextMapsTheOutbox_ShouldWriteTheEventDurably()
+    {
+        // Arrange
+        // The row joins the same save as the state change, so the event is durable exactly when
+        // the change is.
+        var (context, _) = CreateOutboxContext();
+        var aggregate = TestAggregate.Create(Guid.NewGuid(), "Test");
+        var domainEvent = new TestDomainEvent { Message = "durable" };
+        aggregate.AddDomainEvent(domainEvent);
+        context.Aggregates.Add(aggregate);
+
+        // Act
+        await context.SaveChangesAsync();
+
+        // Assert
+        OutboxEventEntity row = context.OutboxEvents.Should().ContainSingle().Subject;
+        row.Id.Should().Be(domainEvent.EventId);
+        row.EventType.Should().Be(domainEvent.EventType);
+    }
+
+    [Fact]
+    public async Task SavingChanges_WhenTheContextMapsTheOutbox_ShouldStampTheDispatchOutcome()
+    {
+        // Arrange
+        var (context, _) = CreateOutboxContext();
+        var aggregate = TestAggregate.Create(Guid.NewGuid(), "Test");
+        aggregate.AddDomainEvent(new TestDomainEvent { Message = "durable" });
+        context.Aggregates.Add(aggregate);
+
+        // Act
+        await context.SaveChangesAsync();
+
+        // Assert
+        context.OutboxEvents.Single().DispatchedAt.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task SavingChanges_WithSeveralEvents_ShouldWriteOneOutboxRowEach()
+    {
+        // Arrange
+        var (context, _) = CreateOutboxContext();
+        var aggregate = TestAggregate.Create(Guid.NewGuid(), "Test");
+        aggregate.AddDomainEvent(new TestDomainEvent { Message = "first" });
+        aggregate.AddDomainEvent(new TestDomainEvent { Message = "second" });
+        context.Aggregates.Add(aggregate);
+
+        // Act
+        await context.SaveChangesAsync();
+
+        // Assert
+        context.OutboxEvents.Should().HaveCount(2);
+    }
+
+    #endregion
 }

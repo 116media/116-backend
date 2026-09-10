@@ -28,7 +28,7 @@ public static class BaseModule
     /// <item>Database connection string configuration</item>
     /// <item>EF Core interceptors registration</item>
     /// <item>DbContext registration with PostgreSQL and snake_case naming</item>
-    /// <item>Connection pooling (if enabled)</item>
+    /// <item>Connection pooling</item>
     /// </list>
     /// </remarks>
     public static IServiceCollection AddModuleDatabase<TDbContext>(
@@ -39,30 +39,15 @@ public static class BaseModule
     {
         string connectionString = GetDefaultConnectionString();
 
-        // Register EF Core interceptors if not already registered
         RegisterInterceptorsIfNotExists(services);
 
-        // Register DbContext
-        if (options.UseConnectionPooling)
-        {
-            services.AddDbContextPool<TDbContext>(
-                (serviceProvider, dbOptions) =>
-                {
-                    ConfigureDbContextOptions(serviceProvider, dbOptions, connectionString);
-                    ApplyTrackingDefault(dbOptions, options.UseNoTrackingByDefault);
-                }
-            );
-        }
-        else
-        {
-            services.AddDbContext<TDbContext>(
-                (serviceProvider, dbOptions) =>
-                {
-                    ConfigureDbContextOptions(serviceProvider, dbOptions, connectionString);
-                    ApplyTrackingDefault(dbOptions, options.UseNoTrackingByDefault);
-                }
-            );
-        }
+        services.AddDbContextPool<TDbContext>(
+            (serviceProvider, dbOptions) =>
+            {
+                ConfigureDbContextOptions(serviceProvider, dbOptions, connectionString);
+                ApplyTrackingDefault(dbOptions, options.UseNoTrackingByDefault);
+            }
+        );
 
         return services;
     }
@@ -118,12 +103,6 @@ public static class BaseModule
     }
 
     /// <summary>
-    /// Configures the DbContext options with interceptors and database provider.
-    /// </summary>
-    /// <param name="serviceProvider">The service provider</param>
-    /// <param name="options">The DbContext options builder</param>
-    /// <param name="connectionString">The database connection string</param>
-    /// <summary>
     /// Applies the module's query-tracking default. No-tracking modules opt their write-path
     /// repository methods back in with AsTracking.
     /// </summary>
@@ -137,13 +116,18 @@ public static class BaseModule
         }
     }
 
+    /// <summary>
+    /// Configures the DbContext options with interceptors and the database provider.
+    /// </summary>
+    /// <param name="serviceProvider">The service provider</param>
+    /// <param name="options">The DbContext options builder</param>
+    /// <param name="connectionString">The database connection string</param>
     private static void ConfigureDbContextOptions(
         IServiceProvider serviceProvider,
         DbContextOptionsBuilder options,
         string connectionString
     )
     {
-        // Add interceptors
         options.AddInterceptors(serviceProvider.GetServices<ISaveChangesInterceptor>());
 
         // Configure PostgreSQL with snake_case naming. Transient faults retry with backoff;

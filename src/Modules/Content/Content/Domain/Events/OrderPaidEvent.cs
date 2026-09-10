@@ -17,4 +17,4 @@ namespace _116.Content.Domain.Events;
 /// </param>
 /// <param name="Items">The paid items with their effects computed at raise time.</param>
 public record OrderPaidEvent(Guid OrderId, Guid PaymentId, DateTimeOffset PaidAt, IReadOnlyList<PaidItemEffect> Items)
-    : IDomainEvent;
+    : DomainEvent;

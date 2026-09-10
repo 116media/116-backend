@@ -138,6 +138,9 @@ public static class IdentityModule
         services.AddScoped<IIdentityUnitOfWork, IdentityUnitOfWork>();
         services.AddScoped(typeof(IIdentityRepository<>), typeof(IdentityRepository<>));
 
+        // Replay delivers events raised inside a transaction, not just retries failed dispatches.
+        services.AddScheduledJob<IdentityOutboxReplayJob>(cronExpression: "0 */1 * * * ?");
+
         // Register adapters
         services.AddScoped<IClientOriginDetectionAdapter, WangkanaiClientOriginDetectionAdapter>();
 
@@ -222,6 +225,7 @@ public static class IdentityModule
 
         // Register domain event handlers: welcome and security notifications
         services.AddScoped<IDomainEventHandler<UserVerifiedEvent>, UserVerifiedWelcomeEmailHandler>();
+        services.AddScoped<IDomainEventHandler<OtpIssuedEvent>, OtpIssuedEmailHandler>();
         services.AddScoped<IDomainEventHandler<UserPasswordChangedEvent>, UserPasswordChangedNotificationsHandler>();
         services.AddScoped<IDomainEventHandler<UserEmailChangedEvent>, UserEmailChangedNotificationsHandler>();
         services.AddScoped<IDomainEventHandler<UserRoleGrantedEvent>, UserRoleGrantedNotificationsHandler>();

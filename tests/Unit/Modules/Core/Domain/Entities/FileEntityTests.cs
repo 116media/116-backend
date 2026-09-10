@@ -390,4 +390,50 @@ public class FileEntityTests
     }
 
     #endregion
+
+    #region Claim
+
+    [Fact]
+    public void Claim_OnAFreshUpload_ShouldTakeOwnershipAndStampTheTime()
+    {
+        // Arrange
+        DateTime before = DateTime.UtcNow;
+        FileEntity file = FileFactory.CreateImage();
+
+        // Act
+        bool claimed = file.Claim();
+
+        // Assert
+        claimed.Should().BeTrue();
+        file.ClaimedAt.Should().NotBeNull();
+        file.ClaimedAt.Should().BeOnOrAfter(before);
+    }
+
+    [Fact]
+    public void Claim_CalledTwice_ShouldKeepTheFirstClaim()
+    {
+        // Arrange
+        FileEntity file = FileFactory.CreateImage();
+        file.Claim();
+        DateTime? firstClaim = file.ClaimedAt;
+
+        // Act
+        bool reclaimed = file.Claim();
+
+        // Assert
+        reclaimed.Should().BeFalse();
+        file.ClaimedAt.Should().Be(firstClaim);
+    }
+
+    [Fact]
+    public void Claim_ShouldBeUnsetOnAnUploadNothingReferences()
+    {
+        // Arrange & Act
+        FileEntity file = FileFactory.CreateImage();
+
+        // Assert
+        file.ClaimedAt.Should().BeNull();
+    }
+
+    #endregion
 }

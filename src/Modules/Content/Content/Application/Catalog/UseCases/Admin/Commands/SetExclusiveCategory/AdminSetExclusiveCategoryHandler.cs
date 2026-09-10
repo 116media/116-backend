@@ -50,20 +50,23 @@ public class AdminSetExclusiveCategoryHandler(
             throw i18n.Category.OnlyVideoCategoryCanBeExclusive();
         }
 
-        CategoryEntity? currentExclusive = await categoryRepository.GetExclusiveCategoryAsync(
+        await unitOfWork.ExecuteInTransactionAsync(
+            async ct =>
+            {
+                CategoryEntity? currentExclusive = await categoryRepository.GetExclusiveCategoryAsync(
+                    cancellationToken: ct
+                );
+
+                if (currentExclusive is not null && currentExclusive.Id != id)
+                {
+                    currentExclusive.ClearExclusive();
+                    categoryRepository.Update(category: currentExclusive);
+                }
+
+                category.SetExclusive();
+            },
             cancellationToken: cancellationToken
         );
-
-        if (currentExclusive is not null && currentExclusive.Id != id)
-        {
-            currentExclusive.ClearExclusive();
-            categoryRepository.Update(category: category);
-            await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-        }
-
-        category.SetExclusive();
-
-        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         CategoryEntity updated = await categoryRepository.GetByIdOrThrowAsync(
             id: id,

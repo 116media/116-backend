@@ -192,6 +192,10 @@ namespace _116.Mailer.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(1000)")
                         .HasColumnName("last_error");
 
+                    b.Property<DateTime?>("LeaseExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("lease_expires_at");
+
                     b.Property<DateTime>("NextAttemptAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("next_attempt_at");
@@ -245,10 +249,59 @@ namespace _116.Mailer.Infrastructure.Persistence.Migrations
                     b.HasKey("Id")
                         .HasName("pk_outbox_emails");
 
+                    b.HasIndex("LeaseExpiresAt")
+                        .HasDatabaseName("ix_outbox_emails_lease_expires_at");
+
                     b.HasIndex("Status", "NextAttemptAt")
                         .HasDatabaseName("ix_outbox_emails_status_next_attempt_at");
 
                     b.ToTable("outbox_emails", "mailer");
+                });
+
+            modelBuilder.Entity("_116.Shared.Infrastructure.Outbox.OutboxEventEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("AttemptCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("attempt_count");
+
+                    b.Property<DateTime?>("DispatchedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("dispatched_at");
+
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("event_type");
+
+                    b.Property<string>("LastError")
+                        .HasColumnType("text")
+                        .HasColumnName("last_error");
+
+                    b.Property<DateTime>("OccurredOn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("occurred_on");
+
+                    b.Property<string>("Payload")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("payload");
+
+                    b.HasKey("Id")
+                        .HasName("pk_domain_event_outbox");
+
+                    b.HasIndex("OccurredOn")
+                        .HasDatabaseName("ix_domain_event_outbox_pending")
+                        .HasFilter("dispatched_at IS NULL");
+
+                    b.ToTable("domain_event_outbox", "mailer");
                 });
 #pragma warning restore 612, 618
         }

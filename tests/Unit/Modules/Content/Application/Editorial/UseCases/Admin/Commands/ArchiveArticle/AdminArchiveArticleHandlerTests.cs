@@ -81,7 +81,7 @@ public class AdminArchiveArticleHandlerTests
     [Fact]
     public async Task Handle_WhenArticleIsNotPublished_ShouldArchiveWithoutUnpublishedEvent()
     {
-        // Arrange — approved but never published, the closest archivable pre-publication state
+        // Arrange
         ArticleEntity article = ArticleFactory.Create(CategoryId);
         article.MarkPendingReview();
         article.Approve();

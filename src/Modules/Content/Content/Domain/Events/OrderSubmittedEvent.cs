@@ -7,4 +7,4 @@ namespace _116.Content.Domain.Events;
 /// Consumers send the invoice-style payment request to the B2B customer.
 /// </summary>
 /// <param name="OrderId">The submitted order.</param>
-public record OrderSubmittedEvent(Guid OrderId) : IDomainEvent;
+public record OrderSubmittedEvent(Guid OrderId) : DomainEvent;

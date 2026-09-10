@@ -12,6 +12,12 @@ public enum EnumOutboxEmailStatus
     Pending,
 
     /// <summary>
+    /// Taken by a dispatcher for the current run. The lease expiry returns the
+    /// row to the pool if that dispatcher dies before recording an outcome.
+    /// </summary>
+    Claimed,
+
+    /// <summary>
     /// Delivered to the provider successfully.
     /// </summary>
     Sent,

@@ -638,6 +638,52 @@ namespace _116.Identity.Infrastructure.Persistence.Migrations
                     b.ToTable("user_token_state", "identity");
                 });
 
+            modelBuilder.Entity("_116.Shared.Infrastructure.Outbox.OutboxEventEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("AttemptCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("attempt_count");
+
+                    b.Property<DateTime?>("DispatchedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("dispatched_at");
+
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("event_type");
+
+                    b.Property<string>("LastError")
+                        .HasColumnType("text")
+                        .HasColumnName("last_error");
+
+                    b.Property<DateTime>("OccurredOn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("occurred_on");
+
+                    b.Property<string>("Payload")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("payload");
+
+                    b.HasKey("Id")
+                        .HasName("pk_domain_event_outbox");
+
+                    b.HasIndex("OccurredOn")
+                        .HasDatabaseName("ix_domain_event_outbox_pending")
+                        .HasFilter("dispatched_at IS NULL");
+
+                    b.ToTable("domain_event_outbox", "identity");
+                });
+
             modelBuilder.Entity("_116.Identity.Domain.Entities.OtpEntity", b =>
                 {
                     b.HasOne("_116.Identity.Domain.Entities.UserEntity", "User")

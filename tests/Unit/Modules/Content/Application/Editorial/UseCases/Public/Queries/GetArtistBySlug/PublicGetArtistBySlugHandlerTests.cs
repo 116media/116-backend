@@ -149,7 +149,7 @@ public class PublicGetArtistBySlugHandlerTests : BaseContentHandlerTest
     [Fact]
     public async Task Handle_WhenEveryTotalIsZero_ShouldThrowNotFound()
     {
-        // Arrange — a bio and an avatar are not content; a stub must not become a page.
+        // Arrange
         ArtistEntity artist = ArtistFactory.CreateWithSlug("empty-artist");
         _artistRepositoryMock.SetupGetBySlug("empty-artist", artist);
         _artistRepositoryMock.SetupGetTotals(new ArtistTotals(0, 0, 0, 0, 0));
@@ -181,7 +181,7 @@ public class PublicGetArtistBySlugHandlerTests : BaseContentHandlerTest
         int news
     )
     {
-        // Arrange — each of the five surfaces alone keeps the profile alive.
+        // Arrange
         ArtistEntity artist = ArtistFactory.CreateWithSlug("one-surface");
         _artistRepositoryMock.SetupGetBySlug("one-surface", artist);
         _artistRepositoryMock.SetupGetTotals(new ArtistTotals(songs, videos, albums, mixtapes, news));

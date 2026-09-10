@@ -111,7 +111,7 @@ public class PublicLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
     [Fact]
     public async Task Login_WhenTheRoleCarriesPermissions_StampsThemOnTheAccessToken()
     {
-        // Arrange — the Visitor role signup assigns carries two permissions
+        // Arrange
         await using var seedContext = CreateDbContext<IdentityDbContext>();
         var visitorRole = RoleFactory.CreateWithId(Guid.NewGuid(), "Visitor");
         PermissionEntity readArticles = PermissionFactory.Create("articles", "read");

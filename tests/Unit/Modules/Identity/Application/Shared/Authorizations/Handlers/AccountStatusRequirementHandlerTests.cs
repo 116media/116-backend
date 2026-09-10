@@ -251,7 +251,7 @@ public class AccountStatusRequirementHandlerTests
     [InlineData(typeof(OperationCanceledException))]
     public async Task HandleRequirementAsync_WithDbConnectivityError_ShouldFailClosed(Type exceptionType)
     {
-        // Arrange — the token claims say active, but an unverifiable status must not be trusted.
+        // Arrange
         var userId = Guid.NewGuid();
         var claims = new[]
         {
@@ -277,7 +277,7 @@ public class AccountStatusRequirementHandlerTests
     [Fact]
     public async Task HandleRequirementAsync_EvaluatedTwiceInOneRequest_ShouldQueryOnce()
     {
-        // Arrange — two policies in one authorization pass share the request-cached entity.
+        // Arrange
         var userId = Guid.NewGuid();
         var claims = new[] { new Claim(ClaimTypes.NameIdentifier, userId.ToString()) };
         var user = new ClaimsPrincipal(new ClaimsIdentity(claims));

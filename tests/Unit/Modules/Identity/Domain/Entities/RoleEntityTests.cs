@@ -322,7 +322,7 @@ public class RoleEntityTests
     [Fact]
     public void Restore_WhenNotDeleted_ShouldRaiseNothing()
     {
-        // Arrange — a no-op transition must not evict the lookup cache
+        // Arrange
         var role = RoleEntity.Create(Guid.NewGuid(), "Editor", "Editorial staff role");
         role.ClearDomainEvents();
 

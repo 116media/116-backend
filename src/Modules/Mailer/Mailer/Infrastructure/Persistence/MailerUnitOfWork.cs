@@ -1,4 +1,6 @@
 using _116.Mailer.Application.Shared.Persistence;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace _116.Mailer.Infrastructure.Persistence;
 
@@ -13,5 +15,26 @@ public class MailerUnitOfWork(MailerDbContext context) : IMailerUnitOfWork
     public async Task<int> CommitAsync(CancellationToken cancellationToken = default)
     {
         return await context.SaveChangesAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public Task ExecuteInTransactionAsync(
+        Func<CancellationToken, Task> operation,
+        CancellationToken cancellationToken = default
+    )
+    {
+        IExecutionStrategy strategy = context.Database.CreateExecutionStrategy();
+
+        return strategy.ExecuteAsync(
+            async ct =>
+            {
+                await using IDbContextTransaction transaction = await context.Database.BeginTransactionAsync(ct);
+
+                await operation(ct);
+                await context.SaveChangesAsync(ct);
+                await transaction.CommitAsync(ct);
+            },
+            cancellationToken
+        );
     }
 }

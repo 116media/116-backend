@@ -8,4 +8,4 @@ namespace _116.Content.Domain.Events;
 /// the departed video stops appearing in the ranked list.
 /// </summary>
 /// <param name="VideoId">The video that left the published set.</param>
-public record VideoUnpublishedEvent(Guid VideoId) : IDomainEvent;
+public record VideoUnpublishedEvent(Guid VideoId) : DomainEvent;

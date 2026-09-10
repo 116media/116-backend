@@ -92,7 +92,7 @@ public class AdminSetArticleArtistsHandlerTests
     [Fact]
     public async Task Handle_WithEmptyList_ShouldUntagEverything()
     {
-        // Arrange — empty is valid: an article about nobody in particular must be untaggable.
+        // Arrange
         ArticleEntity article = ArticleFactory.Create(Guid.NewGuid());
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
         _articleRepositoryMock

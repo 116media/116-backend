@@ -683,7 +683,7 @@ public class TokenDeliveryServiceTests : IDisposable
     [Fact]
     public void SetTokenCookies_ShouldScopeRefreshCookie_SoSignOutReceivesIt()
     {
-        // Arrange — a public (web) login, exactly the reported sign-out scenario
+        // Arrange
         DefaultHttpContext httpContext = CreateHttpContext("/api/v1/public/auth/login");
         SetupHttpContext(httpContext, EnumClient.WebApp);
         AuthenticationDto authResult = CreateAuthResult();

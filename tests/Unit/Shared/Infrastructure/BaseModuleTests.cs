@@ -59,34 +59,25 @@ public class BaseModuleTests
     }
 
     [Fact]
-    public void AddModuleDatabase_WithConnectionPooling_ShouldRegisterDbContextPool()
+    public void AddModuleDatabase_ShouldRegisterAPooledScopedContext()
     {
         // Arrange
         var services = new ServiceCollection();
-        var options = new ModuleOptions<TestDbContext> { ModuleName = "Test", UseConnectionPooling = true };
+        var options = new ModuleOptions<TestDbContext> { ModuleName = "Test" };
 
         // Act
         services.AddModuleDatabase(options);
 
         // Assert
-        ServiceDescriptor? descriptor = services.FirstOrDefault(s => s.ServiceType == typeof(TestDbContext));
-        descriptor.Should().NotBeNull();
-    }
+        ServiceDescriptor? context = services.FirstOrDefault(s => s.ServiceType == typeof(TestDbContext));
+        context.Should().NotBeNull();
+        context!.Lifetime.Should().Be(ServiceLifetime.Scoped);
 
-    [Fact]
-    public void AddModuleDatabase_WithoutConnectionPooling_ShouldRegisterDbContext()
-    {
-        // Arrange
-        var services = new ServiceCollection();
-        var options = new ModuleOptions<TestDbContext> { ModuleName = "Test", UseConnectionPooling = false };
-
-        // Act
-        services.AddModuleDatabase(options);
-
-        // Assert
-        ServiceDescriptor? descriptor = services.FirstOrDefault(s => s.ServiceType == typeof(TestDbContext));
-        descriptor.Should().NotBeNull();
-        descriptor.Lifetime.Should().Be(ServiceLifetime.Scoped);
+        ServiceDescriptor? contextOptions = services.FirstOrDefault(s =>
+            s.ServiceType == typeof(DbContextOptions<TestDbContext>)
+        );
+        contextOptions.Should().NotBeNull();
+        contextOptions!.Lifetime.Should().Be(ServiceLifetime.Singleton);
     }
 
     [Fact]

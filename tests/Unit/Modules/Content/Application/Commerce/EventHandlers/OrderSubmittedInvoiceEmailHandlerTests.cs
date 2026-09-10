@@ -47,7 +47,7 @@ public class OrderSubmittedInvoiceEmailHandlerTests
     [Fact]
     public async Task Handle_WhenOrderNotFound_ShouldSkipTheEmail()
     {
-        // Arrange — repository returns null by default
+        // Arrange
 
         // Act
         await _handler.Handle(new OrderSubmittedEvent(Guid.NewGuid()), CancellationToken.None);

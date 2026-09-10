@@ -80,6 +80,17 @@ public class FileEntity : Aggregate<Guid>
     public DateTime? DeletedAt { get; private set; }
 
     /// <summary>
+    /// When something took ownership of this file, in UTC. Null while the upload is not yet
+    /// referenced by anything.
+    /// </summary>
+    /// <remarks>
+    /// An upload and the row that references it are written by two modules and cannot share a
+    /// transaction. A row that stays unclaimed past the grace period is therefore an upload whose
+    /// referencing write never landed, and the reaper removes it.
+    /// </remarks>
+    public DateTime? ClaimedAt { get; private set; }
+
+    /// <summary>
     /// Creates a new file entity.
     /// </summary>
     /// <param name="id">The unique identifier of the file.</param>
@@ -139,6 +150,22 @@ public class FileEntity : Aggregate<Guid>
             DominantColorHex = dominantColorHex,
             ForegroundColorHex = foregroundColorHex,
         };
+    }
+
+    /// <summary>
+    /// Records that something now references this file, taking it out of the reaper's reach.
+    /// Idempotent: re-claiming keeps the first claim's timestamp.
+    /// </summary>
+    /// <returns>True when this call took ownership, false when the file was already claimed.</returns>
+    public bool Claim()
+    {
+        if (ClaimedAt is not null)
+        {
+            return false;
+        }
+
+        ClaimedAt = DateTime.UtcNow;
+        return true;
     }
 
     /// <summary>

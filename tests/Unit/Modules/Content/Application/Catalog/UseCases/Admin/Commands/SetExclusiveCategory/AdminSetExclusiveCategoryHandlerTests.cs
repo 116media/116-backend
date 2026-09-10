@@ -59,7 +59,7 @@ public class AdminSetExclusiveCategoryHandlerTests : BaseContentHandlerTest
 
         // Assert
         category.IsExclusive.Should().BeTrue();
-        _unitOfWorkMock.VerifyCommitCalled();
+        _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 
     [Fact]

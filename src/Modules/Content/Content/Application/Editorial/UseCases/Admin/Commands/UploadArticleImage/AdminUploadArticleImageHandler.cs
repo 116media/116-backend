@@ -105,6 +105,8 @@ public class AdminUploadArticleImageHandler(
         await articleRepository.AddImageAsync(image: image, cancellationToken: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
+        await fileRepository.ClaimAsync(fileId: fileEntity.Id, cancellationToken: cancellationToken);
+
         var dto = mapper.Map<ArticleImageDto>(image);
         return new AdminUploadArticleImageResult(Image: dto);
     }

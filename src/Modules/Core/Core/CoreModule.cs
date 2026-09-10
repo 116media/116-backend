@@ -8,10 +8,13 @@ using _116.Core.Application.Shared.Repositories;
 using _116.Core.Application.Shared.Services;
 using _116.Core.Domain.Constants;
 using _116.Core.Domain.Events;
+using _116.Core.Infrastructure.BackgroundJobs;
+using _116.Core.Infrastructure.Outbox;
 using _116.Core.Infrastructure.Persistence;
 using _116.Core.Infrastructure.Repositories;
 using _116.Core.Infrastructure.Services;
 using _116.Shared.Application.Exceptions.Handlers.Contracts;
+using _116.Shared.Application.Extensions;
 using _116.Shared.Application.Services;
 using _116.Shared.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
@@ -62,6 +65,13 @@ public static class CoreModule
         // Register Unit of Work for transaction management
         services.AddScoped<ICoreUnitOfWork, CoreUnitOfWork>();
         services.AddScoped(typeof(ICoreRepository<>), typeof(CoreRepository<>));
+        services.AddScoped<IProcessedDomainEventStore, CoreProcessedDomainEventStore>();
+
+        // Replay delivers events raised inside a transaction, not just retries failed dispatches.
+        services.AddScheduledJob<CoreOutboxReplayJob>(cronExpression: "0 */1 * * * ?");
+
+        // Sweeps uploads no referencing write ever claimed; the two cannot share a transaction.
+        services.AddScheduledJob<UnclaimedFileReaperJob>(cronExpression: CoreConstants.UnclaimedFileReapCron);
 
         // Register core repositories
         services.AddScoped<IFileRepository, FileRepository>();

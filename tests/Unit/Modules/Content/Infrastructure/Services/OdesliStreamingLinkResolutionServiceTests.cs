@@ -83,7 +83,7 @@ public class OdesliStreamingLinkResolutionServiceTests
     [Fact]
     public async Task ResolveAsync_ShouldSkipUnknownPlatformKeysAndNonHttpsUrls()
     {
-        // Arrange — Odesli adding a platform, or serving a non-https URL, must never break us.
+        // Arrange
         const string body = """
             {
               "linksByPlatform": {
@@ -108,7 +108,7 @@ public class OdesliStreamingLinkResolutionServiceTests
     [Fact]
     public async Task ResolveAsync_WithMissingLinksByPlatform_ShouldThrow()
     {
-        // Arrange — a body without linksByPlatform is a provider fault, not an empty result.
+        // Arrange
         var handler = new ScriptedHandler(HttpStatusCode.OK, """{ "entityUniqueId": "x" }""");
 
         // Act
@@ -131,7 +131,7 @@ public class OdesliStreamingLinkResolutionServiceTests
     [Fact]
     public async Task ResolveAsync_With429_ShouldThrowRateLimitedFlavour()
     {
-        // Arrange — 429 is surfaced distinctly so the admin is told to wait, not retry.
+        // Arrange
         var handler = new ScriptedHandler(HttpStatusCode.TooManyRequests, "{}");
 
         // Act

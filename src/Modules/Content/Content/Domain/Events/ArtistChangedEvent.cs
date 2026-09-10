@@ -7,4 +7,4 @@ namespace _116.Content.Domain.Events;
 /// invalidation; the consumer is idempotent, so repeated raises cost only a cache miss.
 /// </summary>
 /// <param name="ArtistId">The artist whose projection changed.</param>
-public record ArtistChangedEvent(Guid ArtistId) : IDomainEvent;
+public record ArtistChangedEvent(Guid ArtistId) : DomainEvent;

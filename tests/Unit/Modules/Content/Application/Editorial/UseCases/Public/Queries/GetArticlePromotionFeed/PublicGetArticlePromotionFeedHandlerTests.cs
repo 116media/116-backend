@@ -263,7 +263,7 @@ public class PublicGetArticlePromotionFeedHandlerTests : BaseContentHandlerTest
     [Fact]
     public async Task Handle_WhenNoGossipCategoryExists_ShouldReturnEmptyFallbacksAndStrip()
     {
-        // Arrange — gossip category is null (not configured)
+        // Arrange
         _categoryRepositoryMock.SetupGetGossipCategory(null);
         _articleRepositoryMock.SetupGetActivePromotedBySpot(1, new List<ArticleEntity>());
         _articleRepositoryMock.SetupGetActivePromotedBySpot(2, new List<ArticleEntity>());

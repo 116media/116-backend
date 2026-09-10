@@ -93,7 +93,7 @@ public class YoutubeThumbnailServiceTests
     [Fact]
     public async Task DownloadThumbnailAsync_WhenMaxresdefaultFails_ShouldFallbackToHqdefault()
     {
-        // Arrange — first call returns 404, second call succeeds
+        // Arrange
         Mock<HttpMessageHandler> handlerMock = new();
         handlerMock
             .Protected()

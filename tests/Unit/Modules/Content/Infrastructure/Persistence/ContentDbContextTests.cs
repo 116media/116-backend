@@ -1,6 +1,7 @@
 using _116.Content.Domain.Constants;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Infrastructure.Outbox;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -113,7 +114,12 @@ public class ContentDbContextTests
     [Fact]
     public void Model_ShouldNotMapAnyTypeOutsideTheDomainEntities()
     {
-        IEnumerable<string> mapped = SharedModel.GetEntityTypes().Select(e => e.ClrType.Name);
+        string[] infrastructureTypes = [nameof(OutboxEventEntity), nameof(ProcessedDomainEventEntity)];
+
+        IEnumerable<string> mapped = SharedModel
+            .GetEntityTypes()
+            .Select(e => e.ClrType.Name)
+            .Where(name => !infrastructureTypes.Contains(name));
 
         mapped.Should().BeEquivalentTo(DomainEntityTypes().Select(t => t.Name));
     }

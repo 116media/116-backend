@@ -84,7 +84,7 @@ public class FacebookTokenVerifierTests
     [Fact]
     public async Task VerifyAsync_WhenAppIdMismatches_Throws()
     {
-        // Arrange — a token minted for another app is rejected
+        // Arrange
         FacebookTokenVerifier verifier = Verifier("""{"data":{"is_valid":true,"app_id":"other-app"}}""", "{}");
 
         // Act

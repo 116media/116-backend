@@ -31,7 +31,7 @@ public class DispatchDomainEventsInterceptorPostCommitTests
         }
     }
 
-    private record TestDomainEvent(Guid AggregateId) : IDomainEvent;
+    private record TestDomainEvent(Guid AggregateId) : DomainEvent;
 
     private class TestDbContext : DbContext
     {

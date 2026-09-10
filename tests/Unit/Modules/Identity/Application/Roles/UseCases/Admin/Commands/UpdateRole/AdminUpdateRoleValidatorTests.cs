@@ -104,7 +104,7 @@ public class AdminUpdateRoleValidatorTests
     [Fact]
     public async Task Validate_WithEmptyName_ShouldNotHaveErrors()
     {
-        // Arrange - Update commands treat empty as "not provided" (optional field)
+        // Arrange
         AdminUpdateRoleCommand command = new UpdateRoleCommandBuilder().WithEmptyName().Build();
 
         // Act
@@ -117,7 +117,7 @@ public class AdminUpdateRoleValidatorTests
     [Fact]
     public async Task Validate_WithWhitespaceName_ShouldNotHaveErrors()
     {
-        // Arrange - Whitespace-only is treated as "not provided"
+        // Arrange
         AdminUpdateRoleCommand command = new(
             RoleId: _validRoleId.ToString(),
             Name: "   ",
@@ -157,7 +157,7 @@ public class AdminUpdateRoleValidatorTests
     [Fact]
     public async Task Validate_WithEmptyDescription_ShouldNotHaveErrors()
     {
-        // Arrange - Update commands treat empty as "not provided" (optional field)
+        // Arrange
         AdminUpdateRoleCommand command = new(
             RoleId: _validRoleId.ToString(),
             Name: TestConstants.Role.ValidName,
@@ -174,7 +174,7 @@ public class AdminUpdateRoleValidatorTests
     [Fact]
     public async Task Validate_WithWhitespaceDescription_ShouldNotHaveErrors()
     {
-        // Arrange - Whitespace-only is treated as "not provided"
+        // Arrange
         AdminUpdateRoleCommand command = new(
             RoleId: _validRoleId.ToString(),
             Name: TestConstants.Role.ValidName,

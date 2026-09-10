@@ -13,4 +13,4 @@ namespace _116.Content.Domain.Events;
 /// <param name="ArticleId">The article hosting the conversation.</param>
 /// <param name="ReplierUserId">The identity user UUID of the replier.</param>
 public record CommentReplyAddedEvent(Guid ReplyId, Guid ParentCommentId, Guid ArticleId, Guid ReplierUserId)
-    : IDomainEvent;
+    : DomainEvent;

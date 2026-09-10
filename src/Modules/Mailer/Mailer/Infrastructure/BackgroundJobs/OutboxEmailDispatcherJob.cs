@@ -6,8 +6,6 @@ using _116.Mailer.Domain.Constants;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Infrastructure.Persistence;
 using _116.Shared.Application.Jobs;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Quartz;
@@ -19,16 +17,16 @@ namespace _116.Mailer.Infrastructure.BackgroundJobs;
 /// configured <see cref="IEmailSender" />.
 /// </summary>
 /// <remarks>
-/// Every run opens a transaction, claims a batch of due pending rows with
-/// skip-locked semantics (so concurrent replicas never double-send), performs
-/// one delivery attempt per row, and records the outcome:
+/// Every run claims a batch of due rows in one statement, performs one delivery attempt per row
+/// with no transaction open, then writes the outcomes back:
 /// <list type="bullet">
 ///   <item>success marks the row sent;</item>
 ///   <item>a transient failure schedules the next attempt from the backoff schedule;</item>
 ///   <item>a permanent failure (or an exhausted schedule) marks the row failed.</item>
 /// </list>
-/// One failing message never stops the batch. Schedule: every 15 seconds via
-/// the cron expression registered in <c>MailerModule</c>.
+/// One failing message never stops the batch, and a dispatcher that dies mid-batch leaves leases
+/// that expire so the next run re-claims those rows. Schedule: every 15 seconds via the cron
+/// expression registered in <c>MailerModule</c>.
 /// </remarks>
 [DisallowConcurrentExecution]
 public class OutboxEmailDispatcherJob(IServiceScopeFactory scopeFactory, ILogger<OutboxEmailDispatcherJob> logger)
@@ -43,36 +41,26 @@ public class OutboxEmailDispatcherJob(IServiceScopeFactory scopeFactory, ILogger
         var repository = scope.ServiceProvider.GetRequiredService<IOutboxEmailRepository>();
         var sender = scope.ServiceProvider.GetRequiredService<IEmailSender>();
 
-        // The retrying execution strategy owns the transaction: a transient replay re-claims the
-        // batch under SKIP LOCKED, so no email is dispatched twice by the same run.
-        IExecutionStrategy strategy = dbContext.Database.CreateExecutionStrategy();
+        DateTime now = DateTime.UtcNow;
 
-        await strategy.ExecuteAsync(async () =>
+        IReadOnlyList<OutboxEmailEntity> batch = await repository.ClaimDueBatchAsync(
+            batchSize: MailerConstants.DispatchBatchSize,
+            now: now,
+            leaseExpiresAt: now + MailerConstants.ClaimLease,
+            cancellationToken: context.CancellationToken
+        );
+
+        if (batch.Count == 0)
         {
-            await using IDbContextTransaction transaction = await dbContext.Database.BeginTransactionAsync(
-                context.CancellationToken
-            );
+            return;
+        }
 
-            IReadOnlyList<OutboxEmailEntity> batch = await repository.ClaimDueBatchAsync(
-                MailerConstants.DispatchBatchSize,
-                DateTime.UtcNow,
-                context.CancellationToken
-            );
+        foreach (OutboxEmailEntity email in batch)
+        {
+            await DeliverAsync(email, sender, context.CancellationToken);
+        }
 
-            if (batch.Count == 0)
-            {
-                await transaction.RollbackAsync(context.CancellationToken);
-                return;
-            }
-
-            foreach (OutboxEmailEntity email in batch)
-            {
-                await DeliverAsync(email, sender, context.CancellationToken);
-            }
-
-            await dbContext.SaveChangesAsync(context.CancellationToken);
-            await transaction.CommitAsync(context.CancellationToken);
-        });
+        await dbContext.SaveChangesAsync(CancellationToken.None);
     }
 
     /// <summary>
@@ -114,8 +102,6 @@ public class OutboxEmailDispatcherJob(IServiceScopeFactory scopeFactory, ILogger
         }
         catch (Exception exception)
         {
-            // An unexpected error is treated as transient so a provider-side
-            // hiccup the adapter did not classify still retries.
             email.RegisterFailure(exception.Message, isTransient: true, DateTime.UtcNow);
             logger.LogError(
                 exception,

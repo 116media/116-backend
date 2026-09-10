@@ -119,7 +119,7 @@ public class AdminResolveAlbumStreamingLinksHandlerTests
     [Fact]
     public async Task Handle_ShouldNeverRemoveRowsForUnresolvedPlatforms()
     {
-        // Arrange — a hand-curated Tidal row must survive a resolution that had no Tidal link.
+        // Arrange
         AlbumEntity album = AlbumFactory.Create();
         _albumRepositoryMock.SetupGetByIdOrThrow(album);
         SetupResolution(
@@ -159,7 +159,7 @@ public class AdminResolveAlbumStreamingLinksHandlerTests
     [Fact]
     public async Task Handle_WhenProviderFails_ShouldPropagateResolutionException()
     {
-        // Arrange — the command handler no longer maps the failure; the global pipeline does
+        // Arrange
         AlbumEntity album = AlbumFactory.Create();
         _albumRepositoryMock.SetupGetByIdOrThrow(album);
         _resolutionServiceMock

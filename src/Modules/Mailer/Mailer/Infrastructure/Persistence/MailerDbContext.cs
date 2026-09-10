@@ -1,6 +1,7 @@
 using System.Reflection;
 using _116.Mailer.Domain.Constants;
 using _116.Mailer.Domain.Entities;
+using _116.Shared.Infrastructure.Outbox;
 using Microsoft.EntityFrameworkCore;
 
 namespace _116.Mailer.Infrastructure.Persistence;
@@ -32,6 +33,7 @@ public class MailerDbContext(DbContextOptions<MailerDbContext> options) : DbCont
     {
         modelBuilder.HasDefaultSchema(MailerConstants.SchemaName);
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+        modelBuilder.ApplyConfiguration(new OutboxEventConfiguration());
         base.OnModelCreating(modelBuilder);
     }
 }

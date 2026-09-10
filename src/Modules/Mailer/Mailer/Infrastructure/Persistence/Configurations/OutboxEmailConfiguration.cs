@@ -27,8 +27,7 @@ public class OutboxEmailConfiguration : IEntityTypeConfiguration<OutboxEmailEnti
         builder.Property(x => x.Status).HasConversion<string>().HasMaxLength(20).IsRequired();
         builder.Property(x => x.LastError).HasMaxLength(MailerConstants.MaxLastErrorLength);
 
-        // The dispatcher scans "pending rows due by now, oldest first" on every
-        // run; this composite index is that scan.
         builder.HasIndex(x => new { x.Status, x.NextAttemptAt });
+        builder.HasIndex(x => x.LeaseExpiresAt);
     }
 }

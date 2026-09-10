@@ -116,7 +116,7 @@ public class PublicSocialLoginHandlerTests : BaseHandlerTest
     [Fact]
     public async Task Handle_WhenTokenDoesNotVerify_ShouldPropagateException()
     {
-        // Arrange — the verifier throws for a token it cannot verify; the pipeline maps it, not the handler
+        // Arrange
         _verifierMock
             .Setup(x => x.VerifyAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new SocialTokenVerificationException());
@@ -131,7 +131,7 @@ public class PublicSocialLoginHandlerTests : BaseHandlerTest
     [Fact]
     public async Task Handle_WhenProviderUnsupported_ShouldPropagateException()
     {
-        // Arrange — no verifier is registered for the provider
+        // Arrange
         _verifierFactoryMock
             .Setup(x => x.For(It.IsAny<EnumAuthProvider>()))
             .Throws(new UnsupportedProviderException(EnumAuthProvider.Google));

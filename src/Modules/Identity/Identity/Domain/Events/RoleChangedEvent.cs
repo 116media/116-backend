@@ -8,4 +8,4 @@ namespace _116.Identity.Domain.Events;
 /// cost only a cache miss.
 /// </summary>
 /// <param name="RoleId">The role that changed.</param>
-public record RoleChangedEvent(Guid RoleId) : IDomainEvent;
+public record RoleChangedEvent(Guid RoleId) : DomainEvent;

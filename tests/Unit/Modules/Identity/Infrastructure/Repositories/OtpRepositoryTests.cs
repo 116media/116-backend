@@ -723,7 +723,7 @@ public class OtpRepositoryTests : IDisposable
     [Fact]
     public async Task CleanupExpiredOtpsAsync_WhenNoOtpsExist_ShouldReturnZero()
     {
-        // Arrange - No OTPs in database
+        // Arrange
 
         // Act
         int count = await _repository.CleanupExpiredOtpsAsync();

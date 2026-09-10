@@ -48,6 +48,8 @@ public class AdminUploadShortVideoThumbnailHandler(
         shortVideoRepository.Update(shortVideo: shortVideo);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
+        await fileRepository.ClaimAsync(fileId: fileEntity.Id, cancellationToken: cancellationToken);
+
         return new AdminUploadShortVideoThumbnailResult(
             ThumbnailUrl: fileEntity.StorageUrl,
             ThumbnailStorageKey: fileEntity.StorageKey!

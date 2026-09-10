@@ -11,4 +11,4 @@ namespace _116.Identity.Domain.Events;
 /// <param name="SessionId">The created session.</param>
 /// <param name="UserId">The user the session belongs to.</param>
 /// <param name="IsNewDevice">Whether the device had no prior session row for this user.</param>
-public record SessionCreatedEvent(Guid SessionId, Guid UserId, bool IsNewDevice) : IDomainEvent;
+public record SessionCreatedEvent(Guid SessionId, Guid UserId, bool IsNewDevice) : DomainEvent;

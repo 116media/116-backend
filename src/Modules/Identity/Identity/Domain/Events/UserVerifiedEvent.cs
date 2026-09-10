@@ -8,4 +8,4 @@ namespace _116.Identity.Domain.Events;
 /// an already-verified account never fires it.
 /// </summary>
 /// <param name="UserId">The verified user.</param>
-public record UserVerifiedEvent(Guid UserId) : IDomainEvent;
+public record UserVerifiedEvent(Guid UserId) : DomainEvent;

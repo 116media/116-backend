@@ -4,6 +4,7 @@ using _116.Identity.Application.Auth.UseCases.Public.Commands.ForgotPassword;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
+using _116.Identity.Domain.Events;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Identity;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
@@ -153,4 +154,24 @@ public class PublicForgotPasswordOtpFactoryTests
     }
 
     #endregion
+
+    [Fact]
+    public async Task CreatePasswordResetOtpAsync_ShouldRaiseTheIssuedEventCarryingThePlainCode()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        OtpEntity otp = OtpFactory.CreateForPasswordReset(userId);
+
+        _otpServiceMock.SetupCreateOtpReturns(otp, TestConstants.Otp.DefaultCode);
+
+        // Act
+        await _factory.CreatePasswordResetOtpAsync(userId, CancellationToken.None);
+
+        // Assert
+        OtpIssuedEvent issued = otp.DomainEvents.OfType<OtpIssuedEvent>().Should().ContainSingle().Subject;
+
+        issued.PlainCode.Should().Be(TestConstants.Otp.DefaultCode);
+        issued.UserId.Should().Be(userId);
+        issued.Culture.Should().NotBeNullOrWhiteSpace();
+    }
 }

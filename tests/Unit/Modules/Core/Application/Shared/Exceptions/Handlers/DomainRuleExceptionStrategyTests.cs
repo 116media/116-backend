@@ -65,7 +65,7 @@ public class DomainRuleExceptionStrategyTests
     [Fact]
     public void CreateProblemDetails_ForAnUnmappedCode_ShouldDegradeToTheCodeAsA400()
     {
-        // Arrange — a rule added before its strategy arm must stay a refusal, never a 500
+        // Arrange
         DefaultHttpContext context = CreateContext();
         var exception = new CoreRuleException("core.some-future-rule");
 
@@ -99,7 +99,7 @@ public class DomainRuleExceptionStrategyTests
     [MemberData(nameof(DeclaredCodes))]
     public void CreateProblemDetails_ForEveryDeclaredCode_ShouldResolveALocalizedDetail(string code)
     {
-        // Arrange — every arm ignores its args
+        // Arrange
         DefaultHttpContext context = CreateContext();
         var exception = new CoreRuleException(code, "value");
 

@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using _116.Shared.Application.Services;
 using _116.Shared.Domain;
+using _116.Shared.Infrastructure.Outbox;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,15 +18,17 @@ namespace _116.Shared.Infrastructure.interceptors;
 /// canceled the buffered events are discarded and nothing dispatches.
 /// </summary>
 /// <remarks>
-/// The dispatch point is the completion of the save, not the commit of an enclosing explicit
-/// transaction. A save performed inside a <c>Database.BeginTransaction</c> block publishes while
-/// that transaction is still open, so handlers would observe state no other connection can read
-/// yet and a later rollback would leave the reactions behind. Domain events must therefore not be
-/// raised by work that runs inside an explicit transaction.
+/// A save inside an explicit transaction completes before that transaction commits, so
+/// publishing there would let handlers observe state no other connection can read yet, and a
+/// later rollback would leave the reactions behind. Such saves therefore skip in-process
+/// dispatch: their outbox rows are already durable, and the replay job delivers them once the
+/// transaction has committed.
 /// </remarks>
 public class DispatchDomainEventsInterceptor : SaveChangesInterceptor
 {
     private static readonly ConditionalWeakTable<DbContext, List<IDomainEvent>> BufferedEvents = new();
+
+    private static readonly ConditionalWeakTable<DbContext, List<OutboxEventEntity>> BufferedOutboxRows = new();
 
     private readonly IServiceScopeFactory _serviceScopeFactory;
 
@@ -140,10 +143,25 @@ public class DispatchDomainEventsInterceptor : SaveChangesInterceptor
         }
 
         List<IDomainEvent> buffer = BufferedEvents.GetOrCreateValue(context);
+        List<OutboxEventEntity> outboxRows = BufferedOutboxRows.GetOrCreateValue(context);
+
+        bool hasOutbox = context.Model.FindEntityType(typeof(OutboxEventEntity)) is not null;
 
         foreach (IAggregate aggregate in aggregates)
         {
-            buffer.AddRange(aggregate.ClearDomainEvents());
+            foreach (IDomainEvent domainEvent in aggregate.ClearDomainEvents())
+            {
+                buffer.Add(domainEvent);
+
+                if (!hasOutbox)
+                {
+                    continue;
+                }
+
+                OutboxEventEntity row = OutboxEventEntity.Create(domainEvent);
+                context.Set<OutboxEventEntity>().Add(row);
+                outboxRows.Add(row);
+            }
         }
     }
 
@@ -167,16 +185,33 @@ public class DispatchDomainEventsInterceptor : SaveChangesInterceptor
             return;
         }
 
+        if (context.Database.CurrentTransaction is not null)
+        {
+            BufferedEvents.Remove(context);
+            BufferedOutboxRows.Remove(context);
+            return;
+        }
+
+        BufferedOutboxRows.TryGetValue(context, out List<OutboxEventEntity>? outboxRows);
         BufferedEvents.Remove(context);
+        BufferedOutboxRows.Remove(context);
+
+        var rowsByEventId = outboxRows?.ToDictionary(row => row.Id) ?? [];
+        var outcomeRecorded = false;
 
         foreach (IDomainEvent domainEvent in domainEvents)
         {
+            OutboxEventEntity? row = rowsByEventId.GetValueOrDefault(domainEvent.EventId);
+
             try
             {
                 using IServiceScope scope = _serviceScopeFactory.CreateScope();
                 var domainEventPublisher = scope.ServiceProvider.GetRequiredService<IDomainEventPublisher>();
 
                 await domainEventPublisher.Publish(domainEvent, CancellationToken.None);
+
+                row?.MarkDispatched();
+                outcomeRecorded |= row is not null;
             }
             catch (Exception exception)
             {
@@ -186,7 +221,33 @@ public class DispatchDomainEventsInterceptor : SaveChangesInterceptor
                     domainEvent.GetType().Name,
                     domainEvent
                 );
+
+                row?.MarkFailed(exception.Message);
+                outcomeRecorded |= row is not null;
             }
+        }
+
+        if (outcomeRecorded)
+        {
+            await PersistDispatchOutcomesAsync(context);
+        }
+    }
+
+    /// <summary>
+    /// Writes the dispatch outcomes back to the outbox rows. Failures here are swallowed for the
+    /// same reason dispatch failures are — the business operation already committed — and leave
+    /// the rows undispatched, which the replay job is built to handle.
+    /// </summary>
+    /// <param name="context">The context whose outbox rows carry the outcomes.</param>
+    private async Task PersistDispatchOutcomesAsync(DbContext context)
+    {
+        try
+        {
+            await context.SaveChangesAsync(CancellationToken.None);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(exception, "Recording domain event dispatch outcomes failed; replay will retry them.");
         }
     }
 
@@ -200,6 +261,7 @@ public class DispatchDomainEventsInterceptor : SaveChangesInterceptor
         if (context != null)
         {
             BufferedEvents.Remove(context);
+            BufferedOutboxRows.Remove(context);
         }
     }
 }

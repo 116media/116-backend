@@ -10,4 +10,4 @@ namespace _116.Core.Domain.Events;
 /// </summary>
 /// <param name="FileId">The soft-deleted file row.</param>
 /// <param name="StorageKey">The storage key of the remote asset, or <c>null</c> for external-URL rows.</param>
-public record FileSoftDeletedEvent(Guid FileId, string? StorageKey) : IDomainEvent;
+public record FileSoftDeletedEvent(Guid FileId, string? StorageKey) : DomainEvent;

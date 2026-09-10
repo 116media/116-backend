@@ -463,7 +463,7 @@ public class CategoryEntityTests
     [Fact]
     public void UnpinFromFeed_WhenNotPinned_ShouldRaiseNothing()
     {
-        // Arrange — a no-op transition must not evict the lookup cache
+        // Arrange
         var entity = CategoryEntity.Create(Guid.NewGuid(), Guid.NewGuid(), "Music", "music", "desc", isFree: true);
         entity.ClearDomainEvents();
 

@@ -11,4 +11,4 @@ namespace _116.Core.Domain.Events;
 /// </summary>
 /// <param name="FileId">The replaced file row.</param>
 /// <param name="OldStorageKey">The storage key of the replaced remote asset, or <c>null</c> for external-URL rows.</param>
-public record FileReplacedEvent(Guid FileId, string? OldStorageKey) : IDomainEvent;
+public record FileReplacedEvent(Guid FileId, string? OldStorageKey) : DomainEvent;

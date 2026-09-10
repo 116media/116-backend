@@ -53,6 +53,8 @@ public class AdminUploadCategoryPosterHandler(
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
+        await fileRepository.ClaimAsync(fileId: fileEntity.Id, cancellationToken: cancellationToken);
+
         CategoryEntity updated = await categoryRepository.GetByIdOrThrowAsync(
             id: id,
             cancellationToken: cancellationToken

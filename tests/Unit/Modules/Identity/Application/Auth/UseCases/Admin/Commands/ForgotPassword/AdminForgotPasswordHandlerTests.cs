@@ -22,7 +22,6 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Auth.UseCases.Admin.Comma
 /// </summary>
 public class AdminForgotPasswordHandlerTests
 {
-    private readonly Mock<IMailer> _mailerMock = new();
     private readonly Mock<ILogger<AdminForgotPasswordHandler>> _loggerMock = new();
     private readonly Mock<IAdminForgotPasswordOtpFactory> _otpFactoryMock;
     private readonly Mock<IAuthRepository> _authRepositoryMock;
@@ -36,7 +35,6 @@ public class AdminForgotPasswordHandlerTests
         _handler = new AdminForgotPasswordHandler(
             _otpFactoryMock.Object,
             _authRepositoryMock.Object,
-            _mailerMock.Object,
             _loggerMock.Object
         );
     }
@@ -62,19 +60,6 @@ public class AdminForgotPasswordHandlerTests
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _mailerMock.Verify(
-            x =>
-                x.EnqueueAsync(
-                    It.IsAny<EnumEmailTemplate>(),
-                    It.IsAny<EmailRecipient>(),
-                    It.Is<IReadOnlyDictionary<string, string>>(t =>
-                        t["otpCode"] == TestConstants.Otp.DefaultCode && t["otpCode"] != otp.CodeHash
-                    ),
-                    It.IsAny<string>(),
-                    It.IsAny<CancellationToken>()
-                ),
-            Times.Once
-        );
         otp.CodeHash.Should().NotBe(TestConstants.Otp.DefaultCode);
     }
 
@@ -239,17 +224,6 @@ public class AdminForgotPasswordHandlerTests
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _mailerMock.Verify(
-            x =>
-                x.EnqueueAsync(
-                    It.IsAny<EnumEmailTemplate>(),
-                    It.IsAny<EmailRecipient>(),
-                    It.IsAny<IReadOnlyDictionary<string, string>>(),
-                    It.IsAny<string>(),
-                    It.IsAny<CancellationToken>()
-                ),
-            Times.Never
-        );
     }
 
     [Fact]

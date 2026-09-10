@@ -156,7 +156,7 @@ public class NewsletterRepositoryTests
     [Fact]
     public async Task GetPagedAsync_ShouldListNewestFirstAndHonourThePageWindow()
     {
-        // Arrange — creation stamps are set explicitly, so the expected order is not a save-order accident
+        // Arrange
         NewsletterSubscriberEntity older = Seed("older@example.com");
         NewsletterSubscriberEntity newer = Seed("newer@example.com");
         older.CreatedAt = DateTime.UtcNow.AddMinutes(-10);

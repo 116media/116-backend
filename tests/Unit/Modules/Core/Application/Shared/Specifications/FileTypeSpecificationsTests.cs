@@ -53,7 +53,7 @@ public class FileTypeSpecificationsTests
     [Fact]
     public void FileIsImageSpecification_WithUnsupportedImageFormat_ShouldReturnFalse()
     {
-        // Arrange - image/ prefix but unsupported format
+        // Arrange
         FileEntity file = FileFactory.CreateWithMimeType("image/tiff");
         FileIsImageSpecification spec = new();
 

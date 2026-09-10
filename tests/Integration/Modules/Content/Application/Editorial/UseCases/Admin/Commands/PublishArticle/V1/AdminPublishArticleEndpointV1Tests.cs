@@ -114,7 +114,7 @@ public class AdminPublishArticleEndpointV1Tests(PostgresFixture db) : BaseApiTes
     [Fact]
     public async Task PublishArticle_WhenPendingPayment_ReturnsBadRequestAndStaysUnpublished()
     {
-        // Arrange — the money hole: a commissioned article whose order was never paid must not
+        // Arrange
         // be publishable, and before this guard nothing between the handler and the row said so
         CustomerEntity customer = CustomerFactory.Create();
         ContentOrderEntity order = ContentOrderFactory.CreateForCustomer(customer.Id);

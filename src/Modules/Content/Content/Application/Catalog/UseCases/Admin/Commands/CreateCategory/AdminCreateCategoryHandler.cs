@@ -64,9 +64,8 @@ public class AdminCreateCategoryHandler(
 
             if (currentExclusive is not null)
             {
-                // Clear the previous exclusive first
                 currentExclusive.ClearExclusive();
-                await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+                categoryRepository.Update(category: currentExclusive);
             }
         }
 

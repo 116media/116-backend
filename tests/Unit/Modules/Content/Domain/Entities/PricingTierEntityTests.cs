@@ -238,7 +238,7 @@ public class PricingTierEntityTests
     [Fact]
     public void Deactivate_WhenAlreadyInactive_ShouldRaiseNothing()
     {
-        // Arrange — a no-op transition must not evict the lookup cache
+        // Arrange
         var entity = PricingTierEntity.Create(Guid.NewGuid(), TestConstants.PricingTier.ValidName, "desc");
         entity.Deactivate();
         entity.ClearDomainEvents();

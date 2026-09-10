@@ -17,9 +17,9 @@ namespace _116.Unit.Tests.Shared.Application.Services;
 /// </summary>
 public class DomainEventPublisherTests
 {
-    public record TestDomainEvent(Guid AggregateId) : IDomainEvent;
+    public record TestDomainEvent(Guid AggregateId) : DomainEvent;
 
-    public record OtherDomainEvent(Guid AggregateId) : IDomainEvent;
+    public record OtherDomainEvent(Guid AggregateId) : DomainEvent;
 
     private sealed class DelegatingTestHandler(Func<TestDomainEvent, CancellationToken, Task> onHandle)
         : IDomainEventHandler<TestDomainEvent>
@@ -43,7 +43,8 @@ public class DomainEventPublisherTests
 
     private static DomainEventPublisher CreatePublisher(
         Action<ServiceCollection> configureServices,
-        Mock<ILogger<DomainEventPublisher>>? loggerMock = null
+        Mock<ILogger<DomainEventPublisher>>? loggerMock = null,
+        IProcessedDomainEventStore? processedEvents = null
     )
     {
         var services = new ServiceCollection();
@@ -52,7 +53,37 @@ public class DomainEventPublisherTests
         ServiceProvider serviceProvider = services.BuildServiceProvider();
         ILogger<DomainEventPublisher> logger = (loggerMock ?? new Mock<ILogger<DomainEventPublisher>>()).Object;
 
-        return new DomainEventPublisher(serviceProvider, logger, new DomainEventHandlerRegistry(services));
+        return new DomainEventPublisher(
+            serviceProvider,
+            logger,
+            new DomainEventHandlerRegistry(services),
+            processedEvents ?? new AlwaysFreshProcessedDomainEventStore()
+        );
+    }
+
+    /// <summary>
+    /// Treats every invocation as a first run, so these tests observe handler fan-out rather
+    /// than replay suppression. The suppression path has its own test below.
+    /// </summary>
+    private sealed class AlwaysFreshProcessedDomainEventStore : IProcessedDomainEventStore
+    {
+        public Task<bool> TryRecordAsync(
+            Guid eventId,
+            string handlerName,
+            CancellationToken cancellationToken = default
+        ) => Task.FromResult(true);
+    }
+
+    /// <summary>
+    /// Reports every invocation as already processed, standing in for a replayed event.
+    /// </summary>
+    private sealed class AlreadyProcessedDomainEventStore : IProcessedDomainEventStore
+    {
+        public Task<bool> TryRecordAsync(
+            Guid eventId,
+            string handlerName,
+            CancellationToken cancellationToken = default
+        ) => Task.FromResult(false);
     }
 
     [Fact]
@@ -72,6 +103,23 @@ public class DomainEventPublisherTests
 
         // Assert
         handlerMock.Verify(h => h.Handle(domainEvent, tokenSource.Token), Times.Once);
+    }
+
+    [Fact]
+    public async Task Publish_WhenTheHandlerAlreadyRanForTheEvent_SkipsIt()
+    {
+        // Arrange
+        var handlerMock = new Mock<IDomainEventHandler<TestDomainEvent>>();
+        DomainEventPublisher publisher = CreatePublisher(
+            services => services.AddScoped<IDomainEventHandler<TestDomainEvent>>(_ => handlerMock.Object),
+            processedEvents: new AlreadyProcessedDomainEventStore()
+        );
+
+        // Act
+        await publisher.Publish(new TestDomainEvent(Guid.NewGuid()), CancellationToken.None);
+
+        // Assert
+        handlerMock.Verify(h => h.Handle(It.IsAny<TestDomainEvent>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]

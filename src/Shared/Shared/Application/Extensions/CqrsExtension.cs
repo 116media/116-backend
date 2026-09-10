@@ -4,6 +4,7 @@ using _116.Shared.Application.Services;
 using _116.Shared.Contracts.Application.CQRS;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace _116.Shared.Application.Extensions;
 
@@ -32,6 +33,10 @@ public static class CqrsExtension
 
         // Register domain event publisher
         services.AddScoped<IDomainEventPublisher, DomainEventPublisher>();
+
+        // Modules override this with a store backed by their own schema; the fallback keeps a
+        // module-less host (unit tests, tooling) resolvable.
+        services.TryAddScoped<IProcessedDomainEventStore, NoOpProcessedDomainEventStore>();
 
         // The registry reads the handler registrations from this collection. It is built on first
         // resolution, by which time every module has contributed its handlers, so the registration

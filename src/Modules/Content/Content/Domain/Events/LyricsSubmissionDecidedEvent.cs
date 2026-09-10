@@ -20,4 +20,4 @@ public record LyricsSubmissionDecidedEvent(
     EnumSubmissionStatus Outcome,
     string? ReviewNote,
     Guid? PublishedLyricsId
-) : IDomainEvent;
+) : DomainEvent;

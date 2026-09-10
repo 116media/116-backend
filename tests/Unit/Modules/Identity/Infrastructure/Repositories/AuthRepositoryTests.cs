@@ -288,7 +288,7 @@ public class AuthRepositoryTests : IDisposable
     [Fact]
     public void IsUserAccountVerified_WhenLocalUserIsNotVerified_ShouldThrowAccountNotVerifiedException()
     {
-        // Arrange - Default UserBuilder creates unverified users
+        // Arrange
         UserEntity user = UserFactory.CreateUnverified();
 
         // Act
@@ -301,7 +301,7 @@ public class AuthRepositoryTests : IDisposable
     [Fact]
     public void IsUserAccountVerified_WhenExternalUser_ShouldReturnTrueRegardlessOfVerificationStatus()
     {
-        // Arrange - External users don't need verification
+        // Arrange
         UserEntity user = UserFactory.CreateExternal(EnumAuthProvider.Google);
 
         // Act
@@ -692,7 +692,7 @@ public class AuthRepositoryTests : IDisposable
     [Fact]
     public async Task GetUserByPhoneNumberAsync_WhenPartialPhoneNumberMatches_ShouldReturnNull()
     {
-        // Arrange — spec matches on FullPhoneNumber only, not partial
+        // Arrange
         UserEntity user = UserFactory.CreateWithPhoneNumber("+1234567890", "1234567890");
 
         _context.Users.Add(user);
@@ -891,7 +891,7 @@ public class AuthRepositoryTests : IDisposable
     [Fact]
     public async Task GetOrCreateExternalUserAsync_WhenEmailMatchesUnlinkedExternal_ShouldLinkSubjectId()
     {
-        // Arrange — an external account whose email matches but whose subject id is being set for the
+        // Arrange
         // first time is linked, not rejected.
         RoleEntity visitorRole = RoleFactory.CreateVisitor();
         var existingUser = UserEntity.CreateExternal(

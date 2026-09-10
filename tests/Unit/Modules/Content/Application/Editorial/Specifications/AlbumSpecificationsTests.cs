@@ -112,7 +112,7 @@ public class AlbumSpecificationsTests
     [Fact]
     public void AlbumByArtistSpecification_WithUnlinkedAlbum_ShouldReturnFalse()
     {
-        // Arrange — ArtistId is nullable; an unlinked album matches no artist scope.
+        // Arrange
         AlbumEntity album = AlbumFactory.Create();
         var spec = new AlbumByArtistSpecification(Guid.NewGuid());
 

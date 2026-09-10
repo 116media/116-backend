@@ -18,4 +18,21 @@ public static class CoreConstants
     /// Used for module registration and configuration.
     /// </summary>
     public const string ModuleName = "Core";
+
+    /// <summary>
+    /// How long an unclaimed upload is kept before the reaper removes it and its remote asset.
+    /// Sized well above the seconds a referencing write needs, so a slow request is never reaped
+    /// out from under itself.
+    /// </summary>
+    public static readonly TimeSpan UnclaimedFileGracePeriod = TimeSpan.FromHours(24);
+
+    /// <summary>
+    /// Maximum unclaimed uploads removed per reaper run.
+    /// </summary>
+    public const int UnclaimedFileReapBatchSize = 100;
+
+    /// <summary>
+    /// Cron expression for the unclaimed-upload reaper: hourly, on the hour.
+    /// </summary>
+    public const string UnclaimedFileReapCron = "0 0 * * * ?";
 }

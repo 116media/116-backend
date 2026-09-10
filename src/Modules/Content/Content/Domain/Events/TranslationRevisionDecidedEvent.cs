@@ -19,4 +19,4 @@ public record TranslationRevisionDecidedEvent(
     Guid ProposedByUserId,
     bool Accepted,
     bool ByModerator
-) : IDomainEvent;
+) : DomainEvent;

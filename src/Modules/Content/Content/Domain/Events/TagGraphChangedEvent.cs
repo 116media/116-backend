@@ -11,4 +11,4 @@ namespace _116.Content.Domain.Events;
 /// idempotent so the extra raises cost nothing beyond a cache miss.
 /// </summary>
 /// <param name="TagId">The tag whose graph membership changed.</param>
-public record TagGraphChangedEvent(Guid TagId) : IDomainEvent;
+public record TagGraphChangedEvent(Guid TagId) : DomainEvent;
