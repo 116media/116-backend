@@ -1,11 +1,13 @@
 using _116.Core.Application.Shared.Repositories;
 using _116.Identity.Application.Shared.Repositories;
+using _116.Identity.Application.User.Services;
 using _116.Identity.Application.User.UseCases.Admin.Queries.GetOwnProfile;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Identity;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Repositories;
+using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -18,15 +20,15 @@ namespace _116.Unit.Tests.Modules.Identity.Application.User.UseCases.Admin.Queri
 public class AdminGetOwnProfileHandlerTests : BaseHandlerTest
 {
     private readonly Mock<IAuthRepository> _authRepositoryMock;
-    private readonly Mock<IFileRepository> _fileRepositoryMock;
+    private readonly Mock<IAvatarService> _avatarServiceMock;
     private readonly AdminGetOwnProfileHandler _handler;
 
     public AdminGetOwnProfileHandlerTests()
     {
         _authRepositoryMock = MockAuthRepository.Create();
-        _fileRepositoryMock = MockFileRepository.Create();
+        _avatarServiceMock = MockAvatarService.Create();
 
-        _handler = new AdminGetOwnProfileHandler(_authRepositoryMock.Object, _fileRepositoryMock.Object, Mapper);
+        _handler = new AdminGetOwnProfileHandler(_authRepositoryMock.Object, _avatarServiceMock.Object, Mapper);
     }
 
     #region Success Cases
@@ -40,7 +42,7 @@ public class AdminGetOwnProfileHandlerTests : BaseHandlerTest
 
         _authRepositoryMock.SetupGetUserWithRolesAndPermissionsById(user);
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
-        _fileRepositoryMock.SetupGetAvatarFileReturnsNull(user.AvatarFileId);
+        _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
 
         // Act
         AdminGetOwnProfileResult result = await _handler.Handle(query, CancellationToken.None);
@@ -58,7 +60,7 @@ public class AdminGetOwnProfileHandlerTests : BaseHandlerTest
 
         _authRepositoryMock.SetupGetUserWithRolesAndPermissionsById(user);
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
-        _fileRepositoryMock.SetupGetAvatarFileReturnsNull(user.AvatarFileId);
+        _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
 
         // Act
         await _handler.Handle(query, CancellationToken.None);
@@ -79,7 +81,7 @@ public class AdminGetOwnProfileHandlerTests : BaseHandlerTest
 
         _authRepositoryMock.SetupGetUserWithRolesAndPermissionsById(user);
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
-        _fileRepositoryMock.SetupGetAvatarFileReturnsNull(user.AvatarFileId);
+        _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
 
         // Act
         await _handler.Handle(query, CancellationToken.None);
@@ -97,7 +99,7 @@ public class AdminGetOwnProfileHandlerTests : BaseHandlerTest
 
         _authRepositoryMock.SetupGetUserWithRolesAndPermissionsById(user);
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
-        _fileRepositoryMock.SetupGetAvatarFileReturnsNull(user.AvatarFileId);
+        _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
 
         // Act
         await _handler.Handle(query, CancellationToken.None);
@@ -118,16 +120,13 @@ public class AdminGetOwnProfileHandlerTests : BaseHandlerTest
 
         _authRepositoryMock.SetupGetUserWithRolesAndPermissionsById(user);
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
-        _fileRepositoryMock.SetupGetAvatarFileReturnsNull(user.AvatarFileId);
+        _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
 
         // Act
         await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        _fileRepositoryMock.Verify(
-            x => x.GetAvatarFileAsync(user.AvatarFileId, It.IsAny<CancellationToken>()),
-            Times.Once
-        );
+        _avatarServiceMock.Verify(x => x.GetAvatarAsync(user.AvatarFileId, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     #endregion
@@ -164,7 +163,7 @@ public class AdminGetOwnProfileHandlerTests : BaseHandlerTest
 
         _authRepositoryMock.SetupGetUserWithRolesAndPermissionsById(user);
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
-        _fileRepositoryMock.SetupGetAvatarFileReturnsNull(user.AvatarFileId);
+        _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
 
         // Act
         await _handler.Handle(query, cts.Token);
@@ -183,13 +182,13 @@ public class AdminGetOwnProfileHandlerTests : BaseHandlerTest
 
         _authRepositoryMock.SetupGetUserWithRolesAndPermissionsById(user);
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
-        _fileRepositoryMock.SetupGetAvatarFileReturnsNull(user.AvatarFileId);
+        _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
 
         // Act
         await _handler.Handle(query, cts.Token);
 
         // Assert
-        _fileRepositoryMock.Verify(x => x.GetAvatarFileAsync(user.AvatarFileId, cts.Token), Times.Once);
+        _avatarServiceMock.Verify(x => x.GetAvatarAsync(user.AvatarFileId, cts.Token), Times.Once);
     }
 
     #endregion
