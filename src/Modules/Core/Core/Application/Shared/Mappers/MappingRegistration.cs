@@ -13,4 +13,17 @@ public sealed class MappingRegistration : IRegister
     {
         FileMapper.Register(config);
     }
+
+    /// <summary>
+    /// Creates and compiles a standalone config carrying only the Core module's mappings.
+    /// </summary>
+    /// <returns>A fully configured TypeAdapterConfig instance.</returns>
+    public static TypeAdapterConfig CreateConfiguration()
+    {
+        var config = new TypeAdapterConfig();
+        new MappingRegistration().Register(config);
+        config.Compile();
+
+        return config;
+    }
 }
