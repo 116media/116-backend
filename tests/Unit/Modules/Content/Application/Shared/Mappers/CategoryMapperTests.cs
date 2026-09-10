@@ -2,6 +2,7 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
+using _116.Core.Contracts.Application.DTOs;
 using _116.Core.Domain.Entities;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Factories.Core;
@@ -26,10 +27,10 @@ public class CategoryMapperTests : BaseContentHandlerTest
     public void ToCategoryDto_WhenPosterInFileMap_ShouldResolvePosterUrl()
     {
         CategoryEntity category = CategoryWithContentType();
-        FileEntity poster = FileFactory.CreateWithStorageUrl("https://cdn.116.test/posters/show.jpg");
+        FileReferenceDto poster = FileReferenceDtoFactory.CreateWithStorageUrl("https://cdn.116.test/posters/show.jpg");
         category.SetPosterFileId(poster.Id);
 
-        var files = new Dictionary<Guid, FileEntity> { [poster.Id] = poster };
+        var files = new Dictionary<Guid, FileReferenceDto> { [poster.Id] = poster };
 
         CategoryDto dto = category.ToCategoryDto(Mapper, files);
 
@@ -41,7 +42,7 @@ public class CategoryMapperTests : BaseContentHandlerTest
     {
         CategoryEntity category = CategoryWithContentType();
 
-        CategoryDto dto = category.ToCategoryDto(Mapper, new Dictionary<Guid, FileEntity>());
+        CategoryDto dto = category.ToCategoryDto(Mapper, new Dictionary<Guid, FileReferenceDto>());
 
         dto.PosterUrl.Should().BeNull();
     }
@@ -52,7 +53,7 @@ public class CategoryMapperTests : BaseContentHandlerTest
         CategoryEntity category = CategoryWithContentType();
         category.SetPosterFileId(Guid.NewGuid());
 
-        CategoryDto dto = category.ToCategoryDto(Mapper, new Dictionary<Guid, FileEntity>());
+        CategoryDto dto = category.ToCategoryDto(Mapper, new Dictionary<Guid, FileReferenceDto>());
 
         dto.PosterUrl.Should().BeNull();
     }
@@ -61,10 +62,10 @@ public class CategoryMapperTests : BaseContentHandlerTest
     public void ToCategoryDto_WhenPosterHasColors_ShouldPassColorsThrough()
     {
         CategoryEntity category = CategoryWithContentType();
-        FileEntity poster = FileFactory.CreateWithColors("#FFEB3B", "#000000");
+        FileReferenceDto poster = FileReferenceDtoFactory.CreateWithColors("#FFEB3B", "#000000");
         category.SetPosterFileId(poster.Id);
 
-        var files = new Dictionary<Guid, FileEntity> { [poster.Id] = poster };
+        var files = new Dictionary<Guid, FileReferenceDto> { [poster.Id] = poster };
 
         CategoryDto dto = category.ToCategoryDto(Mapper, files);
 
@@ -78,7 +79,7 @@ public class CategoryMapperTests : BaseContentHandlerTest
     {
         CategoryEntity category = CategoryWithContentType();
 
-        CategoryDto dto = category.ToCategoryDto(Mapper, new Dictionary<Guid, FileEntity>());
+        CategoryDto dto = category.ToCategoryDto(Mapper, new Dictionary<Guid, FileReferenceDto>());
 
         dto.Colors.Should().BeNull();
     }
@@ -87,10 +88,10 @@ public class CategoryMapperTests : BaseContentHandlerTest
     public void ToCategoryDto_WhenPosterHasNoExtractedColors_ShouldLeaveColorsNull()
     {
         CategoryEntity category = CategoryWithContentType();
-        FileEntity poster = FileFactory.CreateWithStorageUrl("https://cdn.116.test/posters/show.jpg");
+        FileReferenceDto poster = FileReferenceDtoFactory.CreateWithStorageUrl("https://cdn.116.test/posters/show.jpg");
         category.SetPosterFileId(poster.Id);
 
-        var files = new Dictionary<Guid, FileEntity> { [poster.Id] = poster };
+        var files = new Dictionary<Guid, FileReferenceDto> { [poster.Id] = poster };
 
         CategoryDto dto = category.ToCategoryDto(Mapper, files);
 
@@ -102,10 +103,10 @@ public class CategoryMapperTests : BaseContentHandlerTest
     public void ToCategoryDto_WhenPosterHasDominantButNoForeground_ShouldLeaveColorsNull()
     {
         CategoryEntity category = CategoryWithContentType();
-        FileEntity poster = FileFactory.CreateWithColors("#FFEB3B", foregroundColorHex: null);
+        FileReferenceDto poster = FileReferenceDtoFactory.CreateWithColors("#FFEB3B", foregroundColorHex: null);
         category.SetPosterFileId(poster.Id);
 
-        var files = new Dictionary<Guid, FileEntity> { [poster.Id] = poster };
+        var files = new Dictionary<Guid, FileReferenceDto> { [poster.Id] = poster };
 
         CategoryDto dto = category.ToCategoryDto(Mapper, files);
 
