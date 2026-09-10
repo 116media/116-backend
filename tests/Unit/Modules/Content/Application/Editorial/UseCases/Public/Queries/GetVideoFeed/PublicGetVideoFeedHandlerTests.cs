@@ -4,9 +4,12 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.Services;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Factories.Core;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Repositories;
+using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -20,18 +23,18 @@ public class PublicGetVideoFeedHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<ICategoryRepository> _categoryRepositoryMock;
     private readonly Mock<IVideoRepository> _videoRepositoryMock;
-    private readonly Mock<IFileRepository> _fileRepositoryMock;
+    private readonly Mock<IFileStorageService> _fileStorageMock;
     private readonly PublicGetVideoFeedHandler _handler;
 
     public PublicGetVideoFeedHandlerTests()
     {
         _categoryRepositoryMock = MockCategoryRepository.Create();
         _videoRepositoryMock = MockVideoRepository.Create();
-        _fileRepositoryMock = MockFileRepository.Create();
+        _fileStorageMock = MockFileStorageService.Create();
         _handler = new PublicGetVideoFeedHandler(
             _categoryRepositoryMock.Object,
             _videoRepositoryMock.Object,
-            _fileRepositoryMock.Object,
+            _fileStorageMock.Object,
             Mapper
         );
     }
@@ -62,7 +65,7 @@ public class PublicGetVideoFeedHandlerTests : BaseContentHandlerTest
         result.Sections.Should().ContainSingle();
         result.Sections[0].Category.Id.Should().Be(withVideos.Id);
         result.Sections[0].Videos.Should().HaveCount(3);
-        _fileRepositoryMock.VerifyGetByIdsCalledOnce();
+        _fileStorageMock.VerifyResolveManyCalledOnce();
     }
 
     [Fact]
