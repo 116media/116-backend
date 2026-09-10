@@ -4,9 +4,12 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.Services;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Factories.Core;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Repositories;
+using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -19,7 +22,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Public.
 public class PublicGetVideoPromotionFeedHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<IVideoRepository> _videoRepositoryMock;
-    private readonly Mock<IFileRepository> _fileRepositoryMock;
+    private readonly Mock<IFileStorageService> _fileStorageMock;
     private readonly PublicGetVideoPromotionFeedHandler _handler;
 
     private static readonly Guid CategoryId = Guid.NewGuid();
@@ -27,12 +30,8 @@ public class PublicGetVideoPromotionFeedHandlerTests : BaseContentHandlerTest
     public PublicGetVideoPromotionFeedHandlerTests()
     {
         _videoRepositoryMock = MockVideoRepository.Create();
-        _fileRepositoryMock = MockFileRepository.Create();
-        _handler = new PublicGetVideoPromotionFeedHandler(
-            _videoRepositoryMock.Object,
-            _fileRepositoryMock.Object,
-            Mapper
-        );
+        _fileStorageMock = MockFileStorageService.Create();
+        _handler = new PublicGetVideoPromotionFeedHandler(_videoRepositoryMock.Object, _fileStorageMock.Object, Mapper);
     }
 
     #region All spots filled
