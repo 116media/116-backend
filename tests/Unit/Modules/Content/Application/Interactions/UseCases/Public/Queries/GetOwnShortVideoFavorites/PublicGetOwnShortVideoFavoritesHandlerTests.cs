@@ -4,11 +4,14 @@ using _116.Content.Application.Interactions.UseCases.Public.Queries.GetOwnShared
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.DTOs;
+using _116.Core.Contracts.Application.Services;
 using _116.Core.Domain.Entities;
 using _116.Shared.Application.Pagination;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Repositories;
+using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -20,15 +23,15 @@ public class PublicGetOwnShortVideoFavoritesHandlerTests : BaseContentHandlerTes
 {
     private static readonly Guid UserId = Guid.NewGuid();
     private readonly Mock<IShortVideoRepository> _repository = MockShortVideoRepository.Create();
-    private readonly Mock<IFileRepository> _files = MockFileRepository.Create();
+    private readonly Mock<IFileStorageService> _files = MockFileStorageService.Create();
 
     public PublicGetOwnShortVideoFavoritesHandlerTests()
     {
         _files
             .Setup(repository =>
-                repository.GetByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>())
+                repository.ResolveManyAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>())
             )
-            .ReturnsAsync(new Dictionary<Guid, FileEntity>());
+            .ReturnsAsync(new Dictionary<Guid, FileReferenceDto>());
     }
 
     [Fact]
