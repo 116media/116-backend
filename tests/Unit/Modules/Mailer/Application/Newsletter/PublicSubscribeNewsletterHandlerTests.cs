@@ -1,8 +1,9 @@
 using _116.Mailer.Application.Newsletter.UseCases.Public.Commands.SubscribeNewsletter;
 using _116.Mailer.Application.Shared.Persistence;
 using _116.Mailer.Application.Shared.Repositories;
-using _116.Mailer.Contracts.Application;
-using _116.Mailer.Contracts.Domain;
+using _116.Mailer.Contracts.Application.DTOs;
+using _116.Mailer.Contracts.Application.Services;
+using _116.Mailer.Contracts.Domain.Enums;
 using _116.Mailer.Domain.Entities;
 using AwesomeAssertions;
 using Moq;
@@ -18,7 +19,7 @@ public class PublicSubscribeNewsletterHandlerTests
 {
     private readonly Mock<INewsletterRepository> _repository = new();
     private readonly Mock<IMailerUnitOfWork> _unitOfWork = new();
-    private readonly Mock<IMailer> _mailer = new();
+    private readonly Mock<IEmailService> _mailer = new();
 
     private PublicSubscribeNewsletterHandler Handler => new(_repository.Object, _unitOfWork.Object, _mailer.Object);
 
@@ -40,7 +41,7 @@ public class PublicSubscribeNewsletterHandlerTests
             m =>
                 m.EnqueueAsync(
                     EnumEmailTemplate.NewsletterConfirm,
-                    It.IsAny<EmailRecipient>(),
+                    It.IsAny<EmailRecipientDto>(),
                     It.Is<IReadOnlyDictionary<string, string>>(t => t.ContainsKey("confirmUrl")),
                     It.IsAny<string>(),
                     It.IsAny<CancellationToken>()
@@ -72,7 +73,7 @@ public class PublicSubscribeNewsletterHandlerTests
             m =>
                 m.EnqueueAsync(
                     EnumEmailTemplate.NewsletterConfirm,
-                    It.IsAny<EmailRecipient>(),
+                    It.IsAny<EmailRecipientDto>(),
                     It.IsAny<IReadOnlyDictionary<string, string>>(),
                     It.IsAny<string>(),
                     It.IsAny<CancellationToken>()
