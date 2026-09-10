@@ -1,4 +1,4 @@
-using _116.Identity.Contracts.Application;
+using _116.Identity.Contracts.Application.DTOs;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Services;
@@ -107,7 +107,7 @@ public class UserLookupServiceTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        AuthorInfo? result = await _sut.GetAuthorInfoByIdAsync(user.Id);
+        AuthorDto? result = await _sut.GetAuthorInfoByIdAsync(user.Id);
 
         // Assert
         result.Should().NotBeNull();
@@ -122,7 +122,7 @@ public class UserLookupServiceTests : IDisposable
         Guid nonExistentId = Guid.NewGuid();
 
         // Act
-        AuthorInfo? result = await _sut.GetAuthorInfoByIdAsync(nonExistentId);
+        AuthorDto? result = await _sut.GetAuthorInfoByIdAsync(nonExistentId);
 
         // Assert
         result.Should().BeNull();
@@ -137,7 +137,7 @@ public class UserLookupServiceTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        AuthorInfo? result = await _sut.GetAuthorInfoByIdAsync(user.Id);
+        AuthorDto? result = await _sut.GetAuthorInfoByIdAsync(user.Id);
 
         // Assert
         result.Should().NotBeNull();
@@ -153,7 +153,7 @@ public class UserLookupServiceTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        AuthorInfo? result = await _sut.GetAuthorInfoByIdAsync(user.Id);
+        AuthorDto? result = await _sut.GetAuthorInfoByIdAsync(user.Id);
 
         // Assert
         result.Should().NotBeNull();
