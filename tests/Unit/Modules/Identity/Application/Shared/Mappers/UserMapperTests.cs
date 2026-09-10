@@ -1,4 +1,4 @@
-using _116.Core.Application.Shared.DTOs;
+using _116.Core.Contracts.Application.DTOs;
 using _116.Core.Domain.Entities;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Mappers;
@@ -188,7 +188,7 @@ public class UserMapperTests
         FileEntity fileEntity = FileFactory.CreateJpeg();
 
         // Act
-        var result = fileEntity.ToFileDto(_mapper);
+        FileDto? result = fileEntity is null ? null : _mapper.Map<FileDto>(fileEntity.ToFileReferenceDto());
 
         // Assert
         result.Should().NotBeNull();
@@ -207,7 +207,7 @@ public class UserMapperTests
         FileEntity? fileEntity = null;
 
         // Act
-        var result = fileEntity.ToFileDto(_mapper);
+        FileDto? result = fileEntity is null ? null : _mapper.Map<FileDto>(fileEntity.ToFileReferenceDto());
 
         // Assert
         result.Should().BeNull();
