@@ -2,8 +2,8 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
-using _116.Core.Application.Shared.Repositories;
-using _116.Identity.Contracts.Application;
+using _116.Core.Contracts.Application.Services;
+using _116.Identity.Contracts.Application.Services;
 using _116.Tests.Fixtures.Factories.Content;
 using MapsterMapper;
 
@@ -35,8 +35,8 @@ public class LyricsMapperTests(PostgresFixture postgres) : BaseRepositoryTest(po
         await using var readContext = CreateDbContext<ContentDbContext>();
         LyricsEntity loaded = await readContext.Lyrics.Include(l => l.Category).FirstAsync(l => l.Id == lyrics.Id);
 
-        var fileRepository = Resolve<IFileRepository>();
-        LyricsSummaryDto dto = await loaded.ToLyricsSummaryDtoAsync(fileRepository);
+        var fileStorage = Resolve<IFileStorageService>();
+        LyricsSummaryDto dto = await loaded.ToLyricsSummaryDtoAsync(fileStorage);
 
         dto.Id.Should().Be(loaded.Id);
         dto.CategoryId.Should().Be(category.Id);
@@ -71,8 +71,8 @@ public class LyricsMapperTests(PostgresFixture postgres) : BaseRepositoryTest(po
         await using var readContext = CreateDbContext<ContentDbContext>();
         LyricsEntity loaded = await readContext.Lyrics.FirstAsync(l => l.Id == lyrics.Id);
 
-        var fileRepository = Resolve<IFileRepository>();
-        LyricsSummaryDto dto = await loaded.ToLyricsSummaryDtoAsync(fileRepository);
+        var fileStorage = Resolve<IFileStorageService>();
+        LyricsSummaryDto dto = await loaded.ToLyricsSummaryDtoAsync(fileStorage);
 
         dto.VideoId.Should().Be(video.Id);
     }
@@ -97,8 +97,8 @@ public class LyricsMapperTests(PostgresFixture postgres) : BaseRepositoryTest(po
         await using var readContext = CreateDbContext<ContentDbContext>();
         List<LyricsEntity> loaded = await readContext.Lyrics.Include(l => l.Category).ToListAsync();
 
-        var fileRepository = Resolve<IFileRepository>();
-        IReadOnlyList<LyricsSummaryDto> dtos = await loaded.AsReadOnly().ToLyricsSummaryDtosAsync(fileRepository);
+        var fileStorage = Resolve<IFileStorageService>();
+        IReadOnlyList<LyricsSummaryDto> dtos = await loaded.AsReadOnly().ToLyricsSummaryDtosAsync(fileStorage);
 
         dtos.Should().HaveCount(2);
         dtos.Select(d => d.SongTitle).Should().BeEquivalentTo(["Song One", "Song Two"]);
@@ -128,8 +128,8 @@ public class LyricsMapperTests(PostgresFixture postgres) : BaseRepositoryTest(po
 
         var mapper = Resolve<IMapper>();
         var userLookup = Resolve<IUserLookupService>();
-        var fileRepository = Resolve<IFileRepository>();
-        LyricsDetailDto dto = await loaded.ToLyricsDetailDtoAsync(mapper, userLookup, fileRepository);
+        var fileStorage = Resolve<IFileStorageService>();
+        LyricsDetailDto dto = await loaded.ToLyricsDetailDtoAsync(mapper, userLookup, fileStorage);
 
         dto.Id.Should().Be(loaded.Id);
         dto.CategoryName.Should().Be("Culture");
@@ -161,10 +161,10 @@ public class LyricsMapperTests(PostgresFixture postgres) : BaseRepositoryTest(po
 
         var mapper = Resolve<IMapper>();
         var userLookup = Resolve<IUserLookupService>();
-        var fileRepository = Resolve<IFileRepository>();
+        var fileStorage = Resolve<IFileStorageService>();
         IReadOnlyList<LyricsDetailDto> dtos = await loaded
             .AsReadOnly()
-            .ToLyricsDetailDtosAsync(mapper, userLookup, fileRepository);
+            .ToLyricsDetailDtosAsync(mapper, userLookup, fileStorage);
 
         dtos.Should().HaveCount(2);
     }
