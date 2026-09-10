@@ -1,8 +1,9 @@
 using _116.Identity.Application.User.EventHandlers;
-using _116.Identity.Contracts.Application;
+using _116.Identity.Contracts.Application.Services;
 using _116.Identity.Domain.Events;
-using _116.Mailer.Contracts.Application;
-using _116.Mailer.Contracts.Domain;
+using _116.Mailer.Contracts.Application.DTOs;
+using _116.Mailer.Contracts.Application.Services;
+using _116.Mailer.Contracts.Domain.Enums;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
@@ -15,8 +16,8 @@ namespace _116.Unit.Tests.Modules.Identity.Application.User.EventHandlers;
 public class UserEmailChangedNotificationsHandlerTests
 {
     private readonly Mock<IUserLookupService> _userLookupServiceMock = new();
-    private readonly Mock<IMailer> _mailerMock = new();
-    private readonly Mock<INotifier> _notifierMock = new();
+    private readonly Mock<IEmailService> _mailerMock = new();
+    private readonly Mock<INotificationService> _notifierMock = new();
     private readonly UserEmailChangedNotificationsHandler _handler;
 
     public UserEmailChangedNotificationsHandlerTests()
@@ -45,7 +46,7 @@ public class UserEmailChangedNotificationsHandlerTests
             x =>
                 x.EnqueueAsync(
                     EnumEmailTemplate.EmailChangedAlertOld,
-                    It.Is<EmailRecipient>(r => r.Address == "old@test.com"),
+                    It.Is<EmailRecipientDto>(r => r.Address == "old@test.com"),
                     It.Is<IReadOnlyDictionary<string, string>>(t =>
                         t["newEmailMasked"] == "f***@example.com" && t["userName"] == "Fally"
                     ),
@@ -72,7 +73,7 @@ public class UserEmailChangedNotificationsHandlerTests
             x =>
                 x.EnqueueAsync(
                     EnumEmailTemplate.EmailChangedConfirmNew,
-                    It.Is<EmailRecipient>(r => r.Address == "fresh@example.com"),
+                    It.Is<EmailRecipientDto>(r => r.Address == "fresh@example.com"),
                     It.Is<IReadOnlyDictionary<string, string>>(t =>
                         t["userName"] == "Fally" && t.ContainsKey("changeTime")
                     ),
@@ -99,7 +100,7 @@ public class UserEmailChangedNotificationsHandlerTests
             x =>
                 x.EnqueueAsync(
                     It.IsAny<EnumEmailTemplate>(),
-                    It.IsAny<EmailRecipient>(),
+                    It.IsAny<EmailRecipientDto>(),
                     It.IsAny<IReadOnlyDictionary<string, string>>(),
                     It.IsAny<string>(),
                     It.IsAny<CancellationToken>()
@@ -110,7 +111,7 @@ public class UserEmailChangedNotificationsHandlerTests
             x =>
                 x.EnqueueAsync(
                     EnumEmailTemplate.EmailChangedConfirmNew,
-                    It.Is<EmailRecipient>(r => r.Address == "fresh@example.com"),
+                    It.Is<EmailRecipientDto>(r => r.Address == "fresh@example.com"),
                     It.IsAny<IReadOnlyDictionary<string, string>>(),
                     It.IsAny<string>(),
                     It.IsAny<CancellationToken>()
