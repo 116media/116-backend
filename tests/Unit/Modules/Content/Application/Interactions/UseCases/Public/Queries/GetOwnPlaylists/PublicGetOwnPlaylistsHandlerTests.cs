@@ -2,9 +2,12 @@ using _116.Content.Application.Interactions.Persistence;
 using _116.Content.Application.Interactions.UseCases.Public.Queries.GetOwnPlaylists;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.Services;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Factories.Core;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Repositories;
+using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -19,14 +22,14 @@ public class PublicGetOwnPlaylistsHandlerTests : BaseContentHandlerTest
     private static readonly Guid UserId = Guid.NewGuid();
 
     private readonly Mock<IPlaylistRepository> _playlistRepositoryMock;
-    private readonly Mock<IFileRepository> _fileRepositoryMock;
+    private readonly Mock<IFileStorageService> _fileStorageMock;
     private readonly PublicGetOwnPlaylistsHandler _handler;
 
     public PublicGetOwnPlaylistsHandlerTests()
     {
         _playlistRepositoryMock = MockPlaylistRepository.Create();
-        _fileRepositoryMock = MockFileRepository.Create();
-        _handler = new PublicGetOwnPlaylistsHandler(_playlistRepositoryMock.Object, _fileRepositoryMock.Object, Mapper);
+        _fileStorageMock = MockFileStorageService.Create();
+        _handler = new PublicGetOwnPlaylistsHandler(_playlistRepositoryMock.Object, _fileStorageMock.Object, Mapper);
     }
 
     #region Success Cases
