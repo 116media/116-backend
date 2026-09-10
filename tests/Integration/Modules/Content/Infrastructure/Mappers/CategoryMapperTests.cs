@@ -2,7 +2,7 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
-using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.Services;
 using _116.Tests.Fixtures.Factories.Content;
 using MapsterMapper;
 using ContentMappingRegistration = _116.Content.Application.Shared.Mappers.MappingRegistration;
@@ -36,8 +36,8 @@ public class CategoryMapperTests(PostgresFixture postgres) : BaseRepositoryTest(
             .Include(c => c.Pricing)
             .FirstAsync(c => c.Id == category.Id);
 
-        var fileRepository = Resolve<IFileRepository>();
-        CategoryDto dto = await loaded.ToCategoryDtoAsync(_mapper, fileRepository);
+        var fileStorage = Resolve<IFileStorageService>();
+        CategoryDto dto = await loaded.ToCategoryDtoAsync(_mapper, fileStorage);
 
         dto.Id.Should().Be(loaded.Id);
         dto.Name.Should().Be(loaded.Name);
@@ -68,8 +68,8 @@ public class CategoryMapperTests(PostgresFixture postgres) : BaseRepositoryTest(
             .Include(c => c.Pricing)
             .FirstAsync(c => c.Id == category.Id);
 
-        var fileRepository = Resolve<IFileRepository>();
-        CategoryDto dto = await loaded.ToCategoryDtoAsync(_mapper, fileRepository);
+        var fileStorage = Resolve<IFileStorageService>();
+        CategoryDto dto = await loaded.ToCategoryDtoAsync(_mapper, fileStorage);
 
         dto.PosterUrl.Should().BeNull();
     }
@@ -100,8 +100,8 @@ public class CategoryMapperTests(PostgresFixture postgres) : BaseRepositoryTest(
                 .ThenInclude(p => p.PricingTier)
             .FirstAsync(c => c.Id == category.Id);
 
-        var fileRepository = Resolve<IFileRepository>();
-        CategoryDto dto = await loaded.ToCategoryDtoAsync(_mapper, fileRepository);
+        var fileStorage = Resolve<IFileStorageService>();
+        CategoryDto dto = await loaded.ToCategoryDtoAsync(_mapper, fileStorage);
 
         dto.Pricing.Should().ContainSingle();
         dto.Pricing[0].TierName.Should().Be("base_upload");
@@ -127,8 +127,8 @@ public class CategoryMapperTests(PostgresFixture postgres) : BaseRepositoryTest(
             .Include(c => c.Pricing)
             .ToListAsync();
 
-        var fileRepository = Resolve<IFileRepository>();
-        IReadOnlyList<CategoryDto> dtos = await loaded.ToCategoryDtosAsync(_mapper, fileRepository);
+        var fileStorage = Resolve<IFileStorageService>();
+        IReadOnlyList<CategoryDto> dtos = await loaded.ToCategoryDtosAsync(_mapper, fileStorage);
 
         dtos.Should().HaveCount(2);
         dtos.Select(d => d.Name).Should().BeEquivalentTo(["Music", "Culture"]);
