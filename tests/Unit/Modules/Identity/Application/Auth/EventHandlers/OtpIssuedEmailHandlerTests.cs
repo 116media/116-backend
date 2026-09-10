@@ -1,9 +1,11 @@
 using _116.Identity.Application.Auth.EventHandlers;
-using _116.Identity.Contracts.Application;
+using _116.Identity.Contracts.Application.DTOs;
+using _116.Identity.Contracts.Application.Services;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.Events;
-using _116.Mailer.Contracts.Application;
-using _116.Mailer.Contracts.Domain;
+using _116.Mailer.Contracts.Application.DTOs;
+using _116.Mailer.Contracts.Application.Services;
+using _116.Mailer.Contracts.Domain.Enums;
 using _116.Tests.Fixtures.Constants;
 using AwesomeAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -19,7 +21,7 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Auth.EventHandlers;
 public class OtpIssuedEmailHandlerTests
 {
     private readonly Mock<IUserLookupService> _userLookupMock = new();
-    private readonly Mock<IMailer> _mailerMock = new();
+    private readonly Mock<IEmailService> _mailerMock = new();
     private readonly OtpIssuedEmailHandler _handler;
 
     private static readonly Guid UserId = Guid.NewGuid();
@@ -41,7 +43,7 @@ public class OtpIssuedEmailHandlerTests
     {
         _userLookupMock
             .Setup(x => x.GetAuthorInfoByIdAsync(UserId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new AuthorInfo(UserName: "Fan", Email: email, AvatarFileId: null, Role: null));
+            .ReturnsAsync(new AuthorDto(UserName: "Fan", Email: email, AvatarFileId: null, Role: null));
     }
 
     [Theory]
@@ -64,7 +66,7 @@ public class OtpIssuedEmailHandlerTests
             x =>
                 x.EnqueueAsync(
                     expectedTemplate,
-                    It.Is<EmailRecipient>(r => r.Address == "fan@example.com"),
+                    It.Is<EmailRecipientDto>(r => r.Address == "fan@example.com"),
                     It.Is<IReadOnlyDictionary<string, string>>(t => t["otpCode"] == TestConstants.Otp.DefaultCode),
                     "fr",
                     It.IsAny<CancellationToken>()
@@ -88,7 +90,7 @@ public class OtpIssuedEmailHandlerTests
             x =>
                 x.EnqueueAsync(
                     It.IsAny<EnumEmailTemplate>(),
-                    It.IsAny<EmailRecipient>(),
+                    It.IsAny<EmailRecipientDto>(),
                     It.IsAny<IReadOnlyDictionary<string, string>>(),
                     "ln",
                     It.IsAny<CancellationToken>()
