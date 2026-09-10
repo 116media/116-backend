@@ -2,12 +2,14 @@ using _116.Content.Application.Editorial.UseCases.Public.Queries.GetArtistBySlug
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.Services;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Pagination;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Repositories;
+using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -31,12 +33,12 @@ public class PublicGetArtistBySlugHandlerTests : BaseContentHandlerTest
         _artistRepositoryMock = MockArtistRepository.Create();
         _lyricsRepositoryMock = MockLyricsRepository.Create();
         _videoRepositoryMock = MockVideoRepository.Create();
-        Mock<IFileRepository> fileRepositoryMock = MockFileRepository.Create();
+        Mock<IFileStorageService> fileStorageMock = MockFileStorageService.Create();
         _handler = new PublicGetArtistBySlugHandler(
             _artistRepositoryMock.Object,
             _lyricsRepositoryMock.Object,
             _videoRepositoryMock.Object,
-            fileRepositoryMock.Object,
+            fileStorageMock.Object,
             TestErrorsFactory.CreateContentI18n()
         );
     }
