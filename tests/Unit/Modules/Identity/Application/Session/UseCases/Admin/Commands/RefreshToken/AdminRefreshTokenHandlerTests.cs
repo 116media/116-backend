@@ -4,11 +4,13 @@ using _116.Identity.Application.Session.Factories.Contracts;
 using _116.Identity.Application.Session.UseCases.Admin.Commands.RefreshToken;
 using _116.Identity.Application.Shared.Cache;
 using _116.Identity.Application.Shared.DTOs;
+using _116.Identity.Application.User.Services;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Tests.Fixtures.Factories.Identity;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Repositories;
+using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -22,19 +24,19 @@ public class AdminRefreshTokenHandlerTests : BaseHandlerTest
 {
     private readonly Mock<IRefreshTokenFactory> _refreshTokenFactoryMock;
     private readonly Mock<IJwtService> _jwtServiceMock;
-    private readonly Mock<IFileRepository> _fileRepositoryMock;
+    private readonly Mock<IAvatarService> _avatarServiceMock;
     private readonly AdminRefreshTokenHandler _handler;
 
     public AdminRefreshTokenHandlerTests()
     {
         _refreshTokenFactoryMock = new Mock<IRefreshTokenFactory>();
         _jwtServiceMock = new Mock<IJwtService>();
-        _fileRepositoryMock = MockFileRepository.Create();
+        _avatarServiceMock = MockAvatarService.Create();
 
         _handler = new AdminRefreshTokenHandler(
             _refreshTokenFactoryMock.Object,
             _jwtServiceMock.Object,
-            _fileRepositoryMock.Object,
+            _avatarServiceMock.Object,
             Mapper
         );
     }
@@ -76,7 +78,7 @@ public class AdminRefreshTokenHandlerTests : BaseHandlerTest
                 )
             )
             .Returns(jwtResult);
-        _fileRepositoryMock.SetupGetAvatarFileReturnsNull(user.AvatarFileId);
+        _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
 
         // Act
         AdminRefreshTokenResult result = await _handler.Handle(command, CancellationToken.None);
@@ -118,7 +120,7 @@ public class AdminRefreshTokenHandlerTests : BaseHandlerTest
                 )
             )
             .Returns(jwtResult);
-        _fileRepositoryMock.SetupGetAvatarFileReturnsNull(user.AvatarFileId);
+        _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
@@ -162,7 +164,7 @@ public class AdminRefreshTokenHandlerTests : BaseHandlerTest
                 )
             )
             .Returns(jwtResult);
-        _fileRepositoryMock.SetupGetAvatarFileReturnsNull(user.AvatarFileId);
+        _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
@@ -219,16 +221,13 @@ public class AdminRefreshTokenHandlerTests : BaseHandlerTest
                 )
             )
             .Returns(jwtResult);
-        _fileRepositoryMock.SetupGetAvatarFileReturnsNull(user.AvatarFileId);
+        _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _fileRepositoryMock.Verify(
-            x => x.GetAvatarFileAsync(user.AvatarFileId, It.IsAny<CancellationToken>()),
-            Times.Once
-        );
+        _avatarServiceMock.Verify(x => x.GetAvatarAsync(user.AvatarFileId, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -263,7 +262,7 @@ public class AdminRefreshTokenHandlerTests : BaseHandlerTest
                 )
             )
             .Returns(jwtResult);
-        _fileRepositoryMock.SetupGetAvatarFileReturnsNull(user.AvatarFileId);
+        _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
 
         // Act
         AdminRefreshTokenResult result = await _handler.Handle(command, CancellationToken.None);
@@ -309,7 +308,7 @@ public class AdminRefreshTokenHandlerTests : BaseHandlerTest
                 )
             )
             .Returns(jwtResult);
-        _fileRepositoryMock.SetupGetAvatarFileReturnsNull(user.AvatarFileId);
+        _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
 
         // Act
         await _handler.Handle(command, cts.Token);
@@ -351,13 +350,13 @@ public class AdminRefreshTokenHandlerTests : BaseHandlerTest
                 )
             )
             .Returns(jwtResult);
-        _fileRepositoryMock.SetupGetAvatarFileReturnsNull(user.AvatarFileId);
+        _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
 
         // Act
         await _handler.Handle(command, cts.Token);
 
         // Assert
-        _fileRepositoryMock.Verify(x => x.GetAvatarFileAsync(user.AvatarFileId, cts.Token), Times.Once);
+        _avatarServiceMock.Verify(x => x.GetAvatarAsync(user.AvatarFileId, cts.Token), Times.Once);
     }
 
     #endregion
