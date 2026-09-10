@@ -245,6 +245,22 @@ public class MailerModuleTests : IDisposable
     }
 
     [Fact]
+    public void AddMailerModule_WithTheResendProviderButNoApiKey_ShouldFailAtRegistration()
+    {
+        // A Resend deployment without its key must fail at boot rather than at the first send.
+        Environment.SetEnvironmentVariable(EmailProviderVariable, MailerConstants.EmailProviders.Resend);
+        Environment.SetEnvironmentVariable(ResendApiKeyVariable, null);
+
+        // Act
+        Action act = () => _services.AddMailerModule(HostEnvironment("Testing"));
+
+        // Assert
+        act.Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage("RESEND_API_KEY is required when EMAIL_PROVIDER is 'resend'.");
+    }
+
+    [Fact]
     public void AddMailerModule_WithAnUnknownProvider_ShouldFailAtRegistration()
     {
         // Arrange
