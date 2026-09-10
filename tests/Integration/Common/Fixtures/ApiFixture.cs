@@ -352,11 +352,11 @@ public class ApiFixture(PostgresFixture db) : WebApplicationFactory<Program>
     /// </summary>
     private static void ReplaceEmailSender(IServiceCollection services)
     {
-        RemoveAll<IEmailSender>(services);
+        RemoveAll<IEmailSenderService>(services);
 
-        services.AddSingleton<StubEmailSender>();
-        services.AddSingleton<IEmailSender>(sp => sp.GetRequiredService<StubEmailSender>());
-        services.AddSingleton<IResettableStub>(sp => sp.GetRequiredService<StubEmailSender>());
+        services.AddSingleton<StubEmailSenderService>();
+        services.AddSingleton<IEmailSenderService>(sp => sp.GetRequiredService<StubEmailSenderService>());
+        services.AddSingleton<IResettableStub>(sp => sp.GetRequiredService<StubEmailSenderService>());
     }
 
     /// <summary>
