@@ -2,6 +2,8 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.DTOs;
+using _116.Core.Contracts.Application.Services;
 using _116.Core.Domain.Entities;
 using _116.Shared.Application.DTOs;
 using _116.Tests.Fixtures.Builders.Entities.Content;
@@ -9,6 +11,7 @@ using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Factories.Core;
 using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
+using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -22,7 +25,7 @@ public class VideoMapperTests : BaseContentHandlerTest
 {
     private static readonly Guid CategoryId = Guid.NewGuid();
     private static readonly Guid ContentTypeId = Guid.NewGuid();
-    private readonly Mock<IFileRepository> _fileRepositoryMock = new();
+    private readonly Mock<IFileStorageService> _fileStorageMock = new();
 
     /// <summary>
     /// Creates a video entity with the Category navigation property populated via reflection,
@@ -54,7 +57,7 @@ public class VideoMapperTests : BaseContentHandlerTest
     private async Task<VideoSummaryDto> MapSummaryAsync(VideoEntity video)
     {
         IReadOnlyList<VideoEntity> videos = [video];
-        IReadOnlyList<VideoSummaryDto> dtos = await videos.ToVideoSummaryDtosAsync(Mapper, _fileRepositoryMock.Object);
+        IReadOnlyList<VideoSummaryDto> dtos = await videos.ToVideoSummaryDtosAsync(Mapper, _fileStorageMock.Object);
         return dtos.Single();
     }
 
@@ -205,7 +208,7 @@ public class VideoMapperTests : BaseContentHandlerTest
         // Act
         IReadOnlyList<VideoSummaryDto> dtos = await videos.ToVideoSummaryDtosAsync(
             Mapper,
-            _fileRepositoryMock.Object,
+            _fileStorageMock.Object,
             CancellationToken.None
         );
 
@@ -222,7 +225,7 @@ public class VideoMapperTests : BaseContentHandlerTest
         // Act
         IReadOnlyList<VideoSummaryDto> dtos = await videos.ToVideoSummaryDtosAsync(
             Mapper,
-            _fileRepositoryMock.Object,
+            _fileStorageMock.Object,
             CancellationToken.None
         );
 
@@ -241,7 +244,7 @@ public class VideoMapperTests : BaseContentHandlerTest
         // Act
         IReadOnlyList<VideoSummaryDto> dtos = await videos.ToVideoSummaryDtosAsync(
             Mapper,
-            _fileRepositoryMock.Object,
+            _fileStorageMock.Object,
             CancellationToken.None
         );
 
@@ -269,7 +272,7 @@ public class VideoMapperTests : BaseContentHandlerTest
         video.CreatedAt = expectedCreatedAt;
 
         // Act
-        var dto = await video.ToVideoDetailDtoAsync(Mapper, _fileRepositoryMock.Object, CancellationToken.None);
+        var dto = await video.ToVideoDetailDtoAsync(Mapper, _fileStorageMock.Object, CancellationToken.None);
 
         // Assert
         dto.CreatedAt.Should().Be(expectedCreatedAt);
@@ -283,7 +286,7 @@ public class VideoMapperTests : BaseContentHandlerTest
         video.CreatedBy = "admin-user-id";
 
         // Act
-        var dto = await video.ToVideoDetailDtoAsync(Mapper, _fileRepositoryMock.Object, CancellationToken.None);
+        var dto = await video.ToVideoDetailDtoAsync(Mapper, _fileStorageMock.Object, CancellationToken.None);
 
         // Assert
         dto.CreatedBy.Should().Be("admin-user-id");
@@ -298,7 +301,7 @@ public class VideoMapperTests : BaseContentHandlerTest
         video.UpdatedAt = expectedUpdatedAt;
 
         // Act
-        var dto = await video.ToVideoDetailDtoAsync(Mapper, _fileRepositoryMock.Object, CancellationToken.None);
+        var dto = await video.ToVideoDetailDtoAsync(Mapper, _fileStorageMock.Object, CancellationToken.None);
 
         // Assert
         dto.UpdatedAt.Should().Be(expectedUpdatedAt);
@@ -312,7 +315,7 @@ public class VideoMapperTests : BaseContentHandlerTest
         video.UpdatedBy = "super-admin-id";
 
         // Act
-        var dto = await video.ToVideoDetailDtoAsync(Mapper, _fileRepositoryMock.Object, CancellationToken.None);
+        var dto = await video.ToVideoDetailDtoAsync(Mapper, _fileStorageMock.Object, CancellationToken.None);
 
         // Assert
         dto.UpdatedBy.Should().Be("super-admin-id");
@@ -329,7 +332,7 @@ public class VideoMapperTests : BaseContentHandlerTest
         VideoEntity video = CreateVideoWithCategory();
 
         // Act
-        var dto = await video.ToVideoDetailDtoAsync(Mapper, _fileRepositoryMock.Object, CancellationToken.None);
+        var dto = await video.ToVideoDetailDtoAsync(Mapper, _fileStorageMock.Object, CancellationToken.None);
 
         // Assert
         dto.Id.Should().Be(video.Id);
@@ -360,11 +363,7 @@ public class VideoMapperTests : BaseContentHandlerTest
         VideoEntity video = VideoFactory.Create(CategoryId);
 
         // Act
-        VideoDetailDto dto = await video.ToVideoDetailDtoAsync(
-            Mapper,
-            _fileRepositoryMock.Object,
-            CancellationToken.None
-        );
+        VideoDetailDto dto = await video.ToVideoDetailDtoAsync(Mapper, _fileStorageMock.Object, CancellationToken.None);
 
         // Assert
         dto.CategoryName.Should().BeEmpty();
@@ -377,11 +376,7 @@ public class VideoMapperTests : BaseContentHandlerTest
         VideoEntity video = CreateVideoWithCategory();
 
         // Act
-        VideoDetailDto dto = await video.ToVideoDetailDtoAsync(
-            Mapper,
-            _fileRepositoryMock.Object,
-            CancellationToken.None
-        );
+        VideoDetailDto dto = await video.ToVideoDetailDtoAsync(Mapper, _fileStorageMock.Object, CancellationToken.None);
 
         // Assert
         dto.CategoryName.Should().NotBeEmpty();
@@ -398,11 +393,7 @@ public class VideoMapperTests : BaseContentHandlerTest
         VideoEntity video = VideoFactory.CreatePromoted(CategoryId);
 
         // Act
-        VideoDetailDto dto = await video.ToVideoDetailDtoAsync(
-            Mapper,
-            _fileRepositoryMock.Object,
-            CancellationToken.None
-        );
+        VideoDetailDto dto = await video.ToVideoDetailDtoAsync(Mapper, _fileStorageMock.Object, CancellationToken.None);
 
         // Assert
         dto.IsPromoted.Should().BeTrue();
@@ -416,11 +407,7 @@ public class VideoMapperTests : BaseContentHandlerTest
         VideoEntity video = VideoFactory.Create(CategoryId);
 
         // Act
-        VideoDetailDto dto = await video.ToVideoDetailDtoAsync(
-            Mapper,
-            _fileRepositoryMock.Object,
-            CancellationToken.None
-        );
+        VideoDetailDto dto = await video.ToVideoDetailDtoAsync(Mapper, _fileStorageMock.Object, CancellationToken.None);
 
         // Assert
         dto.IsPromoted.Should().BeFalse();
@@ -435,7 +422,7 @@ public class VideoMapperTests : BaseContentHandlerTest
         video.StampPromotion(Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(7));
 
         // Act
-        Func<Task> act = () => video.ToVideoDetailDtoAsync(Mapper, _fileRepositoryMock.Object, CancellationToken.None);
+        Func<Task> act = () => video.ToVideoDetailDtoAsync(Mapper, _fileStorageMock.Object, CancellationToken.None);
 
         // Assert — must not NPE
         await act.Should().NotThrowAsync();
@@ -490,11 +477,7 @@ public class VideoMapperTests : BaseContentHandlerTest
         video.UpdateRating(3.8m, 5);
 
         // Act
-        VideoDetailDto dto = await video.ToVideoDetailDtoAsync(
-            Mapper,
-            _fileRepositoryMock.Object,
-            CancellationToken.None
-        );
+        VideoDetailDto dto = await video.ToVideoDetailDtoAsync(Mapper, _fileStorageMock.Object, CancellationToken.None);
 
         // Assert
         dto.ShareCount.Should().Be(1);
@@ -509,11 +492,7 @@ public class VideoMapperTests : BaseContentHandlerTest
         VideoEntity video = VideoFactory.Create(CategoryId);
 
         // Act
-        VideoDetailDto dto = await video.ToVideoDetailDtoAsync(
-            Mapper,
-            _fileRepositoryMock.Object,
-            CancellationToken.None
-        );
+        VideoDetailDto dto = await video.ToVideoDetailDtoAsync(Mapper, _fileStorageMock.Object, CancellationToken.None);
 
         // Assert
         dto.ShareCount.Should().Be(0);
@@ -532,11 +511,7 @@ public class VideoMapperTests : BaseContentHandlerTest
         VideoEntity video = CreateVideoWithCategory();
 
         // Act
-        VideoDetailDto dto = await video.ToVideoDetailDtoAsync(
-            Mapper,
-            _fileRepositoryMock.Object,
-            CancellationToken.None
-        );
+        VideoDetailDto dto = await video.ToVideoDetailDtoAsync(Mapper, _fileStorageMock.Object, CancellationToken.None);
 
         // Assert
         dto.CustomerId.Should().BeNull();
@@ -560,11 +535,7 @@ public class VideoMapperTests : BaseContentHandlerTest
             .Build();
 
         // Act
-        VideoDetailDto dto = await video.ToVideoDetailDtoAsync(
-            Mapper,
-            _fileRepositoryMock.Object,
-            CancellationToken.None
-        );
+        VideoDetailDto dto = await video.ToVideoDetailDtoAsync(Mapper, _fileStorageMock.Object, CancellationToken.None);
 
         // Assert
         dto.CustomerId.Should().Be(customerId);
@@ -581,11 +552,7 @@ public class VideoMapperTests : BaseContentHandlerTest
         VideoEntity video = VideoFactory.CreatePaid(CategoryId, customerId, orderItemId);
 
         // Act
-        VideoDetailDto dto = await video.ToVideoDetailDtoAsync(
-            Mapper,
-            _fileRepositoryMock.Object,
-            CancellationToken.None
-        );
+        VideoDetailDto dto = await video.ToVideoDetailDtoAsync(Mapper, _fileStorageMock.Object, CancellationToken.None);
 
         // Assert
         dto.CustomerId.Should().Be(customerId);
@@ -599,9 +566,14 @@ public class VideoMapperTests : BaseContentHandlerTest
     {
         // Arrange
         VideoEntity video = VideoFactory.Create(CategoryId);
-        FileEntity thumbnail = FileFactory.CreateWithStorageUrl("https://cdn.116.test/thumbs/clip.jpg");
+        FileReferenceDto thumbnail = FileReferenceDtoFactory.CreateWithStorageUrl(
+            "https://cdn.116.test/thumbs/clip.jpg"
+        );
         video.SetThumbnailFileId(thumbnail.Id);
-        IReadOnlyDictionary<Guid, FileEntity> files = new Dictionary<Guid, FileEntity> { [thumbnail.Id] = thumbnail };
+        IReadOnlyDictionary<Guid, FileReferenceDto> files = new Dictionary<Guid, FileReferenceDto>
+        {
+            [thumbnail.Id] = thumbnail,
+        };
 
         IReadOnlyList<VideoEntity> videos = [video];
 
@@ -617,14 +589,16 @@ public class VideoMapperTests : BaseContentHandlerTest
     {
         // Arrange
         VideoEntity video = VideoFactory.Create(CategoryId);
-        FileEntity thumbnail = FileFactory.CreateWithStorageUrl("https://cdn.116.test/thumbs/clip.jpg");
+        FileReferenceDto thumbnail = FileReferenceDtoFactory.CreateWithStorageUrl(
+            "https://cdn.116.test/thumbs/clip.jpg"
+        );
         video.SetThumbnailFileId(thumbnail.Id);
-        _fileRepositoryMock
-            .Setup(x => x.GetByIdAsync(thumbnail.Id, It.IsAny<CancellationToken>()))
+        _fileStorageMock
+            .Setup(x => x.ResolveAsync(thumbnail.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(thumbnail);
 
         // Act
-        PublicVideoSummaryDto dto = await video.ToPublicVideoSummaryDtoAsync(_fileRepositoryMock.Object);
+        PublicVideoSummaryDto dto = await video.ToPublicVideoSummaryDtoAsync(_fileStorageMock.Object);
 
         // Assert
         dto.ThumbnailUrl.Should().Be(thumbnail.StorageUrl);
