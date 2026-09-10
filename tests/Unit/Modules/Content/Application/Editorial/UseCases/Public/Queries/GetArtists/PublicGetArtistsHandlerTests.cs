@@ -3,12 +3,15 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.DTOs;
+using _116.Core.Contracts.Application.Services;
 using _116.Core.Domain.Entities;
 using _116.Shared.Application.Pagination;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Factories.Core;
 using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common.Mocks.Repositories;
+using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -22,14 +25,14 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Public.
 public class PublicGetArtistsHandlerTests
 {
     private readonly Mock<IArtistRepository> _artistRepositoryMock;
-    private readonly Mock<IFileRepository> _fileRepositoryMock;
+    private readonly Mock<IFileStorageService> _fileStorageMock;
     private readonly PublicGetArtistsHandler _handler;
 
     public PublicGetArtistsHandlerTests()
     {
         _artistRepositoryMock = MockArtistRepository.Create();
-        _fileRepositoryMock = MockFileRepository.Create();
-        _handler = new PublicGetArtistsHandler(_artistRepositoryMock.Object, _fileRepositoryMock.Object);
+        _fileStorageMock = MockFileStorageService.Create();
+        _handler = new PublicGetArtistsHandler(_artistRepositoryMock.Object, _fileStorageMock.Object);
     }
 
     /// <summary>
@@ -74,10 +77,10 @@ public class PublicGetArtistsHandlerTests
     public async Task Handle_WithAnAvatarOnFile_ShouldResolveTheStorageUrl()
     {
         // Arrange
-        FileEntity avatar = FileFactory.CreateJpeg();
+        FileReferenceDto avatar = FileReferenceDtoFactory.CreateJpeg();
         ArtistEntity artist = ArtistFactory.Create();
         artist.SetAvatarFileId(avatar.Id);
-        _fileRepositoryMock.SetupGetById(avatar);
+        _fileStorageMock.SetupResolve(avatar);
         SetupDirectory(1, [], new ArtistDirectoryRow(artist, ContentCount: 0));
 
         var query = new PublicGetArtistsQuery(new PaginatedRequest(0, 10), Letter: null, Search: null);
