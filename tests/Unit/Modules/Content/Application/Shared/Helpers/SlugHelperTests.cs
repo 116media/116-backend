@@ -1,9 +1,9 @@
-using _116.Core.Application.Shared.Helpers;
+using _116.Content.Application.Shared.Helpers;
 using _116.Tests.Fixtures.Factories.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Core.Application.Shared.Helpers;
+namespace _116.Unit.Tests.Modules.Content.Application.Shared.Helpers;
 
 /// <summary>
 /// Unit tests for <see cref="SlugHelper"/>.
