@@ -1,5 +1,6 @@
 using _116.Core.Application.Shared.EventHandlers;
 using _116.Core.Application.Shared.Services;
+using _116.Core.Contracts.Domain.Enums;
 using _116.Core.Domain.Events;
 using _116.Unit.Tests.Common.Mocks.Services;
 using Moq;
@@ -26,12 +27,19 @@ public class FileAssetCleanupHandlerTests
     {
         // Act
         await _handler.Handle(
-            new FileReplacedEvent(FileId: Guid.NewGuid(), OldStorageKey: "avatars/user-1"),
+            new FileReplacedEvent(
+                FileId: Guid.NewGuid(),
+                OldStorageKey: "avatars/user-1",
+                Kind: EnumStoredFileKind.Image
+            ),
             CancellationToken.None
         );
 
         // Assert
-        _fileServiceMock.Verify(x => x.DeleteFileAsync("avatars/user-1", It.IsAny<CancellationToken>()), Times.Once);
+        _fileServiceMock.Verify(
+            x => x.DeleteFileAsync("avatars/user-1", It.IsAny<EnumStoredFileKind>(), It.IsAny<CancellationToken>()),
+            Times.Once
+        );
     }
 
     [Fact]
@@ -39,7 +47,7 @@ public class FileAssetCleanupHandlerTests
     {
         // Act
         await _handler.Handle(
-            new FileReplacedEvent(FileId: Guid.NewGuid(), OldStorageKey: null),
+            new FileReplacedEvent(FileId: Guid.NewGuid(), OldStorageKey: null, Kind: EnumStoredFileKind.Image),
             CancellationToken.None
         );
 
@@ -52,13 +60,22 @@ public class FileAssetCleanupHandlerTests
     {
         // Act
         await _handler.Handle(
-            new FileSoftDeletedEvent(FileId: Guid.NewGuid(), StorageKey: "content/covers/cover-1"),
+            new FileSoftDeletedEvent(
+                FileId: Guid.NewGuid(),
+                StorageKey: "content/covers/cover-1",
+                Kind: EnumStoredFileKind.Image
+            ),
             CancellationToken.None
         );
 
         // Assert
         _fileServiceMock.Verify(
-            x => x.DeleteFileAsync("content/covers/cover-1", It.IsAny<CancellationToken>()),
+            x =>
+                x.DeleteFileAsync(
+                    "content/covers/cover-1",
+                    It.IsAny<EnumStoredFileKind>(),
+                    It.IsAny<CancellationToken>()
+                ),
             Times.Once
         );
     }
@@ -68,7 +85,7 @@ public class FileAssetCleanupHandlerTests
     {
         // Act
         await _handler.Handle(
-            new FileSoftDeletedEvent(FileId: Guid.NewGuid(), StorageKey: null),
+            new FileSoftDeletedEvent(FileId: Guid.NewGuid(), StorageKey: null, Kind: EnumStoredFileKind.Image),
             CancellationToken.None
         );
 
