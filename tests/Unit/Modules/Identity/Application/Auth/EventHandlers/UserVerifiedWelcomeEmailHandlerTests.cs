@@ -1,8 +1,10 @@
 using _116.Identity.Application.Auth.EventHandlers;
-using _116.Identity.Contracts.Application;
+using _116.Identity.Contracts.Application.DTOs;
+using _116.Identity.Contracts.Application.Services;
 using _116.Identity.Domain.Events;
-using _116.Mailer.Contracts.Application;
-using _116.Mailer.Contracts.Domain;
+using _116.Mailer.Contracts.Application.DTOs;
+using _116.Mailer.Contracts.Application.Services;
+using _116.Mailer.Contracts.Domain.Enums;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
@@ -15,7 +17,7 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Auth.EventHandlers;
 public class UserVerifiedWelcomeEmailHandlerTests
 {
     private readonly Mock<IUserLookupService> _userLookupServiceMock = new();
-    private readonly Mock<IMailer> _mailerMock = new();
+    private readonly Mock<IEmailService> _mailerMock = new();
     private readonly UserVerifiedWelcomeEmailHandler _handler;
 
     public UserVerifiedWelcomeEmailHandlerTests()
@@ -34,7 +36,7 @@ public class UserVerifiedWelcomeEmailHandlerTests
         var userId = Guid.NewGuid();
         _userLookupServiceMock
             .Setup(x => x.GetAuthorInfoByIdAsync(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new AuthorInfo("Fally", "fally@test.com", null, "Visitor"));
+            .ReturnsAsync(new AuthorDto("Fally", "fally@test.com", null, "Visitor"));
 
         // Act
         await _handler.Handle(new UserVerifiedEvent(userId), CancellationToken.None);
@@ -44,7 +46,7 @@ public class UserVerifiedWelcomeEmailHandlerTests
             x =>
                 x.EnqueueAsync(
                     EnumEmailTemplate.Welcome,
-                    It.Is<EmailRecipient>(r => r.Address == "fally@test.com" && r.DisplayName == "Fally"),
+                    It.Is<EmailRecipientDto>(r => r.Address == "fally@test.com" && r.DisplayName == "Fally"),
                     It.Is<IReadOnlyDictionary<string, string>>(t => t["userName"] == "Fally"),
                     It.IsAny<string>(),
                     It.IsAny<CancellationToken>()
@@ -60,7 +62,7 @@ public class UserVerifiedWelcomeEmailHandlerTests
         var userId = Guid.NewGuid();
         _userLookupServiceMock
             .Setup(x => x.GetAuthorInfoByIdAsync(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new AuthorInfo("Fally", null, null, "Visitor"));
+            .ReturnsAsync(new AuthorDto("Fally", null, null, "Visitor"));
 
         // Act
         await _handler.Handle(new UserVerifiedEvent(userId), CancellationToken.None);
@@ -76,7 +78,7 @@ public class UserVerifiedWelcomeEmailHandlerTests
         var userId = Guid.NewGuid();
         _userLookupServiceMock
             .Setup(x => x.GetAuthorInfoByIdAsync(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((AuthorInfo?)null);
+            .ReturnsAsync((AuthorDto?)null);
 
         // Act
         await _handler.Handle(new UserVerifiedEvent(userId), CancellationToken.None);
