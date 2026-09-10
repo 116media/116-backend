@@ -3,11 +3,15 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
-using _116.Identity.Contracts.Application;
+using _116.Core.Contracts.Application.Services;
+using _116.Identity.Contracts.Application.DTOs;
+using _116.Identity.Contracts.Application.Services;
 using _116.Shared.Application.Pagination;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Factories.Core;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Repositories;
+using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -25,18 +29,18 @@ public class PublicGetCommentRepliesHandlerTests : BaseContentHandlerTest
 
     private readonly Mock<IArticleCommentRepository> _articleCommentRepositoryMock;
     private readonly Mock<IUserLookupService> _userLookupMock;
-    private readonly Mock<IFileRepository> _fileRepositoryMock;
+    private readonly Mock<IFileStorageService> _fileStorageMock;
     private readonly PublicGetCommentRepliesHandler _handler;
 
     public PublicGetCommentRepliesHandlerTests()
     {
         _articleCommentRepositoryMock = MockArticleCommentRepository.Create();
         _userLookupMock = new Mock<IUserLookupService>();
-        _fileRepositoryMock = new Mock<IFileRepository>();
+        _fileStorageMock = new Mock<IFileStorageService>();
         _handler = new PublicGetCommentRepliesHandler(
             _articleCommentRepositoryMock.Object,
             _userLookupMock.Object,
-            _fileRepositoryMock.Object
+            _fileStorageMock.Object
         );
     }
 
@@ -48,9 +52,7 @@ public class PublicGetCommentRepliesHandlerTests : BaseContentHandlerTest
             .Setup(x =>
                 x.GetAuthorInfosByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>())
             )
-            .ReturnsAsync(
-                new Dictionary<Guid, AuthorInfo> { [UserId] = new AuthorInfo("jane", null, null, "Visitor") }
-            );
+            .ReturnsAsync(new Dictionary<Guid, AuthorDto> { [UserId] = new AuthorDto("jane", null, null, "Visitor") });
 
     private static PublicGetCommentRepliesQuery Query(Guid? viewerUserId = null) =>
         new(ParentId, new PaginatedRequest(0, 10), viewerUserId);
