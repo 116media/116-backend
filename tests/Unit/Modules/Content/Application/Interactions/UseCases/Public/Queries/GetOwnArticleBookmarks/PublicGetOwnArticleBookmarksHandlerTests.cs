@@ -2,12 +2,15 @@ using _116.Content.Application.Interactions.UseCases.Public.Queries.GetOwnArticl
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.DTOs;
+using _116.Core.Contracts.Application.Services;
 using _116.Core.Domain.Entities;
 using _116.Shared.Application.Pagination;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Factories.Core;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Repositories;
+using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -23,18 +26,18 @@ public class PublicGetOwnArticleBookmarksHandlerTests : BaseContentHandlerTest
     private static readonly Guid UserId = Guid.NewGuid();
 
     private readonly Mock<IArticleInteractionRepository> _articleInteractionRepositoryMock;
-    private readonly Mock<IFileRepository> _fileRepositoryMock;
+    private readonly Mock<IFileStorageService> _fileStorageMock;
     private readonly PublicGetOwnArticleBookmarksHandler _handler;
 
     public PublicGetOwnArticleBookmarksHandlerTests()
     {
         _articleInteractionRepositoryMock = MockArticleInteractionRepository.Create();
-        _fileRepositoryMock = MockFileRepository.Create();
-        FileEntity coverFile = FileFactory.CreateImage();
-        _fileRepositoryMock.SetupGetById(coverFile);
+        _fileStorageMock = MockFileStorageService.Create();
+        FileReferenceDto coverFile = FileReferenceDtoFactory.CreateImage();
+        _fileStorageMock.SetupResolve(coverFile);
         _handler = new PublicGetOwnArticleBookmarksHandler(
             _articleInteractionRepositoryMock.Object,
-            _fileRepositoryMock.Object
+            _fileStorageMock.Object
         );
     }
 
