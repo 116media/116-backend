@@ -1,4 +1,5 @@
 using _116.Core.Application.Shared.Repositories;
+using _116.Identity.Application.User.Services;
 using _116.Identity.Application.User.UseCases.Admin.Commands.UpdateOwnProfile;
 using _116.Identity.Application.User.UseCases.Admin.Commands.UpdateOwnProfile.Contracts;
 using _116.Identity.Domain.Entities;
@@ -6,6 +7,7 @@ using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Identity;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Repositories;
+using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -18,15 +20,15 @@ namespace _116.Unit.Tests.Modules.Identity.Application.User.UseCases.Admin.Comma
 public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
 {
     private readonly Mock<IAdminUpdateProfileAuthFactory> _authFactoryMock;
-    private readonly Mock<IFileRepository> _fileRepositoryMock;
+    private readonly Mock<IAvatarService> _avatarServiceMock;
     private readonly AdminUpdateOwnProfileHandler _handler;
 
     public AdminUpdateOwnProfileHandlerTests()
     {
         _authFactoryMock = new Mock<IAdminUpdateProfileAuthFactory>();
-        _fileRepositoryMock = MockFileRepository.Create();
+        _avatarServiceMock = MockAvatarService.Create();
 
-        _handler = new AdminUpdateOwnProfileHandler(_authFactoryMock.Object, _fileRepositoryMock.Object, Mapper);
+        _handler = new AdminUpdateOwnProfileHandler(_authFactoryMock.Object, _avatarServiceMock.Object, Mapper);
     }
 
     #region Success Cases
@@ -65,7 +67,7 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
                 )
             )
             .ReturnsAsync(authData);
-        _fileRepositoryMock.SetupGetAvatarFileReturnsNull(user.AvatarFileId);
+        _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
 
         // Act
         AdminUpdateOwnProfileResult result = await _handler.Handle(command, CancellationToken.None);
@@ -108,7 +110,7 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
                 )
             )
             .ReturnsAsync(authData);
-        _fileRepositoryMock.SetupGetAvatarFileReturnsNull(user.AvatarFileId);
+        _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
@@ -163,16 +165,13 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
                 )
             )
             .ReturnsAsync(authData);
-        _fileRepositoryMock.SetupGetAvatarFileReturnsNull(user.AvatarFileId);
+        _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _fileRepositoryMock.Verify(
-            x => x.GetAvatarFileAsync(user.AvatarFileId, It.IsAny<CancellationToken>()),
-            Times.Once
-        );
+        _avatarServiceMock.Verify(x => x.GetAvatarAsync(user.AvatarFileId, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     #endregion
@@ -293,7 +292,7 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
                 )
             )
             .ReturnsAsync(authData);
-        _fileRepositoryMock.SetupGetAvatarFileReturnsNull(user.AvatarFileId);
+        _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
 
         // Act
         await _handler.Handle(command, cts.Token);
@@ -339,13 +338,13 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
                 )
             )
             .ReturnsAsync(authData);
-        _fileRepositoryMock.SetupGetAvatarFileReturnsNull(user.AvatarFileId);
+        _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
 
         // Act
         await _handler.Handle(command, cts.Token);
 
         // Assert
-        _fileRepositoryMock.Verify(x => x.GetAvatarFileAsync(user.AvatarFileId, cts.Token), Times.Once);
+        _avatarServiceMock.Verify(x => x.GetAvatarAsync(user.AvatarFileId, cts.Token), Times.Once);
     }
 
     #endregion
