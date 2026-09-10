@@ -5,7 +5,10 @@ using _116.Content.Domain.Entities;
 using _116.Content.Domain.Events;
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Application.Shared.Services;
+using _116.Core.Contracts.Application.Services;
+using _116.Core.Contracts.Domain.Enums;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Factories.Core;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using _116.Unit.Tests.Common.Mocks.Services;
@@ -19,23 +22,19 @@ namespace _116.Unit.Tests.Modules.Content.Application.Shared.EventHandlers;
 /// </summary>
 public class ContentAssetCleanupHandlerTests
 {
-    private readonly Mock<ICloudinaryService> _cloudinaryMock;
-    private readonly Mock<IFileRepository> _fileRepositoryMock;
+    private readonly Mock<IFileStorageService> _fileStorageMock;
     private readonly Mock<IArticleRepository> _articleRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly ContentAssetCleanupHandler _handler;
 
     public ContentAssetCleanupHandlerTests()
     {
-        _cloudinaryMock = MockCloudinaryService.Create();
-        _fileRepositoryMock = MockFileRepository.Create();
+        _fileStorageMock = MockFileStorageService.Create();
         _articleRepositoryMock = MockArticleRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _fileRepositoryMock.SetupSoftDeleteById();
 
         _handler = new ContentAssetCleanupHandler(
-            _cloudinaryMock.Object,
-            _fileRepositoryMock.Object,
+            _fileStorageMock.Object,
             _articleRepositoryMock.Object,
             _unitOfWorkMock.Object
         );
@@ -59,11 +58,12 @@ public class ContentAssetCleanupHandlerTests
         await _handler.Handle(domainEvent, CancellationToken.None);
 
         // Assert
-        _fileRepositoryMock.VerifySoftDeleteByIdCalled(coverFileId);
-        _cloudinaryMock.Verify(
+        _fileStorageMock.VerifyDeleteCalled();
+        _fileStorageMock.Verify(
             x =>
-                x.DeleteImagesAsync(
+                x.DeleteAssetsAsync(
                     It.Is<IEnumerable<string>>(keys => keys.SequenceEqual(storageKeys)),
+                    It.IsAny<EnumStoredFileKind>(),
                     It.IsAny<CancellationToken>()
                 ),
             Times.Once
@@ -84,8 +84,8 @@ public class ContentAssetCleanupHandlerTests
         await _handler.Handle(domainEvent, CancellationToken.None);
 
         // Assert
-        _fileRepositoryMock.VerifySoftDeleteByIdNotCalled();
-        _cloudinaryMock.VerifyDeleteImagesNotCalled();
+        _fileStorageMock.VerifyDeleteNotCalled();
+        _fileStorageMock.VerifyDeleteNotCalled();
     }
 
     #endregion
@@ -103,7 +103,7 @@ public class ContentAssetCleanupHandlerTests
         await _handler.Handle(domainEvent, CancellationToken.None);
 
         // Assert
-        _fileRepositoryMock.VerifySoftDeleteByIdCalled(thumbnailFileId);
+        _fileStorageMock.VerifyDeleteCalled();
         _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 
@@ -117,7 +117,7 @@ public class ContentAssetCleanupHandlerTests
         );
 
         // Assert
-        _fileRepositoryMock.VerifySoftDeleteByIdNotCalled();
+        _fileStorageMock.VerifyDeleteNotCalled();
         _unitOfWorkMock.VerifyExecutedInTransaction(0);
     }
 
@@ -141,8 +141,8 @@ public class ContentAssetCleanupHandlerTests
         await _handler.Handle(domainEvent, CancellationToken.None);
 
         // Assert
-        _fileRepositoryMock.VerifySoftDeleteByIdCalled(videoFileId);
-        _fileRepositoryMock.VerifySoftDeleteByIdCalled(thumbnailFileId);
+        _fileStorageMock.VerifyDeleteCalled();
+        _fileStorageMock.VerifyDeleteCalled();
         _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 
@@ -156,7 +156,7 @@ public class ContentAssetCleanupHandlerTests
         );
 
         // Assert
-        _fileRepositoryMock.VerifySoftDeleteByIdNotCalled();
+        _fileStorageMock.VerifyDeleteNotCalled();
     }
 
     #endregion
@@ -189,10 +189,11 @@ public class ContentAssetCleanupHandlerTests
             Times.Once
         );
         _unitOfWorkMock.VerifyCommitCalled();
-        _cloudinaryMock.Verify(
+        _fileStorageMock.Verify(
             x =>
-                x.DeleteImagesAsync(
+                x.DeleteAssetsAsync(
                     It.Is<IEnumerable<string>>(keys => keys.SequenceEqual(orphanedKeys)),
+                    It.IsAny<EnumStoredFileKind>(),
                     It.IsAny<CancellationToken>()
                 ),
             Times.Once
@@ -216,7 +217,15 @@ public class ContentAssetCleanupHandlerTests
 
         // Assert
         _articleRepositoryMock.Verify(x => x.RemoveImages(It.IsAny<IEnumerable<ArticleImageEntity>>()), Times.Never);
-        _cloudinaryMock.VerifyDeleteImagesCalled();
+        _fileStorageMock.Verify(
+            x =>
+                x.DeleteAssetsAsync(
+                    It.Is<IEnumerable<string>>(keys => keys.SequenceEqual(orphanedKeys)),
+                    It.IsAny<EnumStoredFileKind>(),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Once
+        );
     }
 
     #endregion
