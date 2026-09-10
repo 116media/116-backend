@@ -1,9 +1,11 @@
 using _116.Identity.Application.Auth.EventHandlers;
-using _116.Identity.Contracts.Application;
+using _116.Identity.Contracts.Application.DTOs;
+using _116.Identity.Contracts.Application.Services;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.Events;
-using _116.Mailer.Contracts.Application;
-using _116.Mailer.Contracts.Domain;
+using _116.Mailer.Contracts.Application.DTOs;
+using _116.Mailer.Contracts.Application.Services;
+using _116.Mailer.Contracts.Domain.Enums;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
@@ -16,8 +18,8 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Auth.EventHandlers;
 public class UserPasswordChangedNotificationsHandlerTests
 {
     private readonly Mock<IUserLookupService> _userLookupServiceMock = new();
-    private readonly Mock<IMailer> _mailerMock = new();
-    private readonly Mock<INotifier> _notifierMock = new();
+    private readonly Mock<IEmailService> _mailerMock = new();
+    private readonly Mock<INotificationService> _notifierMock = new();
     private readonly UserPasswordChangedNotificationsHandler _handler;
 
     public UserPasswordChangedNotificationsHandlerTests()
@@ -51,7 +53,7 @@ public class UserPasswordChangedNotificationsHandlerTests
             x =>
                 x.EnqueueAsync(
                     expectedTemplate,
-                    It.Is<EmailRecipient>(r => r.Address == "user@test.com"),
+                    It.Is<EmailRecipientDto>(r => r.Address == "user@test.com"),
                     It.Is<IReadOnlyDictionary<string, string>>(t =>
                         t["userName"] == "Fally" && t.ContainsKey(expectedTimeToken)
                     ),
@@ -80,7 +82,7 @@ public class UserPasswordChangedNotificationsHandlerTests
             x =>
                 x.EnqueueAsync(
                     EnumEmailTemplate.LocalPasswordAdded,
-                    It.IsAny<EmailRecipient>(),
+                    It.IsAny<EmailRecipientDto>(),
                     It.Is<IReadOnlyDictionary<string, string>>(t => t.Count == 1 && t["userName"] == "Fally"),
                     It.IsAny<string>(),
                     It.IsAny<CancellationToken>()
@@ -154,7 +156,7 @@ public class UserPasswordChangedNotificationsHandlerTests
         var userId = Guid.NewGuid();
         _userLookupServiceMock
             .Setup(x => x.GetAuthorInfoByIdAsync(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((AuthorInfo?)null);
+            .ReturnsAsync((AuthorDto?)null);
 
         // Act
         await _handler.Handle(
@@ -171,6 +173,6 @@ public class UserPasswordChangedNotificationsHandlerTests
     {
         _userLookupServiceMock
             .Setup(x => x.GetAuthorInfoByIdAsync(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new AuthorInfo("Fally", email, null, "Visitor"));
+            .ReturnsAsync(new AuthorDto("Fally", email, null, "Visitor"));
     }
 }
