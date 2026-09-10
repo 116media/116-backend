@@ -23,6 +23,8 @@ public class SmtpEmailSenderServiceTests : IDisposable
     [
         "SMTP_HOST",
         "SMTP_PORT",
+        "SMTP_USERNAME",
+        "SMTP_PASSWORD",
         "EMAIL_FROM_ADDRESS",
         "EMAIL_FROM_NAME",
     ];
@@ -46,7 +48,7 @@ public class SmtpEmailSenderServiceTests : IDisposable
     /// <summary>
     /// Minimal one-session SMTP server: speaks just enough of the protocol for
     /// one delivery, captures the DATA payload, and can be told to refuse the
-    /// recipient with a permanent 554.
+    /// recipient with a permanent 554 or to advertise AUTH.
     /// </summary>
     private sealed class LoopbackSmtpServer : IDisposable
     {
@@ -56,7 +58,12 @@ public class SmtpEmailSenderServiceTests : IDisposable
         public int Port { get; }
         public string Data { get; private set; } = string.Empty;
 
-        public LoopbackSmtpServer(bool rejectRecipient = false)
+        /// <summary>
+        /// The credentials the client presented, or null when it never authenticated.
+        /// </summary>
+        public string? AuthenticatedAs { get; private set; }
+
+        public LoopbackSmtpServer(bool rejectRecipient = false, bool offerAuth = false)
         {
             _listener = new TcpListener(IPAddress.Loopback, 0);
             _listener.Start();
@@ -94,7 +101,16 @@ public class SmtpEmailSenderServiceTests : IDisposable
                         case "EHLO":
                         case "HELO":
                             await writer.WriteLineAsync("250-loopback");
+                            if (offerAuth)
+                            {
+                                await writer.WriteLineAsync("250-AUTH PLAIN LOGIN");
+                            }
+
                             await writer.WriteLineAsync("250 OK");
+                            break;
+                        case "AUTH":
+                            AuthenticatedAs = DecodePlainCredentials(line);
+                            await writer.WriteLineAsync("235 2.7.0 authenticated");
                             break;
                         case "MAIL":
                             await writer.WriteLineAsync("250 OK");
@@ -117,6 +133,26 @@ public class SmtpEmailSenderServiceTests : IDisposable
             });
         }
 
+        /// <summary>
+        /// Reads the username out of an <c>AUTH PLAIN</c> command, whose payload decodes to
+        /// authorization id, username and password separated by NUL.
+        /// </summary>
+        /// <param name="line">The command line as received.</param>
+        /// <returns>The username, or null when the command carried no initial response.</returns>
+        private static string? DecodePlainCredentials(string line)
+        {
+            string[] parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+            if (parts.Length < 3)
+            {
+                return null;
+            }
+
+            string[] fields = Encoding.UTF8.GetString(Convert.FromBase64String(parts[2])).Split('\0');
+
+            return fields.Length >= 2 ? fields[1] : null;
+        }
+
         public void Dispose()
         {
             _listener.Stop();
@@ -124,12 +160,14 @@ public class SmtpEmailSenderServiceTests : IDisposable
         }
     }
 
-    private static SmtpEmailSenderService CreateSender(int port)
+    private static SmtpEmailSenderService CreateSender(int port, string? username = null, string? password = null)
     {
         Environment.SetEnvironmentVariable("SMTP_HOST", "127.0.0.1");
         Environment.SetEnvironmentVariable("SMTP_PORT", port.ToString());
         Environment.SetEnvironmentVariable("EMAIL_FROM_ADDRESS", "no-reply@116.example");
         Environment.SetEnvironmentVariable("EMAIL_FROM_NAME", "116");
+        Environment.SetEnvironmentVariable("SMTP_USERNAME", username);
+        Environment.SetEnvironmentVariable("SMTP_PASSWORD", password);
 
         return new SmtpEmailSenderService();
     }
@@ -155,6 +193,18 @@ public class SmtpEmailSenderServiceTests : IDisposable
         server.Data.Should().Contain("Hello over the wire");
         server.Data.Should().Contain("text/plain").And.Contain("text/html");
         server.Data.Should().Contain("no-reply@116.example");
+    }
+
+    [Fact]
+    public async Task SendAsync_WithCredentialsConfigured_AuthenticatesBeforeDelivering()
+    {
+        using var server = new LoopbackSmtpServer(offerAuth: true);
+
+        await CreateSender(server.Port, username: "mailer@116.example", password: "s3cret")
+            .SendAsync(Message(), CancellationToken.None);
+
+        server.AuthenticatedAs.Should().Be("mailer@116.example");
+        server.Data.Should().Contain("Loopback subject");
     }
 
     [Fact]
