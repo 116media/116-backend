@@ -2,7 +2,7 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
-using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.Services;
 using _116.Tests.Fixtures.Factories.Content;
 using MapsterMapper;
 using ContentMappingRegistration = _116.Content.Application.Shared.Mappers.MappingRegistration;
@@ -37,8 +37,8 @@ public class ArticleMapperTests(PostgresFixture postgres) : BaseRepositoryTest(p
         await using var readContext = CreateDbContext<ContentDbContext>();
         ArticleEntity loaded = await readContext.Articles.Include(a => a.Category).FirstAsync(a => a.Id == article.Id);
 
-        var fileRepository = Resolve<IFileRepository>();
-        ArticleSummaryDto dto = await loaded.ToArticleSummaryDtoAsync(_mapper, fileRepository);
+        var fileStorage = Resolve<IFileStorageService>();
+        ArticleSummaryDto dto = await loaded.ToArticleSummaryDtoAsync(_mapper, fileStorage);
 
         dto.Id.Should().Be(loaded.Id);
         dto.CategoryId.Should().Be(category.Id);
@@ -67,8 +67,8 @@ public class ArticleMapperTests(PostgresFixture postgres) : BaseRepositoryTest(p
         await using var readContext = CreateDbContext<ContentDbContext>();
         ArticleEntity loaded = await readContext.Articles.Include(a => a.Category).FirstAsync(a => a.Id == article.Id);
 
-        var fileRepository = Resolve<IFileRepository>();
-        ArticleSummaryDto dto = await loaded.ToArticleSummaryDtoAsync(_mapper, fileRepository);
+        var fileStorage = Resolve<IFileStorageService>();
+        ArticleSummaryDto dto = await loaded.ToArticleSummaryDtoAsync(_mapper, fileStorage);
 
         dto.CoverImageUrl.Should().BeNull();
     }
@@ -111,8 +111,8 @@ public class ArticleMapperTests(PostgresFixture postgres) : BaseRepositoryTest(p
             .Include(a => a.Customer)
             .FirstAsync(a => a.Id == article.Id);
 
-        var fileRepository = Resolve<IFileRepository>();
-        ArticleDetailDto dto = await loaded.ToArticleDetailDtoAsync(_mapper, fileRepository);
+        var fileStorage = Resolve<IFileStorageService>();
+        ArticleDetailDto dto = await loaded.ToArticleDetailDtoAsync(_mapper, fileStorage);
 
         dto.Id.Should().Be(loaded.Id);
         dto.CategoryName.Should().Be("Culture");
@@ -141,8 +141,8 @@ public class ArticleMapperTests(PostgresFixture postgres) : BaseRepositoryTest(p
         await using var readContext = CreateDbContext<ContentDbContext>();
         List<ArticleEntity> loaded = await readContext.Articles.Include(a => a.Category).ToListAsync();
 
-        var fileRepository = Resolve<IFileRepository>();
-        IReadOnlyList<ArticleSummaryDto> dtos = await loaded.ToArticleSummaryDtosAsync(_mapper, fileRepository);
+        var fileStorage = Resolve<IFileStorageService>();
+        IReadOnlyList<ArticleSummaryDto> dtos = await loaded.ToArticleSummaryDtosAsync(_mapper, fileStorage);
 
         dtos.Should().HaveCount(2);
     }
