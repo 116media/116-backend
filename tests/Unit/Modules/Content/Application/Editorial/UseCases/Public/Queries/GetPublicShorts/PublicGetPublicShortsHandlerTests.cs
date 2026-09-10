@@ -2,8 +2,11 @@ using _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublicShorts
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.DTOs;
+using _116.Core.Contracts.Application.Services;
 using _116.Core.Domain.Entities;
-using _116.Identity.Contracts.Application;
+using _116.Identity.Contracts.Application.DTOs;
+using _116.Identity.Contracts.Application.Services;
 using _116.Shared.Application.Pagination;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Factories.Core;
@@ -23,23 +26,23 @@ public class PublicGetPublicShortsHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<IShortVideoRepository> _shortVideoRepositoryMock;
     private readonly Mock<IUserLookupService> _userLookupMock;
-    private readonly Mock<IFileRepository> _fileRepositoryMock;
+    private readonly Mock<IFileStorageService> _fileStorageMock;
     private readonly PublicGetPublicShortsHandler _handler;
 
     public PublicGetPublicShortsHandlerTests()
     {
         _shortVideoRepositoryMock = MockShortVideoRepository.Create();
         _userLookupMock = MockUserLookupService.Create();
-        _fileRepositoryMock = MockFileRepository.Create();
+        _fileStorageMock = MockFileStorageService.Create();
 
-        FileEntity videoFile = FileFactory.CreateVideo();
-        _fileRepositoryMock.SetupGetById(videoFile);
-        _fileRepositoryMock.SetupGetByIds(new Dictionary<Guid, FileEntity>());
+        FileReferenceDto videoFile = FileReferenceDtoFactory.CreateVideo();
+        _fileStorageMock.SetupResolve(videoFile);
+        _fileStorageMock.SetupResolveMany(new Dictionary<Guid, FileReferenceDto>());
 
         _handler = new PublicGetPublicShortsHandler(
             _shortVideoRepositoryMock.Object,
             _userLookupMock.Object,
-            _fileRepositoryMock.Object,
+            _fileStorageMock.Object,
             Mapper
         );
     }
@@ -159,9 +162,9 @@ public class PublicGetPublicShortsHandlerTests : BaseContentHandlerTest
         List<ShortVideoEntity> shorts = ShortVideoFactory.CreateMany(2);
         var query = new PublicGetPublicShortsQuery(PaginatedRequest: new PaginatedRequest(0, 10), Search: null);
 
-        Dictionary<Guid, AuthorInfo> authors = shorts.ToDictionary(
+        Dictionary<Guid, AuthorDto> authors = shorts.ToDictionary(
             shortVideo => shortVideo.AuthorId,
-            _ => new AuthorInfo("kinix_editor", null, null, "Admin")
+            _ => new AuthorDto("kinix_editor", null, null, "Admin")
         );
 
         _shortVideoRepositoryMock.SetupGetAllAsync(shorts, shorts.Count);
