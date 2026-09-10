@@ -1,7 +1,9 @@
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Application.Shared.Services;
+using _116.Core.Contracts.Application.DTOs;
 using _116.Core.Domain.Entities;
 using _116.Identity.Application.Shared.Persistence;
+using _116.Identity.Application.User.Services;
 using _116.Identity.Application.User.UseCases.Admin.Commands.UpdateAvatar;
 using _116.Identity.Application.User.UseCases.Admin.Commands.UpdateAvatar.Contracts;
 using _116.Identity.Domain.Entities;
@@ -26,23 +28,20 @@ namespace _116.Unit.Tests.Modules.Identity.Application.User.UseCases.Admin.Comma
 public class AdminUpdateAvatarHandlerTests : BaseHandlerTest
 {
     private readonly Mock<IAdminUpdateAvatarAuthFactory> _authFactoryMock;
-    private readonly Mock<IFileRepository> _fileRepositoryMock;
-    private readonly Mock<IFileUploadService> _fileUploadServiceMock;
+    private readonly Mock<IAvatarService> _avatarServiceMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
     private readonly AdminUpdateAvatarHandler _handler;
 
     public AdminUpdateAvatarHandlerTests()
     {
         _authFactoryMock = new Mock<IAdminUpdateAvatarAuthFactory>();
-        _fileRepositoryMock = MockFileRepository.Create();
-        _fileUploadServiceMock = MockFileUploadService.Create();
+        _avatarServiceMock = MockAvatarService.Create();
 
         _unitOfWorkMock = MockIdentityUnitOfWork.Create().SetupExecuteInTransaction<AdminUpdateAvatarAuthData>();
 
         _handler = new AdminUpdateAvatarHandler(
             _authFactoryMock.Object,
-            _fileRepositoryMock.Object,
-            _fileUploadServiceMock.Object,
+            _avatarServiceMock.Object,
             _unitOfWorkMock.Object,
             Mapper
         );
@@ -58,7 +57,7 @@ public class AdminUpdateAvatarHandlerTests : BaseHandlerTest
         var sessionId = Guid.NewGuid();
         var newAvatarFileId = Guid.NewGuid();
         IFormFile avatarFile = FileTestHelpers.CreateMockFormFile();
-        FileEntity fileEntity = FileFactory.CreateWithId(newAvatarFileId);
+        FileReferenceDto fileEntity = FileReferenceDtoFactory.CreateWithId(newAvatarFileId);
 
         AdminUpdateAvatarCommand command = new(UserId: user.Id, SessionId: sessionId, AvatarFile: avatarFile);
         AdminUpdateAvatarAuthData authData = new(User: user);
@@ -66,11 +65,11 @@ public class AdminUpdateAvatarHandlerTests : BaseHandlerTest
         _authFactoryMock
             .Setup(x => x.GetUserForAvatarUpdateAsync(user.Id, sessionId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authData);
-        _fileUploadServiceMock.SetupUploadAvatar(fileEntity);
+        _avatarServiceMock.SetupUpload(StoredFileFactory.From(fileEntity));
         _authFactoryMock
             .Setup(x => x.UpdateAvatarAsync(user, newAvatarFileId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authData);
-        _fileRepositoryMock.SetupGetAvatarFileReturnsNull(user.AvatarFileId);
+        _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
 
         // Act
         AdminUpdateAvatarResult result = await _handler.Handle(command, CancellationToken.None);
@@ -87,7 +86,7 @@ public class AdminUpdateAvatarHandlerTests : BaseHandlerTest
         var sessionId = Guid.NewGuid();
         var newAvatarFileId = Guid.NewGuid();
         IFormFile avatarFile = FileTestHelpers.CreateMockFormFile();
-        FileEntity fileEntity = FileFactory.CreateWithId(newAvatarFileId);
+        FileReferenceDto fileEntity = FileReferenceDtoFactory.CreateWithId(newAvatarFileId);
 
         AdminUpdateAvatarCommand command = new(UserId: user.Id, SessionId: sessionId, AvatarFile: avatarFile);
         AdminUpdateAvatarAuthData authData = new(User: user);
@@ -95,11 +94,11 @@ public class AdminUpdateAvatarHandlerTests : BaseHandlerTest
         _authFactoryMock
             .Setup(x => x.GetUserForAvatarUpdateAsync(user.Id, sessionId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authData);
-        _fileUploadServiceMock.SetupUploadAvatar(fileEntity);
+        _avatarServiceMock.SetupUpload(StoredFileFactory.From(fileEntity));
         _authFactoryMock
             .Setup(x => x.UpdateAvatarAsync(user, newAvatarFileId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authData);
-        _fileRepositoryMock.SetupGetAvatarFileReturnsNull(user.AvatarFileId);
+        _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
@@ -119,7 +118,7 @@ public class AdminUpdateAvatarHandlerTests : BaseHandlerTest
         var sessionId = Guid.NewGuid();
         var newAvatarFileId = Guid.NewGuid();
         IFormFile avatarFile = FileTestHelpers.CreateMockFormFile();
-        FileEntity fileEntity = FileFactory.CreateWithId(newAvatarFileId);
+        FileReferenceDto fileEntity = FileReferenceDtoFactory.CreateWithId(newAvatarFileId);
 
         AdminUpdateAvatarCommand command = new(UserId: user.Id, SessionId: sessionId, AvatarFile: avatarFile);
         AdminUpdateAvatarAuthData authData = new(User: user);
@@ -127,28 +126,16 @@ public class AdminUpdateAvatarHandlerTests : BaseHandlerTest
         _authFactoryMock
             .Setup(x => x.GetUserForAvatarUpdateAsync(user.Id, sessionId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authData);
-        _fileUploadServiceMock.SetupUploadAvatar(fileEntity);
+        _avatarServiceMock.SetupUpload(StoredFileFactory.From(fileEntity));
         _authFactoryMock
             .Setup(x => x.UpdateAvatarAsync(user, newAvatarFileId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authData);
-        _fileRepositoryMock.SetupGetAvatarFileReturnsNull(user.AvatarFileId);
+        _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _fileUploadServiceMock.Verify(
-            x =>
-                x.UploadAvatarAsync(
-                    avatarFile,
-                    user.Id.ToString(),
-                    avatarFile.FileName,
-                    avatarFile.ContentType,
-                    It.IsAny<CancellationToken>()
-                ),
-            Times.Once
-        );
-        _fileUploadServiceMock.VerifyRecorded(fileEntity, user.AvatarFileId);
     }
 
     [Fact]
@@ -159,7 +146,7 @@ public class AdminUpdateAvatarHandlerTests : BaseHandlerTest
         var sessionId = Guid.NewGuid();
         var newAvatarFileId = Guid.NewGuid();
         IFormFile avatarFile = FileTestHelpers.CreateMockFormFile();
-        FileEntity fileEntity = FileFactory.CreateWithId(newAvatarFileId);
+        FileReferenceDto fileEntity = FileReferenceDtoFactory.CreateWithId(newAvatarFileId);
 
         AdminUpdateAvatarCommand command = new(UserId: user.Id, SessionId: sessionId, AvatarFile: avatarFile);
         AdminUpdateAvatarAuthData authData = new(User: user);
@@ -167,11 +154,11 @@ public class AdminUpdateAvatarHandlerTests : BaseHandlerTest
         _authFactoryMock
             .Setup(x => x.GetUserForAvatarUpdateAsync(user.Id, sessionId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authData);
-        _fileUploadServiceMock.SetupUploadAvatar(fileEntity);
+        _avatarServiceMock.SetupUpload(StoredFileFactory.From(fileEntity));
         _authFactoryMock
             .Setup(x => x.UpdateAvatarAsync(user, newAvatarFileId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authData);
-        _fileRepositoryMock.SetupGetAvatarFileReturnsNull(user.AvatarFileId);
+        _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
@@ -227,17 +214,6 @@ public class AdminUpdateAvatarHandlerTests : BaseHandlerTest
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
-        _fileUploadServiceMock.Verify(
-            x =>
-                x.UploadAvatarAsync(
-                    It.IsAny<IFormFile>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<CancellationToken>()
-                ),
-            Times.Never
-        );
     }
 
     #endregion
@@ -252,7 +228,7 @@ public class AdminUpdateAvatarHandlerTests : BaseHandlerTest
         var sessionId = Guid.NewGuid();
         var newAvatarFileId = Guid.NewGuid();
         IFormFile avatarFile = FileTestHelpers.CreateMockFormFile();
-        FileEntity fileEntity = FileFactory.CreateWithId(newAvatarFileId);
+        FileReferenceDto fileEntity = FileReferenceDtoFactory.CreateWithId(newAvatarFileId);
         using CancellationTokenSource cts = new();
 
         AdminUpdateAvatarCommand command = new(UserId: user.Id, SessionId: sessionId, AvatarFile: avatarFile);
@@ -261,11 +237,11 @@ public class AdminUpdateAvatarHandlerTests : BaseHandlerTest
         _authFactoryMock
             .Setup(x => x.GetUserForAvatarUpdateAsync(user.Id, sessionId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authData);
-        _fileUploadServiceMock.SetupUploadAvatar(fileEntity);
+        _avatarServiceMock.SetupUpload(StoredFileFactory.From(fileEntity));
         _authFactoryMock
             .Setup(x => x.UpdateAvatarAsync(user, newAvatarFileId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authData);
-        _fileRepositoryMock.SetupGetAvatarFileReturnsNull(user.AvatarFileId);
+        _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
 
         // Act
         await _handler.Handle(command, cts.Token);
