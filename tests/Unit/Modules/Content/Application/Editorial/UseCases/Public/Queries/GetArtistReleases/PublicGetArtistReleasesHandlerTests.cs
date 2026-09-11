@@ -1,3 +1,4 @@
+using _116.Content.Application.Editorial.Factories;
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetArtistReleases;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -33,7 +34,7 @@ public class PublicGetArtistReleasesHandlerTests
         _handler = new PublicGetArtistReleasesHandler(
             _artistRepositoryMock.Object,
             _albumRepositoryMock.Object,
-            fileStorageMock.Object,
+            new AlbumDtoFactory(fileStorageMock.Object),
             TestErrorsFactory.CreateContentI18n()
         );
     }
