@@ -1,3 +1,4 @@
+using _116.Content.Application.Editorial.Factories;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.AttachYoutubeVideoUrl;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -45,8 +46,7 @@ public class AdminAttachYoutubeVideoUrlHandlerTests : BaseContentHandlerTest
         _handler = new AdminAttachYoutubeVideoUrlHandler(
             _videoRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            _fileStorageMock.Object,
-            Mapper
+            new VideoDtoFactory(Mapper, _fileStorageMock.Object)
         );
     }
 
