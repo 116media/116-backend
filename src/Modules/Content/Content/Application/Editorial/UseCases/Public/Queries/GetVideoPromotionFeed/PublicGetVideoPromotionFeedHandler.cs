@@ -106,7 +106,7 @@ public class PublicGetVideoPromotionFeedHandler(IVideoRepository videoRepository
     /// <param name="promoted">Promoted videos assigned to this spot.</param>
     /// <param name="freeQueue">Remaining free videos not yet consumed by earlier spots.</param>
     /// <param name="usedIds">Tracks all video IDs already placed in the feed to prevent duplicates.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <param name="thumbnails">The thumbnails resolved for the whole feed, keyed by file id.</param>
     /// <returns>A <see cref="VideoPromotionSpotDto" /> with promoted videos or a single free video fallback.</returns>
     private static VideoPromotionSpotDto BuildSimpleSpot(
         int spotPriority,
@@ -142,7 +142,7 @@ public class PublicGetVideoPromotionFeedHandler(IVideoRepository videoRepository
     /// <param name="promoted">Promoted videos assigned to spot 3.</param>
     /// <param name="freeQueue">Remaining free videos not yet consumed by earlier spots.</param>
     /// <param name="usedIds">Tracks all video IDs already placed in the feed to prevent duplicates.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <param name="thumbnails">The thumbnails resolved for the whole feed, keyed by file id.</param>
     /// <returns>
     /// A <see cref="VideoPromotionSpot3Dto" /> with two named slots (<c>"a"</c> and <c>"b"</c>),
     /// each containing at least one video.
