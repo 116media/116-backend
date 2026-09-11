@@ -1,3 +1,4 @@
+using _116.Content.Application.Catalog.Factories;
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.UploadCategoryPoster;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -40,7 +41,7 @@ public class AdminUploadCategoryPosterHandlerTests : BaseContentHandlerTest
             _categoryRepositoryMock.Object,
             _fileStorageMock.Object,
             _unitOfWorkMock.Object,
-            Mapper
+            new CategoryDtoFactory(Mapper, _fileStorageMock.Object)
         );
     }
 
