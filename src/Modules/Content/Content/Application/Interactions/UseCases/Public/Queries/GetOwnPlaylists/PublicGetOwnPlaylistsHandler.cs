@@ -1,10 +1,9 @@
+using _116.Content.Application.Interactions.Factories;
 using _116.Content.Application.Interactions.Persistence;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Domain.Entities;
-using _116.Core.Contracts.Application.Services;
 using _116.Shared.Contracts.Application.CQRS;
-using MapsterMapper;
 
 namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetOwnPlaylists;
 
@@ -15,8 +14,7 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetOwnPl
 /// <param name="mapper">The mapper used to project entities to DTOs.</param>
 public class PublicGetOwnPlaylistsHandler(
     IPlaylistRepository playlistRepository,
-    IFileStorageService fileStorage,
-    IMapper mapper
+    IPlaylistDtoFactory playlistDtoFactory
 ) : IQueryHandler<PublicGetOwnPlaylistsQuery, PublicGetOwnPlaylistsResult>
 {
     /// <inheritdoc />
@@ -30,11 +28,7 @@ public class PublicGetOwnPlaylistsHandler(
             cancellationToken: cancellationToken
         );
 
-        IReadOnlyList<PlaylistDto> dtoList = await playlists.ToPlaylistDtosAsync(
-            mapper,
-            fileStorage,
-            cancellationToken
-        );
+        IReadOnlyList<PlaylistDto> dtoList = await playlistDtoFactory.CreateManyAsync(playlists, cancellationToken);
         return new PublicGetOwnPlaylistsResult(Playlists: dtoList);
     }
 }
