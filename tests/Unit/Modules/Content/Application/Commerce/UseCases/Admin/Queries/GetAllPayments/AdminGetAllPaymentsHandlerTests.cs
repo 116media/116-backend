@@ -1,7 +1,9 @@
+using _116.Content.Application.Commerce.Factories;
 using _116.Content.Application.Commerce.UseCases.Admin.Queries.GetAllPayments;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
+using _116.Identity.Contracts.Application.DTOs;
 using _116.Identity.Contracts.Application.Services;
 using _116.Shared.Application.Pagination;
 using _116.Tests.Fixtures.Builders.Entities.Content;
@@ -29,7 +31,10 @@ public class AdminGetAllPaymentsHandlerTests : BaseContentHandlerTest
     {
         _orderRepositoryMock = MockContentOrderRepository.Create();
         _userLookupMock = MockUserLookupService.Create();
-        _handler = new AdminGetAllPaymentsHandler(_orderRepositoryMock.Object, Mapper, _userLookupMock.Object);
+        _handler = new AdminGetAllPaymentsHandler(
+            _orderRepositoryMock.Object,
+            new PaymentDtoFactory(Mapper, _userLookupMock.Object)
+        );
     }
 
     #region Success Cases
@@ -76,7 +81,12 @@ public class AdminGetAllPaymentsHandlerTests : BaseContentHandlerTest
             .Build();
 
         Guid verifierId = payment.VerifiedById!.Value;
-        _userLookupMock.SetupGetUserNameById(verifierId, TestConstants.User.ValidUserName);
+        _userLookupMock.SetupGetAuthorInfosByIds(
+            new Dictionary<Guid, AuthorDto>
+            {
+                [verifierId] = new(TestConstants.User.ValidUserName, Email: null, AvatarFileId: null, Role: null),
+            }
+        );
 
         List<ContentPaymentEntity> payments = [payment];
         _orderRepositoryMock.SetupGetAllPaymentsAsync(payments, payments.Count);
@@ -94,7 +104,7 @@ public class AdminGetAllPaymentsHandlerTests : BaseContentHandlerTest
         // Assert
         result.Payments.Items.Should().ContainSingle();
         result.Payments.Items.First().VerifiedByUserName.Should().Be(TestConstants.User.ValidUserName);
-        _userLookupMock.VerifyGetUserNameByIdCalled(verifierId);
+        _userLookupMock.VerifyGetAuthorInfosByIdsCalledOnce();
     }
 
     [Fact]
