@@ -1,3 +1,4 @@
+using _116.Content.Application.Editorial.Factories;
 using _116.Content.Application.Editorial.UseCases.Admin.Queries.GetAllVideos;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -31,7 +32,10 @@ public class AdminGetAllVideosHandlerTests : BaseContentHandlerTest
     {
         _videoRepositoryMock = MockVideoRepository.Create();
         _fileStorageMock = MockFileStorageService.Create();
-        _handler = new AdminGetAllVideosHandler(_videoRepositoryMock.Object, _fileStorageMock.Object, Mapper);
+        _handler = new AdminGetAllVideosHandler(
+            _videoRepositoryMock.Object,
+            new VideoDtoFactory(Mapper, _fileStorageMock.Object)
+        );
     }
 
     [Fact]
