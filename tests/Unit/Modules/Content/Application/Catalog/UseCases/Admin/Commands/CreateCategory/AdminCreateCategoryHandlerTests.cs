@@ -1,3 +1,4 @@
+using _116.Content.Application.Catalog.Factories;
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.CreateCategory;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -41,8 +42,7 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
             _contentTypeRepositoryMock.Object,
             _categoryRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            _fileStorageMock.Object,
-            Mapper,
+            new CategoryDtoFactory(Mapper, _fileStorageMock.Object),
             TestErrorsFactory.CreateContentI18n()
         );
     }
