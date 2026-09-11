@@ -1,3 +1,4 @@
+using _116.Content.Application.Catalog.Factories;
 using _116.Content.Application.Catalog.UseCases.Public.Queries.GetActiveCategories;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -29,8 +30,7 @@ public class PublicGetActiveCategoriesHandlerTests : BaseContentHandlerTest
         _fileStorageMock = MockFileStorageService.Create();
         _handler = new PublicGetActiveCategoriesHandler(
             _categoryRepositoryMock.Object,
-            _fileStorageMock.Object,
-            Mapper
+            new CategoryDtoFactory(Mapper, _fileStorageMock.Object)
         );
     }
 
