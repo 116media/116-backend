@@ -1,4 +1,5 @@
 using _116.Content.Application.Catalog.Constants;
+using _116.Content.Application.Catalog.Factories;
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.PinCategoryToFeed;
 using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Shared.Persistence;
@@ -45,8 +46,7 @@ public class AdminPinCategoryToFeedHandlerTests : BaseContentHandlerTest
             _categoryRepositoryMock.Object,
             _videoRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            _fileStorageMock.Object,
-            Mapper,
+            new CategoryDtoFactory(Mapper, _fileStorageMock.Object),
             TestErrorsFactory.CreateContentI18n()
         );
     }
