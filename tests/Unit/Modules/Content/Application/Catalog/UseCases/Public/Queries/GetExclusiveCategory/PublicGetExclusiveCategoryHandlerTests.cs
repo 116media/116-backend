@@ -1,4 +1,6 @@
+using _116.Content.Application.Catalog.Factories;
 using _116.Content.Application.Catalog.UseCases.Public.Queries.GetExclusiveCategory;
+using _116.Content.Application.Editorial.Factories;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
@@ -36,8 +38,8 @@ public class PublicGetExclusiveCategoryHandlerTests : BaseContentHandlerTest
         _handler = new PublicGetExclusiveCategoryHandler(
             _categoryRepositoryMock.Object,
             _videoRepositoryMock.Object,
-            _fileStorageMock.Object,
-            Mapper,
+            new CategoryDtoFactory(Mapper, _fileStorageMock.Object),
+            new VideoDtoFactory(Mapper, _fileStorageMock.Object),
             TestErrorsFactory.CreateContentI18n()
         );
     }
