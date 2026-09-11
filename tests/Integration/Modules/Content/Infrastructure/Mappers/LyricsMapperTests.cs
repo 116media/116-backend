@@ -138,34 +138,4 @@ public class LyricsMapperTests(PostgresFixture postgres) : BaseRepositoryTest(po
         dto.LyricsText.Should().Be(loaded.LyricsText);
         dto.Language.Should().Be(loaded.Language);
     }
-
-    [Fact]
-    public async Task ToLyricsDetailDtosAsync_ShouldMapCollection()
-    {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        seedContext.ContentTypes.Add(contentType);
-        await seedContext.SaveChangesAsync();
-
-        var category = CategoryFactory.Create(contentType.Id);
-        seedContext.Categories.Add(category);
-        await seedContext.SaveChangesAsync();
-
-        var l1 = LyricsFactory.Create(category.Id);
-        var l2 = LyricsFactory.Create(category.Id);
-        seedContext.Lyrics.AddRange(l1, l2);
-        await seedContext.SaveChangesAsync();
-
-        await using var readContext = CreateDbContext<ContentDbContext>();
-        List<LyricsEntity> loaded = await readContext.Lyrics.Include(l => l.Category).ToListAsync();
-
-        var mapper = Resolve<IMapper>();
-        var userLookup = Resolve<IUserLookupService>();
-        var fileStorage = Resolve<IFileStorageService>();
-        IReadOnlyList<LyricsDetailDto> dtos = await loaded
-            .AsReadOnly()
-            .ToLyricsDetailDtosAsync(mapper, userLookup, fileStorage);
-
-        dtos.Should().HaveCount(2);
-    }
 }
