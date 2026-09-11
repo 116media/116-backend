@@ -1,3 +1,4 @@
+using _116.Content.Application.Editorial.Factories;
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublishedVideos;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -30,7 +31,10 @@ public class PublicGetPublishedVideosHandlerTests : BaseContentHandlerTest
     {
         _videoRepositoryMock = MockVideoRepository.Create();
         _fileStorageMock = MockFileStorageService.Create();
-        _handler = new PublicGetPublishedVideosHandler(_videoRepositoryMock.Object, _fileStorageMock.Object);
+        _handler = new PublicGetPublishedVideosHandler(
+            _videoRepositoryMock.Object,
+            new VideoDtoFactory(Mapper, _fileStorageMock.Object)
+        );
     }
 
     [Fact]
