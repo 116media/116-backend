@@ -1,3 +1,4 @@
+using _116.Content.Application.Editorial.Factories;
 using _116.Content.Application.Editorial.UseCases.Admin.Queries.GetVideoById;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -40,8 +41,8 @@ public class AdminGetVideoByIdHandlerTests : BaseContentHandlerTest
         _handler = new AdminGetVideoByIdHandler(
             _videoRepositoryMock.Object,
             _userLookupMock.Object,
-            _fileStorageMock.Object,
-            Mapper
+            new VideoDtoFactory(Mapper, _fileStorageMock.Object),
+            _fileStorageMock.Object
         );
     }
 
