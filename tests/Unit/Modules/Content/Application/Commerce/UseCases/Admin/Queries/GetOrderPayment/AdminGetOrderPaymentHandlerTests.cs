@@ -6,6 +6,7 @@ using _116.Core.Application.Shared.Repositories;
 using _116.Core.Contracts.Application.DTOs;
 using _116.Core.Contracts.Application.Services;
 using _116.Core.Domain.Entities;
+using _116.Identity.Contracts.Application.DTOs;
 using _116.Identity.Contracts.Application.Services;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
@@ -43,7 +44,7 @@ public class AdminGetOrderPaymentHandlerTests : BaseContentHandlerTest
             _orderRepositoryMock.Object,
             _fileStorageMock.Object,
             Mapper,
-            _userLookupMock.Object
+            new PaymentDtoFactory(Mapper, _userLookupMock.Object)
         );
     }
 
@@ -100,7 +101,12 @@ public class AdminGetOrderPaymentHandlerTests : BaseContentHandlerTest
         Guid verifierId = payment.VerifiedById!.Value;
 
         _orderPaymentFactoryMock.SetupGetByOrderId(orderId, payment);
-        _userLookupMock.SetupGetUserNameById(verifierId, TestConstants.User.ValidUserName);
+        _userLookupMock.SetupGetAuthorInfosByIds(
+            new Dictionary<Guid, AuthorDto>
+            {
+                [verifierId] = new(TestConstants.User.ValidUserName, Email: null, AvatarFileId: null, Role: null),
+            }
+        );
 
         var query = new AdminGetOrderPaymentQuery(OrderId: orderId);
 
@@ -109,7 +115,7 @@ public class AdminGetOrderPaymentHandlerTests : BaseContentHandlerTest
 
         // Assert
         result.Payment.VerifiedByUserName.Should().Be(TestConstants.User.ValidUserName);
-        _userLookupMock.VerifyGetUserNameByIdCalled(verifierId);
+        _userLookupMock.VerifyGetAuthorInfosByIdsCalledOnce();
     }
 
     [Fact]
