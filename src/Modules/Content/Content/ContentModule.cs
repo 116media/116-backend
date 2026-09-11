@@ -1,3 +1,4 @@
+using _116.Content.Application.Catalog.Factories;
 using _116.Content.Application.Commerce.EventHandlers;
 using _116.Content.Application.Commerce.Factories;
 using _116.Content.Application.Commerce.Services;
@@ -12,8 +13,10 @@ using _116.Content.Application.Commerce.UseCases.Admin.Commands.SubmitOrder.Cont
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPayment;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPayment.Contracts;
 using _116.Content.Application.Editorial.EventHandlers;
+using _116.Content.Application.Editorial.Factories;
 using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Interactions.EventHandlers;
+using _116.Content.Application.Interactions.Factories;
 using _116.Content.Application.Interactions.Persistence;
 using _116.Content.Application.Shared.Errors;
 using _116.Content.Application.Shared.Errors.Facade;
@@ -244,6 +247,18 @@ public static class ContentModule
         services.AddScoped<IAddOrderItemFactory, AdminAddOrderItemFactory>();
         services.AddScoped<IAddItemTierFactory, AdminAddItemTierFactory>();
         services.AddScoped<ICreateOrderFactory, AdminCreateOrderFactory>();
+        services.AddScoped<IPaymentDtoFactory, PaymentDtoFactory>();
+
+        // Catalog factories
+        services.AddScoped<ICategoryDtoFactory, CategoryDtoFactory>();
+
+        // Editorial factories
+        services.AddScoped<IArtistDtoFactory, ArtistDtoFactory>();
+        services.AddScoped<IAlbumDtoFactory, AlbumDtoFactory>();
+        services.AddScoped<IVideoDtoFactory, VideoDtoFactory>();
+
+        // Interactions factories
+        services.AddScoped<IPlaylistDtoFactory, PlaylistDtoFactory>();
 
         services
             .AddHttpClient<IYoutubeThumbnailService, YoutubeThumbnailService>()
