@@ -1,7 +1,7 @@
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Entities;
 using _116.Core.Contracts.Application.DTOs;
-using _116.Identity.Contracts.Application.Services;
+using _116.Identity.Contracts.Application.DTOs;
 using Mapster;
 using MapsterMapper;
 
@@ -94,20 +94,21 @@ public static class ContentOrderMapper
     }
 
     /// <summary>
-    /// Maps a <see cref="ContentPaymentEntity" /> to a <see cref="PaymentSummaryDto" />
-    /// including customer name and order status from the linked order.
+    /// Maps a <see cref="ContentPaymentEntity" /> to a <see cref="PaymentSummaryDto" /> including
+    /// customer name and order status from the linked order, resolving the verifier's name from a
+    /// pre-fetched map. Performs no IO — batch mappings resolve users up front.
     /// </summary>
-    public static async Task<PaymentSummaryDto> ToPaymentSummaryDtoAsync(
+    public static PaymentSummaryDto ToPaymentSummaryDto(
         this ContentPaymentEntity entity,
         IMapper mapper,
-        IUserLookupService userLookup,
-        CancellationToken ct = default
+        IReadOnlyDictionary<Guid, AuthorDto> verifiers
     )
     {
         var dto = mapper.Map<PaymentSummaryDto>(entity);
-        string? verifiedByUserName = entity.VerifiedById.HasValue
-            ? await userLookup.GetUserNameByIdAsync(entity.VerifiedById.Value, ct)
-            : null;
+        string? verifiedByUserName =
+            entity.VerifiedById is { } verifierId && verifiers.TryGetValue(verifierId, out AuthorDto? verifier)
+                ? verifier.UserName
+                : null;
 
         return dto with
         {
@@ -120,39 +121,21 @@ public static class ContentOrderMapper
     }
 
     /// <summary>
-    /// Maps a collection of <see cref="ContentPaymentEntity" /> to a list of <see cref="PaymentSummaryDto" />.
+    /// Maps a <see cref="ContentPaymentEntity" /> to a <see cref="PaymentDto" />, injecting the
+    /// resolved proof file and reading the verifier's name from a pre-fetched map. Performs no IO.
     /// </summary>
-    public static async Task<IReadOnlyList<PaymentSummaryDto>> ToPaymentSummaryDtosAsync(
-        this IReadOnlyList<ContentPaymentEntity> entities,
-        IMapper mapper,
-        IUserLookupService userLookup,
-        CancellationToken ct = default
-    )
-    {
-        var results = new List<PaymentSummaryDto>(entities.Count);
-        foreach (ContentPaymentEntity entity in entities)
-        {
-            results.Add(await entity.ToPaymentSummaryDtoAsync(mapper, userLookup, ct));
-        }
-        return results;
-    }
-
-    /// <summary>
-    /// Maps a <see cref="ContentPaymentEntity" /> to a <see cref="PaymentDto" />,
-    /// injecting the resolved proof file so the frontend can render image or PDF accordingly.
-    /// </summary>
-    public static async Task<PaymentDto> ToPaymentDtoAsync(
+    public static PaymentDto ToPaymentDto(
         this ContentPaymentEntity entity,
         IMapper mapper,
-        IUserLookupService userLookup,
-        FileDto? proofFile = null,
-        CancellationToken ct = default
+        IReadOnlyDictionary<Guid, AuthorDto> verifiers,
+        FileDto? proofFile = null
     )
     {
         var dto = mapper.Map<PaymentDto>(entity);
-        string? verifiedByUserName = entity.VerifiedById.HasValue
-            ? await userLookup.GetUserNameByIdAsync(entity.VerifiedById.Value, ct)
-            : null;
+        string? verifiedByUserName =
+            entity.VerifiedById is { } verifierId && verifiers.TryGetValue(verifierId, out AuthorDto? verifier)
+                ? verifier.UserName
+                : null;
 
         return dto with
         {
