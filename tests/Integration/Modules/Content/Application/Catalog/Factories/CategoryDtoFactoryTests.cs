@@ -1,25 +1,21 @@
+using _116.Content.Application.Catalog.Factories;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
-using _116.Core.Contracts.Application.Services;
 using _116.Tests.Fixtures.Factories.Content;
-using MapsterMapper;
-using ContentMappingRegistration = _116.Content.Application.Shared.Mappers.MappingRegistration;
 
-namespace _116.Integration.Tests.Modules.Content.Mappers;
+namespace _116.Integration.Tests.Modules.Content.Application.Catalog.Factories;
 
 /// <summary>
-/// Integration tests for <see cref="CategoryMapper" />.
-/// Verifies entity-to-DTO mapping with navigation properties loaded from PostgreSQL.
+/// Integration tests for <see cref="ICategoryDtoFactory" />, resolved from the container.
+/// Verifies entity-to-DTO projection with navigation properties loaded from PostgreSQL.
 /// </summary>
 [Collection("Database")]
-public class CategoryMapperTests(PostgresFixture postgres) : BaseRepositoryTest(postgres)
+public class CategoryDtoFactoryTests(PostgresFixture postgres) : BaseRepositoryTest(postgres)
 {
-    private readonly IMapper _mapper = new Mapper(ContentMappingRegistration.CreateConfiguration());
-
     [Fact]
-    public async Task ToCategoryDtoAsync_ShouldMapAllFields()
+    public async Task CreateAsync_ShouldMapAllFields()
     {
         await using var seedContext = CreateDbContext<ContentDbContext>();
         var contentType = ContentTypeFactory.Create("Video");
@@ -36,8 +32,8 @@ public class CategoryMapperTests(PostgresFixture postgres) : BaseRepositoryTest(
             .Include(c => c.Pricing)
             .FirstAsync(c => c.Id == category.Id);
 
-        var fileStorage = Resolve<IFileStorageService>();
-        CategoryDto dto = await loaded.ToCategoryDtoAsync(_mapper, fileStorage);
+        var categoryDtoFactory = Resolve<ICategoryDtoFactory>();
+        CategoryDto dto = await categoryDtoFactory.CreateAsync(loaded);
 
         dto.Id.Should().Be(loaded.Id);
         dto.Name.Should().Be(loaded.Name);
@@ -51,7 +47,7 @@ public class CategoryMapperTests(PostgresFixture postgres) : BaseRepositoryTest(
     }
 
     [Fact]
-    public async Task ToCategoryDtoAsync_WithNullPoster_ShouldMapPosterUrlAsNull()
+    public async Task CreateAsync_WithNullPoster_ShouldMapPosterUrlAsNull()
     {
         await using var seedContext = CreateDbContext<ContentDbContext>();
         var contentType = ContentTypeFactory.Create("Article");
@@ -68,14 +64,14 @@ public class CategoryMapperTests(PostgresFixture postgres) : BaseRepositoryTest(
             .Include(c => c.Pricing)
             .FirstAsync(c => c.Id == category.Id);
 
-        var fileStorage = Resolve<IFileStorageService>();
-        CategoryDto dto = await loaded.ToCategoryDtoAsync(_mapper, fileStorage);
+        var categoryDtoFactory = Resolve<ICategoryDtoFactory>();
+        CategoryDto dto = await categoryDtoFactory.CreateAsync(loaded);
 
         dto.PosterUrl.Should().BeNull();
     }
 
     [Fact]
-    public async Task ToCategoryDtoAsync_WithPricing_ShouldMapPricingCollection()
+    public async Task CreateAsync_WithPricing_ShouldMapPricingCollection()
     {
         await using var seedContext = CreateDbContext<ContentDbContext>();
         var contentType = ContentTypeFactory.Create("Video");
@@ -100,8 +96,8 @@ public class CategoryMapperTests(PostgresFixture postgres) : BaseRepositoryTest(
                 .ThenInclude(p => p.PricingTier)
             .FirstAsync(c => c.Id == category.Id);
 
-        var fileStorage = Resolve<IFileStorageService>();
-        CategoryDto dto = await loaded.ToCategoryDtoAsync(_mapper, fileStorage);
+        var categoryDtoFactory = Resolve<ICategoryDtoFactory>();
+        CategoryDto dto = await categoryDtoFactory.CreateAsync(loaded);
 
         dto.Pricing.Should().ContainSingle();
         dto.Pricing[0].TierName.Should().Be("base_upload");
@@ -109,7 +105,7 @@ public class CategoryMapperTests(PostgresFixture postgres) : BaseRepositoryTest(
     }
 
     [Fact]
-    public async Task ToCategoryDtosAsync_ShouldMapCollection()
+    public async Task CreateManyAsync_ShouldMapCollection()
     {
         await using var seedContext = CreateDbContext<ContentDbContext>();
         var contentType = ContentTypeFactory.Create("Video");
@@ -127,8 +123,8 @@ public class CategoryMapperTests(PostgresFixture postgres) : BaseRepositoryTest(
             .Include(c => c.Pricing)
             .ToListAsync();
 
-        var fileStorage = Resolve<IFileStorageService>();
-        IReadOnlyList<CategoryDto> dtos = await loaded.ToCategoryDtosAsync(_mapper, fileStorage);
+        var categoryDtoFactory = Resolve<ICategoryDtoFactory>();
+        IReadOnlyList<CategoryDto> dtos = await categoryDtoFactory.CreateManyAsync(loaded);
 
         dtos.Should().HaveCount(2);
         dtos.Select(d => d.Name).Should().BeEquivalentTo(["Music", "Culture"]);
