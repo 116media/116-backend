@@ -1,3 +1,4 @@
+using _116.Content.Application.Editorial.Factories;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateVideoSeo;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -37,8 +38,7 @@ public class AdminUpdateVideoSeoHandlerTests : BaseContentHandlerTest
         _handler = new AdminUpdateVideoSeoHandler(
             _videoRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            _fileStorageMock.Object,
-            Mapper
+            new VideoDtoFactory(Mapper, _fileStorageMock.Object)
         );
     }
 
