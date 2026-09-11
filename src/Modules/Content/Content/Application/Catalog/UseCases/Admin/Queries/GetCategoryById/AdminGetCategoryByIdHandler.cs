@@ -1,9 +1,7 @@
-using _116.Content.Application.Shared.Mappers;
+using _116.Content.Application.Catalog.Factories;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Contracts.Application.Services;
 using _116.Shared.Contracts.Application.CQRS;
-using MapsterMapper;
 
 namespace _116.Content.Application.Catalog.UseCases.Admin.Queries.GetCategoryById;
 
@@ -11,13 +9,9 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Queries.GetCategoryByI
 /// Handles the <see cref="AdminGetCategoryByIdQuery" /> to retrieve a category by its identifier.
 /// </summary>
 /// <param name="categoryRepository">Repository for category data access operations.</param>
-/// <param name="fileStorage">Core's storage contract.</param>
-/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-public class AdminGetCategoryByIdHandler(
-    ICategoryRepository categoryRepository,
-    IFileStorageService fileStorage,
-    IMapper mapper
-) : IQueryHandler<AdminGetCategoryByIdQuery, AdminGetCategoryByIdResult>
+/// <param name="categoryDtoFactory">Builds category projections with their posters resolved.</param>
+public class AdminGetCategoryByIdHandler(ICategoryRepository categoryRepository, ICategoryDtoFactory categoryDtoFactory)
+    : IQueryHandler<AdminGetCategoryByIdQuery, AdminGetCategoryByIdResult>
 {
     /// <inheritdoc />
     public async Task<AdminGetCategoryByIdResult> Handle(
@@ -30,7 +24,7 @@ public class AdminGetCategoryByIdHandler(
             cancellationToken: cancellationToken
         );
 
-        var dto = await category.ToCategoryDtoAsync(mapper, fileStorage, cancellationToken);
+        var dto = await categoryDtoFactory.CreateAsync(category, cancellationToken);
         return new AdminGetCategoryByIdResult(Category: dto);
     }
 }
