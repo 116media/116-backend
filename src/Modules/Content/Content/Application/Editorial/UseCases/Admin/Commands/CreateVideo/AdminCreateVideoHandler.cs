@@ -1,11 +1,10 @@
+using _116.Content.Application.Editorial.Factories;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Contracts.Application.Services;
 using _116.Shared.Contracts.Application.CQRS;
-using MapsterMapper;
 
 namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateVideo;
 
@@ -15,15 +14,13 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateVideo
 /// <param name="categoryRepository">Repository for category data access operations.</param>
 /// <param name="videoRepository">Repository for video data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="fileStorage">Core's storage contract.</param>
-/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
+/// <param name="videoDtoFactory">Builds video projections with their thumbnails resolved.</param>
 public class AdminCreateVideoHandler(
     ICategoryRepository categoryRepository,
     IVideoRepository videoRepository,
     IContentUnitOfWork unitOfWork,
-    IFileStorageService fileStorage,
-    IMapper mapper,
+    IVideoDtoFactory videoDtoFactory,
     ContentI18n i18n
 ) : ICommandHandler<AdminCreateVideoCommand, AdminCreateVideoResult>
 {
@@ -85,7 +82,7 @@ public class AdminCreateVideoHandler(
             cancellationToken: cancellationToken
         );
 
-        var dto = await created.ToVideoDetailDtoAsync(mapper, fileStorage, cancellationToken);
+        var dto = await videoDtoFactory.CreateDetailAsync(created, cancellationToken);
         return new AdminCreateVideoResult(Video: dto);
     }
 }
