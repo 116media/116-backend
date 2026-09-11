@@ -1,3 +1,4 @@
+using _116.Content.Application.Editorial.Factories;
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetVideoBySlug;
 using _116.Content.Application.Shared.Errors;
 using _116.Content.Application.Shared.Errors.Facade;
@@ -41,8 +42,7 @@ public class PublicGetVideoBySlugHandlerTests : BaseContentHandlerTest
         _handler = new PublicGetVideoBySlugHandler(
             _videoRepositoryMock.Object,
             _artistRepositoryMock.Object,
-            _fileStorageMock.Object,
-            Mapper,
+            new VideoDtoFactory(Mapper, _fileStorageMock.Object),
             _i18n
         );
     }
