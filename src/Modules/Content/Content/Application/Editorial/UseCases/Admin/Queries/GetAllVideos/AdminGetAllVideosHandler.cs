@@ -1,11 +1,10 @@
+using _116.Content.Application.Editorial.Factories;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Contracts.Application.Services;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
-using MapsterMapper;
 
 namespace _116.Content.Application.Editorial.UseCases.Admin.Queries.GetAllVideos;
 
@@ -13,9 +12,8 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Queries.GetAllVideos
 /// Handles the <see cref="AdminGetAllVideosQuery" /> to retrieve a paginated list of videos.
 /// </summary>
 /// <param name="videoRepository">Repository for video data access operations.</param>
-/// <param name="fileStorage">Core's storage contract.</param>
-/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-public class AdminGetAllVideosHandler(IVideoRepository videoRepository, IFileStorageService fileStorage, IMapper mapper)
+/// <param name="videoDtoFactory">Builds video projections with their thumbnails resolved.</param>
+public class AdminGetAllVideosHandler(IVideoRepository videoRepository, IVideoDtoFactory videoDtoFactory)
     : IQueryHandler<AdminGetAllVideosQuery, AdminGetAllVideosResult>
 {
     /// <inheritdoc />
@@ -33,11 +31,7 @@ public class AdminGetAllVideosHandler(IVideoRepository videoRepository, IFileSto
             cancellationToken: cancellationToken
         );
 
-        IReadOnlyList<VideoSummaryDto> dtoList = await videos.ToVideoSummaryDtosAsync(
-            mapper,
-            fileStorage,
-            cancellationToken
-        );
+        IReadOnlyList<VideoSummaryDto> dtoList = await videoDtoFactory.CreateManyAsync(videos, cancellationToken);
 
         var paginatedResult = new PaginatedResult<VideoSummaryDto>(
             pageIndex: pageIndex,
