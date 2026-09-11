@@ -1,9 +1,9 @@
+using _116.Content.Application.Editorial.Factories;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Contracts.Application.Services;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
 
@@ -16,12 +16,12 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetArtistRe
 /// </summary>
 /// <param name="artistRepository">Repository for artist profile data access operations.</param>
 /// <param name="albumRepository">Repository for album data access operations.</param>
-/// <param name="fileStorage">Core's storage contract.</param>
+/// <param name="albumDtoFactory">Builds album projections with their covers resolved.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class PublicGetArtistReleasesHandler(
     IArtistRepository artistRepository,
     IAlbumRepository albumRepository,
-    IFileStorageService fileStorage,
+    IAlbumDtoFactory albumDtoFactory,
     ContentI18n i18n
 ) : IQueryHandler<PublicGetArtistReleasesQuery, PublicGetArtistReleasesResult>
 {
@@ -49,7 +49,10 @@ public class PublicGetArtistReleasesHandler(
             cancellationToken: cancellationToken
         );
 
-        IReadOnlyList<AlbumDto> albumDtos = await albums.AsReadOnly().ToAlbumDtosAsync(fileStorage, cancellationToken);
+        IReadOnlyList<AlbumDto> albumDtos = await albumDtoFactory.CreateManyAsync(
+            albums.AsReadOnly(),
+            cancellationToken
+        );
 
         var releases = new PaginatedResult<AlbumDto>(
             pageIndex: query.Page.PageIndex,
