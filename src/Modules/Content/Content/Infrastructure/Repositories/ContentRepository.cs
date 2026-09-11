@@ -14,4 +14,4 @@ namespace _116.Content.Infrastructure.Repositories;
 public class ContentRepository<TEntity>(ContentDbContext context)
     : RepositoryBase<ContentDbContext, TEntity, Guid>(context),
         IContentRepository<TEntity>
-    where TEntity : class, IEntity<Guid>;
+    where TEntity : class, IEntity<Guid>, IAggregateRoot;

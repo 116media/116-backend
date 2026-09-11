@@ -14,4 +14,4 @@ namespace _116.Core.Infrastructure.Repositories;
 public class CoreRepository<TEntity>(CoreDbContext context)
     : RepositoryBase<CoreDbContext, TEntity, Guid>(context),
         ICoreRepository<TEntity>
-    where TEntity : class, IEntity<Guid>;
+    where TEntity : class, IEntity<Guid>, IAggregateRoot;

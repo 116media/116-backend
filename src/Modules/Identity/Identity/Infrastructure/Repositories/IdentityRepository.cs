@@ -14,4 +14,4 @@ namespace _116.Identity.Infrastructure.Repositories;
 public class IdentityRepository<TEntity>(IdentityDbContext context)
     : RepositoryBase<IdentityDbContext, TEntity, Guid>(context),
         IIdentityRepository<TEntity>
-    where TEntity : class, IEntity<Guid>;
+    where TEntity : class, IEntity<Guid>, IAggregateRoot;

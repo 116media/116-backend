@@ -1,0 +1,168 @@
+// identity schema — final applied state, generated from applied-full.sql.
+// This is DBML: paste it directly into the dbdiagram.io editor pane.
+
+Table "identity"."domain_event_outbox" {
+  "id" uuid [pk]
+  "event_type" varchar(500) [not null]
+  "payload" text [not null]
+  "occurred_on" timestamptz [not null]
+  "dispatched_at" timestamptz
+  "attempt_count" integer [not null, default: 0]
+  "last_error" text
+}
+
+Table "identity"."otps" {
+  "id" uuid [pk]
+  "user_id" uuid [not null]
+  "code_hash" varchar(100) [not null]
+  "purpose" text [not null]
+  "expires_at" timestamptz [not null]
+  "attempt_count" integer [not null, default: 0]
+  "is_used" boolean [not null, default: false]
+  "used_at" timestamptz
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+  "consumed_at" timestamptz
+  Indexes {
+    ("purpose", "expires_at")
+    ("user_id", "purpose")
+  }
+}
+
+Table "identity"."permissions" {
+  "id" uuid [pk]
+  "resource" varchar(15) [not null]
+  "action" varchar(15) [not null]
+  "description" varchar(300) [not null]
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+  "deleted_at" timestamptz
+  "is_active" boolean [not null, default: true]
+  "is_deleted" boolean [not null, default: false]
+  Indexes {
+    ("resource", "action") [unique]
+  }
+}
+
+Table "identity"."role_permissions" {
+  "id" uuid [pk]
+  "role_id" uuid [not null]
+  "permission_id" uuid [not null]
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+  Indexes {
+    ("role_id", "permission_id") [unique]
+  }
+}
+
+Table "identity"."roles" {
+  "id" uuid [pk]
+  "name" varchar(20) [not null, unique]
+  "description" varchar(300) [not null]
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+  "deleted_at" timestamptz
+  "is_active" boolean [not null, default: true]
+  "is_deleted" boolean [not null, default: false]
+}
+
+Table "identity"."sessions" {
+  "id" uuid [pk]
+  "user_id" uuid [not null]
+  "device_id" varchar(64) [not null]
+  "refresh_token_hash" varchar(500) [not null]
+  "expires_at" timestamptz [not null]
+  "ip_address" varchar(45)
+  "user_agent" varchar(500)
+  "browser" text [not null]
+  "device" text [not null]
+  "platform" text [not null]
+  "client" text [not null]
+  "is_revoked" boolean [not null, default: false]
+  "revoked_at" timestamptz
+  "created_at" timestamptz [not null]
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+  "absolute_expires_at" timestamptz [not null, default: `'-infinity'`]
+  Indexes {
+    ("user_id", "device_id")
+  }
+}
+
+Table "identity"."user_otp_state" {
+  "user_id" uuid [pk]
+  "failed_attempts" integer [not null, default: 0]
+  "locked_until" timestamptz
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+}
+
+Table "identity"."user_roles" {
+  "id" uuid [pk]
+  "user_id" uuid [not null]
+  "role_id" uuid [not null]
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+  Indexes {
+    ("user_id", "role_id") [unique]
+  }
+}
+
+Table "identity"."user_token_state" {
+  "user_id" uuid [pk]
+  "security_stamp" uuid [not null]
+  "token_version" bigint [not null, default: 0]
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+}
+
+Table "identity"."users" {
+  "id" uuid [pk]
+  "email" varchar(254) [unique]
+  "user_name" varchar(20) [not null, unique]
+  "password_hash" text
+  "auth_provider" text [not null]
+  "is_verified" boolean [not null, default: false]
+  "is_active" boolean [not null, default: true]
+  "avatar_file_id" uuid
+  "avatar_source" text [not null]
+  "country_name" varchar(100)
+  "country_iso_code" varchar(3)
+  "country_dial_code" varchar(10)
+  "partial_phone_number" varchar(50)
+  "full_phone_number" varchar(20)
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+  "provider_subject_id" varchar(255)
+  "failed_login_attempts" integer [not null, default: 0]
+  "locked_until" timestamptz
+  Indexes {
+    ("auth_provider", "provider_subject_id")
+  }
+}
+
+Ref: "identity"."otps"."user_id" > "identity"."users"."id" [delete: cascade]
+Ref: "identity"."role_permissions"."permission_id" > "identity"."permissions"."id" [delete: cascade]
+Ref: "identity"."role_permissions"."role_id" > "identity"."roles"."id" [delete: cascade]
+Ref: "identity"."sessions"."user_id" > "identity"."users"."id" [delete: cascade]
+Ref: "identity"."user_otp_state"."user_id" > "identity"."users"."id" [delete: cascade]
+Ref: "identity"."user_roles"."role_id" > "identity"."roles"."id" [delete: cascade]
+Ref: "identity"."user_roles"."user_id" > "identity"."users"."id" [delete: cascade]
+Ref: "identity"."user_token_state"."user_id" > "identity"."users"."id" [delete: cascade]

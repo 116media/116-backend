@@ -16,6 +16,23 @@ public class EntityEntryExtensionTests
     {
         public string Name { get; set; } = string.Empty;
         public OwnedEntity? OwnedData { get; set; }
+
+        /// <summary>
+        /// Creates a test entity with its identity assigned.
+        /// </summary>
+        /// <param name="id">The identity to assign.</param>
+        /// <param name="name">The entity name.</param>
+        /// <param name="ownedData">Optional owned value.</param>
+        /// <returns>The constructed entity.</returns>
+        public static TestEntity Create(Guid id, string name = "", OwnedEntity? ownedData = null)
+        {
+            return new TestEntity
+            {
+                Id = id,
+                Name = name,
+                OwnedData = ownedData,
+            };
+        }
     }
 
     [Owned]
@@ -51,7 +68,7 @@ public class EntityEntryExtensionTests
     {
         // Arrange
         using TestDbContext context = CreateInMemoryContext();
-        var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Test" };
+        var entity = TestEntity.Create(Guid.NewGuid(), "Test");
         context.TestEntities.Add(entity);
 
         // Act
@@ -67,12 +84,7 @@ public class EntityEntryExtensionTests
     {
         // Arrange
         using TestDbContext context = CreateInMemoryContext();
-        var entity = new TestEntity
-        {
-            Id = Guid.NewGuid(),
-            Name = "Test",
-            OwnedData = new OwnedEntity { Value = "Owned value" },
-        };
+        var entity = TestEntity.Create(Guid.NewGuid(), "Test", new OwnedEntity { Value = "Owned value" });
         context.TestEntities.Add(entity);
 
         // Act
@@ -88,17 +100,12 @@ public class EntityEntryExtensionTests
     {
         // Arrange
         using TestDbContext context = CreateInMemoryContext();
-        var entity = new TestEntity
-        {
-            Id = Guid.NewGuid(),
-            Name = "Test",
-            OwnedData = new OwnedEntity { Value = "Original" },
-        };
+        var entity = TestEntity.Create(Guid.NewGuid(), "Test", new OwnedEntity { Value = "Original" });
         context.TestEntities.Add(entity);
         context.SaveChanges();
 
         // Modify owned entity
-        entity.OwnedData.Value = "Modified";
+        entity.OwnedData!.Value = "Modified";
         context.Entry(entity.OwnedData).State = EntityState.Modified;
 
         // Act
@@ -114,12 +121,7 @@ public class EntityEntryExtensionTests
     {
         // Arrange
         using TestDbContext context = CreateInMemoryContext();
-        var entity = new TestEntity
-        {
-            Id = Guid.NewGuid(),
-            Name = "Test",
-            OwnedData = new OwnedEntity { Value = "Value" },
-        };
+        var entity = TestEntity.Create(Guid.NewGuid(), "Test", new OwnedEntity { Value = "Value" });
         context.TestEntities.Add(entity);
         context.SaveChanges();
 
@@ -139,12 +141,7 @@ public class EntityEntryExtensionTests
     {
         // Arrange
         using TestDbContext context = CreateInMemoryContext();
-        var entity = new TestEntity
-        {
-            Id = Guid.NewGuid(),
-            Name = "Test",
-            OwnedData = new OwnedEntity { Value = "Value" },
-        };
+        var entity = TestEntity.Create(Guid.NewGuid(), "Test", new OwnedEntity { Value = "Value" });
         context.TestEntities.Add(entity);
         context.SaveChanges();
 

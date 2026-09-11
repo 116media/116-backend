@@ -64,10 +64,14 @@ services:
             - EMAIL_PROVIDER=${EMAIL_PROVIDER}
             - EMAIL_FROM_ADDRESS=${EMAIL_FROM_ADDRESS}
             - EMAIL_FROM_NAME=${EMAIL_FROM_NAME}
-            - SMTP_HOST=116_mailpit
-            - SMTP_PORT=1025
-            - REDIS_URL=116_redis:6379
+            - SMTP_HOST=${SMTP_HOST}
+            - SMTP_PORT=${SMTP_PORT}
+            - REDIS_URL=${REDIS_URL}
             - FRONTEND_BASE_URL=${FRONTEND_BASE_URL}
+            - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+            - FACEBOOK_APP_ID=${FACEBOOK_APP_ID}
+            - FACEBOOK_APP_SECRET=${FACEBOOK_APP_SECRET}
+            - OTP_PEPPER=${OTP_PEPPER}
         restart: always
         ports:
             - "5025:8080"

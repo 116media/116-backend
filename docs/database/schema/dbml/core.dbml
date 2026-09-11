@@ -1,0 +1,41 @@
+// core schema — final applied state, generated from applied-full.sql.
+// This is DBML: paste it directly into the dbdiagram.io editor pane.
+
+Table "core"."domain_event_outbox" {
+  "id" uuid [pk]
+  "event_type" varchar(500) [not null]
+  "payload" text [not null]
+  "occurred_on" timestamptz [not null]
+  "dispatched_at" timestamptz
+  "attempt_count" integer [not null, default: 0]
+  "last_error" text
+}
+
+Table "core"."files" {
+  "id" uuid [pk]
+  "file_name" varchar(255) [not null]
+  "original_file_name" varchar(255) [not null]
+  "mime_type" varchar(100) [not null]
+  "storage_url" varchar(2048) [not null]
+  "size_in_bytes" bigint [not null]
+  "is_deleted" boolean [not null, default: false]
+  "deleted_at" timestamptz
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+  "storage_key" varchar(100)
+  "dominant_color_hex" varchar(7)
+  "foreground_color_hex" varchar(7)
+  "claimed_at" timestamptz
+}
+
+Table "core"."processed_domain_events" {
+  "event_id" uuid [not null]
+  "handler_name" varchar(200) [not null]
+  "processed_at" timestamptz [not null]
+  Indexes {
+    ("event_id", "handler_name") [pk]
+  }
+}
+

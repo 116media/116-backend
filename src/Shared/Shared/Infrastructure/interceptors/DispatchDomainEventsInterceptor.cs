@@ -10,19 +10,14 @@ using Microsoft.Extensions.Logging;
 namespace _116.Shared.Infrastructure.interceptors;
 
 /// <summary>
-/// EF Core interceptor that dispatches domain events after a successful save.
-/// Events are collected from tracked aggregates while changes are being saved,
-/// buffered per <see cref="DbContext"/>, and published once the commit has
-/// completed, so handlers only ever observe committed state and a handler
-/// failure can never fail the business operation. When the save fails or is
-/// canceled the buffered events are discarded and nothing dispatches.
+/// Dispatches domain events after a successful save: collected from tracked aggregates during
+/// the save, buffered per <see cref="DbContext" />, published once the commit completes so
+/// handlers only observe committed state. A failed or canceled save discards the buffer.
 /// </summary>
 /// <remarks>
-/// A save inside an explicit transaction completes before that transaction commits, so
-/// publishing there would let handlers observe state no other connection can read yet, and a
-/// later rollback would leave the reactions behind. Such saves therefore skip in-process
-/// dispatch: their outbox rows are already durable, and the replay job delivers them once the
-/// transaction has committed.
+/// Saves inside an explicit transaction skip in-process dispatch — the transaction has not
+/// committed, so handlers would read state no other connection can see. Their outbox rows are
+/// durable and the replay job delivers them.
 /// </remarks>
 public class DispatchDomainEventsInterceptor : SaveChangesInterceptor
 {
@@ -34,18 +29,23 @@ public class DispatchDomainEventsInterceptor : SaveChangesInterceptor
 
     private readonly ILogger<DispatchDomainEventsInterceptor> _logger;
 
+    private readonly TimeProvider _timeProvider;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="DispatchDomainEventsInterceptor"/> class.
     /// </summary>
     /// <param name="serviceScopeFactory">Factory to create scoped services for domain event publishing.</param>
     /// <param name="logger">Logger recording dispatch failures that must not surface to the caller.</param>
+    /// <param name="timeProvider">The clock every event's occurrence stamp is read from.</param>
     public DispatchDomainEventsInterceptor(
         IServiceScopeFactory serviceScopeFactory,
-        ILogger<DispatchDomainEventsInterceptor> logger
+        ILogger<DispatchDomainEventsInterceptor> logger,
+        TimeProvider timeProvider
     )
     {
         _serviceScopeFactory = serviceScopeFactory;
         _logger = logger;
+        _timeProvider = timeProvider;
     }
 
     /// <inheritdoc />
@@ -75,10 +75,8 @@ public class DispatchDomainEventsInterceptor : SaveChangesInterceptor
 
     /// <inheritdoc />
     /// <remarks>
-    /// The caller's cancellation token is deliberately not forwarded to the dispatch. Endpoints
-    /// bind it to the request lifetime, and the reactions to a committed change outlive the
-    /// request that triggered them: a client disconnecting after the commit must not skip the
-    /// session revocations, outbox rows, and counter updates the committed change owes.
+    /// The caller's token is not forwarded: reactions to a committed change outlive the request,
+    /// so a client disconnecting must not skip the revocations and counter updates it owes.
     /// </remarks>
     public override async ValueTask<int> SavedChangesAsync(
         SaveChangesCompletedEventData eventData,
@@ -118,13 +116,12 @@ public class DispatchDomainEventsInterceptor : SaveChangesInterceptor
     }
 
     /// <summary>
-    /// Collects pending domain events from tracked aggregate roots into the
-    /// per-context buffer and clears them from the aggregates. Clearing at
-    /// collection time keeps aggregates clean whether the save later succeeds
-    /// or fails, and keeps execution-strategy retries from re-buffering.
+    /// Moves pending events off tracked aggregates into the per-context buffer, stamping each.
+    /// Clearing here keeps aggregates clean whether the save succeeds or fails, and stops
+    /// execution-strategy retries re-buffering.
     /// </summary>
     /// <param name="context">The current DbContext instance.</param>
-    private static void CollectDomainEvents(DbContext? context)
+    private void CollectDomainEvents(DbContext? context)
     {
         if (context == null)
         {
@@ -147,10 +144,13 @@ public class DispatchDomainEventsInterceptor : SaveChangesInterceptor
 
         bool hasOutbox = context.Model.FindEntityType(typeof(OutboxEventEntity)) is not null;
 
+        DateTime now = _timeProvider.GetUtcNow().UtcDateTime;
+
         foreach (IAggregate aggregate in aggregates)
         {
-            foreach (IDomainEvent domainEvent in aggregate.ClearDomainEvents())
+            foreach (IDomainEvent raised in aggregate.ClearDomainEvents())
             {
+                IDomainEvent domainEvent = StampOccurredOn(raised, now);
                 buffer.Add(domainEvent);
 
                 if (!hasOutbox)
@@ -166,15 +166,25 @@ public class DispatchDomainEventsInterceptor : SaveChangesInterceptor
     }
 
     /// <summary>
-    /// Publishes the events buffered for the context, each in a fresh
-    /// dependency injection scope so handlers never share the business
-    /// operation's DbContext instance. Events publish in raise order; the
-    /// buffer is removed before dispatch so reentrant saves start clean.
-    /// Dispatch runs with <see cref="CancellationToken.None"/> because the
-    /// reactions belong to the committed change, not to the request that
-    /// triggered it. Scope creation and publisher resolution are guarded as
-    /// well: the data is already durable at this point, so no dispatch
-    /// failure may make the committed operation appear failed.
+    /// Stamps an event's occurrence time, leaving an event that already carries one untouched.
+    /// </summary>
+    /// <param name="domainEvent">The event as the aggregate raised it.</param>
+    /// <param name="now">The current UTC time.</param>
+    /// <returns>The event carrying an occurrence stamp.</returns>
+    private static IDomainEvent StampOccurredOn(IDomainEvent domainEvent, DateTime now)
+    {
+        return domainEvent is DomainEvent record && record.OccurredOn == default
+            ? record with
+            {
+                OccurredOn = now,
+            }
+            : domainEvent;
+    }
+
+    /// <summary>
+    /// Publishes the context's buffered events in raise order, each in a fresh scope and under
+    /// <see cref="CancellationToken.None" />. Every dispatch failure is logged and swallowed —
+    /// the change is already committed, so it must not surface as a failed operation.
     /// </summary>
     /// <param name="context">The current DbContext instance.</param>
     /// <returns>A task that completes once all buffered events are published.</returns>
@@ -234,9 +244,8 @@ public class DispatchDomainEventsInterceptor : SaveChangesInterceptor
     }
 
     /// <summary>
-    /// Writes the dispatch outcomes back to the outbox rows. Failures here are swallowed for the
-    /// same reason dispatch failures are — the business operation already committed — and leave
-    /// the rows undispatched, which the replay job is built to handle.
+    /// Writes dispatch outcomes back to the outbox rows. Failures are swallowed and leave the
+    /// rows undispatched for the replay job.
     /// </summary>
     /// <param name="context">The context whose outbox rows carry the outcomes.</param>
     private async Task PersistDispatchOutcomesAsync(DbContext context)
@@ -252,8 +261,8 @@ public class DispatchDomainEventsInterceptor : SaveChangesInterceptor
     }
 
     /// <summary>
-    /// Drops the events buffered for the context so a failed or canceled save
-    /// dispatches nothing and leaves no stale events for a later save.
+    /// Drops the context's buffered events so a failed or canceled save dispatches nothing and
+    /// leaves none behind for a later save.
     /// </summary>
     /// <param name="context">The current DbContext instance.</param>
     private static void DiscardBufferedEvents(DbContext? context)
