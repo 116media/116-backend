@@ -1,10 +1,9 @@
+using _116.Content.Application.Editorial.Factories;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Contracts.Application.Services;
 using _116.Shared.Contracts.Application.CQRS;
-using MapsterMapper;
 
 namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateVideoSeo;
 
@@ -13,13 +12,11 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateVideo
 /// </summary>
 /// <param name="videoRepository">Repository for video data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="fileStorage">Core's storage contract.</param>
-/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="videoDtoFactory">Builds video projections with their thumbnails resolved.</param>
 public class AdminUpdateVideoSeoHandler(
     IVideoRepository videoRepository,
     IContentUnitOfWork unitOfWork,
-    IFileStorageService fileStorage,
-    IMapper mapper
+    IVideoDtoFactory videoDtoFactory
 ) : ICommandHandler<AdminUpdateVideoSeoCommand, AdminUpdateVideoSeoResult>
 {
     /// <inheritdoc />
@@ -42,7 +39,7 @@ public class AdminUpdateVideoSeoHandler(
             cancellationToken: cancellationToken
         );
 
-        var dto = await updated.ToVideoDetailDtoAsync(mapper, fileStorage, cancellationToken);
+        var dto = await videoDtoFactory.CreateDetailAsync(updated, cancellationToken);
         return new AdminUpdateVideoSeoResult(Video: dto);
     }
 }
