@@ -1,3 +1,4 @@
+using _116.Content.Application.Editorial.Factories;
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetVideoPromotionFeed;
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetVideoPromotionFeed.V1;
 using _116.Content.Application.Shared.DTOs;
@@ -31,7 +32,10 @@ public class PublicGetVideoPromotionFeedHandlerTests : BaseContentHandlerTest
     {
         _videoRepositoryMock = MockVideoRepository.Create();
         _fileStorageMock = MockFileStorageService.Create();
-        _handler = new PublicGetVideoPromotionFeedHandler(_videoRepositoryMock.Object, _fileStorageMock.Object, Mapper);
+        _handler = new PublicGetVideoPromotionFeedHandler(
+            _videoRepositoryMock.Object,
+            new VideoDtoFactory(Mapper, _fileStorageMock.Object)
+        );
     }
 
     #region All spots filled
