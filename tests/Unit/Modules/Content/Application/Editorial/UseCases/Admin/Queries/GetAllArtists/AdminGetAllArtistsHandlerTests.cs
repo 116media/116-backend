@@ -1,3 +1,4 @@
+using _116.Content.Application.Editorial.Factories;
 using _116.Content.Application.Editorial.UseCases.Admin.Queries.GetAllArtists;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -25,7 +26,10 @@ public class AdminGetAllArtistsHandlerTests
     {
         _artistRepositoryMock = MockArtistRepository.Create();
         Mock<IFileStorageService> fileStorageMock = MockFileStorageService.Create();
-        _handler = new AdminGetAllArtistsHandler(_artistRepositoryMock.Object, fileStorageMock.Object);
+        _handler = new AdminGetAllArtistsHandler(
+            _artistRepositoryMock.Object,
+            new ArtistDtoFactory(fileStorageMock.Object)
+        );
     }
 
     [Fact]
