@@ -1,3 +1,4 @@
+using _116.Content.Application.Interactions.Factories;
 using _116.Content.Application.Interactions.Persistence;
 using _116.Content.Application.Interactions.UseCases.Public.Queries.GetOwnPlaylists;
 using _116.Content.Domain.Entities;
@@ -29,7 +30,10 @@ public class PublicGetOwnPlaylistsHandlerTests : BaseContentHandlerTest
     {
         _playlistRepositoryMock = MockPlaylistRepository.Create();
         _fileStorageMock = MockFileStorageService.Create();
-        _handler = new PublicGetOwnPlaylistsHandler(_playlistRepositoryMock.Object, _fileStorageMock.Object, Mapper);
+        _handler = new PublicGetOwnPlaylistsHandler(
+            _playlistRepositoryMock.Object,
+            new PlaylistDtoFactory(Mapper, _fileStorageMock.Object)
+        );
     }
 
     #region Success Cases
