@@ -1,3 +1,4 @@
+using _116.Content.Application.Editorial.Factories;
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetArtistBySlug;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -38,6 +39,8 @@ public class PublicGetArtistBySlugHandlerTests : BaseContentHandlerTest
             _artistRepositoryMock.Object,
             _lyricsRepositoryMock.Object,
             _videoRepositoryMock.Object,
+            new ArtistDtoFactory(fileStorageMock.Object),
+            new VideoDtoFactory(Mapper, fileStorageMock.Object),
             fileStorageMock.Object,
             TestErrorsFactory.CreateContentI18n()
         );
