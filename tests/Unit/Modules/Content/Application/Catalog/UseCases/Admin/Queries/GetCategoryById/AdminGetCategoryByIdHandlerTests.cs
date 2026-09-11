@@ -1,3 +1,4 @@
+using _116.Content.Application.Catalog.Factories;
 using _116.Content.Application.Catalog.UseCases.Admin.Queries.GetCategoryById;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -28,7 +29,10 @@ public class AdminGetCategoryByIdHandlerTests : BaseContentHandlerTest
     {
         _categoryRepositoryMock = MockCategoryRepository.Create();
         _fileStorageMock = MockFileStorageService.Create();
-        _handler = new AdminGetCategoryByIdHandler(_categoryRepositoryMock.Object, _fileStorageMock.Object, Mapper);
+        _handler = new AdminGetCategoryByIdHandler(
+            _categoryRepositoryMock.Object,
+            new CategoryDtoFactory(Mapper, _fileStorageMock.Object)
+        );
     }
 
     #region Success Cases
