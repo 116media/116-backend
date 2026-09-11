@@ -1,3 +1,4 @@
+using _116.Content.Application.Catalog.Factories;
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCategory;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -38,8 +39,7 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
         _handler = new AdminUpdateCategoryHandler(
             _categoryRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            _fileStorageMock.Object,
-            Mapper,
+            new CategoryDtoFactory(Mapper, _fileStorageMock.Object),
             TestErrorsFactory.CreateContentI18n()
         );
     }
