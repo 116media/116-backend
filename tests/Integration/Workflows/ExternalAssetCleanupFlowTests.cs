@@ -25,7 +25,7 @@ namespace _116.Integration.Tests.Workflows;
 [Collection("Database")]
 public class ExternalAssetCleanupFlowTests(PostgresFixture db) : BaseApiTest(db)
 {
-    private StubCloudStorageClient CloudinaryStub => Api.Services.GetRequiredService<StubCloudStorageClient>();
+    private StubCloudinaryEndpoint CloudinaryStub => Api.Services.GetRequiredService<StubCloudinaryEndpoint>();
 
     private async Task<ArticleEntity> SeedArticleAsync(Action<ContentDbContext, ArticleEntity>? extend = null)
     {
@@ -65,7 +65,7 @@ public class ExternalAssetCleanupFlowTests(PostgresFixture db) : BaseApiTest(db)
         );
 
         Client.AuthenticateAsSuperAdmin();
-        CloudinaryStub.NextDeleteFailure = new InvalidOperationException("cloudinary down");
+        CloudinaryStub.NextDeleteError = "cloudinary down";
 
         var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Articles}/{article.Id}");
 
@@ -96,7 +96,7 @@ public class ExternalAssetCleanupFlowTests(PostgresFixture db) : BaseApiTest(db)
         );
 
         Client.AuthenticateAsSuperAdmin();
-        CloudinaryStub.NextDeleteFailure = new InvalidOperationException("cloudinary down");
+        CloudinaryStub.NextDeleteError = "cloudinary down";
 
         var request = new AdminUpdateArticleRequestBuilder()
             .WithCategoryId(article.CategoryId)
@@ -129,7 +129,7 @@ public class ExternalAssetCleanupFlowTests(PostgresFixture db) : BaseApiTest(db)
         });
 
         Client.AuthenticateAsSuperAdmin();
-        CloudinaryStub.NextDeleteFailure = new InvalidOperationException("cloudinary down");
+        CloudinaryStub.NextDeleteError = "cloudinary down";
 
         var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Videos}/{video.Id}");
 
@@ -160,7 +160,7 @@ public class ExternalAssetCleanupFlowTests(PostgresFixture db) : BaseApiTest(db)
         });
 
         Client.AuthenticateAsSuperAdmin();
-        CloudinaryStub.NextDeleteFailure = new InvalidOperationException("cloudinary down");
+        CloudinaryStub.NextDeleteError = "cloudinary down";
 
         var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Shorts}/{shortVideo.Id}");
 
@@ -195,7 +195,7 @@ public class ExternalAssetCleanupFlowTests(PostgresFixture db) : BaseApiTest(db)
         });
 
         Client.AuthenticateAsSuperAdmin();
-        CloudinaryStub.NextDeleteFailure = new InvalidOperationException("cloudinary down");
+        CloudinaryStub.NextDeleteError = "cloudinary down";
 
         var response = await Client.PatchAsJsonAsync(
             Routes.Admin.Editorial.Youtube(EditorialRouteConstants.Videos, video.Id),
@@ -236,7 +236,7 @@ public class ExternalAssetCleanupFlowTests(PostgresFixture db) : BaseApiTest(db)
             firstAvatarFileId = user!.AvatarFileId!.Value;
         }
 
-        CloudinaryStub.NextDeleteFailure = new InvalidOperationException("cloudinary down");
+        CloudinaryStub.NextDeleteError = "cloudinary down";
 
         var secondResponse = await Client.PatchAsync(Routes.Public.Me.Avatar(), BuildAvatarContent());
         secondResponse.StatusCode.Should().Be(HttpStatusCode.OK);
