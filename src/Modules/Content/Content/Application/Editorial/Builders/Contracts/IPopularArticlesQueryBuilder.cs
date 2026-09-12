@@ -1,5 +1,4 @@
 using _116.Content.Domain.Entities;
-using _116.Content.Infrastructure.Persistence;
 
 namespace _116.Content.Application.Editorial.Builders.Contracts;
 
@@ -27,7 +26,11 @@ public interface IPopularArticlesQueryBuilder
     IPopularArticlesQueryBuilder WithLimit(int? limit);
 
     /// <summary>
-    /// Builds and returns the final ordered, filtered, optionally limited <see cref="IQueryable" />.
+    /// Builds the final ordered, filtered, optionally limited query over the supplied source.
+    /// The caller owns the source and any eager loading on it, so the ranking policy here stays
+    /// free of persistence concerns.
     /// </summary>
-    IQueryable<ArticleEntity> Build(ContentDbContext context);
+    /// <param name="source">The articles to rank.</param>
+    /// <returns>The ranked query.</returns>
+    IQueryable<ArticleEntity> Build(IQueryable<ArticleEntity> source);
 }
