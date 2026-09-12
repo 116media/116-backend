@@ -1,0 +1,13 @@
+# Architecture rule violations this codebase still carries.
+#
+# One fully-qualified type name per line; blank lines and lines starting with '#' are ignored.
+# ArchitectureRule subtracts these from a rule's failing types, so a listed type does not break
+# the build while it is here.
+#
+# This file may only ever shrink. Adding a line means a new violation was introduced and should
+# be fixed instead; CI treats growth as a failure because the allowlist is the ratchet that keeps
+# the boundary work from eroding.
+#
+# It is currently empty: the nine violations that existed when the rules were introduced (eight
+# Content query builders reaching into Infrastructure, and Mailer's newsletter entity using
+# Microsoft.AspNetCore.WebUtilities) were fixed rather than allowlisted.
