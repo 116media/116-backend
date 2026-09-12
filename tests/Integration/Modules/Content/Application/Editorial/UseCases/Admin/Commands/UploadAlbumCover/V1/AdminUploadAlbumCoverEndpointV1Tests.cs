@@ -19,7 +19,7 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminUploadAlbumCoverEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private StubCloudinaryService CloudinaryStub => Api.Services.GetRequiredService<StubCloudinaryService>();
+    private StubCloudStorageClient CloudinaryStub => Api.Services.GetRequiredService<StubCloudStorageClient>();
 
     private static string ValidationDetail(string property, string message) =>
         new ValidationException([new ValidationFailure(property, message)]).Message;
