@@ -97,8 +97,9 @@ public class NewsletterSubscriberEntityTests
         subscriber.Confirm(now: Now);
         subscriber.Unsubscribe(now: Now);
 
-        subscriber.ReissueConfirmation();
+        bool reissued = subscriber.ReissueConfirmation();
 
+        reissued.Should().BeTrue();
         subscriber.Status.Should().Be(EnumNewsletterStatus.PendingConfirmation);
         subscriber.ConfirmationToken.Should().NotBe(firstToken);
         subscriber.ConfirmedAt.Should().BeNull();
@@ -112,8 +113,9 @@ public class NewsletterSubscriberEntityTests
         subscriber.Confirm(now: Now);
         string token = subscriber.ConfirmationToken;
 
-        subscriber.ReissueConfirmation();
+        bool reissued = subscriber.ReissueConfirmation();
 
+        reissued.Should().BeFalse();
         subscriber.Status.Should().Be(EnumNewsletterStatus.Subscribed);
         subscriber.ConfirmationToken.Should().Be(token);
     }
