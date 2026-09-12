@@ -118,17 +118,19 @@ public class NewsletterSubscriberEntity : Aggregate<Guid>
     /// with a fresh confirmation token, for re-subscription and confirmation
     /// re-sends. A no-op on an already subscribed row.
     /// </summary>
-    public void ReissueConfirmation()
+    /// <returns><c>true</c> when a fresh confirmation was issued.</returns>
+    public bool ReissueConfirmation()
     {
         if (Status == EnumNewsletterStatus.Subscribed)
         {
-            return;
+            return false;
         }
 
         Status = EnumNewsletterStatus.PendingConfirmation;
         ConfirmationToken = GenerateToken();
         ConfirmedAt = null;
         UnsubscribedAt = null;
+        return true;
     }
 
     /// <summary>
