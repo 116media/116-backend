@@ -67,6 +67,38 @@ jobs:
               env:
                   CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
+    architecture-tests:
+        name: Architecture Tests
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Setup .NET
+              uses: actions/setup-dotnet@v4
+              with:
+                  dotnet-version: ${{ env.DOTNET_VERSION }}
+
+            - name: Restore dependencies
+              run: dotnet restore
+
+            # No coverage: these rules reflect over assemblies and execute no product code.
+            - name: Run Architecture Tests
+              run: |
+                  dotnet test tests/Architecture \
+                    --configuration Release \
+                    --no-restore \
+                    --logger "trx;LogFileName=architecture-test-results.trx" \
+                    --results-directory ./architecture
+
+            - name: Upload Test Results
+              uses: actions/upload-artifact@v4
+              if: always()
+              with:
+                  name: architecture-test-results
+                  path: ./architecture/*.trx
+                  retention-days: 30
+
     integration-tests:
         name: Integration Tests
         runs-on: ubuntu-latest
