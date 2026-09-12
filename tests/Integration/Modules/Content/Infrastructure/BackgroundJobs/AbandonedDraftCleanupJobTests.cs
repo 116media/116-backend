@@ -24,7 +24,7 @@ namespace _116.Integration.Tests.Modules.Content.Infrastructure.BackgroundJobs;
 [Collection("Database")]
 public class AbandonedDraftCleanupJobTests(PostgresFixture db) : BaseApiTest(db)
 {
-    private StubCloudinaryService CloudinaryStub => Api.Services.GetRequiredService<StubCloudinaryService>();
+    private StubCloudStorageClient CloudinaryStub => Api.Services.GetRequiredService<StubCloudStorageClient>();
 
     /// <summary>
     /// Builds the job with the host's real scope factory, mirroring how Quartz instantiates it.
