@@ -16,10 +16,12 @@ namespace _116.Core.Infrastructure.Services;
 /// </summary>
 /// <param name="settings">Cloudinary account credentials.</param>
 /// <param name="pipeline">The resilience pipeline wrapping every provider call.</param>
+/// <param name="httpClient">The transport the SDK sends over.</param>
 /// <param name="logger">Logger for provider diagnostics.</param>
 public class CloudinaryStorageClient(
     CloudinarySettings settings,
     ResiliencePipeline pipeline,
+    HttpClient httpClient,
     ILogger<CloudinaryStorageClient> logger
 ) : ICloudStorageClient
 {
@@ -28,10 +30,27 @@ public class CloudinaryStorageClient(
     /// </summary>
     private const int BatchSize = 100;
 
-    private readonly Cloudinary _cloudinary = new(new Account(settings.CloudName, settings.ApiKey, settings.ApiSecret))
+    private readonly Cloudinary _cloudinary = Connect(settings, httpClient);
+
+    /// <summary>
+    /// Builds the provider client over the supplied transport. The SDK creates its own
+    /// <see cref="HttpClient" /> otherwise, which leaves its traffic outside the host's
+    /// connection pooling and makes the provider unreachable from a test.
+    /// </summary>
+    /// <param name="settings">Cloudinary account credentials.</param>
+    /// <param name="httpClient">The transport to send over.</param>
+    /// <returns>The provider client.</returns>
+    private static Cloudinary Connect(CloudinarySettings settings, HttpClient httpClient)
     {
-        Api = { Secure = true },
-    };
+        var cloudinary = new Cloudinary(new Account(settings.CloudName, settings.ApiKey, settings.ApiSecret))
+        {
+            Api = { Secure = true },
+        };
+
+        cloudinary.Api.Client = httpClient;
+
+        return cloudinary;
+    }
 
     /// <inheritdoc />
     public async Task<CloudStorageAsset> UploadAsync(
