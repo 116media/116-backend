@@ -2,8 +2,6 @@ using _116.Content.Application.Editorial.Builders.Contracts;
 using _116.Content.Application.Editorial.Constants;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
-using _116.Content.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
 
 namespace _116.Content.Application.Editorial.Builders;
 
@@ -19,7 +17,7 @@ namespace _116.Content.Application.Editorial.Builders;
 ///     .WithCategory(categoryId)
 ///     .WithExcludeId(excludeId)
 ///     .WithLimit(5)
-///     .Build(context);
+///     .Build(Context.Articles.Include(a => a.Category));
 /// </code>
 /// The score weights come from <see cref="PopularArticlesScoring" /> so the ranking is
 /// tunable in one place. All four counters are non-negative integers, so the score is an
@@ -53,16 +51,14 @@ public class PopularArticlesQueryBuilder : IPopularArticlesQueryBuilder
     }
 
     /// <inheritdoc />
-    public IQueryable<ArticleEntity> Build(ContentDbContext context)
+    public IQueryable<ArticleEntity> Build(IQueryable<ArticleEntity> source)
     {
         const int likeWeight = PopularArticlesScoring.LikeWeight;
         const int commentWeight = PopularArticlesScoring.CommentWeight;
         const int shareWeight = PopularArticlesScoring.ShareWeight;
         const int bookmarkWeight = PopularArticlesScoring.BookmarkWeight;
 
-        IQueryable<ArticleEntity> query = context
-            .Articles.Include(a => a.Category)
-            .Where(a => a.Status == EnumContentStatus.Published);
+        IQueryable<ArticleEntity> query = source.Where(a => a.Status == EnumContentStatus.Published);
 
         if (_categoryId.HasValue)
         {
