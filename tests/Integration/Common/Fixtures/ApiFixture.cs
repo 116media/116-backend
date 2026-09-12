@@ -279,7 +279,7 @@ public class ApiFixture(PostgresFixture db) : WebApplicationFactory<Program>
     /// </summary>
     private static void StubExternalServices(IServiceCollection services)
     {
-        ReplaceCloudinaryService(services);
+        StubCloudinaryTransport(services);
         Replace<IYoutubeThumbnailService, StubYoutubeThumbnailService>(services);
         ReplaceStreamingLinkResolutionService(services);
         ReplaceEmailSender(services);
@@ -325,17 +325,19 @@ public class ApiFixture(PostgresFixture db) : WebApplicationFactory<Program>
     }
 
     /// <summary>
-    /// Replaces the provider client with the stub, leaving the real <see cref="CloudinaryService" />
-    /// in place so its validation and result projection run under integration. Registered as a
-    /// singleton and under <see cref="IResettableStub" /> so tests share and reset one instance.
+    /// Replaces the provider's transport with a stub endpoint, leaving the real
+    /// <see cref="CloudinaryService" />, <see cref="CloudinaryStorageClient" /> and its resilience
+    /// pipeline in place so all three run under integration. Registered as a singleton and under
+    /// <see cref="IResettableStub" /> so tests share and reset one instance.
     /// </summary>
-    private static void ReplaceCloudinaryService(IServiceCollection services)
+    private static void StubCloudinaryTransport(IServiceCollection services)
     {
-        RemoveAll<ICloudStorageClient>(services);
+        services.AddSingleton<StubCloudinaryEndpoint>();
+        services.AddSingleton<IResettableStub>(sp => sp.GetRequiredService<StubCloudinaryEndpoint>());
 
-        services.AddSingleton<StubCloudStorageClient>();
-        services.AddSingleton<ICloudStorageClient>(sp => sp.GetRequiredService<StubCloudStorageClient>());
-        services.AddSingleton<IResettableStub>(sp => sp.GetRequiredService<StubCloudStorageClient>());
+        services
+            .AddHttpClient(CloudStorageResilience.HttpClientName)
+            .ConfigurePrimaryHttpMessageHandler(sp => sp.GetRequiredService<StubCloudinaryEndpoint>());
     }
 
     /// <summary>
