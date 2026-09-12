@@ -325,16 +325,17 @@ public class ApiFixture(PostgresFixture db) : WebApplicationFactory<Program>
     }
 
     /// <summary>
-    /// Replaces the Cloudinary adapter with the stub, registered as a singleton and
-    /// under <see cref="IResettableStub" /> so tests share and reset one instance.
+    /// Replaces the provider client with the stub, leaving the real <see cref="CloudinaryService" />
+    /// in place so its validation and result projection run under integration. Registered as a
+    /// singleton and under <see cref="IResettableStub" /> so tests share and reset one instance.
     /// </summary>
     private static void ReplaceCloudinaryService(IServiceCollection services)
     {
-        RemoveAll<ICloudinaryService>(services);
+        RemoveAll<ICloudStorageClient>(services);
 
-        services.AddSingleton<StubCloudinaryService>();
-        services.AddSingleton<ICloudinaryService>(sp => sp.GetRequiredService<StubCloudinaryService>());
-        services.AddSingleton<IResettableStub>(sp => sp.GetRequiredService<StubCloudinaryService>());
+        services.AddSingleton<StubCloudStorageClient>();
+        services.AddSingleton<ICloudStorageClient>(sp => sp.GetRequiredService<StubCloudStorageClient>());
+        services.AddSingleton<IResettableStub>(sp => sp.GetRequiredService<StubCloudStorageClient>());
     }
 
     /// <summary>
