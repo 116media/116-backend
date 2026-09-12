@@ -1,9 +1,9 @@
+using System.Buffers.Text;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Cryptography;
 using _116.Mailer.Domain.Constants;
 using _116.Mailer.Domain.Enums;
 using _116.Shared.Domain;
-using Microsoft.AspNetCore.WebUtilities;
 
 namespace _116.Mailer.Domain.Entities;
 
@@ -136,6 +136,6 @@ public class NewsletterSubscriberEntity : Aggregate<Guid>
     /// </summary>
     private static string GenerateToken()
     {
-        return WebEncoders.Base64UrlEncode(RandomNumberGenerator.GetBytes(MailerConstants.NewsletterTokenBytes));
+        return Base64Url.EncodeToString(RandomNumberGenerator.GetBytes(MailerConstants.NewsletterTokenBytes));
     }
 }
