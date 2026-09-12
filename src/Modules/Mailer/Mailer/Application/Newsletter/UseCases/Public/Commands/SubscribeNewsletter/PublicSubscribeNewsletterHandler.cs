@@ -6,7 +6,6 @@ using _116.Mailer.Contracts.Application.DTOs;
 using _116.Mailer.Contracts.Application.Services;
 using _116.Mailer.Contracts.Domain.Enums;
 using _116.Mailer.Domain.Entities;
-using _116.Mailer.Domain.Enums;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Mailer.Application.Newsletter.UseCases.Public.Commands.SubscribeNewsletter;
@@ -41,11 +40,6 @@ public class PublicSubscribeNewsletterHandler(
             cancellationToken
         );
 
-        if (existing is { Status: EnumNewsletterStatus.Subscribed })
-        {
-            return new PublicSubscribeNewsletterResult(IsSuccess: true, Email: command.Email);
-        }
-
         NewsletterSubscriberEntity subscriber;
 
         if (existing is null)
@@ -56,7 +50,11 @@ public class PublicSubscribeNewsletterHandler(
         else
         {
             subscriber = existing;
-            subscriber.ReissueConfirmation();
+
+            if (!subscriber.ReissueConfirmation())
+            {
+                return new PublicSubscribeNewsletterResult(IsSuccess: true, Email: command.Email);
+            }
         }
 
         await unitOfWork.CommitAsync(cancellationToken);
