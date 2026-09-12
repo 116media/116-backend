@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Script to run tests with code coverage locally
-# Usage: ./scripts/run-tests-with-coverage.sh [unit|integration|all]
+# Usage: ./scripts/run-tests-with-coverage.sh [unit|integration|architecture|all]
 
 set -e
 
@@ -76,6 +76,14 @@ run_integration_tests() {
         /p:ExcludeByAttribute="\"GeneratedCodeAttribute,CompilerGeneratedAttribute\""
 }
 
+run_architecture_tests() {
+    print_header "Running Architecture Tests"
+    # No coverage: these rules reflect over assemblies and execute no product code.
+    dotnet test "$PROJECT_ROOT/tests/Architecture" \
+        --configuration Release \
+        --logger "console;verbosity=normal"
+}
+
 # Generate a standalone coverage report for a single test suite.
 # Each suite gets its own report directory so unit and integration
 # coverage are reported separately instead of being merged together.
@@ -124,6 +132,7 @@ show_help() {
     echo "Commands:"
     echo "  unit         Run unit tests only"
     echo "  integration  Run integration tests only (requires Docker)"
+    echo "  architecture Run architecture rules only (no coverage)"
     echo "  all          Run all tests (default)"
     echo "  report       Generate report from existing coverage data"
     echo "  help         Show this help message"
@@ -150,10 +159,14 @@ case "${1:-all}" in
         run_integration_tests
         generate_report
         ;;
+    architecture)
+        run_architecture_tests
+        ;;
     all)
         cleanup
         run_unit_tests
         run_integration_tests
+        run_architecture_tests
         generate_report
         ;;
     report)
