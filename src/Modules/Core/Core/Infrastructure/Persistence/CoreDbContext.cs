@@ -1,6 +1,7 @@
 using System.Reflection;
 using _116.Core.Domain.Constants;
 using _116.Core.Domain.Entities;
+using _116.Core.Domain.Enums;
 using _116.Shared.Infrastructure.Outbox;
 using Microsoft.EntityFrameworkCore;
 
@@ -38,7 +39,9 @@ public class CoreDbContext(DbContextOptions<CoreDbContext> options) : DbContext(
         modelBuilder.ApplyConfiguration(new ProcessedDomainEventConfiguration());
 
         // Soft-deleted files never resolve for consumers; no read path renders deleted files.
-        modelBuilder.Entity<FileEntity>().HasQueryFilter(file => !file.IsDeleted);
+        modelBuilder
+            .Entity<FileEntity>()
+            .HasQueryFilter(file => file.State != EnumFileState.Deleted && file.State != EnumFileState.Replaced);
 
         base.OnModelCreating(modelBuilder);
     }

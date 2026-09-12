@@ -29,6 +29,7 @@ public class AdminUploadArticleImageHandlerTests : BaseContentHandlerTest
     private readonly Mock<IArticleRepository> _articleRepositoryMock;
     private readonly Mock<ICloudinaryService> _cloudinaryMock;
     private readonly Mock<IFileRepository> _fileRepositoryMock;
+    private readonly Mock<IFileUploadService> _fileUploadServiceMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminUploadArticleImageHandler _handler;
     private readonly IFormFile _mockFile;
@@ -41,15 +42,17 @@ public class AdminUploadArticleImageHandlerTests : BaseContentHandlerTest
         _articleRepositoryMock = MockArticleRepository.Create();
         _cloudinaryMock = MockCloudinaryService.Create();
         _fileRepositoryMock = MockFileRepository.Create();
+        _fileUploadServiceMock = MockFileUploadService.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
 
         _coverFile = FileFactory.CreateImage();
-        _fileRepositoryMock.SetupReplaceImageFile(_coverFile);
+        _fileUploadServiceMock.SetupReplaceImageFile(_coverFile);
 
         _handler = new AdminUploadArticleImageHandler(
             _articleRepositoryMock.Object,
             _cloudinaryMock.Object,
             _fileRepositoryMock.Object,
+            _fileUploadServiceMock.Object,
             _unitOfWorkMock.Object,
             Mapper
         );
@@ -105,7 +108,7 @@ public class AdminUploadArticleImageHandlerTests : BaseContentHandlerTest
         article.CoverImageFileId.Should().Be(_coverFile.Id);
         result.Image.Url.Should().Be(_coverFile.StorageUrl);
         result.Image.ImageType.Should().Be(EnumArticleImageType.Cover);
-        _fileRepositoryMock.VerifyReplaceImageFileCalled();
+        _fileUploadServiceMock.VerifyReplaceImageFileCalled();
         _articleRepositoryMock.VerifyUpdateCalled(article);
         _articleRepositoryMock.VerifyAddImageCalled();
         _unitOfWorkMock.VerifyCommitCalled();
@@ -132,7 +135,7 @@ public class AdminUploadArticleImageHandlerTests : BaseContentHandlerTest
         // Assert
         article.CoverImageFileId.Should().Be(_coverFile.Id);
         result.Image.ImageType.Should().Be(EnumArticleImageType.Cover);
-        _fileRepositoryMock.VerifyReplaceImageFileCalled();
+        _fileUploadServiceMock.VerifyReplaceImageFileCalled();
         _articleRepositoryMock.Verify(
             x => x.RemoveImages(It.Is<IEnumerable<ArticleImageEntity>>(images => images.Single() == oldCover)),
             Times.Once

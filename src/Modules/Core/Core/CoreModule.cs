@@ -85,6 +85,7 @@ public static class CoreModule
             );
         services.AddScoped<ICloudinaryService, CloudinaryService>();
         services.AddScoped<IImageColorService, ImageColorService>();
+        services.AddScoped<IFileUploadService, FileUploadService>();
 
         // File lifecycle domain event handlers
         services.AddScoped<IDomainEventHandler<FileReplacedEvent>, FileAssetCleanupHandler>();

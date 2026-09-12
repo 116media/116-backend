@@ -1,4 +1,5 @@
 using _116.Core.Application.Shared.Repositories;
+using _116.Core.Application.Shared.Services;
 using _116.Core.Domain.Entities;
 using _116.Identity.Application.User.UseCases.Admin.Commands.UpdateAvatar;
 using _116.Identity.Application.User.UseCases.Admin.Commands.UpdateAvatar.Contracts;
@@ -9,6 +10,7 @@ using _116.Tests.Fixtures.Factories.Identity;
 using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Repositories;
+using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
 using Moq;
@@ -23,14 +25,21 @@ public class AdminUpdateAvatarHandlerTests : BaseHandlerTest
 {
     private readonly Mock<IAdminUpdateAvatarAuthFactory> _authFactoryMock;
     private readonly Mock<IFileRepository> _fileRepositoryMock;
+    private readonly Mock<IFileUploadService> _fileUploadServiceMock;
     private readonly AdminUpdateAvatarHandler _handler;
 
     public AdminUpdateAvatarHandlerTests()
     {
         _authFactoryMock = new Mock<IAdminUpdateAvatarAuthFactory>();
         _fileRepositoryMock = MockFileRepository.Create();
+        _fileUploadServiceMock = MockFileUploadService.Create();
 
-        _handler = new AdminUpdateAvatarHandler(_authFactoryMock.Object, _fileRepositoryMock.Object, Mapper);
+        _handler = new AdminUpdateAvatarHandler(
+            _authFactoryMock.Object,
+            _fileRepositoryMock.Object,
+            _fileUploadServiceMock.Object,
+            Mapper
+        );
     }
 
     #region Success Cases
@@ -51,7 +60,7 @@ public class AdminUpdateAvatarHandlerTests : BaseHandlerTest
         _authFactoryMock
             .Setup(x => x.GetUserForAvatarUpdateAsync(user.Id, sessionId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authData);
-        _fileRepositoryMock
+        _fileUploadServiceMock
             .Setup(x =>
                 x.UpdateAvatarFromFileAsync(
                     It.IsAny<Guid?>(),
@@ -91,7 +100,7 @@ public class AdminUpdateAvatarHandlerTests : BaseHandlerTest
         _authFactoryMock
             .Setup(x => x.GetUserForAvatarUpdateAsync(user.Id, sessionId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authData);
-        _fileRepositoryMock
+        _fileUploadServiceMock
             .Setup(x =>
                 x.UpdateAvatarFromFileAsync(
                     It.IsAny<Guid?>(),
@@ -134,7 +143,7 @@ public class AdminUpdateAvatarHandlerTests : BaseHandlerTest
         _authFactoryMock
             .Setup(x => x.GetUserForAvatarUpdateAsync(user.Id, sessionId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authData);
-        _fileRepositoryMock
+        _fileUploadServiceMock
             .Setup(x =>
                 x.UpdateAvatarFromFileAsync(
                     It.IsAny<Guid?>(),
@@ -155,7 +164,7 @@ public class AdminUpdateAvatarHandlerTests : BaseHandlerTest
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _fileRepositoryMock.Verify(
+        _fileUploadServiceMock.Verify(
             x =>
                 x.UpdateAvatarFromFileAsync(
                     user.AvatarFileId,
@@ -185,7 +194,7 @@ public class AdminUpdateAvatarHandlerTests : BaseHandlerTest
         _authFactoryMock
             .Setup(x => x.GetUserForAvatarUpdateAsync(user.Id, sessionId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authData);
-        _fileRepositoryMock
+        _fileUploadServiceMock
             .Setup(x =>
                 x.UpdateAvatarFromFileAsync(
                     It.IsAny<Guid?>(),
@@ -256,7 +265,7 @@ public class AdminUpdateAvatarHandlerTests : BaseHandlerTest
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
-        _fileRepositoryMock.Verify(
+        _fileUploadServiceMock.Verify(
             x =>
                 x.UpdateAvatarFromFileAsync(
                     It.IsAny<Guid?>(),
@@ -291,7 +300,7 @@ public class AdminUpdateAvatarHandlerTests : BaseHandlerTest
         _authFactoryMock
             .Setup(x => x.GetUserForAvatarUpdateAsync(user.Id, sessionId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authData);
-        _fileRepositoryMock
+        _fileUploadServiceMock
             .Setup(x =>
                 x.UpdateAvatarFromFileAsync(
                     It.IsAny<Guid?>(),

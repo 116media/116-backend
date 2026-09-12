@@ -3,6 +3,7 @@ using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
+using _116.Core.Application.Shared.Services;
 using _116.Core.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
@@ -24,6 +25,7 @@ public class AdminUploadLyricsCoverHandlerTests
 {
     private readonly Mock<ILyricsRepository> _lyricsRepositoryMock;
     private readonly Mock<IFileRepository> _fileRepositoryMock;
+    private readonly Mock<IFileUploadService> _fileUploadServiceMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminUploadLyricsCoverHandler _handler;
 
@@ -33,14 +35,16 @@ public class AdminUploadLyricsCoverHandlerTests
     {
         _lyricsRepositoryMock = MockLyricsRepository.Create();
         _fileRepositoryMock = MockFileRepository.Create();
+        _fileUploadServiceMock = MockFileUploadService.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
 
         FileEntity fileEntity = FileFactory.CreateImage();
-        _fileRepositoryMock.SetupReplaceImageFile(fileEntity);
+        _fileUploadServiceMock.SetupReplaceImageFile(fileEntity);
 
         _handler = new AdminUploadLyricsCoverHandler(
             _lyricsRepositoryMock.Object,
             _fileRepositoryMock.Object,
+            _fileUploadServiceMock.Object,
             _unitOfWorkMock.Object
         );
     }
@@ -51,7 +55,7 @@ public class AdminUploadLyricsCoverHandlerTests
         // Arrange
         LyricsEntity lyrics = LyricsFactory.Create(CategoryId);
         FileEntity uploadedFile = FileFactory.CreateImage();
-        _fileRepositoryMock.SetupReplaceImageFile(uploadedFile);
+        _fileUploadServiceMock.SetupReplaceImageFile(uploadedFile);
         IFormFile fileMock = MockYoutubeThumbnailService.CreateMockFormFile();
         var command = new AdminUploadLyricsCoverCommand(LyricsId: lyrics.Id, File: fileMock);
 
@@ -64,7 +68,7 @@ public class AdminUploadLyricsCoverHandlerTests
         lyrics.CoverImageFileId.Should().Be(uploadedFile.Id);
         result.CoverImageUrl.Should().Be(uploadedFile.StorageUrl);
         result.CoverImageStorageKey.Should().Be(uploadedFile.StorageKey);
-        _fileRepositoryMock.VerifyReplaceImageFileCalled();
+        _fileUploadServiceMock.VerifyReplaceImageFileCalled();
         _fileRepositoryMock.VerifyClaimed(uploadedFile.Id);
         _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
         _unitOfWorkMock.VerifyCommitCalled();
@@ -77,7 +81,7 @@ public class AdminUploadLyricsCoverHandlerTests
         LyricsEntity lyrics = LyricsFactory.Create(CategoryId);
         lyrics.SetCoverImageFileId(Guid.NewGuid());
         FileEntity replacementFile = FileFactory.CreateImage();
-        _fileRepositoryMock.SetupReplaceImageFile(replacementFile);
+        _fileUploadServiceMock.SetupReplaceImageFile(replacementFile);
         IFormFile fileMock = MockYoutubeThumbnailService.CreateMockFormFile();
         var command = new AdminUploadLyricsCoverCommand(LyricsId: lyrics.Id, File: fileMock);
 
@@ -90,7 +94,7 @@ public class AdminUploadLyricsCoverHandlerTests
         lyrics.CoverImageFileId.Should().Be(replacementFile.Id);
         result.CoverImageUrl.Should().Be(replacementFile.StorageUrl);
         result.CoverImageStorageKey.Should().Be(replacementFile.StorageKey);
-        _fileRepositoryMock.VerifyReplaceImageFileCalled();
+        _fileUploadServiceMock.VerifyReplaceImageFileCalled();
         _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
         _unitOfWorkMock.VerifyCommitCalled();
     }

@@ -73,18 +73,6 @@ public class AdminCreateShortVideoHandlerTests : BaseContentHandlerTest
         capturedEntity.IsActive.Should().BeFalse();
         _shortVideoRepositoryMock.VerifyAddCalled();
         _unitOfWorkMock.VerifyCommitCalled();
-        _fileRepositoryMock.Verify(
-            x =>
-                x.UploadAndStoreVideoFileAsync(
-                    It.IsAny<IFormFile>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<CancellationToken>()
-                ),
-            Times.Never
-        );
     }
 
     [Fact]

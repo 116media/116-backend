@@ -5,6 +5,7 @@ using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
+using _116.Core.Application.Shared.Services;
 using _116.Core.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
@@ -19,12 +20,14 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.AttachPaymen
 /// </summary>
 /// <param name="orderPaymentFactory">Shared factory for fetching and validating payment records.</param>
 /// <param name="fileRepository">Repository for uploading and persisting file metadata.</param>
+/// <param name=\"fileUploadService\">Uploads and replaces stored assets.</param>
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class AdminAttachPaymentProofHandler(
     IOrderPaymentFactory orderPaymentFactory,
     IFileRepository fileRepository,
+    IFileUploadService fileUploadService,
     IContentOrderRepository contentOrderRepository,
     IContentUnitOfWork unitOfWork,
     IMapper mapper
@@ -49,7 +52,7 @@ public class AdminAttachPaymentProofHandler(
 
         string mimeType = file.ContentType.Split(';')[0].Trim().ToLowerInvariant();
 
-        FileEntity proofFile = await fileRepository.UploadAndStoreRawFileAsync(
+        FileEntity proofFile = await fileUploadService.UploadAndStoreRawFileAsync(
             file: file,
             mimeType: mimeType,
             publicId: command.OrderId,

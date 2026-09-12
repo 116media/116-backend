@@ -36,11 +36,6 @@ public static class FileConstants
     public const int ColorHexLength = 7;
 
     /// <summary>
-    /// Default deletion status for new files.
-    /// </summary>
-    public const bool DefaultIsDeleted = false;
-
-    /// <summary>
     /// Maximum file size for avatar uploads (2MB).
     /// </summary>
     public const long MaxAvatarFileSizeBytes = 2 * 1024 * 1024;

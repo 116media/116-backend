@@ -1,3 +1,4 @@
+using _116.Core.Application.Shared.Persistence;
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Constants;
 using _116.Core.Domain.Entities;
@@ -21,6 +22,7 @@ namespace _116.Unit.Tests.Modules.Core.Infrastructure.BackgroundJobs;
 public class UnclaimedFileReaperJobTests
 {
     private readonly Mock<IFileRepository> _fileRepositoryMock = MockFileRepository.Create();
+    private readonly Mock<ICoreUnitOfWork> _unitOfWorkMock = new();
     private readonly Mock<IJobExecutionContext> _jobContextMock = new();
     private readonly UnclaimedFileReaperJob _job;
 
@@ -30,6 +32,8 @@ public class UnclaimedFileReaperJobTests
 
         var services = new ServiceCollection();
         services.AddScoped(_ => _fileRepositoryMock.Object);
+        services.AddScoped(_ => _unitOfWorkMock.Object);
+        services.AddSingleton(TimeProvider.System);
 
         _job = new UnclaimedFileReaperJob(
             services.BuildServiceProvider().GetRequiredService<IServiceScopeFactory>(),
@@ -58,7 +62,7 @@ public class UnclaimedFileReaperJobTests
         await _job.Execute(_jobContextMock.Object);
 
         // Assert
-        _fileRepositoryMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+        _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -74,7 +78,7 @@ public class UnclaimedFileReaperJobTests
         // Assert
         abandoned.IsDeleted.Should().BeTrue();
         abandoned.DomainEvents.OfType<FileSoftDeletedEvent>().Should().ContainSingle();
-        _fileRepositoryMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]

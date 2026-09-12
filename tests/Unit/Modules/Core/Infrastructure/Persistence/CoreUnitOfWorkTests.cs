@@ -89,7 +89,7 @@ public class CoreUnitOfWorkTests : IDisposable
         _context.Files.Add(file);
         await _context.SaveChangesAsync();
 
-        file.Delete();
+        file.Delete(DateTime.UtcNow);
 
         // Act
         int result = await _unitOfWork.CommitAsync();
@@ -133,7 +133,7 @@ public class CoreUnitOfWorkTests : IDisposable
         FileEntity newFile = FileFactory.Create();
         _context.Files.Add(newFile);
 
-        existingFile.Delete();
+        existingFile.Delete(DateTime.UtcNow);
 
         // Act
         int result = await _unitOfWork.CommitAsync();

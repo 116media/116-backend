@@ -196,7 +196,7 @@ public class FileBuilder
 
         if (_isDeleted)
         {
-            file.Delete();
+            file.Delete(DateTime.UtcNow);
         }
 
         return file;

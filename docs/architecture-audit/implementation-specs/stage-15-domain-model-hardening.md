@@ -795,11 +795,11 @@ perform network IO: `UploadAndStoreAvatarAsync`, `DownloadAndStoreAvatarFromUrlA
 cannot be faked in a unit test, cannot be reasoned about transactionally, and cannot fail in a
 way the caller can distinguish from a database failure.
 
-And it commits. `SaveChangesAsync` is a public repository method, and `FileRepository` calls it
-from **ten** internal sites — every upload, replace and claim path commits inside the
-repository, so `ICoreUnitOfWork` (which exists, `Application/Shared/Persistence/`) is bypassed
-on every file write. Even the reaper commits through the repository
-(`UnclaimedFileReaperJob.cs:54`). This is the same defect as A.2.6, multiplied by ten.
+And it commits. `SaveChangesAsync` is a public repository method. Of the ten `SaveChangesAsync`
+occurrences in the file, two are the method's own declaration and body and two are the
+deliberate cross-module commits below, leaving **six** upload-path commit sites that bypass
+`ICoreUnitOfWork` (which exists, `Application/Shared/Persistence/`). Even the reaper commits
+through the repository (`UnclaimedFileReaperJob.cs:54`).
 
 **B.2.2 — Core knows an Identity policy (R13, module boundary).**
 `UpdateAvatarUrlFromSourceAsync(..., bool isAvatarSourceManual, ...)`. `EnumAvatarSource` is an
@@ -876,20 +876,25 @@ stateDiagram-v2
 
 ### B.4 The changes
 
-1. **Split the repository.** The ten IO methods move to a new `IFileUploadService` in
-   `Core/Application/Shared/Services/`, next to the `ICloudinaryService` they wrap. Of the
-   eleven persistence methods, `SaveChangesAsync` is deleted — commit belongs to
-   `ICoreUnitOfWork`, and the ten internal commit sites (including the reaper's,
-   `UnclaimedFileReaperJob.cs:54`) convert with it; `UpdateAsync` is deleted per D4;
-   `ClaimAsync` and `SoftDeleteByIdAsync` stop committing internally. Callers in Identity and
-   Content re-point; signatures do not change, so the re-point is mechanical.
+1. **Split the repository.** Five IO methods move to a new `IFileUploadService` in
+   `Core/Application/Shared/Services/`; the other four had no caller outside the repository and
+   become private. `SaveChangesAsync` and `UpdateAsync` are deleted (D4), and the six
+   upload-path commits move behind `ICoreUnitOfWork`, the reaper's included.
+
+   **`ClaimAsync` and `SoftDeleteByIdAsync` keep their internal commit** (D12). Their 17 callers
+   all live in Content and Identity, whose units of work commit a different `DbContext`; removing
+   the commit would leave every claim unpersisted and the reaper would delete live uploads once
+   the grace period passed. Callers re-point to the upload service; signatures do not change.
 2. **Delete `UpdateAvatarUrlFromSourceAsync`.** Its branch moves to the Identity handler that
    owns `EnumAvatarSource`, which then calls the plain `ReplaceImageFileAsync`. Core stops
    knowing about avatars.
-3. **`EnumFileState` replaces the flag trio.** `Unclaimed | Claimed | Deleted | Replaced`, with
-   `IsDeleted` kept as a computed `=> State is Deleted or Replaced` for the existing global
-   query filter (`CoreDbContext.cs:41`), so the filter and every read path are untouched. Migration adds the column and
-   backfills from the flags; `DeletedAt`/`ClaimedAt` stay as timestamps.
+3. **`EnumFileState` replaces the flag trio.** `Unclaimed | Claimed | Deleted | Replaced`,
+   mapped as the single source of truth. `IsDeleted` survives only as a `[NotMapped]`
+   convenience for in-memory callers — it **cannot** appear in a query, so the global filter
+   (`CoreDbContext.cs:41`), both `FileStatusSpecifications`, the three repository predicates and
+   the index all move to `State`. `CategorySpecifications.cs:125` records the same lesson for
+   `IsPinnedToFeed`. The migration adds `state`, backfills it from `is_deleted`/`claimed_at`
+   **before** dropping the column, then drops it; `DeletedAt`/`ClaimedAt` stay as timestamps.
 4. **Clock as a parameter** on `Claim`, `Delete`, `Replace`; the reaper and the dispatcher jobs
    take `TimeProvider` (the same change the composition-root audit prescribes).
 5. **The claim decision returns to the caller.** `FileRepository.ClaimAsync` loads and returns
@@ -1259,6 +1264,7 @@ by 15.1. No Mailer-specific work.
 | D8 | Which primitives become value objects | wrap everything with a rule, or only where the rule is violable | **Only where a non-validator path can violate it.** `Email` and `Money` and `Slug` are reachable from seeders, social login and event handlers that no FluentValidation rule covers — they get value objects. `Language`, `ReleaseYear` and the four enum-wrapping VOs (`SessionStatus`, `ExportFormat`, `AuthProvider`, `Client`) are only ever set from a validated request; they stay primitives and the VOs stay edge parsers. |
 | D9 | `StreamingLinkEntity`'s parent | child of Album, child of Lyrics, or its own root | **Its own root.** The schema decides it: `ck_streaming_links_exactly_one_target` enforces `album_id XOR lyrics_id`, so half the rows (a standalone single's links) have no album at all and *cannot* be members of the Album aggregate — a link cannot be a member of two different aggregate types. It already has its own repository upserting by (owner, platform) under two unique indexes. It stays a single-entity root; the XOR stays in the factory + check constraint. |
 | D10 | Engagement counters on the aggregate | move them back inside, or admit they are outside | **Admit they are outside.** Stage 8 moved them to atomic SQL for a real reason — a read-modify-write through the aggregate loses increments. Reverting that to satisfy R14 would reintroduce a concurrency bug to satisfy a diagram. The fix is to stop the aggregate claiming them: `private init` plus a doc comment naming the maintaining repository method. |
+| D12 | The two cross-module repository commits | remove them per R12, or keep them | **Keep them.** `ClaimAsync` and `SoftDeleteByIdAsync` are called from Content and Identity handlers whose unit of work commits a different `DbContext`; nothing else in those requests can persist a Core row. Removing the commit silently drops every claim and hands live uploads to the reaper. They are the module's cross-context entry points and are documented as such. |
 | D11 | `UserEntity` login counters | leave them, or move to a sibling aggregate | **Move to `UserLoginStateEntity`.** Same argument as D10, opposite conclusion: here the sibling aggregate already exists as a pattern (`UserOtpStateEntity`), so the honest model is reachable at the cost of one table and two dropped columns. |
 
 ---

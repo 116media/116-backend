@@ -3,12 +3,14 @@ using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
+using _116.Core.Application.Shared.Services;
 using _116.Core.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Factories.Core;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
+using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
 using Moq;
@@ -23,6 +25,7 @@ public class AdminUploadArtistAvatarHandlerTests
 {
     private readonly Mock<IArtistRepository> _artistRepositoryMock;
     private readonly Mock<IFileRepository> _fileRepositoryMock;
+    private readonly Mock<IFileUploadService> _fileUploadServiceMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminUploadArtistAvatarHandler _handler;
 
@@ -30,10 +33,12 @@ public class AdminUploadArtistAvatarHandlerTests
     {
         _artistRepositoryMock = MockArtistRepository.Create();
         _fileRepositoryMock = MockFileRepository.Create();
+        _fileUploadServiceMock = MockFileUploadService.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _handler = new AdminUploadArtistAvatarHandler(
             _artistRepositoryMock.Object,
             _fileRepositoryMock.Object,
+            _fileUploadServiceMock.Object,
             _unitOfWorkMock.Object
         );
     }
@@ -46,7 +51,7 @@ public class AdminUploadArtistAvatarHandlerTests
         _artistRepositoryMock.SetupGetByIdOrThrow(artist);
 
         FileEntity fileEntity = FileFactory.CreateImage();
-        _fileRepositoryMock.SetupReplaceImageFile(fileEntity);
+        _fileUploadServiceMock.SetupReplaceImageFile(fileEntity);
 
         Mock<IFormFile> fileMock = new();
         fileMock.Setup(f => f.FileName).Returns("avatar.png");

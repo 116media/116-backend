@@ -1,5 +1,7 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using _116.BuildingBlocks.Constants;
+using _116.Core.Domain.Enums;
 using _116.Core.Domain.Events;
 using _116.Core.Domain.Exceptions;
 using _116.Core.Domain.StateMachines;
@@ -70,9 +72,15 @@ public class FileEntity : Aggregate<Guid>
     public string? ForegroundColorHex { get; private set; }
 
     /// <summary>
-    /// Indicates whether the file has been deleted (soft delete).
+    /// The file's lifecycle position. Mapped, so read paths can filter on it in SQL.
     /// </summary>
-    public bool IsDeleted { get; private set; } = FileConstants.DefaultIsDeleted;
+    public EnumFileState State { get; private set; } = EnumFileState.Unclaimed;
+
+    /// <summary>
+    /// Whether the row is soft-deleted, by deletion or replacement.
+    /// </summary>
+    [NotMapped]
+    public bool IsDeleted => State is EnumFileState.Deleted or EnumFileState.Replaced;
 
     /// <summary>
     /// Date and time when the file was deleted, in UTC.
@@ -157,14 +165,16 @@ public class FileEntity : Aggregate<Guid>
     /// Idempotent: re-claiming keeps the first claim's timestamp.
     /// </summary>
     /// <returns>True when this call took ownership, false when the file was already claimed.</returns>
-    public bool Claim()
+    public bool Claim(DateTime now)
     {
-        if (ClaimedAt is not null)
+        if (State != EnumFileState.Unclaimed)
         {
             return false;
         }
 
-        ClaimedAt = DateTime.UtcNow;
+        State = EnumFileState.Claimed;
+        ClaimedAt = now;
+
         return true;
     }
 
@@ -177,15 +187,15 @@ public class FileEntity : Aggregate<Guid>
     /// <remarks>
     /// This performs a soft delete, marking the file as deleted without physically removing it.
     /// </remarks>
-    public bool Delete()
+    public bool Delete(DateTime now)
     {
         if (IsDeleted)
         {
             return false;
         }
 
-        IsDeleted = true;
-        DeletedAt = DateTime.UtcNow;
+        State = EnumFileState.Deleted;
+        DeletedAt = now;
 
         AddDomainEvent(new FileSoftDeletedEvent(FileId: Id, StorageKey: StorageKey));
 
@@ -199,15 +209,15 @@ public class FileEntity : Aggregate<Guid>
     /// plain deletions stay distinguishable to post-commit consumers.
     /// </summary>
     /// <returns>True if the file was marked as replaced, false if already deleted.</returns>
-    public bool MarkReplaced()
+    public bool MarkReplaced(DateTime now)
     {
         if (IsDeleted)
         {
             return false;
         }
 
-        IsDeleted = true;
-        DeletedAt = DateTime.UtcNow;
+        State = EnumFileState.Replaced;
+        DeletedAt = now;
 
         AddDomainEvent(new FileReplacedEvent(FileId: Id, OldStorageKey: StorageKey));
 

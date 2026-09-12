@@ -1,5 +1,6 @@
 using _116.BuildingBlocks.Constants;
 using _116.Core.Domain.Entities;
+using _116.Core.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -37,7 +38,7 @@ public class FileConfiguration : IEntityTypeConfiguration<FileEntity>
 
         builder.Property(f => f.ForegroundColorHex).HasMaxLength(FileConstants.ColorHexLength).IsRequired(false);
 
-        builder.Property(f => f.IsDeleted).HasDefaultValue(FileConstants.DefaultIsDeleted);
+        builder.Property(f => f.State).HasDefaultValue(EnumFileState.Unclaimed).IsRequired();
 
         builder.Property(f => f.DeletedAt).IsRequired(false);
 
@@ -47,7 +48,7 @@ public class FileConfiguration : IEntityTypeConfiguration<FileEntity>
         // Unique among active rows only; soft-deleted rows keep their file_name on replace.
         builder.HasIndex(f => f.FileName).IsUnique().HasFilter("is_deleted = false");
 
-        builder.HasIndex(f => f.IsDeleted);
+        builder.HasIndex(f => f.State);
 
         builder.HasIndex(f => f.CreatedAt).HasFilter("claimed_at IS NULL AND is_deleted = false");
     }

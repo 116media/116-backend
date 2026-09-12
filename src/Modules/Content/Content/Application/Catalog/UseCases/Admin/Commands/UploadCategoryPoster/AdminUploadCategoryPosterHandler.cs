@@ -3,6 +3,7 @@ using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
+using _116.Core.Application.Shared.Services;
 using _116.Core.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
@@ -15,11 +16,13 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.UploadCategor
 /// </summary>
 /// <param name="categoryRepository">Repository for category data access operations.</param>
 /// <param name="fileRepository">Repository for file storage operations.</param>
+/// <param name=\"fileUploadService\">Uploads and replaces stored assets.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class AdminUploadCategoryPosterHandler(
     ICategoryRepository categoryRepository,
     IFileRepository fileRepository,
+    IFileUploadService fileUploadService,
     IContentUnitOfWork unitOfWork,
     IMapper mapper
 ) : ICommandHandler<AdminUploadCategoryPosterCommand, AdminUploadCategoryPosterResult>
@@ -39,7 +42,7 @@ public class AdminUploadCategoryPosterHandler(
 
         IFormFile file = command.File!;
 
-        FileEntity fileEntity = await fileRepository.ReplaceImageFileAsync(
+        FileEntity fileEntity = await fileUploadService.ReplaceImageFileAsync(
             currentFileId: category.PosterFileId,
             file: file,
             publicId: id.ToString(),

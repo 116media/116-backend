@@ -2,6 +2,7 @@ using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
+using _116.Core.Application.Shared.Services;
 using _116.Core.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
 
@@ -13,10 +14,12 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadShort
 /// </summary>
 /// <param name="shortVideoRepository">Repository for short video data access operations.</param>
 /// <param name="fileRepository">Repository for centralized file entity management.</param>
+/// <param name=\"fileUploadService\">Uploads and replaces stored assets.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 public class AdminUploadShortVideoThumbnailHandler(
     IShortVideoRepository shortVideoRepository,
     IFileRepository fileRepository,
+    IFileUploadService fileUploadService,
     IContentUnitOfWork unitOfWork
 ) : ICommandHandler<AdminUploadShortVideoThumbnailCommand, AdminUploadShortVideoThumbnailResult>
 {
@@ -33,7 +36,7 @@ public class AdminUploadShortVideoThumbnailHandler(
             cancellationToken: cancellationToken
         );
 
-        FileEntity fileEntity = await fileRepository.ReplaceImageFileAsync(
+        FileEntity fileEntity = await fileUploadService.ReplaceImageFileAsync(
             currentFileId: shortVideo.ThumbnailFileId,
             file: command.File,
             publicId: shortVideoId.ToString(),
