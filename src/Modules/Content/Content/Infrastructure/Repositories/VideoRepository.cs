@@ -130,7 +130,7 @@ public class VideoRepository(ContentDbContext context) : ContentRepository<Video
             .WithCategory(categoryId: categoryId)
             .WithExcludeId(excludeId: excludeId)
             .WithLimit(limit: limit)
-            .Build(context: Context);
+            .Build(source: Context.Videos.Include(v => v.Category));
 
         return await query.ToListAsync(cancellationToken);
     }
