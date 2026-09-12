@@ -15,6 +15,12 @@ namespace _116.Core.Infrastructure.Services;
 public static class CloudStorageResilience
 {
     /// <summary>
+    /// The named <see cref="HttpClient" /> the provider sends over, so its transport is pooled
+    /// with every other outbound client and a test can substitute it.
+    /// </summary>
+    public const string HttpClientName = "cloud-storage";
+
+    /// <summary>
     /// How long one provider attempt may take before it is abandoned. Matches the timeout the
     /// other outbound clients in this codebase use.
     /// </summary>
