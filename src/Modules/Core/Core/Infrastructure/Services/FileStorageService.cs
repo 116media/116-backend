@@ -142,9 +142,6 @@ public class FileStorageService(
         CancellationToken cancellationToken = default
     )
     {
-        // Deliberately one query rather than a read-through per id: fanning a batch out across
-        // cache lookups would re-introduce the N+1 this contract exists to avoid whenever the
-        // cache is cold. The results are written back so later single resolves hit.
         IReadOnlyDictionary<Guid, FileEntity> files = await fileRepository.GetByIdsAsync(
             fileIds: fileIds,
             cancellationToken: cancellationToken
@@ -175,8 +172,6 @@ public class FileStorageService(
         CancellationToken cancellationToken = default
     )
     {
-        // Derived from the reference projection so both share one cache entry per file; the
-        // repository applies the same not-deleted filter to either query.
         IReadOnlyDictionary<Guid, FileReferenceDto> references = await ResolveManyAsync(fileIds, cancellationToken);
 
         return references.ToDictionary(entry => entry.Key, entry => entry.Value.StorageUrl);
