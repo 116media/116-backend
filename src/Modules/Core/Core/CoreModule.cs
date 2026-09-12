@@ -89,11 +89,15 @@ public static class CoreModule
             .ConfigurePrimaryHttpMessageHandler(() =>
                 new SocketsHttpHandler { AllowAutoRedirect = false, ConnectTimeout = TimeSpan.FromSeconds(5) }
             );
-        // Singleton so one pipeline — and one circuit-breaker state — is shared process-wide;
-        // a scoped pipeline would reset per request and could never open.
+        services.AddHttpClient(
+            CloudStorageResilience.HttpClientName,
+            client => client.Timeout = CloudStorageResilience.Timeout
+        );
+
         services.AddSingleton<ICloudStorageClient>(sp => new CloudinaryStorageClient(
             sp.GetRequiredService<CloudinarySettings>(),
             CloudStorageResilience.CreatePipeline(),
+            sp.GetRequiredService<IHttpClientFactory>().CreateClient(CloudStorageResilience.HttpClientName),
             sp.GetRequiredService<ILogger<CloudinaryStorageClient>>()
         ));
         services.AddScoped<ICloudinaryService, CloudinaryService>();
