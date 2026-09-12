@@ -25,7 +25,7 @@ namespace _116.Integration.Tests.Workflows;
 [Collection("Database")]
 public class ExternalAssetCleanupFlowTests(PostgresFixture db) : BaseApiTest(db)
 {
-    private StubCloudinaryService CloudinaryStub => Api.Services.GetRequiredService<StubCloudinaryService>();
+    private StubCloudStorageClient CloudinaryStub => Api.Services.GetRequiredService<StubCloudStorageClient>();
 
     private async Task<ArticleEntity> SeedArticleAsync(Action<ContentDbContext, ArticleEntity>? extend = null)
     {
