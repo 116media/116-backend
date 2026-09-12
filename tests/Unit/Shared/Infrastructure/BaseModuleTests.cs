@@ -1,6 +1,8 @@
+using System.Data.Common;
 using _116.Shared.Infrastructure;
 using _116.Shared.Infrastructure.interceptors;
 using _116.Shared.Infrastructure.Seed;
+using _116.Unit.Tests.Common.Helpers;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
@@ -46,6 +48,7 @@ public class BaseModuleTests
     public void AddModuleDatabase_ShouldResolveDbContextFromTheDefaultConnectionString()
     {
         // Arrange
+        using var environment = new TestDatabaseEnvironment();
         var services = new ServiceCollection();
         var options = new ModuleOptions<TestDbContext> { ModuleName = "Test" };
 
@@ -59,7 +62,7 @@ public class BaseModuleTests
     }
 
     [Fact]
-    public void AddModuleDatabase_ShouldRegisterAPooledScopedContext()
+    public void AddModuleDatabase_ShouldRegisterTheContextOverTheScopedSharedConnection()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -73,11 +76,28 @@ public class BaseModuleTests
         context.Should().NotBeNull();
         context!.Lifetime.Should().Be(ServiceLifetime.Scoped);
 
-        ServiceDescriptor? contextOptions = services.FirstOrDefault(s =>
-            s.ServiceType == typeof(DbContextOptions<TestDbContext>)
-        );
-        contextOptions.Should().NotBeNull();
-        contextOptions!.Lifetime.Should().Be(ServiceLifetime.Singleton);
+        ServiceDescriptor? connection = services.FirstOrDefault(s => s.ServiceType == typeof(DbConnection));
+        connection.Should().NotBeNull();
+        connection!.Lifetime.Should().Be(ServiceLifetime.Scoped);
+    }
+
+    [Fact]
+    public void AddModuleDatabase_ShouldAlsoRegisterTheContextAsADbContext()
+    {
+        // Arrange
+        using var environment = new TestDatabaseEnvironment();
+        var services = new ServiceCollection();
+        var options = new ModuleOptions<TestDbContext> { ModuleName = "Test" };
+
+        // Act
+        services.AddModuleDatabase(options);
+
+        // Assert
+        ServiceProvider serviceProvider = services.BuildServiceProvider();
+        using IServiceScope scope = serviceProvider.CreateScope();
+
+        DbContext[] contexts = [.. scope.ServiceProvider.GetServices<DbContext>()];
+        contexts.Should().ContainSingle().Which.Should().BeOfType<TestDbContext>();
     }
 
     [Fact]

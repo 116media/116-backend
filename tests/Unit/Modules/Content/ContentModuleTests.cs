@@ -10,6 +10,7 @@ using _116.Content.Infrastructure.Repositories;
 using _116.Content.Infrastructure.Services;
 using _116.Shared.Infrastructure.Seed;
 using _116.Unit.Tests.Common;
+using _116.Unit.Tests.Common.Helpers;
 using AwesomeAssertions;
 using Mapster;
 using MapsterMapper;
@@ -31,6 +32,7 @@ namespace _116.Unit.Tests.Modules.Content;
 public class ContentModuleTests : IDisposable
 {
     private readonly ServiceCollection _services;
+    private readonly TestDatabaseEnvironment _environment = new();
 
     public ContentModuleTests()
     {
@@ -42,6 +44,7 @@ public class ContentModuleTests : IDisposable
 
     public void Dispose()
     {
+        _environment.Dispose();
         GC.SuppressFinalize(this);
     }
 

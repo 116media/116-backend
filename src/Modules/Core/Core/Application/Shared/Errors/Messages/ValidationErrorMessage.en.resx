@@ -30,6 +30,9 @@
   <data name="FileSizeMustBeGreaterThanZero" xml:space="preserve">
     <value>File size must be greater than zero.</value>
   </data>
+  <data name="FileAlreadyRecorded" xml:space="preserve">
+    <value>This file has already been recorded.</value>
+  </data>
   <data name="InvalidFileUrl" xml:space="preserve">
     <value>File URL '{0}' has an invalid format. Must be a valid HTTP or HTTPS URL.</value>
   </data>

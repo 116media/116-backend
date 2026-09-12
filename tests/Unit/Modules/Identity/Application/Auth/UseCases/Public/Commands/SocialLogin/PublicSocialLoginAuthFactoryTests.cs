@@ -1,4 +1,3 @@
-using _116.Core.Application.Shared.Repositories;
 using _116.Core.Application.Shared.Services;
 using _116.Core.Domain.Entities;
 using _116.Identity.Application.Adapters.SocialAuth;
@@ -11,6 +10,7 @@ using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.ValueObjects;
 using _116.Tests.Fixtures.Factories.Core;
 using _116.Tests.Fixtures.Factories.Identity;
+using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -25,7 +25,6 @@ public class PublicSocialLoginAuthFactoryTests
     private const EnumAuthProvider Provider = EnumAuthProvider.Google;
 
     private readonly Mock<IAuthRepository> _authRepositoryMock;
-    private readonly Mock<IFileRepository> _fileRepositoryMock;
     private readonly Mock<IFileUploadService> _fileUploadServiceMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
     private readonly PublicSocialLoginAuthFactory _factory;
@@ -33,12 +32,10 @@ public class PublicSocialLoginAuthFactoryTests
     public PublicSocialLoginAuthFactoryTests()
     {
         _authRepositoryMock = new Mock<IAuthRepository>();
-        _fileRepositoryMock = new Mock<IFileRepository>();
         _fileUploadServiceMock = new Mock<IFileUploadService>();
-        _unitOfWorkMock = new Mock<IIdentityUnitOfWork>();
+        _unitOfWorkMock = MockIdentityUnitOfWork.Create();
         _factory = new PublicSocialLoginAuthFactory(
             _authRepositoryMock.Object,
-            _fileRepositoryMock.Object,
             _fileUploadServiceMock.Object,
             _unitOfWorkMock.Object
         );
@@ -77,16 +74,9 @@ public class PublicSocialLoginAuthFactoryTests
 
         _fileUploadServiceMock
             .Setup(x =>
-                x.UpdateAvatarFromUrlAsync(
-                    user.AvatarFileId,
-                    payload.PictureUrl!,
-                    user.Id.ToString(),
-                    It.IsAny<CancellationToken>()
-                )
+                x.UploadAvatarFromUrlAsync(user.AvatarFileId, payload.PictureUrl!, It.IsAny<CancellationToken>())
             )
             .ReturnsAsync(avatarFile);
-
-        _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
         PublicSocialLoginAuthData result = await _factory.AuthenticateOrCreateAsync(
@@ -118,20 +108,12 @@ public class PublicSocialLoginAuthFactoryTests
             )
             .ReturnsAsync(user);
 
-        _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
-
         // Act
         await _factory.AuthenticateOrCreateAsync(payload, Provider, CancellationToken.None);
 
         // Assert
         _fileUploadServiceMock.Verify(
-            x =>
-                x.UpdateAvatarFromUrlAsync(
-                    It.IsAny<Guid?>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<CancellationToken>()
-                ),
+            x => x.UploadAvatarFromUrlAsync(It.IsAny<Guid?>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
             Times.Never
         );
     }
@@ -157,16 +139,9 @@ public class PublicSocialLoginAuthFactoryTests
 
         _fileUploadServiceMock
             .Setup(x =>
-                x.UpdateAvatarFromUrlAsync(
-                    It.IsAny<Guid?>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<CancellationToken>()
-                )
+                x.UploadAvatarFromUrlAsync(It.IsAny<Guid?>(), It.IsAny<string>(), It.IsAny<CancellationToken>())
             )
             .ReturnsAsync((FileEntity?)null);
-
-        _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
         await _factory.AuthenticateOrCreateAsync(payload, Provider, CancellationToken.None);
@@ -206,29 +181,16 @@ public class PublicSocialLoginAuthFactoryTests
 
         _fileUploadServiceMock
             .Setup(x =>
-                x.UpdateAvatarFromUrlAsync(
-                    user.AvatarFileId,
-                    payload.PictureUrl!,
-                    user.Id.ToString(),
-                    It.IsAny<CancellationToken>()
-                )
+                x.UploadAvatarFromUrlAsync(user.AvatarFileId, payload.PictureUrl!, It.IsAny<CancellationToken>())
             )
             .ReturnsAsync((FileEntity?)null);
-
-        _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
         await _factory.AuthenticateOrCreateAsync(payload, Provider, CancellationToken.None);
 
         // Assert
         _fileUploadServiceMock.Verify(
-            x =>
-                x.UpdateAvatarFromUrlAsync(
-                    user.AvatarFileId,
-                    payload.PictureUrl!,
-                    user.Id.ToString(),
-                    It.IsAny<CancellationToken>()
-                ),
+            x => x.UploadAvatarFromUrlAsync(user.AvatarFileId, payload.PictureUrl!, It.IsAny<CancellationToken>()),
             Times.Once
         );
     }
@@ -253,20 +215,12 @@ public class PublicSocialLoginAuthFactoryTests
             )
             .ReturnsAsync(user);
 
-        _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
-
         // Act
         await _factory.AuthenticateOrCreateAsync(payload, Provider, CancellationToken.None);
 
         // Assert
         _fileUploadServiceMock.Verify(
-            x =>
-                x.UpdateAvatarFromUrlAsync(
-                    It.IsAny<Guid?>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<CancellationToken>()
-                ),
+            x => x.UploadAvatarFromUrlAsync(It.IsAny<Guid?>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
             Times.Never
         );
         user.AvatarSource.Should().Be(EnumAvatarSource.Manual);
@@ -295,16 +249,9 @@ public class PublicSocialLoginAuthFactoryTests
 
         _fileUploadServiceMock
             .Setup(x =>
-                x.UpdateAvatarFromUrlAsync(
-                    user.AvatarFileId,
-                    payload.PictureUrl!,
-                    user.Id.ToString(),
-                    It.IsAny<CancellationToken>()
-                )
+                x.UploadAvatarFromUrlAsync(user.AvatarFileId, payload.PictureUrl!, It.IsAny<CancellationToken>())
             )
             .ReturnsAsync(avatarFile);
-
-        _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
         await _factory.AuthenticateOrCreateAsync(payload, Provider, CancellationToken.None);
@@ -335,22 +282,15 @@ public class PublicSocialLoginAuthFactoryTests
 
         _fileUploadServiceMock
             .Setup(x =>
-                x.UpdateAvatarFromUrlAsync(
-                    It.IsAny<Guid?>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<CancellationToken>()
-                )
+                x.UploadAvatarFromUrlAsync(It.IsAny<Guid?>(), It.IsAny<string>(), It.IsAny<CancellationToken>())
             )
             .ReturnsAsync((FileEntity?)null);
-
-        _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
         await _factory.AuthenticateOrCreateAsync(payload, Provider, CancellationToken.None);
 
         // Assert
-        _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 
     [Fact]
@@ -374,17 +314,8 @@ public class PublicSocialLoginAuthFactoryTests
             .ReturnsAsync(user);
 
         _fileUploadServiceMock
-            .Setup(x =>
-                x.UpdateAvatarFromUrlAsync(
-                    user.AvatarFileId,
-                    payload.PictureUrl!,
-                    user.Id.ToString(),
-                    cancellationToken
-                )
-            )
+            .Setup(x => x.UploadAvatarFromUrlAsync(user.AvatarFileId, payload.PictureUrl!, cancellationToken))
             .ReturnsAsync((FileEntity?)null);
-
-        _unitOfWorkMock.Setup(x => x.CommitAsync(cancellationToken)).ReturnsAsync(1);
 
         // Act
         await _factory.AuthenticateOrCreateAsync(payload, Provider, cancellationToken);
@@ -401,7 +332,7 @@ public class PublicSocialLoginAuthFactoryTests
                 ),
             Times.Once
         );
-        _unitOfWorkMock.Verify(x => x.CommitAsync(cancellationToken), Times.Once);
+        _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 
     #endregion
@@ -427,20 +358,12 @@ public class PublicSocialLoginAuthFactoryTests
             )
             .ReturnsAsync(user);
 
-        _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
-
         // Act
         await _factory.AuthenticateOrCreateAsync(payload, Provider, CancellationToken.None);
 
         // Assert
         _fileUploadServiceMock.Verify(
-            x =>
-                x.UpdateAvatarFromUrlAsync(
-                    It.IsAny<Guid?>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<CancellationToken>()
-                ),
+            x => x.UploadAvatarFromUrlAsync(It.IsAny<Guid?>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
             Times.Never
         );
     }

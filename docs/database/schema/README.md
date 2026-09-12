@@ -3,6 +3,10 @@
 Two artifacts, because they answer different questions. They agree — verified by diffing the
 table sets, which match exactly.
 
+`core.sql` currently runs two migrations ahead of `applied-full.sql`: `AddFileState` and
+`CollapseFileStates` are generated but unapplied, so `core.files` shows `state` there and
+`is_deleted`/`claimed_at` here. The table sets are unaffected.
+
 | File | Source | Answers |
 | --- | --- | --- |
 | `applied-full.sql` | `pg_dump` of the migrated database | **What the schema *is*.** Final state, real Postgres DDL, includes non-EF objects. |

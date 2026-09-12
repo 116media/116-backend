@@ -24,7 +24,7 @@ public class CoreUnitOfWorkTests : IDisposable
             .Options;
 
         _context = new CoreDbContext(options);
-        _unitOfWork = new CoreUnitOfWork(_context);
+        _unitOfWork = new CoreUnitOfWork(_context, [_context]);
     }
 
     public void Dispose()
@@ -164,7 +164,7 @@ public class CoreUnitOfWorkTests : IDisposable
     {
         // Arrange
         await using var context = new CoreDbContext(CreateTransactionalOptions());
-        var unitOfWork = new CoreUnitOfWork(context);
+        var unitOfWork = new CoreUnitOfWork(context, [context]);
         var ran = false;
 
         // Act
@@ -184,7 +184,7 @@ public class CoreUnitOfWorkTests : IDisposable
         // Arrange
         // The seam commits once at the end, so the operation itself never saves.
         await using var context = new CoreDbContext(CreateTransactionalOptions());
-        var unitOfWork = new CoreUnitOfWork(context);
+        var unitOfWork = new CoreUnitOfWork(context, [context]);
 
         // Act
         await unitOfWork.ExecuteInTransactionAsync(_ =>
@@ -204,7 +204,7 @@ public class CoreUnitOfWorkTests : IDisposable
         // Arrange
         // A failure has to reach the caller; swallowing it would commit a half-applied change.
         await using var context = new CoreDbContext(CreateTransactionalOptions());
-        var unitOfWork = new CoreUnitOfWork(context);
+        var unitOfWork = new CoreUnitOfWork(context, [context]);
         var failure = new InvalidOperationException("operation failed");
 
         // Act
@@ -221,7 +221,7 @@ public class CoreUnitOfWorkTests : IDisposable
     {
         // Arrange
         await using var context = new CoreDbContext(CreateTransactionalOptions());
-        var unitOfWork = new CoreUnitOfWork(context);
+        var unitOfWork = new CoreUnitOfWork(context, [context]);
         using var cts = new CancellationTokenSource();
         CancellationToken observed = default;
 

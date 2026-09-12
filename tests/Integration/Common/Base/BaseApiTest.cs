@@ -1,9 +1,11 @@
+using System.Net;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Integration.Tests.Common.Stubs;
 using _116.Shared.Domain;
 using _116.Tests.Fixtures.Factories.Identity;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.Caching.Memory;
+using StackExchange.Redis;
 
 namespace _116.Integration.Tests.Common.Base;
 
@@ -173,7 +175,7 @@ public abstract class BaseApiTest : IAsyncLifetime
     {
         await Db.ResetAsync();
         ResetStubs();
-        ClearMemoryCache();
+        await ClearCachesAsync();
         await SeedTestUsersAsync();
         await SeedAsync();
     }
@@ -193,16 +195,28 @@ public abstract class BaseApiTest : IAsyncLifetime
     }
 
     /// <summary>
-    /// Clears the shared in-process cache before each test, since it outlives the database reset
-    /// and security-state, denylist and hybrid-cache L1 entries would otherwise leak into the
-    /// next test. The hybrid cache stores its L1 entries in this same <see cref="IMemoryCache" />.
+    /// Clears both cache layers before each test, since they outlive the database reset and
+    /// security-state, denylist and hybrid-cache entries would otherwise leak into the next test.
+    /// The hybrid cache keeps L1 in this same <see cref="IMemoryCache" /> and L2 in Redis.
     /// </summary>
-    private void ClearMemoryCache()
+    private async Task ClearCachesAsync()
     {
         using var scope = Api.Services.CreateScope();
+
         if (scope.ServiceProvider.GetRequiredService<IMemoryCache>() is MemoryCache memoryCache)
         {
             memoryCache.Clear();
+        }
+
+        var multiplexer = scope.ServiceProvider.GetService<IConnectionMultiplexer>();
+        if (multiplexer is null)
+        {
+            return;
+        }
+
+        foreach (EndPoint endpoint in multiplexer.GetEndPoints())
+        {
+            await multiplexer.GetServer(endpoint).FlushDatabaseAsync();
         }
     }
 

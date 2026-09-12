@@ -2,7 +2,6 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadArtistAva
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Repositories;
 using _116.Core.Application.Shared.Services;
 using _116.Core.Domain.Entities;
 using _116.Shared.Application.Exceptions;
@@ -24,7 +23,6 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 public class AdminUploadArtistAvatarHandlerTests
 {
     private readonly Mock<IArtistRepository> _artistRepositoryMock;
-    private readonly Mock<IFileRepository> _fileRepositoryMock;
     private readonly Mock<IFileUploadService> _fileUploadServiceMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminUploadArtistAvatarHandler _handler;
@@ -32,12 +30,10 @@ public class AdminUploadArtistAvatarHandlerTests
     public AdminUploadArtistAvatarHandlerTests()
     {
         _artistRepositoryMock = MockArtistRepository.Create();
-        _fileRepositoryMock = MockFileRepository.Create();
         _fileUploadServiceMock = MockFileUploadService.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _handler = new AdminUploadArtistAvatarHandler(
             _artistRepositoryMock.Object,
-            _fileRepositoryMock.Object,
             _fileUploadServiceMock.Object,
             _unitOfWorkMock.Object
         );
@@ -51,7 +47,7 @@ public class AdminUploadArtistAvatarHandlerTests
         _artistRepositoryMock.SetupGetByIdOrThrow(artist);
 
         FileEntity fileEntity = FileFactory.CreateImage();
-        _fileUploadServiceMock.SetupReplaceImageFile(fileEntity);
+        _fileUploadServiceMock.SetupUploadImage(fileEntity);
 
         Mock<IFormFile> fileMock = new();
         fileMock.Setup(f => f.FileName).Returns("avatar.png");
@@ -68,7 +64,7 @@ public class AdminUploadArtistAvatarHandlerTests
         artist.AvatarFileId.Should().Be(fileEntity.Id);
 
         _artistRepositoryMock.VerifyUpdateCalled(artist);
-        _unitOfWorkMock.VerifyCommitCalled();
+        _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 
     [Fact]
@@ -86,6 +82,6 @@ public class AdminUploadArtistAvatarHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
-        _unitOfWorkMock.VerifyCommitNotCalled();
+        _unitOfWorkMock.VerifyExecutedInTransaction(0);
     }
 }

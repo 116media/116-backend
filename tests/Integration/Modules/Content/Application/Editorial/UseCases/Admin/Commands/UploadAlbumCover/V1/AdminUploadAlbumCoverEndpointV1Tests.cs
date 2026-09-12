@@ -3,11 +3,13 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadAlbumCove
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Integration.Tests.Common.Stubs;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 using FluentValidation;
 using FluentValidation.Results;
+using CoreValidationErrorMessage = _116.Core.Application.Shared.Errors.Messages.ValidationErrorMessage;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.UploadAlbumCover.V1;
 
@@ -17,6 +19,8 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminUploadAlbumCoverEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private StubCloudinaryService CloudinaryStub => Api.Services.GetRequiredService<StubCloudinaryService>();
+
     private static string ValidationDetail(string property, string message) =>
         new ValidationException([new ValidationFailure(property, message)]).Message;
 
@@ -115,5 +119,49 @@ public class AdminUploadAlbumCoverEndpointV1Tests(PostgresFixture db) : BaseApiT
             HttpStatusCode.BadRequest,
             ValidationDetail("File", Localized<LyricsErrorMessage>(m => m.FileRequired()))
         );
+    }
+
+    [Fact]
+    public async Task UploadAlbumCover_WithNoContentTypeOnTheFilePart_ReturnsLocalizedRuleProblem()
+    {
+        AlbumEntity album = await SeedAlbumAsync();
+        Client.AuthenticateAsSuperAdmin();
+
+        // A part without a content type still binds, so nothing before the domain rejects it.
+        using var formContent = new MultipartFormDataContent();
+        var fileContent = new ByteArrayContent([0xFF, 0xD8, 0xFF, 0xE0]);
+        fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
+        {
+            Name = "\"file\"",
+            FileName = "\"cover.jpg\"",
+        };
+        formContent.Add(fileContent);
+
+        var response = await Client.PostAsync(Routes.Admin.Albums.Cover(album.Id), formContent);
+
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<CoreValidationErrorMessage>(m => m.MimeTypeRequired())
+        );
+    }
+
+    [Fact]
+    public async Task UploadAlbumCover_WithNoContentTypeOnTheFilePart_NeverReachesStorage()
+    {
+        AlbumEntity album = await SeedAlbumAsync();
+        Client.AuthenticateAsSuperAdmin();
+
+        using var formContent = new MultipartFormDataContent();
+        var fileContent = new ByteArrayContent([0xFF, 0xD8, 0xFF, 0xE0]);
+        fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
+        {
+            Name = "\"file\"",
+            FileName = "\"cover.jpg\"",
+        };
+        formContent.Add(fileContent);
+
+        await Client.PostAsync(Routes.Admin.Albums.Cover(album.Id), formContent);
+
+        CloudinaryStub.UploadedPublicIds.Should().BeEmpty();
     }
 }

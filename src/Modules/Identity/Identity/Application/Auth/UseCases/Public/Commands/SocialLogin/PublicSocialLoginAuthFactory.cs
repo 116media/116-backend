@@ -1,4 +1,3 @@
-using _116.Core.Application.Shared.Repositories;
 using _116.Core.Application.Shared.Services;
 using _116.Core.Domain.Entities;
 using _116.Identity.Application.Adapters.SocialAuth;
@@ -15,11 +14,9 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin;
 /// </summary>
 /// <param name="authRepository">Repository for user data access operations.</param>
 /// <param name="fileUploadService">Uploads and replaces stored assets.</param>
-/// <param name="fileRepository">Repository for accessing file metadata.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 public class PublicSocialLoginAuthFactory(
     IAuthRepository authRepository,
-    IFileRepository fileRepository,
     IFileUploadService fileUploadService,
     IIdentityUnitOfWork unitOfWork
 ) : IPublicSocialLoginAuthFactory
@@ -39,29 +36,33 @@ public class PublicSocialLoginAuthFactory(
             cancellationToken: cancellationToken
         );
 
-        FileEntity? avatarFileEntity = null;
         bool hasManualAvatar = user!.AvatarSource == EnumAvatarSource.Manual;
-        if (!hasManualAvatar && !string.IsNullOrWhiteSpace(payload.PictureUrl))
-        {
-            avatarFileEntity = await fileUploadService.UpdateAvatarFromUrlAsync(
+        bool canAdoptProviderAvatar = !hasManualAvatar && !string.IsNullOrWhiteSpace(payload.PictureUrl);
+
+        FileEntity? avatar = canAdoptProviderAvatar
+            ? await fileUploadService.UploadAvatarFromUrlAsync(
                 currentAvatarFileId: user.AvatarFileId,
-                newAvatarUrl: payload.PictureUrl!,
-                userId: user.Id.ToString(),
+                avatarUrl: payload.PictureUrl!,
                 cancellationToken: cancellationToken
-            );
-        }
+            )
+            : null;
 
-        if (avatarFileEntity != null)
-        {
-            user.UpdateAvatar(avatarFileId: avatarFileEntity.Id, avatarSource: EnumAvatarSource.Provider);
-        }
+        await unitOfWork.ExecuteInTransactionAsync(
+            async ct =>
+            {
+                if (avatar is not null)
+                {
+                    await fileUploadService.RecordAsync(
+                        file: avatar,
+                        supersededFileId: user.AvatarFileId,
+                        cancellationToken: ct
+                    );
 
-        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-
-        if (avatarFileEntity is not null)
-        {
-            await fileRepository.ClaimAsync(fileId: avatarFileEntity.Id, cancellationToken: cancellationToken);
-        }
+                    user.UpdateAvatar(avatarFileId: avatar.Id, avatarSource: EnumAvatarSource.Provider);
+                }
+            },
+            cancellationToken: cancellationToken
+        );
 
         List<RolePermissionEntity> userPermissions = user.UserRoles.SelectMany(ur => ur.Role.RolePermissions).ToList();
 

@@ -26,7 +26,7 @@ public class IdentityUnitOfWorkTests
         // Arrange
         DbContextOptions<IdentityDbContext> options = CreateOptions();
         await using var context = new IdentityDbContext(options);
-        var unitOfWork = new IdentityUnitOfWork(context);
+        var unitOfWork = new IdentityUnitOfWork(context, [context]);
 
         // Act
         int result = await unitOfWork.CommitAsync();
@@ -41,7 +41,7 @@ public class IdentityUnitOfWorkTests
         // Arrange
         DbContextOptions<IdentityDbContext> options = CreateOptions();
         await using var context = new IdentityDbContext(options);
-        var unitOfWork = new IdentityUnitOfWork(context);
+        var unitOfWork = new IdentityUnitOfWork(context, [context]);
         CancellationToken cancellationToken = new();
 
         // Act
@@ -57,7 +57,7 @@ public class IdentityUnitOfWorkTests
         // Arrange
         DbContextOptions<IdentityDbContext> options = CreateOptions();
         await using var context = new IdentityDbContext(options);
-        var unitOfWork = new IdentityUnitOfWork(context);
+        var unitOfWork = new IdentityUnitOfWork(context, [context]);
 
         // Act
         int result = await unitOfWork.CommitAsync();
@@ -72,7 +72,7 @@ public class IdentityUnitOfWorkTests
         // Arrange
         DbContextOptions<IdentityDbContext> options = CreateOptions();
         await using var context = new IdentityDbContext(options);
-        var unitOfWork = new IdentityUnitOfWork(context);
+        var unitOfWork = new IdentityUnitOfWork(context, [context]);
 
         // Act
         int result = await unitOfWork.CommitAsync();
@@ -87,7 +87,7 @@ public class IdentityUnitOfWorkTests
         // Arrange
         DbContextOptions<IdentityDbContext> options = CreateOptions();
         await using var context = new IdentityDbContext(options);
-        var unitOfWork = new IdentityUnitOfWork(context);
+        var unitOfWork = new IdentityUnitOfWork(context, [context]);
 
         // Act
         int result1 = await unitOfWork.CommitAsync();
@@ -116,7 +116,7 @@ public class IdentityUnitOfWorkTests
     {
         // Arrange
         await using var context = new IdentityDbContext(CreateTransactionalOptions());
-        var unitOfWork = new IdentityUnitOfWork(context);
+        var unitOfWork = new IdentityUnitOfWork(context, [context]);
         var ran = false;
 
         // Act
@@ -136,7 +136,7 @@ public class IdentityUnitOfWorkTests
         // Arrange
         // The seam commits once at the end, so the operation itself never saves.
         await using var context = new IdentityDbContext(CreateTransactionalOptions());
-        var unitOfWork = new IdentityUnitOfWork(context);
+        var unitOfWork = new IdentityUnitOfWork(context, [context]);
 
         // Act
         await unitOfWork.ExecuteInTransactionAsync(_ =>
@@ -156,7 +156,7 @@ public class IdentityUnitOfWorkTests
         // Arrange
         // A failure has to reach the caller; swallowing it would commit a half-applied change.
         await using var context = new IdentityDbContext(CreateTransactionalOptions());
-        var unitOfWork = new IdentityUnitOfWork(context);
+        var unitOfWork = new IdentityUnitOfWork(context, [context]);
         var failure = new InvalidOperationException("operation failed");
 
         // Act
@@ -173,7 +173,7 @@ public class IdentityUnitOfWorkTests
     {
         // Arrange
         await using var context = new IdentityDbContext(CreateTransactionalOptions());
-        var unitOfWork = new IdentityUnitOfWork(context);
+        var unitOfWork = new IdentityUnitOfWork(context, [context]);
         using var cts = new CancellationTokenSource();
         CancellationToken observed = default;
 

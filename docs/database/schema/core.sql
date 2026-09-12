@@ -267,5 +267,38 @@ CREATE INDEX ix_files_created_at ON core.files (created_at) WHERE claimed_at IS 
 INSERT INTO "__EFMigrationsHistory" (migration_id, product_version)
 VALUES ('20260910132223_AddFileClaimedAt', '9.0.4');
 
+ALTER TABLE core.files ADD state integer NOT NULL DEFAULT 0;
+
+UPDATE core.files
+SET state = CASE
+    WHEN is_deleted THEN 2
+    WHEN claimed_at IS NOT NULL THEN 1
+    ELSE 0
+END;
+
+DROP INDEX core.ix_files_is_deleted;
+
+ALTER TABLE core.files DROP COLUMN is_deleted;
+
+CREATE INDEX ix_files_state ON core.files (state);
+
+INSERT INTO "__EFMigrationsHistory" (migration_id, product_version)
+VALUES ('20260911181652_AddFileState', '9.0.4');
+
+UPDATE core.files
+SET state = CASE state
+    WHEN 1 THEN 0
+    WHEN 2 THEN 1
+    WHEN 3 THEN 2
+    ELSE 0
+END;
+
+ALTER TABLE core.files DROP COLUMN claimed_at;
+
+CREATE UNIQUE INDEX ix_files_file_name ON core.files (file_name) WHERE state = 0;
+
+INSERT INTO "__EFMigrationsHistory" (migration_id, product_version)
+VALUES ('20260911233113_CollapseFileStates', '9.0.4');
+
 COMMIT;
 

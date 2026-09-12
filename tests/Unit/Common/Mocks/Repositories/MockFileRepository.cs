@@ -30,17 +30,6 @@ public static class MockFileRepository
     }
 
     /// <summary>
-    /// Verifies the upload was claimed once the referencing row committed. An unclaimed upload
-    /// is reaped, so a handler that forgets the claim loses the file a day later.
-    /// </summary>
-    /// <param name="mock">The mock instance.</param>
-    /// <param name="fileId">The file expected to have been claimed.</param>
-    public static void VerifyClaimed(this Mock<IFileRepository> mock, Guid fileId)
-    {
-        mock.Verify(x => x.ClaimAsync(fileId, It.IsAny<CancellationToken>()), Times.Once);
-    }
-
-    /// <summary>
     /// Sets up GetByIdAsync to return the specified file.
     /// </summary>
     /// <param name="mock">The mock instance.</param>
@@ -214,8 +203,6 @@ public static class MockFileRepository
     private static void SetupDefaults(Mock<IFileRepository> mock)
     {
         Dictionary<Guid, FileEntity> known = KnownFiles.GetOrCreateValue(mock);
-
-        mock.Setup(x => x.ClaimAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
         mock.Setup(x => x.GetByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(

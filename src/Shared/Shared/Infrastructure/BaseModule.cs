@@ -1,3 +1,4 @@
+using System.Data.Common;
 using _116.Shared.Application.Configurations;
 using _116.Shared.Application.Configurations.Schemas;
 using _116.Shared.Application.Services;
@@ -7,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Npgsql;
 
 namespace _116.Shared.Infrastructure;
 
@@ -37,19 +39,32 @@ public static class BaseModule
     )
         where TDbContext : DbContext
     {
-        string connectionString = GetDefaultConnectionString();
-
         RegisterInterceptorsIfNotExists(services);
+        RegisterSharedConnectionIfNotExists(services);
 
-        services.AddDbContextPool<TDbContext>(
+        services.AddDbContext<TDbContext>(
             (serviceProvider, dbOptions) =>
             {
-                ConfigureDbContextOptions(serviceProvider, dbOptions, connectionString);
+                ConfigureDbContextOptions(serviceProvider, dbOptions);
                 ApplyTrackingDefault(dbOptions, options.UseNoTrackingByDefault);
             }
         );
 
+        // Also resolvable as DbContext, so a unit of work can enlist every module context that
+        // shares the scope's connection.
+        services.AddScoped<DbContext>(serviceProvider => serviceProvider.GetRequiredService<TDbContext>());
+
         return services;
+    }
+
+    /// <summary>
+    /// Registers the connection every module context in a scope shares, so one transaction can
+    /// span them. Opening and closing stays with EF; the scope owns disposal.
+    /// </summary>
+    /// <param name="services">The service collection</param>
+    private static void RegisterSharedConnectionIfNotExists(IServiceCollection services)
+    {
+        services.TryAddScoped<DbConnection>(_ => new NpgsqlConnection(GetDefaultConnectionString()));
     }
 
     /// <summary>
@@ -121,20 +136,16 @@ public static class BaseModule
     /// </summary>
     /// <param name="serviceProvider">The service provider</param>
     /// <param name="options">The DbContext options builder</param>
-    /// <param name="connectionString">The database connection string</param>
-    private static void ConfigureDbContextOptions(
-        IServiceProvider serviceProvider,
-        DbContextOptionsBuilder options,
-        string connectionString
-    )
+    private static void ConfigureDbContextOptions(IServiceProvider serviceProvider, DbContextOptionsBuilder options)
     {
         options.AddInterceptors(serviceProvider.GetServices<ISaveChangesInterceptor>());
 
-        // Configure PostgreSQL with snake_case naming. Transient faults retry with backoff;
-        // the command timeout keeps a wedged statement from holding a pooled connection open.
+        // Every context in the scope binds the same connection, so one transaction covers them
+        // all. Transient faults retry with backoff; the command timeout keeps a wedged statement
+        // from holding the connection open.
         options
             .UseNpgsql(
-                connectionString,
+                serviceProvider.GetRequiredService<DbConnection>(),
                 npgsql =>
                 {
                     npgsql.EnableRetryOnFailure(

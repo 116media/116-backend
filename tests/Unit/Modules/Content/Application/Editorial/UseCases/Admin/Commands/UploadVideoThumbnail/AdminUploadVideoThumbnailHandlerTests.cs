@@ -2,7 +2,6 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadVideoThum
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Repositories;
 using _116.Core.Application.Shared.Services;
 using _116.Core.Domain.Entities;
 using _116.Shared.Application.Exceptions;
@@ -24,7 +23,6 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 public class AdminUploadVideoThumbnailHandlerTests
 {
     private readonly Mock<IVideoRepository> _videoRepositoryMock;
-    private readonly Mock<IFileRepository> _fileRepositoryMock;
     private readonly Mock<IFileUploadService> _fileUploadServiceMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminUploadVideoThumbnailHandler _handler;
@@ -34,16 +32,14 @@ public class AdminUploadVideoThumbnailHandlerTests
     public AdminUploadVideoThumbnailHandlerTests()
     {
         _videoRepositoryMock = MockVideoRepository.Create();
-        _fileRepositoryMock = MockFileRepository.Create();
         _fileUploadServiceMock = MockFileUploadService.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
 
         FileEntity fileEntity = FileFactory.CreateImage();
-        _fileUploadServiceMock.SetupReplaceImageFile(fileEntity);
+        _fileUploadServiceMock.SetupUploadImage(fileEntity);
 
         _handler = new AdminUploadVideoThumbnailHandler(
             _videoRepositoryMock.Object,
-            _fileRepositoryMock.Object,
             _fileUploadServiceMock.Object,
             _unitOfWorkMock.Object
         );
@@ -55,7 +51,7 @@ public class AdminUploadVideoThumbnailHandlerTests
         // Arrange
         VideoEntity video = VideoFactory.Create(CategoryId);
         FileEntity uploadedFile = FileFactory.CreateImage();
-        _fileUploadServiceMock.SetupReplaceImageFile(uploadedFile);
+        _fileUploadServiceMock.SetupUploadImage(uploadedFile);
         IFormFile fileMock = MockYoutubeThumbnailService.CreateMockFormFile();
         var command = new AdminUploadVideoThumbnailCommand(VideoId: video.Id.ToString(), File: fileMock);
 
@@ -68,10 +64,9 @@ public class AdminUploadVideoThumbnailHandlerTests
         video.ThumbnailFileId.Should().Be(uploadedFile.Id);
         result.ThumbnailUrl.Should().Be(uploadedFile.StorageUrl);
         result.ThumbnailStorageKey.Should().Be(uploadedFile.StorageKey);
-        _fileUploadServiceMock.VerifyReplaceImageFileCalled();
-        _fileRepositoryMock.VerifyClaimed(uploadedFile.Id);
+        _fileUploadServiceMock.VerifyUploadImageCalled();
         _videoRepositoryMock.VerifyUpdateCalled(video);
-        _unitOfWorkMock.VerifyCommitCalled();
+        _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 
     [Fact]
@@ -80,7 +75,7 @@ public class AdminUploadVideoThumbnailHandlerTests
         // Arrange
         VideoEntity video = VideoFactory.CreateWithThumbnail(CategoryId);
         FileEntity uploadedFile = FileFactory.CreateImage();
-        _fileUploadServiceMock.SetupReplaceImageFile(uploadedFile);
+        _fileUploadServiceMock.SetupUploadImage(uploadedFile);
         IFormFile fileMock = MockYoutubeThumbnailService.CreateMockFormFile();
         var command = new AdminUploadVideoThumbnailCommand(VideoId: video.Id.ToString(), File: fileMock);
 
@@ -93,9 +88,9 @@ public class AdminUploadVideoThumbnailHandlerTests
         video.ThumbnailFileId.Should().Be(uploadedFile.Id);
         result.ThumbnailUrl.Should().Be(uploadedFile.StorageUrl);
         result.ThumbnailStorageKey.Should().Be(uploadedFile.StorageKey);
-        _fileUploadServiceMock.VerifyReplaceImageFileCalled();
+        _fileUploadServiceMock.VerifyUploadImageCalled();
         _videoRepositoryMock.VerifyUpdateCalled(video);
-        _unitOfWorkMock.VerifyCommitCalled();
+        _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 
     [Fact]
@@ -112,6 +107,6 @@ public class AdminUploadVideoThumbnailHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
-        _unitOfWorkMock.VerifyCommitNotCalled();
+        _unitOfWorkMock.VerifyExecutedInTransaction(0);
     }
 }

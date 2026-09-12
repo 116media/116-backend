@@ -54,8 +54,6 @@ public class PublicRecordLyricsViewHandler(ILyricsRepository lyricsRepository, I
 
         DateTime windowStart = DateTime.UtcNow - ViewCountingConstants.DedupWindow;
 
-        // "unknown" is a shared bucket, not an identity — deduplicating it would make
-        // unrelated signal-less viewers suppress each other, so those always count.
         bool alreadyCounted =
             dedupKey != UnknownDedupKey
             && await lyricsRepository.HasCountedViewSinceAsync(

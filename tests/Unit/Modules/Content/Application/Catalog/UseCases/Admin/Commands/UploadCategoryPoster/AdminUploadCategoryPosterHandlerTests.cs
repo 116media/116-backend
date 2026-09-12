@@ -59,15 +59,15 @@ public class AdminUploadCategoryPosterHandlerTests : BaseContentHandlerTest
         var command = new AdminUploadCategoryPosterCommand(Id: category.Id.ToString(), File: file);
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-        _fileUploadServiceMock.SetupReplaceImageFile(fileEntity);
+        _fileUploadServiceMock.SetupUploadImage(fileEntity);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         category.PosterFileId.Should().Be(fileEntity.Id);
-        _fileUploadServiceMock.VerifyReplaceImageFileCalled();
-        _unitOfWorkMock.VerifyCommitCalled();
+        _fileUploadServiceMock.VerifyUploadImageCalled();
+        _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 
     [Fact]
@@ -85,14 +85,14 @@ public class AdminUploadCategoryPosterHandlerTests : BaseContentHandlerTest
         var command = new AdminUploadCategoryPosterCommand(Id: category.Id.ToString(), File: file);
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-        _fileUploadServiceMock.SetupReplaceImageFile(newFileEntity);
+        _fileUploadServiceMock.SetupUploadImage(newFileEntity);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         category.PosterFileId.Should().Be(newFileEntity.Id);
-        _unitOfWorkMock.VerifyCommitCalled();
+        _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 
     #endregion

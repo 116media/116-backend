@@ -277,7 +277,7 @@ and the login counters sit on `UserEntity` instead.
 ```mermaid
 flowchart TB
   subgraph FA["File aggregate"]
-    F["<b>FileEntity</b><br/>State: Unclaimed → Claimed → Deleted / Replaced<br/>Claim(now) · Delete(now) · Replace(now)"]
+    F["<b>FileEntity</b><br/>State: Stored → Deleted / Replaced<br/>Delete(now) · MarkReplaced(now)"]
   end
   N["No cross-aggregate reference:<br/>Core is the base module<br/>and points at nothing"]
   FA -.- N
@@ -285,7 +285,7 @@ flowchart TB
 
 | Root | Inside the boundary | The invariant the boundary protects | Reached by id only |
 | --- | --- | --- | --- |
-| `FileEntity` | — | Claimed at most once, deleted at most once; the four states are total and mutually exclusive | Nothing — Core depends on no module |
+| `FileEntity` | — | Deleted at most once; the three states are total and mutually exclusive | Nothing — Core depends on no module |
 
 #### The same map, in plain words
 
@@ -294,9 +294,8 @@ flowchart TB
   ║  ★ FileEntity                                   THE ROOT      ║
   ║      name · mime · size · storage key · colours               ║
   ║                                                               ║
-  ║      state:  Unclaimed ──▶ Claimed ──▶ Deleted                ║
-  ║                    │            └────▶ Replaced               ║
-  ║                    └──▶ Deleted  (reaper, grace elapsed)      ║
+  ║      state:  Stored ──▶ Deleted                               ║
+  ║                  └────▶ Replaced                              ║
   ╚═══════════════════════════════════════════════════════════════╝
 
         Core points at nothing. It is the bottom of the stack:
@@ -308,11 +307,12 @@ What the box means when you sit down to write code:
 - **A file is one box with no members.** There is nothing to navigate into and nothing to
   cascade.
 - **The file never knows who uses it.** An article holds a `CoverImageFileId`; the file holds no
-  `ArticleId`. That is why the claim-and-reap mechanism exists at all.
+  `ArticleId`. The row and the reference are written in one transaction (D12), so a file row
+  exists only if something already points at it.
 - **Uploading is not a repository call.** After this stage `IFileRepository` only reads and
   writes rows; `IFileUploadService` is what talks to Cloudinary.
-- **Every state move takes the clock as an argument** — `Claim(now)`, `Delete(now)` — so the
-  reaper's grace period cannot drift between the API host and the job host.
+- **Every state move takes the clock as an argument** — `Delete(now)`, `MarkReplaced(now)` — so
+  the stamp cannot drift between the API host and the job host.
 
 Core's boundary is already right. Its problem (Part B) is entirely that `IFileRepository` does
 network IO and knows an Identity policy, which is an R12/R13 failure, not an R1 failure.
@@ -842,11 +842,11 @@ around it — the repository splits from the upload service:
 ```mermaid
 flowchart TB
   subgraph app["Core.Application"]
-    FUS["IFileUploadService<br/>upload · replace · fetch-remote · colour"]
-    FRP["IFileRepository<br/>GetById · GetByIds · GetStorageUrls · GetAvatarFile<br/>GetUnclaimedBefore · Add · Remove · Claim (no commit)"]
+    FUS["IFileUploadService<br/>UploadImage · UploadVideo · UploadRaw · UploadAvatar<br/>UploadAvatarFromUrl (network only) · Record (stages, never commits)"]
+    FRP["IFileRepository<br/>GetById · GetByIds · GetStorageUrls · GetAvatarFile<br/>Add · Remove · SoftDeleteById"]
   end
   subgraph dom["Core.Domain"]
-    F["FileEntity (root)<br/>State: EnumFileState<br/>Claim(now) · Delete(now) · Replace(now)"]
+    F["FileEntity (root)<br/>State: EnumFileState<br/>Delete(now) · MarkReplaced(now)"]
   end
   subgraph infra["Core.Infrastructure"]
     CS["CloudinaryService"]
@@ -864,41 +864,64 @@ flowchart TB
 
 ```mermaid
 stateDiagram-v2
-  [*] --> Unclaimed: Create()
-  Unclaimed --> Claimed: Claim(now)
-  Unclaimed --> Deleted: reaper — grace elapsed
-  Claimed --> Deleted: Delete(now)
-  Claimed --> Replaced: Replace(now)
-  Unclaimed --> Deleted: Delete(now)
+  [*] --> Stored: Create()
+  Stored --> Deleted: Delete(now)
+  Stored --> Replaced: MarkReplaced(now)
   Deleted --> [*]
   Replaced --> [*]
 ```
 
+A row reaches `Stored` only inside the transaction that also writes the reference to it, so
+there is no state for "uploaded but unreferenced" and nothing to sweep (D12).
+
 ### B.4 The changes
 
-1. **Split the repository.** Five IO methods move to a new `IFileUploadService` in
-   `Core/Application/Shared/Services/`; the other four had no caller outside the repository and
-   become private. `SaveChangesAsync` and `UpdateAsync` are deleted (D4), and the six
-   upload-path commits move behind `ICoreUnitOfWork`, the reaper's included.
+1. **The upload API splits in two.** `UploadImageAsync` / `UploadVideoAsync` / `UploadRawAsync` /
+   `UploadAvatarAsync` / `UploadAvatarFromUrlAsync` do the network call and return an **unrecorded
+   `FileEntity`** — the row to write, with no database work done at all.
+   `RecordAsync(file, supersededFileId)` stages that row and marks the superseded file replaced,
+   and **commits nothing**. The caller opens one transaction and does both halves inside it:
 
-   **`ClaimAsync` and `SoftDeleteByIdAsync` keep their internal commit** (D12). Their 17 callers
-   all live in Content and Identity, whose units of work commit a different `DbContext`; removing
-   the commit would leave every claim unpersisted and the reaper would delete live uploads once
-   the grace period passed. Callers re-point to the upload service; signatures do not change.
+   ```csharp
+   FileEntity uploaded = await fileUploadService.UploadImageAsync(file, id, folder, name, mime, ct);
+
+   await unitOfWork.ExecuteInTransactionAsync(
+       async transactionToken =>
+       {
+           await fileUploadService.RecordAsync(uploaded, album.CoverImageFileId, transactionToken);
+           album.Update(coverImageFileId: uploaded.Id, ...);
+           albumRepository.Update(album);
+       },
+       cancellationToken
+   );
+   ```
+
+   No parallel DTO carries the upload across the boundary: `FileEntity.IsRecorded` reads the audit
+   stamp the interceptor writes on first save, so an unrecorded file is one whose `CreatedAt` is
+   still null, and `RecordAsync` refuses anything else with `CoreRuleCodes.FileAlreadyRecorded`
+   (D13).
+
+   The file row and the row referencing it now land or roll back together, across two
+   `DbContext`s (D12). `SaveChangesAsync` and `UpdateAsync` leave `IFileRepository` (D4), and
+   the six upload-path commits disappear rather than moving.
 2. **Delete `UpdateAvatarUrlFromSourceAsync`.** Its branch moves to the Identity handler that
-   owns `EnumAvatarSource`, which then calls the plain `ReplaceImageFileAsync`. Core stops
-   knowing about avatars.
-3. **`EnumFileState` replaces the flag trio.** `Unclaimed | Claimed | Deleted | Replaced`,
-   mapped as the single source of truth. `IsDeleted` survives only as a `[NotMapped]`
-   convenience for in-memory callers — it **cannot** appear in a query, so the global filter
-   (`CoreDbContext.cs:41`), both `FileStatusSpecifications`, the three repository predicates and
-   the index all move to `State`. `CategorySpecifications.cs:125` records the same lesson for
-   `IsPinnedToFeed`. The migration adds `state`, backfills it from `is_deleted`/`claimed_at`
-   **before** dropping the column, then drops it; `DeletedAt`/`ClaimedAt` stay as timestamps.
-4. **Clock as a parameter** on `Claim`, `Delete`, `Replace`; the reaper and the dispatcher jobs
-   take `TimeProvider` (the same change the composition-root audit prescribes).
-5. **The claim decision returns to the caller.** `FileRepository.ClaimAsync` loads and returns
-   the aggregate; the calling handler invokes `Claim(now)` and decides what `false` means.
+   owns `EnumAvatarSource`, which then calls the plain upload methods. Core stops knowing about
+   avatars.
+3. **`EnumFileState` replaces the flag trio.** `Stored | Deleted | Replaced`, mapped as the
+   single source of truth. `IsDeleted` survives only as a `[NotMapped]` convenience for
+   in-memory callers — it **cannot** appear in a query, so the global filter
+   (`CoreDbContext.cs:41`), both `FileStatusSpecifications`, the repository predicates and the
+   index all move to `State`. `CategorySpecifications.cs:125` records the same lesson for
+   `IsPinnedToFeed`. `AddFileState` adds `state` and backfills it before dropping `is_deleted`;
+   `CollapseFileStates` then folds `Claimed` away, drops `claimed_at`, and rebuilds the unique
+   `file_name` index that the dropped column had taken with it.
+4. **Clock as a parameter** on `Delete` and `MarkReplaced`; the dispatcher jobs take
+   `TimeProvider` (the same change the composition-root audit prescribes).
+5. **The claim protocol is deleted outright** — `FileEntity.Claim`, `ClaimAsync`,
+   `GetUnclaimedBeforeAsync`, `UnclaimedFileReaperJob`, its Quartz registration and its three
+   constants. It existed to repair a window that atomicity closes (D12), and a mechanism that
+   deletes production data to compensate for a missing transaction is worse than the
+   transaction.
 
 ---
 
@@ -1264,8 +1287,9 @@ by 15.1. No Mailer-specific work.
 | D8 | Which primitives become value objects | wrap everything with a rule, or only where the rule is violable | **Only where a non-validator path can violate it.** `Email` and `Money` and `Slug` are reachable from seeders, social login and event handlers that no FluentValidation rule covers — they get value objects. `Language`, `ReleaseYear` and the four enum-wrapping VOs (`SessionStatus`, `ExportFormat`, `AuthProvider`, `Client`) are only ever set from a validated request; they stay primitives and the VOs stay edge parsers. |
 | D9 | `StreamingLinkEntity`'s parent | child of Album, child of Lyrics, or its own root | **Its own root.** The schema decides it: `ck_streaming_links_exactly_one_target` enforces `album_id XOR lyrics_id`, so half the rows (a standalone single's links) have no album at all and *cannot* be members of the Album aggregate — a link cannot be a member of two different aggregate types. It already has its own repository upserting by (owner, platform) under two unique indexes. It stays a single-entity root; the XOR stays in the factory + check constraint. |
 | D10 | Engagement counters on the aggregate | move them back inside, or admit they are outside | **Admit they are outside.** Stage 8 moved them to atomic SQL for a real reason — a read-modify-write through the aggregate loses increments. Reverting that to satisfy R14 would reintroduce a concurrency bug to satisfy a diagram. The fix is to stop the aggregate claiming them: `private init` plus a doc comment naming the maintaining repository method. |
-| D12 | The two cross-module repository commits | remove them per R12, or keep them | **Keep them.** `ClaimAsync` and `SoftDeleteByIdAsync` are called from Content and Identity handlers whose unit of work commits a different `DbContext`; nothing else in those requests can persist a Core row. Removing the commit silently drops every claim and hands live uploads to the reaper. They are the module's cross-context entry points and are documented as such. |
+| D12 | An upload and the row referencing it are written by two modules | keep the claim-and-reap repair, or make the two writes atomic | **Make them atomic.** All four module contexts now resolve one scoped `DbConnection`, so `ExecuteInTransactionAsync` enlists every other context via `UseTransactionAsync` and commits once. The file row and its reference cannot disagree, which removes the window the claim protocol existed to repair — so `Claim`, `ClaimAsync`, `GetUnclaimedBeforeAsync` and `UnclaimedFileReaperJob` are deleted, not fixed. The cost is `AddDbContextPool` becoming `AddDbContext`: contexts are no longer pooled, because a pooled context cannot be handed a connection from the scope. `CrossContextTransactionTests` proves both directions against real Postgres. |
 | D11 | `UserEntity` login counters | leave them, or move to a sibling aggregate | **Move to `UserLoginStateEntity`.** Same argument as D10, opposite conclusion: here the sibling aggregate already exists as a pattern (`UserOtpStateEntity`), so the honest model is reachable at the cost of one table and two dropped columns. |
+| D13 | Distinguishing an uploaded-but-unrecorded file from a persisted one | a dedicated DTO the upload returns, or a fact already on the entity | **A fact on the entity.** A parallel `UploadedAsset` record made the state a compile-time type, but mirrored `FileEntity` field for field — every new column would mean editing the entity, the record and the mapping. `CreatedAt` is null until `AuditableEntityInterceptor` stamps it on first save, so `IsRecorded` already expresses it for free, and it also catches an entity loaded in another scope, which the record could not. The cost is that the check moves from compile time to a guard at the top of `RecordAsync`. |
 
 ---
 
@@ -1279,6 +1303,7 @@ by 15.1. No Mailer-specific work.
 - [ ] 15.6 — Identity: OTP verification policy moves out of `OtpRepository` into `OtpEntity.Verify`
 - [ ] 15.7 — Core: `IFileRepository` splits from `IFileUploadService`; `UpdateAvatarUrlFromSourceAsync` moves to Identity
 - [ ] 15.8 — Core: `EnumFileState` replaces the flag trio; clock injected
+- [ ] 15.8b — Core: upload and reference become one transaction; the claim protocol and its reaper are deleted (D12)
 - [ ] 15.9 — Content: navigation census commit (the 64, classified within/across)
 - [ ] 15.10 — Content: twelve members demote to `Entity<Guid>`; roots gain their member factories
 - [ ] 15.11 — Content: cross-aggregate navs → id-only, Commerce → Catalogue → Editorial
@@ -1313,9 +1338,13 @@ by 15.1. No Mailer-specific work.
   `UPDATE`. Fails before D4's change.
 - **Integration — derived `HasLyrics`.** `HasPublishedLyricsAsync` against draft, published and
   deleted lyrics, driven through `IVideoRepository` from DI.
-- **Integration — Core split.** The upload path still works through `IFileUploadService`; the
-  reaper still sweeps through the narrowed `IFileRepository`. Both already have tests
-  (`UnclaimedFileReaperJobTests`) that must stay green unchanged.
+- **Integration — cross-context atomicity.** `CrossContextTransactionTests` writes a `core.files`
+  row and a `content.tags` row in one `ExecuteInTransactionAsync` and asserts both are persisted;
+  a second test throws inside the operation and asserts neither is. Without the shared scoped
+  `DbConnection` the first test fails outright, so it is the proof for D12.
+- **Unit — the upload halves are separable.** `UploadImageAsync` writes nothing to the database
+  and tracks no entity; `RecordAsync` leaves the new row `Added` and the superseded row
+  `Replaced`, both uncommitted until the caller's transaction commits.
 - **The existing suites are the no-op proof for D1**: removing navigations must not change any
   response body. Any assertion that moves is a bug in the mapper re-point, not a test to update.
 
@@ -1323,13 +1352,20 @@ by 15.1. No Mailer-specific work.
 
 ## Rollout
 
-Three schema changes, all generated and left unapplied per house rule:
+Four schema changes, all generated and left unapplied per house rule:
 
 | Migration | Module | Change |
 | --- | --- | --- |
 | `AddUserLoginState` | Identity | Create `user_login_states`; drop `users.failed_login_attempts`, `users.locked_until` |
 | `AddFileState` | Core | Add `files.state`; backfill from `is_deleted`/`claimed_at` |
+| `CollapseFileStates` | Core | Fold `Claimed` into `Stored`; drop `files.claimed_at`; rebuild the unique `file_name` index on `state` |
 | `DropVideoHasLyrics` | Content | Drop `videos.has_lyrics` |
+
+`AddFileState` drops `is_deleted`, which silently takes `ix_files_file_name` and
+`ix_files_created_at` with it — a partial index cannot outlive a column in its predicate.
+`CollapseFileStates` rebuilds the unique one on `state`; the `created_at` one went with the
+reaper it served. Both directions were applied to a scratch database seeded with a row in each
+legacy state before either was committed.
 
 Everything else — the value objects, the navigation removals, the demotions, the guards — is
 converter-level or code-level and touches no column.
@@ -1351,7 +1387,7 @@ aggregate — Commerce, Catalogue, Editorial — each its own PR.
 6. `grep -rn "ApplySpecification" src/Modules/Content` → empty.
 7. `grep -rln "SaveChangesAsync" src/Modules/*/*/Infrastructure/Repositories/` → shrinks from
    five files to two. `OtpRepository`'s commit moves to the handler (15.6) and
-   `FileRepository`'s ten commit sites move behind `ICoreUnitOfWork` (15.7);
+   `FileRepository`'s commit sites disappear into the caller's transaction (15.7/15.8b);
    `AccountLockoutRepository` and `UserTokenStateRepository` keep theirs **by design** — they
    are the atomic-counter aggregates whose write must survive the surrounding failure (D10/D11)
    — and `AuthRepository` is re-audited at 15.6 with the same test.
@@ -1363,6 +1399,8 @@ aggregate — Commerce, Catalogue, Editorial — each its own PR.
     members = 49, Mailer 3.
 11. **Mailer regression:** it enters this stage passing every rule (§0.2) and must leave it the
     same way. Its only change is the kernel `Id` fix, so any Mailer diff beyond that is drift.
+12. `grep -rn "Claim\|Unclaimed\|reaper" src/Modules/Core` → empty. The protocol is gone, not
+    disabled, and nothing in Core still names it.
 
 ---
 

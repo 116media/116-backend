@@ -4,7 +4,6 @@ using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
-using _116.Core.Application.Shared.Repositories;
 using _116.Core.Application.Shared.Services;
 using _116.Core.Domain.Entities;
 using _116.Shared.Application.Exceptions;
@@ -29,7 +28,6 @@ namespace _116.Unit.Tests.Modules.Content.Application.Commerce.UseCases.Admin.Co
 public class AdminAttachPaymentProofHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<IOrderPaymentFactory> _orderPaymentFactoryMock;
-    private readonly Mock<IFileRepository> _fileRepositoryMock;
     private readonly Mock<IFileUploadService> _fileUploadServiceMock;
     private readonly Mock<IContentOrderRepository> _orderRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
@@ -38,13 +36,11 @@ public class AdminAttachPaymentProofHandlerTests : BaseContentHandlerTest
     public AdminAttachPaymentProofHandlerTests()
     {
         _orderPaymentFactoryMock = MockOrderPaymentFactory.Create();
-        _fileRepositoryMock = MockFileRepository.Create();
         _fileUploadServiceMock = MockFileUploadService.Create();
         _orderRepositoryMock = MockContentOrderRepository.Create();
-        _unitOfWorkMock = MockContentUnitOfWork.Create();
+        _unitOfWorkMock = MockContentUnitOfWork.Create().SetupExecuteInTransaction<FileEntity>();
         _handler = new AdminAttachPaymentProofHandler(
             _orderPaymentFactoryMock.Object,
-            _fileRepositoryMock.Object,
             _fileUploadServiceMock.Object,
             _orderRepositoryMock.Object,
             _unitOfWorkMock.Object,
@@ -65,7 +61,7 @@ public class AdminAttachPaymentProofHandlerTests : BaseContentHandlerTest
         _orderPaymentFactoryMock.SetupGetByOrderId(orderId, payment);
         _fileUploadServiceMock
             .Setup(x =>
-                x.UploadAndStoreRawFileAsync(
+                x.UploadRawAsync(
                     It.IsAny<IFormFile>(),
                     It.IsAny<string>(),
                     It.IsAny<string>(),
@@ -96,7 +92,7 @@ public class AdminAttachPaymentProofHandlerTests : BaseContentHandlerTest
         result.Proof.OriginalFileName.Should().Be(proofFile.OriginalFileName);
         result.Proof.StorageUrl.Should().Be(proofFile.StorageUrl);
         _orderRepositoryMock.Verify(x => x.UpdatePaymentAsync(payment, It.IsAny<CancellationToken>()), Times.Once);
-        _unitOfWorkMock.VerifyCommitCalled();
+        _unitOfWorkMock.VerifyExecutedInTransaction<FileEntity>();
     }
 
     #endregion
@@ -125,7 +121,7 @@ public class AdminAttachPaymentProofHandlerTests : BaseContentHandlerTest
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
-        _unitOfWorkMock.VerifyCommitNotCalled();
+        _unitOfWorkMock.VerifyExecutedInTransaction<FileEntity>(0);
     }
 
     [Fact]
@@ -156,7 +152,7 @@ public class AdminAttachPaymentProofHandlerTests : BaseContentHandlerTest
         );
         _fileUploadServiceMock.Verify(
             x =>
-                x.UploadAndStoreRawFileAsync(
+                x.UploadRawAsync(
                     It.IsAny<IFormFile>(),
                     It.IsAny<string>(),
                     It.IsAny<string>(),
@@ -166,7 +162,7 @@ public class AdminAttachPaymentProofHandlerTests : BaseContentHandlerTest
                 ),
             Times.Never
         );
-        _unitOfWorkMock.VerifyCommitNotCalled();
+        _unitOfWorkMock.VerifyExecutedInTransaction<FileEntity>(0);
     }
 
     [Fact]
@@ -182,7 +178,7 @@ public class AdminAttachPaymentProofHandlerTests : BaseContentHandlerTest
         string capturedMimeType = string.Empty;
         _fileUploadServiceMock
             .Setup(x =>
-                x.UploadAndStoreRawFileAsync(
+                x.UploadRawAsync(
                     It.IsAny<IFormFile>(),
                     It.IsAny<string>(),
                     It.IsAny<string>(),

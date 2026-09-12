@@ -16,7 +16,7 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.UploadCategor
 /// </summary>
 /// <param name="categoryRepository">Repository for category data access operations.</param>
 /// <param name="fileRepository">Repository for file storage operations.</param>
-/// <param name=\"fileUploadService\">Uploads and replaces stored assets.</param>
+/// <param name="fileUploadService">Uploads and replaces stored assets.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class AdminUploadCategoryPosterHandler(
@@ -42,8 +42,7 @@ public class AdminUploadCategoryPosterHandler(
 
         IFormFile file = command.File!;
 
-        FileEntity fileEntity = await fileUploadService.ReplaceImageFileAsync(
-            currentFileId: category.PosterFileId,
+        FileEntity uploaded = await fileUploadService.UploadImageAsync(
             file: file,
             publicId: id.ToString(),
             folder: "content/category-posters",
@@ -52,11 +51,19 @@ public class AdminUploadCategoryPosterHandler(
             cancellationToken: cancellationToken
         );
 
-        category.SetPosterFileId(posterFileId: fileEntity.Id);
+        await unitOfWork.ExecuteInTransactionAsync(
+            async ct =>
+            {
+                await fileUploadService.RecordAsync(
+                    file: uploaded,
+                    supersededFileId: category.PosterFileId,
+                    cancellationToken: ct
+                );
 
-        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-
-        await fileRepository.ClaimAsync(fileId: fileEntity.Id, cancellationToken: cancellationToken);
+                category.SetPosterFileId(posterFileId: uploaded.Id);
+            },
+            cancellationToken: cancellationToken
+        );
 
         CategoryEntity updated = await categoryRepository.GetByIdOrThrowAsync(
             id: id,

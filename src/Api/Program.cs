@@ -34,11 +34,9 @@ builder.Host.UseSerilog(
 Env.NoClobber().Load();
 Env.NoClobber().TraversePath().Load();
 
-// Every declared environment variable is validated in one pass; a misconfigured instance
-// refuses to boot with the complete list of problems.
+// Every declared variable is validated in one pass, so a misconfigured instance never half-boots.
 EnvSchema.ValidateAtBoot();
 
-// Load Cloudinary configuration from environment variables
 builder.Services.AddCloudinaryConfiguration();
 
 Assembly coreAssembly = typeof(CoreModule).Assembly;
@@ -72,9 +70,7 @@ builder.Services.AddRateLimiting();
 
 builder.Services.AddMemoryCache();
 
-// With REDIS_URL set the hybrid cache gains Redis as its distributed layer plus an eviction
-// backplane, making tag eviction visible across instances. Without it the cache runs
-// in-process only.
+// REDIS_URL adds the distributed layer and the eviction backplane; without it, in-process only.
 string? redisUrl = SecurityEnv.RedisUrl.Value;
 if (!string.IsNullOrWhiteSpace(redisUrl))
 {
@@ -118,8 +114,7 @@ builder
     .WithTracing(tracing => tracing.AddAspNetCoreInstrumentation().AddNpgsql().AddOtlpExporter())
     .WithMetrics(metrics => metrics.AddAspNetCoreInstrumentation().AddRuntimeInstrumentation().AddOtlpExporter());
 
-// Global body ceiling: the documented 350 MB video plus headroom. Upload endpoints keep their
-// tighter per-route limits; everything else never legitimately approaches this.
+// Global ceiling: the documented 350 MB video plus headroom; upload routes keep tighter limits.
 builder.WebHost.ConfigureKestrel(kestrel =>
 {
     kestrel.Limits.MaxRequestBodySize = 400 * 1024 * 1024;
@@ -147,8 +142,7 @@ builder.Services.AddCors(options =>
             policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
         }
 
-        // Outside Development with no configured origins the policy is left empty — CORS fails closed,
-        // so a misconfigured deploy rejects cross-origin calls instead of allowing every origin.
+        // No origins configured outside Development leaves the policy empty, so CORS fails closed.
     });
 });
 
@@ -156,15 +150,13 @@ builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter())
 );
 
-// The clustered job store needs real Postgres and its quartz schema; Testing hosts remove the
-// scheduler entirely and keep the default in-memory store registration.
+// The clustered store needs real Postgres and its quartz schema; Testing keeps the in-memory one.
 if (!builder.Environment.IsEnvironment("Testing"))
 {
     builder.Services.AddClusteredQuartzStore();
 }
 
-// Startup order matters: migrations (Development only) run before seeding, and both before the
-// Quartz hosted service the modules register below, whose persistent store needs the schema.
+// Order matters: migrate, then seed, then the Quartz store the modules register below needs that schema.
 if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddHostedService<DevelopmentMigrationHostedService>();
@@ -198,9 +190,8 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 
 WebApplication app = builder.Build();
 
-// Explicit migration mode: `dotnet run --project src/Api -- migrate` applies every module's
-// pending migrations and exits. Deploys run this before rolling instances, which is also the
-// only order under which CONCURRENTLY index builds can run out of band.
+// 'dotnet run -- migrate' migrates and exits;
+// deploys run it before rolling, the only order CONCURRENTLY allows.
 if (args.Contains("migrate"))
 {
     await DatabaseMigrator.MigrateAllAsync(app.Services);

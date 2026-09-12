@@ -128,6 +128,30 @@ public class PublicRecordLyricsViewDedupTests(PostgresFixture db) : BaseApiTest(
     }
 
     [Fact]
+    public async Task RecordLyricsView_AnonymousWithNoIdentitySignal_CountsEveryView()
+    {
+        LyricsEntity lyrics = await SeedPublishedLyricsAsync();
+        Client.ClearAuthentication();
+
+        var first = await RecordViewAsync(lyrics.Id, GenuineDwellMs, scrollDepthRatio: 1.0);
+        first.StatusCode.Should().Be(HttpStatusCode.OK);
+        (await first.ReadAsAsync<PublicRecordLyricsViewResponse>()).IsCounted.Should().BeTrue();
+
+        var second = await RecordViewAsync(lyrics.Id, GenuineDwellMs, scrollDepthRatio: 1.0);
+        second.StatusCode.Should().Be(HttpStatusCode.OK);
+        (await second.ReadAsAsync<PublicRecordLyricsViewResponse>()).IsCounted.Should().BeTrue();
+
+        List<LyricsViewEventEntity> events = await GetViewEventsAsync(lyrics.Id);
+        events.Should().HaveCount(2);
+        events.Should().OnlyContain(e => e.DedupKey == "unknown");
+        events.Count(e => e.IsCounted).Should().Be(2);
+
+        await using var verifyDb = CreateDbContext<ContentDbContext>();
+        LyricsEntity? updated = await verifyDb.Lyrics.FindAsync(lyrics.Id);
+        updated!.ViewCount.Should().Be(2);
+    }
+
+    [Fact]
     public async Task RecordLyricsView_LongDwellButShallowScroll_IsNotCounted()
     {
         LyricsEntity lyrics = await SeedPublishedLyricsAsync();

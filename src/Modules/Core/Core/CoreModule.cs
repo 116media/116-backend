@@ -71,7 +71,6 @@ public static class CoreModule
         services.AddScheduledJob<CoreOutboxReplayJob>(cronExpression: "0 */1 * * * ?");
 
         // Sweeps uploads no referencing write ever claimed; the two cannot share a transaction.
-        services.AddScheduledJob<UnclaimedFileReaperJob>(cronExpression: CoreConstants.UnclaimedFileReapCron);
 
         // Register core repositories
         services.AddScoped<IFileRepository, FileRepository>();

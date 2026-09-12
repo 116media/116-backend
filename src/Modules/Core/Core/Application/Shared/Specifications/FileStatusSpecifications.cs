@@ -16,27 +16,3 @@ public class FileIsNotDeletedSpecification : Specification<FileEntity>
         return file => file.State != EnumFileState.Deleted && file.State != EnumFileState.Replaced;
     }
 }
-
-/// <summary>
-/// Specification that matches files that have been soft-deleted.
-/// Useful for recovery operations or cleanup processes.
-/// </summary>
-public class FileIsDeletedSpecification : Specification<FileEntity>
-{
-    public override Expression<Func<FileEntity, bool>> ToExpression()
-    {
-        return file => (file.State == EnumFileState.Deleted || file.State == EnumFileState.Replaced);
-    }
-}
-
-/// <summary>
-/// Specification that matches files within a specific size range.
-/// Useful for filtering files by storage requirements or upload limits.
-/// </summary>
-public class FileBySizeRangeSpecification(long minSize, long maxSize) : Specification<FileEntity>
-{
-    public override Expression<Func<FileEntity, bool>> ToExpression()
-    {
-        return file => file.SizeInBytes >= minSize && file.SizeInBytes <= maxSize;
-    }
-}

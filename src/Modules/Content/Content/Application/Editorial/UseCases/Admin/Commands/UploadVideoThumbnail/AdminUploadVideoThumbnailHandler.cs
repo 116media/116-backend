@@ -1,7 +1,6 @@
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Repositories;
 using _116.Core.Application.Shared.Services;
 using _116.Core.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
@@ -13,12 +12,10 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadVideo
 /// The thumbnail file is tracked via <see cref="FileEntity" /> in the Core module.
 /// </summary>
 /// <param name="videoRepository">Repository for video data access operations.</param>
-/// <param name="fileRepository">Repository for centralized file entity management.</param>
-/// <param name=\"fileUploadService\">Uploads and replaces stored assets.</param>
+/// <param name="fileUploadService">Uploads and replaces stored assets.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 public class AdminUploadVideoThumbnailHandler(
     IVideoRepository videoRepository,
-    IFileRepository fileRepository,
     IFileUploadService fileUploadService,
     IContentUnitOfWork unitOfWork
 ) : ICommandHandler<AdminUploadVideoThumbnailCommand, AdminUploadVideoThumbnailResult>
@@ -36,8 +33,7 @@ public class AdminUploadVideoThumbnailHandler(
             cancellationToken: cancellationToken
         );
 
-        FileEntity fileEntity = await fileUploadService.ReplaceImageFileAsync(
-            currentFileId: video.ThumbnailFileId,
+        FileEntity uploaded = await fileUploadService.UploadImageAsync(
             file: command.File,
             publicId: videoId.ToString(),
             folder: "content/video-thumbnails",
@@ -46,16 +42,25 @@ public class AdminUploadVideoThumbnailHandler(
             cancellationToken: cancellationToken
         );
 
-        video.SetThumbnailFileId(thumbnailFileId: fileEntity.Id);
+        await unitOfWork.ExecuteInTransactionAsync(
+            async ct =>
+            {
+                await fileUploadService.RecordAsync(
+                    file: uploaded,
+                    supersededFileId: video.ThumbnailFileId,
+                    cancellationToken: ct
+                );
 
-        videoRepository.Update(video: video);
-        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+                video.SetThumbnailFileId(thumbnailFileId: uploaded.Id);
 
-        await fileRepository.ClaimAsync(fileId: fileEntity.Id, cancellationToken: cancellationToken);
+                videoRepository.Update(video: video);
+            },
+            cancellationToken: cancellationToken
+        );
 
         return new AdminUploadVideoThumbnailResult(
-            ThumbnailUrl: fileEntity.StorageUrl,
-            ThumbnailStorageKey: fileEntity.StorageKey!
+            ThumbnailUrl: uploaded.StorageUrl,
+            ThumbnailStorageKey: uploaded.StorageKey!
         );
     }
 }

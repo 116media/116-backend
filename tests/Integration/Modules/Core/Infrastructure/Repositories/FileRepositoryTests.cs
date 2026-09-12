@@ -77,9 +77,10 @@ public class FileRepositoryTests(PostgresFixture postgres) : BaseRepositoryTest(
         context.Files.Add(file);
         await context.SaveChangesAsync();
 
-        var (repo, _) = CreateScopedRepository<IFileRepository, CoreDbContext>();
+        var (repo, db) = CreateScopedRepository<IFileRepository, CoreDbContext>();
 
         var result = await repo.SoftDeleteByIdAsync(file.Id);
+        await db.SaveChangesAsync();
 
         result.Should().BeTrue();
 
@@ -177,8 +178,9 @@ public class FileRepositoryTests(PostgresFixture postgres) : BaseRepositoryTest(
         context.Files.Add(file);
         await context.SaveChangesAsync();
 
-        var (repo, _) = CreateScopedRepository<IFileRepository, CoreDbContext>();
+        var (repo, db) = CreateScopedRepository<IFileRepository, CoreDbContext>();
         bool deleted = await repo.SoftDeleteByIdAsync(file.Id);
+        await db.SaveChangesAsync();
 
         deleted.Should().BeTrue();
 

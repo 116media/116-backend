@@ -1,9 +1,13 @@
-using _116.Core.Application.Shared.Persistence;
 using _116.Core.Application.Shared.Services;
 using _116.Core.Domain.Entities;
+using _116.Core.Domain.Enums;
+using _116.Core.Domain.Exceptions;
+using _116.Core.Domain.StateMachines;
 using _116.Core.Infrastructure.Persistence;
 using _116.Core.Infrastructure.Repositories;
 using _116.Core.Infrastructure.Services;
+using _116.Shared.Application.Services;
+using _116.Shared.Infrastructure.interceptors;
 using _116.Tests.Fixtures.Factories.Core;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
@@ -15,8 +19,8 @@ using Xunit;
 namespace _116.Unit.Tests.Modules.Core.Infrastructure.Services;
 
 /// <summary>
-/// Unit tests for <see cref="FileUploadService" />: each upload reaches storage, is recorded,
-/// and the superseded row is marked replaced before the new one lands.
+/// Unit tests for <see cref="FileUploadService" />: uploads describe what reached storage without
+/// touching the database, and recording stages the row without committing it.
 /// </summary>
 public class FileUploadServiceTests : IDisposable
 {
@@ -26,26 +30,30 @@ public class FileUploadServiceTests : IDisposable
     private readonly CoreDbContext _context;
     private readonly Mock<IFileService> _fileServiceMock = new();
     private readonly Mock<IImageColorService> _imageColorServiceMock = new();
-    private readonly Mock<ICoreUnitOfWork> _unitOfWorkMock = new();
     private readonly FileUploadService _service;
 
     public FileUploadServiceTests()
     {
+        // The audit interceptor is what stamps CreatedAt, which is how a recorded file is told
+        // from an unrecorded one; without it a seeded row would not look persisted.
         DbContextOptions<CoreDbContext> options = new DbContextOptionsBuilder<CoreDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .AddInterceptors(
+                new AuditableEntityInterceptor(
+                    Mock.Of<ICurrentActor>(actor =>
+                        actor.UserId == null && actor.IsAuthenticated == false && actor.HasHttpContext == false
+                    ),
+                    _time
+                )
+            )
             .Options;
 
         _context = new CoreDbContext(options);
-
-        _unitOfWorkMock
-            .Setup(x => x.CommitAsync(It.IsAny<CancellationToken>()))
-            .Returns(async (CancellationToken token) => await _context.SaveChangesAsync(token));
 
         _service = new FileUploadService(
             new FileRepository(_context, _time),
             _fileServiceMock.Object,
             _imageColorServiceMock.Object,
-            _unitOfWorkMock.Object,
             _time
         );
     }
@@ -163,94 +171,7 @@ public class FileUploadServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task UpdateAvatarFromUrlAsync_WithNoCurrentAvatar_ShouldStoreTheDownloadedFile()
-    {
-        // Arrange
-        const string avatarUrl = "https://provider.test/avatar.jpg";
-        FileDownloadResult download = SetupDownload(avatarUrl);
-
-        // Act
-        FileEntity? result = await _service.UpdateAvatarFromUrlAsync(null, avatarUrl, "user-1");
-
-        // Assert
-        result.Should().NotBeNull();
-        result!.Id.Should().Be(download.FileId);
-        result.StorageUrl.Should().Be(avatarUrl);
-        (await ReadIgnoringFiltersAsync(download.FileId)).Should().NotBeNull();
-    }
-
-    [Fact]
-    public async Task UpdateAvatarFromUrlAsync_WhenTheCurrentAvatarHasTheSameUrl_ShouldDoNothing()
-    {
-        // Arrange
-        FileEntity existing = await SeedStoredFileAsync();
-
-        // Act
-        FileEntity? result = await _service.UpdateAvatarFromUrlAsync(existing.Id, existing.StorageUrl, "user-1");
-
-        // Assert
-        result.Should().BeNull();
-        _fileServiceMock.Verify(
-            x => x.DownloadFileAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
-            Times.Never
-        );
-    }
-
-    [Fact]
-    public async Task UpdateAvatarFromUrlAsync_WithADifferentUrl_ShouldReplaceTheOldRow()
-    {
-        // Arrange
-        FileEntity existing = await SeedStoredFileAsync();
-        const string avatarUrl = "https://provider.test/changed.jpg";
-        SetupDownload(avatarUrl);
-
-        // Act
-        FileEntity? result = await _service.UpdateAvatarFromUrlAsync(existing.Id, avatarUrl, "user-1");
-
-        // Assert
-        result.Should().NotBeNull();
-        FileEntity? replaced = await ReadIgnoringFiltersAsync(existing.Id);
-        replaced.Should().NotBeNull();
-        replaced!.IsDeleted.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task UpdateAvatarFromFileAsync_WithNoCurrentAvatar_ShouldStoreTheUpload()
-    {
-        // Arrange
-        FileUploadResult upload = SetupUpload();
-
-        // Act
-        FileEntity result = await _service.UpdateAvatarFromFileAsync(
-            null,
-            FakeFile(),
-            "user-1",
-            "avatar.jpg",
-            "image/jpeg"
-        );
-
-        // Assert
-        result.Id.Should().Be(upload.FileId);
-        (await ReadIgnoringFiltersAsync(upload.FileId)).Should().NotBeNull();
-    }
-
-    [Fact]
-    public async Task UpdateAvatarFromFileAsync_WithACurrentAvatar_ShouldReplaceTheOldRow()
-    {
-        // Arrange
-        FileEntity existing = await SeedStoredFileAsync();
-        SetupUpload();
-
-        // Act
-        await _service.UpdateAvatarFromFileAsync(existing.Id, FakeFile(), "user-1", "avatar.jpg", "image/jpeg");
-
-        // Assert
-        FileEntity? replaced = await ReadIgnoringFiltersAsync(existing.Id);
-        replaced!.IsDeleted.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task ReplaceImageFileAsync_ShouldCarryTheExtractedColorsOntoTheStoredRow()
+    public async Task UploadImageAsync_ShouldCarryTheExtractedColorsOntoTheFile()
     {
         // Arrange
         FileUploadResult upload = SetupUpload();
@@ -259,8 +180,7 @@ public class FileUploadServiceTests : IDisposable
             .ReturnsAsync(new ImageColors("#112233", "#FFFFFF"));
 
         // Act
-        FileEntity result = await _service.ReplaceImageFileAsync(
-            null,
+        FileEntity uploaded = await _service.UploadImageAsync(
             FakeFile(),
             "poster",
             "posters",
@@ -269,13 +189,15 @@ public class FileUploadServiceTests : IDisposable
         );
 
         // Assert
-        result.Id.Should().Be(upload.FileId);
-        result.DominantColorHex.Should().Be("#112233");
-        result.ForegroundColorHex.Should().Be("#FFFFFF");
+        uploaded.Id.Should().Be(upload.FileId);
+        uploaded.StorageUrl.Should().Be(upload.SecureUrl);
+        uploaded.StorageKey.Should().Be(upload.PublicId);
+        uploaded.DominantColorHex.Should().Be("#112233");
+        uploaded.ForegroundColorHex.Should().Be("#FFFFFF");
     }
 
     [Fact]
-    public async Task ReplaceImageFileAsync_WhenColorExtractionYieldsNothing_ShouldStillStoreTheFile()
+    public async Task UploadImageAsync_WhenColorExtractionYieldsNothing_ShouldStillDescribeTheUpload()
     {
         // Arrange
         FileUploadResult upload = SetupUpload();
@@ -284,8 +206,7 @@ public class FileUploadServiceTests : IDisposable
             .ReturnsAsync((ImageColors?)null);
 
         // Act
-        FileEntity result = await _service.ReplaceImageFileAsync(
-            null,
+        FileEntity uploaded = await _service.UploadImageAsync(
             FakeFile(),
             "poster",
             "posters",
@@ -294,34 +215,59 @@ public class FileUploadServiceTests : IDisposable
         );
 
         // Assert
-        result.Id.Should().Be(upload.FileId);
-        result.DominantColorHex.Should().BeNull();
-        result.ForegroundColorHex.Should().BeNull();
+        uploaded.Id.Should().Be(upload.FileId);
+        uploaded.DominantColorHex.Should().BeNull();
+        uploaded.ForegroundColorHex.Should().BeNull();
     }
 
     [Fact]
-    public async Task ReplaceVideoFileAsync_WithACurrentFile_ShouldReplaceTheOldRow()
+    public async Task UploadImageAsync_ShouldWriteNothingToTheDatabase()
     {
         // Arrange
-        FileEntity existing = await SeedStoredFileAsync();
         SetupUpload();
 
         // Act
-        await _service.ReplaceVideoFileAsync(existing.Id, FakeFile(), "clip", "clips", "clip.mp4", "video/mp4");
+        FileEntity uploaded = await _service.UploadImageAsync(
+            FakeFile(),
+            "poster",
+            "posters",
+            "poster.jpg",
+            "image/jpeg"
+        );
 
         // Assert
-        FileEntity? replaced = await ReadIgnoringFiltersAsync(existing.Id);
-        replaced!.IsDeleted.Should().BeTrue();
+        (await ReadIgnoringFiltersAsync(uploaded.Id))
+            .Should()
+            .BeNull();
+        _context.ChangeTracker.Entries<FileEntity>().Should().BeEmpty();
     }
 
     [Fact]
-    public async Task UploadAndStoreRawFileAsync_ShouldStoreTheUpload()
+    public async Task UploadVideoAsync_ShouldDescribeTheVideoUpload()
     {
         // Arrange
         FileUploadResult upload = SetupUpload();
 
         // Act
-        FileEntity result = await _service.UploadAndStoreRawFileAsync(
+        FileEntity uploaded = await _service.UploadVideoAsync(FakeFile(), "clip", "clips", "clip.mp4", "video/mp4");
+
+        // Assert
+        uploaded.Id.Should().Be(upload.FileId);
+        uploaded.MimeType.Should().Be("video/mp4");
+        _fileServiceMock.Verify(
+            x => x.UploadVideoFileAsync(It.IsAny<IFormFile>(), "clip", "clips", It.IsAny<CancellationToken>()),
+            Times.Once
+        );
+    }
+
+    [Fact]
+    public async Task UploadRawAsync_ShouldDescribeTheRawUpload()
+    {
+        // Arrange
+        FileUploadResult upload = SetupUpload();
+
+        // Act
+        FileEntity uploaded = await _service.UploadRawAsync(
             FakeFile(),
             "proof",
             "proofs",
@@ -330,34 +276,195 @@ public class FileUploadServiceTests : IDisposable
         );
 
         // Assert
-        result.Id.Should().Be(upload.FileId);
-        (await ReadIgnoringFiltersAsync(upload.FileId)).Should().NotBeNull();
+        uploaded.Id.Should().Be(upload.FileId);
+        uploaded.MimeType.Should().Be("application/pdf");
+        _fileServiceMock.Verify(
+            x => x.UploadRawFileAsync(It.IsAny<IFormFile>(), "proof", "proofs", It.IsAny<CancellationToken>()),
+            Times.Once
+        );
     }
 
     [Fact]
-    public async Task ReplaceImageFileAsync_WithACurrentFile_ShouldCommitTheReplacementBeforeTheNewUpload()
+    public async Task UploadAvatarAsync_ShouldUploadUnderTheOwnersIdInTheAvatarsFolder()
+    {
+        // Arrange
+        FileUploadResult upload = SetupUpload();
+
+        // Act
+        FileEntity uploaded = await _service.UploadAvatarAsync(FakeFile(), "user-1", "avatar.jpg", "image/jpeg");
+
+        // Assert
+        uploaded.Id.Should().Be(upload.FileId);
+        uploaded.FileName.Should().Be("user-1");
+        _fileServiceMock.Verify(
+            x => x.UploadFileAsync(It.IsAny<IFormFile>(), "user-1", "avatars", It.IsAny<CancellationToken>()),
+            Times.Once
+        );
+    }
+
+    [Fact]
+    public async Task UploadAvatarFromUrlAsync_WithNoCurrentAvatar_ShouldDescribeTheDownload()
+    {
+        // Arrange
+        const string avatarUrl = "https://provider.test/avatar.jpg";
+        FileDownloadResult download = SetupDownload(avatarUrl);
+
+        // Act
+        FileEntity? avatar = await _service.UploadAvatarFromUrlAsync(null, avatarUrl);
+
+        // Assert
+        avatar.Should().NotBeNull();
+        avatar!.Id.Should().Be(download.FileId);
+        avatar.StorageUrl.Should().Be(avatarUrl);
+    }
+
+    [Fact]
+    public async Task UploadAvatarFromUrlAsync_WhenTheCurrentAvatarHasTheSameUrl_ShouldDoNothing()
+    {
+        // Arrange
+        FileEntity existing = await SeedStoredFileAsync();
+
+        // Act
+        FileEntity? avatar = await _service.UploadAvatarFromUrlAsync(existing.Id, existing.StorageUrl);
+
+        // Assert
+        avatar.Should().BeNull();
+        _fileServiceMock.Verify(
+            x => x.DownloadFileAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
+    }
+
+    [Fact]
+    public async Task UploadAvatarFromUrlAsync_WithADifferentUrl_ShouldDescribeTheDownload()
+    {
+        // Arrange
+        FileEntity existing = await SeedStoredFileAsync();
+        const string avatarUrl = "https://provider.test/changed.jpg";
+        FileDownloadResult download = SetupDownload(avatarUrl);
+
+        // Act
+        FileEntity? avatar = await _service.UploadAvatarFromUrlAsync(existing.Id, avatarUrl);
+
+        // Assert
+        avatar.Should().NotBeNull();
+        avatar!.Id.Should().Be(download.FileId);
+    }
+
+    [Fact]
+    public async Task RecordAsync_ShouldStageTheRowWithoutCommittingIt()
+    {
+        // Arrange
+        SetupUpload();
+        FileEntity uploaded = await _service.UploadImageAsync(
+            FakeFile(),
+            "poster",
+            "posters",
+            "poster.jpg",
+            "image/jpeg"
+        );
+
+        // Act
+        FileEntity recorded = await _service.RecordAsync(uploaded);
+
+        // Assert
+        recorded.Id.Should().Be(uploaded.Id);
+        _context.Entry(recorded).State.Should().Be(EntityState.Added);
+        (await ReadIgnoringFiltersAsync(uploaded.Id)).Should().BeNull();
+    }
+
+    [Fact]
+    public async Task RecordAsync_WithASupersededFile_ShouldMarkTheOldRowReplaced()
     {
         // Arrange
         FileEntity existing = await SeedStoredFileAsync();
         SetupUpload();
+        FileEntity uploaded = await _service.UploadImageAsync(
+            FakeFile(),
+            "poster",
+            "posters",
+            "poster.jpg",
+            "image/jpeg"
+        );
 
         // Act
-        await _service.ReplaceImageFileAsync(existing.Id, FakeFile(), "poster", "posters", "p.jpg", "image/jpeg");
+        await _service.RecordAsync(uploaded, existing.Id);
+        await _context.SaveChangesAsync();
 
         // Assert
-        _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Exactly(2));
+        FileEntity? replaced = await ReadIgnoringFiltersAsync(existing.Id);
+        replaced.Should().NotBeNull();
+        replaced!.State.Should().Be(EnumFileState.Replaced);
+        replaced.DeletedAt.Should().Be(StartInstant);
+        (await ReadIgnoringFiltersAsync(uploaded.Id)).Should().NotBeNull();
     }
 
     [Fact]
-    public async Task UploadAndStoreRawFileAsync_ShouldCommitExactlyOnce()
+    public async Task RecordAsync_WithAFileThatAlreadyHasARow_ShouldRefuseToRecordItTwice()
+    {
+        // Arrange
+        FileEntity recorded = await SeedStoredFileAsync();
+
+        // Act
+        Func<Task> act = async () => await _service.RecordAsync(recorded);
+
+        // Assert
+        await act.Should()
+            .ThrowAsync<CoreRuleException>()
+            .Where(exception => exception.Code == CoreRuleCodes.FileAlreadyRecorded);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task UploadImageAsync_WithoutAMimeType_ShouldRejectBeforeReachingStorage(string mimeType)
     {
         // Arrange
         SetupUpload();
 
         // Act
-        await _service.UploadAndStoreRawFileAsync(FakeFile(), "proof", "proofs", "proof.pdf", "application/pdf");
+        Func<Task> act = async () =>
+            await _service.UploadImageAsync(FakeFile(), "poster", "posters", "poster.jpg", mimeType);
 
         // Assert
-        _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
+        await act.Should()
+            .ThrowAsync<CoreRuleException>()
+            .Where(exception => exception.Code == CoreRuleCodes.MimeTypeRequired);
+        _fileServiceMock.Verify(
+            x =>
+                x.UploadFileAsync(
+                    It.IsAny<IFormFile>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Never
+        );
+    }
+
+    [Fact]
+    public async Task UploadImageAsync_WithoutAnOriginalFileName_ShouldRejectBeforeReachingStorage()
+    {
+        // Arrange
+        SetupUpload();
+
+        // Act
+        Func<Task> act = async () =>
+            await _service.UploadImageAsync(FakeFile(), "poster", "posters", " ", "image/jpeg");
+
+        // Assert
+        await act.Should()
+            .ThrowAsync<CoreRuleException>()
+            .Where(exception => exception.Code == CoreRuleCodes.OriginalFileNameRequired);
+        _fileServiceMock.Verify(
+            x =>
+                x.UploadFileAsync(
+                    It.IsAny<IFormFile>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Never
+        );
     }
 }

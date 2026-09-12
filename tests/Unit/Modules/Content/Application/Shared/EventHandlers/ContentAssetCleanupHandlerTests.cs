@@ -104,6 +104,7 @@ public class ContentAssetCleanupHandlerTests
 
         // Assert
         _fileRepositoryMock.VerifySoftDeleteByIdCalled(thumbnailFileId);
+        _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 
     [Fact]
@@ -117,6 +118,7 @@ public class ContentAssetCleanupHandlerTests
 
         // Assert
         _fileRepositoryMock.VerifySoftDeleteByIdNotCalled();
+        _unitOfWorkMock.VerifyExecutedInTransaction(0);
     }
 
     #endregion
@@ -141,6 +143,7 @@ public class ContentAssetCleanupHandlerTests
         // Assert
         _fileRepositoryMock.VerifySoftDeleteByIdCalled(videoFileId);
         _fileRepositoryMock.VerifySoftDeleteByIdCalled(thumbnailFileId);
+        _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 
     [Fact]
