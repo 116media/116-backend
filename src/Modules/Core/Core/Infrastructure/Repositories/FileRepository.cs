@@ -45,28 +45,6 @@ public class FileRepository(CoreDbContext context, TimeProvider timeProvider)
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyDictionary<Guid, string>> GetStorageUrlsByIdsAsync(
-        IReadOnlyCollection<Guid> fileIds,
-        CancellationToken cancellationToken = default
-    )
-    {
-        if (fileIds.Count == 0)
-        {
-            return new Dictionary<Guid, string>();
-        }
-
-        Guid[] distinctIds = fileIds.Distinct().ToArray();
-
-        return await Context
-            .Files.Where(file =>
-                distinctIds.Contains(file.Id)
-                && file.State != EnumFileState.Deleted
-                && file.State != EnumFileState.Replaced
-            )
-            .ToDictionaryAsync(file => file.Id, file => file.StorageUrl, cancellationToken);
-    }
-
-    /// <inheritdoc />
     public async Task<FileEntity?> GetAvatarFileAsync(Guid? avatarFileId, CancellationToken cancellationToken = default)
     {
         return avatarFileId.HasValue ? await GetByIdAsync(avatarFileId.Value, cancellationToken) : null;
