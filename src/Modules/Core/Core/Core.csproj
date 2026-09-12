@@ -12,6 +12,8 @@
 
     <ItemGroup>
         <PackageReference Include="CloudinaryDotNet" />
+        <PackageReference Include="Microsoft.Extensions.Caching.Hybrid" />
+        <PackageReference Include="Polly.Core" />
         <PackageReference Include="SixLabors.ImageSharp" />
     </ItemGroup>
 </Project>
