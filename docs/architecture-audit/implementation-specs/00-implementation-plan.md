@@ -28,7 +28,7 @@ shippable work. **Rules of engagement:**
 - [ ] **Stage 11 — CancellationToken, validated configuration & observability** → [`stage-11-cancellation-config-observability.md`](stage-11-cancellation-config-observability.md)
 - [ ] **Stage 12 — Public/Admin DTO split & staff-data leak fixes** → [`stage-12-public-dto-split.md`](stage-12-public-dto-split.md)
 - [ ] **Stage 13 — Domain-event durability (identity + outbox + transaction boundary)** → [`stage-13-domain-event-durability.md`](stage-13-domain-event-durability.md)
-- [ ] **Stage 14 — Storage contracts, file pipeline, architecture tests & packaging** → [`stage-14-storage-contracts-and-packaging.md`](stage-14-storage-contracts-and-packaging.md)
+- [x] **Stage 14 — Storage contracts, file pipeline, architecture tests & packaging** → [`stage-14-storage-contracts-and-packaging.md`](stage-14-storage-contracts-and-packaging.md)
 - [ ] **Stage 15 — Domain model hardening (aggregate boundaries, guards, events)** → [`stage-15-domain-model-hardening.md`](stage-15-domain-model-hardening.md)
 - [ ] **Stage 16 — API contract & authorization hygiene** → [`stage-16-api-contract-hygiene.md`](stage-16-api-contract-hygiene.md)
 - [ ] **Stage 17 — Notifications, email & i18n overhaul** → [`stage-17-notifications-and-i18n.md`](stage-17-notifications-and-i18n.md)
@@ -184,15 +184,16 @@ Small, isolated, high-urgency fixes with no cross-module surgery. Full code in t
 
 ### Stage 14 — Storage contracts, file pipeline, architecture tests & packaging
 
-- [ ] Central Package Management + `Directory.Build.props` `[study 04]`
-- [ ] `Core.Contracts` (`IFileStore`/`FileRef`); split the 17-method `IFileRepository`; migrate
-      Identity then Content off `Core.csproj`; fix the Api/Core registration mismatch
-      `[02 §1 / 02 §4 / 02 §6 / 02 §12 / 05 §6]`
-- [ ] Evict avatar/thumbnail/colour/slug from Core; collapse the duplicated `FileEntity → FileDto`
-      mapping `[05 §5 / 02 §9]`
-- [ ] File pipeline: swap-then-delete, correct `resource_type`, Polly-wrapped Cloudinary, atomic
+- [x] Central Package Management + `Directory.Build.props` `[study 04]`
+- [x] `Core.Contracts` (shipped as `IFileStorageService`/`FileReferenceDto`); split the
+      17-method `IFileRepository`; migrate Identity then Content off `Core.csproj`; fix the
+      Api/Core registration mismatch `[02 §1 / 02 §4 / 02 §6 / 02 §12 / 05 §6]`
+- [x] Evict avatar/thumbnail/slug from Core; collapse the duplicated `FileEntity → FileDto`
+      mapping. Colour extraction stays in Core — see the D3 amendment `[05 §5 / 02 §9]`
+- [x] File pipeline: swap-then-delete, correct `resource_type`, Polly-wrapped Cloudinary, atomic
       upload+write, `FileEntity` invariants `[05 §2 / 05 §3 / 05 §4 / 05 §7 / 05 §10]`
-- [ ] `tests/Architecture` NetArchTest rules (boundaries + layers) `[02 §3 / study 02]`
+- [x] `tests/Architecture` NetArchTest rules (boundaries + layers + provider SDKs); allowlist
+      empty; own CI job `[02 §3 / study 02]`
 - **PR:** `refactor(core): storage contracts, hardened file pipeline, architecture tests and CPM`
 
 ### Stage 15 — Domain model hardening
