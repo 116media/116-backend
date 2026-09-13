@@ -74,6 +74,8 @@ public class AdminUpdateCategoryHandler(
         await unitOfWork.ExecuteInTransactionAsync(
             async ct =>
             {
+                bool hasClearedPredecessor = false;
+
                 if (command.IsExclusive)
                 {
                     CategoryEntity? currentExclusive = await categoryRepository.GetExclusiveCategoryAsync(
@@ -83,7 +85,7 @@ public class AdminUpdateCategoryHandler(
                     if (currentExclusive is not null && currentExclusive.Id != category.Id)
                     {
                         currentExclusive.ClearExclusive();
-                        categoryRepository.Update(category: currentExclusive);
+                        hasClearedPredecessor = true;
                     }
                 }
 
@@ -96,8 +98,15 @@ public class AdminUpdateCategoryHandler(
                     if (currentDefault is not null && currentDefault.Id != category.Id)
                     {
                         currentDefault.ClearDefaultForLyrics();
-                        categoryRepository.Update(category: currentDefault);
+                        hasClearedPredecessor = true;
                     }
+                }
+
+                if (hasClearedPredecessor)
+                {
+                    // The partial unique indexes are checked per statement, so the clear must
+                    // reach the database before the set, inside the same transaction.
+                    await unitOfWork.CommitAsync(cancellationToken: ct);
                 }
 
                 category.Update(
