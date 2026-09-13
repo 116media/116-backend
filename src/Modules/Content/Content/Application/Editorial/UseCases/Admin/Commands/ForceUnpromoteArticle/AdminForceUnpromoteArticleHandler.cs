@@ -40,8 +40,6 @@ public class AdminForceUnpromoteArticleHandler(
         }
 
         article.ForceUnpromote(unpromotedBy: currentActor.UserId!, reason: command.Reason);
-
-        articleRepository.Update(article: article);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminForceUnpromoteArticleResult(ArticleId: article.Id, UnpromotedAt: article.UnpromotedAt!.Value);
