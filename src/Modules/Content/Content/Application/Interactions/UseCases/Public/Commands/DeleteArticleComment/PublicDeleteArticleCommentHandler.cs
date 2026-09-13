@@ -45,7 +45,6 @@ public class PublicDeleteArticleCommentHandler(
 
         if (comment.SoftDelete())
         {
-            articleCommentRepository.UpdateComment(comment: comment);
             await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
         }
 
