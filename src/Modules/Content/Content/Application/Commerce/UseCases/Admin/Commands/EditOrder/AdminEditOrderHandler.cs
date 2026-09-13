@@ -41,8 +41,6 @@ public class AdminEditOrderHandler(
         }
 
         order.Update(customerId: newCustomerId, packageId: command.PackageId);
-
-        await contentOrderRepository.UpdateAsync(order: order, ct: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         ContentOrderEntity updated =
