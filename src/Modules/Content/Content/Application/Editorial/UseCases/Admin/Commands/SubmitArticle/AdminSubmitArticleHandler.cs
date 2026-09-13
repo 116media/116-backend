@@ -57,8 +57,6 @@ public class AdminSubmitArticleHandler(
         {
             throw i18n.Article.AlreadyPendingReview();
         }
-
-        articleRepository.Update(article: article);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminSubmitArticleResult(IsSuccess: true);
