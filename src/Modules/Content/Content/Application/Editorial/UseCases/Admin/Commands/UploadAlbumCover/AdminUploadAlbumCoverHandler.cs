@@ -58,8 +58,6 @@ public class AdminUploadAlbumCoverHandler(
                     label: album.Label,
                     releaseType: album.ReleaseType
                 );
-
-                albumRepository.Update(album: album);
             },
             cancellationToken: cancellationToken
         );
