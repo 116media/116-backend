@@ -55,8 +55,6 @@ public class AdminUploadShortVideoFileHandler(
                 );
 
                 shortVideo.ReplaceVideoFile(videoFileId: uploaded.Reference.Id);
-
-                shortVideoRepository.Update(shortVideo: shortVideo);
             },
             cancellationToken: cancellationToken
         );
