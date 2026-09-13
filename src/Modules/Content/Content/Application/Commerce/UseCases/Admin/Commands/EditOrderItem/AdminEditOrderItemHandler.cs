@@ -80,11 +80,7 @@ public class AdminEditOrderItemHandler(
             socialBoost: command.SocialBoost,
             isBonus: command.IsBonus
         );
-
-        await contentOrderRepository.UpdateItemAsync(item: item, ct: cancellationToken);
-
         order.RecalculateTotalFromItems();
-        await contentOrderRepository.UpdateAsync(order: order, ct: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         ContentOrderItemEntity updatedItem = await contentOrderRepository.GetItemByIdOrThrowAsync(
