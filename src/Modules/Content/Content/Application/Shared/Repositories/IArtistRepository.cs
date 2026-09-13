@@ -136,11 +136,6 @@ public interface IArtistRepository
     Task AddSocialLinkAsync(ArtistSocialLinkEntity link, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Marks an existing social link as modified.
-    /// </summary>
-    void UpdateSocialLink(ArtistSocialLinkEntity link);
-
-    /// <summary>
     /// Removes a social link from the repository.
     /// </summary>
     void RemoveSocialLink(ArtistSocialLinkEntity link);
