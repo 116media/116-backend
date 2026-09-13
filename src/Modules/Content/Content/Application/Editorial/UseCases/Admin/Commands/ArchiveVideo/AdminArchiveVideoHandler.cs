@@ -32,8 +32,6 @@ public class AdminArchiveVideoHandler(IVideoRepository videoRepository, IContent
         {
             throw i18n.Video.AlreadyArchived();
         }
-
-        videoRepository.Update(video: video);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminArchiveVideoResult(IsSuccess: true);
