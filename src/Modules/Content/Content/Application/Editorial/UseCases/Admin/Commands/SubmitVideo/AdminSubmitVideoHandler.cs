@@ -54,8 +54,6 @@ public class AdminSubmitVideoHandler(
         {
             throw i18n.Video.AlreadyPendingReview();
         }
-
-        videoRepository.Update(video: video);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminSubmitVideoResult(IsSuccess: true);
