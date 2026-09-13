@@ -63,8 +63,6 @@ public class AdminUpdateVideoHandler(
             metaTitle: command.MetaTitle,
             metaDescription: command.MetaDescription
         );
-
-        videoRepository.Update(video: video);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         VideoEntity updated = await videoRepository.GetByIdOrThrowAsync(
