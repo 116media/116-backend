@@ -46,7 +46,6 @@ public class AdminUpsertSingleStreamingLinkHandler(
         if (existing is not null)
         {
             existing.UpdateUrl(url: command.Url);
-            streamingLinkRepository.Update(streamingLink: existing);
             await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
             return new AdminUpsertSingleStreamingLinkResult(StreamingLinkId: existing.Id);
