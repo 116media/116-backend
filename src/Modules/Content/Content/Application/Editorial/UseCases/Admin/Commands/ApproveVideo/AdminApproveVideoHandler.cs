@@ -32,7 +32,6 @@ public class AdminApproveVideoHandler(IVideoRepository videoRepository, IContent
         }
 
         video.Approve();
-        videoRepository.Update(video: video);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminApproveVideoResult(IsSuccess: true);
