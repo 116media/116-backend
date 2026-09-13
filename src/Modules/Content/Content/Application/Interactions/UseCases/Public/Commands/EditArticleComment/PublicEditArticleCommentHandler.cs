@@ -43,8 +43,6 @@ public class PublicEditArticleCommentHandler(
         }
 
         comment.Edit(body: command.Body);
-        articleCommentRepository.UpdateComment(comment: comment);
-
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new PublicEditArticleCommentResult(IsSuccess: true);
