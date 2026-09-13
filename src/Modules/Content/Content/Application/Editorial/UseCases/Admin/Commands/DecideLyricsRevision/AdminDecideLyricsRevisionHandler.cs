@@ -33,19 +33,15 @@ public class AdminDecideLyricsRevisionHandler(
         if (command.Accept)
         {
             revision.Accept(decidedByUserId: command.DecidedByUserId);
-            revisionRepository.Update(revision: revision);
-
             LyricsEntity lyrics = await lyricsRepository.GetByIdOrThrowAsync(
                 id: revision.LyricsId,
                 cancellationToken: cancellationToken
             );
             lyrics.ReplaceLyricsText(lyricsText: revision.ProposedText);
-            lyricsRepository.Update(lyrics: lyrics);
         }
         else
         {
             revision.Reject(decidedByUserId: command.DecidedByUserId);
-            revisionRepository.Update(revision: revision);
         }
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
