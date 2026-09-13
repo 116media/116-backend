@@ -35,8 +35,6 @@ public class AdminArchiveLyricsHandler(
         {
             throw i18n.Lyrics.AlreadyArchived();
         }
-
-        lyricsRepository.Update(lyrics: lyrics);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminArchiveLyricsResult(IsSuccess: true);
