@@ -80,8 +80,6 @@ public class VideoYoutubeUrlAttachedThumbnailHandler(
                 );
 
                 video.SetThumbnailFileId(thumbnailFileId: uploaded.Reference.Id);
-
-                videoRepository.Update(video: video);
             },
             cancellationToken: cancellationToken
         );
