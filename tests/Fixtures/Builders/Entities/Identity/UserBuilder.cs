@@ -214,10 +214,10 @@ public class UserBuilder
 
         foreach (RoleEntity role in _roles)
         {
-            var userRole = UserRoleEntity.CreateBootstrap(Guid.NewGuid(), _id, role.Id);
+            user.GrantInitialRole(roleId: role.Id);
 
+            UserRoleEntity userRole = user.UserRoles.First(ur => ur.RoleId == role.Id);
             typeof(UserRoleEntity).GetProperty(nameof(UserRoleEntity.Role))!.SetValue(userRole, role);
-            user.AssignRole(userRole);
         }
 
         return user;

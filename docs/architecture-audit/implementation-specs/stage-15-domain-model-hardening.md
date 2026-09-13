@@ -635,10 +635,28 @@ one-way — and no boundary anywhere: from a loaded
 
 **A.2.1 — Two of nine roots are not roots; two more are undocumented (R1, R13).**
 `UserRoleEntity` and `RolePermissionEntity` are pure join rows: they exist only as part of a
-user's grants and a role's permission set, they are never fetched by identity, and neither has
-a repository. They are `Aggregate<Guid>` solely because they raise events
-(`UserRoleEntity.cs:44,76`, `RolePermissionEntity.cs:46,57`) and `Aggregate` is the only base
-that can. `UserOtpStateEntity` and `UserTokenStateEntity` are 1:1 with the user — their `Id`
+user's grants and a role's permission set, and neither carries a lifecycle of its own. They are
+`Aggregate<Guid>` solely because they raise events (`UserRoleEntity.cs:44,76`,
+`RolePermissionEntity.cs:46,57`) and `Aggregate` is the only base that can.
+
+The breach is wider than the base class. **Both have their own repository**, and both are
+fetched by a key that is not their root's:
+
+| Repository | Direct-retrieval methods | Callers |
+| --- | --- | --- |
+| `IUserRoleRepository` | `GetByUserAndRoleAsync(userId, roleId)`, `GetUserRolesWithRoleAsync(userId)`, `ExistsByUserAndRoleAsync` | `AdminAssignRoleToUserHandler`, `AdminRemoveRoleFromUserHandler`, `AdminGetUserRolesHandler` |
+| `IRolePermissionRepository` | `GetByRoleAndPermissionAsync(roleId, permissionId)`, `GetByRoleAndPermissionIdsAsync`, `GetPermissionIdsByRoleIdAsync`, `ExistsByRoleAndPermissionAsync` | `AdminAssignPermissionToRoleHandler`, `AdminRemovePermissionFromRoleHandler`, `AdminBulkUpdateRolePermissionsHandler` |
+
+Both are DI-registered (`IdentityModule.cs:156-157`) and both extend `IdentityRepository<T>`, so
+after 15.1 they only still compile because their entities are `Aggregate<Guid>` and therefore
+satisfy the `IAggregateRoot` constraint. Demoting the two types breaks the constraint, which is
+what makes deleting the repositories a compile-time obligation rather than a tidy-up.
+
+The six admin grant/revoke handlers consequently never go through a root at all: they add and
+delete join rows directly and commit. `UserEntity.AssignRole` — the one method that does route a
+grant through the root — is called from exactly one place, and it is not a handler (A.2.8).
+
+`UserOtpStateEntity` and `UserTokenStateEntity` are 1:1 with the user — their `Id`
 *is* the user id (`UserOtpStateEntity.cs:33`) — but they are genuinely separate aggregates by
 design, because their counters are bumped by atomic SQL and must not contend on the user's
 lock. That is legitimate; what is missing is saying so.
@@ -709,9 +727,11 @@ are `UserEntity` rules. `UserEntity.ValidateCanLogin()` (`:340`) is the shape th
 take, but it is a void method the caller must remember to call, and it dereferences `Email!`.
 
 **A.2.8 — `AssignRole` accepts a pre-built member (R8).**
-`UserEntity.cs:386` takes a fully constructed `UserRoleEntity` from the handler, checks for a
-duplicate, and adds it. The root does not create its own child, so nothing stops a caller
-building a `UserRoleEntity` with a mismatched `UserId`.
+`UserEntity.cs:386` takes a fully constructed `UserRoleEntity`, checks for a duplicate, and adds
+it. The root does not create its own child, so nothing stops a caller building a
+`UserRoleEntity` with a mismatched `UserId`. Its sole production caller is
+`AuthRepository.cs:274` — the signup visitor-grant, invoked from infrastructure, not from a
+handler; the admin grant path (A.2.1) bypasses the root entirely via `IUserRoleRepository`.
 
 **A.2.9 — Ambient clock in eight places (R15).**
 `SessionEntity.cs:147,166,179`; `OtpEntity.cs:106,123,140`; `RoleEntity.cs:154`;
@@ -731,6 +751,28 @@ asks.
    `UserEntity.GrantRole(roleId, roleName)` and `RevokeRole(roleId, roleName)`,
    `RoleEntity.GrantPermission(permissionId)` / `RevokePermission(permissionId)`. Each returns
    `bool` and raises only on a real change. `AssignRole(UserRoleEntity)` is deleted (A.2.8).
+
+   The demotion drags the A.2.1 repositories with it — after 15.1 a member entity with a
+   repository no longer compiles, so this is one indivisible change:
+   - **`IUserRoleRepository` / `UserRoleRepository` and `IRolePermissionRepository` /
+     `RolePermissionRepository` are deleted**, with their DI registrations
+     (`IdentityModule.cs:156-157`) and the four specifications that only they applied
+     (`UserRoleByUserAndRoleSpecification`, `UserRoleByUserIdSpecification`,
+     `RolePermissionByRoleAndPermissionSpecification`, `RolePermissionByRoleIdSpecification`).
+   - **The six admin handlers re-route through the roots.** `AdminAssignRoleToUser` /
+     `AdminRemoveRoleFromUser` load the *user* with roles and call `GrantRole`/`RevokeRole`;
+     `AdminAssignPermissionToRole`, `AdminRemovePermissionFromRole` and
+     `AdminBulkUpdateRolePermissions` load the *role* with permissions and call
+     `GrantPermission`/`RevokePermission`; `AdminGetUserRoles` reads from `IAuthRepository`'s
+     user-with-roles query instead of the join-row repository. The duplicate-grant check moves
+     from `ExistsBy…Async` round-trips into the root method's own guard, and the not-assigned
+     404s become the `false`/absent case of the same methods.
+   - **The bootstrap paths keep working through the roots**: `AuthRepository.cs:274` (visitor
+     grant on signup) and the two seeders swap `CreateBootstrap` + `Add` for the root verbs on
+     the loaded `UserEntity`/`RoleEntity`; the no-event bootstrap distinction moves behind a
+     parameter or a dedicated root method rather than a second entity factory.
+   - `RecordRevocation` / `MarkRemoved` (A.2.5's declarative raisers on these two types) go
+     with `AddDomainEvent` — the facts are raised by `RevokeRole`/`RevokePermission`.
 2. **Login counters move to `UserLoginStateEntity`**, a sibling of `UserOtpStateEntity` with
    the same shape and the same atomic-SQL repository. `UserEntity.FailedLoginAttempts` and
    `LockedUntil` are dropped. `IAccountLockoutRepository` re-points; migration drops two
@@ -1295,15 +1337,17 @@ by 15.1. No Mailer-specific work.
 
 ## Checklist
 
-- [ ] 15.1 — Kernel: `IAggregateRoot`, `Entity<T>` without events, `Id` init-only, `AddDomainEvent` protected, `OccurredOn` from the interceptor
-- [ ] 15.2 — Identity: `UserRole`/`RolePermission` demote to members; grant/revoke verbs on the roots
+- [x] 15.1 — Kernel: `IAggregateRoot`, `Entity<T>` without events, `Id` init-only, `AddDomainEvent` protected, `OccurredOn` from the interceptor
+- [x] 15.2 — Identity: `UserRole`/`RolePermission` demote to members; their two repositories and
+  four specifications are deleted; the six admin handlers and the bootstrap paths re-route
+  through grant/revoke verbs on the roots
 - [ ] 15.3 — Identity: `UserLoginStateEntity`; drop `FailedLoginAttempts`/`LockedUntil` from `UserEntity` (D11)
 - [ ] 15.4 — Identity: `Email`/`OtpPurpose`/`Client` value objects reach the entities via converters (D8)
 - [ ] 15.5 — Identity: six transition guards; `UserActivatedEvent`/`UserDeactivatedEvent`; the five declarative raisers move to their owning root
 - [ ] 15.6 — Identity: OTP verification policy moves out of `OtpRepository` into `OtpEntity.Verify`
-- [ ] 15.7 — Core: `IFileRepository` splits from `IFileUploadService`; `UpdateAvatarUrlFromSourceAsync` moves to Identity
-- [ ] 15.8 — Core: `EnumFileState` replaces the flag trio; clock injected
-- [ ] 15.8b — Core: upload and reference become one transaction; the claim protocol and its reaper are deleted (D12)
+- [x] 15.7 — Core: `IFileRepository` splits from `IFileUploadService`; `UpdateAvatarUrlFromSourceAsync` moves to Identity
+- [x] 15.8 — Core: `EnumFileState` replaces the flag trio; clock injected
+- [x] 15.8b — Core: upload and reference become one transaction; the claim protocol and its reaper are deleted (D12)
 - [ ] 15.9 — Content: navigation census commit (the 64, classified within/across)
 - [ ] 15.10 — Content: twelve members demote to `Entity<Guid>`; roots gain their member factories
 - [ ] 15.11 — Content: cross-aggregate navs → id-only, Commerce → Catalogue → Editorial

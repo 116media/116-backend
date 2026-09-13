@@ -41,6 +41,25 @@ public interface IAuthRepository : IClaimsProvider
     Task<UserEntity?> GetUserWithRolesByEmailOrThrow(Email email, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Retrieves a user with their associated roles by unique identifier.
+    /// </summary>
+    /// <param name="userId">The unique identifier of the user.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>The user entity with roles loaded.</returns>
+    /// <exception cref="NotFoundException">Thrown when no user is found with the specified identifier.</exception>
+    Task<UserEntity?> GetUserWithRolesByIdOrThrow(Guid userId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves the active administrator owning this address, filtering on role and status in
+    /// the query. Returns null when the address is unknown, not an administrator, or inactive,
+    /// so the caller cannot tell those three apart.
+    /// </summary>
+    /// <param name="email">The email address to search for.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>The matching user, or null when no active administrator owns the address.</returns>
+    Task<UserEntity?> GetActiveAdminByEmailAsync(Email email, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Retrieves a user with their associated roles and permissions by unique identifier.
     /// </summary>
     /// <param name="userId">The unique identifier of the user.</param>

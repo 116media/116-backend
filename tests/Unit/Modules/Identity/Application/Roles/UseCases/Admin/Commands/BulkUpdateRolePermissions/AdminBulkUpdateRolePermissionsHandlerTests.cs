@@ -3,6 +3,7 @@ using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Exceptions;
+using _116.Tests.Fixtures.Builders.Entities.Identity;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Identity;
 using _116.Unit.Tests.Common;
@@ -20,7 +21,6 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Roles.UseCases.Admin.Comm
 public class AdminBulkUpdateRolePermissionsHandlerTests : BaseHandlerTest
 {
     private readonly Mock<IRoleRepository> _roleRepositoryMock;
-    private readonly Mock<IRolePermissionRepository> _rolePermissionRepositoryMock;
     private readonly Mock<IUserTokenStateRepository> _tokenStateRepositoryMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
     private readonly AdminBulkUpdateRolePermissionsHandler _handler;
@@ -28,17 +28,28 @@ public class AdminBulkUpdateRolePermissionsHandlerTests : BaseHandlerTest
     public AdminBulkUpdateRolePermissionsHandlerTests()
     {
         _roleRepositoryMock = MockRoleRepository.Create();
-        _rolePermissionRepositoryMock = MockRolePermissionRepository.Create();
         _tokenStateRepositoryMock = new Mock<IUserTokenStateRepository>();
         _unitOfWorkMock = MockIdentityUnitOfWork.Create();
 
         _handler = new AdminBulkUpdateRolePermissionsHandler(
             _roleRepositoryMock.Object,
-            _rolePermissionRepositoryMock.Object,
             _tokenStateRepositoryMock.Object,
             _unitOfWorkMock.Object,
             Mapper
         );
+    }
+
+    /// <summary>
+    /// Builds a role that already carries the supplied permissions, mirroring the shape the
+    /// repository include returns.
+    /// </summary>
+    private static RoleEntity CreateRoleWithPermissions(params PermissionEntity[] permissions)
+    {
+        return new RoleBuilder()
+            .WithName(TestConstants.Role.ValidName)
+            .WithDescription(TestConstants.Role.ValidDescription)
+            .WithPermissions(permissions)
+            .Build();
     }
 
     #region Success Cases
@@ -50,7 +61,6 @@ public class AdminBulkUpdateRolePermissionsHandlerTests : BaseHandlerTest
         RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName, TestConstants.Role.ValidDescription);
 
         List<Guid> newPermissionIds = [Guid.NewGuid(), Guid.NewGuid()];
-        List<Guid> currentPermissionIds = [];
 
         AdminBulkUpdateRolePermissionsCommand command = new(
             RoleId: role.Id.ToString(),
@@ -58,7 +68,6 @@ public class AdminBulkUpdateRolePermissionsHandlerTests : BaseHandlerTest
         );
 
         _roleRepositoryMock.SetupGetByIdWithPermissionsOrThrow(role);
-        _rolePermissionRepositoryMock.SetupGetPermissionIdsByRoleId(role.Id, currentPermissionIds);
 
         // Act
         AdminBulkUpdateRolePermissionsResult result = await _handler.Handle(command, CancellationToken.None);
@@ -73,103 +82,85 @@ public class AdminBulkUpdateRolePermissionsHandlerTests : BaseHandlerTest
     }
 
     [Fact]
-    public async Task Handle_WithNewPermissions_ShouldAddNewPermissions()
+    public async Task Handle_WithNewPermissions_ShouldGrantThroughTheRoleAggregate()
     {
         // Arrange
         RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName, TestConstants.Role.ValidDescription);
 
         var newPermissionId = Guid.NewGuid();
-        List<Guid> newPermissionIds = [newPermissionId];
-        List<Guid> currentPermissionIds = [];
-
         AdminBulkUpdateRolePermissionsCommand command = new(
             RoleId: role.Id.ToString(),
-            PermissionIds: newPermissionIds
+            PermissionIds: [newPermissionId]
         );
 
         _roleRepositoryMock.SetupGetByIdWithPermissionsOrThrow(role);
-        _rolePermissionRepositoryMock.SetupGetPermissionIdsByRoleId(role.Id, currentPermissionIds);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _rolePermissionRepositoryMock.VerifyAddCalled();
+        role.HasPermission(newPermissionId).Should().BeTrue();
     }
 
     [Fact]
-    public async Task Handle_WithRemovedPermissions_ShouldRemoveOldPermissions()
+    public async Task Handle_WithRemovedPermissions_ShouldRevokeThroughTheRoleAggregate()
     {
         // Arrange
-        RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName, TestConstants.Role.ValidDescription);
-
-        var existingPermissionId = Guid.NewGuid();
-        List<Guid> newPermissionIds = [];
-        List<Guid> currentPermissionIds = [existingPermissionId];
-
-        RolePermissionEntity rolePermission = RolePermissionFactory.Create(role.Id, existingPermissionId);
-
-        AdminBulkUpdateRolePermissionsCommand command = new(
-            RoleId: role.Id.ToString(),
-            PermissionIds: newPermissionIds
+        PermissionEntity existingPermission = PermissionFactory.Create(
+            TestConstants.Permission.ValidResource,
+            TestConstants.Permission.ValidAction
         );
+        RoleEntity role = CreateRoleWithPermissions(existingPermission);
+
+        AdminBulkUpdateRolePermissionsCommand command = new(RoleId: role.Id.ToString(), PermissionIds: []);
 
         _roleRepositoryMock.SetupGetByIdWithPermissionsOrThrow(role);
-        _rolePermissionRepositoryMock.SetupGetPermissionIdsByRoleId(role.Id, currentPermissionIds);
-        _rolePermissionRepositoryMock.SetupGetByRoleAndPermission(rolePermission);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _rolePermissionRepositoryMock.VerifyDeleteCalled();
+        role.RolePermissions.Should().BeEmpty();
     }
 
     [Fact]
     public async Task Handle_WithMixedPermissions_ShouldAddAndRemoveCorrectly()
     {
         // Arrange
-        RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName, TestConstants.Role.ValidDescription);
+        PermissionEntity keepPermission = PermissionFactory.Create("resource", "keep");
+        PermissionEntity removePermission = PermissionFactory.Create("resource", "remove");
+        RoleEntity role = CreateRoleWithPermissions(keepPermission, removePermission);
 
-        var keepPermissionId = Guid.NewGuid();
-        var removePermissionId = Guid.NewGuid();
         var addPermissionId = Guid.NewGuid();
-
-        List<Guid> newPermissionIds = [keepPermissionId, addPermissionId];
-        List<Guid> currentPermissionIds = [keepPermissionId, removePermissionId];
-
-        RolePermissionEntity rolePermissionToRemove = RolePermissionFactory.Create(role.Id, removePermissionId);
-
         AdminBulkUpdateRolePermissionsCommand command = new(
             RoleId: role.Id.ToString(),
-            PermissionIds: newPermissionIds
+            PermissionIds: [keepPermission.Id, addPermissionId]
         );
 
         _roleRepositoryMock.SetupGetByIdWithPermissionsOrThrow(role);
-        _rolePermissionRepositoryMock.SetupGetPermissionIdsByRoleId(role.Id, currentPermissionIds);
-        _rolePermissionRepositoryMock.SetupGetByRoleAndPermission(rolePermissionToRemove);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _rolePermissionRepositoryMock.VerifyAddCalled();
-        _rolePermissionRepositoryMock.VerifyDeleteCalled();
+        role.HasPermission(keepPermission.Id).Should().BeTrue();
+        role.HasPermission(addPermissionId).Should().BeTrue();
+        role.HasPermission(removePermission.Id).Should().BeFalse();
     }
 
     [Fact]
     public async Task Handle_WithNoChanges_ShouldStillCommit()
     {
         // Arrange
-        RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName, TestConstants.Role.ValidDescription);
+        PermissionEntity permission = PermissionFactory.Create(
+            TestConstants.Permission.ValidResource,
+            TestConstants.Permission.ValidAction
+        );
+        RoleEntity role = CreateRoleWithPermissions(permission);
 
-        var permissionId = Guid.NewGuid();
-        List<Guid> permissionIds = [permissionId];
-
-        AdminBulkUpdateRolePermissionsCommand command = new(RoleId: role.Id.ToString(), PermissionIds: permissionIds);
+        AdminBulkUpdateRolePermissionsCommand command = new(RoleId: role.Id.ToString(), PermissionIds: [permission.Id]);
 
         _roleRepositoryMock.SetupGetByIdWithPermissionsOrThrow(role);
-        _rolePermissionRepositoryMock.SetupGetPermissionIdsByRoleId(role.Id, permissionIds);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
@@ -186,28 +177,19 @@ public class AdminBulkUpdateRolePermissionsHandlerTests : BaseHandlerTest
     public async Task Handle_WithEmptyPermissionList_ShouldRemoveAllPermissions()
     {
         // Arrange
-        RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName, TestConstants.Role.ValidDescription);
+        PermissionEntity first = PermissionFactory.Create("resource", "first");
+        PermissionEntity second = PermissionFactory.Create("resource", "second");
+        RoleEntity role = CreateRoleWithPermissions(first, second);
 
-        var existingPermissionId = Guid.NewGuid();
-        List<Guid> currentPermissionIds = [existingPermissionId];
-        List<Guid> newPermissionIds = [];
-
-        RolePermissionEntity rolePermission = RolePermissionFactory.Create(role.Id, existingPermissionId);
-
-        AdminBulkUpdateRolePermissionsCommand command = new(
-            RoleId: role.Id.ToString(),
-            PermissionIds: newPermissionIds
-        );
+        AdminBulkUpdateRolePermissionsCommand command = new(RoleId: role.Id.ToString(), PermissionIds: []);
 
         _roleRepositoryMock.SetupGetByIdWithPermissionsOrThrow(role);
-        _rolePermissionRepositoryMock.SetupGetPermissionIdsByRoleId(role.Id, currentPermissionIds);
-        _rolePermissionRepositoryMock.SetupGetByRoleAndPermission(rolePermission);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _rolePermissionRepositoryMock.VerifyDeleteCalled();
+        role.RolePermissions.Should().BeEmpty();
     }
 
     #endregion
@@ -266,20 +248,17 @@ public class AdminBulkUpdateRolePermissionsHandlerTests : BaseHandlerTest
         RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName, TestConstants.Role.ValidDescription);
 
         List<Guid> permissionIds = [Guid.NewGuid()];
-        List<Guid> currentPermissionIds = [];
 
         AdminBulkUpdateRolePermissionsCommand command = new(RoleId: role.Id.ToString(), PermissionIds: permissionIds);
 
         using CancellationTokenSource cts = new();
         _roleRepositoryMock.SetupGetByIdWithPermissionsOrThrow(role);
-        _rolePermissionRepositoryMock.SetupGetPermissionIdsByRoleId(role.Id, currentPermissionIds);
 
         // Act
         await _handler.Handle(command, cts.Token);
 
         // Assert
-        _roleRepositoryMock.Verify(x => x.ExistsByIdOrThrowAsync(role.Id, cts.Token), Times.Once);
-        _roleRepositoryMock.Verify(x => x.GetRoleByIdWithPermissionsOrThrowAsync(role.Id, cts.Token), Times.Once);
+        _roleRepositoryMock.Verify(x => x.GetRoleByIdWithPermissionsOrThrowAsync(role.Id, cts.Token), Times.Exactly(2));
     }
 
     [Fact]
@@ -289,12 +268,10 @@ public class AdminBulkUpdateRolePermissionsHandlerTests : BaseHandlerTest
         RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName, TestConstants.Role.ValidDescription);
 
         List<Guid> permissionIds = [Guid.NewGuid()];
-        List<Guid> currentPermissionIds = [];
 
         AdminBulkUpdateRolePermissionsCommand command = new(RoleId: role.Id.ToString(), PermissionIds: permissionIds);
 
         _roleRepositoryMock.SetupGetByIdWithPermissionsOrThrow(role);
-        _rolePermissionRepositoryMock.SetupGetPermissionIdsByRoleId(role.Id, currentPermissionIds);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
@@ -302,7 +279,7 @@ public class AdminBulkUpdateRolePermissionsHandlerTests : BaseHandlerTest
         // Assert
         _roleRepositoryMock.Verify(
             x => x.GetRoleByIdWithPermissionsOrThrowAsync(role.Id, It.IsAny<CancellationToken>()),
-            Times.Once
+            Times.Exactly(2)
         );
     }
 

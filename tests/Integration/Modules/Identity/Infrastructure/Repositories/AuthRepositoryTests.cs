@@ -1,7 +1,5 @@
 using _116.Identity.Application.Shared.Exceptions;
 using _116.Identity.Application.Shared.Repositories;
-using _116.Identity.Domain.Exceptions;
-using _116.Identity.Domain.StateMachines;
 using _116.Identity.Domain.ValueObjects;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Shared.Application.Exceptions;
@@ -72,6 +70,78 @@ public class AuthRepositoryTests(PostgresFixture postgres) : BaseRepositoryTest(
         result!.Email.Should().Be(user.Email);
         result.UserRoles.Should().NotBeEmpty();
         result.UserRoles.First().Role.Should().NotBeNull();
+    }
+
+    /// <summary>
+    /// Covers <c>UserIsActiveAdminSpecification</c>, which the query applies in SQL.
+    /// </summary>
+    [Fact]
+    public async Task GetActiveAdminByEmailAsync_ActiveAdmin_ShouldReturnTheUser()
+    {
+        // Arrange
+        await using var seedContext = CreateDbContext<IdentityDbContext>();
+        var user = UserFactory.CreateAdmin();
+        seedContext.Users.Add(user);
+        await seedContext.SaveChangesAsync();
+
+        var repo = Resolve<IAuthRepository>();
+
+        // Act
+        var result = await repo.GetActiveAdminByEmailAsync(user.Email!);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Id.Should().Be(user.Id);
+    }
+
+    [Fact]
+    public async Task GetActiveAdminByEmailAsync_UserWithoutAnAdminRole_ShouldReturnNull()
+    {
+        // Arrange
+        await using var seedContext = CreateDbContext<IdentityDbContext>();
+        var user = UserFactory.CreateVisitor();
+        seedContext.Users.Add(user);
+        await seedContext.SaveChangesAsync();
+
+        var repo = Resolve<IAuthRepository>();
+
+        // Act
+        var result = await repo.GetActiveAdminByEmailAsync(user.Email!);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetActiveAdminByEmailAsync_InactiveAdmin_ShouldReturnNull()
+    {
+        // Arrange
+        await using var seedContext = CreateDbContext<IdentityDbContext>();
+        var user = UserFactory.CreateAdmin();
+        user.Deactivate();
+        seedContext.Users.Add(user);
+        await seedContext.SaveChangesAsync();
+
+        var repo = Resolve<IAuthRepository>();
+
+        // Act
+        var result = await repo.GetActiveAdminByEmailAsync(user.Email!);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetActiveAdminByEmailAsync_UnknownEmail_ShouldReturnNull()
+    {
+        // Arrange
+        var repo = Resolve<IAuthRepository>();
+
+        // Act
+        var result = await repo.GetActiveAdminByEmailAsync(new Email("no-such-admin@example.com"));
+
+        // Assert
+        result.Should().BeNull();
     }
 
     [Fact]
@@ -235,7 +305,7 @@ public class AuthRepositoryTests(PostgresFixture postgres) : BaseRepositoryTest(
     }
 
     [Fact]
-    public async Task AssignVisitorRoleAsync_CalledTwiceInOneScope_ShouldThrowTheRoleAlreadyAssignedRule()
+    public async Task AssignVisitorRoleAsync_CalledTwiceInOneScope_ShouldKeepASingleAssociation()
     {
         // Arrange
         await using var seedContext = CreateDbContext<IdentityDbContext>();
@@ -250,12 +320,11 @@ public class AuthRepositoryTests(PostgresFixture postgres) : BaseRepositoryTest(
         await repo.AssignVisitorRoleAsync(user.Id);
 
         // Act
-        var act = () => repo.AssignVisitorRoleAsync(user.Id);
+        await repo.AssignVisitorRoleAsync(user.Id);
 
-        // Assert — the repository surfaces the domain rule; the strategy titles it a conflict
-        (await act.Should().ThrowAsync<IdentityRuleException>())
-            .Which.Code.Should()
-            .Be(IdentityRuleCodes.RoleAlreadyAssignedToUser);
+        // Assert
+        var attached = await repo.FindUserByIdOrThrow(user.Id);
+        attached!.UserRoles.Should().ContainSingle(ur => ur.RoleId == visitorRole.Id);
     }
 
     [Fact]

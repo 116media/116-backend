@@ -8,17 +8,15 @@ using MapsterMapper;
 namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.BulkUpdateRolePermissions;
 
 /// <summary>
-/// Handles the <see cref="AdminBulkUpdateRolePermissionsCommand" /> to bulk update a role's
-/// permissions, bumping every role member's token version.
+/// Handles the <see cref="AdminBulkUpdateRolePermissionsCommand" /> to reconcile a role's
+/// permission set through the role aggregate, bumping every role member's token version.
 /// </summary>
 /// <param name="roleRepository">Repository for role data access operations.</param>
-/// <param name="rolePermissionRepository">Repository for role-permission data access operations.</param>
 /// <param name="tokenStateRepository">Repository bumping the role members' token versions.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class AdminBulkUpdateRolePermissionsHandler(
     IRoleRepository roleRepository,
-    IRolePermissionRepository rolePermissionRepository,
     IUserTokenStateRepository tokenStateRepository,
     IIdentityUnitOfWork unitOfWork,
     IMapper mapper
@@ -37,43 +35,26 @@ public class AdminBulkUpdateRolePermissionsHandler(
     {
         Guid roleId = Guid.Parse(input: command.RoleId);
 
-        await roleRepository.ExistsByIdOrThrowAsync(roleId: roleId, cancellationToken: cancellationToken);
-
-        // Get current permission IDs
-        List<Guid> currentPermissionIds = await rolePermissionRepository.GetPermissionIdsByRoleIdAsync(
+        RoleEntity? role = await roleRepository.GetRoleByIdWithPermissionsOrThrowAsync(
             roleId: roleId,
             cancellationToken: cancellationToken
         );
 
         // Determine permissions to add and remove
         HashSet<Guid> newPermissionIds = command.PermissionIds.ToHashSet();
-        HashSet<Guid> currentPermissionIdsSet = currentPermissionIds.ToHashSet();
+        HashSet<Guid> currentPermissionIds = role!.RolePermissions.Select(rp => rp.PermissionId).ToHashSet();
 
-        List<Guid> permissionsToAdd = newPermissionIds.Except(currentPermissionIdsSet).ToList();
-        List<Guid> permissionsToRemove = currentPermissionIdsSet.Except(newPermissionIds).ToList();
+        List<Guid> permissionsToAdd = newPermissionIds.Except(currentPermissionIds).ToList();
+        List<Guid> permissionsToRemove = currentPermissionIds.Except(newPermissionIds).ToList();
 
-        // Remove permissions — one query for the whole removal set, not one per permission.
-        List<RolePermissionEntity> rolePermissionsToRemove =
-            await rolePermissionRepository.GetByRoleAndPermissionIdsAsync(
-                roleId: roleId,
-                permissionIds: permissionsToRemove,
-                cancellationToken: cancellationToken
-            );
-
-        foreach (RolePermissionEntity rolePermission in rolePermissionsToRemove)
+        foreach (Guid permissionId in permissionsToRemove)
         {
-            rolePermission.MarkRemoved();
-            rolePermissionRepository.Delete(entity: rolePermission);
+            role.RevokePermission(permissionId: permissionId);
         }
 
-        // Add new permissions
-        foreach (
-            RolePermissionEntity rolePermission in permissionsToAdd.Select(permissionId =>
-                RolePermissionEntity.Create(id: Guid.NewGuid(), roleId: roleId, permissionId: permissionId)
-            )
-        )
+        foreach (Guid permissionId in permissionsToAdd)
         {
-            await rolePermissionRepository.AddAsync(entity: rolePermission, cancellationToken: cancellationToken);
+            role.GrantPermission(permissionId: permissionId);
         }
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
@@ -88,7 +69,7 @@ public class AdminBulkUpdateRolePermissionsHandler(
         }
 
         // Reload the role with permissions to return updated data
-        RoleEntity? role = await roleRepository.GetRoleByIdWithPermissionsOrThrowAsync(
+        role = await roleRepository.GetRoleByIdWithPermissionsOrThrowAsync(
             roleId: roleId,
             cancellationToken: cancellationToken
         );

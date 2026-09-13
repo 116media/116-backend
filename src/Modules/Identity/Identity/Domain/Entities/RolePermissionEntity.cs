@@ -1,12 +1,12 @@
-using _116.Identity.Domain.Events;
 using _116.Shared.Domain;
 
 namespace _116.Identity.Domain.Entities;
 
 /// <summary>
-/// Represents the many-to-many association between roles and permissions.
+/// Member entity of the Role aggregate recording a single permission grant.
+/// Created and removed only through <see cref="RoleEntity" />'s grant/revoke methods.
 /// </summary>
-public class RolePermissionEntity : Aggregate<Guid>
+public class RolePermissionEntity : Entity<Guid>
 {
     /// <summary>
     /// Foreign key referencing the associated role.
@@ -29,31 +29,15 @@ public class RolePermissionEntity : Aggregate<Guid>
     public PermissionEntity Permission { get; private set; } = null!;
 
     /// <summary>
-    /// Creates a new role-permission association.
+    /// Creates a role-permission association. The role-changed fact is raised by the role
+    /// aggregate, not here — a member entity carries no events. The key stays unset so change
+    /// detection tracks a row reached through the role's collection as an insert.
     /// </summary>
-    /// <param name="id">The unique identifier of the association.</param>
     /// <param name="roleId">The ID of the role.</param>
     /// <param name="permissionId">The ID of the permission.</param>
     /// <returns>A new <see cref="RolePermissionEntity" /> instance.</returns>
-    public static RolePermissionEntity Create(Guid id, Guid roleId, Guid permissionId)
+    internal static RolePermissionEntity Create(Guid roleId, Guid permissionId)
     {
-        var rolePermission = new RolePermissionEntity
-        {
-            Id = id,
-            RoleId = roleId,
-            PermissionId = permissionId,
-        };
-        rolePermission.AddDomainEvent(new RoleChangedEvent(RoleId: roleId));
-
-        return rolePermission;
-    }
-
-    /// <summary>
-    /// Raises the role-changed fact for this association's removal, so cached role
-    /// projections refresh once the deletion commits.
-    /// </summary>
-    public void MarkRemoved()
-    {
-        AddDomainEvent(new RoleChangedEvent(RoleId: RoleId));
+        return new RolePermissionEntity { RoleId = roleId, PermissionId = permissionId };
     }
 }

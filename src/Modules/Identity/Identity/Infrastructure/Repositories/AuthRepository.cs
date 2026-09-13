@@ -48,6 +48,35 @@ public class AuthRepository(IdentityDbContext context, UserErrors userErrors, Se
     }
 
     /// <inheritdoc />
+    public async Task<UserEntity?> GetUserWithRolesByIdOrThrow(
+        Guid userId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var specification = new UserByIdSpecification(userId: userId);
+        return await Context
+            .Users.ApplySpecification(specification: specification)
+            .Include(u => u.UserRoles)
+                .ThenInclude(ur => ur.Role)
+            .FirstDefaultOrThrowAsync(keyValue: userId, cancellationToken: cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<UserEntity?> GetActiveAdminByEmailAsync(
+        Email email,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var emailSpecification = new UserByEmailSpecification(email: email.Value);
+        var activeAdminSpecification = new UserIsActiveAdminSpecification();
+
+        return await Context
+            .Users.ApplySpecification(specification: emailSpecification)
+            .ApplySpecification(specification: activeAdminSpecification)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
     public async Task<UserEntity?> GetUserWithRolesAndPermissionsByIdOrThrow(
         Guid userId,
         CancellationToken cancellationToken = default
@@ -267,11 +296,7 @@ public class AuthRepository(IdentityDbContext context, UserErrors userErrors, Se
             throw userErrors.RoleNotFoundByName(nameof(EnumCoreUserRole.Visitor));
         }
 
-        // Create user-role association using the static factory method
-        var userRole = UserRoleEntity.CreateBootstrap(Guid.NewGuid(), userId: userId, roleId: visitorRole.Id);
-
-        // Use the domain method to assign the role
-        user?.AssignRole(userRole: userRole);
+        user?.GrantInitialRole(roleId: visitorRole.Id);
     }
 
     /// <inheritdoc />

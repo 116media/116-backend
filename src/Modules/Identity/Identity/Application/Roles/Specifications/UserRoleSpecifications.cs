@@ -22,28 +22,6 @@ public class UserHasAdminRoleSpecification : Specification<UserEntity>
 }
 
 /// <summary>
-/// Specification that matches users with a specific role.
-/// </summary>
-public class UserHasRoleSpecification(string roleName) : Specification<UserEntity>
-{
-    public override Expression<Func<UserEntity, bool>> ToExpression()
-    {
-        return user => user.UserRoles.Any(ur => ur.Role.Name == roleName);
-    }
-}
-
-/// <summary>
-/// Specification that matches users with the Visitor role.
-/// </summary>
-public class UserHasVisitorRoleSpecification : Specification<UserEntity>
-{
-    public override Expression<Func<UserEntity, bool>> ToExpression()
-    {
-        return user => user.UserRoles.Any(ur => ur.Role.Name == nameof(EnumCoreUserRole.Visitor));
-    }
-}
-
-/// <summary>
 /// Composite specification for active admin users.
 /// Combines IsActive and HasAdminRole specifications, commonly used for admin authentication flows.
 /// </summary>
@@ -54,40 +32,5 @@ public class UserIsActiveAdminSpecification : Specification<UserEntity>
         var activeSpec = new UserIsActiveSpecification();
         var adminSpec = new UserHasAdminRoleSpecification();
         return activeSpec.And(other: adminSpec).ToExpression();
-    }
-}
-
-/// <summary>
-/// Specification that matches user-role associations by user ID.
-/// </summary>
-public class UserRoleByUserIdSpecification(Guid userId) : Specification<UserRoleEntity>
-{
-    public override Expression<Func<UserRoleEntity, bool>> ToExpression()
-    {
-        return userRole => userRole.UserId == userId;
-    }
-}
-
-/// <summary>
-/// Specification that matches user-role associations by role ID.
-/// </summary>
-public class UserRoleByRoleIdSpecification(Guid roleId) : Specification<UserRoleEntity>
-{
-    public override Expression<Func<UserRoleEntity, bool>> ToExpression()
-    {
-        return userRole => userRole.RoleId == roleId;
-    }
-}
-
-/// <summary>
-/// Specification that matches a specific user-role association.
-/// </summary>
-public class UserRoleByUserAndRoleSpecification(Guid userId, Guid roleId) : Specification<UserRoleEntity>
-{
-    public override Expression<Func<UserRoleEntity, bool>> ToExpression()
-    {
-        var userSpec = new UserRoleByUserIdSpecification(userId: userId);
-        var roleSpec = new UserRoleByRoleIdSpecification(roleId: roleId);
-        return userSpec.And(other: roleSpec).ToExpression();
     }
 }

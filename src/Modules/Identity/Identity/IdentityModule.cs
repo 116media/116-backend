@@ -153,8 +153,6 @@ public static class IdentityModule
         services.AddScoped<IUserLookupService, UserLookupService>();
         services.AddScoped<IRoleRepository, RoleRepository>();
         services.AddScoped<IPermissionRepository, PermissionRepository>();
-        services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();
-        services.AddScoped<IUserRoleRepository, UserRoleRepository>();
         services.AddScoped<IOtpService>(sp => new OtpService(
             pepper: SecurityEnv.OtpPepper.Value,
             timeProvider: sp.GetRequiredService<TimeProvider>()

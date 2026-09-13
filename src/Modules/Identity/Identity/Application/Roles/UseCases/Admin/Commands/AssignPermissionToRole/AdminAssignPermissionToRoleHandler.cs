@@ -9,12 +9,11 @@ using MapsterMapper;
 namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.AssignPermissionToRole;
 
 /// <summary>
-/// Handles the <see cref="AdminAssignPermissionToRoleCommand" /> to assign a permission to a
-/// role, bumping every role member's token version.
+/// Handles the <see cref="AdminAssignPermissionToRoleCommand" /> to grant a permission through
+/// the role aggregate, bumping every role member's token version.
 /// </summary>
 /// <param name="roleRepository">Repository for role data access operations.</param>
 /// <param name="permissionRepository">Repository for permission data access operations.</param>
-/// <param name="rolePermissionRepository">Repository for role-permission data access operations.</param>
 /// <param name="tokenStateRepository">Repository bumping the role members' token versions.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
@@ -22,7 +21,6 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.AssignPermissi
 public class AdminAssignPermissionToRoleHandler(
     IRoleRepository roleRepository,
     IPermissionRepository permissionRepository,
-    IRolePermissionRepository rolePermissionRepository,
     IUserTokenStateRepository tokenStateRepository,
     IIdentityUnitOfWork unitOfWork,
     IMapper mapper,
@@ -42,14 +40,11 @@ public class AdminAssignPermissionToRoleHandler(
     {
         Guid roleId = Guid.Parse(input: command.RoleId);
 
-        // Validate role exists
-        RoleEntity? role = await roleRepository.GetRoleByIdOrThrowAsync(
+        RoleEntity? role = await roleRepository.GetRoleByIdWithPermissionsOrThrowAsync(
             roleId: roleId,
             cancellationToken: cancellationToken
         );
 
-        // Soft deletion also clears IsActive, so the deleted state is checked first to keep the
-        // more specific error reachable.
         if (role!.IsDeleted)
         {
             throw i18n.User.RoleIsDeleted();
@@ -66,8 +61,6 @@ public class AdminAssignPermissionToRoleHandler(
             cancellationToken: cancellationToken
         );
 
-        // Soft deletion also clears IsActive, so the deleted state is checked first to keep the
-        // more specific error reachable.
         if (permission!.IsDeleted)
         {
             throw i18n.User.PermissionIsDeleted();
@@ -78,26 +71,11 @@ public class AdminAssignPermissionToRoleHandler(
             throw i18n.User.PermissionIsInactive();
         }
 
-        // Check if permission is already assigned to the role
-        bool alreadyAssigned = await rolePermissionRepository.ExistsByRoleAndPermissionAsync(
-            roleId: roleId,
-            permissionId: command.PermissionId,
-            cancellationToken: cancellationToken
-        );
-
-        if (alreadyAssigned)
+        if (!role.GrantPermission(permissionId: command.PermissionId))
         {
             throw i18n.User.PermissionAlreadyAssignedToRole();
         }
 
-        // Create the role-permission association
-        var rolePermission = RolePermissionEntity.Create(
-            id: Guid.NewGuid(),
-            roleId: roleId,
-            permissionId: command.PermissionId
-        );
-
-        await rolePermissionRepository.AddAsync(entity: rolePermission, cancellationToken: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         await tokenStateRepository.BumpTokenVersionForRoleUsersAsync(

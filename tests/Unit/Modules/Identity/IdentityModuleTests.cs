@@ -109,8 +109,6 @@ public class IdentityModuleTests
         services.Should().Contain(s => s.ServiceType == typeof(IAuthRepository));
         services.Should().Contain(s => s.ServiceType == typeof(IRoleRepository));
         services.Should().Contain(s => s.ServiceType == typeof(IPermissionRepository));
-        services.Should().Contain(s => s.ServiceType == typeof(IRolePermissionRepository));
-        services.Should().Contain(s => s.ServiceType == typeof(IUserRoleRepository));
         services.Should().Contain(s => s.ServiceType == typeof(IOtpRepository));
         services.Should().Contain(s => s.ServiceType == typeof(ISessionRepository));
     }

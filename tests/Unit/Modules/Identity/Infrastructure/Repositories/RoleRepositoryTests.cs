@@ -43,8 +43,8 @@ public class RoleRepositoryTests : IDisposable
         RoleEntity role = RoleFactory.Create();
         PermissionEntity permission1 = PermissionFactory.Create("article", "read");
         PermissionEntity permission2 = PermissionFactory.Create("article", "write");
-        var rolePermission1 = RolePermissionEntity.Create(Guid.NewGuid(), role.Id, permission1.Id);
-        var rolePermission2 = RolePermissionEntity.Create(Guid.NewGuid(), role.Id, permission2.Id);
+        var rolePermission1 = RolePermissionEntity.Create(role.Id, permission1.Id);
+        var rolePermission2 = RolePermissionEntity.Create(role.Id, permission2.Id);
 
         _context.Roles.Add(role);
         _context.Permissions.AddRange(permission1, permission2);

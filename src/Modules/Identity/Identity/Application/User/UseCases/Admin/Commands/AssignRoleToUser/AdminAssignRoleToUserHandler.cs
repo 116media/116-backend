@@ -10,18 +10,19 @@ using MapsterMapper;
 namespace _116.Identity.Application.User.UseCases.Admin.Commands.AssignRoleToUser;
 
 /// <summary>
-/// Handles the <see cref="AdminAssignRoleToUserCommand" /> to assign a role to a user, bumping
-/// the target user's token version so outstanding tokens pick up the grant on refresh.
+/// Handles the <see cref="AdminAssignRoleToUserCommand" /> to grant a role through the user
+/// aggregate, bumping the target user's token version so outstanding tokens pick up the grant
+/// on refresh.
 /// </summary>
 /// <param name="roleRepository">Repository for role data access operations.</param>
-/// <param name="userRoleRepository">Repository for user-role data access operations.</param>
+/// <param name="authRepository">Repository loading the user aggregate with its roles.</param>
 /// <param name="tokenStateRepository">Repository bumping the target user's token version.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 /// <param name="i18n">Single i18n entry point for the Identity module.</param>
 public class AdminAssignRoleToUserHandler(
     IRoleRepository roleRepository,
-    IUserRoleRepository userRoleRepository,
+    IAuthRepository authRepository,
     IUserTokenStateRepository tokenStateRepository,
     IIdentityUnitOfWork unitOfWork,
     IMapper mapper,
@@ -47,8 +48,7 @@ public class AdminAssignRoleToUserHandler(
             cancellationToken: cancellationToken
         );
 
-        // Soft deletion also clears IsActive, so the deleted state is checked first to keep the
-        // more specific error reachable.
+        // Soft deletion also clears IsActive, so the deleted check comes first to stay reachable.
         if (role!.IsDeleted)
         {
             throw i18n.User.RoleIsDeleted();
@@ -59,38 +59,24 @@ public class AdminAssignRoleToUserHandler(
             throw i18n.User.RoleIsInactive();
         }
 
-        // Check if role is already assigned to user
-        bool alreadyAssigned = await userRoleRepository.ExistsByUserAndRoleAsync(
+        UserEntity? user = await authRepository.GetUserWithRolesByIdOrThrow(
             userId: userId,
-            roleId: command.RoleId,
             cancellationToken: cancellationToken
         );
 
-        if (alreadyAssigned)
+        if (!user!.GrantRole(roleId: command.RoleId, roleName: role.Name))
         {
             throw i18n.User.RoleAlreadyAssignedToUser();
         }
 
-        // Create the user-role association; the role name rides the grant event
-        var userRole = UserRoleEntity.Create(
-            id: Guid.NewGuid(),
-            userId: userId,
-            roleId: command.RoleId,
-            roleName: role.Name
-        );
-
-        await userRoleRepository.AddAsync(entity: userRole, cancellationToken: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         await tokenStateRepository.BumpTokenVersionAsync(userId: userId, cancellationToken: cancellationToken);
 
-        // Get updated user roles
-        List<UserRoleEntity> userRoles = await userRoleRepository.GetUserRolesWithRoleAsync(
-            userId: userId,
-            cancellationToken: cancellationToken
-        );
-
-        IReadOnlyCollection<RoleDto> roles = userRoles.Select(ur => ur.Role.ToRoleDto(mapper)).ToList();
+        // The freshly granted association has no Role navigation loaded yet; the role in hand fills it.
+        IReadOnlyCollection<RoleDto> roles = user
+            .UserRoles.Select(ur => (ur.RoleId == role.Id ? role : ur.Role).ToRoleDto(mapper))
+            .ToList();
         return new AdminAssignRoleToUserResult(Roles: roles);
     }
 }

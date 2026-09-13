@@ -3,6 +3,8 @@ using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Application.User.UseCases.Admin.Commands.AssignRoleToUser.V1;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Mailer.Contracts.Domain;
+using _116.Mailer.Infrastructure.Persistence;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Builders.Requests.Identity;
@@ -43,6 +45,12 @@ public class AdminAssignRoleToUserEndpointV1Tests(PostgresFixture db) : BaseApiT
         (await verifyContext.UserRoles.AnyAsync(ur => ur.UserId == TestUser.AdminId && ur.RoleId == role.Id))
             .Should()
             .BeTrue();
+
+        // The grant fact now rides the user aggregate; the security email proves it dispatched.
+        await using var mailerContext = CreateDbContext<MailerDbContext>();
+        (await mailerContext.OutboxEmails.Where(o => o.RecipientAddress == TestUser.AdminEmail).ToListAsync())
+            .Should()
+            .ContainSingle(o => o.Template == nameof(EnumEmailTemplate.RoleChanged));
     }
 
     [Fact]

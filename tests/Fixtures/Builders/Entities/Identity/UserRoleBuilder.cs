@@ -89,7 +89,13 @@ public class UserRoleBuilder
     /// <returns>A configured UserRoleEntity instance.</returns>
     public UserRoleEntity Build()
     {
-        var userRole = UserRoleEntity.CreateBootstrap(_id, _userId, _roleId);
+        var userRole = UserRoleEntity.Create(_userId, _roleId);
+
+        // The factory leaves the key unset for EF's client-side generator; tests that need a
+        // deterministic key get it through the init-only property here.
+        typeof(UserRoleEntity)
+            .GetProperty(nameof(UserRoleEntity.Id), BindingFlags.Public | BindingFlags.Instance)!
+            .SetValue(userRole, _id);
 
         if (_role is not null)
         {
