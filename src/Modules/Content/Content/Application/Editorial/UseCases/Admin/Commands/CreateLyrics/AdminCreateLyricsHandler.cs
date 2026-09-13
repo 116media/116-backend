@@ -59,7 +59,6 @@ public class AdminCreateLyricsHandler(
                 cancellationToken: cancellationToken
             );
             video.MarkHasLyrics();
-            videoRepository.Update(video: video);
         }
 
         await lyricsRepository.AddAsync(lyrics: lyrics, cancellationToken: cancellationToken);
