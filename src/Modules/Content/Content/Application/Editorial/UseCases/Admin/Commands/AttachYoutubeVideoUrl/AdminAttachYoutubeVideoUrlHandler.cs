@@ -47,8 +47,6 @@ public class AdminAttachYoutubeVideoUrlHandler(
         );
 
         video.AttachYoutubeVideoUrl(youtubeVideoUrl: command.YoutubeVideoUrl);
-
-        videoRepository.Update(video: video);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         VideoEntity updated = await videoRepository.GetByIdOrThrowAsync(
