@@ -43,8 +43,6 @@ public class AdminRemoveOrderItemHandler(
         // recalculates the total and the repository call deletes the row, in one transaction.
         order.RemoveItem(item);
         await contentOrderRepository.RemoveItemAsync(item: item, ct: cancellationToken);
-
-        await contentOrderRepository.UpdateAsync(order: order, ct: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminRemoveOrderItemResult(IsSuccess: true);
