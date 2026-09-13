@@ -104,8 +104,6 @@ public class AdminUploadArticleImageHandler(
                 );
 
                 article.UpdateCoverImage(coverImageFileId: uploaded.Reference.Id);
-                articleRepository.Update(article: article);
-
                 await articleRepository.AddImageAsync(image: image, cancellationToken: ct);
             },
             cancellationToken: cancellationToken
