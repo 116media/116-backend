@@ -1,11 +1,7 @@
-using _116.Content.Application.Editorial.Specifications;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
-using _116.Shared.Application.Exceptions;
-using _116.Shared.Application.Specifications;
-using _116.Shared.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace _116.Content.Infrastructure.Repositories;
@@ -33,11 +29,10 @@ public class ArticleCommentRepository(ContentDbContext context)
         CancellationToken cancellationToken = default
     )
     {
-        var specification = new ArticleCommentByArticleIdSpecification(articleId: articleId);
-
+        // Top-level comments only; replies (comments with a parent) are fetched separately.
         IQueryable<ArticleCommentEntity> query = Context
             .ArticleComments.IgnoreQueryFilters()
-            .ApplySpecification(specification: specification);
+            .Where(comment => comment.ArticleId == articleId && comment.ParentCommentId == null);
 
         int totalCount = await query.CountAsync(cancellationToken);
 
@@ -58,9 +53,8 @@ public class ArticleCommentRepository(ContentDbContext context)
         CancellationToken cancellationToken = default
     )
     {
-        var specification = new ArticleCommentReplyByParentSpecification(parentCommentId: parentCommentId);
-        IQueryable<ArticleCommentEntity> query = Context.ArticleComments.ApplySpecification(
-            specification: specification
+        IQueryable<ArticleCommentEntity> query = Context.ArticleComments.Where(comment =>
+            comment.ParentCommentId == parentCommentId && !comment.IsDeleted
         );
 
         int totalCount = await query.CountAsync(cancellationToken);
@@ -102,11 +96,9 @@ public class ArticleCommentRepository(ContentDbContext context)
         CancellationToken cancellationToken = default
     )
     {
-        var specification = new ArticleCommentByIdSpecification(commentId: commentId);
         return await Context
             .ArticleComments.AsTracking()
-            .ApplySpecification(specification: specification)
-            .FirstOrDefaultAsync(cancellationToken);
+            .FirstOrDefaultAsync(comment => comment.Id == commentId, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -116,17 +108,12 @@ public class ArticleCommentRepository(ContentDbContext context)
         CancellationToken cancellationToken = default
     )
     {
-        var specification = new ArticleCommentByIdInArticleSpecification(commentId: commentId, articleId: articleId);
         return await Context
             .ArticleComments.AsTracking()
-            .ApplySpecification(specification: specification)
-            .FirstOrDefaultAsync(cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public void UpdateComment(ArticleCommentEntity comment)
-    {
-        Context.ArticleComments.Update(comment);
+            .FirstOrDefaultAsync(
+                comment => comment.Id == commentId && comment.ArticleId == articleId,
+                cancellationToken
+            );
     }
 
     /// <inheritdoc />
@@ -136,10 +123,10 @@ public class ArticleCommentRepository(ContentDbContext context)
         CancellationToken cancellationToken = default
     )
     {
-        var specification = new ArticleCommentLikeByUserAndCommentSpecification(userId: userId, commentId: commentId);
-        return await Context
-            .ArticleCommentLikes.ApplySpecification(specification: specification)
-            .AnyAsync(cancellationToken);
+        return await Context.ArticleCommentLikes.AnyAsync(
+            like => like.UserId == userId && like.CommentId == commentId,
+            cancellationToken
+        );
     }
 
     /// <inheritdoc />
@@ -151,11 +138,9 @@ public class ArticleCommentRepository(ContentDbContext context)
     /// <inheritdoc />
     public async Task RemoveCommentLikeAsync(Guid userId, Guid commentId, CancellationToken cancellationToken = default)
     {
-        var specification = new ArticleCommentLikeByUserAndCommentSpecification(userId: userId, commentId: commentId);
         ArticleCommentLikeEntity? like = await Context
             .ArticleCommentLikes.AsTracking()
-            .ApplySpecification(specification: specification)
-            .FirstOrDefaultAsync(cancellationToken);
+            .FirstOrDefaultAsync(l => l.UserId == userId && l.CommentId == commentId, cancellationToken);
 
         if (like is not null)
         {
@@ -208,9 +193,8 @@ public class ArticleCommentRepository(ContentDbContext context)
         CancellationToken cancellationToken = default
     )
     {
-        var specification = new ArticleCommentByUserAndArticleSpecification(userId: userId, articleId: articleId);
         IQueryable<ArticleCommentEntity> query = Context
-            .ArticleComments.ApplySpecification(specification: specification)
+            .ArticleComments.Where(comment => comment.UserId == userId && comment.ArticleId == articleId)
             .Where(comment => !comment.IsDeleted);
 
         int totalCount = await query.CountAsync(cancellationToken);
@@ -232,9 +216,8 @@ public class ArticleCommentRepository(ContentDbContext context)
         CancellationToken cancellationToken = default
     )
     {
-        var commentByUserSpecification = new ArticleCommentByUserIdSpecification(userId: userId);
         var groupedQuery = Context
-            .ArticleComments.ApplySpecification(specification: commentByUserSpecification)
+            .ArticleComments.Where(comment => comment.UserId == userId)
             .Where(comment => !comment.IsDeleted && comment.Article.Status == EnumContentStatus.Published)
             .GroupBy(comment => comment.ArticleId)
             .Select(group => new
@@ -264,7 +247,7 @@ public class ArticleCommentRepository(ContentDbContext context)
             .ToDictionaryAsync(article => article.Id, cancellationToken);
 
         List<ArticleCommentEntity> comments = await Context
-            .ArticleComments.ApplySpecification(specification: commentByUserSpecification)
+            .ArticleComments.Where(comment => comment.UserId == userId)
             .Where(comment => !comment.IsDeleted && articleIds.Contains(comment.ArticleId))
             .OrderByDescending(comment => comment.CreatedAt)
             .ThenBy(comment => comment.Id)
