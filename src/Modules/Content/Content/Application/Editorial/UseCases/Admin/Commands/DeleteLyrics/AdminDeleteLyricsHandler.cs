@@ -35,7 +35,6 @@ public class AdminDeleteLyricsHandler(
                 cancellationToken: cancellationToken
             );
             video.UnmarkHasLyrics();
-            videoRepository.Update(video: video);
         }
 
         lyricsRepository.Remove(lyrics: lyrics);
