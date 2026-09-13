@@ -33,9 +33,6 @@ public class AdminUnpinCategoryFromFeedHandler(
         );
 
         category.UnpinFromFeed();
-
-        categoryRepository.Update(category: category);
-
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         CategoryEntity updated = await categoryRepository.GetByIdOrThrowAsync(
