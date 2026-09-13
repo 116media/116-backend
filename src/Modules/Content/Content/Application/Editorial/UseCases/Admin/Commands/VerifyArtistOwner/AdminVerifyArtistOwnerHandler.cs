@@ -34,8 +34,6 @@ public class AdminVerifyArtistOwnerHandler(
         );
 
         artist.ClaimOwnership(userId: command.UserId);
-
-        artistRepository.Update(artist: artist);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         var dto = await artistDtoFactory.CreateAsync(artist, ct: cancellationToken);
