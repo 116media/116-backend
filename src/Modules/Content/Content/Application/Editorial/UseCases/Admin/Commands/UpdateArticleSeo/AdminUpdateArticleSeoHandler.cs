@@ -36,8 +36,6 @@ public class AdminUpdateArticleSeoHandler(
         );
 
         article.UpdateSeo(metaTitle: command.MetaTitle, metaDescription: command.MetaDescription);
-
-        articleRepository.Update(article: article);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         ArticleEntity updated = await articleRepository.GetByIdOrThrowAsync(
