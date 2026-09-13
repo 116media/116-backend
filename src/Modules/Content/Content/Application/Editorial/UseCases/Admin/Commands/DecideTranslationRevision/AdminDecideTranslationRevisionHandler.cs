@@ -32,19 +32,15 @@ public class AdminDecideTranslationRevisionHandler(
         if (command.Accept)
         {
             revision.Accept(decidedByUserId: command.DecidedByUserId);
-            revisionRepository.Update(revision: revision);
-
             LyricsTranslationEntity translation = await translationRepository.GetByIdOrThrowAsync(
                 id: revision.TranslationId,
                 cancellationToken: cancellationToken
             );
             translation.ApplyAcceptedRevision(newText: revision.ProposedText);
-            translationRepository.Update(translation: translation);
         }
         else
         {
             revision.Reject(decidedByUserId: command.DecidedByUserId);
-            revisionRepository.Update(revision: revision);
         }
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
