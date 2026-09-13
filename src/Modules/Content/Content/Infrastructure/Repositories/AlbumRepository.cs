@@ -1,9 +1,7 @@
-using _116.Content.Application.Editorial.Specifications;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
-using _116.Shared.Application.Specifications;
 using _116.Shared.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 
@@ -27,8 +25,11 @@ public class AlbumRepository(ContentDbContext context) : ContentRepository<Album
 
         if (!string.IsNullOrWhiteSpace(search))
         {
-            Specification<AlbumEntity> spec = new AlbumSearchSpecification(search: search);
-            query = query.ApplySpecification(specification: spec);
+            string pattern = $"%{search}%";
+            query = query.Where(album =>
+                EF.Functions.ILike(album.Name, pattern)
+                || (album.Label != null && EF.Functions.ILike(album.Label, pattern))
+            );
         }
 
         int totalCount = await query.CountAsync(cancellationToken);
@@ -51,11 +52,9 @@ public class AlbumRepository(ContentDbContext context) : ContentRepository<Album
         CancellationToken cancellationToken = default
     )
     {
-        Specification<AlbumEntity> specification = new AlbumByArtistSpecification(artistId: artistId).And(
-            new AlbumByReleaseTypeSpecification(releaseType: releaseType)
+        IQueryable<AlbumEntity> query = Context.Albums.Where(album =>
+            album.ArtistId == artistId && album.ReleaseType == releaseType
         );
-
-        IQueryable<AlbumEntity> query = Context.Albums.ApplySpecification(specification: specification);
 
         int totalCount = await query.CountAsync(cancellationToken: cancellationToken);
 
