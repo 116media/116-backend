@@ -40,9 +40,6 @@ public class AdminDeactivateCategoryHandler(
         {
             throw i18n.Category.AlreadyInactive();
         }
-
-        categoryRepository.Update(category: category);
-
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         CategoryEntity updated = await categoryRepository.GetByIdOrThrowAsync(
