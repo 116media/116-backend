@@ -41,9 +41,6 @@ public class AdminActivatePackageHandler(
         {
             throw i18n.Package.AlreadyActive();
         }
-
-        packageRepository.Update(package: package);
-
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         PackageEntity updated = await packageRepository.GetByIdWithSlotsOrThrowAsync(
