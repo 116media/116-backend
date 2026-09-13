@@ -37,7 +37,6 @@ public class AdminRequestLyricsSubmissionRevisionHandler(
         }
 
         submission.RequestRevision(reviewedByUserId: command.ReviewerId, note: command.Note);
-        submissionRepository.Update(submission: submission);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminRequestLyricsSubmissionRevisionResult(IsSuccess: true);
