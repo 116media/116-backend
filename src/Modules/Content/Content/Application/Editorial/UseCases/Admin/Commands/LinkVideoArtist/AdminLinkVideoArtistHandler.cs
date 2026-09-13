@@ -41,8 +41,6 @@ public class AdminLinkVideoArtistHandler(
         {
             video.UnlinkArtist();
         }
-
-        videoRepository.Update(video: video);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminLinkVideoArtistResult(IsSuccess: true);
