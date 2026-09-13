@@ -37,7 +37,6 @@ public class AdminRejectLyricsSubmissionHandler(
         }
 
         submission.Reject(reviewedByUserId: command.ReviewerId, note: command.Note);
-        submissionRepository.Update(submission: submission);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminRejectLyricsSubmissionResult(IsSuccess: true);
