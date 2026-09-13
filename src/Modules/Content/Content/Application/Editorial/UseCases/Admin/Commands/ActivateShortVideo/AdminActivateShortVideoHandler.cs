@@ -37,8 +37,6 @@ public class AdminActivateShortVideoHandler(
         {
             throw i18n.ShortVideo.AlreadyActive();
         }
-
-        shortVideoRepository.Update(shortVideo: shortVideo);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminActivateShortVideoResult(IsSuccess: true);
