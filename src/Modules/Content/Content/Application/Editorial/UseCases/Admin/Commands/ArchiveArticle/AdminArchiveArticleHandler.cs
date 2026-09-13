@@ -38,8 +38,6 @@ public class AdminArchiveArticleHandler(
         {
             throw i18n.Article.AlreadyArchived();
         }
-
-        articleRepository.Update(article: article);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminArchiveArticleResult(IsSuccess: true);
