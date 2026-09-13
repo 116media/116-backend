@@ -155,11 +155,6 @@ public interface IVideoRepository
     Task AddRatingAsync(VideoRatingEntity rating, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Marks an existing rating as modified.
-    /// </summary>
-    void UpdateRating(VideoRatingEntity rating);
-
-    /// <summary>
     /// Returns all ratings for a given video (used for average/count recomputation).
     /// </summary>
     Task<List<VideoRatingEntity>> GetAllRatingsForVideoAsync(
