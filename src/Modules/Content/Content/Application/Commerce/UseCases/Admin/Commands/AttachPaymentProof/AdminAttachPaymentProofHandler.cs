@@ -61,9 +61,6 @@ public class AdminAttachPaymentProofHandler(
                 FileReferenceDto recorded = await fileStorage.RecordAsync(file: uploaded, cancellationToken: ct);
 
                 payment.AttachProof(proofFileId: uploaded.Reference.Id, paymentMethod: command.PaymentMethod);
-
-                await contentOrderRepository.UpdatePaymentAsync(payment: payment, ct: ct);
-
                 return recorded;
             },
             cancellationToken: cancellationToken
