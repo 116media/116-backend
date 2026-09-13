@@ -40,9 +40,6 @@ public class AdminUpdateCustomerHandler(
             company: command.Company,
             notes: command.Notes
         );
-
-        customerRepository.Update(customer: customer);
-
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         var dto = customer.ToCustomerDto(mapper);
