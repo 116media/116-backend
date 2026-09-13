@@ -38,8 +38,6 @@ public class AdminUpdateShortVideoHandler(
         );
 
         shortVideo.Update(title: command.Title, videoId: command.VideoId);
-
-        shortVideoRepository.Update(shortVideo);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         ShortVideoEntity updated = await shortVideoRepository.GetByIdOrThrowAsync(
