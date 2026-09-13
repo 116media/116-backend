@@ -56,7 +56,6 @@ public class AdminSetExclusiveCategoryHandler(
                 if (currentExclusive is not null && currentExclusive.Id != id)
                 {
                     currentExclusive.ClearExclusive();
-                    categoryRepository.Update(category: currentExclusive);
                 }
 
                 category.SetExclusive();
