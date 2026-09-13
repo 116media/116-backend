@@ -61,7 +61,6 @@ public class AdminCreateCategoryHandler(
             if (currentExclusive is not null)
             {
                 currentExclusive.ClearExclusive();
-                categoryRepository.Update(category: currentExclusive);
             }
         }
 
