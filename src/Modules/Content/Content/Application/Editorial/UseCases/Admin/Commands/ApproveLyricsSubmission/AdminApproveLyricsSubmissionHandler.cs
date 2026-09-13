@@ -84,7 +84,6 @@ public class AdminApproveLyricsSubmissionHandler(
                 await lyricsRepository.AddAsync(lyrics: lyrics, cancellationToken: ct);
 
                 submission.Approve(reviewedByUserId: command.ReviewerId, publishedLyricsId: lyrics.Id);
-                submissionRepository.Update(submission: submission);
             },
             cancellationToken: cancellationToken
         );
