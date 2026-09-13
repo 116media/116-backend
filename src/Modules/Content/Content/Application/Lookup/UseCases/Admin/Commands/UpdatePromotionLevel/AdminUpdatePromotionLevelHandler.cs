@@ -51,9 +51,6 @@ public class AdminUpdatePromotionLevelHandler(
             priceUsd: command.PriceUsd,
             spotPriority: command.SpotPriority
         );
-
-        promotionLevelRepository.Update(promotionLevel: promotionLevel);
-
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         var dto = promotionLevel.ToPromotionLevelDto(mapper);
