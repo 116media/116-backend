@@ -91,8 +91,6 @@ public partial class AdminUpdateArticleHandler(
             metaDescription: command.MetaDescription,
             orphanedBodyImageStorageKeys: orphanedStorageKeys
         );
-
-        articleRepository.Update(article: article);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         ArticleEntity updated = await articleRepository.GetByIdOrThrowAsync(
