@@ -38,7 +38,6 @@ public class AdminRejectArticleHandler(
         }
 
         article.Reject(reason: command.Reason);
-        articleRepository.Update(article: article);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminRejectArticleResult(IsSuccess: true);
