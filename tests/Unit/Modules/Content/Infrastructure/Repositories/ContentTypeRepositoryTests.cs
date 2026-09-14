@@ -99,6 +99,6 @@ public class ContentTypeRepositoryTests : IDisposable
         result[2].Name.Should().Be("Video");
     }
 
-    // NOTE: ContentTypeExistsByNameAsync and ContentTypeSearchSpecification use ILike
+    // NOTE: ExistsByNameAsync and the search filter use ILike
     // which is not supported by InMemoryDatabase provider — tested in integration tests.
 }
