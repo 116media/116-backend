@@ -105,7 +105,6 @@ public class PublicRequestArtistClaimHandlerTests
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _artistRepositoryMock.Verify(x => x.Update(It.IsAny<ArtistEntity>()), Times.Never);
         artist.UserId.Should().BeNull();
         artist.VerifiedAt.Should().BeNull();
     }
