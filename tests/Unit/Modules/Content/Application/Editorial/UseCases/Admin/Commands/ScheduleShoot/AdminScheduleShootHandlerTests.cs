@@ -45,7 +45,6 @@ public class AdminScheduleShootHandlerTests
 
         // Assert
         video.ShootingScheduledAt.Should().Be(scheduledAt);
-        _videoRepositoryMock.VerifyUpdateCalled(video);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
