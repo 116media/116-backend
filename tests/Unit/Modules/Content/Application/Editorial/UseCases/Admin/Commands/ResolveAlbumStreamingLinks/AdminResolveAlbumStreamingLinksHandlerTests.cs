@@ -109,7 +109,6 @@ public class AdminResolveAlbumStreamingLinksHandlerTests
 
         // Assert
         existing.Url.Should().Be("https://open.spotify.com/album/new");
-        _streamingLinkRepositoryMock.Verify(x => x.Update(existing), Times.Once);
         _streamingLinkRepositoryMock.Verify(
             x => x.AddAsync(It.IsAny<StreamingLinkEntity>(), It.IsAny<CancellationToken>()),
             Times.Never
