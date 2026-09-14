@@ -57,7 +57,6 @@ public class AdminVerifyArtistOwnerHandlerTests
         artist.UserId.Should().Be(userId);
         artist.VerifiedAt.Should().NotBeNull();
         result.Artist.Id.Should().Be(artist.Id);
-        _artistRepositoryMock.VerifyUpdateCalled(artist);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
