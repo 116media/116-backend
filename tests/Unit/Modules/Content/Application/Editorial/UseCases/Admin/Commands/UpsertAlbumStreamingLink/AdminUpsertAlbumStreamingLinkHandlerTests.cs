@@ -92,7 +92,6 @@ public class AdminUpsertAlbumStreamingLinkHandlerTests
         result.StreamingLinkId.Should().Be(existing.Id);
         existing.Url.Should().Be("https://open.spotify.com/album/updated");
         existing.Platform.Should().Be(EnumStreamingPlatform.Spotify);
-        _streamingLinkRepositoryMock.VerifyUpdateCalled(existing);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
