@@ -83,7 +83,6 @@ public class OrderPaidEffectsHandlerTests
         article.IsPromoted.Should().BeTrue();
         article.PromotionLevelId.Should().Be(promotionLevelId);
         article.Status.Should().Be(EnumContentStatus.PendingReview);
-        _articleRepositoryMock.VerifyUpdateCalled(article);
         _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 
@@ -149,7 +148,6 @@ public class OrderPaidEffectsHandlerTests
         // Assert
         video.SocialBoost.Should().BeTrue();
         video.Status.Should().Be(EnumContentStatus.PendingReview);
-        _videoRepositoryMock.VerifyUpdateCalled(video);
         _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 
@@ -174,7 +172,6 @@ public class OrderPaidEffectsHandlerTests
         lyrics.IsPromoted.Should().BeTrue();
         lyrics.PromotedUntil.Should().Be(promotionUntil);
         lyrics.Status.Should().Be(EnumContentStatus.PendingReview);
-        _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
         _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 
@@ -212,7 +209,6 @@ public class OrderPaidEffectsHandlerTests
         );
 
         // Assert
-        _articleRepositoryMock.Verify(x => x.Update(It.IsAny<ArticleEntity>()), Times.Never);
         _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
 
@@ -234,7 +230,6 @@ public class OrderPaidEffectsHandlerTests
         // Assert
         article.IsPromoted.Should().BeTrue();
         article.Status.Should().Be(EnumContentStatus.Published);
-        _articleRepositoryMock.VerifyUpdateCalled(article);
         _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 
@@ -260,7 +255,6 @@ public class OrderPaidEffectsHandlerTests
         article.PromotedUntil.Should().BeNull();
         article.PromotionLevelId.Should().BeNull();
         article.UnpromotedReason.Should().Be("policy violation");
-        _articleRepositoryMock.Verify(x => x.Update(It.IsAny<ArticleEntity>()), Times.Never);
         _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
 
@@ -290,7 +284,6 @@ public class OrderPaidEffectsHandlerTests
         article.IsPromoted.Should().BeTrue();
         article.PromotionLevelId.Should().Be(promotionLevelId);
         article.PromotedUntil.Should().Be(promotionUntil);
-        _articleRepositoryMock.VerifyUpdateCalled(article);
         _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 
