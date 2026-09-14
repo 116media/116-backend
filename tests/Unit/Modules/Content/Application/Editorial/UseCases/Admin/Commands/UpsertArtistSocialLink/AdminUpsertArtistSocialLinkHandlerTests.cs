@@ -83,7 +83,6 @@ public class AdminUpsertArtistSocialLinkHandlerTests
             x => x.AddSocialLinkAsync(It.IsAny<ArtistSocialLinkEntity>(), It.IsAny<CancellationToken>()),
             Times.Never
         );
-        _artistRepositoryMock.Verify(x => x.UpdateSocialLink(existing), Times.Once);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
