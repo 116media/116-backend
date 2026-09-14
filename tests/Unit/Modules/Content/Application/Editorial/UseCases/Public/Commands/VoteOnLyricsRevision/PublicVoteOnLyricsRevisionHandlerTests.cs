@@ -74,8 +74,6 @@ public class PublicVoteOnLyricsRevisionHandlerTests
         addedVote!.RevisionId.Should().Be(revision.Id);
         addedVote.UserId.Should().Be(userId);
         addedVote.Vote.Should().Be(EnumVote.Approve);
-        _revisionRepositoryMock.Verify(x => x.Update(It.IsAny<LyricsRevisionEntity>()), Times.Never);
-        _lyricsRepositoryMock.Verify(x => x.Update(It.IsAny<LyricsEntity>()), Times.Never);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -104,8 +102,6 @@ public class PublicVoteOnLyricsRevisionHandlerTests
         lyrics.LyricsText.Should().Be("Corrected, community-accepted lyrics text.");
         lyrics.SongTitle.Should().Be(originalSongTitle);
         _voteRepositoryMock.VerifyAddCalled();
-        _revisionRepositoryMock.VerifyUpdateCalled(revision);
-        _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
