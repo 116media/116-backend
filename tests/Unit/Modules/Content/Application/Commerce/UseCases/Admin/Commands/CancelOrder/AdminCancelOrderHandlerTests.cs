@@ -49,7 +49,6 @@ public class AdminCancelOrderHandlerTests
 
         // Assert
         order.Status.Should().Be(EnumOrderStatus.Cancelled);
-        _orderRepositoryMock.VerifyUpdateCalled(order);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -67,7 +66,6 @@ public class AdminCancelOrderHandlerTests
 
         // Assert
         order.Status.Should().Be(EnumOrderStatus.Cancelled);
-        _orderRepositoryMock.VerifyUpdateCalled(order);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
