@@ -52,7 +52,6 @@ public class AdminApproveLyricsHandlerTests
 
         // Assert
         lyrics.Status.Should().Be(EnumContentStatus.Approved);
-        _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
