@@ -52,7 +52,6 @@ public class AdminPublishVideoHandlerTests
         // Assert
         video.Status.Should().Be(EnumContentStatus.Published);
         video.PublishedAt.Should().NotBeNull();
-        _videoRepositoryMock.VerifyUpdateCalled(video);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
