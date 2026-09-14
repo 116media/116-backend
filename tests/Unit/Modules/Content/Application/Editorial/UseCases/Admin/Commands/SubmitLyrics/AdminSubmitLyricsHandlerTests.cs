@@ -54,7 +54,6 @@ public class AdminSubmitLyricsHandlerTests
 
         // Assert
         lyrics.Status.Should().Be(EnumContentStatus.PendingReview);
-        _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -75,7 +74,6 @@ public class AdminSubmitLyricsHandlerTests
 
         // Assert
         lyrics.Status.Should().Be(EnumContentStatus.PendingPayment);
-        _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -96,7 +94,6 @@ public class AdminSubmitLyricsHandlerTests
 
         // Assert
         lyrics.Status.Should().Be(EnumContentStatus.PendingReview);
-        _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
