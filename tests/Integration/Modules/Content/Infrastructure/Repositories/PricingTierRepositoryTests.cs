@@ -45,6 +45,45 @@ public class PricingTierRepositoryTests : BaseRepositoryTest
     }
 
     [Fact]
+    public async Task ExistsByNameAsync_WithDifferentCase_ReturnsTrue()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        seedContext.PricingTiers.Add(PricingTierFactory.Create("Platinum"));
+        await seedContext.SaveChangesAsync();
+
+        var repo = Resolve<IPricingTierRepository>();
+
+        var exists = await repo.ExistsByNameAsync("pLaTiNuM");
+
+        exists.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ExistsByNameAsync_WhenNotFound_ReturnsFalse()
+    {
+        var repo = Resolve<IPricingTierRepository>();
+
+        var exists = await repo.ExistsByNameAsync($"missing-{Guid.NewGuid():N}");
+
+        exists.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task GetAllAsync_WithoutSearch_ReturnsAllOrderedByName()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        seedContext.PricingTiers.AddRange(PricingTierFactory.Create("Zinc"), PricingTierFactory.Create("Amber"));
+        await seedContext.SaveChangesAsync();
+
+        var repo = Resolve<IPricingTierRepository>();
+
+        var result = await repo.GetAllAsync();
+
+        result.Should().HaveCountGreaterThanOrEqualTo(2);
+        result.Should().BeInAscendingOrder(x => x.Name);
+    }
+
+    [Fact]
     public async Task GetAllAsync_WithSearch_FiltersResults()
     {
         await using var seedContext = CreateDbContext<ContentDbContext>();
