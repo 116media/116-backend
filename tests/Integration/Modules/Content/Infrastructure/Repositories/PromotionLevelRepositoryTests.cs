@@ -33,6 +33,66 @@ public class PromotionLevelRepositoryTests : BaseRepositoryTest
     }
 
     [Fact]
+    public async Task ExistsByNameAsync_WithDifferentCase_ReturnsTrue()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        seedContext.PromotionLevels.Add(PromotionLevelFactory.Create("Spotlight", 30, 49.99m));
+        await seedContext.SaveChangesAsync();
+
+        var repo = Resolve<IPromotionLevelRepository>();
+
+        var exists = await repo.ExistsByNameAsync("sPoTlIgHt");
+
+        exists.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ExistsByNameAsync_WhenNotFound_ReturnsFalse()
+    {
+        var repo = Resolve<IPromotionLevelRepository>();
+
+        var exists = await repo.ExistsByNameAsync($"missing-{Guid.NewGuid():N}");
+
+        exists.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task GetAllAsync_WithSearch_FiltersResults()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        seedContext.PromotionLevels.AddRange(
+            PromotionLevelFactory.Create("HomepageBoost", 30, 49.99m),
+            PromotionLevelFactory.Create("SidebarSlot", 7, 9.99m)
+        );
+        await seedContext.SaveChangesAsync();
+
+        var repo = Resolve<IPromotionLevelRepository>();
+
+        var result = await repo.GetAllAsync(search: "homepage");
+
+        result.Should().ContainSingle();
+        result[0].Name.Should().Be("HomepageBoost");
+    }
+
+    [Fact]
+    public async Task GetAllAsync_WithoutSearch_ReturnsAllOrderedByName()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        seedContext.PromotionLevels.AddRange(
+            PromotionLevelFactory.Create("Zenith", 30, 49.99m),
+            PromotionLevelFactory.Create("Anchor", 7, 9.99m)
+        );
+        await seedContext.SaveChangesAsync();
+
+        var repo = Resolve<IPromotionLevelRepository>();
+
+        var result = await repo.GetAllAsync();
+
+        result.Should().HaveCountGreaterThanOrEqualTo(2);
+        result.Should().BeInAscendingOrder(x => x.Name);
+    }
+
+    [Fact]
     public async Task GetActiveAsync_ReturnsOnlyActiveEntities()
     {
         await using var seedContext = CreateDbContext<ContentDbContext>();
