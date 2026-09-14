@@ -2,6 +2,7 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Shared.Application.Exceptions;
+using _116.Tests.Fixtures.Builders.Entities.Content;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Infrastructure.Repositories;
@@ -131,6 +132,115 @@ public class ContentOrderRepositoryTests(PostgresFixture postgres) : BaseReposit
 
         totalCount.Should().Be(1);
         result.Should().OnlyContain(o => o.CustomerId == customerA.Id);
+    }
+
+    [Fact]
+    public async Task GetAllAsync_WithStatusFilter_ReturnsOnlyMatchingOrders()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var customer = CustomerFactory.Create();
+        seedContext.Customers.Add(customer);
+        var draft = ContentOrderFactory.CreateForCustomer(customer.Id);
+        var paid = new ContentOrderBuilder().WithCustomerId(customer.Id).AsPaid().Build();
+        seedContext.ContentOrders.AddRange(draft, paid);
+        await seedContext.SaveChangesAsync();
+
+        var repo = Resolve<IContentOrderRepository>();
+
+        var (result, _) = await repo.GetAllAsync(page: 1, pageSize: 50, status: EnumOrderStatus.Paid, customerId: null);
+
+        result.Should().OnlyContain(o => o.Status == EnumOrderStatus.Paid);
+        result.Should().Contain(o => o.Id == paid.Id);
+        result.Should().NotContain(o => o.Id == draft.Id);
+    }
+
+    [Fact]
+    public async Task GetAllAsync_WithSearch_MatchesCustomerNameEmailOrCompany()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        string marker = $"srch{Guid.NewGuid():N}"[..12];
+        var byName = new CustomerBuilder().WithFullName($"{marker}-name").Build();
+        var byEmail = new CustomerBuilder().WithEmail($"{marker}@example.com").Build();
+        var byCompany = new CustomerBuilder().WithCompany($"{marker} Media").Build();
+        var unrelated = CustomerFactory.Create();
+        seedContext.Customers.AddRange(byName, byEmail, byCompany, unrelated);
+        var orders = new[] { byName.Id, byEmail.Id, byCompany.Id, unrelated.Id }
+            .Select(ContentOrderFactory.CreateForCustomer)
+            .ToArray();
+        seedContext.ContentOrders.AddRange(orders);
+        await seedContext.SaveChangesAsync();
+
+        var repo = Resolve<IContentOrderRepository>();
+
+        var (result, totalCount) = await repo.GetAllAsync(
+            page: 1,
+            pageSize: 50,
+            status: null,
+            customerId: null,
+            search: marker.ToUpperInvariant()
+        );
+
+        totalCount.Should().Be(3);
+        result.Select(o => o.CustomerId).Should().BeEquivalentTo([byName.Id, byEmail.Id, byCompany.Id]);
+    }
+
+    [Fact]
+    public async Task GetAllPaymentsAsync_WithStatusAndMethodFilters_ReturnsOnlyMatchingPayments()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var customer = CustomerFactory.Create();
+        seedContext.Customers.Add(customer);
+        var pendingOrder = ContentOrderFactory.CreateForCustomer(customer.Id);
+        var verifiedOrder = ContentOrderFactory.CreateForCustomer(customer.Id);
+        seedContext.ContentOrders.AddRange(pendingOrder, verifiedOrder);
+        var pending = ContentPaymentFactory.Create(pendingOrder.Id);
+        var verified = ContentPaymentFactory.CreateVerified(verifiedOrder.Id);
+        seedContext.ContentPayments.AddRange(pending, verified);
+        await seedContext.SaveChangesAsync();
+
+        var repo = Resolve<IContentOrderRepository>();
+
+        var (byStatus, _) = await repo.GetAllPaymentsAsync(
+            page: 1,
+            pageSize: 50,
+            status: EnumPaymentStatus.Verified,
+            method: null
+        );
+
+        byStatus.Should().OnlyContain(p => p.Status == EnumPaymentStatus.Verified);
+        byStatus.Should().Contain(p => p.Id == verified.Id);
+        byStatus.Should().NotContain(p => p.Id == pending.Id);
+    }
+
+    [Fact]
+    public async Task GetAllPaymentsAsync_WithSearch_MatchesTheOrderingCustomer()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        string marker = $"pay{Guid.NewGuid():N}"[..12];
+        var wanted = new CustomerBuilder().WithFullName($"{marker}-customer").Build();
+        var other = CustomerFactory.Create();
+        seedContext.Customers.AddRange(wanted, other);
+        var wantedOrder = ContentOrderFactory.CreateForCustomer(wanted.Id);
+        var otherOrder = ContentOrderFactory.CreateForCustomer(other.Id);
+        seedContext.ContentOrders.AddRange(wantedOrder, otherOrder);
+        seedContext.ContentPayments.AddRange(
+            ContentPaymentFactory.Create(wantedOrder.Id),
+            ContentPaymentFactory.Create(otherOrder.Id)
+        );
+        await seedContext.SaveChangesAsync();
+
+        var repo = Resolve<IContentOrderRepository>();
+
+        var (result, totalCount) = await repo.GetAllPaymentsAsync(
+            page: 1,
+            pageSize: 50,
+            status: null,
+            method: null,
+            search: marker
+        );
+
+        totalCount.Should().Be(1);
+        result.Should().ContainSingle().Which.OrderId.Should().Be(wantedOrder.Id);
     }
 
     [Fact]
