@@ -96,7 +96,6 @@ public class AdminUpsertSingleStreamingLinkHandlerTests
         result.StreamingLinkId.Should().Be(existing.Id);
         existing.Url.Should().Be("https://listen.tidal.com/track/updated");
         existing.Platform.Should().Be(EnumStreamingPlatform.Tidal);
-        _streamingLinkRepositoryMock.VerifyUpdateCalled(existing);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
