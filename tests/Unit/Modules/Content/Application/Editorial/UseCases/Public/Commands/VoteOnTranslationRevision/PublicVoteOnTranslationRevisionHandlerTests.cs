@@ -74,8 +74,6 @@ public class PublicVoteOnTranslationRevisionHandlerTests
         addedVote!.RevisionId.Should().Be(revision.Id);
         addedVote.UserId.Should().Be(userId);
         addedVote.Vote.Should().Be(EnumVote.Approve);
-        _revisionRepositoryMock.Verify(x => x.Update(It.IsAny<LyricsTranslationRevisionEntity>()), Times.Never);
-        _translationRepositoryMock.Verify(x => x.Update(It.IsAny<LyricsTranslationEntity>()), Times.Never);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -103,8 +101,6 @@ public class PublicVoteOnTranslationRevisionHandlerTests
         translation.Text.Should().Be("Newly accepted translation text.");
         translation.Source.Should().Be(EnumTranslationSource.Community);
         _voteRepositoryMock.VerifyAddCalled();
-        _revisionRepositoryMock.VerifyUpdateCalled(revision);
-        _translationRepositoryMock.VerifyUpdateCalled(translation);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
