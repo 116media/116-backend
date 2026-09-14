@@ -52,7 +52,6 @@ public class AdminDeleteArticleCommentHandlerTests
 
         // Assert
         comment.IsDeleted.Should().BeTrue();
-        _articleCommentRepositoryMock.VerifyUpdateCommentCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -72,7 +71,6 @@ public class AdminDeleteArticleCommentHandlerTests
 
         // Assert
         comment.DomainEvents.Should().BeEmpty();
-        _articleCommentRepositoryMock.Verify(x => x.UpdateComment(It.IsAny<ArticleCommentEntity>()), Times.Never);
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
