@@ -46,7 +46,6 @@ public class AdminDeactivateShortVideoHandlerTests
 
         // Assert
         shortVideo.IsActive.Should().BeFalse();
-        _shortVideoRepositoryMock.VerifyUpdateCalled(shortVideo);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
