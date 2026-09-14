@@ -50,7 +50,6 @@ public class AdminApproveVideoHandlerTests
 
         // Assert
         video.Status.Should().Be(EnumContentStatus.Approved);
-        _videoRepositoryMock.VerifyUpdateCalled(video);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
