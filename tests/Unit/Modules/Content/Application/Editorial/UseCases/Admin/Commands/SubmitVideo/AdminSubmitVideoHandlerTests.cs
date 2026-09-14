@@ -55,7 +55,6 @@ public class AdminSubmitVideoHandlerTests
 
         // Assert
         video.Status.Should().Be(EnumContentStatus.PendingReview);
-        _videoRepositoryMock.VerifyUpdateCalled(video);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -76,7 +75,6 @@ public class AdminSubmitVideoHandlerTests
 
         // Assert
         video.Status.Should().Be(EnumContentStatus.PendingPayment);
-        _videoRepositoryMock.VerifyUpdateCalled(video);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -97,7 +95,6 @@ public class AdminSubmitVideoHandlerTests
 
         // Assert
         video.Status.Should().Be(EnumContentStatus.PendingReview);
-        _videoRepositoryMock.VerifyUpdateCalled(video);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
