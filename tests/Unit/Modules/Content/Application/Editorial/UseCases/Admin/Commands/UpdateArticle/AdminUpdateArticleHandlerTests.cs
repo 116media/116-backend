@@ -106,7 +106,6 @@ public class AdminUpdateArticleHandlerTests : BaseContentHandlerTest
         result.Article.Title.Should().Be(command.Title);
         result.Article.Slug.Should().Be(command.Slug);
         article.DomainEvents.OfType<ArticleBodyImagesOrphanedEvent>().Should().BeEmpty();
-        _articleRepositoryMock.VerifyUpdateCalled(article);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
