@@ -1,4 +1,3 @@
-using _116.Content.Application.Editorial.Specifications;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
@@ -23,10 +22,10 @@ public class TranslationRepository(ContentDbContext context)
         CancellationToken cancellationToken = default
     )
     {
-        var specification = new TranslationByLyricsAndLanguageSpecification(lyricsId: lyricsId, language: language);
-        return await Context
-            .LyricsTranslations.ApplySpecification(specification: specification)
-            .FirstOrDefaultAsync(cancellationToken);
+        return await Context.LyricsTranslations.FirstOrDefaultAsync(
+            translation => translation.LyricsId == lyricsId && translation.Language == language,
+            cancellationToken
+        );
     }
 
     /// <inheritdoc />
@@ -35,9 +34,8 @@ public class TranslationRepository(ContentDbContext context)
         CancellationToken cancellationToken = default
     )
     {
-        var specification = new TranslationByLyricsIdSpecification(lyricsId: lyricsId);
         return await Context
-            .LyricsTranslations.ApplySpecification(specification: specification)
+            .LyricsTranslations.Where(translation => translation.LyricsId == lyricsId)
             .ToListAsync(cancellationToken);
     }
 }
