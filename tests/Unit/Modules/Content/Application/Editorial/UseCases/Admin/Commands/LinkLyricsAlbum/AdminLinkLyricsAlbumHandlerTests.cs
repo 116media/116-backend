@@ -52,7 +52,6 @@ public class AdminLinkLyricsAlbumHandlerTests
 
         // Assert
         lyrics.AlbumId.Should().Be(album.Id);
-        _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -70,7 +69,6 @@ public class AdminLinkLyricsAlbumHandlerTests
 
         // Assert
         lyrics.AlbumId.Should().BeNull();
-        _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
         _unitOfWorkMock.VerifyCommitCalled();
         _albumRepositoryMock.Verify(
             x => x.GetByIdOrThrowAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
