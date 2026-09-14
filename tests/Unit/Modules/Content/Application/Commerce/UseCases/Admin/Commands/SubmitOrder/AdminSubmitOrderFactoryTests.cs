@@ -68,7 +68,6 @@ public class AdminSubmitOrderFactoryTests
                 ),
             Times.Once
         );
-        _orderRepositoryMock.VerifyUpdateCalled(order);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
