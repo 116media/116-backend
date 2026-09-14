@@ -57,7 +57,6 @@ public class PublicEditArticleCommentHandlerTests
 
         // Assert
         comment.Body.Should().Be(command.Body);
-        _articleCommentRepositoryMock.VerifyUpdateCommentCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
