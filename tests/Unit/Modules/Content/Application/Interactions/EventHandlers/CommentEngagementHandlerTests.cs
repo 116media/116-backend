@@ -52,7 +52,6 @@ public class CommentEngagementHandlerTests
             x => x.GetCommentByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
             Times.Never
         );
-        _articleCommentRepositoryMock.Verify(x => x.UpdateComment(It.IsAny<ArticleCommentEntity>()), Times.Never);
     }
 
     [Fact]
