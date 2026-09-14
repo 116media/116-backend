@@ -284,11 +284,6 @@ public static class MockArticleCommentRepository
         );
     }
 
-    public static void VerifyUpdateCommentCalled(this Mock<IArticleCommentRepository> mock)
-    {
-        mock.Verify(x => x.UpdateComment(It.IsAny<ArticleCommentEntity>()), Times.Once);
-    }
-
     public static Mock<IArticleCommentRepository> SetupExistsOrThrow(
         this Mock<IArticleCommentRepository> mock,
         Guid articleId
