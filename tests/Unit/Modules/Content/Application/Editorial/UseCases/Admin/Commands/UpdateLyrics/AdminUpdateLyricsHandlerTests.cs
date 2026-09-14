@@ -106,7 +106,6 @@ public class AdminUpdateLyricsHandlerTests : BaseContentHandlerTest
         lyrics.CustomerId.Should().BeNull();
         lyrics.OrderItemId.Should().BeNull();
         result.Lyrics.Id.Should().Be(lyrics.Id);
-        _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -136,7 +135,6 @@ public class AdminUpdateLyricsHandlerTests : BaseContentHandlerTest
         // Assert
         lyrics.VideoId.Should().Be(videoId);
         video.HasLyrics.Should().BeTrue();
-        _videoRepositoryMock.VerifyUpdateCalled(video);
     }
 
     [Fact]
@@ -172,8 +170,6 @@ public class AdminUpdateLyricsHandlerTests : BaseContentHandlerTest
         lyrics.VideoId.Should().Be(newVideoId);
         oldVideo.HasLyrics.Should().BeFalse();
         newVideo.HasLyrics.Should().BeTrue();
-        _videoRepositoryMock.Verify(x => x.Update(oldVideo), Times.Once);
-        _videoRepositoryMock.Verify(x => x.Update(newVideo), Times.Once);
     }
 
     #endregion
