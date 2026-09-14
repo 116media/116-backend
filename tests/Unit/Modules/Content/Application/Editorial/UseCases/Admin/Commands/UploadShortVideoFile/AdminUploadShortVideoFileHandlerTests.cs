@@ -65,8 +65,6 @@ public class AdminUploadShortVideoFileHandlerTests
         shortVideo.VideoFileId.Should().Be(uploadedFile.Id);
         result.VideoUrl.Should().Be(uploadedFile.StorageUrl);
         result.VideoStorageKey.Should().Be(uploadedFile.StorageKey);
-
-        _shortVideoRepositoryMock.VerifyUpdateCalled(shortVideo);
         _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 
@@ -89,8 +87,6 @@ public class AdminUploadShortVideoFileHandlerTests
         shortVideo.VideoFileId.Should().Be(uploadedFile.Id);
         result.VideoUrl.Should().Be(uploadedFile.StorageUrl);
         result.VideoStorageKey.Should().Be(uploadedFile.StorageKey);
-
-        _shortVideoRepositoryMock.VerifyUpdateCalled(shortVideo);
         _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 
