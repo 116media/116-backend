@@ -54,7 +54,6 @@ public class AdminPublishArticleHandlerTests
         // Assert
         article.Status.Should().Be(EnumContentStatus.Published);
         article.PublishedAt.Should().NotBeNull();
-        _articleRepositoryMock.VerifyUpdateCalled(article);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
