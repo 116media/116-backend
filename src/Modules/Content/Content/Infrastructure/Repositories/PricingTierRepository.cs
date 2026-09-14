@@ -1,8 +1,6 @@
-using _116.Content.Application.Lookup.Specifications;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
-using _116.Shared.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace _116.Content.Infrastructure.Repositories;
@@ -18,11 +16,7 @@ public class PricingTierRepository(ContentDbContext context)
     /// <inheritdoc />
     public async Task<bool> ExistsByNameAsync(string name, CancellationToken cancellationToken = default)
     {
-        var specification = new PricingTierByNameSpecification(name: name);
-        return await Context.PricingTiers.AnyBySpecificationAsync(
-            specification: specification,
-            cancellationToken: cancellationToken
-        );
+        return await Context.PricingTiers.AnyAsync(tier => EF.Functions.ILike(tier.Name, name), cancellationToken);
     }
 
     /// <inheritdoc />
@@ -31,9 +25,16 @@ public class PricingTierRepository(ContentDbContext context)
         CancellationToken cancellationToken = default
     )
     {
-        IQueryable<PricingTierEntity> query = string.IsNullOrWhiteSpace(search)
-            ? Context.PricingTiers
-            : Context.PricingTiers.ApplySpecification(new PricingTierSearchSpecification(search: search));
+        IQueryable<PricingTierEntity> query = Context.PricingTiers;
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            string pattern = $"%{search}%";
+            query = query.Where(tier =>
+                EF.Functions.ILike(tier.Name, pattern)
+                || (tier.Description != null && EF.Functions.ILike(tier.Description, pattern))
+            );
+        }
 
         return await query.OrderBy(x => x.Name).ToListAsync(cancellationToken);
     }
