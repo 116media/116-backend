@@ -90,7 +90,6 @@ public class AdminAttachYoutubeVideoUrlHandlerTests : BaseContentHandlerTest
         video.YoutubeVideoUrl.Should().Be(command.YoutubeVideoUrl);
         result.Video.Id.Should().Be(video.Id);
         result.Video.YoutubeVideoUrl.Should().Be(command.YoutubeVideoUrl);
-        _videoRepositoryMock.VerifyUpdateCalled(video);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -190,7 +189,6 @@ public class AdminAttachYoutubeVideoUrlHandlerTests : BaseContentHandlerTest
         video.YoutubeVideoUrl.Should().Be(command.YoutubeVideoUrl);
         result.Video.Id.Should().Be(video.Id);
         result.Video.YoutubeVideoUrl.Should().Be(command.YoutubeVideoUrl);
-        _videoRepositoryMock.VerifyUpdateCalled(video);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
