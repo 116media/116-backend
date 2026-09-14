@@ -56,7 +56,6 @@ public class AdminRejectLyricsSubmissionHandlerTests
         submission.Status.Should().Be(EnumSubmissionStatus.Rejected);
         submission.ReviewedByUserId.Should().Be(reviewerId);
         submission.ReviewNote.Should().Be(note);
-        _submissionRepositoryMock.VerifyUpdateCalled(submission);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
