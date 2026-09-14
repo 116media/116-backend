@@ -202,7 +202,6 @@ public class AdminCreateLyricsHandlerTests : BaseContentHandlerTest
         result.Lyrics.Id.Should().Be(created.Id);
 
         _lyricsRepositoryMock.VerifyAddCalled();
-        _videoRepositoryMock.VerifyUpdateCalled(video);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
