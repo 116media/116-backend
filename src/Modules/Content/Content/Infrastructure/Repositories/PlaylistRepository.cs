@@ -1,9 +1,7 @@
 using _116.Content.Application.Interactions.Persistence;
-using _116.Content.Application.Interactions.Specifications;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
-using _116.Shared.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace _116.Content.Infrastructure.Repositories;
@@ -22,9 +20,8 @@ public class PlaylistRepository(ContentDbContext context)
         CancellationToken cancellationToken = default
     )
     {
-        var specification = new PlaylistByUserIdSpecification(userId: userId);
         return await Context
-            .Playlists.ApplySpecification(specification: specification)
+            .Playlists.Where(playlist => playlist.UserId == userId)
             .Include(p => p.Videos.Where(pv => pv.Video.Status == EnumContentStatus.Published))
                 .ThenInclude(pv => pv.Video)
             .OrderByDescending(p => p.CreatedAt)
@@ -34,19 +31,16 @@ public class PlaylistRepository(ContentDbContext context)
     /// <inheritdoc />
     public override async Task<PlaylistEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var specification = new PlaylistByIdSpecification(id: id);
         return await Context
             .Playlists.AsTracking()
-            .ApplySpecification(specification: specification)
-            .FirstOrDefaultAsync(cancellationToken);
+            .FirstOrDefaultAsync(playlist => playlist.Id == id, cancellationToken);
     }
 
     /// <inheritdoc />
     public async Task<PlaylistEntity?> GetByIdWithVideosAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var specification = new PlaylistByIdSpecification(id: id);
         return await Context
-            .Playlists.ApplySpecification(specification: specification)
+            .Playlists.Where(playlist => playlist.Id == id)
             .Include(p => p.Videos.Where(pv => pv.Video.Status == EnumContentStatus.Published))
                 .ThenInclude(pv => pv.Video)
                     .ThenInclude(video => video.Category)
@@ -60,10 +54,10 @@ public class PlaylistRepository(ContentDbContext context)
         CancellationToken cancellationToken = default
     )
     {
-        var specification = new PlaylistVideoByPlaylistAndVideoSpecification(playlistId: playlistId, videoId: videoId);
-        return await Context
-            .PlaylistVideos.ApplySpecification(specification: specification)
-            .AnyAsync(cancellationToken);
+        return await Context.PlaylistVideos.AnyAsync(
+            entry => entry.PlaylistId == playlistId && entry.VideoId == videoId,
+            cancellationToken
+        );
     }
 
     /// <inheritdoc />
@@ -75,11 +69,9 @@ public class PlaylistRepository(ContentDbContext context)
     /// <inheritdoc />
     public async Task RemoveVideoAsync(Guid playlistId, Guid videoId, CancellationToken cancellationToken = default)
     {
-        var specification = new PlaylistVideoByPlaylistAndVideoSpecification(playlistId: playlistId, videoId: videoId);
         PlaylistVideoEntity? entry = await Context
             .PlaylistVideos.AsTracking()
-            .ApplySpecification(specification: specification)
-            .FirstOrDefaultAsync(cancellationToken);
+            .FirstOrDefaultAsync(e => e.PlaylistId == playlistId && e.VideoId == videoId, cancellationToken);
 
         if (entry is not null)
         {
