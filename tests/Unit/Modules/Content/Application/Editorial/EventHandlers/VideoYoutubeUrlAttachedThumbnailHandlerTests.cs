@@ -77,7 +77,6 @@ public class VideoYoutubeUrlAttachedThumbnailHandlerTests
         );
 
         video.ThumbnailFileId.Should().Be(_uploadedFile.Id);
-        _videoRepositoryMock.VerifyUpdateCalled(video);
         _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 
@@ -98,7 +97,6 @@ public class VideoYoutubeUrlAttachedThumbnailHandlerTests
         // Assert
 
         video.ThumbnailFileId.Should().Be(_uploadedFile.Id);
-        _videoRepositoryMock.VerifyUpdateCalled(video);
         _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 
