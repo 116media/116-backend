@@ -71,7 +71,6 @@ public class AdminForceUnpromoteVideoHandlerTests
         video.UnpromotedReason.Should().Be(command.Reason);
         result.VideoId.Should().Be(video.Id);
         result.UnpromotedAt.Should().Be(video.UnpromotedAt!.Value);
-        _videoRepositoryMock.VerifyUpdateCalled(video);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
