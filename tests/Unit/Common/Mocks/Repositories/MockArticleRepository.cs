@@ -148,15 +148,6 @@ public static class MockArticleRepository
         mock.Verify(x => x.AddAsync(It.IsAny<ArticleEntity>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    /// <summary>
-    /// Verifies that the repository was handed exactly the expected entity once,
-    /// so updating a different instance than the one looked up fails the test.
-    /// </summary>
-    public static void VerifyUpdateCalled(this Mock<IArticleRepository> mock, ArticleEntity expected)
-    {
-        mock.Verify(x => x.Update(expected), Times.Once);
-    }
-
     public static void VerifyRemoveCalled(this Mock<IArticleRepository> mock, ArticleEntity article)
     {
         mock.Verify(x => x.Remove(article), Times.Once);
