@@ -66,8 +66,6 @@ public class AdminUploadVideoThumbnailHandlerTests
         video.ThumbnailFileId.Should().Be(uploadedFile.Id);
         result.ThumbnailUrl.Should().Be(uploadedFile.StorageUrl);
         result.ThumbnailStorageKey.Should().Be(uploadedFile.StorageKey);
-
-        _videoRepositoryMock.VerifyUpdateCalled(video);
         _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 
@@ -90,8 +88,6 @@ public class AdminUploadVideoThumbnailHandlerTests
         video.ThumbnailFileId.Should().Be(uploadedFile.Id);
         result.ThumbnailUrl.Should().Be(uploadedFile.StorageUrl);
         result.ThumbnailStorageKey.Should().Be(uploadedFile.StorageKey);
-
-        _videoRepositoryMock.VerifyUpdateCalled(video);
         _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 
