@@ -149,14 +149,13 @@ public class ContentOrderRepositoryTests : IDisposable
     #region UpdateAsync
 
     [Fact]
-    public async Task UpdateAsync_ShouldUpdateOrderInDatabase()
+    public async Task TrackedMutation_ShouldUpdateOrderInDatabase()
     {
         // Arrange
         ContentOrderEntity order = await SeedOrderAsync();
 
-        // Act
+        // Act — a loaded order is tracked; SaveChanges diffs the row without an attach call.
         order.Submit();
-        await _repository.UpdateAsync(order);
         await _context.SaveChangesAsync();
 
         // Assert
@@ -166,10 +165,10 @@ public class ContentOrderRepositoryTests : IDisposable
 
     #endregion
 
-    #region UpdatePaymentAsync
+    #region Tracked payment mutation
 
     [Fact]
-    public async Task UpdatePaymentAsync_ShouldUpdatePaymentInDatabase()
+    public async Task TrackedMutation_ShouldUpdatePaymentInDatabase()
     {
         // Arrange
         ContentOrderEntity order = await SeedOrderAsync();
@@ -181,9 +180,8 @@ public class ContentOrderRepositoryTests : IDisposable
         await _repository.AddPaymentAsync(payment);
         await _context.SaveChangesAsync();
 
-        // Act
+        // Act — tracked mutation
         payment.Verify(adminUserId: Guid.NewGuid(), receiptUrl: "https://receipts.example.com/test.pdf");
-        await _repository.UpdatePaymentAsync(payment);
         await _context.SaveChangesAsync();
 
         // Assert
@@ -278,7 +276,6 @@ public class ContentOrderRepositoryTests : IDisposable
         ContentOrderEntity draftOrder = await SeedOrderAsync();
         ContentOrderEntity submittedOrder = await SeedOrderAsync();
         submittedOrder.Submit();
-        await _repository.UpdateAsync(submittedOrder);
         await _context.SaveChangesAsync();
 
         // Act
@@ -505,10 +502,10 @@ public class ContentOrderRepositoryTests : IDisposable
 
     #endregion
 
-    #region UpdateItemAsync
+    #region Tracked item mutation
 
     [Fact]
-    public async Task UpdateItemAsync_ShouldUpdateItemInDatabase()
+    public async Task TrackedMutation_ShouldUpdateItemInDatabase()
     {
         // Arrange
         ContentOrderEntity order = await SeedOrderAsync();
@@ -526,8 +523,7 @@ public class ContentOrderRepositoryTests : IDisposable
             isBonus: null
         );
 
-        // Act
-        await _repository.UpdateItemAsync(item);
+        // Act — tracked mutation
         await _context.SaveChangesAsync();
 
         // Assert
