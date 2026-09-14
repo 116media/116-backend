@@ -149,15 +149,6 @@ public static class MockVideoRepository
         mock.Verify(x => x.AddAsync(It.IsAny<VideoEntity>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    /// <summary>
-    /// Verifies that the repository was handed exactly the expected entity once,
-    /// so updating a different instance than the one looked up fails the test.
-    /// </summary>
-    public static void VerifyUpdateCalled(this Mock<IVideoRepository> mock, VideoEntity expected)
-    {
-        mock.Verify(x => x.Update(expected), Times.Once);
-    }
-
     public static void VerifyRemoveCalled(this Mock<IVideoRepository> mock, VideoEntity video)
     {
         mock.Verify(x => x.Remove(video), Times.Once);
@@ -227,11 +218,6 @@ public static class MockVideoRepository
     public static void VerifyAddRatingCalled(this Mock<IVideoRepository> mock)
     {
         mock.Verify(x => x.AddRatingAsync(It.IsAny<VideoRatingEntity>(), It.IsAny<CancellationToken>()), Times.Once);
-    }
-
-    public static void VerifyUpdateRatingCalled(this Mock<IVideoRepository> mock)
-    {
-        mock.Verify(x => x.UpdateRating(It.IsAny<VideoRatingEntity>()), Times.Once);
     }
 
     public static void VerifyAddShareCalled(this Mock<IVideoRepository> mock)
