@@ -117,6 +117,26 @@ public class PackageRepositoryTests(PostgresFixture postgres) : BaseRepositoryTe
     }
 
     [Fact]
+    public async Task GetSlotByIdAsync_ScopedToAnotherPackage_ReturnsNull()
+    {
+        await using var context = CreateDbContext<ContentDbContext>();
+        var owningPackage = PackageFactory.Create();
+        var otherPackage = PackageFactory.Create();
+        context.Packages.AddRange(owningPackage, otherPackage);
+        var slot = PackageSlotFactory.CreateOpen(owningPackage.Id);
+        context.PackageSlots.Add(slot);
+        await context.SaveChangesAsync();
+
+        var repo = Resolve<IPackageRepository>();
+
+        var inOwner = await repo.GetSlotByIdAsync(slot.Id, owningPackage.Id);
+        var inOther = await repo.GetSlotByIdAsync(slot.Id, otherPackage.Id);
+
+        inOwner.Should().NotBeNull();
+        inOther.Should().BeNull();
+    }
+
+    [Fact]
     public async Task AddSlotAsync_NewSlot_PersistsToDatabase()
     {
         await using var context = CreateDbContext<ContentDbContext>();
