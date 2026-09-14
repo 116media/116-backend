@@ -72,6 +72,10 @@ public class ApiFixture(PostgresFixture db) : WebApplicationFactory<Program>
             // Every user a test inserts gets the token-state row production paths create.
             services.AddSingleton<ISaveChangesInterceptor, UserTokenStateSeedingInterceptor>();
 
+            // SQL capture for tests asserting statement shape (e.g. column-clobber regressions).
+            services.AddSingleton<RecordingCommandInterceptor>();
+            services.AddSingleton<IResettableStub>(sp => sp.GetRequiredService<RecordingCommandInterceptor>());
+
             ReplaceDbContexts(services);
             StubExternalServices(services);
             DisableScheduledJobs(services);
@@ -204,6 +208,7 @@ public class ApiFixture(PostgresFixture db) : WebApplicationFactory<Program>
             (serviceProvider, options) =>
             {
                 options.AddInterceptors(serviceProvider.GetServices<ISaveChangesInterceptor>());
+                options.AddInterceptors(serviceProvider.GetRequiredService<RecordingCommandInterceptor>());
                 options.UseNpgsql(serviceProvider.GetRequiredService<DbConnection>()).UseSnakeCaseNamingConvention();
             }
         );
