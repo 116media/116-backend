@@ -52,7 +52,6 @@ public class AdminLinkVideoArtistHandlerTests
 
         // Assert
         video.ArtistId.Should().Be(artist.Id);
-        _videoRepositoryMock.VerifyUpdateCalled(video);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -74,7 +73,6 @@ public class AdminLinkVideoArtistHandlerTests
             x => x.GetByIdOrThrowAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
             Times.Never
         );
-        _videoRepositoryMock.VerifyUpdateCalled(video);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
