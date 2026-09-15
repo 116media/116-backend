@@ -1,7 +1,11 @@
+using _116.Content.Application.Editorial.Specifications;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Specifications;
+using _116.Shared.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace _116.Content.Infrastructure.Repositories;
@@ -18,10 +22,8 @@ public class ArticleInteractionRepository(ContentDbContext context)
     /// <inheritdoc />
     public async Task<bool> HasLikedAsync(Guid userId, Guid articleId, CancellationToken cancellationToken = default)
     {
-        return await Context.ArticleLikes.AnyAsync(
-            like => like.UserId == userId && like.ArticleId == articleId,
-            cancellationToken
-        );
+        var specification = new ArticleLikeByUserAndArticleSpecification(userId: userId, articleId: articleId);
+        return await Context.ArticleLikes.ApplySpecification(specification: specification).AnyAsync(cancellationToken);
     }
 
     /// <inheritdoc />
@@ -33,9 +35,11 @@ public class ArticleInteractionRepository(ContentDbContext context)
     /// <inheritdoc />
     public async Task RemoveLikeAsync(Guid userId, Guid articleId, CancellationToken cancellationToken = default)
     {
+        var specification = new ArticleLikeByUserAndArticleSpecification(userId: userId, articleId: articleId);
         ArticleLikeEntity? like = await Context
             .ArticleLikes.AsTracking()
-            .FirstOrDefaultAsync(l => l.UserId == userId && l.ArticleId == articleId, cancellationToken);
+            .ApplySpecification(specification: specification)
+            .FirstOrDefaultAsync(cancellationToken);
 
         if (like is not null)
         {
@@ -51,10 +55,10 @@ public class ArticleInteractionRepository(ContentDbContext context)
         CancellationToken cancellationToken = default
     )
     {
-        return await Context.ArticleBookmarks.AnyAsync(
-            bookmark => bookmark.UserId == userId && bookmark.ArticleId == articleId,
-            cancellationToken
-        );
+        var specification = new ArticleBookmarkByUserAndArticleSpecification(userId: userId, articleId: articleId);
+        return await Context
+            .ArticleBookmarks.ApplySpecification(specification: specification)
+            .AnyAsync(cancellationToken);
     }
 
     /// <inheritdoc />
@@ -66,9 +70,11 @@ public class ArticleInteractionRepository(ContentDbContext context)
     /// <inheritdoc />
     public async Task RemoveBookmarkAsync(Guid userId, Guid articleId, CancellationToken cancellationToken = default)
     {
+        var specification = new ArticleBookmarkByUserAndArticleSpecification(userId: userId, articleId: articleId);
         ArticleBookmarkEntity? bookmark = await Context
             .ArticleBookmarks.AsTracking()
-            .FirstOrDefaultAsync(b => b.UserId == userId && b.ArticleId == articleId, cancellationToken);
+            .ApplySpecification(specification: specification)
+            .FirstOrDefaultAsync(cancellationToken);
 
         if (bookmark is not null)
         {
@@ -116,8 +122,9 @@ public class ArticleInteractionRepository(ContentDbContext context)
         CancellationToken cancellationToken = default
     )
     {
+        var specification = new ArticleBookmarkByUserIdSpecification(userId: userId);
         IQueryable<ArticleBookmarkEntity> bookmarkQuery = Context
-            .ArticleBookmarks.Where(b => b.UserId == userId)
+            .ArticleBookmarks.ApplySpecification(specification: specification)
             .Where(b => b.Article.Status == EnumContentStatus.Published)
             .Include(b => b.Article)
                 .ThenInclude(a => a.Category)
@@ -143,8 +150,9 @@ public class ArticleInteractionRepository(ContentDbContext context)
         CancellationToken cancellationToken = default
     )
     {
+        var specification = new ArticleLikeByUserIdSpecification(userId: userId);
         IQueryable<ArticleLikeEntity> query = Context
-            .ArticleLikes.Where(like => like.UserId == userId)
+            .ArticleLikes.ApplySpecification(specification: specification)
             .Where(like => like.Article.Status == EnumContentStatus.Published)
             .Include(like => like.Article)
                 .ThenInclude(article => article.Category)
@@ -169,8 +177,9 @@ public class ArticleInteractionRepository(ContentDbContext context)
         CancellationToken cancellationToken = default
     )
     {
+        var specification = new ArticleShareByUserIdSpecification(userId: userId);
         var groupedQuery = Context
-            .ArticleShares.Where(share => share.UserId == userId)
+            .ArticleShares.ApplySpecification(specification: specification)
             .Where(share => share.Article.Status == EnumContentStatus.Published)
             .GroupBy(share => share.ArticleId)
             .Select(group => new
