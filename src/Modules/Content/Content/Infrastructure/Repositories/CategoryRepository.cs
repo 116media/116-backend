@@ -1,6 +1,8 @@
+using _116.Content.Application.Catalog.Specifications;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Specifications;
 using _116.Shared.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 
@@ -30,12 +32,18 @@ public class CategoryRepository(ContentDbContext context)
 
         if (isActive.HasValue)
         {
-            query = query.Where(category => category.IsActive == isActive.Value);
+            Specification<CategoryEntity> spec = isActive.Value
+                ? new ActiveCategorySpecification()
+                : new ActiveCategorySpecification().Not();
+            query = query.ApplySpecification(specification: spec);
         }
 
         if (isFree.HasValue)
         {
-            query = query.Where(category => category.IsFree == isFree.Value);
+            Specification<CategoryEntity> spec = isFree.Value
+                ? new FreeCategorySpecification()
+                : new PaidCategorySpecification();
+            query = query.ApplySpecification(specification: spec);
         }
 
         int totalCount = await query.CountAsync(cancellationToken);
@@ -78,9 +86,10 @@ public class CategoryRepository(ContentDbContext context)
     /// <inheritdoc />
     public async Task<CategoryEntity?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default)
     {
-        return await Context.Categories.FirstOrDefaultAsync(
-            category => EF.Functions.ILike(category.Slug, slug),
-            cancellationToken
+        var specification = new CategoryBySlugSpecification(slug: slug);
+        return await Context.Categories.FirstOrDefaultBySpecificationAsync(
+            specification: specification,
+            cancellationToken: cancellationToken
         );
     }
 
@@ -90,14 +99,18 @@ public class CategoryRepository(ContentDbContext context)
         CancellationToken cancellationToken = default
     )
     {
-        IQueryable<CategoryEntity> query = Context.Categories.Where(category => category.IsActive);
+        Specification<CategoryEntity> spec = new ActiveCategorySpecification();
 
         if (contentTypeId.HasValue)
         {
-            query = query.Where(category => category.ContentTypeId == contentTypeId.Value);
+            spec = spec.And(new CategoryByContentTypeSpecification(contentTypeId: contentTypeId.Value));
         }
 
-        return await query.Include(c => c.ContentType).OrderBy(c => c.Name).ToListAsync(cancellationToken);
+        return await Context
+            .Categories.ApplySpecification(specification: spec)
+            .Include(c => c.ContentType)
+            .OrderBy(c => c.Name)
+            .ToListAsync(cancellationToken);
     }
 
     /// <inheritdoc />
@@ -158,8 +171,9 @@ public class CategoryRepository(ContentDbContext context)
     /// <inheritdoc />
     public async Task<CategoryEntity?> GetGossipCategoryAsync(CancellationToken cancellationToken = default)
     {
+        var specification = new GossipCategorySpecification();
         return await Context
-            .Categories.Where(category => category.IsGossip && category.IsActive)
+            .Categories.ApplySpecification(specification: specification)
             .Include(c => c.ContentType)
             .FirstOrDefaultAsync(cancellationToken);
     }
@@ -167,9 +181,10 @@ public class CategoryRepository(ContentDbContext context)
     /// <inheritdoc />
     public async Task<CategoryEntity?> GetExclusiveCategoryAsync(CancellationToken cancellationToken = default)
     {
+        var specification = new ExclusiveCategorySpecification();
         return await Context
             .Categories.AsTracking()
-            .Where(category => category.IsExclusive && category.IsActive)
+            .ApplySpecification(specification: specification)
             .Include(c => c.ContentType)
             .FirstOrDefaultAsync(cancellationToken);
     }
@@ -177,9 +192,10 @@ public class CategoryRepository(ContentDbContext context)
     /// <inheritdoc />
     public async Task<CategoryEntity?> GetDefaultLyricsCategoryAsync(CancellationToken cancellationToken = default)
     {
+        var specification = new DefaultLyricsCategorySpecification();
         return await Context
             .Categories.AsTracking()
-            .Where(category => category.IsDefaultForLyrics && category.IsActive)
+            .ApplySpecification(specification: specification)
             .Include(c => c.ContentType)
             .FirstOrDefaultAsync(cancellationToken);
     }
@@ -190,18 +206,18 @@ public class CategoryRepository(ContentDbContext context)
         CancellationToken cancellationToken = default
     )
     {
-        // Filters on PinnedToFeedAt (the mapped column), not the [NotMapped] IsPinnedToFeed
-        // property, so it translates to SQL.
-        IQueryable<CategoryEntity> query = Context
-            .Categories.AsTracking()
-            .Where(category => category.PinnedToFeedAt != null && category.IsActive);
+        Specification<CategoryEntity> specification = new PinnedToFeedCategorySpecification();
 
         if (contentTypeId.HasValue)
         {
-            query = query.Where(category => category.ContentTypeId == contentTypeId.Value);
+            specification = specification.And(
+                new CategoryByContentTypeSpecification(contentTypeId: contentTypeId.Value)
+            );
         }
 
-        return await query
+        return await Context
+            .Categories.AsTracking()
+            .ApplySpecification(specification: specification)
             .Include(c => c.ContentType)
             .OrderByDescending(c => c.PinnedToFeedAt)
             .ToListAsync(cancellationToken);
