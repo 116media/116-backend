@@ -72,11 +72,14 @@ public class PublicVoteOnTranslationRevisionHandler(
         if (netApprovals >= TranslationConstants.AutoAcceptThreshold && revision.Status == EnumRevisionStatus.Pending)
         {
             revision.Accept(decidedByUserId: null);
+            revisionRepository.Update(revision: revision);
+
             LyricsTranslationEntity translation = await translationRepository.GetByIdOrThrowAsync(
                 id: revision.TranslationId,
                 cancellationToken: cancellationToken
             );
             translation.ApplyAcceptedRevision(newText: revision.ProposedText);
+            translationRepository.Update(translation: translation);
         }
 
         // Both the revision's acceptance and the translation's applied text commit together in
