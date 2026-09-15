@@ -132,7 +132,7 @@ public class RoleSpecificationsTests
     {
         // Arrange
         RoleEntity role = RoleFactory.Create();
-        role.SoftDelete();
+        role.SoftDelete(now: DateTime.UtcNow);
         RoleIsDeletedSpecification spec = new();
 
         // Act
@@ -179,7 +179,7 @@ public class RoleSpecificationsTests
     {
         // Arrange
         RoleEntity role = RoleFactory.Create();
-        role.SoftDelete();
+        role.SoftDelete(now: DateTime.UtcNow);
         RoleNotDeletedSpecification spec = new();
 
         // Act
@@ -229,7 +229,7 @@ public class RoleSpecificationsTests
         // Arrange
         RoleEntity role = RoleFactory.Create();
         role.Activate();
-        role.SoftDelete();
+        role.SoftDelete(now: DateTime.UtcNow);
         ActiveRoleSpecification spec = new();
 
         // Act
@@ -245,7 +245,7 @@ public class RoleSpecificationsTests
         // Arrange
         RoleEntity role = RoleFactory.Create();
         role.Deactivate();
-        role.SoftDelete();
+        role.SoftDelete(now: DateTime.UtcNow);
         ActiveRoleSpecification spec = new();
 
         // Act
@@ -347,7 +347,7 @@ public class RoleSpecificationsTests
         inactiveRole.Deactivate();
 
         RoleEntity deletedRole = RoleFactory.Create("Deleted");
-        deletedRole.SoftDelete();
+        deletedRole.SoftDelete(now: DateTime.UtcNow);
 
         List<RoleEntity> roles = [activeRole, inactiveRole, deletedRole];
         ActiveRoleSpecification spec = new();

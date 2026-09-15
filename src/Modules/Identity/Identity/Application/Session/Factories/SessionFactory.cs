@@ -115,7 +115,7 @@ public class SessionFactory(
         JwtGenerationDto accessToken = jwtService.GenerateToken(
             userId: user.Id,
             sessionId: sessionId,
-            email: user.Email!,
+            email: user.Email!.Value,
             userName: user.UserName,
             userRoles: user.UserRoles,
             userPermissions: userPermissions,

@@ -59,7 +59,7 @@ public class SessionEntityTests
         session.Browser.Should().Be(browser);
         session.Device.Should().Be(device);
         session.Platform.Should().Be(platform);
-        session.Client.Should().Be(client);
+        session.Client.Value.Should().Be(client);
         session.IpAddress.Should().Be(ipAddress);
         session.UserAgent.Should().Be(userAgent);
         session.IsRevoked.Should().BeFalse();
@@ -107,7 +107,7 @@ public class SessionEntityTests
         SessionEntity session = SessionFactory.Create();
 
         // Act
-        bool result = session.IsActive();
+        bool result = session.IsActive(now: DateTime.UtcNow);
 
         // Assert
         result.Should().BeTrue();
@@ -120,7 +120,7 @@ public class SessionEntityTests
         SessionEntity session = SessionFactory.CreateExpired();
 
         // Act
-        bool result = session.IsActive();
+        bool result = session.IsActive(now: DateTime.UtcNow);
 
         // Assert
         result.Should().BeFalse();
@@ -133,7 +133,7 @@ public class SessionEntityTests
         SessionEntity session = SessionFactory.CreateRevoked();
 
         // Act
-        bool result = session.IsActive();
+        bool result = session.IsActive(now: DateTime.UtcNow);
 
         // Assert
         result.Should().BeFalse();
@@ -144,10 +144,10 @@ public class SessionEntityTests
     {
         // Arrange
         SessionEntity session = SessionFactory.CreateExpired();
-        session.Revoke();
+        session.Revoke(reason: EnumSessionRevokeReason.SelfSignOut, now: DateTime.UtcNow);
 
         // Act
-        bool result = session.IsActive();
+        bool result = session.IsActive(now: DateTime.UtcNow);
 
         // Assert
         result.Should().BeFalse();
@@ -203,7 +203,7 @@ public class SessionEntityTests
         SessionEntity session = new SessionBuilder().WithAbsoluteExpiresAt(DateTime.UtcNow.AddDays(1)).Build();
 
         // Act
-        bool result = session.HasReachedAbsoluteExpiry();
+        bool result = session.HasReachedAbsoluteExpiry(now: DateTime.UtcNow);
 
         // Assert
         result.Should().BeFalse();
@@ -216,7 +216,7 @@ public class SessionEntityTests
         SessionEntity session = new SessionBuilder().WithAbsoluteExpiresAt(DateTime.UtcNow.AddDays(-1)).Build();
 
         // Act
-        bool result = session.HasReachedAbsoluteExpiry();
+        bool result = session.HasReachedAbsoluteExpiry(now: DateTime.UtcNow);
 
         // Assert
         result.Should().BeTrue();
@@ -234,7 +234,7 @@ public class SessionEntityTests
 
         // Assert
         session.AbsoluteExpiresAt.Should().Be(newAbsoluteExpiresAt);
-        session.HasReachedAbsoluteExpiry().Should().BeFalse();
+        session.HasReachedAbsoluteExpiry(now: DateTime.UtcNow).Should().BeFalse();
     }
 
     #endregion
@@ -248,7 +248,7 @@ public class SessionEntityTests
         SessionEntity session = SessionFactory.Create();
 
         // Act
-        session.Revoke();
+        session.Revoke(reason: EnumSessionRevokeReason.SelfSignOut, now: DateTime.UtcNow);
 
         // Assert
         session.IsRevoked.Should().BeTrue();
@@ -257,18 +257,44 @@ public class SessionEntityTests
     }
 
     [Fact]
-    public void Revoke_WhenAlreadyRevoked_ShouldUpdateRevokedAt()
+    public void Revoke_WhenAlreadyRevoked_ShouldReportFalseKeepTheStampAndRaiseNothing()
     {
         // Arrange
         SessionEntity session = SessionFactory.CreateRevoked();
         DateTime? originalRevokedAt = session.RevokedAt;
+        session.ClearDomainEvents();
 
         // Act
-        session.Revoke();
+        bool transitioned = session.Revoke(
+            reason: EnumSessionRevokeReason.SelfSignOut,
+            now: DateTime.UtcNow.AddMinutes(5)
+        );
 
         // Assert
+        transitioned.Should().BeFalse();
         session.IsRevoked.Should().BeTrue();
-        session.RevokedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+        session.RevokedAt.Should().Be(originalRevokedAt);
+        session.DomainEvents.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Reactivate_WhenActive_ShouldRenewTheLeaseWithoutRaising()
+    {
+        // Arrange
+        SessionEntity session = SessionFactory.Create();
+        session.ClearDomainEvents();
+        DateTime newExpiry = DateTime.UtcNow.AddDays(30);
+        DateTime newAbsoluteExpiry = DateTime.UtcNow.AddDays(60);
+
+        // Act
+        bool revived = session.Reactivate("renewed_hash", newExpiry, newAbsoluteExpiry);
+
+        // Assert
+        revived.Should().BeFalse();
+        session.RefreshTokenHash.Should().Be("renewed_hash");
+        session.ExpiresAt.Should().Be(newExpiry);
+        session.AbsoluteExpiresAt.Should().Be(newAbsoluteExpiry);
+        session.DomainEvents.Should().BeEmpty();
     }
 
     [Fact]
@@ -276,13 +302,13 @@ public class SessionEntityTests
     {
         // Arrange
         SessionEntity session = SessionFactory.Create();
-        session.IsActive().Should().BeTrue(); // Pre-condition
+        session.IsActive(now: DateTime.UtcNow).Should().BeTrue(); // Pre-condition
 
         // Act
-        session.Revoke();
+        session.Revoke(reason: EnumSessionRevokeReason.SelfSignOut, now: DateTime.UtcNow);
 
         // Assert
-        session.IsActive().Should().BeFalse();
+        session.IsActive(now: DateTime.UtcNow).Should().BeFalse();
     }
 
     #endregion
@@ -297,7 +323,7 @@ public class SessionEntityTests
 
         // Assert
         session.Device.Should().Be(EnumDevice.Mobile);
-        session.Client.Should().Be(EnumClient.MobileApp);
+        session.Client.Value.Should().Be(EnumClient.MobileApp);
     }
 
     [Fact]
@@ -308,7 +334,7 @@ public class SessionEntityTests
 
         // Assert
         session.Device.Should().Be(EnumDevice.Desktop);
-        session.Client.Should().Be(EnumClient.WebApp);
+        session.Client.Value.Should().Be(EnumClient.WebApp);
     }
 
     #endregion
@@ -354,7 +380,7 @@ public class SessionEntityTests
         session.ClearDomainEvents();
 
         // Act
-        session.Revoke(EnumSessionRevokeReason.SecurityInvalidation);
+        session.Revoke(reason: EnumSessionRevokeReason.SecurityInvalidation, now: DateTime.UtcNow);
 
         // Assert
         SessionRevokedEvent raised = session.DomainEvents.OfType<SessionRevokedEvent>().Single();
@@ -371,7 +397,7 @@ public class SessionEntityTests
         session.ClearDomainEvents();
 
         // Act
-        session.Revoke();
+        session.Revoke(reason: EnumSessionRevokeReason.SelfSignOut, now: DateTime.UtcNow);
 
         // Assert
         session
@@ -382,16 +408,17 @@ public class SessionEntityTests
     }
 
     [Fact]
-    public void Reactivate_ShouldRaiseSessionReactivatedEvent()
+    public void Reactivate_WhenRevoked_ShouldRaiseSessionReactivatedEvent()
     {
         // Arrange
-        SessionEntity session = SessionFactory.Create();
+        SessionEntity session = SessionFactory.CreateRevoked();
         session.ClearDomainEvents();
 
         // Act
-        session.Reactivate("new_hash", DateTime.UtcNow.AddDays(30), DateTime.UtcNow.AddDays(60));
+        bool revived = session.Reactivate("new_hash", DateTime.UtcNow.AddDays(30), DateTime.UtcNow.AddDays(60));
 
         // Assert
+        revived.Should().BeTrue();
         SessionReactivatedEvent raised = session.DomainEvents.OfType<SessionReactivatedEvent>().Single();
         raised.SessionId.Should().Be(session.Id);
         raised.UserId.Should().Be(session.UserId);

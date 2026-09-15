@@ -22,25 +22,16 @@ public interface IOtpRepository
     Task AddAsync(OtpEntity otp, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Validates an OTP code for a specific user and purpose.
+    /// Loads the most recent outstanding OTP for a user and purpose. Judging a presented code
+    /// against it is the caller's job through <see cref="OtpEntity.Verify" />.
     /// </summary>
     /// <param name="userId">The unique identifier of the user.</param>
-    /// <param name="code">The OTP code to validate.</param>
     /// <param name="purpose">The purpose of the OTP.</param>
     /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
-    /// <returns>The valid OTP entity if validation succeeds.</returns>
-    /// <exception cref="NotFoundException">Thrown when no valid OTP is found.</exception>
-    /// <exception cref="BadRequestException">Thrown when OTP code is invalid.</exception>
-    /// <exception cref="AuthenticationException">Thrown when OTP is expired.</exception>
-    /// <exception cref="AuthorizationException">Thrown when max attempts are reached.</exception>
-    /// <remarks>
-    /// This method loads the outstanding OTP for the user and purpose, compares the supplied code
-    /// against the stored hash, and throws appropriate exceptions for different failure scenarios.
-    /// A failed comparison consumes one of the allowed attempts.
-    /// </remarks>
-    Task<OtpEntity> ValidateOtpAsync(
+    /// <returns>The outstanding OTP entity.</returns>
+    /// <exception cref="NotFoundException">Thrown when no outstanding OTP exists.</exception>
+    Task<OtpEntity> GetLatestOutstandingOtpOrThrowAsync(
         Guid userId,
-        string code,
         EnumOtpPurpose purpose,
         CancellationToken cancellationToken = default
     );
@@ -69,17 +60,6 @@ public interface IOtpRepository
     );
 
     /// <summary>
-    /// Invalidates all existing OTPs for a user and specific purpose.
-    /// </summary>
-    /// <param name="userId">The unique identifier of the user.</param>
-    /// <param name="purpose">The purpose of the OTPs to invalidate.</param>
-    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
-    /// <returns>A task representing the asynchronous operation.</returns>
-    /// <remarks>
-    /// This method marks all existing OTPs for the user and purpose as used to prevent reuse.
-    /// Useful when generating a new OTP to replace existing ones.
-    /// </remarks>
-    /// <summary>
     /// Counts the codes issued to an account for a purpose inside the resend window, so a caller
     /// can refuse to mint more than the cap allows.
     /// </summary>
@@ -89,10 +69,17 @@ public interface IOtpRepository
     /// <returns>The number of codes issued inside the window.</returns>
     Task<int> CountRecentOtpsAsync(Guid userId, EnumOtpPurpose purpose, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Marks every outstanding OTP for the user and purpose consumed, so a superseded code can
+    /// never be presented again.
+    /// </summary>
+    /// <param name="userId">The unique identifier of the user.</param>
+    /// <param name="purpose">The purpose of the OTPs to invalidate.</param>
     /// <param name="exceptOtpId">
     /// A code to leave untouched, used by verification so the code being redeemed is not consumed
     /// alongside the ones it supersedes.
     /// </param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
     Task InvalidateExistingOtpsAsync(
         Guid userId,
         EnumOtpPurpose purpose,

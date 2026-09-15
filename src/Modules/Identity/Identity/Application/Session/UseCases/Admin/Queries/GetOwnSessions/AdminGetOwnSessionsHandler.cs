@@ -13,7 +13,7 @@ namespace _116.Identity.Application.Session.UseCases.Admin.Queries.GetOwnSession
 /// </summary>
 /// <param name="sessionRepository">Repository for session data access operations.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-public class AdminGetOwnSessionsHandler(ISessionRepository sessionRepository, IMapper mapper)
+public class AdminGetOwnSessionsHandler(ISessionRepository sessionRepository, IMapper mapper, TimeProvider timeProvider)
     : IQueryHandler<AdminGetOwnSessionsQuery, AdminGetOwnSessionsResult>
 {
     /// <summary>
@@ -33,8 +33,9 @@ public class AdminGetOwnSessionsHandler(ISessionRepository sessionRepository, IM
             cancellationToken: cancellationToken
         );
 
+        DateTime now = timeProvider.GetUtcNow().UtcDateTime;
         ReadOnlyCollection<SessionDto> sessionDtos = sessions
-            .Select(s => s.ToSessionDto(mapper, currentSessionId: query.CurrentSessionId))
+            .Select(s => s.ToSessionDto(mapper, now: now, currentSessionId: query.CurrentSessionId))
             .ToList()
             .AsReadOnly();
 

@@ -26,7 +26,11 @@ public class AdminResetPasswordHandlerTests
         _authFactoryMock = new Mock<IAdminResetPasswordAuthFactory>();
         _otpRepositoryMock = MockOtpRepository.Create();
 
-        _handler = new AdminResetPasswordHandler(_authFactoryMock.Object, _otpRepositoryMock.Object);
+        _handler = new AdminResetPasswordHandler(
+            _authFactoryMock.Object,
+            _otpRepositoryMock.Object,
+            TimeProvider.System
+        );
     }
 
     #region Success Cases

@@ -228,7 +228,7 @@ public class AdminGetAllSessionsEndpointV1Tests(PostgresFixture db) : BaseApiTes
     {
         SessionEntity matchingSession = CreateSessionWithIp(TestUser.SuperAdminId, "203.0.113.50");
         SessionEntity sameIpButRevoked = CreateSessionWithIp(TestUser.AdminId, "203.0.113.50");
-        sameIpButRevoked.Revoke();
+        sameIpButRevoked.Revoke(reason: EnumSessionRevokeReason.SelfSignOut, now: DateTime.UtcNow);
         SessionEntity activeOnAnotherIp = CreateSessionWithIp(TestUser.VisitorId, "198.51.100.1");
         await SeedAsync<IdentityDbContext>(ctx =>
         {

@@ -37,7 +37,7 @@ public class AuthRepositoryTests : IDisposable
         UserErrors userErrors = TestErrorsFactory.CreateUserErrors();
         SessionErrors sessionErrors = TestErrorsFactory.CreateSessionErrors();
 
-        _repository = new AuthRepository(_context, userErrors, sessionErrors);
+        _repository = new AuthRepository(_context, userErrors, sessionErrors, TimeProvider.System);
     }
 
     public void Dispose()
@@ -100,7 +100,7 @@ public class AuthRepositoryTests : IDisposable
 
         // Assert
         result.Should().NotBeNull();
-        result.Email.Should().Be("test@example.com");
+        result.Email!.Value.Should().Be("test@example.com");
         result.UserRoles.Should().ContainSingle();
     }
 
@@ -235,7 +235,7 @@ public class AuthRepositoryTests : IDisposable
         // Assert
         UserEntity? savedUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == "new@example.com");
         savedUser.Should().NotBeNull();
-        savedUser.Email.Should().Be("new@example.com");
+        savedUser.Email!.Value.Should().Be("new@example.com");
     }
 
     #endregion
@@ -498,7 +498,7 @@ public class AuthRepositoryTests : IDisposable
 
         // Assert
         result.Should().NotBeNull();
-        result.Email.Should().Be("test@example.com");
+        result.Email!.Value.Should().Be("test@example.com");
         result.UserRoles.Should().ContainSingle();
     }
 
@@ -539,7 +539,7 @@ public class AuthRepositoryTests : IDisposable
 
         // Assert
         result.Should().NotBeNull();
-        result.Email.Should().Be("credentials@example.com");
+        result.Email!.Value.Should().Be("credentials@example.com");
     }
 
     [Fact]
@@ -830,7 +830,7 @@ public class AuthRepositoryTests : IDisposable
 
         // Assert
         result.Should().NotBeNull();
-        result.Email.Should().Be("external@example.com");
+        result.Email!.Value.Should().Be("external@example.com");
         result.UserName.Should().Be("externaluser");
         result.AuthProvider.Should().Be(EnumAuthProvider.Google);
         result.ProviderSubjectId.Should().Be("google-subject-1");

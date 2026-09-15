@@ -12,8 +12,12 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.ResetPassword;
 /// </summary>
 /// <param name="authFactory">Factory for handling admin user password reset logic.</param>
 /// <param name="otpRepository">Repository for OTP data access operations.</param>
-public class AdminResetPasswordHandler(IAdminResetPasswordAuthFactory authFactory, IOtpRepository otpRepository)
-    : ICommandHandler<AdminResetPasswordCommand, AdminResetPasswordResult>
+/// <param name="timeProvider">Clock stamping the instant the code is spent.</param>
+public class AdminResetPasswordHandler(
+    IAdminResetPasswordAuthFactory authFactory,
+    IOtpRepository otpRepository,
+    TimeProvider timeProvider
+) : ICommandHandler<AdminResetPasswordCommand, AdminResetPasswordResult>
 {
     /// <summary>
     /// Handles the password reset command by validating OTP and updating the admin user's password.
@@ -46,7 +50,7 @@ public class AdminResetPasswordHandler(IAdminResetPasswordAuthFactory authFactor
 
         // Spend the code in the same unit of work as the new password, so it cannot be
         // replayed against a second reset.
-        verifiedOtp.MarkAsConsumed();
+        verifiedOtp.MarkAsConsumed(now: timeProvider.GetUtcNow().UtcDateTime);
 
         await authFactory.ResetPasswordAsync(
             user: authData.User,

@@ -60,7 +60,7 @@ public class AdminHardDeletePermissionHandlerTests
             TestConstants.Permission.ValidResource,
             TestConstants.Permission.ValidAction
         );
-        deletedPermission.SoftDelete();
+        deletedPermission.SoftDelete(now: DateTime.UtcNow);
 
         AdminHardDeletePermissionCommand command = new(PermissionId: deletedPermission.Id.ToString());
 

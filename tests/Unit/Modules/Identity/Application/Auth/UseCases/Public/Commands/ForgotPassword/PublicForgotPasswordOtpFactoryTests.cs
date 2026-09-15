@@ -80,7 +80,7 @@ public class PublicForgotPasswordOtpFactoryTests
 
         // Assert
         result.Otp.UserId.Should().Be(userId);
-        result.Otp.Purpose.Should().Be(EnumOtpPurpose.PasswordReset);
+        result.Otp.Purpose.Value.Should().Be(EnumOtpPurpose.PasswordReset);
     }
 
     [Fact]

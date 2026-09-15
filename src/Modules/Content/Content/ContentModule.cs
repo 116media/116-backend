@@ -36,8 +36,6 @@ using _116.Shared.Application.Extensions;
 using _116.Shared.Application.Services;
 using _116.Shared.Infrastructure;
 using _116.Shared.Infrastructure.Seed;
-using Mapster;
-using MapsterMapper;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -123,10 +121,8 @@ public static class ContentModule
         services.AddScoped<StreamingLinkErrors>();
         services.AddScoped<ContentI18n>();
 
-        // Register Mapster configuration and IMapper (thread-safe, no global state)
-        TypeAdapterConfig mappingConfig = MappingRegistration.CreateConfiguration();
-        services.AddSingleton(mappingConfig);
-        services.AddScoped<IMapper>(sp => new Mapper(sp.GetRequiredService<TypeAdapterConfig>()));
+        // Contribute Content mappings to the shared cross-module Mapster config
+        services.AddModuleMappings(new MappingRegistration());
 
         services.AddScoped<IContentUnitOfWork, ContentUnitOfWork>();
         services.AddScoped(typeof(IContentRepository<>), typeof(ContentRepository<>));

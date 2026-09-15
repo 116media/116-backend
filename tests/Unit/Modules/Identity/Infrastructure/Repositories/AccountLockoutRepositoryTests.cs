@@ -43,19 +43,21 @@ public class AccountLockoutRepositoryTests
     }
 
     [Fact]
-    public async Task GetAsync_ForAFreshAccount_ShouldReadTheStoredLoginCounters()
+    public async Task GetAsync_WithALoginStateRow_ShouldReadTheStoredLoginCounters()
     {
         // Arrange
         UserEntity user = UserFactory.Create();
+        UserLoginStateEntity loginState = UserLoginStateEntity.Create(user.Id);
         _context.Users.Add(user);
+        _context.UserLoginStates.Add(loginState);
         await _context.SaveChangesAsync();
 
         // Act
         AccountLockoutState state = await _repository.GetAsync(user.Id, CancellationToken.None);
 
         // Assert
-        state.FailedLoginAttempts.Should().Be(user.FailedLoginAttempts);
-        state.LockedUntil.Should().Be(user.LockedUntil);
+        state.FailedLoginAttempts.Should().Be(loginState.FailedAttempts);
+        state.LockedUntil.Should().Be(loginState.LockedUntil);
     }
 
     [Fact]

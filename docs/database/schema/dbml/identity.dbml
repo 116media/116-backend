@@ -98,6 +98,16 @@ Table "identity"."sessions" {
   }
 }
 
+Table "identity"."user_login_state" {
+  "user_id" uuid [pk]
+  "failed_attempts" integer [not null, default: 0]
+  "locked_until" timestamptz
+  "created_at" timestamptz
+  "created_by" text
+  "updated_at" timestamptz
+  "updated_by" text
+}
+
 Table "identity"."user_otp_state" {
   "user_id" uuid [pk]
   "failed_attempts" integer [not null, default: 0]
@@ -151,8 +161,6 @@ Table "identity"."users" {
   "updated_at" timestamptz
   "updated_by" text
   "provider_subject_id" varchar(255)
-  "failed_login_attempts" integer [not null, default: 0]
-  "locked_until" timestamptz
   Indexes {
     ("auth_provider", "provider_subject_id")
   }
@@ -162,6 +170,7 @@ Ref: "identity"."otps"."user_id" > "identity"."users"."id" [delete: cascade]
 Ref: "identity"."role_permissions"."permission_id" > "identity"."permissions"."id" [delete: cascade]
 Ref: "identity"."role_permissions"."role_id" > "identity"."roles"."id" [delete: cascade]
 Ref: "identity"."sessions"."user_id" > "identity"."users"."id" [delete: cascade]
+Ref: "identity"."user_login_state"."user_id" > "identity"."users"."id" [delete: cascade]
 Ref: "identity"."user_otp_state"."user_id" > "identity"."users"."id" [delete: cascade]
 Ref: "identity"."user_roles"."role_id" > "identity"."roles"."id" [delete: cascade]
 Ref: "identity"."user_roles"."user_id" > "identity"."users"."id" [delete: cascade]

@@ -37,7 +37,7 @@ public class UserEntityTests
 
         // Assert
         user.Id.Should().Be(id);
-        user.Email.Should().Be(email.ToLowerInvariant());
+        user.Email!.Value.Should().Be(email.ToLowerInvariant());
         user.UserName.Should().Be(userName);
         user.PasswordHash.Should().Be(passwordHash);
         user.AuthProvider.Should().Be(EnumAuthProvider.Local);
@@ -128,7 +128,7 @@ public class UserEntityTests
 
         // Assert
         user.Id.Should().Be(id);
-        user.Email.Should().Be(email.ToLowerInvariant());
+        user.Email!.Value.Should().Be(email.ToLowerInvariant());
         user.UserName.Should().Be(userName);
         user.PasswordHash.Should().BeNull();
         user.AuthProvider.Should().Be(EnumAuthProvider.Google);
@@ -262,7 +262,7 @@ public class UserEntityTests
         user.UpdateEmail(newEmail);
 
         // Assert
-        user.Email.Should().Be(newEmail.ToLowerInvariant());
+        user.Email!.Value.Should().Be(newEmail.ToLowerInvariant());
         user.IsVerified.Should().BeFalse(); // Should reset verification
     }
 
@@ -439,29 +439,118 @@ public class UserEntityTests
     #region Activate/Deactivate Tests
 
     [Fact]
-    public void Activate_ShouldSetIsActiveToTrue()
+    public void Activate_WhenInactive_ShouldTransitionAndRaiseUserActivatedEvent()
     {
         // Arrange
-        UserEntity user = UserFactory.Create();
+        UserEntity user = UserFactory.CreateInactive();
+        user.ClearDomainEvents();
 
         // Act
-        user.Activate();
+        bool transitioned = user.Activate();
 
         // Assert
+        transitioned.Should().BeTrue();
         user.IsActive.Should().BeTrue();
+        user.DomainEvents.OfType<UserActivatedEvent>().Single().UserId.Should().Be(user.Id);
     }
 
     [Fact]
-    public void Deactivate_ShouldSetIsActiveToFalse()
+    public void Activate_WhenAlreadyActive_ShouldReportFalseAndRaiseNothing()
     {
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
+        user.ClearDomainEvents();
 
         // Act
-        user.Deactivate();
+        bool transitioned = user.Activate();
 
         // Assert
+        transitioned.Should().BeFalse();
+        user.IsActive.Should().BeTrue();
+        user.DomainEvents.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Deactivate_WhenActive_ShouldTransitionAndRaiseUserDeactivatedEvent()
+    {
+        // Arrange
+        UserEntity user = UserFactory.CreateVerifiedActive();
+        user.ClearDomainEvents();
+
+        // Act
+        bool transitioned = user.Deactivate();
+
+        // Assert
+        transitioned.Should().BeTrue();
         user.IsActive.Should().BeFalse();
+        user.DomainEvents.OfType<UserDeactivatedEvent>().Single().UserId.Should().Be(user.Id);
+    }
+
+    [Fact]
+    public void Deactivate_WhenAlreadyInactive_ShouldReportFalseAndRaiseNothing()
+    {
+        // Arrange
+        UserEntity user = UserFactory.CreateInactive();
+        user.ClearDomainEvents();
+
+        // Act
+        bool transitioned = user.Deactivate();
+
+        // Assert
+        transitioned.Should().BeFalse();
+        user.IsActive.Should().BeFalse();
+        user.DomainEvents.Should().BeEmpty();
+    }
+
+    #endregion
+
+    #region MarkVerifiedByOtp Tests
+
+    [Fact]
+    public void MarkVerifiedByOtp_WithEmailVerificationPurpose_ShouldVerifyAndRaiseOnce()
+    {
+        // Arrange
+        UserEntity user = UserFactory.CreateUnverified();
+        user.ClearDomainEvents();
+
+        // Act
+        bool transitioned = user.MarkVerifiedByOtp(EnumOtpPurpose.EmailVerification);
+
+        // Assert
+        transitioned.Should().BeTrue();
+        user.IsVerified.Should().BeTrue();
+        user.DomainEvents.OfType<UserVerifiedEvent>().Should().ContainSingle();
+    }
+
+    [Fact]
+    public void MarkVerifiedByOtp_WithPasswordResetPurpose_ShouldNotVerify()
+    {
+        // Arrange
+        UserEntity user = UserFactory.CreateUnverified();
+        user.ClearDomainEvents();
+
+        // Act
+        bool transitioned = user.MarkVerifiedByOtp(EnumOtpPurpose.PasswordReset);
+
+        // Assert
+        transitioned.Should().BeFalse();
+        user.IsVerified.Should().BeFalse();
+        user.DomainEvents.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void MarkVerifiedByOtp_WhenAlreadyVerified_ShouldReportFalseAndRaiseNothing()
+    {
+        // Arrange
+        UserEntity user = UserFactory.CreateVerifiedActive();
+        user.ClearDomainEvents();
+
+        // Act
+        bool transitioned = user.MarkVerifiedByOtp(EnumOtpPurpose.EmailVerification);
+
+        // Assert
+        transitioned.Should().BeFalse();
+        user.DomainEvents.Should().BeEmpty();
     }
 
     #endregion

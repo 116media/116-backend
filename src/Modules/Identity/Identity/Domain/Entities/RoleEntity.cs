@@ -83,11 +83,13 @@ public class RoleEntity : Aggregate<Guid>
     }
 
     /// <summary>
-    /// Updates the role's name and description.
+    /// Updates the role's name and description, raising <see cref="RoleChangedEvent" /> only
+    /// when a value actually changed. Idempotent: identical values report <c>false</c>.
     /// </summary>
     /// <param name="name">The new name for the role.</param>
     /// <param name="description">The new description for the role.</param>
-    public void Update(string name, string description)
+    /// <returns><c>true</c> if a value changed; <c>false</c> otherwise.</returns>
+    public bool Update(string name, string description)
     {
         if (string.IsNullOrWhiteSpace(value: name))
         {
@@ -99,9 +101,15 @@ public class RoleEntity : Aggregate<Guid>
             throw new IdentityRuleException(IdentityRuleCodes.RoleDescriptionRequired);
         }
 
+        if (Name == name && Description == description)
+        {
+            return false;
+        }
+
         Name = name;
         Description = description;
         AddDomainEvent(new RoleChangedEvent(RoleId: Id));
+        return true;
     }
 
     /// <summary>
@@ -141,8 +149,9 @@ public class RoleEntity : Aggregate<Guid>
     /// <summary>
     /// Marks the role as deleted (soft delete).
     /// </summary>
+    /// <param name="now">The current UTC instant, stamped as the deletion time.</param>
     /// <returns>True if the role was soft-deleted, false if already deleted.</returns>
-    public bool SoftDelete()
+    public bool SoftDelete(DateTime now)
     {
         if (IsDeleted)
         {
@@ -151,7 +160,7 @@ public class RoleEntity : Aggregate<Guid>
 
         IsDeleted = true;
         IsActive = false;
-        DeletedAt = DateTime.UtcNow;
+        DeletedAt = now;
         AddDomainEvent(new RoleChangedEvent(RoleId: Id));
 
         return true;
@@ -177,7 +186,8 @@ public class RoleEntity : Aggregate<Guid>
 
     /// <summary>
     /// Raises the role-changed fact for this role's permanent removal, so cached lookup
-    /// projections refresh once the deletion commits.
+    /// projections refresh once the deletion commits. The fact is declared here because the
+    /// removal destroys the aggregate itself, leaving no state to transition (D14).
     /// </summary>
     public void MarkHardDeleted()
     {

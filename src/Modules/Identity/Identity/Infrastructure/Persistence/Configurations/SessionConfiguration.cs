@@ -1,5 +1,6 @@
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -41,7 +42,11 @@ public class SessionConfiguration : IEntityTypeConfiguration<SessionEntity>
         builder.Property(s => s.Browser).HasConversion<string>().IsRequired();
         builder.Property(s => s.Device).HasConversion<string>().IsRequired();
         builder.Property(s => s.Platform).HasConversion<string>().IsRequired();
-        builder.Property(s => s.Client).HasConversion<string>().IsRequired();
+        // The value object rides the existing text column holding the enum name.
+        builder
+            .Property(s => s.Client)
+            .HasConversion(client => client.Value.ToString(), value => new Client(value))
+            .IsRequired();
         builder.Property(s => s.IsRevoked).HasDefaultValue(false).IsRequired();
         builder.Property(s => s.RevokedAt).IsRequired(false);
 

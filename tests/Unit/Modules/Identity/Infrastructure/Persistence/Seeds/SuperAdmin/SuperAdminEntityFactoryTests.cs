@@ -54,7 +54,7 @@ public class SuperAdminEntityFactoryTests : IDisposable
         UserEntity result = _factory.CreateSuperAdminUser();
 
         // Assert
-        result.Email.Should().Be(SuperAdminConfiguration.Email);
+        result.Email!.Value.Should().Be(SuperAdminConfiguration.Email);
     }
 
     [Fact]

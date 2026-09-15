@@ -50,19 +50,16 @@ public class PublicUpdateProfileAuthFactory(
         authRepository.IsUserAccountVerified(user!);
         await authRepository.IsSessionValidAsync(sessionId, cancellationToken);
 
-        // Blank means "not supplied", matching the optional validators, which skip their rules
-        // when the value is whitespace. Treating it as supplied reaches Email's format guard.
         bool isPhoneUpdated = !string.IsNullOrWhiteSpace(value: partialPhoneNumber);
         bool isUsernameUpdated = !string.IsNullOrWhiteSpace(value: userName) && user!.UserName != userName;
-        bool isEmailUpdated = !string.IsNullOrWhiteSpace(value: email) && user!.Email != email?.ToLowerInvariant();
+        bool isEmailUpdated =
+            !string.IsNullOrWhiteSpace(value: email) && user!.Email?.Value != email?.ToLowerInvariant();
 
         if (isEmailUpdated)
         {
             await EnsureEmailUnique(email!, cancellationToken: cancellationToken);
             user!.UpdateEmail(newEmail: email!);
 
-            // The acting session survives the change it performed; the account's other sessions
-            // are revoked in the same transaction as the new address.
             await sessionRepository.DeleteAllByUserIdAsync(
                 userId: user.Id,
                 exemptSessionId: sessionId,

@@ -26,7 +26,7 @@ public class AdminExportSessionDataHandlerTests
         IMapper mapper = new Mapper(config);
 
         _sessionRepositoryMock = MockSessionRepository.Create();
-        _handler = new AdminExportSessionDataHandler(_sessionRepositoryMock.Object, mapper);
+        _handler = new AdminExportSessionDataHandler(_sessionRepositoryMock.Object, mapper, TimeProvider.System);
     }
 
     #region Success Cases

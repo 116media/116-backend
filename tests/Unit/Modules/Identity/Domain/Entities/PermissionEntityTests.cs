@@ -208,6 +208,21 @@ public class PermissionEntityTests
 
     #endregion
 
+    [Fact]
+    public void Update_WithIdenticalValues_ShouldReportFalseAndRaiseNothing()
+    {
+        // Arrange
+        PermissionEntity permission = PermissionFactory.Create("articles", "read");
+        permission.ClearDomainEvents();
+
+        // Act
+        bool changed = permission.Update("articles", "read", permission.Description);
+
+        // Assert
+        changed.Should().BeFalse();
+        permission.DomainEvents.Should().BeEmpty();
+    }
+
     #region Activate Tests
 
     [Fact]
@@ -281,7 +296,7 @@ public class PermissionEntityTests
         PermissionEntity permission = PermissionFactory.Create();
 
         // Act
-        bool result = permission.SoftDelete();
+        bool result = permission.SoftDelete(now: DateTime.UtcNow);
 
         // Assert
         result.Should().BeTrue();
@@ -298,7 +313,7 @@ public class PermissionEntityTests
         PermissionEntity permission = PermissionFactory.CreateDeleted();
 
         // Act
-        bool result = permission.SoftDelete();
+        bool result = permission.SoftDelete(now: DateTime.UtcNow);
 
         // Assert
         result.Should().BeFalse();
@@ -397,6 +412,24 @@ public class PermissionEntityTests
 
         // Assert
         permission.DomainEvents.Should().BeEmpty();
+    }
+
+    #endregion
+
+    #region MarkHardDeleted Tests
+
+    [Fact]
+    public void MarkHardDeleted_ShouldRaisePermissionChangedEvent()
+    {
+        // Arrange
+        PermissionEntity permission = PermissionFactory.Create("articles", "read");
+        permission.ClearDomainEvents();
+
+        // Act
+        permission.MarkHardDeleted();
+
+        // Assert
+        permission.DomainEvents.OfType<PermissionChangedEvent>().Should().ContainSingle();
     }
 
     #endregion

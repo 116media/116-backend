@@ -1,6 +1,7 @@
 using System.Linq.Expressions;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
+using _116.Identity.Domain.ValueObjects;
 using _116.Shared.Application.Specifications;
 
 namespace _116.Identity.Application.Auth.Specifications;
@@ -25,7 +26,9 @@ public class OtpByPurposeSpecification(EnumOtpPurpose purpose) : Specification<O
 {
     public override Expression<Func<OtpEntity, bool>> ToExpression()
     {
-        return otp => otp.Purpose == purpose;
+        // Wrapped once outside the expression so the query compares value objects directly.
+        var target = new OtpPurpose(value: purpose);
+        return otp => otp.Purpose == target;
     }
 }
 

@@ -74,6 +74,12 @@ public class IdentityDbContext(DbContextOptions<IdentityDbContext> options) : Db
     public DbSet<UserOtpStateEntity> UserOtpStates => Set<UserOtpStateEntity>();
 
     /// <summary>
+    /// Gets the collection of per-user login brute-force records.
+    /// </summary>
+    /// <value>DbSet of UserLoginStateEntity for managing login lockout counters</value>
+    public DbSet<UserLoginStateEntity> UserLoginStates => Set<UserLoginStateEntity>();
+
+    /// <summary>
     /// Configures the model for the context using Fluent API.
     /// </summary>
     /// <param name="modelBuilder">The builder used to construct the model for the context.</param>

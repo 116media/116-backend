@@ -3,21 +3,14 @@ using Mapster;
 namespace _116.Content.Application.Shared.Mappers;
 
 /// <summary>
-/// Centralized mapping configuration registration for the Content module.
-/// Creates and configures a TypeAdapterConfig instance without mutating global state.
+/// The Content module's Mapster registrations, contributed to the shared cross-module config
+/// through <see cref="IRegister" />.
 /// </summary>
-public static class MappingRegistration
+public sealed class MappingRegistration : IRegister
 {
-    /// <summary>
-    /// Creates and configures a new TypeAdapterConfig with all Content module mappings.
-    /// This config can be registered in DI and injected where needed.
-    /// </summary>
-    /// <returns>A fully configured TypeAdapterConfig instance.</returns>
-    public static TypeAdapterConfig CreateConfiguration()
+    /// <inheritdoc />
+    public void Register(TypeAdapterConfig config)
     {
-        var config = new TypeAdapterConfig();
-
-        // Register all mapper configurations
         ContentTypeMapper.Register(config);
         PricingTierMapper.Register(config);
         PromotionLevelMapper.Register(config);
@@ -31,8 +24,16 @@ public static class MappingRegistration
         LyricsMapper.Register(config);
         PlaylistMapper.Register(config);
         ContentOrderMapper.Register(config);
+    }
 
-        // Compile once for performance
+    /// <summary>
+    /// Creates and compiles a standalone config carrying only the Content module's mappings.
+    /// </summary>
+    /// <returns>A fully configured TypeAdapterConfig instance.</returns>
+    public static TypeAdapterConfig CreateConfiguration()
+    {
+        var config = new TypeAdapterConfig();
+        new MappingRegistration().Register(config);
         config.Compile();
 
         return config;

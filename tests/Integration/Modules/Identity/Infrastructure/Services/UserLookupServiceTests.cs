@@ -57,7 +57,7 @@ public class UserLookupServiceTests(PostgresFixture postgres) : BaseRepositoryTe
 
         result.Should().NotBeNull();
         result!.UserName.Should().Be(user.UserName);
-        result.Email.Should().Be(user.Email);
+        result.Email.Should().Be(user.Email!.Value);
         result.Role.Should().Be(role.Name);
     }
 

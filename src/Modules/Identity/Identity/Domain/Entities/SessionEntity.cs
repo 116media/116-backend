@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.Events;
+using _116.Identity.Domain.ValueObjects;
 using _116.Shared.Domain;
 
 namespace _116.Identity.Domain.Entities;
@@ -76,7 +77,7 @@ public class SessionEntity : Aggregate<Guid>
     /// Client application that initiated the session
     /// (e.g., MobileApp, WebApp, Dashboard).
     /// </summary>
-    public EnumClient Client { get; private set; }
+    public Client Client { get; private set; } = null!;
 
     /// <summary>
     /// Indicates whether this session has been explicitly revoked.
@@ -128,7 +129,7 @@ public class SessionEntity : Aggregate<Guid>
             Browser = browser,
             Device = device,
             Platform = platform,
-            Client = client,
+            Client = new Client(value: client),
             IpAddress = ipAddress,
             UserAgent = userAgent,
         };
@@ -139,12 +140,12 @@ public class SessionEntity : Aggregate<Guid>
     }
 
     /// <summary>
-    /// Determines whether the session is currently active.
-    /// A session is active if it has not expired and has not been revoked.
+    /// Determines whether the session is active at the supplied instant: not expired, not revoked.
     /// </summary>
-    public bool IsActive()
+    /// <param name="now">The current UTC instant.</param>
+    public bool IsActive(DateTime now)
     {
-        return ExpiresAt > DateTime.UtcNow && !IsRevoked;
+        return ExpiresAt > now && !IsRevoked;
     }
 
     /// <summary>
@@ -160,41 +161,58 @@ public class SessionEntity : Aggregate<Guid>
     /// <summary>
     /// Determines whether the session has reached its absolute lifetime ceiling.
     /// </summary>
+    /// <param name="now">The current UTC instant.</param>
     /// <returns>True once the absolute expiry has passed.</returns>
-    public bool HasReachedAbsoluteExpiry()
+    public bool HasReachedAbsoluteExpiry(DateTime now)
     {
-        return DateTime.UtcNow >= AbsoluteExpiresAt;
+        return now >= AbsoluteExpiresAt;
     }
 
     /// <summary>
-    /// Revokes this session.
-    /// Used when a user logs out, a device is invalidated,
-    /// or a security event requires terminating the session.
-    /// Raises <see cref="SessionRevokedEvent" /> carrying the revocation cause.
+    /// Revokes this session and raises <see cref="SessionRevokedEvent" /> carrying the cause.
+    /// Idempotent: a session already revoked reports <c>false</c>, keeps its original stamp and
+    /// raises nothing.
     /// </summary>
     /// <param name="reason">Why the session is being revoked.</param>
-    public void Revoke(EnumSessionRevokeReason reason = EnumSessionRevokeReason.SelfSignOut)
+    /// <param name="now">The current UTC instant, stamped as the revocation time.</param>
+    /// <returns><c>true</c> if the session transitioned; <c>false</c> if already revoked.</returns>
+    public bool Revoke(EnumSessionRevokeReason reason, DateTime now)
     {
+        if (IsRevoked)
+        {
+            return false;
+        }
+
         IsRevoked = true;
-        RevokedAt = DateTime.UtcNow;
+        RevokedAt = now;
 
         AddDomainEvent(new SessionRevokedEvent(UserId: UserId, SessionId: Id, Reason: reason));
+        return true;
     }
 
     /// <summary>
-    /// Reactivates a previously expired or revoked session with a new refresh token, expiry and
-    /// absolute expiry. Reusing the existing row avoids unique constraint violations on
-    /// (user_id, device_id). Raises <see cref="SessionReactivatedEvent" />.
+    /// Renews the session's lease with a new refresh token, expiry and absolute expiry, reusing
+    /// the row to avoid unique-constraint violations on (user_id, device_id). Raises
+    /// <see cref="SessionReactivatedEvent" /> only when this genuinely revived a revoked session;
+    /// renewing an active session reports <c>false</c> and raises nothing.
     /// </summary>
-    public void Reactivate(string newRefreshTokenHash, DateTime newExpiresAt, DateTime newAbsoluteExpiresAt)
+    /// <returns><c>true</c> if a revoked session was revived; <c>false</c> for a plain renewal.</returns>
+    public bool Reactivate(string newRefreshTokenHash, DateTime newExpiresAt, DateTime newAbsoluteExpiresAt)
     {
         RefreshTokenHash = newRefreshTokenHash;
         ExpiresAt = newExpiresAt;
         AbsoluteExpiresAt = newAbsoluteExpiresAt;
+
+        if (!IsRevoked)
+        {
+            return false;
+        }
+
         IsRevoked = false;
         RevokedAt = null;
 
         AddDomainEvent(new SessionReactivatedEvent(SessionId: Id, UserId: UserId));
+        return true;
     }
 
     /// <summary>

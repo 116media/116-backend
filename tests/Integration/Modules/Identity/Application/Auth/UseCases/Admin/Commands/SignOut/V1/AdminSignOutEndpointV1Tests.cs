@@ -87,7 +87,7 @@ public class AdminSignOutEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
         seedContext.Users.Add(inactiveUser);
         await seedContext.SaveChangesAsync();
 
-        Client.AuthenticateAs(inactiveUserId, "Admin");
+        Client.AuthenticateWithSecurityMarkers(inactiveUserId, "Admin", tokenVersion: 1);
 
         var request = new AdminSignOutRequestBuilder().WithRefreshToken("some-refresh-token").Build();
         var response = await Client.PostAsJsonAsync(SignOutUrl, request);

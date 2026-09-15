@@ -1,8 +1,8 @@
+using _116.Identity.Application.Auth.Factories.Contracts;
 using _116.Identity.Application.Auth.Repositories;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
-using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.ValueObjects;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Contracts.Application.CQRS;
@@ -14,13 +14,17 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.VerifyOtp;
 /// </summary>
 /// <param name="authRepository">Repository for user data access operations.</param>
 /// <param name="otpRepository">Repository for OTP data access operations.</param>
-/// <param name="lockoutRepository">Repository clearing the account OTP counter on success.</param>
+/// <param name="otpVerificationFactory">Factory validating the presented code and metering misses.</param>
+/// <param name="lockoutRepository">Repository clearing the failure counter on success.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
+/// <param name="timeProvider">Clock supplying the instant the code is judged against.</param>
 public class AdminVerifyOtpHandler(
     IAuthRepository authRepository,
     IOtpRepository otpRepository,
+    IOtpVerificationFactory otpVerificationFactory,
     IAccountLockoutRepository lockoutRepository,
-    IIdentityUnitOfWork unitOfWork
+    IIdentityUnitOfWork unitOfWork,
+    TimeProvider timeProvider
 ) : ICommandHandler<AdminVerifyOtpCommand, AdminVerifyOtpResult>
 {
     /// <summary>
@@ -29,9 +33,7 @@ public class AdminVerifyOtpHandler(
     /// <param name="command">The OTP verification command containing email and code.</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
     /// <returns>A <see cref="AdminVerifyOtpResult" /> containing verification status and message.</returns>
-    /// <exception cref="NotFoundException">Thrown when no admin user is found with the specified email.</exception>
-    /// <exception cref="ConflictException">Thrown when the account is already verified.</exception>
-    /// <exception cref="NotFoundException">Thrown when no valid OTP is found.</exception>
+    /// <exception cref="NotFoundException">Thrown when no admin user or outstanding OTP is found.</exception>
     /// <exception cref="BadRequestException">Thrown when OTP code is invalid.</exception>
     /// <exception cref="AuthenticationException">Thrown when OTP is expired.</exception>
     /// <exception cref="AuthorizationException">Thrown when max attempts are reached.</exception>
@@ -44,25 +46,27 @@ public class AdminVerifyOtpHandler(
             email: email,
             cancellationToken: cancellationToken
         );
+
         // Validate admin account status
         authRepository.IsUserAdmin(user!);
         authRepository.IsUserAccountActive(user!);
-        // Validate the OTP (throws appropriate exceptions on failure)
-        OtpEntity otp = await otpRepository.ValidateOtpAsync(
+
+        OtpEntity otp = await otpRepository.GetLatestOutstandingOtpOrThrowAsync(
             userId: user!.Id,
-            code: command.Code,
             purpose: purpose,
             cancellationToken: cancellationToken
         );
-        // Mark OTP as used and user as verified
-        otp.MarkAsUsed();
 
-        // Only an email-verification code proves the address; a reset or recovery code must not
-        // silently mark an unconfirmed address verified.
-        if (purpose.Value == EnumOtpPurpose.EmailVerification)
-        {
-            user.MarkAsVerified();
-        }
+        await otpVerificationFactory.ValidateOtpAsync(
+            otp: otp,
+            code: command.Code,
+            userId: user.Id,
+            cancellationToken: cancellationToken
+        );
+
+        otp.MarkAsUsed(now: timeProvider.GetUtcNow().UtcDateTime);
+        user.MarkVerifiedByOtp(purpose: purpose);
+
         // Invalidate any remaining OTPs for this purpose
         await otpRepository.InvalidateExistingOtpsAsync(
             userId: user.Id,

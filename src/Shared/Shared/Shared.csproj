@@ -50,6 +50,7 @@
 
     <ItemGroup>
         <InternalsVisibleTo Include="_116.Integration.Tests" />
+        <InternalsVisibleTo Include="_116.Unit.Tests" />
     </ItemGroup>
 
     <ItemGroup>

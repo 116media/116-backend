@@ -22,7 +22,7 @@ public class AdminGetAllSessionsHandlerTests : BaseHandlerTest
     public AdminGetAllSessionsHandlerTests()
     {
         _sessionRepositoryMock = MockSessionRepository.Create();
-        _handler = new AdminGetAllSessionsHandler(_sessionRepositoryMock.Object, Mapper);
+        _handler = new AdminGetAllSessionsHandler(_sessionRepositoryMock.Object, Mapper, TimeProvider.System);
     }
 
     #region Success Cases

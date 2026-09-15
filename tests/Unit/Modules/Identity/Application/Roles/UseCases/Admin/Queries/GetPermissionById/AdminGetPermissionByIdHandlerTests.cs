@@ -126,7 +126,7 @@ public class AdminGetPermissionByIdHandlerTests : BaseHandlerTest
             TestConstants.Permission.ValidResource,
             TestConstants.Permission.ValidAction
         );
-        permission.SoftDelete();
+        permission.SoftDelete(now: DateTime.UtcNow);
 
         AdminGetPermissionByIdQuery query = new(PermissionId: permission.Id);
 

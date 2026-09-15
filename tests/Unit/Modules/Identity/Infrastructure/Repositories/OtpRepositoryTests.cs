@@ -44,7 +44,13 @@ public class OtpRepositoryTests : IDisposable
         _otpServiceMock = MockOtpService.Create();
         _lockoutRepositoryMock = new Mock<IAccountLockoutRepository>();
 
-        _repository = new OtpRepository(_context, userErrors, _otpServiceMock.Object, _lockoutRepositoryMock.Object);
+        _repository = new OtpRepository(
+            _context,
+            userErrors,
+            _otpServiceMock.Object,
+            _lockoutRepositoryMock.Object,
+            TimeProvider.System
+        );
     }
 
     public void Dispose()
@@ -84,273 +90,86 @@ public class OtpRepositoryTests : IDisposable
 
     #endregion
 
-    #region ValidateOtpAsync Tests
+    #region GetLatestOutstandingOtpOrThrowAsync Tests
 
     [Fact]
-    public async Task ValidateOtpAsync_WhenOtpIsValid_ShouldReturnOtp()
+    public async Task GetLatestOutstandingOtpOrThrowAsync_WithAnOutstandingOtp_ShouldReturnIt()
     {
         // Arrange
         var userId = Guid.NewGuid();
-        string code = "123456";
         var purpose = EnumOtpPurpose.EmailVerification;
 
-        OtpEntity otp = CreateOtpWithCreatedAt(OtpFactory.Create(userId, code, purpose));
+        OtpEntity otp = CreateOtpWithCreatedAt(OtpFactory.Create(userId, "123456", purpose));
 
         _context.Otps.Add(otp);
         await _context.SaveChangesAsync();
 
-        _otpServiceMock.SetupVerifySuccess(code);
-
         // Act
-        OtpEntity result = await _repository.ValidateOtpAsync(userId, code, purpose);
+        OtpEntity result = await _repository.GetLatestOutstandingOtpOrThrowAsync(userId, purpose);
 
         // Assert
-        result.Should().NotBeNull();
         result.Id.Should().Be(otp.Id);
     }
 
     [Fact]
-    public async Task ValidateOtpAsync_WhenOtpIsExpired_ShouldThrowOtpExpirationException()
+    public async Task GetLatestOutstandingOtpOrThrowAsync_WhenNoneExists_ShouldThrowNotFoundException()
     {
         // Arrange
         var userId = Guid.NewGuid();
-        string code = "123456";
-        var purpose = EnumOtpPurpose.EmailVerification;
-
-        OtpEntity otp = CreateOtpWithCreatedAt(OtpFactory.CreateExpired(userId, code, purpose));
-
-        _context.Otps.Add(otp);
-        await _context.SaveChangesAsync();
-
-        // Act
-        Func<Task> act = async () => await _repository.ValidateOtpAsync(userId, code, purpose);
-
-        // Assert
-        await act.Should().ThrowAsync<OtpExpirationException>();
-    }
-
-    [Fact]
-    public async Task ValidateOtpAsync_WhenMaxAttemptsReached_ShouldThrowOtpAttemptsLimitException()
-    {
-        // Arrange
-        var userId = Guid.NewGuid();
-        string code = "123456";
-        var purpose = EnumOtpPurpose.EmailVerification;
-
-        OtpEntity otp = CreateOtpWithCreatedAt(OtpFactory.CreateMaxAttemptsReached(userId, code, purpose));
-
-        _context.Otps.Add(otp);
-        await _context.SaveChangesAsync();
-
-        // Act
-        Func<Task> act = async () => await _repository.ValidateOtpAsync(userId, code, purpose);
-
-        // Assert
-        await act.Should().ThrowAsync<OtpAttemptsLimitException>();
-    }
-
-    [Fact]
-    public async Task ValidateOtpAsync_WhenCodeIsInvalid_ShouldIncrementAttemptCountAndThrowBadRequestException()
-    {
-        // Arrange
-        var userId = Guid.NewGuid();
-        string correctCode = "123456";
-        string wrongCode = "654321";
-        var purpose = EnumOtpPurpose.EmailVerification;
-
-        OtpEntity otp = CreateOtpWithCreatedAt(OtpFactory.Create(userId, correctCode, purpose));
-
-        _context.Otps.Add(otp);
-        await _context.SaveChangesAsync();
-
-        int initialAttemptCount = otp.AttemptCount;
-
-        // Act
-        Func<Task> act = async () => await _repository.ValidateOtpAsync(userId, wrongCode, purpose);
-
-        // Assert
-        await act.Should().ThrowAsync<BadRequestException>();
-
-        OtpEntity? updatedOtp = await _context.Otps.FirstOrDefaultAsync(o => o.Id == otp.Id);
-        updatedOtp!.AttemptCount.Should().Be(initialAttemptCount + 1);
-    }
-
-    [Fact]
-    public async Task ValidateOtpAsync_WhenCodeIsInvalid_ShouldRegisterTheFailureAgainstTheAccount()
-    {
-        // Arrange
-        var userId = Guid.NewGuid();
-        string correctCode = "123456";
-        string wrongCode = "654321";
-        var purpose = EnumOtpPurpose.EmailVerification;
-
-        OtpEntity otp = CreateOtpWithCreatedAt(OtpFactory.Create(userId, correctCode, purpose));
-
-        _context.Otps.Add(otp);
-        await _context.SaveChangesAsync();
-
-        // Act
-        Func<Task> act = async () => await _repository.ValidateOtpAsync(userId, wrongCode, purpose);
-
-        // Assert
-        await act.Should().ThrowAsync<BadRequestException>();
-
-        _lockoutRepositoryMock.Verify(x => x.RegisterFailedOtpAsync(userId, It.IsAny<CancellationToken>()), Times.Once);
-    }
-
-    [Fact]
-    public async Task ValidateOtpAsync_WhenInvalidCodeReachesMaxAttempts_ShouldThrowOtpAttemptsLimitException()
-    {
-        // Arrange
-        var userId = Guid.NewGuid();
-        string correctCode = "123456";
-        string wrongCode = "654321";
-        var purpose = EnumOtpPurpose.EmailVerification;
-
-        OtpEntity otp = CreateOtpWithCreatedAt(OtpFactory.CreateWithAttemptCount(userId, correctCode, purpose, 2)); // One less than max (max = 3)
-
-        _context.Otps.Add(otp);
-        await _context.SaveChangesAsync();
-
-        // Act
-        Func<Task> act = async () => await _repository.ValidateOtpAsync(userId, wrongCode, purpose);
-
-        // Assert
-        await act.Should().ThrowAsync<OtpAttemptsLimitException>();
-    }
-
-    [Fact]
-    public async Task ValidateOtpAsync_WhenTheCodeDoesNotMatchTheStoredHash_ShouldConsumeAnAttempt()
-    {
-        // Arrange
-        var userId = Guid.NewGuid();
-        string correctCode = "123456";
-        string wrongCode = "654321";
-        var purpose = EnumOtpPurpose.EmailVerification;
-
-        OtpEntity latestOtp = CreateOtpWithCreatedAt(OtpFactory.Create(userId, correctCode, purpose));
-
-        _context.Otps.Add(latestOtp);
-        await _context.SaveChangesAsync();
-
-        // Act - Try with wrong code
-        Func<Task> act = async () => await _repository.ValidateOtpAsync(userId, wrongCode, purpose);
-
-        // Assert
-        await act.Should().ThrowAsync<BadRequestException>();
-
-        OtpEntity? updatedOtp = await _context.Otps.FirstOrDefaultAsync(o => o.Id == latestOtp.Id);
-        updatedOtp!.AttemptCount.Should().Be(1);
-    }
-
-    [Fact]
-    public async Task ValidateOtpAsync_WhenTheOutstandingOtpIsExpired_ShouldThrowOtpExpirationExceptionEvenForAWrongCode()
-    {
-        // Arrange
-        var userId = Guid.NewGuid();
-        string code = "123456";
-        string wrongCode = "654321";
-        var purpose = EnumOtpPurpose.EmailVerification;
-
-        OtpEntity latestOtp = CreateOtpWithCreatedAt(OtpFactory.CreateExpired(userId, code, purpose));
-
-        _context.Otps.Add(latestOtp);
-        await _context.SaveChangesAsync();
-
-        // Act - expiry is settled on the loaded row before the code is ever compared
-        Func<Task> act = async () => await _repository.ValidateOtpAsync(userId, wrongCode, purpose);
-
-        // Assert
-        await act.Should().ThrowAsync<OtpExpirationException>();
-    }
-
-    [Fact]
-    public async Task ValidateOtpAsync_WhenTheOutstandingOtpHasMaxAttempts_ShouldThrowOtpAttemptsLimitException()
-    {
-        // Arrange
-        var userId = Guid.NewGuid();
-        string code = "123456";
-        string wrongCode = "654321";
-        var purpose = EnumOtpPurpose.EmailVerification;
-
-        OtpEntity latestOtp = CreateOtpWithCreatedAt(OtpFactory.CreateMaxAttemptsReached(userId, code, purpose));
-
-        _context.Otps.Add(latestOtp);
-        await _context.SaveChangesAsync();
-
-        // Act
-        Func<Task> act = async () => await _repository.ValidateOtpAsync(userId, wrongCode, purpose);
-
-        // Assert
-        await act.Should().ThrowAsync<OtpAttemptsLimitException>();
-    }
-
-    [Fact]
-    public async Task ValidateOtpAsync_WhenNoValidOtpFound_ShouldThrowNotFoundException()
-    {
-        // Arrange
-        var userId = Guid.NewGuid();
-        string code = "123456";
         var purpose = EnumOtpPurpose.EmailVerification;
 
         // Act - No OTP exists
-        Func<Task> act = async () => await _repository.ValidateOtpAsync(userId, code, purpose);
+        Func<Task> act = async () => await _repository.GetLatestOutstandingOtpOrThrowAsync(userId, purpose);
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
     }
 
     [Fact]
-    public async Task ValidateOtpAsync_WhenAWrongCodeConsumesTheLastAttempt_ShouldThrowOtpAttemptsLimitException()
+    public async Task GetLatestOutstandingOtpOrThrowAsync_ShouldReturnTheMostRecentOutstandingOtp()
     {
         // Arrange
         var userId = Guid.NewGuid();
-        string correctCode = "123456";
-        string wrongCode = "654321";
-        var purpose = EnumOtpPurpose.EmailVerification;
-
-        OtpEntity latestOtp = CreateOtpWithCreatedAt(
-            OtpFactory.CreateWithAttemptCount(userId, correctCode, purpose, 2)
-        ); // One less than max (max = 3)
-
-        _context.Otps.Add(latestOtp);
-        await _context.SaveChangesAsync();
-
-        // Act - Wrong code that will increment to max
-        Func<Task> act = async () => await _repository.ValidateOtpAsync(userId, wrongCode, purpose);
-
-        // Assert
-        await act.Should().ThrowAsync<OtpAttemptsLimitException>();
-
-        OtpEntity? updatedOtp = await _context.Otps.FirstOrDefaultAsync(o => o.Id == latestOtp.Id);
-        updatedOtp!.AttemptCount.Should().Be(3);
-    }
-
-    [Fact]
-    public async Task ValidateOtpAsync_ShouldReturnTheMostRecentOutstandingOtp()
-    {
-        // Arrange
-        var userId = Guid.NewGuid();
-        string code = "123456";
         var purpose = EnumOtpPurpose.EmailVerification;
 
         OtpEntity olderOtp = CreateOtpWithCreatedAt(
-            OtpFactory.Create(userId, code, purpose),
+            OtpFactory.Create(userId, "123456", purpose),
             DateTime.UtcNow.AddMinutes(-10)
         );
 
-        OtpEntity newerOtp = CreateOtpWithCreatedAt(OtpFactory.Create(userId, code, purpose), DateTime.UtcNow);
+        OtpEntity newerOtp = CreateOtpWithCreatedAt(OtpFactory.Create(userId, "123456", purpose), DateTime.UtcNow);
 
         _context.Otps.AddRange(olderOtp, newerOtp);
         await _context.SaveChangesAsync();
 
-        _otpServiceMock.SetupVerifySuccess(code);
-
         // Act
-        OtpEntity result = await _repository.ValidateOtpAsync(userId, code, purpose);
+        OtpEntity result = await _repository.GetLatestOutstandingOtpOrThrowAsync(userId, purpose);
 
         // Assert
         result.Id.Should().Be(newerOtp.Id);
+    }
+
+    [Fact]
+    public async Task GetLatestOutstandingOtpOrThrowAsync_ShouldSkipUsedAndConsumedOtps()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var purpose = EnumOtpPurpose.EmailVerification;
+
+        OtpEntity usedOtp = CreateOtpWithCreatedAt(OtpFactory.CreateUsed(userId, "111111", purpose));
+        OtpEntity outstandingOtp = CreateOtpWithCreatedAt(
+            OtpFactory.Create(userId, "123456", purpose),
+            DateTime.UtcNow.AddMinutes(-5)
+        );
+
+        _context.Otps.AddRange(usedOtp, outstandingOtp);
+        await _context.SaveChangesAsync();
+
+        // Act
+        OtpEntity result = await _repository.GetLatestOutstandingOtpOrThrowAsync(userId, purpose);
+
+        // Assert
+        result.Id.Should().Be(outstandingOtp.Id);
     }
 
     #endregion

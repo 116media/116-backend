@@ -35,7 +35,7 @@ public class UserMapperTests(PostgresFixture postgres) : BaseRepositoryTest(post
         );
 
         dto.Id.Should().Be(loaded.Id);
-        dto.Email.Should().Be(loaded.Email);
+        dto.Email.Should().Be(loaded.Email!.Value);
         dto.UserName.Should().Be(loaded.UserName);
         dto.AuthProvider.Should().Be(loaded.AuthProvider);
         dto.IsVerified.Should().BeTrue();

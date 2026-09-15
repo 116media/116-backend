@@ -22,6 +22,7 @@ namespace _116.Identity.Application.Session.Factories;
 /// <param name="tokenStateRepository">Repository providing the user's token-invalidation markers.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="sessionErrors">Session domain error factory for generating domain exceptions.</param>
+/// <param name="timeProvider">Clock supplying the instant expiry and revocation are judged at.</param>
 /// <param name="logger">Logger recording replay detections that could not be completed.</param>
 public class RefreshTokenFactory(
     ISessionRepository sessionRepository,
@@ -29,6 +30,7 @@ public class RefreshTokenFactory(
     IUserTokenStateRepository tokenStateRepository,
     IIdentityUnitOfWork unitOfWork,
     SessionErrors sessionErrors,
+    TimeProvider timeProvider,
     ILogger<RefreshTokenFactory> logger
 ) : IRefreshTokenFactory
 {
@@ -44,16 +46,18 @@ public class RefreshTokenFactory(
 
         if (session is not null)
         {
+            DateTime now = timeProvider.GetUtcNow().UtcDateTime;
+
             if (!session.User.IsActive)
             {
-                session.Revoke(reason: EnumSessionRevokeReason.SecurityInvalidation);
+                session.Revoke(reason: EnumSessionRevokeReason.SecurityInvalidation, now: now);
                 await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
                 throw sessionErrors.InvalidRefreshToken();
             }
 
-            if (session.HasReachedAbsoluteExpiry())
+            if (session.HasReachedAbsoluteExpiry(now: now))
             {
-                session.Revoke(reason: EnumSessionRevokeReason.Expiry);
+                session.Revoke(reason: EnumSessionRevokeReason.Expiry, now: now);
                 await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
                 throw sessionErrors.InvalidRefreshToken();
             }
@@ -132,7 +136,9 @@ public class RefreshTokenFactory(
     {
         string newRefreshToken = refreshTokenService.GenerateRefreshToken();
         string newRefreshTokenHash = refreshTokenService.HashRefreshToken(refreshToken: newRefreshToken);
-        DateTime newRefreshTokenExpiresAt = DateTime.UtcNow.AddMinutes(JwtEnv.RefreshTokenExpirationMinutes.Value);
+        DateTime newRefreshTokenExpiresAt = timeProvider
+            .GetUtcNow()
+            .UtcDateTime.AddMinutes(JwtEnv.RefreshTokenExpirationMinutes.Value);
 
         return (newRefreshToken, newRefreshTokenHash, newRefreshTokenExpiresAt);
     }

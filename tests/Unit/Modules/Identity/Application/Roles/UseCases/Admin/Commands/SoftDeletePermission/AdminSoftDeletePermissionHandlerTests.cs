@@ -36,7 +36,8 @@ public class AdminSoftDeletePermissionHandlerTests : BaseHandlerTest
             _permissionRepositoryMock.Object,
             _unitOfWorkMock.Object,
             Mapper,
-            _userErrors
+            _userErrors,
+            TimeProvider.System
         );
     }
 
@@ -132,7 +133,7 @@ public class AdminSoftDeletePermissionHandlerTests : BaseHandlerTest
             TestConstants.Permission.ValidResource,
             TestConstants.Permission.ValidAction
         );
-        deletedPermission.SoftDelete();
+        deletedPermission.SoftDelete(now: DateTime.UtcNow);
 
         AdminSoftDeletePermissionCommand command = new(PermissionId: deletedPermission.Id.ToString());
 
@@ -153,7 +154,7 @@ public class AdminSoftDeletePermissionHandlerTests : BaseHandlerTest
             TestConstants.Permission.ValidResource,
             TestConstants.Permission.ValidAction
         );
-        deletedPermission.SoftDelete();
+        deletedPermission.SoftDelete(now: DateTime.UtcNow);
 
         AdminSoftDeletePermissionCommand command = new(PermissionId: deletedPermission.Id.ToString());
 

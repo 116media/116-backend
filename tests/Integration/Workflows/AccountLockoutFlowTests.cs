@@ -1,5 +1,6 @@
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.ValueObjects;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Builders.Requests.Identity;
 using _116.Tests.Fixtures.Factories.Identity;
@@ -40,7 +41,8 @@ public class AccountLockoutFlowTests(PostgresFixture db) : BaseApiTest(db)
         signUp.StatusCode.Should().Be(HttpStatusCode.Created);
 
         await using IdentityDbContext context = CreateDbContext<IdentityDbContext>();
-        UserEntity user = await context.Users.FirstAsync(u => u.Email == email);
+        Email registered = new(email);
+        UserEntity user = await context.Users.FirstAsync(u => u.Email == registered);
         user.MarkAsVerified();
         user.Activate();
         await context.SaveChangesAsync();
@@ -78,10 +80,12 @@ public class AccountLockoutFlowTests(PostgresFixture db) : BaseApiTest(db)
         locked.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
 
         await using IdentityDbContext context = CreateDbContext<IdentityDbContext>();
-        UserEntity user = await context.Users.FirstAsync(u => u.Email == email);
-        user.FailedLoginAttempts.Should().BeGreaterThanOrEqualTo(UserConstants.MaxLoginAttempts);
-        user.LockedUntil.Should().NotBeNull();
-        user.LockedUntil.Should().BeAfter(DateTime.UtcNow);
+        Email target = new(email);
+        UserEntity user = await context.Users.FirstAsync(u => u.Email == target);
+        UserLoginStateEntity state = await context.UserLoginStates.FirstAsync(s => s.Id == user.Id);
+        state.FailedAttempts.Should().BeGreaterThanOrEqualTo(UserConstants.MaxLoginAttempts);
+        state.LockedUntil.Should().NotBeNull();
+        state.LockedUntil.Should().BeAfter(DateTime.UtcNow);
     }
 
     [Fact]
@@ -103,9 +107,11 @@ public class AccountLockoutFlowTests(PostgresFixture db) : BaseApiTest(db)
         success.StatusCode.Should().Be(HttpStatusCode.OK);
 
         await using IdentityDbContext context = CreateDbContext<IdentityDbContext>();
-        UserEntity user = await context.Users.FirstAsync(u => u.Email == email);
-        user.FailedLoginAttempts.Should().Be(0);
-        user.LockedUntil.Should().BeNull();
+        Email target = new(email);
+        UserEntity user = await context.Users.FirstAsync(u => u.Email == target);
+        UserLoginStateEntity state = await context.UserLoginStates.FirstAsync(s => s.Id == user.Id);
+        state.FailedAttempts.Should().Be(0);
+        state.LockedUntil.Should().BeNull();
     }
 
     [Fact]

@@ -25,7 +25,7 @@ public class SessionRepositoryTests : IDisposable
             .Options;
 
         _context = new IdentityDbContext(options);
-        _repository = new SessionRepository(_context);
+        _repository = new SessionRepository(_context, TimeProvider.System);
     }
 
     public void Dispose()
@@ -106,7 +106,7 @@ public class SessionRepositoryTests : IDisposable
         // Arrange
         UserEntity user = UserFactory.Create();
         SessionEntity session = CreateSessionWithCreatedAt(user.Id);
-        session.Revoke();
+        session.Revoke(reason: EnumSessionRevokeReason.SelfSignOut, now: DateTime.UtcNow);
 
         _context.Users.Add(user);
         _context.Sessions.Add(session);
@@ -147,7 +147,7 @@ public class SessionRepositoryTests : IDisposable
     {
         // Arrange
         SessionEntity session = CreateSessionWithCreatedAt();
-        session.Revoke();
+        session.Revoke(reason: EnumSessionRevokeReason.SelfSignOut, now: DateTime.UtcNow);
         DateTime? originalRevokedAt = session.RevokedAt;
 
         _context.Sessions.Add(session);
@@ -253,7 +253,7 @@ public class SessionRepositoryTests : IDisposable
     {
         // Arrange
         SessionEntity session = CreateSessionWithCreatedAt();
-        session.Revoke();
+        session.Revoke(reason: EnumSessionRevokeReason.SelfSignOut, now: DateTime.UtcNow);
 
         _context.Sessions.Add(session);
         await _context.SaveChangesAsync();
@@ -344,7 +344,7 @@ public class SessionRepositoryTests : IDisposable
     {
         // Arrange
         SessionEntity expiredSession = new SessionBuilder().AsExpired().WithCreatedAt(DateTime.UtcNow).Build();
-        expiredSession.Revoke();
+        expiredSession.Revoke(reason: EnumSessionRevokeReason.SelfSignOut, now: DateTime.UtcNow);
 
         _context.Sessions.Add(expiredSession);
         await _context.SaveChangesAsync();
@@ -394,7 +394,7 @@ public class SessionRepositoryTests : IDisposable
     {
         // Arrange
         SessionEntity session = CreateSessionWithCreatedAt();
-        session.Revoke();
+        session.Revoke(reason: EnumSessionRevokeReason.SelfSignOut, now: DateTime.UtcNow);
 
         _context.Sessions.Add(session);
         await _context.SaveChangesAsync();
@@ -480,7 +480,7 @@ public class SessionRepositoryTests : IDisposable
         var userId = Guid.NewGuid();
         SessionEntity activeSession = CreateSessionWithCreatedAt(userId);
         SessionEntity revokedSession = CreateSessionWithCreatedAt(userId);
-        revokedSession.Revoke();
+        revokedSession.Revoke(reason: EnumSessionRevokeReason.SelfSignOut, now: DateTime.UtcNow);
 
         _context.Sessions.AddRange(activeSession, revokedSession);
         await _context.SaveChangesAsync();
@@ -696,7 +696,7 @@ public class SessionRepositoryTests : IDisposable
             .WithBrowser(EnumBrowser.Chrome)
             .WithCreatedAt(DateTime.UtcNow)
             .Build();
-        revokedSession.Revoke();
+        revokedSession.Revoke(reason: EnumSessionRevokeReason.SelfSignOut, now: DateTime.UtcNow);
 
         _context.Sessions.AddRange(activeSession, revokedSession);
         await _context.SaveChangesAsync();
@@ -797,7 +797,7 @@ public class SessionRepositoryTests : IDisposable
         SessionEntity activeSession1 = CreateSessionWithCreatedAt();
         SessionEntity activeSession2 = CreateSessionWithCreatedAt();
         SessionEntity revokedSession = CreateSessionWithCreatedAt();
-        revokedSession.Revoke();
+        revokedSession.Revoke(reason: EnumSessionRevokeReason.SelfSignOut, now: DateTime.UtcNow);
 
         _context.Sessions.AddRange(activeSession1, activeSession2, revokedSession);
         await _context.SaveChangesAsync();
@@ -861,7 +861,7 @@ public class SessionRepositoryTests : IDisposable
         // Arrange
         SessionEntity activeSession = CreateSessionWithCreatedAt();
         SessionEntity revokedSession = CreateSessionWithCreatedAt();
-        revokedSession.Revoke();
+        revokedSession.Revoke(reason: EnumSessionRevokeReason.SelfSignOut, now: DateTime.UtcNow);
 
         _context.Sessions.AddRange(activeSession, revokedSession);
         await _context.SaveChangesAsync();
@@ -939,7 +939,7 @@ public class SessionRepositoryTests : IDisposable
     {
         // Arrange
         SessionEntity session = CreateSessionWithCreatedAt();
-        session.Revoke();
+        session.Revoke(reason: EnumSessionRevokeReason.SelfSignOut, now: DateTime.UtcNow);
         string originalHash = session.RefreshTokenHash;
 
         _context.Sessions.Add(session);

@@ -34,7 +34,7 @@ public class OtpEntityTests
         otp.UserId.Should().Be(userId);
         otp.CodeHash.Should().Be(codeHash);
         otp.CodeHash.Should().NotBe(TestConstants.Otp.ValidCode);
-        otp.Purpose.Should().Be(purpose);
+        otp.Purpose.Value.Should().Be(purpose);
         otp.ExpiresAt.Should().Be(expiresAt);
         otp.IsUsed.Should().BeFalse();
         otp.UsedAt.Should().BeNull();
@@ -57,7 +57,7 @@ public class OtpEntityTests
         var otp = OtpEntity.Create(id, userId, codeHash, purpose, expiresAt);
 
         // Assert
-        otp.Purpose.Should().Be(purpose);
+        otp.Purpose.Value.Should().Be(purpose);
     }
 
     #endregion
@@ -71,7 +71,7 @@ public class OtpEntityTests
         OtpEntity otp = OtpFactory.Create();
 
         // Act
-        otp.MarkAsUsed();
+        otp.MarkAsUsed(now: DateTime.UtcNow);
 
         // Assert
         otp.IsUsed.Should().BeTrue();
@@ -80,18 +80,19 @@ public class OtpEntityTests
     }
 
     [Fact]
-    public void MarkAsUsed_WhenAlreadyUsed_ShouldUpdateUsedAt()
+    public void MarkAsUsed_WhenAlreadyUsed_ShouldReportFalseAndKeepTheFirstStamp()
     {
         // Arrange
         OtpEntity otp = OtpFactory.CreateUsed();
         DateTime? originalUsedAt = otp.UsedAt;
 
         // Act
-        otp.MarkAsUsed();
+        bool transitioned = otp.MarkAsUsed(now: DateTime.UtcNow.AddMinutes(5));
 
         // Assert
+        transitioned.Should().BeFalse();
         otp.IsUsed.Should().BeTrue();
-        otp.UsedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+        otp.UsedAt.Should().Be(originalUsedAt);
     }
 
     #endregion
@@ -105,7 +106,7 @@ public class OtpEntityTests
         OtpEntity otp = OtpFactory.Create();
 
         // Act
-        otp.MarkAsConsumed();
+        otp.MarkAsConsumed(now: DateTime.UtcNow);
 
         // Assert
         otp.ConsumedAt.Should().NotBeNull();
@@ -123,7 +124,7 @@ public class OtpEntityTests
         await Task.Delay(TimeSpan.FromMilliseconds(20));
 
         // Act
-        otp.MarkAsConsumed();
+        otp.MarkAsConsumed(now: DateTime.UtcNow);
 
         // Assert
         otp.ConsumedAt.Should().Be(firstConsumedAt);
@@ -136,7 +137,7 @@ public class OtpEntityTests
         OtpEntity otp = OtpFactory.Create();
 
         // Act
-        otp.MarkAsConsumed();
+        otp.MarkAsConsumed(now: DateTime.UtcNow);
 
         // Assert
         otp.IsUsed.Should().BeFalse();
@@ -179,35 +180,104 @@ public class OtpEntityTests
 
     #endregion
 
-    #region IncrementAttemptCount Tests
+    #region Verify Tests
 
     [Fact]
-    public void IncrementAttemptCount_ShouldIncreaseCountByOne()
+    public void Verify_WithAMatchingCode_ShouldReportValidWithoutConsumingAnAttempt()
     {
         // Arrange
         OtpEntity otp = OtpFactory.Create();
-        int initialCount = otp.AttemptCount;
 
         // Act
-        otp.IncrementAttemptCount();
+        EnumOtpVerificationStatus status = otp.Verify(suppliedCodeMatches: true, now: DateTime.UtcNow);
 
         // Assert
-        otp.AttemptCount.Should().Be(initialCount + 1);
+        status.Should().Be(EnumOtpVerificationStatus.Valid);
+        otp.AttemptCount.Should().Be(0);
     }
 
     [Fact]
-    public void IncrementAttemptCount_MultipleTimes_ShouldAccumulateCorrectly()
+    public void Verify_WithAWrongCode_ShouldReportMismatchAndConsumeAnAttempt()
     {
         // Arrange
         OtpEntity otp = OtpFactory.Create();
 
         // Act
-        otp.IncrementAttemptCount();
-        otp.IncrementAttemptCount();
-        otp.IncrementAttemptCount();
+        EnumOtpVerificationStatus status = otp.Verify(suppliedCodeMatches: false, now: DateTime.UtcNow);
 
         // Assert
-        otp.AttemptCount.Should().Be(3);
+        status.Should().Be(EnumOtpVerificationStatus.Mismatch);
+        otp.AttemptCount.Should().Be(1);
+    }
+
+    [Fact]
+    public void Verify_WhenExpired_ShouldReportExpiredWithoutJudgingTheCode()
+    {
+        // Arrange
+        OtpEntity otp = OtpFactory.CreateExpired();
+
+        // Act
+        EnumOtpVerificationStatus status = otp.Verify(suppliedCodeMatches: false, now: DateTime.UtcNow);
+
+        // Assert
+        status.Should().Be(EnumOtpVerificationStatus.Expired);
+        otp.AttemptCount.Should().Be(0);
+    }
+
+    [Fact]
+    public void Verify_WhenExpiredWithACorrectCode_ShouldStillReportExpired()
+    {
+        // Arrange
+        OtpEntity otp = OtpFactory.CreateExpired();
+
+        // Act
+        EnumOtpVerificationStatus status = otp.Verify(suppliedCodeMatches: true, now: DateTime.UtcNow);
+
+        // Assert
+        status.Should().Be(EnumOtpVerificationStatus.Expired);
+    }
+
+    [Fact]
+    public void Verify_WhenAttemptsAlreadyExhausted_ShouldReportExhaustedWithoutConsumingMore()
+    {
+        // Arrange
+        OtpEntity otp = OtpFactory.CreateMaxAttemptsReached();
+        int attemptsBefore = otp.AttemptCount;
+
+        // Act
+        EnumOtpVerificationStatus status = otp.Verify(suppliedCodeMatches: false, now: DateTime.UtcNow);
+
+        // Assert
+        status.Should().Be(EnumOtpVerificationStatus.AttemptsExhausted);
+        otp.AttemptCount.Should().Be(attemptsBefore);
+    }
+
+    [Fact]
+    public void Verify_WhenAWrongCodeConsumesTheLastAttempt_ShouldReportExhausted()
+    {
+        // Arrange
+        OtpEntity otp = new OtpBuilder().WithAttemptCount(TestConstants.Otp.MaxAttempts - 1).Build();
+
+        // Act
+        EnumOtpVerificationStatus status = otp.Verify(suppliedCodeMatches: false, now: DateTime.UtcNow);
+
+        // Assert
+        status.Should().Be(EnumOtpVerificationStatus.AttemptsExhausted);
+        otp.AttemptCount.Should().Be(TestConstants.Otp.MaxAttempts);
+    }
+
+    [Fact]
+    public void Verify_WithWrongCodes_ShouldAccumulateAttempts()
+    {
+        // Arrange
+        OtpEntity otp = OtpFactory.Create();
+
+        // Act
+        otp.Verify(suppliedCodeMatches: false, now: DateTime.UtcNow);
+        otp.Verify(suppliedCodeMatches: false, now: DateTime.UtcNow);
+
+        // Assert
+        otp.AttemptCount.Should().Be(2);
     }
 
     #endregion
@@ -221,7 +291,7 @@ public class OtpEntityTests
         OtpEntity otp = OtpFactory.Create();
 
         // Act
-        bool result = otp.IsExpired();
+        bool result = otp.IsExpired(now: DateTime.UtcNow);
 
         // Assert
         result.Should().BeFalse();
@@ -234,7 +304,7 @@ public class OtpEntityTests
         OtpEntity otp = OtpFactory.CreateExpired();
 
         // Act
-        bool result = otp.IsExpired();
+        bool result = otp.IsExpired(now: DateTime.UtcNow);
 
         // Assert
         result.Should().BeTrue();
@@ -277,7 +347,7 @@ public class OtpEntityTests
 
         for (int i = 0; i < TestConstants.Otp.MaxAttempts - 1; i++)
         {
-            otp.IncrementAttemptCount();
+            otp.Verify(suppliedCodeMatches: false, now: DateTime.UtcNow);
         }
 
         otp.HasMaxAttemptsReached().Should().BeFalse();
@@ -290,7 +360,7 @@ public class OtpEntityTests
 
         for (int i = 0; i < TestConstants.Otp.MaxAttempts; i++)
         {
-            otp.IncrementAttemptCount();
+            otp.Verify(suppliedCodeMatches: false, now: DateTime.UtcNow);
         }
 
         otp.HasMaxAttemptsReached().Should().BeTrue();
@@ -307,7 +377,7 @@ public class OtpEntityTests
         OtpEntity otp = OtpFactory.CreateForEmailVerification(Guid.NewGuid());
 
         // Assert
-        otp.Purpose.Should().Be(EnumOtpPurpose.EmailVerification);
+        otp.Purpose.Value.Should().Be(EnumOtpPurpose.EmailVerification);
     }
 
     [Fact]
@@ -317,7 +387,7 @@ public class OtpEntityTests
         OtpEntity otp = OtpFactory.CreateForPasswordReset(Guid.NewGuid());
 
         // Assert
-        otp.Purpose.Should().Be(EnumOtpPurpose.PasswordReset);
+        otp.Purpose.Value.Should().Be(EnumOtpPurpose.PasswordReset);
     }
 
     #endregion

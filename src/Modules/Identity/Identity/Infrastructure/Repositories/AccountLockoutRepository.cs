@@ -2,15 +2,17 @@ using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Shared.Domain;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace _116.Identity.Infrastructure.Repositories;
 
 /// <summary>
 /// Implementation of <see cref="IAccountLockoutRepository" /> using set-based
 /// <c>ExecuteUpdateAsync</c> statements, so two concurrent failures cannot both read the same count
-/// and write the same increment. Login counters live on the user row; OTP counters live in
-/// <see cref="UserOtpStateEntity" />, which outlives the OTP rows a resend replaces.
+/// and write the same increment. Login counters live in <see cref="UserLoginStateEntity" /> and
+/// OTP counters in <see cref="UserOtpStateEntity" />, both outliving the rows a flow replaces.
 /// </summary>
 /// <param name="context">The Identity database context.</param>
 public class AccountLockoutRepository(IdentityDbContext context) : IAccountLockoutRepository
@@ -19,8 +21,8 @@ public class AccountLockoutRepository(IdentityDbContext context) : IAccountLocko
     public async Task<AccountLockoutState> GetAsync(Guid userId, CancellationToken cancellationToken)
     {
         var login = await context
-            .Users.Where(u => u.Id == userId)
-            .Select(u => new { u.FailedLoginAttempts, u.LockedUntil })
+            .UserLoginStates.Where(s => s.Id == userId)
+            .Select(s => new { s.FailedAttempts, s.LockedUntil })
             .FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
         var otp = await context
@@ -29,7 +31,7 @@ public class AccountLockoutRepository(IdentityDbContext context) : IAccountLocko
             .FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
         return new AccountLockoutState(
-            FailedLoginAttempts: login?.FailedLoginAttempts ?? 0,
+            FailedLoginAttempts: login?.FailedAttempts ?? 0,
             LockedUntil: login?.LockedUntil,
             OtpFailedAttempts: otp?.FailedAttempts ?? 0,
             OtpLockedUntil: otp?.LockedUntil
@@ -39,17 +41,19 @@ public class AccountLockoutRepository(IdentityDbContext context) : IAccountLocko
     /// <inheritdoc />
     public async Task<int> RegisterFailedLoginAsync(Guid userId, CancellationToken cancellationToken)
     {
+        await EnsureLoginStateAsync(userId: userId, cancellationToken: cancellationToken);
+
         DateTime lockUntil = DateTime.UtcNow.AddMinutes(value: UserConstants.LoginLockoutMinutes);
 
         await context
-            .Users.Where(u => u.Id == userId)
+            .UserLoginStates.Where(s => s.Id == userId)
             .ExecuteUpdateAsync(
                 setters =>
                     setters
-                        .SetProperty(u => u.FailedLoginAttempts, u => u.FailedLoginAttempts + 1)
+                        .SetProperty(s => s.FailedAttempts, s => s.FailedAttempts + 1)
                         .SetProperty(
-                            u => u.LockedUntil,
-                            u => u.FailedLoginAttempts + 1 >= UserConstants.MaxLoginAttempts ? lockUntil : u.LockedUntil
+                            s => s.LockedUntil,
+                            s => s.FailedAttempts + 1 >= UserConstants.MaxLoginAttempts ? lockUntil : s.LockedUntil
                         ),
                 cancellationToken: cancellationToken
             );
@@ -62,10 +66,9 @@ public class AccountLockoutRepository(IdentityDbContext context) : IAccountLocko
     public async Task ClearFailedLoginsAsync(Guid userId, CancellationToken cancellationToken)
     {
         await context
-            .Users.Where(u => u.Id == userId && (u.FailedLoginAttempts != 0 || u.LockedUntil != null))
+            .UserLoginStates.Where(s => s.Id == userId && (s.FailedAttempts != 0 || s.LockedUntil != null))
             .ExecuteUpdateAsync(
-                setters =>
-                    setters.SetProperty(u => u.FailedLoginAttempts, 0).SetProperty(u => u.LockedUntil, _ => null),
+                setters => setters.SetProperty(s => s.FailedAttempts, 0).SetProperty(s => s.LockedUntil, _ => null),
                 cancellationToken: cancellationToken
             );
     }
@@ -106,22 +109,63 @@ public class AccountLockoutRepository(IdentityDbContext context) : IAccountLocko
     }
 
     /// <summary>
+    /// Creates the login lockout row on first use, so accounts that predate the table still lock.
+    /// </summary>
+    /// <param name="userId">The account the row belongs to.</param>
+    /// <param name="cancellationToken">Token to cancel the operation.</param>
+    private async Task EnsureLoginStateAsync(Guid userId, CancellationToken cancellationToken)
+    {
+        await EnsureStateRowAsync(
+            states: context.UserLoginStates,
+            state: UserLoginStateEntity.Create(userId: userId),
+            cancellationToken: cancellationToken
+        );
+    }
+
+    /// <summary>
     /// Creates the OTP throttling row on first use, so accounts that predate the table still throttle.
     /// </summary>
     /// <param name="userId">The account the row belongs to.</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
     private async Task EnsureOtpStateAsync(Guid userId, CancellationToken cancellationToken)
     {
-        bool exists = await context.UserOtpStates.AnyAsync(s => s.Id == userId, cancellationToken: cancellationToken);
+        await EnsureStateRowAsync(
+            states: context.UserOtpStates,
+            state: UserOtpStateEntity.Create(userId: userId),
+            cancellationToken: cancellationToken
+        );
+    }
+
+    /// <summary>
+    /// Inserts the state row when it is missing. Two concurrent first failures can both pass the
+    /// existence check; the loser's insert hits the primary key, is detached, and the counter
+    /// update proceeds against the winner's row.
+    /// </summary>
+    /// <param name="states">The state table.</param>
+    /// <param name="state">The row provisioned on first use.</param>
+    /// <param name="cancellationToken">Token to cancel the operation.</param>
+    private async Task EnsureStateRowAsync<TState>(
+        DbSet<TState> states,
+        TState state,
+        CancellationToken cancellationToken
+    )
+        where TState : Aggregate<Guid>
+    {
+        bool exists = await states.AnyAsync(s => s.Id == state.Id, cancellationToken: cancellationToken);
         if (exists)
         {
             return;
         }
 
-        await context.UserOtpStates.AddAsync(
-            entity: UserOtpStateEntity.Create(userId: userId),
-            cancellationToken: cancellationToken
-        );
-        await context.SaveChangesAsync(cancellationToken: cancellationToken);
+        await states.AddAsync(entity: state, cancellationToken: cancellationToken);
+        try
+        {
+            await context.SaveChangesAsync(cancellationToken: cancellationToken);
+        }
+        catch (DbUpdateException exception)
+            when (exception.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+        {
+            context.Entry(entity: state).State = EntityState.Detached;
+        }
     }
 }

@@ -95,7 +95,7 @@ public class OtpServiceTests
         result.Otp.Should().NotBeNull();
         result.Otp.Id.Should().NotBe(Guid.Empty);
         result.Otp.UserId.Should().Be(userId);
-        result.Otp.Purpose.Should().Be(purpose);
+        result.Otp.Purpose.Value.Should().Be(purpose);
     }
 
     [Fact]
@@ -184,7 +184,7 @@ public class OtpServiceTests
         OtpCreationResult result = _sut.CreateOtp(userId, purpose);
 
         // Assert
-        result.Otp.Purpose.Should().Be(EnumOtpPurpose.PasswordReset);
+        result.Otp.Purpose.Value.Should().Be(EnumOtpPurpose.PasswordReset);
     }
 
     [Fact]

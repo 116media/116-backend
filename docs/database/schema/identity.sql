@@ -280,5 +280,29 @@ DROP TABLE identity.processed_domain_events;
 INSERT INTO "__EFMigrationsHistory" (migration_id, product_version)
 VALUES ('20260910172740_DropRedundantProcessedDomainEvents', '9.0.4');
 
+CREATE TABLE identity.user_login_state (
+    user_id uuid NOT NULL,
+    failed_attempts integer NOT NULL DEFAULT 0,
+    locked_until timestamp with time zone,
+    created_at timestamp with time zone,
+    created_by text,
+    updated_at timestamp with time zone,
+    updated_by text,
+    CONSTRAINT pk_user_login_state PRIMARY KEY (user_id),
+    CONSTRAINT fk_user_login_state_users_user_id FOREIGN KEY (user_id) REFERENCES identity.users (id) ON DELETE CASCADE
+);
+
+INSERT INTO identity.user_login_state (user_id, failed_attempts, locked_until, created_at)
+SELECT id, failed_login_attempts, locked_until, now()
+FROM identity.users
+WHERE failed_login_attempts <> 0 OR locked_until IS NOT NULL;
+
+ALTER TABLE identity.users DROP COLUMN failed_login_attempts;
+
+ALTER TABLE identity.users DROP COLUMN locked_until;
+
+INSERT INTO "__EFMigrationsHistory" (migration_id, product_version)
+VALUES ('20260914052728_AddUserLoginState', '9.0.4');
+
 COMMIT;
 

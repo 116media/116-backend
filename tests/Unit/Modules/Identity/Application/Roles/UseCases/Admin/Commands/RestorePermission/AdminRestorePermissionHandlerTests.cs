@@ -50,7 +50,7 @@ public class AdminRestorePermissionHandlerTests : BaseHandlerTest
             TestConstants.Permission.ValidResource,
             TestConstants.Permission.ValidAction
         );
-        deletedPermission.SoftDelete();
+        deletedPermission.SoftDelete(now: DateTime.UtcNow);
 
         AdminRestorePermissionCommand command = new(PermissionId: deletedPermission.Id.ToString());
 
@@ -72,7 +72,7 @@ public class AdminRestorePermissionHandlerTests : BaseHandlerTest
             TestConstants.Permission.ValidResource,
             TestConstants.Permission.ValidAction
         );
-        deletedPermission.SoftDelete();
+        deletedPermission.SoftDelete(now: DateTime.UtcNow);
 
         AdminRestorePermissionCommand command = new(PermissionId: deletedPermission.Id.ToString());
 
@@ -94,7 +94,7 @@ public class AdminRestorePermissionHandlerTests : BaseHandlerTest
             TestConstants.Permission.ValidResource,
             TestConstants.Permission.ValidAction
         );
-        deletedPermission.SoftDelete();
+        deletedPermission.SoftDelete(now: DateTime.UtcNow);
 
         AdminRestorePermissionCommand command = new(PermissionId: deletedPermission.Id.ToString());
 
@@ -202,7 +202,7 @@ public class AdminRestorePermissionHandlerTests : BaseHandlerTest
             TestConstants.Permission.ValidResource,
             TestConstants.Permission.ValidAction
         );
-        deletedPermission.SoftDelete();
+        deletedPermission.SoftDelete(now: DateTime.UtcNow);
 
         AdminRestorePermissionCommand command = new(PermissionId: deletedPermission.Id.ToString());
 

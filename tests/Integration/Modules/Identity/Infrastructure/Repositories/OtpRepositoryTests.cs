@@ -1,6 +1,7 @@
 using _116.Identity.Application.Auth.Exceptions;
 using _116.Identity.Application.Auth.Repositories;
 using _116.Identity.Domain.Enums;
+using _116.Identity.Domain.ValueObjects;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Identity;
@@ -34,7 +35,7 @@ public class OtpRepositoryTests(PostgresFixture postgres) : BaseRepositoryTest(p
 
         saved.Should().NotBeNull();
         saved!.UserId.Should().Be(user.Id);
-        saved.Purpose.Should().Be(EnumOtpPurpose.EmailVerification);
+        saved.Purpose.Value.Should().Be(EnumOtpPurpose.EmailVerification);
     }
 
     [Fact]
@@ -57,11 +58,11 @@ public class OtpRepositoryTests(PostgresFixture postgres) : BaseRepositoryTest(p
         saved.Should().NotBeNull();
         saved!.CodeHash.Should().StartWith("h1:");
         saved.CodeHash.Should().NotBe(Otp.ValidCode);
-        saved.Purpose.Should().Be(EnumOtpPurpose.PasswordReset);
+        saved.Purpose.Value.Should().Be(EnumOtpPurpose.PasswordReset);
     }
 
     [Fact]
-    public async Task ValidateOtpAsync_ValidOtp_ShouldReturnMatchingOtp()
+    public async Task GetLatestOutstandingOtpOrThrowAsync_WithAnOutstandingOtp_ShouldReturnIt()
     {
         await using var seedContext = CreateDbContext<IdentityDbContext>();
         var user = UserFactory.CreateVerifiedActive();
@@ -72,7 +73,7 @@ public class OtpRepositoryTests(PostgresFixture postgres) : BaseRepositoryTest(p
 
         var repo = Resolve<IOtpRepository>();
 
-        var result = await repo.ValidateOtpAsync(user.Id, Otp.ValidCode, EnumOtpPurpose.EmailVerification);
+        var result = await repo.GetLatestOutstandingOtpOrThrowAsync(user.Id, EnumOtpPurpose.EmailVerification);
 
         result.Should().NotBeNull();
         result.Id.Should().Be(otp.Id);
@@ -81,12 +82,12 @@ public class OtpRepositoryTests(PostgresFixture postgres) : BaseRepositoryTest(p
     }
 
     [Fact]
-    public async Task ValidateOtpAsync_NonExistentOtp_ShouldThrow()
+    public async Task GetLatestOutstandingOtpOrThrowAsync_WhenNoneExists_ShouldThrow()
     {
         var repo = Resolve<IOtpRepository>();
         var nonExistentUserId = Guid.NewGuid();
 
-        var act = () => repo.ValidateOtpAsync(nonExistentUserId, Otp.InvalidCode, EnumOtpPurpose.EmailVerification);
+        var act = () => repo.GetLatestOutstandingOtpOrThrowAsync(nonExistentUserId, EnumOtpPurpose.EmailVerification);
 
         await act.Should().ThrowAsync<NotFoundException>();
     }
@@ -111,37 +112,6 @@ public class OtpRepositoryTests(PostgresFixture postgres) : BaseRepositoryTest(p
     }
 
     [Fact]
-    public async Task ValidateOtpAsync_WithAWrongCode_ShouldConsumeAttemptsUntilTheLimitIsReached()
-    {
-        await using var seedContext = CreateDbContext<IdentityDbContext>();
-        var user = UserFactory.CreateVerifiedActive();
-        seedContext.Users.Add(user);
-        var otp = OtpFactory.Create(user.Id, Otp.ValidCode, EnumOtpPurpose.EmailVerification);
-        seedContext.Otps.Add(otp);
-        await seedContext.SaveChangesAsync();
-
-        var repo = Resolve<IOtpRepository>();
-
-        var firstAttempt = () => repo.ValidateOtpAsync(user.Id, Otp.InvalidCode, EnumOtpPurpose.EmailVerification);
-        await firstAttempt.Should().ThrowAsync<BadRequestException>();
-
-        await using (var afterFirst = CreateDbContext<IdentityDbContext>())
-        {
-            (await afterFirst.Otps.FirstAsync(o => o.Id == otp.Id)).AttemptCount.Should().Be(1);
-        }
-
-        var secondAttempt = () => repo.ValidateOtpAsync(user.Id, Otp.InvalidCode, EnumOtpPurpose.EmailVerification);
-        await secondAttempt.Should().ThrowAsync<BadRequestException>();
-
-        // The third wrong code exhausts the allowance, so the failure changes shape.
-        var thirdAttempt = () => repo.ValidateOtpAsync(user.Id, Otp.InvalidCode, EnumOtpPurpose.EmailVerification);
-        await thirdAttempt.Should().ThrowAsync<OtpAttemptsLimitException>();
-
-        await using var verifyContext = CreateDbContext<IdentityDbContext>();
-        (await verifyContext.Otps.FirstAsync(o => o.Id == otp.Id)).AttemptCount.Should().Be(3);
-    }
-
-    [Fact]
     public async Task InvalidateExistingOtpsAsync_ShouldConsumeAllExistingOtps()
     {
         await using var seedContext = CreateDbContext<IdentityDbContext>();
@@ -158,8 +128,9 @@ public class OtpRepositoryTests(PostgresFixture postgres) : BaseRepositoryTest(p
         await db.SaveChangesAsync();
 
         await using var verifyContext = CreateDbContext<IdentityDbContext>();
+        var emailVerification = new OtpPurpose(EnumOtpPurpose.EmailVerification);
         var otps = await verifyContext
-            .Otps.Where(o => o.UserId == user.Id && o.Purpose == EnumOtpPurpose.EmailVerification)
+            .Otps.Where(o => o.UserId == user.Id && o.Purpose == emailVerification)
             .ToListAsync();
 
         // Superseded codes are consumed, not marked used: "used" means the owner verified it, and

@@ -241,7 +241,7 @@ public class UserCredentialSpecificationsTests
 
         // Assert
         filtered.Should().ContainSingle();
-        filtered[0].Email.Should().Be(email);
+        filtered[0].Email!.Value.Should().Be(email);
     }
 
     [Fact]
@@ -280,7 +280,7 @@ public class UserCredentialSpecificationsTests
 
         // Assert
         filtered.Should().ContainSingle();
-        filtered[0].Email.Should().Be(email);
+        filtered[0].Email!.Value.Should().Be(email);
     }
 
     [Fact]

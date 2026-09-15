@@ -51,16 +51,16 @@ Everything in Parts A–C is a citation against one of these.
 | R3 reference by id | n/a | ✗ 11 navigations | ✓ none | ✗ 64 navigations | ✓ none |
 | R4 consistency boundary | n/a | ✗ `UserEntity` | ✓ | ✗ | ✓ |
 | R5 immutable identity | ✗ `Id` public set | ✗ inherited | ✗ inherited | ✗ inherited | ✗ inherited |
-| R6 value objects | n/a | ✗ 7 VOs, 0 used by entities | ✗ none | ✗ 1 VO, 0 used by entities | ✗ none |
+| R6 value objects | n/a | ✓ `Email`/`OtpPurpose`/`Client` on the entities (15.4) | ✗ none | ✗ 1 VO, 0 used by entities | ✗ none |
 | R7 behaviour not data | ✗ `Update()` on `IRepository` | ✗ | ~ | ✗ | ✓ |
 | R8 constructed valid | n/a | ✗ `AssignRole` | ✓ | ✗ `AddItem` | ✓ |
-| R9 guarded transitions | n/a | ✗ 7 unguarded | ✗ no state enum | ✗ 7 unguarded | ✓ all guarded |
+| R9 guarded transitions | n/a | ✓ guarded (15.5) | ✓ `EnumFileState` (15.8) | ✗ 7 unguarded | ✓ all guarded |
 | R10 events follow change | ✗ `AddDomainEvent` public | ✗ 5 declarative raisers | ✓ | ✗ | ✓ raises none |
 | R11 persistence-ignorant | ✓ | ✓ | ✓ | ✓ | ✓ |
-| R12 logic in the domain | n/a | ✗ `OtpRepository` | ✗ `FileRepository` | ✗ | ✓ |
+| R12 logic in the domain | n/a | ✓ `OtpEntity.Verify` owns the policy (15.6) | ✓ split (15.7) | ✗ | ✓ |
 | R13 repository = root collection | ✗ | ~ | ✗ 21-method god repo | ~ 25 repos / 49 aggregates | ✓ 3 repos / 3 roots |
 | R14 one source of truth | n/a | ✓ | ✓ | ✗ `HasLyrics`, counters | ✓ |
-| R15 deterministic | ✗ `OccurredOn` | ✗ 8 sites | ✗ 3 sites | ✗ 29 sites | ✓ 0 sites |
+| R15 deterministic | ✓ interceptor stamps (15.1) | ✓ 0 sites (15.17 slice) | ✓ 0 sites (15.8) | ✗ 29 sites | ✓ 0 sites |
 | R16 ubiquitous language | n/a | ~ | ~ | ✗ 6× bulk `Update` | ✓ |
 
 **Mailer is the reference implementation and passes everything the kernel does not force on
@@ -1326,12 +1326,13 @@ by 15.1. No Mailer-specific work.
 | D5 | Specifications | make them carry include/sort/page, or retire the layer | **Retire.** 137 predicate-only classes behind 117 call sites, whose includes/sorts are re-hand-written per call site, is ceremony without leverage `[04 §12]` / `[06 §14]`. Specs inline into their single call sites; the base class stays in Shared for Identity's and Core's specifications until Stage 18. |
 | D6 | `[06 §16]` unused `IMapper` | sweep now | **Verify first — likely already closed.** Stage 7's CS9113 cleanup removed unread primary-ctor params and the build holds at 0 warnings, which would flag an injected-never-read `mapper`. Re-census at finalization; sweep only what remains. |
 | D7 | How to make R1 enforceable | convention + review, or a type-level marker | **`IAggregateRoot` marker in the kernel**, with `IRepository` constrained to it. Convention is what produced 49/49 roots; a constraint makes the mistake a compile error. Costs one interface and one `where` clause. |
-| D8 | Which primitives become value objects | wrap everything with a rule, or only where the rule is violable | **Only where a non-validator path can violate it.** `Email` and `Money` and `Slug` are reachable from seeders, social login and event handlers that no FluentValidation rule covers — they get value objects. `Language`, `ReleaseYear` and the four enum-wrapping VOs (`SessionStatus`, `ExportFormat`, `AuthProvider`, `Client`) are only ever set from a validated request; they stay primitives and the VOs stay edge parsers. |
+| D8 | Which primitives become value objects | wrap everything with a rule, or only where the rule is violable | **The 15.4 trio plus `Money` and `Slug`.** `Email` closes a real hole (seeders and social login bypass every FluentValidation rule); `OtpPurpose` and `Client` were converted with it at 15.4 so the OTP and Session aggregates carry self-validating types rather than raw enums, resolving this decision's earlier conflict with the 15.4 checklist line in the checklist's favor. `Language`, `ReleaseYear` and the remaining enum-wrapping VOs (`SessionStatus`, `ExportFormat`, `AuthProvider`) stay primitives and their VOs stay edge parsers. |
 | D9 | `StreamingLinkEntity`'s parent | child of Album, child of Lyrics, or its own root | **Its own root.** The schema decides it: `ck_streaming_links_exactly_one_target` enforces `album_id XOR lyrics_id`, so half the rows (a standalone single's links) have no album at all and *cannot* be members of the Album aggregate — a link cannot be a member of two different aggregate types. It already has its own repository upserting by (owner, platform) under two unique indexes. It stays a single-entity root; the XOR stays in the factory + check constraint. |
 | D10 | Engagement counters on the aggregate | move them back inside, or admit they are outside | **Admit they are outside.** Stage 8 moved them to atomic SQL for a real reason — a read-modify-write through the aggregate loses increments. Reverting that to satisfy R14 would reintroduce a concurrency bug to satisfy a diagram. The fix is to stop the aggregate claiming them: `private init` plus a doc comment naming the maintaining repository method. |
 | D12 | An upload and the row referencing it are written by two modules | keep the claim-and-reap repair, or make the two writes atomic | **Make them atomic.** All four module contexts now resolve one scoped `DbConnection`, so `ExecuteInTransactionAsync` enlists every other context via `UseTransactionAsync` and commits once. The file row and its reference cannot disagree, which removes the window the claim protocol existed to repair — so `Claim`, `ClaimAsync`, `GetUnclaimedBeforeAsync` and `UnclaimedFileReaperJob` are deleted, not fixed. The cost is `AddDbContextPool` becoming `AddDbContext`: contexts are no longer pooled, because a pooled context cannot be handed a connection from the scope. `CrossContextTransactionTests` proves both directions against real Postgres. |
 | D11 | `UserEntity` login counters | leave them, or move to a sibling aggregate | **Move to `UserLoginStateEntity`.** Same argument as D10, opposite conclusion: here the sibling aggregate already exists as a pattern (`UserOtpStateEntity`), so the honest model is reachable at the cost of one table and two dropped columns. |
 | D13 | Distinguishing an uploaded-but-unrecorded file from a persisted one | a dedicated DTO the upload returns, or a fact already on the entity | **A fact on the entity.** A parallel `UploadedAsset` record made the state a compile-time type, but mirrored `FileEntity` field for field — every new column would mean editing the entity, the record and the mapping. `CreatedAt` is null until `AuditableEntityInterceptor` stamps it on first save, so `IsRecorded` already expresses it for free, and it also catches an entity loaded in another scope, which the record could not. The cost is that the check moves from compile time to a guard at the top of `RecordAsync`. |
+| D14 | The remaining declarative raisers (`RecordMassSignOut`, `Role`/`PermissionEntity.MarkHardDeleted`) | delete them, or admit them | **Admit them, documented.** Unlike 15.2's join rows, there is no other root to move these facts to: a hard delete destroys the aggregate itself, leaving no state to transition, and a mass sign-out's real mutations are N session revocations that already raise per-session events — the account-level fact exists so consumers get one notification instead of N. Each raiser's doc comment states this. |
 
 ---
 
@@ -1341,10 +1342,12 @@ by 15.1. No Mailer-specific work.
 - [x] 15.2 — Identity: `UserRole`/`RolePermission` demote to members; their two repositories and
   four specifications are deleted; the six admin handlers and the bootstrap paths re-route
   through grant/revoke verbs on the roots
-- [ ] 15.3 — Identity: `UserLoginStateEntity`; drop `FailedLoginAttempts`/`LockedUntil` from `UserEntity` (D11)
-- [ ] 15.4 — Identity: `Email`/`OtpPurpose`/`Client` value objects reach the entities via converters (D8)
-- [ ] 15.5 — Identity: six transition guards; `UserActivatedEvent`/`UserDeactivatedEvent`; the five declarative raisers move to their owning root
-- [ ] 15.6 — Identity: OTP verification policy moves out of `OtpRepository` into `OtpEntity.Verify`
+- [x] 15.3 — Identity: `UserLoginStateEntity`; drop `FailedLoginAttempts`/`LockedUntil` from `UserEntity` (D11)
+- [x] 15.4 — Identity: `Email`/`OtpPurpose`/`Client` value objects reach the entities via converters (D8)
+- [x] 15.5 — Identity: six transition guards; `UserActivatedEvent`/`UserDeactivatedEvent` with the
+  admin activate/deactivate-user use cases that raise them; the remaining declarative raisers
+  are kept by decision (D14)
+- [x] 15.6 — Identity: OTP verification policy moves out of `OtpRepository` into `OtpEntity.Verify`
 - [x] 15.7 — Core: `IFileRepository` splits from `IFileUploadService`; `UpdateAvatarUrlFromSourceAsync` moves to Identity
 - [x] 15.8 — Core: `EnumFileState` replaces the flag trio; clock injected
 - [x] 15.8b — Core: upload and reference become one transaction; the claim protocol and its reaper are deleted (D12)
@@ -1356,8 +1359,8 @@ by 15.1. No Mailer-specific work.
 - [ ] 15.14 — Content: `HasLyrics` derived; the three maintaining handlers stop writing it `[03 §11]`
 - [ ] 15.15 — Content: counters demote to `private init` with their maintaining method named (D10)
 - [ ] 15.16 — Content: `Money` and `Slug` value objects via converters
-- [ ] 15.17 — All modules: `DateTime.UtcNow` out of `Domain/` (40 sites)
-- [ ] 15.18 — Load-then-mutate paths drop `Update()`; attach-Update deleted per repository `[04 §3]`
+- [ ] 15.17 — All modules: `DateTime.UtcNow` out of `Domain/` (40 sites; **Identity's 8 done**, Content's 29 and Core's remain per their stages)
+- [ ] 15.18 — Load-then-mutate paths drop `Update()`; attach-Update deleted per repository `[04 §3]` (**Identity's `OtpRepository` site done**)
 - [ ] 15.19 — Content specifications inlined; `ApplySpecification` call sites collapse `[04 §12]`
 - [ ] 15.20 — D2/D6 verified and recorded
 - [ ] 15.21 — Verify (build 0/0, csharpier, unit, integration; builder reflection hacks gone `[03 §9]`)
@@ -1400,7 +1403,7 @@ Four schema changes, all generated and left unapplied per house rule:
 
 | Migration | Module | Change |
 | --- | --- | --- |
-| `AddUserLoginState` | Identity | Create `user_login_states`; drop `users.failed_login_attempts`, `users.locked_until` |
+| `AddUserLoginState` | Identity | Create `user_login_state` (singular, matching its siblings); backfill non-zero counters; drop `users.failed_login_attempts`, `users.locked_until` |
 | `AddFileState` | Core | Add `files.state`; backfill from `is_deleted`/`claimed_at` |
 | `CollapseFileStates` | Core | Fold `Claimed` into `Stored`; drop `files.claimed_at`; rebuild the unique `file_name` index on `state` |
 | `DropVideoHasLyrics` | Content | Drop `videos.has_lyrics` |

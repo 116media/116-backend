@@ -7,6 +7,10 @@ table sets, which match exactly.
 `CollapseFileStates` are generated but unapplied, so `core.files` shows `state` there and
 `is_deleted`/`claimed_at` here. The table sets are unaffected.
 
+`identity.sql` runs one migration ahead of `applied-full.sql`: `AddUserLoginState` is
+generated but unapplied, so `identity.user_login_state` and the removal of
+`users.failed_login_attempts`/`users.locked_until` appear there but not here.
+
 | File | Source | Answers |
 | --- | --- | --- |
 | `applied-full.sql` | `pg_dump` of the migrated database | **What the schema *is*.** Final state, real Postgres DDL, includes non-EF objects. |
@@ -26,7 +30,9 @@ want to know what a table actually looks like.
 | `quartz` | 12 — scheduler tables, **created at runtime, present in no migration** |
 | `public` | 1 — `__EFMigrationsHistory`, shared by all four contexts |
 
-The entity-table count matches `Domain/Entities/*.cs` exactly in every module (49 / 9 / 3 / 1).
+The entity-table count matches `Domain/Entities/*.cs` exactly in every module (49 / 9 / 3 / 1),
+except Identity, whose 10th entity (`UserLoginStateEntity`) lands with the unapplied
+`AddUserLoginState` migration.
 
 The `quartz` schema is the reason this file exists at all: Quartz creates its 12 tables itself
 at startup, so they appear in no EF migration and no generated script. A dump is the only way
@@ -127,7 +133,7 @@ done
 
 | File | Tables | Relationships |
 | --- | --- | --- |
-| `dbml/identity.dbml` | 10 | 8 |
+| `dbml/identity.dbml` | 11 | 9 |
 | `dbml/core.dbml` | 3 | 0 |
 | `dbml/mailer.dbml` | 4 | 0 |
 | `dbml/content.dbml` | 50 | 61 |

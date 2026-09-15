@@ -1,4 +1,5 @@
 using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
@@ -11,6 +12,8 @@ namespace _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
 /// </summary>
 public class SuperAdminRepositoryManager(IdentityDbContext context, ILogger<SuperAdminRepositoryManager> logger)
 {
+    private static readonly Email SuperAdminEmail = new(value: SuperAdminConfiguration.Email);
+
     /// <summary>
     /// Checks if a Super Admin user already exists in the database.
     /// </summary>
@@ -20,7 +23,7 @@ public class SuperAdminRepositoryManager(IdentityDbContext context, ILogger<Supe
         UserEntity? existingSuperAdmin = await context
             .Users.Include(u => u.UserRoles)
                 .ThenInclude(ur => ur.Role)
-            .FirstOrDefaultAsync(u => u.Email == SuperAdminConfiguration.Email);
+            .FirstOrDefaultAsync(u => u.Email == SuperAdminEmail);
         return existingSuperAdmin != null;
     }
 

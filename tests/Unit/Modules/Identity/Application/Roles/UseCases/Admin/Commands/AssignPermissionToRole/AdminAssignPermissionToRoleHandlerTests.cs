@@ -231,7 +231,7 @@ public class AdminAssignPermissionToRoleHandlerTests : BaseHandlerTest
             TestConstants.Permission.ValidResource,
             TestConstants.Permission.ValidAction
         );
-        deletedPermission.SoftDelete();
+        deletedPermission.SoftDelete(now: DateTime.UtcNow);
 
         RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName, TestConstants.Role.ValidDescription);
 

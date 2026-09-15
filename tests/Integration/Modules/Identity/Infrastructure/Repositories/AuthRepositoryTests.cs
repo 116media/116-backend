@@ -224,7 +224,7 @@ public class AuthRepositoryTests(PostgresFixture postgres) : BaseRepositoryTest(
         var saved = await verifyContext.Users.FindAsync(user.Id);
 
         saved.Should().NotBeNull();
-        saved!.Email.Should().Be("add-async-auth@example.com");
+        saved!.Email!.Value.Should().Be("add-async-auth@example.com");
     }
 
     [Fact]
