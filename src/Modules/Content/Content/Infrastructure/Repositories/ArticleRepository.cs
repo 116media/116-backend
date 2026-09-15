@@ -1,8 +1,11 @@
 using _116.Content.Application.Editorial.Builders;
+using _116.Content.Application.Editorial.Specifications;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Specifications;
 using _116.Shared.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 
@@ -26,26 +29,15 @@ public class ArticleRepository(ContentDbContext context) : ContentRepository<Art
     {
         IQueryable<ArticleEntity> query = Context.Articles.Include(a => a.Category);
 
-        if (!string.IsNullOrWhiteSpace(search))
-        {
-            string pattern = $"%{search}%";
-            query = query.Where(article =>
-                EF.Functions.ILike(article.Title, pattern)
-                || EF.Functions.ILike(article.Headline, pattern)
-                || EF.Functions.ILike(article.Body, pattern)
-                || (article.MetaTitle != null && EF.Functions.ILike(article.MetaTitle, pattern))
-                || (article.MetaDescription != null && EF.Functions.ILike(article.MetaDescription, pattern))
-            );
-        }
+        Specification<ArticleEntity>? spec = new ArticleQueryBuilder()
+            .WithSearch(search: search)
+            .WithStatus(status: status)
+            .WithCategory(categoryId: categoryId)
+            .Build();
 
-        if (status.HasValue)
+        if (spec is not null)
         {
-            query = query.Where(article => article.Status == status.Value);
-        }
-
-        if (categoryId.HasValue)
-        {
-            query = query.Where(article => article.CategoryId == categoryId.Value);
+            query = query.ApplySpecification(specification: spec);
         }
 
         int totalCount = await query.CountAsync(cancellationToken);
@@ -62,8 +54,9 @@ public class ArticleRepository(ContentDbContext context) : ContentRepository<Art
     /// <inheritdoc />
     public override async Task<ArticleEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
+        var specification = new ArticleByIdSpecification(id: id);
         return await Context
-            .Articles.Where(article => article.Id == id)
+            .Articles.ApplySpecification(specification: specification)
             .Include(a => a.Category)
             .Include(a => a.Images)
             .Include(a => a.Tags)
@@ -80,9 +73,10 @@ public class ArticleRepository(ContentDbContext context) : ContentRepository<Art
         CancellationToken cancellationToken = default
     )
     {
+        var specification = new ArticleByIdSpecification(id: id);
         return await Context
             .Articles.AsTracking()
-            .Where(article => article.Id == id)
+            .ApplySpecification(specification: specification)
             .Include(a => a.Category)
             .Include(a => a.Images)
             .Include(a => a.Tags)
@@ -96,9 +90,10 @@ public class ArticleRepository(ContentDbContext context) : ContentRepository<Art
     /// <inheritdoc />
     public async Task<ArticleEntity?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default)
     {
+        var specification = new ArticleBySlugSpecification(slug: slug);
         return await Context
             .Articles.AsTracking()
-            .Where(article => EF.Functions.ILike(article.Slug, slug))
+            .ApplySpecification(specification: specification)
             .Include(a => a.Category)
             .Include(a => a.Images)
             .Include(a => a.Tags)
@@ -111,13 +106,9 @@ public class ArticleRepository(ContentDbContext context) : ContentRepository<Art
     /// <inheritdoc />
     public async Task<IReadOnlyList<ArticleEntity>> GetPromotedAsync(CancellationToken cancellationToken = default)
     {
-        DateTimeOffset now = DateTimeOffset.UtcNow;
+        var specification = new PromotedArticleSpecification();
         return await Context
-            .Articles.Where(article =>
-                article.IsPromoted
-                && article.Status == EnumContentStatus.Published
-                && (article.PromotedUntil == null || article.PromotedUntil > now)
-            )
+            .Articles.ApplySpecification(specification: specification)
             .Include(a => a.Category)
             .OrderByDescending(a => a.PublishedAt)
             .ToListAsync(cancellationToken);
@@ -146,13 +137,9 @@ public class ArticleRepository(ContentDbContext context) : ContentRepository<Art
         CancellationToken cancellationToken = default
     )
     {
+        var specification = new AbandonedDraftSpecification(cutoff: cutoff);
         return await Context
-            .Articles.Where(article =>
-                article.Status == EnumContentStatus.Draft
-                && article.Body == string.Empty
-                && article.Headline == string.Empty
-                && article.CreatedAt < cutoff
-            )
+            .Articles.ApplySpecification(specification: specification)
             .Include(a => a.Images)
             .ToListAsync(cancellationToken);
     }
@@ -163,9 +150,11 @@ public class ArticleRepository(ContentDbContext context) : ContentRepository<Art
         CancellationToken cancellationToken = default
     )
     {
+        var specification = new ArticleByOrderItemIdSpecification(orderItemId: orderItemId);
         return await Context
             .Articles.AsTracking()
-            .FirstOrDefaultAsync(article => article.OrderItemId == orderItemId, cancellationToken);
+            .ApplySpecification(specification: specification)
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
     /// <inheritdoc />
@@ -180,9 +169,10 @@ public class ArticleRepository(ContentDbContext context) : ContentRepository<Art
         CancellationToken cancellationToken = default
     )
     {
+        var specification = new ArticleImageByArticleIdSpecification(articleId: articleId);
         return await Context
             .ArticleImages.AsTracking()
-            .Where(image => image.ArticleId == articleId)
+            .ApplySpecification(specification: specification)
             .ToListAsync(cancellationToken);
     }
 
@@ -211,9 +201,10 @@ public class ArticleRepository(ContentDbContext context) : ContentRepository<Art
         CancellationToken cancellationToken = default
     )
     {
+        var specification = new ArticleTagByArticleIdSpecification(articleId: articleId);
         return await Context
             .ArticleTags.AsTracking()
-            .Where(tag => tag.ArticleId == articleId)
+            .ApplySpecification(specification: specification)
             .ToListAsync(cancellationToken);
     }
 
@@ -263,10 +254,12 @@ public class ArticleRepository(ContentDbContext context) : ContentRepository<Art
         CancellationToken cancellationToken = default
     )
     {
-        IQueryable<ArticleEntity> query = Context.Articles.Where(article =>
-            article.Status == EnumContentStatus.Published
-            && Context.ArticleArtists.Any(aa => aa.ArticleId == article.Id && aa.ArtistId == artistId)
+        var specification = new ArticleByArtistSpecification(
+            artistId: artistId,
+            articleArtists: Context.ArticleArtists
         );
+
+        IQueryable<ArticleEntity> query = Context.Articles.ApplySpecification(specification: specification);
 
         int totalCount = await query.CountAsync(cancellationToken: cancellationToken);
 
@@ -286,15 +279,9 @@ public class ArticleRepository(ContentDbContext context) : ContentRepository<Art
         CancellationToken cancellationToken = default
     )
     {
-        DateTimeOffset now = DateTimeOffset.UtcNow;
+        var specification = new ArticleBySpotPrioritySpecification(spotPriority: spotPriority);
         return await Context
-            .Articles.Where(article =>
-                article.IsPromoted
-                && article.Status == EnumContentStatus.Published
-                && (article.PromotedUntil == null || article.PromotedUntil > now)
-                && article.PromotionLevel != null
-                && article.PromotionLevel.SpotPriority == spotPriority
-            )
+            .Articles.ApplySpecification(specification: specification)
             .Include(a => a.Category)
             .Include(a => a.PromotionLevel)
             .OrderByDescending(a => a.PublishedAt)
@@ -309,10 +296,9 @@ public class ArticleRepository(ContentDbContext context) : ContentRepository<Art
         CancellationToken cancellationToken = default
     )
     {
+        var specification = new GossipArticleSpecification(gossipCategoryId: gossipCategoryId);
         return await Context
-            .Articles.Where(article =>
-                article.Status == EnumContentStatus.Published && article.CategoryId == gossipCategoryId
-            )
+            .Articles.ApplySpecification(specification: specification)
             .Where(a => !excludeIds.Contains(a.Id))
             .Include(a => a.Category)
             .OrderByDescending(a => a.PublishedAt)
