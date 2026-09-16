@@ -23,4 +23,10 @@ public class LyricsRevisionErrorMessage(IStringLocalizer<LyricsRevisionErrorMess
     /// not provided.
     /// </summary>
     public string ProposedTextRequired() => localizer["ProposedTextRequired"];
+
+    /// <summary>
+    /// Gets an error message for when a moderator decides a lyrics revision that has already
+    /// been accepted or rejected.
+    /// </summary>
+    public string AlreadyDecided() => localizer["AlreadyDecided"];
 }
