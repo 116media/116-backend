@@ -20,11 +20,6 @@ public class LyricsLikeEntity : Aggregate<Guid>
     /// </summary>
     public Guid LyricsId { get; private set; }
 
-    /// <summary>
-    /// Navigation property to the lyrics page.
-    /// </summary>
-    public LyricsEntity Lyrics { get; private set; } = null!;
-
     private LyricsLikeEntity() { }
 
     /// <summary>
@@ -41,7 +36,6 @@ public class LyricsLikeEntity : Aggregate<Guid>
             Id = id,
             UserId = userId,
             LyricsId = lyricsId,
-            CreatedAt = DateTime.UtcNow,
         };
 
         like.AddDomainEvent(new LyricsEngagedEvent(LyricsId: lyricsId, Kind: EnumEngagementKind.Like, Delta: 1));
