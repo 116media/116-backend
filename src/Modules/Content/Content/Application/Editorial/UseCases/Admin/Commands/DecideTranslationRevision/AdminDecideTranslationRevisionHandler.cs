@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -12,10 +13,12 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.DecideTrans
 /// <param name="revisionRepository">Repository for translation revision data access operations.</param>
 /// <param name="translationRepository">Repository for lyrics translation data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminDecideTranslationRevisionHandler(
     ITranslationRevisionRepository revisionRepository,
     ITranslationRepository translationRepository,
-    IContentUnitOfWork unitOfWork
+    IContentUnitOfWork unitOfWork,
+    ContentI18n i18n
 ) : ICommandHandler<AdminDecideTranslationRevisionCommand, AdminDecideTranslationRevisionResult>
 {
     /// <inheritdoc />
@@ -29,18 +32,22 @@ public class AdminDecideTranslationRevisionHandler(
             cancellationToken: cancellationToken
         );
 
+        bool decided = command.Accept
+            ? revision.Accept(decidedByUserId: command.DecidedByUserId)
+            : revision.Reject(decidedByUserId: command.DecidedByUserId);
+
+        if (!decided)
+        {
+            throw i18n.Translation.AlreadyDecided();
+        }
+
         if (command.Accept)
         {
-            revision.Accept(decidedByUserId: command.DecidedByUserId);
             LyricsTranslationEntity translation = await translationRepository.GetByIdOrThrowAsync(
                 id: revision.TranslationId,
                 cancellationToken: cancellationToken
             );
             translation.ApplyAcceptedRevision(newText: revision.ProposedText);
-        }
-        else
-        {
-            revision.Reject(decidedByUserId: command.DecidedByUserId);
         }
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
