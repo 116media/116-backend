@@ -1,4 +1,5 @@
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -15,7 +16,11 @@ public class ContentPaymentConfiguration : IEntityTypeConfiguration<ContentPayme
     {
         builder.HasKey(x => x.Id);
 
-        builder.Property(x => x.AmountUsd).HasColumnType("numeric(10,2)").IsRequired();
+        builder
+            .Property(x => x.AmountUsd)
+            .HasConversion(money => money.Amount, value => new Money(value))
+            .HasColumnType("numeric(10,2)")
+            .IsRequired();
 
         builder.Property(x => x.Status).IsRequired();
 
@@ -32,7 +37,7 @@ public class ContentPaymentConfiguration : IEntityTypeConfiguration<ContentPayme
         builder.Property(x => x.Notes).HasMaxLength(1000).IsRequired(false);
 
         builder
-            .HasOne(x => x.Order)
+            .HasOne<ContentOrderEntity>()
             .WithOne(o => o.Payment)
             .HasForeignKey<ContentPaymentEntity>(x => x.OrderId)
             .OnDelete(DeleteBehavior.Cascade);
