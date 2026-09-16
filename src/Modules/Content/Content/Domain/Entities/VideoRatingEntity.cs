@@ -26,11 +26,6 @@ public class VideoRatingEntity : Aggregate<Guid>
     /// </summary>
     public short Stars { get; private set; }
 
-    /// <summary>
-    /// Navigation property to the video.
-    /// </summary>
-    public VideoEntity Video { get; private set; } = null!;
-
     private VideoRatingEntity() { }
 
     /// <summary>
