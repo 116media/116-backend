@@ -30,7 +30,7 @@ public class ShortVideoViewEventConfiguration : IEntityTypeConfiguration<ShortVi
         builder.Property(x => x.CreatedAt).IsRequired();
 
         builder
-            .HasOne(x => x.ShortVideo)
+            .HasOne<ShortVideoEntity>()
             .WithMany()
             .HasForeignKey(x => x.ShortVideoId)
             .OnDelete(DeleteBehavior.Cascade);
