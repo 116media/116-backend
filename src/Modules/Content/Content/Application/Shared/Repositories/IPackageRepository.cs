@@ -23,52 +23,27 @@ public interface IPackageRepository
     );
 
     /// <summary>
-    /// Retrieves a package by its unique identifier including its slots and their categories.
-    /// Returns null if not found.
+    /// Retrieves a package by its identifier, with its slots and their category pricing
+    /// hydrated, or null when it does not exist.
     /// </summary>
-    Task<PackageEntity?> GetByIdWithSlotsAsync(Guid id, CancellationToken cancellationToken = default);
+    /// <param name="id">The unique identifier of the package.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>The package if found, otherwise null.</returns>
+    Task<PackageEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Retrieves a package by its unique identifier including its slots and their categories.
-    /// Throws a NotFoundException if not found.
+    /// Retrieves a package by its identifier, with its slots and their category pricing
+    /// hydrated, tracked for mutation, or throws when it does not exist.
     /// </summary>
-    /// <exception cref="_116.Shared.Application.Exceptions.NotFoundException">Thrown when the package is not found.</exception>
-    Task<PackageEntity> GetByIdWithSlotsOrThrowAsync(Guid id, CancellationToken cancellationToken = default);
+    /// <param name="id">The unique identifier of the package.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>The package.</returns>
+    Task<PackageEntity> GetByIdOrThrowAsync(Guid id, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Adds a new package to the repository.
     /// </summary>
     Task AddAsync(PackageEntity package, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Retrieves a package slot by its unique identifier.
-    /// Returns null if not found.
-    /// </summary>
-    Task<PackageSlotEntity?> GetSlotByIdAsync(Guid slotId, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Retrieves a package slot by its unique identifier scoped to the package it belongs to.
-    /// Returns null when no slot with that identifier belongs to that package.
-    /// </summary>
-    /// <param name="slotId">The slot identifier.</param>
-    /// <param name="packageId">The package the slot must belong to.</param>
-    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
-    /// <returns>The slot, or null when it does not belong to the given package.</returns>
-    Task<PackageSlotEntity?> GetSlotByIdAsync(
-        Guid slotId,
-        Guid packageId,
-        CancellationToken cancellationToken = default
-    );
-
-    /// <summary>
-    /// Adds a new package slot to the repository.
-    /// </summary>
-    Task AddSlotAsync(PackageSlotEntity slot, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Removes a package slot from the repository.
-    /// </summary>
-    void RemoveSlot(PackageSlotEntity slot);
 
     /// <summary>
     /// Stages a modified package for the next commit. The write is explicit so it
