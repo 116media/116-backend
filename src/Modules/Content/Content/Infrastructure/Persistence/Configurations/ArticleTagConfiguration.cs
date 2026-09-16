@@ -21,11 +21,11 @@ public class ArticleTagConfiguration : IEntityTypeConfiguration<ArticleTagEntity
         builder.HasIndex(x => new { x.ArticleId, x.TagId }).IsUnique();
 
         builder
-            .HasOne(x => x.Article)
+            .HasOne<ArticleEntity>()
             .WithMany(a => a.Tags)
             .HasForeignKey(x => x.ArticleId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasOne(x => x.Tag).WithMany().HasForeignKey(x => x.TagId).OnDelete(DeleteBehavior.Cascade);
+        builder.HasOne<TagEntity>().WithMany().HasForeignKey(x => x.TagId).OnDelete(DeleteBehavior.Cascade);
     }
 }
