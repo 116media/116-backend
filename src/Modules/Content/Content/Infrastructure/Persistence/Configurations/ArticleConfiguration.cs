@@ -1,6 +1,7 @@
 using _116.Content.Domain.Constants;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
+using _116.Content.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -19,7 +20,11 @@ public class ArticleConfiguration : IEntityTypeConfiguration<ArticleEntity>
 
         builder.Property(x => x.Title).HasMaxLength(ContentConstants.MaxTitleLength).IsRequired();
 
-        builder.Property(x => x.Slug).HasMaxLength(ContentConstants.MaxSlugLength).IsRequired();
+        builder
+            .Property(x => x.Slug)
+            .HasConversion(slug => slug.Value, value => new Slug(value))
+            .HasMaxLength(ContentConstants.MaxSlugLength)
+            .IsRequired();
 
         builder
             .Property(x => x.Headline)
@@ -97,17 +102,17 @@ public class ArticleConfiguration : IEntityTypeConfiguration<ArticleEntity>
             .HasFilter("is_promoted = true")
             .IsDescending(true);
 
-        builder.HasOne(x => x.Category).WithMany().HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<CategoryEntity>().WithMany().HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.Restrict);
 
         builder
-            .HasOne(x => x.Customer)
+            .HasOne<CustomerEntity>()
             .WithMany()
             .HasForeignKey(x => x.CustomerId)
             .IsRequired(false)
             .OnDelete(DeleteBehavior.SetNull);
 
         builder
-            .HasOne(x => x.PromotionLevel)
+            .HasOne<PromotionLevelEntity>()
             .WithMany()
             .HasForeignKey(x => x.PromotionLevelId)
             .IsRequired(false)
