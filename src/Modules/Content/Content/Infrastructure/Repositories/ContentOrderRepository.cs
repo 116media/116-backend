@@ -1,6 +1,5 @@
 using _116.Content.Application.Commerce.Builders;
 using _116.Content.Application.Commerce.Specifications;
-using _116.Content.Application.Shared.Errors;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
@@ -15,61 +14,25 @@ namespace _116.Content.Infrastructure.Repositories;
 /// Implementation of <see cref="IContentOrderRepository" /> for managing content order entities.
 /// </summary>
 /// <param name="context">The Content module database context.</param>
-/// <param name="contentOrderErrors">Content order domain error factory.</param>
-public class ContentOrderRepository(ContentDbContext context, ContentOrderErrors contentOrderErrors)
+public class ContentOrderRepository(ContentDbContext context)
     : ContentRepository<ContentOrderEntity>(context),
         IContentOrderRepository
 {
     /// <inheritdoc />
-    public async Task AddItemAsync(ContentOrderItemEntity item, CancellationToken ct = default)
-    {
-        await Context.ContentOrderItems.AddAsync(item, ct);
-    }
-
-    /// <inheritdoc />
-    public async Task AddItemTierAsync(ContentItemTierEntity tier, CancellationToken ct = default)
-    {
-        await Context.ContentItemTiers.AddAsync(tier, ct);
-    }
-
-    /// <inheritdoc />
-    public async Task AddPaymentAsync(ContentPaymentEntity payment, CancellationToken ct = default)
-    {
-        await Context.ContentPayments.AddAsync(payment, ct);
-    }
-
-    /// <inheritdoc />
-    public Task UpdateAsync(ContentOrderEntity order, CancellationToken ct = default)
-    {
-        Context.ContentOrders.Update(order);
-        return Task.CompletedTask;
-    }
-
-    /// <inheritdoc />
-    public Task UpdatePaymentAsync(ContentPaymentEntity payment, CancellationToken ct = default)
-    {
-        Context.ContentPayments.Update(payment);
-        return Task.CompletedTask;
-    }
-
-    /// <inheritdoc />
     public async Task<ContentOrderEntity?> GetByIdWithItemsAsync(Guid id, CancellationToken ct = default)
     {
         var specification = new ContentOrderByIdSpecification(id: id);
-        return await Context
-            .ContentOrders.AsTracking()
-            .ApplySpecification(specification: specification)
-            .Include(o => o.Customer)
-            .Include(o => o.Items)
-                .ThenInclude(i => i.Category)
-            .Include(o => o.Items)
-                .ThenInclude(i => i.PromotionLevel)
-            .Include(o => o.Items)
+        return await QueryTracked().ApplySpecification(specification: specification).FirstOrDefaultAsync(ct);
+    }
+
+    /// <inheritdoc />
+    protected override IQueryable<ContentOrderEntity> Query()
+    {
+        return Context
+            .ContentOrders.Include(o => o.Items)
                 .ThenInclude(i => i.Tiers)
-                    .ThenInclude(t => t.PricingTier)
             .Include(o => o.Payment)
-            .AsSplitQuery()
-            .FirstOrDefaultAsync(ct);
+            .AsSplitQuery();
     }
 
     /// <inheritdoc />
@@ -87,13 +50,13 @@ public class ContentOrderRepository(ContentDbContext context, ContentOrderErrors
             .WithStatus(status: status)
             .WithCustomerId(customerId: customerId)
             .WithSearch(search: search)
-            .Build();
+            .Build(customers: Context.Customers);
 
         IQueryable<ContentOrderEntity> query = spec is not null
             ? Context.ContentOrders.ApplySpecification(specification: spec)
             : Context.ContentOrders;
 
-        query = query.Include(o => o.Customer).Include(o => o.Items);
+        query = query.Include(o => o.Items);
 
         int totalCount = await query.CountAsync(ct);
 
@@ -105,7 +68,7 @@ public class ContentOrderRepository(ContentDbContext context, ContentOrderErrors
     }
 
     /// <inheritdoc />
-    public async Task<(IReadOnlyList<ContentPaymentEntity> Items, int TotalCount)> GetAllPaymentsAsync(
+    public async Task<(IReadOnlyList<ContentOrderEntity> Items, int TotalCount)> GetOrdersWithPaymentAsync(
         int page,
         int pageSize,
         EnumPaymentStatus? status,
@@ -115,115 +78,38 @@ public class ContentOrderRepository(ContentDbContext context, ContentOrderErrors
         CancellationToken ct = default
     )
     {
-        Specification<ContentPaymentEntity>? spec = new ContentPaymentQueryBuilder()
+        Specification<ContentOrderEntity>? spec = new ContentPaymentQueryBuilder()
             .WithStatus(status: status)
             .WithMethod(method: method)
             .WithSearch(search: search)
-            .Build();
+            .Build(customers: Context.Customers);
 
-        IQueryable<ContentPaymentEntity> query = spec is not null
-            ? Context.ContentPayments.ApplySpecification(specification: spec)
-            : Context.ContentPayments;
+        IQueryable<ContentOrderEntity> query = Context
+            .ContentOrders.ApplySpecification(specification: new OrderHasPaymentSpecification())
+            .Include(o => o.Payment);
 
-        query = query.Include(p => p.Order).ThenInclude(o => o.Customer);
+        if (spec is not null)
+        {
+            query = query.ApplySpecification(specification: spec);
+        }
 
         int totalCount = await query.CountAsync(ct);
 
-        query = orderByAscending ? query.OrderBy(p => p.CreatedAt) : query.OrderByDescending(p => p.CreatedAt);
+        query = orderByAscending
+            ? query.OrderBy(o => o.Payment!.CreatedAt)
+            : query.OrderByDescending(o => o.Payment!.CreatedAt);
 
-        List<ContentPaymentEntity> payments = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(ct);
+        List<ContentOrderEntity> orders = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(ct);
 
-        return (payments, totalCount);
-    }
-
-    /// <inheritdoc />
-    public async Task<ContentPaymentEntity?> GetPaymentByOrderIdAsync(Guid orderId, CancellationToken ct = default)
-    {
-        var specification = new ContentPaymentByOrderIdSpecification(orderId: orderId);
-        return await Context
-            .ContentPayments.AsTracking()
-            .ApplySpecification(specification: specification)
-            .FirstOrDefaultAsync(ct);
-    }
-
-    /// <inheritdoc />
-    public async Task<ContentOrderItemEntity?> GetItemByIdAsync(
-        Guid orderId,
-        Guid itemId,
-        CancellationToken ct = default
-    )
-    {
-        var specification = new ContentOrderItemByIdAndOrderIdSpecification(orderId: orderId, itemId: itemId);
-
-        // Tracked so the identity map fixes up Tiers from the caller's earlier order load.
-        return await Context
-            .ContentOrderItems.AsTracking()
-            .ApplySpecification(specification: specification)
-            .FirstOrDefaultAsync(ct);
-    }
-
-    /// <inheritdoc />
-    public async Task<ContentOrderItemEntity> GetItemByIdOrThrowAsync(
-        Guid orderId,
-        Guid itemId,
-        CancellationToken ct = default
-    )
-    {
-        var specification = new ContentOrderItemByIdAndOrderIdSpecification(orderId: orderId, itemId: itemId);
-        return await Context
-                .ContentOrderItems.AsTracking()
-                .ApplySpecification(specification: specification)
-                .FirstOrDefaultAsync(ct)
-            ?? throw contentOrderErrors.ItemNotFound(itemId: itemId);
-    }
-
-    /// <inheritdoc />
-    public async Task<ContentItemTierEntity?> GetItemTierByIdAsync(
-        Guid itemId,
-        Guid tierId,
-        CancellationToken ct = default
-    )
-    {
-        return await Context.ContentItemTiers.FirstOrDefaultAsync(t => t.OrderItemId == itemId && t.Id == tierId, ct);
-    }
-
-    /// <inheritdoc />
-    public async Task<ContentItemTierEntity> GetItemTierByIdOrThrowAsync(
-        Guid itemId,
-        Guid tierId,
-        CancellationToken ct = default
-    )
-    {
-        return await Context
-                .ContentItemTiers.AsTracking()
-                .FirstOrDefaultAsync(t => t.OrderItemId == itemId && t.Id == tierId, ct)
-            ?? throw contentOrderErrors.ItemTierNotFound(tierId: tierId);
-    }
-
-    /// <inheritdoc />
-    public Task UpdateItemAsync(ContentOrderItemEntity item, CancellationToken ct = default)
-    {
-        Context.ContentOrderItems.Update(item);
-        return Task.CompletedTask;
-    }
-
-    /// <inheritdoc />
-    public Task RemoveItemAsync(ContentOrderItemEntity item, CancellationToken ct = default)
-    {
-        Context.ContentOrderItems.Remove(item);
-        return Task.CompletedTask;
-    }
-
-    /// <inheritdoc />
-    public Task RemoveItemTierAsync(ContentItemTierEntity tier, CancellationToken ct = default)
-    {
-        Context.ContentItemTiers.Remove(tier);
-        return Task.CompletedTask;
+        return (orders, totalCount);
     }
 
     /// <inheritdoc />
     public async Task<ContentOrderEntity?> GetOrderByItemIdAsync(Guid orderItemId, CancellationToken ct = default)
     {
-        return await Context.ContentOrders.Where(o => o.Items.Any(i => i.Id == orderItemId)).FirstOrDefaultAsync(ct);
+        return await Context.ContentOrders.FirstOrDefaultBySpecificationAsync(
+            specification: new ContentOrderByItemIdSpecification(orderItemId: orderItemId),
+            cancellationToken: ct
+        );
     }
 }
