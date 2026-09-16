@@ -34,6 +34,6 @@ public class LyricsShareConfiguration : IEntityTypeConfiguration<LyricsShareEnti
             .HasFilter("user_id IS NOT NULL")
             .HasDatabaseName("ix_lyrics_shares_user_created_lyrics");
 
-        builder.HasOne(x => x.Lyrics).WithMany().HasForeignKey(x => x.LyricsId).OnDelete(DeleteBehavior.Cascade);
+        builder.HasOne<LyricsEntity>().WithMany().HasForeignKey(x => x.LyricsId).OnDelete(DeleteBehavior.Cascade);
     }
 }
