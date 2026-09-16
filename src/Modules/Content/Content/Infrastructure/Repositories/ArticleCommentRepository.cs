@@ -88,9 +88,7 @@ public class ArticleCommentRepository(ContentDbContext context)
         Guid[] distinctIds = parentCommentIds.Distinct().ToArray();
 
         return await Context
-            .ArticleComments.Where(c =>
-                c.ParentCommentId != null && distinctIds.Contains(c.ParentCommentId.Value) && !c.IsDeleted
-            )
+            .ArticleComments.Where(c => c.ParentCommentId != null && distinctIds.Contains(c.ParentCommentId.Value))
             .GroupBy(c => c.ParentCommentId!.Value)
             .Select(group => new { ParentCommentId = group.Key, Count = group.Count() })
             .ToDictionaryAsync(row => row.ParentCommentId, row => row.Count, cancellationToken);
@@ -121,12 +119,6 @@ public class ArticleCommentRepository(ContentDbContext context)
             .ArticleComments.AsTracking()
             .ApplySpecification(specification: specification)
             .FirstOrDefaultAsync(cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public void UpdateComment(ArticleCommentEntity comment)
-    {
-        Context.ArticleComments.Update(comment);
     }
 
     /// <inheritdoc />
@@ -177,7 +169,10 @@ public class ArticleCommentRepository(ContentDbContext context)
         }
 
         List<Guid> likedIds = await Context
-            .ArticleCommentLikes.Where(like => like.UserId == viewerUserId && commentIds.Contains(like.CommentId))
+            .ArticleCommentLikes.ApplySpecification(
+                specification: new ArticleCommentLikeByUserIdSpecification(userId: viewerUserId)
+            )
+            .Where(like => commentIds.Contains(like.CommentId))
             .Select(like => like.CommentId)
             .ToListAsync(cancellationToken);
 
@@ -192,7 +187,7 @@ public class ArticleCommentRepository(ContentDbContext context)
     )
     {
         return Context
-            .ArticleComments.Where(c => c.Id == commentId)
+            .ArticleComments.ApplySpecification(specification: new ArticleCommentByIdSpecification(commentId))
             .ExecuteUpdateAsync(
                 setters => setters.SetProperty(c => c.LikeCount, c => Math.Max(0, c.LikeCount + delta)),
                 cancellationToken: cancellationToken
@@ -209,9 +204,9 @@ public class ArticleCommentRepository(ContentDbContext context)
     )
     {
         var specification = new ArticleCommentByUserAndArticleSpecification(userId: userId, articleId: articleId);
-        IQueryable<ArticleCommentEntity> query = Context
-            .ArticleComments.ApplySpecification(specification: specification)
-            .Where(comment => !comment.IsDeleted);
+        IQueryable<ArticleCommentEntity> query = Context.ArticleComments.ApplySpecification(
+            specification: specification
+        );
 
         int totalCount = await query.CountAsync(cancellationToken);
         List<ArticleCommentEntity> comments = await query
@@ -235,7 +230,11 @@ public class ArticleCommentRepository(ContentDbContext context)
         var commentByUserSpecification = new ArticleCommentByUserIdSpecification(userId: userId);
         var groupedQuery = Context
             .ArticleComments.ApplySpecification(specification: commentByUserSpecification)
-            .Where(comment => !comment.IsDeleted && comment.Article.Status == EnumContentStatus.Published)
+            .Where(comment =>
+                Context.Articles.Any(article =>
+                    article.Id == comment.ArticleId && article.Status == EnumContentStatus.Published
+                )
+            )
             .GroupBy(comment => comment.ArticleId)
             .Select(group => new
             {
@@ -260,12 +259,11 @@ public class ArticleCommentRepository(ContentDbContext context)
         Guid[] articleIds = pageRows.Select(row => row.ArticleId).ToArray();
         Dictionary<Guid, ArticleEntity> articles = await Context
             .Articles.Where(article => articleIds.Contains(article.Id))
-            .Include(article => article.Category)
             .ToDictionaryAsync(article => article.Id, cancellationToken);
 
         List<ArticleCommentEntity> comments = await Context
             .ArticleComments.ApplySpecification(specification: commentByUserSpecification)
-            .Where(comment => !comment.IsDeleted && articleIds.Contains(comment.ArticleId))
+            .Where(comment => articleIds.Contains(comment.ArticleId))
             .OrderByDescending(comment => comment.CreatedAt)
             .ThenBy(comment => comment.Id)
             .ToListAsync(cancellationToken);
