@@ -29,10 +29,10 @@ public class ArticleCommentConfiguration : IEntityTypeConfiguration<ArticleComme
 
         builder.Property(x => x.LikeCount).HasDefaultValue(0).IsRequired();
 
-        builder.HasOne(x => x.Article).WithMany().HasForeignKey(x => x.ArticleId).OnDelete(DeleteBehavior.Cascade);
+        builder.HasOne<ArticleEntity>().WithMany().HasForeignKey(x => x.ArticleId).OnDelete(DeleteBehavior.Cascade);
 
         builder
-            .HasOne(x => x.ParentComment)
+            .HasOne<ArticleCommentEntity>()
             .WithMany()
             .HasForeignKey(x => x.ParentCommentId)
             .OnDelete(DeleteBehavior.Restrict);
