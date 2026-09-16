@@ -4,6 +4,7 @@ using _116.Content.Domain.Constants;
 using _116.Content.Domain.Events;
 using _116.Content.Domain.Exceptions;
 using _116.Content.Domain.StateMachines;
+using _116.Content.Domain.ValueObjects;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -31,7 +32,7 @@ public class CategoryEntity : Aggregate<Guid>
     /// Must be unique across all categories.
     /// </summary>
     [MaxLength(length: ContentConstants.MaxCategorySlugLength)]
-    public string Slug { get; private set; } = null!;
+    public Slug Slug { get; private set; } = null!;
 
     /// <summary>
     /// Human-readable description of the category.
@@ -100,19 +101,9 @@ public class CategoryEntity : Aggregate<Guid>
     public bool IsPinnedToFeed => PinnedToFeedAt is not null;
 
     /// <summary>
-    /// The content type this category is classified under.
-    /// </summary>
-    public ContentTypeEntity ContentType { get; private set; } = null!;
-
-    /// <summary>
     /// The pricing tiers configured for this category.
     /// </summary>
     public ICollection<CategoryPricingEntity> Pricing { get; } = new List<CategoryPricingEntity>();
-
-    /// <summary>
-    /// Package slots that reference this category.
-    /// </summary>
-    public ICollection<PackageSlotEntity> PackageSlots { get; } = new List<PackageSlotEntity>();
 
     /// <summary>
     /// Private parameterless constructor required by Entity Framework Core.
@@ -173,26 +164,12 @@ public class CategoryEntity : Aggregate<Guid>
     }
 
     /// <summary>
-    /// Updates the category's display name, slug, and description.
+    /// Renames the category and its slug.
     /// </summary>
     /// <param name="name">The new display name.</param>
     /// <param name="slug">The new URL-safe slug.</param>
-    /// <param name="description">The new description.</param>
-    /// <param name="isGossip">Whether this is the gossip category used for homepage feed fallbacks.</param>
-    /// <param name="isExclusive">Whether this category is the exclusive show featured on the homepage.</param>
-    /// <param name="isDefaultForLyrics">
-    /// Whether this is the default category assigned to lyrics pages. Required — deliberately not
-    /// optional, because a defaulted value here silently clears a persisted flag at every call site
-    /// that omits it. Callers must pass the intended value explicitly.
-    /// </param>
-    public void Update(
-        string name,
-        string slug,
-        string description,
-        bool isGossip,
-        bool isExclusive,
-        bool isDefaultForLyrics
-    )
+    /// <returns><c>true</c> if either value changed; otherwise <c>false</c>.</returns>
+    public bool Rename(string name, string slug)
     {
         if (string.IsNullOrWhiteSpace(value: name))
         {
@@ -204,12 +181,73 @@ public class CategoryEntity : Aggregate<Guid>
             throw new ContentRuleException(ContentRuleCodes.CategorySlugRequired);
         }
 
+        if (Name == name && Slug == slug)
+        {
+            return false;
+        }
+
         Name = name;
         Slug = slug;
+        MarkChanged();
+
+        return true;
+    }
+
+    /// <summary>
+    /// Rewrites the category's description.
+    /// </summary>
+    /// <param name="description">The new description.</param>
+    /// <returns><c>true</c> if the description changed; otherwise <c>false</c>.</returns>
+    public bool Redescribe(string description)
+    {
+        if (Description == description)
+        {
+            return false;
+        }
+
         Description = description;
+        MarkChanged();
+
+        return true;
+    }
+
+    /// <summary>
+    /// Sets the three feed-placement flags together, since a category may hold at most the role
+    /// each one names and the handler decides them as one.
+    /// </summary>
+    /// <param name="isGossip">Whether this is the gossip category used for homepage feed fallbacks.</param>
+    /// <param name="isExclusive">Whether this category is the exclusive show featured on the homepage.</param>
+    /// <param name="isDefaultForLyrics">
+    /// Whether this is the default category assigned to lyrics pages. Required — deliberately not
+    /// optional, because a defaulted value here silently clears a persisted flag at every call site
+    /// that omits it. Callers must pass the intended value explicitly.
+    /// </param>
+    /// <returns><c>true</c> if any flag changed; otherwise <c>false</c>.</returns>
+    public bool Reclassify(bool isGossip, bool isExclusive, bool isDefaultForLyrics)
+    {
+        if (IsGossip == isGossip && IsExclusive == isExclusive && IsDefaultForLyrics == isDefaultForLyrics)
+        {
+            return false;
+        }
+
         IsGossip = isGossip;
         IsExclusive = isExclusive;
         IsDefaultForLyrics = isDefaultForLyrics;
+        MarkChanged();
+
+        return true;
+    }
+
+    /// <summary>
+    /// Records one change notice per unit of work, however many edit verbs the handler calls.
+    /// </summary>
+    private void MarkChanged()
+    {
+        if (DomainEvents.OfType<CategoryChangedEvent>().Any())
+        {
+            return;
+        }
+
         AddDomainEvent(new CategoryChangedEvent(CategoryId: Id));
     }
 
@@ -320,9 +358,9 @@ public class CategoryEntity : Aggregate<Guid>
     /// the oldest pinned category when the cap would be exceeded. Re-pinning an already
     /// pinned category refreshes its timestamp (moving it to the front of the FIFO queue).
     /// </summary>
-    public void PinToFeed()
+    public void PinToFeed(DateTimeOffset now)
     {
-        PinnedToFeedAt = DateTimeOffset.UtcNow;
+        PinnedToFeedAt = now;
         AddDomainEvent(new CategoryChangedEvent(CategoryId: Id));
     }
 
@@ -343,5 +381,72 @@ public class CategoryEntity : Aggregate<Guid>
         AddDomainEvent(new CategoryChangedEvent(CategoryId: Id));
 
         return true;
+    }
+
+    /// <summary>
+    /// Sets the price for a tier within this category, adding the row or repricing the
+    /// existing one. Returns false when the stored price already matches.
+    /// </summary>
+    /// <param name="pricingTierId">The tier being priced.</param>
+    /// <param name="priceUsd">The price in USD.</param>
+    /// <returns><c>true</c> if a row was added or repriced; otherwise <c>false</c>.</returns>
+    public bool SetPricing(Guid pricingTierId, decimal priceUsd)
+    {
+        CategoryPricingEntity? existing = FindPricing(pricingTierId: pricingTierId);
+
+        if (existing is null)
+        {
+            Pricing.Add(
+                CategoryPricingEntity.Create(
+                    id: Guid.NewGuid(),
+                    categoryId: Id,
+                    pricingTierId: pricingTierId,
+                    priceUsd: priceUsd
+                )
+            );
+            AddDomainEvent(new CategoryChangedEvent(CategoryId: Id));
+
+            return true;
+        }
+
+        if (existing.PriceUsd == priceUsd)
+        {
+            return false;
+        }
+
+        existing.UpdatePrice(priceUsd: priceUsd);
+        AddDomainEvent(new CategoryChangedEvent(CategoryId: Id));
+
+        return true;
+    }
+
+    /// <summary>
+    /// Removes the pricing row for a tier, reporting whether one was there.
+    /// </summary>
+    /// <param name="pricingTierId">The tier whose price is removed.</param>
+    /// <returns><c>true</c> if a row was removed; otherwise <c>false</c>.</returns>
+    public bool RemovePricing(Guid pricingTierId)
+    {
+        CategoryPricingEntity? existing = FindPricing(pricingTierId: pricingTierId);
+
+        if (existing is null)
+        {
+            return false;
+        }
+
+        Pricing.Remove(existing);
+        AddDomainEvent(new CategoryChangedEvent(CategoryId: Id));
+
+        return true;
+    }
+
+    /// <summary>
+    /// Returns this category's pricing row for a tier, or null when the tier is unpriced.
+    /// </summary>
+    /// <param name="pricingTierId">The tier to look up.</param>
+    /// <returns>The matching pricing row, or <c>null</c>.</returns>
+    public CategoryPricingEntity? FindPricing(Guid pricingTierId)
+    {
+        return Pricing.FirstOrDefault(pricing => pricing.PricingTierId == pricingTierId);
     }
 }
