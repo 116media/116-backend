@@ -47,4 +47,17 @@ public class ContentTypeRepository(ContentDbContext context)
             .OrderBy(x => x.Name)
             .ToListAsync(cancellationToken);
     }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyDictionary<Guid, ContentTypeEntity>> GetByIdsAsync(
+        IReadOnlyCollection<Guid> ids,
+        CancellationToken cancellationToken = default
+    )
+    {
+        List<ContentTypeEntity> entities = await Context
+            .ContentTypes.Where(entity => ids.Contains(entity.Id))
+            .ToListAsync(cancellationToken);
+
+        return entities.ToDictionary(entity => entity.Id);
+    }
 }
