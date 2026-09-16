@@ -1,4 +1,5 @@
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -15,14 +16,18 @@ public class ContentOrderConfiguration : IEntityTypeConfiguration<ContentOrderEn
     {
         builder.HasKey(x => x.Id);
 
-        builder.Property(x => x.TotalAmountUsd).HasColumnType("numeric(10,2)").IsRequired();
+        builder
+            .Property(x => x.TotalAmountUsd)
+            .HasConversion(money => money.Amount, value => new Money(value))
+            .HasColumnType("numeric(10,2)")
+            .IsRequired();
 
         builder.Property(x => x.Status).IsRequired();
 
-        builder.HasOne(x => x.Customer).WithMany().HasForeignKey(x => x.CustomerId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<CustomerEntity>().WithMany().HasForeignKey(x => x.CustomerId).OnDelete(DeleteBehavior.Restrict);
 
         builder
-            .HasOne(x => x.Package)
+            .HasOne<PackageEntity>()
             .WithMany()
             .HasForeignKey(x => x.PackageId)
             .IsRequired(false)
