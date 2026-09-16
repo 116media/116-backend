@@ -1,6 +1,7 @@
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Domain.Events;
+using _116.Tests.Fixtures.Constants;
 using AwesomeAssertions;
 using Xunit;
 
@@ -114,7 +115,7 @@ public class ArticleCommentEntityTests
         comment.ClearDomainEvents();
 
         // Act
-        bool deleted = comment.SoftDelete();
+        bool deleted = comment.SoftDelete(TestConstants.Clock.Instant);
 
         // Assert
         deleted.Should().BeTrue();
@@ -139,12 +140,12 @@ public class ArticleCommentEntityTests
             Guid.NewGuid(),
             "a comment body"
         );
-        comment.SoftDelete();
+        comment.SoftDelete(TestConstants.Clock.Instant);
         DateTimeOffset? firstDeletedAt = comment.DeletedAt;
         comment.ClearDomainEvents();
 
         // Act
-        bool deleted = comment.SoftDelete();
+        bool deleted = comment.SoftDelete(TestConstants.Clock.Instant);
 
         // Assert
         deleted.Should().BeFalse();
