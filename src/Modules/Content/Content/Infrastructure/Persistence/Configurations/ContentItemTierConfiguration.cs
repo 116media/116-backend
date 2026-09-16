@@ -1,4 +1,5 @@
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -15,16 +16,20 @@ public class ContentItemTierConfiguration : IEntityTypeConfiguration<ContentItem
     {
         builder.HasKey(x => x.Id);
 
-        builder.Property(x => x.PriceSnapshotUsd).HasColumnType("numeric(10,2)").IsRequired();
+        builder
+            .Property(x => x.PriceSnapshotUsd)
+            .HasConversion(money => money.Amount, value => new Money(value))
+            .HasColumnType("numeric(10,2)")
+            .IsRequired();
 
         builder
-            .HasOne(x => x.OrderItem)
+            .HasOne<ContentOrderItemEntity>()
             .WithMany(i => i.Tiers)
             .HasForeignKey(x => x.OrderItemId)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder
-            .HasOne(x => x.PricingTier)
+            .HasOne<PricingTierEntity>()
             .WithMany()
             .HasForeignKey(x => x.PricingTierId)
             .OnDelete(DeleteBehavior.Restrict);
