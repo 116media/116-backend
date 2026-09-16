@@ -115,7 +115,7 @@ public class PromotionLevelEntityTests
 
         promoLevel.Name.Should().Be("New Name");
         promoLevel.DurationDays.Should().Be(14);
-        promoLevel.PriceUsd.Should().Be(99.99m);
+        promoLevel.PriceUsd.Amount.Should().Be(99.99m);
         promoLevel.SpotPriority.Should().Be(2);
     }
 
