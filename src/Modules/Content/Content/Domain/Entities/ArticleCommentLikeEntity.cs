@@ -19,11 +19,6 @@ public class ArticleCommentLikeEntity : Aggregate<Guid>
     /// </summary>
     public Guid CommentId { get; private set; }
 
-    /// <summary>
-    /// Navigation property to the comment.
-    /// </summary>
-    public ArticleCommentEntity Comment { get; private set; } = null!;
-
     private ArticleCommentLikeEntity() { }
 
     /// <summary>
@@ -40,7 +35,6 @@ public class ArticleCommentLikeEntity : Aggregate<Guid>
             Id = id,
             UserId = userId,
             CommentId = commentId,
-            CreatedAt = DateTime.UtcNow,
         };
 
         like.AddDomainEvent(new CommentEngagedEvent(CommentId: commentId, Delta: 1));
