@@ -3,6 +3,7 @@ using _116.Content.Domain.Constants;
 using _116.Content.Domain.Events;
 using _116.Content.Domain.Exceptions;
 using _116.Content.Domain.StateMachines;
+using _116.Content.Domain.ValueObjects;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -30,7 +31,7 @@ public class ShortVideoEntity : Aggregate<Guid>
     /// Used as the public permalink on the short video page.
     /// </summary>
     [MaxLength(length: ContentConstants.MaxSlugLength)]
-    public string Slug { get; private set; } = null!;
+    public Slug Slug { get; private set; } = null!;
 
     /// <summary>
     /// ID of the uploaded video file tracked in the Core module, or null while the short video
@@ -71,24 +72,24 @@ public class ShortVideoEntity : Aggregate<Guid>
     public long FeedRank { get; private set; }
 
     /// <summary>
-    /// Cached view count.
+    /// Cached view count, maintained by <c>ShortVideoRepository.ApplyEngagementDeltaAsync</c>.
     /// </summary>
-    public int ViewCount { get; private set; }
+    public int ViewCount { get; private init; }
 
     /// <summary>
-    /// Cached like count.
+    /// Cached like count, maintained by <c>ShortVideoRepository.ApplyEngagementDeltaAsync</c>.
     /// </summary>
-    public int LikeCount { get; private set; }
+    public int LikeCount { get; private init; }
 
     /// <summary>
-    /// Cached share count.
+    /// Cached share count, maintained by <c>ShortVideoRepository.ApplyEngagementDeltaAsync</c>.
     /// </summary>
-    public int ShareCount { get; private set; }
+    public int ShareCount { get; private init; }
 
     /// <summary>
-    /// Cached bookmark count.
+    /// Cached bookmark count, maintained by <c>ShortVideoRepository.ApplyEngagementDeltaAsync</c>.
     /// </summary>
-    public int BookmarkCount { get; private set; }
+    public int BookmarkCount { get; private init; }
 
     /// <summary>
     /// The identity user UUID of the admin who uploaded this short video.
@@ -96,11 +97,6 @@ public class ShortVideoEntity : Aggregate<Guid>
     /// editorial owner shown in the CMS. No FK to the identity schema by design.
     /// </summary>
     public Guid AuthorId { get; private set; }
-
-    /// <summary>
-    /// The parent full video this clip previews. <c>null</c> for standalone clips.
-    /// </summary>
-    public VideoEntity? ParentVideo { get; private set; }
 
     /// <summary>
     /// Private parameterless constructor required by Entity Framework Core.
