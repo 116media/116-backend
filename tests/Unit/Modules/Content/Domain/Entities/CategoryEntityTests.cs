@@ -3,6 +3,7 @@ using _116.Content.Domain.Events;
 using _116.Content.Domain.Exceptions;
 using _116.Content.Domain.StateMachines;
 using _116.Shared.Application.Exceptions;
+using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
@@ -82,42 +83,75 @@ public class CategoryEntityTests
 
     #endregion
 
-    #region Update
+    #region Rename / Redescribe
 
     [Fact]
-    public void Update_WithValidArguments_ShouldUpdateFields()
+    public void Rename_WithValidArguments_ShouldSetNameAndSlug()
     {
         Guid contentTypeId = Guid.NewGuid();
         CategoryEntity category = CategoryFactory.Create(contentTypeId);
-        var errors = TestErrorsFactory.CreateCategoryErrors();
 
-        category.Update("New Name", "new-slug", "New description", false, false, false);
+        bool changed = category.Rename("New Name", "new-slug");
 
+        changed.Should().BeTrue();
         category.Name.Should().Be("New Name");
-        category.Slug.Should().Be("new-slug");
+        category.Slug.Value.Should().Be("new-slug");
+    }
+
+    [Fact]
+    public void Rename_WithTheSameValues_ShouldReportUnchangedAndRaiseNothing()
+    {
+        Guid contentTypeId = Guid.NewGuid();
+        CategoryEntity category = CategoryFactory.Create(contentTypeId);
+        category.ClearDomainEvents();
+
+        bool changed = category.Rename(category.Name, category.Slug);
+
+        changed.Should().BeFalse();
+        category.DomainEvents.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Redescribe_ShouldSetTheDescription()
+    {
+        Guid contentTypeId = Guid.NewGuid();
+        CategoryEntity category = CategoryFactory.Create(contentTypeId);
+
+        bool changed = category.Redescribe("New description");
+
+        changed.Should().BeTrue();
         category.Description.Should().Be("New description");
     }
 
     [Fact]
-    public void Update_WithEmptyName_ShouldThrowBadRequestException()
+    public void Redescribe_WithTheSameDescription_ShouldReportUnchanged()
     {
         Guid contentTypeId = Guid.NewGuid();
         CategoryEntity category = CategoryFactory.Create(contentTypeId);
-        var errors = TestErrorsFactory.CreateCategoryErrors();
 
-        Action act = () => category.Update("", "valid-slug", "desc", false, false, false);
+        bool changed = category.Redescribe(category.Description);
+
+        changed.Should().BeFalse();
+    }
+
+    [Fact]
+    public void Rename_WithEmptyName_ShouldThrowBadRequestException()
+    {
+        Guid contentTypeId = Guid.NewGuid();
+        CategoryEntity category = CategoryFactory.Create(contentTypeId);
+
+        Action act = () => category.Rename("", "valid-slug");
 
         act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.CategoryNameRequired);
     }
 
     [Fact]
-    public void Update_WithEmptySlug_ShouldThrowBadRequestException()
+    public void Rename_WithEmptySlug_ShouldThrowBadRequestException()
     {
         Guid contentTypeId = Guid.NewGuid();
         CategoryEntity category = CategoryFactory.Create(contentTypeId);
-        var errors = TestErrorsFactory.CreateCategoryErrors();
 
-        Action act = () => category.Update("Valid Name", "  ", "desc", false, false, false);
+        Action act = () => category.Rename("Valid Name", "  ");
 
         act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.CategorySlugRequired);
     }
@@ -215,16 +249,15 @@ public class CategoryEntityTests
 
     #endregion
 
-    #region Update IsExclusive
+    #region Reclassify IsExclusive
 
     [Fact]
-    public void Update_SetsIsExclusive()
+    public void Reclassify_SetsIsExclusive()
     {
         Guid contentTypeId = Guid.NewGuid();
         CategoryEntity category = CategoryFactory.Create(contentTypeId);
-        var errors = TestErrorsFactory.CreateCategoryErrors();
 
-        category.Update("Name", "slug", "desc", false, true, false);
+        category.Reclassify(isGossip: false, isExclusive: true, isDefaultForLyrics: false);
 
         category.IsExclusive.Should().BeTrue();
     }
@@ -293,7 +326,7 @@ public class CategoryEntityTests
     {
         CategoryEntity category = CategoryFactory.Create(Guid.NewGuid());
 
-        category.PinToFeed();
+        category.PinToFeed(TestConstants.Clock.Instant);
 
         category.PinnedToFeedAt.Should().NotBeNull();
         category.IsPinnedToFeed.Should().BeTrue();
@@ -303,10 +336,10 @@ public class CategoryEntityTests
     public void PinToFeed_WhenAlreadyPinned_ShouldRefreshTimestampForward()
     {
         CategoryEntity category = CategoryFactory.Create(Guid.NewGuid());
-        category.PinToFeed();
+        category.PinToFeed(TestConstants.Clock.Instant);
         DateTimeOffset first = category.PinnedToFeedAt!.Value;
 
-        category.PinToFeed();
+        category.PinToFeed(TestConstants.Clock.Instant);
 
         category.PinnedToFeedAt!.Value.Should().BeOnOrAfter(first);
     }
@@ -315,7 +348,7 @@ public class CategoryEntityTests
     public void UnpinFromFeed_WhenPinned_ShouldClearAndReturnTrue()
     {
         CategoryEntity category = CategoryFactory.Create(Guid.NewGuid());
-        category.PinToFeed();
+        category.PinToFeed(TestConstants.Clock.Instant);
 
         bool result = category.UnpinFromFeed();
 
@@ -341,7 +374,7 @@ public class CategoryEntityTests
         CategoryEntity category = CategoryFactory.Create(Guid.NewGuid());
 
         category.IsPinnedToFeed.Should().BeFalse();
-        category.PinToFeed();
+        category.PinToFeed(TestConstants.Clock.Instant);
         category.IsPinnedToFeed.Should().BeTrue();
     }
 
@@ -402,13 +435,12 @@ public class CategoryEntityTests
     }
 
     [Fact]
-    public void Update_SetsIsDefaultForLyrics()
+    public void Reclassify_SetsIsDefaultForLyrics()
     {
         Guid contentTypeId = Guid.NewGuid();
         CategoryEntity category = CategoryFactory.Create(contentTypeId);
-        var errors = TestErrorsFactory.CreateCategoryErrors();
 
-        category.Update("Name", "slug", "desc", false, false, isDefaultForLyrics: true);
+        category.Reclassify(isGossip: false, isExclusive: false, isDefaultForLyrics: true);
 
         category.IsDefaultForLyrics.Should().BeTrue();
     }
@@ -433,14 +465,30 @@ public class CategoryEntityTests
     }
 
     [Fact]
-    public void Update_ShouldRaiseCategoryChangedEvent()
+    public void Rename_ShouldRaiseCategoryChangedEvent()
     {
         // Arrange
         var entity = CategoryEntity.Create(Guid.NewGuid(), Guid.NewGuid(), "Music", "music", "desc", isFree: true);
         entity.ClearDomainEvents();
 
         // Act
-        entity.Update("Culture", "culture", "desc", isGossip: false, isExclusive: false, isDefaultForLyrics: false);
+        entity.Rename("Culture", "culture");
+
+        // Assert
+        entity.DomainEvents.OfType<CategoryChangedEvent>().Should().ContainSingle();
+    }
+
+    [Fact]
+    public void EditVerbs_CalledTogether_ShouldRaiseOneCategoryChangedEvent()
+    {
+        // Arrange
+        var entity = CategoryEntity.Create(Guid.NewGuid(), Guid.NewGuid(), "Music", "music", "desc", isFree: true);
+        entity.ClearDomainEvents();
+
+        // Act
+        entity.Rename("Culture", "culture");
+        entity.Redescribe("Another description");
+        entity.Reclassify(isGossip: true, isExclusive: false, isDefaultForLyrics: false);
 
         // Assert
         entity.DomainEvents.OfType<CategoryChangedEvent>().Should().ContainSingle();
@@ -454,7 +502,7 @@ public class CategoryEntityTests
         entity.ClearDomainEvents();
 
         // Act
-        entity.PinToFeed();
+        entity.PinToFeed(TestConstants.Clock.Instant);
 
         // Assert
         entity.DomainEvents.OfType<CategoryChangedEvent>().Should().ContainSingle();
