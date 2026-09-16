@@ -26,11 +26,6 @@ public class LyricsShareEntity : Aggregate<Guid>
     /// </summary>
     public EnumShareChannel? ShareChannel { get; private set; }
 
-    /// <summary>
-    /// Navigation property to the lyrics page.
-    /// </summary>
-    public LyricsEntity Lyrics { get; private set; } = null!;
-
     private LyricsShareEntity() { }
 
     /// <summary>
@@ -49,7 +44,6 @@ public class LyricsShareEntity : Aggregate<Guid>
             UserId = userId,
             LyricsId = lyricsId,
             ShareChannel = shareChannel,
-            CreatedAt = DateTime.UtcNow,
         };
 
         share.AddDomainEvent(new LyricsEngagedEvent(LyricsId: lyricsId, Kind: EnumEngagementKind.Share, Delta: 1));
