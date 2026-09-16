@@ -3,6 +3,7 @@ using _116.Content.Domain.Constants;
 using _116.Content.Domain.Events;
 using _116.Content.Domain.Exceptions;
 using _116.Content.Domain.StateMachines;
+using _116.Content.Domain.ValueObjects;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -27,7 +28,7 @@ public class PromotionLevelEntity : Aggregate<Guid>
     /// <summary>
     /// Price of this promotion level in USD.
     /// </summary>
-    public decimal PriceUsd { get; private set; }
+    public Money PriceUsd { get; private set; } = null!;
 
     /// <summary>
     /// Homepage grid spot this promotion level targets (1 = hero top-left, 2 = tall side
