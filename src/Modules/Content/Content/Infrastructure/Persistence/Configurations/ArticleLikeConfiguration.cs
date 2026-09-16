@@ -20,6 +20,6 @@ public class ArticleLikeConfiguration : IEntityTypeConfiguration<ArticleLikeEnti
 
         builder.HasIndex(x => new { x.UserId, x.ArticleId }).IsUnique();
 
-        builder.HasOne(x => x.Article).WithMany().HasForeignKey(x => x.ArticleId).OnDelete(DeleteBehavior.Cascade);
+        builder.HasOne<ArticleEntity>().WithMany().HasForeignKey(x => x.ArticleId).OnDelete(DeleteBehavior.Cascade);
     }
 }
