@@ -22,14 +22,14 @@ public class PackageSlotConfiguration : IEntityTypeConfiguration<PackageSlotEnti
         builder.Property(x => x.CategoryId).IsRequired(false);
 
         builder
-            .HasOne(x => x.Package)
+            .HasOne<PackageEntity>()
             .WithMany(p => p.Slots)
             .HasForeignKey(x => x.PackageId)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder
-            .HasOne(x => x.Category)
-            .WithMany(c => c.PackageSlots)
+            .HasOne<CategoryEntity>()
+            .WithMany()
             .HasForeignKey(x => x.CategoryId)
             .IsRequired(false)
             .OnDelete(DeleteBehavior.SetNull);
