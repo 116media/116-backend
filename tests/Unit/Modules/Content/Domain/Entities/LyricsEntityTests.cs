@@ -53,7 +53,7 @@ public class LyricsEntityTests
         lyrics.ArtistName.Should().Be(artistName);
         lyrics.LyricsText.Should().Be(lyricsText);
         lyrics.Language.Should().Be(language);
-        lyrics.Slug.Should().Be(slug);
+        lyrics.Slug.Value.Should().Be(slug);
         lyrics.AuthorId.Should().Be(AuthorId);
         lyrics.Status.Should().Be(EnumContentStatus.Draft);
         lyrics.CustomerId.Should().BeNull();
@@ -444,7 +444,7 @@ public class LyricsEntityTests
         lyrics.Approve();
 
         // Act
-        bool result = lyrics.Publish();
+        bool result = lyrics.Publish(TestConstants.Clock.Instant);
 
         // Assert
         result.Should().BeTrue();
@@ -459,10 +459,10 @@ public class LyricsEntityTests
         LyricsEntity lyrics = CreateFreeLyrics();
         lyrics.MarkPendingReview();
         lyrics.Approve();
-        lyrics.Publish();
+        lyrics.Publish(TestConstants.Clock.Instant);
 
         // Act
-        bool result = lyrics.Publish();
+        bool result = lyrics.Publish(TestConstants.Clock.Instant);
 
         // Assert
         result.Should().BeFalse();
@@ -478,7 +478,7 @@ public class LyricsEntityTests
         lyrics.ClearDomainEvents();
 
         // Act
-        lyrics.Publish();
+        lyrics.Publish(TestConstants.Clock.Instant);
 
         // Assert
         lyrics
@@ -564,7 +564,7 @@ public class LyricsEntityTests
         LyricsEntity lyrics = CreateFreeLyrics();
         lyrics.MarkPendingReview();
         lyrics.Approve();
-        lyrics.Publish();
+        lyrics.Publish(TestConstants.Clock.Instant);
 
         // Act
         bool result = lyrics.Archive();
@@ -581,7 +581,7 @@ public class LyricsEntityTests
         LyricsEntity lyrics = CreateFreeLyrics();
         lyrics.MarkPendingReview();
         lyrics.Approve();
-        lyrics.Publish();
+        lyrics.Publish(TestConstants.Clock.Instant);
         lyrics.Archive();
 
         // Act
@@ -593,16 +593,16 @@ public class LyricsEntityTests
 
     #endregion
 
-    #region Update Tests
+    #region Edit Verb Tests
 
     [Fact]
-    public void UpdateSeo_ShouldSetMetaFieldsAndStructuredData()
+    public void ReviseSeo_ShouldSetMetaFieldsAndStructuredData()
     {
         // Arrange
         LyricsEntity lyrics = CreateFreeLyrics();
 
         // Act
-        lyrics.UpdateSeo("My SEO Title", "My SEO Description", "{\"@type\":\"MusicRecording\"}");
+        lyrics.ReviseSeo("My SEO Title", "My SEO Description", "{\"@type\":\"MusicRecording\"}");
 
         // Assert
         lyrics.MetaTitle.Should().Be("My SEO Title");
@@ -611,7 +611,7 @@ public class LyricsEntityTests
     }
 
     [Fact]
-    public void Update_ShouldUpdateAllFields()
+    public void EditVerbs_ShouldEachSetTheirOwnFields()
     {
         // Arrange
         LyricsEntity lyrics = CreateFreeLyrics();
@@ -621,23 +621,17 @@ public class LyricsEntityTests
         Guid orderItemId = Guid.NewGuid();
 
         // Act
-        lyrics.Update(
-            categoryId: newCategoryId,
-            songTitle: "Updated Song Title",
-            artistName: "Updated Artist",
-            slug: "updated-slug",
-            lyricsText: "Updated lyrics text",
-            language: "en",
-            videoId: newVideoId,
-            customerId: customerId,
-            orderItemId: orderItemId
-        );
+        lyrics.Recategorize(categoryId: newCategoryId);
+        lyrics.Retitle(songTitle: "Updated Song Title", artistName: "Updated Artist", slug: "updated-slug");
+        lyrics.ReviseText(lyricsText: "Updated lyrics text", language: "en");
+        lyrics.Relink(videoId: newVideoId);
+        lyrics.AssignCommission(customerId: customerId, orderItemId: orderItemId);
 
         // Assert
         lyrics.CategoryId.Should().Be(newCategoryId);
         lyrics.SongTitle.Should().Be("Updated Song Title");
         lyrics.ArtistName.Should().Be("Updated Artist");
-        lyrics.Slug.Should().Be("updated-slug");
+        lyrics.Slug.Value.Should().Be("updated-slug");
         lyrics.LyricsText.Should().Be("Updated lyrics text");
         lyrics.Language.Should().Be("en");
         lyrics.VideoId.Should().Be(newVideoId);
@@ -649,27 +643,38 @@ public class LyricsEntityTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
-    public void Update_WithEmptySlug_ShouldThrowBadRequestException(string? invalidSlug)
+    public void Retitle_WithEmptySlug_ShouldThrowBadRequestException(string? invalidSlug)
     {
         // Arrange
         LyricsEntity lyrics = CreateFreeLyrics();
 
         // Act
         Action act = () =>
-            lyrics.Update(
-                categoryId: CategoryId,
+            lyrics.Retitle(
                 songTitle: TestConstants.Lyrics.ValidSongTitle,
                 artistName: TestConstants.Lyrics.ValidArtistName,
-                slug: invalidSlug!,
-                lyricsText: TestConstants.Lyrics.ValidLyricsText,
-                language: TestConstants.Lyrics.ValidLanguage,
-                videoId: null,
-                customerId: null,
-                orderItemId: null
+                slug: invalidSlug!
             );
 
         // Assert
         act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.LyricsSlugRequired);
+    }
+
+    [Fact]
+    public void EditVerbs_WithUnchangedValues_ShouldEachReportFalse()
+    {
+        // Arrange
+        LyricsEntity lyrics = CreateFreeLyrics();
+
+        // Act & Assert
+        lyrics.Recategorize(categoryId: lyrics.CategoryId).Should().BeFalse();
+        lyrics
+            .Retitle(songTitle: lyrics.SongTitle, artistName: lyrics.ArtistName, slug: lyrics.Slug)
+            .Should()
+            .BeFalse();
+        lyrics.ReviseText(lyricsText: lyrics.LyricsText, language: lyrics.Language).Should().BeFalse();
+        lyrics.Relink(videoId: lyrics.VideoId).Should().BeFalse();
+        lyrics.AssignCommission(customerId: lyrics.CustomerId, orderItemId: lyrics.OrderItemId).Should().BeFalse();
     }
 
     #endregion
@@ -1010,7 +1015,7 @@ public class LyricsEntityTests
         const string reason = "Government takedown request.";
 
         // Act
-        lyrics.ForceUnpromote(unpromotedBy, reason);
+        lyrics.ForceUnpromote(unpromotedBy, reason, TestConstants.Clock.Instant);
 
         // Assert
         lyrics.IsPromoted.Should().BeFalse();
@@ -1030,7 +1035,7 @@ public class LyricsEntityTests
         const string reason = "Government takedown request.";
 
         // Act
-        lyrics.ForceUnpromote("super-admin-user-id", reason);
+        lyrics.ForceUnpromote("super-admin-user-id", reason, TestConstants.Clock.Instant);
 
         // Assert
         lyrics
@@ -1056,7 +1061,8 @@ public class LyricsEntityTests
         LyricsEntity lyrics = CreateFreeLyrics();
 
         // Act
-        Action act = () => lyrics.ForceUnpromote("super-admin-user-id", "Government takedown request.");
+        Action act = () =>
+            lyrics.ForceUnpromote("super-admin-user-id", "Government takedown request.", TestConstants.Clock.Instant);
 
         // Assert
         act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.LyricsNotPromoted);
@@ -1107,7 +1113,7 @@ public class LyricsEntityTests
         lyrics.SongTitle.Should().Be(originalSongTitle);
         lyrics.ArtistName.Should().Be(originalArtistName);
         lyrics.Language.Should().Be(originalLanguage);
-        lyrics.Slug.Should().Be(originalSlug);
+        lyrics.Slug.Value.Should().Be(originalSlug);
         lyrics.AuthorId.Should().Be(originalAuthorId);
         lyrics.Status.Should().Be(originalStatus);
     }
