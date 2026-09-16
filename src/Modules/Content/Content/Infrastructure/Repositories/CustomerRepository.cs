@@ -42,4 +42,17 @@ public class CustomerRepository(ContentDbContext context)
             cancellationToken: cancellationToken
         );
     }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyDictionary<Guid, CustomerEntity>> GetByIdsAsync(
+        IReadOnlyCollection<Guid> ids,
+        CancellationToken cancellationToken = default
+    )
+    {
+        List<CustomerEntity> entities = await Context
+            .Customers.Where(entity => ids.Contains(entity.Id))
+            .ToListAsync(cancellationToken);
+
+        return entities.ToDictionary(entity => entity.Id);
+    }
 }
