@@ -59,9 +59,6 @@ public class AlbumRepository(ContentDbContext context) : ContentRepository<Album
 
         int totalCount = await query.CountAsync(cancellationToken: cancellationToken);
 
-        // Unknown years sort last, not first — Postgres puts NULL first under DESC, which
-        // would head a discography with the records nobody dated. The name tie-break keeps
-        // paging stable for two releases from the same year.
         List<AlbumEntity> albums = await query
             .OrderBy(a => a.ReleaseYear == null)
             .ThenByDescending(a => a.ReleaseYear)
