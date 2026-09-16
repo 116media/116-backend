@@ -124,27 +124,6 @@ public interface IVideoRepository
     void Remove(VideoEntity video);
 
     /// <summary>
-    /// Adds a new video-tag junction record to the repository.
-    /// </summary>
-    Task AddTagAsync(VideoTagEntity tag, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Marks a video-tag junction record for deletion.
-    /// </summary>
-    void RemoveTag(VideoTagEntity tag);
-
-    /// <summary>
-    /// Retrieves all tag junction records for a given video.
-    /// </summary>
-    /// <param name="videoId">The video identifier.</param>
-    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
-    /// <returns>A read-only list of video-tag junction entities.</returns>
-    Task<IReadOnlyList<VideoTagEntity>> GetTagsByVideoIdAsync(
-        Guid videoId,
-        CancellationToken cancellationToken = default
-    );
-
-    /// <summary>
     /// Returns the user's existing rating for a video, or null if none exists.
     /// </summary>
     Task<VideoRatingEntity?> GetRatingAsync(Guid userId, Guid videoId, CancellationToken cancellationToken = default);
@@ -298,4 +277,45 @@ public interface IVideoRepository
     /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
     /// <returns>Rows updated; <c>0</c> when the video no longer exists.</returns>
     Task<int> SetRatingAsync(Guid videoId, decimal average, int count, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Reports whether a published lyrics page is linked to the video — the one place the
+    /// fact is computed from its source of truth.
+    /// </summary>
+    /// <param name="videoId">The video identifier.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    Task<bool> HasPublishedLyricsAsync(Guid videoId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Returns the subset of the given video ids that have a published lyrics page linked,
+    /// in one query — the batch companion of <see cref="HasPublishedLyricsAsync" />.
+    /// </summary>
+    /// <param name="videoIds">The video identifiers to probe.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    Task<IReadOnlySet<Guid>> GetIdsWithPublishedLyricsAsync(
+        IReadOnlyCollection<Guid> videoIds,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Resolves the videos the given ids reference, in one query, keyed by id.
+    /// Missing ids are simply absent from the result.
+    /// </summary>
+    /// <param name="ids">The identifiers to resolve.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    Task<IReadOnlyDictionary<Guid, VideoEntity>> GetByIdsAsync(
+        IReadOnlyCollection<Guid> ids,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Resolves the published videos among the given ids, in one query, keyed by id. An id whose
+    /// video is unpublished or deleted is simply absent — which is how a playlist hides it.
+    /// </summary>
+    /// <param name="ids">The identifiers to resolve.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    Task<IReadOnlyDictionary<Guid, VideoEntity>> GetPublishedByIdsAsync(
+        IReadOnlyCollection<Guid> ids,
+        CancellationToken cancellationToken = default
+    );
 }
