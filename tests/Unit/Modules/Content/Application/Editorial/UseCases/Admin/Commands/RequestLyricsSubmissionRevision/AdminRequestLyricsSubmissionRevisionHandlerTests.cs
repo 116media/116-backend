@@ -5,6 +5,8 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Domain.Events;
+using _116.Content.Domain.Exceptions;
+using _116.Content.Domain.StateMachines;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
@@ -95,7 +97,7 @@ public class AdminRequestLyricsSubmissionRevisionHandlerTests
     #region Failure Cases
 
     [Fact]
-    public async Task Handle_WhenSubmissionNotPending_ShouldThrowConflictException()
+    public async Task Handle_WhenSubmissionAlreadyDecided_ShouldThrowAlreadyDecidedRule()
     {
         // Arrange
         LyricsSubmissionEntity submission = LyricsSubmissionFactory.CreateRejected(Guid.NewGuid());
@@ -107,7 +109,9 @@ public class AdminRequestLyricsSubmissionRevisionHandlerTests
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        await act.Should().ThrowAsync<ConflictException>();
+        await act.Should()
+            .ThrowAsync<ContentRuleException>()
+            .Where(exception => exception.Code == ContentRuleCodes.SubmissionAlreadyDecided);
         submission.Status.Should().Be(EnumSubmissionStatus.Rejected);
         submission.ReviewNote.Should().NotBe("Too late.");
         submission.DomainEvents.Should().BeEmpty();
