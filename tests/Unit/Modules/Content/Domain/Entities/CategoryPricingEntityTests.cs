@@ -2,131 +2,183 @@ using _116.Content.Domain.Entities;
 using _116.Content.Domain.Events;
 using _116.Content.Domain.Exceptions;
 using _116.Content.Domain.StateMachines;
-using _116.Shared.Application.Exceptions;
-using _116.Tests.Fixtures.Constants;
-using _116.Tests.Fixtures.Helpers;
+using _116.Tests.Fixtures.Factories.Content;
 using AwesomeAssertions;
 using Xunit;
 
 namespace _116.Unit.Tests.Modules.Content.Domain.Entities;
 
 /// <summary>
-/// Unit tests for <see cref="CategoryPricingEntity"/>.
+/// Unit tests for <see cref="CategoryPricingEntity" />, which is a member of the category
+/// aggregate: every arrangement and assertion goes through <see cref="CategoryEntity" />,
+/// the only writer of its rows.
 /// </summary>
 public class CategoryPricingEntityTests
 {
-    #region Create Tests
+    private static readonly Guid ContentTypeId = Guid.NewGuid();
+
+    #region SetPricing Tests
 
     [Fact]
-    public void Create_WithValidValues_ShouldCreateCategoryPricing()
+    public void SetPricing_OnAnUnpricedTier_ShouldAddTheRowCarryingTheCategoryAndTier()
     {
         // Arrange
-        var id = Guid.NewGuid();
-        var categoryId = Guid.NewGuid();
-        var tierId = Guid.NewGuid();
-        decimal price = TestConstants.CategoryPricing.ValidPriceUsd;
+        CategoryEntity category = CategoryFactory.Create(ContentTypeId);
+        var pricingTierId = Guid.NewGuid();
 
         // Act
-        var entity = CategoryPricingEntity.Create(id, categoryId, tierId, price);
+        bool changed = category.SetPricing(pricingTierId: pricingTierId, priceUsd: 25m);
 
         // Assert
-        entity.Id.Should().Be(id);
-        entity.CategoryId.Should().Be(categoryId);
-        entity.PricingTierId.Should().Be(tierId);
-        entity.PriceUsd.Should().Be(price);
+        changed.Should().BeTrue();
+        CategoryPricingEntity pricing = category.Pricing.Should().ContainSingle().Subject;
+        pricing.CategoryId.Should().Be(category.Id);
+        pricing.PricingTierId.Should().Be(pricingTierId);
+        pricing.PriceUsd.Amount.Should().Be(25m);
+        pricing.Id.Should().NotBeEmpty();
     }
 
     [Fact]
-    public void Create_WithZeroPrice_ShouldSucceed()
+    public void SetPricing_OnAPricedTier_ShouldRepriceTheSameRow()
     {
+        // Arrange
+        CategoryEntity category = CategoryFactory.Create(ContentTypeId);
+        var pricingTierId = Guid.NewGuid();
+        category.SetPricing(pricingTierId: pricingTierId, priceUsd: 25m);
+        Guid originalRowId = category.Pricing.Single().Id;
+
         // Act
-        var entity = CategoryPricingEntity.Create(
-            Guid.NewGuid(),
-            Guid.NewGuid(),
-            Guid.NewGuid(),
-            TestConstants.CategoryPricing.ZeroPriceUsd
-        );
+        bool changed = category.SetPricing(pricingTierId: pricingTierId, priceUsd: 30m);
 
         // Assert
-        entity.PriceUsd.Should().Be(0m);
+        changed.Should().BeTrue();
+        category.Pricing.Should().ContainSingle();
+        category.Pricing.Single().Id.Should().Be(originalRowId);
+        category.Pricing.Single().PriceUsd.Amount.Should().Be(30m);
+    }
+
+    [Fact]
+    public void SetPricing_WithTheSamePrice_ShouldReportNoChange()
+    {
+        // Arrange
+        CategoryEntity category = CategoryFactory.Create(ContentTypeId);
+        var pricingTierId = Guid.NewGuid();
+        category.SetPricing(pricingTierId: pricingTierId, priceUsd: 25m);
+
+        // Act
+        bool changed = category.SetPricing(pricingTierId: pricingTierId, priceUsd: 25m);
+
+        // Assert
+        changed.Should().BeFalse();
+    }
+
+    [Fact]
+    public void SetPricing_ForTwoTiers_ShouldKeepBothRows()
+    {
+        // Arrange
+        CategoryEntity category = CategoryFactory.Create(ContentTypeId);
+
+        // Act
+        category.SetPricing(pricingTierId: Guid.NewGuid(), priceUsd: 25m);
+        category.SetPricing(pricingTierId: Guid.NewGuid(), priceUsd: 40m);
+
+        // Assert
+        category.Pricing.Should().HaveCount(2);
     }
 
     [Theory]
+    [InlineData(-1)]
     [InlineData(-0.01)]
-    [InlineData(-100)]
-    public void Create_WithNegativePrice_ShouldThrowBadRequestException(decimal invalidPrice)
+    public void SetPricing_WithANegativePrice_ShouldThrow(decimal invalidPrice)
     {
+        // Arrange
+        CategoryEntity category = CategoryFactory.Create(ContentTypeId);
+
         // Act
-        Action act = () => CategoryPricingEntity.Create(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), invalidPrice);
+        Action act = () => category.SetPricing(pricingTierId: Guid.NewGuid(), priceUsd: invalidPrice);
 
         // Assert
         act.Should()
             .Throw<ContentRuleException>()
-            .Which.Code.Should()
-            .Be(ContentRuleCodes.CategoryPriceMustBeNonNegative);
+            .Where(exception => exception.Code == ContentRuleCodes.CategoryPriceMustBeNonNegative);
+        category.Pricing.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void SetPricing_WithZero_ShouldBeAllowed()
+    {
+        // Arrange
+        CategoryEntity category = CategoryFactory.Create(ContentTypeId);
+
+        // Act
+        category.SetPricing(pricingTierId: Guid.NewGuid(), priceUsd: 0m);
+
+        // Assert
+        category.Pricing.Single().PriceUsd.Amount.Should().Be(0m);
     }
 
     #endregion
 
-    #region UpdatePrice Tests
+    #region RemovePricing Tests
 
     [Fact]
-    public void UpdatePrice_WithValidPrice_ShouldUpdatePrice()
+    public void RemovePricing_OnAPricedTier_ShouldDropTheRow()
     {
         // Arrange
-        var entity = CategoryPricingEntity.Create(
-            Guid.NewGuid(),
-            Guid.NewGuid(),
-            Guid.NewGuid(),
-            TestConstants.CategoryPricing.ValidPriceUsd
-        );
+        CategoryEntity category = CategoryFactory.Create(ContentTypeId);
+        var pricingTierId = Guid.NewGuid();
+        category.SetPricing(pricingTierId: pricingTierId, priceUsd: 25m);
 
         // Act
-        entity.UpdatePrice(TestConstants.CategoryPricing.UpdatedPriceUsd);
+        bool removed = category.RemovePricing(pricingTierId: pricingTierId);
 
         // Assert
-        entity.PriceUsd.Should().Be(TestConstants.CategoryPricing.UpdatedPriceUsd);
+        removed.Should().BeTrue();
+        category.Pricing.Should().BeEmpty();
     }
 
     [Fact]
-    public void UpdatePrice_WithZeroPrice_ShouldSucceed()
+    public void RemovePricing_OnAnUnpricedTier_ShouldReportNoChange()
     {
         // Arrange
-        var entity = CategoryPricingEntity.Create(
-            Guid.NewGuid(),
-            Guid.NewGuid(),
-            Guid.NewGuid(),
-            TestConstants.CategoryPricing.ValidPriceUsd
-        );
+        CategoryEntity category = CategoryFactory.Create(ContentTypeId);
 
         // Act
-        entity.UpdatePrice(0m);
+        bool removed = category.RemovePricing(pricingTierId: Guid.NewGuid());
 
         // Assert
-        entity.PriceUsd.Should().Be(0m);
+        removed.Should().BeFalse();
     }
 
-    [Theory]
-    [InlineData(-0.01)]
-    [InlineData(-50)]
-    public void UpdatePrice_WithNegativePrice_ShouldThrowBadRequestException(decimal invalidPrice)
+    #endregion
+
+    #region FindPricing Tests
+
+    [Fact]
+    public void FindPricing_ShouldReturnOnlyTheRowForThatTier()
     {
         // Arrange
-        var entity = CategoryPricingEntity.Create(
-            Guid.NewGuid(),
-            Guid.NewGuid(),
-            Guid.NewGuid(),
-            TestConstants.CategoryPricing.ValidPriceUsd
-        );
+        CategoryEntity category = CategoryFactory.Create(ContentTypeId);
+        var pricingTierId = Guid.NewGuid();
+        category.SetPricing(pricingTierId: pricingTierId, priceUsd: 25m);
+        category.SetPricing(pricingTierId: Guid.NewGuid(), priceUsd: 40m);
 
         // Act
-        Action act = () => entity.UpdatePrice(invalidPrice);
+        CategoryPricingEntity? found = category.FindPricing(pricingTierId: pricingTierId);
 
         // Assert
-        act.Should()
-            .Throw<ContentRuleException>()
-            .Which.Code.Should()
-            .Be(ContentRuleCodes.CategoryPriceMustBeNonNegative);
+        found.Should().NotBeNull();
+        found!.PriceUsd.Amount.Should().Be(25m);
+    }
+
+    [Fact]
+    public void FindPricing_ForAnUnpricedTier_ShouldReturnNull()
+    {
+        // Arrange
+        CategoryEntity category = CategoryFactory.Create(ContentTypeId);
+
+        // Act & Assert
+        category.FindPricing(pricingTierId: Guid.NewGuid()).Should().BeNull();
     }
 
     #endregion
@@ -134,49 +186,84 @@ public class CategoryPricingEntityTests
     #region Domain Events
 
     [Fact]
-    public void Create_ShouldRaiseCategoryChangedEventForTheCategory()
+    public void SetPricing_OnAnUnpricedTier_ShouldRaiseCategoryChangedOnTheRoot()
     {
         // Arrange
-        var categoryId = Guid.NewGuid();
+        CategoryEntity category = CategoryFactory.Create(ContentTypeId);
+        category.ClearDomainEvents();
 
         // Act
-        var entity = CategoryPricingEntity.Create(Guid.NewGuid(), categoryId, Guid.NewGuid(), 25m);
+        category.SetPricing(pricingTierId: Guid.NewGuid(), priceUsd: 25m);
 
         // Assert
-        entity
+        category
             .DomainEvents.OfType<CategoryChangedEvent>()
             .Should()
             .ContainSingle()
             .Which.Should()
-            .Be(new CategoryChangedEvent(categoryId));
+            .Be(new CategoryChangedEvent(category.Id));
     }
 
     [Fact]
-    public void UpdatePrice_ShouldRaiseCategoryChangedEvent()
+    public void SetPricing_WhenRepricing_ShouldRaiseCategoryChangedOnTheRoot()
     {
         // Arrange
-        var entity = CategoryPricingEntity.Create(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), 25m);
-        entity.ClearDomainEvents();
+        CategoryEntity category = CategoryFactory.Create(ContentTypeId);
+        var pricingTierId = Guid.NewGuid();
+        category.SetPricing(pricingTierId: pricingTierId, priceUsd: 25m);
+        category.ClearDomainEvents();
 
         // Act
-        entity.UpdatePrice(30m);
+        category.SetPricing(pricingTierId: pricingTierId, priceUsd: 30m);
 
         // Assert
-        entity.DomainEvents.OfType<CategoryChangedEvent>().Should().ContainSingle();
+        category.DomainEvents.OfType<CategoryChangedEvent>().Should().ContainSingle();
     }
 
     [Fact]
-    public void MarkRemoved_ShouldRaiseCategoryChangedEvent()
+    public void SetPricing_WithAnUnchangedPrice_ShouldRaiseNothing()
     {
         // Arrange
-        var entity = CategoryPricingEntity.Create(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), 25m);
-        entity.ClearDomainEvents();
+        CategoryEntity category = CategoryFactory.Create(ContentTypeId);
+        var pricingTierId = Guid.NewGuid();
+        category.SetPricing(pricingTierId: pricingTierId, priceUsd: 25m);
+        category.ClearDomainEvents();
 
         // Act
-        entity.MarkRemoved();
+        category.SetPricing(pricingTierId: pricingTierId, priceUsd: 25m);
 
         // Assert
-        entity.DomainEvents.OfType<CategoryChangedEvent>().Should().ContainSingle();
+        category.DomainEvents.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void RemovePricing_ShouldRaiseCategoryChangedOnTheRoot()
+    {
+        // Arrange
+        CategoryEntity category = CategoryFactory.Create(ContentTypeId);
+        var pricingTierId = Guid.NewGuid();
+        category.SetPricing(pricingTierId: pricingTierId, priceUsd: 25m);
+        category.ClearDomainEvents();
+
+        // Act
+        category.RemovePricing(pricingTierId: pricingTierId);
+
+        // Assert
+        category.DomainEvents.OfType<CategoryChangedEvent>().Should().ContainSingle();
+    }
+
+    [Fact]
+    public void RemovePricing_OnAnUnpricedTier_ShouldRaiseNothing()
+    {
+        // Arrange
+        CategoryEntity category = CategoryFactory.Create(ContentTypeId);
+        category.ClearDomainEvents();
+
+        // Act
+        category.RemovePricing(pricingTierId: Guid.NewGuid());
+
+        // Assert
+        category.DomainEvents.Should().BeEmpty();
     }
 
     #endregion
