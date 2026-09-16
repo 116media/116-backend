@@ -1,4 +1,5 @@
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -15,7 +16,11 @@ public class CategoryPricingConfiguration : IEntityTypeConfiguration<CategoryPri
     {
         builder.HasKey(x => x.Id);
 
-        builder.Property(x => x.PriceUsd).HasColumnType("numeric(10,2)").IsRequired();
+        builder
+            .Property(x => x.PriceUsd)
+            .HasConversion(money => money.Amount, value => new Money(value))
+            .HasColumnType("numeric(10,2)")
+            .IsRequired();
 
         builder
             .HasIndex(new[] { nameof(CategoryPricingEntity.CategoryId), nameof(CategoryPricingEntity.PricingTierId) })
@@ -23,13 +28,13 @@ public class CategoryPricingConfiguration : IEntityTypeConfiguration<CategoryPri
             .HasDatabaseName("uq_category_pricing_category_tier");
 
         builder
-            .HasOne(x => x.Category)
+            .HasOne<CategoryEntity>()
             .WithMany(c => c.Pricing)
             .HasForeignKey(x => x.CategoryId)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder
-            .HasOne(x => x.PricingTier)
+            .HasOne<PricingTierEntity>()
             .WithMany()
             .HasForeignKey(x => x.PricingTierId)
             .OnDelete(DeleteBehavior.Restrict);
