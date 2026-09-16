@@ -1,6 +1,6 @@
-using _116.Content.Domain.Events;
 using _116.Content.Domain.Exceptions;
 using _116.Content.Domain.StateMachines;
+using _116.Content.Domain.ValueObjects;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -9,7 +9,7 @@ namespace _116.Content.Domain.Entities;
 /// Represents a pricing tier assignment for a category, recording the price for a specific
 /// add-on service (e.g., "Artist Profile + base_upload = USD25").
 /// </summary>
-public class CategoryPricingEntity : Aggregate<Guid>
+public class CategoryPricingEntity : Entity<Guid>
 {
     /// <summary>
     /// The identifier of the category this pricing row belongs to.
@@ -24,17 +24,7 @@ public class CategoryPricingEntity : Aggregate<Guid>
     /// <summary>
     /// The price in USD for this tier within this category.
     /// </summary>
-    public decimal PriceUsd { get; private set; }
-
-    /// <summary>
-    /// The category this pricing row belongs to.
-    /// </summary>
-    public CategoryEntity Category { get; private set; } = null!;
-
-    /// <summary>
-    /// The pricing tier being configured.
-    /// </summary>
-    public PricingTierEntity PricingTier { get; private set; } = null!;
+    public Money PriceUsd { get; private set; } = null!;
 
     /// <summary>
     /// Private parameterless constructor required by Entity Framework Core.
@@ -49,7 +39,7 @@ public class CategoryPricingEntity : Aggregate<Guid>
     /// <param name="pricingTierId">The identifier of the pricing tier.</param>
     /// <param name="priceUsd">The price in USD (must be >= 0).</param>
     /// <returns>A new <see cref="CategoryPricingEntity" /> instance.</returns>
-    public static CategoryPricingEntity Create(Guid id, Guid categoryId, Guid pricingTierId, decimal priceUsd)
+    internal static CategoryPricingEntity Create(Guid id, Guid categoryId, Guid pricingTierId, decimal priceUsd)
     {
         if (priceUsd < 0)
         {
@@ -63,8 +53,6 @@ public class CategoryPricingEntity : Aggregate<Guid>
             PricingTierId = pricingTierId,
             PriceUsd = priceUsd,
         };
-        pricing.AddDomainEvent(new CategoryChangedEvent(CategoryId: categoryId));
-
         return pricing;
     }
 
@@ -72,7 +60,7 @@ public class CategoryPricingEntity : Aggregate<Guid>
     /// Updates the price for this pricing tier within the category.
     /// </summary>
     /// <param name="priceUsd">The new price in USD (must be >= 0).</param>
-    public void UpdatePrice(decimal priceUsd)
+    internal void UpdatePrice(decimal priceUsd)
     {
         if (priceUsd < 0)
         {
@@ -80,15 +68,5 @@ public class CategoryPricingEntity : Aggregate<Guid>
         }
 
         PriceUsd = priceUsd;
-        AddDomainEvent(new CategoryChangedEvent(CategoryId: CategoryId));
-    }
-
-    /// <summary>
-    /// Raises the category-changed fact for this pricing row's removal, so cached lookup
-    /// projections refresh once the deletion commits.
-    /// </summary>
-    public void MarkRemoved()
-    {
-        AddDomainEvent(new CategoryChangedEvent(CategoryId: CategoryId));
     }
 }
