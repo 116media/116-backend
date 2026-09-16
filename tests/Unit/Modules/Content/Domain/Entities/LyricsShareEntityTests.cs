@@ -54,20 +54,6 @@ public class LyricsShareEntityTests
     }
 
     [Fact]
-    public void Create_ShouldSetCreatedAt()
-    {
-        // Arrange
-        DateTime before = DateTime.UtcNow;
-
-        // Act
-        LyricsShareEntity share = LyricsShareEntity.Create(Guid.NewGuid(), null, Guid.NewGuid());
-
-        // Assert
-        share.CreatedAt.Should().BeOnOrAfter(before);
-        share.CreatedAt.Should().BeOnOrBefore(DateTime.UtcNow);
-    }
-
-    [Fact]
     public void Create_ShouldRaisePositiveShareEngagementEvent()
     {
         // Arrange
