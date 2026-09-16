@@ -49,4 +49,15 @@ public interface ICustomerRepository
     /// </summary>
     /// <param name="customer">The modified customer.</param>
     void Update(CustomerEntity customer);
+
+    /// <summary>
+    /// Resolves the customers the given ids reference, in one query, keyed by id.
+    /// Missing ids are simply absent from the result.
+    /// </summary>
+    /// <param name="ids">The identifiers to resolve.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    Task<IReadOnlyDictionary<Guid, CustomerEntity>> GetByIdsAsync(
+        IReadOnlyCollection<Guid> ids,
+        CancellationToken cancellationToken = default
+    );
 }
