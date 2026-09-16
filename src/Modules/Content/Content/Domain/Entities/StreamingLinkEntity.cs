@@ -40,16 +40,6 @@ public class StreamingLinkEntity : Aggregate<Guid>
     public string Url { get; private set; } = null!;
 
     /// <summary>
-    /// The album this link belongs to. <c>null</c> when the link targets a standalone single.
-    /// </summary>
-    public AlbumEntity? Album { get; private set; }
-
-    /// <summary>
-    /// The standalone single this link belongs to. <c>null</c> when the link targets an album.
-    /// </summary>
-    public LyricsEntity? Lyrics { get; private set; }
-
-    /// <summary>
     /// Private parameterless constructor required by Entity Framework Core.
     /// </summary>
     private StreamingLinkEntity() { }
