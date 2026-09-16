@@ -28,21 +28,6 @@ public interface IPlaylistRepository
     Task<PlaylistEntity?> GetByIdWithVideosAsync(Guid id, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Returns true if the given video is already part of the given playlist.
-    /// </summary>
-    Task<bool> VideoExistsInPlaylistAsync(Guid playlistId, Guid videoId, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Adds a playlist-video junction record to the repository.
-    /// </summary>
-    Task AddVideoAsync(PlaylistVideoEntity playlistVideo, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Removes a playlist-video junction record identified by the playlist and video IDs.
-    /// </summary>
-    Task RemoveVideoAsync(Guid playlistId, Guid videoId, CancellationToken cancellationToken = default);
-
-    /// <summary>
     /// Marks an existing playlist as modified.
     /// </summary>
     void Update(PlaylistEntity playlist);
