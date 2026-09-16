@@ -5,7 +5,7 @@ namespace _116.Content.Domain.Entities;
 /// <summary>
 /// Junction entity linking a playlist to a video, with display sort order.
 /// </summary>
-public class PlaylistVideoEntity : Aggregate<Guid>
+public class PlaylistVideoEntity : Entity<Guid>
 {
     /// <summary>
     /// The playlist this entry belongs to.
@@ -22,16 +22,6 @@ public class PlaylistVideoEntity : Aggregate<Guid>
     /// </summary>
     public int SortOrder { get; private set; }
 
-    /// <summary>
-    /// Navigation property to the playlist.
-    /// </summary>
-    public PlaylistEntity Playlist { get; private set; } = null!;
-
-    /// <summary>
-    /// Navigation property to the video.
-    /// </summary>
-    public VideoEntity Video { get; private set; } = null!;
-
     private PlaylistVideoEntity() { }
 
     /// <summary>
@@ -42,7 +32,7 @@ public class PlaylistVideoEntity : Aggregate<Guid>
     /// <param name="videoId">The video being added.</param>
     /// <param name="sortOrder">The display order within the playlist.</param>
     /// <returns>A new <see cref="PlaylistVideoEntity" />.</returns>
-    public static PlaylistVideoEntity Create(Guid id, Guid playlistId, Guid videoId, int sortOrder)
+    internal static PlaylistVideoEntity Create(Guid id, Guid playlistId, Guid videoId, int sortOrder)
     {
         return new PlaylistVideoEntity
         {
@@ -50,7 +40,6 @@ public class PlaylistVideoEntity : Aggregate<Guid>
             PlaylistId = playlistId,
             VideoId = videoId,
             SortOrder = sortOrder,
-            CreatedAt = DateTime.UtcNow,
         };
     }
 
