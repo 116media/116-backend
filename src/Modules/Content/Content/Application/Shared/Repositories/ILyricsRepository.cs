@@ -87,20 +87,6 @@ public interface ILyricsRepository
     void Remove(LyricsEntity lyrics);
 
     /// <summary>
-    /// Replaces the full set of tags applied to a lyrics page. Removes every existing
-    /// <see cref="LyricsTagEntity" /> row for the given lyrics id and inserts the new set in
-    /// one call. An empty <paramref name="tagIds" /> collection clears all tags.
-    /// </summary>
-    /// <param name="lyricsId">The lyrics page whose tag set is being replaced.</param>
-    /// <param name="tagIds">The complete new set of tag identifiers.</param>
-    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
-    Task ReplaceTagsAsync(
-        Guid lyricsId,
-        IReadOnlyCollection<Guid> tagIds,
-        CancellationToken cancellationToken = default
-    );
-
-    /// <summary>
     /// Retrieves a paginated list of published lyrics pages linked to a specific artist profile.
     /// Used to populate the public artist page's lyrics section.
     /// </summary>
