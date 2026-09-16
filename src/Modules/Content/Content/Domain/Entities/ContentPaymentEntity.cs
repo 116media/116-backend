@@ -2,6 +2,7 @@ using _116.Content.Domain.Enums;
 using _116.Content.Domain.Events;
 using _116.Content.Domain.Exceptions;
 using _116.Content.Domain.StateMachines;
+using _116.Content.Domain.ValueObjects;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -11,7 +12,7 @@ namespace _116.Content.Domain.Entities;
 /// Created when the order is submitted and tracks the full payment lifecycle:
 /// proof attachment → admin verification (or rejection).
 /// </summary>
-public class ContentPaymentEntity : Aggregate<Guid>
+public class ContentPaymentEntity : Entity<Guid>
 {
     /// <summary>
     /// The order this payment record belongs to.
@@ -21,7 +22,7 @@ public class ContentPaymentEntity : Aggregate<Guid>
     /// <summary>
     /// The total amount in USD that the customer must pay, snapshotted from the order total at submission time.
     /// </summary>
-    public decimal AmountUsd { get; private set; }
+    public Money AmountUsd { get; private set; } = null!;
 
     /// <summary>
     /// The payment method used by the customer (e.g., BankTransfer, MobileMoney, Cash).
@@ -65,11 +66,6 @@ public class ContentPaymentEntity : Aggregate<Guid>
     public string? Notes { get; private set; }
 
     /// <summary>
-    /// The order this payment belongs to.
-    /// </summary>
-    public ContentOrderEntity Order { get; private set; } = null!;
-
-    /// <summary>
     /// Private parameterless constructor required by Entity Framework Core.
     /// </summary>
     private ContentPaymentEntity() { }
@@ -82,7 +78,7 @@ public class ContentPaymentEntity : Aggregate<Guid>
     /// <param name="orderId">The order this payment belongs to.</param>
     /// <param name="amountUsd">The total amount the customer must pay (snapshotted from the order).</param>
     /// <returns>A new <see cref="ContentPaymentEntity" /> in <c>Pending</c> status.</returns>
-    public static ContentPaymentEntity Create(Guid id, Guid orderId, decimal amountUsd)
+    internal static ContentPaymentEntity Create(Guid id, Guid orderId, decimal amountUsd)
     {
         return new ContentPaymentEntity
         {
@@ -124,7 +120,7 @@ public class ContentPaymentEntity : Aggregate<Guid>
     /// <exception cref="ContentRuleException">
     /// Thrown when the payment is already verified or rejected.
     /// </exception>
-    public void Verify(Guid adminUserId, string receiptUrl)
+    public void Verify(Guid adminUserId, string receiptUrl, DateTimeOffset now)
     {
         if (Status == EnumPaymentStatus.Verified)
         {
@@ -143,7 +139,7 @@ public class ContentPaymentEntity : Aggregate<Guid>
 
         Status = EnumPaymentStatus.Verified;
         VerifiedById = adminUserId;
-        VerifiedAt = DateTimeOffset.UtcNow;
+        VerifiedAt = now;
         ReceiptUrl = receiptUrl;
     }
 
@@ -155,7 +151,7 @@ public class ContentPaymentEntity : Aggregate<Guid>
     /// <exception cref="ContentRuleException">
     /// Thrown when the payment is already verified or rejected.
     /// </exception>
-    public void Reject(string? notes)
+    internal void Reject(string? notes)
     {
         if (Status == EnumPaymentStatus.Verified)
         {
@@ -169,6 +165,5 @@ public class ContentPaymentEntity : Aggregate<Guid>
 
         Status = EnumPaymentStatus.Rejected;
         Notes = notes;
-        AddDomainEvent(new PaymentRejectedEvent(OrderId: OrderId, PaymentId: Id, Notes: notes));
     }
 }
