@@ -3,6 +3,7 @@ using _116.Content.Domain.Constants;
 using _116.Content.Domain.Entities;
 using _116.Shared.Infrastructure.Outbox;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace _116.Content.Infrastructure.Persistence;
 
@@ -264,6 +265,20 @@ public class ContentDbContext(DbContextOptions<ContentDbContext> options) : DbCo
         modelBuilder.HasDefaultSchema(ContentConstants.SchemaName);
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         modelBuilder.ApplyConfiguration(new OutboxEventConfiguration());
+
+        // Every identifier is assigned by the domain factory, never by the store. Saying so
+        // is what lets EF treat a member added to a root's collection as an insert; left as
+        // store-generated, a child arriving with its key already set is tracked as Modified
+        // and its INSERT never runs.
+        foreach (IMutableEntityType entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            IMutableProperty? key = entityType.FindPrimaryKey()?.Properties.SingleOrDefault();
+
+            if (key?.ClrType == typeof(Guid))
+            {
+                key.ValueGenerated = ValueGenerated.Never;
+            }
+        }
 
         // Soft-deleted comments are invisible by default; the threaded listing opts back in
         // with IgnoreQueryFilters because it renders tombstones for reply continuity.
