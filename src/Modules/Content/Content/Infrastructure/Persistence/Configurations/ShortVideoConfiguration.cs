@@ -1,5 +1,6 @@
 using _116.Content.Domain.Constants;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -20,7 +21,11 @@ public class ShortVideoConfiguration : IEntityTypeConfiguration<ShortVideoEntity
 
         builder.Property(x => x.Title).HasMaxLength(ContentConstants.MaxShortVideoTitleLength).IsRequired();
 
-        builder.Property(x => x.Slug).HasMaxLength(ContentConstants.MaxSlugLength).IsRequired();
+        builder
+            .Property(x => x.Slug)
+            .HasConversion(slug => slug.Value, value => new Slug(value))
+            .HasMaxLength(ContentConstants.MaxSlugLength)
+            .IsRequired();
 
         builder.Property(x => x.VideoFileId).IsRequired(false);
 
@@ -47,8 +52,8 @@ public class ShortVideoConfiguration : IEntityTypeConfiguration<ShortVideoEntity
         builder.HasIndex(x => new { x.IsActive, x.CreatedAt });
 
         builder
-            .HasOne(x => x.ParentVideo)
-            .WithMany(v => v.Shorts)
+            .HasOne<VideoEntity>()
+            .WithMany()
             .HasForeignKey(x => x.VideoId)
             .IsRequired(false)
             .OnDelete(DeleteBehavior.SetNull);
