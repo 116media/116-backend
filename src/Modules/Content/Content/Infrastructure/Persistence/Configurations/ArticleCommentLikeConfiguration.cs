@@ -18,7 +18,11 @@ public class ArticleCommentLikeConfiguration : IEntityTypeConfiguration<ArticleC
 
         builder.Property(x => x.CommentId).IsRequired();
 
-        builder.HasOne(x => x.Comment).WithMany().HasForeignKey(x => x.CommentId).OnDelete(DeleteBehavior.Cascade);
+        builder
+            .HasOne<ArticleCommentEntity>()
+            .WithMany()
+            .HasForeignKey(x => x.CommentId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder
             .HasIndex(x => new { x.CommentId, x.UserId })
