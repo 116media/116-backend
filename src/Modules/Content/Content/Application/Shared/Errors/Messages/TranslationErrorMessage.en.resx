@@ -18,4 +18,7 @@
   <data name="ProposedTextRequired" xml:space="preserve">
     <value>Proposed text is required.</value>
   </data>
+  <data name="AlreadyDecided" xml:space="preserve">
+    <value>This revision has already been decided.</value>
+  </data>
 </root>
