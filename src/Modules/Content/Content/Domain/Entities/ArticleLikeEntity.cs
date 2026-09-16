@@ -20,11 +20,6 @@ public class ArticleLikeEntity : Aggregate<Guid>
     /// </summary>
     public Guid ArticleId { get; private set; }
 
-    /// <summary>
-    /// Navigation property to the article.
-    /// </summary>
-    public ArticleEntity Article { get; private set; } = null!;
-
     private ArticleLikeEntity() { }
 
     /// <summary>
@@ -41,7 +36,6 @@ public class ArticleLikeEntity : Aggregate<Guid>
             Id = id,
             UserId = userId,
             ArticleId = articleId,
-            CreatedAt = DateTime.UtcNow,
         };
 
         like.AddDomainEvent(new ArticleEngagedEvent(ArticleId: articleId, Kind: EnumEngagementKind.Like, Delta: 1));
