@@ -37,7 +37,7 @@ public class ArticleEntityTests
         article.Id.Should().Be(id);
         article.CategoryId.Should().Be(CategoryId);
         article.Title.Should().Be(title);
-        article.Slug.Should().Be(slug);
+        article.Slug.Value.Should().Be(slug);
         article.AuthorId.Should().Be(AuthorId);
         article.Status.Should().Be(EnumContentStatus.Draft);
         article.CustomerId.Should().BeNull();
@@ -212,7 +212,7 @@ public class ArticleEntityTests
         );
         article.MarkPendingReview();
         article.Approve();
-        article.Publish();
+        article.Publish(TestConstants.Clock.Instant);
 
         // Act
         Action act = () => article.Submit();
@@ -275,7 +275,7 @@ public class ArticleEntityTests
         );
         article.MarkPendingReview();
         article.Approve();
-        article.Publish();
+        article.Publish(TestConstants.Clock.Instant);
 
         // Act
         bool result = article.MarkPendingReview();
@@ -387,7 +387,7 @@ public class ArticleEntityTests
         article.Approve();
 
         // Act
-        bool result = article.Publish();
+        bool result = article.Publish(TestConstants.Clock.Instant);
 
         // Assert
         result.Should().BeTrue();
@@ -408,10 +408,10 @@ public class ArticleEntityTests
         );
         article.MarkPendingReview();
         article.Approve();
-        article.Publish();
+        article.Publish(TestConstants.Clock.Instant);
 
         // Act
-        bool result = article.Publish();
+        bool result = article.Publish(TestConstants.Clock.Instant);
 
         // Assert
         result.Should().BeFalse();
@@ -433,7 +433,7 @@ public class ArticleEntityTests
         article.ClearDomainEvents();
 
         // Act
-        article.Publish();
+        article.Publish(TestConstants.Clock.Instant);
 
         // Assert
         article
@@ -465,11 +465,11 @@ public class ArticleEntityTests
         );
         article.MarkPendingReview();
         article.Approve();
-        article.Publish();
+        article.Publish(TestConstants.Clock.Instant);
         article.ClearDomainEvents();
 
         // Act
-        article.Publish();
+        article.Publish(TestConstants.Clock.Instant);
 
         // Assert
         article.DomainEvents.Should().BeEmpty();
@@ -566,7 +566,7 @@ public class ArticleEntityTests
         );
         article.MarkPendingReview();
         article.Approve();
-        article.Publish();
+        article.Publish(TestConstants.Clock.Instant);
 
         // Act
         bool result = article.Archive();
@@ -589,7 +589,7 @@ public class ArticleEntityTests
         );
         article.MarkPendingReview();
         article.Approve();
-        article.Publish();
+        article.Publish(TestConstants.Clock.Instant);
         article.Archive();
 
         // Act
@@ -663,10 +663,8 @@ public class ArticleEntityTests
         );
         article.StampPromotion(Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(7));
 
-        DateTimeOffset before = DateTimeOffset.UtcNow;
-
         // Act
-        article.ForceUnpromote(superAdminId, reason);
+        article.ForceUnpromote(superAdminId, reason, TestConstants.Clock.Instant);
 
         // Assert
         article.IsPromoted.Should().BeFalse();
@@ -675,7 +673,7 @@ public class ArticleEntityTests
         article.UnpromotedBy.Should().Be(superAdminId);
         article.UnpromotedReason.Should().Be(reason);
         article.UnpromotedAt.Should().NotBeNull();
-        article.UnpromotedAt!.Value.Should().BeCloseTo(before, TimeSpan.FromSeconds(1));
+        article.UnpromotedAt!.Value.Should().Be(TestConstants.Clock.Instant);
     }
 
     [Fact]
@@ -694,7 +692,7 @@ public class ArticleEntityTests
         article.ClearDomainEvents();
 
         // Act
-        article.ForceUnpromote("super-admin-uuid", reason);
+        article.ForceUnpromote("super-admin-uuid", reason, TestConstants.Clock.Instant);
 
         // Assert
         article
@@ -726,7 +724,7 @@ public class ArticleEntityTests
         );
 
         // Act
-        Action act = () => article.ForceUnpromote("super-admin-uuid", "reason");
+        Action act = () => article.ForceUnpromote("super-admin-uuid", "reason", TestConstants.Clock.Instant);
 
         // Assert
         act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.ArticleNotPromoted);
@@ -745,18 +743,18 @@ public class ArticleEntityTests
         );
         article.MarkPendingReview();
         article.Approve();
-        article.Publish();
+        article.Publish(TestConstants.Clock.Instant);
         article.StampSocialBoost();
         article.StampPromotion(Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(7));
 
         // Act
-        article.ForceUnpromote("super-admin-uuid", "reason");
+        article.ForceUnpromote("super-admin-uuid", "reason", TestConstants.Clock.Instant);
 
         // Assert
         article.Status.Should().Be(EnumContentStatus.Published);
         article.SocialBoost.Should().BeTrue();
         article.Title.Should().Be(TestConstants.Article.ValidTitle);
-        article.Slug.Should().Be(TestConstants.Article.ValidSlug);
+        article.Slug.Value.Should().Be(TestConstants.Article.ValidSlug);
     }
 
     #endregion
@@ -765,10 +763,10 @@ public class ArticleEntityTests
 
     #endregion
 
-    #region Update Tests
+    #region Edit Verb Tests
 
     [Fact]
-    public void UpdateSeo_ShouldSetMetaFields()
+    public void ReviseSeo_ShouldSetMetaFields()
     {
         // Arrange
         ArticleEntity article = ArticleEntity.CreateFree(
@@ -780,7 +778,7 @@ public class ArticleEntityTests
         );
 
         // Act
-        article.UpdateSeo("My SEO Title", "My SEO Description");
+        article.ReviseSeo("My SEO Title", "My SEO Description");
 
         // Assert
         article.MetaTitle.Should().Be("My SEO Title");
@@ -808,7 +806,7 @@ public class ArticleEntityTests
     }
 
     [Fact]
-    public void Update_ShouldUpdateAllFields()
+    public void EditVerbs_ShouldEachSetTheirOwnFields()
     {
         // Arrange
         ArticleEntity article = ArticleEntity.CreateFree(
@@ -823,23 +821,16 @@ public class ArticleEntityTests
         Guid orderItemId = Guid.NewGuid();
 
         // Act
-        article.Update(
-            categoryId: newCategoryId,
-            title: "Updated Title",
-            slug: "updated-slug",
-            headline: "Updated headline for the article",
-            body: "<p>Updated body</p>",
-            customerId: customerId,
-            orderItemId: orderItemId,
-            socialBoost: true,
-            metaTitle: "Updated Meta",
-            metaDescription: "Updated description"
-        );
+        article.Recategorize(categoryId: newCategoryId);
+        article.Retitle(title: "Updated Title", slug: "updated-slug");
+        article.ReviseBody(headline: "Updated headline for the article", body: "<p>Updated body</p>");
+        article.AssignCommission(customerId: customerId, orderItemId: orderItemId, socialBoost: true);
+        article.ReviseSeo(metaTitle: "Updated Meta", metaDescription: "Updated description");
 
         // Assert
         article.CategoryId.Should().Be(newCategoryId);
         article.Title.Should().Be("Updated Title");
-        article.Slug.Should().Be("updated-slug");
+        article.Slug.Value.Should().Be("updated-slug");
         article.Headline.Should().Be("Updated headline for the article");
         article.Body.Should().Be("<p>Updated body</p>");
         article.CustomerId.Should().Be(customerId);
@@ -851,7 +842,28 @@ public class ArticleEntityTests
     }
 
     [Fact]
-    public void Update_WhenBodyImagesDropOut_ShouldRaiseOrphanedEventWithCapturedKeys()
+    public void EditVerbs_WithUnchangedValues_ShouldEachReportFalse()
+    {
+        // Arrange
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
+            AuthorId
+        );
+        article.ReviseBody(headline: "A headline", body: "<p>Body</p>");
+
+        // Act & Assert
+        article.Recategorize(categoryId: CategoryId).Should().BeFalse();
+        article.Retitle(title: article.Title, slug: article.Slug).Should().BeFalse();
+        article.ReviseBody(headline: "A headline", body: "<p>Body</p>").Should().BeFalse();
+        article.AssignCommission(customerId: null, orderItemId: null, socialBoost: false).Should().BeFalse();
+        article.ReviseSeo(metaTitle: null, metaDescription: null).Should().BeFalse();
+    }
+
+    [Fact]
+    public void ReviseBody_WhenBodyImagesDropOut_ShouldRaiseOrphanedEventWithCapturedKeys()
     {
         // Arrange
         ArticleEntity article = ArticleEntity.CreateFree(
@@ -864,17 +876,9 @@ public class ArticleEntityTests
         List<string> orphanedKeys = ["content/articles/image-0", "content/articles/image-1"];
 
         // Act
-        article.Update(
-            categoryId: CategoryId,
-            title: "Updated Title",
-            slug: "updated-slug",
+        article.ReviseBody(
             headline: "Updated headline for the article",
             body: "<p>Updated body without images</p>",
-            customerId: null,
-            orderItemId: null,
-            socialBoost: false,
-            metaTitle: null,
-            metaDescription: null,
             orphanedBodyImageStorageKeys: orphanedKeys
         );
 
@@ -888,7 +892,7 @@ public class ArticleEntityTests
     }
 
     [Fact]
-    public void Update_WhenOrphanedKeyListIsEmpty_ShouldNotRaiseOrphanedEvent()
+    public void ReviseBody_WhenOrphanedKeyListIsEmpty_ShouldNotRaiseOrphanedEvent()
     {
         // Arrange
         ArticleEntity article = ArticleEntity.CreateFree(
@@ -900,17 +904,9 @@ public class ArticleEntityTests
         );
 
         // Act
-        article.Update(
-            categoryId: CategoryId,
-            title: "Updated Title",
-            slug: "updated-slug",
+        article.ReviseBody(
             headline: "Updated headline for the article",
             body: "<p>Updated body</p>",
-            customerId: null,
-            orderItemId: null,
-            socialBoost: false,
-            metaTitle: null,
-            metaDescription: null,
             orphanedBodyImageStorageKeys: []
         );
 
@@ -936,7 +932,7 @@ public class ArticleEntityTests
         article.ClearDomainEvents();
 
         // Act
-        article.Publish();
+        article.Publish(TestConstants.Clock.Instant);
 
         // Assert
         article
@@ -960,7 +956,7 @@ public class ArticleEntityTests
         );
         article.MarkPendingReview();
         article.Approve();
-        article.Publish();
+        article.Publish(TestConstants.Clock.Instant);
         article.ClearDomainEvents();
         article.MarkPendingReview();
 
@@ -1011,7 +1007,7 @@ public class ArticleEntityTests
         );
         article.MarkPendingReview();
         article.Approve();
-        article.Publish();
+        article.Publish(TestConstants.Clock.Instant);
         article.ClearDomainEvents();
 
         // Act
