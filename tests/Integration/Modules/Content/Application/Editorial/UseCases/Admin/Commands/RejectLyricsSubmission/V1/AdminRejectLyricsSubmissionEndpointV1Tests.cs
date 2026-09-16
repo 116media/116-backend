@@ -3,6 +3,10 @@ using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Mailer.Contracts.Domain.Enums;
+using _116.Mailer.Domain.Entities;
+using _116.Mailer.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
 using FluentValidation;
 using FluentValidation.Results;
@@ -97,5 +101,40 @@ public class AdminRejectLyricsSubmissionEndpointV1Tests(PostgresFixture db) : Ba
 
         bool anyLyricsCreated = await ctx.Lyrics.AnyAsync();
         anyLyricsCreated.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task RejectLyricsSubmission_RejectedTwice_ReturnsConflictAndNotifiesOnce()
+    {
+        LyricsSubmissionEntity submission = await SeedAsync<ContentDbContext, LyricsSubmissionEntity>(ctx =>
+        {
+            LyricsSubmissionEntity submission = LyricsSubmissionFactory.Create(TestUser.VisitorId);
+            ctx.LyricsSubmissions.Add(submission);
+            return submission;
+        });
+
+        Client.AuthenticateAsAdmin();
+
+        var first = await Client.PatchAsJsonAsync(
+            Routes.Admin.Lyrics.RejectSubmission(submission.Id),
+            new AdminRejectLyricsSubmissionRequest("Not a good fit.")
+        );
+        first.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var second = await Client.PatchAsJsonAsync(
+            Routes.Admin.Lyrics.RejectSubmission(submission.Id),
+            new AdminRejectLyricsSubmissionRequest("Not a good fit.")
+        );
+
+        await second.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<SubmissionErrorMessage>(m => m.NotPending())
+        );
+
+        await using MailerDbContext mailerContext = CreateDbContext<MailerDbContext>();
+        List<NotificationEntity> notifications = await mailerContext
+            .Notifications.Where(n => n.UserId == TestUser.VisitorId)
+            .ToListAsync();
+        notifications.Should().ContainSingle(n => n.Type == EnumNotificationType.SubmissionDecided);
     }
 }
