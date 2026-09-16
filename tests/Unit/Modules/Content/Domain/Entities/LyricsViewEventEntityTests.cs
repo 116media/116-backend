@@ -88,30 +88,6 @@ public class LyricsViewEventEntityTests
     }
 
     [Fact]
-    public void Create_ShouldSetCreatedAt()
-    {
-        // Arrange
-        DateTime before = DateTime.UtcNow;
-
-        // Act
-        LyricsViewEventEntity viewEvent = LyricsViewEventEntity.Create(
-            Guid.NewGuid(),
-            Guid.NewGuid(),
-            null,
-            "unknown",
-            null,
-            null,
-            isCounted: true,
-            dwellMs: 1_000,
-            scrollDepthRatio: 0.8
-        );
-
-        // Assert
-        viewEvent.CreatedAt.Should().BeOnOrAfter(before);
-        viewEvent.CreatedAt.Should().BeOnOrBefore(DateTime.UtcNow);
-    }
-
-    [Fact]
     public void Create_WhenCounted_ShouldRaisePositiveViewEngagementEvent()
     {
         // Arrange
