@@ -1,5 +1,6 @@
 using _116.Content.Domain.Constants;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -18,7 +19,11 @@ public class TagConfiguration : IEntityTypeConfiguration<TagEntity>
 
         builder.Property(x => x.Name).HasMaxLength(ContentConstants.MaxTagNameLength).IsRequired();
 
-        builder.Property(x => x.Slug).HasMaxLength(ContentConstants.MaxTagSlugLength).IsRequired();
+        builder
+            .Property(x => x.Slug)
+            .HasConversion(slug => slug.Value, value => new Slug(value))
+            .HasMaxLength(ContentConstants.MaxTagSlugLength)
+            .IsRequired();
 
         builder.HasIndex(x => x.Slug).IsUnique();
         builder.HasIndex(x => x.Name).IsUnique();
