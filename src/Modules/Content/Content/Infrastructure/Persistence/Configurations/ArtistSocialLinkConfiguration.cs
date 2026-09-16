@@ -22,6 +22,10 @@ public class ArtistSocialLinkConfiguration : IEntityTypeConfiguration<ArtistSoci
 
         // A social link has no meaning without its artist, so deleting the profile cascades
         // to its links — the same call StreamingLinkConfiguration makes for the same reason.
-        builder.HasOne(x => x.Artist).WithMany().HasForeignKey(x => x.ArtistId).OnDelete(DeleteBehavior.Cascade);
+        builder
+            .HasOne<ArtistEntity>()
+            .WithMany(artist => artist.SocialLinks)
+            .HasForeignKey(x => x.ArtistId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
