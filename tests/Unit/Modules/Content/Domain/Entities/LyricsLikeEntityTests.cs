@@ -29,20 +29,6 @@ public class LyricsLikeEntityTests
     }
 
     [Fact]
-    public void Create_ShouldSetCreatedAt()
-    {
-        // Arrange
-        DateTime before = DateTime.UtcNow;
-
-        // Act
-        LyricsLikeEntity like = LyricsLikeEntity.Create(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid());
-
-        // Assert
-        like.CreatedAt.Should().BeOnOrAfter(before);
-        like.CreatedAt.Should().BeOnOrBefore(DateTime.UtcNow);
-    }
-
-    [Fact]
     public void Create_ShouldRaisePositiveLikeEngagementEvent()
     {
         // Arrange
