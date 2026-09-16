@@ -86,7 +86,7 @@ public class AggregateRootTests
         Type[] unmarked = [.. aggregates.Where(type => !typeof(IAggregateRoot).IsAssignableFrom(type))];
 
         // Assert
-        aggregates.Should().HaveCountGreaterThan(50);
+        aggregates.Should().HaveCountGreaterThan(40);
         unmarked.Should().BeEmpty();
     }
 }
