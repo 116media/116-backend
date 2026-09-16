@@ -41,4 +41,13 @@ public class LyricsRevisionErrors(LyricsRevisionErrorMessage i18n)
     {
         return new BadRequestException(i18n.ProposedTextRequired());
     }
+
+    /// <summary>
+    /// Throws when a moderator decides a revision that has already been accepted or rejected,
+    /// so a second decision cannot silently re-apply the text and re-notify the proposer.
+    /// </summary>
+    public ConflictException AlreadyDecided()
+    {
+        return new ConflictException(i18n.AlreadyDecided());
+    }
 }
