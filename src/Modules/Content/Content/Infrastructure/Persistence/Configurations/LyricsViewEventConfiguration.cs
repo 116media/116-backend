@@ -33,7 +33,7 @@ public class LyricsViewEventConfiguration : IEntityTypeConfiguration<LyricsViewE
 
         builder.Property(x => x.CreatedAt).IsRequired();
 
-        builder.HasOne(x => x.Lyrics).WithMany().HasForeignKey(x => x.LyricsId).OnDelete(DeleteBehavior.Cascade);
+        builder.HasOne<LyricsEntity>().WithMany().HasForeignKey(x => x.LyricsId).OnDelete(DeleteBehavior.Cascade);
 
         builder.HasIndex(x => new
         {
