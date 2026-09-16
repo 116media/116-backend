@@ -15,21 +15,6 @@ public interface IContentOrderRepository
     Task AddAsync(ContentOrderEntity order, CancellationToken ct = default);
 
     /// <summary>
-    /// Adds a new order item to the repository.
-    /// </summary>
-    Task AddItemAsync(ContentOrderItemEntity item, CancellationToken ct = default);
-
-    /// <summary>
-    /// Adds a new pricing tier snapshot to the repository.
-    /// </summary>
-    Task AddItemTierAsync(ContentItemTierEntity tier, CancellationToken ct = default);
-
-    /// <summary>
-    /// Adds a new payment record to the repository.
-    /// </summary>
-    Task AddPaymentAsync(ContentPaymentEntity payment, CancellationToken ct = default);
-
-    /// <summary>
     /// Retrieves a content order by its unique identifier, including all items, their tiers,
     /// the customer, category, promotion level, and the payment record.
     /// Returns null if not found.
@@ -64,8 +49,8 @@ public interface IContentOrderRepository
     );
 
     /// <summary>
-    /// Retrieves a paginated list of payment records with optional filters for status,
-    /// payment method, and customer search. Includes the linked order and customer.
+    /// Retrieves a paginated list of the orders that carry a payment, each with its payment
+    /// loaded — the root the admin payments listing pages over.
     /// </summary>
     /// <param name="page">The 1-based page number.</param>
     /// <param name="pageSize">The number of items per page.</param>
@@ -74,7 +59,7 @@ public interface IContentOrderRepository
     /// <param name="search">Optional search term matching customer name, email, or company.</param>
     /// <param name="orderByAscending">When true, orders by <c>CreatedAt</c> ascending; defaults to descending.</param>
     /// <param name="ct">Token to observe for cancellation requests.</param>
-    Task<(IReadOnlyList<ContentPaymentEntity> Items, int TotalCount)> GetAllPaymentsAsync(
+    Task<(IReadOnlyList<ContentOrderEntity> Items, int TotalCount)> GetOrdersWithPaymentAsync(
         int page,
         int pageSize,
         EnumPaymentStatus? status,
@@ -83,51 +68,6 @@ public interface IContentOrderRepository
         bool orderByAscending = false,
         CancellationToken ct = default
     );
-
-    /// <summary>
-    /// Retrieves the payment record for a given order. Returns null if not found.
-    /// </summary>
-    Task<ContentPaymentEntity?> GetPaymentByOrderIdAsync(Guid orderId, CancellationToken ct = default);
-
-    /// <summary>
-    /// Retrieves a specific order item that belongs to the given order.
-    /// Returns null if not found.
-    /// </summary>
-    Task<ContentOrderItemEntity?> GetItemByIdAsync(Guid orderId, Guid itemId, CancellationToken ct = default);
-
-    /// <summary>
-    /// Retrieves a specific order item that belongs to the given order.
-    /// Throws a NotFoundException if not found.
-    /// </summary>
-    /// <exception cref="_116.Shared.Application.Exceptions.NotFoundException">
-    /// Thrown when the item is not found.
-    /// </exception>
-    Task<ContentOrderItemEntity> GetItemByIdOrThrowAsync(Guid orderId, Guid itemId, CancellationToken ct = default);
-
-    /// <summary>
-    /// Retrieves a specific pricing tier that belongs to the given order item.
-    /// Returns null if not found.
-    /// </summary>
-    Task<ContentItemTierEntity?> GetItemTierByIdAsync(Guid itemId, Guid tierId, CancellationToken ct = default);
-
-    /// <summary>
-    /// Retrieves a specific pricing tier that belongs to the given order item.
-    /// Throws a NotFoundException if not found.
-    /// </summary>
-    /// <exception cref="_116.Shared.Application.Exceptions.NotFoundException">
-    /// Thrown when the tier is not found.
-    /// </exception>
-    Task<ContentItemTierEntity> GetItemTierByIdOrThrowAsync(Guid itemId, Guid tierId, CancellationToken ct = default);
-
-    /// <summary>
-    /// Removes a content order item from the repository.
-    /// </summary>
-    Task RemoveItemAsync(ContentOrderItemEntity item, CancellationToken ct = default);
-
-    /// <summary>
-    /// Removes a pricing tier snapshot from the repository.
-    /// </summary>
-    Task RemoveItemTierAsync(ContentItemTierEntity tier, CancellationToken ct = default);
 
     /// <summary>
     /// Retrieves the order that owns the given order item. Returns null if not found.
