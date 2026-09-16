@@ -38,7 +38,7 @@ public class VideoEntityTests
         video.Id.Should().Be(id);
         video.CategoryId.Should().Be(CategoryId);
         video.Title.Should().Be(title);
-        video.Slug.Should().Be(slug);
+        video.Slug.Value.Should().Be(slug);
         video.AuthorId.Should().Be(AuthorId);
         video.Status.Should().Be(EnumContentStatus.Draft);
         video.CustomerId.Should().BeNull();
@@ -218,10 +218,10 @@ public class VideoEntityTests
             AuthorId,
             Description
         );
-        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl);
+        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl, TestConstants.Clock.Instant);
         video.MarkPendingReview();
         video.Approve();
-        video.Publish();
+        video.Publish(TestConstants.Clock.Instant);
 
         // Act
         Action act = () => video.Submit();
@@ -287,12 +287,12 @@ public class VideoEntityTests
             AuthorId,
             Description
         );
-        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl);
+        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl, TestConstants.Clock.Instant);
         video.MarkPendingReview();
         video.Approve();
 
         // Act
-        bool result = video.Publish();
+        bool result = video.Publish(TestConstants.Clock.Instant);
 
         // Assert
         result.Should().BeTrue();
@@ -312,13 +312,13 @@ public class VideoEntityTests
             AuthorId,
             Description
         );
-        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl);
+        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl, TestConstants.Clock.Instant);
         video.MarkPendingReview();
         video.Approve();
         video.ClearDomainEvents();
 
         // Act
-        video.Publish();
+        video.Publish(TestConstants.Clock.Instant);
 
         // Assert
         video
@@ -353,7 +353,7 @@ public class VideoEntityTests
         video.Approve();
 
         // Act
-        Action act = () => video.Publish();
+        Action act = () => video.Publish(TestConstants.Clock.Instant);
 
         // Assert
         act.Should()
@@ -374,13 +374,13 @@ public class VideoEntityTests
             AuthorId,
             Description
         );
-        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl);
+        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl, TestConstants.Clock.Instant);
         video.MarkPendingReview();
         video.Approve();
-        video.Publish();
+        video.Publish(TestConstants.Clock.Instant);
 
         // Act
-        bool result = video.Publish();
+        bool result = video.Publish(TestConstants.Clock.Instant);
 
         // Assert
         result.Should().BeFalse();
@@ -479,10 +479,10 @@ public class VideoEntityTests
             AuthorId,
             Description
         );
-        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl);
+        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl, TestConstants.Clock.Instant);
         video.MarkPendingReview();
         video.Approve();
-        video.Publish();
+        video.Publish(TestConstants.Clock.Instant);
 
         // Act
         bool result = video.Archive();
@@ -504,10 +504,10 @@ public class VideoEntityTests
             AuthorId,
             Description
         );
-        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl);
+        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl, TestConstants.Clock.Instant);
         video.MarkPendingReview();
         video.Approve();
-        video.Publish();
+        video.Publish(TestConstants.Clock.Instant);
         video.Archive();
 
         // Act
@@ -536,7 +536,7 @@ public class VideoEntityTests
         const string youtubeId = TestConstants.Video.ValidYoutubeVideoUrl;
 
         // Act
-        video.AttachYoutubeVideoUrl(youtubeId);
+        video.AttachYoutubeVideoUrl(youtubeId, TestConstants.Clock.Instant);
 
         // Assert
         video.YoutubeVideoUrl.Should().Be(youtubeId);
@@ -558,7 +558,7 @@ public class VideoEntityTests
         video.ClearDomainEvents();
 
         // Act
-        video.AttachYoutubeVideoUrl(youtubeUrl);
+        video.AttachYoutubeVideoUrl(youtubeUrl, TestConstants.Clock.Instant);
 
         // Assert
         video
@@ -581,11 +581,11 @@ public class VideoEntityTests
             AuthorId,
             Description
         );
-        video.ScheduleShoot(DateTimeOffset.UtcNow.AddDays(-7));
+        video.ScheduleShoot(TestConstants.Clock.Instant.AddDays(-7));
         const string youtubeId = TestConstants.Video.ValidYoutubeVideoUrl;
 
         // Act
-        video.AttachYoutubeVideoUrl(youtubeId);
+        video.AttachYoutubeVideoUrl(youtubeId, TestConstants.Clock.Instant);
 
         // Assert
         video.YoutubeVideoUrl.Should().Be(youtubeId);
@@ -608,7 +608,7 @@ public class VideoEntityTests
         const string youtubeId = TestConstants.Video.ValidYoutubeVideoUrl;
 
         // Act
-        Action act = () => video.AttachYoutubeVideoUrl(youtubeId);
+        Action act = () => video.AttachYoutubeVideoUrl(youtubeId, TestConstants.Clock.Instant);
 
         // Assert
         act.Should()
@@ -686,47 +686,6 @@ public class VideoEntityTests
     }
 
     [Fact]
-    public void MarkHasLyrics_ShouldSetHasLyricsTrue()
-    {
-        // Arrange
-        VideoEntity video = VideoEntity.CreateFree(
-            Guid.NewGuid(),
-            CategoryId,
-            TestConstants.Video.ValidTitle,
-            TestConstants.Video.ValidSlug,
-            AuthorId,
-            Description
-        );
-
-        // Act
-        video.MarkHasLyrics();
-
-        // Assert
-        video.HasLyrics.Should().BeTrue();
-    }
-
-    [Fact]
-    public void UpdateRating_ShouldSetAverageAndCount()
-    {
-        // Arrange
-        VideoEntity video = VideoEntity.CreateFree(
-            Guid.NewGuid(),
-            CategoryId,
-            TestConstants.Video.ValidTitle,
-            TestConstants.Video.ValidSlug,
-            AuthorId,
-            Description
-        );
-
-        // Act
-        video.UpdateRating(average: 4.5m, count: 10);
-
-        // Assert
-        video.RatingAverage.Should().Be(4.5m);
-        video.RatingCount.Should().Be(10);
-    }
-
-    [Fact]
     public void StampPromotion_ShouldSetIsPromotedAndPromotedUntil()
     {
         // Arrange
@@ -765,10 +724,8 @@ public class VideoEntityTests
         );
         video.StampPromotion(Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(7));
 
-        DateTimeOffset before = DateTimeOffset.UtcNow;
-
         // Act
-        video.ForceUnpromote(superAdminId, reason);
+        video.ForceUnpromote(superAdminId, reason, TestConstants.Clock.Instant);
 
         // Assert
         video.IsPromoted.Should().BeFalse();
@@ -777,7 +734,7 @@ public class VideoEntityTests
         video.UnpromotedBy.Should().Be(superAdminId);
         video.UnpromotedReason.Should().Be(reason);
         video.UnpromotedAt.Should().NotBeNull();
-        video.UnpromotedAt!.Value.Should().BeCloseTo(before, TimeSpan.FromSeconds(1));
+        video.UnpromotedAt!.Value.Should().Be(TestConstants.Clock.Instant);
     }
 
     [Fact]
@@ -797,7 +754,7 @@ public class VideoEntityTests
         video.ClearDomainEvents();
 
         // Act
-        video.ForceUnpromote("super-admin-uuid", reason);
+        video.ForceUnpromote("super-admin-uuid", reason, TestConstants.Clock.Instant);
 
         // Assert
         video
@@ -830,7 +787,7 @@ public class VideoEntityTests
         );
 
         // Act
-        Action act = () => video.ForceUnpromote("super-admin-uuid", "reason");
+        Action act = () => video.ForceUnpromote("super-admin-uuid", "reason", TestConstants.Clock.Instant);
 
         // Assert
         act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.VideoNotPromoted);
@@ -848,25 +805,25 @@ public class VideoEntityTests
             AuthorId,
             Description
         );
-        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl);
+        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl, TestConstants.Clock.Instant);
         video.MarkPendingReview();
         video.Approve();
-        video.Publish();
+        video.Publish(TestConstants.Clock.Instant);
         video.StampSocialBoost();
         video.StampPromotion(Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(7));
 
         // Act
-        video.ForceUnpromote("super-admin-uuid", "reason");
+        video.ForceUnpromote("super-admin-uuid", "reason", TestConstants.Clock.Instant);
 
         // Assert
         video.Status.Should().Be(EnumContentStatus.Published);
         video.SocialBoost.Should().BeTrue();
         video.Title.Should().Be(TestConstants.Video.ValidTitle);
-        video.Slug.Should().Be(TestConstants.Video.ValidSlug);
+        video.Slug.Value.Should().Be(TestConstants.Video.ValidSlug);
     }
 
     [Fact]
-    public void Update_ShouldUpdateAllFields()
+    public void EditVerbs_ShouldEachSetTheirOwnFields()
     {
         // Arrange
         VideoEntity video = VideoEntity.CreateFree(
@@ -882,22 +839,16 @@ public class VideoEntityTests
         Guid orderItemId = Guid.NewGuid();
 
         // Act
-        video.Update(
-            categoryId: newCategoryId,
-            title: "Updated Title",
-            slug: "updated-slug",
-            description: "Updated description",
-            customerId: customerId,
-            orderItemId: orderItemId,
-            socialBoost: true,
-            metaTitle: "Updated Meta",
-            metaDescription: "Updated description"
-        );
+        video.Recategorize(categoryId: newCategoryId);
+        video.Retitle(title: "Updated Title", slug: "updated-slug");
+        video.ReviseDescription(description: "Updated description");
+        video.AssignCommission(customerId: customerId, orderItemId: orderItemId, socialBoost: true);
+        video.ReviseSeo(metaTitle: "Updated Meta", metaDescription: "Updated description");
 
         // Assert
         video.CategoryId.Should().Be(newCategoryId);
         video.Title.Should().Be("Updated Title");
-        video.Slug.Should().Be("updated-slug");
+        video.Slug.Value.Should().Be("updated-slug");
         video.Description.Should().Be("Updated description");
         video.CustomerId.Should().Be(customerId);
         video.OrderItemId.Should().Be(orderItemId);
@@ -907,7 +858,28 @@ public class VideoEntityTests
     }
 
     [Fact]
-    public void UpdateSeo_ShouldSetMetaFields()
+    public void EditVerbs_WithUnchangedValues_ShouldEachReportFalse()
+    {
+        // Arrange
+        VideoEntity video = VideoEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Video.ValidTitle,
+            TestConstants.Video.ValidSlug,
+            AuthorId,
+            Description
+        );
+
+        // Act & Assert
+        video.Recategorize(categoryId: CategoryId).Should().BeFalse();
+        video.Retitle(title: video.Title, slug: video.Slug).Should().BeFalse();
+        video.ReviseDescription(description: Description).Should().BeFalse();
+        video.AssignCommission(customerId: null, orderItemId: null, socialBoost: false).Should().BeFalse();
+        video.ReviseSeo(metaTitle: null, metaDescription: null).Should().BeFalse();
+    }
+
+    [Fact]
+    public void ReviseSeo_ShouldSetMetaFields()
     {
         // Arrange
         VideoEntity video = VideoEntity.CreateFree(
@@ -920,7 +892,7 @@ public class VideoEntityTests
         );
 
         // Act
-        video.UpdateSeo("My SEO Title", "My SEO Description");
+        video.ReviseSeo("My SEO Title", "My SEO Description");
 
         // Assert
         video.MetaTitle.Should().Be("My SEO Title");
@@ -1001,10 +973,10 @@ public class VideoEntityTests
             AuthorId,
             Description
         );
-        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl);
+        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl, TestConstants.Clock.Instant);
         video.MarkPendingReview();
         video.Approve();
-        video.Publish();
+        video.Publish(TestConstants.Clock.Instant);
 
         // Act
         bool result = video.MarkPendingReview();
@@ -1122,7 +1094,7 @@ public class VideoEntityTests
 
         // Assert
         video.Title.Should().Be(TestConstants.Video.ValidTitle);
-        video.Slug.Should().Be(TestConstants.Video.ValidSlug);
+        video.Slug.Value.Should().Be(TestConstants.Video.ValidSlug);
     }
 
     #endregion
@@ -1139,13 +1111,13 @@ public class VideoEntityTests
             AuthorId,
             Description
         );
-        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl);
+        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl, TestConstants.Clock.Instant);
         video.MarkPendingReview();
         video.Approve();
         video.ClearDomainEvents();
 
         // Act
-        video.Publish();
+        video.Publish(TestConstants.Clock.Instant);
 
         // Assert
         video
@@ -1168,10 +1140,10 @@ public class VideoEntityTests
             AuthorId,
             Description
         );
-        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl);
+        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl, TestConstants.Clock.Instant);
         video.MarkPendingReview();
         video.Approve();
-        video.Publish();
+        video.Publish(TestConstants.Clock.Instant);
         video.ClearDomainEvents();
         video.MarkPendingReview();
 
@@ -1222,10 +1194,10 @@ public class VideoEntityTests
             AuthorId,
             Description
         );
-        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl);
+        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl, TestConstants.Clock.Instant);
         video.MarkPendingReview();
         video.Approve();
-        video.Publish();
+        video.Publish(TestConstants.Clock.Instant);
         video.ClearDomainEvents();
 
         // Act
