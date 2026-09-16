@@ -47,4 +47,17 @@ public class PromotionLevelRepository(ContentDbContext context)
             .OrderBy(x => x.Name)
             .ToListAsync(cancellationToken);
     }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyDictionary<Guid, PromotionLevelEntity>> GetByIdsAsync(
+        IReadOnlyCollection<Guid> ids,
+        CancellationToken cancellationToken = default
+    )
+    {
+        List<PromotionLevelEntity> entities = await Context
+            .PromotionLevels.Where(entity => ids.Contains(entity.Id))
+            .ToListAsync(cancellationToken);
+
+        return entities.ToDictionary(entity => entity.Id);
+    }
 }
