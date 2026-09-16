@@ -1,5 +1,6 @@
 using _116.Content.Domain.Constants;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -18,7 +19,11 @@ public class CategoryConfiguration : IEntityTypeConfiguration<CategoryEntity>
 
         builder.Property(x => x.Name).HasMaxLength(ContentConstants.MaxCategoryNameLength).IsRequired();
 
-        builder.Property(x => x.Slug).HasMaxLength(ContentConstants.MaxCategorySlugLength).IsRequired();
+        builder
+            .Property(x => x.Slug)
+            .HasConversion(slug => slug.Value, value => new Slug(value))
+            .HasMaxLength(ContentConstants.MaxCategorySlugLength)
+            .IsRequired();
 
         builder.Property(x => x.Description).HasMaxLength(ContentConstants.MaxCategoryDescriptionLength).IsRequired();
 
@@ -48,7 +53,7 @@ public class CategoryConfiguration : IEntityTypeConfiguration<CategoryEntity>
         builder.HasIndex(x => x.Name).IsUnique();
 
         builder
-            .HasOne(x => x.ContentType)
+            .HasOne<ContentTypeEntity>()
             .WithMany()
             .HasForeignKey(x => x.ContentTypeId)
             .OnDelete(DeleteBehavior.Restrict);
