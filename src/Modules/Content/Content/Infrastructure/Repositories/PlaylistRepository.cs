@@ -25,8 +25,7 @@ public class PlaylistRepository(ContentDbContext context)
         var specification = new PlaylistByUserIdSpecification(userId: userId);
         return await Context
             .Playlists.ApplySpecification(specification: specification)
-            .Include(p => p.Videos.Where(pv => pv.Video.Status == EnumContentStatus.Published))
-                .ThenInclude(pv => pv.Video)
+            .Include(p => p.Videos)
             .OrderByDescending(p => p.CreatedAt)
             .ToListAsync(cancellationToken);
     }
@@ -37,6 +36,7 @@ public class PlaylistRepository(ContentDbContext context)
         var specification = new PlaylistByIdSpecification(id: id);
         return await Context
             .Playlists.AsTracking()
+            .Include(playlist => playlist.Videos)
             .ApplySpecification(specification: specification)
             .FirstOrDefaultAsync(cancellationToken);
     }
@@ -47,44 +47,8 @@ public class PlaylistRepository(ContentDbContext context)
         var specification = new PlaylistByIdSpecification(id: id);
         return await Context
             .Playlists.ApplySpecification(specification: specification)
-            .Include(p => p.Videos.Where(pv => pv.Video.Status == EnumContentStatus.Published))
-                .ThenInclude(pv => pv.Video)
-                    .ThenInclude(video => video.Category)
+            .Include(p => p.Videos)
             .FirstOrDefaultAsync(cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public async Task<bool> VideoExistsInPlaylistAsync(
-        Guid playlistId,
-        Guid videoId,
-        CancellationToken cancellationToken = default
-    )
-    {
-        var specification = new PlaylistVideoByPlaylistAndVideoSpecification(playlistId: playlistId, videoId: videoId);
-        return await Context
-            .PlaylistVideos.ApplySpecification(specification: specification)
-            .AnyAsync(cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public async Task AddVideoAsync(PlaylistVideoEntity playlistVideo, CancellationToken cancellationToken = default)
-    {
-        await Context.PlaylistVideos.AddAsync(playlistVideo, cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public async Task RemoveVideoAsync(Guid playlistId, Guid videoId, CancellationToken cancellationToken = default)
-    {
-        var specification = new PlaylistVideoByPlaylistAndVideoSpecification(playlistId: playlistId, videoId: videoId);
-        PlaylistVideoEntity? entry = await Context
-            .PlaylistVideos.AsTracking()
-            .ApplySpecification(specification: specification)
-            .FirstOrDefaultAsync(cancellationToken);
-
-        if (entry is not null)
-        {
-            Context.PlaylistVideos.Remove(entry);
-        }
     }
 
     /// <inheritdoc />
