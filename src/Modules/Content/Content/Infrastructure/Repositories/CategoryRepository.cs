@@ -25,10 +25,7 @@ public class CategoryRepository(ContentDbContext context)
         CancellationToken cancellationToken = default
     )
     {
-        IQueryable<CategoryEntity> query = Context
-            .Categories.Include(c => c.ContentType)
-            .Include(c => c.Pricing)
-                .ThenInclude(p => p.PricingTier);
+        IQueryable<CategoryEntity> query = Context.Categories.Include(c => c.Pricing);
 
         if (isActive.HasValue)
         {
@@ -58,29 +55,9 @@ public class CategoryRepository(ContentDbContext context)
     }
 
     /// <inheritdoc />
-    public override async Task<CategoryEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    protected override IQueryable<CategoryEntity> Query()
     {
-        return await Context
-            .Categories.Where(category => category.Id == id)
-            .Include(c => c.ContentType)
-            .Include(c => c.Pricing)
-                .ThenInclude(p => p.PricingTier)
-            .FirstOrDefaultAsync(cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public override async Task<CategoryEntity> GetByIdOrThrowAsync(
-        Guid id,
-        CancellationToken cancellationToken = default
-    )
-    {
-        return await Context
-            .Categories.AsTracking()
-            .Where(category => category.Id == id)
-            .Include(c => c.ContentType)
-            .Include(c => c.Pricing)
-                .ThenInclude(p => p.PricingTier)
-            .FirstDefaultOrThrowAsync(keyValue: id, cancellationToken: cancellationToken);
+        return Context.Categories.Include(c => c.Pricing);
     }
 
     /// <inheritdoc />
@@ -108,64 +85,8 @@ public class CategoryRepository(ContentDbContext context)
 
         return await Context
             .Categories.ApplySpecification(specification: spec)
-            .Include(c => c.ContentType)
             .OrderBy(c => c.Name)
             .ToListAsync(cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public async Task<IReadOnlyList<CategoryPricingEntity>> GetPricingByCategoryAsync(
-        Guid categoryId,
-        CancellationToken cancellationToken = default
-    )
-    {
-        return await Context
-            .CategoryPricing.Where(pricing => pricing.CategoryId == categoryId)
-            .Include(p => p.PricingTier)
-            .ToListAsync(cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public async Task<IReadOnlyList<CategoryPricingEntity>> GetPricingByCategoriesAsync(
-        IReadOnlyCollection<Guid> categoryIds,
-        CancellationToken cancellationToken = default
-    )
-    {
-        if (categoryIds.Count == 0)
-        {
-            return [];
-        }
-
-        return await Context
-            .CategoryPricing.Where(pricing => categoryIds.Contains(pricing.CategoryId))
-            .Include(p => p.PricingTier)
-            .ToListAsync(cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public async Task<CategoryPricingEntity?> GetPricingAsync(
-        Guid categoryId,
-        Guid pricingTierId,
-        CancellationToken cancellationToken = default
-    )
-    {
-        return await Context
-            .CategoryPricing.AsTracking()
-            .Where(pricing => pricing.CategoryId == categoryId && pricing.PricingTierId == pricingTierId)
-            .Include(p => p.PricingTier)
-            .FirstOrDefaultAsync(cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public async Task AddPricingAsync(CategoryPricingEntity pricing, CancellationToken cancellationToken = default)
-    {
-        await Context.CategoryPricing.AddAsync(pricing, cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public void RemovePricing(CategoryPricingEntity pricing)
-    {
-        Context.CategoryPricing.Remove(pricing);
     }
 
     /// <inheritdoc />
@@ -174,7 +95,6 @@ public class CategoryRepository(ContentDbContext context)
         var specification = new GossipCategorySpecification();
         return await Context
             .Categories.ApplySpecification(specification: specification)
-            .Include(c => c.ContentType)
             .FirstOrDefaultAsync(cancellationToken);
     }
 
@@ -185,7 +105,6 @@ public class CategoryRepository(ContentDbContext context)
         return await Context
             .Categories.AsTracking()
             .ApplySpecification(specification: specification)
-            .Include(c => c.ContentType)
             .FirstOrDefaultAsync(cancellationToken);
     }
 
@@ -196,7 +115,6 @@ public class CategoryRepository(ContentDbContext context)
         return await Context
             .Categories.AsTracking()
             .ApplySpecification(specification: specification)
-            .Include(c => c.ContentType)
             .FirstOrDefaultAsync(cancellationToken);
     }
 
@@ -218,8 +136,20 @@ public class CategoryRepository(ContentDbContext context)
         return await Context
             .Categories.AsTracking()
             .ApplySpecification(specification: specification)
-            .Include(c => c.ContentType)
             .OrderByDescending(c => c.PinnedToFeedAt)
             .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyDictionary<Guid, CategoryEntity>> GetByIdsAsync(
+        IReadOnlyCollection<Guid> ids,
+        CancellationToken cancellationToken = default
+    )
+    {
+        List<CategoryEntity> entities = await Query()
+            .Where(entity => ids.Contains(entity.Id))
+            .ToListAsync(cancellationToken);
+
+        return entities.ToDictionary(entity => entity.Id);
     }
 }
