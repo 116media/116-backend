@@ -1,6 +1,7 @@
 using _116.Content.Domain.Constants;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
+using _116.Content.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -21,7 +22,11 @@ public class VideoConfiguration : IEntityTypeConfiguration<VideoEntity>
 
         builder.Property(x => x.Title).HasMaxLength(ContentConstants.MaxTitleLength).IsRequired();
 
-        builder.Property(x => x.Slug).HasMaxLength(ContentConstants.MaxSlugLength).IsRequired();
+        builder
+            .Property(x => x.Slug)
+            .HasConversion(slug => slug.Value, value => new Slug(value))
+            .HasMaxLength(ContentConstants.MaxSlugLength)
+            .IsRequired();
 
         builder.Property(x => x.Description).IsRequired();
 
@@ -58,8 +63,6 @@ public class VideoConfiguration : IEntityTypeConfiguration<VideoEntity>
 
         builder.Property(x => x.UnpromotedReason).HasMaxLength(500).IsRequired(false);
 
-        builder.Property(x => x.HasLyrics).HasDefaultValue(false).IsRequired();
-
         builder.Property(x => x.RatingAverage).HasPrecision(3, 2).HasDefaultValue(0m).IsRequired();
 
         builder.Property(x => x.RatingCount).HasDefaultValue(0).IsRequired();
@@ -80,17 +83,17 @@ public class VideoConfiguration : IEntityTypeConfiguration<VideoEntity>
             .HasDatabaseName("ix_videos_status_published_at")
             .IsDescending(false, true);
 
-        builder.HasOne(x => x.Category).WithMany().HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<CategoryEntity>().WithMany().HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.Restrict);
 
         builder
-            .HasOne(x => x.Customer)
+            .HasOne<CustomerEntity>()
             .WithMany()
             .HasForeignKey(x => x.CustomerId)
             .IsRequired(false)
             .OnDelete(DeleteBehavior.SetNull);
 
         builder
-            .HasOne(x => x.PromotionLevel)
+            .HasOne<PromotionLevelEntity>()
             .WithMany()
             .HasForeignKey(x => x.PromotionLevelId)
             .IsRequired(false)
