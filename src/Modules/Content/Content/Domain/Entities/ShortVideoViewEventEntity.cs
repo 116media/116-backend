@@ -44,11 +44,6 @@ public class ShortVideoViewEventEntity : Aggregate<Guid>
     /// </summary>
     public bool IsCounted { get; private set; }
 
-    /// <summary>
-    /// Navigation property to the short video.
-    /// </summary>
-    public ShortVideoEntity ShortVideo { get; private set; } = null!;
-
     private ShortVideoViewEventEntity() { }
 
     /// <summary>
@@ -81,7 +76,6 @@ public class ShortVideoViewEventEntity : Aggregate<Guid>
             IpAddress = ipAddress,
             UserAgent = userAgent,
             IsCounted = isCounted,
-            CreatedAt = DateTime.UtcNow,
         };
 
         if (isCounted)
