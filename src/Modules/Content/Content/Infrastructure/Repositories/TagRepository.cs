@@ -28,8 +28,9 @@ public class TagRepository(ContentDbContext context) : ContentRepository<TagEnti
     /// <inheritdoc />
     public async Task<TagEntity?> GetByNameAsync(string name, CancellationToken cancellationToken = default)
     {
-        return await Context.Tags.FirstOrDefaultAsync(
-            t => t.Name.ToLower() == name.ToLower(),
+        var specification = new TagByNameSpecification(name: name);
+        return await Context.Tags.FirstOrDefaultBySpecificationAsync(
+            specification: specification,
             cancellationToken: cancellationToken
         );
     }
@@ -79,5 +80,18 @@ public class TagRepository(ContentDbContext context) : ContentRepository<TagEnti
             .Build(Context);
 
         return await query.ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyDictionary<Guid, TagEntity>> GetByIdsAsync(
+        IReadOnlyCollection<Guid> ids,
+        CancellationToken cancellationToken = default
+    )
+    {
+        List<TagEntity> entities = await Context
+            .Tags.Where(entity => ids.Contains(entity.Id))
+            .ToListAsync(cancellationToken);
+
+        return entities.ToDictionary(entity => entity.Id);
     }
 }
