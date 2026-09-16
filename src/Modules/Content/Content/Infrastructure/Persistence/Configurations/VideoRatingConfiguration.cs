@@ -26,6 +26,6 @@ public class VideoRatingConfiguration : IEntityTypeConfiguration<VideoRatingEnti
 
         builder.HasIndex(x => new { x.UserId, x.VideoId }).IsUnique().HasDatabaseName("ix_video_ratings_user_video");
 
-        builder.HasOne(x => x.Video).WithMany().HasForeignKey(x => x.VideoId).OnDelete(DeleteBehavior.Cascade);
+        builder.HasOne<VideoEntity>().WithMany().HasForeignKey(x => x.VideoId).OnDelete(DeleteBehavior.Cascade);
     }
 }
