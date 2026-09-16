@@ -1,5 +1,6 @@
 using _116.Content.Domain.Constants;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -20,7 +21,11 @@ public class PromotionLevelConfiguration : IEntityTypeConfiguration<PromotionLev
 
         builder.Property(x => x.DurationDays).IsRequired();
 
-        builder.Property(x => x.PriceUsd).HasPrecision(10, 2).IsRequired();
+        builder
+            .Property(x => x.PriceUsd)
+            .HasConversion(money => money.Amount, value => new Money(value))
+            .HasPrecision(10, 2)
+            .IsRequired();
 
         builder.Property(x => x.IsActive).IsRequired().HasDefaultValue(true);
 
