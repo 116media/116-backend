@@ -41,7 +41,7 @@ public class ShortVideoEntityTests
         // Assert
         shortVideo.Id.Should().Be(id);
         shortVideo.Title.Should().Be(title);
-        shortVideo.Slug.Should().Be(slug);
+        shortVideo.Slug.Value.Should().Be(slug);
         shortVideo.VideoFileId.Should().BeNull();
         shortVideo.AuthorId.Should().Be(AuthorId);
         shortVideo.IsActive.Should().BeFalse();
@@ -260,7 +260,7 @@ public class ShortVideoEntityTests
 
         // Assert
         shortVideo.Title.Should().Be("New Title");
-        shortVideo.Slug.Should().Be(TestConstants.ShortVideo.ValidSlug);
+        shortVideo.Slug.Value.Should().Be(TestConstants.ShortVideo.ValidSlug);
         shortVideo.VideoId.Should().BeNull();
         shortVideo.HasFullVideo.Should().BeFalse();
     }
