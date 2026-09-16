@@ -19,10 +19,8 @@ public class ArtistRepository(ContentDbContext context) : ContentRepository<Arti
     public async Task<ArtistEntity?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default)
     {
         var specification = new ArtistBySlugSpecification(slug: slug);
-        return await Context.Artists.FirstOrDefaultBySpecificationAsync(
-            specification: specification,
-            cancellationToken: cancellationToken
-        );
+        return await Query()
+            .FirstOrDefaultBySpecificationAsync(specification: specification, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
@@ -76,20 +74,18 @@ public class ArtistRepository(ContentDbContext context) : ContentRepository<Arti
                 lyrics: Context.Lyrics,
                 videos: Context.Videos,
                 albums: Context.Albums,
-                articleArtists: Context.ArticleArtists
+                articleArtists: Context.ArticleArtists,
+                articles: Context.Articles
             )
         );
 
         if (!string.IsNullOrWhiteSpace(value: letter))
         {
-            query = query.Where(a => a.InitialLetter == letter);
+            query = query.ApplySpecification(specification: new ArtistByInitialLetterSpecification(letter: letter));
         }
         else if (!string.IsNullOrWhiteSpace(value: search))
         {
-            // Both sides of the comparison are pre-folded uppercase, so a plain LIKE is
-            // correct and index-friendly; ILIKE would re-do work the stored column already did.
-            string pattern = $"%{ArtistEntity.FoldName(name: search)}%";
-            query = query.Where(a => EF.Functions.Like(a.NameFolded, pattern));
+            query = query.ApplySpecification(specification: new ArtistByFoldedNameSpecification(search: search));
         }
 
         int totalCount = await query.CountAsync(cancellationToken: cancellationToken);
@@ -111,7 +107,10 @@ public class ArtistRepository(ContentDbContext context) : ContentRepository<Arti
                         && (al.ReleaseType == EnumReleaseType.Album || al.ReleaseType == EnumReleaseType.Mixtape)
                     )
                     + Context.ArticleArtists.Count(aa =>
-                        aa.ArtistId == a.Id && aa.Article.Status == EnumContentStatus.Published
+                        aa.ArtistId == a.Id
+                        && Context.Articles.Any(article =>
+                            article.Id == aa.ArticleId && article.Status == EnumContentStatus.Published
+                        )
                     )
             ))
             .ToListAsync(cancellationToken: cancellationToken);
@@ -128,7 +127,8 @@ public class ArtistRepository(ContentDbContext context) : ContentRepository<Arti
                     lyrics: Context.Lyrics,
                     videos: Context.Videos,
                     albums: Context.Albums,
-                    articleArtists: Context.ArticleArtists
+                    articleArtists: Context.ArticleArtists,
+                    articles: Context.Articles
                 )
             )
             .Select(a => a.InitialLetter)
@@ -143,14 +143,17 @@ public class ArtistRepository(ContentDbContext context) : ContentRepository<Arti
         // One statement projecting all five counts, term-for-term aligned with the
         // directory's content predicate — the profile's 404 rule sums these.
         ArtistTotals? totals = await Context
-            .Artists.Where(a => a.Id == artistId)
+            .Artists.ApplySpecification(specification: new ArtistByIdSpecification(id: artistId))
             .Select(a => new ArtistTotals(
                 Context.Lyrics.Count(l => l.ArtistId == a.Id && l.Status == EnumContentStatus.Published),
                 Context.Videos.Count(v => v.ArtistId == a.Id && v.Status == EnumContentStatus.Published),
                 Context.Albums.Count(al => al.ArtistId == a.Id && al.ReleaseType == EnumReleaseType.Album),
                 Context.Albums.Count(al => al.ArtistId == a.Id && al.ReleaseType == EnumReleaseType.Mixtape),
                 Context.ArticleArtists.Count(aa =>
-                    aa.ArtistId == a.Id && aa.Article.Status == EnumContentStatus.Published
+                    aa.ArtistId == a.Id
+                    && Context.Articles.Any(article =>
+                        article.Id == aa.ArticleId && article.Status == EnumContentStatus.Published
+                    )
                 )
             ))
             .FirstOrDefaultAsync(cancellationToken: cancellationToken);
@@ -159,47 +162,8 @@ public class ArtistRepository(ContentDbContext context) : ContentRepository<Arti
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<ArtistSocialLinkEntity>> GetSocialLinksAsync(
-        Guid artistId,
-        CancellationToken cancellationToken = default
-    )
+    protected override IQueryable<ArtistEntity> Query()
     {
-        return await Context
-            .ArtistSocialLinks.Where(link => link.ArtistId == artistId)
-            .OrderBy(link => link.Platform)
-            .ToListAsync(cancellationToken: cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public async Task<ArtistSocialLinkEntity?> GetSocialLinkAsync(
-        Guid artistId,
-        EnumSocialPlatform platform,
-        CancellationToken cancellationToken = default
-    )
-    {
-        return await Context
-            .ArtistSocialLinks.AsTracking()
-            .FirstOrDefaultAsync(
-                link => link.ArtistId == artistId && link.Platform == platform,
-                cancellationToken: cancellationToken
-            );
-    }
-
-    /// <inheritdoc />
-    public async Task AddSocialLinkAsync(ArtistSocialLinkEntity link, CancellationToken cancellationToken = default)
-    {
-        await Context.ArtistSocialLinks.AddAsync(link, cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public void UpdateSocialLink(ArtistSocialLinkEntity link)
-    {
-        Context.ArtistSocialLinks.Update(link);
-    }
-
-    /// <inheritdoc />
-    public void RemoveSocialLink(ArtistSocialLinkEntity link)
-    {
-        Context.ArtistSocialLinks.Remove(link);
+        return Context.Artists.Include(artist => artist.SocialLinks);
     }
 }
