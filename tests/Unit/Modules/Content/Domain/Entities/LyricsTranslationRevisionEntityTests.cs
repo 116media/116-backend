@@ -1,6 +1,9 @@
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Domain.Events;
+using _116.Content.Domain.Exceptions;
+using _116.Content.Domain.StateMachines;
+using _116.Tests.Fixtures.Factories.Content;
 using AwesomeAssertions;
 using Xunit;
 
@@ -215,4 +218,89 @@ public class LyricsTranslationRevisionEntityTests
             Guid.NewGuid()
         );
     }
+
+    #region Decision idempotence
+
+    [Fact]
+    public void Accept_WhenAlreadyAccepted_ShouldReturnFalseAndRaiseNoSecondEvent()
+    {
+        // Arrange
+        LyricsTranslationRevisionEntity revision = LyricsTranslationRevisionFactory.Create(Guid.NewGuid());
+        revision.Accept(Guid.NewGuid());
+        revision.ClearDomainEvents();
+
+        // Act
+        bool result = revision.Accept(Guid.NewGuid());
+
+        // Assert
+        result.Should().BeFalse();
+        revision.DomainEvents.Should().BeEmpty();
+        revision.Status.Should().Be(EnumRevisionStatus.Accepted);
+    }
+
+    [Fact]
+    public void Reject_WhenAlreadyRejected_ShouldReturnFalseAndRaiseNoSecondEvent()
+    {
+        // Arrange
+        LyricsTranslationRevisionEntity revision = LyricsTranslationRevisionFactory.Create(Guid.NewGuid());
+        revision.Reject(Guid.NewGuid());
+        revision.ClearDomainEvents();
+
+        // Act
+        bool result = revision.Reject(Guid.NewGuid());
+
+        // Assert
+        result.Should().BeFalse();
+        revision.DomainEvents.Should().BeEmpty();
+        revision.Status.Should().Be(EnumRevisionStatus.Rejected);
+    }
+
+    [Fact]
+    public void Accept_WhenAlreadyRejected_ShouldThrowAlreadyDecided()
+    {
+        // Arrange
+        LyricsTranslationRevisionEntity revision = LyricsTranslationRevisionFactory.Create(Guid.NewGuid());
+        revision.Reject(Guid.NewGuid());
+
+        // Act
+        Action act = () => revision.Accept(Guid.NewGuid());
+
+        // Assert
+        act.Should()
+            .Throw<ContentRuleException>()
+            .Where(exception => exception.Code == ContentRuleCodes.RevisionAlreadyDecided);
+        revision.Status.Should().Be(EnumRevisionStatus.Rejected);
+    }
+
+    [Fact]
+    public void Reject_WhenAlreadyAccepted_ShouldThrowAlreadyDecided()
+    {
+        // Arrange
+        LyricsTranslationRevisionEntity revision = LyricsTranslationRevisionFactory.Create(Guid.NewGuid());
+        revision.Accept(Guid.NewGuid());
+
+        // Act
+        Action act = () => revision.Reject(Guid.NewGuid());
+
+        // Assert
+        act.Should()
+            .Throw<ContentRuleException>()
+            .Where(exception => exception.Code == ContentRuleCodes.RevisionAlreadyDecided);
+        revision.Status.Should().Be(EnumRevisionStatus.Accepted);
+    }
+
+    [Fact]
+    public void Accept_WhenPending_ShouldReturnTrue()
+    {
+        // Arrange
+        LyricsTranslationRevisionEntity revision = LyricsTranslationRevisionFactory.Create(Guid.NewGuid());
+
+        // Act
+        bool result = revision.Accept(Guid.NewGuid());
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    #endregion
 }
