@@ -49,14 +49,15 @@ public class LyricsSubmissionRepository(ContentDbContext context)
         CancellationToken cancellationToken = default
     )
     {
-        return await (
-            from submission in Context.LyricsSubmissions
-            where submission.Status == EnumSubmissionStatus.Pending
-            where
+        return await Context
+            .LyricsSubmissions.ApplySpecification(
+                specification: new SubmissionByStatusSpecification(status: EnumSubmissionStatus.Pending)
+            )
+            .Where(submission =>
                 Context.Lyrics.Any(lyrics =>
                     lyrics.SongTitle == submission.SongTitle && lyrics.ArtistName == submission.ArtistName
                 )
-            select submission
-        ).ToListAsync(cancellationToken);
+            )
+            .ToListAsync(cancellationToken);
     }
 }
