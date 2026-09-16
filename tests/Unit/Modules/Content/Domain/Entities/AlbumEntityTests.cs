@@ -117,51 +117,107 @@ public class AlbumEntityTests
 
     #endregion
 
-    #region Update Tests
+    #region Rename Tests
 
     [Fact]
-    public void Update_WithValidParams_ShouldUpdateAllFieldsIndependently()
+    public void Rename_WithNewName_ShouldSetItAndReportChanged()
     {
         // Arrange
         AlbumEntity album = CreateAlbum();
-        Guid newCoverImageFileId = Guid.NewGuid();
 
         // Act
-        album.Update("Updated Name", newCoverImageFileId, 1999, "Updated Label", EnumReleaseType.Album);
+        bool changed = album.Rename("Updated Name");
 
         // Assert
+        changed.Should().BeTrue();
         album.Name.Should().Be("Updated Name");
-        album.CoverImageFileId.Should().Be(newCoverImageFileId);
-        album.ReleaseYear.Should().Be(1999);
-        album.Label.Should().Be("Updated Label");
     }
 
     [Fact]
-    public void Update_WithNullCoverImageFileId_ShouldClearCoverImageFileId_AndLeaveOthersUntouched()
+    public void Rename_WithSameName_ShouldReportUnchangedAndRaiseNothing()
     {
         // Arrange
         AlbumEntity album = CreateAlbum();
-        album.Update("Name", Guid.NewGuid(), 1990, "Label", EnumReleaseType.Album);
+        album.ClearDomainEvents();
 
         // Act
-        album.Update("Name", null, 1990, "Label", EnumReleaseType.Album);
+        bool changed = album.Rename(album.Name);
 
         // Assert
+        changed.Should().BeFalse();
+        album.DomainEvents.Should().BeEmpty();
+    }
+
+    #endregion
+
+    #region SetCoverImage Tests
+
+    [Fact]
+    public void SetCoverImage_WithNewFileId_ShouldSetItAndLeaveOtherFieldsUntouched()
+    {
+        // Arrange
+        AlbumEntity album = CreateAlbum();
+        album.ReviseRelease(1990, "Label", EnumReleaseType.Album);
+        Guid newCoverImageFileId = Guid.NewGuid();
+
+        // Act
+        bool changed = album.SetCoverImage(newCoverImageFileId);
+
+        // Assert
+        changed.Should().BeTrue();
+        album.CoverImageFileId.Should().Be(newCoverImageFileId);
+        album.ReleaseYear.Should().Be(1990);
+        album.Label.Should().Be("Label");
+    }
+
+    [Fact]
+    public void SetCoverImage_WithNull_ShouldClearCoverImageFileId_AndLeaveOthersUntouched()
+    {
+        // Arrange
+        AlbumEntity album = CreateAlbum();
+        album.ReviseRelease(1990, "Label", EnumReleaseType.Album);
+        album.SetCoverImage(Guid.NewGuid());
+
+        // Act
+        bool changed = album.SetCoverImage(null);
+
+        // Assert
+        changed.Should().BeTrue();
         album.CoverImageFileId.Should().BeNull();
         album.ReleaseYear.Should().Be(1990);
         album.Label.Should().Be("Label");
     }
 
     [Fact]
-    public void Update_WithNullReleaseYear_ShouldClearReleaseYearOnly_AndLeaveOthersUntouched()
+    public void SetCoverImage_WithTheSameFileId_ShouldReportUnchanged()
     {
         // Arrange
         AlbumEntity album = CreateAlbum();
         Guid coverImageFileId = Guid.NewGuid();
-        album.Update("Name", coverImageFileId, 1990, "Label", EnumReleaseType.Album);
+        album.SetCoverImage(coverImageFileId);
 
         // Act
-        album.Update("Name", coverImageFileId, null, "Label", EnumReleaseType.Album);
+        bool changed = album.SetCoverImage(coverImageFileId);
+
+        // Assert
+        changed.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region ReviseRelease Tests
+
+    [Fact]
+    public void ReviseRelease_WithNullReleaseYear_ShouldClearReleaseYearOnly_AndLeaveOthersUntouched()
+    {
+        // Arrange
+        AlbumEntity album = CreateAlbum();
+        Guid coverImageFileId = Guid.NewGuid();
+        album.SetCoverImage(coverImageFileId);
+        album.ReviseRelease(1990, "Label", EnumReleaseType.Album);
+
+        // Act
+        album.ReviseRelease(null, "Label", EnumReleaseType.Album);
 
         // Assert
         album.ReleaseYear.Should().BeNull();
@@ -170,15 +226,16 @@ public class AlbumEntityTests
     }
 
     [Fact]
-    public void Update_WithNullLabel_ShouldClearLabelOnly_AndLeaveOthersUntouched()
+    public void ReviseRelease_WithNullLabel_ShouldClearLabelOnly_AndLeaveOthersUntouched()
     {
         // Arrange
         AlbumEntity album = CreateAlbum();
         Guid coverImageFileId = Guid.NewGuid();
-        album.Update("Name", coverImageFileId, 1990, "Label", EnumReleaseType.Album);
+        album.SetCoverImage(coverImageFileId);
+        album.ReviseRelease(1990, "Label", EnumReleaseType.Album);
 
         // Act
-        album.Update("Name", coverImageFileId, 1990, null, EnumReleaseType.Album);
+        album.ReviseRelease(1990, null, EnumReleaseType.Album);
 
         // Assert
         album.Label.Should().BeNull();
@@ -187,7 +244,7 @@ public class AlbumEntityTests
     }
 
     [Fact]
-    public void Update_ShouldNeverExposeArtistIdChange()
+    public void Rename_ShouldNeverExposeArtistIdChange()
     {
         // Arrange
         AlbumEntity album = AlbumEntity.Create(
@@ -202,7 +259,7 @@ public class AlbumEntityTests
         Guid originalArtistId = album.ArtistId!.Value;
 
         // Act
-        album.Update("Updated Name", null, null, null, EnumReleaseType.Album);
+        album.Rename("Updated Name");
 
         // Assert
         album.ArtistId.Should().Be(originalArtistId);
@@ -212,13 +269,13 @@ public class AlbumEntityTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
-    public void Update_WithEmptyName_ShouldThrowBadRequestException(string? invalidName)
+    public void Rename_WithEmptyName_ShouldThrowBadRequestException(string? invalidName)
     {
         // Arrange
         AlbumEntity album = CreateAlbum();
 
         // Act
-        Action act = () => album.Update(invalidName!, null, null, null, EnumReleaseType.Album);
+        Action act = () => album.Rename(invalidName!);
 
         // Assert
         act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.AlbumNameRequired);
@@ -260,7 +317,7 @@ public class AlbumEntityTests
     }
 
     [Fact]
-    public void Update_ShouldChangeReleaseTypeWithoutTouchingOtherFields()
+    public void ReviseRelease_ShouldChangeReleaseTypeWithoutTouchingOtherFields()
     {
         // Arrange
         AlbumEntity album = AlbumEntity.Create(
@@ -274,7 +331,7 @@ public class AlbumEntityTests
         );
 
         // Act
-        album.Update(album.Name, album.CoverImageFileId, album.ReleaseYear, album.Label, EnumReleaseType.EP);
+        album.ReviseRelease(album.ReleaseYear, album.Label, EnumReleaseType.EP);
 
         // Assert
         album.ReleaseType.Should().Be(EnumReleaseType.EP);
@@ -283,7 +340,7 @@ public class AlbumEntityTests
     }
 
     [Fact]
-    public void Update_WithSameReleaseType_ShouldNotResetIt()
+    public void ReviseRelease_WithSameReleaseType_ShouldNotResetIt()
     {
         // Arrange
         AlbumEntity album = AlbumEntity.Create(
@@ -297,7 +354,7 @@ public class AlbumEntityTests
         );
 
         // Act — a metadata edit re-supplying the current type must not change it.
-        album.Update("New Name", null, null, null, album.ReleaseType);
+        album.ReviseRelease(null, null, album.ReleaseType);
 
         // Assert
         album.ReleaseType.Should().Be(EnumReleaseType.Mixtape);
