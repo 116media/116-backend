@@ -30,8 +30,8 @@ public class AdminGetAllPaymentsHandler(
         int pageSize = query.PaginatedRequest.PageSize;
         int pageIndex = query.PaginatedRequest.PageIndex;
 
-        (IReadOnlyList<ContentPaymentEntity> payments, int totalCount) =
-            await contentOrderRepository.GetAllPaymentsAsync(
+        (IReadOnlyList<ContentOrderEntity> orders, int totalCount) =
+            await contentOrderRepository.GetOrdersWithPaymentAsync(
                 page: pageIndex + 1,
                 pageSize: pageSize,
                 status: query.Status,
@@ -41,7 +41,7 @@ public class AdminGetAllPaymentsHandler(
                 ct: cancellationToken
             );
 
-        IReadOnlyList<PaymentSummaryDto> dtoList = await paymentDtoFactory.CreateManyAsync(payments, cancellationToken);
+        IReadOnlyList<PaymentSummaryDto> dtoList = await paymentDtoFactory.CreateManyAsync(orders, cancellationToken);
 
         var paginatedResult = new PaginatedResult<PaymentSummaryDto>(
             pageIndex: pageIndex,
