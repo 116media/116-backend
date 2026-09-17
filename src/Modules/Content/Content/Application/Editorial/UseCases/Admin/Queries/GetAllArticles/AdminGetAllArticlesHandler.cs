@@ -18,7 +18,8 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Queries.GetAllArticl
 public class AdminGetAllArticlesHandler(
     IArticleRepository articleRepository,
     IFileStorageService fileStorage,
-    IMapper mapper
+    IMapper mapper,
+    IContentLookupFactory contentLookupFactory
 ) : IQueryHandler<AdminGetAllArticlesQuery, AdminGetAllArticlesResult>
 {
     /// <inheritdoc />
@@ -41,6 +42,7 @@ public class AdminGetAllArticlesHandler(
 
         IReadOnlyList<ArticleSummaryDto> dtoList = await articles.ToArticleSummaryDtosAsync(
             mapper,
+            await contentLookupFactory.ResolveForArticlesAsync(articles, cancellationToken),
             fileStorage,
             cancellationToken
         );
