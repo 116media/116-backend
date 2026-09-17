@@ -20,49 +20,16 @@ public static class MockPackageRepository
         return mock;
     }
 
-    public static Mock<IPackageRepository> SetupGetByIdWithSlotsOrThrow(
-        this Mock<IPackageRepository> mock,
-        PackageEntity entity
-    )
+    public static Mock<IPackageRepository> SetupGetByIdOrThrow(this Mock<IPackageRepository> mock, PackageEntity entity)
     {
-        mock.Setup(x => x.GetByIdWithSlotsOrThrowAsync(entity.Id, It.IsAny<CancellationToken>())).ReturnsAsync(entity);
+        mock.Setup(x => x.GetByIdOrThrowAsync(entity.Id, It.IsAny<CancellationToken>())).ReturnsAsync(entity);
         return mock;
     }
 
-    public static Mock<IPackageRepository> SetupGetByIdWithSlotsOrThrowNotFound(
-        this Mock<IPackageRepository> mock,
-        Guid id
-    )
+    public static Mock<IPackageRepository> SetupGetByIdOrThrowNotFound(this Mock<IPackageRepository> mock, Guid id)
     {
-        mock.Setup(x => x.GetByIdWithSlotsOrThrowAsync(id, It.IsAny<CancellationToken>()))
+        mock.Setup(x => x.GetByIdOrThrowAsync(id, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new NotFoundException($"Package with id '{id}' was not found."));
-        return mock;
-    }
-
-    public static Mock<IPackageRepository> SetupGetSlotById(
-        this Mock<IPackageRepository> mock,
-        Guid slotId,
-        PackageSlotEntity? slot
-    )
-    {
-        mock.Setup(x => x.GetSlotByIdAsync(slotId, It.IsAny<CancellationToken>())).ReturnsAsync(slot);
-        return mock;
-    }
-
-    /// <summary>
-    /// Sets up the package-scoped slot lookup to return the slot only for the given package id.
-    /// Any other package id falls through to the default null, so a cross-package lookup is
-    /// distinguishable from a matching one.
-    /// </summary>
-    public static Mock<IPackageRepository> SetupGetSlotByIdInPackage(
-        this Mock<IPackageRepository> mock,
-        Guid slotId,
-        Guid packageId,
-        PackageSlotEntity? slot
-    )
-    {
-        mock.Setup(x => x.GetSlotByIdAsync(slotId, It.Is<Guid>(id => id == packageId), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(slot);
         return mock;
     }
 
@@ -84,16 +51,6 @@ public static class MockPackageRepository
         mock.Verify(x => x.AddAsync(It.IsAny<PackageEntity>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    public static void VerifyAddSlotCalled(this Mock<IPackageRepository> mock)
-    {
-        mock.Verify(x => x.AddSlotAsync(It.IsAny<PackageSlotEntity>(), It.IsAny<CancellationToken>()), Times.Once);
-    }
-
-    public static void VerifyRemoveSlotCalled(this Mock<IPackageRepository> mock, PackageSlotEntity slot)
-    {
-        mock.Verify(x => x.RemoveSlot(slot), Times.Once);
-    }
-
     /// <summary>
     /// Installs defaults for write, void and aggregate members only. Identity lookups are left
     /// unconfigured so that a miss has to be arranged by the test, naming the identifier it is a
@@ -103,8 +60,6 @@ public static class MockPackageRepository
     private static void SetupDefaults(Mock<IPackageRepository> mock)
     {
         mock.Setup(x => x.AddAsync(It.IsAny<PackageEntity>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask);
-        mock.Setup(x => x.AddSlotAsync(It.IsAny<PackageSlotEntity>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
         mock.Setup(x =>
                 x.GetAllAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool?>(), It.IsAny<CancellationToken>())
