@@ -1,11 +1,12 @@
 using _116.Content.Application.Shared.DTOs;
+using _116.Content.Application.Shared.Mappers;
 using _116.Content.Domain.Entities;
 
 namespace _116.Content.Application.Catalog.Factories;
 
 /// <summary>
-/// Builds <see cref="CategoryDto" /> projections, resolving each category's poster in a single
-/// batch so callers never issue one file query per category.
+/// Builds <see cref="CategoryDto" /> projections, resolving each category's poster, content type
+/// and pricing tiers in a single batch so callers never issue one query per category.
 /// </summary>
 public interface ICategoryDtoFactory
 {
@@ -27,4 +28,13 @@ public interface ICategoryDtoFactory
         IReadOnlyList<CategoryEntity> categories,
         CancellationToken ct = default
     );
+
+    /// <summary>
+    /// Resolves every row a set of categories names — posters, content types and pricing
+    /// tiers — in one batch, for a caller assembling several projections at once.
+    /// </summary>
+    /// <param name="categories">The categories to resolve lookups for.</param>
+    /// <param name="ct">Token to observe for cancellation requests.</param>
+    /// <returns>The resolved lookups.</returns>
+    Task<CategoryLookups> ResolveLookupsAsync(IReadOnlyList<CategoryEntity> categories, CancellationToken ct = default);
 }
