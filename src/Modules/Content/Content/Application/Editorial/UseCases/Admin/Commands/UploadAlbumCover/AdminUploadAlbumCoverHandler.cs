@@ -51,13 +51,7 @@ public class AdminUploadAlbumCoverHandler(
                     cancellationToken: ct
                 );
 
-                album.Update(
-                    name: album.Name,
-                    coverImageFileId: uploaded.Reference.Id,
-                    releaseYear: album.ReleaseYear,
-                    label: album.Label,
-                    releaseType: album.ReleaseType
-                );
+                album.SetCoverImage(coverImageFileId: uploaded.Reference.Id);
             },
             cancellationToken: cancellationToken
         );
