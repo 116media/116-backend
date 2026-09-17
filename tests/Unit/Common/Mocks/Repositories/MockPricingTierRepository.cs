@@ -21,6 +21,21 @@ public static class MockPricingTierRepository
             .Returns(Task.CompletedTask);
         mock.Setup(x => x.GetAllAsync(It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<PricingTierEntity>());
+        mock.Setup(x => x.GetByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<Guid, PricingTierEntity>());
+        return mock;
+    }
+
+    /// <summary>
+    /// Arranges the batch lookup to resolve exactly the supplied rows, keyed by id.
+    /// </summary>
+    public static Mock<IPricingTierRepository> SetupGetByIds(
+        this Mock<IPricingTierRepository> mock,
+        params PricingTierEntity[] entities
+    )
+    {
+        mock.Setup(x => x.GetByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(entities.ToDictionary(entity => entity.Id));
         return mock;
     }
 
