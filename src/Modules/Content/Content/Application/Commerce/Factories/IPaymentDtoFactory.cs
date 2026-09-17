@@ -24,13 +24,14 @@ public interface IPaymentDtoFactory
     );
 
     /// <summary>
-    /// Builds the summary projections for a list of payments, resolving every verifier in one query.
+    /// Builds the summary projections for the payments carried by a list of orders, resolving
+    /// every verifier and customer in one query each.
     /// </summary>
-    /// <param name="payments">The payments to project.</param>
+    /// <param name="orders">The orders whose payments to project; each must carry a payment.</param>
     /// <param name="ct">Token to observe for cancellation requests.</param>
     /// <returns>The projections, in the order supplied.</returns>
     Task<IReadOnlyList<PaymentSummaryDto>> CreateManyAsync(
-        IReadOnlyList<ContentPaymentEntity> payments,
+        IReadOnlyList<ContentOrderEntity> orders,
         CancellationToken ct = default
     );
 }
