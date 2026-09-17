@@ -23,7 +23,6 @@ public class ContentPaymentBuilder
     private string _receiptUrl = TestConstants.Commerce.ValidReceiptUrl;
     private bool _rejected;
     private string? _rejectionNotes;
-    private ContentOrderEntity? _order;
 
     public ContentPaymentBuilder WithId(Guid id)
     {
@@ -71,7 +70,6 @@ public class ContentPaymentBuilder
     /// </summary>
     public ContentPaymentBuilder WithOrder(ContentOrderEntity order)
     {
-        _order = order;
         _orderId = order.Id;
         return this;
     }
@@ -95,19 +93,12 @@ public class ContentPaymentBuilder
 
         if (_verified)
         {
-            payment.Verify(_verifiedByAdminId, _receiptUrl);
+            payment.Verify(_verifiedByAdminId, _receiptUrl, TestConstants.Clock.Instant);
         }
 
         if (_rejected)
         {
             payment.Reject(_rejectionNotes);
-        }
-
-        if (_order is not null)
-        {
-            typeof(ContentPaymentEntity)
-                .GetProperty(nameof(ContentPaymentEntity.Order), BindingFlags.Public | BindingFlags.Instance)!
-                .SetValue(payment, _order);
         }
 
         return payment;
