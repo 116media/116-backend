@@ -1,4 +1,5 @@
 using _116.Content.Application.Shared.Repositories;
+using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Shared.Application.Exceptions;
@@ -153,7 +154,7 @@ public class ArticleRepositoryTests(PostgresFixture postgres) : BaseRepositoryTe
         var (result, _) = await repo.GetAllAsync(page: 1, pageSize: 10, search: null, status: null, categoryId: null);
 
         result.Should().Contain(a => a.Id == article.Id);
-        result.First(a => a.Id == article.Id).Category.Should().NotBeNull();
+        result.First(a => a.Id == article.Id).CategoryId.Should().NotBeEmpty();
     }
 
     [Fact]
@@ -177,7 +178,7 @@ public class ArticleRepositoryTests(PostgresFixture postgres) : BaseRepositoryTe
 
         result.Should().NotBeNull();
         result!.Id.Should().Be(article.Id);
-        result.Category.Should().NotBeNull();
+        result.CategoryId.Should().NotBeEmpty();
     }
 
     [Fact]
@@ -242,8 +243,8 @@ public class ArticleRepositoryTests(PostgresFixture postgres) : BaseRepositoryTe
         var result = await repo.GetBySlugAsync("test-slug-article");
 
         result.Should().NotBeNull();
-        result!.Slug.Should().Be("test-slug-article");
-        result.Category.Should().NotBeNull();
+        result!.Slug.Value.Should().Be("test-slug-article");
+        result.CategoryId.Should().NotBeEmpty();
     }
 
     [Fact]
@@ -378,15 +379,16 @@ public class ArticleRepositoryTests(PostgresFixture postgres) : BaseRepositoryTe
         await seedContext.SaveChangesAsync();
 
         var (repo, db) = CreateScopedRepository<IArticleRepository, ContentDbContext>();
-        var image = ArticleImageFactory.CreateCover(article.Id);
-        await repo.AddImageAsync(image);
+        ArticleEntity tracked = await repo.GetByIdOrThrowAsync(article.Id);
+        ArticleImageEntity image = ArticleImageFactory.CreateCover(tracked);
         await db.SaveChangesAsync();
 
         var readRepo = Resolve<IArticleRepository>();
-        var result = await readRepo.GetImagesByArticleIdAsync(article.Id);
+        ArticleEntity reloaded = await readRepo.GetByIdOrThrowAsync(article.Id);
 
-        result.Should().ContainSingle();
-        result[0].ArticleId.Should().Be(article.Id);
+        reloaded.Images.Should().ContainSingle();
+        reloaded.Images.Single().ArticleId.Should().Be(article.Id);
+        reloaded.Images.Single().Id.Should().Be(image.Id);
     }
 
     [Fact]
@@ -405,13 +407,12 @@ public class ArticleRepositoryTests(PostgresFixture postgres) : BaseRepositoryTe
         seedContext.Articles.Add(article);
         await seedContext.SaveChangesAsync();
 
-        var images = ArticleImageFactory.CreateMany(article.Id, 3);
-        seedContext.ArticleImages.AddRange(images);
+        ArticleImageFactory.CreateMany(article, 3);
         await seedContext.SaveChangesAsync();
 
         var (repo, db) = CreateScopedRepository<IArticleRepository, ContentDbContext>();
-        var existing = await db.ArticleImages.Where(i => i.ArticleId == article.Id).ToListAsync();
-        repo.RemoveImages(existing);
+        ArticleEntity tracked = await repo.GetByIdOrThrowAsync(article.Id);
+        tracked.RemoveBodyImages(tracked.Images.Select(image => image.StorageKey).ToList());
         await db.SaveChangesAsync();
 
         await using var verifyContext = CreateDbContext<ContentDbContext>();
