@@ -57,7 +57,7 @@ namespace _116.Content.Application.Shared.DTOs;
 /// The display name of the applied promotion level, or null if not promoted.
 /// </param>
 /// <param name="HasLyrics">
-/// Whether a lyrics page is linked to this video.
+/// Whether a published lyrics page is linked to this video.
 /// </param>
 /// <param name="ShootingScheduledAt">
 /// The scheduled shooting date, or null.
