@@ -22,10 +22,11 @@ public class CategoryDtoFactoryTests : BaseContentHandlerTest
     private readonly Mock<IFileStorageService> _fileStorageMock = MockFileStorageService.Create();
 
     /// <summary>
-    /// Builds the factory under test over the shared mapper and the mocked storage contract.
+    /// Builds the factory under test over the shared mapper, the mocked storage contract and
+    /// mocked lookup repositories.
     /// </summary>
     /// <returns>The factory.</returns>
-    private CategoryDtoFactory CreateFactory() => new(Mapper, _fileStorageMock.Object);
+    private ICategoryDtoFactory CreateFactory() => CreateCategoryDtoFactory(_fileStorageMock.Object);
 
     [Fact]
     public async Task CreateManyAsync_WithMultipleEntities_ShouldReturnMappedList()
