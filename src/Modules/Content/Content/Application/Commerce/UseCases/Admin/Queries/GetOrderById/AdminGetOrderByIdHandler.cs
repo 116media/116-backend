@@ -1,4 +1,5 @@
 using _116.Content.Application.Commerce.Factories;
+using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
@@ -17,12 +18,15 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Queries.GetOrderById;
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
 /// <param name="fileStorage">Core's storage contract.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="orderDtoFactory">Builds order projections with their lookups resolved.</param>
+/// <param name="orderDtoFactory">Builds order projections with their lookups resolved.</param>
 /// <param name="userLookup">Cross-module service for resolving admin user names.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminGetOrderByIdHandler(
     IContentOrderRepository contentOrderRepository,
     IFileStorageService fileStorage,
     IMapper mapper,
+    IContentOrderDtoFactory orderDtoFactory,
     IPaymentDtoFactory paymentDtoFactory,
     ContentI18n i18n
 ) : IQueryHandler<AdminGetOrderByIdQuery, AdminGetOrderByIdResult>
@@ -37,7 +41,7 @@ public class AdminGetOrderByIdHandler(
 
         if (order is not null)
         {
-            var dto = order.ToContentOrderDetailDto(mapper);
+            ContentOrderDetailDto dto = await orderDtoFactory.CreateDetailAsync(order, cancellationToken);
 
             if (order.Payment?.PaymentProofFileId is not { } proofFileId)
             {
