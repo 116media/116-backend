@@ -28,7 +28,8 @@ public class PublicGetArtistBySlugHandler(
     IArtistDtoFactory artistDtoFactory,
     IVideoDtoFactory videoDtoFactory,
     IFileStorageService fileStorage,
-    ContentI18n i18n
+    ContentI18n i18n,
+    IContentLookupFactory contentLookupFactory
 ) : IQueryHandler<PublicGetArtistBySlugQuery, PublicGetArtistBySlugResult>
 {
     /// <inheritdoc />
@@ -80,16 +81,17 @@ public class PublicGetArtistBySlugHandler(
             cancellationToken: cancellationToken
         );
 
-        IReadOnlyList<ArtistSocialLinkEntity> socialLinks = await artistRepository.GetSocialLinksAsync(
-            artistId: artist.Id,
-            cancellationToken: cancellationToken
-        );
+        IReadOnlyList<ArtistSocialLinkEntity> socialLinks = artist.SocialLinks.OrderBy(link => link.Platform).ToList();
 
         ArtistDto artistDto = await artistDtoFactory.CreateAsync(artist, socialLinks, cancellationToken);
 
         IReadOnlyList<PublicLyricsSummaryDto> lyricsDtos = await lyricsList
             .AsReadOnly()
-            .ToPublicLyricsSummaryDtosAsync(fileStorage, cancellationToken);
+            .ToPublicLyricsSummaryDtosAsync(
+                await contentLookupFactory.ResolveForLyricsAsync(lyricsList.AsReadOnly(), cancellationToken),
+                fileStorage,
+                cancellationToken
+            );
 
         IReadOnlyList<PublicVideoSummaryDto> videoDtos = await videoDtoFactory.CreatePublicManyAsync(
             videoList.AsReadOnly(),
