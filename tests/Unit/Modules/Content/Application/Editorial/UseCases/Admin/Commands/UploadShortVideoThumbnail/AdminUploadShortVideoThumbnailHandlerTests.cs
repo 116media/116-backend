@@ -3,6 +3,8 @@ using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Services;
+using _116.Core.Contracts.Application.DTOs;
+using _116.Core.Contracts.Application.Services;
 using _116.Core.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
@@ -22,23 +24,23 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 /// </summary>
 public class AdminUploadShortVideoThumbnailHandlerTests
 {
+    private readonly Mock<IFileStorageService> _fileStorageMock;
     private readonly Mock<IShortVideoRepository> _shortVideoRepositoryMock;
-    private readonly Mock<IFileUploadService> _fileUploadServiceMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminUploadShortVideoThumbnailHandler _handler;
 
     public AdminUploadShortVideoThumbnailHandlerTests()
     {
+        _fileStorageMock = MockFileStorageService.Create();
         _shortVideoRepositoryMock = MockShortVideoRepository.Create();
-        _fileUploadServiceMock = MockFileUploadService.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
 
-        FileEntity fileEntity = FileFactory.CreateImage();
-        _fileUploadServiceMock.SetupUploadImage(fileEntity);
+        FileReferenceDto fileEntity = FileReferenceDtoFactory.CreateImage();
+        _fileStorageMock.SetupUpload(StoredFileFactory.From(fileEntity));
 
         _handler = new AdminUploadShortVideoThumbnailHandler(
             _shortVideoRepositoryMock.Object,
-            _fileUploadServiceMock.Object,
+            _fileStorageMock.Object,
             _unitOfWorkMock.Object
         );
     }
@@ -48,8 +50,8 @@ public class AdminUploadShortVideoThumbnailHandlerTests
     {
         // Arrange
         ShortVideoEntity shortVideo = ShortVideoFactory.Create();
-        FileEntity uploadedFile = FileFactory.CreateImage();
-        _fileUploadServiceMock.SetupUploadImage(uploadedFile);
+        FileReferenceDto uploadedFile = FileReferenceDtoFactory.CreateImage();
+        _fileStorageMock.SetupUpload(StoredFileFactory.From(uploadedFile));
         IFormFile fileMock = MockYoutubeThumbnailService.CreateMockFormFile();
         var command = new AdminUploadShortVideoThumbnailCommand(ShortVideoId: shortVideo.Id.ToString(), File: fileMock);
 
@@ -62,7 +64,7 @@ public class AdminUploadShortVideoThumbnailHandlerTests
         shortVideo.ThumbnailFileId.Should().Be(uploadedFile.Id);
         result.ThumbnailUrl.Should().Be(uploadedFile.StorageUrl);
         result.ThumbnailStorageKey.Should().Be(uploadedFile.StorageKey);
-        _fileUploadServiceMock.VerifyUploadImageCalled();
+
         _shortVideoRepositoryMock.VerifyUpdateCalled(shortVideo);
         _unitOfWorkMock.VerifyExecutedInTransaction();
     }
@@ -72,8 +74,8 @@ public class AdminUploadShortVideoThumbnailHandlerTests
     {
         // Arrange
         ShortVideoEntity shortVideo = ShortVideoFactory.CreateWithThumbnail();
-        FileEntity uploadedFile = FileFactory.CreateImage();
-        _fileUploadServiceMock.SetupUploadImage(uploadedFile);
+        FileReferenceDto uploadedFile = FileReferenceDtoFactory.CreateImage();
+        _fileStorageMock.SetupUpload(StoredFileFactory.From(uploadedFile));
         IFormFile fileMock = MockYoutubeThumbnailService.CreateMockFormFile();
         var command = new AdminUploadShortVideoThumbnailCommand(ShortVideoId: shortVideo.Id.ToString(), File: fileMock);
 
@@ -86,7 +88,7 @@ public class AdminUploadShortVideoThumbnailHandlerTests
         shortVideo.ThumbnailFileId.Should().Be(uploadedFile.Id);
         result.ThumbnailUrl.Should().Be(uploadedFile.StorageUrl);
         result.ThumbnailStorageKey.Should().Be(uploadedFile.StorageKey);
-        _fileUploadServiceMock.VerifyUploadImageCalled();
+
         _shortVideoRepositoryMock.VerifyUpdateCalled(shortVideo);
         _unitOfWorkMock.VerifyExecutedInTransaction();
     }

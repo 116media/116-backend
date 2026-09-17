@@ -3,11 +3,15 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
-using _116.Identity.Contracts.Application;
+using _116.Core.Contracts.Application.Services;
+using _116.Identity.Contracts.Application.DTOs;
+using _116.Identity.Contracts.Application.Services;
 using _116.Shared.Application.Pagination;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Factories.Core;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Repositories;
+using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -25,18 +29,18 @@ public class PublicGetArticleCommentsHandlerTests : BaseContentHandlerTest
 
     private readonly Mock<IArticleCommentRepository> _articleCommentRepositoryMock;
     private readonly Mock<IUserLookupService> _userLookupMock;
-    private readonly Mock<IFileRepository> _fileRepositoryMock;
+    private readonly Mock<IFileStorageService> _fileStorageMock;
     private readonly PublicGetArticleCommentsHandler _handler;
 
     public PublicGetArticleCommentsHandlerTests()
     {
         _articleCommentRepositoryMock = MockArticleCommentRepository.Create();
         _userLookupMock = new Mock<IUserLookupService>();
-        _fileRepositoryMock = new Mock<IFileRepository>();
+        _fileStorageMock = new Mock<IFileStorageService>();
         _handler = new PublicGetArticleCommentsHandler(
             _articleCommentRepositoryMock.Object,
             _userLookupMock.Object,
-            _fileRepositoryMock.Object
+            _fileStorageMock.Object
         );
     }
 
@@ -47,7 +51,7 @@ public class PublicGetArticleCommentsHandlerTests : BaseContentHandlerTest
                 x.GetAuthorInfosByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>())
             )
             .ReturnsAsync(
-                new Dictionary<Guid, AuthorInfo> { [userId] = new AuthorInfo(userName, email, avatarFileId, role) }
+                new Dictionary<Guid, AuthorDto> { [userId] = new AuthorDto(userName, email, avatarFileId, role) }
             );
     }
 
@@ -109,7 +113,7 @@ public class PublicGetArticleCommentsHandlerTests : BaseContentHandlerTest
             .Setup(x =>
                 x.GetAuthorInfosByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>())
             )
-            .ReturnsAsync(new Dictionary<Guid, AuthorInfo>());
+            .ReturnsAsync(new Dictionary<Guid, AuthorDto>());
 
         PublicGetArticleCommentsResult result = await _handler.Handle(Query(), CancellationToken.None);
 
@@ -140,10 +144,8 @@ public class PublicGetArticleCommentsHandlerTests : BaseContentHandlerTest
         ArticleCommentEntity comment = ArticleCommentFactory.Create(ArticleId, UserId);
         _articleCommentRepositoryMock.SetupGetCommentsAsync(new List<ArticleCommentEntity> { comment }, totalCount: 1);
         SetupAuthor(UserId, "jane", null, AvatarFileId, "Visitor");
-        _fileRepositoryMock
-            .Setup(x =>
-                x.GetStorageUrlsByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>())
-            )
+        _fileStorageMock
+            .Setup(x => x.ResolveUrlsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new Dictionary<Guid, string> { [AvatarFileId] = "https://cdn/avatar.jpg" });
 
         PublicGetArticleCommentsResult result = await _handler.Handle(Query(), CancellationToken.None);

@@ -2,8 +2,11 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.DTOs;
+using _116.Core.Contracts.Application.Services;
 using _116.Core.Domain.Entities;
-using _116.Identity.Contracts.Application;
+using _116.Identity.Contracts.Application.DTOs;
+using _116.Identity.Contracts.Application.Services;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Factories.Core;
 using _116.Unit.Tests.Common;
@@ -21,11 +24,11 @@ namespace _116.Unit.Tests.Modules.Content.Application.Shared.Mappers;
 /// </summary>
 public class ShortVideoMapperTests : BaseContentHandlerTest
 {
-    private readonly Mock<IFileRepository> _fileRepositoryMock = MockFileRepository.Create();
+    private readonly Mock<IFileStorageService> _fileStorageMock = MockFileStorageService.Create();
 
-    private void SetupFile(Guid fileId, FileEntity file)
+    private void SetupFile(Guid fileId, FileReferenceDto file)
     {
-        _fileRepositoryMock.Setup(x => x.GetByIdAsync(fileId, It.IsAny<CancellationToken>())).ReturnsAsync(file);
+        _fileStorageMock.Setup(x => x.ResolveAsync(fileId, It.IsAny<CancellationToken>())).ReturnsAsync(file);
     }
 
     #region ToShortVideoDtoAsync — video url resolution
@@ -36,14 +39,10 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
         // Arrange
         ShortVideoEntity entity = ShortVideoFactory.Create();
         const string videoUrl = "https://res.cloudinary.com/demo/video/upload/v1/shorts/sample.mp4";
-        SetupFile(entity.VideoFileId!.Value, FileFactory.CreateWithStorageUrl(videoUrl));
+        SetupFile(entity.VideoFileId!.Value, FileReferenceDtoFactory.CreateWithStorageUrl(videoUrl));
 
         // Act
-        ShortVideoDto dto = await entity.ToShortVideoDtoAsync(
-            Mapper,
-            _fileRepositoryMock.Object,
-            CancellationToken.None
-        );
+        ShortVideoDto dto = await entity.ToShortVideoDtoAsync(Mapper, _fileStorageMock.Object, CancellationToken.None);
 
         // Assert
         dto.VideoUrl.Should().Be(videoUrl);
@@ -56,11 +55,7 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
         ShortVideoEntity entity = ShortVideoFactory.CreateDraft();
 
         // Act
-        ShortVideoDto dto = await entity.ToShortVideoDtoAsync(
-            Mapper,
-            _fileRepositoryMock.Object,
-            CancellationToken.None
-        );
+        ShortVideoDto dto = await entity.ToShortVideoDtoAsync(Mapper, _fileStorageMock.Object, CancellationToken.None);
 
         // Assert
         dto.VideoUrl.Should().BeNull();
@@ -79,14 +74,10 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
         entity.ThumbnailFileId.Should().BeNull();
 
         const string videoUrl = "https://res.cloudinary.com/demo/video/upload/v1/shorts/sample.mp4";
-        SetupFile(entity.VideoFileId!.Value, FileFactory.CreateWithStorageUrl(videoUrl));
+        SetupFile(entity.VideoFileId!.Value, FileReferenceDtoFactory.CreateWithStorageUrl(videoUrl));
 
         // Act
-        ShortVideoDto dto = await entity.ToShortVideoDtoAsync(
-            Mapper,
-            _fileRepositoryMock.Object,
-            CancellationToken.None
-        );
+        ShortVideoDto dto = await entity.ToShortVideoDtoAsync(Mapper, _fileStorageMock.Object, CancellationToken.None);
 
         // Assert — screenshot transformation inserted and extension changed to jpg
         dto.ThumbnailUrl.Should()
@@ -100,15 +91,11 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
         ShortVideoEntity entity = ShortVideoFactory.CreateWithThumbnail();
         const string videoUrl = "https://res.cloudinary.com/demo/video/upload/v1/shorts/sample.mp4";
         const string thumbnailUrl = "https://res.cloudinary.com/demo/image/upload/v1/shorts/custom-thumb.jpg";
-        SetupFile(entity.VideoFileId!.Value, FileFactory.CreateWithStorageUrl(videoUrl));
-        SetupFile(entity.ThumbnailFileId!.Value, FileFactory.CreateWithStorageUrl(thumbnailUrl));
+        SetupFile(entity.VideoFileId!.Value, FileReferenceDtoFactory.CreateWithStorageUrl(videoUrl));
+        SetupFile(entity.ThumbnailFileId!.Value, FileReferenceDtoFactory.CreateWithStorageUrl(thumbnailUrl));
 
         // Act
-        ShortVideoDto dto = await entity.ToShortVideoDtoAsync(
-            Mapper,
-            _fileRepositoryMock.Object,
-            CancellationToken.None
-        );
+        ShortVideoDto dto = await entity.ToShortVideoDtoAsync(Mapper, _fileStorageMock.Object, CancellationToken.None);
 
         // Assert — uses the uploaded thumbnail, not a generated one
         dto.ThumbnailUrl.Should().Be(thumbnailUrl);
@@ -123,12 +110,12 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
     {
         // Arrange
         IReadOnlyList<ShortVideoEntity> entities = ShortVideoFactory.CreateMany(3);
-        _fileRepositoryMock.SetupGetByIds(new Dictionary<Guid, FileEntity>());
+        _fileStorageMock.SetupResolveMany(new Dictionary<Guid, FileReferenceDto>());
 
         // Act
         IReadOnlyList<ShortVideoDto> dtos = await entities.ToShortVideoDtosAsync(
             Mapper,
-            _fileRepositoryMock.Object,
+            _fileStorageMock.Object,
             CancellationToken.None
         );
 
@@ -145,7 +132,7 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
         // Act
         IReadOnlyList<ShortVideoDto> dtos = await entities.ToShortVideoDtosAsync(
             Mapper,
-            _fileRepositoryMock.Object,
+            _fileStorageMock.Object,
             CancellationToken.None
         );
 
@@ -166,7 +153,7 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
         // Act
         ShortVideoDto dto = await entity.ToShortVideoDtoAsync(
             Mapper,
-            _fileRepositoryMock.Object,
+            _fileStorageMock.Object,
             CancellationToken.None,
             isLiked: true,
             isBookmarked: true
@@ -184,11 +171,7 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
         ShortVideoEntity entity = ShortVideoFactory.Create();
 
         // Act
-        ShortVideoDto dto = await entity.ToShortVideoDtoAsync(
-            Mapper,
-            _fileRepositoryMock.Object,
-            CancellationToken.None
-        );
+        ShortVideoDto dto = await entity.ToShortVideoDtoAsync(Mapper, _fileStorageMock.Object, CancellationToken.None);
 
         // Assert
         dto.IsLiked.Should().BeFalse();
@@ -206,12 +189,12 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
 
         IReadOnlySet<Guid> likedIds = new HashSet<Guid> { liked.Id };
         IReadOnlySet<Guid> bookmarkedIds = new HashSet<Guid> { bookmarked.Id };
-        _fileRepositoryMock.SetupGetByIds(new Dictionary<Guid, FileEntity>());
+        _fileStorageMock.SetupResolveMany(new Dictionary<Guid, FileReferenceDto>());
 
         // Act
         IReadOnlyList<ShortVideoDto> dtos = await entities.ToShortVideoDtosAsync(
             Mapper,
-            _fileRepositoryMock.Object,
+            _fileStorageMock.Object,
             likedIds,
             bookmarkedIds,
             CancellationToken.None
@@ -238,13 +221,13 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
         var userLookup = new Mock<IUserLookupService>();
         userLookup
             .Setup(x => x.GetAuthorInfoByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new AuthorInfo("kinix_editor", "editor@example.com", null, "Admin"));
+            .ReturnsAsync(new AuthorDto("kinix_editor", "editor@example.com", null, "Admin"));
 
         // Act
         ShortVideoDto dto = await entity.ToShortVideoDtoAsync(
             Mapper,
             userLookup.Object,
-            _fileRepositoryMock.Object,
+            _fileStorageMock.Object,
             CancellationToken.None,
             isLiked: true,
             isBookmarked: true
@@ -265,19 +248,19 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
         ShortVideoEntity other = ShortVideoFactory.Create();
         IReadOnlyList<ShortVideoEntity> entities = [liked, other];
 
-        var authors = new Dictionary<Guid, AuthorInfo>
+        var authors = new Dictionary<Guid, AuthorDto>
         {
-            [liked.AuthorId] = new AuthorInfo("kinix_editor", null, null, "Admin"),
-            [other.AuthorId] = new AuthorInfo("kinix_editor", null, null, "Admin"),
+            [liked.AuthorId] = new AuthorDto("kinix_editor", null, null, "Admin"),
+            [other.AuthorId] = new AuthorDto("kinix_editor", null, null, "Admin"),
         };
         Mock<IUserLookupService> userLookup = MockUserLookupService.Create().SetupGetAuthorInfosByIds(authors);
-        _fileRepositoryMock.SetupGetByIds(new Dictionary<Guid, FileEntity>());
+        _fileStorageMock.SetupResolveMany(new Dictionary<Guid, FileReferenceDto>());
 
         // Act
         IReadOnlyList<ShortVideoDto> dtos = await entities.ToShortVideoDtosAsync(
             Mapper,
             userLookup.Object,
-            _fileRepositoryMock.Object,
+            _fileStorageMock.Object,
             new HashSet<Guid> { liked.Id },
             new HashSet<Guid>(),
             CancellationToken.None
@@ -295,13 +278,13 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
         // Arrange
         List<ShortVideoEntity> shorts = ShortVideoFactory.CreateMany(4);
         Mock<IUserLookupService> userLookup = MockUserLookupService.Create();
-        _fileRepositoryMock.SetupGetByIds(new Dictionary<Guid, FileEntity>());
+        _fileStorageMock.SetupResolveMany(new Dictionary<Guid, FileReferenceDto>());
 
         // Act
         await shorts.ToShortVideoDtosAsync(
             Mapper,
             userLookup.Object,
-            _fileRepositoryMock.Object,
+            _fileStorageMock.Object,
             new HashSet<Guid>(),
             new HashSet<Guid>(),
             CancellationToken.None
@@ -309,8 +292,8 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
 
         // Assert — one batch call each, not one per item (no N+1)
         userLookup.VerifyGetAuthorInfosByIdsCalledOnce();
-        _fileRepositoryMock.VerifyGetByIdsCalledOnce();
-        _fileRepositoryMock.Verify(x => x.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+        _fileStorageMock.VerifyResolveManyCalledOnce();
+        _fileStorageMock.Verify(x => x.ResolveAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -318,13 +301,15 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
     {
         // Arrange
         ShortVideoEntity entity = ShortVideoFactory.Create();
-        var files = new Dictionary<Guid, FileEntity>
+        var files = new Dictionary<Guid, FileReferenceDto>
         {
-            [entity.VideoFileId!.Value] = FileFactory.CreateWithStorageUrl("https://cdn.example.com/short.mp4"),
+            [entity.VideoFileId!.Value] = FileReferenceDtoFactory.CreateWithStorageUrl(
+                "https://cdn.example.com/short.mp4"
+            ),
         };
-        var authors = new Dictionary<Guid, AuthorInfo>
+        var authors = new Dictionary<Guid, AuthorDto>
         {
-            [entity.AuthorId] = new AuthorInfo("editor", null, null, "Admin"),
+            [entity.AuthorId] = new AuthorDto("editor", null, null, "Admin"),
         };
 
         // Act
@@ -351,15 +336,19 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
         // and the author's avatar resolves from the same pre-fetched file map
         ShortVideoEntity entity = ShortVideoFactory.CreateWithThumbnail();
         var avatarFileId = Guid.NewGuid();
-        var files = new Dictionary<Guid, FileEntity>
+        var files = new Dictionary<Guid, FileReferenceDto>
         {
-            [entity.VideoFileId!.Value] = FileFactory.CreateWithStorageUrl("https://cdn.example.com/short.mp4"),
-            [entity.ThumbnailFileId!.Value] = FileFactory.CreateWithStorageUrl("https://cdn.example.com/thumb.jpg"),
-            [avatarFileId] = FileFactory.CreateWithStorageUrl("https://cdn.example.com/avatar.png"),
+            [entity.VideoFileId!.Value] = FileReferenceDtoFactory.CreateWithStorageUrl(
+                "https://cdn.example.com/short.mp4"
+            ),
+            [entity.ThumbnailFileId!.Value] = FileReferenceDtoFactory.CreateWithStorageUrl(
+                "https://cdn.example.com/thumb.jpg"
+            ),
+            [avatarFileId] = FileReferenceDtoFactory.CreateWithStorageUrl("https://cdn.example.com/avatar.png"),
         };
-        var authors = new Dictionary<Guid, AuthorInfo>
+        var authors = new Dictionary<Guid, AuthorDto>
         {
-            [entity.AuthorId] = new AuthorInfo("editor", "editor@116.com", avatarFileId, "Admin"),
+            [entity.AuthorId] = new AuthorDto("editor", "editor@116.com", avatarFileId, "Admin"),
         };
 
         // Act

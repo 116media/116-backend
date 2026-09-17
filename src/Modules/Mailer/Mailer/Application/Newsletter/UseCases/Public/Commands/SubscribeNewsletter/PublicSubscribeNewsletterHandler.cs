@@ -2,8 +2,9 @@ using System.Globalization;
 using _116.Mailer.Application.Newsletter.Services;
 using _116.Mailer.Application.Shared.Persistence;
 using _116.Mailer.Application.Shared.Repositories;
-using _116.Mailer.Contracts.Application;
-using _116.Mailer.Contracts.Domain;
+using _116.Mailer.Contracts.Application.DTOs;
+using _116.Mailer.Contracts.Application.Services;
+using _116.Mailer.Contracts.Domain.Enums;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Domain.Enums;
 using _116.Shared.Contracts.Application.CQRS;
@@ -19,11 +20,11 @@ namespace _116.Mailer.Application.Newsletter.UseCases.Public.Commands.SubscribeN
 /// </summary>
 /// <param name="newsletterRepository">Repository for subscriber persistence.</param>
 /// <param name="unitOfWork">The Mailer module unit of work.</param>
-/// <param name="mailer">The outbox mailer used to send the confirmation email.</param>
+/// <param name="emailService">The outbox mailer used to send the confirmation email.</param>
 public class PublicSubscribeNewsletterHandler(
     INewsletterRepository newsletterRepository,
     IMailerUnitOfWork unitOfWork,
-    IMailer mailer
+    IEmailService emailService
 ) : ICommandHandler<PublicSubscribeNewsletterCommand, PublicSubscribeNewsletterResult>
 {
     /// <summary>
@@ -60,9 +61,9 @@ public class PublicSubscribeNewsletterHandler(
 
         await unitOfWork.CommitAsync(cancellationToken);
 
-        await mailer.EnqueueAsync(
+        await emailService.EnqueueAsync(
             template: EnumEmailTemplate.NewsletterConfirm,
-            to: new EmailRecipient(subscriber.Email),
+            to: new EmailRecipientDto(subscriber.Email),
             tokens: new Dictionary<string, string>
             {
                 ["confirmUrl"] = NewsletterLinkBuilder.ConfirmUrl(subscriber.ConfirmationToken),

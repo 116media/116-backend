@@ -4,6 +4,9 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Core.Application.Shared.Services;
+using _116.Core.Contracts.Application.DTOs;
+using _116.Core.Contracts.Application.Services;
+using _116.Core.Contracts.Domain.Enums;
 using _116.Core.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
@@ -25,30 +28,27 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 /// </summary>
 public class AdminUploadArticleImageHandlerTests : BaseContentHandlerTest
 {
+    private readonly Mock<IFileStorageService> _fileStorageMock;
     private readonly Mock<IArticleRepository> _articleRepositoryMock;
-    private readonly Mock<ICloudinaryService> _cloudinaryMock;
-    private readonly Mock<IFileUploadService> _fileUploadServiceMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminUploadArticleImageHandler _handler;
     private readonly IFormFile _mockFile;
-    private readonly FileEntity _coverFile;
+    private readonly FileReferenceDto _coverFile;
 
     private static readonly Guid CategoryId = Guid.NewGuid();
 
     public AdminUploadArticleImageHandlerTests()
     {
+        _fileStorageMock = MockFileStorageService.Create();
         _articleRepositoryMock = MockArticleRepository.Create();
-        _cloudinaryMock = MockCloudinaryService.Create();
-        _fileUploadServiceMock = MockFileUploadService.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
 
-        _coverFile = FileFactory.CreateImage();
-        _fileUploadServiceMock.SetupUploadImage(_coverFile);
+        _coverFile = FileReferenceDtoFactory.CreateImage();
+        _fileStorageMock.SetupUpload(StoredFileFactory.From(_coverFile));
 
         _handler = new AdminUploadArticleImageHandler(
             _articleRepositoryMock.Object,
-            _cloudinaryMock.Object,
-            _fileUploadServiceMock.Object,
+            _fileStorageMock.Object,
             _unitOfWorkMock.Object,
             Mapper
         );
@@ -74,11 +74,21 @@ public class AdminUploadArticleImageHandlerTests : BaseContentHandlerTest
         AdminUploadArticleImageResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Image.Url.Should().Be(TestConstants.Cloudinary.ValidSecureUrl);
-        result.Image.StorageKey.Should().Be(TestConstants.Cloudinary.ValidPublicId);
+        result.Image.Url.Should().Be(_coverFile.StorageUrl);
+        result.Image.StorageKey.Should().Be(_coverFile.StorageKey);
         result.Image.ImageType.Should().Be(EnumArticleImageType.Body);
         article.CoverImageFileId.Should().BeNull();
-        _cloudinaryMock.VerifyUploadCalled();
+        _fileStorageMock.Verify(
+            x =>
+                x.UploadAsync(
+                    It.IsAny<IFormFile>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<EnumStoredFileKind>(),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Once
+        );
         _articleRepositoryMock.VerifyAddImageCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -104,7 +114,7 @@ public class AdminUploadArticleImageHandlerTests : BaseContentHandlerTest
         article.CoverImageFileId.Should().Be(_coverFile.Id);
         result.Image.Url.Should().Be(_coverFile.StorageUrl);
         result.Image.ImageType.Should().Be(EnumArticleImageType.Cover);
-        _fileUploadServiceMock.VerifyUploadImageCalled();
+
         _articleRepositoryMock.VerifyUpdateCalled(article);
         _articleRepositoryMock.VerifyAddImageCalled();
         _unitOfWorkMock.VerifyExecutedInTransaction();
@@ -131,7 +141,7 @@ public class AdminUploadArticleImageHandlerTests : BaseContentHandlerTest
         // Assert
         article.CoverImageFileId.Should().Be(_coverFile.Id);
         result.Image.ImageType.Should().Be(EnumArticleImageType.Cover);
-        _fileUploadServiceMock.VerifyUploadImageCalled();
+
         _articleRepositoryMock.Verify(
             x => x.RemoveImages(It.Is<IEnumerable<ArticleImageEntity>>(images => images.Single() == oldCover)),
             Times.Once

@@ -2,9 +2,11 @@ using _116.Content.Application.Editorial.EventHandlers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Events;
-using _116.Identity.Contracts.Application;
-using _116.Mailer.Contracts.Application;
-using _116.Mailer.Contracts.Domain;
+using _116.Identity.Contracts.Application.DTOs;
+using _116.Identity.Contracts.Application.Services;
+using _116.Mailer.Contracts.Application.DTOs;
+using _116.Mailer.Contracts.Application.Services;
+using _116.Mailer.Contracts.Domain.Enums;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -20,8 +22,8 @@ public class LyricsRevisionDecidedNotificationsHandlerTests
 {
     private readonly Mock<IUserLookupService> _userLookupServiceMock = new();
     private readonly Mock<ILyricsRepository> _lyricsRepositoryMock;
-    private readonly Mock<IMailer> _mailerMock = new();
-    private readonly Mock<INotifier> _notifierMock = new();
+    private readonly Mock<IEmailService> _mailerMock = new();
+    private readonly Mock<INotificationService> _notifierMock = new();
     private readonly LyricsRevisionDecidedNotificationsHandler _handler;
     private readonly LyricsEntity _lyrics;
 
@@ -58,7 +60,7 @@ public class LyricsRevisionDecidedNotificationsHandlerTests
             x =>
                 x.EnqueueAsync(
                     EnumEmailTemplate.RevisionDecided,
-                    It.Is<EmailRecipient>(r => r.Address == "proposer@test.com"),
+                    It.Is<EmailRecipientDto>(r => r.Address == "proposer@test.com"),
                     It.Is<IReadOnlyDictionary<string, string>>(t =>
                         t["userName"] == "Fally" && t["songTitle"] == _lyrics.SongTitle && t["decision"] == "accepted"
                     ),
@@ -164,6 +166,6 @@ public class LyricsRevisionDecidedNotificationsHandlerTests
     {
         _userLookupServiceMock
             .Setup(x => x.GetAuthorInfoByIdAsync(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new AuthorInfo("Fally", email, null, "Visitor"));
+            .ReturnsAsync(new AuthorDto("Fally", email, null, "Visitor"));
     }
 }

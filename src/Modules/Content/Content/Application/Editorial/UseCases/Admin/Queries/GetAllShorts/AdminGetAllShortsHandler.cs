@@ -2,8 +2,8 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Repositories;
-using _116.Identity.Contracts.Application;
+using _116.Core.Contracts.Application.Services;
+using _116.Identity.Contracts.Application.Services;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
@@ -20,7 +20,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Queries.GetAllShorts
 /// <param name="userLookup">
 /// Cross-module service for resolving author profiles.
 /// </param>
-/// <param name="fileRepository">
+/// <param name="fileStorage">
 /// Repository for resolving avatar file URLs.
 /// </param>
 /// <param name="mapper">
@@ -29,7 +29,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Queries.GetAllShorts
 public class AdminGetAllShortsHandler(
     IShortVideoRepository shortVideoRepository,
     IUserLookupService userLookup,
-    IFileRepository fileRepository,
+    IFileStorageService fileStorage,
     IMapper mapper
 ) : IQueryHandler<AdminGetAllShortsQuery, AdminGetAllShortsResult>
 {
@@ -50,7 +50,7 @@ public class AdminGetAllShortsHandler(
         IReadOnlyList<ShortVideoDto> dtoList = await shortVideos.ToShortVideoDtosAsync(
             mapper,
             userLookup,
-            fileRepository,
+            fileStorage,
             cancellationToken
         );
 

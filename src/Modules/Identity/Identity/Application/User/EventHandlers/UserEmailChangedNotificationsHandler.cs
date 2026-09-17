@@ -1,7 +1,8 @@
-using _116.Identity.Contracts.Application;
+using _116.Identity.Contracts.Application.Services;
 using _116.Identity.Domain.Events;
-using _116.Mailer.Contracts.Application;
-using _116.Mailer.Contracts.Domain;
+using _116.Mailer.Contracts.Application.DTOs;
+using _116.Mailer.Contracts.Application.Services;
+using _116.Mailer.Contracts.Domain.Enums;
 using _116.Shared.Application.Localization;
 using _116.Shared.Application.Services;
 using Microsoft.Extensions.Logging;
@@ -16,13 +17,13 @@ namespace _116.Identity.Application.User.EventHandlers;
 /// construction. Both channels are handled together because they share every lookup.
 /// </summary>
 /// <param name="userLookupService">Lookup resolving the user's display name by id.</param>
-/// <param name="mailer">Outbox mailer sending the alert and confirmation.</param>
-/// <param name="notifier">Writer for the in-app notification row.</param>
+/// <param name="emailService">Outbox mailer sending the alert and confirmation.</param>
+/// <param name="notificationService">Writer for the in-app notification row.</param>
 /// <param name="logger">Logger recording skipped deliveries.</param>
 public class UserEmailChangedNotificationsHandler(
     IUserLookupService userLookupService,
-    IMailer mailer,
-    INotifier notifier,
+    IEmailService emailService,
+    INotificationService notificationService,
     ILogger<UserEmailChangedNotificationsHandler> logger
 ) : IDomainEventHandler<UserEmailChangedEvent>
 {
@@ -46,9 +47,9 @@ public class UserEmailChangedNotificationsHandler(
 
         if (domainEvent.OldEmail is not null)
         {
-            await mailer.EnqueueAsync(
+            await emailService.EnqueueAsync(
                 template: EnumEmailTemplate.EmailChangedAlertOld,
-                to: new EmailRecipient(Address: domainEvent.OldEmail, DisplayName: userName),
+                to: new EmailRecipientDto(Address: domainEvent.OldEmail, DisplayName: userName),
                 tokens: new Dictionary<string, string>
                 {
                     ["userName"] = userName,
@@ -60,15 +61,15 @@ public class UserEmailChangedNotificationsHandler(
             );
         }
 
-        await mailer.EnqueueAsync(
+        await emailService.EnqueueAsync(
             template: EnumEmailTemplate.EmailChangedConfirmNew,
-            to: new EmailRecipient(Address: domainEvent.NewEmail, DisplayName: userName),
+            to: new EmailRecipientDto(Address: domainEvent.NewEmail, DisplayName: userName),
             tokens: new Dictionary<string, string> { ["userName"] = userName, ["changeTime"] = changeTime },
             culture: culture,
             cancellationToken: cancellationToken
         );
 
-        await notifier.NotifyAsync(
+        await notificationService.NotifyAsync(
             userId: domainEvent.UserId,
             type: EnumNotificationType.EmailChanged,
             tokens: new Dictionary<string, string> { ["newEmailMasked"] = newEmailMasked },

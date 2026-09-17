@@ -1,5 +1,4 @@
-using _116.Core.Application.Shared.DTOs;
-using _116.Core.Domain.Entities;
+using _116.Core.Contracts.Application.DTOs;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
@@ -56,17 +55,6 @@ public static class UserMapper
     {
         var dto = mapper.Map<UserResponseDto>(user);
         return dto with { Roles = roles, Permissions = permissions, Avatar = avatar };
-    }
-
-    /// <summary>
-    /// Maps FileEntity to FileDto.
-    /// </summary>
-    /// <param name="fileEntity">The file entity to map</param>
-    /// <param name="mapper">Injected IMapper instance</param>
-    /// <returns>Mapped FileDto or null if input is null</returns>
-    public static FileDto? ToFileDto(this FileEntity? fileEntity, IMapper mapper)
-    {
-        return fileEntity == null ? null : mapper.Map<FileDto>(fileEntity);
     }
 
     /// <summary>

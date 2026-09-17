@@ -2,9 +2,11 @@ using _116.Content.Application.Editorial.UseCases.Admin.Queries.GetAllArtists;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.Services;
 using _116.Shared.Application.Pagination;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Unit.Tests.Common.Mocks.Repositories;
+using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -22,8 +24,8 @@ public class AdminGetAllArtistsHandlerTests
     public AdminGetAllArtistsHandlerTests()
     {
         _artistRepositoryMock = MockArtistRepository.Create();
-        Mock<IFileRepository> fileRepositoryMock = MockFileRepository.Create();
-        _handler = new AdminGetAllArtistsHandler(_artistRepositoryMock.Object, fileRepositoryMock.Object);
+        Mock<IFileStorageService> fileStorageMock = MockFileStorageService.Create();
+        _handler = new AdminGetAllArtistsHandler(_artistRepositoryMock.Object, fileStorageMock.Object);
     }
 
     [Fact]

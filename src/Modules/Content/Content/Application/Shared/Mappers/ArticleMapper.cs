@@ -1,8 +1,8 @@
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
-using _116.Core.Application.Shared.Repositories;
-using _116.Core.Domain.Entities;
+using _116.Core.Contracts.Application.DTOs;
+using _116.Core.Contracts.Application.Services;
 using Mapster;
 using MapsterMapper;
 
@@ -45,11 +45,11 @@ public static class ArticleMapper
     public static async Task<ArticleSummaryDto> ToArticleSummaryDtoAsync(
         this ArticleEntity entity,
         IMapper mapper,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         CancellationToken ct = default
     )
     {
-        string? coverImageUrl = await ResolveCoverImageUrlAsync(entity, fileRepository, ct);
+        string? coverImageUrl = await ResolveCoverImageUrlAsync(entity, fileStorage, ct);
 
         return entity.ToArticleSummaryDto(mapper, coverImageUrl: coverImageUrl);
     }
@@ -91,12 +91,12 @@ public static class ArticleMapper
 
     /// <summary>
     /// Maps an <see cref="ArticleEntity" /> to an <see cref="ArticleDetailDto" />,
-    /// resolving the cover image URL from the associated FileEntity and stamping the
+    /// resolving the cover image URL from the associated FileReferenceDto and stamping the
     /// current user's interaction flags.
     /// </summary>
     /// <param name="entity">The article to map.</param>
     /// <param name="mapper">The Mapster mapper used for images and tags.</param>
-    /// <param name="fileRepository">Repository used to resolve the cover image URL.</param>
+    /// <param name="fileStorage">Core's storage contract.</param>
     /// <param name="ct">Token to observe for cancellation requests.</param>
     /// <param name="isLiked">
     /// Whether the current user has liked this article. False when anonymous.
@@ -108,13 +108,13 @@ public static class ArticleMapper
     public static async Task<ArticleDetailDto> ToArticleDetailDtoAsync(
         this ArticleEntity entity,
         IMapper mapper,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         CancellationToken ct = default,
         bool isLiked = false,
         bool isBookmarked = false
     )
     {
-        string? coverImageUrl = await ResolveCoverImageUrlAsync(entity, fileRepository, ct);
+        string? coverImageUrl = await ResolveCoverImageUrlAsync(entity, fileStorage, ct);
 
         return new ArticleDetailDto(
             entity.Id,
@@ -162,16 +162,16 @@ public static class ArticleMapper
 
     /// <summary>
     /// Maps a list of <see cref="ArticleEntity" /> to a list of <see cref="ArticleSummaryDto" />,
-    /// resolving cover image URLs from associated FileEntity records.
+    /// resolving cover image URLs from associated FileReferenceDto records.
     /// </summary>
     public static async Task<IReadOnlyList<ArticleSummaryDto>> ToArticleSummaryDtosAsync(
         this IReadOnlyList<ArticleEntity> entities,
         IMapper mapper,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         CancellationToken ct = default
     )
     {
-        IReadOnlyDictionary<Guid, FileEntity> files = await fileRepository.GetByIdsAsync(
+        IReadOnlyDictionary<Guid, FileReferenceDto> files = await fileStorage.ResolveManyAsync(
             entities.Where(e => e.CoverImageFileId.HasValue).Select(e => e.CoverImageFileId!.Value).Distinct().ToList(),
             ct
         );
@@ -217,11 +217,11 @@ public static class ArticleMapper
     /// </summary>
     public static async Task<IReadOnlyList<PublicArticleSummaryDto>> ToPublicArticleSummaryDtosAsync(
         this IReadOnlyList<ArticleEntity> entities,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         CancellationToken ct = default
     )
     {
-        IReadOnlyDictionary<Guid, FileEntity> files = await fileRepository.GetByIdsAsync(
+        IReadOnlyDictionary<Guid, FileReferenceDto> files = await fileStorage.ResolveManyAsync(
             entities.Where(e => e.CoverImageFileId.HasValue).Select(e => e.CoverImageFileId!.Value).Distinct().ToList(),
             ct
         );
@@ -243,14 +243,14 @@ public static class ArticleMapper
     /// </summary>
     public static async Task<IReadOnlyList<PublicArticleSummaryDto>> ToPublicArticleSummaryDtosAsync(
         this IReadOnlyList<ArticleEntity> entities,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         IReadOnlySet<Guid> likedArticleIds,
         IReadOnlySet<Guid> bookmarkedArticleIds,
         CancellationToken ct = default
     )
     {
         IReadOnlyList<PublicArticleSummaryDto> summaries = await entities.ToPublicArticleSummaryDtosAsync(
-            fileRepository,
+            fileStorage,
             ct
         );
 
@@ -271,11 +271,11 @@ public static class ArticleMapper
     /// </summary>
     public static async Task<PublicArticleSummaryDto> ToPublicArticleSummaryDtoAsync(
         this ArticleEntity entity,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         CancellationToken ct = default
     )
     {
-        string? coverImageUrl = await ResolveCoverImageUrlAsync(entity, fileRepository, ct);
+        string? coverImageUrl = await ResolveCoverImageUrlAsync(entity, fileStorage, ct);
         return entity.ToPublicArticleSummaryDto(coverImageUrl: coverImageUrl);
     }
 
@@ -285,13 +285,13 @@ public static class ArticleMapper
     /// </summary>
     public static async Task<PublicArticleSummaryDto> ToPublicArticleSummaryDtoAsync(
         this ArticleEntity entity,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         IReadOnlySet<Guid> likedArticleIds,
         IReadOnlySet<Guid> bookmarkedArticleIds,
         CancellationToken ct = default
     )
     {
-        string? coverImageUrl = await ResolveCoverImageUrlAsync(entity, fileRepository, ct);
+        string? coverImageUrl = await ResolveCoverImageUrlAsync(entity, fileStorage, ct);
 
         return entity.ToPublicArticleSummaryDto(coverImageUrl: coverImageUrl) with
         {
@@ -307,13 +307,13 @@ public static class ArticleMapper
     public static async Task<PublicArticleDetailDto> ToPublicArticleDetailDtoAsync(
         this ArticleEntity entity,
         IMapper mapper,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         CancellationToken ct = default,
         bool isLiked = false,
         bool isBookmarked = false
     )
     {
-        string? coverImageUrl = await ResolveCoverImageUrlAsync(entity, fileRepository, ct);
+        string? coverImageUrl = await ResolveCoverImageUrlAsync(entity, fileStorage, ct);
 
         return new PublicArticleDetailDto(
             entity.Id,
@@ -394,20 +394,20 @@ public static class ArticleMapper
     /// Resolves the cover image URL for an article.
     /// </summary>
     /// <remarks>
-    /// Prefers the FileEntity referenced by <c>CoverImageFileId</c>. Falls back to the
+    /// Prefers the FileReferenceDto referenced by <c>CoverImageFileId</c>. Falls back to the
     /// <c>Cover</c> entry in the <c>Images</c> collection (when loaded) for covers that predate
-    /// FileEntity-backed tracking, where <c>CoverImageFileId</c> was never populated. Returns
+    /// FileReferenceDto-backed tracking, where <c>CoverImageFileId</c> was never populated. Returns
     /// null when no cover image exists.
     /// </remarks>
     private static async Task<string?> ResolveCoverImageUrlAsync(
         ArticleEntity entity,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         CancellationToken ct
     )
     {
         if (entity.CoverImageFileId.HasValue)
         {
-            FileEntity? coverFile = await fileRepository.GetByIdAsync(entity.CoverImageFileId.Value, ct);
+            FileReferenceDto? coverFile = await fileStorage.ResolveAsync(entity.CoverImageFileId.Value, ct);
             if (coverFile?.StorageUrl is not null)
             {
                 return coverFile.StorageUrl;

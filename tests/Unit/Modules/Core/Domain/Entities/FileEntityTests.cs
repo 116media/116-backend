@@ -1,4 +1,5 @@
 using _116.Core.Application.Shared.Errors.Facade;
+using _116.Core.Contracts.Domain.Enums;
 using _116.Core.Domain.Entities;
 using _116.Core.Domain.Enums;
 using _116.Core.Domain.Events;
@@ -271,7 +272,7 @@ public class FileEntityTests
             .Should()
             .ContainSingle()
             .Which.Should()
-            .Be(new FileSoftDeletedEvent(file.Id, "avatars/user-1"));
+            .Be(new FileSoftDeletedEvent(file.Id, "avatars/user-1", file.Kind));
     }
 
     [Fact]
@@ -323,7 +324,7 @@ public class FileEntityTests
             .Should()
             .ContainSingle()
             .Which.Should()
-            .Be(new FileReplacedEvent(file.Id, "content/covers/cover-1"));
+            .Be(new FileReplacedEvent(file.Id, "content/covers/cover-1", file.Kind));
         file.DomainEvents.OfType<FileSoftDeletedEvent>().Should().BeEmpty();
     }
 

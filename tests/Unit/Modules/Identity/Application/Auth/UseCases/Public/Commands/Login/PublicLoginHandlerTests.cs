@@ -2,6 +2,7 @@ using _116.Core.Application.Shared.Repositories;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.Login;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.Login.Contracts;
 using _116.Identity.Application.Session.Factories.Contracts;
+using _116.Identity.Application.User.Services;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
@@ -9,6 +10,7 @@ using _116.Tests.Fixtures.Factories.Identity;
 using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Repositories;
+using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -22,19 +24,19 @@ public class PublicLoginHandlerTests : BaseHandlerTest
 {
     private readonly Mock<IPublicLoginAuthFactory> _authFactoryMock;
     private readonly Mock<ISessionFactory> _sessionFactoryMock;
-    private readonly Mock<IFileRepository> _fileRepositoryMock;
+    private readonly Mock<IAvatarService> _avatarServiceMock;
     private readonly PublicLoginHandler _handler;
 
     public PublicLoginHandlerTests()
     {
         _authFactoryMock = new Mock<IPublicLoginAuthFactory>();
         _sessionFactoryMock = new Mock<ISessionFactory>();
-        _fileRepositoryMock = MockFileRepository.Create();
+        _avatarServiceMock = MockAvatarService.Create();
 
         _handler = new PublicLoginHandler(
             _authFactoryMock.Object,
             _sessionFactoryMock.Object,
-            _fileRepositoryMock.Object,
+            _avatarServiceMock.Object,
             Mapper
         );
     }
@@ -60,7 +62,7 @@ public class PublicLoginHandlerTests : BaseHandlerTest
         _sessionFactoryMock
             .Setup(x => x.CreateSessionAsync(user, permissions, It.IsAny<CancellationToken>()))
             .ReturnsAsync(sessionResult);
-        _fileRepositoryMock.SetupGetAvatarFileReturnsNull(user.AvatarFileId);
+        _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
 
         // Act
         PublicLoginResult result = await _handler.Handle(command, CancellationToken.None);
@@ -89,7 +91,7 @@ public class PublicLoginHandlerTests : BaseHandlerTest
         _sessionFactoryMock
             .Setup(x => x.CreateSessionAsync(user, permissions, It.IsAny<CancellationToken>()))
             .ReturnsAsync(sessionResult);
-        _fileRepositoryMock.SetupGetAvatarFileReturnsNull(user.AvatarFileId);
+        _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
@@ -120,7 +122,7 @@ public class PublicLoginHandlerTests : BaseHandlerTest
         _sessionFactoryMock
             .Setup(x => x.CreateSessionAsync(user, permissions, It.IsAny<CancellationToken>()))
             .ReturnsAsync(sessionResult);
-        _fileRepositoryMock.SetupGetAvatarFileReturnsNull(user.AvatarFileId);
+        _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
@@ -151,16 +153,13 @@ public class PublicLoginHandlerTests : BaseHandlerTest
         _sessionFactoryMock
             .Setup(x => x.CreateSessionAsync(user, permissions, It.IsAny<CancellationToken>()))
             .ReturnsAsync(sessionResult);
-        _fileRepositoryMock.SetupGetAvatarFileReturnsNull(user.AvatarFileId);
+        _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _fileRepositoryMock.Verify(
-            x => x.GetAvatarFileAsync(user.AvatarFileId, It.IsAny<CancellationToken>()),
-            Times.Once
-        );
+        _avatarServiceMock.Verify(x => x.GetAvatarAsync(user.AvatarFileId, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     #endregion
@@ -257,7 +256,7 @@ public class PublicLoginHandlerTests : BaseHandlerTest
         _sessionFactoryMock
             .Setup(x => x.CreateSessionAsync(user, permissions, It.IsAny<CancellationToken>()))
             .ReturnsAsync(sessionResult);
-        _fileRepositoryMock.SetupGetAvatarFileReturnsNull(user.AvatarFileId);
+        _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
 
         // Act
         await _handler.Handle(command, cts.Token);

@@ -2,10 +2,11 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
-using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.DTOs;
+using _116.Core.Contracts.Application.Services;
 using _116.Core.Domain.Entities;
 using _116.Core.Infrastructure.Persistence;
-using _116.Identity.Contracts.Application;
+using _116.Identity.Contracts.Application.Services;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence;
@@ -37,8 +38,8 @@ public class ShortVideoMapperTests(PostgresFixture postgres) : BaseRepositoryTes
         await using var readContext = CreateDbContext<ContentDbContext>();
         ShortVideoEntity loaded = await readContext.ShortVideos.FirstAsync(sv => sv.Id == shortVideo.Id);
 
-        var fileRepository = Resolve<IFileRepository>();
-        ShortVideoDto dto = await loaded.ToShortVideoDtoAsync(_mapper, fileRepository);
+        var fileStorage = Resolve<IFileStorageService>();
+        ShortVideoDto dto = await loaded.ToShortVideoDtoAsync(_mapper, fileStorage);
 
         dto.Id.Should().Be(loaded.Id);
         dto.Title.Should().Be(loaded.Title);
@@ -60,8 +61,8 @@ public class ShortVideoMapperTests(PostgresFixture postgres) : BaseRepositoryTes
         await using var readContext = CreateDbContext<ContentDbContext>();
         ShortVideoEntity loaded = await readContext.ShortVideos.FirstAsync(sv => sv.Id == shortVideo.Id);
 
-        var fileRepository = Resolve<IFileRepository>();
-        ShortVideoDto dto = await loaded.ToShortVideoDtoAsync(_mapper, fileRepository);
+        var fileStorage = Resolve<IFileStorageService>();
+        ShortVideoDto dto = await loaded.ToShortVideoDtoAsync(_mapper, fileStorage);
 
         dto.VideoUrl.Should().Be(videoFile.StorageUrl);
         dto.ThumbnailUrl.Should().NotBeNull();
@@ -84,8 +85,8 @@ public class ShortVideoMapperTests(PostgresFixture postgres) : BaseRepositoryTes
         await using var readContext = CreateDbContext<ContentDbContext>();
         ShortVideoEntity loaded = await readContext.ShortVideos.FirstAsync(sv => sv.Id == shortVideo.Id);
 
-        var fileRepository = Resolve<IFileRepository>();
-        ShortVideoDto dto = await loaded.ToShortVideoDtoAsync(_mapper, fileRepository);
+        var fileStorage = Resolve<IFileStorageService>();
+        ShortVideoDto dto = await loaded.ToShortVideoDtoAsync(_mapper, fileStorage);
 
         dto.ThumbnailUrl.Should().Be(thumbnailFile.StorageUrl);
     }
@@ -102,8 +103,8 @@ public class ShortVideoMapperTests(PostgresFixture postgres) : BaseRepositoryTes
         await using var readContext = CreateDbContext<ContentDbContext>();
         List<ShortVideoEntity> loaded = await readContext.ShortVideos.ToListAsync();
 
-        var fileRepository = Resolve<IFileRepository>();
-        IReadOnlyList<ShortVideoDto> dtos = await loaded.ToShortVideoDtosAsync(_mapper, fileRepository);
+        var fileStorage = Resolve<IFileStorageService>();
+        IReadOnlyList<ShortVideoDto> dtos = await loaded.ToShortVideoDtosAsync(_mapper, fileStorage);
 
         dtos.Should().HaveCount(2);
     }
@@ -126,7 +127,7 @@ public class ShortVideoMapperTests(PostgresFixture postgres) : BaseRepositoryTes
         await using var readContext = CreateDbContext<ContentDbContext>();
         List<ShortVideoEntity> loaded = await readContext.ShortVideos.ToListAsync();
 
-        var fileRepository = Resolve<IFileRepository>();
+        var fileStorage = Resolve<IFileStorageService>();
         var userLookup = Resolve<IUserLookupService>();
         IReadOnlySet<Guid> liked = new HashSet<Guid> { sv1.Id };
         IReadOnlySet<Guid> bookmarked = new HashSet<Guid> { sv2.Id };
@@ -134,7 +135,7 @@ public class ShortVideoMapperTests(PostgresFixture postgres) : BaseRepositoryTes
         IReadOnlyList<ShortVideoDto> dtos = await loaded.ToShortVideoDtosAsync(
             _mapper,
             userLookup,
-            fileRepository,
+            fileStorage,
             liked,
             bookmarked
         );
@@ -186,10 +187,10 @@ public class ShortVideoMapperTests(PostgresFixture postgres) : BaseRepositoryTes
         await using var readContext = CreateDbContext<ContentDbContext>();
         List<ShortVideoEntity> loaded = await readContext.ShortVideos.ToListAsync();
 
-        var fileRepository = Resolve<IFileRepository>();
+        var fileStorage = Resolve<IFileStorageService>();
         var userLookup = Resolve<IUserLookupService>();
 
-        IReadOnlyList<ShortVideoDto> dtos = await loaded.ToShortVideoDtosAsync(_mapper, userLookup, fileRepository);
+        IReadOnlyList<ShortVideoDto> dtos = await loaded.ToShortVideoDtosAsync(_mapper, userLookup, fileStorage);
 
         ShortVideoDto authoredDto = dtos.Single(dto => dto.Id == authored.Id);
         authoredDto.Author.Should().NotBeNull();
@@ -208,16 +209,11 @@ public class ShortVideoMapperTests(PostgresFixture postgres) : BaseRepositoryTes
         await using var readContext = CreateDbContext<ContentDbContext>();
         List<ShortVideoEntity> loaded = await readContext.ShortVideos.ToListAsync();
 
-        var fileRepository = Resolve<IFileRepository>();
+        var fileStorage = Resolve<IFileStorageService>();
         IReadOnlySet<Guid> liked = new HashSet<Guid> { shortVideo.Id };
         IReadOnlySet<Guid> bookmarked = new HashSet<Guid>();
 
-        IReadOnlyList<ShortVideoDto> dtos = await loaded.ToShortVideoDtosAsync(
-            _mapper,
-            fileRepository,
-            liked,
-            bookmarked
-        );
+        IReadOnlyList<ShortVideoDto> dtos = await loaded.ToShortVideoDtosAsync(_mapper, fileStorage, liked, bookmarked);
 
         dtos.Single(dto => dto.Id == shortVideo.Id).IsLiked.Should().BeTrue();
         dtos.Single(dto => dto.Id == shortVideo.Id).IsBookmarked.Should().BeFalse();

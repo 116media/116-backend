@@ -2,9 +2,11 @@ using _116.Content.Application.Interactions.EventHandlers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Events;
-using _116.Identity.Contracts.Application;
-using _116.Mailer.Contracts.Application;
-using _116.Mailer.Contracts.Domain;
+using _116.Identity.Contracts.Application.DTOs;
+using _116.Identity.Contracts.Application.Services;
+using _116.Mailer.Contracts.Application.DTOs;
+using _116.Mailer.Contracts.Application.Services;
+using _116.Mailer.Contracts.Domain.Enums;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -21,8 +23,8 @@ public class CommentReplyAddedNotificationsHandlerTests
     private readonly Mock<IArticleRepository> _articleRepositoryMock;
     private readonly Mock<IArticleCommentRepository> _articleCommentRepositoryMock;
     private readonly Mock<IUserLookupService> _userLookupServiceMock = new();
-    private readonly Mock<IMailer> _mailerMock = new();
-    private readonly Mock<INotifier> _notifierMock = new();
+    private readonly Mock<IEmailService> _mailerMock = new();
+    private readonly Mock<INotificationService> _notifierMock = new();
     private readonly CommentReplyAddedNotificationsHandler _handler;
 
     private readonly ArticleEntity _article;
@@ -82,7 +84,7 @@ public class CommentReplyAddedNotificationsHandlerTests
             x =>
                 x.EnqueueAsync(
                     EnumEmailTemplate.CommentReply,
-                    It.Is<EmailRecipient>(r => r.Address == "author@test.com"),
+                    It.Is<EmailRecipientDto>(r => r.Address == "author@test.com"),
                     It.Is<IReadOnlyDictionary<string, string>>(t =>
                         t["userName"] == "Fally"
                         && t["replierName"] == "Aline"
@@ -230,7 +232,7 @@ public class CommentReplyAddedNotificationsHandlerTests
     {
         _userLookupServiceMock
             .Setup(x => x.GetAuthorInfoByIdAsync(_parentAuthorId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new AuthorInfo("Fally", email, null, "Visitor"));
+            .ReturnsAsync(new AuthorDto("Fally", email, null, "Visitor"));
     }
 
     private void SetupReplierName(string name)

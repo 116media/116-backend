@@ -4,9 +4,10 @@ using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Repositories;
-using _116.Core.Domain.Entities;
-using _116.Identity.Contracts.Application;
+using _116.Core.Contracts.Application.DTOs;
+using _116.Core.Contracts.Application.Services;
+using _116.Identity.Contracts.Application.DTOs;
+using _116.Identity.Contracts.Application.Services;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Content.Application.Interactions.UseCases.Public.Commands.AddCommentReply;
@@ -21,13 +22,13 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.AddComm
 /// <param name="articleCommentRepository">Repository for article comment data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="userLookup">Cross-module service for resolving the replier's profile.</param>
-/// <param name="fileRepository">Repository for resolving the replier's avatar URL.</param>
+/// <param name="fileStorage">Core's storage contract.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class PublicAddCommentReplyHandler(
     IArticleCommentRepository articleCommentRepository,
     IContentUnitOfWork unitOfWork,
     IUserLookupService userLookup,
-    IFileRepository fileRepository,
+    IFileStorageService fileStorage,
     ContentI18n i18n
 ) : ICommandHandler<PublicAddCommentReplyCommand, PublicAddCommentReplyResult>
 {
@@ -84,7 +85,7 @@ public class PublicAddCommentReplyHandler(
     /// <returns>The resolved author DTO, or null.</returns>
     private async Task<PublicAuthorDto?> ResolveAuthorAsync(Guid userId, CancellationToken cancellationToken)
     {
-        AuthorInfo? info = await userLookup.GetAuthorInfoByIdAsync(userId: userId, ct: cancellationToken);
+        AuthorDto? info = await userLookup.GetAuthorInfoByIdAsync(userId: userId, ct: cancellationToken);
 
         if (info is null)
         {
@@ -94,7 +95,7 @@ public class PublicAddCommentReplyHandler(
         string? avatarUrl = null;
         if (info.AvatarFileId.HasValue)
         {
-            FileEntity? avatarFile = await fileRepository.GetByIdAsync(info.AvatarFileId.Value, cancellationToken);
+            FileReferenceDto? avatarFile = await fileStorage.ResolveAsync(info.AvatarFileId.Value, cancellationToken);
             avatarUrl = avatarFile?.StorageUrl;
         }
 

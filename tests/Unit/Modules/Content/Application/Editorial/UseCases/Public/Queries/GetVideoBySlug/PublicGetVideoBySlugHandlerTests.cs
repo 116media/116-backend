@@ -4,12 +4,15 @@ using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.Services;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Factories.Core;
 using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Repositories;
+using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -22,7 +25,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Public.
 public class PublicGetVideoBySlugHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<IVideoRepository> _videoRepositoryMock;
-    private readonly Mock<IFileRepository> _fileRepositoryMock;
+    private readonly Mock<IFileStorageService> _fileStorageMock;
     private readonly Mock<IArtistRepository> _artistRepositoryMock;
     private readonly PublicGetVideoBySlugHandler _handler;
     private readonly VideoErrors _videoErrors = TestErrorsFactory.CreateVideoErrors();
@@ -33,12 +36,12 @@ public class PublicGetVideoBySlugHandlerTests : BaseContentHandlerTest
     public PublicGetVideoBySlugHandlerTests()
     {
         _videoRepositoryMock = MockVideoRepository.Create();
-        _fileRepositoryMock = MockFileRepository.Create();
+        _fileStorageMock = MockFileStorageService.Create();
         _artistRepositoryMock = MockArtistRepository.Create();
         _handler = new PublicGetVideoBySlugHandler(
             _videoRepositoryMock.Object,
             _artistRepositoryMock.Object,
-            _fileRepositoryMock.Object,
+            _fileStorageMock.Object,
             Mapper,
             _i18n
         );

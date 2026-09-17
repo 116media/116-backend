@@ -2,7 +2,7 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
-using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.Services;
 using _116.Tests.Fixtures.Factories.Content;
 using MapsterMapper;
 using ContentMappingRegistration = _116.Content.Application.Shared.Mappers.MappingRegistration;
@@ -37,9 +37,9 @@ public class VideoMapperTests(PostgresFixture postgres) : BaseRepositoryTest(pos
         await using var readContext = CreateDbContext<ContentDbContext>();
         VideoEntity loaded = await readContext.Videos.Include(v => v.Category).FirstAsync(v => v.Id == video.Id);
 
-        var fileRepository = Resolve<IFileRepository>();
+        var fileStorage = Resolve<IFileStorageService>();
         IReadOnlyList<VideoEntity> videos = [loaded];
-        VideoSummaryDto dto = (await videos.ToVideoSummaryDtosAsync(_mapper, fileRepository)).Single();
+        VideoSummaryDto dto = (await videos.ToVideoSummaryDtosAsync(_mapper, fileStorage)).Single();
 
         dto.Id.Should().Be(loaded.Id);
         dto.CategoryId.Should().Be(category.Id);
@@ -68,9 +68,9 @@ public class VideoMapperTests(PostgresFixture postgres) : BaseRepositoryTest(pos
         await using var readContext = CreateDbContext<ContentDbContext>();
         VideoEntity loaded = await readContext.Videos.Include(v => v.Category).FirstAsync(v => v.Id == video.Id);
 
-        var fileRepository = Resolve<IFileRepository>();
+        var fileStorage = Resolve<IFileStorageService>();
         IReadOnlyList<VideoEntity> videos = [loaded];
-        VideoSummaryDto dto = (await videos.ToVideoSummaryDtosAsync(_mapper, fileRepository)).Single();
+        VideoSummaryDto dto = (await videos.ToVideoSummaryDtosAsync(_mapper, fileStorage)).Single();
 
         dto.ThumbnailUrl.Should().BeNull();
     }
@@ -100,8 +100,8 @@ public class VideoMapperTests(PostgresFixture postgres) : BaseRepositoryTest(pos
             .Include(v => v.Customer)
             .FirstAsync(v => v.Id == video.Id);
 
-        var fileRepository = Resolve<IFileRepository>();
-        VideoDetailDto dto = await loaded.ToVideoDetailDtoAsync(_mapper, fileRepository);
+        var fileStorage = Resolve<IFileStorageService>();
+        VideoDetailDto dto = await loaded.ToVideoDetailDtoAsync(_mapper, fileStorage);
 
         dto.Id.Should().Be(loaded.Id);
         dto.CategoryId.Should().Be(category.Id);
@@ -130,8 +130,8 @@ public class VideoMapperTests(PostgresFixture postgres) : BaseRepositoryTest(pos
         await using var readContext = CreateDbContext<ContentDbContext>();
         List<VideoEntity> loaded = await readContext.Videos.Include(v => v.Category).ToListAsync();
 
-        var fileRepository = Resolve<IFileRepository>();
-        IReadOnlyList<VideoSummaryDto> dtos = await loaded.ToVideoSummaryDtosAsync(_mapper, fileRepository);
+        var fileStorage = Resolve<IFileStorageService>();
+        IReadOnlyList<VideoSummaryDto> dtos = await loaded.ToVideoSummaryDtosAsync(_mapper, fileStorage);
 
         dtos.Should().HaveCount(2);
     }

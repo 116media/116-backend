@@ -5,6 +5,7 @@ using _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin.Contracts;
 using _116.Identity.Application.Session.Factories.Contracts;
 using _116.Identity.Application.Shared.Exceptions;
+using _116.Identity.Application.User.Services;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Shared.Application.Exceptions;
@@ -13,6 +14,7 @@ using _116.Tests.Fixtures.Factories.Identity;
 using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Repositories;
+using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -27,7 +29,7 @@ public class PublicSocialLoginHandlerTests : BaseHandlerTest
 {
     private readonly Mock<IPublicSocialLoginAuthFactory> _authFactoryMock = new();
     private readonly Mock<ISessionFactory> _sessionFactoryMock = new();
-    private readonly Mock<IFileRepository> _fileRepositoryMock = MockFileRepository.Create();
+    private readonly Mock<IAvatarService> _avatarServiceMock = MockAvatarService.Create();
     private readonly Mock<ISocialTokenVerifierFactory> _verifierFactoryMock = new();
     private readonly Mock<ISocialTokenVerifier> _verifierMock = new();
     private readonly PublicSocialLoginHandler _handler;
@@ -39,7 +41,7 @@ public class PublicSocialLoginHandlerTests : BaseHandlerTest
         _handler = new PublicSocialLoginHandler(
             _authFactoryMock.Object,
             _sessionFactoryMock.Object,
-            _fileRepositoryMock.Object,
+            _avatarServiceMock.Object,
             _verifierFactoryMock.Object,
             TestErrorsFactory.CreateIdentityI18n(),
             Mapper
@@ -85,7 +87,7 @@ public class PublicSocialLoginHandlerTests : BaseHandlerTest
         _sessionFactoryMock
             .Setup(x => x.CreateSessionAsync(user, authData.UserPermissions, It.IsAny<CancellationToken>()))
             .ReturnsAsync(AuthTestHelpers.CreateDefaultSessionResult());
-        _fileRepositoryMock.SetupGetAvatarFileReturnsNull(user.AvatarFileId);
+        _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
 
         // Act
         PublicSocialLoginResult result = await _handler.Handle(Command(), CancellationToken.None);

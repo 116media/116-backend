@@ -2,9 +2,11 @@ using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Events;
-using _116.Identity.Contracts.Application;
-using _116.Mailer.Contracts.Application;
-using _116.Mailer.Contracts.Domain;
+using _116.Identity.Contracts.Application.DTOs;
+using _116.Identity.Contracts.Application.Services;
+using _116.Mailer.Contracts.Application.DTOs;
+using _116.Mailer.Contracts.Application.Services;
+using _116.Mailer.Contracts.Domain.Enums;
 using _116.Shared.Application.Localization;
 using _116.Shared.Application.Services;
 using Microsoft.Extensions.Logging;
@@ -22,22 +24,22 @@ namespace _116.Content.Application.Editorial.EventHandlers;
 /// <param name="userLookupService">Lookup resolving the proposer's name and address by id.</param>
 /// <param name="translationRepository">Repository resolving the corrected translation.</param>
 /// <param name="lyricsRepository">Repository resolving the translated lyrics page.</param>
-/// <param name="mailer">Outbox mailer sending the decision notice.</param>
-/// <param name="notifier">Writer for the in-app notification row.</param>
+/// <param name="emailService">Outbox mailer sending the decision notice.</param>
+/// <param name="notificationService">Writer for the in-app notification row.</param>
 /// <param name="logger">Logger recording skipped deliveries.</param>
 public class TranslationRevisionDecidedNotificationsHandler(
     IUserLookupService userLookupService,
     ITranslationRepository translationRepository,
     ILyricsRepository lyricsRepository,
-    IMailer mailer,
-    INotifier notifier,
+    IEmailService emailService,
+    INotificationService notificationService,
     ILogger<TranslationRevisionDecidedNotificationsHandler> logger
 ) : IDomainEventHandler<TranslationRevisionDecidedEvent>
 {
     /// <inheritdoc />
     public async Task Handle(TranslationRevisionDecidedEvent domainEvent, CancellationToken cancellationToken = default)
     {
-        AuthorInfo? proposer = await userLookupService.GetAuthorInfoByIdAsync(
+        AuthorDto? proposer = await userLookupService.GetAuthorInfoByIdAsync(
             userId: domainEvent.ProposedByUserId,
             ct: cancellationToken
         );
@@ -74,9 +76,9 @@ public class TranslationRevisionDecidedNotificationsHandler(
 
         if (proposer.Email is not null)
         {
-            await mailer.EnqueueAsync(
+            await emailService.EnqueueAsync(
                 template: EnumEmailTemplate.RevisionDecided,
-                to: new EmailRecipient(Address: proposer.Email, DisplayName: proposer.UserName),
+                to: new EmailRecipientDto(Address: proposer.Email, DisplayName: proposer.UserName),
                 tokens: new Dictionary<string, string>
                 {
                     ["userName"] = proposer.UserName,
@@ -96,7 +98,7 @@ public class TranslationRevisionDecidedNotificationsHandler(
             );
         }
 
-        await notifier.NotifyAsync(
+        await notificationService.NotifyAsync(
             userId: domainEvent.ProposedByUserId,
             type: EnumNotificationType.RevisionDecided,
             tokens: new Dictionary<string, string>

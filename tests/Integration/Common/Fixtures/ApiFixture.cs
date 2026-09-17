@@ -145,6 +145,7 @@ public class ApiFixture(PostgresFixture db) : WebApplicationFactory<Program>
         Environment.SetEnvironmentVariable("EMAIL_PROVIDER", "smtp");
         Environment.SetEnvironmentVariable("EMAIL_FROM_ADDRESS", "no-reply@test.116");
         Environment.SetEnvironmentVariable("EMAIL_FROM_NAME", "116 Tests");
+        Environment.SetEnvironmentVariable("SMTP_USE_STARTTLS", "false");
         Environment.SetEnvironmentVariable("FRONTEND_BASE_URL", "http://localhost:3000");
         Environment.SetEnvironmentVariable("WEBAPP_ORIGIN", "http://localhost:3000");
         Environment.SetEnvironmentVariable("DASHBOARD_ORIGIN", "http://localhost:3001");
@@ -294,9 +295,14 @@ public class ApiFixture(PostgresFixture db) : WebApplicationFactory<Program>
     /// </summary>
     private static void StubRemoteFileTransport(IServiceCollection services)
     {
+        services.AddSingleton<RemoteFileScript>();
+        services.AddSingleton<IResettableStub>(sp => sp.GetRequiredService<RemoteFileScript>());
+
         services
             .AddHttpClient<IFileService, FileService>(client => client.Timeout = TimeSpan.FromSeconds(10))
-            .ConfigurePrimaryHttpMessageHandler(() => new StubRemoteFileHandler());
+            .ConfigurePrimaryHttpMessageHandler(sp => new StubRemoteFileHandler(
+                sp.GetRequiredService<RemoteFileScript>()
+            ));
     }
 
     /// <summary>
@@ -352,11 +358,11 @@ public class ApiFixture(PostgresFixture db) : WebApplicationFactory<Program>
     /// </summary>
     private static void ReplaceEmailSender(IServiceCollection services)
     {
-        RemoveAll<IEmailSender>(services);
+        RemoveAll<IEmailSenderService>(services);
 
-        services.AddSingleton<StubEmailSender>();
-        services.AddSingleton<IEmailSender>(sp => sp.GetRequiredService<StubEmailSender>());
-        services.AddSingleton<IResettableStub>(sp => sp.GetRequiredService<StubEmailSender>());
+        services.AddSingleton<StubEmailSenderService>();
+        services.AddSingleton<IEmailSenderService>(sp => sp.GetRequiredService<StubEmailSenderService>());
+        services.AddSingleton<IResettableStub>(sp => sp.GetRequiredService<StubEmailSenderService>());
     }
 
     /// <summary>

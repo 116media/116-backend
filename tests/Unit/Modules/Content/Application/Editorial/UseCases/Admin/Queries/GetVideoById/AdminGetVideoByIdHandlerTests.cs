@@ -2,8 +2,11 @@ using _116.Content.Application.Editorial.UseCases.Admin.Queries.GetVideoById;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.DTOs;
+using _116.Core.Contracts.Application.Services;
 using _116.Core.Domain.Entities;
-using _116.Identity.Contracts.Application;
+using _116.Identity.Contracts.Application.DTOs;
+using _116.Identity.Contracts.Application.Services;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
@@ -24,7 +27,7 @@ public class AdminGetVideoByIdHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<IVideoRepository> _videoRepositoryMock;
     private readonly Mock<IUserLookupService> _userLookupMock;
-    private readonly Mock<IFileRepository> _fileRepositoryMock;
+    private readonly Mock<IFileStorageService> _fileStorageMock;
     private readonly AdminGetVideoByIdHandler _handler;
 
     private static readonly Guid CategoryId = Guid.NewGuid();
@@ -33,11 +36,11 @@ public class AdminGetVideoByIdHandlerTests : BaseContentHandlerTest
     {
         _videoRepositoryMock = MockVideoRepository.Create();
         _userLookupMock = MockUserLookupService.Create();
-        _fileRepositoryMock = MockFileRepository.Create();
+        _fileStorageMock = MockFileStorageService.Create();
         _handler = new AdminGetVideoByIdHandler(
             _videoRepositoryMock.Object,
             _userLookupMock.Object,
-            _fileRepositoryMock.Object,
+            _fileStorageMock.Object,
             Mapper
         );
     }
@@ -69,7 +72,7 @@ public class AdminGetVideoByIdHandlerTests : BaseContentHandlerTest
         var query = new AdminGetVideoByIdQuery(Id: video.Id);
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
 
-        var authorInfo = new AuthorInfo(
+        var authorInfo = new AuthorDto(
             TestConstants.User.ValidUserName,
             TestConstants.User.ValidEmail,
             null,
@@ -100,7 +103,7 @@ public class AdminGetVideoByIdHandlerTests : BaseContentHandlerTest
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
 
         Guid avatarFileId = Guid.NewGuid();
-        var authorInfo = new AuthorInfo(
+        var authorInfo = new AuthorDto(
             TestConstants.User.ValidUserName,
             TestConstants.User.ValidEmail,
             avatarFileId,
@@ -110,8 +113,8 @@ public class AdminGetVideoByIdHandlerTests : BaseContentHandlerTest
             .Setup(x => x.GetAuthorInfoByIdAsync(video.AuthorId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authorInfo);
 
-        FileEntity avatarFile = FileFactory.CreateWithId(avatarFileId);
-        _fileRepositoryMock.SetupGetById(avatarFile);
+        FileReferenceDto avatarFile = FileReferenceDtoFactory.CreateWithId(avatarFileId);
+        _fileStorageMock.SetupResolve(avatarFile);
 
         // Act
         AdminGetVideoByIdResult result = await _handler.Handle(query, CancellationToken.None);
@@ -132,14 +135,14 @@ public class AdminGetVideoByIdHandlerTests : BaseContentHandlerTest
 
         _userLookupMock
             .Setup(x => x.GetAuthorInfoByIdAsync(video.AuthorId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((AuthorInfo?)null);
+            .ReturnsAsync((AuthorDto?)null);
 
         // Act
         AdminGetVideoByIdResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
         result.Video.Author.Should().BeNull();
-        _fileRepositoryMock.Verify(x => x.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+        _fileStorageMock.Verify(x => x.ResolveAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -151,7 +154,7 @@ public class AdminGetVideoByIdHandlerTests : BaseContentHandlerTest
         var query = new AdminGetVideoByIdQuery(Id: video.Id);
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
 
-        var authorInfo = new AuthorInfo(TestConstants.User.ValidUserName, TestConstants.User.ValidEmail, null, "Admin");
+        var authorInfo = new AuthorDto(TestConstants.User.ValidUserName, TestConstants.User.ValidEmail, null, "Admin");
         _userLookupMock
             .Setup(x => x.GetAuthorInfoByIdAsync(video.AuthorId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authorInfo);
@@ -162,7 +165,7 @@ public class AdminGetVideoByIdHandlerTests : BaseContentHandlerTest
         // Assert
         result.Video.Author.Should().NotBeNull();
         result.Video.Author!.AvatarUrl.Should().BeNull();
-        _fileRepositoryMock.Verify(x => x.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+        _fileStorageMock.Verify(x => x.ResolveAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     #endregion

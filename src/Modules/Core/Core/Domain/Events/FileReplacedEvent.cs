@@ -1,3 +1,4 @@
+using _116.Core.Contracts.Domain.Enums;
 using _116.Shared.Domain;
 
 namespace _116.Core.Domain.Events;
@@ -10,5 +11,6 @@ namespace _116.Core.Domain.Events;
 /// remotely, and consumers skip it.
 /// </summary>
 /// <param name="FileId">The replaced file row.</param>
+/// <param name="Kind">The storage class the replaced asset was stored under.</param>
 /// <param name="OldStorageKey">The storage key of the replaced remote asset, or <c>null</c> for external-URL rows.</param>
-public record FileReplacedEvent(Guid FileId, string? OldStorageKey) : DomainEvent;
+public record FileReplacedEvent(Guid FileId, string? OldStorageKey, EnumStoredFileKind Kind) : DomainEvent;

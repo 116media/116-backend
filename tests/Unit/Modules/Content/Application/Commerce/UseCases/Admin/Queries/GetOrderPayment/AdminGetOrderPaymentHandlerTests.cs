@@ -3,8 +3,10 @@ using _116.Content.Application.Commerce.UseCases.Admin.Queries.GetOrderPayment;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.DTOs;
+using _116.Core.Contracts.Application.Services;
 using _116.Core.Domain.Entities;
-using _116.Identity.Contracts.Application;
+using _116.Identity.Contracts.Application.Services;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
@@ -26,7 +28,7 @@ public class AdminGetOrderPaymentHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<IOrderPaymentFactory> _orderPaymentFactoryMock;
     private readonly Mock<IContentOrderRepository> _orderRepositoryMock;
-    private readonly Mock<IFileRepository> _fileRepositoryMock;
+    private readonly Mock<IFileStorageService> _fileStorageMock;
     private readonly Mock<IUserLookupService> _userLookupMock;
     private readonly AdminGetOrderPaymentHandler _handler;
 
@@ -34,12 +36,12 @@ public class AdminGetOrderPaymentHandlerTests : BaseContentHandlerTest
     {
         _orderPaymentFactoryMock = MockOrderPaymentFactory.Create();
         _orderRepositoryMock = MockContentOrderRepository.Create();
-        _fileRepositoryMock = MockFileRepository.Create();
+        _fileStorageMock = MockFileStorageService.Create();
         _userLookupMock = MockUserLookupService.Create();
         _handler = new AdminGetOrderPaymentHandler(
             _orderPaymentFactoryMock.Object,
             _orderRepositoryMock.Object,
-            _fileRepositoryMock.Object,
+            _fileStorageMock.Object,
             Mapper,
             _userLookupMock.Object
         );
@@ -54,10 +56,10 @@ public class AdminGetOrderPaymentHandlerTests : BaseContentHandlerTest
         Guid orderId = Guid.NewGuid();
         Guid proofFileId = Guid.NewGuid();
         ContentPaymentEntity payment = ContentPaymentFactory.CreateWithProof(orderId, proofFileId);
-        FileEntity proofFile = FileFactory.CreateWithId(proofFileId);
+        FileReferenceDto proofFile = FileReferenceDtoFactory.CreateWithId(proofFileId);
 
         _orderPaymentFactoryMock.SetupGetByOrderId(orderId, payment);
-        _fileRepositoryMock.SetupGetById(proofFile);
+        _fileStorageMock.SetupResolve(proofFile);
 
         var query = new AdminGetOrderPaymentQuery(OrderId: orderId);
 
@@ -86,7 +88,7 @@ public class AdminGetOrderPaymentHandlerTests : BaseContentHandlerTest
         // Assert
         result.Payment.PaymentProof.Should().BeNull();
 
-        _fileRepositoryMock.Verify(x => x.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+        _fileStorageMock.Verify(x => x.ResolveAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]

@@ -26,6 +26,8 @@ public class PublicSocialLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 {
     private StubSocialTokenVerifier Verifier => Api.Services.GetRequiredService<StubSocialTokenVerifier>();
 
+    private RemoteFileScript RemoteFile => Api.Services.GetRequiredService<RemoteFileScript>();
+
     private static string ValidationDetail(string property, string message) =>
         new ValidationException([new ValidationFailure(property, message)]).Message;
 
@@ -213,6 +215,112 @@ public class PublicSocialLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(
             email,
             subjectId: $"sub-{Guid.NewGuid():N}",
             pictureUrl: "https://169.254.169.254/latest/meta-data"
+        );
+
+        var response = await Client.PostAsJsonAsync(Routes.Public.Auth.SocialLogin(), GoogleRequest());
+
+        await response.ShouldBeProblem<InternalServerException>(
+            HttpStatusCode.InternalServerError,
+            Localized<InternalServerErrorMessage>(m => m.FileDownloadFailedGeneric())
+        );
+    }
+
+    [Fact]
+    public async Task SocialLogin_WhenTheProviderPictureRedirects_FollowsTheHopAndStoresAvatar()
+    {
+        await SeedVisitorRoleAsync();
+        Client.ClearAuthentication();
+        Client.DefaultRequestHeaders.Add("X-Device-Id", Guid.NewGuid().ToString());
+
+        // A relative Location is resolved against the hop that returned it, so the second
+        // request lands on the same routable literal and the download completes.
+        RemoteFile.Redirects.Enqueue("/avatar-final.jpg");
+
+        var email = $"social-{Guid.NewGuid():N}@test.com";
+        Verifier.NextPayload = Payload(
+            email,
+            subjectId: $"sub-{Guid.NewGuid():N}",
+            pictureUrl: "https://93.184.216.34/avatar.jpg"
+        );
+
+        var response = await Client.PostAsJsonAsync(Routes.Public.Auth.SocialLogin(), GoogleRequest());
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        await using var verifyContext = CreateDbContext<IdentityDbContext>();
+        UserEntity? created = await verifyContext.Users.FirstOrDefaultAsync(u => u.Email == email);
+        created.Should().NotBeNull();
+        created!.AvatarFileId.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task SocialLogin_WhenTheProviderPictureRedirectsToALinkLocalAddress_IsBlocked()
+    {
+        await SeedVisitorRoleAsync();
+        Client.ClearAuthentication();
+        Client.DefaultRequestHeaders.Add("X-Device-Id", Guid.NewGuid().ToString());
+
+        // The first hop is safe, so only the per-hop re-validation can catch the metadata
+        // address the provider redirects to.
+        RemoteFile.Redirects.Enqueue("https://169.254.169.254/latest/meta-data");
+
+        var email = $"social-{Guid.NewGuid():N}@test.com";
+        Verifier.NextPayload = Payload(
+            email,
+            subjectId: $"sub-{Guid.NewGuid():N}",
+            pictureUrl: "https://93.184.216.34/avatar.jpg"
+        );
+
+        var response = await Client.PostAsJsonAsync(Routes.Public.Auth.SocialLogin(), GoogleRequest());
+
+        await response.ShouldBeProblem<InternalServerException>(
+            HttpStatusCode.InternalServerError,
+            Localized<InternalServerErrorMessage>(m => m.FileDownloadFailedGeneric())
+        );
+    }
+
+    [Fact]
+    public async Task SocialLogin_WhenTheProviderPictureRedirectsWithoutALocation_Fails()
+    {
+        await SeedVisitorRoleAsync();
+        Client.ClearAuthentication();
+        Client.DefaultRequestHeaders.Add("X-Device-Id", Guid.NewGuid().ToString());
+
+        RemoteFile.RedirectWithoutLocation = true;
+
+        var email = $"social-{Guid.NewGuid():N}@test.com";
+        Verifier.NextPayload = Payload(
+            email,
+            subjectId: $"sub-{Guid.NewGuid():N}",
+            pictureUrl: "https://93.184.216.34/avatar.jpg"
+        );
+
+        var response = await Client.PostAsJsonAsync(Routes.Public.Auth.SocialLogin(), GoogleRequest());
+
+        await response.ShouldBeProblem<InternalServerException>(
+            HttpStatusCode.InternalServerError,
+            Localized<InternalServerErrorMessage>(m => m.FileDownloadFailedGeneric())
+        );
+    }
+
+    [Fact]
+    public async Task SocialLogin_WhenTheProviderPictureRedirectsEndlessly_StopsAtTheHopCap()
+    {
+        await SeedVisitorRoleAsync();
+        Client.ClearAuthentication();
+        Client.DefaultRequestHeaders.Add("X-Device-Id", Guid.NewGuid().ToString());
+
+        // More hops than the chain allows, so the cap is what ends the walk.
+        for (var hop = 0; hop < 8; hop++)
+        {
+            RemoteFile.Redirects.Enqueue($"/hop-{hop}.jpg");
+        }
+
+        var email = $"social-{Guid.NewGuid():N}@test.com";
+        Verifier.NextPayload = Payload(
+            email,
+            subjectId: $"sub-{Guid.NewGuid():N}",
+            pictureUrl: "https://93.184.216.34/avatar.jpg"
         );
 
         var response = await Client.PostAsJsonAsync(Routes.Public.Auth.SocialLogin(), GoogleRequest());

@@ -2,7 +2,7 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.Services;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetSimilarLyrics;
@@ -13,8 +13,8 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetSimilarL
 /// three-way waterfall (spec 06).
 /// </summary>
 /// <param name="lyricsRepository">Repository for lyrics data access operations.</param>
-/// <param name="fileRepository">Repository for resolving cover image URLs.</param>
-public class PublicGetSimilarLyricsHandler(ILyricsRepository lyricsRepository, IFileRepository fileRepository)
+/// <param name="fileStorage">Core's storage contract.</param>
+public class PublicGetSimilarLyricsHandler(ILyricsRepository lyricsRepository, IFileStorageService fileStorage)
     : IQueryHandler<PublicGetSimilarLyricsQuery, PublicGetSimilarLyricsResult>
 {
     /// <inheritdoc />
@@ -36,7 +36,7 @@ public class PublicGetSimilarLyricsHandler(ILyricsRepository lyricsRepository, I
         );
 
         IReadOnlyList<PublicLyricsSummaryDto> dtoList = await similar.ToPublicLyricsSummaryDtosAsync(
-            fileRepository,
+            fileStorage,
             likedLyricsIds,
             cancellationToken
         );

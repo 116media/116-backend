@@ -1,9 +1,9 @@
-using _116.Core.Application.Shared.Repositories;
-using _116.Core.Domain.Entities;
+using _116.Core.Contracts.Application.DTOs;
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Session.Factories.Contracts;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Mappers;
+using _116.Identity.Application.User.Services;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
 
@@ -14,12 +14,12 @@ namespace _116.Identity.Application.Session.UseCases.Public.Commands.RefreshToke
 /// </summary>
 /// <param name="refreshTokenFactory">Factory for handling refresh token validation and rotation logic.</param>
 /// <param name="jwtService">Service for generating JWT access tokens.</param>
-/// <param name="fileRepository">Repository for accessing file metadata.</param>
+/// <param name="avatarService">Resolves and stores the user's avatar.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class PublicRefreshTokenHandler(
     IRefreshTokenFactory refreshTokenFactory,
     IJwtService jwtService,
-    IFileRepository fileRepository,
+    IAvatarService avatarService,
     IMapper mapper
 ) : ICommandHandler<PublicRefreshTokenCommand, PublicRefreshTokenResult>
 {
@@ -53,12 +53,10 @@ public class PublicRefreshTokenHandler(
             authProvider: authData.User.AuthProvider
         );
 
-        FileEntity? avatarFile = await fileRepository.GetAvatarFileAsync(
+        FileDto? avatarDto = await avatarService.GetAvatarAsync(
             avatarFileId: authData.User.AvatarFileId,
             cancellationToken: cancellationToken
         );
-
-        var avatarDto = avatarFile?.ToFileDto(mapper);
         var userDto = authData.User.ToUserResponseDto(
             mapper: mapper,
             roles: authData.User.UserRoles.ToRoleDtos(mapper),

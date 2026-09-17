@@ -1,4 +1,5 @@
 using _116.Core.Application.Shared.Services;
+using _116.Core.Contracts.Domain.Enums;
 using _116.Tests.Fixtures.Constants;
 using Microsoft.AspNetCore.Http;
 using Moq;
@@ -111,18 +112,29 @@ public static class MockCloudinaryService
 
     public static void VerifyDeleteImageCalled(this Mock<ICloudinaryService> mock, string storageKey)
     {
-        mock.Verify(x => x.DeleteImageAsync(storageKey, It.IsAny<CancellationToken>()), Times.Once);
+        mock.Verify(
+            x => x.DeleteAsync(storageKey, It.IsAny<EnumStoredFileKind>(), It.IsAny<CancellationToken>()),
+            Times.Once
+        );
     }
 
     public static void VerifyDeleteImageNotCalled(this Mock<ICloudinaryService> mock)
     {
-        mock.Verify(x => x.DeleteImageAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+        mock.Verify(
+            x => x.DeleteAsync(It.IsAny<string>(), It.IsAny<EnumStoredFileKind>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
     }
 
     public static void VerifyDeleteImagesCalled(this Mock<ICloudinaryService> mock)
     {
         mock.Verify(
-            x => x.DeleteImagesAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()),
+            x =>
+                x.DeleteManyAsync(
+                    It.IsAny<IEnumerable<string>>(),
+                    It.IsAny<EnumStoredFileKind>(),
+                    It.IsAny<CancellationToken>()
+                ),
             Times.Once
         );
     }
@@ -130,7 +142,12 @@ public static class MockCloudinaryService
     public static void VerifyDeleteImagesNotCalled(this Mock<ICloudinaryService> mock)
     {
         mock.Verify(
-            x => x.DeleteImagesAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()),
+            x =>
+                x.DeleteManyAsync(
+                    It.IsAny<IEnumerable<string>>(),
+                    It.IsAny<EnumStoredFileKind>(),
+                    It.IsAny<CancellationToken>()
+                ),
             Times.Never
         );
     }
@@ -166,8 +183,17 @@ public static class MockCloudinaryService
                 )
             )
             .ReturnsAsync(DefaultVideoUploadResult());
-        mock.Setup(x => x.DeleteImageAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
-        mock.Setup(x => x.DeleteImagesAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
+        mock.Setup(x =>
+                x.DeleteAsync(It.IsAny<string>(), It.IsAny<EnumStoredFileKind>(), It.IsAny<CancellationToken>())
+            )
+            .ReturnsAsync(true);
+        mock.Setup(x =>
+                x.DeleteManyAsync(
+                    It.IsAny<IEnumerable<string>>(),
+                    It.IsAny<EnumStoredFileKind>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
             .ReturnsAsync(true);
     }
 }

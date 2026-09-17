@@ -1,8 +1,8 @@
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
-using _116.Core.Application.Shared.Repositories;
-using _116.Core.Domain.Entities;
+using _116.Core.Contracts.Application.DTOs;
+using _116.Core.Contracts.Application.Services;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
 
@@ -11,7 +11,7 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetOwnSh
 /// <summary>
 /// Handles the current-user shared-video collection query.
 /// </summary>
-public class PublicGetOwnSharedVideosHandler(IVideoRepository videoRepository, IFileRepository fileRepository)
+public class PublicGetOwnSharedVideosHandler(IVideoRepository videoRepository, IFileStorageService fileStorage)
     : IQueryHandler<PublicGetOwnSharedVideosQuery, PublicGetOwnSharedVideosResult>
 {
     /// <inheritdoc />
@@ -30,7 +30,7 @@ public class PublicGetOwnSharedVideosHandler(IVideoRepository videoRepository, I
             .OfType<Guid>()
             .Distinct()
             .ToArray();
-        IReadOnlyDictionary<Guid, FileEntity> files = await fileRepository.GetByIdsAsync(
+        IReadOnlyDictionary<Guid, FileReferenceDto> files = await fileStorage.ResolveManyAsync(
             thumbnailIds,
             cancellationToken
         );

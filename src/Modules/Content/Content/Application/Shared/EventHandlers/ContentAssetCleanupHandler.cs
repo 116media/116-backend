@@ -2,8 +2,8 @@ using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Events;
-using _116.Core.Application.Shared.Repositories;
-using _116.Core.Application.Shared.Services;
+using _116.Core.Contracts.Application.Services;
+using _116.Core.Contracts.Domain.Enums;
 using _116.Shared.Application.Services;
 
 namespace _116.Content.Application.Shared.EventHandlers;
@@ -20,13 +20,11 @@ namespace _116.Content.Application.Shared.EventHandlers;
 /// Failures are logged and tolerated by the publisher; the assets stay
 /// re-cleanable.
 /// </summary>
-/// <param name="cloudinaryService">Service deleting keyed image assets from cloud storage.</param>
-/// <param name="fileRepository">Repository soft-deleting tracked file rows.</param>
+/// <param name="fileStorage">Core's storage contract.</param>
 /// <param name="articleRepository">Repository for article image rows.</param>
 /// <param name="unitOfWork">Unit of Work committing the soft deletions and the orphaned-row removal.</param>
 public class ContentAssetCleanupHandler(
-    ICloudinaryService cloudinaryService,
-    IFileRepository fileRepository,
+    IFileStorageService fileStorage,
     IArticleRepository articleRepository,
     IContentUnitOfWork unitOfWork
 )
@@ -45,8 +43,9 @@ public class ContentAssetCleanupHandler(
 
         if (domainEvent.BodyImageStorageKeys.Count > 0)
         {
-            await cloudinaryService.DeleteImagesAsync(
-                publicIds: domainEvent.BodyImageStorageKeys,
+            await fileStorage.DeleteAssetsAsync(
+                storageKeys: domainEvent.BodyImageStorageKeys,
+                kind: EnumStoredFileKind.Image,
                 cancellationToken: cancellationToken
             );
         }
@@ -85,7 +84,7 @@ public class ContentAssetCleanupHandler(
             {
                 foreach (Guid fileId in fileIds)
                 {
-                    await fileRepository.SoftDeleteByIdAsync(fileId: fileId, cancellationToken: transactionToken);
+                    await fileStorage.DeleteAsync(fileId: fileId, cancellationToken: transactionToken);
                 }
             },
             cancellationToken: cancellationToken
@@ -112,8 +111,9 @@ public class ContentAssetCleanupHandler(
 
         if (domainEvent.StorageKeys.Count > 0)
         {
-            await cloudinaryService.DeleteImagesAsync(
-                publicIds: domainEvent.StorageKeys,
+            await fileStorage.DeleteAssetsAsync(
+                storageKeys: domainEvent.StorageKeys,
+                kind: EnumStoredFileKind.Image,
                 cancellationToken: cancellationToken
             );
         }

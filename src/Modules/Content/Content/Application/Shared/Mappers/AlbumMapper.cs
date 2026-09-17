@@ -1,7 +1,7 @@
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Repositories;
-using _116.Core.Domain.Entities;
+using _116.Core.Contracts.Application.DTOs;
+using _116.Core.Contracts.Application.Services;
 
 namespace _116.Content.Application.Shared.Mappers;
 
@@ -16,11 +16,11 @@ public static class AlbumMapper
     /// </summary>
     public static async Task<AlbumDto> ToAlbumDtoAsync(
         this AlbumEntity entity,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         CancellationToken ct = default
     )
     {
-        string? coverImageUrl = await ResolveCoverImageUrlAsync(entity, fileRepository, ct);
+        string? coverImageUrl = await ResolveCoverImageUrlAsync(entity, fileStorage, ct);
 
         return entity.ToAlbumDto(coverImageUrl: coverImageUrl);
     }
@@ -44,15 +44,15 @@ public static class AlbumMapper
 
     /// <summary>
     /// Maps a list of <see cref="AlbumEntity" /> to a list of <see cref="AlbumDto" />,
-    /// resolving cover image URLs from associated FileEntity records.
+    /// resolving cover image URLs from associated FileReferenceDto records.
     /// </summary>
     public static async Task<IReadOnlyList<AlbumDto>> ToAlbumDtosAsync(
         this IReadOnlyList<AlbumEntity> entities,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         CancellationToken ct = default
     )
     {
-        IReadOnlyDictionary<Guid, FileEntity> files = await fileRepository.GetByIdsAsync(
+        IReadOnlyDictionary<Guid, FileReferenceDto> files = await fileStorage.ResolveManyAsync(
             entities.Where(e => e.CoverImageFileId.HasValue).Select(e => e.CoverImageFileId!.Value).Distinct().ToList(),
             ct
         );
@@ -74,7 +74,7 @@ public static class AlbumMapper
     /// </summary>
     private static async Task<string?> ResolveCoverImageUrlAsync(
         AlbumEntity entity,
-        IFileRepository fileRepository,
+        IFileStorageService fileStorage,
         CancellationToken ct
     )
     {
@@ -83,7 +83,7 @@ public static class AlbumMapper
             return null;
         }
 
-        FileEntity? coverFile = await fileRepository.GetByIdAsync(entity.CoverImageFileId.Value, ct);
+        FileReferenceDto? coverFile = await fileStorage.ResolveAsync(entity.CoverImageFileId.Value, ct);
         return coverFile?.StorageUrl;
     }
 }

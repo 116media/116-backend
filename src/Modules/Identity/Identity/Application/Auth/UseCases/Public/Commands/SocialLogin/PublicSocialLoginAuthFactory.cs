@@ -1,9 +1,9 @@
-using _116.Core.Application.Shared.Services;
-using _116.Core.Domain.Entities;
+using _116.Core.Contracts.Application.Services;
 using _116.Identity.Application.Adapters.SocialAuth;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin.Contracts;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
+using _116.Identity.Application.User.Services;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 
@@ -13,11 +13,10 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin;
 /// Factory implementation for handling social authentication logic.
 /// </summary>
 /// <param name="authRepository">Repository for user data access operations.</param>
-/// <param name="fileUploadService">Uploads and replaces stored assets.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 public class PublicSocialLoginAuthFactory(
     IAuthRepository authRepository,
-    IFileUploadService fileUploadService,
+    IAvatarService avatarService,
     IIdentityUnitOfWork unitOfWork
 ) : IPublicSocialLoginAuthFactory
 {
@@ -39,8 +38,8 @@ public class PublicSocialLoginAuthFactory(
         bool hasManualAvatar = user!.AvatarSource == EnumAvatarSource.Manual;
         bool canAdoptProviderAvatar = !hasManualAvatar && !string.IsNullOrWhiteSpace(payload.PictureUrl);
 
-        FileEntity? avatar = canAdoptProviderAvatar
-            ? await fileUploadService.UploadAvatarFromUrlAsync(
+        StoredFile? avatar = canAdoptProviderAvatar
+            ? await avatarService.UploadFromUrlAsync(
                 currentAvatarFileId: user.AvatarFileId,
                 avatarUrl: payload.PictureUrl!,
                 cancellationToken: cancellationToken
@@ -52,13 +51,13 @@ public class PublicSocialLoginAuthFactory(
             {
                 if (avatar is not null)
                 {
-                    await fileUploadService.RecordAsync(
-                        file: avatar,
+                    await avatarService.RecordAsync(
+                        avatar: avatar,
                         supersededFileId: user.AvatarFileId,
                         cancellationToken: ct
                     );
 
-                    user.UpdateAvatar(avatarFileId: avatar.Id, avatarSource: EnumAvatarSource.Provider);
+                    user.UpdateAvatar(avatarFileId: avatar.Reference.Id, avatarSource: EnumAvatarSource.Provider);
                 }
             },
             cancellationToken: cancellationToken

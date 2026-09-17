@@ -8,7 +8,7 @@ using _116.Mailer.Application.Shared.Repositories;
 using _116.Mailer.Application.Shared.Services;
 using _116.Mailer.Application.Templates;
 using _116.Mailer.Application.Templates.Messages;
-using _116.Mailer.Contracts.Application;
+using _116.Mailer.Contracts.Application.Services;
 using _116.Mailer.Domain.Constants;
 using _116.Mailer.Infrastructure.Persistence;
 using _116.Mailer.Infrastructure.Repositories;
@@ -33,14 +33,18 @@ namespace _116.Unit.Tests.Modules.Mailer;
 public class MailerModuleTests : IDisposable
 {
     private const string EmailProviderVariable = "EMAIL_PROVIDER";
+    private const string ResendApiKeyVariable = "RESEND_API_KEY";
 
     private readonly string? _previousProvider;
+    private readonly string? _previousResendApiKey;
     private readonly ServiceCollection _services;
 
     public MailerModuleTests()
     {
         _previousProvider = Environment.GetEnvironmentVariable(EmailProviderVariable);
+        _previousResendApiKey = Environment.GetEnvironmentVariable(ResendApiKeyVariable);
         Environment.SetEnvironmentVariable(EmailProviderVariable, null);
+        Environment.SetEnvironmentVariable(ResendApiKeyVariable, null);
 
         _services = [];
         _services.AddLogging();
@@ -51,6 +55,7 @@ public class MailerModuleTests : IDisposable
     public void Dispose()
     {
         Environment.SetEnvironmentVariable(EmailProviderVariable, _previousProvider);
+        Environment.SetEnvironmentVariable(ResendApiKeyVariable, _previousResendApiKey);
         GC.SuppressFinalize(this);
     }
 
@@ -144,8 +149,8 @@ public class MailerModuleTests : IDisposable
         _services.AddMailerModule(HostEnvironment("Testing"));
 
         // Assert
-        ServiceDescriptor descriptor = GetDescriptor<IMailer>();
-        descriptor.ImplementationType.Should().Be<OutboxMailer>();
+        ServiceDescriptor descriptor = GetDescriptor<IEmailService>();
+        descriptor.ImplementationType.Should().Be<OutboxEmailService>();
         descriptor.Lifetime.Should().Be(ServiceLifetime.Scoped);
     }
 
@@ -156,8 +161,8 @@ public class MailerModuleTests : IDisposable
         _services.AddMailerModule(HostEnvironment("Testing"));
 
         // Assert
-        ServiceDescriptor descriptor = GetDescriptor<INotifier>();
-        descriptor.ImplementationType.Should().Be<Notifier>();
+        ServiceDescriptor descriptor = GetDescriptor<INotificationService>();
+        descriptor.ImplementationType.Should().Be<NotificationService>();
         descriptor.Lifetime.Should().Be(ServiceLifetime.Scoped);
     }
 
@@ -193,7 +198,7 @@ public class MailerModuleTests : IDisposable
         _services.AddMailerModule(HostEnvironment("Testing"));
 
         // Assert
-        GetDescriptor<IEmailSender>().ImplementationType.Should().Be<SmtpEmailSender>();
+        GetDescriptor<IEmailSenderService>().ImplementationType.Should().Be<SmtpEmailSenderService>();
     }
 
     [Fact]
@@ -206,7 +211,7 @@ public class MailerModuleTests : IDisposable
         _services.AddMailerModule(HostEnvironment("Testing"));
 
         // Assert
-        GetDescriptor<IEmailSender>().ImplementationType.Should().Be<SmtpEmailSender>();
+        GetDescriptor<IEmailSenderService>().ImplementationType.Should().Be<SmtpEmailSenderService>();
     }
 
     [Fact]
@@ -219,7 +224,7 @@ public class MailerModuleTests : IDisposable
         _services.AddMailerModule(HostEnvironment("Testing"));
 
         // Assert
-        GetDescriptor<IEmailSender>().ImplementationType.Should().Be<SmtpEmailSender>();
+        GetDescriptor<IEmailSenderService>().ImplementationType.Should().Be<SmtpEmailSenderService>();
     }
 
     [Fact]
@@ -227,15 +232,32 @@ public class MailerModuleTests : IDisposable
     {
         // Arrange
         Environment.SetEnvironmentVariable(EmailProviderVariable, MailerConstants.EmailProviders.Resend);
+        Environment.SetEnvironmentVariable(ResendApiKeyVariable, "re_test_key");
 
         // Act
         _services.AddMailerModule(HostEnvironment("Testing"));
         ServiceProvider serviceProvider = _services.BuildServiceProvider();
 
         // Assert
-        var sender = serviceProvider.GetService<IEmailSender>();
+        var sender = serviceProvider.GetService<IEmailSenderService>();
         sender.Should().NotBeNull();
-        sender.Should().BeOfType<ResendEmailSender>();
+        sender.Should().BeOfType<ResendEmailSenderService>();
+    }
+
+    [Fact]
+    public void AddMailerModule_WithTheResendProviderButNoApiKey_ShouldFailAtRegistration()
+    {
+        // A Resend deployment without its key must fail at boot rather than at the first send.
+        Environment.SetEnvironmentVariable(EmailProviderVariable, MailerConstants.EmailProviders.Resend);
+        Environment.SetEnvironmentVariable(ResendApiKeyVariable, null);
+
+        // Act
+        Action act = () => _services.AddMailerModule(HostEnvironment("Testing"));
+
+        // Assert
+        act.Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage("RESEND_API_KEY is required when EMAIL_PROVIDER is 'resend'.");
     }
 
     [Fact]

@@ -6,12 +6,14 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.Services;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Pagination;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Repositories;
+using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -28,7 +30,7 @@ public class GetOwnArticleFavoritesHandlersTests : BaseContentHandlerTest
     private readonly Mock<IArticleRepository> _articles = MockArticleRepository.Create();
     private readonly Mock<IArticleCommentRepository> _comments = MockArticleCommentRepository.Create();
     private readonly Mock<IArticleInteractionRepository> _interactions = MockArticleInteractionRepository.Create();
-    private readonly Mock<IFileRepository> _files = MockFileRepository.Create();
+    private readonly Mock<IFileStorageService> _files = MockFileStorageService.Create();
 
     [Fact]
     public async Task LikedHandler_MapsTimestampAndCurrentLikeState()

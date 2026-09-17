@@ -3,8 +3,9 @@ using _116.Mailer.Application.Shared.Errors;
 using _116.Mailer.Application.Shared.Errors.Messages;
 using _116.Mailer.Application.Shared.Persistence;
 using _116.Mailer.Application.Shared.Repositories;
-using _116.Mailer.Contracts.Application;
-using _116.Mailer.Contracts.Domain;
+using _116.Mailer.Contracts.Application.DTOs;
+using _116.Mailer.Contracts.Application.Services;
+using _116.Mailer.Contracts.Domain.Enums;
 using _116.Mailer.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Helpers;
@@ -22,7 +23,7 @@ public class PublicConfirmNewsletterHandlerTests
 {
     private readonly Mock<INewsletterRepository> _repository = new();
     private readonly Mock<IMailerUnitOfWork> _unitOfWork = new();
-    private readonly Mock<IMailer> _mailer = new();
+    private readonly Mock<IEmailService> _mailer = new();
     private readonly NewsletterErrors _errors = new(LocalizerFactory.CreateMessage<NewsletterErrorMessage>());
 
     private PublicConfirmNewsletterHandler Handler =>
@@ -67,7 +68,7 @@ public class PublicConfirmNewsletterHandlerTests
             m =>
                 m.EnqueueAsync(
                     EnumEmailTemplate.NewsletterWelcome,
-                    It.Is<EmailRecipient>(r => r.Address == "fan@example.com"),
+                    It.Is<EmailRecipientDto>(r => r.Address == "fan@example.com"),
                     It.Is<IReadOnlyDictionary<string, string>>(t =>
                         t["unsubscribeUrl"].Contains(subscriber.UnsubscribeToken)
                     ),

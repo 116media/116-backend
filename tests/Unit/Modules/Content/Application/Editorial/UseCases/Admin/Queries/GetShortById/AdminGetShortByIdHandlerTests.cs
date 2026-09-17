@@ -2,8 +2,11 @@ using _116.Content.Application.Editorial.UseCases.Admin.Queries.GetShortById;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.DTOs;
+using _116.Core.Contracts.Application.Services;
 using _116.Core.Domain.Entities;
-using _116.Identity.Contracts.Application;
+using _116.Identity.Contracts.Application.DTOs;
+using _116.Identity.Contracts.Application.Services;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
@@ -24,18 +27,18 @@ public class AdminGetShortByIdHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<IShortVideoRepository> _shortVideoRepositoryMock;
     private readonly Mock<IUserLookupService> _userLookupMock;
-    private readonly Mock<IFileRepository> _fileRepositoryMock;
+    private readonly Mock<IFileStorageService> _fileStorageMock;
     private readonly AdminGetShortByIdHandler _handler;
 
     public AdminGetShortByIdHandlerTests()
     {
         _shortVideoRepositoryMock = MockShortVideoRepository.Create();
         _userLookupMock = MockUserLookupService.Create();
-        _fileRepositoryMock = MockFileRepository.Create();
+        _fileStorageMock = MockFileStorageService.Create();
         _handler = new AdminGetShortByIdHandler(
             _shortVideoRepositoryMock.Object,
             _userLookupMock.Object,
-            _fileRepositoryMock.Object,
+            _fileStorageMock.Object,
             Mapper
         );
     }
@@ -65,7 +68,7 @@ public class AdminGetShortByIdHandlerTests : BaseContentHandlerTest
         var query = new AdminGetShortByIdQuery(Id: shortVideo.Id);
         _shortVideoRepositoryMock.SetupGetByIdOrThrow(shortVideo);
 
-        var authorInfo = new AuthorInfo(
+        var authorInfo = new AuthorDto(
             TestConstants.User.ValidUserName,
             TestConstants.User.ValidEmail,
             null,
@@ -95,7 +98,7 @@ public class AdminGetShortByIdHandlerTests : BaseContentHandlerTest
         _shortVideoRepositoryMock.SetupGetByIdOrThrow(shortVideo);
 
         Guid avatarFileId = Guid.NewGuid();
-        var authorInfo = new AuthorInfo(
+        var authorInfo = new AuthorDto(
             TestConstants.User.ValidUserName,
             TestConstants.User.ValidEmail,
             avatarFileId,
@@ -105,8 +108,8 @@ public class AdminGetShortByIdHandlerTests : BaseContentHandlerTest
             .Setup(x => x.GetAuthorInfoByIdAsync(shortVideo.AuthorId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authorInfo);
 
-        FileEntity avatarFile = FileFactory.CreateWithId(avatarFileId);
-        _fileRepositoryMock.SetupGetById(avatarFile);
+        FileReferenceDto avatarFile = FileReferenceDtoFactory.CreateWithId(avatarFileId);
+        _fileStorageMock.SetupResolve(avatarFile);
 
         // Act
         AdminGetShortByIdResult result = await _handler.Handle(query, CancellationToken.None);
@@ -127,15 +130,15 @@ public class AdminGetShortByIdHandlerTests : BaseContentHandlerTest
 
         _userLookupMock
             .Setup(x => x.GetAuthorInfoByIdAsync(shortVideo.AuthorId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((AuthorInfo?)null);
+            .ReturnsAsync((AuthorDto?)null);
 
         // Act
         AdminGetShortByIdResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
         result.ShortVideo.Author.Should().BeNull();
-        _fileRepositoryMock.Verify(
-            x => x.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+        _fileStorageMock.Verify(
+            x => x.ResolveAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
             Times.Once,
             "GetByIdAsync should be called once for the video file URL resolution"
         );
@@ -149,7 +152,7 @@ public class AdminGetShortByIdHandlerTests : BaseContentHandlerTest
         var query = new AdminGetShortByIdQuery(Id: shortVideo.Id);
         _shortVideoRepositoryMock.SetupGetByIdOrThrow(shortVideo);
 
-        var authorInfo = new AuthorInfo(TestConstants.User.ValidUserName, TestConstants.User.ValidEmail, null, "Admin");
+        var authorInfo = new AuthorDto(TestConstants.User.ValidUserName, TestConstants.User.ValidEmail, null, "Admin");
         _userLookupMock
             .Setup(x => x.GetAuthorInfoByIdAsync(shortVideo.AuthorId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authorInfo);
@@ -160,8 +163,8 @@ public class AdminGetShortByIdHandlerTests : BaseContentHandlerTest
         // Assert
         result.ShortVideo.Author.Should().NotBeNull();
         result.ShortVideo.Author!.AvatarUrl.Should().BeNull();
-        _fileRepositoryMock.Verify(
-            x => x.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+        _fileStorageMock.Verify(
+            x => x.ResolveAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
             Times.Once,
             "GetByIdAsync should be called once for the video file URL, not for the avatar"
         );

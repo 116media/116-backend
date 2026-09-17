@@ -3,9 +3,11 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Domain.Events;
-using _116.Identity.Contracts.Application;
-using _116.Mailer.Contracts.Application;
-using _116.Mailer.Contracts.Domain;
+using _116.Identity.Contracts.Application.DTOs;
+using _116.Identity.Contracts.Application.Services;
+using _116.Mailer.Contracts.Application.DTOs;
+using _116.Mailer.Contracts.Application.Services;
+using _116.Mailer.Contracts.Domain.Enums;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -22,8 +24,8 @@ public class LyricsSubmissionDecidedNotificationsHandlerTests
     private readonly Mock<IUserLookupService> _userLookupServiceMock = new();
     private readonly Mock<ILyricsSubmissionRepository> _submissionRepositoryMock;
     private readonly Mock<ILyricsRepository> _lyricsRepositoryMock;
-    private readonly Mock<IMailer> _mailerMock = new();
-    private readonly Mock<INotifier> _notifierMock = new();
+    private readonly Mock<IEmailService> _mailerMock = new();
+    private readonly Mock<INotificationService> _notifierMock = new();
     private readonly LyricsSubmissionDecidedNotificationsHandler _handler;
     private readonly LyricsSubmissionEntity _submission;
 
@@ -71,7 +73,7 @@ public class LyricsSubmissionDecidedNotificationsHandlerTests
             x =>
                 x.EnqueueAsync(
                     EnumEmailTemplate.SubmissionDecided,
-                    It.Is<EmailRecipient>(r => r.Address == "submitter@test.com"),
+                    It.Is<EmailRecipientDto>(r => r.Address == "submitter@test.com"),
                     It.Is<IReadOnlyDictionary<string, string>>(t =>
                         t["userName"] == "Fally"
                         && t["songTitle"] == _submission.SongTitle
@@ -242,6 +244,6 @@ public class LyricsSubmissionDecidedNotificationsHandlerTests
     {
         _userLookupServiceMock
             .Setup(x => x.GetAuthorInfoByIdAsync(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new AuthorInfo("Fally", email, null, "Visitor"));
+            .ReturnsAsync(new AuthorDto("Fally", email, null, "Visitor"));
     }
 }

@@ -1,7 +1,7 @@
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
-using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.Services;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
 
@@ -11,10 +11,10 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetOwnAr
 /// Handles the <see cref="PublicGetOwnArticleBookmarksQuery" /> to retrieve the user's bookmarked articles.
 /// </summary>
 /// <param name="articleInteractionRepository">Repository for article interaction data access operations.</param>
-/// <param name="fileRepository">Repository for resolving file URLs.</param>
+/// <param name="fileStorage">Core's storage contract.</param>
 public class PublicGetOwnArticleBookmarksHandler(
     IArticleInteractionRepository articleInteractionRepository,
-    IFileRepository fileRepository
+    IFileStorageService fileStorage
 ) : IQueryHandler<PublicGetOwnArticleBookmarksQuery, PublicGetOwnArticleBookmarksResult>
 {
     /// <inheritdoc />
@@ -46,7 +46,7 @@ public class PublicGetOwnArticleBookmarksHandler(
         foreach (BookmarkedArticleActivity activity in activities)
         {
             PublicArticleSummaryDto article = await activity.Article.ToPublicArticleSummaryDtoAsync(
-                fileRepository,
+                fileStorage,
                 cancellationToken
             );
             article = article with

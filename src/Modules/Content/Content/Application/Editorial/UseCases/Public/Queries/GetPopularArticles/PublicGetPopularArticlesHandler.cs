@@ -2,7 +2,7 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.Services;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPopularArticles;
@@ -12,8 +12,8 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPopularA
 /// published articles ranked by a weighted engagement score.
 /// </summary>
 /// <param name="articleRepository">Repository for article data access operations.</param>
-/// <param name="fileRepository">Repository for resolving cover image URLs.</param>
-public class PublicGetPopularArticlesHandler(IArticleRepository articleRepository, IFileRepository fileRepository)
+/// <param name="fileStorage">Core's storage contract.</param>
+public class PublicGetPopularArticlesHandler(IArticleRepository articleRepository, IFileStorageService fileStorage)
     : IQueryHandler<PublicGetPopularArticlesQuery, PublicGetPopularArticlesResult>
 {
     /// <inheritdoc />
@@ -30,7 +30,7 @@ public class PublicGetPopularArticlesHandler(IArticleRepository articleRepositor
         );
 
         IReadOnlyList<PublicArticleSummaryDto> dtoList = await articles.ToPublicArticleSummaryDtosAsync(
-            fileRepository,
+            fileStorage,
             cancellationToken
         );
 

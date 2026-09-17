@@ -1,11 +1,11 @@
-using _116.Core.Application.Shared.Repositories;
-using _116.Core.Domain.Entities;
+using _116.Core.Contracts.Application.DTOs;
 using _116.Identity.Application.Adapters.SocialAuth;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin.Contracts;
 using _116.Identity.Application.Session.Factories.Contracts;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Mappers;
+using _116.Identity.Application.User.Services;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.ValueObjects;
 using _116.Shared.Contracts.Application.CQRS;
@@ -20,14 +20,14 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin;
 /// </summary>
 /// <param name="authFactory">Factory for handling social authentication logic.</param>
 /// <param name="sessionFactory">Factory for creating authentication sessions.</param>
-/// <param name="fileRepository">Repository for accessing file metadata.</param>
+/// <param name="avatarService">Resolves and stores the user's avatar.</param>
 /// <param name="verifierFactory">Resolves the provider token verifier.</param>
 /// <param name="i18n">Identity module i18n facade for localized errors.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class PublicSocialLoginHandler(
     IPublicSocialLoginAuthFactory authFactory,
     ISessionFactory sessionFactory,
-    IFileRepository fileRepository,
+    IAvatarService avatarService,
     ISocialTokenVerifierFactory verifierFactory,
     IdentityI18n i18n,
     IMapper mapper
@@ -75,12 +75,10 @@ public class PublicSocialLoginHandler(
         );
 
         // Fetch user avatar
-        FileEntity? avatarFile = await fileRepository.GetAvatarFileAsync(
+        FileDto? avatarDto = await avatarService.GetAvatarAsync(
             avatarFileId: authData.User.AvatarFileId,
             cancellationToken: cancellationToken
         );
-
-        var avatarDto = avatarFile?.ToFileDto(mapper);
         var userDto = authData.User.ToUserResponseDto(
             mapper: mapper,
             roles: authData.User.UserRoles.ToRoleDtos(mapper),

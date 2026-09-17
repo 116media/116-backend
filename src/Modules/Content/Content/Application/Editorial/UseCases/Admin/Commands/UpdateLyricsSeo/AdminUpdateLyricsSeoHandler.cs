@@ -2,8 +2,8 @@ using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Repositories;
-using _116.Identity.Contracts.Application;
+using _116.Core.Contracts.Application.Services;
+using _116.Identity.Contracts.Application.Services;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
 
@@ -16,13 +16,13 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateLyric
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">The Mapster mapper used for tags.</param>
 /// <param name="userLookup">Service for resolving author profiles from the Identity module.</param>
-/// <param name="fileRepository">Repository for resolving avatar file URLs.</param>
+/// <param name="fileStorage">Core's storage contract.</param>
 public class AdminUpdateLyricsSeoHandler(
     ILyricsRepository lyricsRepository,
     IContentUnitOfWork unitOfWork,
     IMapper mapper,
     IUserLookupService userLookup,
-    IFileRepository fileRepository
+    IFileStorageService fileStorage
 ) : ICommandHandler<AdminUpdateLyricsSeoCommand, AdminUpdateLyricsSeoResult>
 {
     /// <inheritdoc />
@@ -49,7 +49,7 @@ public class AdminUpdateLyricsSeoHandler(
             cancellationToken: cancellationToken
         );
 
-        var dto = await updated.ToLyricsDetailDtoAsync(mapper, userLookup, fileRepository, cancellationToken);
+        var dto = await updated.ToLyricsDetailDtoAsync(mapper, userLookup, fileStorage, cancellationToken);
         return new AdminUpdateLyricsSeoResult(Lyrics: dto);
     }
 }

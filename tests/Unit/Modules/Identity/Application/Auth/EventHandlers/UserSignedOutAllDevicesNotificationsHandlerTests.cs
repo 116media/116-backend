@@ -1,8 +1,10 @@
 using _116.Identity.Application.Auth.EventHandlers;
-using _116.Identity.Contracts.Application;
+using _116.Identity.Contracts.Application.DTOs;
+using _116.Identity.Contracts.Application.Services;
 using _116.Identity.Domain.Events;
-using _116.Mailer.Contracts.Application;
-using _116.Mailer.Contracts.Domain;
+using _116.Mailer.Contracts.Application.DTOs;
+using _116.Mailer.Contracts.Application.Services;
+using _116.Mailer.Contracts.Domain.Enums;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
@@ -15,8 +17,8 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Auth.EventHandlers;
 public class UserSignedOutAllDevicesNotificationsHandlerTests
 {
     private readonly Mock<IUserLookupService> _userLookupServiceMock = new();
-    private readonly Mock<IMailer> _mailerMock = new();
-    private readonly Mock<INotifier> _notifierMock = new();
+    private readonly Mock<IEmailService> _mailerMock = new();
+    private readonly Mock<INotificationService> _notifierMock = new();
     private readonly UserSignedOutAllDevicesNotificationsHandler _handler;
 
     public UserSignedOutAllDevicesNotificationsHandlerTests()
@@ -42,7 +44,7 @@ public class UserSignedOutAllDevicesNotificationsHandlerTests
         var userId = Guid.NewGuid();
         _userLookupServiceMock
             .Setup(x => x.GetAuthorInfoByIdAsync(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new AuthorInfo("Fally", "fally@test.com", null, "Visitor"));
+            .ReturnsAsync(new AuthorDto("Fally", "fally@test.com", null, "Visitor"));
 
         // Act
         await _handler.Handle(new UserSignedOutAllDevicesEvent(userId, byAdmin), CancellationToken.None);
@@ -52,7 +54,7 @@ public class UserSignedOutAllDevicesNotificationsHandlerTests
             x =>
                 x.EnqueueAsync(
                     expectedTemplate,
-                    It.Is<EmailRecipient>(r => r.Address == "fally@test.com"),
+                    It.Is<EmailRecipientDto>(r => r.Address == "fally@test.com"),
                     It.Is<IReadOnlyDictionary<string, string>>(t => t["userName"] == "Fally" && t.ContainsKey("time")),
                     It.IsAny<string>(),
                     It.IsAny<CancellationToken>()
@@ -79,7 +81,7 @@ public class UserSignedOutAllDevicesNotificationsHandlerTests
         var userId = Guid.NewGuid();
         _userLookupServiceMock
             .Setup(x => x.GetAuthorInfoByIdAsync(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new AuthorInfo("Fally", null, null, "Visitor"));
+            .ReturnsAsync(new AuthorDto("Fally", null, null, "Visitor"));
 
         // Act
         await _handler.Handle(new UserSignedOutAllDevicesEvent(userId, ByAdmin: false), CancellationToken.None);
@@ -106,7 +108,7 @@ public class UserSignedOutAllDevicesNotificationsHandlerTests
         var userId = Guid.NewGuid();
         _userLookupServiceMock
             .Setup(x => x.GetAuthorInfoByIdAsync(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((AuthorInfo?)null);
+            .ReturnsAsync((AuthorDto?)null);
 
         // Act
         await _handler.Handle(new UserSignedOutAllDevicesEvent(userId, ByAdmin: true), CancellationToken.None);

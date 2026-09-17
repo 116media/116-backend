@@ -2,11 +2,14 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.DTOs;
+using _116.Core.Contracts.Application.Services;
 using _116.Core.Domain.Entities;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Factories.Core;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Repositories;
+using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -143,12 +146,12 @@ public class MapperExtensionTests : BaseContentHandlerTest
             CategoryFactory.Create(contentTypeId),
             CategoryFactory.Create(contentTypeId),
         }.AsReadOnly();
-        Mock<IFileRepository> fileRepositoryMock = MockFileRepository.Create();
+        Mock<IFileStorageService> fileStorageMock = MockFileStorageService.Create();
 
         // Act
         IReadOnlyList<CategoryDto> result = await entities.ToCategoryDtosAsync(
             Mapper,
-            fileRepositoryMock.Object,
+            fileStorageMock.Object,
             CancellationToken.None
         );
 
@@ -162,12 +165,12 @@ public class MapperExtensionTests : BaseContentHandlerTest
     {
         // Arrange
         IReadOnlyList<CategoryEntity> entities = new List<CategoryEntity>().AsReadOnly();
-        Mock<IFileRepository> fileRepositoryMock = MockFileRepository.Create();
+        Mock<IFileStorageService> fileStorageMock = MockFileStorageService.Create();
 
         // Act
         IReadOnlyList<CategoryDto> result = await entities.ToCategoryDtosAsync(
             Mapper,
-            fileRepositoryMock.Object,
+            fileStorageMock.Object,
             CancellationToken.None
         );
 
@@ -181,14 +184,14 @@ public class MapperExtensionTests : BaseContentHandlerTest
         // Arrange
         var contentTypeId = Guid.NewGuid();
         CategoryEntity entity = CategoryFactory.Create(contentTypeId);
-        FileEntity posterFile = FileFactory.CreateWithStorageUrl("https://cloudinary.com/poster.jpg");
+        FileReferenceDto posterFile = FileReferenceDtoFactory.CreateWithStorageUrl("https://cloudinary.com/poster.jpg");
         entity.SetPosterFileId(posterFile.Id);
 
-        Mock<IFileRepository> fileRepositoryMock = MockFileRepository.Create();
-        fileRepositoryMock.SetupGetById(posterFile);
+        Mock<IFileStorageService> fileStorageMock = MockFileStorageService.Create();
+        fileStorageMock.SetupResolve(posterFile);
 
         // Act
-        CategoryDto result = await entity.ToCategoryDtoAsync(Mapper, fileRepositoryMock.Object, CancellationToken.None);
+        CategoryDto result = await entity.ToCategoryDtoAsync(Mapper, fileStorageMock.Object, CancellationToken.None);
 
         // Assert
         result.PosterUrl.Should().Be("https://cloudinary.com/poster.jpg");
@@ -200,10 +203,10 @@ public class MapperExtensionTests : BaseContentHandlerTest
         // Arrange
         var contentTypeId = Guid.NewGuid();
         CategoryEntity entity = CategoryFactory.Create(contentTypeId);
-        Mock<IFileRepository> fileRepositoryMock = MockFileRepository.Create();
+        Mock<IFileStorageService> fileStorageMock = MockFileStorageService.Create();
 
         // Act
-        CategoryDto result = await entity.ToCategoryDtoAsync(Mapper, fileRepositoryMock.Object, CancellationToken.None);
+        CategoryDto result = await entity.ToCategoryDtoAsync(Mapper, fileStorageMock.Object, CancellationToken.None);
 
         // Assert
         result.PosterUrl.Should().BeNull();
@@ -216,10 +219,10 @@ public class MapperExtensionTests : BaseContentHandlerTest
         var contentTypeId = Guid.NewGuid();
         CategoryEntity entity = CategoryFactory.Create(contentTypeId);
         entity.SetExclusive();
-        Mock<IFileRepository> fileRepositoryMock = MockFileRepository.Create();
+        Mock<IFileStorageService> fileStorageMock = MockFileStorageService.Create();
 
         // Act
-        CategoryDto result = await entity.ToCategoryDtoAsync(Mapper, fileRepositoryMock.Object, CancellationToken.None);
+        CategoryDto result = await entity.ToCategoryDtoAsync(Mapper, fileStorageMock.Object, CancellationToken.None);
 
         // Assert
         result.IsExclusive.Should().BeTrue();
@@ -232,20 +235,24 @@ public class MapperExtensionTests : BaseContentHandlerTest
         var contentTypeId = Guid.NewGuid();
         CategoryEntity entity1 = CategoryFactory.Create(contentTypeId);
         CategoryEntity entity2 = CategoryFactory.Create(contentTypeId);
-        FileEntity posterFile1 = FileFactory.CreateWithStorageUrl("https://cloudinary.com/poster1.jpg");
-        FileEntity posterFile2 = FileFactory.CreateWithStorageUrl("https://cloudinary.com/poster2.jpg");
+        FileReferenceDto posterFile1 = FileReferenceDtoFactory.CreateWithStorageUrl(
+            "https://cloudinary.com/poster1.jpg"
+        );
+        FileReferenceDto posterFile2 = FileReferenceDtoFactory.CreateWithStorageUrl(
+            "https://cloudinary.com/poster2.jpg"
+        );
         entity1.SetPosterFileId(posterFile1.Id);
         entity2.SetPosterFileId(posterFile2.Id);
 
         IReadOnlyList<CategoryEntity> entities = new List<CategoryEntity> { entity1, entity2 }.AsReadOnly();
-        Mock<IFileRepository> fileRepositoryMock = MockFileRepository.Create();
-        fileRepositoryMock.SetupGetById(posterFile1);
-        fileRepositoryMock.SetupGetById(posterFile2);
+        Mock<IFileStorageService> fileStorageMock = MockFileStorageService.Create();
+        fileStorageMock.SetupResolve(posterFile1);
+        fileStorageMock.SetupResolve(posterFile2);
 
         // Act
         IReadOnlyList<CategoryDto> result = await entities.ToCategoryDtosAsync(
             Mapper,
-            fileRepositoryMock.Object,
+            fileStorageMock.Object,
             CancellationToken.None
         );
 
@@ -265,10 +272,10 @@ public class MapperExtensionTests : BaseContentHandlerTest
         // Arrange
         Guid categoryId = Guid.NewGuid();
         IReadOnlyList<LyricsEntity> entities = LyricsFactory.CreateMany(categoryId, 3).AsReadOnly();
-        Mock<IFileRepository> fileRepositoryMock = MockFileRepository.Create();
+        Mock<IFileStorageService> fileStorageMock = MockFileStorageService.Create();
 
         // Act
-        IReadOnlyList<LyricsSummaryDto> result = await entities.ToLyricsSummaryDtosAsync(fileRepositoryMock.Object);
+        IReadOnlyList<LyricsSummaryDto> result = await entities.ToLyricsSummaryDtosAsync(fileStorageMock.Object);
 
         // Assert
         result.Should().HaveCount(3);
@@ -280,10 +287,10 @@ public class MapperExtensionTests : BaseContentHandlerTest
     {
         // Arrange
         IReadOnlyList<LyricsEntity> entities = new List<LyricsEntity>().AsReadOnly();
-        Mock<IFileRepository> fileRepositoryMock = MockFileRepository.Create();
+        Mock<IFileStorageService> fileStorageMock = MockFileStorageService.Create();
 
         // Act
-        IReadOnlyList<LyricsSummaryDto> result = await entities.ToLyricsSummaryDtosAsync(fileRepositoryMock.Object);
+        IReadOnlyList<LyricsSummaryDto> result = await entities.ToLyricsSummaryDtosAsync(fileStorageMock.Object);
 
         // Assert
         result.Should().BeEmpty();
@@ -295,10 +302,10 @@ public class MapperExtensionTests : BaseContentHandlerTest
         // Arrange
         Guid categoryId = Guid.NewGuid();
         LyricsEntity entity = LyricsFactory.Create(categoryId);
-        Mock<IFileRepository> fileRepositoryMock = MockFileRepository.Create();
+        Mock<IFileStorageService> fileStorageMock = MockFileStorageService.Create();
 
         // Act
-        LyricsSummaryDto dto = await entity.ToLyricsSummaryDtoAsync(fileRepositoryMock.Object);
+        LyricsSummaryDto dto = await entity.ToLyricsSummaryDtoAsync(fileStorageMock.Object);
 
         // Assert
         dto.Id.Should().Be(entity.Id);
@@ -319,15 +326,15 @@ public class MapperExtensionTests : BaseContentHandlerTest
     {
         // Arrange
         IReadOnlyList<ShortVideoEntity> entities = ShortVideoFactory.CreateMany(3).AsReadOnly();
-        Mock<IFileRepository> fileRepositoryMock = MockFileRepository.Create();
-        FileEntity videoFile = FileFactory.CreateVideo();
-        fileRepositoryMock.SetupGetById(videoFile);
-        fileRepositoryMock.SetupGetByIds(new Dictionary<Guid, FileEntity>());
+        Mock<IFileStorageService> fileStorageMock = MockFileStorageService.Create();
+        FileReferenceDto videoFile = FileReferenceDtoFactory.CreateVideo();
+        fileStorageMock.SetupResolve(videoFile);
+        fileStorageMock.SetupResolveMany(new Dictionary<Guid, FileReferenceDto>());
 
         // Act
         IReadOnlyList<ShortVideoDto> result = await entities.ToShortVideoDtosAsync(
             Mapper,
-            fileRepositoryMock.Object,
+            fileStorageMock.Object,
             CancellationToken.None
         );
 
@@ -341,12 +348,12 @@ public class MapperExtensionTests : BaseContentHandlerTest
     {
         // Arrange
         IReadOnlyList<ShortVideoEntity> entities = new List<ShortVideoEntity>().AsReadOnly();
-        Mock<IFileRepository> fileRepositoryMock = MockFileRepository.Create();
+        Mock<IFileStorageService> fileStorageMock = MockFileStorageService.Create();
 
         // Act
         IReadOnlyList<ShortVideoDto> result = await entities.ToShortVideoDtosAsync(
             Mapper,
-            fileRepositoryMock.Object,
+            fileStorageMock.Object,
             CancellationToken.None
         );
 

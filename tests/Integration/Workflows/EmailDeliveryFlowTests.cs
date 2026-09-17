@@ -292,7 +292,7 @@ public class EmailDeliveryFlowTests(PostgresFixture db) : BaseApiTest(db)
             )
         );
 
-        StubEmailSender stub = Api.Services.GetRequiredService<StubEmailSender>();
+        StubEmailSenderService stub = Api.Services.GetRequiredService<StubEmailSenderService>();
         int alreadySent = stub.Sent.Count;
 
         var job = new OutboxEmailDispatcherJob(
@@ -329,7 +329,7 @@ public class EmailDeliveryFlowTests(PostgresFixture db) : BaseApiTest(db)
             )
         );
 
-        StubEmailSender stub = Api.Services.GetRequiredService<StubEmailSender>();
+        StubEmailSenderService stub = Api.Services.GetRequiredService<StubEmailSenderService>();
         stub.NextFailure = new EmailDeliveryException("smtp down");
 
         var job = new OutboxEmailDispatcherJob(
@@ -371,7 +371,7 @@ public class EmailDeliveryFlowTests(PostgresFixture db) : BaseApiTest(db)
             enqueuedAt = (await seeded.OutboxEmails.SingleAsync(o => o.Id == emailId)).NextAttemptAt;
         }
 
-        StubEmailSender stub = Api.Services.GetRequiredService<StubEmailSender>();
+        StubEmailSenderService stub = Api.Services.GetRequiredService<StubEmailSenderService>();
         stub.NextFailure = new EmailDeliveryException("mailbox does not exist", isTransient: false);
 
         var job = new OutboxEmailDispatcherJob(
@@ -411,7 +411,7 @@ public class EmailDeliveryFlowTests(PostgresFixture db) : BaseApiTest(db)
         const string marker = "OVERLONG";
         string overlongError = marker + new string('e', MailerConstants.MaxLastErrorLength);
 
-        StubEmailSender stub = Api.Services.GetRequiredService<StubEmailSender>();
+        StubEmailSenderService stub = Api.Services.GetRequiredService<StubEmailSenderService>();
         stub.NextFailure = new EmailDeliveryException(overlongError);
 
         var job = new OutboxEmailDispatcherJob(

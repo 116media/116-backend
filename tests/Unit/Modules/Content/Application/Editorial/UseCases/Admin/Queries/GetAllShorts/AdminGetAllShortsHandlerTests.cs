@@ -2,10 +2,13 @@ using _116.Content.Application.Editorial.UseCases.Admin.Queries.GetAllShorts;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.DTOs;
+using _116.Core.Contracts.Application.Services;
 using _116.Core.Domain.Entities;
-using _116.Identity.Contracts.Application;
+using _116.Identity.Contracts.Application.Services;
 using _116.Shared.Application.Pagination;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Factories.Core;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using _116.Unit.Tests.Common.Mocks.Services;
@@ -22,20 +25,20 @@ public class AdminGetAllShortsHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<IShortVideoRepository> _shortVideoRepositoryMock;
     private readonly Mock<IUserLookupService> _userLookupMock;
-    private readonly Mock<IFileRepository> _fileRepositoryMock;
+    private readonly Mock<IFileStorageService> _fileStorageMock;
     private readonly AdminGetAllShortsHandler _handler;
 
     public AdminGetAllShortsHandlerTests()
     {
         _shortVideoRepositoryMock = MockShortVideoRepository.Create();
         _userLookupMock = MockUserLookupService.Create();
-        _fileRepositoryMock = MockFileRepository.Create();
-        _fileRepositoryMock.SetupGetByIds(new Dictionary<Guid, FileEntity>());
+        _fileStorageMock = MockFileStorageService.Create();
+        _fileStorageMock.SetupResolveMany(new Dictionary<Guid, FileReferenceDto>());
 
         _handler = new AdminGetAllShortsHandler(
             _shortVideoRepositoryMock.Object,
             _userLookupMock.Object,
-            _fileRepositoryMock.Object,
+            _fileStorageMock.Object,
             Mapper
         );
     }

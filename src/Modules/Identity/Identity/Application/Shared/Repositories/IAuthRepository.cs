@@ -1,4 +1,4 @@
-using _116.Identity.Contracts.Application;
+using _116.Identity.Contracts.Application.Services;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.ValueObjects;
 using _116.Shared.Application.Exceptions;

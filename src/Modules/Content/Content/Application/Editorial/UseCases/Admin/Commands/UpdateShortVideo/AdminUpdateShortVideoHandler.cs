@@ -3,7 +3,7 @@ using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.Services;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
 
@@ -14,12 +14,12 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateShort
 /// The video file is replaced separately via the dedicated upload endpoint.
 /// </summary>
 /// <param name="shortVideoRepository">Repository for short video data access operations.</param>
-/// <param name="fileRepository">Repository for resolving file URLs during mapping.</param>
+/// <param name="fileStorage">Core's storage contract.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class AdminUpdateShortVideoHandler(
     IShortVideoRepository shortVideoRepository,
-    IFileRepository fileRepository,
+    IFileStorageService fileStorage,
     IContentUnitOfWork unitOfWork,
     IMapper mapper
 ) : ICommandHandler<AdminUpdateShortVideoCommand, AdminUpdateShortVideoResult>
@@ -47,7 +47,7 @@ public class AdminUpdateShortVideoHandler(
             cancellationToken: cancellationToken
         );
 
-        var dto = await updated.ToShortVideoDtoAsync(mapper, fileRepository, cancellationToken);
+        var dto = await updated.ToShortVideoDtoAsync(mapper, fileStorage, cancellationToken);
         return new AdminUpdateShortVideoResult(ShortVideo: dto);
     }
 }

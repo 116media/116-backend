@@ -1,11 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-    </PropertyGroup>
-
-    <PropertyGroup>
         <RootNamespace>_116.Content</RootNamespace>
     </PropertyGroup>
 
@@ -18,7 +12,7 @@
         <ProjectReference Include="../../../Shared/Shared/Shared.csproj" />
         <ProjectReference Include="../../../Shared/Shared.Contracts/Shared.Contracts.csproj" />
         <ProjectReference Include="../../Mailer/Mailer.Contracts/Mailer.Contracts.csproj" />
-        <ProjectReference Include="../../Core/Core/Core.csproj" />
+        <ProjectReference Include="../../Core/Core.Contracts/Core.Contracts.csproj" />
         <ProjectReference Include="../../Identity/Identity.Contracts/Identity.Contracts.csproj" />
     </ItemGroup>
 

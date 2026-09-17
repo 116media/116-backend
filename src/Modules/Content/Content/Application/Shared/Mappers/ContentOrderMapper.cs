@@ -1,8 +1,7 @@
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.DTOs;
-using _116.Core.Domain.Entities;
-using _116.Identity.Contracts.Application;
+using _116.Core.Contracts.Application.DTOs;
+using _116.Identity.Contracts.Application.Services;
 using Mapster;
 using MapsterMapper;
 
@@ -163,9 +162,9 @@ public static class ContentOrderMapper
     }
 
     /// <summary>
-    /// Maps a <see cref="FileEntity" /> to a <see cref="FileDto" />, or returns null if the entity is null.
+    /// Maps a <see cref="FileReferenceDto" /> to a <see cref="FileDto" />, or returns null if the entity is null.
     /// </summary>
-    public static FileDto? ToFileDto(this FileEntity? fileEntity, IMapper mapper)
+    public static FileDto? ToFileDto(this FileReferenceDto? fileEntity, IMapper mapper)
     {
         return fileEntity == null ? null : mapper.Map<FileDto>(fileEntity);
     }

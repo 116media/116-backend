@@ -7,7 +7,7 @@ using _116.Mailer.Application.Shared.Repositories;
 using _116.Mailer.Application.Shared.Services;
 using _116.Mailer.Application.Templates;
 using _116.Mailer.Application.Templates.Messages;
-using _116.Mailer.Contracts.Application;
+using _116.Mailer.Contracts.Application.Services;
 using _116.Mailer.Domain.Constants;
 using _116.Mailer.Infrastructure.BackgroundJobs;
 using _116.Mailer.Infrastructure.Persistence;
@@ -15,7 +15,6 @@ using _116.Mailer.Infrastructure.Repositories;
 using _116.Mailer.Infrastructure.Services;
 using _116.Shared.Application.Configurations.Schemas;
 using _116.Shared.Application.Extensions;
-using _116.Shared.Application.Services;
 using _116.Shared.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -63,8 +62,8 @@ public static class MailerModule
         services.AddScoped<IOutboxEmailRepository, OutboxEmailRepository>();
         services.AddScoped<INewsletterRepository, NewsletterRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
-        services.AddScoped<IMailer, OutboxMailer>();
-        services.AddScoped<INotifier, Notifier>();
+        services.AddScoped<IEmailService, OutboxEmailService>();
+        services.AddScoped<INotificationService, NotificationService>();
 
         RegisterEmailSender(services);
 
@@ -74,7 +73,7 @@ public static class MailerModule
     }
 
     /// <summary>
-    /// Registers the <see cref="IEmailSender" /> adapter selected by the
+    /// Registers the <see cref="IEmailSenderService" /> adapter selected by the
     /// <c>EMAIL_PROVIDER</c> environment variable. Unknown values fail at boot:
     /// a misconfigured provider must be loud, never a silent no-send.
     /// </summary>
@@ -85,11 +84,18 @@ public static class MailerModule
         switch (provider.ToLowerInvariant())
         {
             case MailerConstants.EmailProviders.Smtp:
-                services.AddScoped<IEmailSender, SmtpEmailSender>();
+                services.AddScoped<IEmailSenderService, SmtpEmailSenderService>();
                 break;
             case MailerConstants.EmailProviders.Resend:
+                // Checked here rather than in the env schema, so an SMTP deployment never has
+                // to supply a Resend key; a Resend deployment still fails at boot without one.
+                if (string.IsNullOrWhiteSpace(MailEnv.ResendApiKey.Value))
+                {
+                    throw new InvalidOperationException("RESEND_API_KEY is required when EMAIL_PROVIDER is 'resend'.");
+                }
+
                 services
-                    .AddHttpClient<IEmailSender, ResendEmailSender>()
+                    .AddHttpClient<IEmailSenderService, ResendEmailSenderService>()
                     .ConfigureHttpClient(client => client.Timeout = TimeSpan.FromSeconds(10));
                 break;
             default:

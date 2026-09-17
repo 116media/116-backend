@@ -4,7 +4,7 @@ using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
-using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.Services;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
@@ -17,13 +17,13 @@ namespace _116.Content.Application.Catalog.UseCases.Public.Queries.GetExclusiveC
 /// </summary>
 /// <param name="categoryRepository">Repository for category data access operations.</param>
 /// <param name="videoRepository">Repository for video data access operations.</param>
-/// <param name="fileRepository">Repository for resolving file URLs.</param>
+/// <param name="fileStorage">Core's storage contract.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class PublicGetExclusiveCategoryHandler(
     ICategoryRepository categoryRepository,
     IVideoRepository videoRepository,
-    IFileRepository fileRepository,
+    IFileStorageService fileStorage,
     IMapper mapper,
     ContentI18n i18n
 ) : IQueryHandler<PublicGetExclusiveCategoryQuery, PublicGetExclusiveCategoryResult>
@@ -43,7 +43,7 @@ public class PublicGetExclusiveCategoryHandler(
             throw i18n.Category.NoExclusiveCategoryFound();
         }
 
-        CategoryDto categoryDto = await category.ToCategoryDtoAsync(mapper, fileRepository, cancellationToken);
+        CategoryDto categoryDto = await category.ToCategoryDtoAsync(mapper, fileStorage, cancellationToken);
 
         int pageSize = query.PaginatedRequest.PageSize;
         int pageIndex = query.PaginatedRequest.PageIndex;
@@ -58,7 +58,7 @@ public class PublicGetExclusiveCategoryHandler(
         );
 
         IReadOnlyList<PublicVideoSummaryDto> videoDtos = await videos.ToPublicVideoSummaryDtosAsync(
-            fileRepository,
+            fileStorage,
             cancellationToken
         );
 

@@ -6,12 +6,15 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.Services;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Factories.Core;
 using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
+using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -29,7 +32,7 @@ public class AdminPinCategoryToFeedHandlerTests : BaseContentHandlerTest
     private readonly Mock<ICategoryRepository> _categoryRepositoryMock;
     private readonly Mock<IVideoRepository> _videoRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
-    private readonly Mock<IFileRepository> _fileRepositoryMock;
+    private readonly Mock<IFileStorageService> _fileStorageMock;
     private readonly AdminPinCategoryToFeedHandler _handler;
 
     public AdminPinCategoryToFeedHandlerTests()
@@ -37,12 +40,12 @@ public class AdminPinCategoryToFeedHandlerTests : BaseContentHandlerTest
         _categoryRepositoryMock = MockCategoryRepository.Create();
         _videoRepositoryMock = MockVideoRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _fileRepositoryMock = MockFileRepository.Create();
+        _fileStorageMock = MockFileStorageService.Create();
         _handler = new AdminPinCategoryToFeedHandler(
             _categoryRepositoryMock.Object,
             _videoRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            _fileRepositoryMock.Object,
+            _fileStorageMock.Object,
             Mapper,
             TestErrorsFactory.CreateContentI18n()
         );

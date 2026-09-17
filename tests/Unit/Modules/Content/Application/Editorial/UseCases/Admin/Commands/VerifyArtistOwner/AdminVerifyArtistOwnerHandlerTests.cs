@@ -6,11 +6,13 @@ using _116.Content.Domain.Events;
 using _116.Content.Domain.Exceptions;
 using _116.Content.Domain.StateMachines;
 using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.Services;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
+using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -30,11 +32,11 @@ public class AdminVerifyArtistOwnerHandlerTests
     {
         _artistRepositoryMock = MockArtistRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        Mock<IFileRepository> fileRepositoryMock = MockFileRepository.Create();
+        Mock<IFileStorageService> fileStorageMock = MockFileStorageService.Create();
         _handler = new AdminVerifyArtistOwnerHandler(
             _artistRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            fileRepositoryMock.Object
+            fileStorageMock.Object
         );
     }
 

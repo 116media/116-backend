@@ -6,7 +6,7 @@ using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
-using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.Services;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
 
@@ -20,14 +20,14 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.PinCategoryTo
 /// <param name="categoryRepository">Repository for category data access operations.</param>
 /// <param name="videoRepository">Repository for video data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="fileRepository">Repository for resolving file URLs.</param>
+/// <param name="fileStorage">Core's storage contract.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminPinCategoryToFeedHandler(
     ICategoryRepository categoryRepository,
     IVideoRepository videoRepository,
     IContentUnitOfWork unitOfWork,
-    IFileRepository fileRepository,
+    IFileStorageService fileStorage,
     IMapper mapper,
     ContentI18n i18n
 ) : ICommandHandler<AdminPinCategoryToFeedCommand, AdminPinCategoryToFeedResult>
@@ -94,7 +94,7 @@ public class AdminPinCategoryToFeedHandler(
             cancellationToken: cancellationToken
         );
 
-        var dto = await updated.ToCategoryDtoAsync(mapper, fileRepository, cancellationToken);
+        var dto = await updated.ToCategoryDtoAsync(mapper, fileStorage, cancellationToken);
         return new AdminPinCategoryToFeedResult(Category: dto);
     }
 }

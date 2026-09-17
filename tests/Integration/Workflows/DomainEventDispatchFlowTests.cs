@@ -2,7 +2,7 @@ using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
-using _116.Mailer.Contracts.Domain;
+using _116.Mailer.Contracts.Domain.Enums;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Infrastructure.Persistence;
 using _116.Shared.Application.Exceptions;

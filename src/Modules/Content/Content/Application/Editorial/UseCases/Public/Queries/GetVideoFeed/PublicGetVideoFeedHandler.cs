@@ -4,8 +4,8 @@ using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
-using _116.Core.Application.Shared.Repositories;
-using _116.Core.Domain.Entities;
+using _116.Core.Contracts.Application.DTOs;
+using _116.Core.Contracts.Application.Services;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
 
@@ -18,12 +18,12 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetVideoFee
 /// </summary>
 /// <param name="categoryRepository">Repository for category data access operations.</param>
 /// <param name="videoRepository">Repository for video data access operations.</param>
-/// <param name="fileRepository">Repository for resolving file URLs.</param>
+/// <param name="fileStorage">Core's storage contract.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class PublicGetVideoFeedHandler(
     ICategoryRepository categoryRepository,
     IVideoRepository videoRepository,
-    IFileRepository fileRepository,
+    IFileStorageService fileStorage,
     IMapper mapper
 ) : IQueryHandler<PublicGetVideoFeedQuery, PublicGetVideoFeedResult>
 {
@@ -74,7 +74,7 @@ public class PublicGetVideoFeedHandler(
             .Distinct()
             .ToList();
 
-        IReadOnlyDictionary<Guid, FileEntity> files = await fileRepository.GetByIdsAsync(
+        IReadOnlyDictionary<Guid, FileReferenceDto> files = await fileStorage.ResolveManyAsync(
             fileIds: fileIds,
             cancellationToken: cancellationToken
         );

@@ -24,7 +24,7 @@ namespace _116.Unit.Tests.Modules.Mailer.Infrastructure.BackgroundJobs;
 public class OutboxEmailDispatcherJobTests
 {
     private readonly Mock<IOutboxEmailRepository> _repositoryMock = new();
-    private readonly Mock<IEmailSender> _senderMock = new();
+    private readonly Mock<IEmailSenderService> _senderMock = new();
     private readonly Mock<IJobExecutionContext> _jobContextMock = new();
     private readonly OutboxEmailDispatcherJob _job;
 
@@ -48,7 +48,7 @@ public class OutboxEmailDispatcherJobTests
 
         serviceProviderMock.Setup(x => x.GetService(typeof(MailerDbContext))).Returns(dbContext);
         serviceProviderMock.Setup(x => x.GetService(typeof(IOutboxEmailRepository))).Returns(_repositoryMock.Object);
-        serviceProviderMock.Setup(x => x.GetService(typeof(IEmailSender))).Returns(_senderMock.Object);
+        serviceProviderMock.Setup(x => x.GetService(typeof(IEmailSenderService))).Returns(_senderMock.Object);
 
         _jobContextMock.Setup(x => x.CancellationToken).Returns(CancellationToken.None);
 

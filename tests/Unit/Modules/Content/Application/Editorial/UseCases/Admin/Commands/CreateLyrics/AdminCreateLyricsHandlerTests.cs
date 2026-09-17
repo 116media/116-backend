@@ -4,8 +4,10 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.DTOs;
+using _116.Core.Contracts.Application.Services;
 using _116.Core.Domain.Entities;
-using _116.Identity.Contracts.Application;
+using _116.Identity.Contracts.Application.Services;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
@@ -42,9 +44,9 @@ public class AdminCreateLyricsHandlerTests : BaseContentHandlerTest
         _videoRepositoryMock = MockVideoRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         Mock<IUserLookupService> userLookupMock = MockUserLookupService.Create();
-        Mock<IFileRepository> fileRepositoryMock = MockFileRepository.Create();
-        FileEntity coverFile = FileFactory.CreateImage();
-        fileRepositoryMock.SetupGetById(coverFile);
+        Mock<IFileStorageService> fileStorageMock = MockFileStorageService.Create();
+        FileReferenceDto coverFile = FileReferenceDtoFactory.CreateImage();
+        fileStorageMock.SetupResolve(coverFile);
         _handler = new AdminCreateLyricsHandler(
             _categoryRepositoryMock.Object,
             _lyricsRepositoryMock.Object,
@@ -52,7 +54,7 @@ public class AdminCreateLyricsHandlerTests : BaseContentHandlerTest
             _unitOfWorkMock.Object,
             Mapper,
             userLookupMock.Object,
-            fileRepositoryMock.Object,
+            fileStorageMock.Object,
             TestErrorsFactory.CreateContentI18n()
         );
     }

@@ -4,6 +4,8 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Application.Shared.Services;
+using _116.Core.Contracts.Application.DTOs;
+using _116.Core.Contracts.Application.Services;
 using _116.Core.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
@@ -25,21 +27,18 @@ namespace _116.Unit.Tests.Modules.Content.Application.Catalog.UseCases.Admin.Com
 public class AdminUploadCategoryPosterHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<ICategoryRepository> _categoryRepositoryMock;
-    private readonly Mock<IFileRepository> _fileRepositoryMock;
-    private readonly Mock<IFileUploadService> _fileUploadServiceMock;
+    private readonly Mock<IFileStorageService> _fileStorageMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminUploadCategoryPosterHandler _handler;
 
     public AdminUploadCategoryPosterHandlerTests()
     {
         _categoryRepositoryMock = MockCategoryRepository.Create();
-        _fileRepositoryMock = MockFileRepository.Create();
-        _fileUploadServiceMock = MockFileUploadService.Create();
+        _fileStorageMock = MockFileStorageService.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _handler = new AdminUploadCategoryPosterHandler(
             _categoryRepositoryMock.Object,
-            _fileRepositoryMock.Object,
-            _fileUploadServiceMock.Object,
+            _fileStorageMock.Object,
             _unitOfWorkMock.Object,
             Mapper
         );
@@ -53,20 +52,20 @@ public class AdminUploadCategoryPosterHandlerTests : BaseContentHandlerTest
         // Arrange
         ContentTypeEntity contentType = ContentTypeFactory.Create();
         CategoryEntity category = CategoryFactory.Create(contentType.Id);
-        FileEntity fileEntity = FileFactory.CreateImage();
+        FileReferenceDto fileEntity = FileReferenceDtoFactory.CreateImage();
         IFormFile file = CreateMockFormFile();
 
         var command = new AdminUploadCategoryPosterCommand(Id: category.Id.ToString(), File: file);
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-        _fileUploadServiceMock.SetupUploadImage(fileEntity);
+        _fileStorageMock.SetupUpload(StoredFileFactory.From(fileEntity));
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         category.PosterFileId.Should().Be(fileEntity.Id);
-        _fileUploadServiceMock.VerifyUploadImageCalled();
+
         _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 
@@ -79,13 +78,13 @@ public class AdminUploadCategoryPosterHandlerTests : BaseContentHandlerTest
         Guid existingPosterId = Guid.NewGuid();
         category.SetPosterFileId(existingPosterId);
 
-        FileEntity newFileEntity = FileFactory.CreateImage();
+        FileReferenceDto newFileEntity = FileReferenceDtoFactory.CreateImage();
         IFormFile file = CreateMockFormFile();
 
         var command = new AdminUploadCategoryPosterCommand(Id: category.Id.ToString(), File: file);
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-        _fileUploadServiceMock.SetupUploadImage(newFileEntity);
+        _fileStorageMock.SetupUpload(StoredFileFactory.From(newFileEntity));
 
         // Act
         await _handler.Handle(command, CancellationToken.None);

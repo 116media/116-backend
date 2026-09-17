@@ -4,8 +4,8 @@ using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Events;
-using _116.Core.Application.Shared.Services;
-using _116.Core.Domain.Entities;
+using _116.Core.Contracts.Application.Services;
+using _116.Core.Contracts.Domain.Enums;
 using _116.Shared.Application.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -21,13 +21,12 @@ namespace _116.Content.Application.Editorial.EventHandlers;
 /// </summary>
 /// <param name="videoRepository">Repository for video data access operations.</param>
 /// <param name="unitOfWork">Unit of Work committing the thumbnail attachment.</param>
-/// <param name="fileUploadService">Uploads and replaces stored assets.</param>
 /// <param name="youtubeThumbnailService">Service for downloading YouTube video thumbnails.</param>
 /// <param name="logger">Logger for skipped thumbnail resolutions.</param>
 public class VideoYoutubeUrlAttachedThumbnailHandler(
     IVideoRepository videoRepository,
     IContentUnitOfWork unitOfWork,
-    IFileUploadService fileUploadService,
+    IFileStorageService fileStorage,
     IYoutubeThumbnailService youtubeThumbnailService,
     ILogger<VideoYoutubeUrlAttachedThumbnailHandler> logger
 ) : IDomainEventHandler<VideoYoutubeUrlAttachedEvent>
@@ -63,25 +62,24 @@ public class VideoYoutubeUrlAttachedThumbnailHandler(
             cancellationToken: cancellationToken
         );
 
-        FileEntity uploaded = await fileUploadService.UploadImageAsync(
+        StoredFile uploaded = await fileStorage.UploadAsync(
             file: thumbnail,
             publicId: video.Id.ToString(),
             folder: "content/video-thumbnails",
-            originalFileName: $"{youtubeVideoId}-thumbnail.jpg",
-            mimeType: "image/jpeg",
+            kind: EnumStoredFileKind.Image,
             cancellationToken: cancellationToken
         );
 
         await unitOfWork.ExecuteInTransactionAsync(
             async ct =>
             {
-                await fileUploadService.RecordAsync(
+                await fileStorage.RecordAsync(
                     file: uploaded,
                     supersededFileId: video.ThumbnailFileId,
                     cancellationToken: ct
                 );
 
-                video.SetThumbnailFileId(thumbnailFileId: uploaded.Id);
+                video.SetThumbnailFileId(thumbnailFileId: uploaded.Reference.Id);
 
                 videoRepository.Update(video: video);
             },

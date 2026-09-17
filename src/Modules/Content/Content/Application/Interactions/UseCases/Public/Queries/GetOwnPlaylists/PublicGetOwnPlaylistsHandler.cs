@@ -2,7 +2,7 @@ using _116.Content.Application.Interactions.Persistence;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.Services;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
 
@@ -15,7 +15,7 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetOwnPl
 /// <param name="mapper">The mapper used to project entities to DTOs.</param>
 public class PublicGetOwnPlaylistsHandler(
     IPlaylistRepository playlistRepository,
-    IFileRepository fileRepository,
+    IFileStorageService fileStorage,
     IMapper mapper
 ) : IQueryHandler<PublicGetOwnPlaylistsQuery, PublicGetOwnPlaylistsResult>
 {
@@ -32,7 +32,7 @@ public class PublicGetOwnPlaylistsHandler(
 
         IReadOnlyList<PlaylistDto> dtoList = await playlists.ToPlaylistDtosAsync(
             mapper,
-            fileRepository,
+            fileStorage,
             cancellationToken
         );
         return new PublicGetOwnPlaylistsResult(Playlists: dtoList);

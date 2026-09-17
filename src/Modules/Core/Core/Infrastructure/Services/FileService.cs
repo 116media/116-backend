@@ -1,6 +1,7 @@
 using System.Net.Http.Headers;
 using _116.Core.Application.Shared.Errors.Facade;
 using _116.Core.Application.Shared.Services;
+using _116.Core.Contracts.Domain.Enums;
 using _116.Shared.Application.Exceptions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -111,9 +112,13 @@ public class FileService(
     }
 
     /// <inheritdoc />
-    public async Task<bool> DeleteFileAsync(string storageKey, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteFileAsync(
+        string storageKey,
+        EnumStoredFileKind kind,
+        CancellationToken cancellationToken = default
+    )
     {
-        return await cloudinaryService.DeleteImageAsync(storageKey, cancellationToken);
+        return await cloudinaryService.DeleteAsync(storageKey, kind, cancellationToken);
     }
 
     /// <inheritdoc />

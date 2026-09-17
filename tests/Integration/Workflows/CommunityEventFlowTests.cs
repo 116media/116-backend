@@ -8,7 +8,7 @@ using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.BackgroundJobs;
 using _116.Content.Infrastructure.Persistence;
 using _116.Integration.Tests.Common.Stubs;
-using _116.Mailer.Contracts.Domain;
+using _116.Mailer.Contracts.Domain.Enums;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;

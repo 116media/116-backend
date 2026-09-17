@@ -3,13 +3,17 @@ using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
-using _116.Identity.Contracts.Application;
+using _116.Core.Contracts.Application.Services;
+using _116.Identity.Contracts.Application.DTOs;
+using _116.Identity.Contracts.Application.Services;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Factories.Core;
 using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
+using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -26,7 +30,7 @@ public class PublicAddCommentReplyHandlerTests : BaseContentHandlerTest
     private readonly Mock<IArticleCommentRepository> _articleCommentRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly Mock<IUserLookupService> _userLookupMock;
-    private readonly Mock<IFileRepository> _fileRepositoryMock;
+    private readonly Mock<IFileStorageService> _fileStorageMock;
     private readonly PublicAddCommentReplyHandler _handler;
 
     public PublicAddCommentReplyHandlerTests()
@@ -34,12 +38,12 @@ public class PublicAddCommentReplyHandlerTests : BaseContentHandlerTest
         _articleCommentRepositoryMock = MockArticleCommentRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _userLookupMock = new Mock<IUserLookupService>();
-        _fileRepositoryMock = new Mock<IFileRepository>();
+        _fileStorageMock = new Mock<IFileStorageService>();
         _handler = new PublicAddCommentReplyHandler(
             _articleCommentRepositoryMock.Object,
             _unitOfWorkMock.Object,
             _userLookupMock.Object,
-            _fileRepositoryMock.Object,
+            _fileStorageMock.Object,
             TestErrorsFactory.CreateContentI18n()
         );
     }
@@ -56,7 +60,7 @@ public class PublicAddCommentReplyHandlerTests : BaseContentHandlerTest
         _articleCommentRepositoryMock.SetupGetCommentByIdAsync(parent);
         _userLookupMock
             .Setup(x => x.GetAuthorInfoByIdAsync(replierId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new AuthorInfo("bob", "bob@example.com", null, "Visitor"));
+            .ReturnsAsync(new AuthorDto("bob", "bob@example.com", null, "Visitor"));
 
         var command = new PublicAddCommentReplyCommand(article.Id, parent.Id, replierId, "A valid reply body.");
 

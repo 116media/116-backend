@@ -2,7 +2,7 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
-using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.Services;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
 using MapsterMapper;
@@ -30,8 +30,8 @@ public class PlaylistMapperTests(PostgresFixture postgres) : BaseRepositoryTest(
         await using var readContext = CreateDbContext<ContentDbContext>();
         List<PlaylistEntity> loaded = await readContext.Playlists.Include(p => p.Videos).ToListAsync();
 
-        var fileRepository = Resolve<IFileRepository>();
-        IReadOnlyList<PlaylistDto> dtos = await loaded.ToPlaylistDtosAsync(_mapper, fileRepository);
+        var fileStorage = Resolve<IFileStorageService>();
+        IReadOnlyList<PlaylistDto> dtos = await loaded.ToPlaylistDtosAsync(_mapper, fileStorage);
 
         dtos.Should().ContainSingle();
         dtos[0].Id.Should().Be(playlist.Id);
@@ -70,8 +70,8 @@ public class PlaylistMapperTests(PostgresFixture postgres) : BaseRepositoryTest(
                 .ThenInclude(pv => pv.Video)
             .FirstAsync(p => p.Id == playlist.Id);
 
-        var fileRepository = Resolve<IFileRepository>();
-        PlaylistDetailDto dto = await loaded.ToPlaylistDetailDtoAsync(_mapper, fileRepository);
+        var fileStorage = Resolve<IFileStorageService>();
+        PlaylistDetailDto dto = await loaded.ToPlaylistDetailDtoAsync(_mapper, fileStorage);
 
         dto.Id.Should().Be(playlist.Id);
         dto.Videos.Should().ContainSingle();
@@ -93,8 +93,8 @@ public class PlaylistMapperTests(PostgresFixture postgres) : BaseRepositoryTest(
                 .ThenInclude(pv => pv.Video)
             .FirstAsync(p => p.Id == playlist.Id);
 
-        var fileRepository = Resolve<IFileRepository>();
-        PlaylistDetailDto dto = await loaded.ToPlaylistDetailDtoAsync(_mapper, fileRepository);
+        var fileStorage = Resolve<IFileStorageService>();
+        PlaylistDetailDto dto = await loaded.ToPlaylistDetailDtoAsync(_mapper, fileStorage);
 
         dto.Videos.Should().BeEmpty();
     }

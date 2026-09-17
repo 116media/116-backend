@@ -2,7 +2,7 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.Services;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPopularVideos;
@@ -12,8 +12,8 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPopularV
 /// published videos ranked by a weighted engagement score.
 /// </summary>
 /// <param name="videoRepository">Repository for video data access operations.</param>
-/// <param name="fileRepository">Repository for resolving thumbnail URLs.</param>
-public class PublicGetPopularVideosHandler(IVideoRepository videoRepository, IFileRepository fileRepository)
+/// <param name="fileStorage">Core's storage contract.</param>
+public class PublicGetPopularVideosHandler(IVideoRepository videoRepository, IFileStorageService fileStorage)
     : IQueryHandler<PublicGetPopularVideosQuery, PublicGetPopularVideosResult>
 {
     /// <inheritdoc />
@@ -30,7 +30,7 @@ public class PublicGetPopularVideosHandler(IVideoRepository videoRepository, IFi
         );
 
         IReadOnlyList<PublicVideoSummaryDto> dtoList = await videos.ToPublicVideoSummaryDtosAsync(
-            fileRepository,
+            fileStorage,
             cancellationToken
         );
 

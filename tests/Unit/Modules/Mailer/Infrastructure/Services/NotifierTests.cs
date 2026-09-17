@@ -1,7 +1,7 @@
 using _116.Mailer.Application.Shared.Persistence;
 using _116.Mailer.Application.Shared.Repositories;
 using _116.Mailer.Application.Shared.Services;
-using _116.Mailer.Contracts.Domain;
+using _116.Mailer.Contracts.Domain.Enums;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Infrastructure.Services;
 using AwesomeAssertions;
@@ -11,7 +11,7 @@ using Xunit;
 namespace _116.Unit.Tests.Modules.Mailer.Infrastructure.Services;
 
 /// <summary>
-/// Unit tests for <see cref="Notifier" />: renders, persists a self-contained
+/// Unit tests for <see cref="NotificationService" />: renders, persists a self-contained
 /// unread row, lifts the optional link path token, and commits exactly once.
 /// </summary>
 public class NotifierTests
@@ -35,9 +35,9 @@ public class NotifierTests
             .Setup(r => r.AddAsync(It.IsAny<NotificationEntity>(), It.IsAny<CancellationToken>()))
             .Callback<NotificationEntity, CancellationToken>((e, _) => captured = e);
 
-        var notifier = new Notifier(_renderer.Object, _repository.Object, _unitOfWork.Object);
+        var notificationService = new NotificationService(_renderer.Object, _repository.Object, _unitOfWork.Object);
 
-        await notifier.NotifyAsync(
+        await notificationService.NotifyAsync(
             userId: userId,
             type: EnumNotificationType.CommentReply,
             tokens: new Dictionary<string, string> { ["replierName"] = "Aline", ["linkPath"] = "/articles/eloko-oyo" },
@@ -74,9 +74,9 @@ public class NotifierTests
             .Setup(r => r.AddAsync(It.IsAny<NotificationEntity>(), It.IsAny<CancellationToken>()))
             .Callback<NotificationEntity, CancellationToken>((e, _) => captured = e);
 
-        var notifier = new Notifier(_renderer.Object, _repository.Object, _unitOfWork.Object);
+        var notificationService = new NotificationService(_renderer.Object, _repository.Object, _unitOfWork.Object);
 
-        await notifier.NotifyAsync(
+        await notificationService.NotifyAsync(
             userId: Guid.NewGuid(),
             type: EnumNotificationType.PasswordChanged,
             tokens: new Dictionary<string, string>(),
@@ -101,10 +101,10 @@ public class NotifierTests
             )
             .Throws(new InvalidOperationException("unresolved placeholder"));
 
-        var notifier = new Notifier(_renderer.Object, _repository.Object, _unitOfWork.Object);
+        var notificationService = new NotificationService(_renderer.Object, _repository.Object, _unitOfWork.Object);
 
         Func<Task> act = () =>
-            notifier.NotifyAsync(
+            notificationService.NotifyAsync(
                 Guid.NewGuid(),
                 EnumNotificationType.PasswordChanged,
                 new Dictionary<string, string>(),

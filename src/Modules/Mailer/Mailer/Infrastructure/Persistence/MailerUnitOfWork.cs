@@ -1,4 +1,3 @@
-using System.Data.Common;
 using _116.Mailer.Application.Shared.Persistence;
 using _116.Shared.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;

@@ -2,6 +2,7 @@ using _116.Content.Application.Editorial.UseCases.Public.Queries.GetSimilarLyric
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.Services;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using _116.Unit.Tests.Common.Mocks.Services;
@@ -24,8 +25,8 @@ public class PublicGetSimilarLyricsHandlerTests
     public PublicGetSimilarLyricsHandlerTests()
     {
         _lyricsRepositoryMock = MockLyricsRepository.Create();
-        Mock<IFileRepository> fileRepositoryMock = MockFileRepository.Create();
-        _handler = new PublicGetSimilarLyricsHandler(_lyricsRepositoryMock.Object, fileRepositoryMock.Object);
+        Mock<IFileStorageService> fileStorageMock = MockFileStorageService.Create();
+        _handler = new PublicGetSimilarLyricsHandler(_lyricsRepositoryMock.Object, fileStorageMock.Object);
     }
 
     [Fact]

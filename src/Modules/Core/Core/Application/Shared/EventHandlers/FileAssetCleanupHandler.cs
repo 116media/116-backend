@@ -25,7 +25,11 @@ public class FileAssetCleanupHandler(IFileService fileService)
             return;
         }
 
-        await fileService.DeleteFileAsync(storageKey: domainEvent.OldStorageKey, cancellationToken: cancellationToken);
+        await fileService.DeleteFileAsync(
+            storageKey: domainEvent.OldStorageKey,
+            kind: domainEvent.Kind,
+            cancellationToken: cancellationToken
+        );
     }
 
     /// <inheritdoc />
@@ -36,6 +40,10 @@ public class FileAssetCleanupHandler(IFileService fileService)
             return;
         }
 
-        await fileService.DeleteFileAsync(storageKey: domainEvent.StorageKey, cancellationToken: cancellationToken);
+        await fileService.DeleteFileAsync(
+            storageKey: domainEvent.StorageKey,
+            kind: domainEvent.Kind,
+            cancellationToken: cancellationToken
+        );
     }
 }

@@ -3,7 +3,7 @@ using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.Services;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
 
@@ -15,12 +15,12 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetArtistAr
 /// </summary>
 /// <param name="artistRepository">Repository for artist profile data access operations.</param>
 /// <param name="articleRepository">Repository for article data access operations.</param>
-/// <param name="fileRepository">Repository for resolving cover image file URLs.</param>
+/// <param name="fileStorage">Core's storage contract.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class PublicGetArtistArticlesHandler(
     IArtistRepository artistRepository,
     IArticleRepository articleRepository,
-    IFileRepository fileRepository,
+    IFileStorageService fileStorage,
     ContentI18n i18n
 ) : IQueryHandler<PublicGetArtistArticlesQuery, PublicGetArtistArticlesResult>
 {
@@ -49,7 +49,7 @@ public class PublicGetArtistArticlesHandler(
 
         IReadOnlyList<PublicArticleSummaryDto> articleDtos = await articles
             .AsReadOnly()
-            .ToPublicArticleSummaryDtosAsync(fileRepository, cancellationToken);
+            .ToPublicArticleSummaryDtosAsync(fileStorage, cancellationToken);
 
         var result = new PaginatedResult<PublicArticleSummaryDto>(
             pageIndex: query.Page.PageIndex,

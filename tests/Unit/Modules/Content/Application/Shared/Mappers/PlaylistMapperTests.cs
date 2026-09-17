@@ -2,10 +2,13 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.Services;
 using _116.Tests.Fixtures.Builders.Entities.Content;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Factories.Core;
 using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
+using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -19,7 +22,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Shared.Mappers;
 public class PlaylistMapperTests : BaseContentHandlerTest
 {
     private static readonly Guid CategoryId = Guid.NewGuid();
-    private readonly Mock<IFileRepository> _fileRepositoryMock = new();
+    private readonly Mock<IFileStorageService> _fileStorageMock = new();
 
     /// <summary>
     /// Builds a playlist link carrying the Video navigation EF Core would populate, so the mapper
@@ -38,7 +41,7 @@ public class PlaylistMapperTests : BaseContentHandlerTest
         // Act
         PlaylistDetailDto dto = await playlist.ToPlaylistDetailDtoAsync(
             Mapper,
-            _fileRepositoryMock.Object,
+            _fileStorageMock.Object,
             CancellationToken.None
         );
 
@@ -62,7 +65,7 @@ public class PlaylistMapperTests : BaseContentHandlerTest
         // Act
         PlaylistDetailDto dto = await playlist.ToPlaylistDetailDtoAsync(
             Mapper,
-            _fileRepositoryMock.Object,
+            _fileStorageMock.Object,
             CancellationToken.None
         );
 
@@ -96,7 +99,7 @@ public class PlaylistMapperTests : BaseContentHandlerTest
         // Act
         PlaylistDetailDto dto = await playlist.ToPlaylistDetailDtoAsync(
             Mapper,
-            _fileRepositoryMock.Object,
+            _fileStorageMock.Object,
             CancellationToken.None
         );
 
@@ -116,7 +119,7 @@ public class PlaylistMapperTests : BaseContentHandlerTest
         // Act
         PlaylistDetailDto dto = await playlist.ToPlaylistDetailDtoAsync(
             Mapper,
-            _fileRepositoryMock.Object,
+            _fileStorageMock.Object,
             CancellationToken.None
         );
 
@@ -145,18 +148,15 @@ public class PlaylistMapperTests : BaseContentHandlerTest
                 resolvedUrls[thumbnailFileId] = $"https://cdn.example/{index}.jpg";
             }
         }
-        _fileRepositoryMock
+        _fileStorageMock
             .Setup(repository =>
-                repository.GetStorageUrlsByIdsAsync(
-                    It.IsAny<IReadOnlyCollection<Guid>>(),
-                    It.IsAny<CancellationToken>()
-                )
+                repository.ResolveUrlsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>())
             )
             .ReturnsAsync(resolvedUrls);
 
         IReadOnlyList<PlaylistDto> result = await new[] { playlist }.ToPlaylistDtosAsync(
             Mapper,
-            _fileRepositoryMock.Object,
+            _fileStorageMock.Object,
             CancellationToken.None
         );
 
@@ -169,12 +169,9 @@ public class PlaylistMapperTests : BaseContentHandlerTest
         }
         if (videoCount > 0)
         {
-            _fileRepositoryMock.Verify(
+            _fileStorageMock.Verify(
                 repository =>
-                    repository.GetStorageUrlsByIdsAsync(
-                        It.IsAny<IReadOnlyCollection<Guid>>(),
-                        It.IsAny<CancellationToken>()
-                    ),
+                    repository.ResolveUrlsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()),
                 Times.Once
             );
         }
@@ -193,34 +190,28 @@ public class PlaylistMapperTests : BaseContentHandlerTest
             [first.ThumbnailFileId!.Value] = "https://cdn.example/first.jpg",
             [second.ThumbnailFileId!.Value] = "https://cdn.example/second.jpg",
         };
-        _fileRepositoryMock
+        _fileStorageMock
             .Setup(repository =>
-                repository.GetStorageUrlsByIdsAsync(
-                    It.IsAny<IReadOnlyCollection<Guid>>(),
-                    It.IsAny<CancellationToken>()
-                )
+                repository.ResolveUrlsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>())
             )
             .ReturnsAsync(urls);
 
         PlaylistDetailDto dto = await playlist.ToPlaylistDetailDtoAsync(
             Mapper,
-            _fileRepositoryMock.Object,
+            _fileStorageMock.Object,
             CancellationToken.None
         );
 
         dto.Videos.Select(video => video.ThumbnailUrl)
             .Should()
             .Equal("https://cdn.example/first.jpg", "https://cdn.example/second.jpg");
-        _fileRepositoryMock.Verify(
+        _fileStorageMock.Verify(
             repository =>
-                repository.GetStorageUrlsByIdsAsync(
-                    It.IsAny<IReadOnlyCollection<Guid>>(),
-                    It.IsAny<CancellationToken>()
-                ),
+                repository.ResolveUrlsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()),
             Times.Once
         );
-        _fileRepositoryMock.Verify(
-            repository => repository.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+        _fileStorageMock.Verify(
+            repository => repository.ResolveAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
             Times.Never
         );
     }

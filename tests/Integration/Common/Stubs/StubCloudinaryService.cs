@@ -1,4 +1,5 @@
 using _116.Core.Application.Shared.Services;
+using _116.Core.Contracts.Domain.Enums;
 using Microsoft.AspNetCore.Http;
 
 namespace _116.Integration.Tests.Common.Stubs;
@@ -10,8 +11,8 @@ namespace _116.Integration.Tests.Common.Stubs;
 public class StubCloudinaryService : ICloudinaryService, IResettableStub
 {
     /// <summary>
-    /// When set, the next <see cref="DeleteImageAsync" /> or
-    /// <see cref="DeleteImagesAsync" /> call throws this exception once and
+    /// When set, the next <see cref="DeleteAsync" /> or
+    /// <see cref="DeleteManyAsync" /> call throws this exception once and
     /// clears the field. Uploads are unaffected.
     /// </summary>
     public Exception? NextDeleteFailure { get; set; }
@@ -76,7 +77,11 @@ public class StubCloudinaryService : ICloudinaryService, IResettableStub
     }
 
     /// <inheritdoc />
-    public Task<bool> DeleteImageAsync(string publicId, CancellationToken cancellationToken = default)
+    public Task<bool> DeleteAsync(
+        string publicId,
+        EnumStoredFileKind kind,
+        CancellationToken cancellationToken = default
+    )
     {
         DeletedPublicIds.Add(publicId);
         ThrowNextDeleteFailureIfSet();
@@ -84,7 +89,11 @@ public class StubCloudinaryService : ICloudinaryService, IResettableStub
     }
 
     /// <inheritdoc />
-    public Task<bool> DeleteImagesAsync(IEnumerable<string> publicIds, CancellationToken cancellationToken = default)
+    public Task<bool> DeleteManyAsync(
+        IEnumerable<string> publicIds,
+        EnumStoredFileKind kind,
+        CancellationToken cancellationToken = default
+    )
     {
         DeletedPublicIds.AddRange(publicIds);
         ThrowNextDeleteFailureIfSet();

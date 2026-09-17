@@ -2,7 +2,7 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.Services;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPromotedVideos;
@@ -11,8 +11,8 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPromoted
 /// Handles the <see cref="PublicGetPromotedVideosQuery" /> to retrieve all currently promoted published videos.
 /// </summary>
 /// <param name="videoRepository">Repository for video data access operations.</param>
-/// <param name="fileRepository">Repository for resolving file URLs.</param>
-public class PublicGetPromotedVideosHandler(IVideoRepository videoRepository, IFileRepository fileRepository)
+/// <param name="fileStorage">Core's storage contract.</param>
+public class PublicGetPromotedVideosHandler(IVideoRepository videoRepository, IFileStorageService fileStorage)
     : IQueryHandler<PublicGetPromotedVideosQuery, PublicGetPromotedVideosResult>
 {
     /// <inheritdoc />
@@ -26,7 +26,7 @@ public class PublicGetPromotedVideosHandler(IVideoRepository videoRepository, IF
         );
 
         IReadOnlyList<PublicVideoSummaryDto> dtoList = await videos.ToPublicVideoSummaryDtosAsync(
-            fileRepository,
+            fileStorage,
             cancellationToken
         );
 

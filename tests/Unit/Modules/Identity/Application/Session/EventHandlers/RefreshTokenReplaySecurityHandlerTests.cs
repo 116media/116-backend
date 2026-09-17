@@ -1,11 +1,13 @@
 using _116.Identity.Application.Session.EventHandlers;
 using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Shared.Persistence;
-using _116.Identity.Contracts.Application;
+using _116.Identity.Contracts.Application.DTOs;
+using _116.Identity.Contracts.Application.Services;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.Events;
-using _116.Mailer.Contracts.Application;
-using _116.Mailer.Contracts.Domain;
+using _116.Mailer.Contracts.Application.DTOs;
+using _116.Mailer.Contracts.Application.Services;
+using _116.Mailer.Contracts.Domain.Enums;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -22,7 +24,7 @@ public class RefreshTokenReplaySecurityHandlerTests
     private readonly Mock<ISessionRepository> _sessionRepositoryMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
     private readonly Mock<IUserLookupService> _userLookupServiceMock = new();
-    private readonly Mock<IMailer> _mailerMock = new();
+    private readonly Mock<IEmailService> _mailerMock = new();
     private readonly RefreshTokenReplaySecurityHandler _handler;
 
     public RefreshTokenReplaySecurityHandlerTests()
@@ -78,7 +80,7 @@ public class RefreshTokenReplaySecurityHandlerTests
             x =>
                 x.EnqueueAsync(
                     EnumEmailTemplate.RefreshTokenReplayAlert,
-                    It.Is<EmailRecipient>(r => r.Address == "user@test.com"),
+                    It.Is<EmailRecipientDto>(r => r.Address == "user@test.com"),
                     It.Is<IReadOnlyDictionary<string, string>>(t => t["userName"] == "Fally" && t.ContainsKey("time")),
                     It.IsAny<string>(),
                     It.IsAny<CancellationToken>()
@@ -115,6 +117,6 @@ public class RefreshTokenReplaySecurityHandlerTests
     {
         _userLookupServiceMock
             .Setup(x => x.GetAuthorInfoByIdAsync(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new AuthorInfo("Fally", email, null, "Visitor"));
+            .ReturnsAsync(new AuthorDto("Fally", email, null, "Visitor"));
     }
 }

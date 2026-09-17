@@ -3,7 +3,8 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Core.Application.Shared.Repositories;
-using _116.Identity.Contracts.Application;
+using _116.Core.Contracts.Application.Services;
+using _116.Identity.Contracts.Application.Services;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
@@ -39,7 +40,7 @@ public class PublicGetLyricsBySlugHandlerTests : BaseContentHandlerTest
         _albumRepositoryMock = MockAlbumRepository.Create();
         _streamingLinkRepositoryMock = MockStreamingLinkRepository.Create();
         Mock<IUserLookupService> userLookupMock = MockUserLookupService.Create();
-        Mock<IFileRepository> fileRepositoryMock = MockFileRepository.Create();
+        Mock<IFileStorageService> fileStorageMock = MockFileStorageService.Create();
         _handler = new PublicGetLyricsBySlugHandler(
             _lyricsRepositoryMock.Object,
             _videoRepositoryMock.Object,
@@ -48,7 +49,7 @@ public class PublicGetLyricsBySlugHandlerTests : BaseContentHandlerTest
             _streamingLinkRepositoryMock.Object,
             Mapper,
             userLookupMock.Object,
-            fileRepositoryMock.Object,
+            fileStorageMock.Object,
             TestErrorsFactory.CreateContentI18n()
         );
     }

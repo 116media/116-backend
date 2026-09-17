@@ -3,10 +3,12 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Core.Application.Shared.Repositories;
+using _116.Core.Contracts.Application.Services;
 using _116.Shared.Application.Pagination;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Repositories;
+using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -26,8 +28,8 @@ public class AdminGetAllLyricsHandlerTests : BaseContentHandlerTest
     public AdminGetAllLyricsHandlerTests()
     {
         _lyricsRepositoryMock = MockLyricsRepository.Create();
-        Mock<IFileRepository> fileRepositoryMock = MockFileRepository.Create();
-        _handler = new AdminGetAllLyricsHandler(_lyricsRepositoryMock.Object, fileRepositoryMock.Object);
+        Mock<IFileStorageService> fileStorageMock = MockFileStorageService.Create();
+        _handler = new AdminGetAllLyricsHandler(_lyricsRepositoryMock.Object, fileStorageMock.Object);
     }
 
     [Fact]
