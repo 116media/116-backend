@@ -138,30 +138,6 @@ public class ArticleByOrderItemIdSpecification(Guid orderItemId) : Specification
 }
 
 /// <summary>
-/// Specification that matches article images belonging to a specific article.
-/// </summary>
-public class ArticleImageByArticleIdSpecification(Guid articleId) : Specification<ArticleImageEntity>
-{
-    /// <inheritdoc />
-    public override Expression<Func<ArticleImageEntity, bool>> ToExpression()
-    {
-        return image => image.ArticleId == articleId;
-    }
-}
-
-/// <summary>
-/// Specification that matches article tags belonging to a specific article.
-/// </summary>
-public class ArticleTagByArticleIdSpecification(Guid articleId) : Specification<ArticleTagEntity>
-{
-    /// <inheritdoc />
-    public override Expression<Func<ArticleTagEntity, bool>> ToExpression()
-    {
-        return tag => tag.ArticleId == articleId;
-    }
-}
-
-/// <summary>
 /// Specification that matches an article like by user and article identifiers.
 /// </summary>
 public class ArticleLikeByUserAndArticleSpecification(Guid userId, Guid articleId) : Specification<ArticleLikeEntity>
@@ -266,7 +242,8 @@ public class ArticleCommentLikeByUserAndCommentSpecification(Guid userId, Guid c
 /// Specification that matches promoted published articles assigned to a specific promotion spot
 /// via their associated <see cref="PromotionLevelEntity.SpotPriority" />.
 /// </summary>
-public class ArticleBySpotPrioritySpecification(int spotPriority) : Specification<ArticleEntity>
+public class ArticleBySpotPrioritySpecification(int spotPriority, IQueryable<PromotionLevelEntity> promotionLevels)
+    : Specification<ArticleEntity>
 {
     /// <inheritdoc />
     public override Expression<Func<ArticleEntity, bool>> ToExpression()
@@ -276,8 +253,7 @@ public class ArticleBySpotPrioritySpecification(int spotPriority) : Specificatio
             article.IsPromoted
             && article.Status == EnumContentStatus.Published
             && (article.PromotedUntil == null || article.PromotedUntil > now)
-            && article.PromotionLevel != null
-            && article.PromotionLevel.SpotPriority == spotPriority;
+            && promotionLevels.Any(level => level.Id == article.PromotionLevelId && level.SpotPriority == spotPriority);
     }
 }
 
