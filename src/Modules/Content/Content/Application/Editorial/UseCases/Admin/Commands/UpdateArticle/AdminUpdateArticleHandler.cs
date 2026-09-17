@@ -30,7 +30,8 @@ public partial class AdminUpdateArticleHandler(
     IContentUnitOfWork unitOfWork,
     IFileStorageService fileStorage,
     IMapper mapper,
-    ContentI18n i18n
+    ContentI18n i18n,
+    IContentLookupFactory contentLookupFactory
 ) : ICommandHandler<AdminUpdateArticleCommand, AdminUpdateArticleResult>
 {
     private static readonly Regex CloudinaryUrlRegex = MyRegex();
@@ -63,34 +64,29 @@ public partial class AdminUpdateArticleHandler(
             }
         }
 
-        IReadOnlyList<ArticleImageEntity> existingImages = await articleRepository.GetImagesByArticleIdAsync(
-            articleId: article.Id,
-            cancellationToken: cancellationToken
-        );
-
         HashSet<string> newBodyUrls = CloudinaryUrlRegex
             .Matches(command.Body)
             .Select(m => m.Value)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-        List<string> orphanedStorageKeys = existingImages
-            .Where(img => img.ImageType == EnumArticleImageType.Body && !newBodyUrls.Contains(img.Url))
+        List<string> orphanedStorageKeys = article
+            .Images.Where(img => img.ImageType == EnumArticleImageType.Body && !newBodyUrls.Contains(img.Url))
             .Select(img => img.StorageKey)
             .ToList();
 
-        article.Update(
-            categoryId: command.CategoryId,
-            title: command.Title,
-            slug: command.Slug,
+        article.Recategorize(categoryId: command.CategoryId);
+        article.Retitle(title: command.Title, slug: command.Slug);
+        article.ReviseBody(
             headline: command.Headline,
             body: command.Body,
-            customerId: command.CustomerId,
-            orderItemId: command.OrderItemId,
-            socialBoost: command.SocialBoost,
-            metaTitle: command.MetaTitle,
-            metaDescription: command.MetaDescription,
             orphanedBodyImageStorageKeys: orphanedStorageKeys
         );
+        article.AssignCommission(
+            customerId: command.CustomerId,
+            orderItemId: command.OrderItemId,
+            socialBoost: command.SocialBoost
+        );
+        article.ReviseSeo(metaTitle: command.MetaTitle, metaDescription: command.MetaDescription);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         ArticleEntity updated = await articleRepository.GetByIdOrThrowAsync(
@@ -98,7 +94,12 @@ public partial class AdminUpdateArticleHandler(
             cancellationToken: cancellationToken
         );
 
-        var dto = await updated.ToArticleDetailDtoAsync(mapper, fileStorage, cancellationToken);
+        var dto = await updated.ToArticleDetailDtoAsync(
+            mapper,
+            await contentLookupFactory.ResolveForArticlesAsync([updated], cancellationToken),
+            fileStorage,
+            cancellationToken
+        );
         return new AdminUpdateArticleResult(Article: dto);
     }
 
