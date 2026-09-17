@@ -96,6 +96,7 @@ public static class ContentModule
         services.AddScoped<LyricsRevisionErrorMessage>();
         services.AddScoped<StreamingLinkErrorMessage>();
         services.AddScoped<ShareErrorMessage>();
+        services.AddScoped<ValueObjectErrorMessage>();
         services.AddSingleton<IExceptionStrategy, StreamingLinkResolutionExceptionHandler>();
         services.AddSingleton<IExceptionStrategy, DomainRuleExceptionStrategy>();
 
@@ -247,10 +248,13 @@ public static class ContentModule
         services.AddScoped<IAddOrderItemFactory, AdminAddOrderItemFactory>();
         services.AddScoped<IAddItemTierFactory, AdminAddItemTierFactory>();
         services.AddScoped<ICreateOrderFactory, AdminCreateOrderFactory>();
+        services.AddScoped<IContentOrderDtoFactory, ContentOrderDtoFactory>();
         services.AddScoped<IPaymentDtoFactory, PaymentDtoFactory>();
 
         // Catalog factories
+        services.AddScoped<IContentLookupFactory, ContentLookupFactory>();
         services.AddScoped<ICategoryDtoFactory, CategoryDtoFactory>();
+        services.AddScoped<IPackageDtoFactory, PackageDtoFactory>();
 
         // Editorial factories
         services.AddScoped<IArtistDtoFactory, ArtistDtoFactory>();
