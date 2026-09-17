@@ -43,13 +43,8 @@ public class AdminDeleteArticleHandler(
             throw i18n.Article.CannotDeletePublishedArticle();
         }
 
-        IReadOnlyList<ArticleImageEntity> images = await articleRepository.GetImagesByArticleIdAsync(
-            articleId: article.Id,
-            cancellationToken: cancellationToken
-        );
-
-        List<string> bodyImageStorageKeys = images
-            .Where(img => img.ImageType == EnumArticleImageType.Body)
+        List<string> bodyImageStorageKeys = article
+            .Images.Where(img => img.ImageType == EnumArticleImageType.Body)
             .Select(img => img.StorageKey)
             .ToList();
 
