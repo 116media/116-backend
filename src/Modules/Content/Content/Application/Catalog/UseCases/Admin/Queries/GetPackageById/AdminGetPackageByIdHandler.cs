@@ -1,8 +1,9 @@
+using _116.Content.Application.Catalog.Factories;
+using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
-using MapsterMapper;
 
 namespace _116.Content.Application.Catalog.UseCases.Admin.Queries.GetPackageById;
 
@@ -10,8 +11,8 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Queries.GetPackageById
 /// Handles the <see cref="AdminGetPackageByIdQuery" /> to retrieve a package by its identifier.
 /// </summary>
 /// <param name="packageRepository">Repository for package data access operations.</param>
-/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-public class AdminGetPackageByIdHandler(IPackageRepository packageRepository, IMapper mapper)
+/// <param name="packageDtoFactory">Builds package projections with their categories resolved.</param>
+public class AdminGetPackageByIdHandler(IPackageRepository packageRepository, IPackageDtoFactory packageDtoFactory)
     : IQueryHandler<AdminGetPackageByIdQuery, AdminGetPackageByIdResult>
 {
     /// <inheritdoc />
@@ -20,12 +21,12 @@ public class AdminGetPackageByIdHandler(IPackageRepository packageRepository, IM
         CancellationToken cancellationToken
     )
     {
-        PackageEntity package = await packageRepository.GetByIdWithSlotsOrThrowAsync(
+        PackageEntity package = await packageRepository.GetByIdOrThrowAsync(
             id: query.Id,
             cancellationToken: cancellationToken
         );
 
-        var dto = package.ToPackageDto(mapper);
+        PackageDto dto = await packageDtoFactory.CreateAsync(package, cancellationToken);
         return new AdminGetPackageByIdResult(Package: dto);
     }
 }
