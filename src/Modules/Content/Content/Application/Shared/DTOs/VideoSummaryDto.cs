@@ -39,7 +39,7 @@ namespace _116.Content.Application.Shared.DTOs;
 /// Whether the video has an active paid promotion.
 /// </param>
 /// <param name="HasLyrics">
-/// Whether a lyrics page is linked to this video.
+/// Whether a published lyrics page is linked to this video.
 /// </param>
 /// <param name="PublishedAt">
 /// When the video was published, or null if not yet published.
