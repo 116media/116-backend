@@ -30,7 +30,8 @@ public class AdminUpdateLyricsHandler(
     IMapper mapper,
     IUserLookupService userLookup,
     IFileStorageService fileStorage,
-    ContentI18n i18n
+    ContentI18n i18n,
+    IContentLookupFactory contentLookupFactory
 ) : ICommandHandler<AdminUpdateLyricsCommand, AdminUpdateLyricsResult>
 {
     /// <inheritdoc />
@@ -58,37 +59,20 @@ public class AdminUpdateLyricsHandler(
             }
         }
 
-        Guid? previousVideoId = lyrics.VideoId;
-
-        lyrics.Update(
-            categoryId: command.CategoryId,
-            songTitle: command.SongTitle,
-            artistName: command.ArtistName,
-            slug: command.Slug,
-            lyricsText: command.LyricsText,
-            language: command.Language,
-            videoId: command.VideoId,
-            customerId: command.CustomerId,
-            orderItemId: command.OrderItemId
-        );
-
-        if (previousVideoId != command.VideoId && previousVideoId.HasValue)
-        {
-            VideoEntity oldVideo = await videoRepository.GetByIdOrThrowAsync(
-                id: previousVideoId.Value,
-                cancellationToken: cancellationToken
-            );
-            oldVideo.UnmarkHasLyrics();
-        }
+        lyrics.Recategorize(categoryId: command.CategoryId);
+        lyrics.Retitle(songTitle: command.SongTitle, artistName: command.ArtistName, slug: command.Slug);
+        lyrics.ReviseText(lyricsText: command.LyricsText, language: command.Language);
+        lyrics.Relink(videoId: command.VideoId);
+        lyrics.AssignCommission(customerId: command.CustomerId, orderItemId: command.OrderItemId);
 
         if (command.VideoId.HasValue)
         {
-            VideoEntity newVideo = await videoRepository.GetByIdOrThrowAsync(
-                id: command.VideoId.Value,
+            await videoRepository.ExistsOrThrowAsync(
+                videoId: command.VideoId.Value,
                 cancellationToken: cancellationToken
             );
-            newVideo.MarkHasLyrics();
         }
+
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         LyricsEntity updated = await lyricsRepository.GetByIdOrThrowAsync(
@@ -96,7 +80,13 @@ public class AdminUpdateLyricsHandler(
             cancellationToken: cancellationToken
         );
 
-        var dto = await updated.ToLyricsDetailDtoAsync(mapper, userLookup, fileStorage, cancellationToken);
+        var dto = await updated.ToLyricsDetailDtoAsync(
+            await contentLookupFactory.ResolveForLyricsAsync([updated], cancellationToken),
+            mapper,
+            userLookup,
+            fileStorage,
+            cancellationToken
+        );
         return new AdminUpdateLyricsResult(Lyrics: dto);
     }
 }
