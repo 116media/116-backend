@@ -137,7 +137,8 @@ public class LyricsByOrderItemIdSpecification(Guid orderItemId) : Specification<
 /// similar-lyrics waterfall (spec 06): video-linked pages are matched against other lyrics
 /// linked to a video in the same category.
 /// </summary>
-public class LyricsSimilarByVideoCategorySpecification(Guid categoryId, Guid excludeId) : Specification<LyricsEntity>
+public class LyricsSimilarByVideoCategorySpecification(Guid categoryId, Guid excludeId, IQueryable<VideoEntity> videos)
+    : Specification<LyricsEntity>
 {
     /// <inheritdoc />
     public override Expression<Func<LyricsEntity, bool>> ToExpression()
@@ -145,8 +146,7 @@ public class LyricsSimilarByVideoCategorySpecification(Guid categoryId, Guid exc
         return lyrics =>
             lyrics.Id != excludeId
             && lyrics.Status == EnumContentStatus.Published
-            && lyrics.Video != null
-            && lyrics.Video.CategoryId == categoryId;
+            && videos.Any(video => video.Id == lyrics.VideoId && video.CategoryId == categoryId);
     }
 }
 
