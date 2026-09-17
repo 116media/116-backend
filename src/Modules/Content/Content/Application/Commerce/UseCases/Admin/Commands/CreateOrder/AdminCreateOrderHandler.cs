@@ -1,3 +1,4 @@
+using _116.Content.Application.Catalog.Specifications;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.CreateOrder.Contracts;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Errors.Facade;
@@ -46,12 +47,12 @@ public class AdminCreateOrderHandler(
 
             if (command.PackageId.HasValue)
             {
-                package = await packageRepository.GetByIdWithSlotsAsync(
+                package = await packageRepository.GetByIdAsync(
                     id: command.PackageId.Value,
                     cancellationToken: cancellationToken
                 );
 
-                if (package is null || !package.IsActive)
+                if (package is null || !new ActivePackageSpecification().IsSatisfiedBy(package))
                 {
                     throw i18n.Package.NotFound(id: command.PackageId.Value);
                 }
