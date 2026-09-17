@@ -15,10 +15,12 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.DeleteA
 /// <param name="articleCommentRepository">Repository for article comment data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
+/// <param name="timeProvider">Clock stamping the deletion time.</param>
 public class PublicDeleteArticleCommentHandler(
     IArticleCommentRepository articleCommentRepository,
     IContentUnitOfWork unitOfWork,
-    ContentI18n i18n
+    ContentI18n i18n,
+    TimeProvider timeProvider
 ) : ICommandHandler<PublicDeleteArticleCommentCommand, PublicDeleteArticleCommentResult>
 {
     /// <inheritdoc />
@@ -43,7 +45,7 @@ public class PublicDeleteArticleCommentHandler(
             throw i18n.ArticleInteraction.NotCommentOwner();
         }
 
-        if (comment.SoftDelete())
+        if (comment.SoftDelete(now: timeProvider.GetUtcNow()))
         {
             await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
         }
