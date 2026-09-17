@@ -14,7 +14,8 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetOwnAr
 /// <param name="fileStorage">Core's storage contract.</param>
 public class PublicGetOwnArticleBookmarksHandler(
     IArticleInteractionRepository articleInteractionRepository,
-    IFileStorageService fileStorage
+    IFileStorageService fileStorage,
+    IContentLookupFactory contentLookupFactory
 ) : IQueryHandler<PublicGetOwnArticleBookmarksQuery, PublicGetOwnArticleBookmarksResult>
 {
     /// <inheritdoc />
@@ -46,6 +47,7 @@ public class PublicGetOwnArticleBookmarksHandler(
         foreach (BookmarkedArticleActivity activity in activities)
         {
             PublicArticleSummaryDto article = await activity.Article.ToPublicArticleSummaryDtoAsync(
+                await contentLookupFactory.ResolveForArticlesAsync([activity.Article], cancellationToken),
                 fileStorage,
                 cancellationToken
             );
