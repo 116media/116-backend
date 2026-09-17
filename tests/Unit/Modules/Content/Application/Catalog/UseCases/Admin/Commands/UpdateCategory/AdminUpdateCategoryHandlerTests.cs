@@ -27,6 +27,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Catalog.UseCases.Admin.Com
 public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<ICategoryRepository> _categoryRepositoryMock;
+    private readonly Mock<IContentTypeRepository> _contentTypeRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly Mock<IFileStorageService> _fileStorageMock;
     private readonly AdminUpdateCategoryHandler _handler;
@@ -34,12 +35,14 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
     public AdminUpdateCategoryHandlerTests()
     {
         _categoryRepositoryMock = MockCategoryRepository.Create();
+        _contentTypeRepositoryMock = MockContentTypeRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _fileStorageMock = MockFileStorageService.Create();
         _handler = new AdminUpdateCategoryHandler(
             _categoryRepositoryMock.Object,
+            _contentTypeRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            new CategoryDtoFactory(Mapper, _fileStorageMock.Object),
+            CreateCategoryDtoFactory(_fileStorageMock.Object),
             TestErrorsFactory.CreateContentI18n()
         );
     }
@@ -51,6 +54,7 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         ContentTypeEntity contentType = ContentTypeFactory.Create();
+        _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
         CategoryEntity category = CategoryFactory.Create(contentType.Id);
         string newName = TestConstants.Category.AnotherValidName;
         string newSlug = TestConstants.Category.AnotherValidSlug;
@@ -87,6 +91,7 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         ContentTypeEntity contentType = ContentTypeFactory.Create();
+        _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
         string slug = TestConstants.Category.ValidSlug;
         CategoryEntity category = CategoryFactory.Create(contentType.Id, TestConstants.Category.ValidName, slug);
 
@@ -119,6 +124,7 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         ContentTypeEntity videoType = ContentTypeFactory.Create(nameof(EnumCoreContentType.Video));
+        _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrow(videoType);
         CategoryEntity category = CategoryFactory.Create(videoType);
         CategoryEntity currentExclusive = CategoryFactory.Create(videoType);
         currentExclusive.SetExclusive();
@@ -149,6 +155,7 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         ContentTypeEntity videoType = ContentTypeFactory.Create(nameof(EnumCoreContentType.Video));
+        _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrow(videoType);
         CategoryEntity category = CategoryFactory.Create(videoType);
         category.SetExclusive();
 
@@ -178,6 +185,7 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         ContentTypeEntity contentType = ContentTypeFactory.Create();
+        _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
         CategoryEntity category = CategoryFactory.Create(contentType.Id);
 
         var command = new AdminUpdateCategoryCommand(
@@ -205,6 +213,7 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         ContentTypeEntity lyricsType = ContentTypeFactory.Create(nameof(EnumCoreContentType.Lyrics));
+        _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrow(lyricsType);
         CategoryEntity category = CategoryFactory.Create(lyricsType);
         category.SetDefaultForLyrics();
 
@@ -235,6 +244,7 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         ContentTypeEntity lyricsType = ContentTypeFactory.Create(nameof(EnumCoreContentType.Lyrics));
+        _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrow(lyricsType);
         CategoryEntity category = CategoryFactory.Create(lyricsType);
         CategoryEntity currentDefault = CategoryFactory.Create(lyricsType);
         currentDefault.SetDefaultForLyrics();
@@ -266,6 +276,7 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         ContentTypeEntity lyricsType = ContentTypeFactory.Create(nameof(EnumCoreContentType.Lyrics));
+        _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrow(lyricsType);
         CategoryEntity category = CategoryFactory.Create(lyricsType);
 
         var command = new AdminUpdateCategoryCommand(
@@ -296,6 +307,7 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         ContentTypeEntity articleType = ContentTypeFactory.Create(nameof(EnumCoreContentType.Article));
+        _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrow(articleType);
         CategoryEntity category = CategoryFactory.Create(articleType);
 
         var command = new AdminUpdateCategoryCommand(
@@ -323,6 +335,7 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         ContentTypeEntity lyricsType = ContentTypeFactory.Create(nameof(EnumCoreContentType.Lyrics));
+        _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrow(lyricsType);
         CategoryEntity category = CategoryFactory.Create(lyricsType);
         category.Deactivate();
 
@@ -351,6 +364,7 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         ContentTypeEntity articleType = ContentTypeFactory.Create(nameof(EnumCoreContentType.Article));
+        _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrow(articleType);
         CategoryEntity category = CategoryFactory.Create(articleType);
 
         var command = new AdminUpdateCategoryCommand(
@@ -382,6 +396,7 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         ContentTypeEntity contentType = ContentTypeFactory.Create();
+        _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
         CategoryEntity inactive = CategoryFactory.CreateInactive(contentType.Id);
 
         var command = new AdminUpdateCategoryCommand(
@@ -434,6 +449,7 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         ContentTypeEntity contentType = ContentTypeFactory.Create();
+        _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
         CategoryEntity category = CategoryFactory.Create(contentType.Id);
         string conflictingSlug = TestConstants.Category.AnotherValidSlug;
 
