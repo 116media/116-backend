@@ -1,4 +1,5 @@
 using _116.Content.Application.Shared.Repositories;
+using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
@@ -113,7 +114,7 @@ public class CategoryRepositoryTests : BaseRepositoryTest
 
         result.Should().NotBeNull();
         result!.Id.Should().Be(category.Id);
-        result.ContentType.Should().NotBeNull();
+        result.ContentTypeId.Should().Be(contentType.Id);
     }
 
     [Fact]
@@ -170,7 +171,7 @@ public class CategoryRepositoryTests : BaseRepositoryTest
         var result = await repo.GetBySlugAsync("test-slug-category");
 
         result.Should().NotBeNull();
-        result!.Slug.Should().Be("test-slug-category");
+        result!.Slug.Value.Should().Be("test-slug-category");
     }
 
     [Fact]
@@ -243,7 +244,32 @@ public class CategoryRepositoryTests : BaseRepositoryTest
     }
 
     [Fact]
-    public async Task GetPricingByCategoryAsync_ReturnsPricingForCategory()
+    public async Task GetByIdOrThrowAsync_HydratesPricingForTheCategory()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var contentType = ContentTypeFactory.Create();
+        seedContext.ContentTypes.Add(contentType);
+        await seedContext.SaveChangesAsync();
+
+        var tier = PricingTierFactory.Create();
+        seedContext.PricingTiers.Add(tier);
+        await seedContext.SaveChangesAsync();
+
+        var category = CategoryFactory.CreatePaid(contentType.Id);
+        CategoryPricingFactory.Create(category, tier.Id);
+        seedContext.Categories.Add(category);
+        await seedContext.SaveChangesAsync();
+
+        var repo = Resolve<ICategoryRepository>();
+        CategoryEntity loaded = await repo.GetByIdOrThrowAsync(category.Id);
+
+        loaded.Pricing.Should().ContainSingle();
+        loaded.Pricing.Single().CategoryId.Should().Be(category.Id);
+        loaded.Pricing.Single().PricingTierId.Should().Be(tier.Id);
+    }
+
+    [Fact]
+    public async Task FindPricing_WhenTheTierIsUnpriced_ReturnsNull()
     {
         await using var seedContext = CreateDbContext<ContentDbContext>();
         var contentType = ContentTypeFactory.Create();
@@ -252,61 +278,16 @@ public class CategoryRepositoryTests : BaseRepositoryTest
 
         var category = CategoryFactory.CreatePaid(contentType.Id);
         seedContext.Categories.Add(category);
-
-        var tier = PricingTierFactory.Create();
-        seedContext.PricingTiers.Add(tier);
-        await seedContext.SaveChangesAsync();
-
-        var pricing = CategoryPricingFactory.Create(category.Id, tier.Id);
-        seedContext.CategoryPricing.Add(pricing);
         await seedContext.SaveChangesAsync();
 
         var repo = Resolve<ICategoryRepository>();
-        var result = await repo.GetPricingByCategoryAsync(category.Id);
+        CategoryEntity loaded = await repo.GetByIdOrThrowAsync(category.Id);
 
-        result.Should().ContainSingle();
-        result[0].CategoryId.Should().Be(category.Id);
-        result[0].PricingTierId.Should().Be(tier.Id);
+        loaded.FindPricing(Guid.NewGuid()).Should().BeNull();
     }
 
     [Fact]
-    public async Task GetPricingAsync_WhenExists_ReturnsPricingEntity()
-    {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        seedContext.ContentTypes.Add(contentType);
-        await seedContext.SaveChangesAsync();
-
-        var category = CategoryFactory.CreatePaid(contentType.Id);
-        seedContext.Categories.Add(category);
-
-        var tier = PricingTierFactory.Create();
-        seedContext.PricingTiers.Add(tier);
-        await seedContext.SaveChangesAsync();
-
-        var pricing = CategoryPricingFactory.Create(category.Id, tier.Id);
-        seedContext.CategoryPricing.Add(pricing);
-        await seedContext.SaveChangesAsync();
-
-        var repo = Resolve<ICategoryRepository>();
-        var result = await repo.GetPricingAsync(category.Id, tier.Id);
-
-        result.Should().NotBeNull();
-        result!.CategoryId.Should().Be(category.Id);
-        result.PricingTierId.Should().Be(tier.Id);
-    }
-
-    [Fact]
-    public async Task GetPricingAsync_WhenDoesNotExist_ReturnsNull()
-    {
-        var repo = Resolve<ICategoryRepository>();
-        var result = await repo.GetPricingAsync(Guid.NewGuid(), Guid.NewGuid());
-
-        result.Should().BeNull();
-    }
-
-    [Fact]
-    public async Task AddPricingAsync_PersistsPricingToDatabase()
+    public async Task SetPricing_ThroughTheRoot_PersistsPricingToDatabase()
     {
         await using var seedContext = CreateDbContext<ContentDbContext>();
         var contentType = ContentTypeFactory.Create();
@@ -321,9 +302,9 @@ public class CategoryRepositoryTests : BaseRepositoryTest
         await seedContext.SaveChangesAsync();
 
         var (repo, db) = CreateScopedRepository<ICategoryRepository, ContentDbContext>();
-        var pricing = CategoryPricingFactory.Create(category.Id, tier.Id);
+        CategoryEntity tracked = await repo.GetByIdOrThrowAsync(category.Id);
 
-        await repo.AddPricingAsync(pricing);
+        tracked.SetPricing(pricingTierId: tier.Id, priceUsd: 25m);
         await db.SaveChangesAsync();
 
         await using var verifyContext = CreateDbContext<ContentDbContext>();
@@ -332,33 +313,30 @@ public class CategoryRepositoryTests : BaseRepositoryTest
         );
 
         persisted.Should().NotBeNull();
+        persisted!.PriceUsd.Amount.Should().Be(25m);
     }
 
     [Fact]
-    public async Task RemovePricing_DeletesPricingFromDatabase()
+    public async Task RemovePricing_ThroughTheRoot_DeletesPricingFromDatabase()
     {
         await using var seedContext = CreateDbContext<ContentDbContext>();
         var contentType = ContentTypeFactory.Create();
         seedContext.ContentTypes.Add(contentType);
         await seedContext.SaveChangesAsync();
 
-        var category = CategoryFactory.CreatePaid(contentType.Id);
-        seedContext.Categories.Add(category);
-
         var tier = PricingTierFactory.Create();
         seedContext.PricingTiers.Add(tier);
         await seedContext.SaveChangesAsync();
 
-        var pricing = CategoryPricingFactory.Create(category.Id, tier.Id);
-        seedContext.CategoryPricing.Add(pricing);
+        var category = CategoryFactory.CreatePaid(contentType.Id);
+        CategoryPricingFactory.Create(category, tier.Id);
+        seedContext.Categories.Add(category);
         await seedContext.SaveChangesAsync();
 
         var (repo, db) = CreateScopedRepository<ICategoryRepository, ContentDbContext>();
-        var existing = await db.CategoryPricing.FirstAsync(p =>
-            p.CategoryId == category.Id && p.PricingTierId == tier.Id
-        );
+        CategoryEntity tracked = await repo.GetByIdOrThrowAsync(category.Id);
 
-        repo.RemovePricing(existing);
+        tracked.RemovePricing(pricingTierId: tier.Id).Should().BeTrue();
         await db.SaveChangesAsync();
 
         await using var verifyContext = CreateDbContext<ContentDbContext>();
@@ -378,14 +356,8 @@ public class CategoryRepositoryTests : BaseRepositoryTest
         await seedContext.SaveChangesAsync();
 
         var category = CategoryFactory.Create(contentType.Id, "Gossip Category", "gossip-category");
-        category.Update(
-            category.Name,
-            category.Slug,
-            "Gossip description",
-            isGossip: true,
-            isExclusive: false,
-            isDefaultForLyrics: false
-        );
+        category.Redescribe("Gossip description");
+        category.Reclassify(isGossip: true, isExclusive: false, isDefaultForLyrics: false);
         seedContext.Categories.Add(category);
         await seedContext.SaveChangesAsync();
 
