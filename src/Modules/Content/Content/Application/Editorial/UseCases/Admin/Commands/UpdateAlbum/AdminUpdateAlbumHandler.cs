@@ -31,13 +31,8 @@ public class AdminUpdateAlbumHandler(
             cancellationToken: cancellationToken
         );
 
-        album.Update(
-            name: command.Name,
-            coverImageFileId: album.CoverImageFileId,
-            releaseYear: command.ReleaseYear,
-            label: command.Label,
-            releaseType: command.ReleaseType
-        );
+        album.Rename(name: command.Name);
+        album.ReviseRelease(releaseYear: command.ReleaseYear, label: command.Label, releaseType: command.ReleaseType);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         var dto = await albumDtoFactory.CreateAsync(album, cancellationToken);
