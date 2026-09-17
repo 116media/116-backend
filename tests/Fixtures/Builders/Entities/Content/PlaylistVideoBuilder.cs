@@ -10,19 +10,16 @@ namespace _116.Tests.Fixtures.Builders.Entities.Content;
 /// </summary>
 public class PlaylistVideoBuilder
 {
-    private Guid _id = Guid.NewGuid();
-    private Guid _playlistId = Guid.NewGuid();
+    private readonly PlaylistEntity _playlist;
     private Guid _videoId = Guid.NewGuid();
     private int _sortOrder;
-    private VideoEntity? _video;
 
     /// <summary>
-    /// Sets the playlist the video is linked into.
+    /// Initializes a new instance of the <see cref="PlaylistVideoBuilder"/> class for a playlist.
     /// </summary>
-    public PlaylistVideoBuilder WithPlaylistId(Guid playlistId)
+    public PlaylistVideoBuilder(PlaylistEntity playlist)
     {
-        _playlistId = playlistId;
-        return this;
+        _playlist = playlist;
     }
 
     /// <summary>
@@ -40,7 +37,7 @@ public class PlaylistVideoBuilder
     /// </summary>
     public PlaylistVideoBuilder WithVideo(VideoEntity video)
     {
-        _video = video;
+        _videoId = video.Id;
         _videoId = video.Id;
         return this;
     }
@@ -50,14 +47,8 @@ public class PlaylistVideoBuilder
     /// </summary>
     public PlaylistVideoEntity Build()
     {
-        PlaylistVideoEntity link = PlaylistVideoEntity.Create(_id, _playlistId, _videoId, _sortOrder);
-
-        if (_video is not null)
-        {
-            typeof(PlaylistVideoEntity)
-                .GetProperty(nameof(PlaylistVideoEntity.Video), BindingFlags.Public | BindingFlags.Instance)!
-                .SetValue(link, _video);
-        }
+        _playlist.AddVideo(videoId: _videoId, sortOrder: _sortOrder);
+        PlaylistVideoEntity link = _playlist.Videos.First(entry => entry.VideoId == _videoId);
 
         return link;
     }
