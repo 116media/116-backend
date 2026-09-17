@@ -4,7 +4,6 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.DeleteLyric
 
 /// <summary>
 /// Command for permanently deleting a lyrics page.
-/// If the lyrics page is linked to a video, the video's HasLyrics flag is cleared.
 /// </summary>
 /// <param name="Id">The unique identifier of the lyrics record to delete.</param>
 public record AdminDeleteLyricsCommand(string Id) : ICommand<AdminDeleteLyricsResult>;
