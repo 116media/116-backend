@@ -185,7 +185,7 @@ public class ContentOrderRepositoryTests(PostgresFixture postgres) : BaseReposit
     }
 
     [Fact]
-    public async Task GetAllPaymentsAsync_WithStatusAndMethodFilters_ReturnsOnlyMatchingPayments()
+    public async Task GetOrdersWithPaymentAsync_WithStatusFilter_ReturnsOnlyMatchingOrders()
     {
         await using var seedContext = CreateDbContext<ContentDbContext>();
         var customer = CustomerFactory.Create();
@@ -200,20 +200,20 @@ public class ContentOrderRepositoryTests(PostgresFixture postgres) : BaseReposit
 
         var repo = Resolve<IContentOrderRepository>();
 
-        var (byStatus, _) = await repo.GetAllPaymentsAsync(
+        var (byStatus, _) = await repo.GetOrdersWithPaymentAsync(
             page: 1,
             pageSize: 50,
             status: EnumPaymentStatus.Verified,
             method: null
         );
 
-        byStatus.Should().OnlyContain(p => p.Status == EnumPaymentStatus.Verified);
-        byStatus.Should().Contain(p => p.Id == verified.Id);
-        byStatus.Should().NotContain(p => p.Id == pending.Id);
+        byStatus.Should().OnlyContain(o => o.Payment!.Status == EnumPaymentStatus.Verified);
+        byStatus.Should().Contain(o => o.Payment!.Id == verified.Id);
+        byStatus.Should().NotContain(o => o.Payment!.Id == pending.Id);
     }
 
     [Fact]
-    public async Task GetAllPaymentsAsync_WithSearch_MatchesTheOrderingCustomer()
+    public async Task GetOrdersWithPaymentAsync_WithSearch_MatchesTheOrderingCustomer()
     {
         await using var seedContext = CreateDbContext<ContentDbContext>();
         string marker = $"pay{Guid.NewGuid():N}"[..12];
@@ -231,7 +231,7 @@ public class ContentOrderRepositoryTests(PostgresFixture postgres) : BaseReposit
 
         var repo = Resolve<IContentOrderRepository>();
 
-        var (result, totalCount) = await repo.GetAllPaymentsAsync(
+        var (result, totalCount) = await repo.GetOrdersWithPaymentAsync(
             page: 1,
             pageSize: 50,
             status: null,
@@ -240,11 +240,11 @@ public class ContentOrderRepositoryTests(PostgresFixture postgres) : BaseReposit
         );
 
         totalCount.Should().Be(1);
-        result.Should().ContainSingle().Which.OrderId.Should().Be(wantedOrder.Id);
+        result.Should().ContainSingle().Which.Id.Should().Be(wantedOrder.Id);
     }
 
     [Fact]
-    public async Task AddPaymentAsync_PersistsPaymentToDatabase()
+    public async Task AttachPayment_ThroughTheRoot_PersistsPaymentToDatabase()
     {
         await using var seedContext = CreateDbContext<ContentDbContext>();
         var customer = CustomerFactory.Create();
@@ -255,10 +255,10 @@ public class ContentOrderRepositoryTests(PostgresFixture postgres) : BaseReposit
         seedContext.ContentOrders.Add(order);
         await seedContext.SaveChangesAsync();
 
-        var payment = ContentPaymentFactory.Create(order.Id, 250.00m);
         var (repo, db) = CreateScopedRepository<IContentOrderRepository, ContentDbContext>();
+        var tracked = await repo.GetByIdOrThrowAsync(order.Id);
 
-        await repo.AddPaymentAsync(payment);
+        var payment = tracked.AttachPayment();
         await db.SaveChangesAsync();
 
         await using var verifyContext = CreateDbContext<ContentDbContext>();
@@ -266,11 +266,11 @@ public class ContentOrderRepositoryTests(PostgresFixture postgres) : BaseReposit
 
         persisted.Should().NotBeNull();
         persisted!.OrderId.Should().Be(order.Id);
-        persisted.AmountUsd.Should().Be(250.00m);
+        persisted.AmountUsd.Should().Be(tracked.TotalAmountUsd);
     }
 
     [Fact]
-    public async Task GetPaymentByOrderIdAsync_WhenExists_ReturnsPayment()
+    public async Task GetByIdOrThrowAsync_WhenPaymentAttached_HydratesThePayment()
     {
         await using var seedContext = CreateDbContext<ContentDbContext>();
         var customer = CustomerFactory.Create();
@@ -287,19 +287,28 @@ public class ContentOrderRepositoryTests(PostgresFixture postgres) : BaseReposit
 
         var repo = Resolve<IContentOrderRepository>();
 
-        var result = await repo.GetPaymentByOrderIdAsync(order.Id);
+        var result = await repo.GetByIdOrThrowAsync(order.Id);
 
-        result.Should().NotBeNull();
-        result!.OrderId.Should().Be(order.Id);
+        result.Payment.Should().NotBeNull();
+        result.Payment!.OrderId.Should().Be(order.Id);
     }
 
     [Fact]
-    public async Task GetPaymentByOrderIdAsync_WhenNotFound_ReturnsNull()
+    public async Task GetByIdOrThrowAsync_WhenNoPaymentAttached_LeavesPaymentNull()
     {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var customer = CustomerFactory.Create();
+        seedContext.Customers.Add(customer);
+        await seedContext.SaveChangesAsync();
+
+        var order = ContentOrderFactory.CreateForCustomer(customer.Id);
+        seedContext.ContentOrders.Add(order);
+        await seedContext.SaveChangesAsync();
+
         var repo = Resolve<IContentOrderRepository>();
 
-        var result = await repo.GetPaymentByOrderIdAsync(Guid.NewGuid());
+        var result = await repo.GetByIdOrThrowAsync(order.Id);
 
-        result.Should().BeNull();
+        result.Payment.Should().BeNull();
     }
 }
