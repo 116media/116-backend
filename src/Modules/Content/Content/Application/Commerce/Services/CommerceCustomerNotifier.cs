@@ -15,8 +15,12 @@ namespace _116.Content.Application.Commerce.Services;
 /// </summary>
 /// <param name="emailService">The outbox mailer.</param>
 /// <param name="customerRepository">Repository resolving customers by id.</param>
-public class CommerceCustomerNotifier(IEmailService emailService, ICustomerRepository customerRepository)
-    : ICommerceCustomerNotifier
+/// <param name="categoryRepository">Repository resolving the item categories named in the invoice.</param>
+public class CommerceCustomerNotifier(
+    IEmailService emailService,
+    ICustomerRepository customerRepository,
+    ICategoryRepository categoryRepository
+) : ICommerceCustomerNotifier
 {
     /// <summary>
     /// The culture customer emails render in; neutral resources are the
@@ -27,16 +31,28 @@ public class CommerceCustomerNotifier(IEmailService emailService, ICustomerRepos
     /// <inheritdoc />
     public async Task NotifyOrderInvoiceAsync(ContentOrderEntity order, CancellationToken cancellationToken)
     {
+        CustomerEntity? customer = await ResolveAsync(order.CustomerId, cancellationToken);
+
+        if (customer is null)
+        {
+            return;
+        }
+
+        IReadOnlyDictionary<Guid, CategoryEntity> categories = await categoryRepository.GetByIdsAsync(
+            ids: order.Items.Select(item => item.CategoryId).Distinct().ToList(),
+            cancellationToken: cancellationToken
+        );
+
         await emailService.EnqueueAsync(
             template: EnumEmailTemplate.OrderInvoice,
-            to: new EmailRecipientDto(Address: order.Customer.Email, DisplayName: order.Customer.FullName),
+            to: new EmailRecipientDto(Address: customer.Email, DisplayName: customer.FullName),
             tokens: new Dictionary<string, string>
             {
-                ["customerName"] = order.Customer.FullName,
+                ["customerName"] = customer.FullName,
                 ["orderReference"] = OrderReference(order.Id),
                 ["amountUsd"] = FormatAmount(order.TotalAmountUsd),
                 ["paymentMethods"] = PaymentMethods(),
-                ["itemSummary"] = ItemSummary(order),
+                ["itemSummary"] = ItemSummary(order, categories),
             },
             culture: CustomerCulture,
             cancellationToken: cancellationToken
@@ -50,12 +66,19 @@ public class CommerceCustomerNotifier(IEmailService emailService, ICustomerRepos
         CancellationToken cancellationToken
     )
     {
+        CustomerEntity? customer = await ResolveAsync(order.CustomerId, cancellationToken);
+
+        if (customer is null)
+        {
+            return;
+        }
+
         await emailService.EnqueueAsync(
             template: EnumEmailTemplate.PaymentReceipt,
-            to: new EmailRecipientDto(Address: order.Customer.Email, DisplayName: order.Customer.FullName),
+            to: new EmailRecipientDto(Address: customer.Email, DisplayName: customer.FullName),
             tokens: new Dictionary<string, string>
             {
-                ["customerName"] = order.Customer.FullName,
+                ["customerName"] = customer.FullName,
                 ["orderReference"] = OrderReference(order.Id),
                 ["amountUsd"] = FormatAmount(payment.AmountUsd),
                 ["receiptUrl"] = payment.ReceiptUrl ?? string.Empty,
@@ -73,12 +96,19 @@ public class CommerceCustomerNotifier(IEmailService emailService, ICustomerRepos
         CancellationToken cancellationToken
     )
     {
+        CustomerEntity? customer = await ResolveAsync(order.CustomerId, cancellationToken);
+
+        if (customer is null)
+        {
+            return;
+        }
+
         await emailService.EnqueueAsync(
             template: EnumEmailTemplate.PaymentRejected,
-            to: new EmailRecipientDto(Address: order.Customer.Email, DisplayName: order.Customer.FullName),
+            to: new EmailRecipientDto(Address: customer.Email, DisplayName: customer.FullName),
             tokens: new Dictionary<string, string>
             {
-                ["customerName"] = order.Customer.FullName,
+                ["customerName"] = customer.FullName,
                 ["orderReference"] = OrderReference(order.Id),
                 ["notes"] = notes ?? string.Empty,
             },
@@ -261,12 +291,18 @@ public class CommerceCustomerNotifier(IEmailService emailService, ICustomerRepos
     }
 
     /// <summary>
-    /// Lists the item categories on the order, or the item count when a
-    /// category navigation is not loaded.
+    /// Lists the item categories on the order, or the item count when a category row
+    /// could not be resolved.
     /// </summary>
-    internal static string ItemSummary(ContentOrderEntity order)
+    internal static string ItemSummary(ContentOrderEntity order, IReadOnlyDictionary<Guid, CategoryEntity> categories)
     {
-        List<string> names = [.. order.Items.Where(i => i.Category is not null).Select(i => i.Category.Name)];
+        List<string> names =
+        [
+            .. order
+                .Items.Select(item => categories.GetValueOrDefault(item.CategoryId))
+                .OfType<CategoryEntity>()
+                .Select(category => category.Name),
+        ];
 
         return names.Count == order.Items.Count && names.Count > 0
             ? string.Join(", ", names)
