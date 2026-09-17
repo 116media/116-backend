@@ -43,85 +43,62 @@ public class ContentOrderByCustomerIdSpecification(Guid customerId) : Specificat
 }
 
 /// <summary>
-/// Specification that matches content orders by customer name, email, or company.
-/// Uses case-insensitive matching (ILIKE in PostgreSQL) for partial search.
+/// Specification that matches content orders by customer name, email, or company, probing the
+/// injected customer set (ILIKE in PostgreSQL) so the order carries no customer navigation.
 /// </summary>
-public class ContentOrderSearchSpecification(string search) : Specification<ContentOrderEntity>
+public class ContentOrderSearchSpecification(string search, IQueryable<CustomerEntity> customers)
+    : Specification<ContentOrderEntity>
 {
     /// <inheritdoc />
     public override Expression<Func<ContentOrderEntity, bool>> ToExpression()
     {
         string pattern = $"%{search}%";
         return order =>
-            EF.Functions.ILike(order.Customer.FullName, pattern)
-            || EF.Functions.ILike(order.Customer.Email, pattern)
-            || (order.Customer.Company != null && EF.Functions.ILike(order.Customer.Company, pattern));
+            customers.Any(customer =>
+                customer.Id == order.CustomerId
+                && (
+                    EF.Functions.ILike(customer.FullName, pattern)
+                    || EF.Functions.ILike(customer.Email, pattern)
+                    || (customer.Company != null && EF.Functions.ILike(customer.Company, pattern))
+                )
+            );
     }
 }
 
 /// <summary>
-/// Specification that matches a content payment by its associated order identifier.
+/// Specification that matches content orders carrying a payment record — the root the admin
+/// payments listing pages over.
 /// </summary>
-public class ContentPaymentByOrderIdSpecification(Guid orderId) : Specification<ContentPaymentEntity>
+public class OrderHasPaymentSpecification : Specification<ContentOrderEntity>
 {
     /// <inheritdoc />
-    public override Expression<Func<ContentPaymentEntity, bool>> ToExpression()
+    public override Expression<Func<ContentOrderEntity, bool>> ToExpression()
     {
-        return payment => payment.OrderId == orderId;
+        return order => order.Payment != null;
     }
 }
 
 /// <summary>
-/// Specification that matches content payments by their verification status.
+/// Specification that matches content orders whose payment has the given verification status.
 /// </summary>
-public class ContentPaymentByStatusSpecification(EnumPaymentStatus status) : Specification<ContentPaymentEntity>
+public class OrderPaymentByStatusSpecification(EnumPaymentStatus status) : Specification<ContentOrderEntity>
 {
     /// <inheritdoc />
-    public override Expression<Func<ContentPaymentEntity, bool>> ToExpression()
+    public override Expression<Func<ContentOrderEntity, bool>> ToExpression()
     {
-        return payment => payment.Status == status;
+        return order => order.Payment != null && order.Payment.Status == status;
     }
 }
 
 /// <summary>
-/// Specification that matches content payments by payment method.
+/// Specification that matches content orders whose payment uses the given payment method.
 /// </summary>
-public class ContentPaymentByMethodSpecification(EnumPaymentMethod method) : Specification<ContentPaymentEntity>
+public class OrderPaymentByMethodSpecification(EnumPaymentMethod method) : Specification<ContentOrderEntity>
 {
     /// <inheritdoc />
-    public override Expression<Func<ContentPaymentEntity, bool>> ToExpression()
+    public override Expression<Func<ContentOrderEntity, bool>> ToExpression()
     {
-        return payment => payment.PaymentMethod == method;
-    }
-}
-
-/// <summary>
-/// Specification that matches content payments by customer information.
-/// Uses case-insensitive matching (ILIKE in PostgreSQL) across customer name, email, and company.
-/// </summary>
-public class ContentPaymentSearchSpecification(string search) : Specification<ContentPaymentEntity>
-{
-    /// <inheritdoc />
-    public override Expression<Func<ContentPaymentEntity, bool>> ToExpression()
-    {
-        string pattern = $"%{search}%";
-        return payment =>
-            EF.Functions.ILike(payment.Order.Customer.FullName, pattern)
-            || EF.Functions.ILike(payment.Order.Customer.Email, pattern)
-            || (payment.Order.Customer.Company != null && EF.Functions.ILike(payment.Order.Customer.Company, pattern));
-    }
-}
-
-/// <summary>
-/// Specification that matches a content order item by its identifier within a specific order.
-/// </summary>
-public class ContentOrderItemByIdAndOrderIdSpecification(Guid orderId, Guid itemId)
-    : Specification<ContentOrderItemEntity>
-{
-    /// <inheritdoc />
-    public override Expression<Func<ContentOrderItemEntity, bool>> ToExpression()
-    {
-        return item => item.Id == itemId && item.OrderId == orderId;
+        return order => order.Payment != null && order.Payment.PaymentMethod == method;
     }
 }
 
