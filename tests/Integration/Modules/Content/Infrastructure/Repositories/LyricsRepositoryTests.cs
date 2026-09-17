@@ -3,6 +3,7 @@ using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Shared.Application.Exceptions;
+using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
 
@@ -749,12 +750,12 @@ public class LyricsRepositoryTests(PostgresFixture postgres) : BaseRepositoryTes
             sourceVideo.Id,
             $"source-{Guid.NewGuid():N}"
         );
-        source.Tags.Add(LyricsTagEntity.Create(Guid.NewGuid(), source.Id, sharedTag.Id));
+        source.ReplaceTags([.. source.Tags.Select(t => t.TagId), sharedTag.Id]);
 
         var tagMatch = LyricsFactory.CreateWithTags(category.Id, sharedTag.Id);
         tagMatch.MarkPendingReview();
         tagMatch.Approve();
-        tagMatch.Publish();
+        tagMatch.Publish(TestConstants.Clock.Instant);
         context.Lyrics.AddRange(source, tagMatch);
         await context.SaveChangesAsync();
 
