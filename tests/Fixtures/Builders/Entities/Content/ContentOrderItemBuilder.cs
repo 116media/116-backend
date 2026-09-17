@@ -19,7 +19,6 @@ public class ContentOrderItemBuilder
     private decimal? _promoPriceSnapshotUsd;
     private bool _socialBoost;
     private bool _isBonus;
-    private CategoryEntity? _category;
 
     public ContentOrderItemBuilder WithOrderId(Guid orderId)
     {
@@ -58,7 +57,7 @@ public class ContentOrderItemBuilder
     /// </summary>
     public ContentOrderItemBuilder WithCategory(CategoryEntity category)
     {
-        _category = category;
+        _categoryId = category.Id;
         _categoryId = category.Id;
         return this;
     }
@@ -75,16 +74,6 @@ public class ContentOrderItemBuilder
             _socialBoost,
             _isBonus
         );
-
-        if (_category is not null)
-        {
-            PropertyInfo prop = typeof(ContentOrderItemEntity).GetProperty(
-                nameof(ContentOrderItemEntity.Category),
-                BindingFlags.Public | BindingFlags.Instance
-            )!;
-
-            prop.SetValue(entity, _category);
-        }
 
         return entity;
     }
