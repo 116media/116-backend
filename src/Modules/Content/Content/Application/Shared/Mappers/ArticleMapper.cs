@@ -32,10 +32,10 @@ public static class ArticleMapper
         config.NewConfig<ArticleImageEntity, ArticleImageDto>();
 
         config
-            .NewConfig<ArticleTagEntity, TagDto>()
-            .Map(dest => dest.Id, src => src.Tag.Id)
-            .Map(dest => dest.Name, src => src.Tag.Name)
-            .Map(dest => dest.Slug, src => src.Tag.Slug);
+            .NewConfig<TagEntity, TagDto>()
+            .Map(dest => dest.Id, src => src.Id)
+            .Map(dest => dest.Name, src => src.Name)
+            .Map(dest => dest.Slug, src => src.Slug);
     }
 
     /// <summary>
@@ -45,13 +45,14 @@ public static class ArticleMapper
     public static async Task<ArticleSummaryDto> ToArticleSummaryDtoAsync(
         this ArticleEntity entity,
         IMapper mapper,
+        ContentLookups lookups,
         IFileStorageService fileStorage,
         CancellationToken ct = default
     )
     {
         string? coverImageUrl = await ResolveCoverImageUrlAsync(entity, fileStorage, ct);
 
-        return entity.ToArticleSummaryDto(mapper, coverImageUrl: coverImageUrl);
+        return entity.ToArticleSummaryDto(mapper, lookups, coverImageUrl: coverImageUrl);
     }
 
     /// <summary>
@@ -61,13 +62,14 @@ public static class ArticleMapper
     public static ArticleSummaryDto ToArticleSummaryDto(
         this ArticleEntity entity,
         IMapper mapper,
+        ContentLookups lookups,
         string? coverImageUrl
     )
     {
         return new ArticleSummaryDto(
             entity.Id,
             entity.CategoryId,
-            entity.Category != null ? entity.Category.Name : string.Empty,
+            lookups.CategoryName(entity.CategoryId),
             entity.Title,
             entity.Slug,
             entity.Headline,
@@ -108,6 +110,7 @@ public static class ArticleMapper
     public static async Task<ArticleDetailDto> ToArticleDetailDtoAsync(
         this ArticleEntity entity,
         IMapper mapper,
+        ContentLookups lookups,
         IFileStorageService fileStorage,
         CancellationToken ct = default,
         bool isLiked = false,
@@ -119,7 +122,7 @@ public static class ArticleMapper
         return new ArticleDetailDto(
             entity.Id,
             entity.CategoryId,
-            entity.Category != null ? entity.Category.Name : string.Empty,
+            lookups.CategoryName(entity.CategoryId),
             entity.Title,
             entity.Slug,
             entity.Headline,
@@ -132,12 +135,12 @@ public static class ArticleMapper
             entity.IsPromoted,
             entity.PromotedUntil,
             entity.PromotionLevelId,
-            entity.PromotionLevel?.Name,
+            lookups.PromotionLevelName(entity.PromotionLevelId),
             entity.PublishedAt,
             entity.MetaTitle,
             entity.MetaDescription,
             mapper.Map<IReadOnlyList<ArticleImageDto>>(entity.Images),
-            mapper.Map<IReadOnlyList<TagDto>>(entity.Tags),
+            entity.TagDtos(mapper, lookups),
             Math.Max(
                 1,
                 (int)Math.Ceiling(entity.Body.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length / 200.0)
@@ -147,7 +150,7 @@ public static class ArticleMapper
             entity.ShareCount,
             entity.BookmarkCount,
             entity.CustomerId,
-            entity.Customer != null ? entity.Customer.FullName : null,
+            lookups.CustomerName(entity.CustomerId),
             entity.OrderItemId
         )
         {
@@ -167,6 +170,7 @@ public static class ArticleMapper
     public static async Task<IReadOnlyList<ArticleSummaryDto>> ToArticleSummaryDtosAsync(
         this IReadOnlyList<ArticleEntity> entities,
         IMapper mapper,
+        ContentLookups lookups,
         IFileStorageService fileStorage,
         CancellationToken ct = default
     )
@@ -180,6 +184,7 @@ public static class ArticleMapper
             .Select(entity =>
                 entity.ToArticleSummaryDto(
                     mapper,
+                    lookups,
                     coverImageUrl: entity.CoverImageFileId.HasValue
                         ? files.GetValueOrDefault(entity.CoverImageFileId.Value)?.StorageUrl
                         : null
@@ -192,12 +197,16 @@ public static class ArticleMapper
     /// Maps an <see cref="ArticleEntity" /> to its public projection from an already resolved
     /// cover URL. Performs no IO — batch mappings resolve files up front.
     /// </summary>
-    public static PublicArticleSummaryDto ToPublicArticleSummaryDto(this ArticleEntity entity, string? coverImageUrl)
+    public static PublicArticleSummaryDto ToPublicArticleSummaryDto(
+        this ArticleEntity entity,
+        ContentLookups lookups,
+        string? coverImageUrl
+    )
     {
         return new PublicArticleSummaryDto(
             entity.Id,
             entity.CategoryId,
-            entity.Category != null ? entity.Category.Name : string.Empty,
+            lookups.CategoryName(entity.CategoryId),
             entity.Title,
             entity.Slug,
             entity.Headline,
@@ -217,6 +226,7 @@ public static class ArticleMapper
     /// </summary>
     public static async Task<IReadOnlyList<PublicArticleSummaryDto>> ToPublicArticleSummaryDtosAsync(
         this IReadOnlyList<ArticleEntity> entities,
+        ContentLookups lookups,
         IFileStorageService fileStorage,
         CancellationToken ct = default
     )
@@ -229,6 +239,7 @@ public static class ArticleMapper
         return entities
             .Select(entity =>
                 entity.ToPublicArticleSummaryDto(
+                    lookups,
                     coverImageUrl: entity.CoverImageFileId.HasValue
                         ? files.GetValueOrDefault(entity.CoverImageFileId.Value)?.StorageUrl
                         : null
@@ -243,6 +254,7 @@ public static class ArticleMapper
     /// </summary>
     public static async Task<IReadOnlyList<PublicArticleSummaryDto>> ToPublicArticleSummaryDtosAsync(
         this IReadOnlyList<ArticleEntity> entities,
+        ContentLookups lookups,
         IFileStorageService fileStorage,
         IReadOnlySet<Guid> likedArticleIds,
         IReadOnlySet<Guid> bookmarkedArticleIds,
@@ -250,6 +262,7 @@ public static class ArticleMapper
     )
     {
         IReadOnlyList<PublicArticleSummaryDto> summaries = await entities.ToPublicArticleSummaryDtosAsync(
+            lookups,
             fileStorage,
             ct
         );
@@ -271,12 +284,13 @@ public static class ArticleMapper
     /// </summary>
     public static async Task<PublicArticleSummaryDto> ToPublicArticleSummaryDtoAsync(
         this ArticleEntity entity,
+        ContentLookups lookups,
         IFileStorageService fileStorage,
         CancellationToken ct = default
     )
     {
         string? coverImageUrl = await ResolveCoverImageUrlAsync(entity, fileStorage, ct);
-        return entity.ToPublicArticleSummaryDto(coverImageUrl: coverImageUrl);
+        return entity.ToPublicArticleSummaryDto(lookups, coverImageUrl: coverImageUrl);
     }
 
     /// <summary>
@@ -285,6 +299,7 @@ public static class ArticleMapper
     /// </summary>
     public static async Task<PublicArticleSummaryDto> ToPublicArticleSummaryDtoAsync(
         this ArticleEntity entity,
+        ContentLookups lookups,
         IFileStorageService fileStorage,
         IReadOnlySet<Guid> likedArticleIds,
         IReadOnlySet<Guid> bookmarkedArticleIds,
@@ -293,7 +308,7 @@ public static class ArticleMapper
     {
         string? coverImageUrl = await ResolveCoverImageUrlAsync(entity, fileStorage, ct);
 
-        return entity.ToPublicArticleSummaryDto(coverImageUrl: coverImageUrl) with
+        return entity.ToPublicArticleSummaryDto(lookups, coverImageUrl: coverImageUrl) with
         {
             IsLiked = likedArticleIds.Contains(entity.Id),
             IsBookmarked = bookmarkedArticleIds.Contains(entity.Id),
@@ -307,6 +322,7 @@ public static class ArticleMapper
     public static async Task<PublicArticleDetailDto> ToPublicArticleDetailDtoAsync(
         this ArticleEntity entity,
         IMapper mapper,
+        ContentLookups lookups,
         IFileStorageService fileStorage,
         CancellationToken ct = default,
         bool isLiked = false,
@@ -318,7 +334,7 @@ public static class ArticleMapper
         return new PublicArticleDetailDto(
             entity.Id,
             entity.CategoryId,
-            entity.Category != null ? entity.Category.Name : string.Empty,
+            lookups.CategoryName(entity.CategoryId),
             entity.Title,
             entity.Slug,
             entity.Headline,
@@ -329,7 +345,7 @@ public static class ArticleMapper
             entity.MetaTitle,
             entity.MetaDescription,
             mapper.Map<IReadOnlyList<ArticleImageDto>>(entity.Images),
-            mapper.Map<IReadOnlyList<TagDto>>(entity.Tags),
+            entity.TagDtos(mapper, lookups),
             Math.Max(
                 1,
                 (int)Math.Ceiling(entity.Body.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length / 200.0)
@@ -415,5 +431,24 @@ public static class ArticleMapper
         }
 
         return entity.Images?.FirstOrDefault(img => img.ImageType == EnumArticleImageType.Cover)?.Url;
+    }
+
+    /// <summary>
+    /// Projects an article's tag junction rows through the resolved tag map, dropping any tag
+    /// row that no longer exists.
+    /// </summary>
+    /// <param name="entity">The article whose tags to project.</param>
+    /// <param name="mapper">Injected IMapper instance.</param>
+    /// <param name="lookups">The resolved rows, including the tags.</param>
+    /// <returns>The tag projections.</returns>
+    private static IReadOnlyList<TagDto> TagDtos(this ArticleEntity entity, IMapper mapper, ContentLookups lookups)
+    {
+        return
+        [
+            .. entity
+                .Tags.Select(articleTag => lookups.Tags.GetValueOrDefault(articleTag.TagId))
+                .OfType<TagEntity>()
+                .Select(mapper.Map<TagDto>),
+        ];
     }
 }
