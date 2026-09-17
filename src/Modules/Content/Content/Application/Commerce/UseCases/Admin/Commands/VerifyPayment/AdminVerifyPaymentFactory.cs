@@ -14,12 +14,12 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPaymen
 /// handlers stamp the content and send the receipt.
 /// </summary>
 /// <param name="promotionLevelRepository">Repository for promotion level data access operations.</param>
-/// <param name="contentOrderRepository">Repository for content order data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
+/// <param name="timeProvider">Clock stamping the verification time.</param>
 public class AdminVerifyPaymentFactory(
     IPromotionLevelRepository promotionLevelRepository,
-    IContentOrderRepository contentOrderRepository,
-    IContentUnitOfWork unitOfWork
+    IContentUnitOfWork unitOfWork,
+    TimeProvider timeProvider
 ) : IVerifyPaymentFactory
 {
     /// <inheritdoc />
@@ -31,7 +31,7 @@ public class AdminVerifyPaymentFactory(
         CancellationToken cancellationToken
     )
     {
-        payment.Verify(adminUserId: adminUserId, receiptUrl: receiptUrl);
+        payment.Verify(adminUserId: adminUserId, receiptUrl: receiptUrl, now: timeProvider.GetUtcNow());
 
         IReadOnlyDictionary<Guid, int> promotionDurations = await ResolvePromotionDurationsAsync(
             order: order,
