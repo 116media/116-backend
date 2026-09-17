@@ -57,7 +57,7 @@ public class AdminAddOrderItemHandler(
             ContentKind: item.ContentKind,
             PromotionLevelId: item.PromotionLevelId,
             PromotionLevelName: promotionLevelName,
-            PromoPriceUsd: item.PromoPriceSnapshotUsd,
+            PromoPriceUsd: item.PromoPriceSnapshotUsd?.Amount,
             SocialBoost: item.SocialBoost,
             IsBonus: item.IsBonus,
             Tiers: []
