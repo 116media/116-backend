@@ -52,17 +52,15 @@ public class AdminUpdateVideoHandler(
             }
         }
 
-        video.Update(
-            categoryId: command.CategoryId,
-            title: command.Title,
-            slug: command.Slug,
-            description: command.Description,
+        video.Recategorize(categoryId: command.CategoryId);
+        video.Retitle(title: command.Title, slug: command.Slug);
+        video.ReviseDescription(description: command.Description);
+        video.AssignCommission(
             customerId: command.CustomerId,
             orderItemId: command.OrderItemId,
-            socialBoost: command.SocialBoost,
-            metaTitle: command.MetaTitle,
-            metaDescription: command.MetaDescription
+            socialBoost: command.SocialBoost
         );
+        video.ReviseSeo(metaTitle: command.MetaTitle, metaDescription: command.MetaDescription);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         VideoEntity updated = await videoRepository.GetByIdOrThrowAsync(
