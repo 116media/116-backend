@@ -1,4 +1,5 @@
 using _116.Content.Application.Shared.Repositories;
+using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -65,7 +66,7 @@ public class PackageRepositoryTests(PostgresFixture postgres) : BaseRepositoryTe
 
         var repo = Resolve<IPackageRepository>();
 
-        var result = await repo.GetByIdWithSlotsAsync(package.Id);
+        var result = await repo.GetByIdAsync(package.Id);
 
         result.Should().NotBeNull();
         result!.Id.Should().Be(package.Id);
@@ -76,7 +77,7 @@ public class PackageRepositoryTests(PostgresFixture postgres) : BaseRepositoryTe
     {
         var repo = Resolve<IPackageRepository>();
 
-        var result = await repo.GetByIdWithSlotsAsync(Guid.NewGuid());
+        var result = await repo.GetByIdAsync(Guid.NewGuid());
 
         result.Should().BeNull();
     }
@@ -87,7 +88,7 @@ public class PackageRepositoryTests(PostgresFixture postgres) : BaseRepositoryTe
         var repo = Resolve<IPackageRepository>();
         var id = Guid.NewGuid();
 
-        var act = async () => await repo.GetByIdWithSlotsOrThrowAsync(id);
+        var act = async () => await repo.GetByIdOrThrowAsync(id);
 
         await act.Should().ThrowAsync<Exception>();
     }
@@ -107,37 +108,26 @@ public class PackageRepositoryTests(PostgresFixture postgres) : BaseRepositoryTe
     }
 
     [Fact]
-    public async Task GetSlotByIdAsync_NonExistentSlot_ReturnsNull()
-    {
-        var repo = Resolve<IPackageRepository>();
-
-        var result = await repo.GetSlotByIdAsync(Guid.NewGuid());
-
-        result.Should().BeNull();
-    }
-
-    [Fact]
-    public async Task GetSlotByIdAsync_ScopedToAnotherPackage_ReturnsNull()
+    public async Task FindSlot_ScopedToAnotherPackage_ReturnsNull()
     {
         await using var context = CreateDbContext<ContentDbContext>();
         var owningPackage = PackageFactory.Create();
         var otherPackage = PackageFactory.Create();
+        var slot = PackageSlotFactory.CreateOpen(owningPackage);
         context.Packages.AddRange(owningPackage, otherPackage);
-        var slot = PackageSlotFactory.CreateOpen(owningPackage.Id);
-        context.PackageSlots.Add(slot);
         await context.SaveChangesAsync();
 
         var repo = Resolve<IPackageRepository>();
 
-        var inOwner = await repo.GetSlotByIdAsync(slot.Id, owningPackage.Id);
-        var inOther = await repo.GetSlotByIdAsync(slot.Id, otherPackage.Id);
+        PackageEntity owner = await repo.GetByIdOrThrowAsync(owningPackage.Id);
+        PackageEntity other = await repo.GetByIdOrThrowAsync(otherPackage.Id);
 
-        inOwner.Should().NotBeNull();
-        inOther.Should().BeNull();
+        owner.FindSlot(slot.Id).Should().NotBeNull();
+        other.FindSlot(slot.Id).Should().BeNull();
     }
 
     [Fact]
-    public async Task AddSlotAsync_NewSlot_PersistsToDatabase()
+    public async Task AddSlot_ThroughTheRoot_PersistsToDatabase()
     {
         await using var context = CreateDbContext<ContentDbContext>();
         var contentType = ContentTypeFactory.Create();
@@ -148,10 +138,10 @@ public class PackageRepositoryTests(PostgresFixture postgres) : BaseRepositoryTe
         context.Categories.Add(category);
         await context.SaveChangesAsync();
 
-        var slot = PackageSlotFactory.Create(package.Id, category.Id);
         var (repo, db) = CreateScopedRepository<IPackageRepository, ContentDbContext>();
+        PackageEntity tracked = await repo.GetByIdOrThrowAsync(package.Id);
 
-        await repo.AddSlotAsync(slot);
+        PackageSlotEntity slot = tracked.AddSlot(categoryId: category.Id, isRequired: true, quantity: 1);
         await db.SaveChangesAsync();
 
         await using var verifyContext = CreateDbContext<ContentDbContext>();
