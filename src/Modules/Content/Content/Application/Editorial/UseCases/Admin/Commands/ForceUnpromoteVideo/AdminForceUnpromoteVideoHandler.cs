@@ -16,11 +16,13 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.ForceUnprom
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="currentActor">Provides the identity of the authenticated user from JWT claims.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
+/// <param name="timeProvider">Clock stamping the unpromotion time.</param>
 public class AdminForceUnpromoteVideoHandler(
     IVideoRepository videoRepository,
     IContentUnitOfWork unitOfWork,
     ICurrentActor currentActor,
-    ContentI18n i18n
+    ContentI18n i18n,
+    TimeProvider timeProvider
 ) : ICommandHandler<AdminForceUnpromoteVideoCommand, AdminForceUnpromoteVideoResult>
 {
     /// <inheritdoc />
@@ -39,7 +41,7 @@ public class AdminForceUnpromoteVideoHandler(
             throw i18n.Video.NotFound(Guid.Empty);
         }
 
-        video.ForceUnpromote(unpromotedBy: currentActor.UserId!, reason: command.Reason);
+        video.ForceUnpromote(unpromotedBy: currentActor.UserId!, reason: command.Reason, now: timeProvider.GetUtcNow());
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminForceUnpromoteVideoResult(VideoId: video.Id, UnpromotedAt: video.UnpromotedAt!.Value);
