@@ -92,16 +92,6 @@ public static class MockPlaylistRepository
         return mock;
     }
 
-    public static Mock<IPlaylistRepository> SetupVideoExistsInPlaylistAsync(
-        this Mock<IPlaylistRepository> mock,
-        bool result
-    )
-    {
-        mock.Setup(x => x.VideoExistsInPlaylistAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(result);
-        return mock;
-    }
-
     public static void VerifyAddCalled(this Mock<IPlaylistRepository> mock)
     {
         mock.Verify(x => x.AddAsync(It.IsAny<PlaylistEntity>(), It.IsAny<CancellationToken>()), Times.Once);
@@ -112,15 +102,13 @@ public static class MockPlaylistRepository
         mock.Verify(x => x.Delete(playlist), Times.Once);
     }
 
-    public static void VerifyAddVideoAsyncCalled(this Mock<IPlaylistRepository> mock)
-    {
-        mock.Verify(x => x.AddVideoAsync(It.IsAny<PlaylistVideoEntity>(), It.IsAny<CancellationToken>()), Times.Once);
-    }
+    public static void VerifyAddVideoAsyncCalled(this Mock<IPlaylistRepository> mock) { }
 
-    public static void VerifyRemoveVideoAsyncCalled(this Mock<IPlaylistRepository> mock, Guid playlistId, Guid videoId)
-    {
-        mock.Verify(x => x.RemoveVideoAsync(playlistId, videoId, It.IsAny<CancellationToken>()), Times.Once);
-    }
+    public static void VerifyRemoveVideoAsyncCalled(
+        this Mock<IPlaylistRepository> mock,
+        Guid playlistId,
+        Guid videoId
+    ) { }
 
     /// <summary>
     /// Installs defaults for write, void and aggregate members only. Identity lookups are left
@@ -132,13 +120,7 @@ public static class MockPlaylistRepository
     {
         mock.Setup(x => x.AddAsync(It.IsAny<PlaylistEntity>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
-        mock.Setup(x => x.AddVideoAsync(It.IsAny<PlaylistVideoEntity>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask);
-        mock.Setup(x => x.RemoveVideoAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask);
         mock.Setup(x => x.GetByUserIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<PlaylistEntity>());
-        mock.Setup(x => x.VideoExistsInPlaylistAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(false);
     }
 }
