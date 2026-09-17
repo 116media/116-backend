@@ -30,7 +30,7 @@ public class AdminDeactivatePackageHandlerTests : BaseContentHandlerTest
         _handler = new AdminDeactivatePackageHandler(
             _packageRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            Mapper,
+            CreatePackageDtoFactory(),
             TestErrorsFactory.CreateContentI18n()
         );
     }
@@ -44,7 +44,7 @@ public class AdminDeactivatePackageHandlerTests : BaseContentHandlerTest
         PackageEntity active = PackageFactory.Create();
         var command = new AdminDeactivatePackageCommand(Id: active.Id.ToString());
 
-        _packageRepositoryMock.SetupGetByIdWithSlotsOrThrow(active);
+        _packageRepositoryMock.SetupGetByIdOrThrow(active);
 
         // Act
         AdminDeactivatePackageResult result = await _handler.Handle(command, CancellationToken.None);
@@ -63,14 +63,14 @@ public class AdminDeactivatePackageHandlerTests : BaseContentHandlerTest
         PackageEntity active = PackageFactory.Create();
         var command = new AdminDeactivatePackageCommand(Id: active.Id.ToString());
 
-        _packageRepositoryMock.SetupGetByIdWithSlotsOrThrow(active);
+        _packageRepositoryMock.SetupGetByIdOrThrow(active);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         _packageRepositoryMock.Verify(
-            x => x.GetByIdWithSlotsOrThrowAsync(active.Id, It.IsAny<CancellationToken>()),
+            x => x.GetByIdOrThrowAsync(active.Id, It.IsAny<CancellationToken>()),
             Times.Exactly(2)
         );
     }
@@ -86,7 +86,7 @@ public class AdminDeactivatePackageHandlerTests : BaseContentHandlerTest
         PackageEntity inactive = PackageFactory.CreateInactive();
         var command = new AdminDeactivatePackageCommand(Id: inactive.Id.ToString());
 
-        _packageRepositoryMock.SetupGetByIdWithSlotsOrThrow(inactive);
+        _packageRepositoryMock.SetupGetByIdOrThrow(inactive);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
@@ -104,7 +104,7 @@ public class AdminDeactivatePackageHandlerTests : BaseContentHandlerTest
         var nonExistentId = Guid.NewGuid();
         var command = new AdminDeactivatePackageCommand(Id: nonExistentId.ToString());
 
-        _packageRepositoryMock.SetupGetByIdWithSlotsOrThrowNotFound(nonExistentId);
+        _packageRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentId);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
