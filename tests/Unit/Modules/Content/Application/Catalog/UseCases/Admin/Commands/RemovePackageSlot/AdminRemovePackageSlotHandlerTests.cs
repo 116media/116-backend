@@ -30,7 +30,7 @@ public class AdminRemovePackageSlotHandlerTests : BaseContentHandlerTest
         _handler = new AdminRemovePackageSlotHandler(
             _packageRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            Mapper,
+            CreatePackageDtoFactory(),
             TestErrorsFactory.CreateContentI18n()
         );
     }
@@ -42,12 +42,11 @@ public class AdminRemovePackageSlotHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         PackageEntity package = PackageFactory.Create();
-        PackageSlotEntity slot = PackageSlotFactory.Create(package.Id);
+        PackageSlotEntity slot = PackageSlotFactory.Create(package);
 
         var command = new AdminRemovePackageSlotCommand(PackageId: package.Id.ToString(), SlotId: slot.Id.ToString());
 
-        _packageRepositoryMock.SetupGetByIdWithSlotsOrThrow(package);
-        _packageRepositoryMock.SetupGetSlotByIdInPackage(slot.Id, package.Id, slot);
+        _packageRepositoryMock.SetupGetByIdOrThrow(package);
 
         // Act
         AdminRemovePackageSlotResult result = await _handler.Handle(command, CancellationToken.None);
@@ -55,7 +54,7 @@ public class AdminRemovePackageSlotHandlerTests : BaseContentHandlerTest
         // Assert
         result.Package.Id.Should().Be(package.Id);
 
-        _packageRepositoryMock.VerifyRemoveSlotCalled(slot);
+        package.Slots.Should().BeEmpty();
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -73,7 +72,7 @@ public class AdminRemovePackageSlotHandlerTests : BaseContentHandlerTest
             SlotId: Guid.NewGuid().ToString()
         );
 
-        _packageRepositoryMock.SetupGetByIdWithSlotsOrThrowNotFound(nonExistentPackageId);
+        _packageRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentPackageId);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
@@ -94,8 +93,7 @@ public class AdminRemovePackageSlotHandlerTests : BaseContentHandlerTest
             SlotId: nonExistentSlotId.ToString()
         );
 
-        _packageRepositoryMock.SetupGetByIdWithSlotsOrThrow(package);
-        _packageRepositoryMock.SetupGetSlotByIdInPackage(nonExistentSlotId, package.Id, null);
+        _packageRepositoryMock.SetupGetByIdOrThrow(package);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
@@ -109,22 +107,21 @@ public class AdminRemovePackageSlotHandlerTests : BaseContentHandlerTest
     {
         PackageEntity addressedPackage = PackageFactory.Create();
         PackageEntity owningPackage = PackageFactory.Create();
-        PackageSlotEntity slot = PackageSlotFactory.Create(owningPackage.Id);
+        PackageSlotEntity slot = PackageSlotFactory.Create(owningPackage);
 
         var command = new AdminRemovePackageSlotCommand(
             PackageId: addressedPackage.Id.ToString(),
             SlotId: slot.Id.ToString()
         );
 
-        _packageRepositoryMock.SetupGetByIdWithSlotsOrThrow(addressedPackage);
-        _packageRepositoryMock.SetupGetSlotByIdInPackage(slot.Id, owningPackage.Id, slot);
+        _packageRepositoryMock.SetupGetByIdOrThrow(addressedPackage);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
-        _packageRepositoryMock.Verify(x => x.RemoveSlot(It.IsAny<PackageSlotEntity>()), Times.Never);
+        owningPackage.Slots.Should().ContainSingle();
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
