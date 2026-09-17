@@ -11,8 +11,11 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetOwnSh
 /// <summary>
 /// Handles the current-user shared-video collection query.
 /// </summary>
-public class PublicGetOwnSharedVideosHandler(IVideoRepository videoRepository, IFileStorageService fileStorage)
-    : IQueryHandler<PublicGetOwnSharedVideosQuery, PublicGetOwnSharedVideosResult>
+public class PublicGetOwnSharedVideosHandler(
+    IVideoRepository videoRepository,
+    IFileStorageService fileStorage,
+    IContentLookupFactory contentLookupFactory
+) : IQueryHandler<PublicGetOwnSharedVideosQuery, PublicGetOwnSharedVideosResult>
 {
     /// <inheritdoc />
     public async Task<PublicGetOwnSharedVideosResult> Handle(
@@ -35,10 +38,22 @@ public class PublicGetOwnSharedVideosHandler(IVideoRepository videoRepository, I
             cancellationToken
         );
 
+        IReadOnlySet<Guid> videosWithLyrics = await videoRepository.GetIdsWithPublishedLyricsAsync(
+            videoIds: activities.Select(activity => activity.Video.Id).ToList(),
+            cancellationToken: cancellationToken
+        );
+
         IReadOnlyList<PublicVideoSummaryDto> videoDtos = activities
             .Select(activity => activity.Video)
             .ToList()
-            .ToPublicVideoSummaryDtos(files);
+            .ToPublicVideoSummaryDtos(
+                await contentLookupFactory.ResolveForVideosAsync(
+                    [.. activities.Select(activity => activity.Video)],
+                    cancellationToken
+                ),
+                files,
+                videosWithLyrics
+            );
 
         IReadOnlyList<UserVideoActivityDto> items = activities
             .Select(
