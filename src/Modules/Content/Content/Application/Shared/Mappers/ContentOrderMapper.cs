@@ -1,5 +1,6 @@
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Core.Contracts.Application.DTOs;
 using _116.Identity.Contracts.Application.DTOs;
 using Mapster;
@@ -20,16 +21,19 @@ public static class ContentOrderMapper
     {
         config
             .NewConfig<ContentItemTierEntity, ItemTierDto>()
-            .Map(dest => dest.TierName, src => src.PricingTier.Name)
+            .Map(dest => dest.TierName, _ => string.Empty)
             .Map(dest => dest.PriceSnapshotUsd, src => src.PriceSnapshotUsd);
 
         config
             .NewConfig<ContentOrderItemEntity, OrderItemDto>()
             .Map(dest => dest.CategoryId, src => src.CategoryId)
-            .Map(dest => dest.CategoryName, src => src.Category.Name)
+            .Map(dest => dest.CategoryName, _ => string.Empty)
             .Map(dest => dest.PromotionLevelId, src => src.PromotionLevelId)
-            .Map(dest => dest.PromotionLevelName, src => src.PromotionLevel != null ? src.PromotionLevel.Name : null)
-            .Map(dest => dest.PromoPriceUsd, src => src.PromoPriceSnapshotUsd)
+            .Map(dest => dest.PromotionLevelName, _ => (string?)null)
+            .Map(
+                dest => dest.PromoPriceUsd,
+                src => src.PromoPriceSnapshotUsd == null ? null : (decimal?)src.PromoPriceSnapshotUsd.Amount
+            )
             .Map(dest => dest.Tiers, src => src.Tiers);
 
         config
@@ -41,32 +45,37 @@ public static class ContentOrderMapper
         config
             .NewConfig<ContentPaymentEntity, PaymentSummaryDto>()
             .Map(dest => dest.OrderId, src => src.OrderId)
-            .Map(dest => dest.CustomerName, src => src.Order.Customer.FullName)
-            .Map(dest => dest.OrderStatus, src => src.Order.Status)
+            .Map(dest => dest.CustomerName, _ => string.Empty)
+            .Map(dest => dest.OrderStatus, _ => EnumOrderStatus.Draft)
             .Map(dest => dest.VerifiedBy, src => src.VerifiedById)
             .Map(dest => dest.VerifiedByUserName, _ => (string?)null);
 
         config
             .NewConfig<ContentOrderEntity, ContentOrderSummaryDto>()
-            .Map(dest => dest.CustomerName, src => src.Customer.FullName)
+            .Map(dest => dest.CustomerName, _ => string.Empty)
             .Map(dest => dest.ItemCount, src => src.Items.Count);
 
         config
             .NewConfig<ContentOrderEntity, ContentOrderDetailDto>()
             .Map(dest => dest.CustomerId, src => src.CustomerId)
-            .Map(dest => dest.CustomerName, src => src.Customer.FullName)
+            .Map(dest => dest.CustomerName, _ => string.Empty)
             .Map(dest => dest.PackageId, src => src.PackageId)
             .Map(dest => dest.Items, src => src.Items)
             .Map(dest => dest.Payment, src => src.Payment);
     }
 
     /// <summary>
-    /// Maps a <see cref="ContentOrderEntity" /> to a <see cref="ContentOrderSummaryDto" />.
+    /// Maps a <see cref="ContentOrderEntity" /> to a <see cref="ContentOrderSummaryDto" />, reading
+    /// the customer name from a pre-fetched map. Performs no IO.
     /// </summary>
-    public static ContentOrderSummaryDto ToContentOrderSummaryDto(this ContentOrderEntity entity, IMapper mapper)
+    public static ContentOrderSummaryDto ToContentOrderSummaryDto(
+        this ContentOrderEntity entity,
+        IMapper mapper,
+        IReadOnlyDictionary<Guid, CustomerEntity> customers
+    )
     {
         var dto = mapper.Map<ContentOrderSummaryDto>(entity);
-        return dto with { CustomerName = entity.Customer.FullName, ItemCount = entity.Items.Count };
+        return dto with { CustomerName = CustomerName(entity.CustomerId, customers), ItemCount = entity.Items.Count };
     }
 
     /// <summary>
@@ -74,48 +83,66 @@ public static class ContentOrderMapper
     /// </summary>
     public static IReadOnlyList<ContentOrderSummaryDto> ToContentOrderSummaryDtos(
         this IReadOnlyList<ContentOrderEntity> entities,
-        IMapper mapper
+        IMapper mapper,
+        IReadOnlyDictionary<Guid, CustomerEntity> customers
     )
     {
-        return entities.Select(e => e.ToContentOrderSummaryDto(mapper)).ToList();
+        return entities.Select(e => e.ToContentOrderSummaryDto(mapper, customers)).ToList();
     }
 
     /// <summary>
-    /// Maps a <see cref="ContentOrderEntity" /> to a <see cref="ContentOrderDetailDto" />.
+    /// Maps a <see cref="ContentOrderEntity" /> to a <see cref="ContentOrderDetailDto" />, reading
+    /// the customer, category, promotion level and tier names from pre-fetched maps. Performs no IO.
     /// </summary>
-    public static ContentOrderDetailDto ToContentOrderDetailDto(this ContentOrderEntity entity, IMapper mapper)
+    public static ContentOrderDetailDto ToContentOrderDetailDto(
+        this ContentOrderEntity entity,
+        IMapper mapper,
+        OrderLookups lookups
+    )
     {
         var dto = mapper.Map<ContentOrderDetailDto>(entity);
         return dto with
         {
-            Items = entity.Items.Select(i => i.ToOrderItemDto(mapper)).ToList(),
+            CustomerName = CustomerName(entity.CustomerId, lookups.Customers),
+            Items = entity.Items.Select(i => i.ToOrderItemDto(mapper, lookups)).ToList(),
             Payment = entity.Payment != null ? mapper.Map<PaymentDto>(entity.Payment) : null,
         };
     }
 
     /// <summary>
-    /// Maps a <see cref="ContentPaymentEntity" /> to a <see cref="PaymentSummaryDto" /> including
-    /// customer name and order status from the linked order, resolving the verifier's name from a
+    /// Reads a customer's display name out of a resolved map, falling back to an empty name when
+    /// the customer row is gone.
+    /// </summary>
+    private static string CustomerName(Guid customerId, IReadOnlyDictionary<Guid, CustomerEntity> customers)
+    {
+        return customers.TryGetValue(customerId, out CustomerEntity? customer) ? customer.FullName : string.Empty;
+    }
+
+    /// <summary>
+    /// Maps the payment carried by an order to a <see cref="PaymentSummaryDto" />, taking the
+    /// customer name and order status from the order itself and the verifier's name from a
     /// pre-fetched map. Performs no IO — batch mappings resolve users up front.
     /// </summary>
     public static PaymentSummaryDto ToPaymentSummaryDto(
-        this ContentPaymentEntity entity,
+        this ContentOrderEntity order,
         IMapper mapper,
-        IReadOnlyDictionary<Guid, AuthorDto> verifiers
+        IReadOnlyDictionary<Guid, AuthorDto> verifiers,
+        IReadOnlyDictionary<Guid, CustomerEntity> customers
     )
     {
-        var dto = mapper.Map<PaymentSummaryDto>(entity);
+        ContentPaymentEntity payment = order.Payment!;
+        var dto = mapper.Map<PaymentSummaryDto>(payment);
         string? verifiedByUserName =
-            entity.VerifiedById is { } verifierId && verifiers.TryGetValue(verifierId, out AuthorDto? verifier)
+            payment.VerifiedById is { } verifierId && verifiers.TryGetValue(verifierId, out AuthorDto? verifier)
                 ? verifier.UserName
                 : null;
 
         return dto with
         {
-            OrderId = entity.OrderId,
-            CustomerName = entity.Order.Customer.FullName,
-            OrderStatus = entity.Order.Status,
-            VerifiedBy = entity.VerifiedById,
+            OrderId = order.Id,
+            CustomerName = CustomerName(order.CustomerId, customers),
+            OrderStatus = order.Status,
+            VerifiedBy = payment.VerifiedById,
             VerifiedByUserName = verifiedByUserName,
         };
     }
@@ -153,15 +180,45 @@ public static class ContentOrderMapper
     }
 
     /// <summary>
-    /// Maps a <see cref="ContentOrderItemEntity" /> to an <see cref="OrderItemDto" />.
+    /// Maps a <see cref="ContentOrderItemEntity" /> to an <see cref="OrderItemDto" />, reading the
+    /// category, promotion level and tier names from pre-fetched maps. Performs no IO.
     /// </summary>
-    public static OrderItemDto ToOrderItemDto(this ContentOrderItemEntity entity, IMapper mapper)
+    public static OrderItemDto ToOrderItemDto(this ContentOrderItemEntity entity, IMapper mapper, OrderLookups lookups)
     {
         var dto = mapper.Map<OrderItemDto>(entity);
+        string? promotionLevelName =
+            entity.PromotionLevelId is { } promotionLevelId
+            && lookups.PromotionLevels.TryGetValue(promotionLevelId, out PromotionLevelEntity? promotionLevel)
+                ? promotionLevel.Name
+                : null;
+
         return dto with
         {
-            Tiers = mapper.Map<IReadOnlyList<ItemTierDto>>(entity.Tiers),
-            PromoPriceUsd = entity.PromoPriceSnapshotUsd,
+            CategoryName = lookups.Categories.TryGetValue(entity.CategoryId, out CategoryEntity? category)
+                ? category.Name
+                : string.Empty,
+            PromotionLevelName = promotionLevelName,
+            Tiers = entity.Tiers.Select(tier => tier.ToItemTierDto(mapper, lookups.PricingTiers)).ToList(),
+            PromoPriceUsd = entity.PromoPriceSnapshotUsd?.Amount,
+        };
+    }
+
+    /// <summary>
+    /// Maps a <see cref="ContentItemTierEntity" /> to an <see cref="ItemTierDto" />, reading the
+    /// tier name from a pre-fetched map. Performs no IO.
+    /// </summary>
+    public static ItemTierDto ToItemTierDto(
+        this ContentItemTierEntity entity,
+        IMapper mapper,
+        IReadOnlyDictionary<Guid, PricingTierEntity> pricingTiers
+    )
+    {
+        var dto = mapper.Map<ItemTierDto>(entity);
+        return dto with
+        {
+            TierName = pricingTiers.TryGetValue(entity.PricingTierId, out PricingTierEntity? pricingTier)
+                ? pricingTier.Name
+                : string.Empty,
         };
     }
 }
