@@ -12,12 +12,14 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.SetExclusiveC
 /// Handles the <see cref="AdminSetExclusiveCategoryCommand" /> to toggle the exclusive flag on a category.
 /// Enforces the mutex constraint: only one category can be exclusive at a time.
 /// </summary>
+/// <param name="contentTypeRepository">Repository resolving the category's content type.</param>
 /// <param name="categoryRepository">Repository for category data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="categoryDtoFactory">Builds category projections with their posters resolved.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminSetExclusiveCategoryHandler(
     ICategoryRepository categoryRepository,
+    IContentTypeRepository contentTypeRepository,
     IContentUnitOfWork unitOfWork,
     ICategoryDtoFactory categoryDtoFactory,
     ContentI18n i18n
@@ -36,12 +38,17 @@ public class AdminSetExclusiveCategoryHandler(
             cancellationToken: cancellationToken
         );
 
+        ContentTypeEntity contentType = await contentTypeRepository.GetByIdOrThrowAsync(
+            id: category.ContentTypeId,
+            cancellationToken: cancellationToken
+        );
+
         if (!category.IsActive)
         {
             throw i18n.Category.CannotMakeInactiveExclusive();
         }
 
-        if (category.ContentType.Name != nameof(EnumCoreContentType.Video))
+        if (contentType.Name != nameof(EnumCoreContentType.Video))
         {
             throw i18n.Category.OnlyVideoCategoryCanBeExclusive();
         }
