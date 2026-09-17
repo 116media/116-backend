@@ -1,10 +1,9 @@
+using _116.Content.Application.Commerce.Factories;
 using _116.Content.Application.Shared.DTOs;
-using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
-using MapsterMapper;
 
 namespace _116.Content.Application.Commerce.UseCases.Admin.Queries.GetCustomerOrders;
 
@@ -12,9 +11,11 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Queries.GetCustomerOr
 /// Handles the <see cref="AdminGetCustomerOrdersQuery" /> to retrieve paginated orders for a specific customer.
 /// </summary>
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
-/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-public class AdminGetCustomerOrdersHandler(IContentOrderRepository contentOrderRepository, IMapper mapper)
-    : IQueryHandler<AdminGetCustomerOrdersQuery, AdminGetCustomerOrdersResult>
+/// <param name="orderDtoFactory">Builds order projections with their lookups resolved.</param>
+public class AdminGetCustomerOrdersHandler(
+    IContentOrderRepository contentOrderRepository,
+    IContentOrderDtoFactory orderDtoFactory
+) : IQueryHandler<AdminGetCustomerOrdersQuery, AdminGetCustomerOrdersResult>
 {
     /// <inheritdoc />
     public async Task<AdminGetCustomerOrdersResult> Handle(
@@ -34,7 +35,10 @@ public class AdminGetCustomerOrdersHandler(IContentOrderRepository contentOrderR
             ct: cancellationToken
         );
 
-        IReadOnlyList<ContentOrderSummaryDto> dtoList = orders.ToContentOrderSummaryDtos(mapper);
+        IReadOnlyList<ContentOrderSummaryDto> dtoList = await orderDtoFactory.CreateManySummariesAsync(
+            orders,
+            cancellationToken
+        );
 
         var paginatedResult = new PaginatedResult<ContentOrderSummaryDto>(
             pageIndex: pageIndex,
