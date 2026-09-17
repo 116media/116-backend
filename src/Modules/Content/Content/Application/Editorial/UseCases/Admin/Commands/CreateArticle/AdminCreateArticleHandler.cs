@@ -24,7 +24,8 @@ public class AdminCreateArticleHandler(
     IContentUnitOfWork unitOfWork,
     IFileStorageService fileStorage,
     IMapper mapper,
-    ContentI18n i18n
+    ContentI18n i18n,
+    IContentLookupFactory contentLookupFactory
 ) : ICommandHandler<AdminCreateArticleCommand, AdminCreateArticleResult>
 {
     /// <inheritdoc />
@@ -55,7 +56,12 @@ public class AdminCreateArticleHandler(
             cancellationToken: cancellationToken
         );
 
-        var dto = await created.ToArticleDetailDtoAsync(mapper, fileStorage, cancellationToken);
+        var dto = await created.ToArticleDetailDtoAsync(
+            mapper,
+            await contentLookupFactory.ResolveForArticlesAsync([created], cancellationToken),
+            fileStorage,
+            cancellationToken
+        );
         return new AdminCreateArticleResult(Article: dto);
     }
 
