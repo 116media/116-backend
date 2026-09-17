@@ -22,7 +22,8 @@ public class AdminUpdateLyricsSeoHandler(
     IContentUnitOfWork unitOfWork,
     IMapper mapper,
     IUserLookupService userLookup,
-    IFileStorageService fileStorage
+    IFileStorageService fileStorage,
+    IContentLookupFactory contentLookupFactory
 ) : ICommandHandler<AdminUpdateLyricsSeoCommand, AdminUpdateLyricsSeoResult>
 {
     /// <inheritdoc />
@@ -35,7 +36,7 @@ public class AdminUpdateLyricsSeoHandler(
 
         LyricsEntity lyrics = await lyricsRepository.GetByIdOrThrowAsync(id: id, cancellationToken: cancellationToken);
 
-        lyrics.UpdateSeo(
+        lyrics.ReviseSeo(
             metaTitle: command.MetaTitle,
             metaDescription: command.MetaDescription,
             structuredData: command.StructuredData
@@ -47,7 +48,13 @@ public class AdminUpdateLyricsSeoHandler(
             cancellationToken: cancellationToken
         );
 
-        var dto = await updated.ToLyricsDetailDtoAsync(mapper, userLookup, fileStorage, cancellationToken);
+        var dto = await updated.ToLyricsDetailDtoAsync(
+            await contentLookupFactory.ResolveForLyricsAsync([updated], cancellationToken),
+            mapper,
+            userLookup,
+            fileStorage,
+            cancellationToken
+        );
         return new AdminUpdateLyricsSeoResult(Lyrics: dto);
     }
 }
