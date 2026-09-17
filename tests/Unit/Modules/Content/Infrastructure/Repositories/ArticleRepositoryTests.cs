@@ -5,6 +5,7 @@ using _116.Content.Infrastructure.Persistence;
 using _116.Content.Infrastructure.Repositories;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Unit.Tests.Common.Helpers;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -23,6 +24,7 @@ public class ArticleRepositoryTests : IDisposable
     {
         DbContextOptions<ContentDbContext> options = new DbContextOptionsBuilder<ContentDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+            .AddInterceptors(new CreatedAtStampingInterceptor())
             .Options;
 
         _context = new ContentDbContext(options);
@@ -387,10 +389,10 @@ public class ArticleRepositoryTests : IDisposable
 
     #endregion
 
-    #region AddImageAsync / GetImagesByArticleIdAsync / RemoveImages Tests
+    #region Image Tests
 
     [Fact]
-    public async Task AddImageAsync_ShouldAddImageToContext()
+    public async Task AddImage_ThroughTheRoot_ShouldPersistTheRow()
     {
         // Arrange
         Guid categoryId = await SeedCategoryAsync();
@@ -398,128 +400,122 @@ public class ArticleRepositoryTests : IDisposable
         _context.Articles.Add(article);
         await _context.SaveChangesAsync();
 
-        ArticleImageEntity image = ArticleImageFactory.CreateCover(article.Id);
-
         // Act
-        await _repository.AddImageAsync(image);
+        ArticleImageEntity image = ArticleImageFactory.CreateCover(article);
         await _context.SaveChangesAsync();
 
         // Assert
         ArticleImageEntity? saved = await _context.ArticleImages.FirstOrDefaultAsync(i => i.Id == image.Id);
         saved.Should().NotBeNull();
-        saved.ArticleId.Should().Be(article.Id);
+        saved!.ArticleId.Should().Be(article.Id);
     }
 
     [Fact]
-    public async Task GetImagesByArticleIdAsync_ShouldReturnImagesForArticle()
+    public async Task GetByIdOrThrowAsync_ShouldHydrateTheImages()
     {
         // Arrange
         Guid categoryId = await SeedCategoryAsync();
         ArticleEntity article = ArticleFactory.Create(categoryId);
+        ArticleImageFactory.CreateCover(article);
+        ArticleImageFactory.CreateBody(article);
         _context.Articles.Add(article);
         await _context.SaveChangesAsync();
-
-        ArticleImageEntity image1 = ArticleImageFactory.CreateCover(article.Id);
-        ArticleImageEntity image2 = ArticleImageFactory.CreateBody(article.Id);
-        _context.ArticleImages.AddRange(image1, image2);
-        await _context.SaveChangesAsync();
+        _context.ChangeTracker.Clear();
 
         // Act
-        IReadOnlyList<ArticleImageEntity> result = await _repository.GetImagesByArticleIdAsync(article.Id);
+        ArticleEntity loaded = await _repository.GetByIdOrThrowAsync(article.Id);
 
         // Assert
-        result.Should().HaveCount(2);
-        result.Should().AllSatisfy(i => i.ArticleId.Should().Be(article.Id));
+        loaded.Images.Should().HaveCount(2);
     }
 
     [Fact]
-    public async Task RemoveImages_ShouldRemoveImagesFromContext()
+    public async Task RemoveCoverImage_ThroughTheRoot_ShouldDeleteOnlyTheCoverRow()
     {
         // Arrange
         Guid categoryId = await SeedCategoryAsync();
         ArticleEntity article = ArticleFactory.Create(categoryId);
+        ArticleImageFactory.CreateCover(article);
+        ArticleImageFactory.CreateBody(article);
         _context.Articles.Add(article);
         await _context.SaveChangesAsync();
 
-        ArticleImageEntity image = ArticleImageFactory.CreateCover(article.Id);
-        _context.ArticleImages.Add(image);
-        await _context.SaveChangesAsync();
-
         // Act
-        _repository.RemoveImages([image]);
+        ArticleImageEntity? removed = article.RemoveCoverImage();
         await _context.SaveChangesAsync();
 
         // Assert
-        ArticleImageEntity? deleted = await _context.ArticleImages.FirstOrDefaultAsync(i => i.Id == image.Id);
-        deleted.Should().BeNull();
+        removed.Should().NotBeNull();
+        (await _context.ArticleImages.CountAsync(i => i.ArticleId == article.Id)).Should().Be(1);
+    }
+
+    [Fact]
+    public async Task RemoveBodyImages_ThroughTheRoot_ShouldDeleteOnlyTheMatchingRows()
+    {
+        // Arrange
+        Guid categoryId = await SeedCategoryAsync();
+        ArticleEntity article = ArticleFactory.Create(categoryId);
+        ArticleImageEntity keep = ArticleImageFactory.CreateBody(article, "keep-key", "https://cdn.example/keep.jpg");
+        ArticleImageEntity drop = ArticleImageFactory.CreateBody(article, "drop-key", "https://cdn.example/drop.jpg");
+        _context.Articles.Add(article);
+        await _context.SaveChangesAsync();
+
+        // Act
+        IReadOnlyList<ArticleImageEntity> removed = article.RemoveBodyImages(["drop-key"]);
+        await _context.SaveChangesAsync();
+
+        // Assert
+        removed.Should().ContainSingle().Which.Id.Should().Be(drop.Id);
+        (await _context.ArticleImages.SingleAsync(i => i.ArticleId == article.Id)).Id.Should().Be(keep.Id);
     }
 
     #endregion
 
-    #region AddTagAsync / GetTagsByArticleIdAsync / RemoveTag Tests
+    #region Tag Tests
 
     [Fact]
-    public async Task AddTagAsync_ShouldAddTagJunctionToContext()
+    public async Task ReplaceTags_ThroughTheRoot_ShouldPersistTheRows()
     {
         // Arrange
         Guid categoryId = await SeedCategoryAsync();
         ArticleEntity article = ArticleFactory.Create(categoryId);
         _context.Articles.Add(article);
-
-        TagEntity tag = TagFactory.CreateDefault();
-        _context.Tags.Add(tag);
         await _context.SaveChangesAsync();
 
-        var articleTag = ArticleTagEntity.Create(id: Guid.NewGuid(), articleId: article.Id, tagId: tag.Id);
+        var tagId = Guid.NewGuid();
 
         // Act
-        await _repository.AddTagAsync(articleTag);
+        article.ReplaceTags([tagId]);
         await _context.SaveChangesAsync();
 
         // Assert
-        IReadOnlyList<ArticleTagEntity> result = await _repository.GetTagsByArticleIdAsync(article.Id);
-        result.Should().ContainSingle();
-        result.First().TagId.Should().Be(tag.Id);
+        (await _context.ArticleTags.CountAsync(t => t.ArticleId == article.Id))
+            .Should()
+            .Be(1);
     }
 
     [Fact]
-    public async Task GetTagsByArticleIdAsync_WhenNoTags_ShouldReturnEmptyList()
+    public async Task ReplaceTags_ThroughTheRoot_ShouldDropRowsThatLeftTheSet()
     {
         // Arrange
         Guid categoryId = await SeedCategoryAsync();
         ArticleEntity article = ArticleFactory.Create(categoryId);
+        TagEntity keptTag = TagFactory.Create("kept-article-tag", "kept-article-tag");
+        TagEntity removedTag = TagFactory.Create("removed-article-tag", "removed-article-tag");
+        _context.Tags.AddRange(keptTag, removedTag);
+        Guid keptTagId = keptTag.Id;
+        article.ReplaceTags([keptTagId, removedTag.Id]);
         _context.Articles.Add(article);
         await _context.SaveChangesAsync();
 
         // Act
-        IReadOnlyList<ArticleTagEntity> result = await _repository.GetTagsByArticleIdAsync(article.Id);
+        article.ReplaceTags([keptTagId]);
+        await _context.SaveChangesAsync();
+        _context.ChangeTracker.Clear();
 
         // Assert
-        result.Should().BeEmpty();
-    }
-
-    [Fact]
-    public async Task RemoveTag_ShouldRemoveTagJunctionFromContext()
-    {
-        // Arrange
-        Guid categoryId = await SeedCategoryAsync();
-        ArticleEntity article = ArticleFactory.Create(categoryId);
-        _context.Articles.Add(article);
-
-        TagEntity tag = TagFactory.CreateDefault();
-        _context.Tags.Add(tag);
-
-        var articleTag = ArticleTagEntity.Create(id: Guid.NewGuid(), articleId: article.Id, tagId: tag.Id);
-        _context.ArticleTags.Add(articleTag);
-        await _context.SaveChangesAsync();
-
-        // Act
-        _repository.RemoveTag(articleTag);
-        await _context.SaveChangesAsync();
-
-        // Assert
-        IReadOnlyList<ArticleTagEntity> result = await _repository.GetTagsByArticleIdAsync(article.Id);
-        result.Should().BeEmpty();
+        ArticleEntity loaded = await _repository.GetByIdOrThrowAsync(article.Id);
+        loaded.Tags.Should().ContainSingle().Which.TagId.Should().Be(keptTagId);
     }
 
     #endregion
