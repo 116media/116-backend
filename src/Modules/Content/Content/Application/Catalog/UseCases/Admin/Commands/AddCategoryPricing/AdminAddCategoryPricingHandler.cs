@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
@@ -32,7 +33,10 @@ public class AdminAddCategoryPricingHandler(
     {
         Guid categoryId = Guid.Parse(command.CategoryId);
 
-        await categoryRepository.GetByIdOrThrowAsync(id: categoryId, cancellationToken: cancellationToken);
+        CategoryEntity category = await categoryRepository.GetByIdOrThrowAsync(
+            id: categoryId,
+            cancellationToken: cancellationToken
+        );
 
         PricingTierEntity pricingTier = await pricingTierRepository.GetByIdOrThrowAsync(
             id: command.PricingTierId,
@@ -44,35 +48,17 @@ public class AdminAddCategoryPricingHandler(
             throw i18n.PricingTier.IsInactive();
         }
 
-        CategoryPricingEntity? existing = await categoryRepository.GetPricingAsync(
-            categoryId: categoryId,
-            pricingTierId: command.PricingTierId,
-            cancellationToken: cancellationToken
-        );
-
-        if (existing is not null)
+        if (category.FindPricing(pricingTierId: command.PricingTierId) is not null)
         {
             throw i18n.Category.PricingAlreadyExists();
         }
 
-        var pricing = CategoryPricingEntity.Create(
-            id: Guid.NewGuid(),
-            categoryId: categoryId,
-            pricingTierId: command.PricingTierId,
-            priceUsd: command.PriceUsd
-        );
-
-        await categoryRepository.AddPricingAsync(pricing: pricing, cancellationToken: cancellationToken);
+        category.SetPricing(pricingTierId: command.PricingTierId, priceUsd: command.PriceUsd);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
-        CategoryPricingEntity created =
-            await categoryRepository.GetPricingAsync(
-                categoryId: categoryId,
-                pricingTierId: command.PricingTierId,
-                cancellationToken: cancellationToken
-            ) ?? pricing;
+        CategoryPricingEntity created = category.FindPricing(pricingTierId: command.PricingTierId)!;
 
-        var dto = created.ToCategoryPricingDto(mapper);
+        CategoryPricingDto dto = created.ToCategoryPricingDto(mapper, pricingTier);
         return new AdminAddCategoryPricingResult(Pricing: dto);
     }
 }
