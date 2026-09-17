@@ -108,21 +108,10 @@ public static class VideoFactory
         new VideoBuilder(categoryId).WithYoutubeUrl().AsApproved().Build();
 
     /// <summary>
-    /// Creates a free video with the Category navigation property loaded via reflection.
-    /// Use this when the test exercises a mapper that accesses <c>entity.Category.Name</c>.
+    /// Creates a free video filed under the given category. The category name reaches a
+    /// projection through the resolved lookups, not through the video.
     /// </summary>
-    public static VideoEntity CreateWithCategory(Guid categoryId, CategoryEntity category)
-    {
-        VideoEntity entity = Create(categoryId);
-
-        PropertyInfo navigation = typeof(VideoEntity).GetProperty(
-            nameof(VideoEntity.Category),
-            BindingFlags.Public | BindingFlags.Instance
-        )!;
-
-        navigation.SetValue(entity, category);
-        return entity;
-    }
+    public static VideoEntity CreateWithCategory(Guid categoryId, CategoryEntity category) => Create(category.Id);
 
     /// <summary>
     /// Creates a list of free videos with the Category navigation property loaded via reflection.
