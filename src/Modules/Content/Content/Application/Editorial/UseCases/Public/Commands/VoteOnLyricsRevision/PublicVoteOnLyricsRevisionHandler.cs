@@ -1,4 +1,5 @@
 using _116.Content.Application.Editorial.Constants;
+using _116.Content.Application.Editorial.Specifications;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -72,18 +73,17 @@ public class PublicVoteOnLyricsRevisionHandler(
 
         if (
             netApprovals >= LyricsRevisionConstants.AutoAcceptThreshold
-            && revision.Status == EnumRevisionStatus.Pending
+            && new PendingLyricsRevisionSpecification().IsSatisfiedBy(revision)
         )
         {
-            revision.Accept(decidedByUserId: null);
-            revisionRepository.Update(revision: revision);
-
-            LyricsEntity lyrics = await lyricsRepository.GetByIdOrThrowAsync(
-                id: revision.LyricsId,
-                cancellationToken: cancellationToken
-            );
-            lyrics.ReplaceLyricsText(lyricsText: revision.ProposedText);
-            lyricsRepository.Update(lyrics: lyrics);
+            if (revision.Accept(decidedByUserId: null))
+            {
+                LyricsEntity lyrics = await lyricsRepository.GetByIdOrThrowAsync(
+                    id: revision.LyricsId,
+                    cancellationToken: cancellationToken
+                );
+                lyrics.ReplaceLyricsText(lyricsText: revision.ProposedText);
+            }
         }
 
         // Both the revision's acceptance and the lyrics page's replaced text commit together
