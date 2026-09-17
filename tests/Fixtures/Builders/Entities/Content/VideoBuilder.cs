@@ -1,4 +1,3 @@
-using System.Reflection;
 using _116.Content.Application.Shared.Errors;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
@@ -32,8 +31,6 @@ public class VideoBuilder
     private Guid _promotionLevelId = Guid.NewGuid();
     private DateTimeOffset? _publishedAtOverride;
     private Guid? _artistId;
-    private CategoryEntity? _category;
-    private CustomerEntity? _customerNavigation;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VideoBuilder"/> class with a required category ID.
@@ -206,23 +203,11 @@ public class VideoBuilder
     }
 
     /// <summary>
-    /// Attaches the Category navigation EF Core populates through <c>.Include(v =&gt; v.Category)</c>,
-    /// and points the foreign key at the same category.
+    /// Points the video's category foreign key at the given category.
     /// </summary>
     public VideoBuilder WithCategory(CategoryEntity category)
     {
-        _category = category;
         _categoryId = category.Id;
-        return this;
-    }
-
-    /// <summary>
-    /// Attaches the Customer navigation EF Core populates through <c>.Include(v =&gt; v.Customer)</c>.
-    /// Combine with <see cref="WithCustomer" /> to set the matching foreign key.
-    /// </summary>
-    public VideoBuilder WithCustomerNavigation(CustomerEntity customer)
-    {
-        _customerNavigation = customer;
         return this;
     }
 
@@ -258,7 +243,7 @@ public class VideoBuilder
 
         if (_youtubeVideoUrl is not null)
         {
-            entity.AttachYoutubeVideoUrl(_youtubeVideoUrl);
+            entity.AttachYoutubeVideoUrl(_youtubeVideoUrl, TestConstants.Clock.Instant);
         }
 
         if (_thumbnailFileId.HasValue)
@@ -273,33 +258,9 @@ public class VideoBuilder
             entity.StampPromotion(_promotionLevelId, _promotedUntil.Value);
         }
 
-        if (_publishedAtOverride.HasValue)
-        {
-            PropertyInfo publishedProp = typeof(VideoEntity).GetProperty(
-                nameof(VideoEntity.PublishedAt),
-                BindingFlags.Public | BindingFlags.Instance
-            )!;
-
-            publishedProp.SetValue(entity, _publishedAtOverride);
-        }
-
         if (_artistId.HasValue)
         {
             entity.LinkArtist(_artistId.Value);
-        }
-
-        if (_category is not null)
-        {
-            typeof(VideoEntity)
-                .GetProperty(nameof(VideoEntity.Category), BindingFlags.Public | BindingFlags.Instance)!
-                .SetValue(entity, _category);
-        }
-
-        if (_customerNavigation is not null)
-        {
-            typeof(VideoEntity)
-                .GetProperty(nameof(VideoEntity.Customer), BindingFlags.Public | BindingFlags.Instance)!
-                .SetValue(entity, _customerNavigation);
         }
 
         entity.CreatedAt = DateTime.UtcNow;
@@ -324,7 +285,7 @@ public class VideoBuilder
             case EnumContentStatus.Published:
                 entity.MarkPendingReview();
                 entity.Approve();
-                entity.Publish();
+                entity.Publish(now: _publishedAtOverride ?? TestConstants.Clock.Instant);
                 break;
             case EnumContentStatus.Rejected:
                 entity.MarkPendingReview();
@@ -333,7 +294,7 @@ public class VideoBuilder
             case EnumContentStatus.Archived:
                 entity.MarkPendingReview();
                 entity.Approve();
-                entity.Publish();
+                entity.Publish(now: _publishedAtOverride ?? TestConstants.Clock.Instant);
                 entity.Archive();
                 break;
         }
