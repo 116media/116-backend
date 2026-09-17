@@ -1,5 +1,6 @@
 using _116.Content.Application.Editorial.Builders.Contracts;
 using _116.Content.Application.Editorial.Constants;
+using _116.Content.Application.Editorial.Specifications;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 
@@ -58,7 +59,9 @@ public class PopularVideosQueryBuilder : IPopularVideosQueryBuilder
         const int ratingWeight = PopularVideosScoring.RatingWeight;
         const int shareWeight = PopularVideosScoring.ShareWeight;
 
-        IQueryable<VideoEntity> query = source.Where(v => v.Status == EnumContentStatus.Published);
+        IQueryable<VideoEntity> query = source.Where(
+            new VideoByStatusSpecification(status: EnumContentStatus.Published).ToExpression()
+        );
 
         if (_categoryId.HasValue)
         {
