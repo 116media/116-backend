@@ -13,9 +13,6 @@ public static class AdminDeleteLyricsMetaField
         """
             Permanently deletes a lyrics page from the database.
             \n
-            If the lyrics page is linked to a video, the video's HasLyrics flag
-            is cleared automatically before deletion.
-            \n
             This operation is <b>irreversible</b>.
             \n
             **Authentication Requirements:**\n
