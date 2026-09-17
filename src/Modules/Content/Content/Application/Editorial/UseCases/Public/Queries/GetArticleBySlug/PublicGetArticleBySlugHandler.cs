@@ -22,7 +22,8 @@ public class PublicGetArticleBySlugHandler(
     IArticleInteractionRepository articleInteractionRepository,
     IFileStorageService fileStorage,
     IMapper mapper,
-    ContentI18n i18n
+    ContentI18n i18n,
+    IContentLookupFactory contentLookupFactory
 ) : IQueryHandler<PublicGetArticleBySlugQuery, PublicGetArticleBySlugResult>
 {
     /// <inheritdoc />
@@ -60,6 +61,7 @@ public class PublicGetArticleBySlugHandler(
 
         var dto = await article.ToPublicArticleDetailDtoAsync(
             mapper,
+            await contentLookupFactory.ResolveForArticlesAsync([article], cancellationToken),
             fileStorage,
             cancellationToken,
             isLiked: isLiked,
