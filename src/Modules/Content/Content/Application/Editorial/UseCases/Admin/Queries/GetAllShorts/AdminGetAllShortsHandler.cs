@@ -30,7 +30,8 @@ public class AdminGetAllShortsHandler(
     IShortVideoRepository shortVideoRepository,
     IUserLookupService userLookup,
     IFileStorageService fileStorage,
-    IMapper mapper
+    IMapper mapper,
+    IVideoRepository videoRepository
 ) : IQueryHandler<AdminGetAllShortsQuery, AdminGetAllShortsResult>
 {
     /// <inheritdoc />
@@ -51,6 +52,7 @@ public class AdminGetAllShortsHandler(
             mapper,
             userLookup,
             fileStorage,
+            videoRepository,
             cancellationToken
         );
 
