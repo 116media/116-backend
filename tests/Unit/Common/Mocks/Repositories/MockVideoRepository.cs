@@ -134,16 +134,6 @@ public static class MockVideoRepository
         return mock;
     }
 
-    public static Mock<IVideoRepository> SetupGetTagsByVideoId(
-        this Mock<IVideoRepository> mock,
-        Guid videoId,
-        IReadOnlyList<VideoTagEntity> tags
-    )
-    {
-        mock.Setup(x => x.GetTagsByVideoIdAsync(videoId, It.IsAny<CancellationToken>())).ReturnsAsync(tags);
-        return mock;
-    }
-
     public static void VerifyAddCalled(this Mock<IVideoRepository> mock)
     {
         mock.Verify(x => x.AddAsync(It.IsAny<VideoEntity>(), It.IsAny<CancellationToken>()), Times.Once);
@@ -152,16 +142,6 @@ public static class MockVideoRepository
     public static void VerifyRemoveCalled(this Mock<IVideoRepository> mock, VideoEntity video)
     {
         mock.Verify(x => x.Remove(video), Times.Once);
-    }
-
-    public static void VerifyAddTagCalled(this Mock<IVideoRepository> mock)
-    {
-        mock.Verify(x => x.AddTagAsync(It.IsAny<VideoTagEntity>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
-    }
-
-    public static void VerifyRemoveTagCalled(this Mock<IVideoRepository> mock)
-    {
-        mock.Verify(x => x.RemoveTag(It.IsAny<VideoTagEntity>()), Times.Once);
     }
 
     /// <summary>
@@ -234,8 +214,6 @@ public static class MockVideoRepository
     private static void SetupDefaults(Mock<IVideoRepository> mock)
     {
         mock.Setup(x => x.AddAsync(It.IsAny<VideoEntity>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
-        mock.Setup(x => x.AddTagAsync(It.IsAny<VideoTagEntity>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask);
         mock.Setup(x =>
                 x.GetAllAsync(
                     It.IsAny<int>(),
@@ -249,8 +227,6 @@ public static class MockVideoRepository
             )
             .ReturnsAsync((new List<VideoEntity>(), 0));
         mock.Setup(x => x.GetPromotedAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new List<VideoEntity>());
-        mock.Setup(x => x.GetTagsByVideoIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<VideoTagEntity>());
         mock.Setup(x => x.GetAllRatingsForVideoAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<VideoRatingEntity>());
         mock.Setup(x => x.AddRatingAsync(It.IsAny<VideoRatingEntity>(), It.IsAny<CancellationToken>()))
@@ -278,6 +254,50 @@ public static class MockVideoRepository
                 )
             )
             .ReturnsAsync((new List<VideoEntity>(), 0));
+        mock.Setup(x => x.HasPublishedLyricsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(false);
+        mock.Setup(x =>
+                x.GetIdsWithPublishedLyricsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>())
+            )
+            .ReturnsAsync(new HashSet<Guid>());
+        mock.Setup(x => x.GetByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<Guid, VideoEntity>());
+        mock.Setup(x => x.GetPublishedByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<Guid, VideoEntity>());
+    }
+
+    public static Mock<IVideoRepository> SetupHasPublishedLyrics(
+        this Mock<IVideoRepository> mock,
+        Guid videoId,
+        bool hasLyrics
+    )
+    {
+        mock.Setup(x => x.HasPublishedLyricsAsync(videoId, It.IsAny<CancellationToken>())).ReturnsAsync(hasLyrics);
+        return mock;
+    }
+
+    /// <summary>
+    /// Arranges the batch lookups to resolve exactly the supplied videos, keyed by id.
+    /// </summary>
+    public static Mock<IVideoRepository> SetupGetByIds(this Mock<IVideoRepository> mock, params VideoEntity[] videos)
+    {
+        Dictionary<Guid, VideoEntity> map = videos.ToDictionary(video => video.Id);
+        mock.Setup(x => x.GetByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(map);
+        mock.Setup(x => x.GetPublishedByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(map);
+        return mock;
+    }
+
+    public static Mock<IVideoRepository> SetupIdsWithPublishedLyrics(
+        this Mock<IVideoRepository> mock,
+        IReadOnlySet<Guid> videoIds
+    )
+    {
+        mock.Setup(x =>
+                x.GetIdsWithPublishedLyricsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>())
+            )
+            .ReturnsAsync(videoIds);
+        return mock;
     }
 
     public static Mock<IVideoRepository> SetupGetLatestPublishedByCategory(
