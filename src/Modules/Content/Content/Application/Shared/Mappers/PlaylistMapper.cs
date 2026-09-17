@@ -1,7 +1,5 @@
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Entities;
-using _116.Core.Contracts.Application.DTOs;
-using _116.Core.Contracts.Application.Services;
 using Mapster;
 using MapsterMapper;
 
@@ -42,25 +40,61 @@ public static class PlaylistMapper
     }
 
     /// <summary>
-    /// Maps a <see cref="PlaylistEntity" /> to a <see cref="PlaylistDetailDto" />,
-    /// resolving video thumbnail URLs from associated FileReferenceDto records.
+    /// The distinct thumbnail files a detail projection needs, so the caller can resolve them all
+    /// in one query before mapping.
     /// </summary>
-    public static async Task<PlaylistDetailDto> ToPlaylistDetailDtoAsync(
+    /// <param name="entity">The playlist to inspect.</param>
+    /// <returns>The file ids.</returns>
+    public static IReadOnlyCollection<Guid> DetailThumbnailFileIds(this PlaylistEntity entity)
+    {
+        return entity
+            .Videos.OrderBy(video => video.SortOrder)
+            .Select(playlistVideo => playlistVideo.Video?.ThumbnailFileId)
+            .OfType<Guid>()
+            .Distinct()
+            .ToArray();
+    }
+
+    /// <summary>
+    /// The distinct thumbnail files a summary projection needs — the first four videos of each
+    /// playlist — so the caller can resolve them all in one query before mapping.
+    /// </summary>
+    /// <param name="entities">The playlists to inspect.</param>
+    /// <returns>The file ids.</returns>
+    public static IReadOnlyCollection<Guid> SummaryThumbnailFileIds(this IReadOnlyList<PlaylistEntity> entities)
+    {
+        return entities
+            .SelectMany(playlist => playlist.Videos.OrderBy(video => video.SortOrder).Take(4))
+            .Select(playlistVideo => playlistVideo.Video?.ThumbnailFileId)
+            .OfType<Guid>()
+            .Distinct()
+            .ToArray();
+    }
+
+    /// <summary>
+    /// Maps a <see cref="PlaylistEntity" /> to a <see cref="PlaylistDetailDto" /> from already
+    /// resolved thumbnail URLs. Performs no IO.
+    /// </summary>
+    /// <param name="entity">The playlist to map.</param>
+    /// <param name="mapper">Injected IMapper instance.</param>
+    /// <param name="thumbnailUrls">The resolved thumbnail URLs, keyed by file id.</param>
+    /// <returns>The detail projection.</returns>
+    public static PlaylistDetailDto ToPlaylistDetailDto(
         this PlaylistEntity entity,
         IMapper mapper,
-        IFileStorageService fileStorage,
-        CancellationToken ct = default
+        IReadOnlyDictionary<Guid, string> thumbnailUrls
     )
     {
         var dto = mapper.Map<PlaylistDetailDto>(entity);
-        var orderedVideos = entity.Videos.OrderBy(v => v.SortOrder).ToList();
-        IReadOnlyList<VideoInPlaylistDto> videoDtos = orderedVideos
+
+        IReadOnlyList<VideoInPlaylistDto> videos = entity
+            .Videos.OrderBy(video => video.SortOrder)
             .Select(playlistVideo => new VideoInPlaylistDto(
                 playlistVideo.VideoId,
                 playlistVideo.Video.Title,
                 playlistVideo.Video.Slug,
                 playlistVideo.Video.Category?.Name ?? string.Empty,
-                null,
+                ThumbnailUrl(playlistVideo, thumbnailUrls),
                 playlistVideo.Video.PublishedAt,
                 playlistVideo.Video.ShareCount,
                 playlistVideo.Video.RatingAverage,
@@ -69,79 +103,56 @@ public static class PlaylistMapper
             ))
             .ToList();
 
-        Guid[] thumbnailFileIds = orderedVideos
-            .Select(video => video.Video?.ThumbnailFileId)
-            .OfType<Guid>()
-            .Distinct()
-            .ToArray();
-        IReadOnlyDictionary<Guid, string> thumbnailUrls =
-            thumbnailFileIds.Length == 0
-                ? new Dictionary<Guid, string>()
-                : await fileStorage.ResolveUrlsAsync(thumbnailFileIds, ct);
-
-        var resolved = new List<VideoInPlaylistDto>(videoDtos.Count);
-        for (int i = 0; i < videoDtos.Count; i++)
-        {
-            VideoInPlaylistDto videoDto = videoDtos[i];
-            PlaylistVideoEntity playlistVideo = orderedVideos[i];
-
-            string? thumbnailUrl =
-                playlistVideo.Video?.ThumbnailFileId is { } fileId
-                && thumbnailUrls.TryGetValue(fileId, out string? storageUrl)
-                    ? storageUrl
-                    : null;
-
-            resolved.Add(videoDto with { ThumbnailUrl = thumbnailUrl });
-        }
-
         return dto with
         {
-            Videos = resolved,
+            Videos = videos,
         };
     }
 
     /// <summary>
-    /// Maps a list of <see cref="PlaylistEntity" /> to a list of <see cref="PlaylistDto" />.
+    /// Maps a <see cref="PlaylistEntity" /> to a <see cref="PlaylistDto" /> from already resolved
+    /// thumbnail URLs, filling the cover strip from the first four videos. Performs no IO.
     /// </summary>
-    public static async Task<IReadOnlyList<PlaylistDto>> ToPlaylistDtosAsync(
-        this IReadOnlyList<PlaylistEntity> entities,
+    /// <param name="entity">The playlist to map.</param>
+    /// <param name="mapper">Injected IMapper instance.</param>
+    /// <param name="thumbnailUrls">The resolved thumbnail URLs, keyed by file id.</param>
+    /// <returns>The summary projection.</returns>
+    public static PlaylistDto ToPlaylistDto(
+        this PlaylistEntity entity,
         IMapper mapper,
-        IFileStorageService fileStorage,
-        CancellationToken ct = default
+        IReadOnlyDictionary<Guid, string> thumbnailUrls
     )
     {
-        Guid[] thumbnailFileIds = entities
-            .SelectMany(playlist => playlist.Videos.OrderBy(video => video.SortOrder).Take(4))
-            .Select(playlistVideo => playlistVideo.Video?.ThumbnailFileId)
-            .OfType<Guid>()
-            .Distinct()
-            .ToArray();
-        IReadOnlyDictionary<Guid, string> thumbnailUrls =
-            thumbnailFileIds.Length == 0
-                ? new Dictionary<Guid, string>()
-                : await fileStorage.ResolveUrlsAsync(thumbnailFileIds, ct);
+        var dto = mapper.Map<PlaylistDto>(entity);
 
-        return entities
-            .Select(e =>
-            {
-                var dto = mapper.Map<PlaylistDto>(e);
-                IReadOnlyList<string?> slots = e
-                    .Videos.OrderBy(video => video.SortOrder)
-                    .Take(4)
-                    .Select(video =>
-                        video.Video?.ThumbnailFileId is { } fileId
-                        && thumbnailUrls.TryGetValue(fileId, out string? storageUrl)
-                            ? storageUrl
-                            : null
-                    )
-                    .ToList();
-
-                return dto with
-                {
-                    VideoCount = e.Videos.Count,
-                    ThumbnailUrls = slots,
-                };
-            })
+        IReadOnlyList<string?> slots = entity
+            .Videos.OrderBy(video => video.SortOrder)
+            .Take(4)
+            .Select(playlistVideo => ThumbnailUrl(playlistVideo, thumbnailUrls))
             .ToList();
+
+        return dto with
+        {
+            VideoCount = entity.Videos.Count,
+            ThumbnailUrls = slots,
+        };
+    }
+
+    /// <summary>
+    /// Reads a playlist entry's thumbnail URL out of the resolved map.
+    /// </summary>
+    /// <param name="playlistVideo">The playlist entry.</param>
+    /// <param name="thumbnailUrls">The resolved thumbnail URLs, keyed by file id.</param>
+    /// <returns>The URL, or null when the video has no thumbnail.</returns>
+    private static string? ThumbnailUrl(
+        PlaylistVideoEntity playlistVideo,
+        IReadOnlyDictionary<Guid, string> thumbnailUrls
+    )
+    {
+        return
+            playlistVideo.Video?.ThumbnailFileId is { } fileId
+            && thumbnailUrls.TryGetValue(fileId, out string? storageUrl)
+            ? storageUrl
+            : null;
     }
 }

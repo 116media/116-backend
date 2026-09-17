@@ -1,3 +1,4 @@
+using _116.Content.Application.Editorial.Factories;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.VerifyArtistOwner;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -36,7 +37,7 @@ public class AdminVerifyArtistOwnerHandlerTests
         _handler = new AdminVerifyArtistOwnerHandler(
             _artistRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            fileStorageMock.Object
+            new ArtistDtoFactory(fileStorageMock.Object)
         );
     }
 

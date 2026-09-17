@@ -1,3 +1,4 @@
+using _116.Content.Application.Editorial.Factories;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
@@ -16,12 +17,16 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetArtistBy
 /// <param name="artistRepository">Repository for artist profile data access operations.</param>
 /// <param name="lyricsRepository">Repository for lyrics data access operations.</param>
 /// <param name="videoRepository">Repository for video data access operations.</param>
-/// <param name="fileStorage">Core's storage contract.</param>
+/// <param name="artistDtoFactory">Builds artist projections with their avatars resolved.</param>
+/// <param name="videoDtoFactory">Builds video projections with their thumbnails resolved.</param>
+/// <param name="fileStorage">Core's storage contract, for the lyrics listed alongside.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class PublicGetArtistBySlugHandler(
     IArtistRepository artistRepository,
     ILyricsRepository lyricsRepository,
     IVideoRepository videoRepository,
+    IArtistDtoFactory artistDtoFactory,
+    IVideoDtoFactory videoDtoFactory,
     IFileStorageService fileStorage,
     ContentI18n i18n
 ) : IQueryHandler<PublicGetArtistBySlugQuery, PublicGetArtistBySlugResult>
@@ -80,15 +85,16 @@ public class PublicGetArtistBySlugHandler(
             cancellationToken: cancellationToken
         );
 
-        ArtistDto artistDto = await artist.ToArtistDtoAsync(fileStorage, cancellationToken, socialLinks);
+        ArtistDto artistDto = await artistDtoFactory.CreateAsync(artist, socialLinks, cancellationToken);
 
         IReadOnlyList<PublicLyricsSummaryDto> lyricsDtos = await lyricsList
             .AsReadOnly()
             .ToPublicLyricsSummaryDtosAsync(fileStorage, cancellationToken);
 
-        IReadOnlyList<PublicVideoSummaryDto> videoDtos = await videoList
-            .AsReadOnly()
-            .ToPublicVideoSummaryDtosAsync(fileStorage, cancellationToken);
+        IReadOnlyList<PublicVideoSummaryDto> videoDtos = await videoDtoFactory.CreatePublicManyAsync(
+            videoList.AsReadOnly(),
+            cancellationToken
+        );
 
         var lyricsResult = new PaginatedResult<PublicLyricsSummaryDto>(
             pageIndex: lyricsPageIndex,

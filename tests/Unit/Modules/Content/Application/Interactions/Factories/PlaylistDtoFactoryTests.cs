@@ -1,3 +1,4 @@
+using _116.Content.Application.Interactions.Factories;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Domain.Entities;
@@ -13,16 +14,22 @@ using AwesomeAssertions;
 using Moq;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Content.Application.Shared.Mappers;
+namespace _116.Unit.Tests.Modules.Content.Application.Interactions.Factories;
 
 /// <summary>
-/// Unit tests for <see cref="PlaylistMapper"/>, covering the <see cref="VideoInPlaylistDto"/>
-/// projection (field mapping, sort ordering, and thumbnail resolution).
+/// Unit tests for <see cref="PlaylistDtoFactory"/>, covering the <see cref="VideoInPlaylistDto"/>
+/// projection (field mapping, sort ordering, and batched thumbnail resolution).
 /// </summary>
-public class PlaylistMapperTests : BaseContentHandlerTest
+public class PlaylistDtoFactoryTests : BaseContentHandlerTest
 {
     private static readonly Guid CategoryId = Guid.NewGuid();
     private readonly Mock<IFileStorageService> _fileStorageMock = new();
+
+    /// <summary>
+    /// Builds the factory under test over the shared mapper and the mocked storage contract.
+    /// </summary>
+    /// <returns>The factory.</returns>
+    private PlaylistDtoFactory CreateFactory() => new(Mapper, _fileStorageMock.Object);
 
     /// <summary>
     /// Builds a playlist link carrying the Video navigation EF Core would populate, so the mapper
@@ -32,18 +39,14 @@ public class PlaylistMapperTests : BaseContentHandlerTest
         new PlaylistVideoBuilder().WithPlaylistId(playlistId).WithVideo(video).WithSortOrder(sortOrder).Build();
 
     [Fact]
-    public async Task ToPlaylistDetailDtoAsync_ShouldMapPlaylistIdAndName()
+    public async Task CreateDetailAsync_ShouldMapPlaylistIdAndName()
     {
         // Arrange
         var userId = Guid.NewGuid();
         PlaylistEntity playlist = PlaylistFactory.Create(userId);
 
         // Act
-        PlaylistDetailDto dto = await playlist.ToPlaylistDetailDtoAsync(
-            Mapper,
-            _fileStorageMock.Object,
-            CancellationToken.None
-        );
+        PlaylistDetailDto dto = await CreateFactory().CreateDetailAsync(playlist, CancellationToken.None);
 
         // Assert
         dto.Id.Should().Be(playlist.Id);
@@ -51,7 +54,7 @@ public class PlaylistMapperTests : BaseContentHandlerTest
     }
 
     [Fact]
-    public async Task ToPlaylistDetailDtoAsync_ShouldMapVideoFields()
+    public async Task CreateDetailAsync_ShouldMapVideoFields()
     {
         // Arrange
         var userId = Guid.NewGuid();
@@ -63,11 +66,7 @@ public class PlaylistMapperTests : BaseContentHandlerTest
         playlist.Videos.Add(LinkVideo(playlist.Id, video, sortOrder: 1));
 
         // Act
-        PlaylistDetailDto dto = await playlist.ToPlaylistDetailDtoAsync(
-            Mapper,
-            _fileStorageMock.Object,
-            CancellationToken.None
-        );
+        PlaylistDetailDto dto = await CreateFactory().CreateDetailAsync(playlist, CancellationToken.None);
 
         // Assert
         dto.Videos.Should().ContainSingle();
@@ -85,7 +84,7 @@ public class PlaylistMapperTests : BaseContentHandlerTest
     }
 
     [Fact]
-    public async Task ToPlaylistDetailDtoAsync_ShouldOrderVideosBySortOrder()
+    public async Task CreateDetailAsync_ShouldOrderVideosBySortOrder()
     {
         // Arrange
         var userId = Guid.NewGuid();
@@ -97,11 +96,7 @@ public class PlaylistMapperTests : BaseContentHandlerTest
         playlist.Videos.Add(LinkVideo(playlist.Id, second, sortOrder: 1));
 
         // Act
-        PlaylistDetailDto dto = await playlist.ToPlaylistDetailDtoAsync(
-            Mapper,
-            _fileStorageMock.Object,
-            CancellationToken.None
-        );
+        PlaylistDetailDto dto = await CreateFactory().CreateDetailAsync(playlist, CancellationToken.None);
 
         // Assert — the sort-order-1 video comes first
         dto.Videos.Should().HaveCount(2);
@@ -110,18 +105,14 @@ public class PlaylistMapperTests : BaseContentHandlerTest
     }
 
     [Fact]
-    public async Task ToPlaylistDetailDtoAsync_WhenNoVideos_ShouldReturnEmptyCollection()
+    public async Task CreateDetailAsync_WhenNoVideos_ShouldReturnEmptyCollection()
     {
         // Arrange
         var userId = Guid.NewGuid();
         PlaylistEntity playlist = PlaylistFactory.Create(userId);
 
         // Act
-        PlaylistDetailDto dto = await playlist.ToPlaylistDetailDtoAsync(
-            Mapper,
-            _fileStorageMock.Object,
-            CancellationToken.None
-        );
+        PlaylistDetailDto dto = await CreateFactory().CreateDetailAsync(playlist, CancellationToken.None);
 
         // Assert
         dto.Videos.Should().BeEmpty();
@@ -134,7 +125,7 @@ public class PlaylistMapperTests : BaseContentHandlerTest
     [InlineData(3)]
     [InlineData(4)]
     [InlineData(5)]
-    public async Task ToPlaylistDtosAsync_ReturnsFirstFourOrderedNullableThumbnailSlots(int videoCount)
+    public async Task CreateManyAsync_ReturnsFirstFourOrderedNullableThumbnailSlots(int videoCount)
     {
         PlaylistEntity playlist = PlaylistFactory.Create(Guid.NewGuid());
         var resolvedUrls = new Dictionary<Guid, string>();
@@ -154,11 +145,7 @@ public class PlaylistMapperTests : BaseContentHandlerTest
             )
             .ReturnsAsync(resolvedUrls);
 
-        IReadOnlyList<PlaylistDto> result = await new[] { playlist }.ToPlaylistDtosAsync(
-            Mapper,
-            _fileStorageMock.Object,
-            CancellationToken.None
-        );
+        IReadOnlyList<PlaylistDto> result = await CreateFactory().CreateManyAsync([playlist], CancellationToken.None);
 
         PlaylistDto dto = result.Should().ContainSingle().Subject;
         dto.VideoCount.Should().Be(videoCount);
@@ -178,7 +165,7 @@ public class PlaylistMapperTests : BaseContentHandlerTest
     }
 
     [Fact]
-    public async Task ToPlaylistDetailDtoAsync_ResolvesAllThumbnailsInOneBatch()
+    public async Task CreateDetailAsync_ResolvesAllThumbnailsInOneBatch()
     {
         PlaylistEntity playlist = PlaylistFactory.Create(Guid.NewGuid());
         VideoEntity first = VideoFactory.CreateWithThumbnail(CategoryId);
@@ -196,11 +183,7 @@ public class PlaylistMapperTests : BaseContentHandlerTest
             )
             .ReturnsAsync(urls);
 
-        PlaylistDetailDto dto = await playlist.ToPlaylistDetailDtoAsync(
-            Mapper,
-            _fileStorageMock.Object,
-            CancellationToken.None
-        );
+        PlaylistDetailDto dto = await CreateFactory().CreateDetailAsync(playlist, CancellationToken.None);
 
         dto.Videos.Select(video => video.ThumbnailUrl)
             .Should()

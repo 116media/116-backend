@@ -1,10 +1,9 @@
+using _116.Content.Application.Interactions.Factories;
 using _116.Content.Application.Interactions.Persistence;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Domain.Entities;
-using _116.Core.Contracts.Application.Services;
 using _116.Shared.Contracts.Application.CQRS;
-using MapsterMapper;
 
 namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetPlaylistById;
 
@@ -12,13 +11,11 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetPlayl
 /// Handles the <see cref="PublicGetPlaylistByIdQuery" /> to retrieve a playlist with its videos.
 /// </summary>
 /// <param name="playlistRepository">Repository for playlist data access operations.</param>
-/// <param name="fileStorage">Core's storage contract.</param>
 /// <param name="mapper">The mapper used to project entities to DTOs.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class PublicGetPlaylistByIdHandler(
     IPlaylistRepository playlistRepository,
-    IFileStorageService fileStorage,
-    IMapper mapper,
+    IPlaylistDtoFactory playlistDtoFactory,
     ContentI18n i18n
 ) : IQueryHandler<PublicGetPlaylistByIdQuery, PublicGetPlaylistByIdResult>
 {
@@ -40,7 +37,7 @@ public class PublicGetPlaylistByIdHandler(
                 throw i18n.Playlist.NotOwner();
             }
 
-            var dto = await playlist.ToPlaylistDetailDtoAsync(mapper, fileStorage, cancellationToken);
+            var dto = await playlistDtoFactory.CreateDetailAsync(playlist, cancellationToken);
             return new PublicGetPlaylistByIdResult(Playlist: dto);
         }
 

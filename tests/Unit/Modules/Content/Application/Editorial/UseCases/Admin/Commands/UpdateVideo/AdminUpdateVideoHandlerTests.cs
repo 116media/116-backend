@@ -1,3 +1,4 @@
+using _116.Content.Application.Editorial.Factories;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateVideo;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -44,8 +45,7 @@ public class AdminUpdateVideoHandlerTests : BaseContentHandlerTest
             _categoryRepositoryMock.Object,
             _videoRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            _fileStorageMock.Object,
-            Mapper,
+            new VideoDtoFactory(Mapper, _fileStorageMock.Object),
             TestErrorsFactory.CreateContentI18n()
         );
     }

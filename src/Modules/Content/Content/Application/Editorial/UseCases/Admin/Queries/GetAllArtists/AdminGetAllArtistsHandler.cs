@@ -1,3 +1,4 @@
+using _116.Content.Application.Editorial.Factories;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
@@ -12,8 +13,8 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Queries.GetAllArtist
 /// Handles the <see cref="AdminGetAllArtistsQuery" /> to retrieve a paginated list of artist profiles.
 /// </summary>
 /// <param name="artistRepository">Repository for artist profile data access operations.</param>
-/// <param name="fileStorage">Core's storage contract.</param>
-public class AdminGetAllArtistsHandler(IArtistRepository artistRepository, IFileStorageService fileStorage)
+/// <param name="artistDtoFactory">Builds artist projections with their avatars resolved.</param>
+public class AdminGetAllArtistsHandler(IArtistRepository artistRepository, IArtistDtoFactory artistDtoFactory)
     : IQueryHandler<AdminGetAllArtistsQuery, AdminGetAllArtistsResult>
 {
     /// <inheritdoc />
@@ -32,9 +33,10 @@ public class AdminGetAllArtistsHandler(IArtistRepository artistRepository, IFile
             cancellationToken: cancellationToken
         );
 
-        IReadOnlyList<ArtistDto> dtoList = await artistList
-            .AsReadOnly()
-            .ToArtistDtosAsync(fileStorage, cancellationToken);
+        IReadOnlyList<ArtistDto> dtoList = await artistDtoFactory.CreateManyAsync(
+            artistList.AsReadOnly(),
+            cancellationToken
+        );
 
         var paginatedResult = new PaginatedResult<ArtistDto>(
             pageIndex: pageIndex,

@@ -1,3 +1,4 @@
+using _116.Content.Application.Interactions.Factories;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Domain.Entities;
@@ -20,7 +21,7 @@ public class PlaylistMapperTests(PostgresFixture postgres) : BaseRepositoryTest(
     private readonly IMapper _mapper = new Mapper(ContentMappingRegistration.CreateConfiguration());
 
     [Fact]
-    public async Task ToPlaylistDtosAsync_ShouldMapAllFields()
+    public async Task CreateManyAsync_ShouldMapAllFields()
     {
         await using var seedContext = CreateDbContext<ContentDbContext>();
         var playlist = PlaylistFactory.Create(User.VisitorId);
@@ -30,8 +31,8 @@ public class PlaylistMapperTests(PostgresFixture postgres) : BaseRepositoryTest(
         await using var readContext = CreateDbContext<ContentDbContext>();
         List<PlaylistEntity> loaded = await readContext.Playlists.Include(p => p.Videos).ToListAsync();
 
-        var fileStorage = Resolve<IFileStorageService>();
-        IReadOnlyList<PlaylistDto> dtos = await loaded.ToPlaylistDtosAsync(_mapper, fileStorage);
+        var playlistDtoFactory = Resolve<IPlaylistDtoFactory>();
+        IReadOnlyList<PlaylistDto> dtos = await playlistDtoFactory.CreateManyAsync(loaded);
 
         dtos.Should().ContainSingle();
         dtos[0].Id.Should().Be(playlist.Id);
@@ -41,7 +42,7 @@ public class PlaylistMapperTests(PostgresFixture postgres) : BaseRepositoryTest(
     }
 
     [Fact]
-    public async Task ToPlaylistDetailDtoAsync_WithVideos_ShouldMapVideoCollection()
+    public async Task CreateDetailAsync_WithVideos_ShouldMapVideoCollection()
     {
         await using var seedContext = CreateDbContext<ContentDbContext>();
         var contentType = ContentTypeFactory.Create("Video");
@@ -70,8 +71,8 @@ public class PlaylistMapperTests(PostgresFixture postgres) : BaseRepositoryTest(
                 .ThenInclude(pv => pv.Video)
             .FirstAsync(p => p.Id == playlist.Id);
 
-        var fileStorage = Resolve<IFileStorageService>();
-        PlaylistDetailDto dto = await loaded.ToPlaylistDetailDtoAsync(_mapper, fileStorage);
+        var playlistDtoFactory = Resolve<IPlaylistDtoFactory>();
+        PlaylistDetailDto dto = await playlistDtoFactory.CreateDetailAsync(loaded);
 
         dto.Id.Should().Be(playlist.Id);
         dto.Videos.Should().ContainSingle();
@@ -80,7 +81,7 @@ public class PlaylistMapperTests(PostgresFixture postgres) : BaseRepositoryTest(
     }
 
     [Fact]
-    public async Task ToPlaylistDetailDtoAsync_WithNoVideos_ShouldMapEmptyCollection()
+    public async Task CreateDetailAsync_WithNoVideos_ShouldMapEmptyCollection()
     {
         await using var seedContext = CreateDbContext<ContentDbContext>();
         var playlist = PlaylistFactory.Create(User.VisitorId);
@@ -93,8 +94,8 @@ public class PlaylistMapperTests(PostgresFixture postgres) : BaseRepositoryTest(
                 .ThenInclude(pv => pv.Video)
             .FirstAsync(p => p.Id == playlist.Id);
 
-        var fileStorage = Resolve<IFileStorageService>();
-        PlaylistDetailDto dto = await loaded.ToPlaylistDetailDtoAsync(_mapper, fileStorage);
+        var playlistDtoFactory = Resolve<IPlaylistDtoFactory>();
+        PlaylistDetailDto dto = await playlistDtoFactory.CreateDetailAsync(loaded);
 
         dto.Videos.Should().BeEmpty();
     }

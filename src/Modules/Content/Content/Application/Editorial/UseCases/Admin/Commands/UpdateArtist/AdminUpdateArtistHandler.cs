@@ -1,3 +1,4 @@
+using _116.Content.Application.Editorial.Factories;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
@@ -13,11 +14,11 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArtis
 /// </summary>
 /// <param name="artistRepository">Repository for artist profile data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="fileStorage">Core's storage contract.</param>
+/// <param name="artistDtoFactory">Builds artist projections with their avatars resolved.</param>
 public class AdminUpdateArtistHandler(
     IArtistRepository artistRepository,
     IContentUnitOfWork unitOfWork,
-    IFileStorageService fileStorage
+    IArtistDtoFactory artistDtoFactory
 ) : ICommandHandler<AdminUpdateArtistCommand, AdminUpdateArtistResult>
 {
     /// <inheritdoc />
@@ -43,7 +44,7 @@ public class AdminUpdateArtistHandler(
         artistRepository.Update(artist: artist);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
-        var dto = await artist.ToArtistDtoAsync(fileStorage, cancellationToken);
+        var dto = await artistDtoFactory.CreateAsync(artist, ct: cancellationToken);
         return new AdminUpdateArtistResult(Artist: dto);
     }
 }

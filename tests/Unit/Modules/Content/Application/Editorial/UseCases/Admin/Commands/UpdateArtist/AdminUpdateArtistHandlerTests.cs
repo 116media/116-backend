@@ -1,3 +1,4 @@
+using _116.Content.Application.Editorial.Factories;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArtist;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -33,7 +34,7 @@ public class AdminUpdateArtistHandlerTests
         _handler = new AdminUpdateArtistHandler(
             _artistRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            fileStorageMock.Object
+            new ArtistDtoFactory(fileStorageMock.Object)
         );
     }
 

@@ -1,13 +1,13 @@
+using _116.Content.Application.Catalog.Factories;
+using _116.Content.Application.Editorial.Factories;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
-using _116.Core.Contracts.Application.Services;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
-using MapsterMapper;
 
 namespace _116.Content.Application.Catalog.UseCases.Public.Queries.GetExclusiveCategory;
 
@@ -17,14 +17,15 @@ namespace _116.Content.Application.Catalog.UseCases.Public.Queries.GetExclusiveC
 /// </summary>
 /// <param name="categoryRepository">Repository for category data access operations.</param>
 /// <param name="videoRepository">Repository for video data access operations.</param>
-/// <param name="fileStorage">Core's storage contract.</param>
-/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="categoryDtoFactory">Builds category projections with their posters resolved.</param>
+/// <param name="fileStorage">Core's storage contract, for the video thumbnails listed alongside.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
+/// <param name="videoDtoFactory">Builds video projections with their thumbnails resolved.</param>
 public class PublicGetExclusiveCategoryHandler(
     ICategoryRepository categoryRepository,
     IVideoRepository videoRepository,
-    IFileStorageService fileStorage,
-    IMapper mapper,
+    ICategoryDtoFactory categoryDtoFactory,
+    IVideoDtoFactory videoDtoFactory,
     ContentI18n i18n
 ) : IQueryHandler<PublicGetExclusiveCategoryQuery, PublicGetExclusiveCategoryResult>
 {
@@ -43,7 +44,7 @@ public class PublicGetExclusiveCategoryHandler(
             throw i18n.Category.NoExclusiveCategoryFound();
         }
 
-        CategoryDto categoryDto = await category.ToCategoryDtoAsync(mapper, fileStorage, cancellationToken);
+        CategoryDto categoryDto = await categoryDtoFactory.CreateAsync(category, cancellationToken);
 
         int pageSize = query.PaginatedRequest.PageSize;
         int pageIndex = query.PaginatedRequest.PageIndex;
@@ -57,8 +58,8 @@ public class PublicGetExclusiveCategoryHandler(
             cancellationToken: cancellationToken
         );
 
-        IReadOnlyList<PublicVideoSummaryDto> videoDtos = await videos.ToPublicVideoSummaryDtosAsync(
-            fileStorage,
+        IReadOnlyList<PublicVideoSummaryDto> videoDtos = await videoDtoFactory.CreatePublicManyAsync(
+            videos,
             cancellationToken
         );
 

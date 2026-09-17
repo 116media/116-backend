@@ -1,8 +1,8 @@
+using _116.Content.Application.Editorial.Factories;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Contracts.Application.Services;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPopularVideos;
@@ -12,8 +12,8 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPopularV
 /// published videos ranked by a weighted engagement score.
 /// </summary>
 /// <param name="videoRepository">Repository for video data access operations.</param>
-/// <param name="fileStorage">Core's storage contract.</param>
-public class PublicGetPopularVideosHandler(IVideoRepository videoRepository, IFileStorageService fileStorage)
+/// <param name="videoDtoFactory">Builds video projections with their thumbnails resolved.</param>
+public class PublicGetPopularVideosHandler(IVideoRepository videoRepository, IVideoDtoFactory videoDtoFactory)
     : IQueryHandler<PublicGetPopularVideosQuery, PublicGetPopularVideosResult>
 {
     /// <inheritdoc />
@@ -29,8 +29,8 @@ public class PublicGetPopularVideosHandler(IVideoRepository videoRepository, IFi
             cancellationToken: cancellationToken
         );
 
-        IReadOnlyList<PublicVideoSummaryDto> dtoList = await videos.ToPublicVideoSummaryDtosAsync(
-            fileStorage,
+        IReadOnlyList<PublicVideoSummaryDto> dtoList = await videoDtoFactory.CreatePublicManyAsync(
+            videos,
             cancellationToken
         );
 

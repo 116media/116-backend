@@ -1,16 +1,14 @@
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Entities;
 using _116.Core.Contracts.Application.DTOs;
-using _116.Core.Contracts.Application.Services;
 using Mapster;
 using MapsterMapper;
 
 namespace _116.Content.Application.Shared.Mappers;
 
 /// <summary>
-/// Mapster configuration for Category and CategoryPricing entity mappings.
-/// Poster URL is resolved from the associated FileReferenceDto at mapping time
-/// rather than stored as a flat string on the entity.
+/// Mapster configuration for Category and CategoryPricing entity mappings. Poster URLs come from a
+/// pre-fetched file map rather than the entity, so every projection here is synchronous and IO-free.
 /// </summary>
 public static class CategoryMapper
 {
@@ -46,56 +44,6 @@ public static class CategoryMapper
         posterFile?.DominantColorHex is { } background && posterFile.ForegroundColorHex is { } foreground
             ? new CategoryColorsDto(background, foreground)
             : null;
-
-    /// <summary>
-    /// Maps a <see cref="CategoryEntity" /> to a <see cref="CategoryDto" />,
-    /// resolving the poster URL from the associated FileReferenceDto record.
-    /// </summary>
-    public static async Task<CategoryDto> ToCategoryDtoAsync(
-        this CategoryEntity entity,
-        IMapper mapper,
-        IFileStorageService fileStorage,
-        CancellationToken ct = default
-    )
-    {
-        var dto = mapper.Map<CategoryDto>(entity);
-
-        string? posterUrl = null;
-        CategoryColorsDto? colors = null;
-        if (entity.PosterFileId.HasValue)
-        {
-            FileReferenceDto? posterFile = await fileStorage.ResolveAsync(entity.PosterFileId.Value, ct);
-            posterUrl = posterFile?.StorageUrl;
-            colors = ResolveColors(posterFile);
-        }
-
-        return dto with
-        {
-            PosterUrl = posterUrl,
-            Colors = colors,
-            Pricing = mapper.Map<IReadOnlyList<CategoryPricingDto>>(entity.Pricing),
-        };
-    }
-
-    /// <summary>
-    /// Maps a collection of <see cref="CategoryEntity" /> to a list of <see cref="CategoryDto" />,
-    /// resolving poster URLs from associated FileReferenceDto records.
-    /// </summary>
-    public static async Task<IReadOnlyList<CategoryDto>> ToCategoryDtosAsync(
-        this IReadOnlyList<CategoryEntity> entities,
-        IMapper mapper,
-        IFileStorageService fileStorage,
-        CancellationToken ct = default
-    )
-    {
-        var results = new List<CategoryDto>(entities.Count);
-        foreach (CategoryEntity entity in entities)
-        {
-            results.Add(await entity.ToCategoryDtoAsync(mapper, fileStorage, ct));
-        }
-
-        return results;
-    }
 
     /// <summary>
     /// Maps a <see cref="CategoryEntity" /> to a <see cref="CategoryDto" />, resolving the poster

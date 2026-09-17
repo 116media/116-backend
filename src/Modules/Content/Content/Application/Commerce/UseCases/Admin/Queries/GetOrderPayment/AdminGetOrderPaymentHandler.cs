@@ -23,7 +23,7 @@ public class AdminGetOrderPaymentHandler(
     IContentOrderRepository contentOrderRepository,
     IFileStorageService fileStorage,
     IMapper mapper,
-    IUserLookupService userLookup
+    IPaymentDtoFactory paymentDtoFactory
 ) : IQueryHandler<AdminGetOrderPaymentQuery, AdminGetOrderPaymentResult>
 {
     /// <inheritdoc />
@@ -44,7 +44,7 @@ public class AdminGetOrderPaymentHandler(
             : null;
 
         var proofDto = proofFile.ToFileDto(mapper);
-        var dto = await payment.ToPaymentDtoAsync(mapper, userLookup, proofDto, cancellationToken);
+        var dto = await paymentDtoFactory.CreateAsync(payment, proofDto, cancellationToken);
 
         return new AdminGetOrderPaymentResult(Payment: dto);
     }

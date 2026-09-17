@@ -1,10 +1,8 @@
-using _116.Content.Application.Shared.Mappers;
+using _116.Content.Application.Catalog.Factories;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Contracts.Application.Services;
 using _116.Shared.Contracts.Application.CQRS;
-using MapsterMapper;
 
 namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.UnpinCategoryFromFeed;
 
@@ -14,13 +12,11 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.UnpinCategory
 /// </summary>
 /// <param name="categoryRepository">Repository for category data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="fileStorage">Core's storage contract.</param>
-/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="categoryDtoFactory">Builds category projections with their posters resolved.</param>
 public class AdminUnpinCategoryFromFeedHandler(
     ICategoryRepository categoryRepository,
     IContentUnitOfWork unitOfWork,
-    IFileStorageService fileStorage,
-    IMapper mapper
+    ICategoryDtoFactory categoryDtoFactory
 ) : ICommandHandler<AdminUnpinCategoryFromFeedCommand, AdminUnpinCategoryFromFeedResult>
 {
     /// <inheritdoc />
@@ -47,7 +43,7 @@ public class AdminUnpinCategoryFromFeedHandler(
             cancellationToken: cancellationToken
         );
 
-        var dto = await updated.ToCategoryDtoAsync(mapper, fileStorage, cancellationToken);
+        var dto = await categoryDtoFactory.CreateAsync(updated, cancellationToken);
         return new AdminUnpinCategoryFromFeedResult(Category: dto);
     }
 }

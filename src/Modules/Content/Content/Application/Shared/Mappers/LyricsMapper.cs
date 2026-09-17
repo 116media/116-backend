@@ -243,26 +243,6 @@ public static class LyricsMapper
     }
 
     /// <summary>
-    /// Maps a list of <see cref="LyricsEntity" /> to a list of <see cref="LyricsDetailDto" />,
-    /// resolving each cover image URL and author profile from the Identity module.
-    /// </summary>
-    public static async Task<IReadOnlyList<LyricsDetailDto>> ToLyricsDetailDtosAsync(
-        this IReadOnlyList<LyricsEntity> entities,
-        IMapper mapper,
-        IUserLookupService userLookup,
-        IFileStorageService fileStorage,
-        CancellationToken ct = default
-    )
-    {
-        var results = new List<LyricsDetailDto>(entities.Count);
-        foreach (LyricsEntity entity in entities)
-        {
-            results.Add(await entity.ToLyricsDetailDtoAsync(mapper, userLookup, fileStorage, ct));
-        }
-        return results;
-    }
-
-    /// <summary>
     /// Maps a <see cref="LyricsEntity" /> to its public card projection from an already
     /// resolved cover URL. Performs no IO — batch mappings resolve files up front.
     /// </summary>

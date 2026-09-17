@@ -1,3 +1,4 @@
+using _116.Content.Application.Catalog.Factories;
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.UnpinCategoryFromFeed;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -36,8 +37,7 @@ public class AdminUnpinCategoryFromFeedHandlerTests : BaseContentHandlerTest
         _handler = new AdminUnpinCategoryFromFeedHandler(
             _categoryRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            _fileStorageMock.Object,
-            Mapper
+            new CategoryDtoFactory(Mapper, _fileStorageMock.Object)
         );
     }
 

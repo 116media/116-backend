@@ -1,11 +1,9 @@
+using _116.Content.Application.Catalog.Factories;
 using _116.Content.Application.Shared.DTOs;
-using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Contracts.Application.Services;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
-using MapsterMapper;
 
 namespace _116.Content.Application.Catalog.UseCases.Admin.Queries.GetAllCategories;
 
@@ -13,12 +11,10 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Queries.GetAllCategori
 /// Handles the <see cref="AdminGetAllCategoriesQuery" /> to retrieve a paginated list of categories.
 /// </summary>
 /// <param name="categoryRepository">Repository for category data access operations.</param>
-/// <param name="fileStorage">Core's storage contract.</param>
-/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="categoryDtoFactory">Builds category projections with their posters resolved.</param>
 public class AdminGetAllCategoriesHandler(
     ICategoryRepository categoryRepository,
-    IFileStorageService fileStorage,
-    IMapper mapper
+    ICategoryDtoFactory categoryDtoFactory
 ) : IQueryHandler<AdminGetAllCategoriesQuery, AdminGetAllCategoriesResult>
 {
     /// <inheritdoc />
@@ -38,11 +34,7 @@ public class AdminGetAllCategoriesHandler(
             cancellationToken: cancellationToken
         );
 
-        var dtoList = new List<CategoryDto>(categories.Count);
-        foreach (CategoryEntity category in categories)
-        {
-            dtoList.Add(await category.ToCategoryDtoAsync(mapper, fileStorage, cancellationToken));
-        }
+        IReadOnlyList<CategoryDto> dtoList = await categoryDtoFactory.CreateManyAsync(categories, cancellationToken);
 
         var paginatedResult = new PaginatedResult<CategoryDto>(
             pageIndex: pageIndex,

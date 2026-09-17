@@ -1,7 +1,6 @@
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Entities;
 using _116.Core.Contracts.Application.DTOs;
-using _116.Core.Contracts.Application.Services;
 using Mapster;
 using MapsterMapper;
 
@@ -36,19 +35,16 @@ public static class VideoMapper
     }
 
     /// <summary>
-    /// Maps a <see cref="VideoEntity" /> to a <see cref="VideoDetailDto" />,
-    /// resolving the thumbnail URL from the associated FileEntity.
+    /// Maps a <see cref="VideoEntity" /> to a <see cref="VideoDetailDto" /> from an already
+    /// resolved thumbnail URL. Performs no IO.
     /// </summary>
-    public static async Task<VideoDetailDto> ToVideoDetailDtoAsync(
+    public static VideoDetailDto ToVideoDetailDto(
         this VideoEntity entity,
         IMapper mapper,
-        IFileStorageService fileStorage,
-        CancellationToken ct = default,
+        string? thumbnailUrl,
         short? ratedStars = null
     )
     {
-        string? thumbnailUrl = await ResolveThumbnailUrlAsync(entity, fileStorage, ct);
-
         return new VideoDetailDto(
             entity.Id,
             entity.CategoryId,
@@ -90,24 +86,6 @@ public static class VideoMapper
     }
 
     /// <summary>
-    /// Maps a list of videos to their public card projection, thumbnail URLs resolved in one
-    /// batch.
-    /// </summary>
-    public static async Task<IReadOnlyList<PublicVideoSummaryDto>> ToPublicVideoSummaryDtosAsync(
-        this IReadOnlyList<VideoEntity> entities,
-        IFileStorageService fileStorage,
-        CancellationToken ct = default
-    )
-    {
-        IReadOnlyDictionary<Guid, FileReferenceDto> files = await fileStorage.ResolveManyAsync(
-            entities.Where(e => e.ThumbnailFileId.HasValue).Select(e => e.ThumbnailFileId!.Value).Distinct().ToList(),
-            ct
-        );
-
-        return entities.ToPublicVideoSummaryDtos(files);
-    }
-
-    /// <summary>
     /// Maps a list of videos to their public card projection using a pre-fetched file map.
     /// Performs no IO — batch mappings resolve files up front.
     /// </summary>
@@ -137,20 +115,6 @@ public static class VideoMapper
     }
 
     /// <summary>
-    /// Maps a <see cref="VideoEntity" /> to its public card projection, resolving the
-    /// thumbnail URL from the associated FileEntity.
-    /// </summary>
-    public static async Task<PublicVideoSummaryDto> ToPublicVideoSummaryDtoAsync(
-        this VideoEntity entity,
-        IFileStorageService fileStorage,
-        CancellationToken ct = default
-    )
-    {
-        string? thumbnailUrl = await ResolveThumbnailUrlAsync(entity, fileStorage, ct);
-        return entity.ToPublicVideoSummaryDto(thumbnailUrl: thumbnailUrl);
-    }
-
-    /// <summary>
     /// Maps a <see cref="VideoEntity" /> to its public card projection from an already
     /// resolved thumbnail URL. Performs no IO — batch mappings resolve files up front.
     /// </summary>
@@ -174,19 +138,16 @@ public static class VideoMapper
     }
 
     /// <summary>
-    /// Maps a <see cref="VideoEntity" /> to its public detail projection, resolving the
-    /// thumbnail URL and stamping the current user's rating.
+    /// Maps a <see cref="VideoEntity" /> to its public detail projection from an already resolved
+    /// thumbnail URL, stamping the current user's rating. Performs no IO.
     /// </summary>
-    public static async Task<PublicVideoDetailDto> ToPublicVideoDetailDtoAsync(
+    public static PublicVideoDetailDto ToPublicVideoDetailDto(
         this VideoEntity entity,
         IMapper mapper,
-        IFileStorageService fileStorage,
-        CancellationToken ct = default,
+        string? thumbnailUrl,
         short? ratedStars = null
     )
     {
-        string? thumbnailUrl = await ResolveThumbnailUrlAsync(entity, fileStorage, ct);
-
         return new PublicVideoDetailDto(
             entity.Id,
             entity.CategoryId,
@@ -208,25 +169,6 @@ public static class VideoMapper
             IsRated: ratedStars.HasValue,
             RatedStars: ratedStars
         );
-    }
-
-    /// <summary>
-    /// Maps a list of <see cref="VideoEntity" /> to a list of <see cref="VideoSummaryDto" />,
-    /// resolving thumbnail URLs from associated FileReferenceDto records.
-    /// </summary>
-    public static async Task<IReadOnlyList<VideoSummaryDto>> ToVideoSummaryDtosAsync(
-        this IReadOnlyList<VideoEntity> entities,
-        IMapper mapper,
-        IFileStorageService fileStorage,
-        CancellationToken ct = default
-    )
-    {
-        IReadOnlyDictionary<Guid, FileReferenceDto> files = await fileStorage.ResolveManyAsync(
-            entities.Where(e => e.ThumbnailFileId.HasValue).Select(e => e.ThumbnailFileId!.Value).Distinct().ToList(),
-            ct
-        );
-
-        return entities.Select(entity => entity.ToVideoSummaryDto(mapper, files)).ToList();
     }
 
     /// <summary>
@@ -270,24 +212,5 @@ public static class VideoMapper
             UpdatedAt = entity.UpdatedAt,
             UpdatedBy = entity.UpdatedBy,
         };
-    }
-
-    /// <summary>
-    /// Resolves the thumbnail URL from the associated FileReferenceDto, or returns null
-    /// if no thumbnail has been uploaded.
-    /// </summary>
-    private static async Task<string?> ResolveThumbnailUrlAsync(
-        VideoEntity entity,
-        IFileStorageService fileStorage,
-        CancellationToken ct
-    )
-    {
-        if (!entity.ThumbnailFileId.HasValue)
-        {
-            return null;
-        }
-
-        FileReferenceDto? thumbnailFile = await fileStorage.ResolveAsync(entity.ThumbnailFileId.Value, ct);
-        return thumbnailFile?.StorageUrl;
     }
 }

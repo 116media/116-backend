@@ -1,3 +1,4 @@
+using _116.Content.Application.Commerce.Factories;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
@@ -17,8 +18,7 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Queries.GetAllPayment
 /// <param name="userLookup">Cross-module service for resolving admin user names.</param>
 public class AdminGetAllPaymentsHandler(
     IContentOrderRepository contentOrderRepository,
-    IMapper mapper,
-    IUserLookupService userLookup
+    IPaymentDtoFactory paymentDtoFactory
 ) : IQueryHandler<AdminGetAllPaymentsQuery, AdminGetAllPaymentsResult>
 {
     /// <inheritdoc />
@@ -41,11 +41,7 @@ public class AdminGetAllPaymentsHandler(
                 ct: cancellationToken
             );
 
-        IReadOnlyList<PaymentSummaryDto> dtoList = await payments.ToPaymentSummaryDtosAsync(
-            mapper,
-            userLookup,
-            cancellationToken
-        );
+        IReadOnlyList<PaymentSummaryDto> dtoList = await paymentDtoFactory.CreateManyAsync(payments, cancellationToken);
 
         var paginatedResult = new PaginatedResult<PaymentSummaryDto>(
             pageIndex: pageIndex,

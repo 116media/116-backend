@@ -1,3 +1,4 @@
+using _116.Content.Application.Commerce.Factories;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
@@ -22,7 +23,7 @@ public class AdminGetOrderByIdHandler(
     IContentOrderRepository contentOrderRepository,
     IFileStorageService fileStorage,
     IMapper mapper,
-    IUserLookupService userLookup,
+    IPaymentDtoFactory paymentDtoFactory,
     ContentI18n i18n
 ) : IQueryHandler<AdminGetOrderByIdQuery, AdminGetOrderByIdResult>
 {
@@ -47,7 +48,7 @@ public class AdminGetOrderByIdHandler(
             var proofDto = proofFile.ToFileDto(mapper);
             dto = dto with
             {
-                Payment = await order.Payment.ToPaymentDtoAsync(mapper, userLookup, proofDto, cancellationToken),
+                Payment = await paymentDtoFactory.CreateAsync(order.Payment, proofDto, cancellationToken),
             };
 
             return new AdminGetOrderByIdResult(Order: dto);

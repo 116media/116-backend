@@ -5,6 +5,7 @@ using _116.Content.Infrastructure.Persistence;
 using _116.Content.Infrastructure.Repositories;
 using _116.Core.Contracts.Application.DTOs;
 using _116.Core.Domain.Entities;
+using _116.Identity.Contracts.Application.DTOs;
 using _116.Identity.Contracts.Application.Services;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Factories.Core;
@@ -23,6 +24,11 @@ namespace _116.Unit.Tests.Modules.Content.Application.Commerce.Mappers;
 /// </summary>
 public class ContentOrderMapperTests : BaseContentHandlerTest, IDisposable
 {
+    /// <summary>
+    /// An empty verifier map, for payments nobody has verified.
+    /// </summary>
+    private static readonly IReadOnlyDictionary<Guid, AuthorDto> NoVerifiers = new Dictionary<Guid, AuthorDto>();
+
     private readonly ContentDbContext _context;
     private readonly ContentOrderRepository _repository;
     private readonly Mock<IUserLookupService> _userLookupMock;
@@ -76,12 +82,12 @@ public class ContentOrderMapperTests : BaseContentHandlerTest, IDisposable
     #region ToPaymentDto
 
     [Fact]
-    public async Task ToPaymentDtoAsync_WithNullProofFile_ShouldReturnDtoWithNullProof()
+    public void ToPaymentDto_WithNullProofFile_ShouldReturnDtoWithNullProof()
     {
         Guid orderId = Guid.NewGuid();
         ContentPaymentEntity payment = ContentPaymentFactory.Create(orderId);
 
-        PaymentDto result = await payment.ToPaymentDtoAsync(Mapper, _userLookupMock.Object, proofFile: null);
+        PaymentDto result = payment.ToPaymentDto(Mapper, NoVerifiers, proofFile: null);
 
         result.Should().NotBeNull();
         result.PaymentProof.Should().BeNull();
@@ -89,7 +95,7 @@ public class ContentOrderMapperTests : BaseContentHandlerTest, IDisposable
     }
 
     [Fact]
-    public async Task ToPaymentDtoAsync_WithProofFile_ShouldInjectProofFile()
+    public void ToPaymentDto_WithProofFile_ShouldInjectProofFile()
     {
         Guid orderId = Guid.NewGuid();
         ContentPaymentEntity payment = ContentPaymentFactory.Create(orderId);
@@ -103,7 +109,7 @@ public class ContentOrderMapperTests : BaseContentHandlerTest, IDisposable
             false
         );
 
-        PaymentDto result = await payment.ToPaymentDtoAsync(Mapper, _userLookupMock.Object, proofFile: proofFile);
+        PaymentDto result = payment.ToPaymentDto(Mapper, NoVerifiers, proofFile: proofFile);
 
         result.Should().NotBeNull();
         result.PaymentProof.Should().NotBeNull();

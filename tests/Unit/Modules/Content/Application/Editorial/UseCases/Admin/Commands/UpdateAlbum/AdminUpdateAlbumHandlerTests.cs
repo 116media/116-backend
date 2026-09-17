@@ -1,3 +1,4 @@
+using _116.Content.Application.Editorial.Factories;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateAlbum;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -34,7 +35,7 @@ public class AdminUpdateAlbumHandlerTests
         _handler = new AdminUpdateAlbumHandler(
             _albumRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            fileStorageMock.Object
+            new AlbumDtoFactory(fileStorageMock.Object)
         );
     }
 
