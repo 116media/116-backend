@@ -13,8 +13,13 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.PublishVide
 /// <param name="videoRepository">Repository for video data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
-public class AdminPublishVideoHandler(IVideoRepository videoRepository, IContentUnitOfWork unitOfWork, ContentI18n i18n)
-    : ICommandHandler<AdminPublishVideoCommand, AdminPublishVideoResult>
+/// <param name="timeProvider">Clock stamping the publication time.</param>
+public class AdminPublishVideoHandler(
+    IVideoRepository videoRepository,
+    IContentUnitOfWork unitOfWork,
+    ContentI18n i18n,
+    TimeProvider timeProvider
+) : ICommandHandler<AdminPublishVideoCommand, AdminPublishVideoResult>
 {
     /// <inheritdoc />
     public async Task<AdminPublishVideoResult> Handle(
@@ -31,7 +36,7 @@ public class AdminPublishVideoHandler(IVideoRepository videoRepository, IContent
             throw i18n.Video.AlreadyPublished();
         }
 
-        video.Publish();
+        video.Publish(now: timeProvider.GetUtcNow());
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminPublishVideoResult(IsSuccess: true);
