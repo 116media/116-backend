@@ -27,6 +27,8 @@ public static class MockTagRepository
     public static Mock<ITagRepository> Create()
     {
         Mock<ITagRepository> mock = new();
+        mock.Setup(x => x.GetByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<Guid, TagEntity>());
         Dictionary<string, TagEntity> known = KnownTags.GetOrCreateValue(mock);
 
         mock.Setup(x => x.GetByNamesAsync(It.IsAny<IReadOnlyCollection<string>>(), It.IsAny<CancellationToken>()))
@@ -49,6 +51,16 @@ public static class MockTagRepository
                 )
             )
             .ReturnsAsync(new List<TagEntity>());
+        return mock;
+    }
+
+    /// <summary>
+    /// Arranges the batch lookup to resolve exactly the supplied rows, keyed by id.
+    /// </summary>
+    public static Mock<ITagRepository> SetupGetByIds(this Mock<ITagRepository> mock, params TagEntity[] entities)
+    {
+        mock.Setup(x => x.GetByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(entities.ToDictionary(entity => entity.Id));
         return mock;
     }
 
