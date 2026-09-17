@@ -15,11 +15,11 @@ public class OrderPaymentFactory(IContentOrderRepository contentOrderRepository,
     /// <inheritdoc />
     public async Task<ContentPaymentEntity> GetByOrderIdOrThrowAsync(Guid orderId, CancellationToken ct = default)
     {
-        ContentPaymentEntity? payment = await contentOrderRepository.GetPaymentByOrderIdAsync(orderId: orderId, ct: ct);
+        ContentOrderEntity? order = await contentOrderRepository.GetByIdWithItemsAsync(id: orderId, ct: ct);
 
-        if (payment is not null)
+        if (order?.Payment is not null)
         {
-            return payment;
+            return order.Payment;
         }
 
         throw contentOrderErrors.PaymentNotFound(orderId: orderId);
