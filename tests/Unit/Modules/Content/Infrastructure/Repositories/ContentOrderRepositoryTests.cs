@@ -1,11 +1,11 @@
-using _116.Content.Application.Shared.Errors;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Content.Infrastructure.Repositories;
 using _116.Shared.Application.Exceptions;
+using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
-using _116.Tests.Fixtures.Helpers;
+using _116.Unit.Tests.Common.Helpers;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -19,16 +19,16 @@ public class ContentOrderRepositoryTests : IDisposable
 {
     private readonly ContentDbContext _context;
     private readonly ContentOrderRepository _repository;
-    private readonly ContentOrderErrors _errors = TestErrorsFactory.CreateContentOrderErrors();
 
     public ContentOrderRepositoryTests()
     {
         DbContextOptions<ContentDbContext> options = new DbContextOptionsBuilder<ContentDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+            .AddInterceptors(new CreatedAtStampingInterceptor())
             .Options;
 
         _context = new ContentDbContext(options);
-        _repository = new ContentOrderRepository(_context, TestErrorsFactory.CreateContentOrderErrors());
+        _repository = new ContentOrderRepository(_context);
     }
 
     public void Dispose()
@@ -58,6 +58,41 @@ public class ContentOrderRepositoryTests : IDisposable
         return order;
     }
 
+    // InMemory drops Include rows whose required principal is missing, so items and tiers reference persisted rows.
+    private async Task<CategoryEntity> SeedCategoryAsync()
+    {
+        CategoryEntity category = CategoryFactory.Create(Guid.NewGuid());
+        _context.Categories.Add(category);
+        await _context.SaveChangesAsync();
+        return category;
+    }
+
+    private async Task<PricingTierEntity> SeedPricingTierAsync()
+    {
+        PricingTierEntity pricingTier = PricingTierFactory.Create();
+        _context.PricingTiers.Add(pricingTier);
+        await _context.SaveChangesAsync();
+        return pricingTier;
+    }
+
+    private async Task<(ContentOrderEntity Order, ContentOrderItemEntity Item)> SeedOrderWithItemAsync()
+    {
+        ContentOrderEntity order = await SeedOrderAsync();
+        CategoryEntity category = await SeedCategoryAsync();
+
+        ContentOrderItemEntity item = order.AddItem(
+            contentKind: EnumCoreContentType.Article,
+            categoryId: category.Id,
+            promotionLevelId: null,
+            promoPriceSnapshotUsd: null,
+            socialBoost: false,
+            isBonus: false
+        );
+        await _context.SaveChangesAsync();
+
+        return (order, item);
+    }
+
     #region AddAsync
 
     [Fact]
@@ -79,18 +114,13 @@ public class ContentOrderRepositoryTests : IDisposable
 
     #endregion
 
-    #region AddItemAsync
+    #region AddItem through the root
 
     [Fact]
-    public async Task AddItemAsync_ShouldPersistItemToDatabase()
+    public async Task AddItem_ThroughTheRoot_ShouldPersistItemToDatabase()
     {
-        // Arrange
-        ContentOrderEntity order = await SeedOrderAsync();
-        ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, Guid.NewGuid());
-
-        // Act
-        await _repository.AddItemAsync(item);
-        await _context.SaveChangesAsync();
+        // Arrange & Act
+        (ContentOrderEntity order, ContentOrderItemEntity item) = await SeedOrderWithItemAsync();
 
         // Assert
         ContentOrderItemEntity? retrieved = await _context.ContentOrderItems.FindAsync(item.Id);
@@ -100,21 +130,17 @@ public class ContentOrderRepositoryTests : IDisposable
 
     #endregion
 
-    #region AddItemTierAsync
+    #region AddTier through the root
 
     [Fact]
-    public async Task AddItemTierAsync_ShouldPersistTierToDatabase()
+    public async Task AddTier_ThroughTheRoot_ShouldPersistTierToDatabase()
     {
         // Arrange
-        ContentOrderEntity order = await SeedOrderAsync();
-        ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, Guid.NewGuid());
-        await _repository.AddItemAsync(item);
-        await _context.SaveChangesAsync();
-
-        ContentItemTierEntity tier = ContentItemTierFactory.CreateDefault(item.Id, Guid.NewGuid());
+        (ContentOrderEntity order, ContentOrderItemEntity item) = await SeedOrderWithItemAsync();
+        PricingTierEntity pricingTier = await SeedPricingTierAsync();
 
         // Act
-        await _repository.AddItemTierAsync(tier);
+        ContentItemTierEntity tier = order.AddTier(item: item, pricingTierId: pricingTier.Id, priceSnapshotUsd: 100m);
         await _context.SaveChangesAsync();
 
         // Assert
@@ -125,17 +151,16 @@ public class ContentOrderRepositoryTests : IDisposable
 
     #endregion
 
-    #region AddPaymentAsync
+    #region AttachPayment through the root
 
     [Fact]
-    public async Task AddPaymentAsync_ShouldPersistPaymentToDatabase()
+    public async Task AttachPayment_ThroughTheRoot_ShouldPersistPaymentToDatabase()
     {
         // Arrange
         ContentOrderEntity order = await SeedOrderAsync();
-        ContentPaymentEntity payment = ContentPaymentFactory.Create(order.Id);
 
         // Act
-        await _repository.AddPaymentAsync(payment);
+        ContentPaymentEntity payment = order.AttachPayment();
         await _context.SaveChangesAsync();
 
         // Assert
@@ -146,7 +171,7 @@ public class ContentOrderRepositoryTests : IDisposable
 
     #endregion
 
-    #region UpdateAsync
+    #region Tracked order mutation
 
     [Fact]
     public async Task TrackedMutation_ShouldUpdateOrderInDatabase()
@@ -173,15 +198,16 @@ public class ContentOrderRepositoryTests : IDisposable
         // Arrange
         ContentOrderEntity order = await SeedOrderAsync();
         order.Submit();
-        await _context.SaveChangesAsync();
-
-        ContentPaymentEntity payment = ContentPaymentFactory.Create(order.Id);
+        ContentPaymentEntity payment = order.AttachPayment();
         payment.AttachProof(Guid.NewGuid(), EnumPaymentMethod.BankTransfer);
-        await _repository.AddPaymentAsync(payment);
         await _context.SaveChangesAsync();
 
         // Act — tracked mutation
-        payment.Verify(adminUserId: Guid.NewGuid(), receiptUrl: "https://receipts.example.com/test.pdf");
+        payment.Verify(
+            adminUserId: Guid.NewGuid(),
+            receiptUrl: "https://receipts.example.com/test.pdf",
+            now: TestConstants.Clock.Instant
+        );
         await _context.SaveChangesAsync();
 
         // Assert
@@ -197,10 +223,8 @@ public class ContentOrderRepositoryTests : IDisposable
     public async Task GetByIdWithItemsAsync_WhenFound_ShouldReturnOrderWithNavigations()
     {
         // Arrange
-        ContentOrderEntity order = await SeedOrderAsync();
-        ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, Guid.NewGuid());
-        await _repository.AddItemAsync(item);
-        await _context.SaveChangesAsync();
+        (ContentOrderEntity order, _) = await SeedOrderWithItemAsync();
+        _context.ChangeTracker.Clear();
 
         // Act
         ContentOrderEntity? result = await _repository.GetByIdWithItemsAsync(order.Id);
@@ -329,175 +353,74 @@ public class ContentOrderRepositoryTests : IDisposable
 
     #endregion
 
-    #region GetPaymentByOrderIdAsync
+    #region Payment hydration
 
     [Fact]
-    public async Task GetPaymentByOrderIdAsync_WhenFound_ShouldReturnPayment()
+    public async Task GetByIdOrThrowAsync_WhenPaymentAttached_ShouldHydratePayment()
     {
         // Arrange
         ContentOrderEntity order = await SeedOrderAsync();
-        ContentPaymentEntity payment = ContentPaymentFactory.Create(order.Id);
-        await _repository.AddPaymentAsync(payment);
+        order.Submit();
+        order.AttachPayment();
         await _context.SaveChangesAsync();
+        _context.ChangeTracker.Clear();
 
         // Act
-        ContentPaymentEntity? result = await _repository.GetPaymentByOrderIdAsync(order.Id);
+        ContentOrderEntity loaded = await _repository.GetByIdOrThrowAsync(order.Id);
 
         // Assert
-        result.Should().NotBeNull();
-        result!.OrderId.Should().Be(order.Id);
+        loaded.Payment.Should().NotBeNull();
+        loaded.Payment!.OrderId.Should().Be(order.Id);
     }
 
     [Fact]
-    public async Task GetPaymentByOrderIdAsync_WhenNotFound_ShouldReturnNull()
+    public async Task GetByIdOrThrowAsync_WhenDraftOrder_ShouldHaveNoPayment()
     {
+        // Arrange
+        ContentOrderEntity order = await SeedOrderAsync();
+        _context.ChangeTracker.Clear();
+
         // Act
-        ContentPaymentEntity? result = await _repository.GetPaymentByOrderIdAsync(Guid.NewGuid());
+        ContentOrderEntity loaded = await _repository.GetByIdOrThrowAsync(order.Id);
 
         // Assert
-        result.Should().BeNull();
+        loaded.Payment.Should().BeNull();
     }
 
     #endregion
 
-    #region GetItemByIdAsync
+    #region FindItem on a rehydrated order
 
     [Fact]
-    public async Task GetItemByIdAsync_WhenFound_ShouldReturnItem()
+    public async Task FindItem_OnRehydratedOrder_ShouldReturnItemOrNull()
     {
         // Arrange
-        ContentOrderEntity order = await SeedOrderAsync();
-        ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, Guid.NewGuid());
-        await _repository.AddItemAsync(item);
-        await _context.SaveChangesAsync();
+        (ContentOrderEntity order, ContentOrderItemEntity item) = await SeedOrderWithItemAsync();
+        _context.ChangeTracker.Clear();
 
         // Act
-        ContentOrderItemEntity? result = await _repository.GetItemByIdAsync(order.Id, item.Id);
+        ContentOrderEntity loaded = await _repository.GetByIdOrThrowAsync(order.Id);
 
         // Assert
-        result.Should().NotBeNull();
-        result!.Id.Should().Be(item.Id);
-        result.OrderId.Should().Be(order.Id);
+        loaded.FindItem(item.Id).Should().NotBeNull();
+        loaded.FindItem(Guid.NewGuid()).Should().BeNull();
     }
 
     [Fact]
-    public async Task GetItemByIdAsync_WhenNotFound_ShouldReturnNull()
+    public async Task FindItem_OnRehydratedOrder_ShouldHydrateItemTiers()
     {
         // Arrange
-        ContentOrderEntity order = await SeedOrderAsync();
-
-        // Act
-        ContentOrderItemEntity? result = await _repository.GetItemByIdAsync(order.Id, Guid.NewGuid());
-
-        // Assert
-        result.Should().BeNull();
-    }
-
-    #endregion
-
-    #region GetItemByIdOrThrowAsync
-
-    [Fact]
-    public async Task GetItemByIdOrThrowAsync_WhenFound_ShouldReturnItem()
-    {
-        // Arrange
-        ContentOrderEntity order = await SeedOrderAsync();
-        ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, Guid.NewGuid());
-        await _repository.AddItemAsync(item);
+        (ContentOrderEntity order, ContentOrderItemEntity item) = await SeedOrderWithItemAsync();
+        PricingTierEntity pricingTier = await SeedPricingTierAsync();
+        order.AddTier(item: item, pricingTierId: pricingTier.Id, priceSnapshotUsd: 100m);
         await _context.SaveChangesAsync();
+        _context.ChangeTracker.Clear();
 
         // Act
-        ContentOrderItemEntity result = await _repository.GetItemByIdOrThrowAsync(order.Id, item.Id);
+        ContentOrderEntity loaded = await _repository.GetByIdOrThrowAsync(order.Id);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Id.Should().Be(item.Id);
-        result.OrderId.Should().Be(order.Id);
-    }
-
-    [Fact]
-    public async Task GetItemByIdOrThrowAsync_WhenNotFound_ShouldThrowNotFoundException()
-    {
-        // Arrange
-        ContentOrderEntity order = await SeedOrderAsync();
-
-        // Act
-        Func<Task> act = async () => await _repository.GetItemByIdOrThrowAsync(order.Id, Guid.NewGuid());
-
-        // Assert
-        await act.Should().ThrowAsync<NotFoundException>();
-    }
-
-    #endregion
-
-    #region GetItemTierByIdAsync
-
-    [Fact]
-    public async Task GetItemTierByIdAsync_WhenFound_ShouldReturnTier()
-    {
-        // Arrange
-        ContentOrderEntity order = await SeedOrderAsync();
-        ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, Guid.NewGuid());
-        await _repository.AddItemAsync(item);
-        await _context.SaveChangesAsync();
-
-        ContentItemTierEntity tier = ContentItemTierFactory.CreateDefault(item.Id, Guid.NewGuid());
-        await _repository.AddItemTierAsync(tier);
-        await _context.SaveChangesAsync();
-
-        // Act
-        ContentItemTierEntity? result = await _repository.GetItemTierByIdAsync(item.Id, tier.Id);
-
-        // Assert
-        result.Should().NotBeNull();
-        result!.Id.Should().Be(tier.Id);
-        result.OrderItemId.Should().Be(item.Id);
-    }
-
-    [Fact]
-    public async Task GetItemTierByIdAsync_WhenNotFound_ShouldReturnNull()
-    {
-        // Act
-        ContentItemTierEntity? result = await _repository.GetItemTierByIdAsync(Guid.NewGuid(), Guid.NewGuid());
-
-        // Assert
-        result.Should().BeNull();
-    }
-
-    #endregion
-
-    #region GetItemTierByIdOrThrowAsync
-
-    [Fact]
-    public async Task GetItemTierByIdOrThrowAsync_WhenFound_ShouldReturnTier()
-    {
-        // Arrange
-        ContentOrderEntity order = await SeedOrderAsync();
-        ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, Guid.NewGuid());
-        await _repository.AddItemAsync(item);
-        await _context.SaveChangesAsync();
-
-        ContentItemTierEntity tier = ContentItemTierFactory.CreateDefault(item.Id, Guid.NewGuid());
-        await _repository.AddItemTierAsync(tier);
-        await _context.SaveChangesAsync();
-
-        // Act
-        ContentItemTierEntity result = await _repository.GetItemTierByIdOrThrowAsync(item.Id, tier.Id);
-
-        // Assert
-        result.Should().NotBeNull();
-        result.Id.Should().Be(tier.Id);
-        result.OrderItemId.Should().Be(item.Id);
-    }
-
-    [Fact]
-    public async Task GetItemTierByIdOrThrowAsync_WhenNotFound_ShouldThrowNotFoundException()
-    {
-        // Act
-        Func<Task> act = async () => await _repository.GetItemTierByIdOrThrowAsync(Guid.NewGuid(), Guid.NewGuid());
-
-        // Assert
-        await act.Should().ThrowAsync<NotFoundException>();
+        loaded.FindItem(item.Id)!.Tiers.Should().ContainSingle();
     }
 
     #endregion
@@ -508,10 +431,7 @@ public class ContentOrderRepositoryTests : IDisposable
     public async Task TrackedMutation_ShouldUpdateItemInDatabase()
     {
         // Arrange
-        ContentOrderEntity order = await SeedOrderAsync();
-        ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, Guid.NewGuid());
-        await _repository.AddItemAsync(item);
-        await _context.SaveChangesAsync();
+        (_, ContentOrderItemEntity item) = await SeedOrderWithItemAsync();
 
         Guid newCategoryId = Guid.NewGuid();
         item.Update(
@@ -533,19 +453,16 @@ public class ContentOrderRepositoryTests : IDisposable
 
     #endregion
 
-    #region RemoveItemAsync
+    #region RemoveItem through the root
 
     [Fact]
-    public async Task RemoveItemAsync_ShouldRemoveItemFromDatabase()
+    public async Task RemoveItem_ThroughTheRoot_ShouldDeleteItemFromDatabase()
     {
         // Arrange
-        ContentOrderEntity order = await SeedOrderAsync();
-        ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, Guid.NewGuid());
-        await _repository.AddItemAsync(item);
-        await _context.SaveChangesAsync();
+        (ContentOrderEntity order, ContentOrderItemEntity item) = await SeedOrderWithItemAsync();
 
         // Act
-        await _repository.RemoveItemAsync(item);
+        order.RemoveItem(item);
         await _context.SaveChangesAsync();
 
         // Assert
@@ -555,23 +472,19 @@ public class ContentOrderRepositoryTests : IDisposable
 
     #endregion
 
-    #region RemoveItemTierAsync
+    #region RemoveTier through the root
 
     [Fact]
-    public async Task RemoveItemTierAsync_ShouldRemoveTierFromDatabase()
+    public async Task RemoveTier_ThroughTheRoot_ShouldDeleteTierFromDatabase()
     {
         // Arrange
-        ContentOrderEntity order = await SeedOrderAsync();
-        ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, Guid.NewGuid());
-        await _repository.AddItemAsync(item);
-        await _context.SaveChangesAsync();
-
-        ContentItemTierEntity tier = ContentItemTierFactory.CreateDefault(item.Id, Guid.NewGuid());
-        await _repository.AddItemTierAsync(tier);
+        (ContentOrderEntity order, ContentOrderItemEntity item) = await SeedOrderWithItemAsync();
+        PricingTierEntity pricingTier = await SeedPricingTierAsync();
+        ContentItemTierEntity tier = order.AddTier(item: item, pricingTierId: pricingTier.Id, priceSnapshotUsd: 100m);
         await _context.SaveChangesAsync();
 
         // Act
-        await _repository.RemoveItemTierAsync(tier);
+        order.RemoveTier(item, tier.Id).Should().BeTrue();
         await _context.SaveChangesAsync();
 
         // Assert
