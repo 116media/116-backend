@@ -29,7 +29,10 @@ public class AdminSetArticleArtistsHandler(
         CancellationToken cancellationToken
     )
     {
-        await articleRepository.GetByIdOrThrowAsync(id: command.ArticleId, cancellationToken: cancellationToken);
+        ArticleEntity article = await articleRepository.GetByIdOrThrowAsync(
+            id: command.ArticleId,
+            cancellationToken: cancellationToken
+        );
 
         foreach (Guid artistId in command.ArtistIds)
         {
@@ -44,19 +47,9 @@ public class AdminSetArticleArtistsHandler(
             }
         }
 
-        await articleRepository.ReplaceArticleArtistsAsync(
-            articleId: command.ArticleId,
-            artistIds: command.ArtistIds,
-            cancellationToken: cancellationToken
-        );
-
+        article.ReplaceArtists(artistIds: command.ArtistIds);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
-        IReadOnlyList<ArticleArtistEntity> current = await articleRepository.GetArtistsByArticleIdAsync(
-            articleId: command.ArticleId,
-            cancellationToken: cancellationToken
-        );
-
-        return new AdminSetArticleArtistsResult(ArtistIds: current.Select(aa => aa.ArtistId).ToList());
+        return new AdminSetArticleArtistsResult(ArtistIds: article.Artists.Select(credit => credit.ArtistId).ToList());
     }
 }
