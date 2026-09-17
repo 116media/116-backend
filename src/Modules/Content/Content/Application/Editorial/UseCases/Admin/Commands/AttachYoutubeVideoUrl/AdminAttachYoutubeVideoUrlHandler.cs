@@ -27,10 +27,12 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.AttachYoutu
 /// Mapster mapper for entity-to-DTO transformations.
 /// </param>
 /// <param name="videoDtoFactory">Builds video projections with their thumbnails resolved.</param>
+/// <param name="timeProvider">Clock the shooting-schedule guard compares against.</param>
 public class AdminAttachYoutubeVideoUrlHandler(
     IVideoRepository videoRepository,
     IContentUnitOfWork unitOfWork,
-    IVideoDtoFactory videoDtoFactory
+    IVideoDtoFactory videoDtoFactory,
+    TimeProvider timeProvider
 ) : ICommandHandler<AdminAttachYoutubeVideoUrlCommand, AdminAttachYoutubeVideoUrlResult>
 {
     /// <inheritdoc />
@@ -46,7 +48,7 @@ public class AdminAttachYoutubeVideoUrlHandler(
             cancellationToken: cancellationToken
         );
 
-        video.AttachYoutubeVideoUrl(youtubeVideoUrl: command.YoutubeVideoUrl);
+        video.AttachYoutubeVideoUrl(youtubeVideoUrl: command.YoutubeVideoUrl, now: timeProvider.GetUtcNow());
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         VideoEntity updated = await videoRepository.GetByIdOrThrowAsync(
