@@ -14,8 +14,11 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetSimilarL
 /// </summary>
 /// <param name="lyricsRepository">Repository for lyrics data access operations.</param>
 /// <param name="fileStorage">Core's storage contract.</param>
-public class PublicGetSimilarLyricsHandler(ILyricsRepository lyricsRepository, IFileStorageService fileStorage)
-    : IQueryHandler<PublicGetSimilarLyricsQuery, PublicGetSimilarLyricsResult>
+public class PublicGetSimilarLyricsHandler(
+    ILyricsRepository lyricsRepository,
+    IFileStorageService fileStorage,
+    IContentLookupFactory contentLookupFactory
+) : IQueryHandler<PublicGetSimilarLyricsQuery, PublicGetSimilarLyricsResult>
 {
     /// <inheritdoc />
     public async Task<PublicGetSimilarLyricsResult> Handle(
@@ -36,6 +39,7 @@ public class PublicGetSimilarLyricsHandler(ILyricsRepository lyricsRepository, I
         );
 
         IReadOnlyList<PublicLyricsSummaryDto> dtoList = await similar.ToPublicLyricsSummaryDtosAsync(
+            await contentLookupFactory.ResolveForLyricsAsync(similar, cancellationToken),
             fileStorage,
             likedLyricsIds,
             cancellationToken
