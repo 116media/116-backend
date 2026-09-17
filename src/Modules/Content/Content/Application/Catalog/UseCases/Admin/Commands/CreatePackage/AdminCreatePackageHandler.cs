@@ -1,10 +1,11 @@
+using _116.Content.Application.Catalog.Factories;
+using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
-using MapsterMapper;
 
 namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.CreatePackage;
 
@@ -13,11 +14,11 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.CreatePackage
 /// </summary>
 /// <param name="packageRepository">Repository for package data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="packageDtoFactory">Builds package projections with their categories resolved.</param>
 public class AdminCreatePackageHandler(
     IPackageRepository packageRepository,
     IContentUnitOfWork unitOfWork,
-    IMapper mapper
+    IPackageDtoFactory packageDtoFactory
 ) : ICommandHandler<AdminCreatePackageCommand, AdminCreatePackageResult>
 {
     /// <inheritdoc />
@@ -31,12 +32,12 @@ public class AdminCreatePackageHandler(
         await packageRepository.AddAsync(package: package, cancellationToken: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
-        PackageEntity created = await packageRepository.GetByIdWithSlotsOrThrowAsync(
+        PackageEntity created = await packageRepository.GetByIdOrThrowAsync(
             id: package.Id,
             cancellationToken: cancellationToken
         );
 
-        var dto = created.ToPackageDto(mapper);
+        PackageDto dto = await packageDtoFactory.CreateAsync(created, cancellationToken);
         return new AdminCreatePackageResult(Package: dto);
     }
 }
