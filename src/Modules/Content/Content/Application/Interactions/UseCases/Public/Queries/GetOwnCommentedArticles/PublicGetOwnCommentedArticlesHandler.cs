@@ -13,7 +13,8 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetOwnCo
 public class PublicGetOwnCommentedArticlesHandler(
     IArticleCommentRepository articleCommentRepository,
     IArticleInteractionRepository articleInteractionRepository,
-    IFileStorageService fileStorage
+    IFileStorageService fileStorage,
+    IContentLookupFactory contentLookupFactory
 ) : IQueryHandler<PublicGetOwnCommentedArticlesQuery, PublicGetOwnCommentedArticlesResult>
 {
     /// <inheritdoc />
@@ -44,6 +45,7 @@ public class PublicGetOwnCommentedArticlesHandler(
         foreach (CommentedArticleActivity activity in activities)
         {
             PublicArticleSummaryDto article = await activity.Article.ToPublicArticleSummaryDtoAsync(
+                await contentLookupFactory.ResolveForArticlesAsync([activity.Article], cancellationToken),
                 fileStorage,
                 cancellationToken
             );
