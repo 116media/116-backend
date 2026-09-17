@@ -12,20 +12,17 @@ namespace _116.Tests.Fixtures.Builders.Entities.Content;
 /// </summary>
 public class PackageSlotBuilder
 {
-    private Guid _id;
-    private Guid _packageId;
+    private readonly PackageEntity _package;
     private Guid? _categoryId;
     private bool _isRequired = true;
     private int _quantity;
-    private CategoryEntity? _category;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PackageSlotBuilder"/> class with default values.
     /// </summary>
-    public PackageSlotBuilder(Guid packageId)
+    public PackageSlotBuilder(PackageEntity package)
     {
-        _id = Guid.NewGuid();
-        _packageId = packageId;
+        _package = package;
         _quantity = TestConstants.PackageSlot.ValidQuantity;
     }
 
@@ -62,7 +59,7 @@ public class PackageSlotBuilder
     /// </summary>
     public PackageSlotBuilder WithCategory(CategoryEntity category)
     {
-        _category = category;
+        _categoryId = category.Id;
         _categoryId = category.Id;
         return this;
     }
@@ -72,14 +69,11 @@ public class PackageSlotBuilder
     /// </summary>
     public PackageSlotEntity Build()
     {
-        PackageSlotEntity slot = PackageSlotEntity.Create(_id, _packageId, _categoryId, _isRequired, _quantity);
-
-        if (_category is not null)
-        {
-            typeof(PackageSlotEntity)
-                .GetProperty(nameof(PackageSlotEntity.Category), BindingFlags.Public | BindingFlags.Instance)!
-                .SetValue(slot, _category);
-        }
+        PackageSlotEntity slot = _package.AddSlot(
+            categoryId: _categoryId,
+            isRequired: _isRequired,
+            quantity: _quantity
+        );
 
         return slot;
     }
