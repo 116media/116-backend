@@ -5,6 +5,7 @@
 
     <ItemGroup>
         <InternalsVisibleTo Include="_116.Unit.Tests" />
+        <InternalsVisibleTo Include="_116.Tests.Fixtures" />
     </ItemGroup>
 
     <ItemGroup>
