@@ -45,11 +45,7 @@ public class AdminAddItemTierFactory(
                 throw contentOrderErrors.CannotAddItemToNonDraftOrder();
             }
 
-            ContentOrderItemEntity? item = await contentOrderRepository.GetItemByIdAsync(
-                orderId: orderId,
-                itemId: orderItemId,
-                ct: cancellationToken
-            );
+            ContentOrderItemEntity? item = order.FindItem(itemId: orderItemId);
 
             if (item is null)
             {
@@ -67,37 +63,25 @@ public class AdminAddItemTierFactory(
                 cancellationToken: cancellationToken
             );
 
-            CategoryPricingEntity? categoryPricing = await categoryRepository.GetPricingAsync(
-                categoryId: item.CategoryId,
-                pricingTierId: pricingTierId,
+            CategoryEntity category = await categoryRepository.GetByIdOrThrowAsync(
+                id: item.CategoryId,
                 cancellationToken: cancellationToken
             );
+
+            CategoryPricingEntity? categoryPricing = category.FindPricing(pricingTierId: pricingTierId);
 
             if (categoryPricing is null)
             {
                 throw categoryErrors.PricingNotFound(categoryId: item.CategoryId, tierId: pricingTierId);
             }
 
-            var tier = ContentItemTierEntity.Create(
-                id: Guid.NewGuid(),
-                orderItemId: orderItemId,
+            ContentItemTierEntity tier = order.AddTier(
+                item: item,
                 pricingTierId: pricingTierId,
                 priceSnapshotUsd: categoryPricing.PriceUsd
             );
 
-            await unitOfWork.ExecuteInTransactionAsync(
-                async ct =>
-                {
-                    await contentOrderRepository.AddItemTierAsync(tier: tier, ct: ct);
-
-                    ContentOrderEntity updated =
-                        await contentOrderRepository.GetByIdWithItemsAsync(id: orderId, ct: ct)
-                        ?? throw contentOrderErrors.NotFound(id: orderId);
-
-                    updated.RecalculateTotalFromItems();
-                },
-                cancellationToken: cancellationToken
-            );
+            await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
             return (tier, pricingTier.Name);
         }
