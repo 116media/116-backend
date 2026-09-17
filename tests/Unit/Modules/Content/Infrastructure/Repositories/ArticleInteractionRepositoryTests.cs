@@ -5,6 +5,7 @@ using _116.Content.Infrastructure.Persistence;
 using _116.Content.Infrastructure.Repositories;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Unit.Tests.Common.Helpers;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -23,6 +24,7 @@ public class ArticleInteractionRepositoryTests : IDisposable
     {
         DbContextOptions<ContentDbContext> options = new DbContextOptionsBuilder<ContentDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+            .AddInterceptors(new CreatedAtStampingInterceptor())
             .Options;
 
         _context = new ContentDbContext(options);
@@ -348,6 +350,7 @@ public class ArticleInteractionRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         ArticleShareEntity share = ArticleShareEntity.Create(Guid.NewGuid(), null, article.Id);
+        share.CreatedAt = DateTime.UtcNow;
 
         // Act
         await _repository.AddShareAsync(share);
