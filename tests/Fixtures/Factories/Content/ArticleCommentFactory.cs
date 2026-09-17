@@ -27,7 +27,7 @@ public static class ArticleCommentFactory
     public static ArticleCommentEntity CreateDeleted(Guid articleId, Guid userId)
     {
         ArticleCommentEntity comment = Create(articleId, userId);
-        comment.SoftDelete();
+        comment.SoftDelete(now: TestConstants.Clock.Instant);
         return comment;
     }
 }
