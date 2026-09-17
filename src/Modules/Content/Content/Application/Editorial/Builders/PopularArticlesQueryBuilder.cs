@@ -1,5 +1,6 @@
 using _116.Content.Application.Editorial.Builders.Contracts;
 using _116.Content.Application.Editorial.Constants;
+using _116.Content.Application.Editorial.Specifications;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 
@@ -58,7 +59,9 @@ public class PopularArticlesQueryBuilder : IPopularArticlesQueryBuilder
         const int shareWeight = PopularArticlesScoring.ShareWeight;
         const int bookmarkWeight = PopularArticlesScoring.BookmarkWeight;
 
-        IQueryable<ArticleEntity> query = source.Where(a => a.Status == EnumContentStatus.Published);
+        IQueryable<ArticleEntity> query = source.Where(
+            new ArticleByStatusSpecification(status: EnumContentStatus.Published).ToExpression()
+        );
 
         if (_categoryId.HasValue)
         {
