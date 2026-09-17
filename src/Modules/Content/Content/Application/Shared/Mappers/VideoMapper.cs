@@ -28,10 +28,10 @@ public static class VideoMapper
     public static void Register(TypeAdapterConfig config)
     {
         config
-            .NewConfig<VideoTagEntity, TagDto>()
-            .Map(dest => dest.Id, src => src.Tag.Id)
-            .Map(dest => dest.Name, src => src.Tag.Name)
-            .Map(dest => dest.Slug, src => src.Tag.Slug);
+            .NewConfig<TagEntity, TagDto>()
+            .Map(dest => dest.Id, src => src.Id)
+            .Map(dest => dest.Name, src => src.Name)
+            .Map(dest => dest.Slug, src => src.Slug);
     }
 
     /// <summary>
@@ -41,14 +41,16 @@ public static class VideoMapper
     public static VideoDetailDto ToVideoDetailDto(
         this VideoEntity entity,
         IMapper mapper,
+        ContentLookups lookups,
         string? thumbnailUrl,
+        bool hasLyrics,
         short? ratedStars = null
     )
     {
         return new VideoDetailDto(
             entity.Id,
             entity.CategoryId,
-            entity.Category != null ? entity.Category.Name : string.Empty,
+            lookups.CategoryName(entity.CategoryId),
             entity.Title,
             entity.Slug,
             entity.Description,
@@ -61,18 +63,18 @@ public static class VideoMapper
             entity.IsPromoted,
             entity.PromotedUntil,
             entity.PromotionLevelId,
-            entity.PromotionLevel?.Name,
-            entity.HasLyrics,
+            lookups.PromotionLevelName(entity.PromotionLevelId),
+            hasLyrics,
             entity.ShootingScheduledAt,
             entity.PublishedAt,
             entity.MetaTitle,
             entity.MetaDescription,
-            mapper.Map<IReadOnlyList<TagDto>>(entity.Tags),
+            entity.TagDtos(mapper, lookups),
             entity.ShareCount,
             entity.RatingAverage,
             entity.RatingCount,
             entity.CustomerId,
-            entity.Customer != null ? entity.Customer.FullName : null,
+            lookups.CustomerName(entity.CustomerId),
             entity.OrderItemId,
             IsRated: ratedStars.HasValue,
             RatedStars: ratedStars
@@ -91,10 +93,14 @@ public static class VideoMapper
     /// </summary>
     public static IReadOnlyList<PublicVideoSummaryDto> ToPublicVideoSummaryDtos(
         this IReadOnlyList<VideoEntity> entities,
-        IReadOnlyDictionary<Guid, FileReferenceDto> files
+        ContentLookups lookups,
+        IReadOnlyDictionary<Guid, FileReferenceDto> files,
+        IReadOnlySet<Guid> videosWithLyrics
     )
     {
-        return entities.Select(entity => entity.ToPublicVideoSummaryDto(files)).ToList();
+        return entities
+            .Select(entity => entity.ToPublicVideoSummaryDto(lookups, files, videosWithLyrics.Contains(entity.Id)))
+            .ToList();
     }
 
     /// <summary>
@@ -103,7 +109,9 @@ public static class VideoMapper
     /// </summary>
     public static PublicVideoSummaryDto ToPublicVideoSummaryDto(
         this VideoEntity entity,
-        IReadOnlyDictionary<Guid, FileReferenceDto> files
+        ContentLookups lookups,
+        IReadOnlyDictionary<Guid, FileReferenceDto> files,
+        bool hasLyrics
     )
     {
         string? thumbnailUrl =
@@ -111,25 +119,30 @@ public static class VideoMapper
                 ? thumbnail.StorageUrl
                 : null;
 
-        return entity.ToPublicVideoSummaryDto(thumbnailUrl: thumbnailUrl);
+        return entity.ToPublicVideoSummaryDto(lookups: lookups, thumbnailUrl: thumbnailUrl, hasLyrics: hasLyrics);
     }
 
     /// <summary>
     /// Maps a <see cref="VideoEntity" /> to its public card projection from an already
     /// resolved thumbnail URL. Performs no IO — batch mappings resolve files up front.
     /// </summary>
-    public static PublicVideoSummaryDto ToPublicVideoSummaryDto(this VideoEntity entity, string? thumbnailUrl)
+    public static PublicVideoSummaryDto ToPublicVideoSummaryDto(
+        this VideoEntity entity,
+        ContentLookups lookups,
+        string? thumbnailUrl,
+        bool hasLyrics
+    )
     {
         return new PublicVideoSummaryDto(
             entity.Id,
             entity.CategoryId,
-            entity.Category != null ? entity.Category.Name : string.Empty,
+            lookups.CategoryName(entity.CategoryId),
             entity.Title,
             entity.Slug,
             thumbnailUrl,
             entity.YoutubeVideoUrl,
             entity.IsPromoted,
-            entity.HasLyrics,
+            hasLyrics,
             entity.PublishedAt,
             entity.ShareCount,
             entity.RatingAverage,
@@ -144,25 +157,27 @@ public static class VideoMapper
     public static PublicVideoDetailDto ToPublicVideoDetailDto(
         this VideoEntity entity,
         IMapper mapper,
+        ContentLookups lookups,
         string? thumbnailUrl,
+        bool hasLyrics,
         short? ratedStars = null
     )
     {
         return new PublicVideoDetailDto(
             entity.Id,
             entity.CategoryId,
-            entity.Category != null ? entity.Category.Name : string.Empty,
+            lookups.CategoryName(entity.CategoryId),
             entity.Title,
             entity.Slug,
             entity.Description,
             thumbnailUrl,
             entity.YoutubeVideoUrl,
             entity.IsPromoted,
-            entity.HasLyrics,
+            hasLyrics,
             entity.PublishedAt,
             entity.MetaTitle,
             entity.MetaDescription,
-            mapper.Map<IReadOnlyList<TagDto>>(entity.Tags),
+            entity.TagDtos(mapper, lookups),
             entity.ShareCount,
             entity.RatingAverage,
             entity.RatingCount,
@@ -180,7 +195,9 @@ public static class VideoMapper
     public static VideoSummaryDto ToVideoSummaryDto(
         this VideoEntity entity,
         IMapper mapper,
-        IReadOnlyDictionary<Guid, FileReferenceDto> files
+        ContentLookups lookups,
+        IReadOnlyDictionary<Guid, FileReferenceDto> files,
+        bool hasLyrics
     )
     {
         string? thumbnailUrl =
@@ -191,7 +208,7 @@ public static class VideoMapper
         return new VideoSummaryDto(
             entity.Id,
             entity.CategoryId,
-            entity.Category != null ? entity.Category.Name : string.Empty,
+            lookups.CategoryName(entity.CategoryId),
             entity.Title,
             entity.Slug,
             thumbnailUrl,
@@ -199,7 +216,7 @@ public static class VideoMapper
             entity.Status,
             entity.YoutubeVideoUrl,
             entity.IsPromoted,
-            entity.HasLyrics,
+            hasLyrics,
             entity.PublishedAt,
             entity.ShootingScheduledAt,
             entity.ShareCount,
@@ -212,5 +229,24 @@ public static class VideoMapper
             UpdatedAt = entity.UpdatedAt,
             UpdatedBy = entity.UpdatedBy,
         };
+    }
+
+    /// <summary>
+    /// Projects a video's tag junction rows through the resolved tag map, dropping any tag row
+    /// that no longer exists.
+    /// </summary>
+    /// <param name="entity">The video whose tags to project.</param>
+    /// <param name="mapper">Injected IMapper instance.</param>
+    /// <param name="lookups">The resolved rows, including the tags.</param>
+    /// <returns>The tag projections.</returns>
+    private static IReadOnlyList<TagDto> TagDtos(this VideoEntity entity, IMapper mapper, ContentLookups lookups)
+    {
+        return
+        [
+            .. entity
+                .Tags.Select(videoTag => lookups.Tags.GetValueOrDefault(videoTag.TagId))
+                .OfType<TagEntity>()
+                .Select(mapper.Map<TagDto>),
+        ];
     }
 }
