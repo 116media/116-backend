@@ -27,16 +27,3 @@ public class PlaylistByUserIdSpecification(Guid userId) : Specification<Playlist
         return playlist => playlist.UserId == userId;
     }
 }
-
-/// <summary>
-/// Specification that matches a playlist video entry by playlist and video identifiers.
-/// </summary>
-public class PlaylistVideoByPlaylistAndVideoSpecification(Guid playlistId, Guid videoId)
-    : Specification<PlaylistVideoEntity>
-{
-    /// <inheritdoc />
-    public override Expression<Func<PlaylistVideoEntity, bool>> ToExpression()
-    {
-        return entry => entry.PlaylistId == playlistId && entry.VideoId == videoId;
-    }
-}
