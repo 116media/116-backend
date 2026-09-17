@@ -23,7 +23,8 @@ public class PublicGetArticlePromotionFeedHandler(
     IArticleInteractionRepository articleInteractionRepository,
     ICategoryRepository categoryRepository,
     IFileStorageService fileStorage,
-    IMapper mapper
+    IMapper mapper,
+    IContentLookupFactory contentLookupFactory
 ) : IQueryHandler<PublicGetArticlePromotionFeedQuery, PublicGetArticlePromotionFeedResult>
 {
     private const int GossipPoolSize = EditorialFeedConstants.GossipPoolSize;
@@ -79,12 +80,19 @@ public class PublicGetArticlePromotionFeedHandler(
                 cancellationToken: cancellationToken
             );
 
+        // One batch for every article across the spots and the gossip strip.
+        ContentLookups lookups = await contentLookupFactory.ResolveForArticlesAsync(
+            [.. spot1Articles, .. spot2Articles, .. spot3Articles, .. gossipPool],
+            cancellationToken
+        );
+
         ArticlePromotionSpotDto spot1 = await BuildSimpleSpotAsync(
             spotPriority: EditorialFeedConstants.Spot1,
             promoted: spot1Articles,
             gossipQueue: gossipQueue,
             usedIds: usedIds,
             mapper: mapper,
+            lookups: lookups,
             fileStorage: fileStorage,
             likedArticleIds: liked,
             bookmarkedArticleIds: bookmarked,
@@ -97,6 +105,7 @@ public class PublicGetArticlePromotionFeedHandler(
             gossipQueue: gossipQueue,
             usedIds: usedIds,
             mapper: mapper,
+            lookups: lookups,
             fileStorage: fileStorage,
             likedArticleIds: liked,
             bookmarkedArticleIds: bookmarked,
@@ -108,6 +117,7 @@ public class PublicGetArticlePromotionFeedHandler(
             gossipQueue: gossipQueue,
             usedIds: usedIds,
             mapper: mapper,
+            lookups: lookups,
             fileStorage: fileStorage,
             likedArticleIds: liked,
             bookmarkedArticleIds: bookmarked,
@@ -118,6 +128,7 @@ public class PublicGetArticlePromotionFeedHandler(
             gossipQueue: gossipQueue,
             stripSize: query.StripSize,
             mapper: mapper,
+            lookups: lookups,
             fileStorage: fileStorage,
             likedArticleIds: liked,
             bookmarkedArticleIds: bookmarked,
@@ -141,6 +152,7 @@ public class PublicGetArticlePromotionFeedHandler(
     /// <param name="gossipQueue">Remaining gossip articles not yet consumed by earlier spots.</param>
     /// <param name="usedIds">Tracks all article IDs already placed in the feed to prevent duplicates.</param>
     /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+    /// <param name="lookups">The categories the cards name, resolved for the whole feed.</param>
     /// <param name="fileStorage">Core's storage contract.</param>
     /// <param name="likedArticleIds">Ids the current user has liked.</param>
     /// <param name="bookmarkedArticleIds">Ids the current user has bookmarked.</param>
@@ -152,6 +164,7 @@ public class PublicGetArticlePromotionFeedHandler(
         Queue<ArticleEntity> gossipQueue,
         HashSet<Guid> usedIds,
         IMapper mapper,
+        ContentLookups lookups,
         IFileStorageService fileStorage,
         IReadOnlySet<Guid> likedArticleIds,
         IReadOnlySet<Guid> bookmarkedArticleIds,
@@ -163,6 +176,7 @@ public class PublicGetArticlePromotionFeedHandler(
             return new ArticlePromotionSpotDto(
                 SpotPriority: spotPriority,
                 Articles: await promoted.ToPublicArticleSummaryDtosAsync(
+                    lookups,
                     fileStorage,
                     likedArticleIds,
                     bookmarkedArticleIds,
@@ -178,6 +192,7 @@ public class PublicGetArticlePromotionFeedHandler(
             usedIds.Add(gossip.Id);
             fallback.Add(
                 await gossip.ToPublicArticleSummaryDtoAsync(
+                    lookups,
                     fileStorage,
                     likedArticleIds,
                     bookmarkedArticleIds,
@@ -197,6 +212,7 @@ public class PublicGetArticlePromotionFeedHandler(
     /// <param name="gossipQueue">Remaining gossip articles not yet consumed by earlier spots.</param>
     /// <param name="usedIds">Tracks all article IDs already placed in the feed to prevent duplicates.</param>
     /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+    /// <param name="lookups">The categories the cards name, resolved for the whole feed.</param>
     /// <param name="fileStorage">Core's storage contract.</param>
     /// <param name="likedArticleIds">Ids the current user has liked.</param>
     /// <param name="bookmarkedArticleIds">Ids the current user has bookmarked.</param>
@@ -210,6 +226,7 @@ public class PublicGetArticlePromotionFeedHandler(
         Queue<ArticleEntity> gossipQueue,
         HashSet<Guid> usedIds,
         IMapper mapper,
+        ContentLookups lookups,
         IFileStorageService fileStorage,
         IReadOnlySet<Guid> likedArticleIds,
         IReadOnlySet<Guid> bookmarkedArticleIds,
@@ -222,7 +239,13 @@ public class PublicGetArticlePromotionFeedHandler(
         for (int i = 0; i < promoted.Count; i++)
         {
             PublicArticleSummaryDto dto = await promoted[i]
-                .ToPublicArticleSummaryDtoAsync(fileStorage, likedArticleIds, bookmarkedArticleIds, cancellationToken);
+                .ToPublicArticleSummaryDtoAsync(
+                    lookups,
+                    fileStorage,
+                    likedArticleIds,
+                    bookmarkedArticleIds,
+                    cancellationToken
+                );
             (i % 2 == 0 ? columnA : columnB).Add(dto);
         }
 
@@ -231,6 +254,7 @@ public class PublicGetArticlePromotionFeedHandler(
             usedIds.Add(gossipA.Id);
             columnA.Add(
                 await gossipA.ToPublicArticleSummaryDtoAsync(
+                    lookups,
                     fileStorage,
                     likedArticleIds,
                     bookmarkedArticleIds,
@@ -244,6 +268,7 @@ public class PublicGetArticlePromotionFeedHandler(
             usedIds.Add(gossipB.Id);
             columnB.Add(
                 await gossipB.ToPublicArticleSummaryDtoAsync(
+                    lookups,
                     fileStorage,
                     likedArticleIds,
                     bookmarkedArticleIds,
@@ -268,6 +293,7 @@ public class PublicGetArticlePromotionFeedHandler(
     /// <param name="gossipQueue">Remaining gossip articles not yet consumed by spot fallbacks.</param>
     /// <param name="stripSize">Maximum number of articles to include in the strip.</param>
     /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+    /// <param name="lookups">The categories the cards name, resolved for the whole feed.</param>
     /// <param name="fileStorage">Core's storage contract.</param>
     /// <param name="likedArticleIds">Ids the current user has liked.</param>
     /// <param name="bookmarkedArticleIds">Ids the current user has bookmarked.</param>
@@ -280,6 +306,7 @@ public class PublicGetArticlePromotionFeedHandler(
         Queue<ArticleEntity> gossipQueue,
         int stripSize,
         IMapper mapper,
+        ContentLookups lookups,
         IFileStorageService fileStorage,
         IReadOnlySet<Guid> likedArticleIds,
         IReadOnlySet<Guid> bookmarkedArticleIds,
@@ -292,6 +319,7 @@ public class PublicGetArticlePromotionFeedHandler(
         {
             strip.Add(
                 await article.ToPublicArticleSummaryDtoAsync(
+                    lookups,
                     fileStorage,
                     likedArticleIds,
                     bookmarkedArticleIds,
