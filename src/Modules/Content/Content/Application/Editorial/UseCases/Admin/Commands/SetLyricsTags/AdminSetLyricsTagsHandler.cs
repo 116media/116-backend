@@ -25,12 +25,7 @@ public class AdminSetLyricsTagsHandler(ILyricsRepository lyricsRepository, ICont
             cancellationToken: cancellationToken
         );
 
-        await lyricsRepository.ReplaceTagsAsync(
-            lyricsId: lyrics.Id,
-            tagIds: command.TagIds,
-            cancellationToken: cancellationToken
-        );
-
+        lyrics.ReplaceTags(tagIds: command.TagIds);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminSetLyricsTagsResult(IsSuccess: true);
