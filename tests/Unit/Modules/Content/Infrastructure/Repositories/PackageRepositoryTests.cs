@@ -3,6 +3,7 @@ using _116.Content.Infrastructure.Persistence;
 using _116.Content.Infrastructure.Repositories;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Unit.Tests.Common.Helpers;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -21,6 +22,7 @@ public class PackageRepositoryTests : IDisposable
     {
         DbContextOptions<ContentDbContext> options = new DbContextOptionsBuilder<ContentDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+            .AddInterceptors(new CreatedAtStampingInterceptor())
             .Options;
 
         _context = new ContentDbContext(options);
@@ -61,14 +63,14 @@ public class PackageRepositoryTests : IDisposable
     {
         // Arrange
         PackageEntity package = PackageFactory.Create();
-        PackageSlotEntity slot = PackageSlotFactory.Create(package.Id);
+        PackageSlotEntity slot = PackageSlotFactory.Create(package);
 
         _context.Packages.Add(package);
         _context.PackageSlots.Add(slot);
         await _context.SaveChangesAsync();
 
         // Act
-        PackageEntity? result = await _repository.GetByIdWithSlotsAsync(package.Id);
+        PackageEntity? result = await _repository.GetByIdAsync(package.Id);
 
         // Assert
         result.Should().NotBeNull();
@@ -80,7 +82,7 @@ public class PackageRepositoryTests : IDisposable
     public async Task GetByIdWithSlotsAsync_WhenNotFound_ShouldReturnNull()
     {
         // Act
-        PackageEntity? result = await _repository.GetByIdWithSlotsAsync(Guid.NewGuid());
+        PackageEntity? result = await _repository.GetByIdAsync(Guid.NewGuid());
 
         // Assert
         result.Should().BeNull();
@@ -99,7 +101,7 @@ public class PackageRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        PackageEntity result = await _repository.GetByIdWithSlotsOrThrowAsync(package.Id);
+        PackageEntity result = await _repository.GetByIdOrThrowAsync(package.Id);
 
         // Assert
         result.Should().NotBeNull();
@@ -113,7 +115,7 @@ public class PackageRepositoryTests : IDisposable
         var nonExistentId = Guid.NewGuid();
 
         // Act
-        Func<Task> act = async () => await _repository.GetByIdWithSlotsOrThrowAsync(nonExistentId);
+        Func<Task> act = async () => await _repository.GetByIdOrThrowAsync(nonExistentId);
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
@@ -187,72 +189,67 @@ public class PackageRepositoryTests : IDisposable
     #region Slot Tests
 
     [Fact]
-    public async Task AddSlotAsync_ShouldPersistSlotEntity()
+    public async Task AddSlot_ThroughTheRoot_ShouldPersistSlotEntity()
     {
         // Arrange
         PackageEntity package = PackageFactory.Create();
         _context.Packages.Add(package);
         await _context.SaveChangesAsync();
 
-        PackageSlotEntity slot = PackageSlotFactory.Create(package.Id);
-
         // Act
-        await _repository.AddSlotAsync(slot);
+        PackageSlotEntity slot = PackageSlotFactory.Create(package);
         await _context.SaveChangesAsync();
 
         // Assert
         PackageSlotEntity? retrieved = await _context.PackageSlots.FindAsync(slot.Id);
         retrieved.Should().NotBeNull();
-        retrieved.PackageId.Should().Be(package.Id);
+        retrieved!.PackageId.Should().Be(package.Id);
     }
 
     [Fact]
-    public async Task GetSlotByIdAsync_WhenFound_ShouldReturnEntity()
+    public async Task FindSlot_WhenPresent_ShouldReturnTheSlot()
     {
         // Arrange
         PackageEntity package = PackageFactory.Create();
-        PackageSlotEntity slot = PackageSlotFactory.Create(package.Id);
+        PackageSlotEntity slot = PackageSlotFactory.Create(package);
 
         _context.Packages.Add(package);
-        _context.PackageSlots.Add(slot);
         await _context.SaveChangesAsync();
+        _context.ChangeTracker.Clear();
 
         // Act
-        PackageSlotEntity? result = await _repository.GetSlotByIdAsync(slot.Id);
+        PackageEntity loaded = await _repository.GetByIdOrThrowAsync(package.Id);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Id.Should().Be(slot.Id);
+        loaded.FindSlot(slot.Id).Should().NotBeNull();
+        loaded.FindSlot(Guid.NewGuid()).Should().BeNull();
     }
 
     [Fact]
-    public async Task GetSlotByIdAsync_WhenNotFound_ShouldReturnNull()
-    {
-        // Act
-        PackageSlotEntity? result = await _repository.GetSlotByIdAsync(Guid.NewGuid());
-
-        // Assert
-        result.Should().BeNull();
-    }
-
-    [Fact]
-    public async Task RemoveSlot_ShouldDeleteSlotFromDatabase()
+    public async Task RemoveSlot_ThroughTheRoot_ShouldDeleteSlotFromDatabase()
     {
         // Arrange
         PackageEntity package = PackageFactory.Create();
-        PackageSlotEntity slot = PackageSlotFactory.Create(package.Id);
+        PackageSlotEntity slot = PackageSlotFactory.Create(package);
 
         _context.Packages.Add(package);
-        _context.PackageSlots.Add(slot);
         await _context.SaveChangesAsync();
 
         // Act
-        _repository.RemoveSlot(slot);
+        package.RemoveSlot(slot.Id).Should().BeTrue();
         await _context.SaveChangesAsync();
 
         // Assert
         PackageSlotEntity? retrieved = await _context.PackageSlots.FindAsync(slot.Id);
         retrieved.Should().BeNull();
+    }
+
+    [Fact]
+    public void RemoveSlot_WhenAbsent_ShouldReportNoChange()
+    {
+        PackageEntity package = PackageFactory.Create();
+
+        package.RemoveSlot(Guid.NewGuid()).Should().BeFalse();
     }
 
     #endregion
