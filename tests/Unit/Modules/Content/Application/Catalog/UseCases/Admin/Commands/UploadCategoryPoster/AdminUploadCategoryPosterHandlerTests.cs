@@ -41,7 +41,7 @@ public class AdminUploadCategoryPosterHandlerTests : BaseContentHandlerTest
             _categoryRepositoryMock.Object,
             _fileStorageMock.Object,
             _unitOfWorkMock.Object,
-            new CategoryDtoFactory(Mapper, _fileStorageMock.Object)
+            CreateCategoryDtoFactory(_fileStorageMock.Object)
         );
     }
 
