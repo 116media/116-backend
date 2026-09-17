@@ -1,10 +1,10 @@
+using _116.Content.Application.Commerce.Factories;
+using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Errors.Facade;
-using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
-using MapsterMapper;
 
 namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.EditOrderItem;
 
@@ -15,14 +15,14 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.EditOrderIte
 /// <param name="categoryRepository">Repository for category data access operations.</param>
 /// <param name="promotionLevelRepository">Repository for promotion level data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="mapper">Mapper for entity-to-DTO conversion.</param>
+/// <param name="orderDtoFactory">Builds order projections with their lookups resolved.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminEditOrderItemHandler(
     IContentOrderRepository contentOrderRepository,
     ICategoryRepository categoryRepository,
     IPromotionLevelRepository promotionLevelRepository,
     IContentUnitOfWork unitOfWork,
-    IMapper mapper,
+    IContentOrderDtoFactory orderDtoFactory,
     ContentI18n i18n
 ) : ICommandHandler<AdminEditOrderItemCommand, AdminEditOrderItemResult>
 {
@@ -35,17 +35,24 @@ public class AdminEditOrderItemHandler(
         Guid orderId = Guid.Parse(command.OrderId);
         Guid itemId = Guid.Parse(command.ItemId);
 
-        ContentOrderEntity order =
-            await contentOrderRepository.GetByIdWithItemsAsync(id: orderId, ct: cancellationToken)
-            ?? throw i18n.ContentOrder.NotFound(id: orderId);
+        ContentOrderEntity? order = await contentOrderRepository.GetByIdWithItemsAsync(
+            id: orderId,
+            ct: cancellationToken
+        );
+
+        if (order is null)
+        {
+            throw i18n.ContentOrder.NotFound(id: orderId);
+        }
 
         order.EnsureDraft();
 
-        ContentOrderItemEntity item = await contentOrderRepository.GetItemByIdOrThrowAsync(
-            orderId: orderId,
-            itemId: itemId,
-            ct: cancellationToken
-        );
+        ContentOrderItemEntity? item = order.FindItem(itemId: itemId);
+
+        if (item is null)
+        {
+            throw i18n.ContentOrder.ItemNotFound(itemId: itemId);
+        }
 
         Guid? newCategoryId = command.CategoryId is not null ? Guid.Parse(command.CategoryId) : null;
 
@@ -83,13 +90,7 @@ public class AdminEditOrderItemHandler(
         order.RecalculateTotalFromItems();
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
-        ContentOrderItemEntity updatedItem = await contentOrderRepository.GetItemByIdOrThrowAsync(
-            orderId: orderId,
-            itemId: itemId,
-            ct: cancellationToken
-        );
-
-        var dto = updatedItem.ToOrderItemDto(mapper);
+        OrderItemDto dto = await orderDtoFactory.CreateItemAsync(item, cancellationToken);
 
         return new AdminEditOrderItemResult(Item: dto);
     }
