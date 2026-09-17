@@ -26,6 +26,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Catalog.UseCases.Admin.Com
 public class AdminSetExclusiveCategoryHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<ICategoryRepository> _categoryRepositoryMock;
+    private readonly Mock<IContentTypeRepository> _contentTypeRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly Mock<IFileStorageService> _fileStorageMock;
     private readonly AdminSetExclusiveCategoryHandler _handler;
@@ -33,12 +34,14 @@ public class AdminSetExclusiveCategoryHandlerTests : BaseContentHandlerTest
     public AdminSetExclusiveCategoryHandlerTests()
     {
         _categoryRepositoryMock = MockCategoryRepository.Create();
+        _contentTypeRepositoryMock = MockContentTypeRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _fileStorageMock = MockFileStorageService.Create();
         _handler = new AdminSetExclusiveCategoryHandler(
             _categoryRepositoryMock.Object,
+            _contentTypeRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            new CategoryDtoFactory(Mapper, _fileStorageMock.Object),
+            CreateCategoryDtoFactory(_fileStorageMock.Object),
             TestErrorsFactory.CreateContentI18n()
         );
     }
@@ -50,6 +53,7 @@ public class AdminSetExclusiveCategoryHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         ContentTypeEntity videoType = ContentTypeFactory.Create(nameof(EnumCoreContentType.Video));
+        _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrow(videoType);
         CategoryEntity category = CategoryFactory.Create(videoType);
 
         var command = new AdminSetExclusiveCategoryCommand(Id: category.Id.ToString());
@@ -70,6 +74,7 @@ public class AdminSetExclusiveCategoryHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         ContentTypeEntity videoType = ContentTypeFactory.Create(nameof(EnumCoreContentType.Video));
+        _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrow(videoType);
         CategoryEntity category = CategoryFactory.Create(videoType);
         CategoryEntity currentExclusive = CategoryFactory.Create(videoType);
         currentExclusive.SetExclusive();
@@ -92,6 +97,7 @@ public class AdminSetExclusiveCategoryHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         ContentTypeEntity videoType = ContentTypeFactory.Create(nameof(EnumCoreContentType.Video));
+        _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrow(videoType);
         CategoryEntity category = CategoryFactory.Create(videoType);
         category.SetExclusive();
 
@@ -116,6 +122,7 @@ public class AdminSetExclusiveCategoryHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         ContentTypeEntity contentType = ContentTypeFactory.Create();
+        _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
         CategoryEntity inactive = CategoryFactory.CreateInactive(contentType.Id);
 
         var command = new AdminSetExclusiveCategoryCommand(Id: inactive.Id.ToString());
@@ -134,6 +141,7 @@ public class AdminSetExclusiveCategoryHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         ContentTypeEntity articleType = ContentTypeFactory.Create(nameof(EnumCoreContentType.Article));
+        _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrow(articleType);
         CategoryEntity category = CategoryFactory.Create(articleType);
 
         var command = new AdminSetExclusiveCategoryCommand(Id: category.Id.ToString());
