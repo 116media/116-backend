@@ -5,7 +5,6 @@ using _116.Content.Domain.Entities;
 using _116.Content.Domain.Exceptions;
 using _116.Content.Domain.StateMachines;
 using _116.Shared.Application.Exceptions;
-using _116.Tests.Fixtures.Builders.Entities.Content;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
@@ -43,24 +42,13 @@ public class AdminRemoveItemTierHandlerTests
     {
         // Arrange
         ContentOrderEntity order = ContentOrderFactory.Create();
-        _orderRepositoryMock.SetupGetByIdOrThrow(order);
-
         ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, Guid.NewGuid());
-        _orderRepositoryMock.SetupGetItemByIdOrThrow(item);
-
         ContentItemTierEntity tier = ContentItemTierFactory.CreateDefault(item.Id, Guid.NewGuid());
-        _orderRepositoryMock.SetupGetItemTierByIdOrThrow(tier);
-
-        CustomerEntity customer = CustomerFactory.Create();
-        ContentOrderEntity orderWithItems = new ContentOrderBuilder().WithId(order.Id).WithCustomer(customer).Build();
-        ContentOrderItemEntity remainingItem = ContentOrderItemFactory.Create(order.Id, Guid.NewGuid());
-        ContentItemTierEntity remainingTier = ContentItemTierFactory.Create(remainingItem.Id, Guid.NewGuid(), 75m);
-        remainingItem.Tiers.Add(remainingTier);
-        orderWithItems.Items.Add(remainingItem);
-
-        _orderRepositoryMock
-            .Setup(x => x.GetByIdWithItemsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(orderWithItems);
+        ContentItemTierEntity remainingTier = ContentItemTierFactory.Create(item.Id, Guid.NewGuid(), 75m);
+        item.Tiers.Add(tier);
+        item.Tiers.Add(remainingTier);
+        order.AddItem(item);
+        _orderRepositoryMock.SetupGetByIdOrThrow(order);
 
         var command = new AdminRemoveItemTierCommand(
             OrderId: order.Id.ToString(),
@@ -72,9 +60,9 @@ public class AdminRemoveItemTierHandlerTests
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        orderWithItems.TotalAmountUsd.Should().Be(remainingTier.PriceSnapshotUsd);
-        _orderRepositoryMock.Verify(x => x.RemoveItemTierAsync(tier, It.IsAny<CancellationToken>()), Times.Once);
-        _unitOfWorkMock.VerifyExecutedInTransaction();
+        item.Tiers.Should().ContainSingle().Which.Should().Be(remainingTier);
+        order.TotalAmountUsd.Should().Be(remainingTier.PriceSnapshotUsd);
+        _unitOfWorkMock.VerifyCommitCalled();
     }
 
     #endregion
@@ -176,13 +164,11 @@ public class AdminRemoveItemTierHandlerTests
     {
         // Arrange
         ContentOrderEntity order = ContentOrderFactory.Create();
+        ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, Guid.NewGuid());
+        order.AddItem(item);
         _orderRepositoryMock.SetupGetByIdOrThrow(order);
 
-        ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, Guid.NewGuid());
-        _orderRepositoryMock.SetupGetItemByIdOrThrow(item);
-
         Guid missingTierId = Guid.NewGuid();
-        _orderRepositoryMock.SetupGetItemTierByIdOrThrowNotFound(item.Id, missingTierId);
 
         var command = new AdminRemoveItemTierCommand(
             OrderId: order.Id.ToString(),
@@ -206,7 +192,6 @@ public class AdminRemoveItemTierHandlerTests
         _orderRepositoryMock.SetupGetByIdOrThrow(order);
 
         Guid foreignItemId = Guid.NewGuid();
-        _orderRepositoryMock.SetupGetItemByIdOrThrowNotFound(order.Id, foreignItemId);
 
         var command = new AdminRemoveItemTierCommand(
             OrderId: order.Id.ToString(),
@@ -219,46 +204,7 @@ public class AdminRemoveItemTierHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
-        _orderRepositoryMock.Verify(
-            x => x.GetItemTierByIdOrThrowAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
-            Times.Never
-        );
-        _orderRepositoryMock.Verify(
-            x => x.RemoveItemTierAsync(It.IsAny<ContentItemTierEntity>(), It.IsAny<CancellationToken>()),
-            Times.Never
-        );
         _unitOfWorkMock.VerifyCommitNotCalled();
-    }
-
-    [Fact]
-    public async Task Handle_WhenRefetchOrderFailsAfterRemoval_ShouldThrowNotFoundException()
-    {
-        // Arrange
-        ContentOrderEntity order = ContentOrderFactory.Create();
-        _orderRepositoryMock.SetupGetByIdOrThrow(order);
-
-        ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, Guid.NewGuid());
-        _orderRepositoryMock.SetupGetItemByIdOrThrow(item);
-
-        ContentItemTierEntity tier = ContentItemTierFactory.CreateDefault(item.Id, Guid.NewGuid());
-        _orderRepositoryMock.SetupGetItemTierByIdOrThrow(tier);
-
-        _orderRepositoryMock
-            .Setup(x => x.GetByIdWithItemsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((ContentOrderEntity?)null);
-
-        var command = new AdminRemoveItemTierCommand(
-            OrderId: order.Id.ToString(),
-            ItemId: item.Id.ToString(),
-            TierId: tier.Id.ToString()
-        );
-
-        // Act
-        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<NotFoundException>();
-        _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 
     #endregion
