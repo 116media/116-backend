@@ -89,7 +89,7 @@ public class AdminUploadArticleImageHandlerTests : BaseContentHandlerTest
                 ),
             Times.Once
         );
-        _articleRepositoryMock.VerifyAddImageCalled();
+        article.Images.Should().ContainSingle();
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -105,7 +105,6 @@ public class AdminUploadArticleImageHandlerTests : BaseContentHandlerTest
         );
 
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
-        _articleRepositoryMock.SetupGetImagesByArticleId(article.Id, new List<ArticleImageEntity>());
 
         // Act
         AdminUploadArticleImageResult result = await _handler.Handle(command, CancellationToken.None);
@@ -114,7 +113,7 @@ public class AdminUploadArticleImageHandlerTests : BaseContentHandlerTest
         article.CoverImageFileId.Should().Be(_coverFile.Id);
         result.Image.Url.Should().Be(_coverFile.StorageUrl);
         result.Image.ImageType.Should().Be(EnumArticleImageType.Cover);
-        _articleRepositoryMock.VerifyAddImageCalled();
+        article.Images.Should().ContainSingle(image => image.ImageType == EnumArticleImageType.Cover);
         _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 
@@ -123,7 +122,7 @@ public class AdminUploadArticleImageHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         ArticleEntity article = ArticleFactory.Create(CategoryId);
-        ArticleImageEntity oldCover = ArticleImageFactory.CreateCover(article.Id);
+        ArticleImageEntity oldCover = ArticleImageFactory.CreateCover(article);
         var command = new AdminUploadArticleImageCommand(
             ArticleId: article.Id.ToString(),
             File: _mockFile,
@@ -131,7 +130,6 @@ public class AdminUploadArticleImageHandlerTests : BaseContentHandlerTest
         );
 
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
-        _articleRepositoryMock.SetupGetImagesByArticleId(article.Id, new List<ArticleImageEntity> { oldCover });
 
         // Act
         AdminUploadArticleImageResult result = await _handler.Handle(command, CancellationToken.None);
@@ -139,12 +137,7 @@ public class AdminUploadArticleImageHandlerTests : BaseContentHandlerTest
         // Assert
         article.CoverImageFileId.Should().Be(_coverFile.Id);
         result.Image.ImageType.Should().Be(EnumArticleImageType.Cover);
-
-        _articleRepositoryMock.Verify(
-            x => x.RemoveImages(It.Is<IEnumerable<ArticleImageEntity>>(images => images.Single() == oldCover)),
-            Times.Once
-        );
-        _articleRepositoryMock.VerifyAddImageCalled();
+        article.Images.Should().ContainSingle(image => image.ImageType == EnumArticleImageType.Cover);
         _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 
