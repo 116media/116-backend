@@ -42,6 +42,7 @@ public class DomainRuleExceptionStrategyTests
             .AddScoped<ContentOrderErrorMessage>()
             .AddScoped<TagErrorMessage>()
             .AddScoped<ShareErrorMessage>()
+            .AddScoped<ValueObjectErrorMessage>()
             .AddScoped<LyricsRevisionErrorMessage>()
             .AddScoped<SubmissionErrorMessage>()
             .AddScoped<SharedExceptionMessage>()
