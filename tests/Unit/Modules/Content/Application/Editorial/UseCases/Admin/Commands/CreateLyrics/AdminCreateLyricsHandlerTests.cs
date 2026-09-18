@@ -55,7 +55,8 @@ public class AdminCreateLyricsHandlerTests : BaseContentHandlerTest
             Mapper,
             userLookupMock.Object,
             fileStorageMock.Object,
-            TestErrorsFactory.CreateContentI18n()
+            TestErrorsFactory.CreateContentI18n(),
+            CreateContentLookupFactory()
         );
     }
 
@@ -112,7 +113,7 @@ public class AdminCreateLyricsHandlerTests : BaseContentHandlerTest
         added.CategoryId.Should().Be(category.Id);
         added.SongTitle.Should().Be(TestConstants.Lyrics.ValidSongTitle);
         added.ArtistName.Should().Be(TestConstants.Lyrics.ValidArtistName);
-        added.Slug.Should().Be(slug);
+        added.Slug.Value.Should().Be(slug);
         added.LyricsText.Should().Be(TestConstants.Lyrics.ValidLyricsText);
         added.Language.Should().Be(TestConstants.Lyrics.ValidLanguage);
         added.AuthorId.Should().Be(AuthorId);
@@ -164,7 +165,7 @@ public class AdminCreateLyricsHandlerTests : BaseContentHandlerTest
     }
 
     [Fact]
-    public async Task Handle_WhenLyricsForVideo_ShouldCreateAndMarkVideoHasLyrics()
+    public async Task Handle_WhenLyricsForVideo_ShouldValidateTheVideoAndCreate()
     {
         // Arrange
         CategoryEntity category = CategoryFactory.Create(CategoryId);
@@ -182,10 +183,9 @@ public class AdminCreateLyricsHandlerTests : BaseContentHandlerTest
             .Callback<LyricsEntity, CancellationToken>((entity, _) => added = entity)
             .Returns(Task.CompletedTask);
 
-        VideoEntity video = VideoFactory.Create(category.Id);
         _videoRepositoryMock
-            .Setup(x => x.GetByIdOrThrowAsync(videoId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(video);
+            .Setup(x => x.ExistsOrThrowAsync(videoId, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
 
         LyricsEntity created = LyricsFactory.CreateForVideo(category.Id, videoId);
         _lyricsRepositoryMock
@@ -198,7 +198,7 @@ public class AdminCreateLyricsHandlerTests : BaseContentHandlerTest
         // Assert
         added.Should().NotBeNull();
         added!.VideoId.Should().Be(videoId);
-        video.HasLyrics.Should().BeTrue();
+        _videoRepositoryMock.Verify(x => x.ExistsOrThrowAsync(videoId, It.IsAny<CancellationToken>()), Times.Once);
         result.Lyrics.Id.Should().Be(created.Id);
 
         _lyricsRepositoryMock.VerifyAddCalled();
