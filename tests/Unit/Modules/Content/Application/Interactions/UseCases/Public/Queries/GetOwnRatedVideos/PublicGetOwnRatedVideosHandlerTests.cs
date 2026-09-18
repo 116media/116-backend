@@ -32,7 +32,11 @@ public class PublicGetOwnRatedVideosHandlerTests : BaseContentHandlerTest
         _videoRepository
             .Setup(repository => repository.GetRatedVideosByUserAsync(userId, 2, 7, It.IsAny<CancellationToken>()))
             .ReturnsAsync((activities, 15));
-        var handler = new PublicGetOwnRatedVideosHandler(_videoRepository.Object, _fileRepository.Object);
+        var handler = new PublicGetOwnRatedVideosHandler(
+            _videoRepository.Object,
+            _fileRepository.Object,
+            CreateContentLookupFactory()
+        );
 
         PublicGetOwnRatedVideosResult result = await handler.Handle(
             new PublicGetOwnRatedVideosQuery(userId, new PaginatedRequest(1, 7)),
@@ -57,7 +61,11 @@ public class PublicGetOwnRatedVideosHandlerTests : BaseContentHandlerTest
         _videoRepository
             .Setup(repository => repository.GetRatedVideosByUserAsync(userId, 1, 10, It.IsAny<CancellationToken>()))
             .ReturnsAsync((Array.Empty<RatedVideoActivity>(), 0));
-        var handler = new PublicGetOwnRatedVideosHandler(_videoRepository.Object, _fileRepository.Object);
+        var handler = new PublicGetOwnRatedVideosHandler(
+            _videoRepository.Object,
+            _fileRepository.Object,
+            CreateContentLookupFactory()
+        );
 
         PublicGetOwnRatedVideosResult result = await handler.Handle(
             new PublicGetOwnRatedVideosQuery(userId, new PaginatedRequest(0, 10)),
