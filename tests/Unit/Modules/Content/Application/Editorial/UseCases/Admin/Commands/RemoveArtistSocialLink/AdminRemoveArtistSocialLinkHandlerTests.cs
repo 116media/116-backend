@@ -4,6 +4,7 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Shared.Application.Exceptions;
+using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
@@ -37,22 +38,17 @@ public class AdminRemoveArtistSocialLinkHandlerTests
     public async Task Handle_WhenLinkExists_ShouldRemoveIt()
     {
         // Arrange
-        var artistId = Guid.NewGuid();
-        ArtistSocialLinkEntity existing = ArtistSocialLinkEntity.Create(
-            Guid.NewGuid(),
-            artistId,
-            EnumSocialPlatform.TikTok,
-            "https://tiktok.com/@someone"
-        );
-        _artistRepositoryMock.SetupGetSocialLink(artistId, EnumSocialPlatform.TikTok, existing);
+        ArtistEntity artist = ArtistFactory.Create();
+        artist.SetSocialLink(EnumSocialPlatform.TikTok, "https://tiktok.com/@someone");
+        _artistRepositoryMock.SetupGetByIdOrThrow(artist);
 
-        var command = new AdminRemoveArtistSocialLinkCommand(artistId, EnumSocialPlatform.TikTok);
+        var command = new AdminRemoveArtistSocialLinkCommand(artist.Id, EnumSocialPlatform.TikTok);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _artistRepositoryMock.Verify(x => x.RemoveSocialLink(existing), Times.Once);
+        artist.SocialLinks.Should().BeEmpty();
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -60,14 +56,16 @@ public class AdminRemoveArtistSocialLinkHandlerTests
     public async Task Handle_WhenNoLinkForPlatform_ShouldThrowNotFound()
     {
         // Arrange
-        var command = new AdminRemoveArtistSocialLinkCommand(Guid.NewGuid(), EnumSocialPlatform.Website);
+        ArtistEntity artist = ArtistFactory.Create();
+        _artistRepositoryMock.SetupGetByIdOrThrow(artist);
+        var command = new AdminRemoveArtistSocialLinkCommand(artist.Id, EnumSocialPlatform.Website);
 
         // Act
         Func<Task> act = () => _handler.Handle(command, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
-        _artistRepositoryMock.Verify(x => x.RemoveSocialLink(It.IsAny<ArtistSocialLinkEntity>()), Times.Never);
+        artist.SocialLinks.Should().BeEmpty();
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 }
