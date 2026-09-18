@@ -45,7 +45,12 @@ public class AdminUpdateVideoHandlerTests : BaseContentHandlerTest
             _categoryRepositoryMock.Object,
             _videoRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            new VideoDtoFactory(Mapper, _fileStorageMock.Object),
+            new VideoDtoFactory(
+                Mapper,
+                _fileStorageMock.Object,
+                _videoRepositoryMock.Object,
+                CreateContentLookupFactory()
+            ),
             TestErrorsFactory.CreateContentI18n()
         );
     }
@@ -83,7 +88,7 @@ public class AdminUpdateVideoHandlerTests : BaseContentHandlerTest
         // Assert
         video.CategoryId.Should().Be(command.CategoryId);
         video.Title.Should().Be(command.Title);
-        video.Slug.Should().Be(command.Slug);
+        video.Slug.Value.Should().Be(command.Slug);
         video.Description.Should().Be(command.Description);
         video.CustomerId.Should().BeNull();
         video.OrderItemId.Should().BeNull();
@@ -134,7 +139,7 @@ public class AdminUpdateVideoHandlerTests : BaseContentHandlerTest
         await act.Should().ThrowAsync<DomainRuleException>();
         video.Status.Should().Be(EnumContentStatus.Approved);
         video.Title.Should().Be(originalTitle);
-        video.Slug.Should().Be(originalSlug);
+        video.Slug.Value.Should().Be(originalSlug);
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
@@ -156,7 +161,7 @@ public class AdminUpdateVideoHandlerTests : BaseContentHandlerTest
 
         // Assert
         await act.Should().ThrowAsync<ConflictException>();
-        video.Slug.Should().Be("original-video-slug");
+        video.Slug.Value.Should().Be("original-video-slug");
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
