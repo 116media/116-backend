@@ -74,7 +74,7 @@ public class AdminApproveLyricsSubmissionHandlerTests
         added.ArtistName.Should().Be("Fally Ipupa");
         added.LyricsText.Should().Be(submission.LyricsText);
         added.Language.Should().Be(submission.Language);
-        added.Slug.Should().Be("eloko-oyo-lyrics");
+        added.Slug.Value.Should().Be("eloko-oyo-lyrics");
         added.AuthorId.Should().Be(reviewerId);
         result.LyricsId.Should().Be(added.Id);
         submission.Status.Should().Be(EnumSubmissionStatus.Approved);
