@@ -5,6 +5,7 @@ using _116.Mailer.Contracts.Application.DTOs;
 using _116.Mailer.Contracts.Application.Services;
 using _116.Mailer.Contracts.Domain.Enums;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -20,12 +21,23 @@ public class CommerceCustomerNotifierTests
 {
     private readonly Mock<IEmailService> _mailerMock = new();
     private readonly Mock<ICustomerRepository> _customerRepositoryMock = new();
+    private readonly Mock<ICategoryRepository> _categoryRepositoryMock = MockCategoryRepository.Create();
     private readonly CommerceCustomerNotifier _notifier;
 
     public CommerceCustomerNotifierTests()
     {
-        _notifier = new CommerceCustomerNotifier(_mailerMock.Object, _customerRepositoryMock.Object);
+        _notifier = new CommerceCustomerNotifier(
+            _mailerMock.Object,
+            _customerRepositoryMock.Object,
+            _categoryRepositoryMock.Object
+        );
     }
+
+    /// <summary>
+    /// The resolved category rows the invoice summary reads, keyed by id.
+    /// </summary>
+    private static IReadOnlyDictionary<Guid, CategoryEntity> CategoryMap(params CategoryEntity[] categories) =>
+        categories.ToDictionary(category => category.Id);
 
     [Fact]
     public void OrderReference_ShouldBeTheFirstEightHexCharsUppercased()
@@ -59,26 +71,26 @@ public class CommerceCustomerNotifierTests
     }
 
     [Fact]
-    public void ItemSummary_WithEveryCategoryLoaded_ShouldListTheCategoryNames()
+    public void ItemSummary_WithEveryCategoryResolved_ShouldListTheCategoryNames()
     {
         ContentOrderEntity order = ContentOrderFactory.Create();
         CategoryEntity music = CategoryFactory.Create(Guid.NewGuid(), "Musique", "musique");
         CategoryEntity interview = CategoryFactory.Create(Guid.NewGuid(), "Interview", "interview");
-        order.Items.Add(ContentOrderItemFactory.CreateWithCategory(order.Id, music));
-        order.Items.Add(ContentOrderItemFactory.CreateWithCategory(order.Id, interview));
+        order.Items.Add(ContentOrderItemFactory.Create(order.Id, music.Id));
+        order.Items.Add(ContentOrderItemFactory.Create(order.Id, interview.Id));
 
-        CommerceCustomerNotifier.ItemSummary(order).Should().Be("Musique, Interview");
+        CommerceCustomerNotifier.ItemSummary(order, CategoryMap(music, interview)).Should().Be("Musique, Interview");
     }
 
     [Fact]
-    public void ItemSummary_WithACategoryNotLoaded_ShouldFallBackToTheItemCount()
+    public void ItemSummary_WithACategoryUnresolved_ShouldFallBackToTheItemCount()
     {
         ContentOrderEntity order = ContentOrderFactory.Create();
         CategoryEntity music = CategoryFactory.Create(Guid.NewGuid(), "Musique", "musique");
-        order.Items.Add(ContentOrderItemFactory.CreateWithCategory(order.Id, music));
+        order.Items.Add(ContentOrderItemFactory.Create(order.Id, music.Id));
         order.Items.Add(ContentOrderItemFactory.Create(order.Id, Guid.NewGuid()));
 
-        CommerceCustomerNotifier.ItemSummary(order).Should().Be("2 item(s)");
+        CommerceCustomerNotifier.ItemSummary(order, CategoryMap(music)).Should().Be("2 item(s)");
     }
 
     [Fact]
@@ -86,7 +98,7 @@ public class CommerceCustomerNotifierTests
     {
         ContentOrderEntity order = ContentOrderFactory.Create();
 
-        CommerceCustomerNotifier.ItemSummary(order).Should().Be("0 item(s)");
+        CommerceCustomerNotifier.ItemSummary(order, CategoryMap()).Should().Be("0 item(s)");
     }
 
     [Fact]
