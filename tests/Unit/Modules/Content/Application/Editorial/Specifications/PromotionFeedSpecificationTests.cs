@@ -14,17 +14,13 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.Specifications;
 /// </summary>
 public class PromotionFeedSpecificationTests
 {
-    private static readonly Guid CategoryId = Guid.NewGuid();
-
     /// <summary>
-    /// Populates the PromotionLevel navigation EF Core would load via Include, so the
-    /// spot-priority predicates can be evaluated in memory.
+    /// The promotion level rows a spot-priority rule probes.
     /// </summary>
-    private static void AttachPromotionLevel<TEntity>(TEntity entity, PromotionLevelEntity level)
-        where TEntity : class
-    {
-        typeof(TEntity).GetProperty(nameof(ArticleEntity.PromotionLevel))!.SetValue(entity, level);
-    }
+    private static IQueryable<PromotionLevelEntity> LevelSource(params PromotionLevelEntity[] levels) =>
+        levels.AsQueryable();
+
+    private static readonly Guid CategoryId = Guid.NewGuid();
 
     #region ArticleBySpotPrioritySpecification
 
@@ -34,8 +30,7 @@ public class PromotionFeedSpecificationTests
         // Arrange
         PromotionLevelEntity level = new PromotionLevelBuilder().WithSpotPriority(1).Build();
         ArticleEntity article = ArticleFactory.CreatePromoted(CategoryId, level.Id);
-        AttachPromotionLevel(article, level);
-        var spec = new ArticleBySpotPrioritySpecification(spotPriority: 1);
+        var spec = new ArticleBySpotPrioritySpecification(spotPriority: 1, promotionLevels: LevelSource(level));
 
         // Act
         bool result = spec.IsSatisfiedBy(article);
@@ -50,8 +45,7 @@ public class PromotionFeedSpecificationTests
         // Arrange
         PromotionLevelEntity level = new PromotionLevelBuilder().WithSpotPriority(2).Build();
         ArticleEntity article = ArticleFactory.CreatePromoted(CategoryId, level.Id);
-        AttachPromotionLevel(article, level);
-        var spec = new ArticleBySpotPrioritySpecification(spotPriority: 1);
+        var spec = new ArticleBySpotPrioritySpecification(spotPriority: 1, promotionLevels: LevelSource(level));
 
         // Act
         bool result = spec.IsSatisfiedBy(article);
@@ -65,7 +59,7 @@ public class PromotionFeedSpecificationTests
     {
         // Arrange
         ArticleEntity article = ArticleFactory.CreatePublished(CategoryId);
-        var spec = new ArticleBySpotPrioritySpecification(spotPriority: 1);
+        var spec = new ArticleBySpotPrioritySpecification(spotPriority: 1, promotionLevels: LevelSource());
         Func<ArticleEntity, bool> predicate = spec.ToExpression().Compile();
 
         // Act
@@ -81,7 +75,7 @@ public class PromotionFeedSpecificationTests
         // Arrange
         ArticleEntity article = ArticleFactory.Create(CategoryId);
         article.StampPromotion(Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(7));
-        var spec = new ArticleBySpotPrioritySpecification(spotPriority: 1);
+        var spec = new ArticleBySpotPrioritySpecification(spotPriority: 1, promotionLevels: LevelSource());
         Func<ArticleEntity, bool> predicate = spec.ToExpression().Compile();
 
         // Act
@@ -248,8 +242,7 @@ public class PromotionFeedSpecificationTests
         // Arrange
         PromotionLevelEntity level = new PromotionLevelBuilder().WithSpotPriority(1).Build();
         VideoEntity video = VideoFactory.CreatePromoted(CategoryId, level.Id);
-        AttachPromotionLevel(video, level);
-        var spec = new VideoBySpotPrioritySpecification(spotPriority: 1);
+        var spec = new VideoBySpotPrioritySpecification(spotPriority: 1, promotionLevels: LevelSource(level));
 
         // Act
         bool result = spec.IsSatisfiedBy(video);
@@ -264,8 +257,7 @@ public class PromotionFeedSpecificationTests
         // Arrange
         PromotionLevelEntity level = new PromotionLevelBuilder().WithSpotPriority(2).Build();
         VideoEntity video = VideoFactory.CreatePromoted(CategoryId, level.Id);
-        AttachPromotionLevel(video, level);
-        var spec = new VideoBySpotPrioritySpecification(spotPriority: 1);
+        var spec = new VideoBySpotPrioritySpecification(spotPriority: 1, promotionLevels: LevelSource(level));
 
         // Act
         bool result = spec.IsSatisfiedBy(video);
@@ -279,7 +271,7 @@ public class PromotionFeedSpecificationTests
     {
         // Arrange
         VideoEntity video = VideoFactory.CreatePublished(CategoryId);
-        var spec = new VideoBySpotPrioritySpecification(spotPriority: 1);
+        var spec = new VideoBySpotPrioritySpecification(spotPriority: 1, promotionLevels: LevelSource());
         Func<VideoEntity, bool> predicate = spec.ToExpression().Compile();
 
         // Act
@@ -295,7 +287,7 @@ public class PromotionFeedSpecificationTests
         // Arrange
         VideoEntity video = VideoFactory.Create(CategoryId);
         video.StampPromotion(Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(7));
-        var spec = new VideoBySpotPrioritySpecification(spotPriority: 1);
+        var spec = new VideoBySpotPrioritySpecification(spotPriority: 1, promotionLevels: LevelSource());
         Func<VideoEntity, bool> predicate = spec.ToExpression().Compile();
 
         // Act
