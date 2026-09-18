@@ -18,7 +18,6 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 public class AdminDeleteLyricsHandlerTests
 {
     private readonly Mock<ILyricsRepository> _lyricsRepositoryMock;
-    private readonly Mock<IVideoRepository> _videoRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminDeleteLyricsHandler _handler;
 
@@ -27,13 +26,8 @@ public class AdminDeleteLyricsHandlerTests
     public AdminDeleteLyricsHandlerTests()
     {
         _lyricsRepositoryMock = MockLyricsRepository.Create();
-        _videoRepositoryMock = MockVideoRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _handler = new AdminDeleteLyricsHandler(
-            _lyricsRepositoryMock.Object,
-            _videoRepositoryMock.Object,
-            _unitOfWorkMock.Object
-        );
+        _handler = new AdminDeleteLyricsHandler(_lyricsRepositoryMock.Object, _unitOfWorkMock.Object);
     }
 
     #region Success Cases
@@ -56,25 +50,18 @@ public class AdminDeleteLyricsHandlerTests
     }
 
     [Fact]
-    public async Task Handle_WhenLyricsLinkedToVideo_ShouldUnmarkVideoAndDelete()
+    public async Task Handle_WhenLyricsLinkedToVideo_ShouldDeleteWithoutTouchingTheVideo()
     {
         // Arrange
         LyricsEntity lyrics = LyricsFactory.CreateForVideo(CategoryId, Guid.NewGuid());
         var command = new AdminDeleteLyricsCommand(Id: lyrics.Id.ToString());
 
-        VideoEntity video = VideoFactory.Create(Guid.NewGuid());
-        video.MarkHasLyrics();
-
         _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
-        _videoRepositoryMock
-            .Setup(x => x.GetByIdOrThrowAsync(lyrics.VideoId!.Value, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(video);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        video.HasLyrics.Should().BeFalse();
         _lyricsRepositoryMock.VerifyRemoveCalled(lyrics);
         _unitOfWorkMock.VerifyCommitCalled();
     }
