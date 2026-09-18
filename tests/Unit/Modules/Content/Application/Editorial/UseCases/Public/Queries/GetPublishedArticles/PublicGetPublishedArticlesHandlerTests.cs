@@ -39,7 +39,8 @@ public class PublicGetPublishedArticlesHandlerTests : BaseContentHandlerTest
         _handler = new PublicGetPublishedArticlesHandler(
             _articleRepositoryMock.Object,
             _articleInteractionRepositoryMock.Object,
-            _fileStorageMock.Object
+            _fileStorageMock.Object,
+            CreateContentLookupFactory()
         );
     }
 
