@@ -22,6 +22,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Public.
 public class PublicGetVideoFeedHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<ICategoryRepository> _categoryRepositoryMock;
+    private readonly Mock<IContentTypeRepository> _contentTypeRepositoryMock;
     private readonly Mock<IVideoRepository> _videoRepositoryMock;
     private readonly Mock<IFileStorageService> _fileStorageMock;
     private readonly PublicGetVideoFeedHandler _handler;
@@ -29,10 +30,14 @@ public class PublicGetVideoFeedHandlerTests : BaseContentHandlerTest
     public PublicGetVideoFeedHandlerTests()
     {
         _categoryRepositoryMock = MockCategoryRepository.Create();
+        _contentTypeRepositoryMock = MockContentTypeRepository.Create();
         _videoRepositoryMock = MockVideoRepository.Create();
         _fileStorageMock = MockFileStorageService.Create();
         _handler = new PublicGetVideoFeedHandler(
             _categoryRepositoryMock.Object,
+            _contentTypeRepositoryMock.Object,
+            CreateCategoryDtoFactory(_fileStorageMock.Object),
+            CreateContentLookupFactory(),
             _videoRepositoryMock.Object,
             _fileStorageMock.Object,
             Mapper
@@ -48,9 +53,10 @@ public class PublicGetVideoFeedHandlerTests : BaseContentHandlerTest
     }
 
     [Fact]
-    public async Task Handle_ShouldOmitEmptySections_AndBatchFilesOnce()
+    public async Task Handle_ShouldOmitEmptySections_AndBatchThumbnailsAndPostersSeparately()
     {
         ContentTypeEntity videoType = ContentTypeFactory.Create(nameof(EnumCoreContentType.Video));
+        _contentTypeRepositoryMock.SetupGetByIds(videoType);
         CategoryEntity withVideos = CategoryFactory.CreatePinned(videoType);
         CategoryEntity empty = CategoryFactory.CreatePinned(videoType);
 
@@ -65,7 +71,8 @@ public class PublicGetVideoFeedHandlerTests : BaseContentHandlerTest
         result.Sections.Should().ContainSingle();
         result.Sections[0].Category.Id.Should().Be(withVideos.Id);
         result.Sections[0].Videos.Should().HaveCount(3);
-        _fileStorageMock.VerifyResolveManyCalledOnce();
+        // One batch for the video thumbnails, one for the category posters — never per card.
+        _fileStorageMock.VerifyResolveManyCalledTimes(2);
     }
 
     [Fact]
@@ -73,6 +80,7 @@ public class PublicGetVideoFeedHandlerTests : BaseContentHandlerTest
     {
         ContentTypeEntity videoType = ContentTypeFactory.Create(nameof(EnumCoreContentType.Video));
         ContentTypeEntity articleType = ContentTypeFactory.Create(nameof(EnumCoreContentType.Article));
+        _contentTypeRepositoryMock.SetupGetByIds(videoType, articleType);
         CategoryEntity video = CategoryFactory.CreatePinned(videoType);
         CategoryEntity article = CategoryFactory.CreatePinned(articleType);
 
@@ -91,6 +99,7 @@ public class PublicGetVideoFeedHandlerTests : BaseContentHandlerTest
     public async Task Handle_ShouldRequestMaxVideosPerSection()
     {
         ContentTypeEntity videoType = ContentTypeFactory.Create(nameof(EnumCoreContentType.Video));
+        _contentTypeRepositoryMock.SetupGetByIds(videoType);
         CategoryEntity category = CategoryFactory.CreatePinned(videoType);
 
         _categoryRepositoryMock.SetupGetPinnedToFeedCategories([category]);
