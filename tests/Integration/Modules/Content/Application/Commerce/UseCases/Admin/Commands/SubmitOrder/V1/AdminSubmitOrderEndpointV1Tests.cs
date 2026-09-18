@@ -22,7 +22,7 @@ public class AdminSubmitOrderEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
         ContentTypeEntity contentType = ContentTypeFactory.Create();
         CategoryEntity category = CategoryFactory.Create(contentType.Id);
         PricingTierEntity pricingTier = PricingTierFactory.Create();
-        CategoryPricingEntity categoryPricing = CategoryPricingFactory.Create(category.Id, pricingTier.Id, 9.99m);
+        CategoryPricingEntity categoryPricing = CategoryPricingFactory.Create(category, pricingTier.Id, 9.99m);
         ContentOrderEntity order = ContentOrderFactory.CreateForCustomer(customer.Id);
         ContentOrderItemEntity orderItem = ContentOrderItemFactory.Create(order.Id, category.Id);
         ContentItemTierEntity itemTier = ContentItemTierFactory.Create(orderItem.Id, pricingTier.Id, 9.99m);
