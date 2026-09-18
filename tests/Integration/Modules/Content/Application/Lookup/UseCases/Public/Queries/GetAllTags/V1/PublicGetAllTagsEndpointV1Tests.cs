@@ -189,8 +189,8 @@ public class PublicGetAllTagsEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
             ctx.Articles.Add(article);
             ctx.Videos.Add(video);
             ctx.Tags.AddRange(articleTag, videoTag);
-            ctx.ArticleTags.Add(ArticleTagEntity.Create(Guid.NewGuid(), article.Id, articleTag.Id));
-            ctx.VideoTags.Add(VideoTagEntity.Create(Guid.NewGuid(), video.Id, videoTag.Id));
+            article.ReplaceTags([.. article.Tags.Select(t => t.TagId), articleTag.Id]);
+            video.ReplaceTags([.. video.Tags.Select(t => t.TagId), videoTag.Id]);
         });
 
         return (articleTag, videoTag);
