@@ -24,7 +24,6 @@ namespace _116.Unit.Tests.Modules.Content.Application.Commerce.UseCases.Admin.Co
 public class AdminVerifyPaymentFactoryTests
 {
     private readonly Mock<IPromotionLevelRepository> _promotionLevelRepositoryMock;
-    private readonly Mock<IContentOrderRepository> _orderRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminVerifyPaymentFactory _factory;
 
@@ -34,12 +33,11 @@ public class AdminVerifyPaymentFactoryTests
     public AdminVerifyPaymentFactoryTests()
     {
         _promotionLevelRepositoryMock = MockPromotionLevelRepository.Create();
-        _orderRepositoryMock = MockContentOrderRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _factory = new AdminVerifyPaymentFactory(
             _promotionLevelRepositoryMock.Object,
-            _orderRepositoryMock.Object,
-            _unitOfWorkMock.Object
+            _unitOfWorkMock.Object,
+            TimeProvider.System
         );
     }
 
