@@ -54,12 +54,11 @@ public class AdminAddItemTierFactoryTests
         item.Tiers.Add(existingTier);
         order.Items.Add(item);
         PricingTierEntity pricingTier = PricingTierFactory.CreateDefault();
-        CategoryPricingEntity categoryPricing = CategoryPricingFactory.Create(category.Id, pricingTier.Id, 100m);
+        CategoryPricingFactory.Create(category, pricingTier.Id, 100m);
 
         _orderRepositoryMock.SetupGetByIdWithItems(order);
-        _orderRepositoryMock.SetupGetItemById(order.Id, item.Id, item);
         _pricingTierRepositoryMock.SetupGetPricingTierByIdOrThrow(pricingTier);
-        _categoryRepositoryMock.SetupGetPricing(category.Id, pricingTier.Id, categoryPricing);
+        _categoryRepositoryMock.SetupGetByIdOrThrow(category);
 
         // Act
         (ContentItemTierEntity tier, string tierName) = await _factory.AttachTierAsync(
@@ -72,11 +71,10 @@ public class AdminAddItemTierFactoryTests
         // Assert
         tier.OrderItemId.Should().Be(item.Id);
         tier.PricingTierId.Should().Be(pricingTier.Id);
-        tier.PriceSnapshotUsd.Should().Be(categoryPricing.PriceUsd);
+        tier.PriceSnapshotUsd.Amount.Should().Be(100m);
         tierName.Should().Be(pricingTier.Name);
-        order.TotalAmountUsd.Should().Be(existingTier.PriceSnapshotUsd);
-        _orderRepositoryMock.Verify(x => x.AddItemTierAsync(tier, It.IsAny<CancellationToken>()), Times.Once);
-        _unitOfWorkMock.VerifyExecutedInTransaction();
+        order.TotalAmountUsd.Should().Be(existingTier.PriceSnapshotUsd + 100m);
+        _unitOfWorkMock.VerifyCommitCalled();
     }
 
     #endregion
@@ -120,7 +118,6 @@ public class AdminAddItemTierFactoryTests
         // Arrange
         ContentOrderEntity order = ContentOrderFactory.Create();
         _orderRepositoryMock.SetupGetByIdWithItems(order);
-        _orderRepositoryMock.SetupGetItemById(order.Id, Guid.NewGuid(), null);
 
         // Act
         Func<Task> act = async () =>
@@ -139,12 +136,12 @@ public class AdminAddItemTierFactoryTests
         Guid contentTypeId = Guid.NewGuid();
         CategoryEntity category = CategoryFactory.Create(contentTypeId);
         ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, category.Id);
+        order.Items.Add(item);
         PricingTierEntity pricingTier = PricingTierFactory.CreateDefault();
 
         _orderRepositoryMock.SetupGetByIdWithItems(order);
-        _orderRepositoryMock.SetupGetItemById(order.Id, item.Id, item);
         _pricingTierRepositoryMock.SetupGetPricingTierByIdOrThrow(pricingTier);
-        _categoryRepositoryMock.SetupGetPricing(category.Id, pricingTier.Id, null);
+        _categoryRepositoryMock.SetupGetByIdOrThrow(category);
 
         // Act
         Func<Task> act = async () =>
@@ -167,9 +164,9 @@ public class AdminAddItemTierFactoryTests
 
         ContentItemTierEntity existingTier = ContentItemTierFactory.Create(item.Id, pricingTier.Id, 100m);
         item.Tiers.Add(existingTier);
+        order.Items.Add(item);
 
         _orderRepositoryMock.SetupGetByIdWithItems(order);
-        _orderRepositoryMock.SetupGetItemById(order.Id, item.Id, item);
 
         // Act
         Func<Task> act = async () =>
