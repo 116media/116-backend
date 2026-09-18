@@ -33,7 +33,12 @@ public class PublicGetPublishedVideosHandlerTests : BaseContentHandlerTest
         _fileStorageMock = MockFileStorageService.Create();
         _handler = new PublicGetPublishedVideosHandler(
             _videoRepositoryMock.Object,
-            new VideoDtoFactory(Mapper, _fileStorageMock.Object)
+            new VideoDtoFactory(
+                Mapper,
+                _fileStorageMock.Object,
+                _videoRepositoryMock.Object,
+                CreateContentLookupFactory()
+            )
         );
     }
 
