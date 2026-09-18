@@ -5,6 +5,7 @@ using _116.Core.Application.Shared.Repositories;
 using _116.Core.Contracts.Application.Services;
 using _116.Identity.Contracts.Application.Services;
 using _116.Shared.Application.Exceptions;
+using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
@@ -36,7 +37,8 @@ public class PublicGetLyricsByVideoIdHandlerTests : BaseContentHandlerTest
             Mapper,
             userLookupMock.Object,
             fileStorageMock.Object,
-            TestErrorsFactory.CreateContentI18n()
+            TestErrorsFactory.CreateContentI18n(),
+            CreateContentLookupFactory()
         );
     }
 
@@ -48,7 +50,7 @@ public class PublicGetLyricsByVideoIdHandlerTests : BaseContentHandlerTest
         LyricsEntity lyrics = LyricsFactory.CreateForVideo(CategoryId, videoId);
         lyrics.MarkPendingReview();
         lyrics.Approve();
-        lyrics.Publish();
+        lyrics.Publish(TestConstants.Clock.Instant);
         var query = new PublicGetLyricsByVideoIdQuery(VideoId: videoId.ToString());
 
         _lyricsRepositoryMock.SetupGetByVideoIdAsync(videoId, lyrics);
@@ -99,7 +101,7 @@ public class PublicGetLyricsByVideoIdHandlerTests : BaseContentHandlerTest
         LyricsEntity lyrics = LyricsFactory.CreateForVideo(CategoryId, videoId);
         lyrics.MarkPendingReview();
         lyrics.Approve();
-        lyrics.Publish();
+        lyrics.Publish(TestConstants.Clock.Instant);
         Guid currentUserId = Guid.NewGuid();
         var query = new PublicGetLyricsByVideoIdQuery(VideoId: videoId.ToString(), CurrentUserId: currentUserId);
 
@@ -121,7 +123,7 @@ public class PublicGetLyricsByVideoIdHandlerTests : BaseContentHandlerTest
         LyricsEntity lyrics = LyricsFactory.CreateForVideo(CategoryId, videoId);
         lyrics.MarkPendingReview();
         lyrics.Approve();
-        lyrics.Publish();
+        lyrics.Publish(TestConstants.Clock.Instant);
         var query = new PublicGetLyricsByVideoIdQuery(VideoId: videoId.ToString(), CurrentUserId: null);
 
         _lyricsRepositoryMock.SetupGetByVideoIdAsync(videoId, lyrics);
@@ -142,7 +144,7 @@ public class PublicGetLyricsByVideoIdHandlerTests : BaseContentHandlerTest
         LyricsEntity lyrics = LyricsFactory.CreateForVideo(CategoryId, videoId);
         lyrics.MarkPendingReview();
         lyrics.Approve();
-        lyrics.Publish();
+        lyrics.Publish(TestConstants.Clock.Instant);
         lyrics.WithViewCount(1);
         lyrics.WithLikeCount(2);
         var query = new PublicGetLyricsByVideoIdQuery(VideoId: videoId.ToString());
