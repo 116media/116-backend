@@ -34,7 +34,12 @@ public class PublicGetPlaylistByIdHandlerTests : BaseContentHandlerTest
         _fileStorageMock = MockFileStorageService.Create();
         _handler = new PublicGetPlaylistByIdHandler(
             _playlistRepositoryMock.Object,
-            new PlaylistDtoFactory(Mapper, _fileStorageMock.Object),
+            new PlaylistDtoFactory(
+                Mapper,
+                _fileStorageMock.Object,
+                MockVideoRepository.Create().Object,
+                MockCategoryRepository.Create().Object
+            ),
             TestErrorsFactory.CreateContentI18n()
         );
     }
