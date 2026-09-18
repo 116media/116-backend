@@ -36,7 +36,7 @@ public class VideoMapperTests(PostgresFixture postgres) : BaseRepositoryTest(pos
         await seedContext.SaveChangesAsync();
 
         await using var readContext = CreateDbContext<ContentDbContext>();
-        VideoEntity loaded = await readContext.Videos.Include(v => v.Category).FirstAsync(v => v.Id == video.Id);
+        VideoEntity loaded = await readContext.Videos.FirstAsync(v => v.Id == video.Id);
 
         var videoDtoFactory = Resolve<IVideoDtoFactory>();
         IReadOnlyList<VideoEntity> videos = [loaded];
@@ -67,7 +67,7 @@ public class VideoMapperTests(PostgresFixture postgres) : BaseRepositoryTest(pos
         await seedContext.SaveChangesAsync();
 
         await using var readContext = CreateDbContext<ContentDbContext>();
-        VideoEntity loaded = await readContext.Videos.Include(v => v.Category).FirstAsync(v => v.Id == video.Id);
+        VideoEntity loaded = await readContext.Videos.FirstAsync(v => v.Id == video.Id);
 
         var videoDtoFactory = Resolve<IVideoDtoFactory>();
         IReadOnlyList<VideoEntity> videos = [loaded];
@@ -93,13 +93,7 @@ public class VideoMapperTests(PostgresFixture postgres) : BaseRepositoryTest(pos
         await seedContext.SaveChangesAsync();
 
         await using var readContext = CreateDbContext<ContentDbContext>();
-        VideoEntity loaded = await readContext
-            .Videos.Include(v => v.Category)
-            .Include(v => v.Tags)
-                .ThenInclude(vt => vt.Tag)
-            .Include(v => v.PromotionLevel)
-            .Include(v => v.Customer)
-            .FirstAsync(v => v.Id == video.Id);
+        VideoEntity loaded = await readContext.Videos.Include(v => v.Tags).FirstAsync(v => v.Id == video.Id);
 
         var videoDtoFactory = Resolve<IVideoDtoFactory>();
         VideoDetailDto dto = await videoDtoFactory.CreateDetailAsync(loaded);
@@ -129,7 +123,7 @@ public class VideoMapperTests(PostgresFixture postgres) : BaseRepositoryTest(pos
         await seedContext.SaveChangesAsync();
 
         await using var readContext = CreateDbContext<ContentDbContext>();
-        List<VideoEntity> loaded = await readContext.Videos.Include(v => v.Category).ToListAsync();
+        List<VideoEntity> loaded = await readContext.Videos.ToListAsync();
 
         var videoDtoFactory = Resolve<IVideoDtoFactory>();
         IReadOnlyList<VideoSummaryDto> dtos = await videoDtoFactory.CreateManyAsync(loaded);
