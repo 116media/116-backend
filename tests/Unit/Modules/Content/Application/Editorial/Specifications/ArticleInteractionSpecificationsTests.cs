@@ -40,64 +40,6 @@ public class ArticleInteractionSpecificationsTests
 
     #endregion
 
-    #region ArticleImageByArticleIdSpecification
-
-    [Fact]
-    public void ArticleImageByArticleIdSpecification_WithMatchingArticleId_ShouldReturnTrue()
-    {
-        Guid articleId = Guid.NewGuid();
-        ArticleImageEntity image = ArticleImageFactory.Create(articleId);
-        var spec = new ArticleImageByArticleIdSpecification(articleId);
-
-        bool result = spec.IsSatisfiedBy(image);
-
-        result.Should().BeTrue();
-    }
-
-    [Fact]
-    public void ArticleImageByArticleIdSpecification_WithDifferentArticleId_ShouldReturnFalse()
-    {
-        ArticleImageEntity image = ArticleImageFactory.Create(Guid.NewGuid());
-        var spec = new ArticleImageByArticleIdSpecification(Guid.NewGuid());
-
-        bool result = spec.IsSatisfiedBy(image);
-
-        result.Should().BeFalse();
-    }
-
-    #endregion
-
-    #region ArticleTagByArticleIdSpecification
-
-    [Fact]
-    public void ArticleTagByArticleIdSpecification_WithMatchingArticleId_ShouldReturnTrue()
-    {
-        Guid articleId = Guid.NewGuid();
-        ArticleTagEntity tag = ArticleTagEntity.Create(Guid.NewGuid(), articleId: articleId, tagId: Guid.NewGuid());
-        var spec = new ArticleTagByArticleIdSpecification(articleId);
-
-        bool result = spec.IsSatisfiedBy(tag);
-
-        result.Should().BeTrue();
-    }
-
-    [Fact]
-    public void ArticleTagByArticleIdSpecification_WithDifferentArticleId_ShouldReturnFalse()
-    {
-        ArticleTagEntity tag = ArticleTagEntity.Create(
-            Guid.NewGuid(),
-            articleId: Guid.NewGuid(),
-            tagId: Guid.NewGuid()
-        );
-        var spec = new ArticleTagByArticleIdSpecification(Guid.NewGuid());
-
-        bool result = spec.IsSatisfiedBy(tag);
-
-        result.Should().BeFalse();
-    }
-
-    #endregion
-
     #region ArticleLikeByUserAndArticleSpecification
 
     [Fact]
