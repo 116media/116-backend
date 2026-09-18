@@ -26,7 +26,7 @@ public class AdminRemoveCategoryPricingEndpointV1Tests(PostgresFixture db) : Bas
             ctx.Categories.Add(category);
             pricingTier = PricingTierFactory.Create();
             ctx.PricingTiers.Add(pricingTier);
-            CategoryPricingEntity categoryPricing = CategoryPricingFactory.Create(category.Id, pricingTier.Id, 5.99m);
+            CategoryPricingEntity categoryPricing = CategoryPricingFactory.Create(category, pricingTier.Id, 5.99m);
             ctx.CategoryPricing.Add(categoryPricing);
         });
 
@@ -100,7 +100,7 @@ public class AdminRemoveCategoryPricingEndpointV1Tests(PostgresFixture db) : Bas
             pricingTier = PricingTierFactory.Create();
             ctx.PricingTiers.Add(pricingTier);
             CategoryPricingEntity categoryPricing = CategoryPricingFactory.Create(
-                owningCategory.Id,
+                owningCategory,
                 pricingTier.Id,
                 5.99m
             );
