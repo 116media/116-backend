@@ -21,15 +21,10 @@ public class AdminRemoveArtistSocialLinkEndpointV1Tests(PostgresFixture db) : Ba
         return await SeedAsync<ContentDbContext, (ArtistEntity, ArtistSocialLinkEntity)>(ctx =>
         {
             ArtistEntity artist = ArtistFactory.Create();
-            ArtistSocialLinkEntity link = ArtistSocialLinkEntity.Create(
-                Guid.NewGuid(),
-                artist.Id,
-                EnumSocialPlatform.TikTok,
-                "https://tiktok.com/@someone"
-            );
+            artist.SetSocialLink(EnumSocialPlatform.TikTok, "https://tiktok.com/@someone");
+            ArtistSocialLinkEntity link = artist.FindSocialLink(EnumSocialPlatform.TikTok)!;
 
             ctx.Artists.Add(artist);
-            ctx.ArtistSocialLinks.Add(link);
 
             return (artist, link);
         });
