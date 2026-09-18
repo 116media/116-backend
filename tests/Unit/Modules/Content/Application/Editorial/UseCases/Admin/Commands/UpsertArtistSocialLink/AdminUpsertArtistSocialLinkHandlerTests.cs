@@ -46,10 +46,11 @@ public class AdminUpsertArtistSocialLinkHandlerTests
 
         // Assert
         result.SocialLinkId.Should().NotBeEmpty();
-        _artistRepositoryMock.Verify(
-            x => x.AddSocialLinkAsync(It.IsAny<ArtistSocialLinkEntity>(), It.IsAny<CancellationToken>()),
-            Times.Once
-        );
+        artist
+            .SocialLinks.Should()
+            .ContainSingle(link => link.Platform == EnumSocialPlatform.Instagram)
+            .Which.Url.Should()
+            .Be("https://instagram.com/fallyipupa01");
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -59,13 +60,8 @@ public class AdminUpsertArtistSocialLinkHandlerTests
         // Arrange
         ArtistEntity artist = ArtistFactory.Create();
         _artistRepositoryMock.SetupGetByIdOrThrow(artist);
-        ArtistSocialLinkEntity existing = ArtistSocialLinkEntity.Create(
-            Guid.NewGuid(),
-            artist.Id,
-            EnumSocialPlatform.Instagram,
-            "https://instagram.com/old"
-        );
-        _artistRepositoryMock.SetupGetSocialLink(artist.Id, EnumSocialPlatform.Instagram, existing);
+        artist.SetSocialLink(EnumSocialPlatform.Instagram, "https://instagram.com/old");
+        ArtistSocialLinkEntity existing = artist.FindSocialLink(EnumSocialPlatform.Instagram)!;
 
         var command = new AdminUpsertArtistSocialLinkCommand(
             artist.Id,
@@ -79,10 +75,7 @@ public class AdminUpsertArtistSocialLinkHandlerTests
         // Assert — same row, new URL; nothing added.
         result.SocialLinkId.Should().Be(existing.Id);
         existing.Url.Should().Be("https://instagram.com/new");
-        _artistRepositoryMock.Verify(
-            x => x.AddSocialLinkAsync(It.IsAny<ArtistSocialLinkEntity>(), It.IsAny<CancellationToken>()),
-            Times.Never
-        );
+        artist.SocialLinks.Should().ContainSingle();
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
