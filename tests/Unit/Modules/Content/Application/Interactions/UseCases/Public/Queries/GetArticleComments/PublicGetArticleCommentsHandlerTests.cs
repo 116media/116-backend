@@ -7,6 +7,7 @@ using _116.Core.Contracts.Application.Services;
 using _116.Identity.Contracts.Application.DTOs;
 using _116.Identity.Contracts.Application.Services;
 using _116.Shared.Application.Pagination;
+using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Factories.Core;
 using _116.Unit.Tests.Common;
@@ -124,7 +125,7 @@ public class PublicGetArticleCommentsHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenCommentDeleted_AuthorAndBodyAreNull()
     {
         ArticleCommentEntity comment = ArticleCommentFactory.Create(ArticleId, UserId);
-        comment.SoftDelete();
+        comment.SoftDelete(TestConstants.Clock.Instant);
         _articleCommentRepositoryMock.SetupGetCommentsAsync(new List<ArticleCommentEntity> { comment }, totalCount: 1);
 
         PublicGetArticleCommentsResult result = await _handler.Handle(Query(), CancellationToken.None);
