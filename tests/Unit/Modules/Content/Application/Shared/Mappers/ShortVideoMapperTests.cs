@@ -1,5 +1,6 @@
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
+using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Contracts.Application.DTOs;
@@ -25,6 +26,12 @@ namespace _116.Unit.Tests.Modules.Content.Application.Shared.Mappers;
 public class ShortVideoMapperTests : BaseContentHandlerTest
 {
     private readonly Mock<IFileStorageService> _fileStorageMock = MockFileStorageService.Create();
+    private readonly Mock<IVideoRepository> _videoRepositoryMock = MockVideoRepository.Create();
+
+    /// <summary>
+    /// An empty parent-video map, for shorts that stand alone.
+    /// </summary>
+    private static readonly IReadOnlyDictionary<Guid, VideoEntity> NoParentVideos = new Dictionary<Guid, VideoEntity>();
 
     private void SetupFile(Guid fileId, FileReferenceDto file)
     {
@@ -42,7 +49,12 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
         SetupFile(entity.VideoFileId!.Value, FileReferenceDtoFactory.CreateWithStorageUrl(videoUrl));
 
         // Act
-        ShortVideoDto dto = await entity.ToShortVideoDtoAsync(Mapper, _fileStorageMock.Object, CancellationToken.None);
+        ShortVideoDto dto = await entity.ToShortVideoDtoAsync(
+            Mapper,
+            _fileStorageMock.Object,
+            _videoRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dto.VideoUrl.Should().Be(videoUrl);
@@ -55,7 +67,12 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
         ShortVideoEntity entity = ShortVideoFactory.CreateDraft();
 
         // Act
-        ShortVideoDto dto = await entity.ToShortVideoDtoAsync(Mapper, _fileStorageMock.Object, CancellationToken.None);
+        ShortVideoDto dto = await entity.ToShortVideoDtoAsync(
+            Mapper,
+            _fileStorageMock.Object,
+            _videoRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dto.VideoUrl.Should().BeNull();
@@ -77,7 +94,12 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
         SetupFile(entity.VideoFileId!.Value, FileReferenceDtoFactory.CreateWithStorageUrl(videoUrl));
 
         // Act
-        ShortVideoDto dto = await entity.ToShortVideoDtoAsync(Mapper, _fileStorageMock.Object, CancellationToken.None);
+        ShortVideoDto dto = await entity.ToShortVideoDtoAsync(
+            Mapper,
+            _fileStorageMock.Object,
+            _videoRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert — screenshot transformation inserted and extension changed to jpg
         dto.ThumbnailUrl.Should()
@@ -95,7 +117,12 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
         SetupFile(entity.ThumbnailFileId!.Value, FileReferenceDtoFactory.CreateWithStorageUrl(thumbnailUrl));
 
         // Act
-        ShortVideoDto dto = await entity.ToShortVideoDtoAsync(Mapper, _fileStorageMock.Object, CancellationToken.None);
+        ShortVideoDto dto = await entity.ToShortVideoDtoAsync(
+            Mapper,
+            _fileStorageMock.Object,
+            _videoRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert — uses the uploaded thumbnail, not a generated one
         dto.ThumbnailUrl.Should().Be(thumbnailUrl);
@@ -116,6 +143,7 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
         IReadOnlyList<ShortVideoDto> dtos = await entities.ToShortVideoDtosAsync(
             Mapper,
             _fileStorageMock.Object,
+            _videoRepositoryMock.Object,
             CancellationToken.None
         );
 
@@ -133,6 +161,7 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
         IReadOnlyList<ShortVideoDto> dtos = await entities.ToShortVideoDtosAsync(
             Mapper,
             _fileStorageMock.Object,
+            _videoRepositoryMock.Object,
             CancellationToken.None
         );
 
@@ -154,6 +183,7 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
         ShortVideoDto dto = await entity.ToShortVideoDtoAsync(
             Mapper,
             _fileStorageMock.Object,
+            _videoRepositoryMock.Object,
             CancellationToken.None,
             isLiked: true,
             isBookmarked: true
@@ -171,7 +201,12 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
         ShortVideoEntity entity = ShortVideoFactory.Create();
 
         // Act
-        ShortVideoDto dto = await entity.ToShortVideoDtoAsync(Mapper, _fileStorageMock.Object, CancellationToken.None);
+        ShortVideoDto dto = await entity.ToShortVideoDtoAsync(
+            Mapper,
+            _fileStorageMock.Object,
+            _videoRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dto.IsLiked.Should().BeFalse();
@@ -195,6 +230,7 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
         IReadOnlyList<ShortVideoDto> dtos = await entities.ToShortVideoDtosAsync(
             Mapper,
             _fileStorageMock.Object,
+            _videoRepositoryMock.Object,
             likedIds,
             bookmarkedIds,
             CancellationToken.None
@@ -228,6 +264,7 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
             Mapper,
             userLookup.Object,
             _fileStorageMock.Object,
+            _videoRepositoryMock.Object,
             CancellationToken.None,
             isLiked: true,
             isBookmarked: true
@@ -261,6 +298,7 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
             Mapper,
             userLookup.Object,
             _fileStorageMock.Object,
+            _videoRepositoryMock.Object,
             new HashSet<Guid> { liked.Id },
             new HashSet<Guid>(),
             CancellationToken.None
@@ -285,6 +323,7 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
             Mapper,
             userLookup.Object,
             _fileStorageMock.Object,
+            _videoRepositoryMock.Object,
             new HashSet<Guid>(),
             new HashSet<Guid>(),
             CancellationToken.None
@@ -317,6 +356,7 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
             Mapper,
             files,
             authors,
+            NoParentVideos,
             new HashSet<Guid> { entity.Id },
             new HashSet<Guid>()
         );
@@ -352,7 +392,14 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
         };
 
         // Act
-        ShortVideoDto dto = entity.ToShortVideoDto(Mapper, files, authors, new HashSet<Guid>(), new HashSet<Guid>());
+        ShortVideoDto dto = entity.ToShortVideoDto(
+            Mapper,
+            files,
+            authors,
+            NoParentVideos,
+            new HashSet<Guid>(),
+            new HashSet<Guid>()
+        );
 
         // Assert
         dto.ThumbnailUrl.Should().Be("https://cdn.example.com/thumb.jpg");
