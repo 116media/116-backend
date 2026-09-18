@@ -46,7 +46,7 @@ public class PublicGetPopularVideosEndpointV1Tests(PostgresFixture db) : BaseApi
 
             if (ratingCount > 0)
             {
-                video.UpdateRating(average: ratingAverage, count: ratingCount);
+                video.WithRating(average: ratingAverage, count: ratingCount);
             }
 
             video.WithShareCount(shares);
