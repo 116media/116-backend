@@ -22,7 +22,7 @@ public class OrderTotalIntegrityFlowTests(PostgresFixture db) : BaseApiTest(db)
         ContentTypeEntity contentType = ContentTypeFactory.Create();
         CategoryEntity category = CategoryFactory.Create(contentType.Id);
         PricingTierEntity pricingTier = PricingTierFactory.Create();
-        CategoryPricingEntity categoryPricing = CategoryPricingFactory.Create(category.Id, pricingTier.Id, 100m);
+        CategoryPricingEntity categoryPricing = CategoryPricingFactory.Create(category, pricingTier.Id, 100m);
         PromotionLevelEntity promotionLevel = PromotionLevelFactory.Create("Homepage", 7, 200m);
         ContentOrderEntity order = ContentOrderFactory.CreateForCustomer(customer.Id);
 
@@ -74,10 +74,10 @@ public class OrderTotalIntegrityFlowTests(PostgresFixture db) : BaseApiTest(db)
 
         await using ContentDbContext verifyDb = CreateDbContext<ContentDbContext>();
         ContentOrderEntity persistedOrder = await verifyDb.ContentOrders.FirstAsync(o => o.Id == order.Id);
-        persistedOrder.TotalAmountUsd.Should().Be(expectedTotal);
+        persistedOrder.TotalAmountUsd.Amount.Should().Be(expectedTotal);
 
         ContentPaymentEntity payment = await verifyDb.ContentPayments.FirstAsync(p => p.OrderId == order.Id);
-        payment.AmountUsd.Should().Be(expectedTotal);
+        payment.AmountUsd.Amount.Should().Be(expectedTotal);
     }
 
     [Fact]
