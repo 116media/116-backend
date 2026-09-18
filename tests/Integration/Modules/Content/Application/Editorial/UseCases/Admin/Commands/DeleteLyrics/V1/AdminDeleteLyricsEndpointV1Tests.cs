@@ -90,7 +90,7 @@ public class AdminDeleteLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
     }
 
     [Fact]
-    public async Task DeleteLyrics_AsSuperAdmin_LinkedToVideo_ClearsVideoHasLyricsFlag()
+    public async Task DeleteLyrics_AsSuperAdmin_LinkedToVideo_DeletesTheLyricsAndKeepsTheVideo()
     {
         Guid categoryId = Guid.Empty;
         VideoEntity video = await SeedAsync<ContentDbContext, VideoEntity>(ctx =>
@@ -116,20 +116,12 @@ public class AdminDeleteLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
         var created = await createResponse.ReadAsAsync<AdminCreateLyricsResponse>();
 
-        await using (ContentDbContext linkedCtx = CreateDbContext<ContentDbContext>())
-        {
-            VideoEntity? linkedVideo = await linkedCtx.Videos.FindAsync(video.Id);
-            linkedVideo!.HasLyrics.Should().BeTrue();
-        }
-
         var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Lyrics}/{created.Lyrics.Id}");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
-        VideoEntity? persistedVideo = await ctx.Videos.FindAsync(video.Id);
-        persistedVideo.Should().NotBeNull();
-        persistedVideo!.HasLyrics.Should().BeFalse();
         (await ctx.Lyrics.FindAsync(created.Lyrics.Id)).Should().BeNull();
+        (await ctx.Videos.FindAsync(video.Id)).Should().NotBeNull();
     }
 }
