@@ -22,7 +22,7 @@ public class AdminGetPackageByIdHandlerTests : BaseContentHandlerTest
     public AdminGetPackageByIdHandlerTests()
     {
         _packageRepositoryMock = MockPackageRepository.Create();
-        _handler = new AdminGetPackageByIdHandler(_packageRepositoryMock.Object, Mapper);
+        _handler = new AdminGetPackageByIdHandler(_packageRepositoryMock.Object, CreatePackageDtoFactory());
     }
 
     #region Success Cases
@@ -32,7 +32,7 @@ public class AdminGetPackageByIdHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         PackageEntity package = PackageFactory.CreateDefault();
-        _packageRepositoryMock.SetupGetByIdWithSlotsOrThrow(package);
+        _packageRepositoryMock.SetupGetByIdOrThrow(package);
 
         var query = new AdminGetPackageByIdQuery(Id: package.Id);
 
@@ -52,7 +52,7 @@ public class AdminGetPackageByIdHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         var nonExistentId = Guid.NewGuid();
-        _packageRepositoryMock.SetupGetByIdWithSlotsOrThrowNotFound(nonExistentId);
+        _packageRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentId);
 
         var query = new AdminGetPackageByIdQuery(Id: nonExistentId);
 
