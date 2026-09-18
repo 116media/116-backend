@@ -1172,10 +1172,10 @@ stateDiagram-v2
 
 ### C.4 The changes
 
-1. **Twelve types demote to `Entity<Guid>`** (C.2.1). They lose events and their own `DbSet`
-   is kept only where EF needs it for the owned collection. Each root gains the creation
-   method its members need: `Article.AddImage(...)`, `Order.AddItem(categoryId, tiers, …)`
-   constructing the item internally (closing C.2.4), `Package.AddSlot(...)`.
+1. **Twelve types demote to `Entity<Guid>`** (C.2.1). They lose events; **their `DbSet`s
+   stay** (D13). Each root gains the creation method its members need:
+   `Article.AddImage(...)`, `Order.AddItem(categoryId, tiers, …)` constructing the item
+   internally (closing C.2.4), `Package.AddSlot(...)`.
 2. **Twenty-six navigations become id-only** (C.2.2). The FK columns already exist, so this is
    a **no-migration** change per aggregate: delete the navigation, delete its EF configuration
    line, delete every `.Include(...)` of it, and re-point the mapper at the batched lookup the
@@ -1258,7 +1258,7 @@ stateDiagram-v2
 8. **Clock injection** across the 29 sites; the ten interaction factories simply drop their
    `CreatedAt = DateTime.UtcNow` line, since the audit interceptor already stamps it.
 9. **`Update()` deleted per repository** (C.2.10, D4) as its callers convert to tracked
-   mutation, and the 137 specifications inline into their call sites (D5).
+   mutation, and the specification layer is hardened per **Part E** rather than inlined (D5).
 
 ---
 
@@ -1315,6 +1315,633 @@ by 15.1. No Mailer-specific work.
 
 ---
 
+## Part E — Content specification hardening
+
+The owner's decision on D5, specified in full. The measured state the decision was taken
+against: 137 specification classes in 21 files behind 117 `ApplySpecification` call sites;
+105 classes instantiated at exactly one site, 16 at two, 3 at three, 1 at four, and **12 at
+zero**; `.Or(` composition used nowhere in the repository; `IsSatisfiedBy` used by production
+code exactly once repo-wide (`AuthRepository.IsUserAdmin`, Identity) and zero times in Content.
+The layer briefly landed inlined (the Sep 13–14 series); this part restores it and makes it
+earn its keep.
+
+### E.0 Where a rule lives — the boundary this part enforces
+
+| Rule kind | Home | Mechanism |
+| --- | --- | --- |
+| Selection / classification of rows | Specification class | `ApplySpecification` in the repository |
+| The same selection re-checked on a loaded object | The same specification | `IsSatisfiedBy` in the handler |
+| Lifecycle transition guard | The aggregate | Guarded entity method (15.5 / 15.12) — **never** a specification |
+| Stacked filters | Composition | `.And` / `.Or` / `.Not` / `AndAll` / `OrAll` at the call site |
+
+The 11 status checks in the Approve/Reject/Publish handlers and the three submission
+`Status != Pending` guards are transition guards: 15.12 moves them **into the entities**, so
+they are explicitly out of scope here — converting them to specifications would scatter
+aggregate rules outward, the opposite of R9/R12.
+
+### E.1 Restore the layer
+
+The 21 specification files, the six `Specification`-returning query builders with their
+contracts, and the spec/builder unit test files are restored from history as forward commits;
+the 22 repositories re-point from the inlined predicates back to `ApplySpecification`. The
+tracked-mutation change (15.18) and the exclusive-clear flush fix are preserved — the six
+attach-`Update` members stay deleted from the restored repositories. The repository
+integration tests added during the inlining stay: they prove predicate behaviour against real
+Postgres regardless of where the predicate lives.
+
+### E.2 The 12 unused specifications — adopt or delete, each investigated
+
+| Specification | Verdict | Evidence |
+| --- | --- | --- |
+| `TagByNameSpecification` | **Fix, then adopt.** | `TagRepository.GetByNameAsync` hand-writes `t.Name.ToLower() == name.ToLower()` while the spec says `tag.Name == name` — the spec was dead because its semantics were wrong (case-sensitive). It becomes `EF.Functions.ILike(tag.Name, name)` and `GetByNameAsync` applies it. `GetByNamesAsync` stays hand-written: set-based lowered matching has no spec shape. |
+| `ArtistByIdSpecification`, `ShortVideoByIdSpecification` | **Adopt.** | Both have a query-side site the base cannot serve: `ArtistRepository.GetTotalsAsync` filters the `IQueryable` so the five counts project server-side in one statement (no entity is loaded), and `ShortVideoRepository.ApplyEngagementDeltaAsync` is an `ExecuteUpdateAsync` row selector (no entity is materialised). This is the rule-5 boundary — a by-id specification is legitimate exactly where `GetById*`/`Exists*` structurally cannot reach. |
+| `AlbumByIdSpecification`, `ContentTypeByIdSpecification`, `CustomerByIdSpecification`, `LyricsRevisionByIdSpecification`, `PricingTierByIdSpecification`, `PromotionLevelByIdSpecification`, `SubmissionByIdSpecification`, `TagByIdSpecification`, `TranslationByIdSpecification` | **Delete.** | Verified per entity against every queryable touch of its set: each is reached only through `RepositoryBase.GetByIdAsync`/`GetByIdOrThrowAsync`/`ExistsAsync`, which filter generically (`entity.Id.Equals(id)`, `RepositoryBase.cs:42/49/56`). None has an `ExecuteUpdate`/`ExecuteDelete` selector or an id-filtered projection. Adopting one would mean overriding the base purely to route the identical predicate through a class — ceremony shadowing the base rule, nine times over. |
+
+### E.3 `IsSatisfiedBy` — the production adoptions
+
+Each site below evaluates a **selection rule** on an already-loaded entity while a
+specification (existing or newly named) encodes the same rule for queries — the dual-use the
+method exists for. No other `IsSatisfiedBy` calls are added; usage follows need, never the
+reverse.
+
+| Specification | Replaces this hand-written check | Site |
+| --- | --- | --- |
+| `LyricsByStatusSpecification(Published)` | `lyrics.Status == EnumContentStatus.Published` after the by-video load | `PublicGetLyricsByVideoIdHandler.cs:43` |
+| `ActiveShortVideoSpecification` | `shortVideo is null \|\| !shortVideo.IsActive` after the by-slug load | `PublicGetPublicShortBySlugHandler.cs:40` |
+| `ActivePackageSpecification` | `package is null \|\| !package.IsActive` validating the ordered package | `AdminCreateOrderHandler.cs:54` |
+| `PendingLyricsRevisionSpecification` *(new)* | `revision.Status == EnumRevisionStatus.Pending` gating the vote-threshold auto-accept | `PublicVoteOnLyricsRevisionHandler.cs:75` |
+| `PendingTranslationRevisionSpecification` *(new)* | same gate on the translation path | `PublicVoteOnTranslationRevisionHandler.cs:72` |
+
+Investigated and **excluded**, with reasons:
+
+- `OrderPaidEffectsHandler.cs:120-124/:176-180/:227` — the `IsPromoted && PromotionLevelId ==
+  effect… && PromotedUntil == effect…` checks compare the stamp against the *paid effect*, an
+  idempotency verification; `PromotedArticleSpecification`/`PromotedVideoSpecification` encode
+  a different rule (published, unexpired). Not equivalent; not adopted.
+- `PublicGetVideoFeedHandler.cs:43` — filters loaded pinned categories by content-type *name*;
+  no specification encodes that rule, and after 15.11 the navigation it reads is gone. Stays a
+  plain in-memory filter.
+- Every transition guard (E.0).
+
+### E.4 Specifications that exist but are skipped where they should apply
+
+`LyricsSubmissionRepository.GetPendingWithMatchingLyricsAsync` hand-writes
+`submission.Status == EnumSubmissionStatus.Pending` two methods below the same file's
+`ApplySpecification(new SubmissionByStatusSpecification(...))` — the query re-points through
+the specification. Optional, recorded not mandated: a
+`ContentItemTierByIdAndItemIdSpecification` would give the tier lookups
+(`GetItemTierByIdAsync`/`OrThrowAsync`) the same two-key shape the item and slot lookups
+already have.
+
+### E.5 Composition — making `Or`/`And`/`Not` load-bearing
+
+- **`OrAll` gets its one genuine home.** `ArtistHasContentSpecification` is already a four-way
+  disjunction hidden in a single lambda. It decomposes into four named, independently
+  reusable rules — `ArtistHasPublishedLyricsSpecification`,
+  `ArtistHasPublishedVideosSpecification`, `ArtistHasFullLengthReleaseSpecification`,
+  `ArtistHasPublishedArticleSpecification` — composed with `Specification.OrAll`. The per-row
+  counts in `GetPublicDirectoryAsync`/`GetTotalsAsync` stay inline (EF cannot invoke shared
+  expressions inside a projection; the existing doc comment already records this) but remain
+  term-for-term aligned with the four named rules.
+- **`And` stops being repeated by hand inside sibling specs.** `GossipCategorySpecification`,
+  `ExclusiveCategorySpecification` and `DefaultLyricsCategorySpecification` each restate
+  `&& category.IsActive`; they compose `ActiveCategorySpecification` internally instead, so
+  "active" is defined once.
+- **`PinnedToFeedCategorySpecification` drops its embedded optional filter.** The
+  `(contentTypeId == null || …)` disjunct leaves the spec; the call site composes
+  `.And(new CategoryByContentTypeSpecification(id))` when the filter is present — the same
+  shape `GetActiveByContentTypeAsync` already uses.
+- The existing `.And` sites (five repositories, six query builders, Identity) and the two
+  `.Not()` sites stay as they are. **No artificial composition is added anywhere** — a forced
+  `Or` would be the same disease as the 12 dead specs.
+
+### E.6 Duplicates — kept now, one generic later
+
+The per-entity by-id copies that are actually used (`Article`, `Video`, `Lyrics`, `Category`,
+`ContentOrder`, `Package`, `PackageSlot`, `Playlist`, `ArticleComment`, `TranslationRevision`)
+stay as they are, by owner decision. The agreed future direction — a Shared-kernel
+
+```csharp
+public class ByIdSpecification<TEntity>(Guid id) : Specification<TEntity>
+    where TEntity : Entity<Guid>
+```
+
+in `Shared/Application/Specifications/` — is the target of a **separate cross-module pass**
+that de-duplicates Identity's, Core's and Content's specifications together. Two-key scoped
+lookups (`ArticleCommentByIdInArticle`, `PackageSlotByIdInPackage`,
+`ContentOrderItemByIdAndOrderId`) are not duplicates of it: the pairing is the rule, and they
+stay named. Kernel entry rule for that later pass: a primitive is promoted only when it has
+three or more live duplications and needs no module-local type.
+
+### C.4b Member `DbSet`s stay — what the first demotion found
+
+The rollout plan's D-a called for deleting all twelve member `DbSet`s from `ContentDbContext`,
+one step further than Identity, on the grounds that *"the direct reads are what produced the
+god repositories."* The diagnosis is right — Content's repositories really do read member
+tables directly (`Context.ArtistSocialLinks.Where(...)`, `Context.ArticleTags`,
+`Context.ContentItemTiers`) and that habit is what grew them. The mechanism is wrong, and the
+first slice (`ArtistSocialLinkEntity`) showed why.
+
+**It does not enforce anything.** `Context.Set<ArtistSocialLinkEntity>()` compiles and reaches
+the same table with no `DbSet` in sight; the integration tests reached for exactly that within
+minutes of the property being removed. Deleting the property removes convenience, not access.
+
+**It silently renames the table.** EF derives a table name from the `DbSet` property name, so
+dropping `public DbSet<ArtistSocialLinkEntity> ArtistSocialLinks` renamed `artist_social_links`
+to `artist_social_link_entity` — a destructive migration that no line of the diff mentions.
+Keeping the `DbSet`, or pinning `builder.ToTable("artist_social_links")` on all twelve
+configurations, are the only two ways to avoid it; the first costs nothing.
+
+**No aggregate rule is violated by keeping it.** The DDD rule is *one repository per aggregate
+root, and a member is loaded and mutated only through its root* — a `DbSet` is an ORM mapping
+detail with no standing in that rule. The rule is already enforced by the compiler:
+`IRepository<TEntity, TId>` is constrained to `IAggregateRoot` (D7/15.1), so a demoted member
+**cannot** have a repository. Identity, the finished reference, demoted
+`UserRoleEntity`/`RolePermissionEntity` to `Entity<Guid>` and kept both `DbSet`s for this
+reason.
+
+**What actually closes the direct reads** is the rest of the demotion, which this stage does
+anyway: delete the repository's member methods (`GetSocialLinksAsync`, `GetSocialLinkAsync`,
+`AddSocialLinkAsync`, `RemoveSocialLink`) and route every handler through the root's verbs.
+Once those are gone there is no direct read left to tempt anyone, and the `DbSet` is an unused
+property that keeps the table name. That is the shape the remaining eleven members follow.
+
+### C.4c App-assigned keys must be declared, or member inserts are lost
+
+The first member written through a root's collection did not persist, and nothing failed
+loudly: EF tracked the new child as `Modified`, issued an `UPDATE` against a row that does not
+exist, and surfaced a `DbUpdateConcurrencyException` ("expected to affect 1 row, actually
+affected 0") from a path that was plainly an insert. The cause is that every identifier in this
+codebase is assigned by the domain factory (`Guid.NewGuid()` inside `Create`), while EF's
+default for a `Guid` key is store-generated — so a child arriving with its key already set
+looks like an existing row being re-attached.
+
+Nothing hit this before because no member was ever added through a root: every member was
+created by a repository calling `Context.X.AddAsync(member)`, which states the intent
+explicitly. The moment `AddSocialLinkAsync` becomes `artist.SetSocialLink(...)`, the intent has
+to come from the model instead.
+
+`ContentDbContext.OnModelCreating` now declares it once for every `Guid` key:
+
+```csharp
+foreach (IMutableEntityType entityType in modelBuilder.Model.GetEntityTypes())
+{
+    IMutableProperty? key = entityType.FindPrimaryKey()?.Properties.SingleOrDefault();
+
+    if (key?.ClrType == typeof(Guid))
+    {
+        key.ValueGenerated = ValueGenerated.Never;
+    }
+}
+```
+
+There is no schema change — `has-pending-model-changes` reports none before and after — because
+the keys never had a database default to drop. It is declared as a convention rather than a
+`ValueGeneratedNever()` line per configuration so the remaining members cannot silently
+regress: a missed line would not fail the build, it would drop writes.
+
+**Gate for every remaining member:** a demotion is not done until a test adds a row *through
+the root* and reads it back from a second context. Hydration-only tests pass while inserts are
+being dropped.
+
+### C.5 What 15.12 and 15.17 changed
+
+**15.12 — the seven guards.** `LyricsRevisionEntity.Accept/Reject`,
+`LyricsTranslationRevisionEntity.Accept/Reject` and `LyricsSubmissionEntity.Approve/Reject/
+RequestRevision` all return `bool` in the Stage 6 shape: the same decision twice returns
+`false` and raises nothing, a flip to a different outcome throws. `RevisionAlreadyDecided`
+and `SubmissionAlreadyDecided` joined `ContentRuleCodes` behind a new `ReviewRuleProblems`
+catalog, both mapping to 409 — the submission code reuses the existing `NotPending` phrasing
+so today's HTTP contract is unchanged, while the revision code surfaces a new
+`AlreadyDecided` message because a second decision previously returned 200 and silently
+re-applied the text and re-notified the proposer.
+
+The two `AdminDecide*` handlers turn `false` into that 409. `AdminRejectLyricsSubmission`
+and `AdminRequestLyricsSubmissionRevision` dropped their own `Status != Pending` checks — the
+transition is their first mutation, so the entity is now the only place the rule lives.
+`AdminApproveLyricsSubmission` **keeps** its pre-check: it creates and commits the lyrics
+record before calling `Approve`, so removing the check would let an already-approved
+submission create a duplicate record before the guard fired. The two vote handlers treat
+`false` as the harmless race it is and simply skip the text apply.
+
+**15.17 — the clock.** The 17 `CreatedAt = DateTime.UtcNow` factory lines are gone; the
+auditing interceptor already overwrote them unconditionally on insert, so production
+behaviour is identical. Twelve lifecycle sites take the instant instead: `Publish(now)` ×3,
+`ForceUnpromote(by, reason, now)` ×3, `ContentPayment.Verify(admin, receipt, now)`,
+`Category.PinToFeed(now)`, `ArticleComment.SoftDelete(now)`, `Artist.ClaimOwnership(user,
+now)`, `Video.AttachYoutubeVideoUrl(url, now)`, and `Artist.Create/Update(..., DateOnly
+today)` for the birthdate guard. Fourteen handlers inject `TimeProvider`.
+
+Two things the test suite exposed and that are worth keeping in mind:
+
+- The repository **unit** tests build a bare in-memory context with no interceptor, so
+  nothing stamped `CreatedAt` once the factories stopped — and the column is required. They
+  now register a test-only `CreatedAtStampingInterceptor` that fills the value **only when
+  unset**, standing in for the application's auditing interceptor while leaving the
+  timestamps an ordering or time-window test arranges intact.
+- Assertions that compared a stamp to wall-clock `UtcNow` became deterministic: they now
+  assert the exact instant the caller passed. The two `OrderPaidEffects` re-stamp tests
+  likewise state their ordering explicitly (`PaidAt.AddMinutes(1)` for "unpromoted after
+  payment") instead of relying on real time to order the two events.
+
+### C.6 What 15.10 changed — the twelve demotions
+
+All twelve members are `Entity<Guid>` with `internal` factories, created and removed only
+through their root's verbs: `Artist.SetSocialLink/RemoveSocialLink/FindSocialLink`,
+`Category.SetPricing/RemovePricing/FindPricing`, `Package.AddSlot/RemoveSlot/FindSlot`,
+`Playlist.AddVideo/RemoveVideo/ContainsVideo`, `Article.AddImage/RemoveCoverImage/
+RemoveBodyImages/ReplaceArtists`, `Article/Video/Lyrics.ReplaceTags`, and
+`ContentOrder.AddItem/AddTier/RemoveItem/RemoveTier/FindItem/AttachPayment/RejectPayment`.
+Each follows the Identity `GrantRole` shape — business verb, `bool` for the no-op, event only
+on change — and `ReplaceTags` raises one `TagGraphChangedEvent` per tag joined or left,
+returning `false` on an identical set.
+
+The two member-raised events moved to their roots: `CategoryPricing`'s upsert raises
+`CategoryChangedEvent` from `Category.SetPricing`, and `PaymentRejectedEvent` moved from
+`ContentPayment.Reject` (now `internal`, guards only) to `ContentOrder.RejectPayment`, which
+is the only caller. `AdminRejectPaymentHandler` correspondingly loads the order, guards
+`Payment is null` and calls the root verb — the `OrderPaymentFactory` lookup survives only for
+the two read paths (payment proof upload, receipt email), now resolving through
+`GetByIdWithItemsAsync(...).Payment` instead of a payment-set query.
+
+Repository member methods are gone: `AddImageAsync`, `AddItemAsync`/`AddItemTierAsync`/
+`AddPaymentAsync`, `GetItemById*`/`GetItemTierById*`/`GetPaymentByOrderIdAsync`,
+`RemoveItem*`, `GetTagsBy*`, `GetSlotBy*`, `GetPricing*`, `GetSocialLink*` and
+`VideoExistsInPlaylistAsync`. Handlers hydrate the root — every root repository now declares
+its member graph once in a `Query()` override (D-b; Order and Package split the query) — and
+call the verb. Dropping `AdminAddItemTierFactory`/`AdminRemoveItemTierHandler`'s
+transaction + reload + recalculate dance is the visible payoff: `AddTier`/`RemoveTier`
+recalculate the total in the same tracked instance, so the loaded order *is* the result.
+Dependencies the rewiring left unread were removed rather than kept as ballast:
+`ContentOrderRepository` no longer takes `ContentOrderErrors`, and the AddOrderItem, SubmitOrder
+and VerifyPayment factories no longer take `IContentOrderRepository`.
+
+Member by-id specifications whose only site was a deleted member method died with it
+(`PackageSlotById`, `PackageSlotByIdInPackage`, `PlaylistVideoByPlaylistAndVideo`,
+`ArticleImageByArticleId`, `ArticleTagByArticleId`, `VideoTagByVideoId`); their rule — "this
+member, inside this root" — now lives in the root's `Find*`/`Contains*` method over the loaded
+collection, which is where a rule about an already-loaded aggregate belongs (E.0).
+
+Test-side, `_116.Tests.Fixtures` joined `_116.Unit.Tests` in `InternalsVisibleTo` so builders
+and factories can still reconstitute member state directly while production code cannot; the
+member builders now take the root and add through its verb, and the former member-method
+repository tests assert the same facts through the root (`AddItem` persists the row,
+`GetByIdOrThrowAsync` hydrates `Items`/`Tiers`/`Payment`, `RemoveTier` deletes the row) — the
+C.4c gate, including one integration test that attaches a payment through a tracked root and
+reads it back from a second context against Postgres.
+
+Navigations 15.11 will delete were deliberately **kept** in this pass where a live
+specification still reads them (`ArticleArtist.Article` for `ArtistHasPublishedArticle`,
+`ContentPayment.Order` for the payment search, the junction `.Tag` navs, the item
+`Category`/`PromotionLevel` navs): each pass makes one kind of change, and those die in 15.11
+with their query-side rewrites.
+
+### C.7 What 15.14 changed — `HasLyrics` derived
+
+The `videos.has_lyrics` column, `MarkHasLyrics`/`UnmarkHasLyrics` and the three maintaining
+handler sites are gone; the fact is computed from its source of truth in `VideoRepository`:
+`HasPublishedLyricsAsync(videoId)` (an EXISTS over `LyricsByVideoIdSpecification` +
+`LyricsByStatusSpecification(Published)`) and its batch companion
+`GetIdsWithPublishedLyricsAsync(videoIds)`, which returns the linked subset in one query.
+The semantics changed to *published* lyrics as the spec asks — the old flag was set the
+moment a draft lyrics record was created, so the public API claimed lyrics nobody could see.
+
+Every video DTO keeps its `HasLyrics` field; the four `VideoMapper` projections now take the
+value as a parameter, `VideoDtoFactory` resolves it (per-video probe on the two detail paths,
+one batched set for the list paths, exposed as `ResolveVideosWithLyricsAsync` for the
+promotion feed's multi-list assembly), and the four handlers that map without the factory
+(video feed, promotion feed, own-rated, own-shared) batch the same set themselves — one
+extra query per request, never per card. The lyrics create/update handlers now validate a
+supplied video id with `ExistsOrThrowAsync` instead of materializing the aggregate to flip
+a flag; the delete handler no longer touches videos at all.
+
+Migration `DropVideoHasLyrics` (generated, unapplied) drops the column and adds the partial
+index `ix_lyrics_video_id_published` on `lyrics(video_id) WHERE status = 'Published'`. One
+correction to this plan's premise: an unfiltered `ix_lyrics_video_id` already existed (EF's
+conventional FK index), and it stays — `GetByVideoIdAsync` reads all statuses and the FK's
+`SET NULL` cascade needs it — so the configuration declares both indexes explicitly.
+
+### C.8 What 15.11 changed — navigations become ids
+
+All four slices have landed. Each deletes the navigation, rewrites its EF configuration to
+the navigation-less `HasOne<T>().WithMany().HasForeignKey(...)` form (the FK column and delete
+behaviour are unchanged, so `has-pending-model-changes` stays clean), deletes every `Include` of
+it, and re-points the readers.
+
+**Commerce** — `ContentOrder.Customer`, `ContentOrder.Package`, `ContentOrderItem.Category`,
+`ContentOrderItem.PromotionLevel`, `ContentItemTier.PricingTier`, and the two back-references
+kept back in 15.10 (`ContentPayment.Order`, plus `ContentOrderItem.Order` and
+`ContentItemTier.OrderItem`). The order's `Query()` is down to its own members
+(`Items → Tiers`, `Payment`).
+
+**Catalogue** — `Category.ContentType`, the dead `Category.PackageSlots`,
+`CategoryPricing.PricingTier` and `PackageSlot.Category`. `CategoryRepository.Query()` keeps only
+`Pricing`; `PackageRepository.Query()` keeps only `Slots`, and its three-level
+`Slots → Category → Pricing/ContentType` chains are gone.
+
+**The shapes the readers take.** Mapper-side reads (D-e) become pre-resolved lookups handed in by
+a DTO factory, which is where the batching lives: `OrderLookups` (customers, categories,
+promotion levels, pricing tiers) behind the new `IContentOrderDtoFactory`, `CategoryLookups`
+(posters, content types, pricing tiers) behind the existing `ICategoryDtoFactory`, and a resolved
+category map behind the new `IPackageDtoFactory` — which the package price needs anyway, since it
+sums each required slot's category pricing. Five repositories gained the batch primitive
+`GetByIdsAsync(ids) → IReadOnlyDictionary<Guid, T>` (Customer, Category, ContentType,
+PromotionLevel, PricingTier) and `CategoryRepository.GetPricingByCategoriesAsync` is deleted:
+`GetByIdsAsync` returns the categories with their `Pricing` loaded, which is what its one caller
+wanted. Its three `CategoryPricing*Specification`s were left with no site and are deleted with it;
+the rule now lives in `Category.FindPricing` over the loaded collection.
+
+Query-side reads (D-d) become correlated `EXISTS` inside the specification, fed the row source by
+the repository — the pattern `ArtistHasPublishedLyricsSpecification(IQueryable<LyricsEntity>)`
+already set. `ContentOrderSearchSpecification(search, customers)` replaces the customer-name,
+-email and -company search that used to join through `order.Customer`, and it is reached through
+`Build(IQueryable<CustomerEntity>)`: **query sources arrive at `Build`, never as a constructor
+argument or a filter step**, matching the four `Build(source)` builders that already exist
+(`PopularArticles`, `PopularVideos`, `PopularTags`, `AllTags`). The payments listing re-roots onto
+its aggregate, as the plan requires: `GetAllPaymentsAsync` becomes
+`GetOrdersWithPaymentAsync`, paging orders that carry a payment behind
+`OrderHasPaymentSpecification` + `OrderPaymentByStatus/ByMethod`, and the payment summary reads
+the customer name and order status from the order it is now reached through.
+
+Three reads that were not projections moved with their owners: `CommerceCustomerNotifier` resolved
+`order.Customer.Email` for the invoice, receipt and rejection emails and now loads the customer by
+id, exactly as its other four methods already did; its invoice item summary takes the resolved
+categories; and the four `category.ContentType.Name` guards (pin-to-feed, set-exclusive, and the
+two in update-category) load the content type by id before comparing. Four builder reflection
+hacks died with the navigations they existed to satisfy (`ContentOrder.Customer`,
+`ContentOrderItem.Category`, `ContentPayment.Order`, `Category.ContentType`,
+`PackageSlot.Category`), leaving the fixtures setting ids only.
+
+One measured behaviour change worth recording: the public video feed now makes two batched file
+calls per request (one for video thumbnails, one for category posters, since the category factory
+owns posters) where it previously made one combined call. Both are batched — never per card — and
+the feed test asserts exactly two.
+
+**Editorial** — the largest slice: `Category`, `Customer` and `PromotionLevel` on all three
+content roots, `Lyrics.Video`, `ShortVideo.ParentVideo`, `PlaylistVideo.Video`,
+`ArticleComment.Article`, the three junction `.Tag` navigations, `ArticleArtist.Article`, and the
+five dead ones (`Video.Shorts`, `ArticleComment.ParentComment`, `ArticleArtist.Artist`,
+`StreamingLink.Album`, `StreamingLink.Lyrics`). 57 `Include`s went with them.
+
+The mapper-side answer here is one shared carrier rather than a factory per content type:
+`ContentLookups` (categories, customers, promotion levels, tags) resolved by the new
+`IContentLookupFactory` — one query per kind of row per request, never one per projected entity —
+and read through named helpers (`lookups.CategoryName(id)`, `CustomerName(id?)`,
+`PromotionLevelName(id?)`). The three junction `TagDto` Mapster configs, which mapped
+`src.Tag.Id/Name/Slug`, become one `TagEntity → TagDto` config plus a per-root `TagDtos` helper
+that reads the resolved map and drops a tag row that no longer exists. `VideoRepository` and
+`TagRepository` gained `GetByIdsAsync`, and `VideoRepository` also `GetPublishedByIdsAsync`,
+which is how the playlist projection now applies the published-only rule the filtered `Include`
+used to carry: `PlaylistDtoFactory` resolves the entries' published videos and the mapper drops
+any entry whose video is absent. `ShortVideoMapper` resolves its parent-video slug the same way,
+batched once per list.
+
+Query-side, five more rules became correlated `EXISTS` with the source injected:
+`VideoByTagSlugSpecification(slug, tags)`, `LyricsSimilarByVideoCategorySpecification(categoryId,
+excludeId, videos)`, `Article`/`VideoBySpotPrioritySpecification(spot, promotionLevels)`, and
+`ArtistHasPublishedArticleSpecification(articleArtists, articles)` — the last one composed into
+`ArtistHasContentSpecification`, which gained the same source. `VideoQueryBuilder` follows the
+house rule the Commerce builders set: the tag rows arrive at `Build(tags)`, never as a filter
+argument. Three reads that were not projections moved with their navigations: the comment
+listing's "article is published" half, and the two artist tagged-article counters, all now
+`Context.Articles.Any(...)` probes.
+
+One trap worth recording: a blanket `Include` strip also removed three includes whose navigation
+is an *interaction* back-reference and therefore still live (`ArticleBookmark.Article`,
+`ArticleLike.Article`, `VideoRating.Video`). Nothing failed to compile — the navigation simply
+came back null and the endpoints returned 500, caught by the integration suite. Those three were
+restored and then removed properly with the Interactions slice.
+
+**Interactions** — the last slice: the 13 back-references from an interaction row to the content
+it records (`ArticleBookmark`/`Like`/`Share`.`Article`, `ArticleCommentLike.Comment`,
+`Lyrics{Like,Share,ViewEvent}.Lyrics`, `ShortVideo{Like,Bookmark,Share,ViewEvent}.ShortVideo`,
+`Video{Rating,Share}.Video`). Eight of them existed only to carry a "the target is still
+published/active" filter, and those become the same correlated `EXISTS` the rest of the group
+uses — `Context.Articles.Any(article => article.Id == like.ArticleId && article.Status ==
+Published)` — written inline in the repository rather than in a specification, because the
+predicate is about the *target* while the specification's subject is the interaction row.
+
+The six listings that projected through the navigation (`GetBookmarkedArticlesAsync`,
+`GetLikedArticlesAsync`, `GetShared*`, `GetLiked`/`GetBookmarkedShortVideosAsync`,
+`GetRatedVideosByUserAsync`) adopt the two-step shape `GetSharedArticlesAsync` already used: page
+the interaction rows down to ids and timestamps, then load that page's targets in one keyed query.
+Each of the three repositories owns one private `Load*Async(ids, ct)` helper for the second step,
+so the `Include` is gone without a per-row query appearing in its place, and the page is still
+ordered and counted by the interaction row as before.
+
+**Builder reflection** (verification #9) is now **zero in the Content fixtures** — the eleven
+`GetProperty(...).SetValue(...)` hacks are gone, including the last two that were not navigation
+related: the category pin stamp now calls `PinToFeed(now)` and the order payment now calls
+`AttachPayment()`. The three remaining sites in the repository are Identity's, out of scope.
+
+### C.9 What 15.13 changed — the six bulk `Update(...)` become verbs
+
+Per D-f the six bulk setters are gone, replaced by the verbs the use cases actually invoke:
+
+| Root | Verbs |
+| --- | --- |
+| `ArticleEntity` | `Retitle(title, slug)`, `ReviseBody(headline, body, orphanedKeys?)`, `Recategorize(categoryId)`, `AssignCommission(customerId, orderItemId, socialBoost)`, `ReviseSeo(metaTitle, metaDescription)` |
+| `VideoEntity` | `Retitle`, `ReviseDescription(description)`, `Recategorize`, `AssignCommission`, `ReviseSeo` |
+| `LyricsEntity` | `Retitle(songTitle, artistName, slug)`, `ReviseText(lyricsText, language)`, `Recategorize`, `Relink(videoId)`, `AssignCommission(customerId, orderItemId)`, `ReviseSeo(metaTitle, metaDescription, structuredData)` |
+| `CategoryEntity` | `Rename(name, slug)`, `Redescribe(description)`, `Reclassify(isGossip, isExclusive, isDefaultForLyrics)` |
+| `ArtistEntity` | `Rename(name)`, `ReviseProfile(bio, realName, aliases, birthdate, hometown, today)` |
+| `AlbumEntity` | `Rename(name)`, `SetCoverImage(coverImageFileId)`, `ReviseRelease(releaseYear, label, releaseType)` |
+
+Every verb returns `bool` and writes nothing when the incoming values match the current ones,
+the shape `ReplaceTags` and Identity's `Revoke` already set. Where the bulk method carried the
+editability gate — Article and Video — each verb still calls
+`ContentPublicationState.EnsureEditable` and calls it **before** the no-op check, so a published
+root refuses an edit exactly as it did when one call did everything; a no-op check placed first
+would have let a same-valued edit through on content that is no longer editable. The three
+`UpdateSeo` methods are renamed `ReviseSeo` and stay deliberately ungated: SEO metadata has its
+own use case and is maintained after publication.
+
+Two roots raise a change notice, and a handler now calls two or three verbs where it called one,
+so the notice is deduplicated inside the aggregate: private `MarkChanged()` on `CategoryEntity`
+and `MarkArtistChanged()` on `AlbumEntity` (and the same guard on `ArtistEntity`) add the event
+only when no event of that type is already pending. One admin edit therefore still produces one
+`CategoryChangedEvent` / `ArtistChangedEvent`, and the cache handler is invalidated once.
+
+Two ambiguities die with the bulk signatures. `AdminUpdateAlbumHandler` had to re-pass
+`album.CoverImageFileId` into `Update` so the edit would not null it, and
+`AdminUploadAlbumCoverHandler` had to re-pass the name, year, label and release type to set only
+the cover; both now call the one verb they mean (`ReviseRelease`, `SetCoverImage`). The Lyrics
+verbs also split `ValidateRequiredFields`: `Retitle` guards the song title, artist name and slug,
+`ReviseText` guards the text, and each guard now fires on the edit that can actually violate it.
+
+### C.10 What 15.15 changed — the counters are read-only in memory
+
+The fifteen denormalized counters — `Article` (like, comment, share, bookmark),
+`ArticleComment.LikeCount`, `Lyrics` (view, like, share), `Video` (rating average, rating count,
+share) and `ShortVideo` (view, like, share, bookmark) — are `{ get; private init; }`, and each
+one's doc line now names the repository method that maintains it
+(`ApplyEngagementDeltaAsync`, `ApplyCommentLikeDeltaAsync`, `SetRatingAsync`). Nothing in `src/`
+had to change: every maintainer already wrote set-based through `ExecuteUpdateAsync`, whose
+`SetProperty` takes a *getter* expression and never touches a CLR setter, and EF materializes
+through the init accessor.
+
+`VideoEntity.UpdateRating(average, count)` is deleted. It was the one in-memory mutator left on a
+counter and had no production caller — every one of its six call sites was a test arranging a
+rating. Those go through `EngagementCounterExtensions.WithRating(average, count)`, beside the
+`WithShareCount`/`WithLikeCount` helpers the same tests already used, so counter arrangement has
+one home and one reflection primitive rather than a second one inside `VideoBuilder`. The domain
+unit test that only proved `UpdateRating` assigned its two arguments is deleted with it;
+`SetRatingAsync` is covered for real in `EngagementCounterTests`.
+
+One deviation from the plan, recorded deliberately: the popular-videos integration test seeds its
+rating with `WithRating` rather than `SetRatingAsync`. Its seed block already arranges the share
+count with `WithShareCount` inside the same `SeedAsync` callback, and the test's subject is the
+ordering query, not rating maintenance — splitting the seed across a save and a second repository
+round-trip would have bought nothing.
+
+### C.11 What 15.16 changed — `Money` and `Slug`
+
+Per D-g both concepts are converted whole, not partly: all **seven** slug properties
+(`Article`, `Lyrics`, `Video`, `ShortVideo`, `Artist`, `Category`, `Tag`) and all **six** money
+properties (`ContentOrder.TotalAmountUsd`, `ContentItemTier.PriceSnapshotUsd`,
+`ContentOrderItem.PromoPriceSnapshotUsd`, `ContentPayment.AmountUsd`,
+`CategoryPricing.PriceUsd`, `PromotionLevel.PriceUsd`). Both are records in
+`Content/Domain/ValueObjects/` shaped exactly like `Identity/Domain/ValueObjects/Email.cs`:
+a validating constructor, a non-throwing `TryFrom`, and implicit operators both ways.
+`Slug` validates format only — the `^[a-z0-9]+(?:-[a-z0-9]+)*$` rule that was duplicated across
+three validators — and per-entity maximum lengths stay in the validators and the EF
+configurations. `Money` guards non-negativity and carries `Zero`, `+`, `* int` and `Sum`.
+
+Two new rule codes, `content.slug.invalid` and `content.money.negative-amount`, arrive with the
+full machinery the module requires: a `ValueObjectRuleProblems` catalog registered in
+`DomainRuleExceptionStrategy`, a `ValueObjectErrorMessage` facade, and neutral/en/fr resx — the
+completeness guard and the localization catalogue count both assert this.
+
+Each property is converted inline in its own configuration —
+`.HasConversion(slug => slug.Value, value => new Slug(value))` — with no converter classes, since
+the repository has none. The column types are unchanged and
+`has-pending-model-changes` reports none, so there is no migration.
+
+**The `ILike` pre-flight the plan required came back clean.** `TagEntity.Slug` was converted
+first and the tag search and by-slug queries were run against Postgres before the other six:
+`EF.Functions.ILike(tag.Slug, pattern)` and `tag.Slug == slug` both translate, because the
+converter stores the bare string and EF applies the conversion on the parameter side. The
+`EF.Property<string>(t, "Slug")` escape hatch was not needed anywhere.
+
+The fallout was almost entirely in assertions — about 70 sites comparing an entity's `Slug` or
+money property to a raw `string`/`decimal` now read `.Value` / `.Amount`. Three production reads
+needed the same treatment, all of them nullable: `PublicGetVideoBySlugHandler` and
+`PublicGetLyricsBySlugHandler` resolve an optional linked slug (`artist?.Slug.Value`), and the
+order-item projection reads `PromoPriceSnapshotUsd?.Amount` — the implicit operator dereferences,
+so a lifted `Money? → decimal?` has to be written explicitly, including in the Mapster config.
+
+Coverage follows the standing rules: the constructor guards are unit-tested in `SlugTests` and
+`MoneyTests` (malformed slugs, negative amounts, `TryFrom`, the operators and equality), and the
+converters round-trip through DI repositories in `ValueObjectConversionTests` — a slug written
+and read back, a slug still matched by string equality in the database, a `numeric(10,2)` amount
+keeping its cents, and a nullable money column coming back null rather than zero.
+
+### E.8 Module-wide predicate audit — the remaining adoption gaps
+
+Every predicate site in the 26 Content repositories and the two infrastructure query builders
+was classified line by line, across all predicate-carrying operators (`Where`,
+`FirstOrDefaultAsync`, `AnyAsync`, `CountAsync`, `Count`, correlated `Any`, filtered `Include`,
+query-syntax `join`, `ExecuteUpdateAsync`, `ExecuteDeleteAsync`, and predicates embedded in
+projections). Eight rules had no specification and earned one:
+
+| Specification | Adopted at | Rule |
+| --- | --- | --- |
+| `ArtistByInitialLetterSpecification` | `ArtistRepository.GetPublicDirectoryAsync` | Directory letter bucket. |
+| `ArtistByFoldedNameSpecification` | `ArtistRepository.GetPublicDirectoryAsync` | Directory search over the pre-folded column. A distinct rule from `ArtistSearchSpecification` (ILIKE over raw Name/Bio): the folding happens in the constructor closure, so the expression tree stays a plain translatable `LIKE`. |
+| `LyricsCountedViewSinceSpecification`, `ShortVideoCountedViewSinceSpecification` | `HasCountedViewSinceAsync` in each repository | The view-count deduplication window, previously the same four-term predicate hand-written in both files with nothing naming it. |
+| `UncountedShortVideoViewBeforeSpecification` | `ShortVideoRepository.PruneUncountedViewEventsAsync` | The retention sweep's row selector, feeding `ExecuteDeleteAsync`. |
+| `ContentOrderByItemIdSpecification` | `ContentOrderRepository.GetOrderByItemIdAsync` | The order owning an item, through the kept `Items` member collection. |
+| `LyricsLikeByUserIdSpecification`, `ArticleCommentLikeByUserIdSpecification` | `LyricsRepository.GetLikedIdsAsync`, `ArticleCommentRepository.GetLikedCommentIdsAsync` | The last two interaction id-set reads still inlining the user half; they now follow the `XByUserIdSpecification` + `.Where(ids.Contains(...))` shape already used for article and short-video interactions. |
+
+Two verdicts went the other way, and both matter more than the additions:
+
+- **The soft-delete rule is a global query filter, not a specification.**
+  `ContentDbContext.OnModelCreating` declares
+  `modelBuilder.Entity<ArticleCommentEntity>().HasQueryFilter(comment => !comment.IsDeleted)`,
+  which EF applies to every query over the set unless it calls `IgnoreQueryFilters` — only the
+  threaded listing does, deliberately, to render tombstones. Four inline `!IsDeleted`
+  restatements in `ArticleCommentRepository` were therefore redundant and are deleted: a
+  hand-copy of a global filter is a rule with two homes that can silently disagree. New
+  repository integration tests seed a soft-deleted comment and assert the reply counts, the
+  own-comments listing and the commented-articles feed all exclude it, which is what proves the
+  removal rather than asserting it.
+- **Five repositories were violating the base by-id rule already.** `VideoRepository`,
+  `ArticleRepository`, `CategoryRepository` and `LyricsRepository` each overrode
+  `GetByIdAsync` **and** `GetByIdOrThrowAsync` only to re-apply `entity.Id == id` through a
+  module specification and to repeat the same `Include` chain twice per file. `RepositoryBase`
+  already owns that predicate and its own documentation places the hydration graph in a
+  `Query()` override; the four now declare their graph once there and inherit both finders,
+  which is behaviour-identical (same includes, same `AsSplitQuery` for articles, untracked
+  `GetByIdAsync` / tracked `GetByIdOrThrowAsync` as before) and deletes eight overrides.
+  `CategoryByIdSpecification` had no other site and is deleted with them; `VideoById`,
+  `LyricsById` and `ArticleById` keep their `ExecuteUpdate` row-selector sites.
+  `PlaylistRepository.GetByIdAsync` is **kept**: its override exists to force tracking, which
+  the untracked base finder cannot express, so removing it would silently drop mutations.
+
+Everything else is correctly placed: rules reading a navigation 15.11 deletes become
+IQueryable-injected specifications in that pass rather than nav-reading ones now; predicates on
+member sets 15.10 removes die with their methods; counts inside a `Select` stay inline because
+EF Core cannot invoke a shared expression in a projection; and id-set membership, keyset cursor
+arithmetic, self-exclusion, ordering and in-memory LINQ are plumbing with no rule to name.
+
+### E.7 Tests and verification for this part
+
+- The restored spec unit tests come back minus the deleted classes'; the two new pending
+  specs and the four artist sub-rules get predicate tests; every `IsSatisfiedBy` adoption is
+  covered by the existing endpoint tests it sits under (no response change is expected).
+- Verification greps, replacing the retired item 6:
+  1. Every specification class in Content has at least one production instantiation —
+     enumerate classes, grep `new <Name>(`, zero orphans.
+  2. `grep -rn "IsSatisfiedBy" src/Modules/Content` → the five adoption sites.
+  3. `grep -rn "\.OrAll\|\.Or(" src/Modules/Content` → the artist composition, nothing else.
+  4. `TagRepository.GetByNameAsync` applies `TagByNameSpecification`; the case-insensitivity
+     integration test still passes.
+  5. Build 0/0, CSharpier clean, unit and integration suites green.
+
+### C.12 What 15.20 and 15.21 verified — the closing run
+
+Every check in the Verification section was run against the finished branch. What it found:
+
+| # | Check | Result |
+| --- | --- | --- |
+| 1 | Build, format, suites | `dotnet build` 0 errors / 0 warnings; `csharpier check` clean on 3,964 files; 8,378 unit, 2,120 integration, 6 architecture — all green |
+| 2 | Roots and members | 37 `Aggregate<Guid>` and 12 `Entity<Guid>` in Content — exactly the target, down from 49/0 |
+| 3 | Entity-typed navigations in Content `Domain/` | The 11 kept root→member ones and nothing else (10 collections plus `ContentOrder.Payment`) |
+| 4 | `UtcNow` in any `Domain/` | Zero across all modules |
+| 5 | `MarkHasLyrics`/`UnmarkHasLyrics` | Zero |
+| 6 | Part E.7 specification checks | 134 specification classes, **zero orphans** after deleting `PackageByIdSpecification`; `IsSatisfiedBy` at exactly the five adoption sites; `OrAll` only at the artist composition |
+| 7 | `SaveChangesAsync` in repositories | The three expected Identity files (`AccountLockoutRepository`, `UserTokenStateRepository`, `AuthRepository`); zero in Content |
+| 8 | `IRepository<T>` closes over `IAggregateRoot` | Compiler-enforced; the build is the check |
+| 9 | Builder reflection | Zero in the Content fixtures; Identity's 12 sites across 5 builders remain and are out of scope |
+| 10 | Root counts | Identity 8, Core 1, Content 37 + 12, Mailer 3 |
+| 11 | Mailer regression | `git diff` against Mailer is empty |
+| 12 | Core claim protocol | Only historical migration files still contain the word; the live Core code names it nowhere |
+| 13 | Migrations | `has-pending-model-changes` reports none, and `DropVideoHasLyrics` is the only new migration in Part C |
+
+Two things the closing run turned up rather than confirmed. The orphan sweep needs its filter
+written carefully: eight classes look unused because their only instantiation is *inside their
+own specifications file* — the four artist sub-rules composed through `OrAll` and the four
+private `Marked*` category rules composed with `ActiveCategorySpecification`. Those are the E.5
+composition working as intended. The ninth, `PackageByIdSpecification`, was a real orphan with no
+reference anywhere including tests, base-covered by `RepositoryBase.GetById*`, and is deleted
+under E.2.
+
+Check 3 is clean for Content but **not for Identity**, which still carries six entity-typed
+navigations: `Otp.User`, `Session.User`, `UserRole.User`, `UserRole.Role`,
+`RolePermission.Role` and `RolePermission.Permission`. Part A is shipped and Part C does not
+reopen it, so this is recorded as a finding for a later pass, not fixed here.
+
+**15.20 — D2 and D6.** D2 stands as decided-against and is recorded as such. D6 is verified
+rather than acted on: 75 Content files inject `IMapper`, and a clean `--no-incremental` build
+reports zero CS9113 (unread primary-constructor parameter) warnings, so none of them is unused.
+The 0-warning gate is read from build output, which is how this is enforced going forward.
+
+**Counts the spec undercounted.** Where the spec says 26 cross-aggregate navigations, 4 money
+properties and 2 slug properties, the tree had **52**, **6** and **7** respectively, and Part C
+converted all of them.
+
+---
+
 ## Decisions
 
 | # | Question | Options weighed | Decision |
@@ -1323,10 +1950,11 @@ by 15.1. No Mailer-specific work.
 | D2 | Strongly-typed IDs | wrap the 105 Guids, or reject with reasons | **Reject, recorded here.** The cost (every signature, EF converter, DTO, test builder — thousands of lines) buys compile-time protection against cross-assigning ids, but the top sources of that bug class — cross-aggregate navs (D1) and check-then-act guards (Stage 6) — are closed by cheaper means. Revisit only if an id-swap bug actually ships. `[03 §8]` closes as *decided-against*. |
 | D3 | Review guards | ad-hoc ifs, or the Stage 6 pattern | **Stage 6's pattern:** idempotent transitions return `bool`, invalid transitions throw coded rule exceptions, events raised only on actual transition. |
 | D4 | `Update()` semantics | keep attach-Update everywhere, or tracked mutation | **Tracked mutation on load-then-mutate paths.** Post-Stage 9 the write paths are explicitly `AsTracking`; a loaded entity's `SaveChanges` diffs columns. `Update()` (attach) remains only where the entity genuinely arrives detached — after this stage that is nowhere in Content, and the method is deleted per repository as its callers convert. |
-| D5 | Specifications | make them carry include/sort/page, or retire the layer | **Retire.** 137 predicate-only classes behind 117 call sites, whose includes/sorts are re-hand-written per call site, is ceremony without leverage `[04 §12]` / `[06 §14]`. Specs inline into their single call sites; the base class stays in Shared for Identity's and Core's specifications until Stage 18. |
+| D5 | Specifications | make them carry include/sort/page, retire the layer, or harden it | **Harden — owner decision, overriding the earlier "retire".** The retirement measured the layer as ceremony (105/137 single-use, 12 dead, zero `Or`, one `IsSatisfiedBy` production use repo-wide) and briefly landed; the owner overruled: the layer stays and is made genuinely load-bearing instead. Unused specs are removed only after checking whether a hand-written predicate should have adopted them; `IsSatisfiedBy` and `And`/`Or`/`Not` are wired in wherever a real dual-use or composition exists — and nowhere else. Duplicated per-entity specs are kept for now; the cross-module de-dup into a Shared `ByIdSpecification<TEntity>` is a later, all-modules pass. Full design in **Part E**. |
 | D6 | `[06 §16]` unused `IMapper` | sweep now | **Verify first — likely already closed.** Stage 7's CS9113 cleanup removed unread primary-ctor params and the build holds at 0 warnings, which would flag an injected-never-read `mapper`. Re-census at finalization; sweep only what remains. |
 | D7 | How to make R1 enforceable | convention + review, or a type-level marker | **`IAggregateRoot` marker in the kernel**, with `IRepository` constrained to it. Convention is what produced 49/49 roots; a constraint makes the mistake a compile error. Costs one interface and one `where` clause. |
 | D8 | Which primitives become value objects | wrap everything with a rule, or only where the rule is violable | **The 15.4 trio plus `Money` and `Slug`.** `Email` closes a real hole (seeders and social login bypass every FluentValidation rule); `OtpPurpose` and `Client` were converted with it at 15.4 so the OTP and Session aggregates carry self-validating types rather than raw enums, resolving this decision's earlier conflict with the 15.4 checklist line in the checklist's favor. `Language`, `ReleaseYear` and the remaining enum-wrapping VOs (`SessionStatus`, `ExportFormat`, `AuthProvider`) stay primitives and their VOs stay edge parsers. |
+| D13 | Member `DbSet`s after demotion | delete all twelve (plan D-a), or keep them as Identity did | **Keep them.** Deleting a member's `DbSet` enforces nothing — `Context.Set<T>()` reaches the same table — while EF derives table names from the `DbSet` property, so removing it silently renames the table (`artist_social_links` → `artist_social_link_entity`, caught by `has-pending-model-changes` on the first slice). No aggregate rule is at stake: a `DbSet` is an ORM mapping detail, and "a member has no repository" is already a compile error via `IRepository`'s `IAggregateRoot` constraint (D7). The direct reads D-a wanted gone are closed by deleting the repository's member methods and routing handlers through the root's verbs, which the demotion does regardless. Reverses plan D-a; see C.4b. |
 | D9 | `StreamingLinkEntity`'s parent | child of Album, child of Lyrics, or its own root | **Its own root.** The schema decides it: `ck_streaming_links_exactly_one_target` enforces `album_id XOR lyrics_id`, so half the rows (a standalone single's links) have no album at all and *cannot* be members of the Album aggregate — a link cannot be a member of two different aggregate types. It already has its own repository upserting by (owner, platform) under two unique indexes. It stays a single-entity root; the XOR stays in the factory + check constraint. |
 | D10 | Engagement counters on the aggregate | move them back inside, or admit they are outside | **Admit they are outside.** Stage 8 moved them to atomic SQL for a real reason — a read-modify-write through the aggregate loses increments. Reverting that to satisfy R14 would reintroduce a concurrency bug to satisfy a diagram. The fix is to stop the aggregate claiming them: `private init` plus a doc comment naming the maintaining repository method. |
 | D12 | An upload and the row referencing it are written by two modules | keep the claim-and-reap repair, or make the two writes atomic | **Make them atomic.** All four module contexts now resolve one scoped `DbConnection`, so `ExecuteInTransactionAsync` enlists every other context via `UseTransactionAsync` and commits once. The file row and its reference cannot disagree, which removes the window the claim protocol existed to repair — so `Claim`, `ClaimAsync`, `GetUnclaimedBeforeAsync` and `UnclaimedFileReaperJob` are deleted, not fixed. The cost is `AddDbContextPool` becoming `AddDbContext`: contexts are no longer pooled, because a pooled context cannot be handed a connection from the scope. `CrossContextTransactionTests` proves both directions against real Postgres. |
@@ -1351,19 +1979,24 @@ by 15.1. No Mailer-specific work.
 - [x] 15.7 — Core: `IFileRepository` splits from `IFileUploadService`; `UpdateAvatarUrlFromSourceAsync` moves to Identity
 - [x] 15.8 — Core: `EnumFileState` replaces the flag trio; clock injected
 - [x] 15.8b — Core: upload and reference become one transaction; the claim protocol and its reaper are deleted (D12)
-- [ ] 15.9 — Content: navigation census commit (the 64, classified within/across)
-- [ ] 15.10 — Content: twelve members demote to `Entity<Guid>`; roots gain their member factories
-- [ ] 15.11 — Content: cross-aggregate navs → id-only, Commerce → Catalogue → Editorial
-- [ ] 15.12 — Content: seven review-workflow guards `[03 §7]`
-- [ ] 15.13 — Content: raw setters gain rules; the six bulk `Update(...)` split into verbs
-- [ ] 15.14 — Content: `HasLyrics` derived; the three maintaining handlers stop writing it `[03 §11]`
-- [ ] 15.15 — Content: counters demote to `private init` with their maintaining method named (D10)
-- [ ] 15.16 — Content: `Money` and `Slug` value objects via converters
-- [ ] 15.17 — All modules: `DateTime.UtcNow` out of `Domain/` (40 sites; **Identity's 8 done**, Content's 29 and Core's remain per their stages)
-- [ ] 15.18 — Load-then-mutate paths drop `Update()`; attach-Update deleted per repository `[04 §3]` (**Identity's `OtpRepository` site done**)
-- [ ] 15.19 — Content specifications inlined; `ApplySpecification` call sites collapse `[04 §12]`
-- [ ] 15.20 — D2/D6 verified and recorded
-- [ ] 15.21 — Verify (build 0/0, csharpier, unit, integration; builder reflection hacks gone `[03 §9]`)
+- [x] 15.9 — Content: navigation census commit (the 64, classified within/across)
+- [x] 15.10 — Content: twelve members demote to `Entity<Guid>`; roots gain their member factories
+- [x] 15.11 — Content: cross-aggregate navs → id-only, Commerce → Catalogue → Editorial → Interactions
+- [x] 15.12 — Content: seven review-workflow guards `[03 §7]`
+- [x] 15.13 — Content: raw setters gain rules; the six bulk `Update(...)` split into verbs
+- [x] 15.14 — Content: `HasLyrics` derived; the three maintaining handlers stop writing it `[03 §11]`
+- [x] 15.15 — Content: counters demote to `private init` with their maintaining method named (D10)
+- [x] 15.16 — Content: `Money` and `Slug` value objects via converters (all 6 money, all 7 slug props — D-g)
+- [x] 15.17 — All modules: `DateTime.UtcNow` out of `Domain/` (Identity, Core and Content all at zero)
+- [x] 15.18 — Load-then-mutate paths drop `Update()`; attach-Update deleted per repository `[04 §3]` (**Identity's `OtpRepository` site done**)
+- [x] 15.19 — Content specification hardening per **Part E** (supersedes the inlining that
+  briefly landed): restore the layer; delete the 11 base-covered by-id orphans; fix and adopt
+  `TagByNameSpecification`; wire the five `IsSatisfiedBy` adoptions; re-point
+  `GetPendingWithMatchingLyricsAsync` through `SubmissionByStatusSpecification`; decompose
+  `ArtistHasContentSpecification` via `OrAll`; compose `ActiveCategorySpecification` into the
+  three category-singleton specs; move `PinnedToFeed`'s optional filter to call-site `.And`
+- [x] 15.20 — D2/D6 verified and recorded (D2 decided-against; D6 clean — 0 CS9113 on a clean build)
+- [x] 15.21 — Verify (build 0/0, csharpier, unit, integration; builder reflection hacks gone `[03 §9]`)
 
 ---
 
@@ -1431,7 +2064,9 @@ aggregate — Commerce, Catalogue, Editorial — each its own PR.
 3. Cross-aggregate entity-typed navigations in Content `Domain/` → 0; in Identity → 0.
 4. `grep -rn "Date\(Time\|TimeOffset\)\.UtcNow" src/Modules/*/*/Domain/` → empty.
 5. `grep -rn "MarkHasLyrics\|UnmarkHasLyrics" src/` → empty.
-6. `grep -rn "ApplySpecification" src/Modules/Content` → empty.
+6. The Part E.7 specification checks: zero orphan specification classes; `IsSatisfiedBy`
+   present at exactly the five adoption sites; `OrAll` present at the artist composition;
+   `TagByNameSpecification` applied by `TagRepository.GetByNameAsync`.
 7. `grep -rln "SaveChangesAsync" src/Modules/*/*/Infrastructure/Repositories/` → shrinks from
    five files to two. `OtpRepository`'s commit moves to the handler (15.6) and
    `FileRepository`'s commit sites disappear into the caller's transaction (15.7/15.8b);
