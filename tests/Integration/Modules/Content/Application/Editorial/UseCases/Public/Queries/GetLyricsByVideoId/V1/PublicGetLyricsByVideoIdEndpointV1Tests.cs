@@ -3,6 +3,7 @@ using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Exceptions.Messages;
+using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
 
@@ -40,7 +41,7 @@ public class PublicGetLyricsByVideoIdEndpointV1Tests(PostgresFixture db) : BaseA
             LyricsEntity entity = LyricsFactory.CreateForVideo(categoryId, video.Id);
             entity.MarkPendingReview();
             entity.Approve();
-            entity.Publish();
+            entity.Publish(TestConstants.Clock.Instant);
             ctx.Lyrics.Add(entity);
             return entity;
         });
@@ -134,7 +135,7 @@ public class PublicGetLyricsByVideoIdEndpointV1Tests(PostgresFixture db) : BaseA
             LyricsEntity entity = LyricsFactory.CreateForVideo(categoryId, video.Id);
             entity.MarkPendingReview();
             entity.Approve();
-            entity.Publish();
+            entity.Publish(TestConstants.Clock.Instant);
             entity.WithViewCount(1);
             entity.WithShareCount(2);
             ctx.Lyrics.Add(entity);
@@ -180,7 +181,7 @@ public class PublicGetLyricsByVideoIdEndpointV1Tests(PostgresFixture db) : BaseA
             LyricsEntity entity = LyricsFactory.CreateForVideo(categoryId, video.Id);
             entity.MarkPendingReview();
             entity.Approve();
-            entity.Publish();
+            entity.Publish(TestConstants.Clock.Instant);
             ctx.Lyrics.Add(entity);
             return entity;
         });
