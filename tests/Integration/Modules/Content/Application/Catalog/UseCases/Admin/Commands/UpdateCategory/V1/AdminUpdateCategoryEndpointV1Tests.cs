@@ -67,7 +67,7 @@ public class AdminUpdateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
         CategoryEntity? updated = await verifyContext.Categories.FindAsync(category.Id);
         updated.Should().NotBeNull();
         updated!.Name.Should().Be(name);
-        updated.Slug.Should().Be(slug);
+        updated.Slug.Value.Should().Be(slug);
         updated.Description.Should().Be("Updated");
     }
 
