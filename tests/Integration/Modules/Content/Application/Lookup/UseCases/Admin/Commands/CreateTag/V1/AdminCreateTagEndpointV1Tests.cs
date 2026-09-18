@@ -73,7 +73,7 @@ public class AdminCreateTagEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
         await using ContentDbContext context = CreateDbContext<ContentDbContext>();
         TagEntity? persisted = await context.Tags.FindAsync(body.Tag.Id);
         persisted.Should().NotBeNull();
-        persisted!.Slug.Should().Be(request.Slug);
+        persisted!.Slug.Value.Should().Be(request.Slug);
     }
 
     [Fact]
