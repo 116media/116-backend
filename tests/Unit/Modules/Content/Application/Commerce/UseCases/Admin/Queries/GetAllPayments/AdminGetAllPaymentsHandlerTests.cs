@@ -23,6 +23,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Commerce.UseCases.Admin.Qu
 /// </summary>
 public class AdminGetAllPaymentsHandlerTests : BaseContentHandlerTest
 {
+    private readonly CustomerEntity _customer = CustomerFactory.Create();
     private readonly Mock<IContentOrderRepository> _orderRepositoryMock;
     private readonly Mock<IUserLookupService> _userLookupMock;
     private readonly AdminGetAllPaymentsHandler _handler;
@@ -33,7 +34,7 @@ public class AdminGetAllPaymentsHandlerTests : BaseContentHandlerTest
         _userLookupMock = MockUserLookupService.Create();
         _handler = new AdminGetAllPaymentsHandler(
             _orderRepositoryMock.Object,
-            new PaymentDtoFactory(Mapper, _userLookupMock.Object)
+            new PaymentDtoFactory(Mapper, _userLookupMock.Object, CreateOrderDtoFactory(_customer))
         );
     }
 
@@ -43,14 +44,11 @@ public class AdminGetAllPaymentsHandlerTests : BaseContentHandlerTest
     public async Task Handle_ShouldReturnPaginatedResult()
     {
         // Arrange
-        var orderId = Guid.NewGuid();
-        CustomerEntity customer = CustomerFactory.Create();
-        ContentOrderEntity order = new ContentOrderBuilder().WithId(orderId).WithCustomer(customer).Build();
+        ContentOrderEntity order = new ContentOrderBuilder().WithCustomer(_customer).Build();
+        order.AttachPayment();
 
-        ContentPaymentEntity payment = new ContentPaymentBuilder().WithOrder(order).Build();
-
-        List<ContentPaymentEntity> payments = [payment];
-        _orderRepositoryMock.SetupGetAllPaymentsAsync(payments, payments.Count);
+        List<ContentOrderEntity> orders = [order];
+        _orderRepositoryMock.SetupGetOrdersWithPaymentAsync(orders, orders.Count);
 
         var query = new AdminGetAllPaymentsQuery(
             PaginatedRequest: new PaginatedRequest(0, 10),
@@ -70,15 +68,14 @@ public class AdminGetAllPaymentsHandlerTests : BaseContentHandlerTest
     public async Task Handle_WithVerifiedPayment_ShouldResolveVerifierUserName()
     {
         // Arrange
-        var orderId = Guid.NewGuid();
-        var adminUserId = Guid.NewGuid();
-        CustomerEntity customer = CustomerFactory.Create();
-        ContentOrderEntity order = new ContentOrderBuilder().WithId(orderId).WithCustomer(customer).Build();
-
-        ContentPaymentEntity payment = new ContentPaymentBuilder()
-            .AsVerified(Guid.NewGuid(), TestConstants.Commerce.ValidReceiptUrl)
-            .WithOrder(order)
-            .Build();
+        ContentOrderEntity order = new ContentOrderBuilder().WithCustomer(_customer).Build();
+        ContentPaymentEntity payment = order.AttachPayment();
+        payment.AttachProof(proofFileId: Guid.NewGuid(), paymentMethod: EnumPaymentMethod.BankTransfer);
+        payment.Verify(
+            adminUserId: Guid.NewGuid(),
+            receiptUrl: TestConstants.Commerce.ValidReceiptUrl,
+            now: TestConstants.Clock.Instant
+        );
 
         Guid verifierId = payment.VerifiedById!.Value;
         _userLookupMock.SetupGetAuthorInfosByIds(
@@ -88,8 +85,8 @@ public class AdminGetAllPaymentsHandlerTests : BaseContentHandlerTest
             }
         );
 
-        List<ContentPaymentEntity> payments = [payment];
-        _orderRepositoryMock.SetupGetAllPaymentsAsync(payments, payments.Count);
+        List<ContentOrderEntity> orders = [order];
+        _orderRepositoryMock.SetupGetOrdersWithPaymentAsync(orders, orders.Count);
 
         var query = new AdminGetAllPaymentsQuery(
             PaginatedRequest: new PaginatedRequest(0, 10),
@@ -111,14 +108,11 @@ public class AdminGetAllPaymentsHandlerTests : BaseContentHandlerTest
     public async Task Handle_WithUnverifiedPayment_ShouldNotCallUserLookup()
     {
         // Arrange
-        var orderId = Guid.NewGuid();
-        CustomerEntity customer = CustomerFactory.Create();
-        ContentOrderEntity order = new ContentOrderBuilder().WithId(orderId).WithCustomer(customer).Build();
+        ContentOrderEntity order = new ContentOrderBuilder().WithCustomer(_customer).Build();
+        order.AttachPayment();
 
-        ContentPaymentEntity payment = new ContentPaymentBuilder().WithOrder(order).Build();
-
-        List<ContentPaymentEntity> payments = [payment];
-        _orderRepositoryMock.SetupGetAllPaymentsAsync(payments, payments.Count);
+        List<ContentOrderEntity> orders = [order];
+        _orderRepositoryMock.SetupGetOrdersWithPaymentAsync(orders, orders.Count);
 
         var query = new AdminGetAllPaymentsQuery(
             PaginatedRequest: new PaginatedRequest(0, 10),
@@ -140,7 +134,7 @@ public class AdminGetAllPaymentsHandlerTests : BaseContentHandlerTest
     public async Task Handle_WithStatusFilter_ShouldPassToRepository()
     {
         // Arrange
-        _orderRepositoryMock.SetupGetAllPaymentsAsync([], 0);
+        _orderRepositoryMock.SetupGetOrdersWithPaymentAsync([], 0);
 
         var query = new AdminGetAllPaymentsQuery(
             PaginatedRequest: new PaginatedRequest(0, 10),
@@ -160,7 +154,7 @@ public class AdminGetAllPaymentsHandlerTests : BaseContentHandlerTest
     public async Task Handle_WithMethodFilter_ShouldPassToRepository()
     {
         // Arrange
-        _orderRepositoryMock.SetupGetAllPaymentsAsync([], 0);
+        _orderRepositoryMock.SetupGetOrdersWithPaymentAsync([], 0);
 
         var query = new AdminGetAllPaymentsQuery(
             PaginatedRequest: new PaginatedRequest(0, 10),
@@ -180,7 +174,7 @@ public class AdminGetAllPaymentsHandlerTests : BaseContentHandlerTest
     public async Task Handle_EmptyResult_ShouldReturnEmptyPaginatedResult()
     {
         // Arrange
-        _orderRepositoryMock.SetupGetAllPaymentsAsync([], 0);
+        _orderRepositoryMock.SetupGetOrdersWithPaymentAsync([], 0);
 
         var query = new AdminGetAllPaymentsQuery(
             PaginatedRequest: new PaginatedRequest(0, 10),
