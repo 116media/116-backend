@@ -32,7 +32,12 @@ public class AdminGetActiveVideosHandlerTests : BaseContentHandlerTest
         _fileStorageMock = MockFileStorageService.Create();
         _handler = new AdminGetActiveVideosHandler(
             _videoRepositoryMock.Object,
-            new VideoDtoFactory(Mapper, _fileStorageMock.Object)
+            new VideoDtoFactory(
+                Mapper,
+                _fileStorageMock.Object,
+                _videoRepositoryMock.Object,
+                CreateContentLookupFactory()
+            )
         );
     }
 
