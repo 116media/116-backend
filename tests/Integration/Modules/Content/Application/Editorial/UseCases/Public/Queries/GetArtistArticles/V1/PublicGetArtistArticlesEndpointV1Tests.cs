@@ -49,8 +49,8 @@ public class PublicGetArtistArticlesEndpointV1Tests(PostgresFixture db) : BaseAp
             ctx.Artists.Add(artist);
             ctx.Articles.AddRange(published, draft, untagged);
             ctx.ArticleArtists.AddRange(
-                ArticleArtistEntity.Create(Guid.NewGuid(), published.Id, artist.Id),
-                ArticleArtistEntity.Create(Guid.NewGuid(), draft.Id, artist.Id)
+                ArticleArtistFactory.Link(published, artist.Id),
+                ArticleArtistFactory.Link(draft, artist.Id)
             );
 
             return (published, draft, untagged);
@@ -86,8 +86,8 @@ public class PublicGetArtistArticlesEndpointV1Tests(PostgresFixture db) : BaseAp
             ctx.Artists.AddRange(artistA, artistB);
             ctx.Articles.Add(article);
             ctx.ArticleArtists.AddRange(
-                ArticleArtistEntity.Create(Guid.NewGuid(), article.Id, artistA.Id),
-                ArticleArtistEntity.Create(Guid.NewGuid(), article.Id, artistB.Id)
+                ArticleArtistFactory.Link(article, artistA.Id),
+                ArticleArtistFactory.Link(article, artistB.Id)
             );
 
             return article;
