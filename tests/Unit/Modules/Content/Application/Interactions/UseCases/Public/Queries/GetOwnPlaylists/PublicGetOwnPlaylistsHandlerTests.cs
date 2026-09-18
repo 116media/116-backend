@@ -32,7 +32,12 @@ public class PublicGetOwnPlaylistsHandlerTests : BaseContentHandlerTest
         _fileStorageMock = MockFileStorageService.Create();
         _handler = new PublicGetOwnPlaylistsHandler(
             _playlistRepositoryMock.Object,
-            new PlaylistDtoFactory(Mapper, _fileStorageMock.Object)
+            new PlaylistDtoFactory(
+                Mapper,
+                _fileStorageMock.Object,
+                MockVideoRepository.Create().Object,
+                MockCategoryRepository.Create().Object
+            )
         );
     }
 
