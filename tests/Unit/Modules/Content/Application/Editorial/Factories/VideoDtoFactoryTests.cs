@@ -1,6 +1,7 @@
 using _116.Content.Application.Editorial.Factories;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
+using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Contracts.Application.DTOs;
@@ -12,6 +13,7 @@ using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Factories.Core;
 using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
+using _116.Unit.Tests.Common.Mocks.Repositories;
 using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
 using Moq;
@@ -27,22 +29,30 @@ public class VideoDtoFactoryTests : BaseContentHandlerTest
     private static readonly Guid CategoryId = Guid.NewGuid();
     private static readonly Guid ContentTypeId = Guid.NewGuid();
     private readonly Mock<IFileStorageService> _fileStorageMock = new();
+    private readonly Mock<IVideoRepository> _videoRepositoryMock = MockVideoRepository.Create();
 
     /// <summary>
-    /// Builds the factory under test over the shared mapper and the mocked storage contract.
+    /// Builds the factory under test over the shared mapper, the mocked storage contract and
+    /// the mocked published-lyrics probe.
     /// </summary>
     /// <returns>The factory.</returns>
-    private VideoDtoFactory CreateFactory() => new(Mapper, _fileStorageMock.Object);
+    private VideoDtoFactory CreateFactory(CategoryEntity[]? categories = null, CustomerEntity[]? customers = null) =>
+        new(
+            Mapper,
+            _fileStorageMock.Object,
+            _videoRepositoryMock.Object,
+            CreateContentLookupFactory(categories: categories, customers: customers)
+        );
 
     /// <summary>
-    /// Creates a video entity with the Category navigation property populated via reflection,
-    /// so the mapper can access Category.Name without a database.
+    /// Creates a video filed under a category, returning both so the test can arrange the
+    /// lookup the projection reads the name from.
     /// </summary>
-    private static VideoEntity CreateVideoWithCategory()
+    private static (VideoEntity Video, CategoryEntity Category) CreateVideoWithCategory()
     {
         CategoryEntity category = CategoryFactory.Create(ContentTypeId);
-        VideoEntity video = new VideoBuilder(CategoryId).WithCategory(category).Build();
-        return video;
+
+        return (new VideoBuilder(CategoryId).WithCategory(category).Build(), category);
     }
 
     #region Register
@@ -61,10 +71,12 @@ public class VideoDtoFactoryTests : BaseContentHandlerTest
     /// Maps one video through the live batch member, so these tests exercise the same path
     /// the admin listings use.
     /// </summary>
-    private async Task<VideoSummaryDto> MapSummaryAsync(VideoEntity video)
+    private async Task<VideoSummaryDto> MapSummaryAsync(VideoEntity video, CategoryEntity? category = null)
     {
         IReadOnlyList<VideoEntity> videos = [video];
-        IReadOnlyList<VideoSummaryDto> dtos = await CreateFactory().CreateManyAsync(videos);
+        IReadOnlyList<VideoSummaryDto> dtos = await CreateFactory(categories: category is null ? null : [category])
+            .CreateManyAsync(videos);
+
         return dtos.Single();
     }
 
@@ -88,13 +100,13 @@ public class VideoDtoFactoryTests : BaseContentHandlerTest
     public async Task CreateManyAsync_WhenCategoryIsLoaded_ShouldMapCategoryName()
     {
         // Arrange
-        VideoEntity video = CreateVideoWithCategory();
+        (VideoEntity video, CategoryEntity category) = CreateVideoWithCategory();
 
         // Act
-        VideoSummaryDto dto = await MapSummaryAsync(video);
+        VideoSummaryDto dto = await MapSummaryAsync(video, category);
 
         // Assert
-        dto.CategoryName.Should().NotBeEmpty();
+        dto.CategoryName.Should().Be(category.Name);
     }
 
     #endregion
@@ -119,7 +131,7 @@ public class VideoDtoFactoryTests : BaseContentHandlerTest
         dto.Status.Should().Be(video.Status);
         dto.YoutubeVideoUrl.Should().Be(video.YoutubeVideoUrl);
         dto.IsPromoted.Should().Be(video.IsPromoted);
-        dto.HasLyrics.Should().Be(video.HasLyrics);
+        dto.HasLyrics.Should().BeFalse();
         dto.PublishedAt.Should().Be(video.PublishedAt);
         dto.ShootingScheduledAt.Should().Be(video.ShootingScheduledAt);
     }
@@ -262,7 +274,7 @@ public class VideoDtoFactoryTests : BaseContentHandlerTest
     public async Task CreateDetailAsync_ShouldMapCreatedAtFromEntity()
     {
         // Arrange
-        VideoEntity video = CreateVideoWithCategory();
+        (VideoEntity video, CategoryEntity videoCategory) = CreateVideoWithCategory();
         var expectedCreatedAt = new DateTime(2024, 3, 20, 9, 0, 0, DateTimeKind.Utc);
         video.CreatedAt = expectedCreatedAt;
 
@@ -277,7 +289,7 @@ public class VideoDtoFactoryTests : BaseContentHandlerTest
     public async Task CreateDetailAsync_ShouldMapCreatedByFromEntity()
     {
         // Arrange
-        VideoEntity video = CreateVideoWithCategory();
+        (VideoEntity video, CategoryEntity videoCategory) = CreateVideoWithCategory();
         video.CreatedBy = "admin-user-id";
 
         // Act
@@ -291,7 +303,7 @@ public class VideoDtoFactoryTests : BaseContentHandlerTest
     public async Task CreateDetailAsync_ShouldMapUpdatedAtFromEntity()
     {
         // Arrange
-        VideoEntity video = CreateVideoWithCategory();
+        (VideoEntity video, CategoryEntity videoCategory) = CreateVideoWithCategory();
         var expectedUpdatedAt = new DateTime(2025, 6, 15, 12, 30, 0, DateTimeKind.Utc);
         video.UpdatedAt = expectedUpdatedAt;
 
@@ -306,7 +318,7 @@ public class VideoDtoFactoryTests : BaseContentHandlerTest
     public async Task CreateDetailAsync_ShouldMapUpdatedByFromEntity()
     {
         // Arrange
-        VideoEntity video = CreateVideoWithCategory();
+        (VideoEntity video, CategoryEntity videoCategory) = CreateVideoWithCategory();
         video.UpdatedBy = "super-admin-id";
 
         // Act
@@ -324,7 +336,7 @@ public class VideoDtoFactoryTests : BaseContentHandlerTest
     public async Task CreateDetailAsync_ShouldMapCoreFields()
     {
         // Arrange
-        VideoEntity video = CreateVideoWithCategory();
+        (VideoEntity video, CategoryEntity videoCategory) = CreateVideoWithCategory();
 
         // Act
         var dto = await CreateFactory().CreateDetailAsync(video, CancellationToken.None);
@@ -338,7 +350,7 @@ public class VideoDtoFactoryTests : BaseContentHandlerTest
         dto.Slug.Should().Be(video.Slug);
         dto.Description.Should().Be(video.Description);
         dto.YoutubeVideoUrl.Should().Be(video.YoutubeVideoUrl);
-        dto.HasLyrics.Should().Be(video.HasLyrics);
+        dto.HasLyrics.Should().BeFalse();
         dto.ShootingScheduledAt.Should().Be(video.ShootingScheduledAt);
         dto.PublishedAt.Should().Be(video.PublishedAt);
         dto.MetaTitle.Should().Be(video.MetaTitle);
@@ -368,13 +380,14 @@ public class VideoDtoFactoryTests : BaseContentHandlerTest
     public async Task CreateDetailAsync_WhenCategoryIsLoaded_ShouldMapCategoryName()
     {
         // Arrange
-        VideoEntity video = CreateVideoWithCategory();
+        (VideoEntity video, CategoryEntity category) = CreateVideoWithCategory();
 
         // Act
-        VideoDetailDto dto = await CreateFactory().CreateDetailAsync(video, CancellationToken.None);
+        VideoDetailDto dto = await CreateFactory(categories: [category])
+            .CreateDetailAsync(video, CancellationToken.None);
 
         // Assert
-        dto.CategoryName.Should().NotBeEmpty();
+        dto.CategoryName.Should().Be(category.Name);
     }
 
     #endregion
@@ -433,7 +446,7 @@ public class VideoDtoFactoryTests : BaseContentHandlerTest
         // Arrange
         VideoEntity video = VideoFactory.Create(CategoryId);
         video.WithShareCount(2);
-        video.UpdateRating(4.5m, 10);
+        video.WithRating(4.5m, 10);
 
         // Act
         VideoSummaryDto dto = await MapSummaryAsync(video);
@@ -469,7 +482,7 @@ public class VideoDtoFactoryTests : BaseContentHandlerTest
         // Arrange
         VideoEntity video = VideoFactory.Create(CategoryId);
         video.WithShareCount(1);
-        video.UpdateRating(3.8m, 5);
+        video.WithRating(3.8m, 5);
 
         // Act
         VideoDetailDto dto = await CreateFactory().CreateDetailAsync(video, CancellationToken.None);
@@ -503,7 +516,7 @@ public class VideoDtoFactoryTests : BaseContentHandlerTest
     public async Task CreateDetailAsync_WhenFreeVideo_ShouldMapCustomerIdAsNull()
     {
         // Arrange
-        VideoEntity video = CreateVideoWithCategory();
+        (VideoEntity video, CategoryEntity videoCategory) = CreateVideoWithCategory();
 
         // Act
         VideoDetailDto dto = await CreateFactory().CreateDetailAsync(video, CancellationToken.None);
@@ -518,19 +531,19 @@ public class VideoDtoFactoryTests : BaseContentHandlerTest
     public async Task CreateDetailAsync_WhenPaidVideo_ShouldMapCustomerId()
     {
         // Arrange
-        Guid customerId = Guid.NewGuid();
+        CustomerEntity customer = CustomerFactory.Create();
+        Guid customerId = customer.Id;
         Guid orderItemId = Guid.NewGuid();
 
         CategoryEntity category = CategoryFactory.Create(ContentTypeId);
-        CustomerEntity customer = CustomerFactory.Create();
         VideoEntity video = new VideoBuilder(CategoryId)
             .WithCustomer(customerId, orderItemId)
             .WithCategory(category)
-            .WithCustomerNavigation(customer)
             .Build();
 
         // Act
-        VideoDetailDto dto = await CreateFactory().CreateDetailAsync(video, CancellationToken.None);
+        VideoDetailDto dto = await CreateFactory(categories: [category], customers: [customer])
+            .CreateDetailAsync(video, CancellationToken.None);
 
         // Assert
         dto.CustomerId.Should().Be(customerId);
@@ -573,7 +586,11 @@ public class VideoDtoFactoryTests : BaseContentHandlerTest
         IReadOnlyList<VideoEntity> videos = [video];
 
         // Act
-        IReadOnlyList<PublicVideoSummaryDto> dtos = videos.ToPublicVideoSummaryDtos(files);
+        IReadOnlyList<PublicVideoSummaryDto> dtos = videos.ToPublicVideoSummaryDtos(
+            ContentLookups.Empty,
+            files,
+            new HashSet<Guid>()
+        );
 
         // Assert
         dtos.Should().ContainSingle().Which.ThumbnailUrl.Should().Be(thumbnail.StorageUrl);
@@ -597,5 +614,36 @@ public class VideoDtoFactoryTests : BaseContentHandlerTest
 
         // Assert
         dto.ThumbnailUrl.Should().Be(thumbnail.StorageUrl);
+    }
+
+    [Fact]
+    public async Task CreateDetailAsync_WhenVideoHasPublishedLyrics_ShouldDeriveHasLyricsTrue()
+    {
+        // Arrange
+        VideoEntity video = VideoFactory.Create(CategoryId);
+        _videoRepositoryMock.SetupHasPublishedLyrics(video.Id, hasLyrics: true);
+
+        // Act
+        VideoDetailDto dto = await CreateFactory().CreateDetailAsync(video, CancellationToken.None);
+
+        // Assert
+        dto.HasLyrics.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task CreatePublicManyAsync_ShouldDeriveHasLyricsPerVideoFromTheBatchProbe()
+    {
+        // Arrange
+        VideoEntity withLyrics = VideoFactory.Create(CategoryId);
+        VideoEntity withoutLyrics = VideoFactory.Create(CategoryId);
+        _videoRepositoryMock.SetupIdsWithPublishedLyrics(new HashSet<Guid> { withLyrics.Id });
+
+        // Act
+        IReadOnlyList<PublicVideoSummaryDto> dtos = await CreateFactory()
+            .CreatePublicManyAsync([withLyrics, withoutLyrics]);
+
+        // Assert
+        dtos.Single(dto => dto.Id == withLyrics.Id).HasLyrics.Should().BeTrue();
+        dtos.Single(dto => dto.Id == withoutLyrics.Id).HasLyrics.Should().BeFalse();
     }
 }
