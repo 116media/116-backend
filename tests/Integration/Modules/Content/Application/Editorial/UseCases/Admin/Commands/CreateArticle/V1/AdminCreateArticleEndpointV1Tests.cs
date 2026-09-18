@@ -89,7 +89,7 @@ public class AdminCreateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
         ArticleEntity? persisted = await ctx.Articles.FindAsync(body.Article.Id);
         persisted.Should().NotBeNull();
         persisted!.Title.Should().Be(request.Title);
-        persisted.Slug.Should().Be(request.Slug);
+        persisted.Slug.Value.Should().Be(request.Slug);
         persisted.Status.Should().Be(EnumContentStatus.Draft);
     }
 
