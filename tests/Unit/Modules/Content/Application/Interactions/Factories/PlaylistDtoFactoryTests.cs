@@ -1,6 +1,7 @@
 using _116.Content.Application.Interactions.Factories;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
+using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Contracts.Application.Services;
@@ -9,6 +10,7 @@ using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Factories.Core;
 using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
+using _116.Unit.Tests.Common.Mocks.Repositories;
 using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
 using Moq;
@@ -24,19 +26,33 @@ public class PlaylistDtoFactoryTests : BaseContentHandlerTest
 {
     private static readonly Guid CategoryId = Guid.NewGuid();
     private readonly Mock<IFileStorageService> _fileStorageMock = new();
+    private readonly Mock<IVideoRepository> _videoRepositoryMock = MockVideoRepository.Create();
 
     /// <summary>
-    /// Builds the factory under test over the shared mapper and the mocked storage contract.
+    /// Builds the factory over the shared mapper, the mocked storage contract and the mocked
+    /// published-video lookup the projection resolves its entries through.
     /// </summary>
     /// <returns>The factory.</returns>
-    private PlaylistDtoFactory CreateFactory() => new(Mapper, _fileStorageMock.Object);
+    private PlaylistDtoFactory CreateFactory() =>
+        new(Mapper, _fileStorageMock.Object, _videoRepositoryMock.Object, MockCategoryRepository.Create().Object);
 
     /// <summary>
-    /// Builds a playlist link carrying the Video navigation EF Core would populate, so the mapper
-    /// can read the video's title and rating without a database.
+    /// Links a video to the playlist and arranges the published-video lookup to resolve it, as
+    /// the repository would for a published entry.
     /// </summary>
-    private static PlaylistVideoEntity LinkVideo(Guid playlistId, VideoEntity video, int sortOrder) =>
-        new PlaylistVideoBuilder().WithPlaylistId(playlistId).WithVideo(video).WithSortOrder(sortOrder).Build();
+    private PlaylistVideoEntity LinkVideo(PlaylistEntity playlist, VideoEntity video, int sortOrder)
+    {
+        PlaylistVideoEntity link = new PlaylistVideoBuilder(playlist).WithVideo(video).WithSortOrder(sortOrder).Build();
+        _videoRepositoryMock.SetupGetByIds([.. playlist.Videos.Select(Resolve).OfType<VideoEntity>(), video]);
+
+        return link;
+    }
+
+    /// <summary>
+    /// The video a link points at, when a previous link in this test already arranged it.
+    /// </summary>
+    private VideoEntity? Resolve(PlaylistVideoEntity link) =>
+        _videoRepositoryMock.Object.GetByIdsAsync([link.VideoId]).Result.GetValueOrDefault(link.VideoId);
 
     [Fact]
     public async Task CreateDetailAsync_ShouldMapPlaylistIdAndName()
@@ -59,11 +75,11 @@ public class PlaylistDtoFactoryTests : BaseContentHandlerTest
         // Arrange
         var userId = Guid.NewGuid();
         VideoEntity video = VideoFactory.Create(CategoryId);
-        video.UpdateRating(average: 4.5m, count: 20);
+        video.WithRating(average: 4.5m, count: 20);
         video.WithShareCount(1);
 
         PlaylistEntity playlist = PlaylistFactory.Create(userId);
-        playlist.Videos.Add(LinkVideo(playlist.Id, video, sortOrder: 1));
+        LinkVideo(playlist, video, sortOrder: 1);
 
         // Act
         PlaylistDetailDto dto = await CreateFactory().CreateDetailAsync(playlist, CancellationToken.None);
@@ -92,8 +108,8 @@ public class PlaylistDtoFactoryTests : BaseContentHandlerTest
         VideoEntity second = VideoFactory.Create(CategoryId);
 
         PlaylistEntity playlist = PlaylistFactory.Create(userId);
-        playlist.Videos.Add(LinkVideo(playlist.Id, first, sortOrder: 2));
-        playlist.Videos.Add(LinkVideo(playlist.Id, second, sortOrder: 1));
+        LinkVideo(playlist, first, sortOrder: 2);
+        LinkVideo(playlist, second, sortOrder: 1);
 
         // Act
         PlaylistDetailDto dto = await CreateFactory().CreateDetailAsync(playlist, CancellationToken.None);
@@ -133,7 +149,7 @@ public class PlaylistDtoFactoryTests : BaseContentHandlerTest
         {
             VideoEntity video =
                 index % 2 == 0 ? VideoFactory.CreateWithThumbnail(CategoryId) : VideoFactory.Create(CategoryId);
-            playlist.Videos.Add(LinkVideo(playlist.Id, video, sortOrder: index));
+            LinkVideo(playlist, video, sortOrder: index);
             if (video.ThumbnailFileId is { } thumbnailFileId)
             {
                 resolvedUrls[thumbnailFileId] = $"https://cdn.example/{index}.jpg";
@@ -170,8 +186,8 @@ public class PlaylistDtoFactoryTests : BaseContentHandlerTest
         PlaylistEntity playlist = PlaylistFactory.Create(Guid.NewGuid());
         VideoEntity first = VideoFactory.CreateWithThumbnail(CategoryId);
         VideoEntity second = VideoFactory.CreateWithThumbnail(CategoryId);
-        playlist.Videos.Add(LinkVideo(playlist.Id, first, 0));
-        playlist.Videos.Add(LinkVideo(playlist.Id, second, 1));
+        LinkVideo(playlist, first, 0);
+        LinkVideo(playlist, second, 1);
         var urls = new Dictionary<Guid, string>
         {
             [first.ThumbnailFileId!.Value] = "https://cdn.example/first.jpg",
