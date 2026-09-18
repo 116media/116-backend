@@ -51,7 +51,8 @@ public class AdminUpdateArticleHandlerTests : BaseContentHandlerTest
             _unitOfWorkMock.Object,
             _fileStorageMock.Object,
             Mapper,
-            TestErrorsFactory.CreateContentI18n()
+            TestErrorsFactory.CreateContentI18n(),
+            CreateContentLookupFactory()
         );
     }
 
@@ -83,7 +84,6 @@ public class AdminUpdateArticleHandlerTests : BaseContentHandlerTest
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
         _articleRepositoryMock.SetupGetBySlug(command.Slug, null);
-        _articleRepositoryMock.SetupGetImagesByArticleId(article.Id, new List<ArticleImageEntity>());
         _articleRepositoryMock
             .Setup(x => x.GetByIdOrThrowAsync(article.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(article);
@@ -94,7 +94,7 @@ public class AdminUpdateArticleHandlerTests : BaseContentHandlerTest
         // Assert
         article.CategoryId.Should().Be(command.CategoryId);
         article.Title.Should().Be(command.Title);
-        article.Slug.Should().Be(command.Slug);
+        article.Slug.Value.Should().Be(command.Slug);
         article.Headline.Should().Be(command.Headline);
         article.Body.Should().Be(command.Body);
         article.CustomerId.Should().BeNull();
@@ -116,13 +116,12 @@ public class AdminUpdateArticleHandlerTests : BaseContentHandlerTest
         CategoryEntity category = CategoryFactory.Create(CategoryId);
         ArticleEntity article = ArticleFactory.Create(CategoryId);
         AdminUpdateArticleCommand command = BuildCommand(article, category.Id);
-        List<ArticleImageEntity> images = ArticleImageFactory.CreateMany(article.Id, 2);
+        List<ArticleImageEntity> images = ArticleImageFactory.CreateMany(article, 2);
         article.ClearDomainEvents();
 
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
         _articleRepositoryMock.SetupGetBySlug(command.Slug, null);
-        _articleRepositoryMock.SetupGetImagesByArticleId(article.Id, images);
         _articleRepositoryMock
             .Setup(x => x.GetByIdOrThrowAsync(article.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(article);
@@ -138,7 +137,6 @@ public class AdminUpdateArticleHandlerTests : BaseContentHandlerTest
             .Subject;
         orphanedEvent.ArticleId.Should().Be(article.Id);
         orphanedEvent.StorageKeys.Should().BeEquivalentTo(images.Select(img => img.StorageKey));
-        _articleRepositoryMock.Verify(x => x.RemoveImages(It.IsAny<IEnumerable<ArticleImageEntity>>()), Times.Never);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -203,7 +201,7 @@ public class AdminUpdateArticleHandlerTests : BaseContentHandlerTest
 
         // Assert
         await act.Should().ThrowAsync<ConflictException>();
-        article.Slug.Should().Be("original-article-slug");
+        article.Slug.Value.Should().Be("original-article-slug");
         article.DomainEvents.Should().BeEmpty();
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
