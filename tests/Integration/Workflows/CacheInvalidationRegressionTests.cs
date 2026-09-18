@@ -55,7 +55,7 @@ public class CacheInvalidationRegressionTests(PostgresFixture db) : BaseApiTest(
 
             ctx.Tags.AddRange(usedTag, idleTag);
             ctx.Articles.Add(article);
-            ctx.ArticleTags.Add(ArticleTagEntity.Create(Guid.NewGuid(), article.Id, usedTag.Id));
+            article.ReplaceTags([.. article.Tags.Select(t => t.TagId), usedTag.Id]);
             ctx.Lyrics.Add(lyrics);
             return (lyrics, usedTag, idleTag, article);
         });
