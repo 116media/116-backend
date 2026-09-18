@@ -54,7 +54,7 @@ public class AdminAddCategoryPricingEndpointV1Tests(PostgresFixture db) : BaseAp
             cp.CategoryId == category.Id && cp.PricingTierId == pricingTier.Id
         );
         pricing.Should().NotBeNull();
-        pricing!.PriceUsd.Should().Be(request.PriceUsd);
+        pricing!.PriceUsd.Amount.Should().Be(request.PriceUsd);
     }
 
     [Fact]
@@ -116,7 +116,7 @@ public class AdminAddCategoryPricingEndpointV1Tests(PostgresFixture db) : BaseAp
             ctx.Categories.Add(category);
             pricingTier = PricingTierFactory.Create();
             ctx.PricingTiers.Add(pricingTier);
-            CategoryPricingEntity existingPricing = CategoryPricingFactory.Create(category.Id, pricingTier.Id, 5.99m);
+            CategoryPricingEntity existingPricing = CategoryPricingFactory.Create(category, pricingTier.Id, 5.99m);
             ctx.CategoryPricing.Add(existingPricing);
         });
 
