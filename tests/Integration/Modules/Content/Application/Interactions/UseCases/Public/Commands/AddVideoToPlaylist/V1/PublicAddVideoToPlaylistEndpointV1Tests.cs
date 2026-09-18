@@ -94,7 +94,7 @@ public class PublicAddVideoToPlaylistEndpointV1Tests(PostgresFixture db) : BaseA
 
         await SeedAsync<ContentDbContext>(ctx =>
         {
-            ctx.PlaylistVideos.Add(PlaylistVideoEntity.Create(Guid.NewGuid(), playlist.Id, video.Id, sortOrder: 1));
+            ctx.Playlists.Attach(playlist).Entity.AddVideo(videoId: video.Id, sortOrder: 1);
         });
 
         Client.AuthenticateAsVisitor();
