@@ -1,4 +1,3 @@
-using _116.Content.Application.Commerce.Factories;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.RejectPayment;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -11,7 +10,6 @@ using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
-using _116.Unit.Tests.Common.Mocks.Factories;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
@@ -25,21 +23,30 @@ namespace _116.Unit.Tests.Modules.Content.Application.Commerce.UseCases.Admin.Co
 /// </summary>
 public class AdminRejectPaymentHandlerTests
 {
-    private readonly Mock<IOrderPaymentFactory> _orderPaymentFactoryMock;
     private readonly Mock<IContentOrderRepository> _orderRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminRejectPaymentHandler _handler;
 
     public AdminRejectPaymentHandlerTests()
     {
-        _orderPaymentFactoryMock = MockOrderPaymentFactory.Create();
         _orderRepositoryMock = MockContentOrderRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _handler = new AdminRejectPaymentHandler(
-            _orderPaymentFactoryMock.Object,
             _orderRepositoryMock.Object,
-            _unitOfWorkMock.Object
+            _unitOfWorkMock.Object,
+            TestErrorsFactory.CreateContentI18n()
         );
+    }
+
+    /// <summary>
+    /// Arranges an order carrying a payment, as the submission flow leaves it.
+    /// </summary>
+    private static (ContentOrderEntity Order, ContentPaymentEntity Payment) CreateOrderWithPayment()
+    {
+        ContentOrderEntity order = ContentOrderFactory.CreateWithId(Guid.NewGuid());
+        ContentPaymentEntity payment = order.AttachPayment();
+
+        return (order, payment);
     }
 
     #region Success Cases
@@ -48,35 +55,34 @@ public class AdminRejectPaymentHandlerTests
     public async Task Handle_WhenPaymentFound_ShouldTransitionToRejectedWithNotes()
     {
         // Arrange
-        Guid orderId = Guid.NewGuid();
-        ContentPaymentEntity payment = ContentPaymentFactory.Create(orderId);
-        _orderPaymentFactoryMock.SetupGetByOrderId(orderId, payment);
+        (ContentOrderEntity order, ContentPaymentEntity payment) = CreateOrderWithPayment();
+        _orderRepositoryMock.SetupGetByIdOrThrow(order);
 
         var command = new AdminRejectPaymentCommand(
-            OrderId: orderId.ToString(),
+            OrderId: order.Id.ToString(),
             Notes: TestConstants.Commerce.ValidRejectionNotes
         );
 
         // Act
-        await _handler.Handle(command, CancellationToken.None);
+        AdminRejectPaymentResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        result.IsSuccess.Should().BeTrue();
         payment.Status.Should().Be(EnumPaymentStatus.Rejected);
         payment.Notes.Should().Be(TestConstants.Commerce.ValidRejectionNotes);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
     [Fact]
-    public async Task Handle_WhenPaymentFound_ShouldRaisePaymentRejectedEvent()
+    public async Task Handle_WhenPaymentFound_ShouldRaisePaymentRejectedEventOnTheOrder()
     {
         // Arrange
-        Guid orderId = Guid.NewGuid();
-        ContentPaymentEntity payment = ContentPaymentFactory.Create(orderId);
-        payment.ClearDomainEvents();
-        _orderPaymentFactoryMock.SetupGetByOrderId(orderId, payment);
+        (ContentOrderEntity order, ContentPaymentEntity payment) = CreateOrderWithPayment();
+        order.ClearDomainEvents();
+        _orderRepositoryMock.SetupGetByIdOrThrow(order);
 
         var command = new AdminRejectPaymentCommand(
-            OrderId: orderId.ToString(),
+            OrderId: order.Id.ToString(),
             Notes: TestConstants.Commerce.ValidRejectionNotes
         );
 
@@ -84,14 +90,14 @@ public class AdminRejectPaymentHandlerTests
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        payment
+        order
             .DomainEvents.OfType<PaymentRejectedEvent>()
             .Should()
             .ContainSingle()
             .Which.Should()
             .Be(
                 new PaymentRejectedEvent(
-                    OrderId: orderId,
+                    OrderId: order.Id,
                     PaymentId: payment.Id,
                     Notes: TestConstants.Commerce.ValidRejectionNotes
                 )
@@ -103,13 +109,13 @@ public class AdminRejectPaymentHandlerTests
     #region Failure Cases
 
     [Fact]
-    public async Task Handle_WhenPaymentNotFound_ShouldThrowNotFoundException()
+    public async Task Handle_WhenOrderHasNoPayment_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid orderId = Guid.NewGuid();
-        _orderPaymentFactoryMock.SetupGetByOrderIdNotFound(orderId);
+        ContentOrderEntity order = ContentOrderFactory.CreateWithId(Guid.NewGuid());
+        _orderRepositoryMock.SetupGetByIdOrThrow(order);
 
-        var command = new AdminRejectPaymentCommand(OrderId: orderId.ToString(), Notes: null);
+        var command = new AdminRejectPaymentCommand(OrderId: order.Id.ToString(), Notes: null);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
@@ -120,74 +126,64 @@ public class AdminRejectPaymentHandlerTests
     }
 
     [Fact]
-    public async Task Handle_WhenOrderNotFound_ShouldThrowNotFoundExceptionWithoutResolvingPayment()
+    public async Task Handle_WhenOrderNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid orderId = Guid.NewGuid();
-        _orderRepositoryMock.SetupGetByIdOrThrowNotFound(orderId);
+        Guid missingOrderId = Guid.NewGuid();
+        _orderRepositoryMock.SetupGetByIdOrThrowNotFound(missingOrderId);
 
-        var command = new AdminRejectPaymentCommand(OrderId: orderId.ToString(), Notes: null);
+        var command = new AdminRejectPaymentCommand(OrderId: missingOrderId.ToString(), Notes: null);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
-        _orderPaymentFactoryMock.Verify(
-            x => x.GetByOrderIdOrThrowAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
-            Times.Never
-        );
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
-    public async Task Handle_WhenPaymentAlreadyVerified_ShouldThrowConflictException()
+    public async Task Handle_WhenPaymentAlreadyVerified_ShouldThrowAlreadyVerifiedRule()
     {
         // Arrange
-        Guid orderId = Guid.NewGuid();
-        ContentPaymentEntity payment = ContentPaymentFactory.CreateVerified(orderId);
-        payment.ClearDomainEvents();
-        _orderPaymentFactoryMock.SetupGetByOrderId(orderId, payment);
-
-        var command = new AdminRejectPaymentCommand(
-            OrderId: orderId.ToString(),
-            Notes: TestConstants.Commerce.ValidRejectionNotes
+        (ContentOrderEntity order, ContentPaymentEntity payment) = CreateOrderWithPayment();
+        payment.AttachProof(proofFileId: Guid.NewGuid(), paymentMethod: EnumPaymentMethod.BankTransfer);
+        payment.Verify(
+            adminUserId: Guid.NewGuid(),
+            receiptUrl: TestConstants.Commerce.ValidReceiptUrl,
+            now: TestConstants.Clock.Instant
         );
+        _orderRepositoryMock.SetupGetByIdOrThrow(order);
+
+        var command = new AdminRejectPaymentCommand(OrderId: order.Id.ToString(), Notes: null);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        (await act.Should().ThrowAsync<ContentRuleException>())
-            .Which.Code.Should()
-            .Be(ContentRuleCodes.PaymentAlreadyVerified);
-        payment.Status.Should().Be(EnumPaymentStatus.Verified);
-        payment.Notes.Should().BeNull();
-        payment.DomainEvents.Should().BeEmpty();
+        await act.Should()
+            .ThrowAsync<ContentRuleException>()
+            .Where(exception => exception.Code == ContentRuleCodes.PaymentAlreadyVerified);
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
     [Fact]
-    public async Task Handle_WhenPaymentAlreadyRejected_ShouldThrowConflictException()
+    public async Task Handle_WhenPaymentAlreadyRejected_ShouldThrowAlreadyRejectedRule()
     {
         // Arrange
-        Guid orderId = Guid.NewGuid();
-        ContentPaymentEntity payment = ContentPaymentFactory.CreateRejected(orderId);
-        payment.ClearDomainEvents();
-        _orderPaymentFactoryMock.SetupGetByOrderId(orderId, payment);
+        (ContentOrderEntity order, _) = CreateOrderWithPayment();
+        order.RejectPayment(notes: "first rejection");
+        _orderRepositoryMock.SetupGetByIdOrThrow(order);
 
-        var command = new AdminRejectPaymentCommand(OrderId: orderId.ToString(), Notes: null);
+        var command = new AdminRejectPaymentCommand(OrderId: order.Id.ToString(), Notes: null);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        (await act.Should().ThrowAsync<ContentRuleException>())
-            .Which.Code.Should()
-            .Be(ContentRuleCodes.PaymentAlreadyRejected);
-        payment.Status.Should().Be(EnumPaymentStatus.Rejected);
-        payment.Notes.Should().Be(TestConstants.Commerce.ValidRejectionNotes);
-        payment.DomainEvents.Should().BeEmpty();
+        await act.Should()
+            .ThrowAsync<ContentRuleException>()
+            .Where(exception => exception.Code == ContentRuleCodes.PaymentAlreadyRejected);
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
