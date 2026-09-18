@@ -4,7 +4,7 @@ using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Shared.Application.Specifications;
 using _116.Tests.Fixtures.Builders.Entities.Content;
-using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Constants;
 using _116.Unit.Tests.Common.Helpers;
 using AwesomeAssertions;
 using Xunit;
@@ -12,15 +12,51 @@ using Xunit;
 namespace _116.Unit.Tests.Modules.Content.Application.Commerce.Builders;
 
 /// <summary>
-/// Unit tests for <see cref="ContentPaymentQueryBuilder"/>.
+/// Unit tests for <see cref="ContentPaymentQueryBuilder"/>, whose specifications select the
+/// orders carrying a payment rather than payment rows.
 /// </summary>
 public class ContentPaymentQueryBuilderTests
 {
     /// <summary>
-    /// Builds a payment whose Order and Customer navigations are populated, mirroring
-    /// the Includes the payment search specification relies on.
+    /// The customer rows the search filter probes; empty for the tests that do not search.
     /// </summary>
-    private static ContentPaymentEntity CreatePaymentForCustomer(string fullName, string email, string company)
+    private static readonly IQueryable<CustomerEntity> NoCustomers = Array.Empty<CustomerEntity>().AsQueryable();
+
+    /// <summary>
+    /// Builds an order whose payment is awaiting verification, paid by the given method.
+    /// </summary>
+    private static ContentOrderEntity CreateOrderWithPendingPayment(EnumPaymentMethod method)
+    {
+        ContentOrderEntity order = new ContentOrderBuilder().Build();
+        ContentPaymentEntity payment = order.AttachPayment();
+        payment.AttachProof(proofFileId: Guid.NewGuid(), paymentMethod: method);
+
+        return order;
+    }
+
+    /// <summary>
+    /// Builds an order whose payment has been verified.
+    /// </summary>
+    private static ContentOrderEntity CreateOrderWithVerifiedPayment()
+    {
+        ContentOrderEntity order = CreateOrderWithPendingPayment(EnumPaymentMethod.BankTransfer);
+        order.Payment!.Verify(
+            adminUserId: Guid.NewGuid(),
+            receiptUrl: TestConstants.Commerce.ValidReceiptUrl,
+            now: TestConstants.Clock.Instant
+        );
+
+        return order;
+    }
+
+    /// <summary>
+    /// Builds a customer and the paid order they placed, so the search filter has both halves.
+    /// </summary>
+    private static (CustomerEntity Customer, ContentOrderEntity Order) CreateOrderForCustomer(
+        string fullName,
+        string email,
+        string company
+    )
     {
         CustomerEntity customer = new CustomerBuilder()
             .WithFullName(fullName)
@@ -28,8 +64,9 @@ public class ContentPaymentQueryBuilderTests
             .WithCompany(company)
             .Build();
         ContentOrderEntity order = new ContentOrderBuilder().WithCustomer(customer).Build();
+        order.AttachPayment();
 
-        return new ContentPaymentBuilder().WithOrder(order).Build();
+        return (customer, order);
     }
 
     #region WithStatus Tests
@@ -42,28 +79,43 @@ public class ContentPaymentQueryBuilderTests
 
         // Act
         builder.WithStatus(null);
-        Specification<ContentPaymentEntity>? spec = builder.Build();
+        Specification<ContentOrderEntity>? spec = builder.Build(NoCustomers);
 
         // Assert
         spec.Should().BeNull();
     }
 
     [Fact]
-    public void WithStatus_WhenStatusProvided_ShouldMatchOnlyPaymentsInThatStatus()
+    public void WithStatus_WhenStatusProvided_ShouldMatchOnlyOrdersWhosePaymentIsInThatStatus()
     {
         // Arrange
         var builder = new ContentPaymentQueryBuilder();
-        ContentPaymentEntity pendingPayment = ContentPaymentFactory.Create(Guid.NewGuid());
-        ContentPaymentEntity verifiedPayment = ContentPaymentFactory.CreateVerified(Guid.NewGuid());
+        ContentOrderEntity pendingOrder = CreateOrderWithPendingPayment(EnumPaymentMethod.BankTransfer);
+        ContentOrderEntity verifiedOrder = CreateOrderWithVerifiedPayment();
 
         // Act
         builder.WithStatus(EnumPaymentStatus.Pending);
-        Specification<ContentPaymentEntity>? spec = builder.Build();
+        Specification<ContentOrderEntity>? spec = builder.Build(NoCustomers);
 
         // Assert
         spec.Should().NotBeNull();
-        spec!.IsSatisfiedBy(pendingPayment).Should().BeTrue();
-        spec.IsSatisfiedBy(verifiedPayment).Should().BeFalse();
+        spec!.IsSatisfiedBy(pendingOrder).Should().BeTrue();
+        spec.IsSatisfiedBy(verifiedOrder).Should().BeFalse();
+    }
+
+    [Fact]
+    public void WithStatus_WhenOrderCarriesNoPayment_ShouldNotMatch()
+    {
+        // Arrange
+        var builder = new ContentPaymentQueryBuilder();
+        ContentOrderEntity orderWithoutPayment = new ContentOrderBuilder().Build();
+
+        // Act
+        builder.WithStatus(EnumPaymentStatus.Pending);
+        Specification<ContentOrderEntity>? spec = builder.Build(NoCustomers);
+
+        // Assert
+        spec!.IsSatisfiedBy(orderWithoutPayment).Should().BeFalse();
     }
 
     [Fact]
@@ -91,33 +143,28 @@ public class ContentPaymentQueryBuilderTests
 
         // Act
         builder.WithMethod(null);
-        Specification<ContentPaymentEntity>? spec = builder.Build();
+        Specification<ContentOrderEntity>? spec = builder.Build(NoCustomers);
 
         // Assert
         spec.Should().BeNull();
     }
 
     [Fact]
-    public void WithMethod_WhenMethodProvided_ShouldMatchOnlyPaymentsUsingThatMethod()
+    public void WithMethod_WhenMethodProvided_ShouldMatchOnlyOrdersWhosePaymentUsesThatMethod()
     {
         // Arrange
         var builder = new ContentPaymentQueryBuilder();
-        ContentPaymentEntity bankTransferPayment = ContentPaymentFactory.CreateWithProof(
-            Guid.NewGuid(),
-            Guid.NewGuid()
-        );
-        ContentPaymentEntity cashPayment = new ContentPaymentBuilder()
-            .WithProofFileId(Guid.NewGuid(), EnumPaymentMethod.Cash)
-            .Build();
+        ContentOrderEntity bankTransferOrder = CreateOrderWithPendingPayment(EnumPaymentMethod.BankTransfer);
+        ContentOrderEntity cashOrder = CreateOrderWithPendingPayment(EnumPaymentMethod.Cash);
 
         // Act
         builder.WithMethod(EnumPaymentMethod.BankTransfer);
-        Specification<ContentPaymentEntity>? spec = builder.Build();
+        Specification<ContentOrderEntity>? spec = builder.Build(NoCustomers);
 
         // Assert
         spec.Should().NotBeNull();
-        spec!.IsSatisfiedBy(bankTransferPayment).Should().BeTrue();
-        spec.IsSatisfiedBy(cashPayment).Should().BeFalse();
+        spec!.IsSatisfiedBy(bankTransferOrder).Should().BeTrue();
+        spec.IsSatisfiedBy(cashOrder).Should().BeFalse();
     }
 
     [Fact]
@@ -145,7 +192,7 @@ public class ContentPaymentQueryBuilderTests
 
         // Act
         builder.WithSearch(null);
-        Specification<ContentPaymentEntity>? spec = builder.Build();
+        Specification<ContentOrderEntity>? spec = builder.Build(NoCustomers);
 
         // Assert
         spec.Should().BeNull();
@@ -159,7 +206,7 @@ public class ContentPaymentQueryBuilderTests
 
         // Act
         builder.WithSearch("   ");
-        Specification<ContentPaymentEntity>? spec = builder.Build();
+        Specification<ContentOrderEntity>? spec = builder.Build(NoCustomers);
 
         // Assert
         spec.Should().BeNull();
@@ -170,17 +217,27 @@ public class ContentPaymentQueryBuilderTests
     {
         // Arrange
         var builder = new ContentPaymentQueryBuilder();
-        ContentPaymentEntity matchingPayment = CreatePaymentForCustomer("Grace Lombe", "grace@acme.io", "Acme Corp");
-        ContentPaymentEntity otherPayment = CreatePaymentForCustomer("Didi Mokonzi", "didi@kinix.cd", "Kinix Media");
+        (CustomerEntity matchingCustomer, ContentOrderEntity matchingOrder) = CreateOrderForCustomer(
+            "Grace Lombe",
+            "grace@acme.io",
+            "Acme Corp"
+        );
+        (CustomerEntity otherCustomer, ContentOrderEntity otherOrder) = CreateOrderForCustomer(
+            "Didi Mokonzi",
+            "didi@kinix.cd",
+            "Kinix Media"
+        );
 
         // Act
         builder.WithSearch("acme");
-        Specification<ContentPaymentEntity>? spec = builder.Build();
+        Specification<ContentOrderEntity>? spec = builder.Build(
+            new[] { matchingCustomer, otherCustomer }.AsQueryable()
+        );
 
         // Assert
         spec.Should().NotBeNull();
-        spec!.IsSatisfiedInMemoryBy(matchingPayment).Should().BeTrue();
-        spec.IsSatisfiedInMemoryBy(otherPayment).Should().BeFalse();
+        spec!.IsSatisfiedInMemoryBy(matchingOrder).Should().BeTrue();
+        spec.IsSatisfiedInMemoryBy(otherOrder).Should().BeFalse();
     }
 
     [Fact]
@@ -201,23 +258,18 @@ public class ContentPaymentQueryBuilderTests
     #region CombineSpecification Tests
 
     [Fact]
-    public void Build_WhenStatusAndMethodProvided_ShouldMatchOnlyPaymentsSatisfyingBoth()
+    public void Build_WhenStatusAndMethodProvided_ShouldMatchOnlyOrdersSatisfyingBoth()
     {
         // Arrange
         var builder = new ContentPaymentQueryBuilder();
-        ContentPaymentEntity match = ContentPaymentFactory.CreateWithProof(Guid.NewGuid(), Guid.NewGuid());
-        ContentPaymentEntity wrongMethod = new ContentPaymentBuilder()
-            .WithProofFileId(Guid.NewGuid(), EnumPaymentMethod.Cash)
-            .Build();
-        ContentPaymentEntity wrongStatus = new ContentPaymentBuilder()
-            .WithProofFileId(Guid.NewGuid(), EnumPaymentMethod.BankTransfer)
-            .AsVerified(Guid.NewGuid(), "https://cdn.example/receipt.pdf")
-            .Build();
+        ContentOrderEntity match = CreateOrderWithPendingPayment(EnumPaymentMethod.BankTransfer);
+        ContentOrderEntity wrongMethod = CreateOrderWithPendingPayment(EnumPaymentMethod.Cash);
+        ContentOrderEntity wrongStatus = CreateOrderWithVerifiedPayment();
 
         // Act
         builder.WithStatus(EnumPaymentStatus.Pending);
         builder.WithMethod(EnumPaymentMethod.BankTransfer);
-        Specification<ContentPaymentEntity>? spec = builder.Build();
+        Specification<ContentOrderEntity>? spec = builder.Build(NoCustomers);
 
         // Assert
         spec.Should().NotBeNull();
@@ -233,7 +285,7 @@ public class ContentPaymentQueryBuilderTests
         var builder = new ContentPaymentQueryBuilder();
 
         // Act
-        Specification<ContentPaymentEntity>? spec = builder.Build();
+        Specification<ContentOrderEntity>? spec = builder.Build(NoCustomers);
 
         // Assert
         spec.Should().BeNull();
