@@ -53,7 +53,8 @@ public class AdminUpdateLyricsHandlerTests : BaseContentHandlerTest
             Mapper,
             userLookupMock.Object,
             fileStorageMock.Object,
-            TestErrorsFactory.CreateContentI18n()
+            TestErrorsFactory.CreateContentI18n(),
+            CreateContentLookupFactory()
         );
     }
 
@@ -99,7 +100,7 @@ public class AdminUpdateLyricsHandlerTests : BaseContentHandlerTest
         lyrics.CategoryId.Should().Be(category.Id);
         lyrics.SongTitle.Should().Be(TestConstants.Lyrics.ValidSongTitle);
         lyrics.ArtistName.Should().Be(TestConstants.Lyrics.ValidArtistName);
-        lyrics.Slug.Should().Be(command.Slug);
+        lyrics.Slug.Value.Should().Be(command.Slug);
         lyrics.LyricsText.Should().Be(TestConstants.Lyrics.ValidLyricsText);
         lyrics.Language.Should().Be(TestConstants.Lyrics.ValidLanguage);
         lyrics.VideoId.Should().BeNull();
@@ -110,7 +111,7 @@ public class AdminUpdateLyricsHandlerTests : BaseContentHandlerTest
     }
 
     [Fact]
-    public async Task Handle_WhenVideoLinkAdded_ShouldMarkNewVideoHasLyrics()
+    public async Task Handle_WhenVideoLinkAdded_ShouldValidateAndLinkTheVideo()
     {
         // Arrange
         CategoryEntity category = CategoryFactory.Create(CategoryId);
@@ -118,13 +119,11 @@ public class AdminUpdateLyricsHandlerTests : BaseContentHandlerTest
         Guid videoId = Guid.NewGuid();
         AdminUpdateLyricsCommand command = BuildCommand(lyrics, category.Id, videoId: videoId);
 
-        VideoEntity video = VideoFactory.Create(category.Id);
-
         _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
         _videoRepositoryMock
-            .Setup(x => x.GetByIdOrThrowAsync(videoId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(video);
+            .Setup(x => x.ExistsOrThrowAsync(videoId, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
         _lyricsRepositoryMock
             .Setup(x => x.GetByIdOrThrowAsync(lyrics.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(lyrics);
@@ -134,11 +133,12 @@ public class AdminUpdateLyricsHandlerTests : BaseContentHandlerTest
 
         // Assert
         lyrics.VideoId.Should().Be(videoId);
-        video.HasLyrics.Should().BeTrue();
+        _videoRepositoryMock.Verify(x => x.ExistsOrThrowAsync(videoId, It.IsAny<CancellationToken>()), Times.Once);
+        _unitOfWorkMock.VerifyCommitCalled();
     }
 
     [Fact]
-    public async Task Handle_WhenVideoLinkChanged_ShouldUnmarkOldVideoAndMarkNewVideo()
+    public async Task Handle_WhenVideoLinkChanged_ShouldRelinkWithoutLoadingEitherVideo()
     {
         // Arrange
         CategoryEntity category = CategoryFactory.Create(CategoryId);
@@ -147,18 +147,11 @@ public class AdminUpdateLyricsHandlerTests : BaseContentHandlerTest
         LyricsEntity lyrics = LyricsFactory.CreateForVideo(CategoryId, oldVideoId);
         AdminUpdateLyricsCommand command = BuildCommand(lyrics, category.Id, videoId: newVideoId);
 
-        VideoEntity oldVideo = VideoFactory.Create(category.Id);
-        oldVideo.MarkHasLyrics();
-        VideoEntity newVideo = VideoFactory.Create(category.Id);
-
         _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
         _videoRepositoryMock
-            .Setup(x => x.GetByIdOrThrowAsync(oldVideoId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(oldVideo);
-        _videoRepositoryMock
-            .Setup(x => x.GetByIdOrThrowAsync(newVideoId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(newVideo);
+            .Setup(x => x.ExistsOrThrowAsync(newVideoId, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
         _lyricsRepositoryMock
             .Setup(x => x.GetByIdOrThrowAsync(lyrics.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(lyrics);
@@ -168,8 +161,10 @@ public class AdminUpdateLyricsHandlerTests : BaseContentHandlerTest
 
         // Assert
         lyrics.VideoId.Should().Be(newVideoId);
-        oldVideo.HasLyrics.Should().BeFalse();
-        newVideo.HasLyrics.Should().BeTrue();
+        _videoRepositoryMock.Verify(
+            x => x.GetByIdOrThrowAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
     }
 
     #endregion
@@ -231,7 +226,7 @@ public class AdminUpdateLyricsHandlerTests : BaseContentHandlerTest
 
         // Assert
         await act.Should().ThrowAsync<ConflictException>();
-        lyrics.Slug.Should().Be("original-lyrics-slug");
+        lyrics.Slug.Value.Should().Be("original-lyrics-slug");
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
