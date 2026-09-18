@@ -22,6 +22,12 @@ namespace _116.Unit.Tests.Modules.Content.Application.Shared.Mappers;
 /// </summary>
 public class MapperExtensionTests : BaseContentHandlerTest
 {
+    /// <summary>
+    /// An empty category map, for slots whose category is open or irrelevant to the assertion.
+    /// </summary>
+    private static readonly IReadOnlyDictionary<Guid, CategoryEntity> NoCategories =
+        new Dictionary<Guid, CategoryEntity>();
+
     #region CustomerMapper Extensions
 
     [Fact]
@@ -78,7 +84,7 @@ public class MapperExtensionTests : BaseContentHandlerTest
         PackageEntity entity = PackageFactory.Create();
 
         // Act
-        var result = entity.ToPackageDto(Mapper);
+        var result = entity.ToPackageDto(Mapper, NoCategories);
 
         // Assert
         result.Should().NotBeNull();
@@ -97,7 +103,7 @@ public class MapperExtensionTests : BaseContentHandlerTest
         }.AsReadOnly();
 
         // Act
-        IReadOnlyList<PackageDto> result = entities.ToPackageDtos(Mapper);
+        IReadOnlyList<PackageDto> result = entities.ToPackageDtos(Mapper, NoCategories);
 
         // Assert
         result.Should().HaveCount(2);
@@ -111,7 +117,7 @@ public class MapperExtensionTests : BaseContentHandlerTest
         IReadOnlyList<PackageEntity> entities = new List<PackageEntity>().AsReadOnly();
 
         // Act
-        IReadOnlyList<PackageDto> result = entities.ToPackageDtos(Mapper);
+        IReadOnlyList<PackageDto> result = entities.ToPackageDtos(Mapper, NoCategories);
 
         // Assert
         result.Should().BeEmpty();
@@ -121,10 +127,10 @@ public class MapperExtensionTests : BaseContentHandlerTest
     public void ToPackageSlotDto_WithOpenSlot_ShouldMapWithNullCategoryName()
     {
         // Arrange
-        PackageSlotEntity entity = PackageSlotFactory.CreateOpen(Guid.NewGuid());
+        PackageSlotEntity entity = PackageSlotFactory.CreateOpen(PackageFactory.Create());
 
         // Act
-        var result = entity.ToPackageSlotDto(Mapper);
+        var result = entity.ToPackageSlotDto(Mapper, NoCategories);
 
         // Assert
         result.Should().NotBeNull();
@@ -145,7 +151,10 @@ public class MapperExtensionTests : BaseContentHandlerTest
         Mock<IFileStorageService> fileStorageMock = MockFileStorageService.Create();
 
         // Act
-        IReadOnlyList<LyricsSummaryDto> result = await entities.ToLyricsSummaryDtosAsync(fileStorageMock.Object);
+        IReadOnlyList<LyricsSummaryDto> result = await entities.ToLyricsSummaryDtosAsync(
+            ContentLookups.Empty,
+            fileStorageMock.Object
+        );
 
         // Assert
         result.Should().HaveCount(3);
@@ -160,7 +169,10 @@ public class MapperExtensionTests : BaseContentHandlerTest
         Mock<IFileStorageService> fileStorageMock = MockFileStorageService.Create();
 
         // Act
-        IReadOnlyList<LyricsSummaryDto> result = await entities.ToLyricsSummaryDtosAsync(fileStorageMock.Object);
+        IReadOnlyList<LyricsSummaryDto> result = await entities.ToLyricsSummaryDtosAsync(
+            ContentLookups.Empty,
+            fileStorageMock.Object
+        );
 
         // Assert
         result.Should().BeEmpty();
@@ -175,7 +187,7 @@ public class MapperExtensionTests : BaseContentHandlerTest
         Mock<IFileStorageService> fileStorageMock = MockFileStorageService.Create();
 
         // Act
-        LyricsSummaryDto dto = await entity.ToLyricsSummaryDtoAsync(fileStorageMock.Object);
+        LyricsSummaryDto dto = await entity.ToLyricsSummaryDtoAsync(ContentLookups.Empty, fileStorageMock.Object);
 
         // Assert
         dto.Id.Should().Be(entity.Id);
@@ -205,6 +217,7 @@ public class MapperExtensionTests : BaseContentHandlerTest
         IReadOnlyList<ShortVideoDto> result = await entities.ToShortVideoDtosAsync(
             Mapper,
             fileStorageMock.Object,
+            MockVideoRepository.Create().Object,
             CancellationToken.None
         );
 
@@ -224,6 +237,7 @@ public class MapperExtensionTests : BaseContentHandlerTest
         IReadOnlyList<ShortVideoDto> result = await entities.ToShortVideoDtosAsync(
             Mapper,
             fileStorageMock.Object,
+            MockVideoRepository.Create().Object,
             CancellationToken.None
         );
 
