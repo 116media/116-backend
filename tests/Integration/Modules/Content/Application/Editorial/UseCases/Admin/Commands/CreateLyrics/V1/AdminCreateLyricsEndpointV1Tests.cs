@@ -92,7 +92,7 @@ public class AdminCreateLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         persisted.Should().NotBeNull();
         persisted!.SongTitle.Should().Be(request.SongTitle);
         persisted.ArtistName.Should().Be(request.ArtistName);
-        persisted.Slug.Should().Be(request.Slug);
+        persisted.Slug.Value.Should().Be(request.Slug);
         persisted.Status.Should().Be(EnumContentStatus.Draft);
     }
 
@@ -246,7 +246,7 @@ public class AdminCreateLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
     }
 
     [Fact]
-    public async Task CreateLyrics_AsSuperAdmin_LinkedToVideo_MarksVideoAsHavingLyrics()
+    public async Task CreateLyrics_AsSuperAdmin_LinkedToVideo_PersistsTheVideoLink()
     {
         Guid categoryId = Guid.Empty;
         VideoEntity video = await SeedAsync<ContentDbContext, VideoEntity>(ctx =>
@@ -260,8 +260,6 @@ public class AdminCreateLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
             categoryId = category.Id;
             return parentVideo;
         });
-
-        video.HasLyrics.Should().BeFalse();
 
         Client.AuthenticateAsSuperAdmin();
         AdminCreateLyricsRequest request = new AdminCreateLyricsRequestBuilder()
@@ -277,8 +275,8 @@ public class AdminCreateLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         body.Lyrics.VideoId.Should().Be(video.Id);
 
         await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
-        VideoEntity? persistedVideo = await ctx.Videos.FindAsync(video.Id);
-        persistedVideo.Should().NotBeNull();
-        persistedVideo!.HasLyrics.Should().BeTrue();
+        LyricsEntity? persisted = await ctx.Lyrics.FindAsync(body.Lyrics.Id);
+        persisted.Should().NotBeNull();
+        persisted!.VideoId.Should().Be(video.Id);
     }
 }
