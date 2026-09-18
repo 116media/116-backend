@@ -43,7 +43,8 @@ public class PublicGetArticleBySlugHandlerTests : BaseContentHandlerTest
             _articleInteractionRepositoryMock.Object,
             _fileStorageMock.Object,
             Mapper,
-            TestErrorsFactory.CreateContentI18n()
+            TestErrorsFactory.CreateContentI18n(),
+            CreateContentLookupFactory()
         );
     }
 
