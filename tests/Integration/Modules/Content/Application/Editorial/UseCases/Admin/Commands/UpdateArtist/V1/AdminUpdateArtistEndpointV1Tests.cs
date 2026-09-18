@@ -101,7 +101,7 @@ public class AdminUpdateArtistEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
         ArtistEntity? persisted = await ctx.Artists.FindAsync(artist.Id);
-        persisted!.Slug.Should().Be(originalSlug);
+        persisted!.Slug.Value.Should().Be(originalSlug);
     }
 
     [Fact]
