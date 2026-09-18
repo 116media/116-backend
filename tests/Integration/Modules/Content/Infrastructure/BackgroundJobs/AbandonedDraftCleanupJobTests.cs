@@ -72,7 +72,7 @@ public class AbandonedDraftCleanupJobTests(PostgresFixture db) : BaseApiTest(db)
             ctx.Categories.Add(category);
             ctx.Articles.AddRange(abandonedDraft, recentDraft, publishedArticle);
             ctx.ArticleImages.AddRange(
-                ArticleImageFactory.CreateFromStorageKeys(abandonedDraft.Id, [firstBodyKey, secondBodyKey])
+                ArticleImageFactory.CreateFromStorageKeys(abandonedDraft, [firstBodyKey, secondBodyKey])
             );
         });
 
