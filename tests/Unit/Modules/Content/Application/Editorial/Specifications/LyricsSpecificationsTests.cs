@@ -17,6 +17,11 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.Specifications;
 /// </summary>
 public class LyricsSpecificationsTests
 {
+    /// <summary>
+    /// The video rows a video-category rule probes.
+    /// </summary>
+    private static IQueryable<VideoEntity> VideoSource(params VideoEntity[] videos) => videos.AsQueryable();
+
     private static readonly Guid CategoryId = Guid.NewGuid();
 
     #region LyricsByIdSpecification
@@ -333,8 +338,8 @@ public class LyricsSpecificationsTests
     {
         // Arrange
         VideoEntity video = VideoFactory.Create(CategoryId);
-        LyricsEntity lyrics = LyricsFactory.CreatePublishedWithVideoNavigation(CategoryId, video);
-        var spec = new LyricsSimilarByVideoCategorySpecification(CategoryId, Guid.NewGuid());
+        LyricsEntity lyrics = LyricsFactory.CreatePublishedForVideo(CategoryId, video);
+        var spec = new LyricsSimilarByVideoCategorySpecification(CategoryId, Guid.NewGuid(), VideoSource(video));
 
         // Act
         bool result = spec.IsSatisfiedBy(lyrics);
@@ -348,8 +353,8 @@ public class LyricsSpecificationsTests
     {
         // Arrange
         VideoEntity video = VideoFactory.Create(CategoryId);
-        LyricsEntity lyrics = LyricsFactory.CreatePublishedWithVideoNavigation(CategoryId, video);
-        var spec = new LyricsSimilarByVideoCategorySpecification(CategoryId, lyrics.Id);
+        LyricsEntity lyrics = LyricsFactory.CreatePublishedForVideo(CategoryId, video);
+        var spec = new LyricsSimilarByVideoCategorySpecification(CategoryId, lyrics.Id, VideoSource(video));
 
         // Act
         bool result = spec.IsSatisfiedBy(lyrics);
@@ -363,7 +368,11 @@ public class LyricsSpecificationsTests
     {
         // Arrange
         LyricsEntity lyrics = LyricsFactory.CreatePublished(CategoryId);
-        var spec = new LyricsSimilarByVideoCategorySpecification(CategoryId, Guid.NewGuid());
+        var spec = new LyricsSimilarByVideoCategorySpecification(
+            CategoryId,
+            Guid.NewGuid(),
+            Array.Empty<VideoEntity>().AsQueryable()
+        );
 
         // Act
         bool result = spec.IsSatisfiedBy(lyrics);
@@ -384,7 +393,7 @@ public class LyricsSpecificationsTests
         LyricsEntity lyrics = LyricsFactory.CreateWithTags(CategoryId, tagId);
         lyrics.MarkPendingReview();
         lyrics.Approve();
-        lyrics.Publish();
+        lyrics.Publish(TestConstants.Clock.Instant);
         var spec = new LyricsBySharedTagsSpecification([tagId], Guid.NewGuid());
 
         // Act
@@ -401,7 +410,7 @@ public class LyricsSpecificationsTests
         LyricsEntity lyrics = LyricsFactory.CreateWithTags(CategoryId, Guid.NewGuid());
         lyrics.MarkPendingReview();
         lyrics.Approve();
-        lyrics.Publish();
+        lyrics.Publish(TestConstants.Clock.Instant);
         var spec = new LyricsBySharedTagsSpecification([Guid.NewGuid()], Guid.NewGuid());
 
         // Act
@@ -525,6 +534,7 @@ public class LyricsSpecificationsTests
         // Arrange
         Guid lyricsId = Guid.NewGuid();
         LyricsViewEventEntity viewEvent = LyricsViewEventFactory.CreateCounted(lyricsId, "dedup-key");
+        viewEvent.CreatedAt = DateTime.UtcNow;
         var spec = new LyricsCountedViewSinceSpecification(
             lyricsId: lyricsId,
             dedupKey: "dedup-key",
@@ -544,6 +554,7 @@ public class LyricsSpecificationsTests
         // Arrange
         Guid lyricsId = Guid.NewGuid();
         LyricsViewEventEntity viewEvent = LyricsViewEventFactory.CreateUncounted(lyricsId, "dedup-key");
+        viewEvent.CreatedAt = DateTime.UtcNow;
         var spec = new LyricsCountedViewSinceSpecification(
             lyricsId: lyricsId,
             dedupKey: "dedup-key",
@@ -563,6 +574,7 @@ public class LyricsSpecificationsTests
         // Arrange
         Guid lyricsId = Guid.NewGuid();
         LyricsViewEventEntity viewEvent = LyricsViewEventFactory.CreateCounted(lyricsId, "dedup-key");
+        viewEvent.CreatedAt = DateTime.UtcNow;
         var spec = new LyricsCountedViewSinceSpecification(
             lyricsId: lyricsId,
             dedupKey: "dedup-key",
@@ -582,6 +594,7 @@ public class LyricsSpecificationsTests
         // Arrange
         Guid lyricsId = Guid.NewGuid();
         LyricsViewEventEntity viewEvent = LyricsViewEventFactory.CreateCounted(lyricsId, "dedup-key");
+        viewEvent.CreatedAt = DateTime.UtcNow;
         var spec = new LyricsCountedViewSinceSpecification(
             lyricsId: lyricsId,
             dedupKey: "other-key",
