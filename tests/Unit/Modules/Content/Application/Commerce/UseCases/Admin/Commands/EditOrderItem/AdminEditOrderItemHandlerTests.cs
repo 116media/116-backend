@@ -39,7 +39,7 @@ public class AdminEditOrderItemHandlerTests : BaseContentHandlerTest
             _categoryRepositoryMock.Object,
             _promotionLevelRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            Mapper,
+            CreateOrderDtoFactory(),
             TestErrorsFactory.CreateContentI18n()
         );
     }
@@ -60,7 +60,6 @@ public class AdminEditOrderItemHandlerTests : BaseContentHandlerTest
         _orderRepositoryMock
             .Setup(x => x.GetByIdWithItemsAsync(order.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(order);
-        _orderRepositoryMock.SetupGetItemByIdOrThrow(item);
 
         var command = new AdminEditOrderItemCommand(
             OrderId: order.Id.ToString(),
@@ -80,7 +79,7 @@ public class AdminEditOrderItemHandlerTests : BaseContentHandlerTest
         item.CategoryId.Should().Be(categoryId);
         item.PromotionLevelId.Should().BeNull();
         item.PromoPriceSnapshotUsd.Should().BeNull();
-        order.TotalAmountUsd.Should().Be(0);
+        order.TotalAmountUsd.Amount.Should().Be(0);
         result.Item.Id.Should().Be(item.Id);
         result.Item.SocialBoost.Should().BeTrue();
         _unitOfWorkMock.VerifyCommitCalled();
@@ -145,10 +144,6 @@ public class AdminEditOrderItemHandlerTests : BaseContentHandlerTest
         (await act.Should().ThrowAsync<ContentRuleException>())
             .Which.Code.Should()
             .Be(ContentRuleCodes.CannotAddItemToNonDraftOrder);
-        _orderRepositoryMock.Verify(
-            x => x.GetItemByIdOrThrowAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
-            Times.Never
-        );
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
@@ -163,7 +158,6 @@ public class AdminEditOrderItemHandlerTests : BaseContentHandlerTest
         _orderRepositoryMock
             .Setup(x => x.GetByIdWithItemsAsync(order.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(order);
-        _orderRepositoryMock.SetupGetItemByIdOrThrowNotFound(order.Id, missingItemId);
 
         var command = new AdminEditOrderItemCommand(
             OrderId: order.Id.ToString(),
