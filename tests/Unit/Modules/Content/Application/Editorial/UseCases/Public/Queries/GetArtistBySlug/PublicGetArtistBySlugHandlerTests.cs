@@ -40,9 +40,15 @@ public class PublicGetArtistBySlugHandlerTests : BaseContentHandlerTest
             _lyricsRepositoryMock.Object,
             _videoRepositoryMock.Object,
             new ArtistDtoFactory(fileStorageMock.Object),
-            new VideoDtoFactory(Mapper, fileStorageMock.Object),
+            new VideoDtoFactory(
+                Mapper,
+                fileStorageMock.Object,
+                _videoRepositoryMock.Object,
+                CreateContentLookupFactory()
+            ),
             fileStorageMock.Object,
-            TestErrorsFactory.CreateContentI18n()
+            TestErrorsFactory.CreateContentI18n(),
+            CreateContentLookupFactory()
         );
     }
 
