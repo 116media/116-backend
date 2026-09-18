@@ -22,19 +22,13 @@ namespace _116.Unit.Tests.Modules.Content.Application.Commerce.UseCases.Admin.Co
 /// </summary>
 public class AdminSubmitOrderFactoryTests
 {
-    private readonly Mock<IContentOrderRepository> _orderRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminSubmitOrderFactory _factory;
 
     public AdminSubmitOrderFactoryTests()
     {
-        _orderRepositoryMock = MockContentOrderRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _factory = new AdminSubmitOrderFactory(
-            _orderRepositoryMock.Object,
-            _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateContentOrderErrors()
-        );
+        _factory = new AdminSubmitOrderFactory(_unitOfWorkMock.Object, TestErrorsFactory.CreateContentOrderErrors());
     }
 
     #region Success Cases
@@ -56,18 +50,6 @@ public class AdminSubmitOrderFactoryTests
 
         // Assert
         order.Status.Should().Be(EnumOrderStatus.PendingPayment);
-        _orderRepositoryMock.Verify(
-            x =>
-                x.AddPaymentAsync(
-                    It.Is<ContentPaymentEntity>(p =>
-                        p.OrderId == order.Id
-                        && p.AmountUsd == tier.PriceSnapshotUsd
-                        && p.Status == EnumPaymentStatus.Pending
-                    ),
-                    It.IsAny<CancellationToken>()
-                ),
-            Times.Once
-        );
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -116,10 +98,6 @@ public class AdminSubmitOrderFactoryTests
         await act.Should().ThrowAsync<BadRequestException>();
         order.Status.Should().Be(EnumOrderStatus.Draft);
         order.DomainEvents.Should().BeEmpty();
-        _orderRepositoryMock.Verify(
-            x => x.AddPaymentAsync(It.IsAny<ContentPaymentEntity>(), It.IsAny<CancellationToken>()),
-            Times.Never
-        );
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
