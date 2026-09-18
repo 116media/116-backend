@@ -24,7 +24,6 @@ public class AdminAddOrderItemFactoryTests
     private readonly Mock<ICategoryRepository> _categoryRepositoryMock;
     private readonly Mock<IPromotionLevelRepository> _promotionLevelRepositoryMock;
     private readonly Mock<IPackageRepository> _packageRepositoryMock;
-    private readonly Mock<IContentOrderRepository> _orderRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminAddOrderItemFactory _factory;
 
@@ -33,13 +32,11 @@ public class AdminAddOrderItemFactoryTests
         _categoryRepositoryMock = MockCategoryRepository.Create();
         _promotionLevelRepositoryMock = MockPromotionLevelRepository.Create();
         _packageRepositoryMock = MockPackageRepository.Create();
-        _orderRepositoryMock = MockContentOrderRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _factory = new AdminAddOrderItemFactory(
             _categoryRepositoryMock.Object,
             _promotionLevelRepositoryMock.Object,
             _packageRepositoryMock.Object,
-            _orderRepositoryMock.Object,
             _unitOfWorkMock.Object,
             TestErrorsFactory.CreateCategoryErrors()
         );
@@ -72,7 +69,6 @@ public class AdminAddOrderItemFactoryTests
         item.CategoryId.Should().Be(category.Id);
         categoryName.Should().Be(category.Name);
         promoName.Should().BeNull();
-        _orderRepositoryMock.VerifyAddItemCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
