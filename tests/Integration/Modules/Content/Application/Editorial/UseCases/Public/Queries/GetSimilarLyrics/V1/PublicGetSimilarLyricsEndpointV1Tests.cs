@@ -3,6 +3,7 @@ using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Exceptions.Messages;
+using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Public.Queries.GetSimilarLyrics.V1;
@@ -131,15 +132,15 @@ public class PublicGetSimilarLyricsEndpointV1Tests(PostgresFixture db) : BaseApi
             LyricsEntity source = LyricsFactory.CreateWithTags(categoryId, tagOne.Id, tagTwo.Id);
             source.MarkPendingReview();
             source.Approve();
-            source.Publish();
+            source.Publish(TestConstants.Clock.Instant);
             LyricsEntity oneTagMatch = LyricsFactory.CreateWithTags(categoryId, tagOne.Id);
             oneTagMatch.MarkPendingReview();
             oneTagMatch.Approve();
-            oneTagMatch.Publish();
+            oneTagMatch.Publish(TestConstants.Clock.Instant);
             LyricsEntity twoTagsMatch = LyricsFactory.CreateWithTags(categoryId, tagOne.Id, tagTwo.Id);
             twoTagsMatch.MarkPendingReview();
             twoTagsMatch.Approve();
-            twoTagsMatch.Publish();
+            twoTagsMatch.Publish(TestConstants.Clock.Instant);
             ctx.Lyrics.AddRange(source, oneTagMatch, twoTagsMatch);
             return (source, twoTagsMatch, oneTagMatch);
         });
@@ -172,14 +173,14 @@ public class PublicGetSimilarLyricsEndpointV1Tests(PostgresFixture db) : BaseApi
                     sourceVideo.Id,
                     $"source-{Guid.NewGuid():N}"
                 );
-                source.Tags.Add(LyricsTagEntity.Create(Guid.NewGuid(), source.Id, sharedTag.Id));
+                source.ReplaceTags([.. source.Tags.Select(t => t.TagId), sharedTag.Id]);
 
                 // Standalone (no video), so it is not a category peer — proves the empty category
                 // branch falls through to the shared-tags branch rather than stopping empty.
                 LyricsEntity tagMatch = LyricsFactory.CreateWithTags(categoryId, sharedTag.Id);
                 tagMatch.MarkPendingReview();
                 tagMatch.Approve();
-                tagMatch.Publish();
+                tagMatch.Publish(TestConstants.Clock.Instant);
                 ctx.Lyrics.AddRange(source, tagMatch);
                 return (source, tagMatch);
             }
