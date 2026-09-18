@@ -43,7 +43,8 @@ public class AdminGetOrderByIdHandlerTests : BaseContentHandlerTest
             _orderRepositoryMock.Object,
             _fileStorageMock.Object,
             Mapper,
-            new PaymentDtoFactory(Mapper, _userLookupMock.Object),
+            CreateOrderDtoFactory(),
+            new PaymentDtoFactory(Mapper, _userLookupMock.Object, CreateOrderDtoFactory()),
             TestErrorsFactory.CreateContentI18n()
         );
     }
@@ -73,13 +74,15 @@ public class AdminGetOrderByIdHandlerTests : BaseContentHandlerTest
         // Arrange
         var orderId = Guid.NewGuid();
         Guid proofFileId = Guid.NewGuid();
-        ContentPaymentEntity payment = new ContentPaymentBuilder()
-            .WithOrderId(orderId)
-            .WithProofFileId(proofFileId, EnumPaymentMethod.BankTransfer)
-            .AsVerified(Guid.NewGuid(), TestConstants.Commerce.ValidReceiptUrl)
-            .Build();
+        ContentOrderEntity order = new ContentOrderBuilder().WithId(orderId).WithPayment().Build();
+        ContentPaymentEntity payment = order.Payment!;
+        payment.AttachProof(proofFileId: proofFileId, paymentMethod: EnumPaymentMethod.BankTransfer);
+        payment.Verify(
+            adminUserId: Guid.NewGuid(),
+            receiptUrl: TestConstants.Commerce.ValidReceiptUrl,
+            now: TestConstants.Clock.Instant
+        );
         Guid verifierId = payment.VerifiedById!.Value;
-        ContentOrderEntity order = new ContentOrderBuilder().WithId(orderId).WithPayment(payment).Build();
 
         FileReferenceDto proofFile = FileReferenceDtoFactory.CreateWithId(proofFileId);
 
@@ -109,11 +112,8 @@ public class AdminGetOrderByIdHandlerTests : BaseContentHandlerTest
         // Arrange
         var orderId = Guid.NewGuid();
         Guid proofFileId = Guid.NewGuid();
-        ContentPaymentEntity payment = new ContentPaymentBuilder()
-            .WithOrderId(orderId)
-            .WithProofFileId(proofFileId, EnumPaymentMethod.BankTransfer)
-            .Build();
-        ContentOrderEntity order = new ContentOrderBuilder().WithId(orderId).WithPayment(payment).Build();
+        ContentOrderEntity order = new ContentOrderBuilder().WithId(orderId).WithPayment().Build();
+        order.Payment!.AttachProof(proofFileId: proofFileId, paymentMethod: EnumPaymentMethod.BankTransfer);
 
         FileReferenceDto proofFile = FileReferenceDtoFactory.CreateWithId(proofFileId);
 
