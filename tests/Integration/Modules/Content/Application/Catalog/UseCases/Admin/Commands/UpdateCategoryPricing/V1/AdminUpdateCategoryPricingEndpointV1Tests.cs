@@ -27,7 +27,7 @@ public class AdminUpdateCategoryPricingEndpointV1Tests(PostgresFixture db) : Bas
             ctx.Categories.Add(category);
             pricingTier = PricingTierFactory.Create();
             ctx.PricingTiers.Add(pricingTier);
-            CategoryPricingEntity categoryPricing = CategoryPricingFactory.Create(category.Id, pricingTier.Id, 5.99m);
+            CategoryPricingEntity categoryPricing = CategoryPricingFactory.Create(category, pricingTier.Id, 5.99m);
             ctx.CategoryPricing.Add(categoryPricing);
         });
 
@@ -52,7 +52,7 @@ public class AdminUpdateCategoryPricingEndpointV1Tests(PostgresFixture db) : Bas
             cp.CategoryId == category.Id && cp.PricingTierId == pricingTier.Id
         );
         updated.Should().NotBeNull();
-        updated!.PriceUsd.Should().Be(request.PriceUsd);
+        updated!.PriceUsd.Amount.Should().Be(request.PriceUsd);
     }
 
     [Fact]
@@ -143,7 +143,7 @@ public class AdminUpdateCategoryPricingEndpointV1Tests(PostgresFixture db) : Bas
             pricingTier = PricingTierFactory.Create();
             ctx.PricingTiers.Add(pricingTier);
             CategoryPricingEntity categoryPricing = CategoryPricingFactory.Create(
-                owningCategory.Id,
+                owningCategory,
                 pricingTier.Id,
                 5.99m
             );
@@ -170,6 +170,6 @@ public class AdminUpdateCategoryPricingEndpointV1Tests(PostgresFixture db) : Bas
             cp.CategoryId == owningCategory.Id && cp.PricingTierId == pricingTier.Id
         );
         untouched.Should().NotBeNull();
-        untouched!.PriceUsd.Should().Be(5.99m);
+        untouched!.PriceUsd.Amount.Should().Be(5.99m);
     }
 }
