@@ -35,9 +35,8 @@ public class OrderPaidReceiptEmailHandlerTests
     {
         // Arrange
         ContentOrderEntity order = ContentOrderFactory.CreatePaid();
-        ContentPaymentEntity payment = ContentPaymentFactory.CreateVerified(order.Id);
+        ContentPaymentEntity payment = order.AttachPayment();
         _orderRepositoryMock.SetupGetByIdWithItems(order);
-        _orderRepositoryMock.SetupGetPaymentByOrderId(order.Id, payment);
 
         // Act
         await _handler.Handle(
