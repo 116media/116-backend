@@ -42,7 +42,8 @@ public class AdminForceUnpromoteVideoHandlerTests
             _videoRepositoryMock.Object,
             _unitOfWorkMock.Object,
             currentActor,
-            TestErrorsFactory.CreateContentI18n()
+            TestErrorsFactory.CreateContentI18n(),
+            TimeProvider.System
         );
     }
 
