@@ -44,7 +44,8 @@ public class PublicGetPublicShortBySlugHandlerTests : BaseContentHandlerTest
             _userLookupMock.Object,
             _fileStorageMock.Object,
             Mapper,
-            TestErrorsFactory.CreateContentI18n()
+            TestErrorsFactory.CreateContentI18n(),
+            MockVideoRepository.Create().Object
         );
     }
 
