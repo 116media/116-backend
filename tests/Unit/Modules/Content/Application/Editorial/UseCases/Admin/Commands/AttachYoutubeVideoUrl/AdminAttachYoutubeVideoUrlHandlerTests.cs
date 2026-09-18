@@ -46,7 +46,13 @@ public class AdminAttachYoutubeVideoUrlHandlerTests : BaseContentHandlerTest
         _handler = new AdminAttachYoutubeVideoUrlHandler(
             _videoRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            new VideoDtoFactory(Mapper, _fileStorageMock.Object)
+            new VideoDtoFactory(
+                Mapper,
+                _fileStorageMock.Object,
+                _videoRepositoryMock.Object,
+                CreateContentLookupFactory()
+            ),
+            TimeProvider.System
         );
     }
 
