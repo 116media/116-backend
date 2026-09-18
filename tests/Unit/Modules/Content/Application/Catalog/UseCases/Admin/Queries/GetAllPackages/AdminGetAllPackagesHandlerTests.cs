@@ -22,7 +22,7 @@ public class AdminGetAllPackagesHandlerTests : BaseContentHandlerTest
     public AdminGetAllPackagesHandlerTests()
     {
         _packageRepositoryMock = MockPackageRepository.Create();
-        _handler = new AdminGetAllPackagesHandler(_packageRepositoryMock.Object, Mapper);
+        _handler = new AdminGetAllPackagesHandler(_packageRepositoryMock.Object, CreatePackageDtoFactory());
     }
 
     #region Success Cases
