@@ -68,7 +68,7 @@ public class PublicGetPublishedVideosEndpointV1Tests(PostgresFixture db) : BaseA
 
             TagEntity tag = TagFactory.Create();
             ctx.Tags.Add(tag);
-            ctx.VideoTags.Add(VideoTagEntity.Create(Guid.NewGuid(), taggedVideo.Id, tag.Id));
+            taggedVideo.ReplaceTags([.. taggedVideo.Tags.Select(t => t.TagId), tag.Id]);
 
             return (taggedVideo, untaggedVideo, tag);
         });
@@ -97,7 +97,7 @@ public class PublicGetPublishedVideosEndpointV1Tests(PostgresFixture db) : BaseA
 
         Client.ClearAuthentication();
 
-        var response = await Client.GetAsync($"{ApiRoutes.Public.Videos}?tagSlug={tag.Slug.ToUpperInvariant()}");
+        var response = await Client.GetAsync($"{ApiRoutes.Public.Videos}?tagSlug={tag.Slug.Value.ToUpperInvariant()}");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
