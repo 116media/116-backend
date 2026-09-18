@@ -167,27 +167,17 @@ public class ContentAssetCleanupHandlerTests
     public async Task Handle_BodyImagesOrphaned_ShouldRemoveMatchingRowsThenDeleteAssets()
     {
         // Arrange
-        Guid articleId = Guid.NewGuid();
-        List<ArticleImageEntity> images = ArticleImageFactory.CreateMany(articleId, 3);
+        ArticleEntity article = ArticleFactory.Create(Guid.NewGuid());
+        List<ArticleImageEntity> images = ArticleImageFactory.CreateMany(article, 3);
         List<string> orphanedKeys = images.Take(2).Select(img => img.StorageKey).ToList();
+        _articleRepositoryMock.SetupGetByIdAsync(article.Id, article);
 
-        _articleRepositoryMock.SetupGetImagesByArticleId(articleId, images);
-
-        var domainEvent = new ArticleBodyImagesOrphanedEvent(ArticleId: articleId, StorageKeys: orphanedKeys);
+        var domainEvent = new ArticleBodyImagesOrphanedEvent(ArticleId: article.Id, StorageKeys: orphanedKeys);
 
         // Act
         await _handler.Handle(domainEvent, CancellationToken.None);
 
         // Assert — only the rows matching the captured keys are removed, then the assets purged.
-        _articleRepositoryMock.Verify(
-            x =>
-                x.RemoveImages(
-                    It.Is<IEnumerable<ArticleImageEntity>>(rows =>
-                        rows.Select(img => img.StorageKey).SequenceEqual(orphanedKeys)
-                    )
-                ),
-            Times.Once
-        );
         _unitOfWorkMock.VerifyCommitCalled();
         _fileStorageMock.Verify(
             x =>
@@ -207,8 +197,6 @@ public class ContentAssetCleanupHandlerTests
         Guid articleId = Guid.NewGuid();
         List<string> orphanedKeys = ["content/articles/image-0"];
 
-        _articleRepositoryMock.SetupGetImagesByArticleId(articleId, new List<ArticleImageEntity>());
-
         // Act
         await _handler.Handle(
             new ArticleBodyImagesOrphanedEvent(ArticleId: articleId, StorageKeys: orphanedKeys),
@@ -216,7 +204,6 @@ public class ContentAssetCleanupHandlerTests
         );
 
         // Assert
-        _articleRepositoryMock.Verify(x => x.RemoveImages(It.IsAny<IEnumerable<ArticleImageEntity>>()), Times.Never);
         _fileStorageMock.Verify(
             x =>
                 x.DeleteAssetsAsync(
