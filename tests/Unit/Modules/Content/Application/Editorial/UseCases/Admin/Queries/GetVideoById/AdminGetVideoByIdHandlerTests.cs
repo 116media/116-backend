@@ -41,7 +41,12 @@ public class AdminGetVideoByIdHandlerTests : BaseContentHandlerTest
         _handler = new AdminGetVideoByIdHandler(
             _videoRepositoryMock.Object,
             _userLookupMock.Object,
-            new VideoDtoFactory(Mapper, _fileStorageMock.Object),
+            new VideoDtoFactory(
+                Mapper,
+                _fileStorageMock.Object,
+                _videoRepositoryMock.Object,
+                CreateContentLookupFactory()
+            ),
             _fileStorageMock.Object
         );
     }
