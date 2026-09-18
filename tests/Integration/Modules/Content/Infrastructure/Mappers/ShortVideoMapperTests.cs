@@ -1,5 +1,6 @@
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
+using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Core.Contracts.Application.DTOs;
@@ -39,7 +40,7 @@ public class ShortVideoMapperTests(PostgresFixture postgres) : BaseRepositoryTes
         ShortVideoEntity loaded = await readContext.ShortVideos.FirstAsync(sv => sv.Id == shortVideo.Id);
 
         var fileStorage = Resolve<IFileStorageService>();
-        ShortVideoDto dto = await loaded.ToShortVideoDtoAsync(_mapper, fileStorage);
+        ShortVideoDto dto = await loaded.ToShortVideoDtoAsync(_mapper, fileStorage, Resolve<IVideoRepository>());
 
         dto.Id.Should().Be(loaded.Id);
         dto.Title.Should().Be(loaded.Title);
@@ -62,7 +63,7 @@ public class ShortVideoMapperTests(PostgresFixture postgres) : BaseRepositoryTes
         ShortVideoEntity loaded = await readContext.ShortVideos.FirstAsync(sv => sv.Id == shortVideo.Id);
 
         var fileStorage = Resolve<IFileStorageService>();
-        ShortVideoDto dto = await loaded.ToShortVideoDtoAsync(_mapper, fileStorage);
+        ShortVideoDto dto = await loaded.ToShortVideoDtoAsync(_mapper, fileStorage, Resolve<IVideoRepository>());
 
         dto.VideoUrl.Should().Be(videoFile.StorageUrl);
         dto.ThumbnailUrl.Should().NotBeNull();
@@ -86,7 +87,7 @@ public class ShortVideoMapperTests(PostgresFixture postgres) : BaseRepositoryTes
         ShortVideoEntity loaded = await readContext.ShortVideos.FirstAsync(sv => sv.Id == shortVideo.Id);
 
         var fileStorage = Resolve<IFileStorageService>();
-        ShortVideoDto dto = await loaded.ToShortVideoDtoAsync(_mapper, fileStorage);
+        ShortVideoDto dto = await loaded.ToShortVideoDtoAsync(_mapper, fileStorage, Resolve<IVideoRepository>());
 
         dto.ThumbnailUrl.Should().Be(thumbnailFile.StorageUrl);
     }
@@ -104,7 +105,11 @@ public class ShortVideoMapperTests(PostgresFixture postgres) : BaseRepositoryTes
         List<ShortVideoEntity> loaded = await readContext.ShortVideos.ToListAsync();
 
         var fileStorage = Resolve<IFileStorageService>();
-        IReadOnlyList<ShortVideoDto> dtos = await loaded.ToShortVideoDtosAsync(_mapper, fileStorage);
+        IReadOnlyList<ShortVideoDto> dtos = await loaded.ToShortVideoDtosAsync(
+            _mapper,
+            fileStorage,
+            Resolve<IVideoRepository>()
+        );
 
         dtos.Should().HaveCount(2);
     }
@@ -136,6 +141,7 @@ public class ShortVideoMapperTests(PostgresFixture postgres) : BaseRepositoryTes
             _mapper,
             userLookup,
             fileStorage,
+            Resolve<IVideoRepository>(),
             liked,
             bookmarked
         );
@@ -190,7 +196,12 @@ public class ShortVideoMapperTests(PostgresFixture postgres) : BaseRepositoryTes
         var fileStorage = Resolve<IFileStorageService>();
         var userLookup = Resolve<IUserLookupService>();
 
-        IReadOnlyList<ShortVideoDto> dtos = await loaded.ToShortVideoDtosAsync(_mapper, userLookup, fileStorage);
+        IReadOnlyList<ShortVideoDto> dtos = await loaded.ToShortVideoDtosAsync(
+            _mapper,
+            userLookup,
+            fileStorage,
+            Resolve<IVideoRepository>()
+        );
 
         ShortVideoDto authoredDto = dtos.Single(dto => dto.Id == authored.Id);
         authoredDto.Author.Should().NotBeNull();
@@ -213,7 +224,13 @@ public class ShortVideoMapperTests(PostgresFixture postgres) : BaseRepositoryTes
         IReadOnlySet<Guid> liked = new HashSet<Guid> { shortVideo.Id };
         IReadOnlySet<Guid> bookmarked = new HashSet<Guid>();
 
-        IReadOnlyList<ShortVideoDto> dtos = await loaded.ToShortVideoDtosAsync(_mapper, fileStorage, liked, bookmarked);
+        IReadOnlyList<ShortVideoDto> dtos = await loaded.ToShortVideoDtosAsync(
+            _mapper,
+            fileStorage,
+            Resolve<IVideoRepository>(),
+            liked,
+            bookmarked
+        );
 
         dtos.Single(dto => dto.Id == shortVideo.Id).IsLiked.Should().BeTrue();
         dtos.Single(dto => dto.Id == shortVideo.Id).IsBookmarked.Should().BeFalse();
