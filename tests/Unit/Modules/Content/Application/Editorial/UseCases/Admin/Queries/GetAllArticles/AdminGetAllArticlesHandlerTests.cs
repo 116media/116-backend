@@ -35,7 +35,12 @@ public class AdminGetAllArticlesHandlerTests : BaseContentHandlerTest
         _fileStorageMock = MockFileStorageService.Create();
         FileReferenceDto coverFile = FileReferenceDtoFactory.CreateImage();
         _fileStorageMock.SetupResolve(coverFile);
-        _handler = new AdminGetAllArticlesHandler(_articleRepositoryMock.Object, _fileStorageMock.Object, Mapper);
+        _handler = new AdminGetAllArticlesHandler(
+            _articleRepositoryMock.Object,
+            _fileStorageMock.Object,
+            Mapper,
+            CreateContentLookupFactory()
+        );
     }
 
     [Fact]
