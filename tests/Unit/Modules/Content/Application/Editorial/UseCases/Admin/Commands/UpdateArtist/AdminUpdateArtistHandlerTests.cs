@@ -34,7 +34,8 @@ public class AdminUpdateArtistHandlerTests
         _handler = new AdminUpdateArtistHandler(
             _artistRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            new ArtistDtoFactory(fileStorageMock.Object)
+            new ArtistDtoFactory(fileStorageMock.Object),
+            TimeProvider.System
         );
     }
 
@@ -76,7 +77,7 @@ public class AdminUpdateArtistHandlerTests
         AdminUpdateArtistResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        artist.Slug.Should().Be(originalSlug);
+        artist.Slug.Value.Should().Be(originalSlug);
         result.Artist.Slug.Should().Be(originalSlug);
     }
 
