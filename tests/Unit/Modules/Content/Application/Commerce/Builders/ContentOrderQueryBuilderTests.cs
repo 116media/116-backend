@@ -16,6 +16,11 @@ namespace _116.Unit.Tests.Modules.Content.Application.Commerce.Builders;
 /// </summary>
 public class ContentOrderQueryBuilderTests
 {
+    /// <summary>
+    /// The customer rows the search filter probes; empty for the tests that do not search.
+    /// </summary>
+    private static readonly IQueryable<CustomerEntity> NoCustomers = Array.Empty<CustomerEntity>().AsQueryable();
+
     #region WithStatus Tests
 
     [Fact]
@@ -26,7 +31,7 @@ public class ContentOrderQueryBuilderTests
 
         // Act
         builder.WithStatus(null);
-        Specification<ContentOrderEntity>? spec = builder.Build();
+        Specification<ContentOrderEntity>? spec = builder.Build(NoCustomers);
 
         // Assert
         spec.Should().BeNull();
@@ -42,7 +47,7 @@ public class ContentOrderQueryBuilderTests
 
         // Act
         builder.WithStatus(EnumOrderStatus.Draft);
-        Specification<ContentOrderEntity>? spec = builder.Build();
+        Specification<ContentOrderEntity>? spec = builder.Build(NoCustomers);
 
         // Assert
         spec.Should().NotBeNull();
@@ -75,7 +80,7 @@ public class ContentOrderQueryBuilderTests
 
         // Act
         builder.WithCustomerId(null);
-        Specification<ContentOrderEntity>? spec = builder.Build();
+        Specification<ContentOrderEntity>? spec = builder.Build(NoCustomers);
 
         // Assert
         spec.Should().BeNull();
@@ -92,7 +97,7 @@ public class ContentOrderQueryBuilderTests
 
         // Act
         builder.WithCustomerId(customerId);
-        Specification<ContentOrderEntity>? spec = builder.Build();
+        Specification<ContentOrderEntity>? spec = builder.Build(NoCustomers);
 
         // Assert
         spec.Should().NotBeNull();
@@ -125,7 +130,7 @@ public class ContentOrderQueryBuilderTests
 
         // Act
         builder.WithSearch(null);
-        Specification<ContentOrderEntity>? spec = builder.Build();
+        Specification<ContentOrderEntity>? spec = builder.Build(NoCustomers);
 
         // Assert
         spec.Should().BeNull();
@@ -139,7 +144,7 @@ public class ContentOrderQueryBuilderTests
 
         // Act
         builder.WithSearch("   ");
-        Specification<ContentOrderEntity>? spec = builder.Build();
+        Specification<ContentOrderEntity>? spec = builder.Build(NoCustomers);
 
         // Assert
         spec.Should().BeNull();
@@ -165,7 +170,9 @@ public class ContentOrderQueryBuilderTests
 
         // Act
         builder.WithSearch("acme");
-        Specification<ContentOrderEntity>? spec = builder.Build();
+        Specification<ContentOrderEntity>? spec = builder.Build(
+            new[] { matchingCustomer, otherCustomer }.AsQueryable()
+        );
 
         // Assert
         spec.Should().NotBeNull();
@@ -203,7 +210,7 @@ public class ContentOrderQueryBuilderTests
         // Act
         builder.WithStatus(EnumOrderStatus.Draft);
         builder.WithCustomerId(customerId);
-        Specification<ContentOrderEntity>? spec = builder.Build();
+        Specification<ContentOrderEntity>? spec = builder.Build(NoCustomers);
 
         // Assert
         spec.Should().NotBeNull();
@@ -222,7 +229,7 @@ public class ContentOrderQueryBuilderTests
         builder.WithStatus(EnumOrderStatus.Draft);
         builder.WithCustomerId(Guid.NewGuid());
         builder.WithSearch("acme");
-        Specification<ContentOrderEntity>? spec = builder.Build();
+        Specification<ContentOrderEntity>? spec = builder.Build(NoCustomers);
 
         // Assert
         spec.Should().NotBeNull();
@@ -235,7 +242,7 @@ public class ContentOrderQueryBuilderTests
         var builder = new ContentOrderQueryBuilder();
 
         // Act
-        Specification<ContentOrderEntity>? spec = builder.Build();
+        Specification<ContentOrderEntity>? spec = builder.Build(NoCustomers);
 
         // Assert
         spec.Should().BeNull();
