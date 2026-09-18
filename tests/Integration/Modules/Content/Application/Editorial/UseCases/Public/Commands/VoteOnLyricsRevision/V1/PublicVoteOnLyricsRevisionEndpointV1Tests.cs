@@ -142,7 +142,7 @@ public class PublicVoteOnLyricsRevisionEndpointV1Tests(PostgresFixture db) : Bas
 
         persistedLyrics.Should().NotBeNull();
         persistedLyrics!.LyricsText.Should().Be("Community-corrected lyrics text");
-        persistedLyrics.Slug.Should().Be(originalSlug);
+        persistedLyrics.Slug.Value.Should().Be(originalSlug);
         persistedLyrics.SongTitle.Should().Be(originalSongTitle);
         persistedLyrics.ArtistName.Should().Be(originalArtistName);
         persistedLyrics.Status.Should().Be(originalStatus);
