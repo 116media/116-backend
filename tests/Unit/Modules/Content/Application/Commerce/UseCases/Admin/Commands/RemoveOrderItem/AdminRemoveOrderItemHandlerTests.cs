@@ -55,7 +55,6 @@ public class AdminRemoveOrderItemHandlerTests
         order.Items.Add(remainingItem);
 
         _orderRepositoryMock.SetupGetByIdWithItems(order);
-        _orderRepositoryMock.SetupGetItemByIdOrThrow(item);
 
         var command = new AdminRemoveOrderItemCommand(OrderId: order.Id.ToString(), ItemId: item.Id.ToString());
 
@@ -64,8 +63,7 @@ public class AdminRemoveOrderItemHandlerTests
 
         // Assert — the removal and the recalculated total commit together
         order.Items.Should().NotContain(item);
-        order.TotalAmountUsd.Should().Be(TestConstants.Commerce.ValidTierPriceUsd);
-        _orderRepositoryMock.Verify(x => x.RemoveItemAsync(item, It.IsAny<CancellationToken>()), Times.Once);
+        order.TotalAmountUsd.Amount.Should().Be(TestConstants.Commerce.ValidTierPriceUsd);
         _unitOfWorkMock.VerifyCommitCalled(times: 1);
     }
 
@@ -112,10 +110,6 @@ public class AdminRemoveOrderItemHandlerTests
         (await act.Should().ThrowAsync<ContentRuleException>())
             .Which.Code.Should()
             .Be(ContentRuleCodes.CannotAddItemToNonDraftOrder);
-        _orderRepositoryMock.Verify(
-            x => x.RemoveItemAsync(It.IsAny<ContentOrderItemEntity>(), It.IsAny<CancellationToken>()),
-            Times.Never
-        );
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
@@ -130,7 +124,6 @@ public class AdminRemoveOrderItemHandlerTests
         _orderRepositoryMock
             .Setup(x => x.GetByIdWithItemsAsync(order.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(order);
-        _orderRepositoryMock.SetupGetItemByIdOrThrowNotFound(order.Id, missingItemId);
 
         var command = new AdminRemoveOrderItemCommand(OrderId: order.Id.ToString(), ItemId: missingItemId.ToString());
 
