@@ -32,7 +32,7 @@ public class AdminRemovePackageSlotEndpointV1Tests(PostgresFixture db) : BaseApi
         {
             package = PackageFactory.Create();
             ctx.Packages.Add(package);
-            slot = PackageSlotFactory.Create(package.Id);
+            slot = PackageSlotFactory.Create(package);
             ctx.PackageSlots.Add(slot);
         });
 
@@ -89,7 +89,7 @@ public class AdminRemovePackageSlotEndpointV1Tests(PostgresFixture db) : BaseApi
             ctx.Categories.Add(category);
             package = PackageFactory.Create();
             ctx.Packages.Add(package);
-            slot = PackageSlotFactory.Create(package.Id, category.Id);
+            slot = PackageSlotFactory.Create(package, category.Id);
             ctx.PackageSlots.Add(slot);
         });
 
@@ -123,7 +123,7 @@ public class AdminRemovePackageSlotEndpointV1Tests(PostgresFixture db) : BaseApi
             ctx.Packages.Add(owningPackage);
             otherPackage = PackageFactory.Create();
             ctx.Packages.Add(otherPackage);
-            slot = PackageSlotFactory.Create(owningPackage.Id, category.Id);
+            slot = PackageSlotFactory.Create(owningPackage, category.Id);
             ctx.PackageSlots.Add(slot);
         });
 
