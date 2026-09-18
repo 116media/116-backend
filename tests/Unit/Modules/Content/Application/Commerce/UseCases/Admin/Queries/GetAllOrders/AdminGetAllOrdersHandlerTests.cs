@@ -17,13 +17,14 @@ namespace _116.Unit.Tests.Modules.Content.Application.Commerce.UseCases.Admin.Qu
 /// </summary>
 public class AdminGetAllOrdersHandlerTests : BaseContentHandlerTest
 {
+    private readonly CustomerEntity _customer = CustomerFactory.Create();
     private readonly Mock<IContentOrderRepository> _orderRepositoryMock;
     private readonly AdminGetAllOrdersHandler _handler;
 
     public AdminGetAllOrdersHandlerTests()
     {
         _orderRepositoryMock = MockContentOrderRepository.Create();
-        _handler = new AdminGetAllOrdersHandler(_orderRepositoryMock.Object, Mapper);
+        _handler = new AdminGetAllOrdersHandler(_orderRepositoryMock.Object, CreateOrderDtoFactory(_customer));
     }
 
     #region Success Cases
@@ -32,10 +33,9 @@ public class AdminGetAllOrdersHandlerTests : BaseContentHandlerTest
     public async Task Handle_ShouldReturnPaginatedResult()
     {
         // Arrange
-        CustomerEntity customer = CustomerFactory.Create();
         List<ContentOrderEntity> orders = Enumerable
             .Range(0, 3)
-            .Select(_ => new ContentOrderBuilder().WithCustomer(customer).Build())
+            .Select(_ => new ContentOrderBuilder().WithCustomer(_customer).Build())
             .ToList();
 
         _orderRepositoryMock.SetupGetAllAsync(orders, orders.Count);
