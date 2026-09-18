@@ -110,8 +110,7 @@ public class AbandonedDraftCleanupJobTests
     {
         // Arrange
         ArticleEntity draft = ArticleFactory.Create(CategoryId);
-        ArticleImageEntity image = ArticleImageFactory.CreateBody(draft.Id);
-        draft.Images.Add(image);
+        ArticleImageEntity image = ArticleImageFactory.CreateBody(draft);
 
         _articleRepositoryMock
             .Setup(x => x.GetAbandonedDraftsAsync(It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
@@ -136,10 +135,8 @@ public class AbandonedDraftCleanupJobTests
     {
         // Arrange
         ArticleEntity draft = ArticleFactory.Create(CategoryId);
-        ArticleImageEntity cover = ArticleImageFactory.CreateCover(draft.Id);
-        ArticleImageEntity body = ArticleImageFactory.CreateBody(draft.Id);
-        draft.Images.Add(cover);
-        draft.Images.Add(body);
+        ArticleImageFactory.CreateCover(draft);
+        ArticleImageEntity body = ArticleImageFactory.CreateBody(draft);
 
         _articleRepositoryMock
             .Setup(x => x.GetAbandonedDraftsAsync(It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
