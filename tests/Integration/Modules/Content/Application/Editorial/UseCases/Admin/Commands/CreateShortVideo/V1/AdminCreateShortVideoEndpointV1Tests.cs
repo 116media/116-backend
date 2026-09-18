@@ -70,7 +70,7 @@ public class AdminCreateShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiT
         await using ContentDbContext verifyContext = CreateDbContext<ContentDbContext>();
         ShortVideoEntity? persisted = await verifyContext.ShortVideos.FindAsync(body.ShortVideo.Id);
         persisted.Should().NotBeNull();
-        persisted!.Slug.Should().Be(slug);
+        persisted!.Slug.Value.Should().Be(slug);
         persisted.VideoFileId.Should().BeNull();
         persisted.IsActive.Should().BeFalse();
     }
