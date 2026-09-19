@@ -91,7 +91,7 @@ public class AdminUpdateCategoryEndpointV1 : ICarterModule
             .WithDescription(description: AdminUpdateCategoryMetaField.UpdateCategory.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentManagement)
             .ProducesValidationProblem()
             .Produces<AdminUpdateCategoryResponse>(statusCode: StatusCodes.Status200OK)
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
