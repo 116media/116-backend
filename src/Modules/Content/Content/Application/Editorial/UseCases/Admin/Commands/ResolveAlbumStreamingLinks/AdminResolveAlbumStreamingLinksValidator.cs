@@ -1,4 +1,5 @@
 using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Shared.Validators;
 using _116.Content.Domain.Constants;
 using FluentValidation;
 
@@ -16,14 +17,6 @@ public class AdminResolveAlbumStreamingLinksValidator : AbstractValidator<AdminR
     /// <param name="i18n">Content module i18n facade.</param>
     public AdminResolveAlbumStreamingLinksValidator(ContentI18n i18n)
     {
-        RuleFor(x => x.SourceUrl)
-            .Cascade(cascadeMode: CascadeMode.Stop)
-            .NotEmpty()
-            .MaximumLength(maximumLength: ContentConstants.MaxStreamingLinkUrlLength)
-            .Must(url =>
-                Uri.TryCreate(uriString: url, uriKind: UriKind.Absolute, out Uri? parsed)
-                && parsed.Scheme == Uri.UriSchemeHttps
-            )
-            .WithMessage(i18n.StreamingLink.Msg.UnresolvableSourceUrl());
+        RuleFor(x => x.SourceUrl).ValidStreamingSourceUrl(i18n.StreamingLink.Msg);
     }
 }
