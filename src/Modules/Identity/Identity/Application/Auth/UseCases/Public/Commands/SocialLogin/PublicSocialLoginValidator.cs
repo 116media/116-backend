@@ -24,6 +24,6 @@ public class PublicSocialLoginValidator : AbstractValidator<PublicSocialLoginCom
     public PublicSocialLoginValidator(IdentityI18n i18n)
     {
         RuleFor(x => x.Provider).ValidAuthProvider(i18n.User.Validation);
-        RuleFor(x => x.IdToken).NotEmpty().WithMessage(i18n.User.Validation.IdTokenRequired());
+        RuleFor(x => x.IdToken).ValidIdToken(i18n.User.Validation);
     }
 }
