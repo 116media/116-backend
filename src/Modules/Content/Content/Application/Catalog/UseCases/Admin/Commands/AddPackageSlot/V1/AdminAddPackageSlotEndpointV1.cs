@@ -81,7 +81,7 @@ public class AdminAddPackageSlotEndpointV1 : ICarterModule
             .WithDescription(description: AdminAddPackageSlotMetaField.AddPackageSlot.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentManagement)
             .ProducesValidationProblem()
             .Produces<AdminAddPackageSlotResponse>(statusCode: StatusCodes.Status201Created)
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
