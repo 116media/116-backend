@@ -205,6 +205,12 @@ Migrate slice-by-slice (Lookup first, Editorial last) — a mechanical construct
 
 ## 6.10 Every use case re-declares its route group; 7 public endpoints landed outside `/public`
 
+> **Resolved in Stage 16** (the misplaced-routes half). All 7 now sit under `public/` —
+> submit lyrics, propose/vote lyrics revision, propose/vote translation revision, get
+> translation revisions, request artist claim. Census re-run: 0 endpoints outside
+> `admin`/`public`. The per-use-case group declaration stays; a scope helper adopted by only
+> 7 of ~150 public endpoints would have been less consistent than matching the other 288.
+
 **Severity: Medium** · overlaps [08 §14](08-cross-cutting.md).
 
 **Where:** all 221 endpoints open with a copied 3-line `MapApiVersionGroup(1).MapGroup(...)
@@ -226,6 +232,12 @@ with the old one `ExcludeFromDescription`). Replace the `"customers"` literal.
 ---
 
 ## 6.11 `ContentBrowsing` — a read policy — rate-limits 129 of 151 write endpoints
+
+> **Resolved in Stage 16.** Re-measured at 148 write endpoints on `ContentBrowsing` (28 DELETE,
+> 49 PATCH, 42 POST, 29 PUT). All moved off it: 119 admin writes to a new `ContentManagement`
+> policy (fixed window, 60/min), 29 public writes to the existing `ContentContribution` (20/min).
+> `ContentBrowsing` now backs 79 endpoints, all GET. The integration fixture's hardcoded policy
+> list — which is why this drifted — now reflects over `RateLimitPolicies` instead.
 
 **Severity: Medium** · same as [08 §1 context](08-cross-cutting.md).
 
@@ -265,6 +277,16 @@ mapping is auditable in one file; re-review all 142 against it.
 ---
 
 ## 6.13 44 command use cases ship with no validator; 63 mutation endpoints omit `ProducesValidationProblem`
+
+> **Resolved in Stage 16** (validator half). Re-measured across all modules: 205 commands, 158
+> with a validator, 47 without — of which 35 take only a `Guid`/enum and are deliberately left
+> alone, since a malformed id already returns 400 via `FormatExceptionStrategy`. The 6 that
+> accepted unbounded free text now have validators sized to their columns.
+>
+> One of the six was a live 500, not merely unvalidated: `PublicRecordShortVideoView` builds
+> `dedup_key` as `device:{DeviceId}` from the caller's `X-Device-Id` header into a
+> `varchar(100)` column, so any device id over 93 characters overflowed it — on an anonymous
+> endpoint. Reproduced as HTTP 500 with a 200-character header, then fixed.
 
 **Severity: Medium** · overlaps [08 §5](08-cross-cutting.md).
 
