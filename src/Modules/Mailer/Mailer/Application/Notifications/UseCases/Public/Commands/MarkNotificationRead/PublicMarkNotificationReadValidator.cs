@@ -1,4 +1,5 @@
 using _116.Mailer.Application.Shared.Errors;
+using _116.Mailer.Application.Shared.Validators;
 using FluentValidation;
 
 namespace _116.Mailer.Application.Notifications.UseCases.Public.Commands.MarkNotificationRead;
@@ -16,6 +17,6 @@ public class PublicMarkNotificationReadValidator : AbstractValidator<PublicMarkN
     /// <param name="errors">Notification error factory providing localized messages.</param>
     public PublicMarkNotificationReadValidator(NotificationErrors errors)
     {
-        RuleFor(x => x.NotificationId).NotEmpty().WithMessage(errors.Msg.NotificationIdRequired());
+        RuleFor(x => x.NotificationId).ValidNotificationId(errors.Msg);
     }
 }
