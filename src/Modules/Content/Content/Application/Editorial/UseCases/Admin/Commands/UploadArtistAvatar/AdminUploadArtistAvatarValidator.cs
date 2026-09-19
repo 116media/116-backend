@@ -1,4 +1,5 @@
 using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Shared.Validators;
 using FluentValidation;
 
 namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadArtistAvatar;
@@ -14,6 +15,6 @@ public class AdminUploadArtistAvatarValidator : AbstractValidator<AdminUploadArt
     /// <param name="i18n">Content module i18n facade.</param>
     public AdminUploadArtistAvatarValidator(ContentI18n i18n)
     {
-        RuleFor(x => x.File).NotNull().WithMessage(i18n.Lyrics.Msg.FileRequired());
+        RuleFor(x => x.File).ValidUploadedFile(i18n.Lyrics.Msg.FileRequired());
     }
 }
