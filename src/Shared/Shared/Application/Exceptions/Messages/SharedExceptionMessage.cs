@@ -44,6 +44,12 @@ public class SharedExceptionMessage(IStringLocalizer<SharedExceptionMessage> loc
     public string InvalidIdentifier() => localizer["InvalidIdentifier"];
 
     /// <summary>
+    /// Error message for a request that failed input validation. Deliberately says nothing about
+    /// which values were submitted; the per-field messages travel in the problem's errors.
+    /// </summary>
+    public string ValidationFailed() => localizer["ValidationFailed"];
+
+    /// <summary>
     /// Generic, localized message for an unhandled/unexpected server error. Used outside Development so
     /// the raw exception text (which may carry connection strings, SQL or schema detail) never reaches
     /// the client.
