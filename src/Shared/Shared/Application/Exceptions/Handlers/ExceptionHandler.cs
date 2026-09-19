@@ -53,7 +53,12 @@ public sealed class ExceptionHandler(ILogger<ExceptionHandler> logger, Exception
 
         // Send response
         context.Response.StatusCode = problemDetails.Status ?? StatusCodes.Status500InternalServerError;
-        await context.Response.WriteAsJsonAsync(problemDetails, cancellationToken: cancellationToken);
+        await context.Response.WriteAsJsonAsync(
+            problemDetails,
+            options: null,
+            contentType: "application/problem+json",
+            cancellationToken: cancellationToken
+        );
 
         return true;
     }
