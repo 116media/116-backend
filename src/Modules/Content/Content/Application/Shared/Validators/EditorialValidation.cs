@@ -4,6 +4,7 @@ using _116.BuildingBlocks.Constants;
 using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Constants;
+using _116.Content.Domain.Enums;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
 
@@ -845,4 +846,287 @@ public static partial class EditorialValidation
     /// </summary>
     [GeneratedRegex(@"^[a-z0-9]+(?:-[a-z0-9]+)*$")]
     private static partial Regex SlugRegex();
+
+    /// <summary>
+    /// Validates a streaming platform deep link — required, max length enforced, and a
+    /// well-formed absolute http(s) URL.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the URL property.</param>
+    /// <param name="i18n">The streaming link error message provider.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, string?> ValidStreamingLinkUrl<T>(
+        this IRuleBuilderInitial<T, string?> ruleBuilder,
+        StreamingLinkErrorMessage i18n
+    )
+    {
+        return ruleBuilder
+            .Cascade(cascadeMode: CascadeMode.Stop)
+            .NotEmpty()
+            .WithMessage(i18n.UrlRequired())
+            .MaximumLength(maximumLength: ContentConstants.MaxStreamingLinkUrlLength)
+            .WithMessage(i18n.UrlTooLong(ContentConstants.MaxStreamingLinkUrlLength))
+            .Must(url =>
+                Uri.TryCreate(uriString: url, uriKind: UriKind.Absolute, result: out Uri? parsed)
+                && (parsed.Scheme == Uri.UriSchemeHttp || parsed.Scheme == Uri.UriSchemeHttps)
+            )
+            .WithMessage(i18n.UrlMalformed());
+    }
+
+    /// <summary>
+    /// Validates the optional comment attached to a lyrics-revision vote — max length enforced.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the comment property.</param>
+    /// <param name="i18n">The lyrics revision error message provider.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, string?> ValidLyricsRevisionVoteComment<T>(
+        this IRuleBuilderInitial<T, string?> ruleBuilder,
+        LyricsRevisionErrorMessage i18n
+    )
+    {
+        return ruleBuilder
+            .MaximumLength(maximumLength: ContentConstants.MaxVoteCommentLength)
+            .WithMessage(i18n.VoteCommentTooLong(ContentConstants.MaxVoteCommentLength));
+    }
+
+    /// <summary>
+    /// Validates the optional comment attached to a translation-revision vote — max length enforced.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the comment property.</param>
+    /// <param name="i18n">The translation error message provider.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, string?> ValidTranslationVoteComment<T>(
+        this IRuleBuilderInitial<T, string?> ruleBuilder,
+        TranslationErrorMessage i18n
+    )
+    {
+        return ruleBuilder
+            .MaximumLength(maximumLength: ContentConstants.MaxVoteCommentLength)
+            .WithMessage(i18n.VoteCommentTooLong(ContentConstants.MaxVoteCommentLength));
+    }
+
+    /// <summary>
+    /// Validates the artist list on an article — present, bounded, and free of duplicates.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the artist id list.</param>
+    /// <param name="i18n">The article error message provider.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, IReadOnlyList<Guid>> ValidArticleArtistIds<T>(
+        this IRuleBuilderInitial<T, IReadOnlyList<Guid>> ruleBuilder,
+        ArticleErrorMessage i18n
+    )
+    {
+        return ruleBuilder
+            .Cascade(cascadeMode: CascadeMode.Stop)
+            .NotNull()
+            .WithMessage(i18n.ArtistIdsRequired())
+            .Must(ids => ids.Count <= ContentConstants.MaxArticleArtistCount)
+            .WithMessage(i18n.TooManyArtists(ContentConstants.MaxArticleArtistCount))
+            .Must(ids => ids.Distinct().Count() == ids.Count)
+            .WithMessage(i18n.DuplicateArtists());
+    }
+
+    /// <summary>
+    /// Validates a lyrics identifier is present.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the id property.</param>
+    /// <param name="i18n">The lyrics error message provider.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, Guid> ValidLyricsId<T>(
+        this IRuleBuilder<T, Guid> ruleBuilder,
+        LyricsErrorMessage i18n
+    )
+    {
+        return ruleBuilder.NotEmpty().WithMessage(i18n.IdRequired());
+    }
+
+    /// <summary>
+    /// Validates the source URL handed to the streaming-link resolver — required, bounded, and an
+    /// absolute https URL, since the provider refuses anything else.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the source URL property.</param>
+    /// <param name="i18n">The streaming link error message provider.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, string?> ValidStreamingSourceUrl<T>(
+        this IRuleBuilderInitial<T, string?> ruleBuilder,
+        StreamingLinkErrorMessage i18n
+    )
+    {
+        return ruleBuilder
+            .Cascade(cascadeMode: CascadeMode.Stop)
+            .NotEmpty()
+            .WithMessage(i18n.SourceUrlRequired())
+            .MaximumLength(maximumLength: ContentConstants.MaxStreamingLinkUrlLength)
+            .WithMessage(i18n.SourceUrlTooLong(ContentConstants.MaxStreamingLinkUrlLength))
+            .Must(url =>
+                Uri.TryCreate(uriString: url, uriKind: UriKind.Absolute, result: out Uri? parsed)
+                && parsed.Scheme == Uri.UriSchemeHttps
+            )
+            .WithMessage(i18n.UnresolvableSourceUrl());
+    }
+
+    /// <summary>
+    /// Validates an artist social link URL — required, bounded, and an absolute https URL.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the URL property.</param>
+    /// <param name="i18n">The artist error message provider.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, string?> ValidArtistSocialLinkUrl<T>(
+        this IRuleBuilderInitial<T, string?> ruleBuilder,
+        ArtistErrorMessage i18n
+    )
+    {
+        return ruleBuilder
+            .Cascade(cascadeMode: CascadeMode.Stop)
+            .NotEmpty()
+            .WithMessage(i18n.SocialLinkUrlRequired())
+            .MaximumLength(maximumLength: ContentConstants.MaxStreamingLinkUrlLength)
+            .WithMessage(i18n.SocialLinkUrlTooLong(ContentConstants.MaxStreamingLinkUrlLength))
+            .Must(url =>
+                Uri.TryCreate(uriString: url, uriKind: UriKind.Absolute, result: out Uri? parsed)
+                && parsed.Scheme == Uri.UriSchemeHttps
+            )
+            .WithMessage(i18n.SocialLinkUrlMustBeHttps());
+    }
+
+    /// <summary>
+    /// Validates the artist directory letter bucket — a single A-Z letter or the non-alphabetic bucket.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the letter property.</param>
+    /// <param name="i18n">The artist error message provider.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, string?> ValidArtistLetterBucket<T>(
+        this IRuleBuilder<T, string?> ruleBuilder,
+        ArtistErrorMessage i18n
+    )
+    {
+        return ruleBuilder
+            .Must(letter =>
+                letter is null
+                || letter == ContentConstants.NonAlphabeticLetterBucket
+                || (letter.Length == 1 && letter[0] is >= 'A' and <= 'Z')
+            )
+            .WithMessage(i18n.InvalidLetterBucket());
+    }
+
+    /// <summary>
+    /// Validates the artist directory search term reaches the minimum useful length.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the search property.</param>
+    /// <param name="i18n">The artist error message provider.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, string?> ValidArtistSearch<T>(
+        this IRuleBuilder<T, string?> ruleBuilder,
+        ArtistErrorMessage i18n
+    )
+    {
+        return ruleBuilder
+            .MinimumLength(minimumLength: ContentConstants.MinArtistSearchLength)
+            .WithMessage(i18n.SearchTooShort(ContentConstants.MinArtistSearchLength));
+    }
+
+    /// <summary>
+    /// Validates the replacement text proposed on a lyrics revision.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the proposed text property.</param>
+    /// <param name="i18n">The lyrics revision error message provider.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, string?> ValidProposedLyricsText<T>(
+        this IRuleBuilder<T, string?> ruleBuilder,
+        LyricsRevisionErrorMessage i18n
+    )
+    {
+        return ruleBuilder.NotEmpty().WithMessage(i18n.ProposedTextRequired());
+    }
+
+    /// <summary>
+    /// Validates the replacement text proposed on a translation revision.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the proposed text property.</param>
+    /// <param name="i18n">The translation error message provider.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, string?> ValidProposedTranslationText<T>(
+        this IRuleBuilder<T, string?> ruleBuilder,
+        TranslationErrorMessage i18n
+    )
+    {
+        return ruleBuilder.NotEmpty().WithMessage(i18n.ProposedTextRequired());
+    }
+
+    /// <summary>
+    /// Validates an artist social platform is one of the supported values.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the platform property.</param>
+    /// <param name="i18n">The artist error message provider.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, EnumSocialPlatform> ValidArtistSocialPlatform<T>(
+        this IRuleBuilder<T, EnumSocialPlatform> ruleBuilder,
+        ArtistErrorMessage i18n
+    )
+    {
+        return ruleBuilder.IsInEnum().WithMessage(i18n.InvalidSocialPlatform());
+    }
+
+    /// <summary>
+    /// Validates an album release type is one of the supported values.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the release type property.</param>
+    /// <param name="i18n">The album error message provider.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, EnumReleaseType> ValidAlbumReleaseType<T>(
+        this IRuleBuilder<T, EnumReleaseType> ruleBuilder,
+        AlbumErrorMessage i18n
+    )
+    {
+        return ruleBuilder.IsInEnum().WithMessage(i18n.InvalidReleaseType());
+    }
+
+    /// <summary>
+    /// Validates that an uploaded file part is present.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the file property.</param>
+    /// <param name="fileRequired">Error message used when the file part is missing.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, IFormFile?> ValidUploadedFile<T>(
+        this IRuleBuilder<T, IFormFile?> ruleBuilder,
+        string fileRequired
+    )
+    {
+        return ruleBuilder.NotNull().WithMessage(fileRequired);
+    }
+
+    /// <summary>
+    /// Validates the artist directory filters are mutually exclusive; a letter bucket and a search
+    /// term describe two different listings.
+    /// </summary>
+    /// <typeparam name="T">The query type carrying both filters.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the query itself.</param>
+    /// <param name="letter">Accessor for the letter filter.</param>
+    /// <param name="search">Accessor for the search filter.</param>
+    /// <param name="i18n">The artist error message provider.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, T> ExclusiveArtistDirectoryFilters<T>(
+        this IRuleBuilder<T, T> ruleBuilder,
+        Func<T, string?> letter,
+        Func<T, string?> search,
+        ArtistErrorMessage i18n
+    )
+    {
+        return ruleBuilder
+            .Must(query => string.IsNullOrWhiteSpace(letter(query)) || string.IsNullOrWhiteSpace(search(query)))
+            .WithMessage(i18n.LetterAndSearchExclusive());
+    }
 }
