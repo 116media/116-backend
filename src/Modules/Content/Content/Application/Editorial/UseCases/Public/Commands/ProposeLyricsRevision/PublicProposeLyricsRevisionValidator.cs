@@ -1,4 +1,5 @@
 using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Shared.Validators;
 using FluentValidation;
 
 namespace _116.Content.Application.Editorial.UseCases.Public.Commands.ProposeLyricsRevision;
@@ -16,6 +17,6 @@ public class PublicProposeLyricsRevisionValidator : AbstractValidator<PublicProp
     /// <param name="i18n">Content module i18n facade.</param>
     public PublicProposeLyricsRevisionValidator(ContentI18n i18n)
     {
-        RuleFor(x => x.ProposedText).NotEmpty().WithMessage(i18n.LyricsRevision.Msg.ProposedTextRequired());
+        RuleFor(x => x.ProposedText).ValidProposedLyricsText(i18n.LyricsRevision.Msg);
     }
 }
