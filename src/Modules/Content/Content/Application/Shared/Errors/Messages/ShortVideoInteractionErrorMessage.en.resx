@@ -24,4 +24,13 @@
   <data name="BookmarkNotFound" xml:space="preserve">
     <value>Bookmark not found for this short video.</value>
   </data>
+  <data name="ViewDeviceIdTooLong" xml:space="preserve">
+    <value>The device identifier must not exceed {0} characters.</value>
+  </data>
+  <data name="ViewIpAddressTooLong" xml:space="preserve">
+    <value>The IP address must not exceed {0} characters.</value>
+  </data>
+  <data name="ViewUserAgentTooLong" xml:space="preserve">
+    <value>The user agent must not exceed {0} characters.</value>
+  </data>
 </root>
