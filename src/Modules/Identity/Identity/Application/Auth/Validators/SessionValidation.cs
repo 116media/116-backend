@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Domain.Enums;
 using FluentValidation;
@@ -96,5 +97,22 @@ public static class SessionValidation
                 && Enum.TryParse<EnumSessionStatus>(value: status, ignoreCase: true, result: out _)
             )
             .WithMessage(i18n.ExportStatusInvalid());
+    }
+
+    /// <summary>
+    /// Validates that an export date range ends on or after it starts.
+    /// </summary>
+    /// <typeparam name="T">The query type carrying both dates.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the end-date property.</param>
+    /// <param name="fromDate">Accessor for the start date.</param>
+    /// <param name="i18n">Validation error messages for rule configuration.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, DateTime?> ValidExportDateRange<T>(
+        this IRuleBuilder<T, DateTime?> ruleBuilder,
+        Expression<Func<T, DateTime?>> fromDate,
+        ValidationErrorMessage i18n
+    )
+    {
+        return ruleBuilder.GreaterThanOrEqualTo(fromDate).WithMessage(i18n.ExportDateRangeInvalid());
     }
 }
