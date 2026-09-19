@@ -12,12 +12,6 @@ using Microsoft.AspNetCore.Routing;
 namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.RemoveItemTier.V1;
 
 /// <summary>
-/// Response model for removing a pricing tier from an order item.
-/// </summary>
-/// <param name="IsSuccess">Indicates whether the tier was successfully removed.</param>
-public record AdminRemoveItemTierResponse(bool IsSuccess);
-
-/// <summary>
 /// Defines the admin remove item tier endpoint.
 /// </summary>
 public class AdminRemoveItemTierEndpointV1 : ICarterModule
@@ -42,13 +36,8 @@ public class AdminRemoveItemTierEndpointV1 : ICarterModule
                 {
                     var command = new AdminRemoveItemTierCommand(OrderId: id, ItemId: itemId, TierId: tierId);
 
-                    AdminRemoveItemTierResult result = await dispatcher.Send(
-                        request: command,
-                        cancellationToken: cancellationToken
-                    );
-
-                    var response = new AdminRemoveItemTierResponse(IsSuccess: result.IsSuccess);
-                    return Results.Ok(response);
+                    await dispatcher.Send(request: command, cancellationToken: cancellationToken);
+                    return Results.NoContent();
                 }
             )
             .WithName(endpointName: AdminRemoveItemTierMetaField.RemoveItemTier.Name)
@@ -56,8 +45,8 @@ public class AdminRemoveItemTierEndpointV1 : ICarterModule
             .WithDescription(description: AdminRemoveItemTierMetaField.RemoveItemTier.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
-            .Produces<AdminRemoveItemTierResponse>(statusCode: StatusCodes.Status200OK)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentManagement)
+            .Produces(statusCode: StatusCodes.Status204NoContent)
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
             .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)
