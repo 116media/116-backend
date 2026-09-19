@@ -42,6 +42,7 @@ public abstract class BaseExceptionStrategy<TException> : IExceptionStrategy<TEx
             Title = title,
             Detail = detail,
             Status = statusCode,
+            Type = ProblemTypes.Blank,
             Instance = context.Request.Path,
             Extensions = { ["traceId"] = context.TraceIdentifier, ["timestamp"] = DateTime.UtcNow },
         };
