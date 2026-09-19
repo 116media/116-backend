@@ -56,7 +56,7 @@ public class AdminUnpinCategoryFromFeedEndpointV1 : ICarterModule
             .WithDescription(description: AdminUnpinCategoryFromFeedMetaField.UnpinCategoryFromFeed.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentManagement)
             .ProducesValidationProblem()
             .Produces<AdminUnpinCategoryFromFeedResponse>(statusCode: StatusCodes.Status200OK)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
