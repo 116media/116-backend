@@ -44,4 +44,19 @@ public static class SocialLoginValidation
             .Must(provider => provider != null && Enum.IsDefined(typeof(EnumAuthProvider), value: provider))
             .WithMessage(i18n.AuthProviderInvalid());
     }
+
+    /// <summary>
+    /// Validates the provider id token accompanying a social login is present.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the id token property.</param>
+    /// <param name="i18n">Validation error messages for rule configuration.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, string> ValidIdToken<T>(
+        this IRuleBuilder<T, string> ruleBuilder,
+        ValidationErrorMessage i18n
+    )
+    {
+        return ruleBuilder.NotEmpty().WithMessage(i18n.IdTokenRequired());
+    }
 }
