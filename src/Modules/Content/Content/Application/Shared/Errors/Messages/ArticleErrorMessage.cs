@@ -215,4 +215,20 @@ public class ArticleErrorMessage(IStringLocalizer<ArticleErrorMessage> localizer
     /// Gets an error message for when an article carries no active promotion.
     /// </summary>
     public string NotPromoted() => localizer["NotPromoted"];
+
+    /// <summary>
+    /// Gets the localized message for ArtistIdsRequired.
+    /// </summary>
+    public string ArtistIdsRequired() => localizer["ArtistIdsRequired"];
+
+    /// <summary>
+    /// Gets the localized message for TooManyArtists.
+    /// </summary>
+    /// <param name="max">The maximum allowed value.</param>
+    public string TooManyArtists(int max) => string.Format(localizer["TooManyArtists"], max);
+
+    /// <summary>
+    /// Gets the localized message for DuplicateArtists.
+    /// </summary>
+    public string DuplicateArtists() => localizer["DuplicateArtists"];
 }
