@@ -1,8 +1,10 @@
 using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Handlers.Contracts;
 using _116.Shared.Application.Exceptions.Messages;
 using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.AspNetCore.Mvc;
 
 namespace _116.Integration.Tests.Shared.Exceptions.Handlers;
 
@@ -13,9 +15,6 @@ namespace _116.Integration.Tests.Shared.Exceptions.Handlers;
 [Collection("Database")]
 public class ExceptionHandlerTests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ValidationDetail(params (string Property, string Message)[] failures) =>
-        new ValidationException(failures.Select(f => new ValidationFailure(f.Property, f.Message))).Message;
-
     [Fact]
     public async Task AuthenticationException_ShouldReturn401_WhenNoToken()
     {
@@ -74,12 +73,9 @@ public class ExceptionHandlerTests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Roles, new { Name = "", Description = "" });
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail(
-                ("Name", Localized<ValidationErrorMessage>(m => m.RoleNameRequired())),
-                ("Description", Localized<ValidationErrorMessage>(m => m.RoleDescriptionRequired()))
-            )
+        await response.ShouldBeValidationProblem(
+            ("Name", Localized<ValidationErrorMessage>(m => m.RoleNameRequired())),
+            ("Description", Localized<ValidationErrorMessage>(m => m.RoleDescriptionRequired()))
         );
     }
 
@@ -90,12 +86,9 @@ public class ExceptionHandlerTests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Roles, new { Name = "", Description = "" });
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail(
-                ("Name", Localized<ValidationErrorMessage>(m => m.RoleNameRequired())),
-                ("Description", Localized<ValidationErrorMessage>(m => m.RoleDescriptionRequired()))
-            )
+        await response.ShouldBeValidationProblem(
+            ("Name", Localized<ValidationErrorMessage>(m => m.RoleNameRequired())),
+            ("Description", Localized<ValidationErrorMessage>(m => m.RoleDescriptionRequired()))
         );
     }
 
@@ -157,5 +150,26 @@ public class ExceptionHandlerTests(PostgresFixture db) : BaseApiTest(db)
             HttpStatusCode.Conflict,
             Localized<ConflictErrorMessage>(m => m.RoleAlreadyExists("ConflictTestRole"))
         );
+    }
+
+    [Fact]
+    public async Task ProblemResponse_ShouldAssertTheProblemJsonContentType()
+    {
+        Client.AuthenticateAsVisitor();
+
+        var response = await Client.GetAsync(ApiRoutes.Admin.Roles);
+
+        response.Content.Headers.ContentType?.MediaType.Should().Be("application/problem+json");
+    }
+
+    [Fact]
+    public async Task ProblemResponse_WithoutARuleCode_ShouldCarryTheBlankType()
+    {
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Roles, new { Name = "", Description = "" });
+
+        ProblemDetails problem = await response.ReadAsAsync<ProblemDetails>();
+        problem.Type.Should().Be(ProblemTypes.Blank);
     }
 }
