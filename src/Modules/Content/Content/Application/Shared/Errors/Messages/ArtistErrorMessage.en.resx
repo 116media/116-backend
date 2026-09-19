@@ -39,4 +39,22 @@
   <data name="LetterAndSearchExclusive" xml:space="preserve">
     <value>A letter filter and a search term cannot be combined.</value>
   </data>
+  <data name="InvalidLetterBucket" xml:space="preserve">
+    <value>The letter filter must be a single letter A-Z, or # for names that start with neither.</value>
+  </data>
+  <data name="SearchTooShort" xml:space="preserve">
+    <value>The search term must be at least {0} characters.</value>
+  </data>
+  <data name="InvalidSocialPlatform" xml:space="preserve">
+    <value>The social platform is not one this profile supports.</value>
+  </data>
+  <data name="SocialLinkUrlRequired" xml:space="preserve">
+    <value>A social link URL is required.</value>
+  </data>
+  <data name="SocialLinkUrlTooLong" xml:space="preserve">
+    <value>The social link URL must not exceed {0} characters.</value>
+  </data>
+  <data name="SocialLinkUrlMustBeHttps" xml:space="preserve">
+    <value>The social link URL must be an absolute https URL.</value>
+  </data>
 </root>
