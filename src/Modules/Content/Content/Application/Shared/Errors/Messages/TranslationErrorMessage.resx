@@ -21,4 +21,7 @@
   <data name="AlreadyDecided" xml:space="preserve">
     <value>This revision has already been decided.</value>
   </data>
+  <data name="VoteCommentTooLong" xml:space="preserve">
+    <value>The vote comment must not exceed {0} characters.</value>
+  </data>
 </root>
