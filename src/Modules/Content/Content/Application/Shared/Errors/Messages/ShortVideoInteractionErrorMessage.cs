@@ -55,4 +55,40 @@ public class ShortVideoInteractionErrorMessage(IStringLocalizer<ShortVideoIntera
     {
         return localizer["BookmarkNotFound"];
     }
+
+    /// <summary>
+    /// Gets an error message for when a view event's device identifier is too long.
+    /// </summary>
+    /// <param name="max">The maximum allowed length.</param>
+    /// <returns>
+    /// An error message naming the maximum length.
+    /// </returns>
+    public string ViewDeviceIdTooLong(int max)
+    {
+        return string.Format(localizer["ViewDeviceIdTooLong"], max);
+    }
+
+    /// <summary>
+    /// Gets an error message for when a view event's IP address is too long.
+    /// </summary>
+    /// <param name="max">The maximum allowed length.</param>
+    /// <returns>
+    /// An error message naming the maximum length.
+    /// </returns>
+    public string ViewIpAddressTooLong(int max)
+    {
+        return string.Format(localizer["ViewIpAddressTooLong"], max);
+    }
+
+    /// <summary>
+    /// Gets an error message for when a view event's user agent is too long.
+    /// </summary>
+    /// <param name="max">The maximum allowed length.</param>
+    /// <returns>
+    /// An error message naming the maximum length.
+    /// </returns>
+    public string ViewUserAgentTooLong(int max)
+    {
+        return string.Format(localizer["ViewUserAgentTooLong"], max);
+    }
 }
