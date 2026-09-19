@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Text.Json;
 using _116.Shared.Application.Exceptions.Handlers.Strategies;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
@@ -55,7 +56,55 @@ public class ValidationExceptionHandlerTests
 
         // Assert
         problemDetails.Extensions.Should().ContainKey("errors");
-        problemDetails.Extensions["errors"].Should().BeEquivalentTo(failures);
+
+        var errors = problemDetails.Extensions["errors"] as Dictionary<string, string[]>;
+        errors.Should().NotBeNull();
+        errors!.Should().ContainKey("email").WhoseValue.Should().ContainSingle().Which.Should().Be("Email is required");
+        errors
+            .Should()
+            .ContainKey("password")
+            .WhoseValue.Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be("Password must be at least 8 characters");
+    }
+
+    [Fact]
+    public void CreateProblemDetails_ShouldNotEchoTheSubmittedValue()
+    {
+        // Arrange
+        List<ValidationFailure> failures =
+        [
+            new("Password", "Password must be at least 8 characters") { AttemptedValue = "hunter2-real-password" },
+        ];
+        ValidationException exception = new(failures);
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
+
+        // Act
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
+
+        // Assert
+        string serialized = JsonSerializer.Serialize(problemDetails);
+        serialized.Should().NotContain("hunter2-real-password");
+        serialized.Should().NotContain("AttemptedValue");
+        serialized.Should().NotContain("FormattedMessagePlaceholderValues");
+    }
+
+    [Fact]
+    public void CreateProblemDetails_ShouldNotPutTheFailureMessagesInTheDetail()
+    {
+        // Arrange
+        List<ValidationFailure> failures = [new("Password", "Password must be at least 8 characters")];
+        ValidationException exception = new(failures);
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
+
+        // Act
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
+
+        // Assert
+        problemDetails.Detail.Should().NotContain("Password must be at least 8 characters");
+        problemDetails.Detail.Should().NotBeNullOrWhiteSpace();
+        problemDetails.Detail.Should().NotBe(exception.Message);
     }
 
     [Fact]
@@ -112,8 +161,13 @@ public class ValidationExceptionHandlerTests
 
         // Assert
         problemDetails.Extensions.Should().ContainKey("errors");
-        var errors = problemDetails.Extensions["errors"] as IEnumerable<ValidationFailure>;
-        errors.Should().HaveCount(4);
+
+        var errors = problemDetails.Extensions["errors"] as Dictionary<string, string[]>;
+        errors.Should().NotBeNull();
+        errors!.Should().HaveCount(3, "the four failures collapse onto three distinct fields");
+        errors["email"].Should().BeEquivalentTo("Email is required", "Email format is invalid");
+        errors["password"].Should().ContainSingle();
+        errors["name"].Should().ContainSingle();
     }
 
     #endregion
