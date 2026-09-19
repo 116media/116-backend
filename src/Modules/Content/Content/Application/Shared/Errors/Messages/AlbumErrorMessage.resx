@@ -15,4 +15,7 @@
   <data name="NameRequired" xml:space="preserve">
     <value>Album name is required.</value>
   </data>
+  <data name="InvalidReleaseType" xml:space="preserve">
+    <value>The release type is not a supported value.</value>
+  </data>
 </root>
