@@ -18,4 +18,10 @@
   <data name="LikeNotFound" xml:space="preserve">
     <value>Aucun like trouvé pour cette page de paroles.</value>
   </data>
+  <data name="DwellMsNegative" xml:space="preserve">
+    <value>Le temps de lecture ne peut pas être négatif.</value>
+  </data>
+  <data name="ScrollDepthOutOfRange" xml:space="preserve">
+    <value>La profondeur de défilement doit être comprise entre 0 et 1.</value>
+  </data>
 </root>
