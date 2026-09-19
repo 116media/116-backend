@@ -95,7 +95,9 @@ public class PopularArticlesQueryBuilderTests : IAsyncLifetime
         ArticleEntity middle = await SeedPublishedAsync(_primaryCategoryId, comments: 3); // 9
         ArticleEntity lowest = await SeedPublishedAsync(_primaryCategoryId, shares: 4); // 8
 
-        List<ArticleEntity> result = await new PopularArticlesQueryBuilder().Build(_context).ToListAsync();
+        List<ArticleEntity> result = await new PopularArticlesQueryBuilder()
+            .Build(_context.Articles.Include(a => a.Category))
+            .ToListAsync();
 
         result.Select(article => article.Id).Should().ContainInOrder(highest.Id, middle.Id, lowest.Id);
     }
@@ -106,7 +108,9 @@ public class PopularArticlesQueryBuilderTests : IAsyncLifetime
         ArticleEntity oneLike = await SeedPublishedAsync(_primaryCategoryId, likes: 1); // 4
         ArticleEntity threeBookmarks = await SeedPublishedAsync(_primaryCategoryId, bookmarks: 3); // 3
 
-        List<ArticleEntity> result = await new PopularArticlesQueryBuilder().Build(_context).ToListAsync();
+        List<ArticleEntity> result = await new PopularArticlesQueryBuilder()
+            .Build(_context.Articles.Include(a => a.Category))
+            .ToListAsync();
 
         result.Select(article => article.Id).Should().ContainInOrder(oneLike.Id, threeBookmarks.Id);
     }
@@ -121,7 +125,9 @@ public class PopularArticlesQueryBuilderTests : IAsyncLifetime
         ArticleEntity published = await SeedPublishedAsync(_primaryCategoryId, likes: 1);
         ArticleEntity draft = await SeedDraftAsync(_primaryCategoryId);
 
-        List<ArticleEntity> result = await new PopularArticlesQueryBuilder().Build(_context).ToListAsync();
+        List<ArticleEntity> result = await new PopularArticlesQueryBuilder()
+            .Build(_context.Articles.Include(a => a.Category))
+            .ToListAsync();
 
         result.Should().ContainSingle();
         result.Should().Contain(article => article.Id == published.Id);
@@ -140,7 +146,7 @@ public class PopularArticlesQueryBuilderTests : IAsyncLifetime
 
         List<ArticleEntity> result = await new PopularArticlesQueryBuilder()
             .WithCategory(_primaryCategoryId)
-            .Build(_context)
+            .Build(_context.Articles.Include(a => a.Category))
             .ToListAsync();
 
         result.Should().ContainSingle();
@@ -156,7 +162,7 @@ public class PopularArticlesQueryBuilderTests : IAsyncLifetime
 
         List<ArticleEntity> result = await new PopularArticlesQueryBuilder()
             .WithCategory(null)
-            .Build(_context)
+            .Build(_context.Articles.Include(a => a.Category))
             .ToListAsync();
 
         result.Should().HaveCount(2);
@@ -174,7 +180,7 @@ public class PopularArticlesQueryBuilderTests : IAsyncLifetime
 
         List<ArticleEntity> result = await new PopularArticlesQueryBuilder()
             .WithExcludeId(excluded.Id)
-            .Build(_context)
+            .Build(_context.Articles.Include(a => a.Category))
             .ToListAsync();
 
         result.Should().ContainSingle();
@@ -190,7 +196,7 @@ public class PopularArticlesQueryBuilderTests : IAsyncLifetime
 
         List<ArticleEntity> result = await new PopularArticlesQueryBuilder()
             .WithExcludeId(null)
-            .Build(_context)
+            .Build(_context.Articles.Include(a => a.Category))
             .ToListAsync();
 
         result.Should().HaveCount(2);
@@ -208,7 +214,10 @@ public class PopularArticlesQueryBuilderTests : IAsyncLifetime
             await SeedPublishedAsync(_primaryCategoryId, likes: engagement);
         }
 
-        List<ArticleEntity> result = await new PopularArticlesQueryBuilder().WithLimit(3).Build(_context).ToListAsync();
+        List<ArticleEntity> result = await new PopularArticlesQueryBuilder()
+            .WithLimit(3)
+            .Build(_context.Articles.Include(a => a.Category))
+            .ToListAsync();
 
         result.Should().HaveCount(3);
     }
@@ -223,7 +232,7 @@ public class PopularArticlesQueryBuilderTests : IAsyncLifetime
 
         List<ArticleEntity> result = await new PopularArticlesQueryBuilder()
             .WithLimit(null)
-            .Build(_context)
+            .Build(_context.Articles.Include(a => a.Category))
             .ToListAsync();
 
         result.Should().HaveCount(4);
@@ -245,7 +254,7 @@ public class PopularArticlesQueryBuilderTests : IAsyncLifetime
             .WithCategory(_primaryCategoryId)
             .WithExcludeId(top.Id)
             .WithLimit(1)
-            .Build(_context)
+            .Build(_context.Articles.Include(a => a.Category))
             .ToListAsync();
 
         result.Should().ContainSingle();

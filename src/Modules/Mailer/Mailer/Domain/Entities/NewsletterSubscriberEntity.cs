@@ -1,9 +1,9 @@
+using System.Buffers.Text;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Cryptography;
 using _116.Mailer.Domain.Constants;
 using _116.Mailer.Domain.Enums;
 using _116.Shared.Domain;
-using Microsoft.AspNetCore.WebUtilities;
 
 namespace _116.Mailer.Domain.Entities;
 
@@ -118,17 +118,19 @@ public class NewsletterSubscriberEntity : Aggregate<Guid>
     /// with a fresh confirmation token, for re-subscription and confirmation
     /// re-sends. A no-op on an already subscribed row.
     /// </summary>
-    public void ReissueConfirmation()
+    /// <returns><c>true</c> when a fresh confirmation was issued.</returns>
+    public bool ReissueConfirmation()
     {
         if (Status == EnumNewsletterStatus.Subscribed)
         {
-            return;
+            return false;
         }
 
         Status = EnumNewsletterStatus.PendingConfirmation;
         ConfirmationToken = GenerateToken();
         ConfirmedAt = null;
         UnsubscribedAt = null;
+        return true;
     }
 
     /// <summary>
@@ -136,6 +138,6 @@ public class NewsletterSubscriberEntity : Aggregate<Guid>
     /// </summary>
     private static string GenerateToken()
     {
-        return WebEncoders.Base64UrlEncode(RandomNumberGenerator.GetBytes(MailerConstants.NewsletterTokenBytes));
+        return Base64Url.EncodeToString(RandomNumberGenerator.GetBytes(MailerConstants.NewsletterTokenBytes));
     }
 }

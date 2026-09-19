@@ -2,7 +2,7 @@ using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 
-namespace _116.Content.Application.Lookup.Builders.Contracts;
+namespace _116.Content.Infrastructure.Builders.Contracts;
 
 /// <summary>
 /// Interface for building all-tags queries using the builder pattern.

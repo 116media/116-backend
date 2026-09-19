@@ -7,6 +7,7 @@ using _116.Core.Contracts.Domain.Enums;
 using _116.Core.Domain.Entities;
 using _116.Core.Infrastructure.Services;
 using _116.Tests.Fixtures.Factories.Core;
+using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using AwesomeAssertions;
 using Mapster;
 using MapsterMapper;
@@ -26,6 +27,7 @@ public class FileStorageServiceTests
     private readonly Mock<IFileUploadService> _fileUploadServiceMock = new();
     private readonly Mock<ICloudinaryService> _cloudinaryServiceMock = new();
     private readonly IMapper _mapper;
+    private readonly PassThroughHybridCache _cache = new();
     private readonly FileStorageService _service;
 
     /// <summary>
@@ -38,7 +40,8 @@ public class FileStorageServiceTests
             _fileRepositoryMock.Object,
             _fileUploadServiceMock.Object,
             _cloudinaryServiceMock.Object,
-            _mapper
+            _mapper,
+            _cache
         );
     }
 
@@ -370,22 +373,33 @@ public class FileStorageServiceTests
     }
 
     [Fact]
-    public async Task ResolveUrlsAsync_ShouldDelegateToTheRepositoryProjection()
+    public async Task ResolveUrlsAsync_ShouldProjectTheUrlOfEveryResolvedFile()
     {
         // Arrange
-        var fileId = Guid.NewGuid();
-        Dictionary<Guid, string> urls = new() { [fileId] = "https://cdn.example/a.jpg" };
+        FileEntity file = FileFactory.CreateJpeg();
         _fileRepositoryMock
-            .Setup(x =>
-                x.GetStorageUrlsByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>())
-            )
-            .ReturnsAsync(urls);
+            .Setup(x => x.GetByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<Guid, FileEntity> { [file.Id] = file });
 
         // Act
-        IReadOnlyDictionary<Guid, string> resolved = await _service.ResolveUrlsAsync([fileId]);
+        IReadOnlyDictionary<Guid, string> resolved = await _service.ResolveUrlsAsync([file.Id]);
 
         // Assert
-        resolved.Should().BeEquivalentTo(urls);
+        resolved.Should().BeEquivalentTo(new Dictionary<Guid, string> { [file.Id] = file.StorageUrl });
+    }
+
+    [Fact]
+    public async Task ResolveUrlsAsync_ShouldShareOneCacheEntryPerFileWithTheReferenceProjection()
+    {
+        // Both projections read the same row, so they must not occupy two key spaces.
+        FileEntity file = FileFactory.CreateJpeg();
+        _fileRepositoryMock
+            .Setup(x => x.GetByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<Guid, FileEntity> { [file.Id] = file });
+
+        await _service.ResolveUrlsAsync([file.Id]);
+
+        _cache.WrittenKeys.Should().ContainSingle().Which.Should().Contain(file.Id.ToString());
     }
 
     #endregion

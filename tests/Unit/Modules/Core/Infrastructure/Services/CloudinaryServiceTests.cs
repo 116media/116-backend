@@ -1,7 +1,8 @@
 using _116.BuildingBlocks.Constants;
 using _116.Core.Application.Shared.Errors.Facade;
+using _116.Core.Application.Shared.Services;
+using _116.Core.Contracts.Domain.Enums;
 using _116.Core.Infrastructure.Services;
-using _116.Shared.Application.Configurations;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
@@ -16,9 +17,9 @@ namespace _116.Unit.Tests.Modules.Core.Infrastructure.Services;
 /// <summary>
 /// Unit tests for <see cref="CloudinaryService"/>. The three upload entry points each run their
 /// own copy of the size, extension, and content-type checks, so every rule is exercised against
-/// every entry point rather than against the image path alone. Accepted inputs are asserted by
-/// the upload reaching the Cloudinary SDK and failing there — no credentials are configured — so
-/// a <see cref="BadGatewayException"/> means validation passed.
+/// every entry point rather than against the image path alone. The provider sits behind a mocked
+/// <see cref="ICloudStorageClient"/>, so an accepted input is asserted by the call reaching the
+/// client and the result being projected, with no network involved.
 /// </summary>
 public class CloudinaryServiceTests
 {
@@ -28,12 +29,27 @@ public class CloudinaryServiceTests
 
     private readonly Mock<ILogger<CloudinaryService>> _loggerMock = new();
     private readonly CoreI18n _i18n = TestErrorsFactory.CreateCoreI18n();
-    private readonly CloudinarySettings _settings = new()
+    private readonly Mock<ICloudStorageClient> _clientMock = new();
+
+    public CloudinaryServiceTests()
     {
-        CloudName = "test-cloud",
-        ApiKey = "test-key",
-        ApiSecret = "test-secret",
-    };
+        _clientMock
+            .Setup(x => x.UploadAsync(It.IsAny<CloudStorageUpload>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Stored);
+    }
+
+    /// <summary>
+    /// A successful stored asset carrying every field the service projects.
+    /// </summary>
+    private static readonly CloudStorageAsset Stored = new(
+        PublicId: PublicId,
+        SecureUrl: "https://res.cloudinary.test/test-cloud/test-id",
+        Format: "jpg",
+        Width: 800,
+        Height: 600,
+        Bytes: SampleLength,
+        ResourceType: "image"
+    );
 
     /// <summary>
     /// The upload entry point a row exercises. Carrying the entry point as a row keeps a new
@@ -52,10 +68,10 @@ public class CloudinaryServiceTests
     }
 
     /// <summary>
-    /// Creates the service under test against settings that point at no real Cloudinary account.
+    /// Creates the service under test over the mocked provider client.
     /// </summary>
-    /// <returns>A service whose validation runs but whose uploads cannot succeed.</returns>
-    private CloudinaryService CreateService() => new(_settings, _loggerMock.Object, _i18n);
+    /// <returns>The service.</returns>
+    private CloudinaryService CreateService() => new(_clientMock.Object, _loggerMock.Object, _i18n);
 
     /// <summary>
     /// Builds an uploaded-file stand-in with the given descriptor, replacing the repeated mock
@@ -138,7 +154,7 @@ public class CloudinaryServiceTests
     #region Constructor
 
     [Fact]
-    public void Constructor_WithValidSettings_ShouldNotThrow()
+    public void Constructor_ShouldNotThrow()
     {
         // Act
         CloudinaryService service = CreateService();
@@ -313,7 +329,7 @@ public class CloudinaryServiceTests
         Func<Task> act = () => Upload(service, target, file);
 
         // Assert
-        await act.Should().ThrowExactlyAsync<BadGatewayException>();
+        await act.Should().NotThrowAsync();
     }
 
     [Theory]
@@ -343,7 +359,7 @@ public class CloudinaryServiceTests
         Func<Task> act = () => Upload(service, target, file);
 
         // Assert
-        await act.Should().ThrowExactlyAsync<BadGatewayException>();
+        await act.Should().NotThrowAsync();
     }
 
     [Theory]
@@ -370,7 +386,7 @@ public class CloudinaryServiceTests
         Func<Task> act = () => Upload(service, target, file);
 
         // Assert
-        await act.Should().ThrowExactlyAsync<BadGatewayException>();
+        await act.Should().NotThrowAsync();
     }
 
     [Theory]
@@ -392,7 +408,103 @@ public class CloudinaryServiceTests
         Func<Task> act = () => Upload(service, target, file);
 
         // Assert
-        await act.Should().ThrowExactlyAsync<BadGatewayException>();
+        await act.Should().NotThrowAsync();
+    }
+
+    #endregion
+
+    #region Resource types
+
+    [Theory]
+    [InlineData(EnumStoredFileKind.Image, "image")]
+    [InlineData(EnumStoredFileKind.Video, "video")]
+    [InlineData(EnumStoredFileKind.Raw, "raw")]
+    public async Task DeleteAsync_ShouldAddressTheAssetUnderItsOwnResourceType(
+        EnumStoredFileKind kind,
+        string expectedResourceType
+    )
+    {
+        // Deleting a video or raw asset as an image is a silent no-op at the provider, so the
+        // asset leaks forever.
+        EnumStoredFileKind? captured = null;
+        _clientMock
+            .Setup(x =>
+                x.DeleteAsync(It.IsAny<string>(), It.IsAny<EnumStoredFileKind>(), It.IsAny<CancellationToken>())
+            )
+            .Callback<string, EnumStoredFileKind, CancellationToken>((_, k, _) => captured = k)
+            .ReturnsAsync(true);
+
+        bool deleted = await CreateService().DeleteAsync(PublicId, kind);
+
+        deleted.Should().BeTrue();
+        captured.Should().Be(kind);
+    }
+
+    [Theory]
+    [InlineData(EnumStoredFileKind.Image, "image")]
+    [InlineData(EnumStoredFileKind.Video, "video")]
+    [InlineData(EnumStoredFileKind.Raw, "raw")]
+    public async Task DeleteManyAsync_ShouldAddressEveryAssetUnderItsOwnResourceType(
+        EnumStoredFileKind kind,
+        string expectedResourceType
+    )
+    {
+        List<string>? capturedIds = null;
+        EnumStoredFileKind? capturedKind = null;
+        _clientMock
+            .Setup(x =>
+                x.DeleteManyAsync(
+                    It.IsAny<IEnumerable<string>>(),
+                    It.IsAny<EnumStoredFileKind>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .Callback<IEnumerable<string>, EnumStoredFileKind, CancellationToken>(
+                (ids, k, _) =>
+                {
+                    capturedIds = [.. ids];
+                    capturedKind = k;
+                }
+            )
+            .ReturnsAsync(true);
+
+        bool deleted = await CreateService().DeleteManyAsync(["first", "second"], kind);
+
+        deleted.Should().BeTrue();
+        capturedIds.Should().BeEquivalentTo(["first", "second"]);
+        capturedKind.Should().Be(kind);
+    }
+
+    [Fact]
+    public async Task DeleteAsync_WhenTheProviderFails_ShouldReportFailureRatherThanThrow()
+    {
+        _clientMock
+            .Setup(x =>
+                x.DeleteAsync(It.IsAny<string>(), It.IsAny<EnumStoredFileKind>(), It.IsAny<CancellationToken>())
+            )
+            .ReturnsAsync(false);
+
+        bool deleted = await CreateService().DeleteAsync(PublicId, EnumStoredFileKind.Image);
+
+        deleted.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task DeleteManyAsync_WithNoKeys_ShouldNotCallTheProvider()
+    {
+        _clientMock
+            .Setup(x =>
+                x.DeleteManyAsync(
+                    It.IsAny<IEnumerable<string>>(),
+                    It.IsAny<EnumStoredFileKind>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync(true);
+
+        bool deleted = await CreateService().DeleteManyAsync([], EnumStoredFileKind.Image);
+
+        deleted.Should().BeTrue();
     }
 
     #endregion

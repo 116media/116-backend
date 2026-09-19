@@ -2,8 +2,6 @@ using _116.Content.Application.Editorial.Builders.Contracts;
 using _116.Content.Application.Editorial.Constants;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
-using _116.Content.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
 
 namespace _116.Content.Application.Editorial.Builders;
 
@@ -19,7 +17,7 @@ namespace _116.Content.Application.Editorial.Builders;
 ///     .WithCategory(categoryId)
 ///     .WithExcludeId(excludeId)
 ///     .WithLimit(5)
-///     .Build(context);
+///     .Build(Context.Videos.Include(v => v.Category));
 /// </code>
 /// The score weights come from <see cref="PopularVideosScoring" /> so the ranking is tunable
 /// in one place. The rating-volume term <c>RatingAverage * RatingCount</c> is cast to
@@ -55,14 +53,12 @@ public class PopularVideosQueryBuilder : IPopularVideosQueryBuilder
     }
 
     /// <inheritdoc />
-    public IQueryable<VideoEntity> Build(ContentDbContext context)
+    public IQueryable<VideoEntity> Build(IQueryable<VideoEntity> source)
     {
         const int ratingWeight = PopularVideosScoring.RatingWeight;
         const int shareWeight = PopularVideosScoring.ShareWeight;
 
-        IQueryable<VideoEntity> query = context
-            .Videos.Include(v => v.Category)
-            .Where(v => v.Status == EnumContentStatus.Published);
+        IQueryable<VideoEntity> query = source.Where(v => v.Status == EnumContentStatus.Published);
 
         if (_categoryId.HasValue)
         {

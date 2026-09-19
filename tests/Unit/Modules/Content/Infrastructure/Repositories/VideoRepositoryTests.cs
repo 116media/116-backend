@@ -4,6 +4,7 @@ using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Content.Infrastructure.Repositories;
 using _116.Shared.Application.Exceptions;
+using _116.Tests.Fixtures.Builders.Entities.Content;
 using _116.Tests.Fixtures.Factories.Content;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
@@ -242,6 +243,333 @@ public class VideoRepositoryTests : IDisposable
 
     // Note: GetBySlugAsync uses PostgreSQL ILike which is not supported by InMemoryDatabase.
     // This method is covered in integration tests.
+
+    #endregion
+
+    #region GetActiveAsync Tests
+
+    [Fact]
+    public async Task GetActiveAsync_ShouldExcludeArchivedAndRejectedVideos()
+    {
+        // Arrange
+        Guid categoryId = await SeedCategoryAsync();
+        VideoEntity published = VideoFactory.CreatePublished(categoryId);
+        _context.Videos.AddRange(
+            published,
+            VideoFactory.CreateArchived(categoryId),
+            VideoFactory.CreateRejected(categoryId)
+        );
+        await _context.SaveChangesAsync();
+
+        // Act
+        List<VideoEntity> result = await _repository.GetActiveAsync();
+
+        // Assert
+        result.Should().ContainSingle();
+        result[0].Id.Should().Be(published.Id);
+    }
+
+    #endregion
+
+    #region GetPopularVideosAsync Tests
+
+    [Fact]
+    public async Task GetPopularVideosAsync_ShouldReturnPublishedVideosNewestFirstOnEqualEngagement()
+    {
+        // Arrange
+        Guid categoryId = await SeedCategoryAsync();
+        VideoEntity older = VideoFactory.CreatePublishedAt(categoryId, DateTimeOffset.UtcNow.AddDays(-2));
+        VideoEntity newer = VideoFactory.CreatePublishedAt(categoryId, DateTimeOffset.UtcNow.AddDays(-1));
+        _context.Videos.AddRange(older, newer, VideoFactory.Create(categoryId));
+        await _context.SaveChangesAsync();
+
+        // Act
+        IReadOnlyList<VideoEntity> result = await _repository.GetPopularVideosAsync(
+            limit: 10,
+            categoryId: null,
+            excludeId: null
+        );
+
+        // Assert
+        result.Select(video => video.Id).Should().Equal(newer.Id, older.Id);
+    }
+
+    [Fact]
+    public async Task GetPopularVideosAsync_ShouldHonourTheCategoryExclusionAndLimit()
+    {
+        // Arrange
+        Guid categoryId = await SeedCategoryAsync();
+        Guid otherCategoryId = await SeedCategoryAsync();
+        VideoEntity excluded = VideoFactory.CreatePublished(categoryId);
+        VideoEntity wanted = VideoFactory.CreatePublished(categoryId);
+        _context.Videos.AddRange(
+            excluded,
+            wanted,
+            VideoFactory.CreatePublished(categoryId),
+            VideoFactory.CreatePublished(otherCategoryId)
+        );
+        await _context.SaveChangesAsync();
+
+        // Act
+        IReadOnlyList<VideoEntity> result = await _repository.GetPopularVideosAsync(
+            limit: 1,
+            categoryId: categoryId,
+            excludeId: excluded.Id
+        );
+
+        // Assert
+        result.Should().ContainSingle();
+        result[0].Id.Should().NotBe(excluded.Id);
+        result[0].CategoryId.Should().Be(categoryId);
+    }
+
+    #endregion
+
+    #region GetByOrderItemIdAsync Tests
+
+    [Fact]
+    public async Task GetByOrderItemIdAsync_WhenTheOrderItemHasAVideo_ShouldReturnIt()
+    {
+        // Arrange
+        Guid categoryId = await SeedCategoryAsync();
+        var orderItemId = Guid.NewGuid();
+        VideoEntity video = VideoFactory.CreatePaid(categoryId, Guid.NewGuid(), orderItemId);
+        _context.Videos.Add(video);
+        await _context.SaveChangesAsync();
+
+        // Act
+        VideoEntity? result = await _repository.GetByOrderItemIdAsync(orderItemId);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Id.Should().Be(video.Id);
+    }
+
+    [Fact]
+    public async Task GetByOrderItemIdAsync_WhenNoVideoIsOrdered_ShouldReturnNull()
+    {
+        // Act
+        VideoEntity? result = await _repository.GetByOrderItemIdAsync(Guid.NewGuid());
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    #endregion
+
+    #region GetActivePromotedBySpotAsync Tests
+
+    [Fact]
+    public async Task GetActivePromotedBySpotAsync_ShouldReturnOnlyVideosPromotedIntoThatSpot()
+    {
+        // Arrange
+        Guid categoryId = await SeedCategoryAsync();
+        PromotionLevelEntity headline = new PromotionLevelBuilder().WithSpotPriority(1).Build();
+        PromotionLevelEntity secondary = new PromotionLevelBuilder().WithSpotPriority(2).Build();
+        _context.PromotionLevels.AddRange(headline, secondary);
+
+        VideoEntity headlined = VideoFactory.CreatePromoted(categoryId, headline.Id);
+        _context.Videos.AddRange(
+            headlined,
+            VideoFactory.CreatePromoted(categoryId, secondary.Id),
+            VideoFactory.CreatePublished(categoryId)
+        );
+        await _context.SaveChangesAsync();
+
+        // Act
+        IReadOnlyList<VideoEntity> result = await _repository.GetActivePromotedBySpotAsync(spotPriority: 1);
+
+        // Assert
+        result.Should().ContainSingle();
+        result[0].Id.Should().Be(headlined.Id);
+    }
+
+    #endregion
+
+    #region GetFreeVideosAsync Tests
+
+    [Fact]
+    public async Task GetFreeVideosAsync_ShouldReturnPublishedVideosWithNoCustomer()
+    {
+        // Arrange
+        Guid categoryId = await SeedCategoryAsync();
+        VideoEntity free = VideoFactory.CreatePublished(categoryId);
+        _context.Videos.AddRange(
+            free,
+            VideoFactory.CreatePaid(categoryId, Guid.NewGuid(), Guid.NewGuid()),
+            VideoFactory.Create(categoryId)
+        );
+        await _context.SaveChangesAsync();
+
+        // Act
+        IReadOnlyList<VideoEntity> result = await _repository.GetFreeVideosAsync(limit: 10, excludeIds: []);
+
+        // Assert
+        result.Should().ContainSingle();
+        result[0].Id.Should().Be(free.Id);
+    }
+
+    [Fact]
+    public async Task GetFreeVideosAsync_ShouldSkipTheExcludedIdsAndStopAtTheLimit()
+    {
+        // Arrange
+        Guid categoryId = await SeedCategoryAsync();
+        List<VideoEntity> videos = VideoFactory.CreateManyPublished(categoryId, 3);
+        _context.Videos.AddRange(videos);
+        await _context.SaveChangesAsync();
+
+        // Act
+        IReadOnlyList<VideoEntity> result = await _repository.GetFreeVideosAsync(limit: 1, excludeIds: [videos[0].Id]);
+
+        // Assert
+        result.Should().ContainSingle();
+        result[0].Id.Should().NotBe(videos[0].Id);
+    }
+
+    #endregion
+
+    #region GetLatestPublishedByCategoryAsync Tests
+
+    [Fact]
+    public async Task GetLatestPublishedByCategoryAsync_ShouldReturnTheCategorysPublishedVideosNewestFirst()
+    {
+        // Arrange
+        Guid categoryId = await SeedCategoryAsync();
+        Guid otherCategoryId = await SeedCategoryAsync();
+        VideoEntity older = VideoFactory.CreatePublishedAt(categoryId, DateTimeOffset.UtcNow.AddDays(-2));
+        VideoEntity newer = VideoFactory.CreatePublishedAt(categoryId, DateTimeOffset.UtcNow.AddDays(-1));
+        _context.Videos.AddRange(
+            older,
+            newer,
+            VideoFactory.Create(categoryId),
+            VideoFactory.CreatePublished(otherCategoryId)
+        );
+        await _context.SaveChangesAsync();
+
+        // Act
+        IReadOnlyList<VideoEntity> result = await _repository.GetLatestPublishedByCategoryAsync(
+            categoryId: categoryId,
+            limit: 10
+        );
+
+        // Assert
+        result.Select(video => video.Id).Should().Equal(newer.Id, older.Id);
+    }
+
+    [Fact]
+    public async Task GetLatestPublishedByCategoryAsync_ShouldStopAtTheLimit()
+    {
+        // Arrange
+        Guid categoryId = await SeedCategoryAsync();
+        _context.Videos.AddRange(VideoFactory.CreateManyPublished(categoryId, 3));
+        await _context.SaveChangesAsync();
+
+        // Act
+        IReadOnlyList<VideoEntity> result = await _repository.GetLatestPublishedByCategoryAsync(
+            categoryId: categoryId,
+            limit: 2
+        );
+
+        // Assert
+        result.Should().HaveCount(2);
+    }
+
+    #endregion
+
+    #region CountPublishedByCategoryAsync Tests
+
+    [Fact]
+    public async Task CountPublishedByCategoryAsync_ShouldCountOnlyThatCategorysPublishedVideos()
+    {
+        // Arrange
+        Guid categoryId = await SeedCategoryAsync();
+        Guid otherCategoryId = await SeedCategoryAsync();
+        _context.Videos.AddRange(VideoFactory.CreateManyPublished(categoryId, 2));
+        _context.Videos.Add(VideoFactory.Create(categoryId));
+        _context.Videos.Add(VideoFactory.CreatePublished(otherCategoryId));
+        await _context.SaveChangesAsync();
+
+        // Act
+        int result = await _repository.CountPublishedByCategoryAsync(categoryId);
+
+        // Assert
+        result.Should().Be(2);
+    }
+
+    #endregion
+
+    #region GetPublishedByArtistAsync Tests
+
+    [Fact]
+    public async Task GetPublishedByArtistAsync_ShouldReturnOnlyThatArtistsPublishedVideos()
+    {
+        // Arrange
+        Guid categoryId = await SeedCategoryAsync();
+        var artistId = Guid.NewGuid();
+        VideoEntity published = VideoFactory.CreatePublishedForArtist(categoryId, artistId);
+        _context.Videos.AddRange(
+            published,
+            VideoFactory.CreateForArtist(categoryId, artistId),
+            VideoFactory.CreatePublishedForArtist(categoryId, Guid.NewGuid())
+        );
+        await _context.SaveChangesAsync();
+
+        // Act
+        var (videos, totalCount) = await _repository.GetPublishedByArtistAsync(artistId, page: 1, pageSize: 10);
+
+        // Assert
+        totalCount.Should().Be(1);
+        videos.Should().ContainSingle();
+        videos[0].Id.Should().Be(published.Id);
+    }
+
+    [Fact]
+    public async Task GetPublishedByArtistAsync_ShouldPaginate()
+    {
+        // Arrange
+        Guid categoryId = await SeedCategoryAsync();
+        var artistId = Guid.NewGuid();
+        _context.Videos.AddRange(
+            VideoFactory.CreatePublishedForArtist(categoryId, artistId),
+            VideoFactory.CreatePublishedForArtist(categoryId, artistId),
+            VideoFactory.CreatePublishedForArtist(categoryId, artistId)
+        );
+        await _context.SaveChangesAsync();
+
+        // Act
+        var (videos, totalCount) = await _repository.GetPublishedByArtistAsync(artistId, page: 2, pageSize: 2);
+
+        // Assert
+        totalCount.Should().Be(3);
+        videos.Should().ContainSingle();
+    }
+
+    #endregion
+
+    #region ApplyEngagementDeltaAsync Tests
+
+    // Note: the Share arm runs ExecuteUpdateAsync, which InMemoryDatabase cannot translate.
+    // It is covered by the integration EngagementCounterTests.
+
+    [Theory]
+    [InlineData(EnumEngagementKind.Like)]
+    [InlineData(EnumEngagementKind.Bookmark)]
+    [InlineData(EnumEngagementKind.View)]
+    public async Task ApplyEngagementDeltaAsync_ForAKindVideosDoNotCount_ShouldReportNoCounter(EnumEngagementKind kind)
+    {
+        // Act
+        int? result = await _repository.ApplyEngagementDeltaAsync(Guid.NewGuid(), kind, delta: 1);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    #endregion
+
+    #region SetRatingAsync Tests
+
+    // Note: SetRatingAsync runs ExecuteUpdateAsync, which InMemoryDatabase cannot translate.
+    // It is covered by the integration VideoRepositoryTests.
 
     #endregion
 

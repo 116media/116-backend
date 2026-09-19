@@ -1,11 +1,11 @@
-using _116.Content.Application.Lookup.Builders.Contracts;
 using _116.Content.Application.Lookup.Specifications;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
+using _116.Content.Infrastructure.Builders.Contracts;
 using _116.Content.Infrastructure.Persistence;
 using _116.Shared.Infrastructure.Extensions;
 
-namespace _116.Content.Application.Lookup.Builders;
+namespace _116.Content.Infrastructure.Builders;
 
 /// <summary>
 /// Builder for constructing all-tags queries.

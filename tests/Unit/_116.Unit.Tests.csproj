@@ -29,6 +29,7 @@
 
         <!-- Mocking -->
         <PackageReference Include="Moq" />
+        <PackageReference Include="Polly.Core" />
         <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
 
         <!-- Data Generation -->

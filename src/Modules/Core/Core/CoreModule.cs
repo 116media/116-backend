@@ -15,12 +15,14 @@ using _116.Core.Infrastructure.Outbox;
 using _116.Core.Infrastructure.Persistence;
 using _116.Core.Infrastructure.Repositories;
 using _116.Core.Infrastructure.Services;
+using _116.Shared.Application.Configurations;
 using _116.Shared.Application.Exceptions.Handlers.Contracts;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Application.Services;
 using _116.Shared.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace _116.Core;
 
@@ -87,6 +89,17 @@ public static class CoreModule
             .ConfigurePrimaryHttpMessageHandler(() =>
                 new SocketsHttpHandler { AllowAutoRedirect = false, ConnectTimeout = TimeSpan.FromSeconds(5) }
             );
+        services.AddHttpClient(
+            CloudStorageResilience.HttpClientName,
+            client => client.Timeout = CloudStorageResilience.Timeout
+        );
+
+        services.AddSingleton<ICloudStorageClient>(sp => new CloudinaryStorageClient(
+            sp.GetRequiredService<CloudinarySettings>(),
+            CloudStorageResilience.CreatePipeline(),
+            sp.GetRequiredService<IHttpClientFactory>().CreateClient(CloudStorageResilience.HttpClientName),
+            sp.GetRequiredService<ILogger<CloudinaryStorageClient>>()
+        ));
         services.AddScoped<ICloudinaryService, CloudinaryService>();
         services.AddScoped<IImageColorService, ImageColorService>();
         services.AddScoped<IFileUploadService, FileUploadService>();
@@ -97,6 +110,10 @@ public static class CoreModule
         // File lifecycle domain event handlers
         services.AddScoped<IDomainEventHandler<FileReplacedEvent>, FileAssetCleanupHandler>();
         services.AddScoped<IDomainEventHandler<FileSoftDeletedEvent>, FileAssetCleanupHandler>();
+
+        // File cache eviction: a replaced or deleted file must stop resolving from cache.
+        services.AddScoped<IDomainEventHandler<FileReplacedEvent>, FileCacheHandler>();
+        services.AddScoped<IDomainEventHandler<FileSoftDeletedEvent>, FileCacheHandler>();
 
         return services;
     }

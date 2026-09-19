@@ -5,6 +5,10 @@ post-Stage-9 verification that docs 01–14 did not cover.
 
 Eleven files. No behaviour change except where Stage 11 already intends one.
 
+> **Partly landed early.** Stage 14 built `tests/Architecture` and, in doing so, fixed 20.1 and
+> implemented most of 20.5. The `Npgsql` work (20.2, 20.3, 20.4) is untouched. Re-verify against
+> the tree before planning: the violations this stage was written against are no longer all there.
+
 **Numbered 20, but it does not run last.** Both fixes are prerequisites, not follow-ups:
 §15.2 must land before Stage 18 splits `Shared.Kernel` (the file stops compiling at that
 moment), and §15.1 must be folded into Stage 11 (which rewrites the same method). The stage
@@ -27,11 +31,11 @@ number records where the finding entered the audit, not the execution slot.
 
 ## Checklist
 
-- [ ] 20.1 — `Mailer.Domain` off `Microsoft.AspNetCore.WebUtilities`
+- [x] 20.1 — `Mailer.Domain` off `Microsoft.AspNetCore.WebUtilities` — **absorbed into Stage 14.** `NewsletterSubscriberEntity.GenerateToken` now uses .NET 9's `System.Buffers.Text.Base64Url`; both emit unpadded RFC 4648, so existing tokens stay valid
 - [ ] 20.2 — `IUniqueConstraintDetector` + Npgsql implementation; `DbUpdateExceptionStrategy` off `Npgsql`
 - [ ] 20.3 — `ITransientFaultDetector` + Npgsql implementation; `AccountStatusRequirementHandler` off `Npgsql`
 - [ ] 20.4 — Unit tests for both detectors (the nine SQLSTATEs, `23505`, and the negative cases)
-- [ ] 20.5 — Architecture rules: no `Npgsql`/`Microsoft.AspNetCore` in `*.Domain`; no `Npgsql` in `*.Application`
+- [ ] 20.5 — Architecture rules: no `Npgsql`/`Microsoft.AspNetCore` in `*.Domain`; no `Npgsql` in `*.Application` — **partly absorbed into Stage 14.** `tests/Architecture/LayerDependencyTests` already forbids `Microsoft.AspNetCore`, EF Core and `Npgsql` in `*.Domain`, and Infrastructure in `*.Application`. What remains here is the `Npgsql`-in-`*.Application` rule, which stays red until 20.2 and 20.3 land
 - [ ] 20.6 — Verify (build 0/0, csharpier, unit, integration, architecture)
 
 ---

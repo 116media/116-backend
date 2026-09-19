@@ -126,7 +126,7 @@ public class ArticleRepository(ContentDbContext context) : ContentRepository<Art
             .WithCategory(categoryId: categoryId)
             .WithExcludeId(excludeId: excludeId)
             .WithLimit(limit: limit)
-            .Build(context: Context);
+            .Build(source: Context.Articles.Include(a => a.Category));
 
         return await query.ToListAsync(cancellationToken);
     }

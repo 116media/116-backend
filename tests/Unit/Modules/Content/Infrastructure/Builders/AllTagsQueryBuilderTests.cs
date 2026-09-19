@@ -1,13 +1,13 @@
-using _116.Content.Application.Lookup.Builders;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
+using _116.Content.Infrastructure.Builders;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Content.Application.Lookup.Builders;
+namespace _116.Unit.Tests.Modules.Content.Infrastructure.Builders;
 
 /// <summary>
 /// Unit tests for <see cref="AllTagsQueryBuilder"/>.
