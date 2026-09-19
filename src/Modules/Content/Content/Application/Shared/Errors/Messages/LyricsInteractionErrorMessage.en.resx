@@ -18,4 +18,10 @@
   <data name="LikeNotFound" xml:space="preserve">
     <value>Like not found for this lyrics page.</value>
   </data>
+  <data name="DwellMsNegative" xml:space="preserve">
+    <value>The dwell time must not be negative.</value>
+  </data>
+  <data name="ScrollDepthOutOfRange" xml:space="preserve">
+    <value>The scroll depth must be between 0 and 1.</value>
+  </data>
 </root>
