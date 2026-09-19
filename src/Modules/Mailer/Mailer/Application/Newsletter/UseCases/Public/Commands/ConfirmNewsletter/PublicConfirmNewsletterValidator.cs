@@ -1,4 +1,5 @@
 using _116.Mailer.Application.Shared.Errors;
+using _116.Mailer.Application.Shared.Validators;
 using FluentValidation;
 
 namespace _116.Mailer.Application.Newsletter.UseCases.Public.Commands.ConfirmNewsletter;
@@ -16,6 +17,6 @@ public class PublicConfirmNewsletterValidator : AbstractValidator<PublicConfirmN
     /// <param name="errors">Newsletter error factory providing localized messages.</param>
     public PublicConfirmNewsletterValidator(NewsletterErrors errors)
     {
-        RuleFor(x => x.Token).NotEmpty().WithMessage(errors.Msg.TokenInvalid());
+        RuleFor(x => x.Token).ValidNewsletterToken(errors.Msg);
     }
 }
