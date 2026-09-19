@@ -69,6 +69,14 @@ the 6 hand-rolled checks. Cut the access-token lifetime to 15 min.
 
 ## S3 — The 28-permission model is generated, stored, seeded, and signed into every JWT — and checked by zero endpoints
 
+> **Decided in Stage 16; the model stays, and so does the claim.** Verified that nothing reads
+> the claim today: the dashboard, frontend and mobile apps all take permissions from API DTOs,
+> and no client decodes the JWT (0 hits for `jwtDecode`/`atob` across all three). The claim was
+> removed on that basis and then **restored on the owner's decision**: permission-based guards
+> are planned and the claim is the substrate they will read, so dropping it would only have to
+> be undone. Token size is the accepted cost. Authorization remains role-based
+> (`UserRolePolicies.*`) until those guards exist.
+
 **Severity: High**
 
 **Where:** `VisitorPermissions.cs` builds 28 permission rows; `VisitorRoleSeeder` persists them;
