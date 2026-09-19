@@ -150,4 +150,10 @@ public class ContentOrderErrorMessage(IStringLocalizer<ContentOrderErrorMessage>
     /// Gets an error message for when an order item ID is required.
     /// </summary>
     public string OrderItemIdRequired() => localizer["OrderItemIdRequired"];
+
+    /// <summary>
+    /// Gets an error message for when payment rejection notes exceed the maximum length.
+    /// </summary>
+    /// <param name="max">The maximum allowed length.</param>
+    public string PaymentNotesTooLong(int max) => string.Format(localizer["PaymentNotesTooLong"], max);
 }
