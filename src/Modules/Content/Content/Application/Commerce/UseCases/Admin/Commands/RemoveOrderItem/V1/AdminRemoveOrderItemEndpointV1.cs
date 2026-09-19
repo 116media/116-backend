@@ -12,12 +12,6 @@ using Microsoft.AspNetCore.Routing;
 namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.RemoveOrderItem.V1;
 
 /// <summary>
-/// Response model for removing an order item.
-/// </summary>
-/// <param name="IsSuccess">Indicates whether the item was successfully removed.</param>
-public record AdminRemoveOrderItemResponse(bool IsSuccess);
-
-/// <summary>
 /// Defines the admin remove order item endpoint.
 /// </summary>
 public class AdminRemoveOrderItemEndpointV1 : ICarterModule
@@ -35,13 +29,8 @@ public class AdminRemoveOrderItemEndpointV1 : ICarterModule
                 async (string id, string itemId, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var command = new AdminRemoveOrderItemCommand(OrderId: id, ItemId: itemId);
-                    AdminRemoveOrderItemResult result = await dispatcher.Send(
-                        request: command,
-                        cancellationToken: cancellationToken
-                    );
-
-                    var response = new AdminRemoveOrderItemResponse(IsSuccess: result.IsSuccess);
-                    return Results.Ok(response);
+                    await dispatcher.Send(request: command, cancellationToken: cancellationToken);
+                    return Results.NoContent();
                 }
             )
             .WithName(endpointName: AdminRemoveOrderItemMetaField.RemoveOrderItem.Name)
@@ -49,8 +38,8 @@ public class AdminRemoveOrderItemEndpointV1 : ICarterModule
             .WithDescription(description: AdminRemoveOrderItemMetaField.RemoveOrderItem.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
-            .Produces<AdminRemoveOrderItemResponse>(statusCode: StatusCodes.Status200OK)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentManagement)
+            .Produces(statusCode: StatusCodes.Status204NoContent)
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
             .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)
