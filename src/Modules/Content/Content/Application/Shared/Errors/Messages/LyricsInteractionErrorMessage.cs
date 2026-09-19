@@ -33,4 +33,14 @@ public class LyricsInteractionErrorMessage(IStringLocalizer<LyricsInteractionErr
     {
         return localizer["LikeNotFound"];
     }
+
+    /// <summary>
+    /// Gets the localized message for DwellMsNegative.
+    /// </summary>
+    public string DwellMsNegative() => localizer["DwellMsNegative"];
+
+    /// <summary>
+    /// Gets the localized message for ScrollDepthOutOfRange.
+    /// </summary>
+    public string ScrollDepthOutOfRange() => localizer["ScrollDepthOutOfRange"];
 }
