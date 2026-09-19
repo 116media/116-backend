@@ -71,7 +71,7 @@ Re-verified against the tree after Stage 15 landed (develop `be2eb195e`):
 | --- | --- | --- | --- |
 | D1 | Unbounded lists | paginate all 22, or cap the small ones | **Paginate the growing ones, cap the bounded-by-nature ones.** Tags/categories/content-types are small reference lists — a server-side `Take(500)` + doc note suffices. User-generated collections (comments already paginated; playlists, shares) get real pagination. `[04 §16]`'s unbounded reads join whichever bucket their table's growth implies. |
 | D2 | The v2 declaration | build v2, or delete it | **Moot — already deleted.** The decision was to delete, and no `MapToApiVersion(2)` remains anywhere in `src/`. Kept for the record; re-introduce a version when a real v2 consumer exists `[08 §13]`. |
-| D3 | S3 (28 permissions, checked nowhere) | enforce permissions per endpoint, or cut to roles | **Cut to roles, keep the tables.** The three-role model is what every endpoint actually checks (`UserRolePolicies.*`); enforcing 28 permissions retroactively would need a product decision per endpoint that nobody has asked for. The seeded data stays (it is correct), the JWT **stops carrying the permissions claim** (it bloats every token for zero checks), and the decision is recorded so the model is deliberate, not dead `[07 S3]`. |
+| D3 | S3 (28 permissions, checked nowhere) | enforce permissions per endpoint, or cut to roles | **Cut to roles, keep the tables.** The three-role model is what every endpoint actually checks (`UserRolePolicies.*`); enforcing 28 permissions retroactively would need a product decision per endpoint that nobody has asked for. The seeded data stays (it is correct) and the decision is recorded so the model is deliberate, not dead `[07 S3]`. **The JWT keeps the permissions claim — user decision, overriding this row's original "stop carrying it".** It was removed and then restored: permission-based guards are planned, and the claim is the substrate they will read, so dropping it would have to be undone. Token size is the accepted cost. |
 | D4 | Envelope removal | sweep all `{isSuccess}` responses, or DELETEs only | **DELETEs → 204 now; the rest stays.** The full envelope sweep breaks every consumer for cosmetic gain; DELETE-returns-body is the semantically wrong case, and the 28 DELETE endpoints are a bounded, coordinated break `[08 §19]`. |
 | D5 | Dispatcher | compiled delegates, or typed wrapper resolution | **Typed wrapper.** A cached `RequestHandlerWrapper<TResponse>` resolved per request type dispatches through a virtual call — no `MethodInfo`, no `Invoke`, no boxing, same DI semantics. |
 | D6 | Mapster | merge the two configs, or scan both into one | **Moot — already done.** `AddModuleMappings` registers each module's `IRegister` and builds a single `TypeAdapterConfig` from `GetServices<IRegister>()` under `TryAddSingleton`, so all three modules' mappings coexist. No competing singletons remain `[01 §1.6]`. |
@@ -82,13 +82,13 @@ Re-verified against the tree after Stage 15 landed (develop `be2eb195e`):
 
 - [ ] 16.1 — Census commit: unpaginated lists, misplaced routes, envelope DELETEs, validator-less commands
 - [ ] 16.2 — Unbounded lists paged/capped `[06 §3 / 04 §16]`
-- [ ] 16.3 — The 7 misplaced public endpoints moved under `/public`; scope route-group helpers `[06 §10 / 08 §14]`
-- [ ] 16.4 — Write endpoints off `ContentBrowsing` onto write policies `[06 §11]`
+- [x] 16.3 — The 7 misplaced public endpoints moved under `/public` `[06 §10 / 08 §14]`
+- [x] 16.4 — Write endpoints off `ContentBrowsing` onto write policies `[06 §11]`
 - [ ] 16.5 — Per-resource authorization unified (one admin tier per lifecycle) `[06 §12]`; S3 decision executed
-- [ ] 16.6 — Validators for the 6 free-text commands; `ProducesValidationProblem` on mutations `[06 §13]`
-- [ ] 16.7 — RFC 7807 completion: validation errors reshaped (no raw `ValidationFailure`, no echoed input in `detail`), `type` URIs `[08 §5 / 08 §11]`
-- [ ] 16.8 — DELETEs → 204 (28 endpoints) `[08 §19]` — the v2 half is already done
-- [ ] 16.9 — Dispatcher wrapper `[01 §1.4]` — the single-Mapster-config half is already done
+- [x] 16.6 — Validators for the 6 free-text commands; `ProducesValidationProblem` on mutations `[06 §13]`
+- [x] 16.7 — RFC 7807 completion: validation errors reshaped (no raw `ValidationFailure`, no echoed input in `detail`), `type` URIs `[08 §5 / 08 §11]`
+- [x] 16.8 — DELETEs → 204 (**22** of 28; 6 keep 200 + payload) `[08 §19]` — the v2 half was already done
+- [x] 16.9 — Dispatcher wrapper `[01 §1.4]` — the single-Mapster-config half was already done
 - [ ] 16.10 — Verify (build 0/0, csharpier, unit, integration; censuses clean)
 
 ---
@@ -152,6 +152,23 @@ public Task<TResponse> Send<TResponse>(IRequest<TResponse> request, Cancellation
 Reflection happens once per request *type* for the process lifetime; the per-request path is a
 dictionary hit and a virtual call. The decorators (validation/logging) are unaffected — they
 wrap `IRequestHandler<,>` via Scrutor as today.
+
+**Landed, with two deviations from the sketch above.**
+
+`GetRequiredService` is not used. The dispatcher unit tests mock `IServiceProvider` with Moq,
+which does not implement `ISupportRequiredService`, so `GetRequiredService` would surface
+"No service for type … has been registered" in place of the asserted
+`No handler registered for {requestType.Name}`. The wrapper calls `GetService<T>()` and keeps
+the explicit null check, so the thrown message is unchanged from the reflection version.
+
+The cache is **not** keyed by request type alone. `IRequest<out TResponse> : IRequest`, so every
+request with a response also satisfies the void path, and one shared `ConcurrentDictionary<Type,
+Type>` was a live collision: dispatching a request through `Send<TResponse>` first poisoned the
+key, and the later `Send(IRequest)` resolved the *response* handler type. There are now two
+caches — `(RequestType, ResponseType)` for the response path, `RequestType` for the void path.
+`DispatcherTests.Send_WhenOneRequestTypeReachesBothDispatchPaths_ShouldResolveEachPathsOwnHandler`
+is the regression test; it was run against the previous `Dispatcher` and fails there, so it
+covers the defect rather than restating the new shape.
 
 ### 16.9b One Mapster config
 
@@ -236,6 +253,26 @@ A regression test submits a failing password and asserts the response body conta
 the submitted value nor `AttemptedValue`, `PropertyValue`, `CustomState`, `Severity`,
 `ErrorCode` or `FormattedMessagePlaceholderValues` as keys.
 
+**Landed.** The payload a failing request now returns is
+`{"name":["Le nom du rôle est obligatoire."],"description":[…]}` — camelCase keys, messages
+only, no submitted values anywhere. `detail` is the fixed localized
+`SharedExceptionMessage.ValidationFailed()`.
+
+The test consolidation went the way the sequence above describes, with one correction: rather
+than a helper returning the new detail, the 63 private `ValidationDetail` helpers were deleted
+outright and the 118 call sites moved to a new
+`HttpResponseExtensions.ShouldBeValidationProblem(...)`, which asserts the status, the title,
+the per-field camelCase entries **and** that none of `AttemptedValue`, `PropertyValue`,
+`CustomState` or `FormattedMessagePlaceholderValues` appears anywhere in the raw body. The
+leak assertion therefore runs on all 118 sites rather than in one regression test, so the
+suite now fails if any future change reintroduces the raw failures. Coverage went up, not
+down: the old assertion compared one concatenated string, the new one pins each field.
+
+`type` is now set on every problem: `about:blank` from
+`BaseExceptionStrategy.CreateStandardProblemDetails`, and `urn:116:problem:{code}` from all
+three modules' `DomainRuleExceptionStrategy` (via `ProblemTypes.ForRule`). `ExceptionHandler`
+writes with `contentType: "application/problem+json"`.
+
 Problem completion (`[08 §11]`) rides the Stage 7 vocabulary: `type` becomes
 `urn:116:problem:{RuleCode}` (or `about:blank` for non-rule problems) and `Content-Type`
 asserts `application/problem+json`. `traceId` is **already stamped** for every strategy —
@@ -269,6 +306,32 @@ format check**, and those are the whole of 16.6:
 Both `Url` values want a well-formed absolute URL; the rest want a maximum length matching the
 column. `ProducesValidationProblem` still goes on every mutation regardless.
 
+**Landed. One of the six was a live 500, not just an unchecked field.**
+
+`PublicRecordShortVideoView` takes `DeviceId` from the caller-supplied `X-Device-Id` header and
+the handler builds `dedup_key` as `$"device:{DeviceId}"`. That column is
+`HasMaxLength(100)` (`ShortVideoViewEventConfiguration:22`), so any device id over 93
+characters overflowed it. The endpoint is anonymous — `Client.ClearAuthentication()` in its own
+tests — so any caller could trigger it. Confirmed by sending a 200-character header against the
+unvalidated build: **HTTP 500**. `RecordShortVideoView_WithOversizedDeviceIdHeader_ReturnsBadRequestAndRecordsNothing`
+sends that same 200-character header and asserts 400 plus no persisted row.
+
+Caps chosen against the columns rather than invented: `DeviceId` 64 (clear of the 93-char
+overflow point), `IpAddress` 64 and `UserAgent` 500 (their own columns), vote comments and
+payment notes 1000 (`Notes` is `HasMaxLength(1000)`), streaming URLs 500
+(`MaxStreamingLinkUrlLength`). `AdminRejectPaymentCommand.OrderId` is a `string` the handler
+feeds to `Guid.Parse`, so it also gained `IsValidGuid` — a field-level 400 rather than the
+generic invalid-identifier problem.
+
+Every rule is a shared `IRuleBuilder` extension and every validator is a thin wrapper, per the
+two-layer standard in `docs/EDITORIAL_VALIDATION_FIX.md`: `ValidStreamingLinkUrl` (two call
+sites, requires an absolute `http`/`https` URI so `javascript:` and scheme-less values are
+rejected), `ValidLyricsRevisionVoteComment`, `ValidTranslationVoteComment`, `ValidPaymentNotes`,
+`ValidViewDeviceId`, `ValidViewIpAddress`, `ValidViewUserAgent`. No inline rule and no magic
+number survives in a validator. Tests: 30 unit cases across six new
+validator test classes, plus 10 integration cases proving each validator is actually wired
+(status 400 and nothing persisted) rather than merely registered.
+
 ## Part C — Surface corrections
 
 **Routes `[06 §10]`** — one helper per scope replaces the per-use-case group declaration:
@@ -297,6 +360,33 @@ return Results.NoContent();
 
 `.Produces(StatusCodes.Status204NoContent)` replaces the response-type metadata; the endpoint
 tests change their assertion from body to status.
+
+**Landed on 22 of the 28, not all of them — the census assumed every DELETE was an envelope and
+six are not.** Measured response shapes:
+
+| Endpoint | Returns | Outcome |
+| --- | --- | --- |
+| `AdminRemoveCategoryPricing` | `IReadOnlyList<CategoryPricingDto> Pricing` | **kept 200** |
+| `AdminRemovePackageSlot` | `PackageDto Package` | **kept 200** |
+| `AdminRemovePermissionFromRole` | `RoleWithPermissionsDto Role` | **kept 200** |
+| `AdminSoftDeletePermission` | `PermissionDto Permission` | **kept 200** |
+| `AdminSoftDeleteRole` | `RoleDto Role` | **kept 200** |
+| `AdminRemoveRoleFromUser` | `IReadOnlyCollection<RoleDto> Roles` | **kept 200** |
+| the other 22 | `bool IsSuccess` and nothing else | → **204** |
+
+D4's reasoning — "DELETE-returns-body is the semantically wrong case" — holds for the
+`{isSuccess: true}` envelope, which carries information the status line already carries. It does
+not hold for a response returning the resulting state: the two soft deletes return the updated
+resource, and the four removals return the collection the caller would otherwise have to re-GET.
+Emptying those to 204 would remove information and force a second round trip, so they stay,
+deliberately, and the decision is recorded here rather than left as an inconsistency.
+
+For the 22, the `XResponse` record is deleted outright (it had no field left), the handler result
+is no longer captured, and `.Produces<XResponse>(Status200OK)` becomes
+`.Produces(Status204NoContent)`. Two endpoints (`AdminHardDeleteRole`,
+`AdminHardDeletePermission`) declared `.Produces<T>()` with no status code and needed a separate
+pass. Test fallout: 21 integration files dropped their body assertions and 26 status assertions
+moved from `OK` to `NoContent`.
 
 **Rate limits `[06 §11]`** — interaction/mutation endpoints move from
 `RateLimitPolicies.ContentBrowsing` (a fixed-window read policy) to the appropriate write
