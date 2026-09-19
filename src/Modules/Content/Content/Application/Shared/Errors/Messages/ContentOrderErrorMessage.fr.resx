@@ -87,4 +87,7 @@
   <data name="PaymentAlreadyDecided" xml:space="preserve">
     <value>La preuve de paiement ne peut plus être modifiée une fois le paiement décidé.</value>
   </data>
+  <data name="PaymentNotesTooLong" xml:space="preserve">
+    <value>Les notes de rejet ne doivent pas dépasser {0} caractères.</value>
+  </data>
 </root>
