@@ -15,4 +15,7 @@
   <data name="NameRequired" xml:space="preserve">
     <value>Le nom de l'album est obligatoire.</value>
   </data>
+  <data name="InvalidReleaseType" xml:space="preserve">
+    <value>Le type de sortie n'est pas une valeur prise en charge.</value>
+  </data>
 </root>
