@@ -2,6 +2,7 @@ using System.Security.Claims;
 using _116.BuildingBlocks.Constants.Authorization.Policies;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Content.Application.Editorial.Constants;
+using _116.Content.Domain.Constants;
 using _116.Identity.Contracts.Application.Services;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
@@ -38,8 +39,8 @@ public class PublicProposeTranslationRevisionEndpointV1 : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         RouteGroupBuilder group = app.MapApiVersionGroup(1)
-            .MapGroup($"{EditorialRouteConstants.Translations}")
-            .WithTags(EditorialRouteConstants.Translations);
+            .MapGroup($"{ContentConstants.Public}/{EditorialRouteConstants.Translations}")
+            .WithTags($"{ContentConstants.Public}::{EditorialRouteConstants.Translations}");
 
         group
             .MapPost(
