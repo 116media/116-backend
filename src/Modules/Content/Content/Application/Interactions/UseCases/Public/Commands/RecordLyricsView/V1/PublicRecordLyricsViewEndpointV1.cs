@@ -104,7 +104,7 @@ public class PublicRecordLyricsViewEndpointV1 : ICarterModule
             .WithSummary(summary: PublicRecordLyricsViewMetaField.RecordLyricsView.Summary)
             .WithDescription(description: PublicRecordLyricsViewMetaField.RecordLyricsView.Description)
             .AllowAnonymous()
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentContribution)
             .Produces<PublicRecordLyricsViewResponse>(statusCode: StatusCodes.Status200OK)
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
             .ProducesProblem(statusCode: StatusCodes.Status404NotFound)
