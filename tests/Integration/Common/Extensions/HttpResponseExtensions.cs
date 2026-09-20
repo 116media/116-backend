@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 
 namespace _116.Integration.Tests.Common.Extensions;
@@ -112,6 +113,82 @@ public static class HttpResponseExtensions
 
         problem.Detail.Should().Be(detail, "the detail is what tells two guards behind the same status code apart");
     }
+
+    /// <summary>
+    /// Asserts that the response is the validation problem the global exception middleware
+    /// produces, pinning the status, title and fixed detail, and asserting one camelCase entry
+    /// per expected field with its localized message. Also asserts the submitted values are
+    /// absent, which the field-level assertions alone cannot prove.
+    /// </summary>
+    /// <param name="response">The HTTP response.</param>
+    /// <param name="expectedFailures">
+    /// The expected field failures. Resolve each message through <c>BaseApiTest.Localized</c>
+    /// rather than hardcoding the sentence.
+    /// </param>
+    public static Task ShouldBeValidationProblem(this HttpResponseMessage response, string property, string message)
+    {
+        return response.ShouldBeValidationProblem([(property, message)]);
+    }
+
+    /// <summary>
+    /// Asserts that the response is the validation problem the global exception middleware
+    /// produces, pinning the status, title and fixed detail, and asserting one camelCase entry
+    /// per expected field with its localized message. Also asserts the submitted values are
+    /// absent, which the field-level assertions alone cannot prove.
+    /// </summary>
+    /// <param name="response">The HTTP response.</param>
+    /// <param name="expectedFailures">
+    /// The expected field failures. Resolve each message through <c>BaseApiTest.Localized</c>
+    /// rather than hardcoding the sentence.
+    /// </param>
+    public static async Task ShouldBeValidationProblem(
+        this HttpResponseMessage response,
+        params (string Property, string Message)[] expectedFailures
+    )
+    {
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        string raw = await response.Content.ReadAsStringAsync();
+        raw.Should().NotBeNullOrWhiteSpace("a ValidationException is translated to a ProblemDetails body");
+
+        ProblemDetails problem = ParseProblem(raw, HttpStatusCode.BadRequest);
+        problem.Title.Should().Be(nameof(ValidationException));
+
+        foreach (string leaked in LeakedFailureKeys)
+        {
+            raw.Should().NotContain(leaked, "the validation problem must not echo the submitted request back");
+        }
+
+        problem.Extensions.Should().ContainKey("errors", "the validation problem enumerates the failed fields");
+
+        var errors = JsonSerializer.Deserialize<Dictionary<string, string[]>>(
+            ((JsonElement)problem.Extensions["errors"]!).GetRawText(),
+            JsonOptions
+        )!;
+
+        foreach ((string property, string message) in expectedFailures)
+        {
+            string key = JsonNamingPolicy.CamelCase.ConvertName(property);
+
+            errors.Should().ContainKey(key, "the failed field should be reported under its camelCase name");
+            errors[key].Should().Contain(message, "the field's localized message travels in the errors");
+        }
+    }
+
+    /// <summary>
+    /// Raw <c>ValidationFailure</c> members that must never reach a client. Their presence in the
+    /// body means the failures were serialized verbatim instead of being projected.
+    /// </summary>
+    private static readonly string[] LeakedFailureKeys =
+    [
+        "AttemptedValue",
+        "attemptedValue",
+        "PropertyValue",
+        "FormattedMessagePlaceholderValues",
+        "formattedMessagePlaceholderValues",
+        "CustomState",
+        "customState",
+    ];
 
     /// <summary>
     /// Deserializes a non-empty error body into <see cref="ProblemDetails" /> and asserts the
