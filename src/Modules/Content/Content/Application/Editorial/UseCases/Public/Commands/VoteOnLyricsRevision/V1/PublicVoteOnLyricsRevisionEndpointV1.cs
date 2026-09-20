@@ -2,6 +2,7 @@ using System.Security.Claims;
 using _116.BuildingBlocks.Constants.Authorization.Policies;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Content.Application.Editorial.Constants;
+using _116.Content.Domain.Constants;
 using _116.Content.Domain.Enums;
 using _116.Identity.Contracts.Application.Services;
 using _116.Shared.Application.Extensions;
@@ -39,8 +40,8 @@ public class PublicVoteOnLyricsRevisionEndpointV1 : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         RouteGroupBuilder group = app.MapApiVersionGroup(1)
-            .MapGroup($"{EditorialRouteConstants.Lyrics}")
-            .WithTags(EditorialRouteConstants.Lyrics);
+            .MapGroup($"{ContentConstants.Public}/{EditorialRouteConstants.Lyrics}")
+            .WithTags($"{ContentConstants.Public}::{EditorialRouteConstants.Lyrics}");
 
         group
             .MapPost(
