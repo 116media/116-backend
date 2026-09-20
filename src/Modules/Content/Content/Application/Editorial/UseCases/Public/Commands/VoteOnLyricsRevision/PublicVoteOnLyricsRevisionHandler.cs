@@ -76,11 +76,14 @@ public class PublicVoteOnLyricsRevisionHandler(
         )
         {
             revision.Accept(decidedByUserId: null);
+            revisionRepository.Update(revision: revision);
+
             LyricsEntity lyrics = await lyricsRepository.GetByIdOrThrowAsync(
                 id: revision.LyricsId,
                 cancellationToken: cancellationToken
             );
             lyrics.ReplaceLyricsText(lyricsText: revision.ProposedText);
+            lyricsRepository.Update(lyrics: lyrics);
         }
 
         // Both the revision's acceptance and the lyrics page's replaced text commit together

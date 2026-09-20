@@ -1,8 +1,9 @@
+using _116.Content.Application.Lookup.Specifications;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Builders.Contracts;
 using _116.Content.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
+using _116.Shared.Infrastructure.Extensions;
 
 namespace _116.Content.Infrastructure.Builders;
 
@@ -50,13 +51,9 @@ public class AllTagsQueryBuilder : IAllTagsQueryBuilder
     /// <inheritdoc />
     public IQueryable<TagEntity> Build(ContentDbContext context)
     {
-        IQueryable<TagEntity> query = context.Tags;
-
-        if (!string.IsNullOrWhiteSpace(_search))
-        {
-            string pattern = $"%{_search}%";
-            query = query.Where(tag => EF.Functions.ILike(tag.Name, pattern) || EF.Functions.ILike(tag.Slug, pattern));
-        }
+        IQueryable<TagEntity> query = string.IsNullOrWhiteSpace(_search)
+            ? context.Tags
+            : context.Tags.ApplySpecification(new TagSearchSpecification(search: _search));
 
         query = _contentType switch
         {

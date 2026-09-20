@@ -1,3 +1,4 @@
+using _116.Content.Application.Editorial.Specifications;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
@@ -19,17 +20,21 @@ public class LyricsRevisionVoteRepository(ContentDbContext context)
     /// <inheritdoc />
     public async Task<bool> HasVotedAsync(Guid revisionId, Guid userId, CancellationToken cancellationToken = default)
     {
-        return await Context.LyricsRevisionVotes.AnyAsync(
-            vote => vote.RevisionId == revisionId && vote.UserId == userId,
-            cancellationToken
+        var specification = new LyricsRevisionVoteByRevisionAndUserSpecification(
+            revisionId: revisionId,
+            userId: userId
         );
+        return await Context
+            .LyricsRevisionVotes.ApplySpecification(specification: specification)
+            .AnyAsync(cancellationToken);
     }
 
     /// <inheritdoc />
     public async Task<int> GetNetApprovalsAsync(Guid revisionId, CancellationToken cancellationToken = default)
     {
+        var specification = new LyricsRevisionVoteByRevisionIdSpecification(revisionId: revisionId);
         return await Context
-            .LyricsRevisionVotes.Where(vote => vote.RevisionId == revisionId)
+            .LyricsRevisionVotes.ApplySpecification(specification: specification)
             .SumAsync(vote => vote.Vote == EnumVote.Approve ? 1 : -1, cancellationToken);
     }
 }

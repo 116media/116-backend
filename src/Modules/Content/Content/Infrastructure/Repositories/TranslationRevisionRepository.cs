@@ -1,3 +1,4 @@
+using _116.Content.Application.Editorial.Specifications;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
@@ -22,8 +23,9 @@ public class TranslationRevisionRepository(ContentDbContext context)
         CancellationToken cancellationToken = default
     )
     {
+        var specification = new TranslationRevisionByIdSpecification(id: id);
         return await Context
-            .LyricsTranslationRevisions.Where(revision => revision.Id == id)
+            .LyricsTranslationRevisions.ApplySpecification(specification: specification)
             .FirstDefaultOrThrowAsync(keyValue: id, cancellationToken: cancellationToken);
     }
 
@@ -33,8 +35,9 @@ public class TranslationRevisionRepository(ContentDbContext context)
         CancellationToken cancellationToken = default
     )
     {
+        var specification = new TranslationRevisionByTranslationIdSpecification(translationId: translationId);
         return await Context
-            .LyricsTranslationRevisions.Where(revision => revision.TranslationId == translationId)
+            .LyricsTranslationRevisions.ApplySpecification(specification: specification)
             .OrderByDescending(revision => revision.CreatedAt)
             .ToListAsync(cancellationToken);
     }

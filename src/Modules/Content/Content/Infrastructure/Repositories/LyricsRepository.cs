@@ -1,9 +1,11 @@
 using _116.Content.Application.Editorial.Builders;
+using _116.Content.Application.Editorial.Specifications;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Specifications;
 using _116.Shared.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 
@@ -29,29 +31,16 @@ public class LyricsRepository(ContentDbContext context) : ContentRepository<Lyri
     {
         IQueryable<LyricsEntity> query = Context.Lyrics.Include(l => l.Category);
 
-        if (!string.IsNullOrWhiteSpace(search))
-        {
-            string pattern = $"%{search}%";
-            query = query.Where(lyrics =>
-                EF.Functions.ILike(lyrics.SongTitle, pattern)
-                || EF.Functions.ILike(lyrics.ArtistName, pattern)
-                || EF.Functions.ILike(lyrics.LyricsText, pattern)
-            );
-        }
+        Specification<LyricsEntity>? spec = new LyricsQueryBuilder()
+            .WithSearch(search: search)
+            .WithStatus(status: status)
+            .WithCategory(categoryId: categoryId)
+            .WithLanguage(language: language)
+            .Build();
 
-        if (status.HasValue)
+        if (spec is not null)
         {
-            query = query.Where(lyrics => lyrics.Status == status.Value);
-        }
-
-        if (categoryId.HasValue)
-        {
-            query = query.Where(lyrics => lyrics.CategoryId == categoryId.Value);
-        }
-
-        if (!string.IsNullOrWhiteSpace(language))
-        {
-            query = query.Where(lyrics => EF.Functions.ILike(lyrics.Language, language));
+            query = query.ApplySpecification(specification: spec);
         }
 
         int totalCount = await query.CountAsync(cancellationToken);
@@ -79,8 +68,9 @@ public class LyricsRepository(ContentDbContext context) : ContentRepository<Lyri
     /// <inheritdoc />
     public async Task<LyricsEntity?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default)
     {
+        var specification = new LyricsBySlugSpecification(slug: slug);
         return await Context
-            .Lyrics.Where(lyrics => EF.Functions.ILike(lyrics.Slug, slug))
+            .Lyrics.ApplySpecification(specification: specification)
             .Include(l => l.Category)
             .Include(l => l.Customer)
             .Include(l => l.Tags)
@@ -91,8 +81,9 @@ public class LyricsRepository(ContentDbContext context) : ContentRepository<Lyri
     /// <inheritdoc />
     public override async Task<LyricsEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
+        var specification = new LyricsByIdSpecification(id: id);
         return await Context
-            .Lyrics.Where(lyrics => lyrics.Id == id)
+            .Lyrics.ApplySpecification(specification: specification)
             .Include(l => l.Category)
             .Include(l => l.Customer)
             .Include(l => l.Tags)
@@ -103,9 +94,10 @@ public class LyricsRepository(ContentDbContext context) : ContentRepository<Lyri
     /// <inheritdoc />
     public override async Task<LyricsEntity> GetByIdOrThrowAsync(Guid id, CancellationToken cancellationToken = default)
     {
+        var specification = new LyricsByIdSpecification(id: id);
         return await Context
             .Lyrics.AsTracking()
-            .Where(lyrics => lyrics.Id == id)
+            .ApplySpecification(specification: specification)
             .Include(l => l.Category)
             .Include(l => l.Customer)
             .Include(l => l.Tags)
@@ -116,8 +108,9 @@ public class LyricsRepository(ContentDbContext context) : ContentRepository<Lyri
     /// <inheritdoc />
     public async Task<LyricsEntity?> GetByVideoIdAsync(Guid videoId, CancellationToken cancellationToken = default)
     {
+        var specification = new LyricsByVideoIdSpecification(videoId: videoId);
         return await Context
-            .Lyrics.Where(lyrics => lyrics.VideoId == videoId)
+            .Lyrics.ApplySpecification(specification: specification)
             .Include(l => l.Category)
             .Include(l => l.Customer)
             .Include(l => l.Tags)
@@ -133,9 +126,13 @@ public class LyricsRepository(ContentDbContext context) : ContentRepository<Lyri
         CancellationToken cancellationToken = default
     )
     {
+        Specification<LyricsEntity> specification = new LyricsByStatusSpecification(EnumContentStatus.Published).And(
+            new LyricsByArtistSpecification(artistId: artistId)
+        );
+
         IQueryable<LyricsEntity> query = Context
             .Lyrics.Include(l => l.Category)
-            .Where(lyrics => lyrics.Status == EnumContentStatus.Published && lyrics.ArtistId == artistId);
+            .ApplySpecification(specification: specification);
 
         int totalCount = await query.CountAsync(cancellationToken);
 
@@ -156,8 +153,12 @@ public class LyricsRepository(ContentDbContext context) : ContentRepository<Lyri
         CancellationToken cancellationToken = default
     )
     {
+        Specification<LyricsEntity> specification = new LyricsByAlbumSpecification(albumId: albumId).And(
+            new LyricsByStatusSpecification(EnumContentStatus.Published)
+        );
+
         return await Context
-            .Lyrics.Where(lyrics => lyrics.AlbumId == albumId && lyrics.Status == EnumContentStatus.Published)
+            .Lyrics.ApplySpecification(specification: specification)
             .Where(l => l.Id != excludeLyricsId)
             .OrderBy(l => l.CreatedAt)
             .ToListAsync(cancellationToken);
@@ -169,9 +170,11 @@ public class LyricsRepository(ContentDbContext context) : ContentRepository<Lyri
         CancellationToken cancellationToken = default
     )
     {
+        var specification = new LyricsByOrderItemIdSpecification(orderItemId: orderItemId);
         return await Context
             .Lyrics.AsTracking()
-            .FirstOrDefaultAsync(lyrics => lyrics.OrderItemId == orderItemId, cancellationToken);
+            .ApplySpecification(specification: specification)
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
     /// <inheritdoc />
@@ -205,10 +208,8 @@ public class LyricsRepository(ContentDbContext context) : ContentRepository<Lyri
     /// <inheritdoc />
     public async Task<bool> HasLikedAsync(Guid userId, Guid lyricsId, CancellationToken cancellationToken = default)
     {
-        return await Context.LyricsLikes.AnyAsync(
-            like => like.UserId == userId && like.LyricsId == lyricsId,
-            cancellationToken
-        );
+        var specification = new LyricsLikeByUserAndLyricsSpecification(userId: userId, lyricsId: lyricsId);
+        return await Context.LyricsLikes.ApplySpecification(specification: specification).AnyAsync(cancellationToken);
     }
 
     /// <inheritdoc />
@@ -220,9 +221,11 @@ public class LyricsRepository(ContentDbContext context) : ContentRepository<Lyri
     /// <inheritdoc />
     public async Task RemoveLikeAsync(Guid userId, Guid lyricsId, CancellationToken cancellationToken = default)
     {
+        var specification = new LyricsLikeByUserAndLyricsSpecification(userId: userId, lyricsId: lyricsId);
         LyricsLikeEntity? like = await Context
             .LyricsLikes.AsTracking()
-            .FirstOrDefaultAsync(l => l.UserId == userId && l.LyricsId == lyricsId, cancellationToken);
+            .ApplySpecification(specification: specification)
+            .FirstOrDefaultAsync(cancellationToken);
 
         if (like is not null)
         {
@@ -294,14 +297,14 @@ public class LyricsRepository(ContentDbContext context) : ContentRepository<Lyri
 
             if (categoryId is Guid resolvedCategoryId)
             {
+                var categorySpecification = new LyricsSimilarByVideoCategorySpecification(
+                    categoryId: resolvedCategoryId,
+                    excludeId: lyricsId
+                );
+
                 List<LyricsEntity> categoryMatches = await Context
                     .Lyrics.Include(l => l.Category)
-                    .Where(similar =>
-                        similar.Id != lyricsId
-                        && similar.Status == EnumContentStatus.Published
-                        && similar.Video != null
-                        && similar.Video.CategoryId == resolvedCategoryId
-                    )
+                    .ApplySpecification(specification: categorySpecification)
                     .OrderByDescending(l => l.CreatedAt)
                     .Take(10)
                     .ToListAsync(cancellationToken);
@@ -317,13 +320,11 @@ public class LyricsRepository(ContentDbContext context) : ContentRepository<Lyri
 
         if (tagIds.Count > 0)
         {
+            var tagsSpecification = new LyricsBySharedTagsSpecification(tagIds: tagIds, excludeId: lyricsId);
+
             List<LyricsEntity> tagMatches = await Context
                 .Lyrics.Include(l => l.Category)
-                .Where(similar =>
-                    similar.Id != lyricsId
-                    && similar.Status == EnumContentStatus.Published
-                    && similar.Tags.Any(t => tagIds.Contains(t.TagId))
-                )
+                .ApplySpecification(specification: tagsSpecification)
                 .Select(l => new { Lyrics = l, SharedCount = l.Tags.Count(t => tagIds.Contains(t.TagId)) })
                 .OrderByDescending(x => x.SharedCount)
                 .ThenByDescending(x => x.Lyrics.CreatedAt)
@@ -337,11 +338,11 @@ public class LyricsRepository(ContentDbContext context) : ContentRepository<Lyri
             }
         }
 
+        var standaloneSpecification = new LyricsStandaloneSpecification(excludeId: lyricsId);
+
         return await Context
             .Lyrics.Include(l => l.Category)
-            .Where(similar =>
-                similar.Id != lyricsId && similar.Status == EnumContentStatus.Published && similar.VideoId == null
-            )
+            .ApplySpecification(specification: standaloneSpecification)
             .OrderByDescending(l => l.CreatedAt)
             .Take(10)
             .ToListAsync(cancellationToken);
