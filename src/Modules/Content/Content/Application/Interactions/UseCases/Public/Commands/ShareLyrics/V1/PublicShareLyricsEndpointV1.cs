@@ -75,7 +75,7 @@ public class PublicShareLyricsEndpointV1 : ICarterModule
             .WithSummary(summary: PublicShareLyricsMetaField.ShareLyrics.Summary)
             .WithDescription(description: PublicShareLyricsMetaField.ShareLyrics.Description)
             .AllowAnonymous()
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentContribution)
             .Produces<PublicShareLyricsResponse>(statusCode: StatusCodes.Status200OK)
             .ProducesProblem(statusCode: StatusCodes.Status404NotFound)
             .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
