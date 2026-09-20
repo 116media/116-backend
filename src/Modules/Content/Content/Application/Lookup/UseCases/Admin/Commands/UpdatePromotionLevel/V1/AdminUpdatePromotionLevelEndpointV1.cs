@@ -80,7 +80,7 @@ public class AdminUpdatePromotionLevelEndpointV1 : ICarterModule
             .WithDescription(description: AdminUpdatePromotionLevelMetaField.UpdatePromotionLevel.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentManagement)
             .ProducesValidationProblem()
             .Produces<AdminUpdatePromotionLevelResponse>(statusCode: StatusCodes.Status200OK)
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
