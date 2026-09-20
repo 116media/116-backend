@@ -78,7 +78,7 @@ public class AdminCreatePermissionEndpointV1 : ICarterModule
             .WithSummary(summary: AdminCreatePermissionMetaField.CreatePermission.Summary)
             .WithDescription(description: AdminCreatePermissionMetaField.CreatePermission.Description)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentManagement)
             .ProducesValidationProblem()
             .Produces<AdminCreatePermissionResponse>(statusCode: StatusCodes.Status201Created)
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
