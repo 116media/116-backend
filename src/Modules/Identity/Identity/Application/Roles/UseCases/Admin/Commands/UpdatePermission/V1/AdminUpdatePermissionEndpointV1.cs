@@ -73,7 +73,7 @@ public class AdminUpdatePermissionEndpointV1 : ICarterModule
             .WithSummary(summary: AdminUpdatePermissionMetaField.UpdatePermission.Summary)
             .WithDescription(description: AdminUpdatePermissionMetaField.UpdatePermission.Description)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentManagement)
             .ProducesValidationProblem()
             .Produces<AdminUpdatePermissionResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
