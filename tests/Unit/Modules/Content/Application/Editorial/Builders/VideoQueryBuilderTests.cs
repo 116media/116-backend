@@ -15,18 +15,26 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.Builders;
 /// </summary>
 public class VideoQueryBuilderTests
 {
+    /// <summary>
+    /// The tag rows the slug filter probes; empty for the tests that do not filter by tag.
+    /// </summary>
+    private static readonly IQueryable<TagEntity> NoTags = Array.Empty<TagEntity>().AsQueryable();
+
     private static readonly Guid CategoryId = Guid.NewGuid();
 
     /// <summary>
-    /// Attaches a tag to a video through the junction entity, populating the Tag
-    /// navigation EF Core would load via Include.
+    /// Attaches a tag to a video through the junction entity, which carries the tag id only;
+    /// the tag row itself reaches the specification as the probed source.
     /// </summary>
     private static void AttachTag(VideoEntity video, TagEntity tag)
     {
-        VideoTagEntity videoTag = VideoTagEntity.Create(Guid.NewGuid(), video.Id, tag.Id);
-        typeof(VideoTagEntity).GetProperty(nameof(VideoTagEntity.Tag))!.SetValue(videoTag, tag);
-        video.Tags.Add(videoTag);
+        video.Tags.Add(VideoTagEntity.Create(Guid.NewGuid(), video.Id, tag.Id));
     }
+
+    /// <summary>
+    /// The tag rows a slug filter probes.
+    /// </summary>
+    private static IQueryable<TagEntity> TagSource(params TagEntity[] tags) => tags.AsQueryable();
 
     #region Build — no filters
 
@@ -34,7 +42,7 @@ public class VideoQueryBuilderTests
     public void Build_WithNoFilters_ShouldReturnNull()
     {
         var builder = new VideoQueryBuilder();
-        Specification<VideoEntity>? spec = builder.Build();
+        Specification<VideoEntity>? spec = builder.Build(NoTags);
         spec.Should().BeNull();
     }
 
@@ -47,7 +55,7 @@ public class VideoQueryBuilderTests
     {
         var builder = new VideoQueryBuilder();
         builder.WithSearch(null);
-        builder.Build().Should().BeNull();
+        builder.Build(NoTags).Should().BeNull();
     }
 
     [Fact]
@@ -55,7 +63,7 @@ public class VideoQueryBuilderTests
     {
         var builder = new VideoQueryBuilder();
         builder.WithSearch("   ");
-        builder.Build().Should().BeNull();
+        builder.Build(NoTags).Should().BeNull();
     }
 
     [Fact]
@@ -72,7 +80,7 @@ public class VideoQueryBuilderTests
         var builder = new VideoQueryBuilder();
         builder.WithSearch("FALLY");
 
-        Specification<VideoEntity> spec = builder.Build()!;
+        Specification<VideoEntity> spec = builder.Build(NoTags)!;
 
         spec.IsSatisfiedInMemoryBy(match).Should().BeTrue();
         spec.IsSatisfiedInMemoryBy(noMatch).Should().BeFalse();
@@ -88,7 +96,7 @@ public class VideoQueryBuilderTests
         var builder = new VideoQueryBuilder();
         builder.WithSearch("fally");
 
-        Specification<VideoEntity> spec = builder.Build()!;
+        Specification<VideoEntity> spec = builder.Build(NoTags)!;
 
         spec.IsSatisfiedInMemoryBy(match).Should().BeTrue();
     }
@@ -102,7 +110,7 @@ public class VideoQueryBuilderTests
     {
         var builder = new VideoQueryBuilder();
         builder.WithStatus(null);
-        builder.Build().Should().BeNull();
+        builder.Build(NoTags).Should().BeNull();
     }
 
     [Fact]
@@ -112,7 +120,7 @@ public class VideoQueryBuilderTests
         var builder = new VideoQueryBuilder();
         builder.WithStatus(EnumContentStatus.Draft);
 
-        Specification<VideoEntity> spec = builder.Build()!;
+        Specification<VideoEntity> spec = builder.Build(NoTags)!;
         Func<VideoEntity, bool> predicate = spec.ToExpression().Compile();
 
         predicate(video).Should().BeTrue();
@@ -125,7 +133,7 @@ public class VideoQueryBuilderTests
         var builder = new VideoQueryBuilder();
         builder.WithStatus(EnumContentStatus.Published);
 
-        Specification<VideoEntity> spec = builder.Build()!;
+        Specification<VideoEntity> spec = builder.Build(NoTags)!;
         Func<VideoEntity, bool> predicate = spec.ToExpression().Compile();
 
         predicate(video).Should().BeFalse();
@@ -140,7 +148,7 @@ public class VideoQueryBuilderTests
     {
         var builder = new VideoQueryBuilder();
         builder.WithCategory(null);
-        builder.Build().Should().BeNull();
+        builder.Build(NoTags).Should().BeNull();
     }
 
     [Fact]
@@ -150,7 +158,7 @@ public class VideoQueryBuilderTests
         var builder = new VideoQueryBuilder();
         builder.WithCategory(CategoryId);
 
-        Specification<VideoEntity> spec = builder.Build()!;
+        Specification<VideoEntity> spec = builder.Build(NoTags)!;
         Func<VideoEntity, bool> predicate = spec.ToExpression().Compile();
 
         predicate(video).Should().BeTrue();
@@ -163,7 +171,7 @@ public class VideoQueryBuilderTests
         var builder = new VideoQueryBuilder();
         builder.WithCategory(Guid.NewGuid());
 
-        Specification<VideoEntity> spec = builder.Build()!;
+        Specification<VideoEntity> spec = builder.Build(NoTags)!;
         Func<VideoEntity, bool> predicate = spec.ToExpression().Compile();
 
         predicate(video).Should().BeFalse();
@@ -178,7 +186,7 @@ public class VideoQueryBuilderTests
     {
         var builder = new VideoQueryBuilder();
         builder.WithTag(null);
-        builder.Build().Should().BeNull();
+        builder.Build(NoTags).Should().BeNull();
     }
 
     [Fact]
@@ -186,19 +194,20 @@ public class VideoQueryBuilderTests
     {
         var builder = new VideoQueryBuilder();
         builder.WithTag("   ");
-        builder.Build().Should().BeNull();
+        builder.Build(NoTags).Should().BeNull();
     }
 
     [Fact]
     public void WithTag_WithSlug_ShouldMatchOnlyVideosCarryingTheTag()
     {
+        TagEntity rumba = TagFactory.Create("Rumba", "rumba");
         VideoEntity taggedVideo = VideoFactory.Create(CategoryId);
-        AttachTag(taggedVideo, TagFactory.Create("Rumba", "rumba"));
+        AttachTag(taggedVideo, rumba);
         VideoEntity untaggedVideo = VideoFactory.Create(CategoryId);
         var builder = new VideoQueryBuilder();
         builder.WithTag("RUMBA");
 
-        Specification<VideoEntity> spec = builder.Build()!;
+        Specification<VideoEntity> spec = builder.Build(TagSource(rumba))!;
 
         spec.IsSatisfiedInMemoryBy(taggedVideo).Should().BeTrue();
         spec.IsSatisfiedInMemoryBy(untaggedVideo).Should().BeFalse();
@@ -207,15 +216,16 @@ public class VideoQueryBuilderTests
     [Fact]
     public void WithTag_AndWithStatus_Combined_ShouldMatchOnlyVideosSatisfyingBoth()
     {
+        TagEntity rumba = TagFactory.Create("Rumba", "rumba");
         VideoEntity match = VideoFactory.CreatePublished(CategoryId);
-        AttachTag(match, TagFactory.Create("Rumba", "rumba"));
+        AttachTag(match, rumba);
         VideoEntity draftTagged = VideoFactory.Create(CategoryId);
-        AttachTag(draftTagged, TagFactory.Create("Rumba", "rumba"));
+        AttachTag(draftTagged, rumba);
         VideoEntity publishedUntagged = VideoFactory.CreatePublished(CategoryId);
         var builder = new VideoQueryBuilder();
         builder.WithStatus(EnumContentStatus.Published).WithTag("rumba");
 
-        Specification<VideoEntity> spec = builder.Build()!;
+        Specification<VideoEntity> spec = builder.Build(TagSource(rumba))!;
 
         spec.IsSatisfiedInMemoryBy(match).Should().BeTrue();
         spec.IsSatisfiedInMemoryBy(draftTagged).Should().BeFalse();
@@ -233,7 +243,7 @@ public class VideoQueryBuilderTests
         var builder = new VideoQueryBuilder();
         builder.WithStatus(EnumContentStatus.Draft).WithCategory(CategoryId);
 
-        Specification<VideoEntity> spec = builder.Build()!;
+        Specification<VideoEntity> spec = builder.Build(NoTags)!;
         Func<VideoEntity, bool> predicate = spec.ToExpression().Compile();
 
         predicate(video).Should().BeTrue();
@@ -246,7 +256,7 @@ public class VideoQueryBuilderTests
         var builder = new VideoQueryBuilder();
         builder.WithStatus(EnumContentStatus.Draft).WithCategory(Guid.NewGuid());
 
-        Specification<VideoEntity> spec = builder.Build()!;
+        Specification<VideoEntity> spec = builder.Build(NoTags)!;
         Func<VideoEntity, bool> predicate = spec.ToExpression().Compile();
 
         predicate(video).Should().BeFalse();

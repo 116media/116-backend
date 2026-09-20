@@ -42,7 +42,8 @@ public class AdminForceUnpromoteLyricsHandlerTests
         _handler = new AdminForceUnpromoteLyricsHandler(
             _lyricsRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            currentActor
+            currentActor,
+            TimeProvider.System
         );
     }
 

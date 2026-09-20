@@ -13,6 +13,7 @@ namespace _116.Content.Application.Commerce.Builders;
 public class ContentOrderQueryBuilder : IContentOrderQueryBuilder
 {
     private Specification<ContentOrderEntity>? _specification;
+    private string? _search;
 
     /// <inheritdoc />
     public IContentOrderQueryBuilder WithStatus(EnumOrderStatus? status)
@@ -48,15 +49,21 @@ public class ContentOrderQueryBuilder : IContentOrderQueryBuilder
             return this;
         }
 
-        var searchSpec = new ContentOrderSearchSpecification(search: search);
-        CombineSpecification(spec: searchSpec);
+        _search = search;
         return this;
     }
 
     /// <inheritdoc />
-    public Specification<ContentOrderEntity>? Build()
+    public Specification<ContentOrderEntity>? Build(IQueryable<CustomerEntity> customers)
     {
-        return _specification;
+        if (_search is null)
+        {
+            return _specification;
+        }
+
+        var searchSpec = new ContentOrderSearchSpecification(search: _search, customers: customers);
+
+        return _specification is null ? searchSpec : _specification.And(other: searchSpec);
     }
 
     private void CombineSpecification(Specification<ContentOrderEntity> spec)

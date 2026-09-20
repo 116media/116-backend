@@ -40,33 +40,6 @@ public class VideoInteractionSpecificationsTests
 
     #endregion
 
-    #region VideoTagByVideoIdSpecification
-
-    [Fact]
-    public void VideoTagByVideoIdSpecification_WithMatchingVideoId_ShouldReturnTrue()
-    {
-        Guid videoId = Guid.NewGuid();
-        VideoTagEntity tag = VideoTagEntity.Create(Guid.NewGuid(), videoId: videoId, tagId: Guid.NewGuid());
-        var spec = new VideoTagByVideoIdSpecification(videoId);
-
-        bool result = spec.IsSatisfiedBy(tag);
-
-        result.Should().BeTrue();
-    }
-
-    [Fact]
-    public void VideoTagByVideoIdSpecification_WithDifferentVideoId_ShouldReturnFalse()
-    {
-        VideoTagEntity tag = VideoTagEntity.Create(Guid.NewGuid(), videoId: Guid.NewGuid(), tagId: Guid.NewGuid());
-        var spec = new VideoTagByVideoIdSpecification(Guid.NewGuid());
-
-        bool result = spec.IsSatisfiedBy(tag);
-
-        result.Should().BeFalse();
-    }
-
-    #endregion
-
     #region VideoRatingByUserAndVideoSpecification
 
     [Fact]

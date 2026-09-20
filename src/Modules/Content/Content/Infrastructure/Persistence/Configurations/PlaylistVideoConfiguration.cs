@@ -23,11 +23,11 @@ public class PlaylistVideoConfiguration : IEntityTypeConfiguration<PlaylistVideo
         builder.HasIndex(x => new { x.PlaylistId, x.VideoId }).IsUnique();
 
         builder
-            .HasOne(x => x.Playlist)
+            .HasOne<PlaylistEntity>()
             .WithMany(p => p.Videos)
             .HasForeignKey(x => x.PlaylistId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasOne(x => x.Video).WithMany().HasForeignKey(x => x.VideoId).OnDelete(DeleteBehavior.Cascade);
+        builder.HasOne<VideoEntity>().WithMany().HasForeignKey(x => x.VideoId).OnDelete(DeleteBehavior.Cascade);
     }
 }

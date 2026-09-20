@@ -41,19 +41,10 @@ public class ArticleCommentEntity : Aggregate<Guid>
     public Guid? ParentCommentId { get; private set; }
 
     /// <summary>
-    /// Navigation to the parent comment, or null for a top-level comment.
+    /// Cached number of likes on this comment, maintained by
+    /// <c>ArticleCommentRepository.ApplyCommentLikeDeltaAsync</c>.
     /// </summary>
-    public ArticleCommentEntity? ParentComment { get; private set; }
-
-    /// <summary>
-    /// Cached number of likes on this comment. Adjusted by like/unlike interactions.
-    /// </summary>
-    public int LikeCount { get; private set; }
-
-    /// <summary>
-    /// Navigation property to the article.
-    /// </summary>
-    public ArticleEntity Article { get; private set; } = null!;
+    public int LikeCount { get; private init; }
 
     private ArticleCommentEntity() { }
 
@@ -139,7 +130,7 @@ public class ArticleCommentEntity : Aggregate<Guid>
     /// <c>-1</c> would drift the article's cached comment count permanently.
     /// </summary>
     /// <returns><c>true</c> if soft-deleted; <c>false</c> if already soft-deleted.</returns>
-    public bool SoftDelete()
+    public bool SoftDelete(DateTimeOffset now)
     {
         if (IsDeleted)
         {
@@ -147,7 +138,7 @@ public class ArticleCommentEntity : Aggregate<Guid>
         }
 
         IsDeleted = true;
-        DeletedAt = DateTimeOffset.UtcNow;
+        DeletedAt = now;
 
         AddDomainEvent(new ArticleEngagedEvent(ArticleId: ArticleId, Kind: EnumEngagementKind.Comment, Delta: -1));
 

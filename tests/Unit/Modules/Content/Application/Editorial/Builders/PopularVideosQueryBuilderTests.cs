@@ -65,7 +65,7 @@ public class PopularVideosQueryBuilderTests : IAsyncLifetime
 
         if (ratingCount > 0)
         {
-            video.UpdateRating(average: ratingAverage, count: ratingCount);
+            video.WithRating(average: ratingAverage, count: ratingCount);
         }
 
         video.WithShareCount(shares);
@@ -93,9 +93,7 @@ public class PopularVideosQueryBuilderTests : IAsyncLifetime
         VideoEntity middle = await SeedPublishedAsync(_primaryCategoryId, shares: 20); // 100
         VideoEntity lowest = await SeedPublishedAsync(_primaryCategoryId, ratingAverage: 4m, ratingCount: 4); // 48
 
-        List<VideoEntity> result = await new PopularVideosQueryBuilder()
-            .Build(_context.Videos.Include(v => v.Category))
-            .ToListAsync();
+        List<VideoEntity> result = await new PopularVideosQueryBuilder().Build(_context.Videos).ToListAsync();
 
         result.Select(video => video.Id).Should().ContainInOrder(highest.Id, middle.Id, lowest.Id);
     }
@@ -107,9 +105,7 @@ public class PopularVideosQueryBuilderTests : IAsyncLifetime
         VideoEntity broadlyRated = await SeedPublishedAsync(_primaryCategoryId, ratingAverage: 4m, ratingCount: 100); // 1200
         VideoEntity luckyAverage = await SeedPublishedAsync(_primaryCategoryId, ratingAverage: 5m, ratingCount: 2); // 30
 
-        List<VideoEntity> result = await new PopularVideosQueryBuilder()
-            .Build(_context.Videos.Include(v => v.Category))
-            .ToListAsync();
+        List<VideoEntity> result = await new PopularVideosQueryBuilder().Build(_context.Videos).ToListAsync();
 
         result.Select(video => video.Id).Should().ContainInOrder(broadlyRated.Id, luckyAverage.Id);
     }
@@ -124,9 +120,7 @@ public class PopularVideosQueryBuilderTests : IAsyncLifetime
         VideoEntity published = await SeedPublishedAsync(_primaryCategoryId, shares: 1);
         VideoEntity draft = await SeedDraftAsync(_primaryCategoryId);
 
-        List<VideoEntity> result = await new PopularVideosQueryBuilder()
-            .Build(_context.Videos.Include(v => v.Category))
-            .ToListAsync();
+        List<VideoEntity> result = await new PopularVideosQueryBuilder().Build(_context.Videos).ToListAsync();
 
         result.Should().ContainSingle();
         result.Should().Contain(video => video.Id == published.Id);
@@ -145,7 +139,7 @@ public class PopularVideosQueryBuilderTests : IAsyncLifetime
 
         List<VideoEntity> result = await new PopularVideosQueryBuilder()
             .WithCategory(_primaryCategoryId)
-            .Build(_context.Videos.Include(v => v.Category))
+            .Build(_context.Videos)
             .ToListAsync();
 
         result.Should().ContainSingle();
@@ -161,7 +155,7 @@ public class PopularVideosQueryBuilderTests : IAsyncLifetime
 
         List<VideoEntity> result = await new PopularVideosQueryBuilder()
             .WithCategory(null)
-            .Build(_context.Videos.Include(v => v.Category))
+            .Build(_context.Videos)
             .ToListAsync();
 
         result.Should().HaveCount(2);
@@ -179,7 +173,7 @@ public class PopularVideosQueryBuilderTests : IAsyncLifetime
 
         List<VideoEntity> result = await new PopularVideosQueryBuilder()
             .WithExcludeId(excluded.Id)
-            .Build(_context.Videos.Include(v => v.Category))
+            .Build(_context.Videos)
             .ToListAsync();
 
         result.Should().ContainSingle();
@@ -195,7 +189,7 @@ public class PopularVideosQueryBuilderTests : IAsyncLifetime
 
         List<VideoEntity> result = await new PopularVideosQueryBuilder()
             .WithExcludeId(null)
-            .Build(_context.Videos.Include(v => v.Category))
+            .Build(_context.Videos)
             .ToListAsync();
 
         result.Should().HaveCount(2);
@@ -215,7 +209,7 @@ public class PopularVideosQueryBuilderTests : IAsyncLifetime
 
         List<VideoEntity> result = await new PopularVideosQueryBuilder()
             .WithLimit(3)
-            .Build(_context.Videos.Include(v => v.Category))
+            .Build(_context.Videos)
             .ToListAsync();
 
         result.Should().HaveCount(3);
@@ -231,7 +225,7 @@ public class PopularVideosQueryBuilderTests : IAsyncLifetime
 
         List<VideoEntity> result = await new PopularVideosQueryBuilder()
             .WithLimit(null)
-            .Build(_context.Videos.Include(v => v.Category))
+            .Build(_context.Videos)
             .ToListAsync();
 
         result.Should().HaveCount(4);
@@ -253,7 +247,7 @@ public class PopularVideosQueryBuilderTests : IAsyncLifetime
             .WithCategory(_primaryCategoryId)
             .WithExcludeId(top.Id)
             .WithLimit(1)
-            .Build(_context.Videos.Include(v => v.Category))
+            .Build(_context.Videos)
             .ToListAsync();
 
         result.Should().ContainSingle();

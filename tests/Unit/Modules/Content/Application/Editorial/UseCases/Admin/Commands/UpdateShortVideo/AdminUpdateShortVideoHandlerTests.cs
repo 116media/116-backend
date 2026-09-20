@@ -39,7 +39,8 @@ public class AdminUpdateShortVideoHandlerTests : BaseContentHandlerTest
             _shortVideoRepositoryMock.Object,
             _fileStorageMock.Object,
             _unitOfWorkMock.Object,
-            Mapper
+            Mapper,
+            MockVideoRepository.Create().Object
         );
     }
 

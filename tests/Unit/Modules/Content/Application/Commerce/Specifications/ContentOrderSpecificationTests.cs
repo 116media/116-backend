@@ -17,10 +17,14 @@ namespace _116.Unit.Tests.Modules.Content.Application.Commerce.Specifications;
 public class ContentOrderSpecificationTests
 {
     /// <summary>
-    /// Builds an order whose Customer navigation is populated, mirroring the
-    /// Include the search specifications rely on.
+    /// Builds a customer and the order they placed, with the customer exposed as the query
+    /// source the search specification probes.
     /// </summary>
-    private static ContentOrderEntity CreateOrderForCustomer(string fullName, string email, string? company)
+    private static (ContentOrderEntity Order, IQueryable<CustomerEntity> Customers) CreateOrderForCustomer(
+        string fullName,
+        string email,
+        string? company
+    )
     {
         CustomerEntity customer = new CustomerBuilder()
             .WithFullName(fullName)
@@ -28,7 +32,7 @@ public class ContentOrderSpecificationTests
             .WithCompany(company)
             .Build();
 
-        return new ContentOrderBuilder().WithCustomer(customer).Build();
+        return (new ContentOrderBuilder().WithCustomer(customer).Build(), new[] { customer }.AsQueryable());
     }
 
     #region ContentOrderByIdSpecification
@@ -122,8 +126,12 @@ public class ContentOrderSpecificationTests
     public void SearchSpec_ShouldMatchCustomerNameEmailOrCompanyCaseInsensitively(string search, bool expected)
     {
         // Arrange
-        ContentOrderEntity order = CreateOrderForCustomer("Didi Mokonzi", "didi@acme.io", "Acme Corp");
-        var spec = new ContentOrderSearchSpecification(search);
+        (ContentOrderEntity order, IQueryable<CustomerEntity> customers) = CreateOrderForCustomer(
+            "Didi Mokonzi",
+            "didi@acme.io",
+            "Acme Corp"
+        );
+        var spec = new ContentOrderSearchSpecification(search: search, customers: customers);
 
         // Act
         bool result = spec.IsSatisfiedInMemoryBy(order);
@@ -136,8 +144,12 @@ public class ContentOrderSpecificationTests
     public void SearchSpec_WithNullCompany_ShouldNotMatchCompanyTerm()
     {
         // Arrange
-        ContentOrderEntity order = CreateOrderForCustomer("Didi Mokonzi", "didi@acme.io", company: null);
-        var spec = new ContentOrderSearchSpecification("corp");
+        (ContentOrderEntity order, IQueryable<CustomerEntity> customers) = CreateOrderForCustomer(
+            "Didi Mokonzi",
+            "didi@acme.io",
+            company: null
+        );
+        var spec = new ContentOrderSearchSpecification(search: "corp", customers: customers);
 
         // Act
         bool result = spec.IsSatisfiedInMemoryBy(order);
@@ -146,149 +158,120 @@ public class ContentOrderSpecificationTests
         result.Should().BeFalse();
     }
 
-    #endregion
-
-    #region ContentPaymentByOrderIdSpecification
-
     [Fact]
-    public void ContentPaymentByOrderIdSpec_WhenOrderIdMatches_ShouldReturnTrue()
-    {
-        var orderId = Guid.NewGuid();
-        ContentPaymentEntity payment = ContentPaymentFactory.Create(orderId);
-        var spec = new ContentPaymentByOrderIdSpecification(orderId);
-
-        bool result = spec.ToExpression().Compile()(payment);
-
-        result.Should().BeTrue();
-    }
-
-    [Fact]
-    public void ContentPaymentByOrderIdSpec_WhenOrderIdDoesNotMatch_ShouldReturnFalse()
-    {
-        ContentPaymentEntity payment = ContentPaymentFactory.Create(Guid.NewGuid());
-        var spec = new ContentPaymentByOrderIdSpecification(Guid.NewGuid());
-
-        bool result = spec.ToExpression().Compile()(payment);
-
-        result.Should().BeFalse();
-    }
-
-    #endregion
-
-    #region ContentOrderItemByIdAndOrderIdSpecification
-
-    [Fact]
-    public void ContentOrderItemByIdAndOrderIdSpec_WhenBothMatch_ShouldReturnTrue()
-    {
-        var orderId = Guid.NewGuid();
-        ContentOrderItemEntity item = ContentOrderItemFactory.Create(orderId, Guid.NewGuid());
-        var spec = new ContentOrderItemByIdAndOrderIdSpecification(orderId, item.Id);
-
-        bool result = spec.ToExpression().Compile()(item);
-
-        result.Should().BeTrue();
-    }
-
-    [Fact]
-    public void ContentOrderItemByIdAndOrderIdSpec_WhenItemIdDoesNotMatch_ShouldReturnFalse()
-    {
-        var orderId = Guid.NewGuid();
-        ContentOrderItemEntity item = ContentOrderItemFactory.Create(orderId, Guid.NewGuid());
-        var spec = new ContentOrderItemByIdAndOrderIdSpecification(orderId, Guid.NewGuid());
-
-        bool result = spec.ToExpression().Compile()(item);
-
-        result.Should().BeFalse();
-    }
-
-    [Fact]
-    public void ContentOrderItemByIdAndOrderIdSpec_WhenOrderIdDoesNotMatch_ShouldReturnFalse()
-    {
-        ContentOrderItemEntity item = ContentOrderItemFactory.Create(Guid.NewGuid(), Guid.NewGuid());
-        var spec = new ContentOrderItemByIdAndOrderIdSpecification(Guid.NewGuid(), item.Id);
-
-        bool result = spec.ToExpression().Compile()(item);
-
-        result.Should().BeFalse();
-    }
-
-    #endregion
-
-    #region ContentPaymentByStatusSpecification
-
-    [Fact]
-    public void PaymentByStatusSpec_WhenStatusMatches_ShouldReturnTrue()
-    {
-        ContentPaymentEntity payment = ContentPaymentFactory.Create(Guid.NewGuid());
-        var spec = new ContentPaymentByStatusSpecification(EnumPaymentStatus.Pending);
-
-        bool result = spec.ToExpression().Compile()(payment);
-
-        result.Should().BeTrue();
-    }
-
-    [Fact]
-    public void PaymentByStatusSpec_WhenStatusDoesNotMatch_ShouldReturnFalse()
-    {
-        ContentPaymentEntity payment = ContentPaymentFactory.Create(Guid.NewGuid());
-        var spec = new ContentPaymentByStatusSpecification(EnumPaymentStatus.Verified);
-
-        bool result = spec.ToExpression().Compile()(payment);
-
-        result.Should().BeFalse();
-    }
-
-    #endregion
-
-    #region ContentPaymentByMethodSpecification
-
-    [Fact]
-    public void PaymentByMethodSpec_WhenMethodMatches_ShouldReturnTrue()
-    {
-        ContentPaymentEntity payment = ContentPaymentFactory.CreateWithProof(Guid.NewGuid(), Guid.NewGuid());
-        var spec = new ContentPaymentByMethodSpecification(EnumPaymentMethod.BankTransfer);
-
-        bool result = spec.ToExpression().Compile()(payment);
-
-        result.Should().BeTrue();
-    }
-
-    [Fact]
-    public void PaymentByMethodSpec_WhenMethodDoesNotMatch_ShouldReturnFalse()
-    {
-        ContentPaymentEntity payment = ContentPaymentFactory.CreateWithProof(Guid.NewGuid(), Guid.NewGuid());
-        var spec = new ContentPaymentByMethodSpecification(EnumPaymentMethod.Cash);
-
-        bool result = spec.ToExpression().Compile()(payment);
-
-        result.Should().BeFalse();
-    }
-
-    #endregion
-
-    #region ContentPaymentSearchSpecification
-
-    [Theory]
-    [InlineData("mokonzi", true)]
-    [InlineData("MOKONZI", true)]
-    [InlineData("acme.io", true)]
-    [InlineData("acme corp", true)]
-    [InlineData("kinix", false)]
-    public void PaymentSearchSpec_ShouldMatchOrderCustomerNameEmailOrCompanyCaseInsensitively(
-        string search,
-        bool expected
-    )
+    public void SearchSpec_WhenTheMatchingCustomerPlacedNoOrder_ShouldReturnFalse()
     {
         // Arrange
-        ContentOrderEntity order = CreateOrderForCustomer("Didi Mokonzi", "didi@acme.io", "Acme Corp");
-        ContentPaymentEntity payment = new ContentPaymentBuilder().WithOrder(order).Build();
-        var spec = new ContentPaymentSearchSpecification(search);
+        (_, IQueryable<CustomerEntity> customers) = CreateOrderForCustomer("Didi Mokonzi", "didi@acme.io", "Acme Corp");
+        ContentOrderEntity otherOrder = ContentOrderFactory.CreateForCustomer(Guid.NewGuid());
+        var spec = new ContentOrderSearchSpecification(search: "mokonzi", customers: customers);
 
         // Act
-        bool result = spec.IsSatisfiedInMemoryBy(payment);
+        bool result = spec.IsSatisfiedInMemoryBy(otherOrder);
 
         // Assert
-        result.Should().Be(expected);
+        result.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region OrderHasPaymentSpecification
+
+    [Fact]
+    public void OrderHasPaymentSpec_WhenOrderCarriesAPayment_ShouldReturnTrue()
+    {
+        ContentOrderEntity order = ContentOrderFactory.CreateWithId(Guid.NewGuid());
+        order.AttachPayment();
+        var spec = new OrderHasPaymentSpecification();
+
+        bool result = spec.IsSatisfiedBy(order);
+
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public void OrderHasPaymentSpec_WhenOrderCarriesNoPayment_ShouldReturnFalse()
+    {
+        ContentOrderEntity order = ContentOrderFactory.CreateWithId(Guid.NewGuid());
+        var spec = new OrderHasPaymentSpecification();
+
+        bool result = spec.IsSatisfiedBy(order);
+
+        result.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region OrderPaymentByStatusSpecification
+
+    [Fact]
+    public void OrderPaymentByStatusSpec_WhenStatusMatches_ShouldReturnTrue()
+    {
+        ContentOrderEntity order = CreateOrderWithPayment(EnumPaymentMethod.BankTransfer);
+        var spec = new OrderPaymentByStatusSpecification(EnumPaymentStatus.Pending);
+
+        bool result = spec.IsSatisfiedBy(order);
+
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public void OrderPaymentByStatusSpec_WhenStatusDoesNotMatch_ShouldReturnFalse()
+    {
+        ContentOrderEntity order = CreateOrderWithPayment(EnumPaymentMethod.BankTransfer);
+        var spec = new OrderPaymentByStatusSpecification(EnumPaymentStatus.Verified);
+
+        bool result = spec.IsSatisfiedBy(order);
+
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void OrderPaymentByStatusSpec_WhenOrderCarriesNoPayment_ShouldReturnFalse()
+    {
+        ContentOrderEntity order = ContentOrderFactory.CreateWithId(Guid.NewGuid());
+        var spec = new OrderPaymentByStatusSpecification(EnumPaymentStatus.Pending);
+
+        bool result = spec.IsSatisfiedBy(order);
+
+        result.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region OrderPaymentByMethodSpecification
+
+    [Fact]
+    public void OrderPaymentByMethodSpec_WhenMethodMatches_ShouldReturnTrue()
+    {
+        ContentOrderEntity order = CreateOrderWithPayment(EnumPaymentMethod.BankTransfer);
+        var spec = new OrderPaymentByMethodSpecification(EnumPaymentMethod.BankTransfer);
+
+        bool result = spec.IsSatisfiedBy(order);
+
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public void OrderPaymentByMethodSpec_WhenMethodDoesNotMatch_ShouldReturnFalse()
+    {
+        ContentOrderEntity order = CreateOrderWithPayment(EnumPaymentMethod.BankTransfer);
+        var spec = new OrderPaymentByMethodSpecification(EnumPaymentMethod.Cash);
+
+        bool result = spec.IsSatisfiedBy(order);
+
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void OrderPaymentByMethodSpec_WhenOrderCarriesNoPayment_ShouldReturnFalse()
+    {
+        ContentOrderEntity order = ContentOrderFactory.CreateWithId(Guid.NewGuid());
+        var spec = new OrderPaymentByMethodSpecification(EnumPaymentMethod.BankTransfer);
+
+        bool result = spec.IsSatisfiedBy(order);
+
+        result.Should().BeFalse();
     }
 
     #endregion
@@ -341,6 +324,15 @@ public class ContentOrderSpecificationTests
     }
 
     #endregion
+
+    private static ContentOrderEntity CreateOrderWithPayment(EnumPaymentMethod method)
+    {
+        ContentOrderEntity order = ContentOrderFactory.CreateWithId(Guid.NewGuid());
+        ContentPaymentEntity payment = order.AttachPayment();
+        payment.AttachProof(proofFileId: Guid.NewGuid(), paymentMethod: method);
+
+        return order;
+    }
 
     private static ContentOrderItemEntity CreateItem(Guid orderId) =>
         ContentOrderItemEntity.Create(

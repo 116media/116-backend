@@ -29,7 +29,11 @@ public class AdminGetAllLyricsHandlerTests : BaseContentHandlerTest
     {
         _lyricsRepositoryMock = MockLyricsRepository.Create();
         Mock<IFileStorageService> fileStorageMock = MockFileStorageService.Create();
-        _handler = new AdminGetAllLyricsHandler(_lyricsRepositoryMock.Object, fileStorageMock.Object);
+        _handler = new AdminGetAllLyricsHandler(
+            _lyricsRepositoryMock.Object,
+            fileStorageMock.Object,
+            CreateContentLookupFactory()
+        );
     }
 
     [Fact]

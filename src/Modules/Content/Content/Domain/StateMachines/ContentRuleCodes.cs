@@ -270,6 +270,16 @@ public static class ContentRuleCodes
     public const string InvalidShareChannel = "content.share.invalid-channel";
 
     /// <summary>
+    /// A slug is not lowercase alphanumeric words joined by single hyphens. Args: [0] the rejected value.
+    /// </summary>
+    public const string InvalidSlug = "content.slug.invalid";
+
+    /// <summary>
+    /// A monetary amount is negative. Args: [0] the rejected amount.
+    /// </summary>
+    public const string NegativeMoneyAmount = "content.money.negative-amount";
+
+    /// <summary>
     /// A revision already decided cannot be flipped to the opposite outcome. Args: none.
     /// </summary>
     public const string RevisionAlreadyDecided = "content.revision.already-decided";

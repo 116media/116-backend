@@ -20,31 +20,15 @@ public class AdminUpsertArtistSocialLinkHandler(IArtistRepository artistReposito
         CancellationToken cancellationToken
     )
     {
-        await artistRepository.GetByIdOrThrowAsync(id: command.ArtistId, cancellationToken: cancellationToken);
-
-        ArtistSocialLinkEntity? existing = await artistRepository.GetSocialLinkAsync(
-            artistId: command.ArtistId,
-            platform: command.Platform,
+        ArtistEntity artist = await artistRepository.GetByIdOrThrowAsync(
+            id: command.ArtistId,
             cancellationToken: cancellationToken
         );
 
-        if (existing is not null)
-        {
-            existing.UpdateUrl(url: command.Url);
-            await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-
-            return new AdminUpsertArtistSocialLinkResult(SocialLinkId: existing.Id);
-        }
-
-        ArtistSocialLinkEntity link = ArtistSocialLinkEntity.Create(
-            id: Guid.NewGuid(),
-            artistId: command.ArtistId,
-            platform: command.Platform,
-            url: command.Url
-        );
-
-        await artistRepository.AddSocialLinkAsync(link: link, cancellationToken: cancellationToken);
+        artist.SetSocialLink(platform: command.Platform, url: command.Url);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+        ArtistSocialLinkEntity link = artist.FindSocialLink(platform: command.Platform)!;
 
         return new AdminUpsertArtistSocialLinkResult(SocialLinkId: link.Id);
     }

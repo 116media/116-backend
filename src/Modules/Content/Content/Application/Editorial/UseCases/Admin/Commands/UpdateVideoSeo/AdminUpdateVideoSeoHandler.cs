@@ -29,7 +29,7 @@ public class AdminUpdateVideoSeoHandler(
 
         VideoEntity video = await videoRepository.GetByIdOrThrowAsync(id: id, cancellationToken: cancellationToken);
 
-        video.UpdateSeo(metaTitle: command.MetaTitle, metaDescription: command.MetaDescription);
+        video.ReviseSeo(metaTitle: command.MetaTitle, metaDescription: command.MetaDescription);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         VideoEntity updated = await videoRepository.GetByIdOrThrowAsync(

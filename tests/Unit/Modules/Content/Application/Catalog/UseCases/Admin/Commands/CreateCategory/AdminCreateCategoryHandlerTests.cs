@@ -42,7 +42,7 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
             _contentTypeRepositoryMock.Object,
             _categoryRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            new CategoryDtoFactory(Mapper, _fileStorageMock.Object),
+            CreateCategoryDtoFactory(_fileStorageMock.Object),
             TestErrorsFactory.CreateContentI18n()
         );
     }

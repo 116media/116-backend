@@ -37,7 +37,8 @@ public sealed class DomainRuleExceptionStrategy : BaseExceptionStrategy<ContentR
         new PaymentRuleProblems(),
         new TagRuleProblems(),
         new ShareRuleProblems(),
-        new ReviewRuleProblems()
+        new ReviewRuleProblems(),
+        new ValueObjectRuleProblems()
     );
 
     /// <summary>

@@ -4,6 +4,7 @@ using _116.Content.Domain.Enums;
 using _116.Content.Domain.Events;
 using _116.Content.Domain.Exceptions;
 using _116.Content.Domain.StateMachines;
+using _116.Content.Domain.ValueObjects;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -56,7 +57,7 @@ public class LyricsEntity : Aggregate<Guid>
     /// Must be unique across all lyrics pages.
     /// </summary>
     [MaxLength(length: ContentConstants.MaxSlugLength)]
-    public string Slug { get; private set; } = null!;
+    public Slug Slug { get; private set; } = null!;
 
     /// <summary>
     /// Optional link to a parent video. <c>null</c> unless this lyrics page is
@@ -205,39 +206,24 @@ public class LyricsEntity : Aggregate<Guid>
     // Maintained by application-level event handlers — not by DB triggers.
 
     /// <summary>
-    /// Cached view count. Incremented by interaction events.
+    /// Cached view count, maintained by <c>LyricsRepository.ApplyEngagementDeltaAsync</c>.
     /// </summary>
-    public int ViewCount { get; private set; }
+    public int ViewCount { get; private init; }
 
     /// <summary>
-    /// Cached like count. Incremented/decremented by interaction events.
+    /// Cached like count, maintained by <c>LyricsRepository.ApplyEngagementDeltaAsync</c>.
     /// </summary>
-    public int LikeCount { get; private set; }
+    public int LikeCount { get; private init; }
 
     /// <summary>
-    /// Cached share count. Incremented by interaction events.
+    /// Cached share count, maintained by <c>LyricsRepository.ApplyEngagementDeltaAsync</c>.
     /// </summary>
-    public int ShareCount { get; private set; }
+    public int ShareCount { get; private init; }
 
     /// <summary>
     /// Tags applied to this lyrics page for discovery and similar-lyrics matching.
     /// </summary>
     public ICollection<LyricsTagEntity> Tags { get; } = new List<LyricsTagEntity>();
-
-    /// <summary>
-    /// The parent video this lyrics page is linked to. <c>null</c> if standalone.
-    /// </summary>
-    public VideoEntity? Video { get; private set; }
-
-    /// <summary>
-    /// The customer who commissioned this lyrics page. <c>null</c> for free content.
-    /// </summary>
-    public CustomerEntity? Customer { get; private set; }
-
-    /// <summary>
-    /// The category this lyrics page belongs to.
-    /// </summary>
-    public CategoryEntity Category { get; private set; } = null!;
 
     /// <summary>
     /// Private parameterless constructor required by Entity Framework Core.
@@ -346,78 +332,139 @@ public class LyricsEntity : Aggregate<Guid>
     }
 
     /// <summary>
-    /// Updates the lyrics content and metadata fields in a single call.
-    /// The status gate, slug uniqueness, and category existence are enforced at the
-    /// application layer by the update handler, not here.
+    /// Renames the song, its performing artist and its slug. Slug uniqueness is the handler's
+    /// to enforce.
     /// </summary>
-    /// <param name="categoryId">
-    /// The category this lyrics page belongs to.
-    /// </param>
-    /// <param name="songTitle">
-    /// The song title.
-    /// </param>
-    /// <param name="artistName">
-    /// The performing artist name.
-    /// </param>
-    /// <param name="slug">
-    /// The URL-safe slug. Uniqueness enforced by handler.
-    /// </param>
-    /// <param name="lyricsText">
-    /// The full lyrics text.
-    /// </param>
-    /// <param name="language">
-    /// ISO 639-1 language code.
-    /// </param>
-    /// <param name="videoId">
-    /// Optional linked video UUID.
-    /// </param>
-    /// <param name="customerId">
-    /// The B2B customer who commissioned this lyrics page. <c>null</c> for free content.
-    /// </param>
-    /// <param name="orderItemId">
-    /// The order item this lyrics page fulfils. <c>null</c> for free content.
-    /// </param>
-    /// <param name="errors">
-    /// The errors factory instance.
-    /// </param>
-    public void Update(
-        Guid categoryId,
-        string songTitle,
-        string artistName,
-        string slug,
-        string lyricsText,
-        string language,
-        Guid? videoId,
-        Guid? customerId,
-        Guid? orderItemId
-    )
+    /// <param name="songTitle">The song title.</param>
+    /// <param name="artistName">The performing artist name.</param>
+    /// <param name="slug">The URL-safe slug. Uniqueness enforced by handler.</param>
+    /// <returns><c>true</c> if any value changed; otherwise <c>false</c>.</returns>
+    public bool Retitle(string songTitle, string artistName, string slug)
     {
-        ValidateRequiredFields(songTitle, artistName, lyricsText);
+        if (string.IsNullOrWhiteSpace(value: songTitle))
+        {
+            throw new ContentRuleException(ContentRuleCodes.SongTitleRequired);
+        }
+
+        if (string.IsNullOrWhiteSpace(value: artistName))
+        {
+            throw new ContentRuleException(ContentRuleCodes.LyricsArtistNameRequired);
+        }
 
         if (string.IsNullOrWhiteSpace(value: slug))
         {
             throw new ContentRuleException(ContentRuleCodes.LyricsSlugRequired);
         }
 
-        CategoryId = categoryId;
+        if (SongTitle == songTitle && ArtistName == artistName && Slug == slug)
+        {
+            return false;
+        }
+
         SongTitle = songTitle;
         ArtistName = artistName;
         Slug = slug;
-        LyricsText = lyricsText;
-        Language = language;
-        VideoId = videoId;
-        CustomerId = customerId;
-        OrderItemId = orderItemId;
+
+        return true;
     }
 
     /// <summary>
-    /// Updates the SEO metadata for this lyrics page.
+    /// Revises the lyrics text and the language it is written in.
     /// </summary>
-    public void UpdateSeo(string? metaTitle, string? metaDescription, string? structuredData)
+    /// <param name="lyricsText">The full lyrics text.</param>
+    /// <param name="language">ISO 639-1 language code.</param>
+    /// <returns><c>true</c> if either value changed; otherwise <c>false</c>.</returns>
+    public bool ReviseText(string lyricsText, string language)
     {
+        if (string.IsNullOrWhiteSpace(value: lyricsText))
+        {
+            throw new ContentRuleException(ContentRuleCodes.LyricsTextRequired);
+        }
+
+        if (LyricsText == lyricsText && Language == language)
+        {
+            return false;
+        }
+
+        LyricsText = lyricsText;
+        Language = language;
+
+        return true;
+    }
+
+    /// <summary>
+    /// Moves the lyrics page to another category. Existence of the category is checked by the handler.
+    /// </summary>
+    /// <param name="categoryId">The category this lyrics page belongs to.</param>
+    /// <returns><c>true</c> if the category changed; otherwise <c>false</c>.</returns>
+    public bool Recategorize(Guid categoryId)
+    {
+        if (CategoryId == categoryId)
+        {
+            return false;
+        }
+
+        CategoryId = categoryId;
+
+        return true;
+    }
+
+    /// <summary>
+    /// Links the lyrics page to a video, or clears the link. Existence of the video is checked
+    /// by the handler.
+    /// </summary>
+    /// <param name="videoId">Optional linked video UUID.</param>
+    /// <returns><c>true</c> if the link changed; otherwise <c>false</c>.</returns>
+    public bool Relink(Guid? videoId)
+    {
+        if (VideoId == videoId)
+        {
+            return false;
+        }
+
+        VideoId = videoId;
+
+        return true;
+    }
+
+    /// <summary>
+    /// Assigns — or clears — the commission this lyrics page fulfils.
+    /// </summary>
+    /// <param name="customerId">The B2B customer who commissioned this page. <c>null</c> for free content.</param>
+    /// <param name="orderItemId">The order item this page fulfils. <c>null</c> for free content.</param>
+    /// <returns><c>true</c> if either value changed; otherwise <c>false</c>.</returns>
+    public bool AssignCommission(Guid? customerId, Guid? orderItemId)
+    {
+        if (CustomerId == customerId && OrderItemId == orderItemId)
+        {
+            return false;
+        }
+
+        CustomerId = customerId;
+        OrderItemId = orderItemId;
+
+        return true;
+    }
+
+    /// <summary>
+    /// Revises the SEO metadata for this lyrics page, including its structured-data payload.
+    /// </summary>
+    /// <param name="metaTitle">Optional SEO meta title.</param>
+    /// <param name="metaDescription">Optional SEO meta description.</param>
+    /// <param name="structuredData">Optional schema.org JSON-LD payload.</param>
+    /// <returns><c>true</c> if any value changed; otherwise <c>false</c>.</returns>
+    public bool ReviseSeo(string? metaTitle, string? metaDescription, string? structuredData)
+    {
+        if (MetaTitle == metaTitle && MetaDescription == metaDescription && StructuredData == structuredData)
+        {
+            return false;
+        }
+
         MetaTitle = metaTitle;
         MetaDescription = metaDescription;
         StructuredData = structuredData;
+
+        return true;
     }
 
     /// <summary>
@@ -532,7 +579,7 @@ public class LyricsEntity : Aggregate<Guid>
     /// Publishes the lyrics page and records the publication timestamp.
     /// </summary>
     /// <returns><c>true</c> if published; <c>false</c> if already published.</returns>
-    public bool Publish()
+    public bool Publish(DateTimeOffset now)
     {
         if (Status == EnumContentStatus.Published)
         {
@@ -546,7 +593,7 @@ public class LyricsEntity : Aggregate<Guid>
         );
 
         Status = EnumContentStatus.Published;
-        PublishedAt = DateTimeOffset.UtcNow;
+        PublishedAt = now;
 
         AddDomainEvent(
             new CommissionedContentPublishedEvent(
@@ -677,7 +724,7 @@ public class LyricsEntity : Aggregate<Guid>
     /// <exception cref="ContentRuleException">
     /// Thrown when the lyrics page does not have an active promotion.
     /// </exception>
-    public void ForceUnpromote(string unpromotedBy, string reason)
+    public void ForceUnpromote(string unpromotedBy, string reason, DateTimeOffset now)
     {
         if (!IsPromoted)
         {
@@ -686,7 +733,7 @@ public class LyricsEntity : Aggregate<Guid>
 
         IsPromoted = false;
         PromotedUntil = null;
-        UnpromotedAt = DateTimeOffset.UtcNow;
+        UnpromotedAt = now;
         UnpromotedBy = unpromotedBy;
         UnpromotedReason = reason;
 
@@ -723,5 +770,36 @@ public class LyricsEntity : Aggregate<Guid>
         {
             throw new ContentRuleException(ContentRuleCodes.LyricsTextRequired);
         }
+    }
+
+    /// <summary>
+    /// Replaces the tag set with the given ids, raising one <see cref="TagGraphChangedEvent" />
+    /// per tag that joins or leaves. An identical set writes nothing and raises nothing.
+    /// </summary>
+    /// <param name="tagIds">The complete tag set this row should carry.</param>
+    /// <returns><c>true</c> if the set changed; otherwise <c>false</c>.</returns>
+    public bool ReplaceTags(IReadOnlyCollection<Guid> tagIds)
+    {
+        HashSet<Guid> desired = tagIds.ToHashSet();
+        HashSet<Guid> current = Tags.Select(tag => tag.TagId).ToHashSet();
+
+        if (desired.SetEquals(current))
+        {
+            return false;
+        }
+
+        foreach (LyricsTagEntity removed in Tags.Where(tag => !desired.Contains(tag.TagId)).ToList())
+        {
+            Tags.Remove(removed);
+            AddDomainEvent(new TagGraphChangedEvent(TagId: removed.TagId));
+        }
+
+        foreach (Guid tagId in desired.Where(id => !current.Contains(id)))
+        {
+            Tags.Add(LyricsTagEntity.Create(id: Guid.NewGuid(), lyricsId: Id, tagId: tagId));
+            AddDomainEvent(new TagGraphChangedEvent(TagId: tagId));
+        }
+
+        return true;
     }
 }

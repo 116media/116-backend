@@ -24,7 +24,8 @@ public class AdminCreateShortVideoHandler(
     IFileStorageService fileStorage,
     IContentUnitOfWork unitOfWork,
     IMapper mapper,
-    ContentI18n i18n
+    ContentI18n i18n,
+    IVideoRepository videoRepository
 ) : ICommandHandler<AdminCreateShortVideoCommand, AdminCreateShortVideoResult>
 {
     /// <inheritdoc />
@@ -73,7 +74,7 @@ public class AdminCreateShortVideoHandler(
             cancellationToken: cancellationToken
         );
 
-        var dto = await created.ToShortVideoDtoAsync(mapper, fileStorage, cancellationToken);
+        var dto = await created.ToShortVideoDtoAsync(mapper, fileStorage, videoRepository, cancellationToken);
         return new AdminCreateShortVideoResult(ShortVideo: dto);
     }
 }

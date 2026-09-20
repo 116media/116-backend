@@ -17,13 +17,17 @@ namespace _116.Unit.Tests.Modules.Content.Application.Commerce.UseCases.Admin.Qu
 /// </summary>
 public class AdminGetPendingPaymentOrdersHandlerTests : BaseContentHandlerTest
 {
+    private readonly CustomerEntity _customer = CustomerFactory.Create();
     private readonly Mock<IContentOrderRepository> _orderRepositoryMock;
     private readonly AdminGetPendingPaymentOrdersHandler _handler;
 
     public AdminGetPendingPaymentOrdersHandlerTests()
     {
         _orderRepositoryMock = MockContentOrderRepository.Create();
-        _handler = new AdminGetPendingPaymentOrdersHandler(_orderRepositoryMock.Object, Mapper);
+        _handler = new AdminGetPendingPaymentOrdersHandler(
+            _orderRepositoryMock.Object,
+            CreateOrderDtoFactory(_customer)
+        );
     }
 
     #region Success Cases
@@ -32,10 +36,9 @@ public class AdminGetPendingPaymentOrdersHandlerTests : BaseContentHandlerTest
     public async Task Handle_ShouldReturnPaginatedPendingPaymentOrders()
     {
         // Arrange
-        CustomerEntity customer = CustomerFactory.Create();
         List<ContentOrderEntity> orders = Enumerable
             .Range(0, 2)
-            .Select(_ => new ContentOrderBuilder().WithCustomer(customer).Build())
+            .Select(_ => new ContentOrderBuilder().WithCustomer(_customer).Build())
             .ToList();
 
         _orderRepositoryMock.SetupGetAllAsync(orders, orders.Count);

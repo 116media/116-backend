@@ -254,74 +254,90 @@ public class ArtistRepositoryTests : IDisposable
     #region Social Link Tests
 
     [Fact]
-    public async Task GetSocialLinksAsync_ShouldReturnLinksOrderedByPlatform()
+    public async Task GetByIdOrThrowAsync_ShouldHydrateSocialLinks()
     {
-        // Arrange
         ArtistEntity artist = ArtistFactory.Create();
+        artist.SetSocialLink(EnumSocialPlatform.Website, "https://a.example");
+        artist.SetSocialLink(EnumSocialPlatform.Instagram, "https://b.example");
         _context.Artists.Add(artist);
-        _context.ArtistSocialLinks.AddRange(
-            ArtistSocialLinkEntity.Create(Guid.NewGuid(), artist.Id, EnumSocialPlatform.Website, "https://a.example"),
-            ArtistSocialLinkEntity.Create(Guid.NewGuid(), artist.Id, EnumSocialPlatform.Instagram, "https://b.example")
-        );
         await _context.SaveChangesAsync();
+        _context.ChangeTracker.Clear();
 
-        // Act
-        IReadOnlyList<ArtistSocialLinkEntity> result = await _repository.GetSocialLinksAsync(artist.Id);
+        ArtistEntity loaded = await _repository.GetByIdOrThrowAsync(artist.Id);
 
-        // Assert
-        result.Select(l => l.Platform).Should().Equal(EnumSocialPlatform.Instagram, EnumSocialPlatform.Website);
+        loaded
+            .SocialLinks.Select(link => link.Platform)
+            .Should()
+            .BeEquivalentTo([EnumSocialPlatform.Website, EnumSocialPlatform.Instagram]);
     }
 
     [Fact]
-    public async Task GetSocialLinkAsync_ShouldReturnTheMatchingSlotOrNull()
+    public async Task SetSocialLink_OnAnEmptySlot_ShouldInsertTheRow()
     {
-        // Arrange
         ArtistEntity artist = ArtistFactory.Create();
-        ArtistSocialLinkEntity link = ArtistSocialLinkEntity.Create(
-            Guid.NewGuid(),
-            artist.Id,
-            EnumSocialPlatform.TikTok,
-            "https://tiktok.com/@x"
-        );
         _context.Artists.Add(artist);
-        _context.ArtistSocialLinks.Add(link);
         await _context.SaveChangesAsync();
 
-        // Act & Assert
-        (await _repository.GetSocialLinkAsync(artist.Id, EnumSocialPlatform.TikTok))!
-            .Id.Should()
-            .Be(link.Id);
-        (await _repository.GetSocialLinkAsync(artist.Id, EnumSocialPlatform.Facebook)).Should().BeNull();
+        bool changed = artist.SetSocialLink(EnumSocialPlatform.X, "https://x.com/original");
+        await _context.SaveChangesAsync();
+        _context.ChangeTracker.Clear();
+
+        changed.Should().BeTrue();
+        ArtistEntity loaded = await _repository.GetByIdOrThrowAsync(artist.Id);
+        loaded.SocialLinks.Should().ContainSingle().Which.Url.Should().Be("https://x.com/original");
     }
 
     [Fact]
-    public async Task AddUpdateRemoveSocialLink_ShouldTrackTheEntityStates()
+    public async Task SetSocialLink_OnAFilledSlot_ShouldReplaceTheUrlInPlace()
     {
-        // Arrange
         ArtistEntity artist = ArtistFactory.Create();
+        artist.SetSocialLink(EnumSocialPlatform.X, "https://x.com/original");
         _context.Artists.Add(artist);
         await _context.SaveChangesAsync();
-        ArtistSocialLinkEntity link = ArtistSocialLinkEntity.Create(
-            Guid.NewGuid(),
-            artist.Id,
-            EnumSocialPlatform.X,
-            "https://x.com/someone"
-        );
 
-        // Act & Assert — add
-        await _repository.AddSocialLinkAsync(link);
+        bool changed = artist.SetSocialLink(EnumSocialPlatform.X, "https://x.com/renamed");
         await _context.SaveChangesAsync();
-        (await _context.ArtistSocialLinks.FindAsync(link.Id)).Should().NotBeNull();
+        _context.ChangeTracker.Clear();
 
-        // update — tracked mutation; SaveChanges diffs the row without an attach call
-        link.UpdateUrl("https://x.com/renamed");
-        await _context.SaveChangesAsync();
-        (await _context.ArtistSocialLinks.FindAsync(link.Id))!.Url.Should().Be("https://x.com/renamed");
+        changed.Should().BeTrue();
+        ArtistEntity loaded = await _repository.GetByIdOrThrowAsync(artist.Id);
+        loaded.SocialLinks.Should().ContainSingle().Which.Url.Should().Be("https://x.com/renamed");
+    }
 
-        // remove
-        _repository.RemoveSocialLink(link);
+    [Fact]
+    public void SetSocialLink_WithTheSameUrl_ShouldReportNoChange()
+    {
+        ArtistEntity artist = ArtistFactory.Create();
+        artist.SetSocialLink(EnumSocialPlatform.X, "https://x.com/same");
+
+        bool changed = artist.SetSocialLink(EnumSocialPlatform.X, "https://x.com/same");
+
+        changed.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task RemoveSocialLink_ShouldDeleteTheRow()
+    {
+        ArtistEntity artist = ArtistFactory.Create();
+        artist.SetSocialLink(EnumSocialPlatform.X, "https://x.com/original");
+        _context.Artists.Add(artist);
         await _context.SaveChangesAsync();
-        (await _context.ArtistSocialLinks.FindAsync(link.Id)).Should().BeNull();
+
+        bool removed = artist.RemoveSocialLink(EnumSocialPlatform.X);
+        await _context.SaveChangesAsync();
+        _context.ChangeTracker.Clear();
+
+        removed.Should().BeTrue();
+        ArtistEntity loaded = await _repository.GetByIdOrThrowAsync(artist.Id);
+        loaded.SocialLinks.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void RemoveSocialLink_OnAnEmptySlot_ShouldReportNoChange()
+    {
+        ArtistEntity artist = ArtistFactory.Create();
+
+        artist.RemoveSocialLink(EnumSocialPlatform.X).Should().BeFalse();
     }
 
     #endregion
@@ -342,7 +358,7 @@ public class ArtistRepositoryTests : IDisposable
         _context.Albums.Add(AlbumFactory.CreateForArtist(artist.Id, EnumReleaseType.EP));
         ArticleEntity article = ArticleFactory.CreatePublished(categoryId);
         _context.Articles.Add(article);
-        _context.ArticleArtists.Add(ArticleArtistEntity.Create(Guid.NewGuid(), article.Id, artist.Id));
+        _context.ArticleArtists.Add(ArticleArtistFactory.Link(article, artist.Id));
         await _context.SaveChangesAsync();
 
         // Act

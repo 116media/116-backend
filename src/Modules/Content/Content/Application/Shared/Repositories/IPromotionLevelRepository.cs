@@ -55,4 +55,15 @@ public interface IPromotionLevelRepository
     /// </summary>
     /// <param name="promotionLevel">The promotion level to update.</param>
     void Update(PromotionLevelEntity promotionLevel);
+
+    /// <summary>
+    /// Resolves the promotion levels the given ids reference, in one query, keyed by id.
+    /// Missing ids are simply absent from the result.
+    /// </summary>
+    /// <param name="ids">The identifiers to resolve.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    Task<IReadOnlyDictionary<Guid, PromotionLevelEntity>> GetByIdsAsync(
+        IReadOnlyCollection<Guid> ids,
+        CancellationToken cancellationToken = default
+    );
 }

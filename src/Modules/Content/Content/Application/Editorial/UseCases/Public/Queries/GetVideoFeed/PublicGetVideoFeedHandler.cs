@@ -1,3 +1,4 @@
+using _116.Content.Application.Catalog.Factories;
 using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
@@ -17,11 +18,16 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetVideoFee
 /// Resolves all poster and thumbnail URLs in a single batched file lookup to avoid an N+1.
 /// </summary>
 /// <param name="categoryRepository">Repository for category data access operations.</param>
+/// <param name="contentTypeRepository">Repository resolving the pinned categories' content types.</param>
+/// <param name="categoryDtoFactory">Builds category projections with their lookups resolved.</param>
 /// <param name="videoRepository">Repository for video data access operations.</param>
 /// <param name="fileStorage">Core's storage contract.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class PublicGetVideoFeedHandler(
     ICategoryRepository categoryRepository,
+    IContentTypeRepository contentTypeRepository,
+    ICategoryDtoFactory categoryDtoFactory,
+    IContentLookupFactory contentLookupFactory,
     IVideoRepository videoRepository,
     IFileStorageService fileStorage,
     IMapper mapper
@@ -33,15 +39,24 @@ public class PublicGetVideoFeedHandler(
         CancellationToken cancellationToken
     )
     {
-        // Pinned categories (ContentType is eager-loaded by the repo). The pinned set is capped
-        // per content type, so filtering to Video in memory is trivial and avoids a separate query.
+        // The pinned set is capped per content type, so resolving their types in one lookup and
+        // filtering to Video in memory is trivial.
         IReadOnlyList<CategoryEntity> pinned = await categoryRepository.GetPinnedToFeedCategoriesAsync(
             cancellationToken: cancellationToken
         );
 
-        List<CategoryEntity> videoCategories = pinned
-            .Where(c => c.ContentType.Name == nameof(EnumCoreContentType.Video))
-            .ToList();
+        IReadOnlyDictionary<Guid, ContentTypeEntity> contentTypes = await contentTypeRepository.GetByIdsAsync(
+            ids: [.. pinned.Select(category => category.ContentTypeId).Distinct()],
+            cancellationToken: cancellationToken
+        );
+
+        List<CategoryEntity> videoCategories =
+        [
+            .. pinned.Where(category =>
+                contentTypes.TryGetValue(category.ContentTypeId, out ContentTypeEntity? contentType)
+                && contentType.Name == nameof(EnumCoreContentType.Video)
+            ),
+        ];
 
         if (videoCategories.Count == 0)
         {
@@ -61,21 +76,34 @@ public class PublicGetVideoFeedHandler(
             );
         }
 
-        // One query for ALL file URLs (category posters + video thumbnails).
-        var fileIds = videoCategories
-            .Where(c => c.PosterFileId.HasValue)
-            .Select(c => c.PosterFileId!.Value)
-            .Concat(
-                videosByCategory
-                    .Values.SelectMany(videos => videos)
-                    .Where(v => v.ThumbnailFileId.HasValue)
-                    .Select(v => v.ThumbnailFileId!.Value)
-            )
+        // One query for every video thumbnail; the category posters come with the lookups below.
+        var thumbnailIds = videosByCategory
+            .Values.SelectMany(videos => videos)
+            .Where(v => v.ThumbnailFileId.HasValue)
+            .Select(v => v.ThumbnailFileId!.Value)
             .Distinct()
             .ToList();
 
         IReadOnlyDictionary<Guid, FileReferenceDto> files = await fileStorage.ResolveManyAsync(
-            fileIds: fileIds,
+            fileIds: thumbnailIds,
+            cancellationToken: cancellationToken
+        );
+
+        // The pinned categories' posters, content types and pricing tiers, in one batch.
+        CategoryLookups categoryLookups = await categoryDtoFactory.ResolveLookupsAsync(
+            videoCategories,
+            cancellationToken
+        );
+
+        // One batch for the categories, customers and promotion levels the cards name.
+        ContentLookups videoLookups = await contentLookupFactory.ResolveForVideosAsync(
+            [.. videosByCategory.Values.SelectMany(videos => videos)],
+            cancellationToken
+        );
+
+        // One query for the published-lyrics fact across every section's videos.
+        IReadOnlySet<Guid> videosWithLyrics = await videoRepository.GetIdsWithPublishedLyricsAsync(
+            videoIds: videosByCategory.Values.SelectMany(videos => videos).Select(v => v.Id).ToList(),
             cancellationToken: cancellationToken
         );
 
@@ -92,9 +120,9 @@ public class PublicGetVideoFeedHandler(
                 continue;
             }
 
-            CategoryDto categoryDto = category.ToCategoryDto(mapper, files);
+            CategoryDto categoryDto = category.ToCategoryDto(mapper, categoryLookups);
             IReadOnlyList<PublicVideoSummaryDto> videoDtos = videos
-                .Select(v => v.ToPublicVideoSummaryDto(files))
+                .Select(v => v.ToPublicVideoSummaryDto(videoLookups, files, videosWithLyrics.Contains(v.Id)))
                 .ToList();
 
             sections.Add(new VideoFeedSectionDto(Category: categoryDto, Videos: videoDtos));

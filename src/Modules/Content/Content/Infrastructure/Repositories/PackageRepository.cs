@@ -22,10 +22,7 @@ public class PackageRepository(ContentDbContext context) : ContentRepository<Pac
         CancellationToken cancellationToken = default
     )
     {
-        IQueryable<PackageEntity> query = Context
-            .Packages.Include(p => p.Slots)
-                .ThenInclude(s => s.Category)
-                    .ThenInclude(c => c!.Pricing);
+        IQueryable<PackageEntity> query = Context.Packages.Include(p => p.Slots);
 
         if (isActive.HasValue)
         {
@@ -47,72 +44,8 @@ public class PackageRepository(ContentDbContext context) : ContentRepository<Pac
     }
 
     /// <inheritdoc />
-    public async Task<PackageEntity?> GetByIdWithSlotsAsync(Guid id, CancellationToken cancellationToken = default)
+    protected override IQueryable<PackageEntity> Query()
     {
-        var specification = new PackageByIdSpecification(id: id);
-        return await Context
-            .Packages.ApplySpecification(specification: specification)
-            .Include(p => p.Slots)
-                .ThenInclude(s => s.Category)
-                    .ThenInclude(c => c!.Pricing)
-            .Include(p => p.Slots)
-                .ThenInclude(s => s.Category)
-                    .ThenInclude(c => c!.ContentType)
-            .AsSplitQuery()
-            .FirstOrDefaultAsync(cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public async Task<PackageEntity> GetByIdWithSlotsOrThrowAsync(
-        Guid id,
-        CancellationToken cancellationToken = default
-    )
-    {
-        var specification = new PackageByIdSpecification(id: id);
-        return await Context
-            .Packages.AsTracking()
-            .ApplySpecification(specification: specification)
-            .Include(p => p.Slots)
-                .ThenInclude(s => s.Category)
-                    .ThenInclude(c => c!.Pricing)
-            .Include(p => p.Slots)
-                .ThenInclude(s => s.Category)
-                    .ThenInclude(c => c!.ContentType)
-            .AsSplitQuery()
-            .FirstDefaultOrThrowAsync(keyValue: id, cancellationToken: cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public async Task<PackageSlotEntity?> GetSlotByIdAsync(Guid slotId, CancellationToken cancellationToken = default)
-    {
-        var specification = new PackageSlotByIdSpecification(slotId: slotId);
-        return await Context
-            .PackageSlots.AsTracking()
-            .FirstOrDefaultBySpecificationAsync(specification: specification, cancellationToken: cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public async Task<PackageSlotEntity?> GetSlotByIdAsync(
-        Guid slotId,
-        Guid packageId,
-        CancellationToken cancellationToken = default
-    )
-    {
-        var specification = new PackageSlotByIdInPackageSpecification(slotId: slotId, packageId: packageId);
-        return await Context
-            .PackageSlots.AsTracking()
-            .FirstOrDefaultBySpecificationAsync(specification: specification, cancellationToken: cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public async Task AddSlotAsync(PackageSlotEntity slot, CancellationToken cancellationToken = default)
-    {
-        await Context.PackageSlots.AddAsync(slot, cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public void RemoveSlot(PackageSlotEntity slot)
-    {
-        Context.PackageSlots.Remove(slot);
+        return Context.Packages.Include(p => p.Slots);
     }
 }

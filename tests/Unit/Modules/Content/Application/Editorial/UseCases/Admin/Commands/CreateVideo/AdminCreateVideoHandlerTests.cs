@@ -44,7 +44,12 @@ public class AdminCreateVideoHandlerTests : BaseContentHandlerTest
             _categoryRepositoryMock.Object,
             _videoRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            new VideoDtoFactory(Mapper, _fileStorageMock.Object),
+            new VideoDtoFactory(
+                Mapper,
+                _fileStorageMock.Object,
+                _videoRepositoryMock.Object,
+                CreateContentLookupFactory()
+            ),
             TestErrorsFactory.CreateContentI18n()
         );
     }

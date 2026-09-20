@@ -60,7 +60,7 @@ public class ExternalAssetCleanupFlowTests(PostgresFixture db) : BaseApiTest(db)
             (ctx, a) =>
             {
                 a.UpdateCoverImage(coverFile.Id);
-                ctx.ArticleImages.AddRange(ArticleImageFactory.CreateMany(a.Id, 2));
+                ctx.ArticleImages.AddRange(ArticleImageFactory.CreateMany(a, 2));
             }
         );
 
@@ -88,7 +88,7 @@ public class ExternalAssetCleanupFlowTests(PostgresFixture db) : BaseApiTest(db)
             (ctx, a) =>
                 ctx.ArticleImages.Add(
                     ArticleImageFactory.CreateBody(
-                        a.Id,
+                        a,
                         orphanedKey,
                         "https://res.cloudinary.com/test-cloud/image/upload/orphaned-body-image.jpg"
                     )

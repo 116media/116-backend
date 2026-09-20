@@ -14,14 +14,12 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.AddOrderItem
 /// <param name="categoryRepository">Repository for category data access operations.</param>
 /// <param name="promotionLevelRepository">Repository for promotion level data access operations.</param>
 /// <param name="packageRepository">Repository for package data access operations.</param>
-/// <param name="contentOrderRepository">Repository for content order data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="categoryErrors">Category domain error factory.</param>
 public class AdminAddOrderItemFactory(
     ICategoryRepository categoryRepository,
     IPromotionLevelRepository promotionLevelRepository,
     IPackageRepository packageRepository,
-    IContentOrderRepository contentOrderRepository,
     IContentUnitOfWork unitOfWork,
     CategoryErrors categoryErrors
 ) : IAddOrderItemFactory
@@ -66,7 +64,7 @@ public class AdminAddOrderItemFactory(
 
             if (order.PackageId.HasValue)
             {
-                PackageEntity? package = await packageRepository.GetByIdWithSlotsAsync(
+                PackageEntity? package = await packageRepository.GetByIdAsync(
                     id: order.PackageId.Value,
                     cancellationToken: cancellationToken
                 );
@@ -82,9 +80,7 @@ public class AdminAddOrderItemFactory(
                 }
             }
 
-            var item = ContentOrderItemEntity.Create(
-                id: Guid.NewGuid(),
-                orderId: order.Id,
+            ContentOrderItemEntity item = order.AddItem(
                 contentKind: contentKind,
                 categoryId: categoryId,
                 promotionLevelId: promotionLevelId,
@@ -93,9 +89,6 @@ public class AdminAddOrderItemFactory(
                 isBonus: forcedBonus
             );
 
-            await contentOrderRepository.AddItemAsync(item: item, ct: cancellationToken);
-
-            order.AddItem(item);
             await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
             return (item, category.Name, promoLevel?.Name);

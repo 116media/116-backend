@@ -15,17 +15,21 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.PinCategoryTo
 /// Enforces the eligibility gate (active, video content type, minimum published videos) and the
 /// per-content-type cap, unpinning the oldest pinned category (FIFO) when the cap is exceeded.
 /// </summary>
+/// <param name="contentTypeRepository">Repository resolving the category's content type.</param>
 /// <param name="categoryRepository">Repository for category data access operations.</param>
 /// <param name="videoRepository">Repository for video data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="categoryDtoFactory">Builds category projections with their posters resolved.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
+/// <param name="timeProvider">Clock stamping the pin time.</param>
 public class AdminPinCategoryToFeedHandler(
     ICategoryRepository categoryRepository,
+    IContentTypeRepository contentTypeRepository,
     IVideoRepository videoRepository,
     IContentUnitOfWork unitOfWork,
     ICategoryDtoFactory categoryDtoFactory,
-    ContentI18n i18n
+    ContentI18n i18n,
+    TimeProvider timeProvider
 ) : ICommandHandler<AdminPinCategoryToFeedCommand, AdminPinCategoryToFeedResult>
 {
     /// <inheritdoc />
@@ -41,6 +45,11 @@ public class AdminPinCategoryToFeedHandler(
             cancellationToken: cancellationToken
         );
 
+        ContentTypeEntity contentType = await contentTypeRepository.GetByIdOrThrowAsync(
+            id: category.ContentTypeId,
+            cancellationToken: cancellationToken
+        );
+
         if (!category.IsActive)
         {
             throw i18n.Category.CannotPinInactiveToFeed();
@@ -48,7 +57,7 @@ public class AdminPinCategoryToFeedHandler(
 
         // Only the video feed exists today, so only Video categories can be pinned.
         // Article categories become eligible when the article feed lands.
-        if (category.ContentType.Name != nameof(EnumCoreContentType.Video))
+        if (contentType.Name != nameof(EnumCoreContentType.Video))
         {
             throw i18n.Category.ContentTypeNotFeedable();
         }
@@ -79,7 +88,7 @@ public class AdminPinCategoryToFeedHandler(
         }
 
         // Re-pinning an already-pinned category refreshes its timestamp (front of queue).
-        category.PinToFeed();
+        category.PinToFeed(now: timeProvider.GetUtcNow());
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         CategoryEntity updated = await categoryRepository.GetByIdOrThrowAsync(

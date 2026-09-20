@@ -44,7 +44,7 @@ public class AdminGetOrderPaymentHandlerTests : BaseContentHandlerTest
             _orderRepositoryMock.Object,
             _fileStorageMock.Object,
             Mapper,
-            new PaymentDtoFactory(Mapper, _userLookupMock.Object)
+            new PaymentDtoFactory(Mapper, _userLookupMock.Object, CreateOrderDtoFactory())
         );
     }
 

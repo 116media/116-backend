@@ -85,7 +85,7 @@ public class AdminCreateOrderHandlerTests
             .Setup(x => x.GetByIdAsync(customer.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(customer);
         _packageRepositoryMock
-            .Setup(x => x.GetByIdWithSlotsAsync(package.Id, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetByIdAsync(package.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(package);
 
         var command = new AdminCreateOrderCommand(CustomerId: customer.Id.ToString(), PackageId: package.Id);
@@ -132,7 +132,7 @@ public class AdminCreateOrderHandlerTests
             .Setup(x => x.GetByIdAsync(customer.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(customer);
         _packageRepositoryMock
-            .Setup(x => x.GetByIdWithSlotsAsync(packageId, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetByIdAsync(packageId, It.IsAny<CancellationToken>()))
             .ReturnsAsync((PackageEntity?)null);
 
         var command = new AdminCreateOrderCommand(CustomerId: customer.Id.ToString(), PackageId: packageId);

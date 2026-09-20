@@ -48,4 +48,15 @@ public interface IPricingTierRepository
     /// </summary>
     /// <param name="pricingTier">The pricing tier to update.</param>
     void Update(PricingTierEntity pricingTier);
+
+    /// <summary>
+    /// Resolves the pricing tiers the given ids reference, in one query, keyed by id.
+    /// Missing ids are simply absent from the result.
+    /// </summary>
+    /// <param name="ids">The identifiers to resolve.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    Task<IReadOnlyDictionary<Guid, PricingTierEntity>> GetByIdsAsync(
+        IReadOnlyCollection<Guid> ids,
+        CancellationToken cancellationToken = default
+    );
 }

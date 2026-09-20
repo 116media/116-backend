@@ -13,25 +13,25 @@ public static class PackageSlotFactory
     /// <summary>
     /// Creates a slot for a package with a specific category.
     /// </summary>
-    public static PackageSlotEntity Create(Guid packageId) => new PackageSlotBuilder(packageId).Build();
+    public static PackageSlotEntity Create(PackageEntity package) => new PackageSlotBuilder(package).Build();
 
     /// <summary>
     /// Creates a slot for a package with a specific category ID.
     /// </summary>
-    public static PackageSlotEntity Create(Guid packageId, Guid categoryId) =>
-        new PackageSlotBuilder(packageId).WithCategoryId(categoryId).Build();
+    public static PackageSlotEntity Create(PackageEntity package, Guid categoryId) =>
+        new PackageSlotBuilder(package).WithCategoryId(categoryId).Build();
 
     /// <summary>
     /// Creates an open slot (no category assigned — client can choose any).
     /// </summary>
-    public static PackageSlotEntity CreateOpen(Guid packageId) =>
-        new PackageSlotBuilder(packageId).WithCategoryId(null).Build();
+    public static PackageSlotEntity CreateOpen(PackageEntity package) =>
+        new PackageSlotBuilder(package).WithCategoryId(null).Build();
 
     /// <summary>
     /// Creates a slot with explicit category, required flag, and quantity.
     /// </summary>
-    public static PackageSlotEntity Create(Guid packageId, Guid? categoryId, bool isRequired, int quantity) =>
-        new PackageSlotBuilder(packageId)
+    public static PackageSlotEntity Create(PackageEntity package, Guid? categoryId, bool isRequired, int quantity) =>
+        new PackageSlotBuilder(package)
             .WithCategoryId(categoryId)
             .WithIsRequired(isRequired)
             .WithQuantity(quantity)

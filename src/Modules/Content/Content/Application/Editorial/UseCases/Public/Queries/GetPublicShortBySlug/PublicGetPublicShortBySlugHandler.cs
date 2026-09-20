@@ -1,3 +1,4 @@
+using _116.Content.Application.Editorial.Specifications;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
@@ -23,7 +24,8 @@ public class PublicGetPublicShortBySlugHandler(
     IUserLookupService userLookup,
     IFileStorageService fileStorage,
     IMapper mapper,
-    ContentI18n i18n
+    ContentI18n i18n,
+    IVideoRepository videoRepository
 ) : IQueryHandler<PublicGetPublicShortBySlugQuery, PublicGetPublicShortBySlugResult>
 {
     /// <inheritdoc />
@@ -37,7 +39,7 @@ public class PublicGetPublicShortBySlugHandler(
             cancellationToken: cancellationToken
         );
 
-        if (shortVideo is null || !shortVideo.IsActive)
+        if (shortVideo is null || !new ActiveShortVideoSpecification().IsSatisfiedBy(shortVideo))
         {
             throw i18n.ShortVideo.NotFound(Guid.Empty);
         }
@@ -55,6 +57,7 @@ public class PublicGetPublicShortBySlugHandler(
             mapper,
             userLookup,
             fileStorage,
+            videoRepository,
             cancellationToken,
             isLiked: isLiked,
             isBookmarked: isBookmarked

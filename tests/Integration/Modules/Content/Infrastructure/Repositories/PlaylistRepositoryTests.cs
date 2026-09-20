@@ -109,13 +109,17 @@ public class PlaylistRepositoryTests(PostgresFixture postgres) : BaseRepositoryT
     }
 
     [Fact]
-    public async Task VideoExistsInPlaylistAsync_NoVideo_ReturnsFalse()
+    public async Task ContainsVideo_NoVideo_ReturnsFalse()
     {
+        var playlist = PlaylistFactory.Create(Guid.NewGuid());
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        seedContext.Playlists.Add(playlist);
+        await seedContext.SaveChangesAsync();
+
         var repo = Resolve<IPlaylistRepository>();
+        PlaylistEntity loaded = (await repo.GetByIdAsync(playlist.Id))!;
 
-        var result = await repo.VideoExistsInPlaylistAsync(Guid.NewGuid(), Guid.NewGuid());
-
-        result.Should().BeFalse();
+        loaded.ContainsVideo(Guid.NewGuid()).Should().BeFalse();
     }
 
     [Fact]
@@ -138,7 +142,7 @@ public class PlaylistRepositoryTests(PostgresFixture postgres) : BaseRepositoryT
     }
 
     [Fact]
-    public async Task VideoExistsInPlaylistAsync_AfterAddingVideo_ReturnsTrue()
+    public async Task ContainsVideo_AfterAddingThroughTheRoot_ReturnsTrue()
     {
         var userId = Guid.NewGuid();
         await using var seedContext = CreateDbContext<ContentDbContext>();
@@ -155,26 +159,18 @@ public class PlaylistRepositoryTests(PostgresFixture postgres) : BaseRepositoryT
         await seedContext.SaveChangesAsync();
 
         var playlist = PlaylistFactory.Create(userId);
+        playlist.AddVideo(videoId: video.Id, sortOrder: 1);
         seedContext.Playlists.Add(playlist);
         await seedContext.SaveChangesAsync();
 
-        var playlistVideo = PlaylistVideoEntity.Create(
-            id: Guid.NewGuid(),
-            playlistId: playlist.Id,
-            videoId: video.Id,
-            sortOrder: 1
-        );
-        seedContext.PlaylistVideos.Add(playlistVideo);
-        await seedContext.SaveChangesAsync();
-
         var repo = Resolve<IPlaylistRepository>();
-        var result = await repo.VideoExistsInPlaylistAsync(playlist.Id, video.Id);
+        PlaylistEntity loaded = (await repo.GetByIdAsync(playlist.Id))!;
 
-        result.Should().BeTrue();
+        loaded.ContainsVideo(video.Id).Should().BeTrue();
     }
 
     [Fact]
-    public async Task AddVideoAsync_NewVideo_PersistsToPlaylist()
+    public async Task AddVideo_ThroughTheRoot_PersistsToPlaylist()
     {
         var userId = Guid.NewGuid();
         await using var seedContext = CreateDbContext<ContentDbContext>();
@@ -195,14 +191,9 @@ public class PlaylistRepositoryTests(PostgresFixture postgres) : BaseRepositoryT
         await seedContext.SaveChangesAsync();
 
         var (repo, db) = CreateScopedRepository<IPlaylistRepository, ContentDbContext>();
-        var playlistVideo = PlaylistVideoEntity.Create(
-            id: Guid.NewGuid(),
-            playlistId: playlist.Id,
-            videoId: video.Id,
-            sortOrder: 1
-        );
+        PlaylistEntity tracked = (await repo.GetByIdAsync(playlist.Id))!;
 
-        await repo.AddVideoAsync(playlistVideo);
+        tracked.AddVideo(videoId: video.Id, sortOrder: 1).Should().BeTrue();
         await db.SaveChangesAsync();
 
         await using var verifyContext = CreateDbContext<ContentDbContext>();

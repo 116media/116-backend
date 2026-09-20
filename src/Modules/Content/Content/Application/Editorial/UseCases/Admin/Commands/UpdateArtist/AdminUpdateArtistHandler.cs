@@ -15,10 +15,12 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArtis
 /// <param name="artistRepository">Repository for artist profile data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="artistDtoFactory">Builds artist projections with their avatars resolved.</param>
+/// <param name="timeProvider">Clock supplying today for the birthdate guard.</param>
 public class AdminUpdateArtistHandler(
     IArtistRepository artistRepository,
     IContentUnitOfWork unitOfWork,
-    IArtistDtoFactory artistDtoFactory
+    IArtistDtoFactory artistDtoFactory,
+    TimeProvider timeProvider
 ) : ICommandHandler<AdminUpdateArtistCommand, AdminUpdateArtistResult>
 {
     /// <inheritdoc />
@@ -32,13 +34,14 @@ public class AdminUpdateArtistHandler(
             cancellationToken: cancellationToken
         );
 
-        artist.Update(
-            name: command.Name,
+        artist.Rename(name: command.Name);
+        artist.ReviseProfile(
             bio: command.Bio,
             realName: command.RealName,
             aliases: command.Aliases,
             birthdate: command.Birthdate,
-            hometown: command.Hometown
+            hometown: command.Hometown,
+            today: DateOnly.FromDateTime(dateTime: timeProvider.GetUtcNow().UtcDateTime)
         );
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 

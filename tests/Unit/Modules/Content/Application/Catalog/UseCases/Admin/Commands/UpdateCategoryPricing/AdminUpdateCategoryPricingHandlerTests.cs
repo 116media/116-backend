@@ -21,15 +21,18 @@ namespace _116.Unit.Tests.Modules.Content.Application.Catalog.UseCases.Admin.Com
 public class AdminUpdateCategoryPricingHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<ICategoryRepository> _categoryRepositoryMock;
+    private readonly Mock<IPricingTierRepository> _pricingTierRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminUpdateCategoryPricingHandler _handler;
 
     public AdminUpdateCategoryPricingHandlerTests()
     {
         _categoryRepositoryMock = MockCategoryRepository.Create();
+        _pricingTierRepositoryMock = MockPricingTierRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _handler = new AdminUpdateCategoryPricingHandler(
             _categoryRepositoryMock.Object,
+            _pricingTierRepositoryMock.Object,
             _unitOfWorkMock.Object,
             Mapper,
             TestErrorsFactory.CreateContentI18n()
@@ -45,11 +48,7 @@ public class AdminUpdateCategoryPricingHandlerTests : BaseContentHandlerTest
         ContentTypeEntity contentType = ContentTypeFactory.Create();
         CategoryEntity category = CategoryFactory.Create(contentType.Id);
         PricingTierEntity pricingTier = PricingTierFactory.CreateDefault();
-        CategoryPricingEntity pricing = CategoryPricingFactory.Create(
-            category.Id,
-            pricingTier.Id,
-            TestConstants.CategoryPricing.ValidPriceUsd
-        );
+        CategoryPricingFactory.Create(category, pricingTier.Id, TestConstants.CategoryPricing.ValidPriceUsd);
 
         var command = new AdminUpdateCategoryPricingCommand(
             CategoryId: category.Id.ToString(),
@@ -58,7 +57,6 @@ public class AdminUpdateCategoryPricingHandlerTests : BaseContentHandlerTest
         );
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-        _categoryRepositoryMock.SetupGetPricing(category.Id, pricingTier.Id, pricing);
 
         // Act
         AdminUpdateCategoryPricingResult result = await _handler.Handle(command, CancellationToken.None);
@@ -87,7 +85,6 @@ public class AdminUpdateCategoryPricingHandlerTests : BaseContentHandlerTest
         );
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-        _categoryRepositoryMock.SetupGetPricing(category.Id, tierId, null);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
@@ -116,10 +113,6 @@ public class AdminUpdateCategoryPricingHandlerTests : BaseContentHandlerTest
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
-        _categoryRepositoryMock.Verify(
-            x => x.GetPricingAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
-            Times.Never
-        );
     }
 
     #endregion

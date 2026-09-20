@@ -3,6 +3,7 @@ using _116.Content.Infrastructure.Persistence;
 using _116.Content.Infrastructure.Repositories;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Unit.Tests.Common.Helpers;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -21,6 +22,7 @@ public class CategoryRepositoryTests : IDisposable
     {
         DbContextOptions<ContentDbContext> options = new DbContextOptionsBuilder<ContentDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+            .AddInterceptors(new CreatedAtStampingInterceptor())
             .Options;
 
         _context = new ContentDbContext(options);
@@ -277,7 +279,7 @@ public class CategoryRepositoryTests : IDisposable
     #region Pricing Tests
 
     [Fact]
-    public async Task AddPricingAsync_ShouldPersistCategoryPricingEntity()
+    public async Task SetPricing_ThroughTheRoot_ShouldInsertTheRow()
     {
         // Arrange
         ContentTypeEntity contentType = await AddContentTypeAsync();
@@ -288,76 +290,89 @@ public class CategoryRepositoryTests : IDisposable
         _context.PricingTiers.Add(pricingTier);
         await _context.SaveChangesAsync();
 
-        CategoryPricingEntity pricing = CategoryPricingFactory.Create(category.Id, pricingTier.Id, 25m);
-
         // Act
-        await _repository.AddPricingAsync(pricing);
+        category.SetPricing(pricingTierId: pricingTier.Id, priceUsd: 25m);
         await _context.SaveChangesAsync();
 
         // Assert
-        CategoryPricingEntity? retrieved = await _context.CategoryPricing.FindAsync(pricing.Id);
+        CategoryPricingEntity? retrieved = await _context.CategoryPricing.FindAsync(
+            category.FindPricing(pricingTier.Id)!.Id
+        );
         retrieved.Should().NotBeNull();
+        retrieved!.PriceUsd.Amount.Should().Be(25m);
     }
 
     [Fact]
-    public async Task GetPricingAsync_WhenFound_ShouldReturnEntity()
+    public async Task SetPricing_ThroughTheRoot_ShouldRepriceInPlace()
     {
         // Arrange
         ContentTypeEntity contentType = await AddContentTypeAsync();
         CategoryEntity category = CategoryFactory.Create(contentType.Id);
         PricingTierEntity pricingTier = PricingTierFactory.CreateDefault();
-        CategoryPricingEntity pricing = CategoryPricingFactory.Create(category.Id, pricingTier.Id, 25m);
+        category.SetPricing(pricingTierId: pricingTier.Id, priceUsd: 25m);
 
         _context.Categories.Add(category);
         _context.PricingTiers.Add(pricingTier);
-        _context.CategoryPricing.Add(pricing);
         await _context.SaveChangesAsync();
 
         // Act
-        CategoryPricingEntity? result = await _repository.GetPricingAsync(category.Id, pricingTier.Id);
+        category.SetPricing(pricingTierId: pricingTier.Id, priceUsd: 30m);
+        await _context.SaveChangesAsync();
+        _context.ChangeTracker.Clear();
 
         // Assert
-        result.Should().NotBeNull();
-        result.CategoryId.Should().Be(category.Id);
-        result.PricingTierId.Should().Be(pricingTier.Id);
+        CategoryEntity loaded = await _repository.GetByIdOrThrowAsync(category.Id);
+        loaded.Pricing.Should().ContainSingle().Which.PriceUsd.Amount.Should().Be(30m);
     }
 
     [Fact]
-    public async Task GetPricingAsync_WhenNotFound_ShouldReturnNull()
+    public async Task RemovePricing_ThroughTheRoot_ShouldDeleteTheRow()
     {
+        // Arrange
+        ContentTypeEntity contentType = await AddContentTypeAsync();
+        CategoryEntity category = CategoryFactory.Create(contentType.Id);
+        PricingTierEntity pricingTier = PricingTierFactory.CreateDefault();
+        category.SetPricing(pricingTierId: pricingTier.Id, priceUsd: 25m);
+
+        _context.Categories.Add(category);
+        _context.PricingTiers.Add(pricingTier);
+        await _context.SaveChangesAsync();
+
         // Act
-        CategoryPricingEntity? result = await _repository.GetPricingAsync(Guid.NewGuid(), Guid.NewGuid());
+        category.RemovePricing(pricingTierId: pricingTier.Id);
+        await _context.SaveChangesAsync();
+        _context.ChangeTracker.Clear();
 
         // Assert
-        result.Should().BeNull();
+        CategoryEntity loaded = await _repository.GetByIdOrThrowAsync(category.Id);
+        loaded.Pricing.Should().BeEmpty();
     }
 
     [Fact]
-    public async Task GetPricingByCategoryAsync_ShouldReturnAllPricingForCategory()
+    public async Task GetByIdOrThrowAsync_ShouldHydrateEveryPricingRow()
     {
         // Arrange
         ContentTypeEntity contentType = await AddContentTypeAsync();
         CategoryEntity category = CategoryFactory.Create(contentType.Id);
         PricingTierEntity tier1 = PricingTierFactory.Create("tier-one");
         PricingTierEntity tier2 = PricingTierFactory.Create("tier-two");
+        category.SetPricing(pricingTierId: tier1.Id, priceUsd: 10m);
+        category.SetPricing(pricingTierId: tier2.Id, priceUsd: 20m);
 
         _context.Categories.Add(category);
         _context.PricingTiers.AddRange(tier1, tier2);
-        _context.CategoryPricing.AddRange(
-            CategoryPricingFactory.Create(category.Id, tier1.Id),
-            CategoryPricingFactory.Create(category.Id, tier2.Id)
-        );
         await _context.SaveChangesAsync();
+        _context.ChangeTracker.Clear();
 
         // Act
-        IReadOnlyList<CategoryPricingEntity> result = await _repository.GetPricingByCategoryAsync(category.Id);
+        CategoryEntity loaded = await _repository.GetByIdOrThrowAsync(category.Id);
 
         // Assert
-        result.Should().HaveCount(2);
+        loaded.Pricing.Should().HaveCount(2);
     }
 
     [Fact]
-    public async Task GetPricingByCategoriesAsync_ShouldReturnPricingForEveryRequestedCategoryOnly()
+    public async Task GetByIdsAsync_ShouldReturnEveryRequestedCategoryWithItsPricing()
     {
         // Arrange
         ContentTypeEntity contentType = await AddContentTypeAsync();
@@ -369,28 +384,28 @@ public class CategoryRepositoryTests : IDisposable
         _context.Categories.AddRange(requestedOne, requestedTwo, unrequested);
         _context.PricingTiers.Add(tier);
         _context.CategoryPricing.AddRange(
-            CategoryPricingFactory.Create(requestedOne.Id, tier.Id),
-            CategoryPricingFactory.Create(requestedTwo.Id, tier.Id),
-            CategoryPricingFactory.Create(unrequested.Id, tier.Id)
+            CategoryPricingFactory.Create(requestedOne, tier.Id),
+            CategoryPricingFactory.Create(requestedTwo, tier.Id),
+            CategoryPricingFactory.Create(unrequested, tier.Id)
         );
         await _context.SaveChangesAsync();
 
         // Act
-        IReadOnlyList<CategoryPricingEntity> result = await _repository.GetPricingByCategoriesAsync([
+        IReadOnlyDictionary<Guid, CategoryEntity> result = await _repository.GetByIdsAsync([
             requestedOne.Id,
             requestedTwo.Id,
         ]);
 
         // Assert
-        result.Should().HaveCount(2);
-        result.Select(p => p.CategoryId).Should().BeEquivalentTo([requestedOne.Id, requestedTwo.Id]);
+        result.Keys.Should().BeEquivalentTo([requestedOne.Id, requestedTwo.Id]);
+        result[requestedOne.Id].Pricing.Should().ContainSingle();
     }
 
     [Fact]
-    public async Task GetPricingByCategoriesAsync_WithNoCategories_ShouldReturnEmptyWithoutQuerying()
+    public async Task GetByIdsAsync_WithNoIds_ShouldReturnEmpty()
     {
         // Act
-        IReadOnlyList<CategoryPricingEntity> result = await _repository.GetPricingByCategoriesAsync([]);
+        IReadOnlyDictionary<Guid, CategoryEntity> result = await _repository.GetByIdsAsync([]);
 
         // Assert
         result.Should().BeEmpty();
@@ -403,15 +418,14 @@ public class CategoryRepositoryTests : IDisposable
         ContentTypeEntity contentType = await AddContentTypeAsync();
         CategoryEntity category = CategoryFactory.Create(contentType.Id);
         PricingTierEntity pricingTier = PricingTierFactory.CreateDefault();
-        CategoryPricingEntity pricing = CategoryPricingFactory.Create(category.Id, pricingTier.Id);
+        CategoryPricingEntity pricing = CategoryPricingFactory.Create(category, pricingTier.Id);
 
         _context.Categories.Add(category);
         _context.PricingTiers.Add(pricingTier);
-        _context.CategoryPricing.Add(pricing);
         await _context.SaveChangesAsync();
 
         // Act
-        _repository.RemovePricing(pricing);
+        category.RemovePricing(pricingTier.Id);
         await _context.SaveChangesAsync();
 
         // Assert

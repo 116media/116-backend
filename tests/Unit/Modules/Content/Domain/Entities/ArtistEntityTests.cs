@@ -27,12 +27,22 @@ public class ArtistEntityTests
         const string bio = TestConstants.Artist.ValidBio;
 
         // Act
-        ArtistEntity artist = ArtistEntity.Create(id, name, slug, bio, null, null, null, null);
+        ArtistEntity artist = ArtistEntity.Create(
+            id,
+            name,
+            slug,
+            bio,
+            null,
+            null,
+            null,
+            null,
+            TestConstants.Clock.Today
+        );
 
         // Assert
         artist.Id.Should().Be(id);
         artist.Name.Should().Be(name);
-        artist.Slug.Should().Be(slug);
+        artist.Slug.Value.Should().Be(slug);
         artist.Bio.Should().Be(bio);
         artist.AvatarFileId.Should().BeNull();
         artist.UserId.Should().BeNull();
@@ -51,7 +61,8 @@ public class ArtistEntityTests
             null,
             null,
             null,
-            null
+            null,
+            TestConstants.Clock.Today
         );
 
         // Assert
@@ -74,7 +85,8 @@ public class ArtistEntityTests
                 null,
                 null,
                 null,
-                null
+                null,
+                TestConstants.Clock.Today
             );
 
         // Assert
@@ -97,7 +109,8 @@ public class ArtistEntityTests
                 null,
                 null,
                 null,
-                null
+                null,
+                TestConstants.Clock.Today
             );
 
         // Assert
@@ -106,38 +119,71 @@ public class ArtistEntityTests
 
     #endregion
 
-    #region Update Tests
+    #region Rename Tests
 
     [Fact]
-    public void Update_WithValidParams_ShouldUpdateNameAndBio()
+    public void Rename_WithNewName_ShouldSetItAndReportChanged()
     {
         // Arrange
         ArtistEntity artist = CreateArtist();
 
         // Act
-        artist.Update("Updated Name", "Updated Bio", null, null, null, null);
+        bool changed = artist.Rename("Updated Name");
 
         // Assert
+        changed.Should().BeTrue();
         artist.Name.Should().Be("Updated Name");
-        artist.Bio.Should().Be("Updated Bio");
     }
 
     [Fact]
-    public void Update_ShouldNeverTouchSlug()
+    public void Rename_WithSameName_ShouldReportUnchangedAndRaiseNothing()
+    {
+        // Arrange
+        ArtistEntity artist = CreateArtist();
+        artist.ClearDomainEvents();
+
+        // Act
+        bool changed = artist.Rename(artist.Name);
+
+        // Assert
+        changed.Should().BeFalse();
+        artist.DomainEvents.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Rename_ShouldNeverTouchSlug()
     {
         // Arrange
         ArtistEntity artist = CreateArtist();
         string originalSlug = artist.Slug;
 
         // Act
-        artist.Update("Updated Name", "Updated Bio", null, null, null, null);
+        artist.Rename("Updated Name");
 
         // Assert
-        artist.Slug.Should().Be(originalSlug);
+        artist.Slug.Value.Should().Be(originalSlug);
+    }
+
+    #endregion
+
+    #region ReviseProfile Tests
+
+    [Fact]
+    public void ReviseProfile_WithNewBio_ShouldSetItAndReportChanged()
+    {
+        // Arrange
+        ArtistEntity artist = CreateArtist();
+
+        // Act
+        bool changed = artist.ReviseProfile("Updated Bio", null, null, null, null, TestConstants.Clock.Today);
+
+        // Assert
+        changed.Should().BeTrue();
+        artist.Bio.Should().Be("Updated Bio");
     }
 
     [Fact]
-    public void Update_WithNullBio_ShouldClearBio()
+    public void ReviseProfile_WithNullBio_ShouldClearBio()
     {
         // Arrange
         ArtistEntity artist = ArtistEntity.Create(
@@ -148,11 +194,12 @@ public class ArtistEntityTests
             null,
             null,
             null,
-            null
+            null,
+            TestConstants.Clock.Today
         );
 
         // Act
-        artist.Update(artist.Name, null, null, null, null, null);
+        artist.ReviseProfile(null, null, null, null, null, TestConstants.Clock.Today);
 
         // Assert
         artist.Bio.Should().BeNull();
@@ -162,13 +209,13 @@ public class ArtistEntityTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
-    public void Update_WithEmptyName_ShouldThrowBadRequestException(string? invalidName)
+    public void Rename_WithEmptyName_ShouldThrowBadRequestException(string? invalidName)
     {
         // Arrange
         ArtistEntity artist = CreateArtist();
 
         // Act
-        Action act = () => artist.Update(invalidName!, "Bio", null, null, null, null);
+        Action act = () => artist.Rename(invalidName!);
 
         // Assert
         act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.ArtistNameRequired);
@@ -216,15 +263,14 @@ public class ArtistEntityTests
         // Arrange
         ArtistEntity artist = CreateArtist();
         Guid userId = Guid.NewGuid();
-        DateTimeOffset before = DateTimeOffset.UtcNow;
 
         // Act
-        artist.ClaimOwnership(userId);
+        artist.ClaimOwnership(userId, TestConstants.Clock.Instant);
 
         // Assert
         artist.UserId.Should().Be(userId);
         artist.VerifiedAt.Should().NotBeNull();
-        artist.VerifiedAt!.Value.Should().BeCloseTo(before, TimeSpan.FromSeconds(5));
+        artist.VerifiedAt!.Value.Should().Be(TestConstants.Clock.Instant);
     }
 
     [Fact]
@@ -235,7 +281,7 @@ public class ArtistEntityTests
         Guid userId = Guid.NewGuid();
 
         // Act
-        artist.ClaimOwnership(userId);
+        artist.ClaimOwnership(userId, TestConstants.Clock.Instant);
 
         // Assert
         artist
@@ -251,11 +297,11 @@ public class ArtistEntityTests
     {
         // Arrange
         ArtistEntity artist = CreateArtist();
-        artist.ClaimOwnership(Guid.NewGuid());
+        artist.ClaimOwnership(Guid.NewGuid(), TestConstants.Clock.Instant);
         artist.ClearDomainEvents();
 
         // Act
-        Action act = () => artist.ClaimOwnership(Guid.NewGuid());
+        Action act = () => artist.ClaimOwnership(Guid.NewGuid(), TestConstants.Clock.Instant);
 
         // Assert
         act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.ArtistAlreadyClaimed);
@@ -267,10 +313,10 @@ public class ArtistEntityTests
     {
         // Arrange
         ArtistEntity artist = CreateArtist();
-        artist.ClaimOwnership(Guid.NewGuid());
+        artist.ClaimOwnership(Guid.NewGuid(), TestConstants.Clock.Instant);
 
         // Act
-        Action act = () => artist.ClaimOwnership(Guid.NewGuid());
+        Action act = () => artist.ClaimOwnership(Guid.NewGuid(), TestConstants.Clock.Instant);
 
         // Assert
         act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.ArtistAlreadyClaimed);
@@ -282,10 +328,10 @@ public class ArtistEntityTests
         // Arrange
         ArtistEntity artist = CreateArtist();
         Guid originalOwnerId = Guid.NewGuid();
-        artist.ClaimOwnership(originalOwnerId);
+        artist.ClaimOwnership(originalOwnerId, TestConstants.Clock.Instant);
 
         // Act
-        Action act = () => artist.ClaimOwnership(Guid.NewGuid());
+        Action act = () => artist.ClaimOwnership(Guid.NewGuid(), TestConstants.Clock.Instant);
 
         // Assert
         act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.ArtistAlreadyClaimed);
@@ -311,7 +357,8 @@ public class ArtistEntityTests
             "Aubrey Drake Graham",
             ["Drizzy", "Champagne Papi"],
             birthdate,
-            "Toronto, Canada"
+            "Toronto, Canada",
+            TestConstants.Clock.Today
         );
 
         // Assert
@@ -342,7 +389,8 @@ public class ArtistEntityTests
             null,
             ["  Drizzy  ", "", "   ", "drizzy", "Champagne Papi"],
             null,
-            null
+            null,
+            TestConstants.Clock.Today
         );
 
         // Assert
@@ -365,7 +413,8 @@ public class ArtistEntityTests
                 null,
                 aliases,
                 null,
-                null
+                null,
+                TestConstants.Clock.Today
             );
 
         // Assert
@@ -385,7 +434,8 @@ public class ArtistEntityTests
                 null,
                 [new string('a', 101)],
                 null,
-                null
+                null,
+                TestConstants.Clock.Today
             );
 
         // Assert
@@ -408,7 +458,8 @@ public class ArtistEntityTests
                 null,
                 null,
                 future,
-                null
+                null,
+                TestConstants.Clock.Today
             );
 
         // Assert
@@ -416,7 +467,7 @@ public class ArtistEntityTests
     }
 
     [Fact]
-    public void Update_WithNullIdentityFields_ShouldClearThem()
+    public void ReviseProfile_WithNullIdentityFields_ShouldClearThem()
     {
         // Arrange
         ArtistEntity artist = ArtistEntity.Create(
@@ -427,11 +478,12 @@ public class ArtistEntityTests
             "Real Name",
             ["Alias"],
             new DateOnly(1990, 1, 1),
-            "Kinshasa, RDC"
+            "Kinshasa, RDC",
+            TestConstants.Clock.Today
         );
 
         // Act
-        artist.Update(artist.Name, null, null, null, null, null);
+        artist.ReviseProfile(null, null, null, null, null, TestConstants.Clock.Today);
 
         // Assert
         artist.RealName.Should().BeNull();
@@ -476,7 +528,8 @@ public class ArtistEntityTests
             null,
             null,
             null,
-            null
+            null,
+            TestConstants.Clock.Today
         );
 
         // Assert
@@ -485,13 +538,13 @@ public class ArtistEntityTests
     }
 
     [Fact]
-    public void Update_WhenRenamed_ShouldRecomputeFoldedNameAndBucket()
+    public void Rename_ShouldRecomputeFoldedNameAndBucket()
     {
         // Arrange
         ArtistEntity artist = CreateArtist();
 
         // Act
-        artist.Update("Élodie", null, null, null, null, null);
+        artist.Rename("Élodie");
 
         // Assert — the artist moves bucket with the rename.
         artist.NameFolded.Should().Be("ELODIE");
@@ -510,7 +563,8 @@ public class ArtistEntityTests
             null,
             null,
             null,
-            null
+            null,
+            TestConstants.Clock.Today
         );
     }
 }

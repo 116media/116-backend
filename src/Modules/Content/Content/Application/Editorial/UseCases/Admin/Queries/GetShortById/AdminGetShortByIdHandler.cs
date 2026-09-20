@@ -21,7 +21,8 @@ public class AdminGetShortByIdHandler(
     IShortVideoRepository shortVideoRepository,
     IUserLookupService userLookup,
     IFileStorageService fileStorage,
-    IMapper mapper
+    IMapper mapper,
+    IVideoRepository videoRepository
 ) : IQueryHandler<AdminGetShortByIdQuery, AdminGetShortByIdResult>
 {
     /// <inheritdoc />
@@ -32,7 +33,13 @@ public class AdminGetShortByIdHandler(
             cancellationToken: cancellationToken
         );
 
-        ShortVideoDto dto = await shortVideo.ToShortVideoDtoAsync(mapper, userLookup, fileStorage, cancellationToken);
+        ShortVideoDto dto = await shortVideo.ToShortVideoDtoAsync(
+            mapper,
+            userLookup,
+            fileStorage,
+            videoRepository,
+            cancellationToken
+        );
 
         return new AdminGetShortByIdResult(ShortVideo: dto);
     }

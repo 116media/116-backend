@@ -254,8 +254,9 @@ public class ShortVideoSpecificationsTests
 
     #endregion
 
-    private static ShortVideoViewEventEntity CreateViewEvent(Guid shortVideoId, string dedupKey, bool isCounted) =>
-        ShortVideoViewEventEntity.Create(
+    private static ShortVideoViewEventEntity CreateViewEvent(Guid shortVideoId, string dedupKey, bool isCounted)
+    {
+        ShortVideoViewEventEntity viewEvent = ShortVideoViewEventEntity.Create(
             id: Guid.NewGuid(),
             shortVideoId: shortVideoId,
             userId: null,
@@ -264,4 +265,9 @@ public class ShortVideoSpecificationsTests
             userAgent: null,
             isCounted: isCounted
         );
+
+        viewEvent.CreatedAt = DateTime.UtcNow;
+
+        return viewEvent;
+    }
 }

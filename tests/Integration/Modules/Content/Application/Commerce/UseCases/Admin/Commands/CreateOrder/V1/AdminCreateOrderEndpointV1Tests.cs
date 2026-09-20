@@ -101,37 +101,37 @@ public class AdminCreateOrderEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
         PricingTierEntity firstTier = PricingTierFactory.Create();
         PricingTierEntity secondTier = PricingTierFactory.Create();
         CategoryPricingEntity billedFirstPrice = CategoryPricingFactory.Create(
-            billedCategory.Id,
+            billedCategory,
             firstTier.Id,
             TestConstants.CategoryPricing.ValidPriceUsd
         );
         CategoryPricingEntity billedSecondPrice = CategoryPricingFactory.Create(
-            billedCategory.Id,
+            billedCategory,
             secondTier.Id,
             TestConstants.CategoryPricing.UpdatedPriceUsd
         );
         CategoryPricingEntity bonusPrice = CategoryPricingFactory.Create(
-            bonusCategory.Id,
+            bonusCategory,
             firstTier.Id,
             TestConstants.CategoryPricing.ValidPriceUsd
         );
 
         PackageEntity package = PackageFactory.Create();
         PackageSlotEntity billedSlot = PackageSlotFactory.Create(
-            package.Id,
+            package,
             billedCategory.Id,
             isRequired: true,
             quantity: TestConstants.PackageSlot.AnotherValidQuantity
         );
         PackageSlotEntity bonusSlot = PackageSlotFactory.Create(
-            package.Id,
+            package,
             bonusCategory.Id,
             isRequired: false,
             quantity: TestConstants.PackageSlot.ValidQuantity
         );
 
         // An open slot carries no category, so the factory skips it entirely.
-        PackageSlotEntity openSlot = PackageSlotFactory.CreateOpen(package.Id);
+        PackageSlotEntity openSlot = PackageSlotFactory.CreateOpen(package);
 
         await SeedAsync<ContentDbContext>(ctx =>
         {
@@ -178,7 +178,7 @@ public class AdminCreateOrderEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
         bonusItem.CategoryId.Should().Be(bonusCategory.Id);
         bonusItem.ContentKind.Should().Be(EnumCoreContentType.Custom);
         bonusItem.Tiers.Should().ContainSingle();
-        bonusItem.Tiers.Single().PriceSnapshotUsd.Should().Be(TestConstants.CategoryPricing.ValidPriceUsd);
+        bonusItem.Tiers.Single().PriceSnapshotUsd.Amount.Should().Be(TestConstants.CategoryPricing.ValidPriceUsd);
     }
 
     [Fact]

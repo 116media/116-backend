@@ -89,17 +89,6 @@ public static class MockArtistRepository
         return mock;
     }
 
-    public static Mock<IArtistRepository> SetupGetSocialLink(
-        this Mock<IArtistRepository> mock,
-        Guid artistId,
-        EnumSocialPlatform platform,
-        ArtistSocialLinkEntity? entity
-    )
-    {
-        mock.Setup(x => x.GetSocialLinkAsync(artistId, platform, It.IsAny<CancellationToken>())).ReturnsAsync(entity);
-        return mock;
-    }
-
     public static Mock<IArtistRepository> SetupGetAllAsync(
         this Mock<IArtistRepository> mock,
         List<ArtistEntity> artists,
@@ -142,10 +131,6 @@ public static class MockArtistRepository
         // not trip the zero-content 404 rule unless they opt into it explicitly.
         mock.Setup(x => x.GetTotalsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ArtistTotals(Songs: 1, Videos: 0, Albums: 0, Mixtapes: 0, News: 0));
-        mock.Setup(x => x.GetSocialLinksAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<ArtistSocialLinkEntity>());
-        mock.Setup(x => x.AddSocialLinkAsync(It.IsAny<ArtistSocialLinkEntity>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask);
         mock.Setup(x => x.GetAvailableLettersAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new List<string>());
         mock.Setup(x =>
                 x.GetPublicDirectoryAsync(

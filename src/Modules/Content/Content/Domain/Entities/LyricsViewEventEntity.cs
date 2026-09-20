@@ -64,11 +64,6 @@ public class LyricsViewEventEntity : Aggregate<Guid>
     /// </summary>
     public double ScrollDepthRatio { get; private set; }
 
-    /// <summary>
-    /// Navigation property to the lyrics page.
-    /// </summary>
-    public LyricsEntity Lyrics { get; private set; } = null!;
-
     private LyricsViewEventEntity() { }
 
     /// <summary>
@@ -107,7 +102,6 @@ public class LyricsViewEventEntity : Aggregate<Guid>
             IsCounted = isCounted,
             DwellMs = dwellMs,
             ScrollDepthRatio = scrollDepthRatio,
-            CreatedAt = DateTime.UtcNow,
         };
 
         if (isCounted)

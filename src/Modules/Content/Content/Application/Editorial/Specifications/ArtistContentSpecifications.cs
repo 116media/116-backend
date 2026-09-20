@@ -53,14 +53,22 @@ public class ArtistHasFullLengthReleaseSpecification(IQueryable<AlbumEntity> alb
 /// Specification that matches artists tagged in at least one published article.
 /// </summary>
 /// <param name="articleArtists">The article-artist junction the artist is matched against.</param>
-public class ArtistHasPublishedArticleSpecification(IQueryable<ArticleArtistEntity> articleArtists)
-    : Specification<ArtistEntity>
+/// <param name="articles">The articles the junction rows are probed against.</param>
+public class ArtistHasPublishedArticleSpecification(
+    IQueryable<ArticleArtistEntity> articleArtists,
+    IQueryable<ArticleEntity> articles
+) : Specification<ArtistEntity>
 {
     /// <inheritdoc />
     public override Expression<Func<ArtistEntity, bool>> ToExpression()
     {
         return artist =>
-            articleArtists.Any(aa => aa.ArtistId == artist.Id && aa.Article.Status == EnumContentStatus.Published);
+            articleArtists.Any(link =>
+                link.ArtistId == artist.Id
+                && articles.Any(article =>
+                    article.Id == link.ArticleId && article.Status == EnumContentStatus.Published
+                )
+            );
     }
 }
 
@@ -80,11 +88,13 @@ public class ArtistHasPublishedArticleSpecification(IQueryable<ArticleArtistEnti
 /// <param name="videos">The video source consulted for published videos.</param>
 /// <param name="albums">The album source consulted for full-length releases.</param>
 /// <param name="articleArtists">The junction consulted for published tagged articles.</param>
+/// <param name="articles">The articles the junction rows are probed against.</param>
 public class ArtistHasContentSpecification(
     IQueryable<LyricsEntity> lyrics,
     IQueryable<VideoEntity> videos,
     IQueryable<AlbumEntity> albums,
-    IQueryable<ArticleArtistEntity> articleArtists
+    IQueryable<ArticleArtistEntity> articleArtists,
+    IQueryable<ArticleEntity> articles
 ) : Specification<ArtistEntity>
 {
     /// <inheritdoc />
@@ -94,7 +104,7 @@ public class ArtistHasContentSpecification(
                 new ArtistHasPublishedLyricsSpecification(lyrics: lyrics),
                 new ArtistHasPublishedVideosSpecification(videos: videos),
                 new ArtistHasFullLengthReleaseSpecification(albums: albums),
-                new ArtistHasPublishedArticleSpecification(articleArtists: articleArtists)
+                new ArtistHasPublishedArticleSpecification(articleArtists: articleArtists, articles: articles)
             )
             .ToExpression();
     }

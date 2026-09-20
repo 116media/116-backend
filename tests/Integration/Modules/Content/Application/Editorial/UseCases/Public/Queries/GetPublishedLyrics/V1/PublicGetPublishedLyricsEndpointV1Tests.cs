@@ -2,6 +2,7 @@ using _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublishedLyr
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
 
@@ -107,7 +108,7 @@ public class PublicGetPublishedLyricsEndpointV1Tests(PostgresFixture db) : BaseA
             entity.Approve();
             entity.MarkPendingReview();
             entity.Approve();
-            entity.Publish();
+            entity.Publish(TestConstants.Clock.Instant);
             ctx.Lyrics.Add(entity);
             return entity;
         });

@@ -31,16 +31,16 @@ public class OrderPaymentFactoryTests
     public async Task GetByOrderIdOrThrowAsync_WhenPaymentExists_ShouldReturnPayment()
     {
         // Arrange
-        Guid orderId = Guid.NewGuid();
-        ContentPaymentEntity payment = ContentPaymentFactory.Create(orderId);
-        _orderRepositoryMock.SetupGetPaymentByOrderId(orderId, payment);
+        ContentOrderEntity order = ContentOrderFactory.Create();
+        ContentPaymentEntity payment = order.AttachPayment();
+        _orderRepositoryMock.SetupGetByIdWithItems(order);
 
         // Act
-        ContentPaymentEntity result = await _factory.GetByOrderIdOrThrowAsync(orderId, CancellationToken.None);
+        ContentPaymentEntity result = await _factory.GetByOrderIdOrThrowAsync(order.Id, CancellationToken.None);
 
         // Assert
         result.Id.Should().Be(payment.Id);
-        result.OrderId.Should().Be(orderId);
+        result.OrderId.Should().Be(order.Id);
     }
 
     #endregion
@@ -52,7 +52,6 @@ public class OrderPaymentFactoryTests
     {
         // Arrange
         Guid orderId = Guid.NewGuid();
-        _orderRepositoryMock.SetupGetPaymentByOrderId(orderId, null);
 
         // Act
         Func<Task> act = async () => await _factory.GetByOrderIdOrThrowAsync(orderId, CancellationToken.None);

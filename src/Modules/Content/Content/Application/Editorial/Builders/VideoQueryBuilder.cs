@@ -13,6 +13,7 @@ namespace _116.Content.Application.Editorial.Builders;
 public class VideoQueryBuilder : IVideoQueryBuilder
 {
     private Specification<VideoEntity>? _specification;
+    private string? _tagSlug;
 
     /// <inheritdoc />
     public IVideoQueryBuilder WithSearch(string? search)
@@ -61,15 +62,21 @@ public class VideoQueryBuilder : IVideoQueryBuilder
             return this;
         }
 
-        var tagSpec = new VideoByTagSlugSpecification(tagSlug: tagSlug);
-        CombineSpecification(spec: tagSpec);
+        _tagSlug = tagSlug;
         return this;
     }
 
     /// <inheritdoc />
-    public Specification<VideoEntity>? Build()
+    public Specification<VideoEntity>? Build(IQueryable<TagEntity> tags)
     {
-        return _specification;
+        if (_tagSlug is null)
+        {
+            return _specification;
+        }
+
+        var tagSpec = new VideoByTagSlugSpecification(tagSlug: _tagSlug, tags: tags);
+
+        return _specification is null ? tagSpec : _specification.And(other: tagSpec);
     }
 
     private void CombineSpecification(Specification<VideoEntity> spec)

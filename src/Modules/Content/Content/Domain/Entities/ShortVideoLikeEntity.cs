@@ -20,11 +20,6 @@ public class ShortVideoLikeEntity : Aggregate<Guid>
     /// </summary>
     public Guid ShortVideoId { get; private set; }
 
-    /// <summary>
-    /// Navigation property to the short video.
-    /// </summary>
-    public ShortVideoEntity ShortVideo { get; private set; } = null!;
-
     private ShortVideoLikeEntity() { }
 
     /// <summary>
@@ -41,7 +36,6 @@ public class ShortVideoLikeEntity : Aggregate<Guid>
             Id = id,
             UserId = userId,
             ShortVideoId = shortVideoId,
-            CreatedAt = DateTime.UtcNow,
         };
 
         like.AddDomainEvent(

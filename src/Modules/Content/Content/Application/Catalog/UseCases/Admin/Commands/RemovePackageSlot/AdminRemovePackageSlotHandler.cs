@@ -1,10 +1,11 @@
+using _116.Content.Application.Catalog.Factories;
+using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
-using MapsterMapper;
 
 namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.RemovePackageSlot;
 
@@ -13,12 +14,12 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.RemovePackage
 /// </summary>
 /// <param name="packageRepository">Repository for package data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="packageDtoFactory">Builds package projections with their categories resolved.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminRemovePackageSlotHandler(
     IPackageRepository packageRepository,
     IContentUnitOfWork unitOfWork,
-    IMapper mapper,
+    IPackageDtoFactory packageDtoFactory,
     ContentI18n i18n
 ) : ICommandHandler<AdminRemovePackageSlotCommand, AdminRemovePackageSlotResult>
 {
@@ -31,28 +32,19 @@ public class AdminRemovePackageSlotHandler(
         Guid packageId = Guid.Parse(command.PackageId);
         Guid slotId = Guid.Parse(command.SlotId);
 
-        await packageRepository.GetByIdWithSlotsOrThrowAsync(id: packageId, cancellationToken: cancellationToken);
-
-        PackageSlotEntity? slot = await packageRepository.GetSlotByIdAsync(
-            slotId: slotId,
-            packageId: packageId,
-            cancellationToken: cancellationToken
-        );
-
-        if (slot is null)
-        {
-            throw i18n.Package.SlotNotFound(slotId: slotId);
-        }
-
-        packageRepository.RemoveSlot(slot: slot);
-        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-
-        PackageEntity updatedPackage = await packageRepository.GetByIdWithSlotsOrThrowAsync(
+        PackageEntity package = await packageRepository.GetByIdOrThrowAsync(
             id: packageId,
             cancellationToken: cancellationToken
         );
 
-        var dto = updatedPackage.ToPackageDto(mapper);
+        if (!package.RemoveSlot(slotId: slotId))
+        {
+            throw i18n.Package.SlotNotFound(slotId: slotId);
+        }
+
+        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+        PackageDto dto = await packageDtoFactory.CreateAsync(package, cancellationToken);
         return new AdminRemovePackageSlotResult(Package: dto, IsSuccess: true);
     }
 }

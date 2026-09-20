@@ -3,9 +3,11 @@ using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using _116.Content.Domain.Constants;
+using _116.Content.Domain.Enums;
 using _116.Content.Domain.Events;
 using _116.Content.Domain.Exceptions;
 using _116.Content.Domain.StateMachines;
+using _116.Content.Domain.ValueObjects;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -30,7 +32,7 @@ public class ArtistEntity : Aggregate<Guid>
     /// public URLs never break once shared.
     /// </summary>
     [MaxLength(length: ContentConstants.MaxSlugLength)]
-    public string Slug { get; private set; } = null!;
+    public Slug Slug { get; private set; } = null!;
 
     /// <summary>
     /// Free-text biography shown on the artist's public page. Null until curated.
@@ -109,6 +111,12 @@ public class ArtistEntity : Aggregate<Guid>
     public DateTimeOffset? VerifiedAt { get; private set; }
 
     /// <summary>
+    /// The artist's outbound social platform links, one row per platform. Written only through
+    /// <see cref="SetSocialLink" /> and <see cref="RemoveSocialLink" />.
+    /// </summary>
+    public ICollection<ArtistSocialLinkEntity> SocialLinks { get; } = new List<ArtistSocialLinkEntity>();
+
+    /// <summary>
     /// Private parameterless constructor required by Entity Framework Core.
     /// </summary>
     private ArtistEntity() { }
@@ -125,6 +133,7 @@ public class ArtistEntity : Aggregate<Guid>
     /// <param name="aliases">Alternate names, or null for none.</param>
     /// <param name="birthdate">The artist's date of birth, or null when unknown.</param>
     /// <param name="hometown">Where the artist is from, or null when unknown.</param>
+    /// <param name="today">The current date, against which a future birthdate is rejected.</param>
     /// <returns>A new, unclaimed <see cref="ArtistEntity" />.</returns>
     public static ArtistEntity Create(
         Guid id,
@@ -134,7 +143,8 @@ public class ArtistEntity : Aggregate<Guid>
         string? realName,
         IReadOnlyList<string>? aliases,
         DateOnly? birthdate,
-        string? hometown
+        string? hometown,
+        DateOnly today
     )
     {
         if (string.IsNullOrWhiteSpace(value: name))
@@ -147,7 +157,7 @@ public class ArtistEntity : Aggregate<Guid>
             throw new ContentRuleException(ContentRuleCodes.ArtistSlugRequired);
         }
 
-        GuardBirthdate(birthdate: birthdate);
+        GuardBirthdate(birthdate: birthdate, today: today);
 
         var artist = new ArtistEntity
         {
@@ -168,39 +178,83 @@ public class ArtistEntity : Aggregate<Guid>
     }
 
     /// <summary>
-    /// Updates the artist's editable profile fields. Slug is immutable after creation to
-    /// preserve public URLs — this method never accepts or changes it.
+    /// Renames the artist and recomputes the folded-name and initial-letter indexes the
+    /// directory browses by. Slug is immutable after creation to preserve public URLs.
     /// </summary>
     /// <param name="name">The artist's display name.</param>
-    /// <param name="bio">Optional free-text biography, or null to clear it.</param>
-    /// <param name="realName">The artist's legal or birth name, or null to clear it.</param>
-    /// <param name="aliases">Alternate names, or null to clear them.</param>
-    /// <param name="birthdate">The artist's date of birth, or null to clear it.</param>
-    /// <param name="hometown">Where the artist is from, or null to clear it.</param>
-    public void Update(
-        string name,
-        string? bio,
-        string? realName,
-        IReadOnlyList<string>? aliases,
-        DateOnly? birthdate,
-        string? hometown
-    )
+    /// <returns><c>true</c> if the name changed; otherwise <c>false</c>.</returns>
+    public bool Rename(string name)
     {
         if (string.IsNullOrWhiteSpace(value: name))
         {
             throw new ContentRuleException(ContentRuleCodes.ArtistNameRequired);
         }
 
-        GuardBirthdate(birthdate: birthdate);
-        ReplaceAliases(aliases: aliases);
+        if (Name == name)
+        {
+            return false;
+        }
 
         Name = name;
+
+        RecomputeNameIndexes();
+        MarkChanged();
+
+        return true;
+    }
+
+    /// <summary>
+    /// Revises the biographical fields. The alias list is normalised on the way in, so an
+    /// incoming list that normalises to the current one writes nothing.
+    /// </summary>
+    /// <param name="bio">Optional free-text biography, or null to clear it.</param>
+    /// <param name="realName">The artist's legal or birth name, or null to clear it.</param>
+    /// <param name="aliases">Alternate names, or null to clear them.</param>
+    /// <param name="birthdate">The artist's date of birth, or null to clear it.</param>
+    /// <param name="hometown">Where the artist is from, or null to clear it.</param>
+    /// <param name="today">The current date, against which a future birthdate is rejected.</param>
+    /// <returns><c>true</c> if any value changed; otherwise <c>false</c>.</returns>
+    public bool ReviseProfile(
+        string? bio,
+        string? realName,
+        IReadOnlyList<string>? aliases,
+        DateOnly? birthdate,
+        string? hometown,
+        DateOnly today
+    )
+    {
+        GuardBirthdate(birthdate: birthdate, today: today);
+
+        List<string> currentAliases = [.. _aliases];
+        ReplaceAliases(aliases: aliases);
+
+        bool aliasesChanged = !_aliases.SequenceEqual(currentAliases, StringComparer.Ordinal);
+
+        if (!aliasesChanged && Bio == bio && RealName == realName && Birthdate == birthdate && Hometown == hometown)
+        {
+            return false;
+        }
+
         Bio = bio;
         RealName = realName;
         Birthdate = birthdate;
         Hometown = hometown;
 
-        RecomputeNameIndexes();
+        MarkChanged();
+
+        return true;
+    }
+
+    /// <summary>
+    /// Records one change notice per unit of work, however many edit verbs the handler calls.
+    /// </summary>
+    private void MarkChanged()
+    {
+        if (DomainEvents.OfType<ArtistChangedEvent>().Any())
+        {
+            return;
+        }
+
         AddDomainEvent(new ArtistChangedEvent(ArtistId: Id));
     }
 
@@ -249,9 +303,9 @@ public class ArtistEntity : Aggregate<Guid>
     /// not a value the profile should render with a negative age.
     /// </summary>
     /// <param name="birthdate">The birthdate to validate, or null.</param>
-    private static void GuardBirthdate(DateOnly? birthdate)
+    private static void GuardBirthdate(DateOnly? birthdate, DateOnly today)
     {
-        if (birthdate is not null && birthdate.Value >= DateOnly.FromDateTime(dateTime: DateTime.UtcNow))
+        if (birthdate is not null && birthdate.Value >= today)
         {
             throw new ContentRuleException(ContentRuleCodes.ArtistBirthdateInFuture);
         }
@@ -319,7 +373,7 @@ public class ArtistEntity : Aggregate<Guid>
     /// <exception cref="ContentRuleException">
     /// Thrown if the profile is already claimed.
     /// </exception>
-    public void ClaimOwnership(Guid userId)
+    public void ClaimOwnership(Guid userId, DateTimeOffset now)
     {
         if (UserId.HasValue)
         {
@@ -327,8 +381,67 @@ public class ArtistEntity : Aggregate<Guid>
         }
 
         UserId = userId;
-        VerifiedAt = DateTimeOffset.UtcNow;
+        VerifiedAt = now;
 
         AddDomainEvent(new ArtistOwnershipVerifiedEvent(ArtistId: Id, UserId: userId));
+    }
+
+    /// <summary>
+    /// Adds or replaces the link for a platform, reporting false when the stored URL already
+    /// matches so an unchanged upsert writes nothing.
+    /// </summary>
+    /// <param name="platform">The social platform the link points to.</param>
+    /// <param name="url">The outbound profile URL.</param>
+    /// <returns><c>true</c> if a link was added or its URL changed; otherwise <c>false</c>.</returns>
+    public bool SetSocialLink(EnumSocialPlatform platform, string url)
+    {
+        ArtistSocialLinkEntity? existing = FindSocialLink(platform: platform);
+
+        if (existing is null)
+        {
+            SocialLinks.Add(
+                ArtistSocialLinkEntity.Create(id: Guid.NewGuid(), artistId: Id, platform: platform, url: url)
+            );
+
+            return true;
+        }
+
+        if (existing.Url == url)
+        {
+            return false;
+        }
+
+        existing.UpdateUrl(url: url);
+
+        return true;
+    }
+
+    /// <summary>
+    /// Removes the link for a platform, reporting whether one was there.
+    /// </summary>
+    /// <param name="platform">The social platform whose link is removed.</param>
+    /// <returns><c>true</c> if a link was removed; otherwise <c>false</c>.</returns>
+    public bool RemoveSocialLink(EnumSocialPlatform platform)
+    {
+        ArtistSocialLinkEntity? existing = FindSocialLink(platform: platform);
+
+        if (existing is null)
+        {
+            return false;
+        }
+
+        SocialLinks.Remove(existing);
+
+        return true;
+    }
+
+    /// <summary>
+    /// Returns this artist's link for a platform, or null when the slot is empty.
+    /// </summary>
+    /// <param name="platform">The social platform to look up.</param>
+    /// <returns>The matching link, or <c>null</c>.</returns>
+    public ArtistSocialLinkEntity? FindSocialLink(EnumSocialPlatform platform)
+    {
+        return SocialLinks.FirstOrDefault(link => link.Platform == platform);
     }
 }

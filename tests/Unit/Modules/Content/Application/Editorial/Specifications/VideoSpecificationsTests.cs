@@ -23,10 +23,13 @@ public class VideoSpecificationsTests
     /// </summary>
     private static void AttachTag(VideoEntity video, TagEntity tag)
     {
-        VideoTagEntity videoTag = VideoTagEntity.Create(Guid.NewGuid(), video.Id, tag.Id);
-        typeof(VideoTagEntity).GetProperty(nameof(VideoTagEntity.Tag))!.SetValue(videoTag, tag);
-        video.Tags.Add(videoTag);
+        video.Tags.Add(VideoTagEntity.Create(Guid.NewGuid(), video.Id, tag.Id));
     }
+
+    /// <summary>
+    /// The tag rows a slug rule probes.
+    /// </summary>
+    private static IQueryable<TagEntity> TagSource(params TagEntity[] tags) => tags.AsQueryable();
 
     #region VideoByIdSpecification
 
@@ -177,9 +180,10 @@ public class VideoSpecificationsTests
     public void VideoByTagSlugSpecification_ShouldMatchTagSlugCaseInsensitively(string tagSlug, bool expected)
     {
         // Arrange
+        TagEntity rumba = TagFactory.Create("Rumba", "rumba");
         VideoEntity video = VideoFactory.Create(CategoryId);
-        AttachTag(video, TagFactory.Create("Rumba", "rumba"));
-        var spec = new VideoByTagSlugSpecification(tagSlug);
+        AttachTag(video, rumba);
+        var spec = new VideoByTagSlugSpecification(tagSlug, TagSource(rumba));
 
         // Act
         bool result = spec.IsSatisfiedInMemoryBy(video);
@@ -193,7 +197,7 @@ public class VideoSpecificationsTests
     {
         // Arrange
         VideoEntity video = VideoFactory.Create(CategoryId);
-        var spec = new VideoByTagSlugSpecification("rumba");
+        var spec = new VideoByTagSlugSpecification("rumba", TagSource());
 
         // Act
         bool result = spec.IsSatisfiedInMemoryBy(video);

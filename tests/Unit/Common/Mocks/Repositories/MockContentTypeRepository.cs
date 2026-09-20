@@ -21,6 +21,21 @@ public static class MockContentTypeRepository
             .Returns(Task.CompletedTask);
         mock.Setup(x => x.GetAllAsync(It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<ContentTypeEntity>());
+        mock.Setup(x => x.GetByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<Guid, ContentTypeEntity>());
+        return mock;
+    }
+
+    /// <summary>
+    /// Arranges the batch lookup to resolve exactly the supplied rows, keyed by id.
+    /// </summary>
+    public static Mock<IContentTypeRepository> SetupGetByIds(
+        this Mock<IContentTypeRepository> mock,
+        params ContentTypeEntity[] entities
+    )
+    {
+        mock.Setup(x => x.GetByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(entities.ToDictionary(entity => entity.Id));
         return mock;
     }
 

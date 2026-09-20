@@ -12,7 +12,7 @@ namespace _116.Tests.Fixtures.Builders.Entities.Content;
 public class ArticleImageBuilder
 {
     private Guid _id = Guid.NewGuid();
-    private Guid _articleId;
+    private readonly ArticleEntity _article;
     private string _storageKey = TestConstants.ArticleImage.ValidStorageKey;
     private string _url = TestConstants.ArticleImage.ValidUrl;
     private EnumArticleImageType _imageType = EnumArticleImageType.Body;
@@ -20,9 +20,9 @@ public class ArticleImageBuilder
     /// <summary>
     /// Initializes a new instance of the <see cref="ArticleImageBuilder"/> class with a required article ID.
     /// </summary>
-    public ArticleImageBuilder(Guid articleId)
+    public ArticleImageBuilder(ArticleEntity article)
     {
-        _articleId = articleId;
+        _article = article;
     }
 
     /// <summary>
@@ -66,12 +66,6 @@ public class ArticleImageBuilder
     /// </summary>
     public ArticleImageEntity Build()
     {
-        return ArticleImageEntity.Create(
-            id: _id,
-            articleId: _articleId,
-            storageKey: _storageKey,
-            url: _url,
-            imageType: _imageType
-        );
+        return _article.AddImage(id: _id, storageKey: _storageKey, url: _url, imageType: _imageType);
     }
 }

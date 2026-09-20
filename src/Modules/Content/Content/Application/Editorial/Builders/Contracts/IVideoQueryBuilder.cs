@@ -34,5 +34,6 @@ public interface IVideoQueryBuilder
     /// Builds and returns the final specification.
     /// Returns null if no filters were applied.
     /// </summary>
-    Specification<VideoEntity>? Build();
+    /// <param name="tags">The tag rows the tag-slug filter probes.</param>
+    Specification<VideoEntity>? Build(IQueryable<TagEntity> tags);
 }

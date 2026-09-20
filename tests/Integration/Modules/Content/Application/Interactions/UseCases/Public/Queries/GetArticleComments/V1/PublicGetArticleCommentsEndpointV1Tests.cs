@@ -4,6 +4,7 @@ using _116.Content.Infrastructure.Persistence;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Shared.Application.Pagination;
+using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Factories.Identity;
 
@@ -124,7 +125,7 @@ public class PublicGetArticleCommentsEndpointV1Tests(PostgresFixture db) : BaseA
         ArticleCommentEntity deleted = await SeedAsync<ContentDbContext, ArticleCommentEntity>(ctx =>
         {
             ArticleCommentEntity c = ArticleCommentFactory.Create(article.Id, TestUser.VisitorId);
-            c.SoftDelete();
+            c.SoftDelete(TestConstants.Clock.Instant);
             ctx.ArticleComments.Add(c);
             return c;
         });

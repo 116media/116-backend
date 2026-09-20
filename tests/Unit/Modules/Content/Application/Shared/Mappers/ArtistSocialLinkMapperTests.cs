@@ -2,6 +2,7 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
+using _116.Tests.Fixtures.Factories.Content;
 using AwesomeAssertions;
 using Xunit;
 
@@ -13,7 +14,15 @@ namespace _116.Unit.Tests.Modules.Content.Application.Shared.Mappers;
 public class ArtistSocialLinkMapperTests
 {
     private static ArtistSocialLinkEntity Link(EnumSocialPlatform platform, string url) =>
-        ArtistSocialLinkEntity.Create(Guid.NewGuid(), Guid.NewGuid(), platform, url);
+        CreateThroughArtist(platform: platform, url: url);
+
+    private static ArtistSocialLinkEntity CreateThroughArtist(EnumSocialPlatform platform, string url)
+    {
+        ArtistEntity artist = ArtistFactory.Create();
+        artist.SetSocialLink(platform: platform, url: url);
+
+        return artist.FindSocialLink(platform: platform)!;
+    }
 
     [Fact]
     public void ToArtistSocialLinkDto_ShouldCarryPlatformAndUrlOnly()

@@ -38,8 +38,13 @@ public class PublicGetExclusiveCategoryHandlerTests : BaseContentHandlerTest
         _handler = new PublicGetExclusiveCategoryHandler(
             _categoryRepositoryMock.Object,
             _videoRepositoryMock.Object,
-            new CategoryDtoFactory(Mapper, _fileStorageMock.Object),
-            new VideoDtoFactory(Mapper, _fileStorageMock.Object),
+            CreateCategoryDtoFactory(_fileStorageMock.Object),
+            new VideoDtoFactory(
+                Mapper,
+                _fileStorageMock.Object,
+                _videoRepositoryMock.Object,
+                CreateContentLookupFactory()
+            ),
             TestErrorsFactory.CreateContentI18n()
         );
     }

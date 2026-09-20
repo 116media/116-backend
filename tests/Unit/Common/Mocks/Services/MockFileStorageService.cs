@@ -199,6 +199,20 @@ public static class MockFileStorageService
     }
 
     /// <summary>
+    /// Asserts the batch resolve ran exactly the expected number of times, for a caller that
+    /// batches one call per kind of file rather than one combined call.
+    /// </summary>
+    /// <param name="mock">The storage mock to assert on.</param>
+    /// <param name="times">The expected number of batch calls.</param>
+    public static void VerifyResolveManyCalledTimes(this Mock<IFileStorageService> mock, int times)
+    {
+        mock.Verify(
+            x => x.ResolveManyAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()),
+            Times.Exactly(times)
+        );
+    }
+
+    /// <summary>
     /// Sets the resolving, recording and deleting defaults.
     /// </summary>
     /// <param name="mock">The store mock.</param>

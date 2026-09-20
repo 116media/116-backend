@@ -21,7 +21,7 @@ public class ShortVideoBookmarkConfiguration : IEntityTypeConfiguration<ShortVid
         builder.HasIndex(x => new { x.UserId, x.ShortVideoId }).IsUnique();
 
         builder
-            .HasOne(x => x.ShortVideo)
+            .HasOne<ShortVideoEntity>()
             .WithMany()
             .HasForeignKey(x => x.ShortVideoId)
             .OnDelete(DeleteBehavior.Cascade);

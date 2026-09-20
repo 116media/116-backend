@@ -23,7 +23,8 @@ public class AdminUpdateLyricsMetadataHandler(
     IContentUnitOfWork unitOfWork,
     IMapper mapper,
     IUserLookupService userLookup,
-    IFileStorageService fileStorage
+    IFileStorageService fileStorage,
+    IContentLookupFactory contentLookupFactory
 ) : ICommandHandler<AdminUpdateLyricsMetadataCommand, AdminUpdateLyricsMetadataResult>
 {
     /// <inheritdoc />
@@ -51,7 +52,13 @@ public class AdminUpdateLyricsMetadataHandler(
             cancellationToken: cancellationToken
         );
 
-        var dto = await updated.ToLyricsDetailDtoAsync(mapper, userLookup, fileStorage, cancellationToken);
+        var dto = await updated.ToLyricsDetailDtoAsync(
+            await contentLookupFactory.ResolveForLyricsAsync([updated], cancellationToken),
+            mapper,
+            userLookup,
+            fileStorage,
+            cancellationToken
+        );
         return new AdminUpdateLyricsMetadataResult(Lyrics: dto);
     }
 }

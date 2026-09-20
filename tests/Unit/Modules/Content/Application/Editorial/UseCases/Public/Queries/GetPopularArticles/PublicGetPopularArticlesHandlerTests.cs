@@ -36,7 +36,11 @@ public class PublicGetPopularArticlesHandlerTests : BaseContentHandlerTest
         _fileStorageMock = MockFileStorageService.Create();
         FileReferenceDto coverFile = FileReferenceDtoFactory.CreateImage();
         _fileStorageMock.SetupResolve(coverFile);
-        _handler = new PublicGetPopularArticlesHandler(_articleRepositoryMock.Object, _fileStorageMock.Object);
+        _handler = new PublicGetPopularArticlesHandler(
+            _articleRepositoryMock.Object,
+            _fileStorageMock.Object,
+            CreateContentLookupFactory()
+        );
     }
 
     [Fact]

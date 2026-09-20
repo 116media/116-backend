@@ -25,18 +25,16 @@ public class AdminRemoveArtistSocialLinkHandler(
         CancellationToken cancellationToken
     )
     {
-        ArtistSocialLinkEntity? existing = await artistRepository.GetSocialLinkAsync(
-            artistId: command.ArtistId,
-            platform: command.Platform,
+        ArtistEntity artist = await artistRepository.GetByIdOrThrowAsync(
+            id: command.ArtistId,
             cancellationToken: cancellationToken
         );
 
-        if (existing is null)
+        if (!artist.RemoveSocialLink(platform: command.Platform))
         {
             throw i18n.Artist.SocialLinkNotFound(platform: command.Platform.ToString());
         }
 
-        artistRepository.RemoveSocialLink(link: existing);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminRemoveArtistSocialLinkResult(IsSuccess: true);

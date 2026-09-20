@@ -9,7 +9,6 @@ using _116.Identity.Contracts.Application.DTOs;
 using _116.Identity.Contracts.Application.Services;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Factories.Core;
-using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
@@ -39,7 +38,7 @@ public class ContentOrderMapperTests : BaseContentHandlerTest, IDisposable
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
         _context = new ContentDbContext(options);
-        _repository = new ContentOrderRepository(_context, TestErrorsFactory.CreateContentOrderErrors());
+        _repository = new ContentOrderRepository(_context);
         _userLookupMock = MockUserLookupService.Create();
     }
 
@@ -133,12 +132,14 @@ public class ContentOrderMapperTests : BaseContentHandlerTest, IDisposable
         await _context.SaveChangesAsync();
 
         ContentOrderEntity? loaded = await _context
-            .ContentOrders.Include(o => o.Customer)
-            .Include(o => o.Items)
+            .ContentOrders.Include(o => o.Items)
             .FirstOrDefaultAsync(o => o.Id == order.Id);
 
         // Act
-        ContentOrderSummaryDto dto = loaded!.ToContentOrderSummaryDto(Mapper);
+        ContentOrderSummaryDto dto = loaded!.ToContentOrderSummaryDto(
+            Mapper,
+            new Dictionary<Guid, CustomerEntity> { [customer.Id] = customer }
+        );
 
         // Assert
         dto.Should().NotBeNull();
@@ -173,17 +174,22 @@ public class ContentOrderMapperTests : BaseContentHandlerTest, IDisposable
         await _context.SaveChangesAsync();
 
         ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, category.Id);
-        await _repository.AddItemAsync(item);
+        order.AddItem(item);
         await _context.SaveChangesAsync();
 
         ContentOrderItemEntity? loaded = await _context
-            .ContentOrderItems.Include(i => i.Category)
-            .Include(i => i.PromotionLevel)
-            .Include(i => i.Tiers)
+            .ContentOrderItems.Include(i => i.Tiers)
             .FirstOrDefaultAsync(i => i.Id == item.Id);
 
+        var lookups = new OrderLookups(
+            Customers: new Dictionary<Guid, CustomerEntity>(),
+            Categories: new Dictionary<Guid, CategoryEntity> { [category.Id] = category },
+            PromotionLevels: new Dictionary<Guid, PromotionLevelEntity>(),
+            PricingTiers: new Dictionary<Guid, PricingTierEntity>()
+        );
+
         // Act
-        OrderItemDto dto = loaded!.ToOrderItemDto(Mapper);
+        OrderItemDto dto = loaded!.ToOrderItemDto(Mapper, lookups);
 
         // Assert
         dto.Should().NotBeNull();

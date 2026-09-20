@@ -39,18 +39,12 @@ public class AdminSetLyricsTagsHandlerTests
         var command = new AdminSetLyricsTagsCommand(LyricsId: lyrics.Id, TagIds: tagIds);
 
         _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
-        _lyricsRepositoryMock
-            .Setup(x => x.ReplaceTagsAsync(lyrics.Id, tagIds, It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _lyricsRepositoryMock.Verify(
-            x => x.ReplaceTagsAsync(lyrics.Id, tagIds, It.IsAny<CancellationToken>()),
-            Times.Once
-        );
+        lyrics.Tags.Select(tag => tag.TagId).Should().BeEquivalentTo(tagIds);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -63,18 +57,12 @@ public class AdminSetLyricsTagsHandlerTests
         var command = new AdminSetLyricsTagsCommand(LyricsId: lyrics.Id, TagIds: tagIds);
 
         _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
-        _lyricsRepositoryMock
-            .Setup(x => x.ReplaceTagsAsync(lyrics.Id, tagIds, It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _lyricsRepositoryMock.Verify(
-            x => x.ReplaceTagsAsync(lyrics.Id, tagIds, It.IsAny<CancellationToken>()),
-            Times.Once
-        );
+        lyrics.Tags.Should().BeEmpty();
     }
 
     [Fact]

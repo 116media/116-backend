@@ -32,31 +32,19 @@ public class AdminRemoveItemTierHandler(
 
         order.EnsureDraft();
 
-        ContentOrderItemEntity item = await contentOrderRepository.GetItemByIdOrThrowAsync(
-            orderId: orderId,
-            itemId: itemId,
-            ct: cancellationToken
-        );
+        ContentOrderItemEntity? item = order.FindItem(itemId: itemId);
 
-        ContentItemTierEntity tier = await contentOrderRepository.GetItemTierByIdOrThrowAsync(
-            itemId: item.Id,
-            tierId: tierId,
-            ct: cancellationToken
-        );
+        if (item is null)
+        {
+            throw i18n.ContentOrder.ItemNotFound(itemId: itemId);
+        }
 
-        await unitOfWork.ExecuteInTransactionAsync(
-            async ct =>
-            {
-                await contentOrderRepository.RemoveItemTierAsync(tier: tier, ct: ct);
+        if (!order.RemoveTier(item: item, tierId: tierId))
+        {
+            throw i18n.ContentOrder.ItemTierNotFound(tierId: tierId);
+        }
 
-                ContentOrderEntity updated =
-                    await contentOrderRepository.GetByIdWithItemsAsync(id: orderId, ct: ct)
-                    ?? throw i18n.ContentOrder.NotFound(id: orderId);
-
-                updated.RecalculateTotalFromItems();
-            },
-            cancellationToken: cancellationToken
-        );
+        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminRemoveItemTierResult(IsSuccess: true);
     }

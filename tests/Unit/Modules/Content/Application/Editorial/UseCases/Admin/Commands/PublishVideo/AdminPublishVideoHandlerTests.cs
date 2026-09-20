@@ -34,7 +34,8 @@ public class AdminPublishVideoHandlerTests
         _handler = new AdminPublishVideoHandler(
             _videoRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateContentI18n()
+            TestErrorsFactory.CreateContentI18n(),
+            TimeProvider.System
         );
     }
 

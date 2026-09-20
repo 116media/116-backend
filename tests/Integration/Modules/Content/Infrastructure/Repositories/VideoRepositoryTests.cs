@@ -126,7 +126,7 @@ public class VideoRepositoryTests : BaseRepositoryTest
 
         result.Should().NotBeNull();
         result!.Id.Should().Be(video.Id);
-        result.Category.Should().NotBeNull();
+        result.CategoryId.Should().NotBeEmpty();
     }
 
     [Fact]
@@ -162,7 +162,7 @@ public class VideoRepositoryTests : BaseRepositoryTest
         var result = await repo.GetBySlugAsync("test-video-slug");
 
         result.Should().NotBeNull();
-        result!.Slug.Should().Be("test-video-slug");
+        result!.Slug.Value.Should().Be("test-video-slug");
     }
 
     [Fact]
@@ -232,7 +232,7 @@ public class VideoRepositoryTests : BaseRepositoryTest
     }
 
     [Fact]
-    public async Task GetTagsByVideoIdAsync_ReturnsTagsForVideo()
+    public async Task GetByIdOrThrowAsync_HydratesTheTagRows()
     {
         await using var seedContext = CreateDbContext<ContentDbContext>();
         var (_, category) = await SeedCategoryChainAsync(seedContext);
@@ -242,18 +242,15 @@ public class VideoRepositoryTests : BaseRepositoryTest
 
         var tag = TagFactory.Create();
         seedContext.Tags.Add(tag);
-        await seedContext.SaveChangesAsync();
-
-        var videoTag = VideoTagEntity.Create(id: Guid.NewGuid(), videoId: video.Id, tagId: tag.Id);
-        seedContext.VideoTags.Add(videoTag);
+        video.ReplaceTags([tag.Id]);
         await seedContext.SaveChangesAsync();
 
         var repo = Resolve<IVideoRepository>();
-        var result = await repo.GetTagsByVideoIdAsync(video.Id);
+        VideoEntity loaded = await repo.GetByIdOrThrowAsync(video.Id);
 
-        result.Should().ContainSingle();
-        result[0].VideoId.Should().Be(video.Id);
-        result[0].TagId.Should().Be(tag.Id);
+        loaded.Tags.Should().ContainSingle();
+        loaded.Tags.Single().VideoId.Should().Be(video.Id);
+        loaded.Tags.Single().TagId.Should().Be(tag.Id);
     }
 
     [Fact]
@@ -388,5 +385,62 @@ public class VideoRepositoryTests : BaseRepositoryTest
         int count = await repo.CountPublishedByCategoryAsync(category.Id);
 
         count.Should().Be(4);
+    }
+
+    [Fact]
+    public async Task HasPublishedLyricsAsync_CountsOnlyPublishedLyricsLinkedToTheVideo()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var (_, category) = await SeedCategoryChainAsync(seedContext);
+
+        var withPublished = VideoFactory.Create(category.Id);
+        var withDraftOnly = VideoFactory.Create(category.Id);
+        var withoutLyrics = VideoFactory.Create(category.Id);
+        seedContext.Videos.AddRange(withPublished, withDraftOnly, withoutLyrics);
+        seedContext.Lyrics.AddRange(
+            LyricsFactory.CreatePublishedForVideoWithSlug(
+                category.Id,
+                withPublished.Id,
+                $"published-{Guid.NewGuid():N}"
+            ),
+            LyricsFactory.CreateForVideo(category.Id, withDraftOnly.Id)
+        );
+        await seedContext.SaveChangesAsync();
+
+        var repo = Resolve<IVideoRepository>();
+
+        (await repo.HasPublishedLyricsAsync(withPublished.Id)).Should().BeTrue();
+        (await repo.HasPublishedLyricsAsync(withDraftOnly.Id)).Should().BeFalse();
+        (await repo.HasPublishedLyricsAsync(withoutLyrics.Id)).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task GetIdsWithPublishedLyricsAsync_ReturnsOnlyIdsWithPublishedLyrics()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var (_, category) = await SeedCategoryChainAsync(seedContext);
+
+        var withPublished = VideoFactory.Create(category.Id);
+        var withDraftOnly = VideoFactory.Create(category.Id);
+        var withoutLyrics = VideoFactory.Create(category.Id);
+        seedContext.Videos.AddRange(withPublished, withDraftOnly, withoutLyrics);
+        seedContext.Lyrics.AddRange(
+            LyricsFactory.CreatePublishedForVideoWithSlug(
+                category.Id,
+                withPublished.Id,
+                $"published-{Guid.NewGuid():N}"
+            ),
+            LyricsFactory.CreateForVideo(category.Id, withDraftOnly.Id)
+        );
+        await seedContext.SaveChangesAsync();
+
+        var repo = Resolve<IVideoRepository>();
+        IReadOnlySet<Guid> result = await repo.GetIdsWithPublishedLyricsAsync([
+            withPublished.Id,
+            withDraftOnly.Id,
+            withoutLyrics.Id,
+        ]);
+
+        result.Should().BeEquivalentTo([withPublished.Id]);
     }
 }

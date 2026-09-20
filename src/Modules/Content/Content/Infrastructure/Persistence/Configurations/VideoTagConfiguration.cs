@@ -21,11 +21,11 @@ public class VideoTagConfiguration : IEntityTypeConfiguration<VideoTagEntity>
         builder.HasIndex(x => new { x.VideoId, x.TagId }).IsUnique();
 
         builder
-            .HasOne(x => x.Video)
+            .HasOne<VideoEntity>()
             .WithMany(v => v.Tags)
             .HasForeignKey(x => x.VideoId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasOne(x => x.Tag).WithMany().HasForeignKey(x => x.TagId).OnDelete(DeleteBehavior.Cascade);
+        builder.HasOne<TagEntity>().WithMany().HasForeignKey(x => x.TagId).OnDelete(DeleteBehavior.Cascade);
     }
 }

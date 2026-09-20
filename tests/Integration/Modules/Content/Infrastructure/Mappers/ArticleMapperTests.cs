@@ -35,10 +35,14 @@ public class ArticleMapperTests(PostgresFixture postgres) : BaseRepositoryTest(p
         await seedContext.SaveChangesAsync();
 
         await using var readContext = CreateDbContext<ContentDbContext>();
-        ArticleEntity loaded = await readContext.Articles.Include(a => a.Category).FirstAsync(a => a.Id == article.Id);
+        ArticleEntity loaded = await readContext.Articles.FirstAsync(a => a.Id == article.Id);
 
         var fileStorage = Resolve<IFileStorageService>();
-        ArticleSummaryDto dto = await loaded.ToArticleSummaryDtoAsync(_mapper, fileStorage);
+        ArticleSummaryDto dto = await loaded.ToArticleSummaryDtoAsync(
+            _mapper,
+            await Resolve<IContentLookupFactory>().ResolveForArticlesAsync([loaded]),
+            fileStorage
+        );
 
         dto.Id.Should().Be(loaded.Id);
         dto.CategoryId.Should().Be(category.Id);
@@ -65,10 +69,14 @@ public class ArticleMapperTests(PostgresFixture postgres) : BaseRepositoryTest(p
         await seedContext.SaveChangesAsync();
 
         await using var readContext = CreateDbContext<ContentDbContext>();
-        ArticleEntity loaded = await readContext.Articles.Include(a => a.Category).FirstAsync(a => a.Id == article.Id);
+        ArticleEntity loaded = await readContext.Articles.FirstAsync(a => a.Id == article.Id);
 
         var fileStorage = Resolve<IFileStorageService>();
-        ArticleSummaryDto dto = await loaded.ToArticleSummaryDtoAsync(_mapper, fileStorage);
+        ArticleSummaryDto dto = await loaded.ToArticleSummaryDtoAsync(
+            _mapper,
+            await Resolve<IContentLookupFactory>().ResolveForArticlesAsync([loaded]),
+            fileStorage
+        );
 
         dto.CoverImageUrl.Should().BeNull();
     }
@@ -86,33 +94,22 @@ public class ArticleMapperTests(PostgresFixture postgres) : BaseRepositoryTest(p
         await seedContext.SaveChangesAsync();
 
         var article = ArticleFactory.Create(category.Id);
-        article.Update(
-            categoryId: category.Id,
-            title: article.Title,
-            slug: article.Slug,
-            headline: article.Headline,
-            body: string.Join(' ', Enumerable.Repeat("mot", 250)),
-            customerId: article.CustomerId,
-            orderItemId: article.OrderItemId,
-            socialBoost: article.SocialBoost,
-            metaTitle: article.MetaTitle,
-            metaDescription: article.MetaDescription
-        );
+        article.ReviseBody(headline: article.Headline, body: string.Join(' ', Enumerable.Repeat("mot", 250)));
         seedContext.Articles.Add(article);
         await seedContext.SaveChangesAsync();
 
         await using var readContext = CreateDbContext<ContentDbContext>();
         ArticleEntity loaded = await readContext
-            .Articles.Include(a => a.Category)
-            .Include(a => a.Images)
+            .Articles.Include(a => a.Images)
             .Include(a => a.Tags)
-                .ThenInclude(at => at.Tag)
-            .Include(a => a.PromotionLevel)
-            .Include(a => a.Customer)
             .FirstAsync(a => a.Id == article.Id);
 
         var fileStorage = Resolve<IFileStorageService>();
-        ArticleDetailDto dto = await loaded.ToArticleDetailDtoAsync(_mapper, fileStorage);
+        ArticleDetailDto dto = await loaded.ToArticleDetailDtoAsync(
+            _mapper,
+            await Resolve<IContentLookupFactory>().ResolveForArticlesAsync([loaded]),
+            fileStorage
+        );
 
         dto.Id.Should().Be(loaded.Id);
         dto.CategoryName.Should().Be("Culture");
@@ -139,10 +136,14 @@ public class ArticleMapperTests(PostgresFixture postgres) : BaseRepositoryTest(p
         await seedContext.SaveChangesAsync();
 
         await using var readContext = CreateDbContext<ContentDbContext>();
-        List<ArticleEntity> loaded = await readContext.Articles.Include(a => a.Category).ToListAsync();
+        List<ArticleEntity> loaded = await readContext.Articles.ToListAsync();
 
         var fileStorage = Resolve<IFileStorageService>();
-        IReadOnlyList<ArticleSummaryDto> dtos = await loaded.ToArticleSummaryDtosAsync(_mapper, fileStorage);
+        IReadOnlyList<ArticleSummaryDto> dtos = await loaded.ToArticleSummaryDtosAsync(
+            _mapper,
+            await Resolve<IContentLookupFactory>().ResolveForArticlesAsync(loaded),
+            fileStorage
+        );
 
         dtos.Should().HaveCount(2);
     }

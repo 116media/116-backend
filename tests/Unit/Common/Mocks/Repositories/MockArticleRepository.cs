@@ -123,26 +123,6 @@ public static class MockArticleRepository
         return mock;
     }
 
-    public static Mock<IArticleRepository> SetupGetImagesByArticleId(
-        this Mock<IArticleRepository> mock,
-        Guid articleId,
-        IReadOnlyList<ArticleImageEntity> images
-    )
-    {
-        mock.Setup(x => x.GetImagesByArticleIdAsync(articleId, It.IsAny<CancellationToken>())).ReturnsAsync(images);
-        return mock;
-    }
-
-    public static Mock<IArticleRepository> SetupGetTagsByArticleId(
-        this Mock<IArticleRepository> mock,
-        Guid articleId,
-        IReadOnlyList<ArticleTagEntity> tags
-    )
-    {
-        mock.Setup(x => x.GetTagsByArticleIdAsync(articleId, It.IsAny<CancellationToken>())).ReturnsAsync(tags);
-        return mock;
-    }
-
     public static void VerifyAddCalled(this Mock<IArticleRepository> mock)
     {
         mock.Verify(x => x.AddAsync(It.IsAny<ArticleEntity>(), It.IsAny<CancellationToken>()), Times.Once);
@@ -151,26 +131,6 @@ public static class MockArticleRepository
     public static void VerifyRemoveCalled(this Mock<IArticleRepository> mock, ArticleEntity article)
     {
         mock.Verify(x => x.Remove(article), Times.Once);
-    }
-
-    public static void VerifyAddImageCalled(this Mock<IArticleRepository> mock)
-    {
-        mock.Verify(x => x.AddImageAsync(It.IsAny<ArticleImageEntity>(), It.IsAny<CancellationToken>()), Times.Once);
-    }
-
-    public static void VerifyRemoveImagesCalled(this Mock<IArticleRepository> mock)
-    {
-        mock.Verify(x => x.RemoveImages(It.IsAny<IEnumerable<ArticleImageEntity>>()), Times.Once);
-    }
-
-    public static void VerifyAddTagCalled(this Mock<IArticleRepository> mock)
-    {
-        mock.Verify(x => x.AddTagAsync(It.IsAny<ArticleTagEntity>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
-    }
-
-    public static void VerifyRemoveTagCalled(this Mock<IArticleRepository> mock)
-    {
-        mock.Verify(x => x.RemoveTag(It.IsAny<ArticleTagEntity>()), Times.Once);
     }
 
     /// <summary>
@@ -182,10 +142,6 @@ public static class MockArticleRepository
     private static void SetupDefaults(Mock<IArticleRepository> mock)
     {
         mock.Setup(x => x.AddAsync(It.IsAny<ArticleEntity>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask);
-        mock.Setup(x => x.AddImageAsync(It.IsAny<ArticleImageEntity>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask);
-        mock.Setup(x => x.AddTagAsync(It.IsAny<ArticleTagEntity>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
         mock.Setup(x =>
                 x.GetAllAsync(
@@ -201,10 +157,6 @@ public static class MockArticleRepository
         mock.Setup(x => x.GetPromotedAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new List<ArticleEntity>());
         mock.Setup(x => x.GetAbandonedDraftsAsync(It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<ArticleEntity>());
-        mock.Setup(x => x.GetImagesByArticleIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<ArticleImageEntity>());
-        mock.Setup(x => x.GetTagsByArticleIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<ArticleTagEntity>());
         mock.Setup(x => x.GetActivePromotedBySpotAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<ArticleEntity>());
         mock.Setup(x =>

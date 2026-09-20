@@ -106,12 +106,13 @@ public class ArtistBuilder
             realName: _realName,
             aliases: _aliases,
             birthdate: _birthdate,
-            hometown: _hometown
+            hometown: _hometown,
+            today: TestConstants.Clock.Today
         );
 
         if (_userId.HasValue)
         {
-            entity.ClaimOwnership(_userId.Value);
+            entity.ClaimOwnership(_userId.Value, TestConstants.Clock.Instant);
         }
 
         entity.CreatedAt = DateTime.UtcNow;

@@ -37,7 +37,8 @@ public class AdminUpdateLyricsSeoHandlerTests : BaseContentHandlerTest
             _unitOfWorkMock.Object,
             Mapper,
             userLookupMock.Object,
-            fileStorageMock.Object
+            fileStorageMock.Object,
+            CreateContentLookupFactory()
         );
     }
 

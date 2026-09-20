@@ -52,7 +52,6 @@ public class PublicAddVideoToPlaylistHandlerTests
 
         _playlistRepositoryMock.SetupGetByIdAsync(playlist);
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
-        _playlistRepositoryMock.SetupVideoExistsInPlaylistAsync(false);
 
         var command = new PublicAddVideoToPlaylistCommand(
             PlaylistId: playlistId,
@@ -65,7 +64,7 @@ public class PublicAddVideoToPlaylistHandlerTests
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _playlistRepositoryMock.VerifyAddVideoAsyncCalled();
+        playlist.ContainsVideo(video.Id).Should().BeTrue();
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -176,10 +175,10 @@ public class PublicAddVideoToPlaylistHandlerTests
         Guid playlistId = Guid.NewGuid();
         PlaylistEntity playlist = PlaylistFactory.CreateWithId(playlistId, userId);
         VideoEntity video = VideoFactory.CreatePublished(CategoryId);
+        playlist.AddVideo(videoId: video.Id, sortOrder: 0);
 
         _playlistRepositoryMock.SetupGetByIdAsync(playlist);
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
-        _playlistRepositoryMock.SetupVideoExistsInPlaylistAsync(true);
 
         var command = new PublicAddVideoToPlaylistCommand(
             PlaylistId: playlistId,

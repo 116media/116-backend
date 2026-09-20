@@ -15,10 +15,12 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.ForceUnprom
 /// <param name="lyricsRepository">Repository for lyrics data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="currentActor">Provides the identity of the authenticated user from JWT claims.</param>
+/// <param name="timeProvider">Clock stamping the unpromotion time.</param>
 public class AdminForceUnpromoteLyricsHandler(
     ILyricsRepository lyricsRepository,
     IContentUnitOfWork unitOfWork,
-    ICurrentActor currentActor
+    ICurrentActor currentActor,
+    TimeProvider timeProvider
 ) : ICommandHandler<AdminForceUnpromoteLyricsCommand, AdminForceUnpromoteLyricsResult>
 {
     /// <inheritdoc />
@@ -32,7 +34,11 @@ public class AdminForceUnpromoteLyricsHandler(
             cancellationToken: cancellationToken
         );
 
-        lyrics.ForceUnpromote(unpromotedBy: currentActor.UserId!, reason: command.Reason);
+        lyrics.ForceUnpromote(
+            unpromotedBy: currentActor.UserId!,
+            reason: command.Reason,
+            now: timeProvider.GetUtcNow()
+        );
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminForceUnpromoteLyricsResult(LyricsId: lyrics.Id, UnpromotedAt: lyrics.UnpromotedAt!.Value);

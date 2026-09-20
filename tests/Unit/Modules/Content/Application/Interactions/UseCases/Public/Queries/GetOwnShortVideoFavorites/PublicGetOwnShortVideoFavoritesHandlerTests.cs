@@ -43,7 +43,12 @@ public class PublicGetOwnShortVideoFavoritesHandlerTests : BaseContentHandlerTes
             .Setup(repository => repository.GetLikedShortVideosAsync(UserId, 2, 5, It.IsAny<CancellationToken>()))
             .ReturnsAsync((new List<ShortVideoActivity> { new(shortVideo, interactedAt) }, 8));
         _repository.SetupGetLikedAndBookmarkedIdsAsync(new HashSet<Guid> { shortVideo.Id }, new HashSet<Guid>());
-        var handler = new PublicGetOwnLikedShortVideosHandler(_repository.Object, _files.Object, Mapper);
+        var handler = new PublicGetOwnLikedShortVideosHandler(
+            _repository.Object,
+            _files.Object,
+            Mapper,
+            MockVideoRepository.Create().Object
+        );
 
         PublicGetOwnLikedShortVideosResult result = await handler.Handle(
             new PublicGetOwnLikedShortVideosQuery(UserId, new PaginatedRequest(1, 5)),
@@ -66,7 +71,12 @@ public class PublicGetOwnShortVideoFavoritesHandlerTests : BaseContentHandlerTes
             .Setup(repository => repository.GetBookmarkedShortVideosAsync(UserId, 1, 10, It.IsAny<CancellationToken>()))
             .ReturnsAsync((new List<ShortVideoActivity> { new(shortVideo, interactedAt) }, 1));
         _repository.SetupGetLikedAndBookmarkedIdsAsync(new HashSet<Guid>(), new HashSet<Guid> { shortVideo.Id });
-        var handler = new PublicGetOwnBookmarkedShortVideosHandler(_repository.Object, _files.Object, Mapper);
+        var handler = new PublicGetOwnBookmarkedShortVideosHandler(
+            _repository.Object,
+            _files.Object,
+            Mapper,
+            MockVideoRepository.Create().Object
+        );
 
         PublicGetOwnBookmarkedShortVideosResult result = await handler.Handle(
             new PublicGetOwnBookmarkedShortVideosQuery(UserId, new PaginatedRequest()),
@@ -86,7 +96,12 @@ public class PublicGetOwnShortVideoFavoritesHandlerTests : BaseContentHandlerTes
         _repository
             .Setup(repository => repository.GetSharedShortVideosAsync(UserId, 1, 10, It.IsAny<CancellationToken>()))
             .ReturnsAsync((new List<ShortVideoActivity> { new(shortVideo, interactedAt, 4) }, 1));
-        var handler = new PublicGetOwnSharedShortVideosHandler(_repository.Object, _files.Object, Mapper);
+        var handler = new PublicGetOwnSharedShortVideosHandler(
+            _repository.Object,
+            _files.Object,
+            Mapper,
+            MockVideoRepository.Create().Object
+        );
 
         PublicGetOwnSharedShortVideosResult result = await handler.Handle(
             new PublicGetOwnSharedShortVideosQuery(UserId, new PaginatedRequest()),
@@ -103,7 +118,12 @@ public class PublicGetOwnShortVideoFavoritesHandlerTests : BaseContentHandlerTes
         _repository
             .Setup(repository => repository.GetLikedShortVideosAsync(UserId, 1, 10, It.IsAny<CancellationToken>()))
             .ReturnsAsync((new List<ShortVideoActivity>(), 0));
-        var handler = new PublicGetOwnLikedShortVideosHandler(_repository.Object, _files.Object, Mapper);
+        var handler = new PublicGetOwnLikedShortVideosHandler(
+            _repository.Object,
+            _files.Object,
+            Mapper,
+            MockVideoRepository.Create().Object
+        );
 
         PublicGetOwnLikedShortVideosResult result = await handler.Handle(
             new PublicGetOwnLikedShortVideosQuery(UserId, new PaginatedRequest()),

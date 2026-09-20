@@ -22,8 +22,12 @@ public class ArticleArtistConfiguration : IEntityTypeConfiguration<ArticleArtist
         // and the article term of contentCount scan the whole join table.
         builder.HasIndex(x => x.ArtistId);
 
-        builder.HasOne(x => x.Article).WithMany().HasForeignKey(x => x.ArticleId).OnDelete(DeleteBehavior.Cascade);
+        builder
+            .HasOne<ArticleEntity>()
+            .WithMany(a => a.Artists)
+            .HasForeignKey(x => x.ArticleId)
+            .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasOne(x => x.Artist).WithMany().HasForeignKey(x => x.ArtistId).OnDelete(DeleteBehavior.Cascade);
+        builder.HasOne<ArtistEntity>().WithMany().HasForeignKey(x => x.ArtistId).OnDelete(DeleteBehavior.Cascade);
     }
 }

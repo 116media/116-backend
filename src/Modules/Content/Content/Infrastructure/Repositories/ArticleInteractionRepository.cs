@@ -96,12 +96,16 @@ public class ArticleInteractionRepository(ContentDbContext context)
         }
 
         List<Guid> likedIds = await Context
-            .ArticleLikes.Where(like => like.UserId == userId && articleIds.Contains(like.ArticleId))
+            .ArticleLikes.ApplySpecification(specification: new ArticleLikeByUserIdSpecification(userId: userId))
+            .Where(like => articleIds.Contains(like.ArticleId))
             .Select(like => like.ArticleId)
             .ToListAsync(cancellationToken);
 
         List<Guid> bookmarkedIds = await Context
-            .ArticleBookmarks.Where(bookmark => bookmark.UserId == userId && articleIds.Contains(bookmark.ArticleId))
+            .ArticleBookmarks.ApplySpecification(
+                specification: new ArticleBookmarkByUserIdSpecification(userId: userId)
+            )
+            .Where(bookmark => articleIds.Contains(bookmark.ArticleId))
             .Select(bookmark => bookmark.ArticleId)
             .ToListAsync(cancellationToken);
 
@@ -125,19 +129,30 @@ public class ArticleInteractionRepository(ContentDbContext context)
         var specification = new ArticleBookmarkByUserIdSpecification(userId: userId);
         IQueryable<ArticleBookmarkEntity> bookmarkQuery = Context
             .ArticleBookmarks.ApplySpecification(specification: specification)
-            .Where(b => b.Article.Status == EnumContentStatus.Published)
-            .Include(b => b.Article)
-                .ThenInclude(a => a.Category)
-            .OrderByDescending(b => b.CreatedAt)
-            .ThenBy(b => b.ArticleId);
+            .Where(bookmark =>
+                Context.Articles.Any(article =>
+                    article.Id == bookmark.ArticleId && article.Status == EnumContentStatus.Published
+                )
+            )
+            .OrderByDescending(bookmark => bookmark.CreatedAt)
+            .ThenBy(bookmark => bookmark.ArticleId);
 
         int totalCount = await bookmarkQuery.CountAsync(cancellationToken);
 
-        List<BookmarkedArticleActivity> activities = await bookmarkQuery
+        var pageRows = await bookmarkQuery
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .Select(b => new BookmarkedArticleActivity(b.Article, b.CreatedAt ?? DateTime.MinValue))
+            .Select(bookmark => new { bookmark.ArticleId, bookmark.CreatedAt })
             .ToListAsync(cancellationToken);
+
+        Dictionary<Guid, ArticleEntity> articles = await LoadArticlesAsync(
+            [.. pageRows.Select(row => row.ArticleId)],
+            cancellationToken
+        );
+
+        List<BookmarkedArticleActivity> activities = pageRows
+            .Select(row => new BookmarkedArticleActivity(articles[row.ArticleId], row.CreatedAt ?? DateTime.MinValue))
+            .ToList();
 
         return (activities, totalCount);
     }
@@ -153,18 +168,29 @@ public class ArticleInteractionRepository(ContentDbContext context)
         var specification = new ArticleLikeByUserIdSpecification(userId: userId);
         IQueryable<ArticleLikeEntity> query = Context
             .ArticleLikes.ApplySpecification(specification: specification)
-            .Where(like => like.Article.Status == EnumContentStatus.Published)
-            .Include(like => like.Article)
-                .ThenInclude(article => article.Category)
+            .Where(like =>
+                Context.Articles.Any(article =>
+                    article.Id == like.ArticleId && article.Status == EnumContentStatus.Published
+                )
+            )
             .OrderByDescending(like => like.CreatedAt)
             .ThenBy(like => like.ArticleId);
 
         int totalCount = await query.CountAsync(cancellationToken);
-        List<ArticleActivity> activities = await query
+        var pageRows = await query
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .Select(like => new ArticleActivity(like.Article, like.CreatedAt ?? DateTime.MinValue, 1, null))
+            .Select(like => new { like.ArticleId, like.CreatedAt })
             .ToListAsync(cancellationToken);
+
+        Dictionary<Guid, ArticleEntity> articles = await LoadArticlesAsync(
+            [.. pageRows.Select(row => row.ArticleId)],
+            cancellationToken
+        );
+
+        List<ArticleActivity> activities = pageRows
+            .Select(row => new ArticleActivity(articles[row.ArticleId], row.CreatedAt ?? DateTime.MinValue, 1, null))
+            .ToList();
 
         return (activities, totalCount);
     }
@@ -180,7 +206,11 @@ public class ArticleInteractionRepository(ContentDbContext context)
         var specification = new ArticleShareByUserIdSpecification(userId: userId);
         var groupedQuery = Context
             .ArticleShares.ApplySpecification(specification: specification)
-            .Where(share => share.Article.Status == EnumContentStatus.Published)
+            .Where(share =>
+                Context.Articles.Any(article =>
+                    article.Id == share.ArticleId && article.Status == EnumContentStatus.Published
+                )
+            )
             .GroupBy(share => share.ArticleId)
             .Select(group => new
             {
@@ -207,11 +237,10 @@ public class ArticleInteractionRepository(ContentDbContext context)
             return ([], totalCount);
         }
 
-        Guid[] articleIds = pageRows.Select(row => row.ArticleId).ToArray();
-        Dictionary<Guid, ArticleEntity> articles = await Context
-            .Articles.Where(article => articleIds.Contains(article.Id))
-            .Include(article => article.Category)
-            .ToDictionaryAsync(article => article.Id, cancellationToken);
+        Dictionary<Guid, ArticleEntity> articles = await LoadArticlesAsync(
+            [.. pageRows.Select(row => row.ArticleId)],
+            cancellationToken
+        );
 
         List<ArticleActivity> activities = pageRows
             .Select(row => new ArticleActivity(
@@ -233,7 +262,9 @@ public class ArticleInteractionRepository(ContentDbContext context)
         CancellationToken cancellationToken = default
     )
     {
-        IQueryable<ArticleEntity> row = Context.Articles.Where(e => e.Id == articleId);
+        IQueryable<ArticleEntity> row = Context.Articles.ApplySpecification(
+            specification: new ArticleByIdSpecification(id: articleId)
+        );
 
         // Math.Max reaches PostgreSQL as GREATEST, so a racing unlike cannot go negative.
         return kind switch
@@ -256,5 +287,26 @@ public class ArticleInteractionRepository(ContentDbContext context)
             ),
             _ => null,
         };
+    }
+
+    /// <summary>
+    /// Loads the articles a page of interaction rows points at, keyed by id.
+    /// </summary>
+    /// <param name="articleIds">The article ids on the page.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The articles by id.</returns>
+    private async Task<Dictionary<Guid, ArticleEntity>> LoadArticlesAsync(
+        Guid[] articleIds,
+        CancellationToken cancellationToken
+    )
+    {
+        if (articleIds.Length == 0)
+        {
+            return [];
+        }
+
+        return await Context
+            .Articles.Where(article => articleIds.Contains(article.Id))
+            .ToDictionaryAsync(article => article.Id, cancellationToken);
     }
 }

@@ -55,4 +55,15 @@ public interface IContentTypeRepository
     /// </summary>
     /// <param name="contentType">The content type to update.</param>
     void Update(ContentTypeEntity contentType);
+
+    /// <summary>
+    /// Resolves the content types the given ids reference, in one query, keyed by id.
+    /// Missing ids are simply absent from the result.
+    /// </summary>
+    /// <param name="ids">The identifiers to resolve.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    Task<IReadOnlyDictionary<Guid, ContentTypeEntity>> GetByIdsAsync(
+        IReadOnlyCollection<Guid> ids,
+        CancellationToken cancellationToken = default
+    );
 }

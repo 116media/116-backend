@@ -2,6 +2,7 @@ using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Content.Infrastructure.Repositories;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Unit.Tests.Common.Helpers;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -20,6 +21,7 @@ public class PlaylistRepositoryTests : IDisposable
     {
         DbContextOptions<ContentDbContext> options = new DbContextOptionsBuilder<ContentDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+            .AddInterceptors(new CreatedAtStampingInterceptor())
             .Options;
 
         _context = new ContentDbContext(options);
@@ -148,105 +150,83 @@ public class PlaylistRepositoryTests : IDisposable
 
     #endregion
 
-    #region VideoExistsInPlaylistAsync Tests
+    #region Video membership through the root
 
     [Fact]
-    public async Task VideoExistsInPlaylistAsync_WhenVideoExists_ShouldReturnTrue()
+    public async Task ContainsVideo_WhenVideoExists_ShouldReturnTrue()
     {
         // Arrange
         PlaylistEntity playlist = await SeedPlaylistAsync(Guid.NewGuid());
         var videoId = Guid.NewGuid();
-        PlaylistVideoEntity playlistVideo = PlaylistVideoEntity.Create(
-            Guid.NewGuid(),
-            playlist.Id,
-            videoId,
-            sortOrder: 0
-        );
-        _context.PlaylistVideos.Add(playlistVideo);
+        playlist.AddVideo(videoId: videoId, sortOrder: 0);
         await _context.SaveChangesAsync();
+        _context.ChangeTracker.Clear();
 
         // Act
-        bool result = await _repository.VideoExistsInPlaylistAsync(playlist.Id, videoId);
+        PlaylistEntity loaded = (await _repository.GetByIdAsync(playlist.Id))!;
 
         // Assert
-        result.Should().BeTrue();
+        loaded.ContainsVideo(videoId).Should().BeTrue();
+        loaded.ContainsVideo(Guid.NewGuid()).Should().BeFalse();
     }
 
     [Fact]
-    public async Task VideoExistsInPlaylistAsync_WhenVideoDoesNotExist_ShouldReturnFalse()
-    {
-        // Act
-        bool result = await _repository.VideoExistsInPlaylistAsync(Guid.NewGuid(), Guid.NewGuid());
-
-        // Assert
-        result.Should().BeFalse();
-    }
-
-    #endregion
-
-    #region AddVideoAsync Tests
-
-    [Fact]
-    public async Task AddVideoAsync_ShouldPersistPlaylistVideoEntity()
-    {
-        // Arrange
-        PlaylistEntity playlist = await SeedPlaylistAsync(Guid.NewGuid());
-        PlaylistVideoEntity playlistVideo = PlaylistVideoEntity.Create(
-            Guid.NewGuid(),
-            playlist.Id,
-            Guid.NewGuid(),
-            sortOrder: 0
-        );
-
-        // Act
-        await _repository.AddVideoAsync(playlistVideo);
-        await _context.SaveChangesAsync();
-
-        // Assert
-        PlaylistVideoEntity? retrieved = await _context.PlaylistVideos.FindAsync(playlistVideo.Id);
-        retrieved.Should().NotBeNull();
-    }
-
-    #endregion
-
-    #region RemoveVideoAsync Tests
-
-    [Fact]
-    public async Task RemoveVideoAsync_WhenEntryExists_ShouldRemoveFromDatabase()
+    public async Task AddVideo_ThroughTheRoot_ShouldPersistTheMembershipRow()
     {
         // Arrange
         PlaylistEntity playlist = await SeedPlaylistAsync(Guid.NewGuid());
         var videoId = Guid.NewGuid();
-        PlaylistVideoEntity playlistVideo = PlaylistVideoEntity.Create(
-            Guid.NewGuid(),
-            playlist.Id,
-            videoId,
-            sortOrder: 0
-        );
-        _context.PlaylistVideos.Add(playlistVideo);
-        await _context.SaveChangesAsync();
 
         // Act
-        await _repository.RemoveVideoAsync(playlist.Id, videoId);
+        playlist.AddVideo(videoId: videoId, sortOrder: 0).Should().BeTrue();
         await _context.SaveChangesAsync();
 
         // Assert
-        PlaylistVideoEntity? retrieved = await _context.PlaylistVideos.FindAsync(playlistVideo.Id);
-        retrieved.Should().BeNull();
+        (await _context.PlaylistVideos.AnyAsync(pv => pv.PlaylistId == playlist.Id && pv.VideoId == videoId))
+            .Should()
+            .BeTrue();
     }
 
     [Fact]
-    public async Task RemoveVideoAsync_WhenEntryDoesNotExist_ShouldDoNothing()
+    public async Task AddVideo_WhenAlreadyInPlaylist_ShouldReportNoChange()
     {
+        // Arrange
+        PlaylistEntity playlist = await SeedPlaylistAsync(Guid.NewGuid());
+        var videoId = Guid.NewGuid();
+        playlist.AddVideo(videoId: videoId, sortOrder: 0);
+        await _context.SaveChangesAsync();
+
+        // Act & Assert
+        playlist.AddVideo(videoId: videoId, sortOrder: 1).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task RemoveVideo_ThroughTheRoot_ShouldDeleteTheMembershipRow()
+    {
+        // Arrange
+        PlaylistEntity playlist = await SeedPlaylistAsync(Guid.NewGuid());
+        var videoId = Guid.NewGuid();
+        playlist.AddVideo(videoId: videoId, sortOrder: 0);
+        await _context.SaveChangesAsync();
+
         // Act
-        Func<Task> act = async () =>
-        {
-            await _repository.RemoveVideoAsync(Guid.NewGuid(), Guid.NewGuid());
-            await _context.SaveChangesAsync();
-        };
+        playlist.RemoveVideo(videoId).Should().BeTrue();
+        await _context.SaveChangesAsync();
 
         // Assert
-        await act.Should().NotThrowAsync();
+        (await _context.PlaylistVideos.AnyAsync(pv => pv.PlaylistId == playlist.Id))
+            .Should()
+            .BeFalse();
+    }
+
+    [Fact]
+    public async Task RemoveVideo_WhenNotInPlaylist_ShouldReportNoChange()
+    {
+        // Arrange
+        PlaylistEntity playlist = await SeedPlaylistAsync(Guid.NewGuid());
+
+        // Act & Assert
+        playlist.RemoveVideo(Guid.NewGuid()).Should().BeFalse();
     }
 
     #endregion

@@ -29,7 +29,8 @@ public class AdminCreateLyricsHandler(
     IMapper mapper,
     IUserLookupService userLookup,
     IFileStorageService fileStorage,
-    ContentI18n i18n
+    ContentI18n i18n,
+    IContentLookupFactory contentLookupFactory
 ) : ICommandHandler<AdminCreateLyricsCommand, AdminCreateLyricsResult>
 {
     /// <inheritdoc />
@@ -54,11 +55,10 @@ public class AdminCreateLyricsHandler(
 
         if (command.VideoId.HasValue)
         {
-            VideoEntity video = await videoRepository.GetByIdOrThrowAsync(
-                id: command.VideoId.Value,
+            await videoRepository.ExistsOrThrowAsync(
+                videoId: command.VideoId.Value,
                 cancellationToken: cancellationToken
             );
-            video.MarkHasLyrics();
         }
 
         await lyricsRepository.AddAsync(lyrics: lyrics, cancellationToken: cancellationToken);
@@ -69,7 +69,13 @@ public class AdminCreateLyricsHandler(
             cancellationToken: cancellationToken
         );
 
-        var dto = await created.ToLyricsDetailDtoAsync(mapper, userLookup, fileStorage, cancellationToken);
+        var dto = await created.ToLyricsDetailDtoAsync(
+            await contentLookupFactory.ResolveForLyricsAsync([created], cancellationToken),
+            mapper,
+            userLookup,
+            fileStorage,
+            cancellationToken
+        );
         return new AdminCreateLyricsResult(Lyrics: dto);
     }
 

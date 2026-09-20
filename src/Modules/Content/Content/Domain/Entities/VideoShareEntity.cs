@@ -26,11 +26,6 @@ public class VideoShareEntity : Aggregate<Guid>
     /// </summary>
     public EnumShareChannel? ShareChannel { get; private set; }
 
-    /// <summary>
-    /// Navigation property to the video.
-    /// </summary>
-    public VideoEntity Video { get; private set; } = null!;
-
     private VideoShareEntity() { }
 
     /// <summary>
@@ -49,7 +44,6 @@ public class VideoShareEntity : Aggregate<Guid>
             UserId = userId,
             VideoId = videoId,
             ShareChannel = shareChannel,
-            CreatedAt = DateTime.UtcNow,
         };
 
         share.AddDomainEvent(new VideoEngagedEvent(VideoId: videoId, Kind: EnumEngagementKind.Share, Delta: 1));

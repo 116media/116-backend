@@ -13,12 +13,12 @@ public static class CategoryPricingFactory
     /// <summary>
     /// Creates a category pricing with default price.
     /// </summary>
-    public static CategoryPricingEntity Create(Guid categoryId, Guid pricingTierId) =>
-        new CategoryPricingBuilder(categoryId, pricingTierId).Build();
+    public static CategoryPricingEntity Create(CategoryEntity category, Guid pricingTierId) =>
+        new CategoryPricingBuilder(category, pricingTierId).Build();
 
     /// <summary>
     /// Creates a category pricing with a specific price.
     /// </summary>
-    public static CategoryPricingEntity Create(Guid categoryId, Guid pricingTierId, decimal priceUsd) =>
-        new CategoryPricingBuilder(categoryId, pricingTierId).WithPriceUsd(priceUsd).Build();
+    public static CategoryPricingEntity Create(CategoryEntity category, Guid pricingTierId, decimal priceUsd) =>
+        new CategoryPricingBuilder(category, pricingTierId).WithPriceUsd(priceUsd).Build();
 }

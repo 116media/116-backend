@@ -11,12 +11,14 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCategor
 /// <summary>
 /// Handles the <see cref="AdminUpdateCategoryCommand" /> to update an existing category.
 /// </summary>
+/// <param name="contentTypeRepository">Repository resolving the category's content type.</param>
 /// <param name="categoryRepository">Repository for category data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="categoryDtoFactory">Builds category projections with their posters resolved.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminUpdateCategoryHandler(
     ICategoryRepository categoryRepository,
+    IContentTypeRepository contentTypeRepository,
     IContentUnitOfWork unitOfWork,
     ICategoryDtoFactory categoryDtoFactory,
     ContentI18n i18n
@@ -32,6 +34,11 @@ public class AdminUpdateCategoryHandler(
 
         CategoryEntity category = await categoryRepository.GetByIdOrThrowAsync(
             id: id,
+            cancellationToken: cancellationToken
+        );
+
+        ContentTypeEntity contentType = await contentTypeRepository.GetByIdOrThrowAsync(
+            id: category.ContentTypeId,
             cancellationToken: cancellationToken
         );
 
@@ -52,7 +59,7 @@ public class AdminUpdateCategoryHandler(
                 throw i18n.Category.CannotMakeInactiveExclusive();
             }
 
-            if (category.ContentType.Name != nameof(EnumCoreContentType.Video))
+            if (contentType.Name != nameof(EnumCoreContentType.Video))
             {
                 throw i18n.Category.OnlyVideoCategoryCanBeExclusive();
             }
@@ -65,7 +72,7 @@ public class AdminUpdateCategoryHandler(
                 throw i18n.Category.CannotMakeInactiveDefaultForLyrics();
             }
 
-            if (category.ContentType.Name != nameof(EnumCoreContentType.Lyrics))
+            if (contentType.Name != nameof(EnumCoreContentType.Lyrics))
             {
                 throw i18n.Category.OnlyLyricsCategoryCanBeDefault();
             }
@@ -109,10 +116,9 @@ public class AdminUpdateCategoryHandler(
                     await unitOfWork.CommitAsync(cancellationToken: ct);
                 }
 
-                category.Update(
-                    name: command.Name,
-                    slug: command.Slug,
-                    description: command.Description,
+                category.Rename(name: command.Name, slug: command.Slug);
+                category.Redescribe(description: command.Description);
+                category.Reclassify(
                     isGossip: command.IsGossip,
                     isExclusive: command.IsExclusive,
                     isDefaultForLyrics: command.IsDefaultForLyrics

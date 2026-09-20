@@ -28,8 +28,7 @@ public class CategoryDtoFactoryTests(PostgresFixture postgres) : BaseRepositoryT
 
         await using var readContext = CreateDbContext<ContentDbContext>();
         CategoryEntity loaded = await readContext
-            .Categories.Include(c => c.ContentType)
-            .Include(c => c.Pricing)
+            .Categories.Include(c => c.Pricing)
             .FirstAsync(c => c.Id == category.Id);
 
         var categoryDtoFactory = Resolve<ICategoryDtoFactory>();
@@ -60,8 +59,7 @@ public class CategoryDtoFactoryTests(PostgresFixture postgres) : BaseRepositoryT
 
         await using var readContext = CreateDbContext<ContentDbContext>();
         CategoryEntity loaded = await readContext
-            .Categories.Include(c => c.ContentType)
-            .Include(c => c.Pricing)
+            .Categories.Include(c => c.Pricing)
             .FirstAsync(c => c.Id == category.Id);
 
         var categoryDtoFactory = Resolve<ICategoryDtoFactory>();
@@ -85,15 +83,13 @@ public class CategoryDtoFactoryTests(PostgresFixture postgres) : BaseRepositoryT
         seedContext.Categories.Add(category);
         await seedContext.SaveChangesAsync();
 
-        var pricing = CategoryPricingFactory.Create(category.Id, pricingTier.Id, 25.00m);
+        var pricing = CategoryPricingFactory.Create(category, pricingTier.Id, 25.00m);
         seedContext.CategoryPricing.Add(pricing);
         await seedContext.SaveChangesAsync();
 
         await using var readContext = CreateDbContext<ContentDbContext>();
         CategoryEntity loaded = await readContext
-            .Categories.Include(c => c.ContentType)
-            .Include(c => c.Pricing)
-                .ThenInclude(p => p.PricingTier)
+            .Categories.Include(c => c.Pricing)
             .FirstAsync(c => c.Id == category.Id);
 
         var categoryDtoFactory = Resolve<ICategoryDtoFactory>();
@@ -118,10 +114,7 @@ public class CategoryDtoFactoryTests(PostgresFixture postgres) : BaseRepositoryT
         await seedContext.SaveChangesAsync();
 
         await using var readContext = CreateDbContext<ContentDbContext>();
-        List<CategoryEntity> loaded = await readContext
-            .Categories.Include(c => c.ContentType)
-            .Include(c => c.Pricing)
-            .ToListAsync();
+        List<CategoryEntity> loaded = await readContext.Categories.Include(c => c.Pricing).ToListAsync();
 
         var categoryDtoFactory = Resolve<ICategoryDtoFactory>();
         IReadOnlyList<CategoryDto> dtos = await categoryDtoFactory.CreateManyAsync(loaded);

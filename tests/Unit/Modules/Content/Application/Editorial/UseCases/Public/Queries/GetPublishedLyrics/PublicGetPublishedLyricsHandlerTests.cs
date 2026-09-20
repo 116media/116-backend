@@ -8,6 +8,7 @@ using _116.Core.Contracts.Application.Services;
 using _116.Shared.Application.Pagination;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
+using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
@@ -19,7 +20,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Public.
 /// <summary>
 /// Unit tests for <see cref="PublicGetPublishedLyricsHandler"/>.
 /// </summary>
-public class PublicGetPublishedLyricsHandlerTests
+public class PublicGetPublishedLyricsHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<ILyricsRepository> _lyricsRepositoryMock;
     private readonly PublicGetPublishedLyricsHandler _handler;
@@ -30,7 +31,11 @@ public class PublicGetPublishedLyricsHandlerTests
     {
         _lyricsRepositoryMock = MockLyricsRepository.Create();
         Mock<IFileStorageService> fileStorageMock = MockFileStorageService.Create();
-        _handler = new PublicGetPublishedLyricsHandler(_lyricsRepositoryMock.Object, fileStorageMock.Object);
+        _handler = new PublicGetPublishedLyricsHandler(
+            _lyricsRepositoryMock.Object,
+            fileStorageMock.Object,
+            CreateContentLookupFactory()
+        );
     }
 
     [Fact]

@@ -16,10 +16,12 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.VerifyArtis
 /// <param name="artistRepository">Repository for artist profile data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="artistDtoFactory">Builds artist projections with their avatars resolved.</param>
+/// <param name="timeProvider">Clock stamping the ownership verification time.</param>
 public class AdminVerifyArtistOwnerHandler(
     IArtistRepository artistRepository,
     IContentUnitOfWork unitOfWork,
-    IArtistDtoFactory artistDtoFactory
+    IArtistDtoFactory artistDtoFactory,
+    TimeProvider timeProvider
 ) : ICommandHandler<AdminVerifyArtistOwnerCommand, AdminVerifyArtistOwnerResult>
 {
     /// <inheritdoc />
@@ -33,7 +35,7 @@ public class AdminVerifyArtistOwnerHandler(
             cancellationToken: cancellationToken
         );
 
-        artist.ClaimOwnership(userId: command.UserId);
+        artist.ClaimOwnership(userId: command.UserId, now: timeProvider.GetUtcNow());
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         var dto = await artistDtoFactory.CreateAsync(artist, ct: cancellationToken);

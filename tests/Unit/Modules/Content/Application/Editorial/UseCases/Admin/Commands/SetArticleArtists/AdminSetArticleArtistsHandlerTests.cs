@@ -44,9 +44,6 @@ public class AdminSetArticleArtistsHandlerTests
         ArtistEntity artist = ArtistFactory.Create();
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
         _artistRepositoryMock.SetupGetByIdAsync(artist.Id, artist);
-        _articleRepositoryMock
-            .Setup(x => x.GetArtistsByArticleIdAsync(article.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync([ArticleArtistEntity.Create(Guid.NewGuid(), article.Id, artist.Id)]);
 
         var command = new AdminSetArticleArtistsCommand(article.Id, [artist.Id]);
 
@@ -55,10 +52,7 @@ public class AdminSetArticleArtistsHandlerTests
 
         // Assert
         result.ArtistIds.Should().Equal(artist.Id);
-        _articleRepositoryMock.Verify(
-            x => x.ReplaceArticleArtistsAsync(article.Id, command.ArtistIds, It.IsAny<CancellationToken>()),
-            Times.Once
-        );
+        article.Artists.Should().ContainSingle().Which.ArtistId.Should().Be(artist.Id);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -77,15 +71,7 @@ public class AdminSetArticleArtistsHandlerTests
 
         // Assert — validated before anything is written, so a bad id never half-applies.
         await act.Should().ThrowAsync<NotFoundException>();
-        _articleRepositoryMock.Verify(
-            x =>
-                x.ReplaceArticleArtistsAsync(
-                    It.IsAny<Guid>(),
-                    It.IsAny<IReadOnlyList<Guid>>(),
-                    It.IsAny<CancellationToken>()
-                ),
-            Times.Never
-        );
+        article.Artists.Should().BeEmpty();
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 
@@ -94,10 +80,8 @@ public class AdminSetArticleArtistsHandlerTests
     {
         // Arrange
         ArticleEntity article = ArticleFactory.Create(Guid.NewGuid());
+        ArticleArtistFactory.Link(article, Guid.NewGuid());
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
-        _articleRepositoryMock
-            .Setup(x => x.GetArtistsByArticleIdAsync(article.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync([]);
 
         var command = new AdminSetArticleArtistsCommand(article.Id, []);
 
@@ -106,10 +90,7 @@ public class AdminSetArticleArtistsHandlerTests
 
         // Assert
         result.ArtistIds.Should().BeEmpty();
-        _articleRepositoryMock.Verify(
-            x => x.ReplaceArticleArtistsAsync(article.Id, command.ArtistIds, It.IsAny<CancellationToken>()),
-            Times.Once
-        );
+        article.Artists.Should().BeEmpty();
         _unitOfWorkMock.VerifyCommitCalled();
     }
 }

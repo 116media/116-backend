@@ -29,7 +29,10 @@ public class AdminUpdateVideoTagsHandler(
     {
         Guid videoId = Guid.Parse(command.VideoId);
 
-        await videoRepository.GetByIdOrThrowAsync(id: videoId, cancellationToken: cancellationToken);
+        VideoEntity video = await videoRepository.GetByIdOrThrowAsync(
+            id: videoId,
+            cancellationToken: cancellationToken
+        );
 
         IReadOnlyDictionary<string, TagEntity> existingTagsByName = await tagRepository.GetByNamesAsync(
             names: command.TagNames,
@@ -50,22 +53,7 @@ public class AdminUpdateVideoTagsHandler(
             resolvedTagIds.Add(existing.Id);
         }
 
-        IReadOnlyList<VideoTagEntity> existingTags = await videoRepository.GetTagsByVideoIdAsync(
-            videoId: videoId,
-            cancellationToken: cancellationToken
-        );
-
-        foreach (VideoTagEntity tag in existingTags)
-        {
-            videoRepository.RemoveTag(tag: tag);
-        }
-
-        foreach (Guid tagId in resolvedTagIds)
-        {
-            var tag = VideoTagEntity.Create(id: Guid.NewGuid(), videoId: videoId, tagId: tagId);
-            await videoRepository.AddTagAsync(tag: tag, cancellationToken: cancellationToken);
-        }
-
+        video.ReplaceTags(tagIds: resolvedTagIds);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminUpdateVideoTagsResult(IsSuccess: true);

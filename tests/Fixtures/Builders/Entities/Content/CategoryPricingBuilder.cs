@@ -11,18 +11,16 @@ namespace _116.Tests.Fixtures.Builders.Entities.Content;
 /// </summary>
 public class CategoryPricingBuilder
 {
-    private Guid _id;
-    private Guid _categoryId;
-    private Guid _pricingTierId;
+    private readonly CategoryEntity _category;
+    private readonly Guid _pricingTierId;
     private decimal _priceUsd;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CategoryPricingBuilder"/> class with default values.
     /// </summary>
-    public CategoryPricingBuilder(Guid categoryId, Guid pricingTierId)
+    public CategoryPricingBuilder(CategoryEntity category, Guid pricingTierId)
     {
-        _id = Guid.NewGuid();
-        _categoryId = categoryId;
+        _category = category;
         _pricingTierId = pricingTierId;
         _priceUsd = TestConstants.CategoryPricing.ValidPriceUsd;
     }
@@ -41,6 +39,8 @@ public class CategoryPricingBuilder
     /// </summary>
     public CategoryPricingEntity Build()
     {
-        return CategoryPricingEntity.Create(_id, _categoryId, _pricingTierId, _priceUsd);
+        _category.SetPricing(pricingTierId: _pricingTierId, priceUsd: _priceUsd);
+
+        return _category.FindPricing(pricingTierId: _pricingTierId)!;
     }
 }

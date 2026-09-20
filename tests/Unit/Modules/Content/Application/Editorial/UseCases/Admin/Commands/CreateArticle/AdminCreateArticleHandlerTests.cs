@@ -49,7 +49,8 @@ public class AdminCreateArticleHandlerTests : BaseContentHandlerTest
             _unitOfWorkMock.Object,
             _fileStorageMock.Object,
             Mapper,
-            TestErrorsFactory.CreateContentI18n()
+            TestErrorsFactory.CreateContentI18n(),
+            CreateContentLookupFactory()
         );
     }
 

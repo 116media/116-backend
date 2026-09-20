@@ -36,7 +36,8 @@ public class AdminCreateArtistHandlerTests
             _artistRepositoryMock.Object,
             _unitOfWorkMock.Object,
             new ArtistDtoFactory(fileStorageMock.Object),
-            TestErrorsFactory.CreateContentI18n()
+            TestErrorsFactory.CreateContentI18n(),
+            TimeProvider.System
         );
     }
 

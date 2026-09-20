@@ -37,4 +37,17 @@ public class PricingTierRepository(ContentDbContext context)
 
         return await query.OrderBy(x => x.Name).ToListAsync(cancellationToken);
     }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyDictionary<Guid, PricingTierEntity>> GetByIdsAsync(
+        IReadOnlyCollection<Guid> ids,
+        CancellationToken cancellationToken = default
+    )
+    {
+        List<PricingTierEntity> entities = await Context
+            .PricingTiers.Where(entity => ids.Contains(entity.Id))
+            .ToListAsync(cancellationToken);
+
+        return entities.ToDictionary(entity => entity.Id);
+    }
 }

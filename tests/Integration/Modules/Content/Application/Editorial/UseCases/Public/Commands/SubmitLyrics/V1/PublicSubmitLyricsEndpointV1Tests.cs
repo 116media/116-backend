@@ -7,6 +7,7 @@ using _116.Content.Infrastructure.Persistence;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Shared.Application.Exceptions;
+using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Factories.Identity;
 using _116.Tests.Fixtures.Helpers;
@@ -101,7 +102,7 @@ public class PublicSubmitLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest
             ContentTypeEntity contentType = ContentTypeFactory.Create();
             CategoryEntity category = CategoryFactory.CreateDefaultForLyrics(contentType.Id);
             ArtistEntity artist = ArtistFactory.Create("Fally Ipupa", "fally-ipupa-real");
-            artist.ClaimOwnership(userId);
+            artist.ClaimOwnership(userId, TestConstants.Clock.Instant);
             ctx.ContentTypes.Add(contentType);
             ctx.Categories.Add(category);
             ctx.Artists.Add(artist);

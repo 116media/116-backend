@@ -88,7 +88,7 @@ public class AdminCreateVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
         await using ContentDbContext verifyContext = CreateDbContext<ContentDbContext>();
         VideoEntity? persisted = await verifyContext.Videos.FindAsync(body.Video.Id);
         persisted.Should().NotBeNull();
-        persisted!.Slug.Should().Be(slug);
+        persisted!.Slug.Value.Should().Be(slug);
         persisted.CategoryId.Should().Be(category.Id);
     }
 

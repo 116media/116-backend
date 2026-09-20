@@ -32,7 +32,8 @@ public class PublicGetLyricsBySlugHandler(
     IMapper mapper,
     IUserLookupService userLookup,
     IFileStorageService fileStorage,
-    ContentI18n i18n
+    ContentI18n i18n,
+    IContentLookupFactory contentLookupFactory
 ) : IQueryHandler<PublicGetLyricsBySlugQuery, PublicGetLyricsBySlugResult>
 {
     /// <inheritdoc />
@@ -55,7 +56,7 @@ public class PublicGetLyricsBySlugHandler(
         if (lyrics.VideoId is Guid videoId)
         {
             VideoEntity? video = await videoRepository.GetByIdAsync(id: videoId, cancellationToken: cancellationToken);
-            videoSlug = video?.Slug;
+            videoSlug = video?.Slug.Value;
         }
 
         string? artistSlug = null;
@@ -65,7 +66,7 @@ public class PublicGetLyricsBySlugHandler(
                 id: artistId,
                 cancellationToken: cancellationToken
             );
-            artistSlug = artist?.Slug;
+            artistSlug = artist?.Slug.Value;
         }
 
         IReadOnlyList<AlbumTrackDto> albumTracks;
@@ -120,6 +121,7 @@ public class PublicGetLyricsBySlugHandler(
             );
 
         var dto = await lyrics.ToPublicLyricsDetailDtoAsync(
+            await contentLookupFactory.ResolveForLyricsAsync([lyrics], cancellationToken),
             mapper,
             userLookup,
             fileStorage,

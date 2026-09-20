@@ -65,7 +65,7 @@ public class AdminCreateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
         CategoryEntity? category = await verifyContext.Categories.FirstOrDefaultAsync(c => c.Id == body.Category.Id);
         category.Should().NotBeNull();
         category!.Name.Should().Be(name);
-        category.Slug.Should().Be(slug);
+        category.Slug.Value.Should().Be(slug);
     }
 
     [Fact]

@@ -3,6 +3,7 @@ using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Exceptions.Messages;
+using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
 
@@ -39,7 +40,7 @@ public class PublicGetLyricsBySlugEndpointV1Tests(PostgresFixture db) : BaseApiT
             LyricsEntity entity = LyricsFactory.CreateWithSlug(categoryId, slug);
             entity.MarkPendingReview();
             entity.Approve();
-            entity.Publish();
+            entity.Publish(TestConstants.Clock.Instant);
             ctx.Lyrics.Add(entity);
             return entity;
         });
@@ -132,7 +133,7 @@ public class PublicGetLyricsBySlugEndpointV1Tests(PostgresFixture db) : BaseApiT
             entity.Approve();
             entity.MarkPendingReview();
             entity.Approve();
-            entity.Publish();
+            entity.Publish(TestConstants.Clock.Instant);
             ctx.Lyrics.Add(entity);
             return entity;
         });
@@ -159,7 +160,7 @@ public class PublicGetLyricsBySlugEndpointV1Tests(PostgresFixture db) : BaseApiT
             entity.Approve();
             entity.MarkPendingReview();
             entity.Approve();
-            entity.Publish();
+            entity.Publish(TestConstants.Clock.Instant);
             ctx.Lyrics.Add(entity);
             return entity;
         });
@@ -190,7 +191,7 @@ public class PublicGetLyricsBySlugEndpointV1Tests(PostgresFixture db) : BaseApiT
             entity.Approve();
             entity.MarkPendingReview();
             entity.Approve();
-            entity.Publish();
+            entity.Publish(TestConstants.Clock.Instant);
             ctx.Artists.Add(artist);
             ctx.Lyrics.Add(entity);
             return artist;
@@ -220,7 +221,7 @@ public class PublicGetLyricsBySlugEndpointV1Tests(PostgresFixture db) : BaseApiT
             entity.Approve();
             entity.MarkPendingReview();
             entity.Approve();
-            entity.Publish();
+            entity.Publish(TestConstants.Clock.Instant);
             ctx.Artists.Add(artist);
             ctx.Lyrics.Add(entity);
             return (entity, artist);
@@ -257,7 +258,7 @@ public class PublicGetLyricsBySlugEndpointV1Tests(PostgresFixture db) : BaseApiT
             entity.Approve();
             entity.MarkPendingReview();
             entity.Approve();
-            entity.Publish();
+            entity.Publish(TestConstants.Clock.Instant);
             ctx.Lyrics.Add(entity);
             return entity;
         });
@@ -282,7 +283,7 @@ public class PublicGetLyricsBySlugEndpointV1Tests(PostgresFixture db) : BaseApiT
             LyricsEntity entity = LyricsFactory.CreateWithSlug(categoryId, slug);
             entity.MarkPendingReview();
             entity.Approve();
-            entity.Publish();
+            entity.Publish(TestConstants.Clock.Instant);
             entity.WithViewCount(2);
             entity.WithShareCount(1);
             ctx.Lyrics.Add(entity);
@@ -313,7 +314,7 @@ public class PublicGetLyricsBySlugEndpointV1Tests(PostgresFixture db) : BaseApiT
             LyricsEntity entity = LyricsFactory.CreateWithSlug(categoryId, slug);
             entity.MarkPendingReview();
             entity.Approve();
-            entity.Publish();
+            entity.Publish(TestConstants.Clock.Instant);
             ctx.Lyrics.Add(entity);
             return entity;
         });

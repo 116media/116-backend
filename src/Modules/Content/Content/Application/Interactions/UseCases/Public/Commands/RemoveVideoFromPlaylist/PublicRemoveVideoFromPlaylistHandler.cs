@@ -36,12 +36,7 @@ public class PublicRemoveVideoFromPlaylistHandler(
                 throw i18n.Playlist.NotOwner();
             }
 
-            await playlistRepository.RemoveVideoAsync(
-                playlistId: command.PlaylistId,
-                videoId: command.VideoId,
-                cancellationToken: cancellationToken
-            );
-
+            playlist.RemoveVideo(videoId: command.VideoId);
             await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
             return new PublicRemoveVideoFromPlaylistResult(IsSuccess: true);

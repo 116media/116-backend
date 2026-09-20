@@ -27,7 +27,6 @@ public class CategoryBuilder
     private bool _isDefaultForLyrics;
     private Guid? _posterFileId;
     private DateTimeOffset? _pinnedToFeedAt;
-    private ContentTypeEntity? _contentType;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CategoryBuilder"/> class with random default values.
@@ -129,7 +128,6 @@ public class CategoryBuilder
     /// </summary>
     public CategoryBuilder WithContentType(ContentTypeEntity contentType)
     {
-        _contentType = contentType;
         _contentTypeId = contentType.Id;
         return this;
     }
@@ -172,22 +170,7 @@ public class CategoryBuilder
 
         if (_pinnedToFeedAt.HasValue)
         {
-            PropertyInfo pinnedProp = typeof(CategoryEntity).GetProperty(
-                nameof(CategoryEntity.PinnedToFeedAt),
-                BindingFlags.Public | BindingFlags.Instance
-            )!;
-
-            pinnedProp.SetValue(entity, _pinnedToFeedAt);
-        }
-
-        if (_contentType is not null)
-        {
-            PropertyInfo prop = typeof(CategoryEntity).GetProperty(
-                nameof(CategoryEntity.ContentType),
-                BindingFlags.Public | BindingFlags.Instance
-            )!;
-
-            prop.SetValue(entity, _contentType);
+            entity.PinToFeed(now: _pinnedToFeedAt.Value);
         }
 
         return entity;

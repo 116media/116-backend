@@ -70,155 +70,9 @@ public static class MockContentOrderRepository
         return mock;
     }
 
-    public static Mock<IContentOrderRepository> SetupGetPaymentByOrderId(
-        this Mock<IContentOrderRepository> mock,
-        Guid orderId,
-        ContentPaymentEntity? payment
-    )
-    {
-        mock.Setup(x => x.GetPaymentByOrderIdAsync(orderId, It.IsAny<CancellationToken>())).ReturnsAsync(payment);
-        return mock;
-    }
-
-    public static Mock<IContentOrderRepository> SetupGetItemById(
-        this Mock<IContentOrderRepository> mock,
-        Guid orderId,
-        Guid itemId,
-        ContentOrderItemEntity? item
-    )
-    {
-        mock.Setup(x => x.GetItemByIdAsync(orderId, itemId, It.IsAny<CancellationToken>())).ReturnsAsync(item);
-        return mock;
-    }
-
-    /// <summary>
-    /// Sets up the item lookup to answer only for the item's own order and item ids, so a handler
-    /// that asks for an item under a different order is not silently handed this one.
-    /// </summary>
-    public static Mock<IContentOrderRepository> SetupGetItemByIdOrThrow(
-        this Mock<IContentOrderRepository> mock,
-        ContentOrderItemEntity item
-    )
-    {
-        mock.Setup(x =>
-                x.GetItemByIdOrThrowAsync(
-                    It.Is<Guid>(id => id == item.OrderId),
-                    It.Is<Guid>(id => id == item.Id),
-                    It.IsAny<CancellationToken>()
-                )
-            )
-            .ReturnsAsync(item);
-        return mock;
-    }
-
-    /// <summary>
-    /// Arranges a miss for the given order and item pair. Naming both identifiers keeps the
-    /// not-found branch tied to the pair the test declares rather than to every pair.
-    /// </summary>
-    /// <param name="mock">The repository mock to configure.</param>
-    /// <param name="orderId">The order the item is looked up under.</param>
-    /// <param name="itemId">The item identifier that must resolve to nothing.</param>
-    /// <returns>The same mock, for chaining.</returns>
-    public static Mock<IContentOrderRepository> SetupGetItemByIdOrThrowNotFound(
-        this Mock<IContentOrderRepository> mock,
-        Guid orderId,
-        Guid itemId
-    )
-    {
-        mock.Setup(x => x.GetItemByIdOrThrowAsync(orderId, itemId, It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new NotFoundException("ContentOrderItem", "id", itemId));
-        return mock;
-    }
-
     public static void VerifyAddCalled(this Mock<IContentOrderRepository> mock)
     {
         mock.Verify(x => x.AddAsync(It.IsAny<ContentOrderEntity>(), It.IsAny<CancellationToken>()), Times.Once);
-    }
-
-    public static void VerifyAddItemCalled(this Mock<IContentOrderRepository> mock)
-    {
-        mock.Verify(x => x.AddItemAsync(It.IsAny<ContentOrderItemEntity>(), It.IsAny<CancellationToken>()), Times.Once);
-    }
-
-    public static void VerifyAddItemTierCalled(this Mock<IContentOrderRepository> mock)
-    {
-        mock.Verify(
-            x => x.AddItemTierAsync(It.IsAny<ContentItemTierEntity>(), It.IsAny<CancellationToken>()),
-            Times.Once
-        );
-    }
-
-    public static void VerifyAddPaymentCalled(this Mock<IContentOrderRepository> mock)
-    {
-        mock.Verify(
-            x => x.AddPaymentAsync(It.IsAny<ContentPaymentEntity>(), It.IsAny<CancellationToken>()),
-            Times.Once
-        );
-    }
-
-    public static Mock<IContentOrderRepository> SetupGetItemTierById(
-        this Mock<IContentOrderRepository> mock,
-        ContentItemTierEntity? tier
-    )
-    {
-        mock.Setup(x => x.GetItemTierByIdAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(tier);
-        return mock;
-    }
-
-    /// <summary>
-    /// Sets up the tier lookup to answer only for the tier's own order-item and tier ids, so a
-    /// handler that asks for a tier under a different item is not silently handed this one.
-    /// </summary>
-    public static Mock<IContentOrderRepository> SetupGetItemTierByIdOrThrow(
-        this Mock<IContentOrderRepository> mock,
-        ContentItemTierEntity tier
-    )
-    {
-        mock.Setup(x =>
-                x.GetItemTierByIdOrThrowAsync(
-                    It.Is<Guid>(id => id == tier.OrderItemId),
-                    It.Is<Guid>(id => id == tier.Id),
-                    It.IsAny<CancellationToken>()
-                )
-            )
-            .ReturnsAsync(tier);
-        return mock;
-    }
-
-    /// <summary>
-    /// Arranges a miss for the given order-item and tier pair, so the not-found branch is reached
-    /// only for the identifiers the test declares.
-    /// </summary>
-    /// <param name="mock">The repository mock to configure.</param>
-    /// <param name="orderItemId">The order item the tier is looked up under.</param>
-    /// <param name="tierId">The tier identifier that must resolve to nothing.</param>
-    /// <returns>The same mock, for chaining.</returns>
-    public static Mock<IContentOrderRepository> SetupGetItemTierByIdOrThrowNotFound(
-        this Mock<IContentOrderRepository> mock,
-        Guid orderItemId,
-        Guid tierId
-    )
-    {
-        mock.Setup(x => x.GetItemTierByIdOrThrowAsync(orderItemId, tierId, It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new NotFoundException("ContentItemTier", "id", tierId));
-        return mock;
-    }
-
-    public static void VerifyRemoveItemCalled(this Mock<IContentOrderRepository> mock)
-    {
-        mock.Verify(
-            x => x.RemoveItemAsync(It.IsAny<ContentOrderItemEntity>(), It.IsAny<CancellationToken>()),
-            Times.Once
-        );
-    }
-
-    public static void VerifyRemoveItemTierCalled(this Mock<IContentOrderRepository> mock)
-    {
-        mock.Verify(
-            x => x.RemoveItemTierAsync(It.IsAny<ContentItemTierEntity>(), It.IsAny<CancellationToken>()),
-            Times.Once
-        );
     }
 
     public static Mock<IContentOrderRepository> SetupGetOrderByItemId(
@@ -231,14 +85,14 @@ public static class MockContentOrderRepository
         return mock;
     }
 
-    public static Mock<IContentOrderRepository> SetupGetAllPaymentsAsync(
+    public static Mock<IContentOrderRepository> SetupGetOrdersWithPaymentAsync(
         this Mock<IContentOrderRepository> mock,
-        IReadOnlyList<ContentPaymentEntity> list,
+        IReadOnlyList<ContentOrderEntity> list,
         int totalCount
     )
     {
         mock.Setup(x =>
-                x.GetAllPaymentsAsync(
+                x.GetOrdersWithPaymentAsync(
                     It.IsAny<int>(),
                     It.IsAny<int>(),
                     It.IsAny<EnumPaymentStatus?>(),
@@ -262,12 +116,6 @@ public static class MockContentOrderRepository
     {
         mock.Setup(x => x.AddAsync(It.IsAny<ContentOrderEntity>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
-        mock.Setup(x => x.AddItemAsync(It.IsAny<ContentOrderItemEntity>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask);
-        mock.Setup(x => x.AddItemTierAsync(It.IsAny<ContentItemTierEntity>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask);
-        mock.Setup(x => x.AddPaymentAsync(It.IsAny<ContentPaymentEntity>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask);
         mock.Setup(x =>
                 x.GetAllAsync(
                     It.IsAny<int>(),
@@ -281,7 +129,7 @@ public static class MockContentOrderRepository
             )
             .ReturnsAsync((new List<ContentOrderEntity>(), 0));
         mock.Setup(x =>
-                x.GetAllPaymentsAsync(
+                x.GetOrdersWithPaymentAsync(
                     It.IsAny<int>(),
                     It.IsAny<int>(),
                     It.IsAny<EnumPaymentStatus?>(),
@@ -291,10 +139,6 @@ public static class MockContentOrderRepository
                     It.IsAny<CancellationToken>()
                 )
             )
-            .ReturnsAsync((new List<ContentPaymentEntity>(), 0));
-        mock.Setup(x => x.RemoveItemAsync(It.IsAny<ContentOrderItemEntity>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask);
-        mock.Setup(x => x.RemoveItemTierAsync(It.IsAny<ContentItemTierEntity>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask);
+            .ReturnsAsync((new List<ContentOrderEntity>(), 0));
     }
 }

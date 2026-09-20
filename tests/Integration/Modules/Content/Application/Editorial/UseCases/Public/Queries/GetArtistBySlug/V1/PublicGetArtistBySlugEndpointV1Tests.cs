@@ -4,6 +4,7 @@ using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Exceptions.Messages;
+using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
 
@@ -213,23 +214,18 @@ public class PublicGetArtistBySlugEndpointV1Tests(PostgresFixture db) : BaseApiT
                 artist.RealName,
                 artist.Aliases,
                 artist.Birthdate,
-                artist.Hometown
+                artist.Hometown,
+                TestConstants.Clock.Today
             );
-            artist.ClaimOwnership(Guid.NewGuid());
+            artist.ClaimOwnership(Guid.NewGuid(), TestConstants.Clock.Instant);
+            artist.SetSocialLink(EnumSocialPlatform.Instagram, "https://instagram.com/champagnepapi");
 
             LyricsEntity lyrics = LyricsFactory.CreatePublishedForArtist(category.Id, artist.Id);
-            ArtistSocialLinkEntity link = ArtistSocialLinkEntity.Create(
-                Guid.NewGuid(),
-                artist.Id,
-                EnumSocialPlatform.Instagram,
-                "https://instagram.com/champagnepapi"
-            );
 
             ctx.ContentTypes.Add(contentType);
             ctx.Categories.Add(category);
             ctx.Artists.Add(artist);
             ctx.Lyrics.Add(lyrics);
-            ctx.ArtistSocialLinks.Add(link);
 
             return artist;
         });

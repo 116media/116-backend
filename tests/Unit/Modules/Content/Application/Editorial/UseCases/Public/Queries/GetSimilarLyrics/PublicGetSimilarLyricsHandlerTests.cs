@@ -4,6 +4,7 @@ using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Contracts.Application.Services;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
@@ -15,7 +16,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Public.
 /// <summary>
 /// Unit tests for <see cref="PublicGetSimilarLyricsHandler"/>.
 /// </summary>
-public class PublicGetSimilarLyricsHandlerTests
+public class PublicGetSimilarLyricsHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<ILyricsRepository> _lyricsRepositoryMock;
     private readonly PublicGetSimilarLyricsHandler _handler;
@@ -26,7 +27,11 @@ public class PublicGetSimilarLyricsHandlerTests
     {
         _lyricsRepositoryMock = MockLyricsRepository.Create();
         Mock<IFileStorageService> fileStorageMock = MockFileStorageService.Create();
-        _handler = new PublicGetSimilarLyricsHandler(_lyricsRepositoryMock.Object, fileStorageMock.Object);
+        _handler = new PublicGetSimilarLyricsHandler(
+            _lyricsRepositoryMock.Object,
+            fileStorageMock.Object,
+            CreateContentLookupFactory()
+        );
     }
 
     [Fact]

@@ -41,7 +41,8 @@ public class AdminGetArticleByIdHandlerTests : BaseContentHandlerTest
             _articleRepositoryMock.Object,
             _userLookupMock.Object,
             _fileStorageMock.Object,
-            Mapper
+            Mapper,
+            CreateContentLookupFactory()
         );
     }
 

@@ -1,5 +1,6 @@
 using System.Reflection;
 using _116.Content.Domain.Entities;
+using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Tests.Fixtures.Builders.Entities.Content;
 
@@ -11,9 +12,8 @@ namespace _116.Tests.Fixtures.Builders.Entities.Content;
 public class ArticleArtistBuilder
 {
     private Guid _id = Guid.NewGuid();
-    private Guid _articleId = Guid.NewGuid();
-    private Guid _artistId = Guid.NewGuid();
     private ArticleEntity? _article;
+    private Guid _artistId = Guid.NewGuid();
 
     /// <summary>
     /// Sets the artist the article covers.
@@ -25,13 +25,11 @@ public class ArticleArtistBuilder
     }
 
     /// <summary>
-    /// Attaches the Article navigation EF Core populates through <c>.Include(j =&gt; j.Article)</c>,
-    /// and points the foreign key at the same article.
+    /// Adds the credit to the given article, so the join row carries that article's id.
     /// </summary>
     public ArticleArtistBuilder WithArticle(ArticleEntity article)
     {
         _article = article;
-        _articleId = article.Id;
         return this;
     }
 
@@ -40,15 +38,9 @@ public class ArticleArtistBuilder
     /// </summary>
     public ArticleArtistEntity Build()
     {
-        ArticleArtistEntity join = ArticleArtistEntity.Create(_id, _articleId, _artistId);
+        ArticleEntity carrier = _article ?? ArticleFactory.Create(Guid.NewGuid());
+        carrier.ReplaceArtists([.. carrier.Artists.Select(credit => credit.ArtistId), _artistId]);
 
-        if (_article is not null)
-        {
-            typeof(ArticleArtistEntity)
-                .GetProperty(nameof(ArticleArtistEntity.Article), BindingFlags.Public | BindingFlags.Instance)!
-                .SetValue(join, _article);
-        }
-
-        return join;
+        return carrier.Artists.First(credit => credit.ArtistId == _artistId);
     }
 }

@@ -21,11 +21,11 @@ public class LyricsTagConfiguration : IEntityTypeConfiguration<LyricsTagEntity>
         builder.HasIndex(x => new { x.LyricsId, x.TagId }).IsUnique();
 
         builder
-            .HasOne(x => x.Lyrics)
+            .HasOne<LyricsEntity>()
             .WithMany(l => l.Tags)
             .HasForeignKey(x => x.LyricsId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasOne(x => x.Tag).WithMany().HasForeignKey(x => x.TagId).OnDelete(DeleteBehavior.Cascade);
+        builder.HasOne<TagEntity>().WithMany().HasForeignKey(x => x.TagId).OnDelete(DeleteBehavior.Cascade);
     }
 }

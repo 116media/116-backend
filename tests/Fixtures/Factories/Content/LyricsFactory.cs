@@ -78,21 +78,11 @@ public static class LyricsFactory
         new LyricsBuilder(categoryId).WithAlbumId(albumId).AsPublished().Build();
 
     /// <summary>
-    /// Creates a published lyrics page with the Video navigation property loaded via reflection.
-    /// Use this when the test exercises a specification that reads <c>entity.Video.CategoryId</c>.
+    /// Creates a published lyrics page linked to the given video. A specification matching on
+    /// the video's category probes the injected video source, not a navigation.
     /// </summary>
-    public static LyricsEntity CreatePublishedWithVideoNavigation(Guid categoryId, VideoEntity video)
-    {
-        LyricsEntity entity = new LyricsBuilder(categoryId).WithVideoId(video.Id).AsPublished().Build();
-
-        PropertyInfo navigation = typeof(LyricsEntity).GetProperty(
-            nameof(LyricsEntity.Video),
-            BindingFlags.Public | BindingFlags.Instance
-        )!;
-
-        navigation.SetValue(entity, video);
-        return entity;
-    }
+    public static LyricsEntity CreatePublishedForVideo(Guid categoryId, VideoEntity video) =>
+        new LyricsBuilder(categoryId).WithVideoId(video.Id).AsPublished().Build();
 
     /// <summary>
     /// Creates a list of free lyrics pages in Draft status.

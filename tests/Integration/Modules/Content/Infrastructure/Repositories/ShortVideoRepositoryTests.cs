@@ -70,7 +70,7 @@ public class ShortVideoRepositoryTests(PostgresFixture postgres) : BaseRepositor
         var result = await repo.GetBySlugAsync(slug);
 
         result.Should().NotBeNull();
-        result!.Slug.Should().Be(slug);
+        result!.Slug.Value.Should().Be(slug);
     }
 
     [Fact]

@@ -29,6 +29,28 @@ public class ArticleMapperTests : BaseContentHandlerTest
 
     private readonly Mock<IFileStorageService> _fileStorageMock;
 
+    /// <summary>
+    /// The rows a projection names, as the DTO factory hands them to the mapper.
+    /// </summary>
+    private static ContentLookups Lookups(
+        CategoryEntity? category = null,
+        CustomerEntity? customer = null,
+        PromotionLevelEntity? promotionLevel = null,
+        params TagEntity[] tags
+    ) =>
+        new(
+            Categories: category is null
+                ? new Dictionary<Guid, CategoryEntity>()
+                : new Dictionary<Guid, CategoryEntity> { [category.Id] = category },
+            Customers: customer is null
+                ? new Dictionary<Guid, CustomerEntity>()
+                : new Dictionary<Guid, CustomerEntity> { [customer.Id] = customer },
+            PromotionLevels: promotionLevel is null
+                ? new Dictionary<Guid, PromotionLevelEntity>()
+                : new Dictionary<Guid, PromotionLevelEntity> { [promotionLevel.Id] = promotionLevel },
+            Tags: tags.ToDictionary(tag => tag.Id)
+        );
+
     public ArticleMapperTests()
     {
         _fileStorageMock = MockFileStorageService.Create();
@@ -60,6 +82,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
         // Act
         ArticleSummaryDto dto = await article.ToArticleSummaryDtoAsync(
             Mapper,
+            Lookups(),
             _fileStorageMock.Object,
             CancellationToken.None
         );
@@ -78,6 +101,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
         // Act
         ArticleSummaryDto dto = await article.ToArticleSummaryDtoAsync(
             Mapper,
+            Lookups(category),
             _fileStorageMock.Object,
             CancellationToken.None
         );
@@ -99,6 +123,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
         // Act
         ArticleSummaryDto dto = await article.ToArticleSummaryDtoAsync(
             Mapper,
+            Lookups(),
             _fileStorageMock.Object,
             CancellationToken.None
         );
@@ -138,6 +163,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
         // Act
         ArticleSummaryDto dto = await article.ToArticleSummaryDtoAsync(
             Mapper,
+            Lookups(),
             _fileStorageMock.Object,
             CancellationToken.None
         );
@@ -162,6 +188,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
         // Act
         ArticleSummaryDto dto = await article.ToArticleSummaryDtoAsync(
             Mapper,
+            Lookups(),
             _fileStorageMock.Object,
             CancellationToken.None
         );
@@ -179,6 +206,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
         // Act
         ArticleSummaryDto dto = await article.ToArticleSummaryDtoAsync(
             Mapper,
+            Lookups(),
             _fileStorageMock.Object,
             CancellationToken.None
         );
@@ -201,7 +229,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
 
         // Act
         Func<Task> act = async () =>
-            await article.ToArticleSummaryDtoAsync(Mapper, _fileStorageMock.Object, CancellationToken.None);
+            await article.ToArticleSummaryDtoAsync(Mapper, Lookups(), _fileStorageMock.Object, CancellationToken.None);
 
         // Assert — must not NPE
         await act.Should().NotThrowAsync();
@@ -220,6 +248,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
         // Act
         IReadOnlyList<ArticleSummaryDto> dtos = await articles.ToArticleSummaryDtosAsync(
             Mapper,
+            Lookups(),
             _fileStorageMock.Object,
             CancellationToken.None
         );
@@ -237,6 +266,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
         // Act
         IReadOnlyList<ArticleSummaryDto> dtos = await articles.ToArticleSummaryDtosAsync(
             Mapper,
+            Lookups(),
             _fileStorageMock.Object,
             CancellationToken.None
         );
@@ -256,6 +286,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
         // Act
         IReadOnlyList<ArticleSummaryDto> dtos = await articles.ToArticleSummaryDtosAsync(
             Mapper,
+            Lookups(),
             _fileStorageMock.Object,
             CancellationToken.None
         );
@@ -286,6 +317,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
         // Act
         ArticleDetailDto dto = await article.ToArticleDetailDtoAsync(
             Mapper,
+            Lookups(),
             _fileStorageMock.Object,
             CancellationToken.None
         );
@@ -304,6 +336,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
         // Act
         ArticleDetailDto dto = await article.ToArticleDetailDtoAsync(
             Mapper,
+            Lookups(),
             _fileStorageMock.Object,
             CancellationToken.None
         );
@@ -323,6 +356,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
         // Act
         ArticleDetailDto dto = await article.ToArticleDetailDtoAsync(
             Mapper,
+            Lookups(),
             _fileStorageMock.Object,
             CancellationToken.None
         );
@@ -341,6 +375,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
         // Act
         ArticleDetailDto dto = await article.ToArticleDetailDtoAsync(
             Mapper,
+            Lookups(),
             _fileStorageMock.Object,
             CancellationToken.None
         );
@@ -362,6 +397,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
         // Act
         ArticleDetailDto dto = await article.ToArticleDetailDtoAsync(
             Mapper,
+            Lookups(),
             _fileStorageMock.Object,
             CancellationToken.None
         );
@@ -391,6 +427,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
         // Act
         ArticleDetailDto dto = await article.ToArticleDetailDtoAsync(
             Mapper,
+            Lookups(),
             _fileStorageMock.Object,
             CancellationToken.None
         );
@@ -409,6 +446,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
         // Act
         ArticleDetailDto dto = await article.ToArticleDetailDtoAsync(
             Mapper,
+            Lookups(category),
             _fileStorageMock.Object,
             CancellationToken.None
         );
@@ -430,6 +468,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
         // Act
         ArticleDetailDto dto = await article.ToArticleDetailDtoAsync(
             Mapper,
+            Lookups(),
             _fileStorageMock.Object,
             CancellationToken.None
         );
@@ -448,6 +487,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
         // Act
         ArticleDetailDto dto = await article.ToArticleDetailDtoAsync(
             Mapper,
+            Lookups(),
             _fileStorageMock.Object,
             CancellationToken.None
         );
@@ -466,7 +506,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
 
         // Act
         Func<Task> act = async () =>
-            await article.ToArticleDetailDtoAsync(Mapper, _fileStorageMock.Object, CancellationToken.None);
+            await article.ToArticleDetailDtoAsync(Mapper, Lookups(), _fileStorageMock.Object, CancellationToken.None);
 
         // Assert — must not NPE
         await act.Should().NotThrowAsync();
@@ -486,6 +526,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
         // Act
         ArticleDetailDto dto = await article.ToArticleDetailDtoAsync(
             Mapper,
+            Lookups(),
             _fileStorageMock.Object,
             CancellationToken.None
         );
@@ -503,22 +544,12 @@ public class ArticleMapperTests : BaseContentHandlerTest
     {
         // Arrange
         ArticleEntity article = ArticleFactory.Create(CategoryId);
-        article.Update(
-            categoryId: CategoryId,
-            title: article.Title,
-            slug: article.Slug,
-            headline: "headline",
-            body: string.Join(" ", Enumerable.Repeat("word", wordCount)),
-            customerId: null,
-            orderItemId: null,
-            socialBoost: false,
-            metaTitle: null,
-            metaDescription: null
-        );
+        article.ReviseBody(headline: "headline", body: string.Join(" ", Enumerable.Repeat("word", wordCount)));
 
         // Act
         ArticleDetailDto dto = await article.ToArticleDetailDtoAsync(
             Mapper,
+            Lookups(),
             _fileStorageMock.Object,
             CancellationToken.None
         );
@@ -536,22 +567,14 @@ public class ArticleMapperTests : BaseContentHandlerTest
     {
         // Arrange
         ArticleEntity article = ArticleFactory.Create(CategoryId);
-        article.Update(
-            categoryId: CategoryId,
-            title: article.Title,
-            slug: article.Slug,
-            headline: "headline",
-            body: "body",
-            customerId: null,
-            orderItemId: null,
-            socialBoost: true,
-            metaTitle: "SEO Title",
-            metaDescription: "SEO Description"
-        );
+        article.ReviseBody(headline: "headline", body: "body");
+        article.AssignCommission(customerId: null, orderItemId: null, socialBoost: true);
+        article.ReviseSeo(metaTitle: "SEO Title", metaDescription: "SEO Description");
 
         // Act
         ArticleDetailDto dto = await article.ToArticleDetailDtoAsync(
             Mapper,
+            Lookups(),
             _fileStorageMock.Object,
             CancellationToken.None
         );
@@ -576,6 +599,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
         // Act
         ArticleDetailDto dto = await article.ToArticleDetailDtoAsync(
             Mapper,
+            Lookups(category),
             _fileStorageMock.Object,
             CancellationToken.None
         );
@@ -590,20 +614,20 @@ public class ArticleMapperTests : BaseContentHandlerTest
     public async Task ToArticleDetailDtoAsync_WhenPaidArticle_ShouldMapCustomerAndOrderItemId()
     {
         // Arrange
-        Guid customerId = Guid.NewGuid();
+        CustomerEntity customer = CustomerFactory.Create();
+        Guid customerId = customer.Id;
         Guid orderItemId = Guid.NewGuid();
 
         CategoryEntity category = CategoryFactory.Create(ContentTypeId);
-        CustomerEntity customer = CustomerFactory.Create();
         ArticleEntity article = new ArticleBuilder(CategoryId)
             .WithCustomer(customerId, orderItemId)
             .WithCategory(category)
-            .WithCustomerNavigation(customer)
             .Build();
 
         // Act
         ArticleDetailDto dto = await article.ToArticleDetailDtoAsync(
             Mapper,
+            Lookups(category, customer: customer),
             _fileStorageMock.Object,
             CancellationToken.None
         );
@@ -626,6 +650,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
         // Act
         ArticleDetailDto dto = await article.ToArticleDetailDtoAsync(
             Mapper,
+            Lookups(),
             _fileStorageMock.Object,
             CancellationToken.None
         );
@@ -652,6 +677,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
         // Act
         ArticleSummaryDto dto = await article.ToArticleSummaryDtoAsync(
             Mapper,
+            Lookups(),
             _fileStorageMock.Object,
             CancellationToken.None
         );
@@ -672,6 +698,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
         // Act
         ArticleSummaryDto dto = await article.ToArticleSummaryDtoAsync(
             Mapper,
+            Lookups(),
             _fileStorageMock.Object,
             CancellationToken.None
         );
@@ -700,6 +727,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
         // Act
         ArticleDetailDto dto = await article.ToArticleDetailDtoAsync(
             Mapper,
+            Lookups(),
             _fileStorageMock.Object,
             CancellationToken.None
         );
@@ -720,6 +748,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
         // Act
         ArticleDetailDto dto = await article.ToArticleDetailDtoAsync(
             Mapper,
+            Lookups(),
             _fileStorageMock.Object,
             CancellationToken.None
         );
@@ -741,6 +770,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
         // Act
         ArticleDetailDto dto = await article.ToArticleDetailDtoAsync(
             Mapper,
+            Lookups(),
             _fileStorageMock.Object,
             CancellationToken.None
         );

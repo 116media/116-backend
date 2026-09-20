@@ -66,4 +66,16 @@ public interface IVideoDtoFactory
         IReadOnlyList<VideoEntity> videos,
         CancellationToken ct = default
     );
+
+    /// <summary>
+    /// Resolves which of the given videos have a published lyrics page linked, in one query,
+    /// for a caller assembling several projections from one batch.
+    /// </summary>
+    /// <param name="videos">The videos to probe.</param>
+    /// <param name="ct">Token to observe for cancellation requests.</param>
+    /// <returns>The ids of the videos with published lyrics.</returns>
+    Task<IReadOnlySet<Guid>> ResolveVideosWithLyricsAsync(
+        IReadOnlyList<VideoEntity> videos,
+        CancellationToken ct = default
+    );
 }

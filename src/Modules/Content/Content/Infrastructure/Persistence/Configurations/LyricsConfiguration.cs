@@ -1,6 +1,7 @@
 using _116.Content.Domain.Constants;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
+using _116.Content.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -19,7 +20,11 @@ public class LyricsConfiguration : IEntityTypeConfiguration<LyricsEntity>
 
         builder.Property(x => x.AuthorId).IsRequired();
 
-        builder.Property(x => x.Slug).HasMaxLength(ContentConstants.MaxSlugLength).IsRequired();
+        builder
+            .Property(x => x.Slug)
+            .HasConversion(slug => slug.Value, value => new Slug(value))
+            .HasMaxLength(ContentConstants.MaxSlugLength)
+            .IsRequired();
 
         builder.Property(x => x.Status).HasConversion<string>().HasDefaultValue(EnumContentStatus.Draft).IsRequired();
 
@@ -75,7 +80,7 @@ public class LyricsConfiguration : IEntityTypeConfiguration<LyricsEntity>
         builder.Property(x => x.UnpromotedReason).HasMaxLength(500).IsRequired(false);
 
         builder
-            .HasOne(x => x.Video)
+            .HasOne<VideoEntity>()
             .WithMany()
             .HasForeignKey(x => x.VideoId)
             .IsRequired(false)
@@ -83,14 +88,20 @@ public class LyricsConfiguration : IEntityTypeConfiguration<LyricsEntity>
 
         builder.HasIndex(x => x.Slug).IsUnique();
 
-        // Serves the artist profile's song surface and the artist content predicate — both
-        // filter on this exact pair per artist row.
+        // Serves the artist profile's song surface and the artist content predicate — both filter on this pair.
         builder.HasIndex(x => new { x.ArtistId, x.Status });
 
-        builder.HasOne(x => x.Category).WithMany().HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.Restrict);
+        // The unfiltered index serves by-video lookups and the FK cascade; the partial one serves the published-lyrics probe.
+        builder.HasIndex(x => x.VideoId);
+        builder
+            .HasIndex(x => x.VideoId, "ix_lyrics_video_id_published")
+            .HasDatabaseName("ix_lyrics_video_id_published")
+            .HasFilter("status = 'Published'");
+
+        builder.HasOne<CategoryEntity>().WithMany().HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.Restrict);
 
         builder
-            .HasOne(x => x.Customer)
+            .HasOne<CustomerEntity>()
             .WithMany()
             .HasForeignKey(x => x.CustomerId)
             .IsRequired(false)

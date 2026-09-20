@@ -20,6 +20,19 @@ public static class MockCategoryRepository
         return mock;
     }
 
+    /// <summary>
+    /// Arranges the batch lookup to resolve exactly the supplied rows, keyed by id.
+    /// </summary>
+    public static Mock<ICategoryRepository> SetupGetByIds(
+        this Mock<ICategoryRepository> mock,
+        params CategoryEntity[] entities
+    )
+    {
+        mock.Setup(x => x.GetByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(entities.ToDictionary(entity => entity.Id));
+        return mock;
+    }
+
     public static Mock<ICategoryRepository> SetupGetByIdOrThrow(
         this Mock<ICategoryRepository> mock,
         CategoryEntity entity
@@ -85,55 +98,9 @@ public static class MockCategoryRepository
         return mock;
     }
 
-    public static Mock<ICategoryRepository> SetupGetPricingByCategory(
-        this Mock<ICategoryRepository> mock,
-        Guid categoryId,
-        IReadOnlyList<CategoryPricingEntity> list
-    )
-    {
-        mock.Setup(x => x.GetPricingByCategoryAsync(categoryId, It.IsAny<CancellationToken>())).ReturnsAsync(list);
-        return mock;
-    }
-
-    public static Mock<ICategoryRepository> SetupGetPricingByCategories(
-        this Mock<ICategoryRepository> mock,
-        IReadOnlyList<CategoryPricingEntity> list
-    )
-    {
-        mock.Setup(x =>
-                x.GetPricingByCategoriesAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>())
-            )
-            .ReturnsAsync(list);
-        return mock;
-    }
-
-    public static Mock<ICategoryRepository> SetupGetPricing(
-        this Mock<ICategoryRepository> mock,
-        Guid categoryId,
-        Guid tierId,
-        CategoryPricingEntity? pricing
-    )
-    {
-        mock.Setup(x => x.GetPricingAsync(categoryId, tierId, It.IsAny<CancellationToken>())).ReturnsAsync(pricing);
-        return mock;
-    }
-
     public static void VerifyAddCalled(this Mock<ICategoryRepository> mock)
     {
         mock.Verify(x => x.AddAsync(It.IsAny<CategoryEntity>(), It.IsAny<CancellationToken>()), Times.Once);
-    }
-
-    public static void VerifyAddPricingCalled(this Mock<ICategoryRepository> mock)
-    {
-        mock.Verify(
-            x => x.AddPricingAsync(It.IsAny<CategoryPricingEntity>(), It.IsAny<CancellationToken>()),
-            Times.Once
-        );
-    }
-
-    public static void VerifyRemovePricingCalled(this Mock<ICategoryRepository> mock, CategoryPricingEntity pricing)
-    {
-        mock.Verify(x => x.RemovePricing(pricing), Times.Once);
     }
 
     /// <summary>
@@ -145,8 +112,6 @@ public static class MockCategoryRepository
     private static void SetupDefaults(Mock<ICategoryRepository> mock)
     {
         mock.Setup(x => x.AddAsync(It.IsAny<CategoryEntity>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask);
-        mock.Setup(x => x.AddPricingAsync(It.IsAny<CategoryPricingEntity>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
         mock.Setup(x =>
                 x.GetAllAsync(
@@ -160,14 +125,10 @@ public static class MockCategoryRepository
             .ReturnsAsync((new List<CategoryEntity>(), 0));
         mock.Setup(x => x.GetActiveByContentTypeAsync(It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<CategoryEntity>());
-        mock.Setup(x => x.GetPricingByCategoryAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<CategoryPricingEntity>());
-        mock.Setup(x =>
-                x.GetPricingByCategoriesAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>())
-            )
-            .ReturnsAsync(new List<CategoryPricingEntity>());
         mock.Setup(x => x.GetPinnedToFeedCategoriesAsync(It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<CategoryEntity>());
+        mock.Setup(x => x.GetByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<Guid, CategoryEntity>());
     }
 
     /// <summary>

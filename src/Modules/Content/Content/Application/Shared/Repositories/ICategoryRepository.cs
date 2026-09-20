@@ -68,48 +68,6 @@ public interface ICategoryRepository
     Task AddAsync(CategoryEntity category, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Retrieves all pricing rows for a given category.
-    /// </summary>
-    /// <param name="categoryId">The identifier of the category.</param>
-    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
-    /// <returns>A read-only list of category pricing entities.</returns>
-    Task<IReadOnlyList<CategoryPricingEntity>> GetPricingByCategoryAsync(
-        Guid categoryId,
-        CancellationToken cancellationToken = default
-    );
-
-    /// <summary>
-    /// Retrieves the pricing rows for several categories in one round-trip.
-    /// </summary>
-    /// <param name="categoryIds">The identifiers of the categories to price.</param>
-    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
-    /// <returns>The pricing rows across every requested category, in no particular order.</returns>
-    Task<IReadOnlyList<CategoryPricingEntity>> GetPricingByCategoriesAsync(
-        IReadOnlyCollection<Guid> categoryIds,
-        CancellationToken cancellationToken = default
-    );
-
-    /// <summary>
-    /// Retrieves a specific pricing row by category and tier identifiers.
-    /// Returns null if not found.
-    /// </summary>
-    Task<CategoryPricingEntity?> GetPricingAsync(
-        Guid categoryId,
-        Guid pricingTierId,
-        CancellationToken cancellationToken = default
-    );
-
-    /// <summary>
-    /// Adds a new category pricing row to the repository.
-    /// </summary>
-    Task AddPricingAsync(CategoryPricingEntity pricing, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Removes a category pricing row from the repository.
-    /// </summary>
-    void RemovePricing(CategoryPricingEntity pricing);
-
-    /// <summary>
     /// Retrieves the single active category designated as the gossip fallback source for
     /// the homepage article promotion feed. Returns null if no such category is configured.
     /// </summary>
@@ -159,4 +117,15 @@ public interface ICategoryRepository
     /// </summary>
     /// <param name="category">The modified category.</param>
     void Update(CategoryEntity category);
+
+    /// <summary>
+    /// Resolves the categorys the given ids reference, in one query, keyed by id.
+    /// Missing ids are simply absent from the result.
+    /// </summary>
+    /// <param name="ids">The identifiers to resolve.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    Task<IReadOnlyDictionary<Guid, CategoryEntity>> GetByIdsAsync(
+        IReadOnlyCollection<Guid> ids,
+        CancellationToken cancellationToken = default
+    );
 }

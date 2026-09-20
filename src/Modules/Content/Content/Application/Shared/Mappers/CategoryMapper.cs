@@ -22,12 +22,12 @@ public static class CategoryMapper
         config
             .NewConfig<CategoryPricingEntity, CategoryPricingDto>()
             .Map(dest => dest.TierId, src => src.PricingTierId)
-            .Map(dest => dest.TierName, src => src.PricingTier.Name)
+            .Map(dest => dest.TierName, _ => string.Empty)
             .Map(dest => dest.PriceUsd, src => src.PriceUsd);
 
         config
             .NewConfig<CategoryEntity, CategoryDto>()
-            .Map(dest => dest.ContentTypeName, src => src.ContentType.Name)
+            .Map(dest => dest.ContentTypeName, _ => string.Empty)
             .Map(dest => dest.PosterUrl, _ => (string?)null)
             .Map(dest => dest.Colors, _ => (CategoryColorsDto?)null)
             .Map(dest => dest.Pricing, src => src.Pricing);
@@ -50,17 +50,13 @@ public static class CategoryMapper
     /// URL from a pre-fetched file map. Performs no IO — intended for batch mapping (e.g. the
     /// content feed) where files are loaded once up front via <c>IFileRepository.GetByIdsAsync</c>.
     /// </summary>
-    public static CategoryDto ToCategoryDto(
-        this CategoryEntity entity,
-        IMapper mapper,
-        IReadOnlyDictionary<Guid, FileReferenceDto> files
-    )
+    public static CategoryDto ToCategoryDto(this CategoryEntity entity, IMapper mapper, CategoryLookups lookups)
     {
         var dto = mapper.Map<CategoryDto>(entity);
 
         string? posterUrl = null;
         CategoryColorsDto? colors = null;
-        if (entity.PosterFileId is { } posterId && files.TryGetValue(posterId, out FileReferenceDto? poster))
+        if (entity.PosterFileId is { } posterId && lookups.Posters.TryGetValue(posterId, out FileReferenceDto? poster))
         {
             posterUrl = poster.StorageUrl;
             colors = ResolveColors(poster);
@@ -68,17 +64,35 @@ public static class CategoryMapper
 
         return dto with
         {
+            ContentTypeName = lookups.ContentTypes.TryGetValue(entity.ContentTypeId, out ContentTypeEntity? contentType)
+                ? contentType.Name
+                : string.Empty,
             PosterUrl = posterUrl,
             Colors = colors,
-            Pricing = mapper.Map<IReadOnlyList<CategoryPricingDto>>(entity.Pricing),
+            Pricing =
+            [
+                .. entity.Pricing.Select(pricing =>
+                    pricing.ToCategoryPricingDto(mapper, lookups.PricingTiers.GetValueOrDefault(pricing.PricingTierId))
+                ),
+            ],
         };
     }
 
     /// <summary>
-    /// Maps a <see cref="CategoryPricingEntity" /> to a <see cref="CategoryPricingDto" />.
+    /// Maps a <see cref="CategoryPricingEntity" /> to a <see cref="CategoryPricingDto" />, reading
+    /// the tier name from a pre-fetched map. Performs no IO.
     /// </summary>
-    public static CategoryPricingDto ToCategoryPricingDto(this CategoryPricingEntity entity, IMapper mapper)
+    public static CategoryPricingDto ToCategoryPricingDto(
+        this CategoryPricingEntity entity,
+        IMapper mapper,
+        PricingTierEntity? pricingTier
+    )
     {
-        return mapper.Map<CategoryPricingDto>(entity);
+        var dto = mapper.Map<CategoryPricingDto>(entity);
+
+        return dto with
+        {
+            TierName = pricingTier is null ? string.Empty : pricingTier.Name,
+        };
     }
 }

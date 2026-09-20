@@ -29,7 +29,10 @@ public class AdminUpdateArticleTagsHandler(
     {
         Guid articleId = Guid.Parse(command.ArticleId);
 
-        await articleRepository.GetByIdOrThrowAsync(id: articleId, cancellationToken: cancellationToken);
+        ArticleEntity article = await articleRepository.GetByIdOrThrowAsync(
+            id: articleId,
+            cancellationToken: cancellationToken
+        );
 
         IReadOnlyDictionary<string, TagEntity> existingTagsByName = await tagRepository.GetByNamesAsync(
             names: command.TagNames,
@@ -50,22 +53,7 @@ public class AdminUpdateArticleTagsHandler(
             resolvedTagIds.Add(existing.Id);
         }
 
-        IReadOnlyList<ArticleTagEntity> existingTags = await articleRepository.GetTagsByArticleIdAsync(
-            articleId: articleId,
-            cancellationToken: cancellationToken
-        );
-
-        foreach (ArticleTagEntity tag in existingTags)
-        {
-            articleRepository.RemoveTag(tag: tag);
-        }
-
-        foreach (Guid tagId in resolvedTagIds)
-        {
-            var tag = ArticleTagEntity.Create(id: Guid.NewGuid(), articleId: articleId, tagId: tagId);
-            await articleRepository.AddTagAsync(tag: tag, cancellationToken: cancellationToken);
-        }
-
+        article.ReplaceTags(tagIds: resolvedTagIds);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminUpdateArticleTagsResult(IsSuccess: true);

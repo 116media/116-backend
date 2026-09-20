@@ -84,12 +84,13 @@ public class PublicGetOwnPlaylistsEndpointV1Tests(PostgresFixture db) : BaseApiT
         });
 
         await SeedAsync<ContentDbContext>(ctx =>
-            ctx.PlaylistVideos.AddRange(
-                videos.Select(
-                    (video, index) => PlaylistVideoEntity.Create(Guid.NewGuid(), playlist.Id, video.Id, index)
-                )
-            )
-        );
+        {
+            PlaylistEntity tracked = ctx.Playlists.Attach(playlist).Entity;
+            foreach ((VideoEntity video, int index) in videos.Select((video, index) => (video, index)))
+            {
+                tracked.AddVideo(videoId: video.Id, sortOrder: index);
+            }
+        });
 
         await SeedAsync<CoreDbContext>(ctx => ctx.Files.AddRange(firstThumbnail, thirdThumbnail, fifthThumbnail));
 

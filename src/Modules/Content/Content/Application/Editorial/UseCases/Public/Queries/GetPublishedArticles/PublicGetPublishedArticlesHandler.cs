@@ -18,7 +18,8 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublishe
 public class PublicGetPublishedArticlesHandler(
     IArticleRepository articleRepository,
     IArticleInteractionRepository articleInteractionRepository,
-    IFileStorageService fileStorage
+    IFileStorageService fileStorage,
+    IContentLookupFactory contentLookupFactory
 ) : IQueryHandler<PublicGetPublishedArticlesQuery, PublicGetPublishedArticlesResult>
 {
     /// <inheritdoc />
@@ -48,6 +49,7 @@ public class PublicGetPublishedArticlesHandler(
             );
 
         IReadOnlyList<PublicArticleSummaryDto> dtoList = await articles.ToPublicArticleSummaryDtosAsync(
+            await contentLookupFactory.ResolveForArticlesAsync(articles, cancellationToken),
             fileStorage,
             liked,
             bookmarked,

@@ -36,7 +36,8 @@ public class PublicGetArtistArticlesHandlerTests : BaseContentHandlerTest
             _artistRepositoryMock.Object,
             _articleRepositoryMock.Object,
             fileStorageMock.Object,
-            TestErrorsFactory.CreateContentI18n()
+            TestErrorsFactory.CreateContentI18n(),
+            CreateContentLookupFactory()
         );
     }
 

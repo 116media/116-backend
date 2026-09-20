@@ -14,13 +14,13 @@ public static class ArticleImageFactory
     /// <summary>
     /// Creates a body image for the specified article.
     /// </summary>
-    public static ArticleImageEntity Create(Guid articleId) => new ArticleImageBuilder(articleId).AsBody().Build();
+    public static ArticleImageEntity Create(ArticleEntity article) => new ArticleImageBuilder(article).AsBody().Build();
 
     /// <summary>
     /// Creates a cover image for the specified article.
     /// </summary>
-    public static ArticleImageEntity CreateCover(Guid articleId) =>
-        new ArticleImageBuilder(articleId)
+    public static ArticleImageEntity CreateCover(ArticleEntity article) =>
+        new ArticleImageBuilder(article)
             .AsCover()
             .WithStorageKey(TestConstants.ArticleImage.ValidStorageKey)
             .WithUrl(TestConstants.ArticleImage.ValidUrl)
@@ -29,8 +29,8 @@ public static class ArticleImageFactory
     /// <summary>
     /// Creates a body image for the specified article.
     /// </summary>
-    public static ArticleImageEntity CreateBody(Guid articleId) =>
-        new ArticleImageBuilder(articleId)
+    public static ArticleImageEntity CreateBody(ArticleEntity article) =>
+        new ArticleImageBuilder(article)
             .AsBody()
             .WithStorageKey(TestConstants.ArticleImage.AnotherStorageKey)
             .WithUrl(TestConstants.ArticleImage.AnotherUrl)
@@ -39,23 +39,23 @@ public static class ArticleImageFactory
     /// <summary>
     /// Creates a cover image with specific storage key and URL.
     /// </summary>
-    public static ArticleImageEntity CreateCover(Guid articleId, string storageKey, string url) =>
-        new ArticleImageBuilder(articleId).AsCover().WithStorageKey(storageKey).WithUrl(url).Build();
+    public static ArticleImageEntity CreateCover(ArticleEntity article, string storageKey, string url) =>
+        new ArticleImageBuilder(article).AsCover().WithStorageKey(storageKey).WithUrl(url).Build();
 
     /// <summary>
     /// Creates a body image with specific storage key and URL.
     /// </summary>
-    public static ArticleImageEntity CreateBody(Guid articleId, string storageKey, string url) =>
-        new ArticleImageBuilder(articleId).AsBody().WithStorageKey(storageKey).WithUrl(url).Build();
+    public static ArticleImageEntity CreateBody(ArticleEntity article, string storageKey, string url) =>
+        new ArticleImageBuilder(article).AsBody().WithStorageKey(storageKey).WithUrl(url).Build();
 
     /// <summary>
     /// Creates a list of body images for the specified article.
     /// </summary>
-    public static List<ArticleImageEntity> CreateMany(Guid articleId, int count) =>
+    public static List<ArticleImageEntity> CreateMany(ArticleEntity article, int count) =>
         Enumerable
             .Range(0, count)
             .Select(i =>
-                new ArticleImageBuilder(articleId)
+                new ArticleImageBuilder(article)
                     .AsBody()
                     .WithStorageKey($"content/articles/image-{i}")
                     .WithUrl($"https://res.cloudinary.com/test/image/upload/v1/image-{i}.jpg")
@@ -66,10 +66,13 @@ public static class ArticleImageFactory
     /// <summary>
     /// Creates a list of article images from raw storage keys (for delete tests).
     /// </summary>
-    public static List<ArticleImageEntity> CreateFromStorageKeys(Guid articleId, IEnumerable<string> storageKeys) =>
+    public static List<ArticleImageEntity> CreateFromStorageKeys(
+        ArticleEntity article,
+        IEnumerable<string> storageKeys
+    ) =>
         storageKeys
             .Select(key =>
-                new ArticleImageBuilder(articleId)
+                new ArticleImageBuilder(article)
                     .AsBody()
                     .WithStorageKey(key)
                     .WithUrl($"https://res.cloudinary.com/test/{key}.jpg")

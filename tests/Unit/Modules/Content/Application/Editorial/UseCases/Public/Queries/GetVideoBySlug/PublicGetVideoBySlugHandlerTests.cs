@@ -42,7 +42,12 @@ public class PublicGetVideoBySlugHandlerTests : BaseContentHandlerTest
         _handler = new PublicGetVideoBySlugHandler(
             _videoRepositoryMock.Object,
             _artistRepositoryMock.Object,
-            new VideoDtoFactory(Mapper, _fileStorageMock.Object),
+            new VideoDtoFactory(
+                Mapper,
+                _fileStorageMock.Object,
+                _videoRepositoryMock.Object,
+                CreateContentLookupFactory()
+            ),
             _i18n
         );
     }
@@ -53,10 +58,10 @@ public class PublicGetVideoBySlugHandlerTests : BaseContentHandlerTest
         // Arrange
         CategoryEntity category = CategoryFactory.Create(CategoryId);
         VideoEntity video = VideoFactory.CreateWithCategory(CategoryId, category);
-        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl);
+        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl, TestConstants.Clock.Instant);
         video.MarkPendingReview();
         video.Approve();
-        video.Publish();
+        video.Publish(TestConstants.Clock.Instant);
 
         string slug = video.Slug;
         var query = new PublicGetVideoBySlugQuery(Slug: slug);
@@ -77,10 +82,10 @@ public class PublicGetVideoBySlugHandlerTests : BaseContentHandlerTest
         // Arrange
         CategoryEntity category = CategoryFactory.Create(CategoryId);
         VideoEntity video = VideoFactory.CreateWithCategory(CategoryId, category);
-        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl);
+        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl, TestConstants.Clock.Instant);
         video.MarkPendingReview();
         video.Approve();
-        video.Publish();
+        video.Publish(TestConstants.Clock.Instant);
 
         _videoRepositoryMock.SetupGetBySlug(video.Slug, video);
 
@@ -100,10 +105,10 @@ public class PublicGetVideoBySlugHandlerTests : BaseContentHandlerTest
         // Arrange
         CategoryEntity category = CategoryFactory.Create(CategoryId);
         VideoEntity video = VideoFactory.CreateWithCategory(CategoryId, category);
-        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl);
+        video.AttachYoutubeVideoUrl(TestConstants.Video.ValidYoutubeVideoUrl, TestConstants.Clock.Instant);
         video.MarkPendingReview();
         video.Approve();
-        video.Publish();
+        video.Publish(TestConstants.Clock.Instant);
 
         ArtistEntity artist = ArtistFactory.CreateWithSlug($"linked-{Guid.NewGuid():N}");
         video.LinkArtist(artist.Id);

@@ -21,7 +21,8 @@ public class PublicGetArtistArticlesHandler(
     IArtistRepository artistRepository,
     IArticleRepository articleRepository,
     IFileStorageService fileStorage,
-    ContentI18n i18n
+    ContentI18n i18n,
+    IContentLookupFactory contentLookupFactory
 ) : IQueryHandler<PublicGetArtistArticlesQuery, PublicGetArtistArticlesResult>
 {
     /// <inheritdoc />
@@ -49,7 +50,11 @@ public class PublicGetArtistArticlesHandler(
 
         IReadOnlyList<PublicArticleSummaryDto> articleDtos = await articles
             .AsReadOnly()
-            .ToPublicArticleSummaryDtosAsync(fileStorage, cancellationToken);
+            .ToPublicArticleSummaryDtosAsync(
+                await contentLookupFactory.ResolveForArticlesAsync(articles.AsReadOnly(), cancellationToken),
+                fileStorage,
+                cancellationToken
+            );
 
         var result = new PaginatedResult<PublicArticleSummaryDto>(
             pageIndex: query.Page.PageIndex,

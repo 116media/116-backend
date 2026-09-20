@@ -13,8 +13,11 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPopularA
 /// </summary>
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="fileStorage">Core's storage contract.</param>
-public class PublicGetPopularArticlesHandler(IArticleRepository articleRepository, IFileStorageService fileStorage)
-    : IQueryHandler<PublicGetPopularArticlesQuery, PublicGetPopularArticlesResult>
+public class PublicGetPopularArticlesHandler(
+    IArticleRepository articleRepository,
+    IFileStorageService fileStorage,
+    IContentLookupFactory contentLookupFactory
+) : IQueryHandler<PublicGetPopularArticlesQuery, PublicGetPopularArticlesResult>
 {
     /// <inheritdoc />
     public async Task<PublicGetPopularArticlesResult> Handle(
@@ -30,6 +33,7 @@ public class PublicGetPopularArticlesHandler(IArticleRepository articleRepositor
         );
 
         IReadOnlyList<PublicArticleSummaryDto> dtoList = await articles.ToPublicArticleSummaryDtosAsync(
+            await contentLookupFactory.ResolveForArticlesAsync(articles, cancellationToken),
             fileStorage,
             cancellationToken
         );

@@ -2,6 +2,7 @@ using _116.Content.Domain.Enums;
 using _116.Content.Domain.Events;
 using _116.Content.Domain.Exceptions;
 using _116.Content.Domain.StateMachines;
+using _116.Content.Domain.ValueObjects;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -29,22 +30,12 @@ public class ContentOrderEntity : Aggregate<Guid>
     /// Recomputed each time a tier or item is added or removed via <see cref="RecalculateTotalFromItems" />.
     /// Starts at <c>0</c> and is never negative.
     /// </summary>
-    public decimal TotalAmountUsd { get; private set; }
+    public Money TotalAmountUsd { get; private set; } = null!;
 
     /// <summary>
     /// Current lifecycle status of the order.
     /// </summary>
     public EnumOrderStatus Status { get; private set; }
-
-    /// <summary>
-    /// The customer who placed this order.
-    /// </summary>
-    public CustomerEntity Customer { get; private set; } = null!;
-
-    /// <summary>
-    /// The package applied to this order, or <c>null</c> if no package was selected.
-    /// </summary>
-    public PackageEntity? Package { get; private set; }
 
     /// <summary>
     /// The line items of this order (one per commissioned content piece).
@@ -122,6 +113,125 @@ public class ContentOrderEntity : Aggregate<Guid>
     {
         Items.Add(item);
         RecalculateTotalFromItems();
+    }
+
+    /// <summary>
+    /// Builds an item inside this order and adds it, recalculating the total.
+    /// </summary>
+    /// <param name="contentKind">The content kind the item pays for.</param>
+    /// <param name="categoryId">The category the item is placed in.</param>
+    /// <param name="promotionLevelId">The purchased promotion level, or null.</param>
+    /// <param name="promoPriceSnapshotUsd">The promotion price frozen at purchase, or null.</param>
+    /// <param name="socialBoost">Whether the social boost add-on was purchased.</param>
+    /// <param name="isBonus">Whether the item is a free bonus excluded from the total.</param>
+    /// <returns>The item that was added.</returns>
+    public ContentOrderItemEntity AddItem(
+        EnumCoreContentType contentKind,
+        Guid categoryId,
+        Guid? promotionLevelId,
+        decimal? promoPriceSnapshotUsd,
+        bool socialBoost,
+        bool isBonus
+    )
+    {
+        ContentOrderItemEntity item = ContentOrderItemEntity.Create(
+            id: Guid.NewGuid(),
+            orderId: Id,
+            contentKind: contentKind,
+            categoryId: categoryId,
+            promotionLevelId: promotionLevelId,
+            promoPriceSnapshotUsd: promoPriceSnapshotUsd,
+            socialBoost: socialBoost,
+            isBonus: isBonus
+        );
+
+        AddItem(item: item);
+
+        return item;
+    }
+
+    /// <summary>
+    /// Attaches a priced tier to one of this order's items and recalculates the total.
+    /// </summary>
+    /// <param name="item">The item the tier is attached to.</param>
+    /// <param name="pricingTierId">The tier being purchased.</param>
+    /// <param name="priceSnapshotUsd">The tier price frozen at purchase.</param>
+    /// <returns>The tier that was attached.</returns>
+    public ContentItemTierEntity AddTier(ContentOrderItemEntity item, Guid pricingTierId, decimal priceSnapshotUsd)
+    {
+        ContentItemTierEntity tier = ContentItemTierEntity.Create(
+            id: Guid.NewGuid(),
+            orderItemId: item.Id,
+            pricingTierId: pricingTierId,
+            priceSnapshotUsd: priceSnapshotUsd
+        );
+
+        item.Tiers.Add(tier);
+        RecalculateTotalFromItems();
+
+        return tier;
+    }
+
+    /// <summary>
+    /// Detaches a tier from one of this order's items and recalculates the total, reporting
+    /// whether the tier was there.
+    /// </summary>
+    /// <param name="item">The item the tier is detached from.</param>
+    /// <param name="tierId">The tier row to remove.</param>
+    /// <returns><c>true</c> if a tier was removed; otherwise <c>false</c>.</returns>
+    public bool RemoveTier(ContentOrderItemEntity item, Guid tierId)
+    {
+        ContentItemTierEntity? tier = item.Tiers.FirstOrDefault(candidate => candidate.Id == tierId);
+
+        if (tier is null)
+        {
+            return false;
+        }
+
+        item.Tiers.Remove(tier);
+        RecalculateTotalFromItems();
+
+        return true;
+    }
+
+    /// <summary>
+    /// Returns this order's item by its identifier, or null when it belongs to another order.
+    /// </summary>
+    /// <param name="itemId">The item to look up.</param>
+    /// <returns>The matching item, or <c>null</c>.</returns>
+    public ContentOrderItemEntity? FindItem(Guid itemId)
+    {
+        return Items.FirstOrDefault(item => item.Id == itemId);
+    }
+
+    /// <summary>
+    /// Creates the payment slot for this order's frozen total. Called by the submission flow
+    /// right after <see cref="Submit" />.
+    /// </summary>
+    /// <returns>The payment that was attached.</returns>
+    public ContentPaymentEntity AttachPayment()
+    {
+        ContentPaymentEntity payment = ContentPaymentEntity.Create(
+            id: Guid.NewGuid(),
+            orderId: Id,
+            amountUsd: TotalAmountUsd
+        );
+
+        Payment = payment;
+
+        return payment;
+    }
+
+    /// <summary>
+    /// Rejects this order's payment with the moderator's notes, raising the rejection fact the
+    /// resubmission email flow consumes.
+    /// </summary>
+    /// <param name="notes">The reason the proof was rejected, or null.</param>
+    public void RejectPayment(string? notes)
+    {
+        Payment!.Reject(notes: notes);
+
+        AddDomainEvent(new PaymentRejectedEvent(OrderId: Id, PaymentId: Payment.Id, Notes: notes));
     }
 
     /// <summary>

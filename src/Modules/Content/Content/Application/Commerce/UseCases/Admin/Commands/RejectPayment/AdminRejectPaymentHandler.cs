@@ -10,13 +10,13 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.RejectPaymen
 /// <summary>
 /// Handles the <see cref="AdminRejectPaymentCommand" /> to reject an order payment.
 /// </summary>
-/// <param name="orderPaymentFactory">Shared factory for fetching and validating payment records.</param>
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminRejectPaymentHandler(
-    IOrderPaymentFactory orderPaymentFactory,
     IContentOrderRepository contentOrderRepository,
-    IContentUnitOfWork unitOfWork
+    IContentUnitOfWork unitOfWork,
+    ContentI18n i18n
 ) : ICommandHandler<AdminRejectPaymentCommand, AdminRejectPaymentResult>
 {
     /// <inheritdoc />
@@ -27,14 +27,14 @@ public class AdminRejectPaymentHandler(
     {
         Guid orderId = Guid.Parse(command.OrderId);
 
-        await contentOrderRepository.GetByIdOrThrowAsync(id: orderId, ct: cancellationToken);
+        ContentOrderEntity order = await contentOrderRepository.GetByIdOrThrowAsync(id: orderId, ct: cancellationToken);
 
-        ContentPaymentEntity payment = await orderPaymentFactory.GetByOrderIdOrThrowAsync(
-            orderId: orderId,
-            ct: cancellationToken
-        );
+        if (order.Payment is null)
+        {
+            throw i18n.ContentOrder.PaymentNotFound(orderId: orderId);
+        }
 
-        payment.Reject(notes: command.Notes);
+        order.RejectPayment(notes: command.Notes);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminRejectPaymentResult(IsSuccess: true);

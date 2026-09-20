@@ -25,7 +25,8 @@ public class AdminGetArticleByIdHandler(
     IArticleRepository articleRepository,
     IUserLookupService userLookup,
     IFileStorageService fileStorage,
-    IMapper mapper
+    IMapper mapper,
+    IContentLookupFactory contentLookupFactory
 ) : IQueryHandler<AdminGetArticleByIdQuery, AdminGetArticleByIdResult>
 {
     /// <inheritdoc />
@@ -39,7 +40,12 @@ public class AdminGetArticleByIdHandler(
             cancellationToken: cancellationToken
         );
 
-        var dto = await article.ToArticleDetailDtoAsync(mapper, fileStorage, cancellationToken);
+        var dto = await article.ToArticleDetailDtoAsync(
+            mapper,
+            await contentLookupFactory.ResolveForArticlesAsync([article], cancellationToken),
+            fileStorage,
+            cancellationToken
+        );
 
         AuthorDto? authorInfo = await userLookup.GetAuthorInfoByIdAsync(
             userId: article.AuthorId,

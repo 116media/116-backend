@@ -4,7 +4,6 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
-using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Specifications;
 using _116.Shared.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
@@ -27,7 +26,7 @@ public class ArticleRepository(ContentDbContext context) : ContentRepository<Art
         CancellationToken cancellationToken = default
     )
     {
-        IQueryable<ArticleEntity> query = Context.Articles.Include(a => a.Category);
+        IQueryable<ArticleEntity> query = Context.Articles;
 
         Specification<ArticleEntity>? spec = new ArticleQueryBuilder()
             .WithSearch(search: search)
@@ -52,39 +51,9 @@ public class ArticleRepository(ContentDbContext context) : ContentRepository<Art
     }
 
     /// <inheritdoc />
-    public override async Task<ArticleEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    protected override IQueryable<ArticleEntity> Query()
     {
-        var specification = new ArticleByIdSpecification(id: id);
-        return await Context
-            .Articles.ApplySpecification(specification: specification)
-            .Include(a => a.Category)
-            .Include(a => a.Images)
-            .Include(a => a.Tags)
-                .ThenInclude(t => t.Tag)
-            .Include(a => a.Customer)
-            .Include(a => a.PromotionLevel)
-            .AsSplitQuery()
-            .FirstOrDefaultAsync(cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public override async Task<ArticleEntity> GetByIdOrThrowAsync(
-        Guid id,
-        CancellationToken cancellationToken = default
-    )
-    {
-        var specification = new ArticleByIdSpecification(id: id);
-        return await Context
-            .Articles.AsTracking()
-            .ApplySpecification(specification: specification)
-            .Include(a => a.Category)
-            .Include(a => a.Images)
-            .Include(a => a.Tags)
-                .ThenInclude(t => t.Tag)
-            .Include(a => a.Customer)
-            .Include(a => a.PromotionLevel)
-            .AsSplitQuery()
-            .FirstDefaultOrThrowAsync(keyValue: id, cancellationToken: cancellationToken);
+        return Context.Articles.Include(a => a.Images).Include(a => a.Artists).Include(a => a.Tags).AsSplitQuery();
     }
 
     /// <inheritdoc />
@@ -94,11 +63,8 @@ public class ArticleRepository(ContentDbContext context) : ContentRepository<Art
         return await Context
             .Articles.AsTracking()
             .ApplySpecification(specification: specification)
-            .Include(a => a.Category)
             .Include(a => a.Images)
             .Include(a => a.Tags)
-                .ThenInclude(t => t.Tag)
-            .Include(a => a.PromotionLevel)
             .AsSplitQuery()
             .FirstOrDefaultAsync(cancellationToken);
     }
@@ -109,7 +75,6 @@ public class ArticleRepository(ContentDbContext context) : ContentRepository<Art
         var specification = new PromotedArticleSpecification();
         return await Context
             .Articles.ApplySpecification(specification: specification)
-            .Include(a => a.Category)
             .OrderByDescending(a => a.PublishedAt)
             .ToListAsync(cancellationToken);
     }
@@ -126,7 +91,7 @@ public class ArticleRepository(ContentDbContext context) : ContentRepository<Art
             .WithCategory(categoryId: categoryId)
             .WithExcludeId(excludeId: excludeId)
             .WithLimit(limit: limit)
-            .Build(source: Context.Articles.Include(a => a.Category));
+            .Build(source: Context.Articles);
 
         return await query.ToListAsync(cancellationToken);
     }
@@ -155,95 +120,6 @@ public class ArticleRepository(ContentDbContext context) : ContentRepository<Art
             .Articles.AsTracking()
             .ApplySpecification(specification: specification)
             .FirstOrDefaultAsync(cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public async Task AddImageAsync(ArticleImageEntity image, CancellationToken cancellationToken = default)
-    {
-        await Context.ArticleImages.AddAsync(image, cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public async Task<IReadOnlyList<ArticleImageEntity>> GetImagesByArticleIdAsync(
-        Guid articleId,
-        CancellationToken cancellationToken = default
-    )
-    {
-        var specification = new ArticleImageByArticleIdSpecification(articleId: articleId);
-        return await Context
-            .ArticleImages.AsTracking()
-            .ApplySpecification(specification: specification)
-            .ToListAsync(cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public void RemoveImages(IEnumerable<ArticleImageEntity> images)
-    {
-        Context.ArticleImages.RemoveRange(images);
-    }
-
-    /// <inheritdoc />
-    public async Task AddTagAsync(ArticleTagEntity tag, CancellationToken cancellationToken = default)
-    {
-        await Context.ArticleTags.AddAsync(tag, cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public void RemoveTag(ArticleTagEntity tag)
-    {
-        tag.MarkRemoved();
-        Context.ArticleTags.Remove(tag);
-    }
-
-    /// <inheritdoc />
-    public async Task<IReadOnlyList<ArticleTagEntity>> GetTagsByArticleIdAsync(
-        Guid articleId,
-        CancellationToken cancellationToken = default
-    )
-    {
-        var specification = new ArticleTagByArticleIdSpecification(articleId: articleId);
-        return await Context
-            .ArticleTags.AsTracking()
-            .ApplySpecification(specification: specification)
-            .ToListAsync(cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public async Task<IReadOnlyList<ArticleArtistEntity>> GetArtistsByArticleIdAsync(
-        Guid articleId,
-        CancellationToken cancellationToken = default
-    )
-    {
-        return await Context
-            .ArticleArtists.Where(aa => aa.ArticleId == articleId)
-            .ToListAsync(cancellationToken: cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public async Task ReplaceArticleArtistsAsync(
-        Guid articleId,
-        IReadOnlyList<Guid> artistIds,
-        CancellationToken cancellationToken = default
-    )
-    {
-        List<ArticleArtistEntity> current = await Context
-            .ArticleArtists.AsTracking()
-            .Where(aa => aa.ArticleId == articleId)
-            .ToListAsync(cancellationToken: cancellationToken);
-
-        var desired = artistIds.ToHashSet();
-
-        Context.ArticleArtists.RemoveRange(current.Where(aa => !desired.Contains(aa.ArtistId)));
-
-        var existing = current.Select(aa => aa.ArtistId).ToHashSet();
-
-        foreach (Guid artistId in desired.Where(id => !existing.Contains(id)))
-        {
-            await Context.ArticleArtists.AddAsync(
-                ArticleArtistEntity.Create(id: Guid.NewGuid(), articleId: articleId, artistId: artistId),
-                cancellationToken
-            );
-        }
     }
 
     /// <inheritdoc />
@@ -279,11 +155,9 @@ public class ArticleRepository(ContentDbContext context) : ContentRepository<Art
         CancellationToken cancellationToken = default
     )
     {
-        var specification = new ArticleBySpotPrioritySpecification(spotPriority: spotPriority);
+        var specification = new ArticleBySpotPrioritySpecification(spotPriority: spotPriority, Context.PromotionLevels);
         return await Context
             .Articles.ApplySpecification(specification: specification)
-            .Include(a => a.Category)
-            .Include(a => a.PromotionLevel)
             .OrderByDescending(a => a.PublishedAt)
             .ToListAsync(cancellationToken);
     }
@@ -300,7 +174,6 @@ public class ArticleRepository(ContentDbContext context) : ContentRepository<Art
         return await Context
             .Articles.ApplySpecification(specification: specification)
             .Where(a => !excludeIds.Contains(a.Id))
-            .Include(a => a.Category)
             .OrderByDescending(a => a.PublishedAt)
             .Take(limit)
             .ToListAsync(cancellationToken);

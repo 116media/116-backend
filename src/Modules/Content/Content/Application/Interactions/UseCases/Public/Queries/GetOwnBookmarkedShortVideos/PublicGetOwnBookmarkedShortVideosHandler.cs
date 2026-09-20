@@ -15,7 +15,8 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetOwnBo
 public class PublicGetOwnBookmarkedShortVideosHandler(
     IShortVideoRepository shortVideoRepository,
     IFileStorageService fileStorage,
-    IMapper mapper
+    IMapper mapper,
+    IVideoRepository videoRepository
 ) : IQueryHandler<PublicGetOwnBookmarkedShortVideosQuery, PublicGetOwnBookmarkedShortVideosResult>
 {
     /// <inheritdoc />
@@ -39,6 +40,7 @@ public class PublicGetOwnBookmarkedShortVideosHandler(
         IReadOnlyList<PublicShortVideoDto> dtos = await shortVideos.ToPublicShortVideoDtosAsync(
             mapper,
             fileStorage,
+            videoRepository,
             liked,
             bookmarked,
             cancellationToken

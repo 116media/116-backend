@@ -38,7 +38,12 @@ public class AdminUpdateVideoSeoHandlerTests : BaseContentHandlerTest
         _handler = new AdminUpdateVideoSeoHandler(
             _videoRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            new VideoDtoFactory(Mapper, _fileStorageMock.Object)
+            new VideoDtoFactory(
+                Mapper,
+                _fileStorageMock.Object,
+                _videoRepositoryMock.Object,
+                CreateContentLookupFactory()
+            )
         );
     }
 

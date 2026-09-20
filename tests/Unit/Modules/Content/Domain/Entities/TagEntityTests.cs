@@ -31,7 +31,7 @@ public class TagEntityTests
         // Assert
         entity.Id.Should().Be(id);
         entity.Name.Should().Be(name);
-        entity.Slug.Should().Be(slug);
+        entity.Slug.Value.Should().Be(slug);
     }
 
     [Theory]
@@ -75,7 +75,7 @@ public class TagEntityTests
 
         // Assert
         tag.Name.Should().Be("New Name");
-        tag.Slug.Should().Be("new-slug");
+        tag.Slug.Value.Should().Be("new-slug");
     }
 
     [Theory]

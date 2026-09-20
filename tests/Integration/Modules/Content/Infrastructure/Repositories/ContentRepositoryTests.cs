@@ -32,7 +32,7 @@ public class ContentRepositoryTests : BaseRepositoryTest
         await using var verifyContext = CreateDbContext<ContentDbContext>();
         TagEntity? persisted = await verifyContext.Tags.FindAsync(tag.Id);
         persisted.Should().NotBeNull();
-        persisted!.Slug.Should().Be("gospel");
+        persisted!.Slug.Value.Should().Be("gospel");
     }
 
     [Fact]

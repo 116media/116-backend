@@ -39,7 +39,8 @@ public class AdminUpdateLyricsMetadataHandlerTests : BaseContentHandlerTest
             _unitOfWorkMock.Object,
             Mapper,
             userLookupMock.Object,
-            fileStorageMock.Object
+            fileStorageMock.Object,
+            CreateContentLookupFactory()
         );
     }
 

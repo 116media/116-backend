@@ -488,7 +488,7 @@ public class ArticleSpecificationsTests
         // Arrange
         var artistId = Guid.NewGuid();
         ArticleEntity article = ArticleFactory.CreatePublished(Guid.NewGuid());
-        ArticleArtistEntity join = ArticleArtistEntity.Create(Guid.NewGuid(), article.Id, artistId);
+        ArticleArtistEntity join = ArticleArtistFactory.Link(article, artistId);
         var spec = new ArticleByArtistSpecification(artistId, new[] { join }.AsQueryable());
 
         // Act & Assert
@@ -501,7 +501,7 @@ public class ArticleSpecificationsTests
         // Arrange
         var artistId = Guid.NewGuid();
         ArticleEntity draft = ArticleFactory.Create(Guid.NewGuid());
-        ArticleArtistEntity join = ArticleArtistEntity.Create(Guid.NewGuid(), draft.Id, artistId);
+        ArticleArtistEntity join = ArticleArtistFactory.Link(draft, artistId);
         var spec = new ArticleByArtistSpecification(artistId, new[] { join }.AsQueryable());
 
         // Act & Assert

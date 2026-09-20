@@ -1,4 +1,3 @@
-using _116.Content.Domain.Events;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -6,7 +5,7 @@ namespace _116.Content.Domain.Entities;
 /// <summary>
 /// Junction entity linking an article to a tag (many-to-many).
 /// </summary>
-public class ArticleTagEntity : Aggregate<Guid>
+public class ArticleTagEntity : Entity<Guid>
 {
     /// <summary>
     /// The identifier of the article.
@@ -18,16 +17,6 @@ public class ArticleTagEntity : Aggregate<Guid>
     /// </summary>
     public Guid TagId { get; private set; }
 
-    /// <summary>
-    /// The article associated with this tag relationship.
-    /// </summary>
-    public ArticleEntity Article { get; private set; } = null!;
-
-    /// <summary>
-    /// The tag associated with this article relationship.
-    /// </summary>
-    public TagEntity Tag { get; private set; } = null!;
-
     private ArticleTagEntity() { }
 
     /// <summary>
@@ -37,28 +26,15 @@ public class ArticleTagEntity : Aggregate<Guid>
     /// <param name="articleId">The article being tagged.</param>
     /// <param name="tagId">The tag being applied.</param>
     /// <returns>A new <see cref="ArticleTagEntity" />.</returns>
-    public static ArticleTagEntity Create(Guid id, Guid articleId, Guid tagId)
+    internal static ArticleTagEntity Create(Guid id, Guid articleId, Guid tagId)
     {
         var association = new ArticleTagEntity
         {
             Id = id,
             ArticleId = articleId,
             TagId = tagId,
-            CreatedAt = DateTime.UtcNow,
         };
 
-        association.AddDomainEvent(new TagGraphChangedEvent(TagId: tagId));
-
         return association;
-    }
-
-    /// <summary>
-    /// Declares this association's removal so the post-commit tags cache
-    /// consumer can evict the cached tag projections.
-    /// Called by the removal path immediately before the row is removed.
-    /// </summary>
-    public void MarkRemoved()
-    {
-        AddDomainEvent(new TagGraphChangedEvent(TagId: TagId));
     }
 }

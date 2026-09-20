@@ -94,18 +94,13 @@ public class ContentAssetCleanupHandler(
     /// <inheritdoc />
     public async Task Handle(ArticleBodyImagesOrphanedEvent domainEvent, CancellationToken cancellationToken = default)
     {
-        IReadOnlyList<ArticleImageEntity> images = await articleRepository.GetImagesByArticleIdAsync(
-            articleId: domainEvent.ArticleId,
+        ArticleEntity? article = await articleRepository.GetByIdAsync(
+            id: domainEvent.ArticleId,
             cancellationToken: cancellationToken
         );
 
-        HashSet<string> orphanedKeys = domainEvent.StorageKeys.ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-        List<ArticleImageEntity> orphanedRows = images.Where(image => orphanedKeys.Contains(image.StorageKey)).ToList();
-
-        if (orphanedRows.Count > 0)
+        if (article is not null && article.RemoveBodyImages(storageKeys: domainEvent.StorageKeys).Count > 0)
         {
-            articleRepository.RemoveImages(images: orphanedRows);
             await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
         }
 

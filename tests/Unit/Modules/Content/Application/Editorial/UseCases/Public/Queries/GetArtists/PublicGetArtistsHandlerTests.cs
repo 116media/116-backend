@@ -7,6 +7,7 @@ using _116.Core.Contracts.Application.DTOs;
 using _116.Core.Contracts.Application.Services;
 using _116.Core.Domain.Entities;
 using _116.Shared.Application.Pagination;
+using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Factories.Core;
 using _116.Tests.Fixtures.Helpers;
@@ -97,7 +98,7 @@ public class PublicGetArtistsHandlerTests
     {
         // Arrange
         ArtistEntity artist = ArtistFactory.Create();
-        artist.ClaimOwnership(Guid.NewGuid());
+        artist.ClaimOwnership(Guid.NewGuid(), TestConstants.Clock.Instant);
         SetupDirectory(1, [], new ArtistDirectoryRow(artist, ContentCount: 0));
 
         var query = new PublicGetArtistsQuery(new PaginatedRequest(0, 10), Letter: null, Search: null);

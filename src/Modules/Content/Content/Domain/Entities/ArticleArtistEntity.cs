@@ -9,7 +9,7 @@ namespace _116.Content.Domain.Entities;
 /// artists, and a single FK would force an arbitrary choice of which profile gets the story.
 /// </para>
 /// </summary>
-public class ArticleArtistEntity : Aggregate<Guid>
+public class ArticleArtistEntity : Entity<Guid>
 {
     /// <summary>
     /// The identifier of the article.
@@ -20,16 +20,6 @@ public class ArticleArtistEntity : Aggregate<Guid>
     /// The identifier of the artist the article covers.
     /// </summary>
     public Guid ArtistId { get; private set; }
-
-    /// <summary>
-    /// The article associated with this artist relationship.
-    /// </summary>
-    public ArticleEntity Article { get; private set; } = null!;
-
-    /// <summary>
-    /// The artist associated with this article relationship.
-    /// </summary>
-    public ArtistEntity Artist { get; private set; } = null!;
 
     /// <summary>
     /// Private parameterless constructor required by Entity Framework Core.
@@ -43,14 +33,13 @@ public class ArticleArtistEntity : Aggregate<Guid>
     /// <param name="articleId">The article being tagged.</param>
     /// <param name="artistId">The artist the article covers.</param>
     /// <returns>A new <see cref="ArticleArtistEntity" />.</returns>
-    public static ArticleArtistEntity Create(Guid id, Guid articleId, Guid artistId)
+    internal static ArticleArtistEntity Create(Guid id, Guid articleId, Guid artistId)
     {
         return new ArticleArtistEntity
         {
             Id = id,
             ArticleId = articleId,
             ArtistId = artistId,
-            CreatedAt = DateTime.UtcNow,
         };
     }
 }

@@ -1,11 +1,10 @@
+using _116.Content.Application.Commerce.Factories;
 using _116.Content.Application.Shared.DTOs;
-using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
-using MapsterMapper;
 
 namespace _116.Content.Application.Commerce.UseCases.Admin.Queries.GetPendingPaymentOrders;
 
@@ -13,9 +12,11 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Queries.GetPendingPay
 /// Handles the <see cref="AdminGetPendingPaymentOrdersQuery" /> to retrieve orders awaiting payment, oldest-first.
 /// </summary>
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
-/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-public class AdminGetPendingPaymentOrdersHandler(IContentOrderRepository contentOrderRepository, IMapper mapper)
-    : IQueryHandler<AdminGetPendingPaymentOrdersQuery, AdminGetPendingPaymentOrdersResult>
+/// <param name="orderDtoFactory">Builds order projections with their lookups resolved.</param>
+public class AdminGetPendingPaymentOrdersHandler(
+    IContentOrderRepository contentOrderRepository,
+    IContentOrderDtoFactory orderDtoFactory
+) : IQueryHandler<AdminGetPendingPaymentOrdersQuery, AdminGetPendingPaymentOrdersResult>
 {
     /// <inheritdoc />
     public async Task<AdminGetPendingPaymentOrdersResult> Handle(
@@ -35,7 +36,10 @@ public class AdminGetPendingPaymentOrdersHandler(IContentOrderRepository content
             ct: cancellationToken
         );
 
-        IReadOnlyList<ContentOrderSummaryDto> dtoList = orders.ToContentOrderSummaryDtos(mapper);
+        IReadOnlyList<ContentOrderSummaryDto> dtoList = await orderDtoFactory.CreateManySummariesAsync(
+            orders,
+            cancellationToken
+        );
 
         var paginatedResult = new PaginatedResult<ContentOrderSummaryDto>(
             pageIndex: pageIndex,

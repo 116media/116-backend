@@ -26,11 +26,6 @@ public class ArticleShareEntity : Aggregate<Guid>
     /// </summary>
     public EnumShareChannel? ShareChannel { get; private set; }
 
-    /// <summary>
-    /// Navigation property to the article.
-    /// </summary>
-    public ArticleEntity Article { get; private set; } = null!;
-
     private ArticleShareEntity() { }
 
     /// <summary>
@@ -54,7 +49,6 @@ public class ArticleShareEntity : Aggregate<Guid>
             UserId = userId,
             ArticleId = articleId,
             ShareChannel = shareChannel,
-            CreatedAt = DateTime.UtcNow,
         };
 
         share.AddDomainEvent(new ArticleEngagedEvent(ArticleId: articleId, Kind: EnumEngagementKind.Share, Delta: 1));

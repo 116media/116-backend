@@ -18,12 +18,14 @@ namespace _116.Unit.Tests.Modules.Content.Application.Commerce.UseCases.Admin.Co
 public class AdminCreateOrderFactoryTests
 {
     private readonly Mock<ICategoryRepository> _categoryRepositoryMock;
+    private readonly Mock<IContentTypeRepository> _contentTypeRepositoryMock;
     private readonly AdminCreateOrderFactory _factory;
 
     public AdminCreateOrderFactoryTests()
     {
         _categoryRepositoryMock = MockCategoryRepository.Create();
-        _factory = new AdminCreateOrderFactory(_categoryRepositoryMock.Object);
+        _contentTypeRepositoryMock = MockContentTypeRepository.Create();
+        _factory = new AdminCreateOrderFactory(_categoryRepositoryMock.Object, _contentTypeRepositoryMock.Object);
     }
 
     #region PopulateFromPackageAsync Tests
@@ -36,15 +38,13 @@ public class AdminCreateOrderFactoryTests
         Guid contentTypeId = Guid.NewGuid();
         CategoryEntity category = CreateCategoryWithContentType(contentTypeId, "Video");
         PackageEntity package = PackageFactory.Create();
-        PackageSlotEntity slot = new PackageSlotBuilder(package.Id)
+        PackageSlotEntity slot = new PackageSlotBuilder(package)
             .WithCategory(category)
             .WithIsRequired(true)
             .WithQuantity(1)
             .Build();
-        package.Slots.Add(slot);
 
-        CategoryPricingEntity pricing = CategoryPricingFactory.Create(category.Id, Guid.NewGuid(), 50m);
-        _categoryRepositoryMock.SetupGetPricingByCategories(new List<CategoryPricingEntity> { pricing });
+        CategoryPricingEntity pricing = CategoryPricingFactory.Create(category, Guid.NewGuid(), 50m);
 
         // Act
         int count = await _factory.PopulateFromPackageAsync(order, package, CancellationToken.None);
@@ -65,14 +65,11 @@ public class AdminCreateOrderFactoryTests
         Guid contentTypeId = Guid.NewGuid();
         CategoryEntity category = CreateCategoryWithContentType(contentTypeId, "Article");
         PackageEntity package = PackageFactory.Create();
-        PackageSlotEntity slot = new PackageSlotBuilder(package.Id)
+        PackageSlotEntity slot = new PackageSlotBuilder(package)
             .WithCategory(category)
             .WithIsRequired(false)
             .WithQuantity(1)
             .Build();
-        package.Slots.Add(slot);
-
-        _categoryRepositoryMock.SetupGetPricingByCategories(new List<CategoryPricingEntity>());
 
         // Act
         int count = await _factory.PopulateFromPackageAsync(order, package, CancellationToken.None);
@@ -89,12 +86,11 @@ public class AdminCreateOrderFactoryTests
         ContentOrderEntity order = ContentOrderFactory.Create();
         PackageEntity package = PackageFactory.Create();
         PackageSlotEntity openSlot = PackageSlotFactory.Create(
-            package.Id,
+            package,
             categoryId: null,
             isRequired: true,
             quantity: 2
         );
-        package.Slots.Add(openSlot);
 
         // Act
         int count = await _factory.PopulateFromPackageAsync(order, package, CancellationToken.None);
@@ -112,14 +108,11 @@ public class AdminCreateOrderFactoryTests
         Guid contentTypeId = Guid.NewGuid();
         CategoryEntity category = CreateCategoryWithContentType(contentTypeId, "Video");
         PackageEntity package = PackageFactory.Create();
-        PackageSlotEntity slot = new PackageSlotBuilder(package.Id)
+        PackageSlotEntity slot = new PackageSlotBuilder(package)
             .WithCategory(category)
             .WithIsRequired(true)
             .WithQuantity(3)
             .Build();
-        package.Slots.Add(slot);
-
-        _categoryRepositoryMock.SetupGetPricingByCategories(new List<CategoryPricingEntity>());
 
         // Act
         int count = await _factory.PopulateFromPackageAsync(order, package, CancellationToken.None);
@@ -137,21 +130,19 @@ public class AdminCreateOrderFactoryTests
         Guid contentTypeId = Guid.NewGuid();
         CategoryEntity category = CreateCategoryWithContentType(contentTypeId, "Video");
         PackageEntity package = PackageFactory.Create();
-        PackageSlotEntity slot = new PackageSlotBuilder(package.Id)
+        PackageSlotEntity slot = new PackageSlotBuilder(package)
             .WithCategory(category)
             .WithIsRequired(false)
             .WithQuantity(1)
             .Build();
-        package.Slots.Add(slot);
 
-        CategoryPricingEntity pricing = CategoryPricingFactory.Create(category.Id, Guid.NewGuid(), 100m);
-        _categoryRepositoryMock.SetupGetPricingByCategories(new List<CategoryPricingEntity> { pricing });
+        CategoryPricingEntity pricing = CategoryPricingFactory.Create(category, Guid.NewGuid(), 100m);
 
         // Act
         await _factory.PopulateFromPackageAsync(order, package, CancellationToken.None);
 
         // Assert — bonus item's tier should not contribute to total
-        order.TotalAmountUsd.Should().Be(0m);
+        order.TotalAmountUsd.Amount.Should().Be(0m);
     }
 
     [Fact]
@@ -162,14 +153,11 @@ public class AdminCreateOrderFactoryTests
         Guid contentTypeId = Guid.NewGuid();
         CategoryEntity category = CreateCategoryWithContentType(contentTypeId, "PhotoShoot");
         PackageEntity package = PackageFactory.Create();
-        PackageSlotEntity slot = new PackageSlotBuilder(package.Id)
+        PackageSlotEntity slot = new PackageSlotBuilder(package)
             .WithCategory(category)
             .WithIsRequired(true)
             .WithQuantity(1)
             .Build();
-        package.Slots.Add(slot);
-
-        _categoryRepositoryMock.SetupGetPricingByCategories(new List<CategoryPricingEntity>());
 
         // Act
         await _factory.PopulateFromPackageAsync(order, package, CancellationToken.None);
@@ -184,8 +172,15 @@ public class AdminCreateOrderFactoryTests
     /// Creates a category carrying the ContentType navigation EF Core would populate, which the
     /// order factory reads to decide the content kind of each generated item.
     /// </summary>
-    private static CategoryEntity CreateCategoryWithContentType(Guid contentTypeId, string contentTypeName) =>
-        new CategoryBuilder(contentTypeId)
-            .WithContentType(ContentTypeEntity.Create(contentTypeId, contentTypeName))
-            .Build();
+    /// <summary>
+    /// Builds a category of the named content type and arranges both batch lookups to resolve it.
+    /// </summary>
+    private CategoryEntity CreateCategoryWithContentType(Guid contentTypeId, string contentTypeName)
+    {
+        CategoryEntity category = new CategoryBuilder(contentTypeId).Build();
+        _contentTypeRepositoryMock.SetupGetByIds(ContentTypeEntity.Create(contentTypeId, contentTypeName));
+        _categoryRepositoryMock.SetupGetByIds(category);
+
+        return category;
+    }
 }

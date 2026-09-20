@@ -3,6 +3,7 @@ using _116.Content.Domain.Constants;
 using _116.Content.Domain.Events;
 using _116.Content.Domain.Exceptions;
 using _116.Content.Domain.StateMachines;
+using _116.Content.Domain.ValueObjects;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -24,7 +25,7 @@ public class TagEntity : Aggregate<Guid>
     /// Used as a unique identifier in public-facing tag filter URLs.
     /// </summary>
     [MaxLength(length: ContentConstants.MaxTagSlugLength)]
-    public string Slug { get; private set; } = null!;
+    public Slug Slug { get; private set; } = null!;
 
     /// <summary>
     /// Private parameterless constructor required by Entity Framework Core.

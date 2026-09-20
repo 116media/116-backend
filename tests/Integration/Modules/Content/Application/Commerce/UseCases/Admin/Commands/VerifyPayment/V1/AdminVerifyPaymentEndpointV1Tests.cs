@@ -362,22 +362,11 @@ public class AdminVerifyPaymentEndpointV1Tests(PostgresFixture db) : BaseApiTest
             ctx.ContentPayments.Add(payment);
         });
 
-        // Retroactively link the already-published free lyrics page to the new order/customer,
-        // exactly as Phase 1's Update(...) signature allows.
+        // Retroactively link the already-published free lyrics page to the new order/customer.
         await using (ContentDbContext linkCtx = CreateDbContext<ContentDbContext>())
         {
             LyricsEntity toLink = (await linkCtx.Lyrics.FindAsync(lyrics.Id))!;
-            toLink.Update(
-                toLink.CategoryId,
-                toLink.SongTitle,
-                toLink.ArtistName,
-                toLink.Slug,
-                toLink.LyricsText,
-                toLink.Language,
-                toLink.VideoId,
-                customer.Id,
-                orderItem.Id
-            );
+            toLink.AssignCommission(customerId: customer.Id, orderItemId: orderItem.Id);
             await linkCtx.SaveChangesAsync();
         }
 

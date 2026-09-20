@@ -97,6 +97,27 @@ public static class EngagementCounterExtensions
     }
 
     /// <summary>
+    /// Arranges a video's cached rating, which <c>VideoRepository.SetRatingAsync</c> maintains
+    /// as a pair.
+    /// </summary>
+    /// <param name="video">The video carrying the rating.</param>
+    /// <param name="average">The cached average star rating.</param>
+    /// <param name="count">The number of ratings behind the average.</param>
+    public static VideoEntity WithRating(this VideoEntity video, decimal average, int count)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(average);
+        Set(video, nameof(video.RatingCount), count);
+
+        PropertyInfo info = typeof(VideoEntity).GetProperty(
+            nameof(video.RatingAverage),
+            BindingFlags.Public | BindingFlags.Instance
+        )!;
+        info.SetValue(video, average);
+
+        return video;
+    }
+
+    /// <summary>
     /// Arranges a video's share count.
     /// </summary>
     public static VideoEntity WithShareCount(this VideoEntity video, int count)

@@ -40,7 +40,7 @@ public class TagRepositoryTests : BaseRepositoryTest
         var result = await repo.GetBySlugAsync("afrobeats");
 
         result.Should().NotBeNull();
-        result!.Slug.Should().Be("afrobeats");
+        result!.Slug.Value.Should().Be("afrobeats");
         result.Name.Should().Be("Afrobeats");
     }
 
@@ -99,7 +99,7 @@ public class TagRepositoryTests : BaseRepositoryTest
 
         persisted.Should().NotBeNull();
         persisted!.Name.Should().Be("NewTag");
-        persisted.Slug.Should().Be("new-tag");
+        persisted.Slug.Value.Should().Be("new-tag");
     }
 
     [Fact]
@@ -117,8 +117,8 @@ public class TagRepositoryTests : BaseRepositoryTest
         seedContext.Articles.Add(article);
         seedContext.Videos.Add(video);
         seedContext.Tags.AddRange(articleTag, videoTag);
-        seedContext.ArticleTags.Add(ArticleTagEntity.Create(Guid.NewGuid(), article.Id, articleTag.Id));
-        seedContext.VideoTags.Add(VideoTagEntity.Create(Guid.NewGuid(), video.Id, videoTag.Id));
+        article.ReplaceTags([.. article.Tags.Select(t => t.TagId), articleTag.Id]);
+        video.ReplaceTags([.. video.Tags.Select(t => t.TagId), videoTag.Id]);
         await seedContext.SaveChangesAsync();
 
         var repo = Resolve<ITagRepository>();
@@ -144,8 +144,8 @@ public class TagRepositoryTests : BaseRepositoryTest
         seedContext.Articles.Add(article);
         seedContext.Videos.Add(video);
         seedContext.Tags.AddRange(articleTag, videoTag);
-        seedContext.ArticleTags.Add(ArticleTagEntity.Create(Guid.NewGuid(), article.Id, articleTag.Id));
-        seedContext.VideoTags.Add(VideoTagEntity.Create(Guid.NewGuid(), video.Id, videoTag.Id));
+        article.ReplaceTags([.. article.Tags.Select(t => t.TagId), articleTag.Id]);
+        video.ReplaceTags([.. video.Tags.Select(t => t.TagId), videoTag.Id]);
         await seedContext.SaveChangesAsync();
 
         var repo = Resolve<ITagRepository>();
@@ -172,9 +172,9 @@ public class TagRepositoryTests : BaseRepositoryTest
         seedContext.Articles.Add(article);
         seedContext.Videos.Add(video);
         seedContext.Tags.AddRange(matching, searchMismatch, associationMismatch);
-        seedContext.ArticleTags.Add(ArticleTagEntity.Create(Guid.NewGuid(), article.Id, matching.Id));
-        seedContext.ArticleTags.Add(ArticleTagEntity.Create(Guid.NewGuid(), article.Id, searchMismatch.Id));
-        seedContext.VideoTags.Add(VideoTagEntity.Create(Guid.NewGuid(), video.Id, associationMismatch.Id));
+        article.ReplaceTags([.. article.Tags.Select(t => t.TagId), matching.Id]);
+        article.ReplaceTags([.. article.Tags.Select(t => t.TagId), searchMismatch.Id]);
+        video.ReplaceTags([.. video.Tags.Select(t => t.TagId), associationMismatch.Id]);
         await seedContext.SaveChangesAsync();
 
         var repo = Resolve<ITagRepository>();

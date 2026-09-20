@@ -8,7 +8,7 @@ namespace _116.Content.Domain.Entities;
 /// Created when the rich-text editor uploads an image during article authoring (step 2).
 /// Deleted by the update handler (image diff) and by the background abandoned-draft cleanup job.
 /// </summary>
-public class ArticleImageEntity : Aggregate<Guid>
+public class ArticleImageEntity : Entity<Guid>
 {
     /// <summary>
     /// The identifier of the article this image belongs to.
@@ -34,11 +34,6 @@ public class ArticleImageEntity : Aggregate<Guid>
     public EnumArticleImageType ImageType { get; private set; }
 
     /// <summary>
-    /// The article this image belongs to.
-    /// </summary>
-    public ArticleEntity Article { get; private set; } = null!;
-
-    /// <summary>
     /// Private parameterless constructor required by Entity Framework Core.
     /// </summary>
     private ArticleImageEntity() { }
@@ -55,7 +50,7 @@ public class ArticleImageEntity : Aggregate<Guid>
     /// <param name="url">The publicly accessible URL of the uploaded image.</param>
     /// <param name="imageType">Whether this is a cover or body image.</param>
     /// <returns>A new <see cref="ArticleImageEntity" /> instance.</returns>
-    public static ArticleImageEntity Create(
+    internal static ArticleImageEntity Create(
         Guid id,
         Guid articleId,
         string storageKey,

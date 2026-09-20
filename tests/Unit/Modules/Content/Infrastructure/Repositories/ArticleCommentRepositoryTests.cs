@@ -4,7 +4,9 @@ using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Content.Infrastructure.Repositories;
 using _116.Shared.Application.Exceptions;
+using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Unit.Tests.Common.Helpers;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -23,6 +25,7 @@ public class ArticleCommentRepositoryTests : IDisposable
     {
         DbContextOptions<ContentDbContext> options = new DbContextOptionsBuilder<ContentDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+            .AddInterceptors(new CreatedAtStampingInterceptor())
             .Options;
 
         _context = new ContentDbContext(options);
@@ -222,7 +225,7 @@ public class ArticleCommentRepositoryTests : IDisposable
             top.Id,
             "r2"
         );
-        reply2.SoftDelete();
+        reply2.SoftDelete(TestConstants.Clock.Instant);
         _context.ArticleComments.AddRange(top, reply1, reply2);
         await _context.SaveChangesAsync();
 
@@ -282,7 +285,7 @@ public class ArticleCommentRepositoryTests : IDisposable
         );
         reply.CreatedAt = DateTime.UtcNow.AddHours(-1);
         ArticleCommentEntity deleted = ArticleCommentEntity.Create(Guid.NewGuid(), userId, article.Id, "deleted");
-        deleted.SoftDelete();
+        deleted.SoftDelete(TestConstants.Clock.Instant);
         ArticleCommentEntity other = ArticleCommentEntity.Create(Guid.NewGuid(), Guid.NewGuid(), article.Id, "other");
         _context.Articles.Add(article);
         _context.ArticleComments.AddRange(parent, reply, deleted, other);
@@ -311,7 +314,7 @@ public class ArticleCommentRepositoryTests : IDisposable
         ArticleCommentEntity second = ArticleCommentEntity.Create(Guid.NewGuid(), userId, article.Id, "second");
         second.CreatedAt = DateTime.UtcNow.AddHours(-1);
         ArticleCommentEntity deleted = ArticleCommentEntity.Create(Guid.NewGuid(), userId, article.Id, "deleted");
-        deleted.SoftDelete();
+        deleted.SoftDelete(TestConstants.Clock.Instant);
         _context.Articles.Add(article);
         _context.ArticleComments.AddRange(
             first,

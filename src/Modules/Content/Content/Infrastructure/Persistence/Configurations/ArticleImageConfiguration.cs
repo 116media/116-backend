@@ -29,7 +29,7 @@ public class ArticleImageConfiguration : IEntityTypeConfiguration<ArticleImageEn
         builder.HasIndex(x => x.ArticleId);
 
         builder
-            .HasOne(x => x.Article)
+            .HasOne<ArticleEntity>()
             .WithMany(a => a.Images)
             .HasForeignKey(x => x.ArticleId)
             .OnDelete(DeleteBehavior.Cascade);

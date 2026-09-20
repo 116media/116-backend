@@ -32,8 +32,8 @@ public class PublicGetPlaylistByIdEndpointV1Tests(PostgresFixture db) : BaseApiT
         return await SeedAsync<ContentDbContext, PlaylistEntity>(ctx =>
         {
             PlaylistEntity playlist = PlaylistFactory.Create(userId);
+            playlist.AddVideo(videoId: videoId, sortOrder: 1);
             ctx.Playlists.Add(playlist);
-            ctx.PlaylistVideos.Add(PlaylistVideoEntity.Create(Guid.NewGuid(), playlist.Id, videoId, sortOrder: 1));
             return playlist;
         });
     }

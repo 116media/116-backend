@@ -14,8 +14,11 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublishe
 /// </summary>
 /// <param name="lyricsRepository">Repository for lyrics data access operations.</param>
 /// <param name="fileStorage">Core's storage contract.</param>
-public class PublicGetPublishedLyricsHandler(ILyricsRepository lyricsRepository, IFileStorageService fileStorage)
-    : IQueryHandler<PublicGetPublishedLyricsQuery, PublicGetPublishedLyricsResult>
+public class PublicGetPublishedLyricsHandler(
+    ILyricsRepository lyricsRepository,
+    IFileStorageService fileStorage,
+    IContentLookupFactory contentLookupFactory
+) : IQueryHandler<PublicGetPublishedLyricsQuery, PublicGetPublishedLyricsResult>
 {
     /// <inheritdoc />
     public async Task<PublicGetPublishedLyricsResult> Handle(
@@ -46,7 +49,12 @@ public class PublicGetPublishedLyricsHandler(ILyricsRepository lyricsRepository,
 
         IReadOnlyList<PublicLyricsSummaryDto> dtoList = await lyricsList
             .AsReadOnly()
-            .ToPublicLyricsSummaryDtosAsync(fileStorage, likedLyricsIds, cancellationToken);
+            .ToPublicLyricsSummaryDtosAsync(
+                await contentLookupFactory.ResolveForLyricsAsync(lyricsList.AsReadOnly(), cancellationToken),
+                fileStorage,
+                likedLyricsIds,
+                cancellationToken
+            );
 
         var paginatedResult = new PaginatedResult<PublicLyricsSummaryDto>(
             pageIndex: pageIndex,

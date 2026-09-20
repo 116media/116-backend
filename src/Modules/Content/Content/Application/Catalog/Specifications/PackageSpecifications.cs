@@ -5,18 +5,6 @@ using _116.Shared.Application.Specifications;
 namespace _116.Content.Application.Catalog.Specifications;
 
 /// <summary>
-/// Specification that matches a package by its unique identifier.
-/// </summary>
-public class PackageByIdSpecification(Guid id) : Specification<PackageEntity>
-{
-    /// <inheritdoc />
-    public override Expression<Func<PackageEntity, bool>> ToExpression()
-    {
-        return package => package.Id == id;
-    }
-}
-
-/// <summary>
 /// Specification that matches only active packages.
 /// Used when listing packages available for new orders.
 /// </summary>
@@ -38,30 +26,5 @@ public class InactivePackageSpecification : Specification<PackageEntity>
     public override Expression<Func<PackageEntity, bool>> ToExpression()
     {
         return package => !package.IsActive;
-    }
-}
-
-/// <summary>
-/// Specification that matches a package slot by its unique identifier.
-/// </summary>
-public class PackageSlotByIdSpecification(Guid slotId) : Specification<PackageSlotEntity>
-{
-    /// <inheritdoc />
-    public override Expression<Func<PackageSlotEntity, bool>> ToExpression()
-    {
-        return slot => slot.Id == slotId;
-    }
-}
-
-/// <summary>
-/// Specification that matches a package slot by its identifier within a specific package.
-/// A slot that belongs to a different package is not a match.
-/// </summary>
-public class PackageSlotByIdInPackageSpecification(Guid slotId, Guid packageId) : Specification<PackageSlotEntity>
-{
-    /// <inheritdoc />
-    public override Expression<Func<PackageSlotEntity, bool>> ToExpression()
-    {
-        return slot => slot.Id == slotId && slot.PackageId == packageId;
     }
 }

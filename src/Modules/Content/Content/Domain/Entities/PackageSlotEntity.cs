@@ -8,7 +8,7 @@ namespace _116.Content.Domain.Entities;
 /// Represents a content slot within a package, defining what content must be delivered
 /// to fulfill the package (e.g., "1 × Artist Profile video", or an open slot where the client picks any category).
 /// </summary>
-public class PackageSlotEntity : Aggregate<Guid>
+public class PackageSlotEntity : Entity<Guid>
 {
     /// <summary>
     /// The identifier of the package this slot belongs to.
@@ -33,16 +33,6 @@ public class PackageSlotEntity : Aggregate<Guid>
     public int Quantity { get; private set; }
 
     /// <summary>
-    /// The package this slot belongs to.
-    /// </summary>
-    public PackageEntity Package { get; private set; } = null!;
-
-    /// <summary>
-    /// The specific category for this slot, or null for an open slot.
-    /// </summary>
-    public CategoryEntity? Category { get; private set; }
-
-    /// <summary>
     /// Private parameterless constructor required by Entity Framework Core.
     /// </summary>
     private PackageSlotEntity() { }
@@ -56,7 +46,7 @@ public class PackageSlotEntity : Aggregate<Guid>
     /// <param name="isRequired">Whether this slot is required to fulfill the package.</param>
     /// <param name="quantity">The number of content pieces required (must be > 0).</param>
     /// <returns>A new <see cref="PackageSlotEntity" /> instance.</returns>
-    public static PackageSlotEntity Create(Guid id, Guid packageId, Guid? categoryId, bool isRequired, int quantity)
+    internal static PackageSlotEntity Create(Guid id, Guid packageId, Guid? categoryId, bool isRequired, int quantity)
     {
         if (quantity <= 0)
         {

@@ -20,6 +20,19 @@ public static class MockCustomerRepository
         return mock;
     }
 
+    /// <summary>
+    /// Arranges the batch lookup to resolve exactly the supplied rows, keyed by id.
+    /// </summary>
+    public static Mock<ICustomerRepository> SetupGetByIds(
+        this Mock<ICustomerRepository> mock,
+        params CustomerEntity[] entities
+    )
+    {
+        mock.Setup(x => x.GetByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(entities.ToDictionary(entity => entity.Id));
+        return mock;
+    }
+
     public static Mock<ICustomerRepository> SetupGetByIdOrThrow(
         this Mock<ICustomerRepository> mock,
         CustomerEntity entity
@@ -74,5 +87,7 @@ public static class MockCustomerRepository
             .Returns(Task.CompletedTask);
         mock.Setup(x => x.GetAllAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((new List<CustomerEntity>(), 0));
+        mock.Setup(x => x.GetByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<Guid, CustomerEntity>());
     }
 }

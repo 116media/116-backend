@@ -17,11 +17,19 @@ namespace _116.Unit.Tests.Modules.Content.Application.Shared.Mappers;
 /// </summary>
 public class CategoryMapperTests : BaseContentHandlerTest
 {
-    private static CategoryEntity CategoryWithContentType()
-    {
-        ContentTypeEntity videoType = ContentTypeFactory.Create(nameof(EnumCoreContentType.Video));
-        return CategoryFactory.Create(videoType);
-    }
+    private static readonly ContentTypeEntity VideoType = ContentTypeFactory.Create(nameof(EnumCoreContentType.Video));
+
+    private static CategoryEntity CategoryWithContentType() => CategoryFactory.Create(VideoType);
+
+    /// <summary>
+    /// The lookups the DTO factory hands the mapper, resolving the shared video content type.
+    /// </summary>
+    private static CategoryLookups Lookups(IReadOnlyDictionary<Guid, FileReferenceDto>? posters = null) =>
+        new(
+            Posters: posters is null ? new Dictionary<Guid, FileReferenceDto>() : posters,
+            ContentTypes: new Dictionary<Guid, ContentTypeEntity> { [VideoType.Id] = VideoType },
+            PricingTiers: new Dictionary<Guid, PricingTierEntity>()
+        );
 
     [Fact]
     public void ToCategoryDto_WhenPosterInFileMap_ShouldResolvePosterUrl()
@@ -32,7 +40,7 @@ public class CategoryMapperTests : BaseContentHandlerTest
 
         var files = new Dictionary<Guid, FileReferenceDto> { [poster.Id] = poster };
 
-        CategoryDto dto = category.ToCategoryDto(Mapper, files);
+        CategoryDto dto = category.ToCategoryDto(Mapper, Lookups(files));
 
         dto.PosterUrl.Should().Be("https://cdn.116.test/posters/show.jpg");
     }
@@ -42,7 +50,7 @@ public class CategoryMapperTests : BaseContentHandlerTest
     {
         CategoryEntity category = CategoryWithContentType();
 
-        CategoryDto dto = category.ToCategoryDto(Mapper, new Dictionary<Guid, FileReferenceDto>());
+        CategoryDto dto = category.ToCategoryDto(Mapper, Lookups());
 
         dto.PosterUrl.Should().BeNull();
     }
@@ -53,7 +61,7 @@ public class CategoryMapperTests : BaseContentHandlerTest
         CategoryEntity category = CategoryWithContentType();
         category.SetPosterFileId(Guid.NewGuid());
 
-        CategoryDto dto = category.ToCategoryDto(Mapper, new Dictionary<Guid, FileReferenceDto>());
+        CategoryDto dto = category.ToCategoryDto(Mapper, Lookups());
 
         dto.PosterUrl.Should().BeNull();
     }
@@ -67,7 +75,7 @@ public class CategoryMapperTests : BaseContentHandlerTest
 
         var files = new Dictionary<Guid, FileReferenceDto> { [poster.Id] = poster };
 
-        CategoryDto dto = category.ToCategoryDto(Mapper, files);
+        CategoryDto dto = category.ToCategoryDto(Mapper, Lookups(files));
 
         dto.Colors.Should().NotBeNull();
         dto.Colors!.Background.Should().Be("#FFEB3B");
@@ -79,7 +87,7 @@ public class CategoryMapperTests : BaseContentHandlerTest
     {
         CategoryEntity category = CategoryWithContentType();
 
-        CategoryDto dto = category.ToCategoryDto(Mapper, new Dictionary<Guid, FileReferenceDto>());
+        CategoryDto dto = category.ToCategoryDto(Mapper, Lookups());
 
         dto.Colors.Should().BeNull();
     }
@@ -93,7 +101,7 @@ public class CategoryMapperTests : BaseContentHandlerTest
 
         var files = new Dictionary<Guid, FileReferenceDto> { [poster.Id] = poster };
 
-        CategoryDto dto = category.ToCategoryDto(Mapper, files);
+        CategoryDto dto = category.ToCategoryDto(Mapper, Lookups(files));
 
         dto.PosterUrl.Should().Be("https://cdn.116.test/posters/show.jpg");
         dto.Colors.Should().BeNull();
@@ -108,7 +116,7 @@ public class CategoryMapperTests : BaseContentHandlerTest
 
         var files = new Dictionary<Guid, FileReferenceDto> { [poster.Id] = poster };
 
-        CategoryDto dto = category.ToCategoryDto(Mapper, files);
+        CategoryDto dto = category.ToCategoryDto(Mapper, Lookups(files));
 
         // Colors are atomic: a half-populated pair resolves to null, not a partial object.
         dto.Colors.Should().BeNull();

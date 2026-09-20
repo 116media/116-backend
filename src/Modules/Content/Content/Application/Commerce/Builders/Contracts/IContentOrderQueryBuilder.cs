@@ -21,13 +21,14 @@ public interface IContentOrderQueryBuilder
     IContentOrderQueryBuilder WithCustomerId(Guid? customerId);
 
     /// <summary>
-    /// Adds a search filter matching customer name, email, or company.
+    /// Adds a filter matching the ordering customer's name, email, or company.
     /// </summary>
     IContentOrderQueryBuilder WithSearch(string? search);
 
     /// <summary>
-    /// Builds and returns the final specification.
-    /// Returns null if no filters were applied.
+    /// Builds and returns the final specification, resolving the customer search against the
+    /// supplied customer rows. Returns null if no filters were applied.
     /// </summary>
-    Specification<ContentOrderEntity>? Build();
+    /// <param name="customers">The customer rows the customer search probes.</param>
+    Specification<ContentOrderEntity>? Build(IQueryable<CustomerEntity> customers);
 }

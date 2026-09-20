@@ -47,7 +47,6 @@ public class AdminDeleteArticleHandlerTests
         var command = new AdminDeleteArticleCommand(Id: article.Id.ToString());
 
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
-        _articleRepositoryMock.SetupGetImagesByArticleId(article.Id, new List<ArticleImageEntity>());
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
@@ -62,11 +61,10 @@ public class AdminDeleteArticleHandlerTests
     {
         // Arrange
         ArticleEntity article = ArticleFactory.Create(CategoryId);
-        List<ArticleImageEntity> images = ArticleImageFactory.CreateMany(article.Id, 2);
+        List<ArticleImageEntity> images = ArticleImageFactory.CreateMany(article, 2);
         var command = new AdminDeleteArticleCommand(Id: article.Id.ToString());
 
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
-        _articleRepositoryMock.SetupGetImagesByArticleId(article.Id, images);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
@@ -87,12 +85,11 @@ public class AdminDeleteArticleHandlerTests
     {
         // Arrange
         ArticleEntity article = ArticleFactory.Create(CategoryId);
-        ArticleImageEntity cover = ArticleImageFactory.CreateCover(article.Id);
-        ArticleImageEntity body = ArticleImageFactory.CreateBody(article.Id);
+        ArticleImageEntity cover = ArticleImageFactory.CreateCover(article);
+        ArticleImageEntity body = ArticleImageFactory.CreateBody(article);
         var command = new AdminDeleteArticleCommand(Id: article.Id.ToString());
 
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
-        _articleRepositoryMock.SetupGetImagesByArticleId(article.Id, [cover, body]);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
@@ -114,7 +111,6 @@ public class AdminDeleteArticleHandlerTests
         var command = new AdminDeleteArticleCommand(Id: article.Id.ToString());
 
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
-        _articleRepositoryMock.SetupGetImagesByArticleId(article.Id, new List<ArticleImageEntity>());
 
         // Act
         await _handler.Handle(command, CancellationToken.None);

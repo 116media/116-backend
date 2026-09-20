@@ -13,8 +13,11 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Queries.GetAllLyrics
 /// </summary>
 /// <param name="lyricsRepository">Repository for lyrics data access operations.</param>
 /// <param name="fileStorage">Core's storage contract.</param>
-public class AdminGetAllLyricsHandler(ILyricsRepository lyricsRepository, IFileStorageService fileStorage)
-    : IQueryHandler<AdminGetAllLyricsQuery, AdminGetAllLyricsResult>
+public class AdminGetAllLyricsHandler(
+    ILyricsRepository lyricsRepository,
+    IFileStorageService fileStorage,
+    IContentLookupFactory contentLookupFactory
+) : IQueryHandler<AdminGetAllLyricsQuery, AdminGetAllLyricsResult>
 {
     /// <inheritdoc />
     public async Task<AdminGetAllLyricsResult> Handle(AdminGetAllLyricsQuery query, CancellationToken cancellationToken)
@@ -33,7 +36,11 @@ public class AdminGetAllLyricsHandler(ILyricsRepository lyricsRepository, IFileS
 
         IReadOnlyList<LyricsSummaryDto> dtoList = await lyricsList
             .AsReadOnly()
-            .ToLyricsSummaryDtosAsync(fileStorage, cancellationToken);
+            .ToLyricsSummaryDtosAsync(
+                await contentLookupFactory.ResolveForLyricsAsync(lyricsList.AsReadOnly(), cancellationToken),
+                fileStorage,
+                cancellationToken
+            );
 
         var paginatedResult = new PaginatedResult<LyricsSummaryDto>(
             pageIndex: pageIndex,

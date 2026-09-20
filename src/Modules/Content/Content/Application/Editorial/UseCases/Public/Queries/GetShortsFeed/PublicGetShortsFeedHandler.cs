@@ -22,7 +22,8 @@ public class PublicGetShortsFeedHandler(
     IShortVideoRepository shortVideoRepository,
     IUserLookupService userLookup,
     IFileStorageService fileStorage,
-    IMapper mapper
+    IMapper mapper,
+    IVideoRepository videoRepository
 ) : IQueryHandler<PublicGetShortsFeedQuery, PublicGetShortsFeedResult>
 {
     /// <inheritdoc />
@@ -64,6 +65,7 @@ public class PublicGetShortsFeedHandler(
             mapper,
             userLookup,
             fileStorage,
+            videoRepository,
             liked,
             bookmarked,
             cancellationToken

@@ -16,11 +16,13 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateArtis
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="artistDtoFactory">Builds artist projections with their avatars resolved.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
+/// <param name="timeProvider">Clock supplying today for the birthdate guard.</param>
 public class AdminCreateArtistHandler(
     IArtistRepository artistRepository,
     IContentUnitOfWork unitOfWork,
     IArtistDtoFactory artistDtoFactory,
-    ContentI18n i18n
+    ContentI18n i18n,
+    TimeProvider timeProvider
 ) : ICommandHandler<AdminCreateArtistCommand, AdminCreateArtistResult>
 {
     /// <inheritdoc />
@@ -47,7 +49,8 @@ public class AdminCreateArtistHandler(
             realName: command.RealName,
             aliases: command.Aliases,
             birthdate: command.Birthdate,
-            hometown: command.Hometown
+            hometown: command.Hometown,
+            today: DateOnly.FromDateTime(dateTime: timeProvider.GetUtcNow().UtcDateTime)
         );
 
         await artistRepository.AddAsync(artist: artist, cancellationToken: cancellationToken);

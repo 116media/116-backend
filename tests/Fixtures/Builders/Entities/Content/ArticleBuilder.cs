@@ -26,8 +26,6 @@ public class ArticleBuilder
     private Guid _promotionLevelId = Guid.NewGuid();
     private DateTimeOffset? _publishedAtOverride;
     private DateTime? _createdAt;
-    private CategoryEntity? _category;
-    private CustomerEntity? _customerNavigation;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ArticleBuilder"/> class with a required category ID.
@@ -155,18 +153,8 @@ public class ArticleBuilder
     /// </summary>
     public ArticleBuilder WithCategory(CategoryEntity category)
     {
-        _category = category;
         _categoryId = category.Id;
-        return this;
-    }
-
-    /// <summary>
-    /// Attaches the Customer navigation EF Core populates through <c>.Include(a =&gt; a.Customer)</c>.
-    /// Combine with <see cref="WithCustomer" /> to set the matching foreign key.
-    /// </summary>
-    public ArticleBuilder WithCustomerNavigation(CustomerEntity customer)
-    {
-        _customerNavigation = customer;
+        _categoryId = category.Id;
         return this;
     }
 
@@ -200,30 +188,6 @@ public class ArticleBuilder
             entity.StampPromotion(_promotionLevelId, _promotedUntil.Value);
         }
 
-        if (_publishedAtOverride.HasValue)
-        {
-            PropertyInfo publishedProp = typeof(ArticleEntity).GetProperty(
-                nameof(ArticleEntity.PublishedAt),
-                BindingFlags.Public | BindingFlags.Instance
-            )!;
-
-            publishedProp.SetValue(entity, _publishedAtOverride);
-        }
-
-        if (_category is not null)
-        {
-            typeof(ArticleEntity)
-                .GetProperty(nameof(ArticleEntity.Category), BindingFlags.Public | BindingFlags.Instance)!
-                .SetValue(entity, _category);
-        }
-
-        if (_customerNavigation is not null)
-        {
-            typeof(ArticleEntity)
-                .GetProperty(nameof(ArticleEntity.Customer), BindingFlags.Public | BindingFlags.Instance)!
-                .SetValue(entity, _customerNavigation);
-        }
-
         entity.CreatedAt = _createdAt ?? DateTime.UtcNow;
 
         return entity;
@@ -246,7 +210,7 @@ public class ArticleBuilder
             case EnumContentStatus.Published:
                 entity.MarkPendingReview();
                 entity.Approve();
-                entity.Publish();
+                entity.Publish(now: _publishedAtOverride ?? TestConstants.Clock.Instant);
                 break;
             case EnumContentStatus.Rejected:
                 entity.MarkPendingReview();
@@ -255,7 +219,7 @@ public class ArticleBuilder
             case EnumContentStatus.Archived:
                 entity.MarkPendingReview();
                 entity.Approve();
-                entity.Publish();
+                entity.Publish(now: _publishedAtOverride ?? TestConstants.Clock.Instant);
                 entity.Archive();
                 break;
             case EnumContentStatus.Draft:

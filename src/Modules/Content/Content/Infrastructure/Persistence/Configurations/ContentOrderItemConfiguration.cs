@@ -1,4 +1,5 @@
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -21,18 +22,25 @@ public class ContentOrderItemConfiguration : IEntityTypeConfiguration<ContentOrd
 
         builder.Property(x => x.IsBonus).IsRequired();
 
-        builder.Property(x => x.PromoPriceSnapshotUsd).HasColumnType("numeric(10,2)").IsRequired(false);
+        builder
+            .Property(x => x.PromoPriceSnapshotUsd)
+            .HasConversion(
+                money => money == null ? null : (decimal?)money.Amount,
+                value => value == null ? null : new Money(value.Value)
+            )
+            .HasColumnType("numeric(10,2)")
+            .IsRequired(false);
 
         builder
-            .HasOne(x => x.Order)
+            .HasOne<ContentOrderEntity>()
             .WithMany(o => o.Items)
             .HasForeignKey(x => x.OrderId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasOne(x => x.Category).WithMany().HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<CategoryEntity>().WithMany().HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.Restrict);
 
         builder
-            .HasOne(x => x.PromotionLevel)
+            .HasOne<PromotionLevelEntity>()
             .WithMany()
             .HasForeignKey(x => x.PromotionLevelId)
             .IsRequired(false)

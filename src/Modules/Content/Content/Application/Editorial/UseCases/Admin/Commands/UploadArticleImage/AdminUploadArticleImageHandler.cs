@@ -51,7 +51,7 @@ public class AdminUploadArticleImageHandler(
             return await HandleCoverImage(article, articleId, file, cancellationToken);
         }
 
-        return await HandleBodyImage(articleId, file, command.ImageType, cancellationToken);
+        return await HandleBodyImage(article, file, command.ImageType, cancellationToken);
     }
 
     /// <summary>
@@ -64,19 +64,7 @@ public class AdminUploadArticleImageHandler(
         CancellationToken cancellationToken
     )
     {
-        IReadOnlyList<ArticleImageEntity> existingImages = await articleRepository.GetImagesByArticleIdAsync(
-            articleId: articleId,
-            cancellationToken: cancellationToken
-        );
-
-        ArticleImageEntity? oldCover = existingImages.FirstOrDefault(img =>
-            img.ImageType == EnumArticleImageType.Cover
-        );
-
-        if (oldCover is not null)
-        {
-            articleRepository.RemoveImages(images: [oldCover]);
-        }
+        article.RemoveCoverImage();
 
         StoredFile uploaded = await fileStorage.UploadAsync(
             file: file,
@@ -86,9 +74,8 @@ public class AdminUploadArticleImageHandler(
             cancellationToken: cancellationToken
         );
 
-        var image = ArticleImageEntity.Create(
+        ArticleImageEntity image = article.AddImage(
             id: Guid.NewGuid(),
-            articleId: articleId,
             storageKey: uploaded.Reference.StorageKey ?? string.Empty,
             url: uploaded.Reference.StorageUrl,
             imageType: EnumArticleImageType.Cover
@@ -104,7 +91,6 @@ public class AdminUploadArticleImageHandler(
                 );
 
                 article.UpdateCoverImage(coverImageFileId: uploaded.Reference.Id);
-                await articleRepository.AddImageAsync(image: image, cancellationToken: ct);
             },
             cancellationToken: cancellationToken
         );
@@ -117,14 +103,14 @@ public class AdminUploadArticleImageHandler(
     /// Handles body image upload via direct Cloudinary upload (not tracked by FileReferenceDto).
     /// </summary>
     private async Task<AdminUploadArticleImageResult> HandleBodyImage(
-        Guid articleId,
+        ArticleEntity article,
         IFormFile file,
         EnumArticleImageType imageType,
         CancellationToken cancellationToken
     )
     {
         var imageId = Guid.NewGuid();
-        string publicId = $"{articleId}-{imageId}";
+        string publicId = $"{article.Id}-{imageId}";
 
         StoredFile uploaded = await fileStorage.UploadAsync(
             file: file,
@@ -134,15 +120,13 @@ public class AdminUploadArticleImageHandler(
             cancellationToken: cancellationToken
         );
 
-        var image = ArticleImageEntity.Create(
+        ArticleImageEntity image = article.AddImage(
             id: imageId,
-            articleId: articleId,
             storageKey: uploaded.Reference.StorageKey ?? string.Empty,
             url: uploaded.Reference.StorageUrl,
             imageType: imageType
         );
 
-        await articleRepository.AddImageAsync(image: image, cancellationToken: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         var dto = mapper.Map<ArticleImageDto>(image);

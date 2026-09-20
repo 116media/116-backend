@@ -22,16 +22,16 @@ public class ArtistContentSpecificationsTests
         List<LyricsEntity>? lyrics = null,
         List<VideoEntity>? videos = null,
         List<AlbumEntity>? albums = null,
-        List<ArticleArtistEntity>? taggedArticles = null
+        List<ArticleArtistEntity>? taggedArticles = null,
+        List<ArticleEntity>? articles = null
     )
     {
-        List<ArticleArtistEntity> joins = taggedArticles ?? [];
-
         var specification = new ArtistHasContentSpecification(
             lyrics: (lyrics ?? []).AsQueryable(),
             videos: (videos ?? []).AsQueryable(),
             albums: (albums ?? []).AsQueryable(),
-            articleArtists: joins.AsQueryable()
+            articleArtists: (taggedArticles ?? []).AsQueryable(),
+            articles: (articles ?? []).AsQueryable()
         );
 
         return specification.ToExpression().Compile()(artist);
@@ -101,8 +101,9 @@ public class ArtistContentSpecificationsTests
         ArtistEntity artist = ArtistFactory.Create();
         ArticleEntity article = ArticleFactory.CreatePublished(CategoryId);
         ArticleArtistEntity join = new ArticleArtistBuilder().WithArticle(article).WithArtistId(artist.Id).Build();
+        List<ArticleEntity> articles = [article];
 
-        Evaluate(artist, taggedArticles: [join]).Should().BeTrue();
+        Evaluate(artist, taggedArticles: [join], articles: articles).Should().BeTrue();
     }
 
     [Fact]
@@ -166,7 +167,8 @@ public class ArtistContentSpecificationsTests
         ArticleEntity draft = ArticleFactory.Create(CategoryId);
         ArticleArtistEntity join = new ArticleArtistBuilder().WithArticle(draft).WithArtistId(artist.Id).Build();
         var spec = new ArtistHasPublishedArticleSpecification(
-            articleArtists: new List<ArticleArtistEntity> { join }.AsQueryable()
+            articleArtists: new List<ArticleArtistEntity> { join }.AsQueryable(),
+            articles: new List<ArticleEntity> { draft }.AsQueryable()
         );
 
         spec.ToExpression().Compile()(artist).Should().BeFalse();

@@ -4,6 +4,7 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Events;
 using _116.Shared.Application.Exceptions;
+using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
@@ -114,7 +115,7 @@ public class PublicRequestArtistClaimHandlerTests
     {
         // Arrange
         ArtistEntity artist = ArtistFactory.Create();
-        artist.ClaimOwnership(Guid.NewGuid());
+        artist.ClaimOwnership(Guid.NewGuid(), TestConstants.Clock.Instant);
         _artistRepositoryMock.SetupGetByIdOrThrow(artist);
         var command = new PublicRequestArtistClaimCommand(artist.Id, Guid.NewGuid());
 

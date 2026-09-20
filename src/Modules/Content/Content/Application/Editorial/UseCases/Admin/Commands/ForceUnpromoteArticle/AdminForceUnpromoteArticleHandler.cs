@@ -16,11 +16,13 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.ForceUnprom
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="currentActor">Provides the identity of the authenticated user from JWT claims.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
+/// <param name="timeProvider">Clock stamping the unpromotion time.</param>
 public class AdminForceUnpromoteArticleHandler(
     IArticleRepository articleRepository,
     IContentUnitOfWork unitOfWork,
     ICurrentActor currentActor,
-    ContentI18n i18n
+    ContentI18n i18n,
+    TimeProvider timeProvider
 ) : ICommandHandler<AdminForceUnpromoteArticleCommand, AdminForceUnpromoteArticleResult>
 {
     /// <inheritdoc />
@@ -39,7 +41,11 @@ public class AdminForceUnpromoteArticleHandler(
             throw i18n.Article.NotFound(Guid.Empty);
         }
 
-        article.ForceUnpromote(unpromotedBy: currentActor.UserId!, reason: command.Reason);
+        article.ForceUnpromote(
+            unpromotedBy: currentActor.UserId!,
+            reason: command.Reason,
+            now: timeProvider.GetUtcNow()
+        );
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminForceUnpromoteArticleResult(ArticleId: article.Id, UnpromotedAt: article.UnpromotedAt!.Value);

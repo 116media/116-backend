@@ -44,7 +44,8 @@ public class PublicGetArticlePromotionFeedHandlerTests : BaseContentHandlerTest
             _articleInteractionRepositoryMock.Object,
             _categoryRepositoryMock.Object,
             _fileStorageMock.Object,
-            Mapper
+            Mapper,
+            CreateContentLookupFactory()
         );
     }
 

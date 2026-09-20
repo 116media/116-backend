@@ -17,8 +17,7 @@ public class ContentOrderBuilder
     private bool _submitted;
     private bool _paid;
     private bool _cancelled;
-    private CustomerEntity? _customer;
-    private ContentPaymentEntity? _payment;
+    private bool _attachPayment;
 
     public ContentOrderBuilder WithId(Guid id)
     {
@@ -68,17 +67,17 @@ public class ContentOrderBuilder
     /// </summary>
     public ContentOrderBuilder WithCustomer(CustomerEntity customer)
     {
-        _customer = customer;
         _customerId = customer.Id;
         return this;
     }
 
     /// <summary>
-    /// Attaches the Payment navigation EF Core populates through <c>.Include(o =&gt; o.Payment)</c>.
+    /// Attaches a payment for the order's total, as the submission flow does. Read it back from
+    /// the built order's <c>Payment</c> to arrange it further.
     /// </summary>
-    public ContentOrderBuilder WithPayment(ContentPaymentEntity payment)
+    public ContentOrderBuilder WithPayment()
     {
-        _payment = payment;
+        _attachPayment = true;
         return this;
     }
 
@@ -105,18 +104,9 @@ public class ContentOrderBuilder
             order.Cancel();
         }
 
-        if (_customer is not null)
+        if (_attachPayment)
         {
-            typeof(ContentOrderEntity)
-                .GetProperty(nameof(ContentOrderEntity.Customer), BindingFlags.Public | BindingFlags.Instance)!
-                .SetValue(order, _customer);
-        }
-
-        if (_payment is not null)
-        {
-            typeof(ContentOrderEntity)
-                .GetProperty(nameof(ContentOrderEntity.Payment), BindingFlags.Public | BindingFlags.Instance)!
-                .SetValue(order, _payment);
+            order.AttachPayment();
         }
 
         return order;

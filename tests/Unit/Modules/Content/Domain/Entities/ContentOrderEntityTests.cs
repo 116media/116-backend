@@ -33,7 +33,7 @@ public class ContentOrderEntityTests
         order.CustomerId.Should().Be(customerId);
         order.PackageId.Should().BeNull();
         order.Status.Should().Be(EnumOrderStatus.Draft);
-        order.TotalAmountUsd.Should().Be(0m);
+        order.TotalAmountUsd.Amount.Should().Be(0m);
     }
 
     [Fact]
@@ -110,7 +110,7 @@ public class ContentOrderEntityTests
         order.RecalculateTotalFromItems();
 
         // Assert: 100 (tier) + 50 (promo) = 150
-        order.TotalAmountUsd.Should().Be(150m);
+        order.TotalAmountUsd.Amount.Should().Be(150m);
     }
 
     #endregion
@@ -452,7 +452,7 @@ public class ContentOrderEntityTests
 
         // Assert
         order.Items.Should().Contain(item);
-        order.TotalAmountUsd.Should().Be(200m);
+        order.TotalAmountUsd.Amount.Should().Be(200m);
     }
 
     [Fact]
@@ -475,7 +475,7 @@ public class ContentOrderEntityTests
         order.AddItem(itemB);
 
         // Assert
-        order.TotalAmountUsd.Should().Be(300m);
+        order.TotalAmountUsd.Amount.Should().Be(300m);
     }
 
     [Fact]
@@ -499,7 +499,7 @@ public class ContentOrderEntityTests
 
         // Assert
         order.Items.Should().NotContain(removed);
-        order.TotalAmountUsd.Should().Be(100m);
+        order.TotalAmountUsd.Amount.Should().Be(100m);
     }
 
     #endregion
@@ -528,7 +528,7 @@ public class ContentOrderEntityTests
         order.RecalculateTotalFromItems();
 
         // Assert: 100 (tier1) + 75 (tier2) + 50 (promo) = 225
-        order.TotalAmountUsd.Should().Be(225m);
+        order.TotalAmountUsd.Amount.Should().Be(225m);
     }
 
     [Fact]
@@ -557,7 +557,7 @@ public class ContentOrderEntityTests
         order.RecalculateTotalFromItems();
 
         // Assert: 80 (paid tier) + 20 (paid promo) = 100, bonus excluded
-        order.TotalAmountUsd.Should().Be(100m);
+        order.TotalAmountUsd.Amount.Should().Be(100m);
     }
 
     [Fact]
@@ -570,7 +570,7 @@ public class ContentOrderEntityTests
         order.RecalculateTotalFromItems();
 
         // Assert
-        order.TotalAmountUsd.Should().Be(0m);
+        order.TotalAmountUsd.Amount.Should().Be(0m);
     }
 
     #endregion

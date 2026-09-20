@@ -58,7 +58,7 @@ public class PublicGetVideoBySlugHandler(
                 id: artistId,
                 cancellationToken: cancellationToken
             );
-            artistSlug = artist?.Slug;
+            artistSlug = artist?.Slug.Value;
         }
 
         PublicVideoDetailDto dto = await videoDtoFactory.CreatePublicDetailAsync(

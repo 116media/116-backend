@@ -34,7 +34,8 @@ public class AdminPublishArticleHandlerTests
         _handler = new AdminPublishArticleHandler(
             _articleRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateContentI18n()
+            TestErrorsFactory.CreateContentI18n(),
+            TimeProvider.System
         );
     }
 

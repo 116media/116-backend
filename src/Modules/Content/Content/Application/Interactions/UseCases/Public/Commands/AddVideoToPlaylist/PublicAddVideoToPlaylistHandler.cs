@@ -50,25 +50,11 @@ public class PublicAddVideoToPlaylistHandler(
                 throw i18n.Video.NotFound(id: command.VideoId);
             }
 
-            bool alreadyExists = await playlistRepository.VideoExistsInPlaylistAsync(
-                playlistId: command.PlaylistId,
-                videoId: command.VideoId,
-                cancellationToken: cancellationToken
-            );
-
-            if (alreadyExists)
+            if (!playlist.AddVideo(videoId: command.VideoId, sortOrder: command.SortOrder))
             {
                 throw i18n.Playlist.VideoAlreadyInPlaylist();
             }
 
-            var playlistVideo = PlaylistVideoEntity.Create(
-                id: Guid.NewGuid(),
-                playlistId: command.PlaylistId,
-                videoId: command.VideoId,
-                sortOrder: command.SortOrder
-            );
-
-            await playlistRepository.AddVideoAsync(playlistVideo: playlistVideo, cancellationToken: cancellationToken);
             await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
             return new PublicAddVideoToPlaylistResult(IsSuccess: true);

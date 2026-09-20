@@ -45,21 +45,16 @@ public class AdminUpdateVideoTagsHandlerTests
         // Arrange
         VideoEntity video = VideoFactory.Create(CategoryId);
         TagEntity existingTag = TagFactory.Create();
-        var existingVideoTag = VideoTagEntity.Create(id: Guid.NewGuid(), videoId: video.Id, tagId: existingTag.Id);
+        video.ReplaceTags([existingTag.Id]);
         var command = new AdminUpdateVideoTagsCommand(VideoId: video.Id.ToString(), TagNames: new List<string>());
 
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
-        _videoRepositoryMock.SetupGetTagsByVideoId(video.Id, new List<VideoTagEntity> { existingVideoTag });
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _videoRepositoryMock.Verify(x => x.RemoveTag(existingVideoTag), Times.Once);
-        _videoRepositoryMock.Verify(
-            x => x.AddTagAsync(It.IsAny<VideoTagEntity>(), It.IsAny<CancellationToken>()),
-            Times.Never
-        );
+        video.Tags.Should().BeEmpty();
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -77,21 +72,15 @@ public class AdminUpdateVideoTagsHandlerTests
         );
 
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
-        _videoRepositoryMock.SetupGetTagsByVideoId(video.Id, new List<VideoTagEntity>());
         _tagRepositoryMock.SetupGetTagByName("Fally Ipupa", tag1);
         _tagRepositoryMock.SetupGetTagByName("Kinshasa", tag2);
-
-        var linked = new List<VideoTagEntity>();
-        _videoRepositoryMock
-            .Setup(x => x.AddTagAsync(Capture.In(linked), It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        linked.Select(t => t.TagId).Should().Equal(tag1.Id, tag2.Id);
-        linked.Should().OnlyContain(t => t.VideoId == video.Id);
+        video.Tags.Select(t => t.TagId).Should().BeEquivalentTo([tag1.Id, tag2.Id]);
+        video.Tags.Should().OnlyContain(t => t.VideoId == video.Id);
         _tagRepositoryMock.VerifyAddTagNotCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -108,18 +97,12 @@ public class AdminUpdateVideoTagsHandlerTests
         );
 
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
-        _videoRepositoryMock.SetupGetTagsByVideoId(video.Id, new List<VideoTagEntity>());
         _tagRepositoryMock.SetupGetTagByName("Afrobeats", null);
         _tagRepositoryMock.SetupGetTagByName("Rumba", null);
 
         var created = new List<TagEntity>();
         _tagRepositoryMock
             .Setup(x => x.AddAsync(Capture.In(created), It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask);
-
-        var linked = new List<VideoTagEntity>();
-        _videoRepositoryMock
-            .Setup(x => x.AddTagAsync(Capture.In(linked), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
         // Act
@@ -139,7 +122,7 @@ public class AdminUpdateVideoTagsHandlerTests
             x => x.AddAsync(It.IsAny<TagEntity>(), It.IsAny<CancellationToken>()),
             Times.Exactly(2)
         );
-        linked.Select(t => t.TagId).Should().Equal(created.Select(t => t.Id));
+        video.Tags.Select(t => t.TagId).Should().BeEquivalentTo(created.Select(t => t.Id));
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -156,18 +139,12 @@ public class AdminUpdateVideoTagsHandlerTests
         );
 
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
-        _videoRepositoryMock.SetupGetTagsByVideoId(video.Id, new List<VideoTagEntity>());
         _tagRepositoryMock.SetupGetTagByName("Fally Ipupa", existingTag);
         _tagRepositoryMock.SetupGetTagByName("NewArtist", null);
 
         var created = new List<TagEntity>();
         _tagRepositoryMock
             .Setup(x => x.AddAsync(Capture.In(created), It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask);
-
-        var linked = new List<VideoTagEntity>();
-        _videoRepositoryMock
-            .Setup(x => x.AddTagAsync(Capture.In(linked), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
         // Act
@@ -180,7 +157,7 @@ public class AdminUpdateVideoTagsHandlerTests
             Times.Once
         );
         _tagRepositoryMock.Verify(x => x.AddAsync(It.IsAny<TagEntity>(), It.IsAny<CancellationToken>()), Times.Once);
-        linked.Select(t => t.TagId).Should().Equal(existingTag.Id, created[0].Id);
+        video.Tags.Select(t => t.TagId).Should().BeEquivalentTo([existingTag.Id, created[0].Id]);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -196,7 +173,6 @@ public class AdminUpdateVideoTagsHandlerTests
         );
 
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
-        _videoRepositoryMock.SetupGetTagsByVideoId(video.Id, new List<VideoTagEntity>());
         _tagRepositoryMock.SetupGetTagByName("Café & Crème", null);
 
         var created = new List<TagEntity>();
@@ -210,7 +186,7 @@ public class AdminUpdateVideoTagsHandlerTests
         // Assert
         created.Should().ContainSingle();
         created[0].Name.Should().Be("Café & Crème");
-        created[0].Slug.Should().StartWith("cafe-creme-");
+        created[0].Slug.Value.Should().StartWith("cafe-creme-");
         _tagRepositoryMock.Verify(
             x =>
                 x.GetByNamesAsync(
@@ -227,7 +203,7 @@ public class AdminUpdateVideoTagsHandlerTests
         // Arrange
         VideoEntity video = VideoFactory.Create(CategoryId);
         TagEntity oldTag = TagFactory.Create();
-        var existingVideoTag = VideoTagEntity.Create(id: Guid.NewGuid(), videoId: video.Id, tagId: oldTag.Id);
+        video.ReplaceTags([oldTag.Id]);
 
         TagEntity newTag = TagFactory.Create("Kinshasa", "kinshasa");
 
@@ -237,21 +213,13 @@ public class AdminUpdateVideoTagsHandlerTests
         );
 
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
-        _videoRepositoryMock.SetupGetTagsByVideoId(video.Id, new List<VideoTagEntity> { existingVideoTag });
         _tagRepositoryMock.SetupGetTagByName("Kinshasa", newTag);
-
-        var callOrder = new List<string>();
-        _videoRepositoryMock.Setup(x => x.RemoveTag(existingVideoTag)).Callback(() => callOrder.Add("remove"));
-        _videoRepositoryMock
-            .Setup(x => x.AddTagAsync(It.Is<VideoTagEntity>(t => t.TagId == newTag.Id), It.IsAny<CancellationToken>()))
-            .Callback(() => callOrder.Add("add"))
-            .Returns(Task.CompletedTask);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        callOrder.Should().Equal("remove", "add");
+        video.Tags.Select(t => t.TagId).Should().BeEquivalentTo([newTag.Id]);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -287,11 +255,6 @@ public class AdminUpdateVideoTagsHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
-        _videoRepositoryMock.Verify(x => x.RemoveTag(It.IsAny<VideoTagEntity>()), Times.Never);
-        _videoRepositoryMock.Verify(
-            x => x.AddTagAsync(It.IsAny<VideoTagEntity>(), It.IsAny<CancellationToken>()),
-            Times.Never
-        );
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 

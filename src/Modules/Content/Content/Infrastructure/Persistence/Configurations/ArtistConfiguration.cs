@@ -1,5 +1,6 @@
 using _116.Content.Domain.Constants;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -18,7 +19,11 @@ public class ArtistConfiguration : IEntityTypeConfiguration<ArtistEntity>
 
         builder.Property(x => x.Name).HasMaxLength(ContentConstants.MaxArtistNameLength).IsRequired();
 
-        builder.Property(x => x.Slug).HasMaxLength(ContentConstants.MaxSlugLength).IsRequired();
+        builder
+            .Property(x => x.Slug)
+            .HasConversion(slug => slug.Value, value => new Slug(value))
+            .HasMaxLength(ContentConstants.MaxSlugLength)
+            .IsRequired();
 
         builder.Property(x => x.Bio).IsRequired(false);
 

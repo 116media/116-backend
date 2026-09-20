@@ -34,7 +34,7 @@ public class AdminAddPackageSlotHandlerTests : BaseContentHandlerTest
             _packageRepositoryMock.Object,
             _categoryRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            Mapper,
+            CreatePackageDtoFactory(),
             TestErrorsFactory.CreateContentI18n()
         );
     }
@@ -56,7 +56,7 @@ public class AdminAddPackageSlotHandlerTests : BaseContentHandlerTest
             Quantity: TestConstants.PackageSlot.ValidQuantity
         );
 
-        _packageRepositoryMock.SetupGetByIdWithSlotsOrThrow(package);
+        _packageRepositoryMock.SetupGetByIdOrThrow(package);
         _categoryRepositoryMock.SetupGetByIdAsync(category.Id, category);
 
         // Act
@@ -65,7 +65,7 @@ public class AdminAddPackageSlotHandlerTests : BaseContentHandlerTest
         // Assert
         result.Package.Id.Should().Be(package.Id);
 
-        _packageRepositoryMock.VerifyAddSlotCalled();
+        package.Slots.Should().ContainSingle(slot => slot.CategoryId == category.Id);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -82,7 +82,7 @@ public class AdminAddPackageSlotHandlerTests : BaseContentHandlerTest
             Quantity: TestConstants.PackageSlot.ValidQuantity
         );
 
-        _packageRepositoryMock.SetupGetByIdWithSlotsOrThrow(package);
+        _packageRepositoryMock.SetupGetByIdOrThrow(package);
 
         // Act
         AdminAddPackageSlotResult result = await _handler.Handle(command, CancellationToken.None);
@@ -90,7 +90,7 @@ public class AdminAddPackageSlotHandlerTests : BaseContentHandlerTest
         // Assert
         result.Package.Id.Should().Be(package.Id);
 
-        _packageRepositoryMock.VerifyAddSlotCalled();
+        package.Slots.Should().ContainSingle(slot => slot.CategoryId == null);
         _unitOfWorkMock.VerifyCommitCalled();
 
         _categoryRepositoryMock.Verify(
@@ -116,7 +116,7 @@ public class AdminAddPackageSlotHandlerTests : BaseContentHandlerTest
             Quantity: TestConstants.PackageSlot.ValidQuantity
         );
 
-        _packageRepositoryMock.SetupGetByIdWithSlotsOrThrowNotFound(nonExistentPackageId);
+        _packageRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentPackageId);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
@@ -139,7 +139,7 @@ public class AdminAddPackageSlotHandlerTests : BaseContentHandlerTest
             Quantity: TestConstants.PackageSlot.ValidQuantity
         );
 
-        _packageRepositoryMock.SetupGetByIdWithSlotsOrThrow(package);
+        _packageRepositoryMock.SetupGetByIdOrThrow(package);
         _categoryRepositoryMock.SetupGetByIdAsync(nonExistentCategoryId, null);
 
         // Act

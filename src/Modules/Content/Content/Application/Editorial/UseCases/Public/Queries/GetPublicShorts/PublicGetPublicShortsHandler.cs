@@ -21,7 +21,8 @@ public class PublicGetPublicShortsHandler(
     IShortVideoRepository shortVideoRepository,
     IUserLookupService userLookup,
     IFileStorageService fileStorage,
-    IMapper mapper
+    IMapper mapper,
+    IVideoRepository videoRepository
 ) : IQueryHandler<PublicGetPublicShortsQuery, PublicGetPublicShortsResult>
 {
     /// <inheritdoc />
@@ -54,6 +55,7 @@ public class PublicGetPublicShortsHandler(
             mapper,
             userLookup,
             fileStorage,
+            videoRepository,
             liked,
             bookmarked,
             cancellationToken

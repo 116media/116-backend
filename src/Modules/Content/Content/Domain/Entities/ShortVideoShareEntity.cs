@@ -26,11 +26,6 @@ public class ShortVideoShareEntity : Aggregate<Guid>
     /// </summary>
     public EnumShareChannel? ShareChannel { get; private set; }
 
-    /// <summary>
-    /// Navigation property to the short video.
-    /// </summary>
-    public ShortVideoEntity ShortVideo { get; private set; } = null!;
-
     private ShortVideoShareEntity() { }
 
     /// <summary>
@@ -54,7 +49,6 @@ public class ShortVideoShareEntity : Aggregate<Guid>
             UserId = userId,
             ShortVideoId = shortVideoId,
             ShareChannel = shareChannel,
-            CreatedAt = DateTime.UtcNow,
         };
 
         share.AddDomainEvent(

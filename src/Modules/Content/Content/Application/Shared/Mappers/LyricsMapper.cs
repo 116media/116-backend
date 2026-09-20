@@ -29,10 +29,10 @@ public static class LyricsMapper
     public static void Register(TypeAdapterConfig config)
     {
         config
-            .NewConfig<LyricsTagEntity, TagDto>()
-            .Map(dest => dest.Id, src => src.Tag.Id)
-            .Map(dest => dest.Name, src => src.Tag.Name)
-            .Map(dest => dest.Slug, src => src.Tag.Slug);
+            .NewConfig<TagEntity, TagDto>()
+            .Map(dest => dest.Id, src => src.Id)
+            .Map(dest => dest.Name, src => src.Name)
+            .Map(dest => dest.Slug, src => src.Slug);
     }
 
     /// <summary>
@@ -43,25 +43,30 @@ public static class LyricsMapper
     /// </summary>
     public static async Task<LyricsSummaryDto> ToLyricsSummaryDtoAsync(
         this LyricsEntity entity,
+        ContentLookups lookups,
         IFileStorageService fileStorage,
         CancellationToken ct = default
     )
     {
         string? coverImageUrl = await ResolveCoverImageUrlAsync(entity, fileStorage, ct);
 
-        return entity.ToLyricsSummaryDto(coverImageUrl: coverImageUrl);
+        return entity.ToLyricsSummaryDto(lookups, coverImageUrl: coverImageUrl);
     }
 
     /// <summary>
     /// Maps a <see cref="LyricsEntity" /> to a <see cref="LyricsSummaryDto" /> from an
     /// already resolved cover URL. Performs no IO — batch mappings resolve files up front.
     /// </summary>
-    public static LyricsSummaryDto ToLyricsSummaryDto(this LyricsEntity entity, string? coverImageUrl)
+    public static LyricsSummaryDto ToLyricsSummaryDto(
+        this LyricsEntity entity,
+        ContentLookups lookups,
+        string? coverImageUrl
+    )
     {
         return new LyricsSummaryDto(
             entity.Id,
             entity.CategoryId,
-            entity.Category != null ? entity.Category.Name : string.Empty,
+            lookups.CategoryName(entity.CategoryId),
             entity.SongTitle,
             entity.ArtistName,
             entity.Slug,
@@ -91,6 +96,7 @@ public static class LyricsMapper
     /// </summary>
     public static async Task<IReadOnlyList<LyricsSummaryDto>> ToLyricsSummaryDtosAsync(
         this IReadOnlyList<LyricsEntity> entities,
+        ContentLookups lookups,
         IFileStorageService fileStorage,
         CancellationToken ct = default
     )
@@ -103,6 +109,7 @@ public static class LyricsMapper
         return entities
             .Select(entity =>
                 entity.ToLyricsSummaryDto(
+                    lookups,
                     coverImageUrl: entity.CoverImageFileId.HasValue
                         ? files.GetValueOrDefault(entity.CoverImageFileId.Value)?.StorageUrl
                         : null
@@ -123,12 +130,13 @@ public static class LyricsMapper
     /// <returns>The mapped summary with the interaction flag applied.</returns>
     public static async Task<LyricsSummaryDto> ToLyricsSummaryDtoAsync(
         this LyricsEntity entity,
+        ContentLookups lookups,
         IFileStorageService fileStorage,
         IReadOnlySet<Guid> likedLyricsIds,
         CancellationToken ct = default
     )
     {
-        LyricsSummaryDto dto = await entity.ToLyricsSummaryDtoAsync(fileStorage, ct);
+        LyricsSummaryDto dto = await entity.ToLyricsSummaryDtoAsync(lookups, fileStorage, ct);
         return dto with { IsLiked = likedLyricsIds.Contains(entity.Id) };
     }
 
@@ -144,12 +152,13 @@ public static class LyricsMapper
     /// <returns>The mapped summaries with the interaction flag applied.</returns>
     public static async Task<IReadOnlyList<LyricsSummaryDto>> ToLyricsSummaryDtosAsync(
         this IReadOnlyList<LyricsEntity> entities,
+        ContentLookups lookups,
         IFileStorageService fileStorage,
         IReadOnlySet<Guid> likedLyricsIds,
         CancellationToken ct = default
     )
     {
-        IReadOnlyList<LyricsSummaryDto> summaries = await entities.ToLyricsSummaryDtosAsync(fileStorage, ct);
+        IReadOnlyList<LyricsSummaryDto> summaries = await entities.ToLyricsSummaryDtosAsync(lookups, fileStorage, ct);
 
         return summaries.Select(dto => dto with { IsLiked = likedLyricsIds.Contains(dto.Id) }).ToList();
     }
@@ -170,6 +179,7 @@ public static class LyricsMapper
     /// <returns>The mapped detail DTO.</returns>
     public static async Task<LyricsDetailDto> ToLyricsDetailDtoAsync(
         this LyricsEntity entity,
+        ContentLookups lookups,
         IMapper mapper,
         IUserLookupService userLookup,
         IFileStorageService fileStorage,
@@ -182,7 +192,7 @@ public static class LyricsMapper
         var dto = new LyricsDetailDto(
             entity.Id,
             entity.CategoryId,
-            entity.Category != null ? entity.Category.Name : string.Empty,
+            lookups.CategoryName(entity.CategoryId),
             entity.SongTitle,
             entity.ArtistName,
             entity.Slug,
@@ -200,13 +210,13 @@ public static class LyricsMapper
             entity.Label,
             entity.Songwriter,
             entity.Producer,
-            mapper.Map<IReadOnlyList<TagDto>>(entity.Tags),
+            entity.TagDtos(mapper, lookups),
             entity.AuthorId.ToString(),
             entity.ViewCount,
             entity.LikeCount,
             entity.ShareCount,
             entity.CustomerId,
-            entity.Customer != null ? entity.Customer.FullName : null,
+            lookups.CustomerName(entity.CustomerId),
             entity.OrderItemId
         )
         {
@@ -246,12 +256,16 @@ public static class LyricsMapper
     /// Maps a <see cref="LyricsEntity" /> to its public card projection from an already
     /// resolved cover URL. Performs no IO — batch mappings resolve files up front.
     /// </summary>
-    public static PublicLyricsSummaryDto ToPublicLyricsSummaryDto(this LyricsEntity entity, string? coverImageUrl)
+    public static PublicLyricsSummaryDto ToPublicLyricsSummaryDto(
+        this LyricsEntity entity,
+        ContentLookups lookups,
+        string? coverImageUrl
+    )
     {
         return new PublicLyricsSummaryDto(
             entity.Id,
             entity.CategoryId,
-            entity.Category != null ? entity.Category.Name : string.Empty,
+            lookups.CategoryName(entity.CategoryId),
             entity.SongTitle,
             entity.ArtistName,
             entity.Slug,
@@ -271,6 +285,7 @@ public static class LyricsMapper
     /// </summary>
     public static async Task<IReadOnlyList<PublicLyricsSummaryDto>> ToPublicLyricsSummaryDtosAsync(
         this IReadOnlyList<LyricsEntity> entities,
+        ContentLookups lookups,
         IFileStorageService fileStorage,
         IReadOnlySet<Guid> likedLyricsIds,
         CancellationToken ct = default
@@ -284,6 +299,7 @@ public static class LyricsMapper
         return entities
             .Select(entity =>
                 entity.ToPublicLyricsSummaryDto(
+                    lookups,
                     coverImageUrl: entity.CoverImageFileId.HasValue
                         ? files.GetValueOrDefault(entity.CoverImageFileId.Value)?.StorageUrl
                         : null
@@ -301,11 +317,17 @@ public static class LyricsMapper
     /// </summary>
     public static async Task<IReadOnlyList<PublicLyricsSummaryDto>> ToPublicLyricsSummaryDtosAsync(
         this IReadOnlyList<LyricsEntity> entities,
+        ContentLookups lookups,
         IFileStorageService fileStorage,
         CancellationToken ct = default
     )
     {
-        return await entities.ToPublicLyricsSummaryDtosAsync(fileStorage, likedLyricsIds: new HashSet<Guid>(), ct);
+        return await entities.ToPublicLyricsSummaryDtosAsync(
+            lookups,
+            fileStorage,
+            likedLyricsIds: new HashSet<Guid>(),
+            ct
+        );
     }
 
     /// <summary>
@@ -314,6 +336,7 @@ public static class LyricsMapper
     /// </summary>
     public static async Task<PublicLyricsDetailDto> ToPublicLyricsDetailDtoAsync(
         this LyricsEntity entity,
+        ContentLookups lookups,
         IMapper mapper,
         IUserLookupService userLookup,
         IFileStorageService fileStorage,
@@ -326,7 +349,7 @@ public static class LyricsMapper
         var dto = new PublicLyricsDetailDto(
             entity.Id,
             entity.CategoryId,
-            entity.Category != null ? entity.Category.Name : string.Empty,
+            lookups.CategoryName(entity.CategoryId),
             entity.SongTitle,
             entity.ArtistName,
             entity.Slug,
@@ -342,7 +365,7 @@ public static class LyricsMapper
             entity.Label,
             entity.Songwriter,
             entity.Producer,
-            mapper.Map<IReadOnlyList<TagDto>>(entity.Tags),
+            entity.TagDtos(mapper, lookups),
             entity.ViewCount,
             entity.LikeCount,
             entity.ShareCount
@@ -388,5 +411,24 @@ public static class LyricsMapper
 
         FileReferenceDto? coverFile = await fileStorage.ResolveAsync(entity.CoverImageFileId.Value, ct);
         return coverFile?.StorageUrl;
+    }
+
+    /// <summary>
+    /// Projects a lyrics page's tag junction rows through the resolved tag map, dropping any
+    /// tag row that no longer exists.
+    /// </summary>
+    /// <param name="entity">The lyrics page whose tags to project.</param>
+    /// <param name="mapper">Injected IMapper instance.</param>
+    /// <param name="lookups">The resolved rows, including the tags.</param>
+    /// <returns>The tag projections.</returns>
+    private static IReadOnlyList<TagDto> TagDtos(this LyricsEntity entity, IMapper mapper, ContentLookups lookups)
+    {
+        return
+        [
+            .. entity
+                .Tags.Select(lyricsTag => lookups.Tags.GetValueOrDefault(lyricsTag.TagId))
+                .OfType<TagEntity>()
+                .Select(mapper.Map<TagDto>),
+        ];
     }
 }

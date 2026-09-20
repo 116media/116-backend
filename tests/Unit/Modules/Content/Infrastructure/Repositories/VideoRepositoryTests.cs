@@ -6,6 +6,7 @@ using _116.Content.Infrastructure.Repositories;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Builders.Entities.Content;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Unit.Tests.Common.Helpers;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -24,6 +25,7 @@ public class VideoRepositoryTests : IDisposable
     {
         DbContextOptions<ContentDbContext> options = new DbContextOptionsBuilder<ContentDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+            .AddInterceptors(new CreatedAtStampingInterceptor())
             .Options;
 
         _context = new ContentDbContext(options);
@@ -791,70 +793,51 @@ public class VideoRepositoryTests : IDisposable
 
     #endregion
 
-    #region AddTagAsync / GetTagsByVideoIdAsync / RemoveTag Tests
+    #region Tag Tests
 
     [Fact]
-    public async Task AddTagAsync_ShouldAddTagJunctionToContext()
+    public async Task ReplaceTags_ThroughTheRoot_ShouldPersistTheRows()
     {
         // Arrange
         Guid categoryId = await SeedCategoryAsync();
         VideoEntity video = VideoFactory.Create(categoryId);
         _context.Videos.Add(video);
-
-        TagEntity tag = TagFactory.CreateDefault();
-        _context.Tags.Add(tag);
         await _context.SaveChangesAsync();
 
-        var videoTag = VideoTagEntity.Create(id: Guid.NewGuid(), videoId: video.Id, tagId: tag.Id);
+        var tagId = Guid.NewGuid();
 
         // Act
-        await _repository.AddTagAsync(videoTag);
+        video.ReplaceTags([tagId]);
         await _context.SaveChangesAsync();
 
         // Assert
-        IReadOnlyList<VideoTagEntity> result = await _repository.GetTagsByVideoIdAsync(video.Id);
-        result.Should().ContainSingle();
-        result.First().TagId.Should().Be(tag.Id);
+        (await _context.VideoTags.CountAsync(t => t.VideoId == video.Id))
+            .Should()
+            .Be(1);
     }
 
     [Fact]
-    public async Task GetTagsByVideoIdAsync_WhenNoTags_ShouldReturnEmptyList()
+    public async Task ReplaceTags_ThroughTheRoot_ShouldDropRowsThatLeftTheSet()
     {
         // Arrange
         Guid categoryId = await SeedCategoryAsync();
         VideoEntity video = VideoFactory.Create(categoryId);
+        TagEntity keptTag = TagFactory.Create("kept-video-tag", "kept-video-tag");
+        TagEntity removedTag = TagFactory.Create("removed-video-tag", "removed-video-tag");
+        _context.Tags.AddRange(keptTag, removedTag);
+        Guid keptTagId = keptTag.Id;
+        video.ReplaceTags([keptTagId, removedTag.Id]);
         _context.Videos.Add(video);
         await _context.SaveChangesAsync();
 
         // Act
-        IReadOnlyList<VideoTagEntity> result = await _repository.GetTagsByVideoIdAsync(video.Id);
+        video.ReplaceTags([keptTagId]);
+        await _context.SaveChangesAsync();
+        _context.ChangeTracker.Clear();
 
         // Assert
-        result.Should().BeEmpty();
-    }
-
-    [Fact]
-    public async Task RemoveTag_ShouldRemoveTagJunctionFromContext()
-    {
-        // Arrange
-        Guid categoryId = await SeedCategoryAsync();
-        VideoEntity video = VideoFactory.Create(categoryId);
-        _context.Videos.Add(video);
-
-        TagEntity tag = TagFactory.CreateDefault();
-        _context.Tags.Add(tag);
-
-        var videoTag = VideoTagEntity.Create(id: Guid.NewGuid(), videoId: video.Id, tagId: tag.Id);
-        _context.VideoTags.Add(videoTag);
-        await _context.SaveChangesAsync();
-
-        // Act
-        _repository.RemoveTag(videoTag);
-        await _context.SaveChangesAsync();
-
-        // Assert
-        IReadOnlyList<VideoTagEntity> result = await _repository.GetTagsByVideoIdAsync(video.Id);
-        result.Should().BeEmpty();
+        VideoEntity loaded = await _repository.GetByIdOrThrowAsync(video.Id);
+        loaded.Tags.Should().ContainSingle().Which.TagId.Should().Be(keptTagId);
     }
 
     #endregion

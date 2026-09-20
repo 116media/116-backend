@@ -457,17 +457,7 @@ public class PublicRecordLyricsViewHandlerTests
     private static LyricsEntity CreateLyricsWithText(string lyricsText)
     {
         LyricsEntity lyrics = LyricsFactory.Create(Guid.NewGuid());
-        lyrics.Update(
-            categoryId: lyrics.CategoryId,
-            songTitle: lyrics.SongTitle,
-            artistName: lyrics.ArtistName,
-            slug: lyrics.Slug,
-            lyricsText: lyricsText,
-            language: lyrics.Language,
-            videoId: lyrics.VideoId,
-            customerId: lyrics.CustomerId,
-            orderItemId: lyrics.OrderItemId
-        );
+        lyrics.ReviseText(lyricsText: lyricsText, language: lyrics.Language);
         return lyrics;
     }
 }

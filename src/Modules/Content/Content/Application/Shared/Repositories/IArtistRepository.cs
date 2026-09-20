@@ -103,42 +103,6 @@ public interface IArtistRepository
     /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
     /// <returns>The per-surface totals.</returns>
     Task<ArtistTotals> GetTotalsAsync(Guid artistId, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Retrieves an artist's social links, ordered by platform so the row is stable across
-    /// requests.
-    /// </summary>
-    /// <param name="artistId">The artist profile to list links for.</param>
-    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
-    /// <returns>The artist's social links.</returns>
-    Task<IReadOnlyList<ArtistSocialLinkEntity>> GetSocialLinksAsync(
-        Guid artistId,
-        CancellationToken cancellationToken = default
-    );
-
-    /// <summary>
-    /// Retrieves the social link for one of an artist's platform slots. Returns null if no
-    /// link exists for that platform.
-    /// </summary>
-    /// <param name="artistId">The artist profile the link belongs to.</param>
-    /// <param name="platform">The platform slot to look up.</param>
-    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
-    /// <returns>The social link if found, otherwise null.</returns>
-    Task<ArtistSocialLinkEntity?> GetSocialLinkAsync(
-        Guid artistId,
-        EnumSocialPlatform platform,
-        CancellationToken cancellationToken = default
-    );
-
-    /// <summary>
-    /// Adds a new social link to the repository.
-    /// </summary>
-    Task AddSocialLinkAsync(ArtistSocialLinkEntity link, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Removes a social link from the repository.
-    /// </summary>
-    void RemoveSocialLink(ArtistSocialLinkEntity link);
 }
 
 /// <summary>

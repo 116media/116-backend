@@ -32,8 +32,8 @@ public class StreamingLinkConfiguration : IEntityTypeConfiguration<StreamingLink
             )
         );
 
-        builder.HasOne(x => x.Album).WithMany().HasForeignKey(x => x.AlbumId).OnDelete(DeleteBehavior.Cascade);
+        builder.HasOne<AlbumEntity>().WithMany().HasForeignKey(x => x.AlbumId).OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasOne(x => x.Lyrics).WithMany().HasForeignKey(x => x.LyricsId).OnDelete(DeleteBehavior.Cascade);
+        builder.HasOne<LyricsEntity>().WithMany().HasForeignKey(x => x.LyricsId).OnDelete(DeleteBehavior.Cascade);
     }
 }

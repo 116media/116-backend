@@ -22,6 +22,21 @@ public static class MockPromotionLevelRepository
         mock.Setup(x => x.GetAllAsync(It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<PromotionLevelEntity>());
         mock.Setup(x => x.GetActiveAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new List<PromotionLevelEntity>());
+        mock.Setup(x => x.GetByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<Guid, PromotionLevelEntity>());
+        return mock;
+    }
+
+    /// <summary>
+    /// Arranges the batch lookup to resolve exactly the supplied rows, keyed by id.
+    /// </summary>
+    public static Mock<IPromotionLevelRepository> SetupGetByIds(
+        this Mock<IPromotionLevelRepository> mock,
+        params PromotionLevelEntity[] entities
+    )
+    {
+        mock.Setup(x => x.GetByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(entities.ToDictionary(entity => entity.Id));
         return mock;
     }
 

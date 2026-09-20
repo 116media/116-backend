@@ -27,7 +27,11 @@ public class AdminCreatePackageHandlerTests : BaseContentHandlerTest
     {
         _packageRepositoryMock = MockPackageRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _handler = new AdminCreatePackageHandler(_packageRepositoryMock.Object, _unitOfWorkMock.Object, Mapper);
+        _handler = new AdminCreatePackageHandler(
+            _packageRepositoryMock.Object,
+            _unitOfWorkMock.Object,
+            CreatePackageDtoFactory()
+        );
     }
 
     #region Success Cases
@@ -42,7 +46,7 @@ public class AdminCreatePackageHandlerTests : BaseContentHandlerTest
 
         PackageEntity created = PackageFactory.Create(name);
         _packageRepositoryMock
-            .Setup(x => x.GetByIdWithSlotsOrThrowAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetByIdOrThrowAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(created);
 
         // Act
@@ -66,7 +70,7 @@ public class AdminCreatePackageHandlerTests : BaseContentHandlerTest
 
         PackageEntity created = PackageFactory.Create();
         _packageRepositoryMock
-            .Setup(x => x.GetByIdWithSlotsOrThrowAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetByIdOrThrowAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(created);
 
         // Act
@@ -74,7 +78,7 @@ public class AdminCreatePackageHandlerTests : BaseContentHandlerTest
 
         // Assert
         _packageRepositoryMock.Verify(
-            x => x.GetByIdWithSlotsOrThrowAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+            x => x.GetByIdOrThrowAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
             Times.Once
         );
     }

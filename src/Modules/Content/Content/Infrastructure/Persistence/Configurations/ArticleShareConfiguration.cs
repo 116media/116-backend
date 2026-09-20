@@ -23,7 +23,7 @@ public class ArticleShareConfiguration : IEntityTypeConfiguration<ArticleShareEn
 
         builder.Property(x => x.CreatedAt).IsRequired();
 
-        builder.HasOne(x => x.Article).WithMany().HasForeignKey(x => x.ArticleId).OnDelete(DeleteBehavior.Cascade);
+        builder.HasOne<ArticleEntity>().WithMany().HasForeignKey(x => x.ArticleId).OnDelete(DeleteBehavior.Cascade);
 
         builder
             .HasIndex(x => new

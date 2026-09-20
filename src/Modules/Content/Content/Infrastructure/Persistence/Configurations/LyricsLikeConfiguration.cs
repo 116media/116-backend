@@ -20,6 +20,6 @@ public class LyricsLikeConfiguration : IEntityTypeConfiguration<LyricsLikeEntity
 
         builder.HasIndex(x => new { x.UserId, x.LyricsId }).IsUnique();
 
-        builder.HasOne(x => x.Lyrics).WithMany().HasForeignKey(x => x.LyricsId).OnDelete(DeleteBehavior.Cascade);
+        builder.HasOne<LyricsEntity>().WithMany().HasForeignKey(x => x.LyricsId).OnDelete(DeleteBehavior.Cascade);
     }
 }

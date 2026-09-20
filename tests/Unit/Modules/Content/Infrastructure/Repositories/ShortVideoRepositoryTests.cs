@@ -4,6 +4,7 @@ using _116.Content.Infrastructure.Repositories;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Domain;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Unit.Tests.Common.Helpers;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -22,6 +23,7 @@ public class ShortVideoRepositoryTests : IDisposable
     {
         DbContextOptions<ContentDbContext> options = new DbContextOptionsBuilder<ContentDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+            .AddInterceptors(new CreatedAtStampingInterceptor())
             .Options;
 
         _context = new ContentDbContext(options);
@@ -471,6 +473,7 @@ public class ShortVideoRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         ShortVideoShareEntity share = ShortVideoShareEntity.Create(Guid.NewGuid(), null, shortVideo.Id);
+        share.CreatedAt = DateTime.UtcNow;
 
         // Act
         await _repository.AddShareAsync(share);
@@ -547,7 +550,9 @@ public class ShortVideoRepositoryTests : IDisposable
         _context.ShortVideos.AddRange(active, anonymous, inactive);
         DateTime latest = DateTime.UtcNow;
         ShortVideoShareEntity older = ShortVideoShareEntity.Create(Guid.NewGuid(), userId, active.Id);
+        older.CreatedAt = DateTime.UtcNow;
         ShortVideoShareEntity newer = ShortVideoShareEntity.Create(Guid.NewGuid(), userId, active.Id);
+        newer.CreatedAt = DateTime.UtcNow;
         SetCreatedAt(older, latest.AddDays(-1));
         SetCreatedAt(newer, latest);
         _context.ShortVideoShares.AddRange(

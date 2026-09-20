@@ -1,3 +1,4 @@
+using _116.Content.Domain.ValueObjects;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -8,7 +9,7 @@ namespace _116.Content.Domain.Entities;
 /// guaranteeing the client's quote cannot change retroactively even if the admin adjusts
 /// category pricing later.
 /// </summary>
-public class ContentItemTierEntity : Aggregate<Guid>
+public class ContentItemTierEntity : Entity<Guid>
 {
     /// <summary>
     /// The order item this tier belongs to.
@@ -24,17 +25,7 @@ public class ContentItemTierEntity : Aggregate<Guid>
     /// The price frozen from <c>category_pricing.price_usd</c> at the moment this tier was added.
     /// Immutable after creation.
     /// </summary>
-    public decimal PriceSnapshotUsd { get; private set; }
-
-    /// <summary>
-    /// The order item this tier belongs to.
-    /// </summary>
-    public ContentOrderItemEntity OrderItem { get; private set; } = null!;
-
-    /// <summary>
-    /// The pricing tier definition.
-    /// </summary>
-    public PricingTierEntity PricingTier { get; private set; } = null!;
+    public Money PriceSnapshotUsd { get; private set; } = null!;
 
     /// <summary>
     /// Private parameterless constructor required by Entity Framework Core.
@@ -49,7 +40,12 @@ public class ContentItemTierEntity : Aggregate<Guid>
     /// <param name="pricingTierId">The pricing tier being snapshotted.</param>
     /// <param name="priceSnapshotUsd">The price frozen from category pricing at this moment.</param>
     /// <returns>A new <see cref="ContentItemTierEntity" /> instance.</returns>
-    public static ContentItemTierEntity Create(Guid id, Guid orderItemId, Guid pricingTierId, decimal priceSnapshotUsd)
+    internal static ContentItemTierEntity Create(
+        Guid id,
+        Guid orderItemId,
+        Guid pricingTierId,
+        decimal priceSnapshotUsd
+    )
     {
         return new ContentItemTierEntity
         {

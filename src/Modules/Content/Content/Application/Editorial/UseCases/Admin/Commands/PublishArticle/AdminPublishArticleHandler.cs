@@ -13,10 +13,12 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.PublishArti
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
+/// <param name="timeProvider">Clock stamping the publication time.</param>
 public class AdminPublishArticleHandler(
     IArticleRepository articleRepository,
     IContentUnitOfWork unitOfWork,
-    ContentI18n i18n
+    ContentI18n i18n,
+    TimeProvider timeProvider
 ) : ICommandHandler<AdminPublishArticleCommand, AdminPublishArticleResult>
 {
     /// <inheritdoc />
@@ -37,7 +39,7 @@ public class AdminPublishArticleHandler(
             throw i18n.Article.AlreadyPublished();
         }
 
-        article.Publish();
+        article.Publish(now: timeProvider.GetUtcNow());
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminPublishArticleResult(IsSuccess: true);

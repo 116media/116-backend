@@ -4,6 +4,7 @@ using _116.Content.Domain.Enums;
 using _116.Content.Domain.Events;
 using _116.Content.Domain.Exceptions;
 using _116.Content.Domain.StateMachines;
+using _116.Content.Domain.ValueObjects;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -56,7 +57,7 @@ public class VideoEntity : Aggregate<Guid>
     /// URL-safe slug used in public video URLs. Must be unique across all videos.
     /// </summary>
     [MaxLength(length: ContentConstants.MaxSlugLength)]
-    public string Slug { get; private set; } = null!;
+    public Slug Slug { get; private set; } = null!;
 
     /// <summary>
     /// Description shown on the video page below the player.
@@ -97,11 +98,6 @@ public class VideoEntity : Aggregate<Guid>
     public Guid? PromotionLevelId { get; private set; }
 
     /// <summary>
-    /// Navigation property to the promotion level entity.
-    /// </summary>
-    public PromotionLevelEntity? PromotionLevel { get; private set; }
-
-    /// <summary>
     /// When the paid promotion expires. <c>null</c> if not promoted.
     /// Set to <c>payment.verified_at + promotion_level.duration_days</c> by the Commerce flow.
     /// </summary>
@@ -123,11 +119,6 @@ public class VideoEntity : Aggregate<Guid>
     /// </summary>
     [MaxLength(length: ContentConstants.MaxUnpromotedReasonLength)]
     public string? UnpromotedReason { get; private set; }
-
-    /// <summary>
-    /// Whether a lyrics page is linked to this video.
-    /// </summary>
-    public bool HasLyrics { get; private set; }
 
     /// <summary>
     /// Current status in the editorial workflow.
@@ -164,39 +155,24 @@ public class VideoEntity : Aggregate<Guid>
     public string? MetaDescription { get; private set; }
 
     /// <summary>
-    /// Cached average star rating (1–5). Recomputed after each rating event.
+    /// Cached average star rating (1–5), maintained by <c>VideoRepository.SetRatingAsync</c>.
     /// </summary>
-    public decimal RatingAverage { get; private set; }
+    public decimal RatingAverage { get; private init; }
 
     /// <summary>
-    /// Total number of ratings received.
+    /// Total number of ratings received, maintained by <c>VideoRepository.SetRatingAsync</c>.
     /// </summary>
-    public int RatingCount { get; private set; }
+    public int RatingCount { get; private init; }
 
     /// <summary>
-    /// Cached share count.
+    /// Cached share count, maintained by <c>VideoRepository.ApplyEngagementDeltaAsync</c>.
     /// </summary>
-    public int ShareCount { get; private set; }
-
-    /// <summary>
-    /// The customer who commissioned this video. <c>null</c> for free content.
-    /// </summary>
-    public CustomerEntity? Customer { get; private set; }
-
-    /// <summary>
-    /// The category this video belongs to.
-    /// </summary>
-    public CategoryEntity Category { get; private set; } = null!;
+    public int ShareCount { get; private init; }
 
     /// <summary>
     /// Tags applied to this video for discovery and SEO.
     /// </summary>
     public ICollection<VideoTagEntity> Tags { get; } = new List<VideoTagEntity>();
-
-    /// <summary>
-    /// Short video teasers linked to this full video.
-    /// </summary>
-    public ICollection<ShortVideoEntity> Shorts { get; } = new List<ShortVideoEntity>();
 
     /// <summary>
     /// Optional link to a claimed <see cref="ArtistEntity" /> profile. Null for the common case
@@ -299,32 +275,86 @@ public class VideoEntity : Aggregate<Guid>
     }
 
     /// <summary>
-    /// Updates all editable video fields in a single call. Permitted when status is
-    /// <c>Draft</c>, <c>PendingPayment</c>, <c>PendingReview</c>, or <c>Rejected</c>.
+    /// Renames the video and its slug. Permitted while the video is editable — <c>Draft</c>,
+    /// <c>PendingPayment</c>, <c>PendingReview</c> or <c>Rejected</c>.
     /// </summary>
-    public void Update(
-        Guid categoryId,
-        string title,
-        string slug,
-        string description,
-        Guid? customerId,
-        Guid? orderItemId,
-        bool socialBoost,
-        string? metaTitle,
-        string? metaDescription
-    )
+    /// <param name="title">The video title.</param>
+    /// <param name="slug">The URL-safe slug. Uniqueness enforced by handler.</param>
+    /// <returns><c>true</c> if either value changed; otherwise <c>false</c>.</returns>
+    public bool Retitle(string title, string slug)
     {
         ContentPublicationState.EnsureEditable(status: Status, contentType: EnumCoreContentType.Video);
 
-        CategoryId = categoryId;
+        if (Title == title && Slug == slug)
+        {
+            return false;
+        }
+
         Title = title;
         Slug = slug;
+
+        return true;
+    }
+
+    /// <summary>
+    /// Revises the editorial description.
+    /// </summary>
+    /// <param name="description">The video description.</param>
+    /// <returns><c>true</c> if the description changed; otherwise <c>false</c>.</returns>
+    public bool ReviseDescription(string description)
+    {
+        ContentPublicationState.EnsureEditable(status: Status, contentType: EnumCoreContentType.Video);
+
+        if (Description == description)
+        {
+            return false;
+        }
+
         Description = description;
+
+        return true;
+    }
+
+    /// <summary>
+    /// Moves the video to another category. Existence of the category is checked by the handler.
+    /// </summary>
+    /// <param name="categoryId">The category this video belongs to.</param>
+    /// <returns><c>true</c> if the category changed; otherwise <c>false</c>.</returns>
+    public bool Recategorize(Guid categoryId)
+    {
+        ContentPublicationState.EnsureEditable(status: Status, contentType: EnumCoreContentType.Video);
+
+        if (CategoryId == categoryId)
+        {
+            return false;
+        }
+
+        CategoryId = categoryId;
+
+        return true;
+    }
+
+    /// <summary>
+    /// Assigns — or clears — the commission this video fulfils, together with its social boost flag.
+    /// </summary>
+    /// <param name="customerId">The B2B customer who commissioned this video. <c>null</c> for free content.</param>
+    /// <param name="orderItemId">The order item this video fulfils. <c>null</c> for free content.</param>
+    /// <param name="socialBoost">Whether this video is flagged for social media promotion.</param>
+    /// <returns><c>true</c> if any value changed; otherwise <c>false</c>.</returns>
+    public bool AssignCommission(Guid? customerId, Guid? orderItemId, bool socialBoost)
+    {
+        ContentPublicationState.EnsureEditable(status: Status, contentType: EnumCoreContentType.Video);
+
+        if (CustomerId == customerId && OrderItemId == orderItemId && SocialBoost == socialBoost)
+        {
+            return false;
+        }
+
         CustomerId = customerId;
         OrderItemId = orderItemId;
         SocialBoost = socialBoost;
-        MetaTitle = metaTitle;
-        MetaDescription = metaDescription;
+
+        return true;
     }
 
     /// <summary>
@@ -353,9 +383,9 @@ public class VideoEntity : Aggregate<Guid>
     /// <exception cref="ContentRuleException">
     /// Thrown when a shooting is scheduled in the future, meaning the video has not yet been shot.
     /// </exception>
-    public void AttachYoutubeVideoUrl(string youtubeVideoUrl)
+    public void AttachYoutubeVideoUrl(string youtubeVideoUrl, DateTimeOffset now)
     {
-        if (ShootingScheduledAt.HasValue && ShootingScheduledAt.Value > DateTimeOffset.UtcNow)
+        if (ShootingScheduledAt.HasValue && ShootingScheduledAt.Value > now)
         {
             throw new ContentRuleException(
                 ContentRuleCodes.CannotAttachYoutubeUrlBeforeShoot,
@@ -383,23 +413,24 @@ public class VideoEntity : Aggregate<Guid>
     }
 
     /// <summary>
-    /// Updates the video's SEO metadata.
+    /// Revises the SEO metadata. Unlike the editorial verbs this is allowed at any status, since
+    /// search metadata is maintained after publication.
     /// </summary>
-    public void UpdateSeo(string? metaTitle, string? metaDescription)
+    /// <param name="metaTitle">Optional SEO meta title. Falls back to <c>Title</c> if null.</param>
+    /// <param name="metaDescription">Optional SEO meta description.</param>
+    /// <returns><c>true</c> if either value changed; otherwise <c>false</c>.</returns>
+    public bool ReviseSeo(string? metaTitle, string? metaDescription)
     {
+        if (MetaTitle == metaTitle && MetaDescription == metaDescription)
+        {
+            return false;
+        }
+
         MetaTitle = metaTitle;
         MetaDescription = metaDescription;
+
+        return true;
     }
-
-    /// <summary>
-    /// Flags that a lyrics page has been linked to this video.
-    /// </summary>
-    public void MarkHasLyrics() => HasLyrics = true;
-
-    /// <summary>
-    /// Clears the lyrics link flag when no lyrics page references this video.
-    /// </summary>
-    public void UnmarkHasLyrics() => HasLyrics = false;
 
     /// <summary>
     /// Transitions a paid video from <c>Draft</c> → <c>PendingPayment</c>.
@@ -475,7 +506,7 @@ public class VideoEntity : Aggregate<Guid>
     /// enforcing the YouTube gate at the domain level.
     /// </summary>
     /// <returns><c>true</c> if published; <c>false</c> if already published.</returns>
-    public bool Publish()
+    public bool Publish(DateTimeOffset now)
     {
         if (Status == EnumContentStatus.Published)
         {
@@ -494,7 +525,7 @@ public class VideoEntity : Aggregate<Guid>
         }
 
         Status = EnumContentStatus.Published;
-        PublishedAt = DateTimeOffset.UtcNow;
+        PublishedAt = now;
 
         AddDomainEvent(
             new CommissionedContentPublishedEvent(
@@ -629,7 +660,7 @@ public class VideoEntity : Aggregate<Guid>
     /// <exception cref="ContentRuleException">
     /// Thrown when the video does not have an active promotion.
     /// </exception>
-    public void ForceUnpromote(string unpromotedBy, string reason)
+    public void ForceUnpromote(string unpromotedBy, string reason, DateTimeOffset now)
     {
         if (!IsPromoted)
         {
@@ -639,7 +670,7 @@ public class VideoEntity : Aggregate<Guid>
         IsPromoted = false;
         PromotedUntil = null;
         PromotionLevelId = null;
-        UnpromotedAt = DateTimeOffset.UtcNow;
+        UnpromotedAt = now;
         UnpromotedBy = unpromotedBy;
         UnpromotedReason = reason;
 
@@ -655,15 +686,6 @@ public class VideoEntity : Aggregate<Guid>
     }
 
     /// <summary>
-    /// Recomputes the cached rating. Called after each rating insert or update.
-    /// </summary>
-    public void UpdateRating(decimal average, int count)
-    {
-        RatingAverage = average;
-        RatingCount = count;
-    }
-
-    /// <summary>
     /// Links this video to a claimed artist profile.
     /// </summary>
     /// <param name="artistId">The <see cref="ArtistEntity" /> ID to link.</param>
@@ -673,4 +695,35 @@ public class VideoEntity : Aggregate<Guid>
     /// Clears the artist profile link from this video.
     /// </summary>
     public void UnlinkArtist() => ArtistId = null;
+
+    /// <summary>
+    /// Replaces the tag set with the given ids, raising one <see cref="TagGraphChangedEvent" />
+    /// per tag that joins or leaves. An identical set writes nothing and raises nothing.
+    /// </summary>
+    /// <param name="tagIds">The complete tag set this row should carry.</param>
+    /// <returns><c>true</c> if the set changed; otherwise <c>false</c>.</returns>
+    public bool ReplaceTags(IReadOnlyCollection<Guid> tagIds)
+    {
+        HashSet<Guid> desired = tagIds.ToHashSet();
+        HashSet<Guid> current = Tags.Select(tag => tag.TagId).ToHashSet();
+
+        if (desired.SetEquals(current))
+        {
+            return false;
+        }
+
+        foreach (VideoTagEntity removed in Tags.Where(tag => !desired.Contains(tag.TagId)).ToList())
+        {
+            Tags.Remove(removed);
+            AddDomainEvent(new TagGraphChangedEvent(TagId: removed.TagId));
+        }
+
+        foreach (Guid tagId in desired.Where(id => !current.Contains(id)))
+        {
+            Tags.Add(VideoTagEntity.Create(id: Guid.NewGuid(), videoId: Id, tagId: tagId));
+            AddDomainEvent(new TagGraphChangedEvent(TagId: tagId));
+        }
+
+        return true;
+    }
 }

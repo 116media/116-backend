@@ -219,7 +219,7 @@ public class LyricsBuilder
 
         foreach (Guid tagId in _tagIds)
         {
-            entity.Tags.Add(LyricsTagEntity.Create(Guid.NewGuid(), entity.Id, tagId));
+            entity.ReplaceTags([.. entity.Tags.Select(tag => tag.TagId), tagId]);
         }
 
         if (_artistId.HasValue)
@@ -259,7 +259,7 @@ public class LyricsBuilder
             case EnumContentStatus.Published:
                 entity.MarkPendingReview();
                 entity.Approve();
-                entity.Publish();
+                entity.Publish(now: TestConstants.Clock.Instant);
                 break;
             case EnumContentStatus.Rejected:
                 entity.MarkPendingReview();
@@ -268,7 +268,7 @@ public class LyricsBuilder
             case EnumContentStatus.Archived:
                 entity.MarkPendingReview();
                 entity.Approve();
-                entity.Publish();
+                entity.Publish(now: TestConstants.Clock.Instant);
                 entity.Archive();
                 break;
             case EnumContentStatus.Draft:

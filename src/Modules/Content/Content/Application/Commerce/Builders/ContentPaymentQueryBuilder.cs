@@ -7,12 +7,13 @@ using _116.Shared.Application.Specifications;
 namespace _116.Content.Application.Commerce.Builders;
 
 /// <summary>
-/// Builder for constructing dynamic content payment queries using specifications.
+/// Builder for the admin payments listing over its root: orders carrying a payment.
 /// Implements the Builder pattern to eliminate conditional logic in query construction.
 /// </summary>
 public class ContentPaymentQueryBuilder : IContentPaymentQueryBuilder
 {
-    private Specification<ContentPaymentEntity>? _specification;
+    private Specification<ContentOrderEntity>? _specification;
+    private string? _search;
 
     /// <inheritdoc />
     public IContentPaymentQueryBuilder WithStatus(EnumPaymentStatus? status)
@@ -22,7 +23,7 @@ public class ContentPaymentQueryBuilder : IContentPaymentQueryBuilder
             return this;
         }
 
-        var statusSpec = new ContentPaymentByStatusSpecification(status: status.Value);
+        var statusSpec = new OrderPaymentByStatusSpecification(status: status.Value);
         CombineSpecification(spec: statusSpec);
         return this;
     }
@@ -35,7 +36,7 @@ public class ContentPaymentQueryBuilder : IContentPaymentQueryBuilder
             return this;
         }
 
-        var methodSpec = new ContentPaymentByMethodSpecification(method: method.Value);
+        var methodSpec = new OrderPaymentByMethodSpecification(method: method.Value);
         CombineSpecification(spec: methodSpec);
         return this;
     }
@@ -48,18 +49,24 @@ public class ContentPaymentQueryBuilder : IContentPaymentQueryBuilder
             return this;
         }
 
-        var searchSpec = new ContentPaymentSearchSpecification(search: search);
-        CombineSpecification(spec: searchSpec);
+        _search = search;
         return this;
     }
 
     /// <inheritdoc />
-    public Specification<ContentPaymentEntity>? Build()
+    public Specification<ContentOrderEntity>? Build(IQueryable<CustomerEntity> customers)
     {
-        return _specification;
+        if (_search is null)
+        {
+            return _specification;
+        }
+
+        var searchSpec = new ContentOrderSearchSpecification(search: _search, customers: customers);
+
+        return _specification is null ? searchSpec : _specification.And(other: searchSpec);
     }
 
-    private void CombineSpecification(Specification<ContentPaymentEntity> spec)
+    private void CombineSpecification(Specification<ContentOrderEntity> spec)
     {
         _specification = _specification is null ? spec : _specification.And(other: spec);
     }

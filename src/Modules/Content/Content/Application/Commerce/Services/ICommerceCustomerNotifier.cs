@@ -13,7 +13,7 @@ public interface ICommerceCustomerNotifier
 {
     /// <summary>
     /// Sends the invoice-style payment request after an order is submitted.
-    /// The order must carry its <c>Customer</c> and <c>Items</c> navigations.
+    /// The order must carry its <c>Items</c>; the customer is resolved by id.
     /// </summary>
     /// <param name="order">The submitted order.</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
@@ -21,7 +21,6 @@ public interface ICommerceCustomerNotifier
 
     /// <summary>
     /// Sends the receipt after a payment is verified and the order marked paid.
-    /// The order must carry its <c>Customer</c> navigation.
     /// </summary>
     /// <param name="order">The paid order.</param>
     /// <param name="payment">The verified payment carrying amount and receipt URL.</param>
@@ -36,7 +35,7 @@ public interface ICommerceCustomerNotifier
     /// Tells the customer their payment proof was rejected, quoting the review
     /// notes, so a corrected payment can be sent.
     /// </summary>
-    /// <param name="order">The order whose payment was rejected; must carry <c>Customer</c>.</param>
+    /// <param name="order">The order whose payment was rejected.</param>
     /// <param name="notes">The reviewer notes explaining the rejection, or <c>null</c> when none were provided.</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
     Task NotifyPaymentRejectedAsync(ContentOrderEntity order, string? notes, CancellationToken cancellationToken);

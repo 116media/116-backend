@@ -53,7 +53,8 @@ public class PlaylistMapperTests(PostgresFixture postgres) : BaseRepositoryTest(
         seedContext.Categories.Add(category);
         await seedContext.SaveChangesAsync();
 
-        var video = VideoFactory.Create(category.Id);
+        // Only published videos surface in a playlist projection, so the entry must be published.
+        var video = VideoFactory.CreatePublished(category.Id);
         video.WithShareCount(1);
         seedContext.Videos.Add(video);
         await seedContext.SaveChangesAsync();
@@ -62,14 +63,11 @@ public class PlaylistMapperTests(PostgresFixture postgres) : BaseRepositoryTest(
         seedContext.Playlists.Add(playlist);
         await seedContext.SaveChangesAsync();
 
-        seedContext.PlaylistVideos.Add(PlaylistVideoEntity.Create(Guid.NewGuid(), playlist.Id, video.Id, sortOrder: 1));
+        seedContext.Playlists.Attach(playlist).Entity.AddVideo(videoId: video.Id, sortOrder: 1);
         await seedContext.SaveChangesAsync();
 
         await using var readContext = CreateDbContext<ContentDbContext>();
-        PlaylistEntity loaded = await readContext
-            .Playlists.Include(p => p.Videos)
-                .ThenInclude(pv => pv.Video)
-            .FirstAsync(p => p.Id == playlist.Id);
+        PlaylistEntity loaded = await readContext.Playlists.Include(p => p.Videos).FirstAsync(p => p.Id == playlist.Id);
 
         var playlistDtoFactory = Resolve<IPlaylistDtoFactory>();
         PlaylistDetailDto dto = await playlistDtoFactory.CreateDetailAsync(loaded);
@@ -89,10 +87,7 @@ public class PlaylistMapperTests(PostgresFixture postgres) : BaseRepositoryTest(
         await seedContext.SaveChangesAsync();
 
         await using var readContext = CreateDbContext<ContentDbContext>();
-        PlaylistEntity loaded = await readContext
-            .Playlists.Include(p => p.Videos)
-                .ThenInclude(pv => pv.Video)
-            .FirstAsync(p => p.Id == playlist.Id);
+        PlaylistEntity loaded = await readContext.Playlists.Include(p => p.Videos).FirstAsync(p => p.Id == playlist.Id);
 
         var playlistDtoFactory = Resolve<IPlaylistDtoFactory>();
         PlaylistDetailDto dto = await playlistDtoFactory.CreateDetailAsync(loaded);

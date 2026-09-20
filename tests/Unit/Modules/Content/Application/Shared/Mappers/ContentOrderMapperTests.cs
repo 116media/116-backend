@@ -14,12 +14,29 @@ namespace _116.Unit.Tests.Modules.Content.Application.Shared.Mappers;
 /// </summary>
 public class ContentOrderMapperTests : BaseContentHandlerTest
 {
+    private readonly CustomerEntity _customer = CustomerFactory.Create();
+
     /// <summary>
-    /// Creates an order carrying the Customer navigation EF Core would populate, so the mapper
-    /// can read Customer.FullName.
+    /// Creates an order placed by the shared customer, whose row the mapper reads from lookups.
     /// </summary>
-    private static ContentOrderEntity CreateOrderWithCustomer() =>
-        new ContentOrderBuilder().WithCustomer(CustomerFactory.Create()).Build();
+    private ContentOrderEntity CreateOrderWithCustomer() => new ContentOrderBuilder().WithCustomer(_customer).Build();
+
+    /// <summary>
+    /// The resolved customer rows, keyed by id, as the DTO factory hands them to the mapper.
+    /// </summary>
+    private IReadOnlyDictionary<Guid, CustomerEntity> Customers =>
+        new Dictionary<Guid, CustomerEntity> { [_customer.Id] = _customer };
+
+    /// <summary>
+    /// The lookups an order detail projection reads; only customers are populated here.
+    /// </summary>
+    private OrderLookups Lookups =>
+        new(
+            Customers: Customers,
+            Categories: new Dictionary<Guid, CategoryEntity>(),
+            PromotionLevels: new Dictionary<Guid, PromotionLevelEntity>(),
+            PricingTiers: new Dictionary<Guid, PricingTierEntity>()
+        );
 
     #region ToContentOrderSummaryDto
 
@@ -30,10 +47,10 @@ public class ContentOrderMapperTests : BaseContentHandlerTest
         ContentOrderEntity order = CreateOrderWithCustomer();
 
         // Act
-        var dto = order.ToContentOrderSummaryDto(Mapper);
+        var dto = order.ToContentOrderSummaryDto(Mapper, Customers);
 
         // Assert
-        dto.CustomerName.Should().Be(order.Customer.FullName);
+        dto.CustomerName.Should().Be(_customer.FullName);
     }
 
     [Fact]
@@ -43,7 +60,7 @@ public class ContentOrderMapperTests : BaseContentHandlerTest
         ContentOrderEntity order = CreateOrderWithCustomer();
 
         // Act
-        var dto = order.ToContentOrderSummaryDto(Mapper);
+        var dto = order.ToContentOrderSummaryDto(Mapper, Customers);
 
         // Assert
         dto.ItemCount.Should().Be(order.Items.Count);
@@ -56,7 +73,7 @@ public class ContentOrderMapperTests : BaseContentHandlerTest
         ContentOrderEntity order = CreateOrderWithCustomer();
 
         // Act
-        var dto = order.ToContentOrderSummaryDto(Mapper);
+        var dto = order.ToContentOrderSummaryDto(Mapper, Customers);
 
         // Assert
         dto.Id.Should().Be(order.Id);
@@ -75,7 +92,7 @@ public class ContentOrderMapperTests : BaseContentHandlerTest
         ContentOrderEntity order = CreateOrderWithCustomer();
 
         // Act
-        var dto = order.ToContentOrderDetailDto(Mapper);
+        var dto = order.ToContentOrderDetailDto(Mapper, Lookups);
 
         // Assert
         dto.Id.Should().Be(order.Id);
@@ -90,10 +107,10 @@ public class ContentOrderMapperTests : BaseContentHandlerTest
         ContentOrderEntity order = CreateOrderWithCustomer();
 
         // Act
-        var dto = order.ToContentOrderDetailDto(Mapper);
+        var dto = order.ToContentOrderDetailDto(Mapper, Lookups);
 
         // Assert
-        dto.CustomerName.Should().Be(order.Customer.FullName);
+        dto.CustomerName.Should().Be(_customer.FullName);
     }
 
     [Fact]
@@ -103,7 +120,7 @@ public class ContentOrderMapperTests : BaseContentHandlerTest
         ContentOrderEntity order = CreateOrderWithCustomer();
 
         // Act
-        var dto = order.ToContentOrderDetailDto(Mapper);
+        var dto = order.ToContentOrderDetailDto(Mapper, Lookups);
 
         // Assert
         dto.CustomerId.Should().Be(order.CustomerId);
@@ -116,7 +133,7 @@ public class ContentOrderMapperTests : BaseContentHandlerTest
         ContentOrderEntity order = CreateOrderWithCustomer();
 
         // Act
-        var dto = order.ToContentOrderDetailDto(Mapper);
+        var dto = order.ToContentOrderDetailDto(Mapper, Lookups);
 
         // Assert
         dto.PackageId.Should().Be(order.PackageId);
@@ -133,26 +150,23 @@ public class ContentOrderMapperTests : BaseContentHandlerTest
         List<ContentOrderEntity> orders = [CreateOrderWithCustomer(), CreateOrderWithCustomer()];
 
         // Act
-        IReadOnlyList<ContentOrderSummaryDto> dtos = orders.ToContentOrderSummaryDtos(Mapper);
+        IReadOnlyList<ContentOrderSummaryDto> dtos = orders.ToContentOrderSummaryDtos(Mapper, Customers);
 
         // Assert
         dtos.Should().HaveCount(2);
-        dtos[0].CustomerName.Should().Be(orders[0].Customer.FullName);
-        dtos[1].CustomerName.Should().Be(orders[1].Customer.FullName);
+        dtos[0].CustomerName.Should().Be(_customer.FullName);
+        dtos[1].CustomerName.Should().Be(_customer.FullName);
     }
 
     [Fact]
     public void ToContentOrderDetailDto_ShouldMapPayment_WhenPaymentExists()
     {
         // Arrange
-        ContentPaymentEntity payment = ContentPaymentFactory.Create(Guid.NewGuid());
-        ContentOrderEntity order = new ContentOrderBuilder()
-            .WithCustomer(CustomerFactory.Create())
-            .WithPayment(payment)
-            .Build();
+        ContentOrderEntity order = CreateOrderWithCustomer();
+        ContentPaymentEntity payment = order.AttachPayment();
 
         // Act
-        var dto = order.ToContentOrderDetailDto(Mapper);
+        var dto = order.ToContentOrderDetailDto(Mapper, Lookups);
 
         // Assert
         dto.Payment.Should().NotBeNull();

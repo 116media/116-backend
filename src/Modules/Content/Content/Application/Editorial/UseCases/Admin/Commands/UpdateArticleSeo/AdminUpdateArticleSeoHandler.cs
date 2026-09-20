@@ -19,7 +19,8 @@ public class AdminUpdateArticleSeoHandler(
     IArticleRepository articleRepository,
     IContentUnitOfWork unitOfWork,
     IFileStorageService fileStorage,
-    IMapper mapper
+    IMapper mapper,
+    IContentLookupFactory contentLookupFactory
 ) : ICommandHandler<AdminUpdateArticleSeoCommand, AdminUpdateArticleSeoResult>
 {
     /// <inheritdoc />
@@ -35,7 +36,7 @@ public class AdminUpdateArticleSeoHandler(
             cancellationToken: cancellationToken
         );
 
-        article.UpdateSeo(metaTitle: command.MetaTitle, metaDescription: command.MetaDescription);
+        article.ReviseSeo(metaTitle: command.MetaTitle, metaDescription: command.MetaDescription);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         ArticleEntity updated = await articleRepository.GetByIdOrThrowAsync(
@@ -43,7 +44,12 @@ public class AdminUpdateArticleSeoHandler(
             cancellationToken: cancellationToken
         );
 
-        var dto = await updated.ToArticleDetailDtoAsync(mapper, fileStorage, cancellationToken);
+        var dto = await updated.ToArticleDetailDtoAsync(
+            mapper,
+            await contentLookupFactory.ResolveForArticlesAsync([updated], cancellationToken),
+            fileStorage,
+            cancellationToken
+        );
         return new AdminUpdateArticleSeoResult(Article: dto);
     }
 }

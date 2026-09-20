@@ -1,4 +1,5 @@
 using _116.Content.Application.Editorial.Constants;
+using _116.Content.Application.Editorial.Specifications;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -69,17 +70,18 @@ public class PublicVoteOnTranslationRevisionHandler(
 
         int netApprovals = netApprovalsBeforeThisVote + (command.Vote == EnumVote.Approve ? 1 : -1);
 
-        if (netApprovals >= TranslationConstants.AutoAcceptThreshold && revision.Status == EnumRevisionStatus.Pending)
-        {
-            revision.Accept(decidedByUserId: null);
-            revisionRepository.Update(revision: revision);
+        bool isStillPending = new PendingTranslationRevisionSpecification().IsSatisfiedBy(revision);
 
-            LyricsTranslationEntity translation = await translationRepository.GetByIdOrThrowAsync(
-                id: revision.TranslationId,
-                cancellationToken: cancellationToken
-            );
-            translation.ApplyAcceptedRevision(newText: revision.ProposedText);
-            translationRepository.Update(translation: translation);
+        if (netApprovals >= TranslationConstants.AutoAcceptThreshold && isStillPending)
+        {
+            if (revision.Accept(decidedByUserId: null))
+            {
+                LyricsTranslationEntity translation = await translationRepository.GetByIdOrThrowAsync(
+                    id: revision.TranslationId,
+                    cancellationToken: cancellationToken
+                );
+                translation.ApplyAcceptedRevision(newText: revision.ProposedText);
+            }
         }
 
         // Both the revision's acceptance and the translation's applied text commit together in

@@ -35,7 +35,7 @@ public class ShortVideoShareConfiguration : IEntityTypeConfiguration<ShortVideoS
             .HasDatabaseName("ix_short_video_shares_user_created_short");
 
         builder
-            .HasOne(x => x.ShortVideo)
+            .HasOne<ShortVideoEntity>()
             .WithMany()
             .HasForeignKey(x => x.ShortVideoId)
             .OnDelete(DeleteBehavior.Cascade);

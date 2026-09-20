@@ -75,7 +75,7 @@ public class AdminUpdatePromotionLevelEndpointV1Tests(PostgresFixture db) : Base
         PromotionLevelEntity? persisted = await context.PromotionLevels.FindAsync(promotionLevel.Id);
         persisted!.Name.Should().Be(request.Name);
         persisted.DurationDays.Should().Be(request.DurationDays);
-        persisted.PriceUsd.Should().Be(request.PriceUsd);
+        persisted.PriceUsd.Amount.Should().Be(request.PriceUsd);
     }
 
     [Fact]

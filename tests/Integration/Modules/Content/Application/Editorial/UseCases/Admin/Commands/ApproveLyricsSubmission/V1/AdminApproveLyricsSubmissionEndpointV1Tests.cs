@@ -87,7 +87,7 @@ public class AdminApproveLyricsSubmissionEndpointV1Tests(PostgresFixture db) : B
         LyricsSubmissionEntity? persistedSubmission = await ctx.LyricsSubmissions.FindAsync(submission.Id);
 
         persistedLyrics.Should().NotBeNull();
-        persistedLyrics!.Slug.Should().Be("eloko-oyo-approved");
+        persistedLyrics!.Slug.Value.Should().Be("eloko-oyo-approved");
         persistedLyrics.SongTitle.Should().Be("Eloko Oyo");
         persistedLyrics.ArtistName.Should().Be("Fally Ipupa");
         persistedLyrics.LyricsText.Should().Be(submission.LyricsText);

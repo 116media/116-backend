@@ -45,25 +45,16 @@ public class AdminUpdateArticleTagsHandlerTests
         // Arrange
         ArticleEntity article = ArticleFactory.Create(CategoryId);
         TagEntity existingTag = TagFactory.Create();
-        var existingArticleTag = ArticleTagEntity.Create(
-            id: Guid.NewGuid(),
-            articleId: article.Id,
-            tagId: existingTag.Id
-        );
+        article.ReplaceTags([existingTag.Id]);
         var command = new AdminUpdateArticleTagsCommand(ArticleId: article.Id.ToString(), TagNames: new List<string>());
 
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
-        _articleRepositoryMock.SetupGetTagsByArticleId(article.Id, new List<ArticleTagEntity> { existingArticleTag });
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _articleRepositoryMock.Verify(x => x.RemoveTag(existingArticleTag), Times.Once);
-        _articleRepositoryMock.Verify(
-            x => x.AddTagAsync(It.IsAny<ArticleTagEntity>(), It.IsAny<CancellationToken>()),
-            Times.Never
-        );
+        article.Tags.Should().BeEmpty();
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -81,21 +72,15 @@ public class AdminUpdateArticleTagsHandlerTests
         );
 
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
-        _articleRepositoryMock.SetupGetTagsByArticleId(article.Id, new List<ArticleTagEntity>());
         _tagRepositoryMock.SetupGetTagByName("Fally Ipupa", tag1);
         _tagRepositoryMock.SetupGetTagByName("Kinshasa", tag2);
-
-        var linked = new List<ArticleTagEntity>();
-        _articleRepositoryMock
-            .Setup(x => x.AddTagAsync(Capture.In(linked), It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        linked.Select(t => t.TagId).Should().Equal(tag1.Id, tag2.Id);
-        linked.Should().OnlyContain(t => t.ArticleId == article.Id);
+        article.Tags.Select(t => t.TagId).Should().BeEquivalentTo([tag1.Id, tag2.Id]);
+        article.Tags.Should().OnlyContain(t => t.ArticleId == article.Id);
         _tagRepositoryMock.VerifyAddTagNotCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -112,18 +97,12 @@ public class AdminUpdateArticleTagsHandlerTests
         );
 
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
-        _articleRepositoryMock.SetupGetTagsByArticleId(article.Id, new List<ArticleTagEntity>());
         _tagRepositoryMock.SetupGetTagByName("Afrobeats", null);
         _tagRepositoryMock.SetupGetTagByName("Rumba", null);
 
         var created = new List<TagEntity>();
         _tagRepositoryMock
             .Setup(x => x.AddAsync(Capture.In(created), It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask);
-
-        var linked = new List<ArticleTagEntity>();
-        _articleRepositoryMock
-            .Setup(x => x.AddTagAsync(Capture.In(linked), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
         // Act
@@ -143,7 +122,7 @@ public class AdminUpdateArticleTagsHandlerTests
             x => x.AddAsync(It.IsAny<TagEntity>(), It.IsAny<CancellationToken>()),
             Times.Exactly(2)
         );
-        linked.Select(t => t.TagId).Should().Equal(created.Select(t => t.Id));
+        article.Tags.Select(t => t.TagId).Should().BeEquivalentTo(created.Select(t => t.Id));
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -160,18 +139,12 @@ public class AdminUpdateArticleTagsHandlerTests
         );
 
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
-        _articleRepositoryMock.SetupGetTagsByArticleId(article.Id, new List<ArticleTagEntity>());
         _tagRepositoryMock.SetupGetTagByName("Fally Ipupa", existingTag);
         _tagRepositoryMock.SetupGetTagByName("NewArtist", null);
 
         var created = new List<TagEntity>();
         _tagRepositoryMock
             .Setup(x => x.AddAsync(Capture.In(created), It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask);
-
-        var linked = new List<ArticleTagEntity>();
-        _articleRepositoryMock
-            .Setup(x => x.AddTagAsync(Capture.In(linked), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
         // Act
@@ -184,7 +157,7 @@ public class AdminUpdateArticleTagsHandlerTests
             Times.Once
         );
         _tagRepositoryMock.Verify(x => x.AddAsync(It.IsAny<TagEntity>(), It.IsAny<CancellationToken>()), Times.Once);
-        linked.Select(t => t.TagId).Should().Equal(existingTag.Id, created[0].Id);
+        article.Tags.Select(t => t.TagId).Should().BeEquivalentTo([existingTag.Id, created[0].Id]);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -200,7 +173,6 @@ public class AdminUpdateArticleTagsHandlerTests
         );
 
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
-        _articleRepositoryMock.SetupGetTagsByArticleId(article.Id, new List<ArticleTagEntity>());
         _tagRepositoryMock.SetupGetTagByName("Café & Crème", null);
 
         var created = new List<TagEntity>();
@@ -214,7 +186,7 @@ public class AdminUpdateArticleTagsHandlerTests
         // Assert
         created.Should().ContainSingle();
         created[0].Name.Should().Be("Café & Crème");
-        created[0].Slug.Should().StartWith("cafe-creme-");
+        created[0].Slug.Value.Should().StartWith("cafe-creme-");
         _tagRepositoryMock.Verify(
             x =>
                 x.GetByNamesAsync(
@@ -231,7 +203,7 @@ public class AdminUpdateArticleTagsHandlerTests
         // Arrange
         ArticleEntity article = ArticleFactory.Create(CategoryId);
         TagEntity oldTag = TagFactory.Create();
-        var existingArticleTag = ArticleTagEntity.Create(id: Guid.NewGuid(), articleId: article.Id, tagId: oldTag.Id);
+        article.ReplaceTags([oldTag.Id]);
 
         TagEntity newTag = TagFactory.Create("Kinshasa", "kinshasa");
 
@@ -241,23 +213,13 @@ public class AdminUpdateArticleTagsHandlerTests
         );
 
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
-        _articleRepositoryMock.SetupGetTagsByArticleId(article.Id, new List<ArticleTagEntity> { existingArticleTag });
         _tagRepositoryMock.SetupGetTagByName("Kinshasa", newTag);
-
-        var callOrder = new List<string>();
-        _articleRepositoryMock.Setup(x => x.RemoveTag(existingArticleTag)).Callback(() => callOrder.Add("remove"));
-        _articleRepositoryMock
-            .Setup(x =>
-                x.AddTagAsync(It.Is<ArticleTagEntity>(t => t.TagId == newTag.Id), It.IsAny<CancellationToken>())
-            )
-            .Callback(() => callOrder.Add("add"))
-            .Returns(Task.CompletedTask);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        callOrder.Should().Equal("remove", "add");
+        article.Tags.Select(t => t.TagId).Should().BeEquivalentTo([newTag.Id]);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -299,11 +261,6 @@ public class AdminUpdateArticleTagsHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
-        _articleRepositoryMock.Verify(x => x.RemoveTag(It.IsAny<ArticleTagEntity>()), Times.Never);
-        _articleRepositoryMock.Verify(
-            x => x.AddTagAsync(It.IsAny<ArticleTagEntity>(), It.IsAny<CancellationToken>()),
-            Times.Never
-        );
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
 

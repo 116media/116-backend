@@ -33,10 +33,13 @@ public class LyricsMapperTests(PostgresFixture postgres) : BaseRepositoryTest(po
         await seedContext.SaveChangesAsync();
 
         await using var readContext = CreateDbContext<ContentDbContext>();
-        LyricsEntity loaded = await readContext.Lyrics.Include(l => l.Category).FirstAsync(l => l.Id == lyrics.Id);
+        LyricsEntity loaded = await readContext.Lyrics.FirstAsync(l => l.Id == lyrics.Id);
 
         var fileStorage = Resolve<IFileStorageService>();
-        LyricsSummaryDto dto = await loaded.ToLyricsSummaryDtoAsync(fileStorage);
+        LyricsSummaryDto dto = await loaded.ToLyricsSummaryDtoAsync(
+            await Resolve<IContentLookupFactory>().ResolveForLyricsAsync([loaded]),
+            fileStorage
+        );
 
         dto.Id.Should().Be(loaded.Id);
         dto.CategoryId.Should().Be(category.Id);
@@ -72,7 +75,10 @@ public class LyricsMapperTests(PostgresFixture postgres) : BaseRepositoryTest(po
         LyricsEntity loaded = await readContext.Lyrics.FirstAsync(l => l.Id == lyrics.Id);
 
         var fileStorage = Resolve<IFileStorageService>();
-        LyricsSummaryDto dto = await loaded.ToLyricsSummaryDtoAsync(fileStorage);
+        LyricsSummaryDto dto = await loaded.ToLyricsSummaryDtoAsync(
+            await Resolve<IContentLookupFactory>().ResolveForLyricsAsync([loaded]),
+            fileStorage
+        );
 
         dto.VideoId.Should().Be(video.Id);
     }
@@ -95,10 +101,15 @@ public class LyricsMapperTests(PostgresFixture postgres) : BaseRepositoryTest(po
         await seedContext.SaveChangesAsync();
 
         await using var readContext = CreateDbContext<ContentDbContext>();
-        List<LyricsEntity> loaded = await readContext.Lyrics.Include(l => l.Category).ToListAsync();
+        List<LyricsEntity> loaded = await readContext.Lyrics.ToListAsync();
 
         var fileStorage = Resolve<IFileStorageService>();
-        IReadOnlyList<LyricsSummaryDto> dtos = await loaded.AsReadOnly().ToLyricsSummaryDtosAsync(fileStorage);
+        IReadOnlyList<LyricsSummaryDto> dtos = await loaded
+            .AsReadOnly()
+            .ToLyricsSummaryDtosAsync(
+                await Resolve<IContentLookupFactory>().ResolveForLyricsAsync(loaded),
+                fileStorage
+            );
 
         dtos.Should().HaveCount(2);
         dtos.Select(d => d.SongTitle).Should().BeEquivalentTo(["Song One", "Song Two"]);
@@ -121,15 +132,17 @@ public class LyricsMapperTests(PostgresFixture postgres) : BaseRepositoryTest(po
         await seedContext.SaveChangesAsync();
 
         await using var readContext = CreateDbContext<ContentDbContext>();
-        LyricsEntity loaded = await readContext
-            .Lyrics.Include(l => l.Category)
-            .Include(l => l.Customer)
-            .FirstAsync(l => l.Id == lyrics.Id);
+        LyricsEntity loaded = await readContext.Lyrics.FirstAsync(l => l.Id == lyrics.Id);
 
         var mapper = Resolve<IMapper>();
         var userLookup = Resolve<IUserLookupService>();
         var fileStorage = Resolve<IFileStorageService>();
-        LyricsDetailDto dto = await loaded.ToLyricsDetailDtoAsync(mapper, userLookup, fileStorage);
+        LyricsDetailDto dto = await loaded.ToLyricsDetailDtoAsync(
+            await Resolve<IContentLookupFactory>().ResolveForLyricsAsync([loaded]),
+            mapper,
+            userLookup,
+            fileStorage
+        );
 
         dto.Id.Should().Be(loaded.Id);
         dto.CategoryName.Should().Be("Culture");

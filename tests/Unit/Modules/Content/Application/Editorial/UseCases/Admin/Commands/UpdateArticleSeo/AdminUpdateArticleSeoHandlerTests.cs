@@ -42,7 +42,8 @@ public class AdminUpdateArticleSeoHandlerTests : BaseContentHandlerTest
             _articleRepositoryMock.Object,
             _unitOfWorkMock.Object,
             _fileStorageMock.Object,
-            Mapper
+            Mapper,
+            CreateContentLookupFactory()
         );
     }
 

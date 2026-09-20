@@ -29,10 +29,7 @@ public class OrderPaidReceiptEmailHandler(
             ct: cancellationToken
         );
 
-        ContentPaymentEntity? payment = await contentOrderRepository.GetPaymentByOrderIdAsync(
-            orderId: domainEvent.OrderId,
-            ct: cancellationToken
-        );
+        ContentPaymentEntity? payment = order?.Payment;
 
         if (order is null || payment is null)
         {

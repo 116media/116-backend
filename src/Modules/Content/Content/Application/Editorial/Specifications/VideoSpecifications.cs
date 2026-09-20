@@ -69,12 +69,15 @@ public class VideoByArtistSpecification(Guid artistId) : Specification<VideoEnti
 /// <summary>
 /// Specification that matches videos carrying a tag with the given slug (case-insensitive).
 /// </summary>
-public class VideoByTagSlugSpecification(string tagSlug) : Specification<VideoEntity>
+public class VideoByTagSlugSpecification(string tagSlug, IQueryable<TagEntity> tags) : Specification<VideoEntity>
 {
     /// <inheritdoc />
     public override Expression<Func<VideoEntity, bool>> ToExpression()
     {
-        return video => video.Tags.Any(videoTag => EF.Functions.ILike(videoTag.Tag.Slug, tagSlug));
+        return video =>
+            video.Tags.Any(videoTag =>
+                tags.Any(tag => tag.Id == videoTag.TagId && EF.Functions.ILike(tag.Slug, tagSlug))
+            );
     }
 }
 
@@ -140,18 +143,6 @@ public class VideoByOrderItemIdSpecification(Guid orderItemId) : Specification<V
 }
 
 /// <summary>
-/// Specification that matches video tags belonging to a specific video.
-/// </summary>
-public class VideoTagByVideoIdSpecification(Guid videoId) : Specification<VideoTagEntity>
-{
-    /// <inheritdoc />
-    public override Expression<Func<VideoTagEntity, bool>> ToExpression()
-    {
-        return tag => tag.VideoId == videoId;
-    }
-}
-
-/// <summary>
 /// Specification that matches a video rating by user and video identifiers.
 /// </summary>
 public class VideoRatingByUserAndVideoSpecification(Guid userId, Guid videoId) : Specification<VideoRatingEntity>
@@ -179,7 +170,8 @@ public class VideoRatingByVideoIdSpecification(Guid videoId) : Specification<Vid
 /// Specification that matches promoted published videos assigned to a specific promotion spot
 /// via their associated <see cref="PromotionLevelEntity.SpotPriority" />.
 /// </summary>
-public class VideoBySpotPrioritySpecification(int spotPriority) : Specification<VideoEntity>
+public class VideoBySpotPrioritySpecification(int spotPriority, IQueryable<PromotionLevelEntity> promotionLevels)
+    : Specification<VideoEntity>
 {
     /// <inheritdoc />
     public override Expression<Func<VideoEntity, bool>> ToExpression()
@@ -189,8 +181,7 @@ public class VideoBySpotPrioritySpecification(int spotPriority) : Specification<
             video.IsPromoted
             && video.Status == EnumContentStatus.Published
             && (video.PromotedUntil == null || video.PromotedUntil > now)
-            && video.PromotionLevel != null
-            && video.PromotionLevel.SpotPriority == spotPriority;
+            && promotionLevels.Any(level => level.Id == video.PromotionLevelId && level.SpotPriority == spotPriority);
     }
 }
 

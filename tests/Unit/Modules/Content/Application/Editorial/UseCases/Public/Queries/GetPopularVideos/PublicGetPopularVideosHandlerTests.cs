@@ -39,7 +39,12 @@ public class PublicGetPopularVideosHandlerTests : BaseContentHandlerTest
         _fileStorageMock.SetupResolve(thumbnailFile);
         _handler = new PublicGetPopularVideosHandler(
             _videoRepositoryMock.Object,
-            new VideoDtoFactory(Mapper, _fileStorageMock.Object)
+            new VideoDtoFactory(
+                Mapper,
+                _fileStorageMock.Object,
+                _videoRepositoryMock.Object,
+                CreateContentLookupFactory()
+            )
         );
     }
 

@@ -27,22 +27,26 @@ public class AdminRemoveOrderItemHandler(
         Guid orderId = Guid.Parse(command.OrderId);
         Guid itemId = Guid.Parse(command.ItemId);
 
-        ContentOrderEntity order =
-            await contentOrderRepository.GetByIdWithItemsAsync(id: orderId, ct: cancellationToken)
-            ?? throw i18n.ContentOrder.NotFound(id: orderId);
-
-        order.EnsureDraft();
-
-        ContentOrderItemEntity item = await contentOrderRepository.GetItemByIdOrThrowAsync(
-            orderId: orderId,
-            itemId: itemId,
+        ContentOrderEntity? order = await contentOrderRepository.GetByIdWithItemsAsync(
+            id: orderId,
             ct: cancellationToken
         );
 
-        // Same scope, so this is the tracked instance inside order.Items; the navigation removal
-        // recalculates the total and the repository call deletes the row, in one transaction.
+        if (order is null)
+        {
+            throw i18n.ContentOrder.NotFound(id: orderId);
+        }
+
+        order.EnsureDraft();
+
+        ContentOrderItemEntity? item = order.FindItem(itemId: itemId);
+
+        if (item is null)
+        {
+            throw i18n.ContentOrder.ItemNotFound(itemId: itemId);
+        }
+
         order.RemoveItem(item);
-        await contentOrderRepository.RemoveItemAsync(item: item, ct: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminRemoveOrderItemResult(IsSuccess: true);

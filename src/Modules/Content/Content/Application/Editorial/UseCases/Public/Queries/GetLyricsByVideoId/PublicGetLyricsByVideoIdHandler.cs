@@ -1,3 +1,4 @@
+using _116.Content.Application.Editorial.Specifications;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
@@ -24,7 +25,8 @@ public class PublicGetLyricsByVideoIdHandler(
     IMapper mapper,
     IUserLookupService userLookup,
     IFileStorageService fileStorage,
-    ContentI18n i18n
+    ContentI18n i18n,
+    IContentLookupFactory contentLookupFactory
 ) : IQueryHandler<PublicGetLyricsByVideoIdQuery, PublicGetLyricsByVideoIdResult>
 {
     /// <inheritdoc />
@@ -40,7 +42,9 @@ public class PublicGetLyricsByVideoIdHandler(
             cancellationToken: cancellationToken
         );
 
-        if (lyrics is not null && lyrics.Status == EnumContentStatus.Published)
+        var published = new LyricsByStatusSpecification(status: EnumContentStatus.Published);
+
+        if (lyrics is not null && published.IsSatisfiedBy(lyrics))
         {
             bool isLiked =
                 query.CurrentUserId is Guid currentUserId
@@ -51,6 +55,7 @@ public class PublicGetLyricsByVideoIdHandler(
                 );
 
             var dto = await lyrics.ToPublicLyricsDetailDtoAsync(
+                await contentLookupFactory.ResolveForLyricsAsync([lyrics], cancellationToken),
                 mapper,
                 userLookup,
                 fileStorage,
