@@ -55,7 +55,7 @@ public class AdminDeactivatePermissionEndpointV1 : ICarterModule
             .WithSummary(summary: AdminDeactivatePermissionMetaField.DeactivatePermission.Summary)
             .WithDescription(description: AdminDeactivatePermissionMetaField.DeactivatePermission.Description)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentManagement)
             .ProducesValidationProblem()
             .Produces<AdminDeactivatePermissionResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
