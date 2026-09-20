@@ -65,7 +65,7 @@ public class AdminRejectLyricsEndpointV1 : ICarterModule
             .WithDescription(description: AdminRejectLyricsMetaField.RejectLyrics.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentManagement)
             .ProducesValidationProblem()
             .Produces<AdminRejectLyricsResponse>(statusCode: StatusCodes.Status200OK)
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
