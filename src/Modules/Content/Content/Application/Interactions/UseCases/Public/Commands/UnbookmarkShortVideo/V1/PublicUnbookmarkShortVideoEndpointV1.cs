@@ -14,12 +14,6 @@ using Microsoft.AspNetCore.Routing;
 namespace _116.Content.Application.Interactions.UseCases.Public.Commands.UnbookmarkShortVideo.V1;
 
 /// <summary>
-/// Response model for a successful PublicUnbookmarkShortVideo operation.
-/// </summary>
-/// <param name="IsSuccess">Indicates if the operation was successful.</param>
-public record PublicUnbookmarkShortVideoResponse(bool IsSuccess);
-
-/// <summary>
 /// Defines the unbookmark short video endpoint.
 /// </summary>
 public class PublicUnbookmarkShortVideoEndpointV1 : ICarterModule
@@ -46,21 +40,16 @@ public class PublicUnbookmarkShortVideoEndpointV1 : ICarterModule
                     Guid userId = claimsProvider.GetUserIdFromClaims(user: user);
 
                     var command = new PublicUnbookmarkShortVideoCommand(ShortVideoId: shortVideoId, UserId: userId);
-                    PublicUnbookmarkShortVideoResult result = await dispatcher.Send(
-                        request: command,
-                        cancellationToken: cancellationToken
-                    );
-
-                    var response = new PublicUnbookmarkShortVideoResponse(IsSuccess: result.IsSuccess);
-                    return Results.Ok(response);
+                    await dispatcher.Send(request: command, cancellationToken: cancellationToken);
+                    return Results.NoContent();
                 }
             )
             .WithName(endpointName: PublicUnbookmarkShortVideoMetaField.UnbookmarkShortVideo.Name)
             .WithSummary(summary: PublicUnbookmarkShortVideoMetaField.UnbookmarkShortVideo.Summary)
             .WithDescription(description: PublicUnbookmarkShortVideoMetaField.UnbookmarkShortVideo.Description)
             .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
-            .Produces<PublicUnbookmarkShortVideoResponse>(statusCode: StatusCodes.Status200OK)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentContribution)
+            .Produces(statusCode: StatusCodes.Status204NoContent)
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
             .ProducesProblem(statusCode: StatusCodes.Status404NotFound)
