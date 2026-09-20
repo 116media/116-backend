@@ -12,12 +12,6 @@ using Microsoft.AspNetCore.Routing;
 namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.DeleteTag.V1;
 
 /// <summary>
-/// Response model for a successful tag deletion.
-/// </summary>
-/// <param name="IsSuccess">Indicates if the operation was successful.</param>
-public record AdminDeleteTagResponse(bool IsSuccess);
-
-/// <summary>
 /// Defines the admin delete tag endpoint.
 /// Handles permanent hard deletion of content discovery tags.
 /// </summary>
@@ -40,13 +34,8 @@ public class AdminDeleteTagEndpointV1 : ICarterModule
                 async (string id, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var command = new AdminDeleteTagCommand(Id: id);
-                    AdminDeleteTagResult result = await dispatcher.Send(
-                        request: command,
-                        cancellationToken: cancellationToken
-                    );
-
-                    var response = new AdminDeleteTagResponse(IsSuccess: result.IsSuccess);
-                    return Results.Ok(response);
+                    await dispatcher.Send(request: command, cancellationToken: cancellationToken);
+                    return Results.NoContent();
                 }
             )
             .WithName(endpointName: AdminDeleteTagMetaField.DeleteTag.Name)
@@ -54,8 +43,8 @@ public class AdminDeleteTagEndpointV1 : ICarterModule
             .WithDescription(description: AdminDeleteTagMetaField.DeleteTag.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
-            .Produces<AdminDeleteTagResponse>(statusCode: StatusCodes.Status200OK)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentManagement)
+            .Produces(statusCode: StatusCodes.Status204NoContent)
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
             .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)
