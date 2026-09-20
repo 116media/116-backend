@@ -2,6 +2,7 @@ using System.Security.Claims;
 using _116.BuildingBlocks.Constants.Authorization.Policies;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Content.Application.Editorial.Constants;
+using _116.Content.Domain.Constants;
 using _116.Identity.Contracts.Application.Services;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
@@ -32,8 +33,8 @@ public class PublicRequestArtistClaimEndpointV1 : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         RouteGroupBuilder group = app.MapApiVersionGroup(1)
-            .MapGroup($"{EditorialRouteConstants.Artists}")
-            .WithTags(EditorialRouteConstants.Artists);
+            .MapGroup($"{ContentConstants.Public}/{EditorialRouteConstants.Artists}")
+            .WithTags($"{ContentConstants.Public}::{EditorialRouteConstants.Artists}");
 
         group
             .MapPost(
@@ -62,7 +63,7 @@ public class PublicRequestArtistClaimEndpointV1 : ICarterModule
             .WithSummary(summary: PublicRequestArtistClaimMetaField.RequestArtistClaim.Summary)
             .WithDescription(description: PublicRequestArtistClaimMetaField.RequestArtistClaim.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentContribution)
             .Produces<PublicRequestArtistClaimResponse>(statusCode: StatusCodes.Status200OK)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
             .ProducesProblem(statusCode: StatusCodes.Status404NotFound)
