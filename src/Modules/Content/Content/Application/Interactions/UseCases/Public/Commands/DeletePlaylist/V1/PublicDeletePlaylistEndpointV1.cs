@@ -14,12 +14,6 @@ using Microsoft.AspNetCore.Routing;
 namespace _116.Content.Application.Interactions.UseCases.Public.Commands.DeletePlaylist.V1;
 
 /// <summary>
-/// Response model for a successful PublicDeletePlaylist operation.
-/// </summary>
-/// <param name="IsSuccess">Indicates if the operation was successful.</param>
-public record PublicDeletePlaylistResponse(bool IsSuccess);
-
-/// <summary>
 /// Defines the delete playlist endpoint.
 /// </summary>
 public class PublicDeletePlaylistEndpointV1 : ICarterModule
@@ -46,21 +40,16 @@ public class PublicDeletePlaylistEndpointV1 : ICarterModule
                     Guid userId = claimsProvider.GetUserIdFromClaims(user: user);
 
                     var command = new PublicDeletePlaylistCommand(Id: playlistId, UserId: userId);
-                    PublicDeletePlaylistResult result = await dispatcher.Send(
-                        request: command,
-                        cancellationToken: cancellationToken
-                    );
-
-                    var response = new PublicDeletePlaylistResponse(IsSuccess: result.IsSuccess);
-                    return Results.Ok(response);
+                    await dispatcher.Send(request: command, cancellationToken: cancellationToken);
+                    return Results.NoContent();
                 }
             )
             .WithName(endpointName: PublicDeletePlaylistMetaField.DeletePlaylist.Name)
             .WithSummary(summary: PublicDeletePlaylistMetaField.DeletePlaylist.Summary)
             .WithDescription(description: PublicDeletePlaylistMetaField.DeletePlaylist.Description)
             .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
-            .Produces<PublicDeletePlaylistResponse>(statusCode: StatusCodes.Status200OK)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentContribution)
+            .Produces(statusCode: StatusCodes.Status204NoContent)
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
             .ProducesProblem(statusCode: StatusCodes.Status404NotFound)
