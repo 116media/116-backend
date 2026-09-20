@@ -268,4 +268,14 @@ public static class ContentRuleCodes
     /// A share channel value is not a known channel. Args: [0] the rejected value.
     /// </summary>
     public const string InvalidShareChannel = "content.share.invalid-channel";
+
+    /// <summary>
+    /// A revision already decided cannot be flipped to the opposite outcome. Args: none.
+    /// </summary>
+    public const string RevisionAlreadyDecided = "content.revision.already-decided";
+
+    /// <summary>
+    /// A submission already decided cannot be flipped to another outcome. Args: none.
+    /// </summary>
+    public const string SubmissionAlreadyDecided = "content.submission.already-decided";
 }

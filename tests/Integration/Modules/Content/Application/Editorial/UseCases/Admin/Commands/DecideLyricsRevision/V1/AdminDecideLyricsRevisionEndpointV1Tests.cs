@@ -1,7 +1,11 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.DecideLyricsRevision.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Mailer.Contracts.Domain.Enums;
+using _116.Mailer.Domain.Entities;
+using _116.Mailer.Infrastructure.Persistence;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
@@ -146,5 +150,90 @@ public class AdminDecideLyricsRevisionEndpointV1Tests(PostgresFixture db) : Base
 
         persistedLyrics.Should().NotBeNull();
         persistedLyrics!.LyricsText.Should().Be(originalText);
+    }
+
+    [Fact]
+    public async Task DecideLyricsRevision_AcceptedTwice_ReturnsConflictAndNotifiesOnce()
+    {
+        LyricsRevisionEntity revision = await SeedAsync<ContentDbContext, LyricsRevisionEntity>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            CategoryEntity category = CategoryFactory.Create(contentType.Id);
+            LyricsEntity lyrics = LyricsFactory.CreatePublished(category.Id);
+            LyricsRevisionEntity revision = LyricsRevisionFactory.Create(
+                lyrics.Id,
+                TestUser.VisitorId,
+                "Accepted once only"
+            );
+            ctx.ContentTypes.Add(contentType);
+            ctx.Categories.Add(category);
+            ctx.Lyrics.Add(lyrics);
+            ctx.LyricsRevisions.Add(revision);
+            return revision;
+        });
+
+        Client.AuthenticateAsAdmin();
+
+        var first = await Client.PutAsJsonAsync(
+            Routes.Admin.Lyrics.Revision(revision.Id),
+            new AdminDecideLyricsRevisionRequest(true)
+        );
+        first.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var second = await Client.PutAsJsonAsync(
+            Routes.Admin.Lyrics.Revision(revision.Id),
+            new AdminDecideLyricsRevisionRequest(true)
+        );
+
+        await second.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<LyricsRevisionErrorMessage>(m => m.AlreadyDecided())
+        );
+
+        await using MailerDbContext mailerContext = CreateDbContext<MailerDbContext>();
+        List<NotificationEntity> notifications = await mailerContext
+            .Notifications.Where(n => n.UserId == TestUser.VisitorId)
+            .ToListAsync();
+        notifications.Should().ContainSingle(n => n.Type == EnumNotificationType.RevisionDecided);
+    }
+
+    [Fact]
+    public async Task DecideLyricsRevision_RejectedAfterAccepted_ReturnsConflictAndKeepsAccepted()
+    {
+        LyricsRevisionEntity revision = await SeedAsync<ContentDbContext, LyricsRevisionEntity>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            CategoryEntity category = CategoryFactory.Create(contentType.Id);
+            LyricsEntity lyrics = LyricsFactory.CreatePublished(category.Id);
+            LyricsRevisionEntity revision = LyricsRevisionFactory.Create(
+                lyrics.Id,
+                TestUser.VisitorId,
+                "Cannot be flipped"
+            );
+            ctx.ContentTypes.Add(contentType);
+            ctx.Categories.Add(category);
+            ctx.Lyrics.Add(lyrics);
+            ctx.LyricsRevisions.Add(revision);
+            return revision;
+        });
+
+        Client.AuthenticateAsAdmin();
+
+        await Client.PutAsJsonAsync(
+            Routes.Admin.Lyrics.Revision(revision.Id),
+            new AdminDecideLyricsRevisionRequest(true)
+        );
+
+        var flip = await Client.PutAsJsonAsync(
+            Routes.Admin.Lyrics.Revision(revision.Id),
+            new AdminDecideLyricsRevisionRequest(false)
+        );
+
+        flip.StatusCode.Should().Be(HttpStatusCode.Conflict);
+
+        await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
+        LyricsRevisionEntity? persisted = await ctx.LyricsRevisions.FindAsync(revision.Id);
+        persisted.Should().NotBeNull();
+        persisted!.Status.Should().Be(EnumRevisionStatus.Accepted);
     }
 }

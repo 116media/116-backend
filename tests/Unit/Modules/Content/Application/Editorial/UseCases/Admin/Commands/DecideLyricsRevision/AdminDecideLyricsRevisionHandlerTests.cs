@@ -1,10 +1,12 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.DecideLyricsRevision;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Domain.Events;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
@@ -21,6 +23,7 @@ public class AdminDecideLyricsRevisionHandlerTests
     private readonly Mock<ILyricsRevisionRepository> _revisionRepositoryMock;
     private readonly Mock<ILyricsRepository> _lyricsRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
+    private readonly ContentI18n _i18n = TestErrorsFactory.CreateContentI18n();
     private readonly AdminDecideLyricsRevisionHandler _handler;
 
     public AdminDecideLyricsRevisionHandlerTests()
@@ -31,7 +34,8 @@ public class AdminDecideLyricsRevisionHandlerTests
         _handler = new AdminDecideLyricsRevisionHandler(
             _revisionRepositoryMock.Object,
             _lyricsRepositoryMock.Object,
-            _unitOfWorkMock.Object
+            _unitOfWorkMock.Object,
+            _i18n
         );
     }
 

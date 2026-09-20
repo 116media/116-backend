@@ -1,5 +1,7 @@
 using _116.Content.Domain.Enums;
 using _116.Content.Domain.Events;
+using _116.Content.Domain.Exceptions;
+using _116.Content.Domain.StateMachines;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -77,13 +79,26 @@ public class LyricsRevisionEntity : Aggregate<Guid>
 
     /// <summary>
     /// Accepts this revision, either via the community vote threshold or a moderator override.
+    /// Idempotent: an already accepted revision reports false and raises nothing; an already
+    /// rejected one cannot be flipped.
     /// </summary>
     /// <param name="decidedByUserId">
     /// The moderator who accepted this revision, or <c>null</c> when auto-accepted by the vote
     /// threshold.
     /// </param>
-    public void Accept(Guid? decidedByUserId)
+    /// <returns><c>true</c> if the revision transitioned; otherwise <c>false</c>.</returns>
+    public bool Accept(Guid? decidedByUserId)
     {
+        if (Status == EnumRevisionStatus.Accepted)
+        {
+            return false;
+        }
+
+        if (Status == EnumRevisionStatus.Rejected)
+        {
+            throw new ContentRuleException(ContentRuleCodes.RevisionAlreadyDecided);
+        }
+
         Status = EnumRevisionStatus.Accepted;
         DecidedByUserId = decidedByUserId;
 
@@ -96,14 +111,29 @@ public class LyricsRevisionEntity : Aggregate<Guid>
                 ByModerator: decidedByUserId.HasValue
             )
         );
+
+        return true;
     }
 
     /// <summary>
     /// Rejects this revision, either via the community vote tally or a moderator override.
+    /// Idempotent: an already rejected revision reports false and raises nothing; an already
+    /// accepted one cannot be flipped.
     /// </summary>
     /// <param name="decidedByUserId">The moderator who rejected this revision.</param>
-    public void Reject(Guid decidedByUserId)
+    /// <returns><c>true</c> if the revision transitioned; otherwise <c>false</c>.</returns>
+    public bool Reject(Guid decidedByUserId)
     {
+        if (Status == EnumRevisionStatus.Rejected)
+        {
+            return false;
+        }
+
+        if (Status == EnumRevisionStatus.Accepted)
+        {
+            throw new ContentRuleException(ContentRuleCodes.RevisionAlreadyDecided);
+        }
+
         Status = EnumRevisionStatus.Rejected;
         DecidedByUserId = decidedByUserId;
 
@@ -116,5 +146,7 @@ public class LyricsRevisionEntity : Aggregate<Guid>
                 ByModerator: true
             )
         );
+
+        return true;
     }
 }

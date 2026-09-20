@@ -1,6 +1,9 @@
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Domain.Events;
+using _116.Content.Domain.Exceptions;
+using _116.Content.Domain.StateMachines;
+using _116.Tests.Fixtures.Factories.Content;
 using AwesomeAssertions;
 using Xunit;
 
@@ -222,4 +225,110 @@ public class LyricsSubmissionEntityTests
             Guid.NewGuid()
         );
     }
+
+    #region Decision idempotence
+
+    [Fact]
+    public void Approve_WhenAlreadyApproved_ShouldReturnFalseAndRaiseNoSecondEvent()
+    {
+        // Arrange
+        LyricsSubmissionEntity submission = LyricsSubmissionFactory.Create();
+        submission.Approve(Guid.NewGuid(), Guid.NewGuid());
+        submission.ClearDomainEvents();
+
+        // Act
+        bool result = submission.Approve(Guid.NewGuid(), Guid.NewGuid());
+
+        // Assert
+        result.Should().BeFalse();
+        submission.DomainEvents.Should().BeEmpty();
+        submission.Status.Should().Be(EnumSubmissionStatus.Approved);
+    }
+
+    [Fact]
+    public void Reject_WhenAlreadyRejected_ShouldReturnFalseAndRaiseNoSecondEvent()
+    {
+        // Arrange
+        LyricsSubmissionEntity submission = LyricsSubmissionFactory.Create();
+        submission.Reject(Guid.NewGuid(), "No.");
+        submission.ClearDomainEvents();
+
+        // Act
+        bool result = submission.Reject(Guid.NewGuid(), "No.");
+
+        // Assert
+        result.Should().BeFalse();
+        submission.DomainEvents.Should().BeEmpty();
+        submission.Status.Should().Be(EnumSubmissionStatus.Rejected);
+    }
+
+    [Fact]
+    public void RequestRevision_WhenAlreadyNeedsRevision_ShouldReturnFalseAndRaiseNoSecondEvent()
+    {
+        // Arrange
+        LyricsSubmissionEntity submission = LyricsSubmissionFactory.Create();
+        submission.RequestRevision(Guid.NewGuid(), "Please fix.");
+        submission.ClearDomainEvents();
+
+        // Act
+        bool result = submission.RequestRevision(Guid.NewGuid(), "Please fix.");
+
+        // Assert
+        result.Should().BeFalse();
+        submission.DomainEvents.Should().BeEmpty();
+        submission.Status.Should().Be(EnumSubmissionStatus.NeedsRevision);
+    }
+
+    [Fact]
+    public void Reject_WhenAlreadyApproved_ShouldThrowAlreadyDecided()
+    {
+        // Arrange
+        LyricsSubmissionEntity submission = LyricsSubmissionFactory.Create();
+        submission.Approve(Guid.NewGuid(), Guid.NewGuid());
+
+        // Act
+        Action act = () => submission.Reject(Guid.NewGuid(), "No.");
+
+        // Assert
+        act.Should()
+            .Throw<ContentRuleException>()
+            .Where(exception => exception.Code == ContentRuleCodes.SubmissionAlreadyDecided);
+        submission.Status.Should().Be(EnumSubmissionStatus.Approved);
+    }
+
+    [Fact]
+    public void Approve_WhenNeedsRevision_ShouldThrowAlreadyDecided()
+    {
+        // Arrange
+        LyricsSubmissionEntity submission = LyricsSubmissionFactory.Create();
+        submission.RequestRevision(Guid.NewGuid(), "Please fix.");
+
+        // Act
+        Action act = () => submission.Approve(Guid.NewGuid(), Guid.NewGuid());
+
+        // Assert
+        act.Should()
+            .Throw<ContentRuleException>()
+            .Where(exception => exception.Code == ContentRuleCodes.SubmissionAlreadyDecided);
+        submission.Status.Should().Be(EnumSubmissionStatus.NeedsRevision);
+    }
+
+    [Fact]
+    public void RequestRevision_WhenAlreadyRejected_ShouldThrowAlreadyDecided()
+    {
+        // Arrange
+        LyricsSubmissionEntity submission = LyricsSubmissionFactory.Create();
+        submission.Reject(Guid.NewGuid(), "No.");
+
+        // Act
+        Action act = () => submission.RequestRevision(Guid.NewGuid(), "Please fix.");
+
+        // Assert
+        act.Should()
+            .Throw<ContentRuleException>()
+            .Where(exception => exception.Code == ContentRuleCodes.SubmissionAlreadyDecided);
+        submission.Status.Should().Be(EnumSubmissionStatus.Rejected);
+    }
+
+    #endregion
 }

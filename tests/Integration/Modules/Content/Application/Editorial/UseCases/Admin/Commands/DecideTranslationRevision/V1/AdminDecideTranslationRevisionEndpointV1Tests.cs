@@ -1,7 +1,11 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.DecideTranslationRevision.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Mailer.Contracts.Domain.Enums;
+using _116.Mailer.Domain.Entities;
+using _116.Mailer.Infrastructure.Persistence;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
@@ -161,5 +165,58 @@ public class AdminDecideTranslationRevisionEndpointV1Tests(PostgresFixture db) :
 
         persistedTranslation.Should().NotBeNull();
         persistedTranslation!.Text.Should().Be("Original text");
+    }
+
+    [Fact]
+    public async Task DecideTranslationRevision_AcceptedTwice_ReturnsConflictAndKeepsOneDecision()
+    {
+        LyricsTranslationRevisionEntity revision = await SeedAsync<ContentDbContext, LyricsTranslationRevisionEntity>(
+            ctx =>
+            {
+                ContentTypeEntity contentType = ContentTypeFactory.Create();
+                CategoryEntity category = CategoryFactory.Create(contentType.Id);
+                LyricsEntity lyrics = LyricsFactory.CreatePublished(category.Id);
+                LyricsTranslationEntity translation = LyricsTranslationFactory.CreateWithText(
+                    lyrics.Id,
+                    "es",
+                    "Original text"
+                );
+                LyricsTranslationRevisionEntity revision = LyricsTranslationRevisionFactory.Create(
+                    translation.Id,
+                    TestUser.VisitorId,
+                    "Accepted once only"
+                );
+                ctx.ContentTypes.Add(contentType);
+                ctx.Categories.Add(category);
+                ctx.Lyrics.Add(lyrics);
+                ctx.LyricsTranslations.Add(translation);
+                ctx.LyricsTranslationRevisions.Add(revision);
+                return revision;
+            }
+        );
+
+        Client.AuthenticateAsAdmin();
+
+        var first = await Client.PutAsJsonAsync(
+            Routes.Admin.Translations.Revision(revision.Id),
+            new AdminDecideTranslationRevisionRequest(true)
+        );
+        first.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var second = await Client.PutAsJsonAsync(
+            Routes.Admin.Translations.Revision(revision.Id),
+            new AdminDecideTranslationRevisionRequest(true)
+        );
+
+        await second.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<TranslationErrorMessage>(m => m.AlreadyDecided())
+        );
+
+        await using MailerDbContext mailerContext = CreateDbContext<MailerDbContext>();
+        List<NotificationEntity> notifications = await mailerContext
+            .Notifications.Where(n => n.UserId == TestUser.VisitorId)
+            .ToListAsync();
+        notifications.Should().ContainSingle(n => n.Type == EnumNotificationType.RevisionDecided);
     }
 }

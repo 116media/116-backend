@@ -2,7 +2,6 @@ using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Content.Domain.Enums;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.RejectLyricsSubmission;
@@ -31,12 +30,11 @@ public class AdminRejectLyricsSubmissionHandler(
             cancellationToken: cancellationToken
         );
 
-        if (submission.Status != EnumSubmissionStatus.Pending)
+        if (!submission.Reject(reviewedByUserId: command.ReviewerId, note: command.Note))
         {
             throw i18n.Submission.NotPending();
         }
 
-        submission.Reject(reviewedByUserId: command.ReviewerId, note: command.Note);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminRejectLyricsSubmissionResult(IsSuccess: true);

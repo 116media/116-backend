@@ -1,5 +1,7 @@
 using _116.Content.Domain.Enums;
 using _116.Content.Domain.Events;
+using _116.Content.Domain.Exceptions;
+using _116.Content.Domain.StateMachines;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -98,13 +100,23 @@ public class LyricsSubmissionEntity : Aggregate<Guid>
     /// </summary>
     /// <param name="reviewedByUserId">The identity user UUID of the reviewing moderator.</param>
     /// <param name="publishedLyricsId">The lyrics record created from this submission.</param>
-    public void Approve(Guid reviewedByUserId, Guid publishedLyricsId)
+    /// <returns><c>true</c> if the submission transitioned; otherwise <c>false</c>.</returns>
+    public bool Approve(Guid reviewedByUserId, Guid publishedLyricsId)
     {
+        if (Status == EnumSubmissionStatus.Approved)
+        {
+            return false;
+        }
+
+        EnsurePending();
+
         Status = EnumSubmissionStatus.Approved;
         ReviewedByUserId = reviewedByUserId;
         PublishedLyricsId = publishedLyricsId;
 
         RaiseDecidedEvent();
+
+        return true;
     }
 
     /// <summary>
@@ -112,13 +124,23 @@ public class LyricsSubmissionEntity : Aggregate<Guid>
     /// </summary>
     /// <param name="reviewedByUserId">The identity user UUID of the reviewing moderator.</param>
     /// <param name="note">The reason for rejection.</param>
-    public void Reject(Guid reviewedByUserId, string note)
+    /// <returns><c>true</c> if the submission transitioned; otherwise <c>false</c>.</returns>
+    public bool Reject(Guid reviewedByUserId, string note)
     {
+        if (Status == EnumSubmissionStatus.Rejected)
+        {
+            return false;
+        }
+
+        EnsurePending();
+
         Status = EnumSubmissionStatus.Rejected;
         ReviewedByUserId = reviewedByUserId;
         ReviewNote = note;
 
         RaiseDecidedEvent();
+
+        return true;
     }
 
     /// <summary>
@@ -126,13 +148,35 @@ public class LyricsSubmissionEntity : Aggregate<Guid>
     /// </summary>
     /// <param name="reviewedByUserId">The identity user UUID of the reviewing moderator.</param>
     /// <param name="note">The requested changes.</param>
-    public void RequestRevision(Guid reviewedByUserId, string note)
+    /// <returns><c>true</c> if the submission transitioned; otherwise <c>false</c>.</returns>
+    public bool RequestRevision(Guid reviewedByUserId, string note)
     {
+        if (Status == EnumSubmissionStatus.NeedsRevision)
+        {
+            return false;
+        }
+
+        EnsurePending();
+
         Status = EnumSubmissionStatus.NeedsRevision;
         ReviewedByUserId = reviewedByUserId;
         ReviewNote = note;
 
         RaiseDecidedEvent();
+
+        return true;
+    }
+
+    /// <summary>
+    /// Guards a decision against a submission that already left <c>Pending</c> for a different
+    /// outcome. <c>NeedsRevision</c> has no path back, so every decided state is terminal here.
+    /// </summary>
+    private void EnsurePending()
+    {
+        if (Status != EnumSubmissionStatus.Pending)
+        {
+            throw new ContentRuleException(ContentRuleCodes.SubmissionAlreadyDecided);
+        }
     }
 
     /// <summary>
