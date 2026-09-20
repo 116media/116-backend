@@ -56,7 +56,7 @@ public class AdminSoftDeleteRoleEndpointV1 : ICarterModule
             .WithSummary(summary: AdminSoftDeleteRoleMetaField.SoftDeleteRole.Summary)
             .WithDescription(description: AdminSoftDeleteRoleMetaField.SoftDeleteRole.Description)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentManagement)
             .ProducesValidationProblem()
             .Produces<AdminSoftDeleteRoleResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
