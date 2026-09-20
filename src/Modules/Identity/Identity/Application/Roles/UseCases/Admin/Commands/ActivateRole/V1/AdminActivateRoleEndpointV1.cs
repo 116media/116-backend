@@ -55,7 +55,7 @@ public class AdminActivateRoleEndpointV1 : ICarterModule
             .WithSummary(summary: AdminActivateRoleMetaField.ActivateRole.Summary)
             .WithDescription(description: AdminActivateRoleMetaField.ActivateRole.Description)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentManagement)
             .ProducesValidationProblem()
             .Produces<AdminActivateRoleResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
