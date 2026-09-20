@@ -1,4 +1,5 @@
 using System.Data.Common;
+using System.Reflection;
 using System.Threading.RateLimiting;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Content.Application.Editorial.Services;
@@ -246,18 +247,13 @@ public class ApiFixture(PostgresFixture db) : WebApplicationFactory<Program>
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
             options.OnRejected = RateLimitingExtension.OnRateLimitRejected;
 
+            // Read off the constants so a policy added to production is never missing here.
             string[] policies =
             [
-                RateLimitPolicies.Authentication,
-                RateLimitPolicies.Otp,
-                RateLimitPolicies.PasswordManagement,
-                RateLimitPolicies.FileUpload,
-                RateLimitPolicies.DataExport,
-                RateLimitPolicies.ContentBrowsing,
-                RateLimitPolicies.UserProfile,
-                RateLimitPolicies.SessionManagement,
-                RateLimitPolicies.AdminMetrics,
-                RateLimitPolicies.ContentContribution,
+                .. typeof(RateLimitPolicies)
+                    .GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
+                    .Where(field => field.IsLiteral && field.FieldType == typeof(string))
+                    .Select(field => (string)field.GetRawConstantValue()!),
             ];
 
             foreach (var policy in policies)
