@@ -13,12 +13,6 @@ using Microsoft.AspNetCore.Routing;
 namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.RemoveArtistSocialLink.V1;
 
 /// <summary>
-/// Response model for a successful RemoveArtistSocialLink operation.
-/// </summary>
-/// <param name="IsSuccess">Whether the link was removed.</param>
-public record AdminRemoveArtistSocialLinkResponse(bool IsSuccess);
-
-/// <summary>
 /// Defines the admin remove artist social link endpoint.
 /// Handles removing an artist's social link for a single platform.
 /// </summary>
@@ -47,13 +41,8 @@ public class AdminRemoveArtistSocialLinkEndpointV1 : ICarterModule
                 {
                     var command = new AdminRemoveArtistSocialLinkCommand(ArtistId: id, Platform: platform);
 
-                    AdminRemoveArtistSocialLinkResult result = await dispatcher.Send(
-                        request: command,
-                        cancellationToken: cancellationToken
-                    );
-
-                    var response = new AdminRemoveArtistSocialLinkResponse(IsSuccess: result.IsSuccess);
-                    return Results.Ok(response);
+                    await dispatcher.Send(request: command, cancellationToken: cancellationToken);
+                    return Results.NoContent();
                 }
             )
             .WithName(endpointName: AdminRemoveArtistSocialLinkMetaField.RemoveArtistSocialLink.Name)
@@ -61,8 +50,8 @@ public class AdminRemoveArtistSocialLinkEndpointV1 : ICarterModule
             .WithDescription(description: AdminRemoveArtistSocialLinkMetaField.RemoveArtistSocialLink.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
-            .Produces<AdminRemoveArtistSocialLinkResponse>(statusCode: StatusCodes.Status200OK)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentManagement)
+            .Produces(statusCode: StatusCodes.Status204NoContent)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
             .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)
             .ProducesProblem(statusCode: StatusCodes.Status404NotFound)
