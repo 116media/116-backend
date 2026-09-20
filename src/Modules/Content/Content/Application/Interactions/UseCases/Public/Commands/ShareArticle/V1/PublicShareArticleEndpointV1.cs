@@ -75,7 +75,7 @@ public class PublicShareArticleEndpointV1 : ICarterModule
             .WithSummary(summary: PublicShareArticleMetaField.ShareArticle.Summary)
             .WithDescription(description: PublicShareArticleMetaField.ShareArticle.Description)
             .AllowAnonymous()
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentContribution)
             .Produces<PublicShareArticleResponse>(statusCode: StatusCodes.Status200OK)
             .ProducesProblem(statusCode: StatusCodes.Status404NotFound)
             .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
