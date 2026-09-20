@@ -77,7 +77,7 @@ public class PublicAddArticleCommentEndpointV1 : ICarterModule
             .WithSummary(summary: PublicAddArticleCommentMetaField.AddArticleComment.Summary)
             .WithDescription(description: PublicAddArticleCommentMetaField.AddArticleComment.Description)
             .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentContribution)
             .Produces<PublicAddArticleCommentResponse>(statusCode: StatusCodes.Status201Created)
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
