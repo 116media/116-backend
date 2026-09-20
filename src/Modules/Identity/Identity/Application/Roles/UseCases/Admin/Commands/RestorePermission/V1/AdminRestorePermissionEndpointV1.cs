@@ -55,7 +55,7 @@ public class AdminRestorePermissionEndpointV1 : ICarterModule
             .WithSummary(summary: AdminRestorePermissionMetaField.RestorePermission.Summary)
             .WithDescription(description: AdminRestorePermissionMetaField.RestorePermission.Description)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentManagement)
             .ProducesValidationProblem()
             .Produces<AdminRestorePermissionResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
