@@ -58,7 +58,7 @@ public class AdminRemoveRoleFromUserEndpointV1 : ICarterModule
             .WithSummary(summary: AdminRemoveRoleFromUserMetaField.RemoveRoleFromUser.Summary)
             .WithDescription(description: AdminRemoveRoleFromUserMetaField.RemoveRoleFromUser.Description)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentManagement)
             .ProducesValidationProblem()
             .Produces<AdminRemoveRoleFromUserResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
