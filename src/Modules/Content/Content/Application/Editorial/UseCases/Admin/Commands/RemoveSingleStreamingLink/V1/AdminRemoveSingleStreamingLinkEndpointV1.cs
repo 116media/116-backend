@@ -13,12 +13,6 @@ using Microsoft.AspNetCore.Routing;
 namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.RemoveSingleStreamingLink.V1;
 
 /// <summary>
-/// Response model for a successful RemoveSingleStreamingLink operation.
-/// </summary>
-/// <param name="IsSuccess">Indicates if the operation completed successfully.</param>
-public record AdminRemoveSingleStreamingLinkResponse(bool IsSuccess);
-
-/// <summary>
 /// Defines the admin remove single streaming link endpoint.
 /// Handles removing a standalone single's curated streaming link for a single platform.
 /// </summary>
@@ -46,13 +40,8 @@ public class AdminRemoveSingleStreamingLinkEndpointV1 : ICarterModule
                 ) =>
                 {
                     var command = new AdminRemoveSingleStreamingLinkCommand(LyricsId: id, Platform: platform);
-                    AdminRemoveSingleStreamingLinkResult result = await dispatcher.Send(
-                        request: command,
-                        cancellationToken: cancellationToken
-                    );
-
-                    var response = new AdminRemoveSingleStreamingLinkResponse(IsSuccess: result.IsSuccess);
-                    return Results.Ok(response);
+                    await dispatcher.Send(request: command, cancellationToken: cancellationToken);
+                    return Results.NoContent();
                 }
             )
             .WithName(endpointName: AdminRemoveSingleStreamingLinkMetaField.RemoveSingleStreamingLink.Name)
@@ -60,8 +49,8 @@ public class AdminRemoveSingleStreamingLinkEndpointV1 : ICarterModule
             .WithDescription(description: AdminRemoveSingleStreamingLinkMetaField.RemoveSingleStreamingLink.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
-            .Produces<AdminRemoveSingleStreamingLinkResponse>(statusCode: StatusCodes.Status200OK)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentManagement)
+            .Produces(statusCode: StatusCodes.Status204NoContent)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
             .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)
             .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
