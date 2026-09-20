@@ -75,7 +75,7 @@ public class PublicShareShortVideoEndpointV1 : ICarterModule
             .WithSummary(summary: PublicShareShortVideoMetaField.ShareShortVideo.Summary)
             .WithDescription(description: PublicShareShortVideoMetaField.ShareShortVideo.Description)
             .AllowAnonymous()
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentContribution)
             .Produces<PublicShareShortVideoResponse>(statusCode: StatusCodes.Status200OK)
             .ProducesProblem(statusCode: StatusCodes.Status404NotFound)
             .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
