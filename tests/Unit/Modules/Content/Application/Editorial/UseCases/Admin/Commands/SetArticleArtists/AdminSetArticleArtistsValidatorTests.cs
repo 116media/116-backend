@@ -1,4 +1,5 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.SetArticleArtists;
+using _116.Tests.Fixtures.Helpers;
 using FluentValidation.TestHelper;
 using Xunit;
 
@@ -9,7 +10,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 /// </summary>
 public class AdminSetArticleArtistsValidatorTests
 {
-    private readonly AdminSetArticleArtistsValidator _validator = new();
+    private readonly AdminSetArticleArtistsValidator _validator = new(TestErrorsFactory.CreateContentI18n());
 
     [Fact]
     public void Validate_WithDistinctIds_ShouldPass()
