@@ -59,7 +59,7 @@ public class PublicLikeShortVideoEndpointV1 : ICarterModule
             .WithSummary(summary: PublicLikeShortVideoMetaField.LikeShortVideo.Summary)
             .WithDescription(description: PublicLikeShortVideoMetaField.LikeShortVideo.Description)
             .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentContribution)
             .Produces<PublicLikeShortVideoResponse>(statusCode: StatusCodes.Status200OK)
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
