@@ -14,12 +14,6 @@ using Microsoft.AspNetCore.Routing;
 namespace _116.Content.Application.Interactions.UseCases.Public.Commands.RemoveVideoFromPlaylist.V1;
 
 /// <summary>
-/// Response model for a successful PublicRemoveVideoFromPlaylist operation.
-/// </summary>
-/// <param name="IsSuccess">Indicates if the operation was successful.</param>
-public record PublicRemoveVideoFromPlaylistResponse(bool IsSuccess);
-
-/// <summary>
 /// Defines the remove video from playlist endpoint.
 /// </summary>
 public class PublicRemoveVideoFromPlaylistEndpointV1 : ICarterModule
@@ -51,21 +45,16 @@ public class PublicRemoveVideoFromPlaylistEndpointV1 : ICarterModule
                         VideoId: parsedVideoId,
                         UserId: userId
                     );
-                    PublicRemoveVideoFromPlaylistResult result = await dispatcher.Send(
-                        request: command,
-                        cancellationToken: cancellationToken
-                    );
-
-                    var response = new PublicRemoveVideoFromPlaylistResponse(IsSuccess: result.IsSuccess);
-                    return Results.Ok(response);
+                    await dispatcher.Send(request: command, cancellationToken: cancellationToken);
+                    return Results.NoContent();
                 }
             )
             .WithName(endpointName: PublicRemoveVideoFromPlaylistMetaField.RemoveVideoFromPlaylist.Name)
             .WithSummary(summary: PublicRemoveVideoFromPlaylistMetaField.RemoveVideoFromPlaylist.Summary)
             .WithDescription(description: PublicRemoveVideoFromPlaylistMetaField.RemoveVideoFromPlaylist.Description)
             .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
-            .Produces<PublicRemoveVideoFromPlaylistResponse>(statusCode: StatusCodes.Status200OK)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentContribution)
+            .Produces(statusCode: StatusCodes.Status204NoContent)
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
             .ProducesProblem(statusCode: StatusCodes.Status404NotFound)
