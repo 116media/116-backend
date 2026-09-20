@@ -38,7 +38,6 @@ public class AdminApproveArticleHandler(
         }
 
         article.Approve();
-        articleRepository.Update(article: article);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminApproveArticleResult(IsSuccess: true);

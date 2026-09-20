@@ -60,8 +60,6 @@ public class AdminDecideTranslationRevisionHandlerTests
         revision.DecidedByUserId.Should().Be(moderatorId);
         translation.Text.Should().Be("Moderator-approved translation text.");
         translation.Source.Should().Be(EnumTranslationSource.Community);
-        _revisionRepositoryMock.VerifyUpdateCalled(revision);
-        _translationRepositoryMock.VerifyUpdateCalled(translation);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -120,8 +118,6 @@ public class AdminDecideTranslationRevisionHandlerTests
         // Assert
         revision.Status.Should().Be(EnumRevisionStatus.Rejected);
         revision.DecidedByUserId.Should().Be(moderatorId);
-        _revisionRepositoryMock.VerifyUpdateCalled(revision);
-        _translationRepositoryMock.Verify(x => x.Update(It.IsAny<LyricsTranslationEntity>()), Times.Never);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 

@@ -65,7 +65,6 @@ public class AdminUpdateVideoSeoHandlerTests : BaseContentHandlerTest
         result.Video.Id.Should().Be(video.Id);
         result.Video.MetaTitle.Should().Be(command.MetaTitle);
         result.Video.MetaDescription.Should().Be(command.MetaDescription);
-        _videoRepositoryMock.VerifyUpdateCalled(video);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 

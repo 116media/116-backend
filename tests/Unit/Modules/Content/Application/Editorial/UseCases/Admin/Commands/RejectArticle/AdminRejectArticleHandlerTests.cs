@@ -59,7 +59,6 @@ public class AdminRejectArticleHandlerTests
         // Assert
         article.Status.Should().Be(EnumContentStatus.Rejected);
         article.RejectionReason.Should().Be(TestConstants.Article.ValidRejectionReason);
-        _articleRepositoryMock.VerifyUpdateCalled(article);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 

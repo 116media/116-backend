@@ -79,7 +79,6 @@ public class AdminUpdateLyricsHandler(
                 cancellationToken: cancellationToken
             );
             oldVideo.UnmarkHasLyrics();
-            videoRepository.Update(video: oldVideo);
         }
 
         if (command.VideoId.HasValue)
@@ -89,10 +88,7 @@ public class AdminUpdateLyricsHandler(
                 cancellationToken: cancellationToken
             );
             newVideo.MarkHasLyrics();
-            videoRepository.Update(video: newVideo);
         }
-
-        lyricsRepository.Update(lyrics: lyrics);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         LyricsEntity updated = await lyricsRepository.GetByIdOrThrowAsync(

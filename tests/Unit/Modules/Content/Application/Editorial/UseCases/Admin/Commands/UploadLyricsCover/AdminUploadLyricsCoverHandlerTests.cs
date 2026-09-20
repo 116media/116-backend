@@ -66,8 +66,6 @@ public class AdminUploadLyricsCoverHandlerTests
         lyrics.CoverImageFileId.Should().Be(uploadedFile.Id);
         result.CoverImageUrl.Should().Be(uploadedFile.StorageUrl);
         result.CoverImageStorageKey.Should().Be(uploadedFile.StorageKey);
-
-        _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
         _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 
@@ -91,8 +89,6 @@ public class AdminUploadLyricsCoverHandlerTests
         lyrics.CoverImageFileId.Should().Be(replacementFile.Id);
         result.CoverImageUrl.Should().Be(replacementFile.StorageUrl);
         result.CoverImageStorageKey.Should().Be(replacementFile.StorageKey);
-
-        _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
         _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 

@@ -32,7 +32,6 @@ public class AdminPublishVideoHandler(IVideoRepository videoRepository, IContent
         }
 
         video.Publish();
-        videoRepository.Update(video: video);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminPublishVideoResult(IsSuccess: true);

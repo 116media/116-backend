@@ -313,11 +313,10 @@ public class ArtistRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
         (await _context.ArtistSocialLinks.FindAsync(link.Id)).Should().NotBeNull();
 
-        // update
+        // update — tracked mutation; SaveChanges diffs the row without an attach call
         link.UpdateUrl("https://x.com/renamed");
-        _repository.UpdateSocialLink(link);
-        _context.Entry(link).State.Should().Be(EntityState.Modified);
         await _context.SaveChangesAsync();
+        (await _context.ArtistSocialLinks.FindAsync(link.Id))!.Url.Should().Be("https://x.com/renamed");
 
         // remove
         _repository.RemoveSocialLink(link);

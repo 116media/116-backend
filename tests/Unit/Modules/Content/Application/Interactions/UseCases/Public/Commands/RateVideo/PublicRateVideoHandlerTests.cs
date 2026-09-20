@@ -70,7 +70,6 @@ public class PublicRateVideoHandlerTests
 
         // Assert
         existingRating.Stars.Should().Be(5);
-        _videoRepositoryMock.VerifyUpdateRatingCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
 

@@ -41,8 +41,6 @@ public class AdminLinkLyricsArtistHandler(
         {
             lyrics.UnlinkArtist();
         }
-
-        lyricsRepository.Update(lyrics: lyrics);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminLinkLyricsArtistResult(IsSuccess: true);

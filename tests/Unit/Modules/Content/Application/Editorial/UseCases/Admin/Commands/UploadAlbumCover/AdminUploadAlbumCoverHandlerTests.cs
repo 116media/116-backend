@@ -65,8 +65,6 @@ public class AdminUploadAlbumCoverHandlerTests
         result.CoverImageUrl.Should().Be(fileEntity.StorageUrl);
         result.CoverImageStorageKey.Should().Be(fileEntity.StorageKey);
         album.CoverImageFileId.Should().Be(fileEntity.Id);
-
-        _albumRepositoryMock.VerifyUpdateCalled(album);
         _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 

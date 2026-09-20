@@ -114,8 +114,6 @@ public class AdminUploadArticleImageHandlerTests : BaseContentHandlerTest
         article.CoverImageFileId.Should().Be(_coverFile.Id);
         result.Image.Url.Should().Be(_coverFile.StorageUrl);
         result.Image.ImageType.Should().Be(EnumArticleImageType.Cover);
-
-        _articleRepositoryMock.VerifyUpdateCalled(article);
         _articleRepositoryMock.VerifyAddImageCalled();
         _unitOfWorkMock.VerifyExecutedInTransaction();
     }
@@ -146,7 +144,6 @@ public class AdminUploadArticleImageHandlerTests : BaseContentHandlerTest
             x => x.RemoveImages(It.Is<IEnumerable<ArticleImageEntity>>(images => images.Single() == oldCover)),
             Times.Once
         );
-        _articleRepositoryMock.VerifyUpdateCalled(article);
         _articleRepositoryMock.VerifyAddImageCalled();
         _unitOfWorkMock.VerifyExecutedInTransaction();
     }

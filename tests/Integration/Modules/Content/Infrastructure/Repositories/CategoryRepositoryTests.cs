@@ -434,6 +434,43 @@ public class CategoryRepositoryTests : BaseRepositoryTest
     }
 
     [Fact]
+    public async Task GetGossipCategoryAsync_WhenGossipIsInactive_ReturnsNull()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var contentType = ContentTypeFactory.Create();
+        var gossip = CategoryFactory.CreateGossip(contentType.Id);
+        gossip.Deactivate();
+        seedContext.ContentTypes.Add(contentType);
+        seedContext.Categories.Add(gossip);
+        await seedContext.SaveChangesAsync();
+
+        var repo = Resolve<ICategoryRepository>();
+
+        var result = await repo.GetGossipCategoryAsync();
+
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetDefaultLyricsCategoryAsync_ReturnsOnlyTheActiveDefault()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var contentType = ContentTypeFactory.Create();
+        var plain = CategoryFactory.Create(contentType.Id);
+        var lyricsDefault = CategoryFactory.CreateDefaultForLyrics(contentType.Id);
+        seedContext.ContentTypes.Add(contentType);
+        seedContext.Categories.AddRange(plain, lyricsDefault);
+        await seedContext.SaveChangesAsync();
+
+        var repo = Resolve<ICategoryRepository>();
+
+        var result = await repo.GetDefaultLyricsCategoryAsync();
+
+        result.Should().NotBeNull();
+        result!.Id.Should().Be(lyricsDefault.Id);
+    }
+
+    [Fact]
     public async Task GetPinnedToFeedCategoriesAsync_ReturnsOnlyActivePinned()
     {
         await using var seedContext = CreateDbContext<ContentDbContext>();

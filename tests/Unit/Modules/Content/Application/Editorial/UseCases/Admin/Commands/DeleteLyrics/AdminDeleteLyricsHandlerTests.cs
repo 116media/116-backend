@@ -75,7 +75,6 @@ public class AdminDeleteLyricsHandlerTests
 
         // Assert
         video.HasLyrics.Should().BeFalse();
-        _videoRepositoryMock.VerifyUpdateCalled(video);
         _lyricsRepositoryMock.VerifyRemoveCalled(lyrics);
         _unitOfWorkMock.VerifyCommitCalled();
     }

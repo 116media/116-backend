@@ -93,7 +93,6 @@ public class AdminUpdateVideoHandlerTests : BaseContentHandlerTest
         result.Video.Id.Should().Be(video.Id);
         result.Video.Title.Should().Be(command.Title);
         result.Video.Slug.Should().Be(command.Slug);
-        _videoRepositoryMock.VerifyUpdateCalled(video);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 

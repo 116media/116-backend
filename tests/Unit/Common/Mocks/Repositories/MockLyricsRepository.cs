@@ -84,15 +84,6 @@ public static class MockLyricsRepository
         mock.Verify(x => x.AddAsync(It.IsAny<LyricsEntity>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    /// <summary>
-    /// Verifies that the repository was handed exactly the expected entity once,
-    /// so updating a different instance than the one looked up fails the test.
-    /// </summary>
-    public static void VerifyUpdateCalled(this Mock<ILyricsRepository> mock, LyricsEntity expected)
-    {
-        mock.Verify(x => x.Update(expected), Times.Once);
-    }
-
     public static Mock<ILyricsRepository> SetupGetPublishedByArtist(
         this Mock<ILyricsRepository> mock,
         Guid artistId,

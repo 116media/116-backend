@@ -38,8 +38,6 @@ public class AdminLinkLyricsAlbumHandler(
         {
             lyrics.UnlinkAlbum();
         }
-
-        lyricsRepository.Update(lyrics: lyrics);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminLinkLyricsAlbumResult(IsSuccess: true);

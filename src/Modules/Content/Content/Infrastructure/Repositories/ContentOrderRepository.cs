@@ -1,12 +1,8 @@
-using _116.Content.Application.Commerce.Builders;
-using _116.Content.Application.Commerce.Specifications;
 using _116.Content.Application.Shared.Errors;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
-using _116.Shared.Application.Specifications;
-using _116.Shared.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace _116.Content.Infrastructure.Repositories;
@@ -39,26 +35,11 @@ public class ContentOrderRepository(ContentDbContext context, ContentOrderErrors
     }
 
     /// <inheritdoc />
-    public Task UpdateAsync(ContentOrderEntity order, CancellationToken ct = default)
-    {
-        Context.ContentOrders.Update(order);
-        return Task.CompletedTask;
-    }
-
-    /// <inheritdoc />
-    public Task UpdatePaymentAsync(ContentPaymentEntity payment, CancellationToken ct = default)
-    {
-        Context.ContentPayments.Update(payment);
-        return Task.CompletedTask;
-    }
-
-    /// <inheritdoc />
     public async Task<ContentOrderEntity?> GetByIdWithItemsAsync(Guid id, CancellationToken ct = default)
     {
-        var specification = new ContentOrderByIdSpecification(id: id);
         return await Context
             .ContentOrders.AsTracking()
-            .ApplySpecification(specification: specification)
+            .Where(order => order.Id == id)
             .Include(o => o.Customer)
             .Include(o => o.Items)
                 .ThenInclude(i => i.Category)
@@ -83,15 +64,27 @@ public class ContentOrderRepository(ContentDbContext context, ContentOrderErrors
         CancellationToken ct = default
     )
     {
-        Specification<ContentOrderEntity>? spec = new ContentOrderQueryBuilder()
-            .WithStatus(status: status)
-            .WithCustomerId(customerId: customerId)
-            .WithSearch(search: search)
-            .Build();
+        IQueryable<ContentOrderEntity> query = Context.ContentOrders;
 
-        IQueryable<ContentOrderEntity> query = spec is not null
-            ? Context.ContentOrders.ApplySpecification(specification: spec)
-            : Context.ContentOrders;
+        if (status.HasValue)
+        {
+            query = query.Where(order => order.Status == status.Value);
+        }
+
+        if (customerId.HasValue)
+        {
+            query = query.Where(order => order.CustomerId == customerId.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            string pattern = $"%{search}%";
+            query = query.Where(order =>
+                EF.Functions.ILike(order.Customer.FullName, pattern)
+                || EF.Functions.ILike(order.Customer.Email, pattern)
+                || (order.Customer.Company != null && EF.Functions.ILike(order.Customer.Company, pattern))
+            );
+        }
 
         query = query.Include(o => o.Customer).Include(o => o.Items);
 
@@ -115,15 +108,30 @@ public class ContentOrderRepository(ContentDbContext context, ContentOrderErrors
         CancellationToken ct = default
     )
     {
-        Specification<ContentPaymentEntity>? spec = new ContentPaymentQueryBuilder()
-            .WithStatus(status: status)
-            .WithMethod(method: method)
-            .WithSearch(search: search)
-            .Build();
+        IQueryable<ContentPaymentEntity> query = Context.ContentPayments;
 
-        IQueryable<ContentPaymentEntity> query = spec is not null
-            ? Context.ContentPayments.ApplySpecification(specification: spec)
-            : Context.ContentPayments;
+        if (status.HasValue)
+        {
+            query = query.Where(payment => payment.Status == status.Value);
+        }
+
+        if (method.HasValue)
+        {
+            query = query.Where(payment => payment.PaymentMethod == method.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            string pattern = $"%{search}%";
+            query = query.Where(payment =>
+                EF.Functions.ILike(payment.Order.Customer.FullName, pattern)
+                || EF.Functions.ILike(payment.Order.Customer.Email, pattern)
+                || (
+                    payment.Order.Customer.Company != null
+                    && EF.Functions.ILike(payment.Order.Customer.Company, pattern)
+                )
+            );
+        }
 
         query = query.Include(p => p.Order).ThenInclude(o => o.Customer);
 
@@ -139,11 +147,9 @@ public class ContentOrderRepository(ContentDbContext context, ContentOrderErrors
     /// <inheritdoc />
     public async Task<ContentPaymentEntity?> GetPaymentByOrderIdAsync(Guid orderId, CancellationToken ct = default)
     {
-        var specification = new ContentPaymentByOrderIdSpecification(orderId: orderId);
         return await Context
             .ContentPayments.AsTracking()
-            .ApplySpecification(specification: specification)
-            .FirstOrDefaultAsync(ct);
+            .FirstOrDefaultAsync(payment => payment.OrderId == orderId, ct);
     }
 
     /// <inheritdoc />
@@ -153,13 +159,10 @@ public class ContentOrderRepository(ContentDbContext context, ContentOrderErrors
         CancellationToken ct = default
     )
     {
-        var specification = new ContentOrderItemByIdAndOrderIdSpecification(orderId: orderId, itemId: itemId);
-
         // Tracked so the identity map fixes up Tiers from the caller's earlier order load.
         return await Context
             .ContentOrderItems.AsTracking()
-            .ApplySpecification(specification: specification)
-            .FirstOrDefaultAsync(ct);
+            .FirstOrDefaultAsync(item => item.Id == itemId && item.OrderId == orderId, ct);
     }
 
     /// <inheritdoc />
@@ -169,11 +172,9 @@ public class ContentOrderRepository(ContentDbContext context, ContentOrderErrors
         CancellationToken ct = default
     )
     {
-        var specification = new ContentOrderItemByIdAndOrderIdSpecification(orderId: orderId, itemId: itemId);
         return await Context
                 .ContentOrderItems.AsTracking()
-                .ApplySpecification(specification: specification)
-                .FirstOrDefaultAsync(ct)
+                .FirstOrDefaultAsync(item => item.Id == itemId && item.OrderId == orderId, ct)
             ?? throw contentOrderErrors.ItemNotFound(itemId: itemId);
     }
 
@@ -198,13 +199,6 @@ public class ContentOrderRepository(ContentDbContext context, ContentOrderErrors
                 .ContentItemTiers.AsTracking()
                 .FirstOrDefaultAsync(t => t.OrderItemId == itemId && t.Id == tierId, ct)
             ?? throw contentOrderErrors.ItemTierNotFound(tierId: tierId);
-    }
-
-    /// <inheritdoc />
-    public Task UpdateItemAsync(ContentOrderItemEntity item, CancellationToken ct = default)
-    {
-        Context.ContentOrderItems.Update(item);
-        return Task.CompletedTask;
     }
 
     /// <inheritdoc />

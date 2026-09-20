@@ -136,10 +136,7 @@ public class OrderPaidEffectsHandler(
 
         changed |= article.MarkPendingReview();
 
-        if (changed)
-        {
-            articleRepository.Update(article: article);
-        }
+        if (changed) { }
 
         return true;
     }
@@ -194,10 +191,7 @@ public class OrderPaidEffectsHandler(
 
         changed |= video.MarkPendingReview();
 
-        if (changed)
-        {
-            videoRepository.Update(video: video);
-        }
+        if (changed) { }
 
         return true;
     }
@@ -245,10 +239,7 @@ public class OrderPaidEffectsHandler(
 
         changed |= lyrics.MarkPendingReview();
 
-        if (changed)
-        {
-            lyricsRepository.Update(lyrics: lyrics);
-        }
+        if (changed) { }
 
         return true;
     }

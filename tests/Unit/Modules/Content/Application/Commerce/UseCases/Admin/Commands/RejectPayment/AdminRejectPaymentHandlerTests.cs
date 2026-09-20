@@ -63,7 +63,6 @@ public class AdminRejectPaymentHandlerTests
         // Assert
         payment.Status.Should().Be(EnumPaymentStatus.Rejected);
         payment.Notes.Should().Be(TestConstants.Commerce.ValidRejectionNotes);
-        _orderRepositoryMock.Verify(x => x.UpdatePaymentAsync(payment, It.IsAny<CancellationToken>()), Times.Once);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 

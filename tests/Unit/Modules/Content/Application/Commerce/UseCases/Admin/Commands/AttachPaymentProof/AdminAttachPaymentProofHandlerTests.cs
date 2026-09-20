@@ -96,7 +96,6 @@ public class AdminAttachPaymentProofHandlerTests : BaseContentHandlerTest
         result.Proof.Id.Should().Be(proofFile.Id);
         result.Proof.OriginalFileName.Should().Be(proofFile.OriginalFileName);
         result.Proof.StorageUrl.Should().Be(proofFile.StorageUrl);
-        _orderRepositoryMock.Verify(x => x.UpdatePaymentAsync(payment, It.IsAny<CancellationToken>()), Times.Once);
         _unitOfWorkMock.VerifyExecutedInTransaction<FileReferenceDto>();
     }
 

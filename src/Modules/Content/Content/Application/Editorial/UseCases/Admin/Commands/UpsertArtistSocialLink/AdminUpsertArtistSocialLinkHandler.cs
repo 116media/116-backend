@@ -31,7 +31,6 @@ public class AdminUpsertArtistSocialLinkHandler(IArtistRepository artistReposito
         if (existing is not null)
         {
             existing.UpdateUrl(url: command.Url);
-            artistRepository.UpdateSocialLink(link: existing);
             await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
             return new AdminUpsertArtistSocialLinkResult(SocialLinkId: existing.Id);

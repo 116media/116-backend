@@ -54,8 +54,6 @@ public class AdminSubmitLyricsHandler(
         {
             throw i18n.Lyrics.AlreadyPendingReview();
         }
-
-        lyricsRepository.Update(lyrics: lyrics);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminSubmitLyricsResult(IsSuccess: true);

@@ -36,8 +36,6 @@ public class AdminSubmitOrderFactory(
         );
 
         await contentOrderRepository.AddPaymentAsync(payment: payment, ct: cancellationToken);
-        await contentOrderRepository.UpdateAsync(order: order, ct: cancellationToken);
-
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
     }
 }

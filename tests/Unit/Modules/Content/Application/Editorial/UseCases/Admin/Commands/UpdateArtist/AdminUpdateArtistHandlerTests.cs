@@ -60,7 +60,6 @@ public class AdminUpdateArtistHandlerTests
         artist.InitialLetter.Should().Be("U");
         result.Artist.Name.Should().Be("Updated Name");
         result.Artist.Bio.Should().Be("Updated Bio");
-        _artistRepositoryMock.VerifyUpdateCalled(artist);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 

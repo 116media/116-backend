@@ -54,7 +54,6 @@ public class AdminRemoveItemTierHandler(
                     ?? throw i18n.ContentOrder.NotFound(id: orderId);
 
                 updated.RecalculateTotalFromItems();
-                await contentOrderRepository.UpdateAsync(order: updated, ct: ct);
             },
             cancellationToken: cancellationToken
         );

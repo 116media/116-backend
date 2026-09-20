@@ -135,6 +135,22 @@ public class CustomerRepositoryTests(PostgresFixture postgres) : BaseRepositoryT
     }
 
     [Fact]
+    public async Task GetByEmailAsync_WithDifferentCase_ReturnsEntity()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var customer = CustomerFactory.Create("cased-lookup@example.com");
+        seedContext.Customers.Add(customer);
+        await seedContext.SaveChangesAsync();
+
+        var repo = Resolve<ICustomerRepository>();
+
+        var result = await repo.GetByEmailAsync("Cased-Lookup@Example.COM");
+
+        result.Should().NotBeNull();
+        result!.Id.Should().Be(customer.Id);
+    }
+
+    [Fact]
     public async Task AddAsync_PersistsCustomerToDatabase()
     {
         var (repo, db) = CreateScopedRepository<ICustomerRepository, ContentDbContext>();

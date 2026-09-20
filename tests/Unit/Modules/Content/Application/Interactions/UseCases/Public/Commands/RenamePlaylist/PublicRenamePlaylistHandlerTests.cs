@@ -51,7 +51,6 @@ public class PublicRenamePlaylistHandlerTests
 
         // Assert
         playlist.Name.Should().Be("New Name");
-        _playlistRepositoryMock.VerifyUpdateCalled(playlist);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 

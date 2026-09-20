@@ -53,8 +53,6 @@ public class AdminUploadArtistAvatarHandler(
                 );
 
                 artist.SetAvatarFileId(avatarFileId: uploaded.Reference.Id);
-
-                artistRepository.Update(artist: artist);
             },
             cancellationToken: cancellationToken
         );

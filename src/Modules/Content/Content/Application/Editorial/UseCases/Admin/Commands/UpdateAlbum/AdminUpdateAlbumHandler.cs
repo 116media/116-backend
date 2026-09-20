@@ -38,8 +38,6 @@ public class AdminUpdateAlbumHandler(
             label: command.Label,
             releaseType: command.ReleaseType
         );
-
-        albumRepository.Update(album: album);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         var dto = await albumDtoFactory.CreateAsync(album, cancellationToken);

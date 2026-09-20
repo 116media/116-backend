@@ -1,10 +1,8 @@
-using _116.Content.Application.Lookup.Specifications;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Builders;
 using _116.Content.Infrastructure.Persistence;
-using _116.Shared.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace _116.Content.Infrastructure.Repositories;
@@ -18,11 +16,7 @@ public class TagRepository(ContentDbContext context) : ContentRepository<TagEnti
     /// <inheritdoc />
     public async Task<TagEntity?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default)
     {
-        var specification = new TagBySlugSpecification(slug: slug);
-        return await Context.Tags.FirstOrDefaultBySpecificationAsync(
-            specification: specification,
-            cancellationToken: cancellationToken
-        );
+        return await Context.Tags.FirstOrDefaultAsync(tag => tag.Slug == slug, cancellationToken);
     }
 
     /// <inheritdoc />

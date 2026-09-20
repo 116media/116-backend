@@ -27,7 +27,6 @@ public class AdminScheduleShootHandler(IVideoRepository videoRepository, IConten
         );
 
         video.ScheduleShoot(scheduledAt: command.ShootingScheduledAt);
-        videoRepository.Update(video: video);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminScheduleShootResult(IsSuccess: true);

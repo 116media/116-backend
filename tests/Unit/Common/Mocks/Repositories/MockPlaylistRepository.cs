@@ -107,15 +107,6 @@ public static class MockPlaylistRepository
         mock.Verify(x => x.AddAsync(It.IsAny<PlaylistEntity>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    /// <summary>
-    /// Verifies that the repository was handed exactly the expected entity once,
-    /// so updating a different instance than the one looked up fails the test.
-    /// </summary>
-    public static void VerifyUpdateCalled(this Mock<IPlaylistRepository> mock, PlaylistEntity expected)
-    {
-        mock.Verify(x => x.Update(expected), Times.Once);
-    }
-
     public static void VerifyDeleteCalled(this Mock<IPlaylistRepository> mock, PlaylistEntity playlist)
     {
         mock.Verify(x => x.Delete(playlist), Times.Once);

@@ -46,9 +46,6 @@ public class AdminUpdateContentTypeHandler(
         }
 
         contentType.Update(name: command.Name);
-
-        contentTypeRepository.Update(contentType: contentType);
-
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         var dto = contentType.ToContentTypeDto(mapper);

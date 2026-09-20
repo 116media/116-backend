@@ -40,7 +40,6 @@ public class AdminDeleteArticleCommentHandler(
 
         if (comment.SoftDelete())
         {
-            articleCommentRepository.UpdateComment(comment: comment);
             await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
         }
 

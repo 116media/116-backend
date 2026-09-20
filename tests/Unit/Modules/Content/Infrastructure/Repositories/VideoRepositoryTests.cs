@@ -652,30 +652,6 @@ public class VideoRepositoryTests : IDisposable
 
     #endregion
 
-    #region UpdateRating Tests
-
-    [Fact]
-    public async Task UpdateRating_ShouldMarkRatingAsModified()
-    {
-        // Arrange
-        Guid categoryId = await SeedCategoryAsync();
-        VideoEntity video = VideoFactory.Create(categoryId);
-        _context.Videos.Add(video);
-        await _context.SaveChangesAsync();
-
-        VideoRatingEntity rating = VideoRatingFactory.Create(video.Id, Guid.NewGuid(), stars: 4);
-        _context.VideoRatings.Add(rating);
-        await _context.SaveChangesAsync();
-
-        // Act
-        _repository.UpdateRating(rating);
-
-        // Assert
-        _context.Entry(rating).State.Should().Be(EntityState.Modified);
-    }
-
-    #endregion
-
     #region Remove Tests
 
     [Fact]

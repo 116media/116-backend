@@ -35,7 +35,6 @@ public class AdminRejectLyricsHandler(
         }
 
         lyrics.Reject(reason: command.Reason);
-        lyricsRepository.Update(lyrics: lyrics);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminRejectLyricsResult(IsSuccess: true);

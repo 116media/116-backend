@@ -40,8 +40,6 @@ public class AdminForceUnpromoteVideoHandler(
         }
 
         video.ForceUnpromote(unpromotedBy: currentActor.UserId!, reason: command.Reason);
-
-        videoRepository.Update(video: video);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminForceUnpromoteVideoResult(VideoId: video.Id, UnpromotedAt: video.UnpromotedAt!.Value);

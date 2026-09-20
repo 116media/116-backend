@@ -38,7 +38,6 @@ public class AdminPublishArticleHandler(
         }
 
         article.Publish();
-        articleRepository.Update(article: article);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminPublishArticleResult(IsSuccess: true);

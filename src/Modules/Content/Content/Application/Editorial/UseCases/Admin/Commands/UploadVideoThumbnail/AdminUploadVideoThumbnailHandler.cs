@@ -51,8 +51,6 @@ public class AdminUploadVideoThumbnailHandler(
                 );
 
                 video.SetThumbnailFileId(thumbnailFileId: uploaded.Reference.Id);
-
-                videoRepository.Update(video: video);
             },
             cancellationToken: cancellationToken
         );

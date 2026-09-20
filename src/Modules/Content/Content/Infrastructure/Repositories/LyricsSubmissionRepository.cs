@@ -1,4 +1,3 @@
-using _116.Content.Application.Editorial.Specifications;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
@@ -29,8 +28,7 @@ public class LyricsSubmissionRepository(ContentDbContext context)
 
         if (status.HasValue)
         {
-            var specification = new SubmissionByStatusSpecification(status: status.Value);
-            query = query.ApplySpecification(specification: specification);
+            query = query.Where(submission => submission.Status == status.Value);
         }
 
         int totalCount = await query.CountAsync(cancellationToken);

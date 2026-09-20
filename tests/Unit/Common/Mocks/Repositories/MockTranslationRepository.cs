@@ -66,15 +66,6 @@ public static class MockTranslationRepository
         mock.Verify(x => x.AddAsync(It.IsAny<LyricsTranslationEntity>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    /// <summary>
-    /// Verifies that the repository was handed exactly the expected entity once,
-    /// so updating a different instance than the one looked up fails the test.
-    /// </summary>
-    public static void VerifyUpdateCalled(this Mock<ITranslationRepository> mock, LyricsTranslationEntity expected)
-    {
-        mock.Verify(x => x.Update(expected), Times.Once);
-    }
-
     public static void VerifyUpdateNotCalled(this Mock<ITranslationRepository> mock)
     {
         mock.Verify(x => x.Update(It.IsAny<LyricsTranslationEntity>()), Times.Never);

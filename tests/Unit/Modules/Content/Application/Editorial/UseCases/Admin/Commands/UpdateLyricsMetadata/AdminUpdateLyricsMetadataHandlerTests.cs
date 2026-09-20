@@ -73,7 +73,6 @@ public class AdminUpdateLyricsMetadataHandlerTests : BaseContentHandlerTest
         result.Lyrics.Label.Should().Be("Sonodisc");
         result.Lyrics.Songwriter.Should().Be("Papa Wemba");
         result.Lyrics.Producer.Should().Be("Viviane Arnoux");
-        _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -108,7 +107,6 @@ public class AdminUpdateLyricsMetadataHandlerTests : BaseContentHandlerTest
         result.Lyrics.Label.Should().BeNull();
         result.Lyrics.Songwriter.Should().BeNull();
         result.Lyrics.Producer.Should().BeNull();
-        _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 

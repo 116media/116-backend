@@ -54,7 +54,6 @@ public class AdminSubmitArticleHandlerTests
 
         // Assert
         article.Status.Should().Be(EnumContentStatus.PendingReview);
-        _articleRepositoryMock.VerifyUpdateCalled(article);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -75,7 +74,6 @@ public class AdminSubmitArticleHandlerTests
 
         // Assert
         article.Status.Should().Be(EnumContentStatus.PendingPayment);
-        _articleRepositoryMock.VerifyUpdateCalled(article);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -96,7 +94,6 @@ public class AdminSubmitArticleHandlerTests
 
         // Assert
         article.Status.Should().Be(EnumContentStatus.PendingReview);
-        _articleRepositoryMock.VerifyUpdateCalled(article);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 

@@ -1,8 +1,6 @@
-using _116.Content.Application.Catalog.Specifications;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
-using _116.Shared.Application.Specifications;
 using _116.Shared.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 
@@ -29,10 +27,7 @@ public class PackageRepository(ContentDbContext context) : ContentRepository<Pac
 
         if (isActive.HasValue)
         {
-            Specification<PackageEntity> spec = isActive.Value
-                ? new ActivePackageSpecification()
-                : new InactivePackageSpecification();
-            query = query.ApplySpecification(specification: spec);
+            query = query.Where(package => package.IsActive == isActive.Value);
         }
 
         int totalCount = await query.CountAsync(cancellationToken);
@@ -49,9 +44,8 @@ public class PackageRepository(ContentDbContext context) : ContentRepository<Pac
     /// <inheritdoc />
     public async Task<PackageEntity?> GetByIdWithSlotsAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var specification = new PackageByIdSpecification(id: id);
         return await Context
-            .Packages.ApplySpecification(specification: specification)
+            .Packages.Where(package => package.Id == id)
             .Include(p => p.Slots)
                 .ThenInclude(s => s.Category)
                     .ThenInclude(c => c!.Pricing)
@@ -68,10 +62,9 @@ public class PackageRepository(ContentDbContext context) : ContentRepository<Pac
         CancellationToken cancellationToken = default
     )
     {
-        var specification = new PackageByIdSpecification(id: id);
         return await Context
             .Packages.AsTracking()
-            .ApplySpecification(specification: specification)
+            .Where(package => package.Id == id)
             .Include(p => p.Slots)
                 .ThenInclude(s => s.Category)
                     .ThenInclude(c => c!.Pricing)
@@ -85,10 +78,9 @@ public class PackageRepository(ContentDbContext context) : ContentRepository<Pac
     /// <inheritdoc />
     public async Task<PackageSlotEntity?> GetSlotByIdAsync(Guid slotId, CancellationToken cancellationToken = default)
     {
-        var specification = new PackageSlotByIdSpecification(slotId: slotId);
         return await Context
             .PackageSlots.AsTracking()
-            .FirstOrDefaultBySpecificationAsync(specification: specification, cancellationToken: cancellationToken);
+            .FirstOrDefaultAsync(slot => slot.Id == slotId, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -98,10 +90,9 @@ public class PackageRepository(ContentDbContext context) : ContentRepository<Pac
         CancellationToken cancellationToken = default
     )
     {
-        var specification = new PackageSlotByIdInPackageSpecification(slotId: slotId, packageId: packageId);
         return await Context
             .PackageSlots.AsTracking()
-            .FirstOrDefaultBySpecificationAsync(specification: specification, cancellationToken: cancellationToken);
+            .FirstOrDefaultAsync(slot => slot.Id == slotId && slot.PackageId == packageId, cancellationToken);
     }
 
     /// <inheritdoc />

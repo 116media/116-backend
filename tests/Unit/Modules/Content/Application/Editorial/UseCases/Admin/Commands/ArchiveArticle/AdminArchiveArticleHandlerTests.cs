@@ -53,7 +53,6 @@ public class AdminArchiveArticleHandlerTests
 
         // Assert
         article.Status.Should().Be(EnumContentStatus.Archived);
-        _articleRepositoryMock.VerifyUpdateCalled(article);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -95,7 +94,6 @@ public class AdminArchiveArticleHandlerTests
         // Assert
         article.Status.Should().Be(EnumContentStatus.Archived);
         article.DomainEvents.Should().BeEmpty();
-        _articleRepositoryMock.VerifyUpdateCalled(article);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 

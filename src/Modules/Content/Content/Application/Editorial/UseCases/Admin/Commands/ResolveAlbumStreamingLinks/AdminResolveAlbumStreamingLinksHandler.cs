@@ -58,7 +58,6 @@ public class AdminResolveAlbumStreamingLinksHandler(
             if (existing is not null)
             {
                 existing.UpdateUrl(url: url);
-                streamingLinkRepository.Update(streamingLink: existing);
                 continue;
             }
 

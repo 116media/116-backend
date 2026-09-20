@@ -69,11 +69,14 @@ public class ArticleCommentRepositoryTests : IDisposable
         _context.ArticleComments.Add(comment);
         await _context.SaveChangesAsync();
 
-        // Act
-        _repository.UpdateComment(comment);
+        // Act — tracked mutation: editing the loaded entity is all a caller does now.
+        comment.Edit("Edited comment body");
+        await _context.SaveChangesAsync();
 
         // Assert
-        _context.Entry(comment).State.Should().Be(EntityState.Modified);
+        (await _context.ArticleComments.FindAsync(comment.Id))!
+            .Body.Should()
+            .Be("Edited comment body");
     }
 
     #endregion

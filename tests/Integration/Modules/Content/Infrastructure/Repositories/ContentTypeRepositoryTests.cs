@@ -70,6 +70,20 @@ public class ContentTypeRepositoryTests : BaseRepositoryTest
     }
 
     [Fact]
+    public async Task ExistsByNameAsync_WithDifferentCase_ReturnsTrue()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        seedContext.ContentTypes.Add(ContentTypeFactory.Create("CasedContentType"));
+        await seedContext.SaveChangesAsync();
+
+        var repo = Resolve<IContentTypeRepository>();
+
+        var exists = await repo.ExistsByNameAsync("cAsEdCoNtEnTtYpE");
+
+        exists.Should().BeTrue();
+    }
+
+    [Fact]
     public async Task GetAllAsync_WithoutSearch_ReturnsAllOrderedByName()
     {
         await using var seedContext = CreateDbContext<ContentDbContext>();

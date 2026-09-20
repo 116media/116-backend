@@ -73,7 +73,6 @@ public class AdminUpdateArticleSeoHandlerTests : BaseContentHandlerTest
         result.Article.Id.Should().Be(article.Id);
         result.Article.MetaTitle.Should().Be("Custom SEO Title");
         result.Article.MetaDescription.Should().Be("Custom SEO description for testing.");
-        _articleRepositoryMock.VerifyUpdateCalled(article);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 

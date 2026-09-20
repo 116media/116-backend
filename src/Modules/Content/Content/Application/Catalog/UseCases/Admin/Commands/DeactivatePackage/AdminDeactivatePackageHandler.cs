@@ -41,9 +41,6 @@ public class AdminDeactivatePackageHandler(
         {
             throw i18n.Package.AlreadyInactive();
         }
-
-        packageRepository.Update(package: package);
-
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         PackageEntity updated = await packageRepository.GetByIdWithSlotsOrThrowAsync(

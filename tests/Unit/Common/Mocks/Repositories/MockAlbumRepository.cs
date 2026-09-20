@@ -67,15 +67,6 @@ public static class MockAlbumRepository
     }
 
     /// <summary>
-    /// Verifies that the repository was handed exactly the expected entity once,
-    /// so updating a different instance than the one looked up fails the test.
-    /// </summary>
-    public static void VerifyUpdateCalled(this Mock<IAlbumRepository> mock, AlbumEntity expected)
-    {
-        mock.Verify(x => x.Update(expected), Times.Once);
-    }
-
-    /// <summary>
     /// Installs defaults for write, void and aggregate members only. Identity lookups are left
     /// unconfigured so that a miss has to be arranged by the test, naming the identifier it is a
     /// miss for, rather than being asserted for every identifier before the test says anything.

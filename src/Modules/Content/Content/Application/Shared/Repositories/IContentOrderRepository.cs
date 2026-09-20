@@ -30,16 +30,6 @@ public interface IContentOrderRepository
     Task AddPaymentAsync(ContentPaymentEntity payment, CancellationToken ct = default);
 
     /// <summary>
-    /// Persists changes to an existing content order.
-    /// </summary>
-    Task UpdateAsync(ContentOrderEntity order, CancellationToken ct = default);
-
-    /// <summary>
-    /// Persists changes to an existing payment record.
-    /// </summary>
-    Task UpdatePaymentAsync(ContentPaymentEntity payment, CancellationToken ct = default);
-
-    /// <summary>
     /// Retrieves a content order by its unique identifier, including all items, their tiers,
     /// the customer, category, promotion level, and the payment record.
     /// Returns null if not found.
@@ -128,11 +118,6 @@ public interface IContentOrderRepository
     /// Thrown when the tier is not found.
     /// </exception>
     Task<ContentItemTierEntity> GetItemTierByIdOrThrowAsync(Guid itemId, Guid tierId, CancellationToken ct = default);
-
-    /// <summary>
-    /// Persists changes to an existing order item.
-    /// </summary>
-    Task UpdateItemAsync(ContentOrderItemEntity item, CancellationToken ct = default);
 
     /// <summary>
     /// Removes a content order item from the repository.

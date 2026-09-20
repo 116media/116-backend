@@ -80,9 +80,6 @@ public class AdminPinCategoryToFeedHandler(
 
         // Re-pinning an already-pinned category refreshes its timestamp (front of queue).
         category.PinToFeed();
-
-        categoryRepository.Update(category: category);
-
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         CategoryEntity updated = await categoryRepository.GetByIdOrThrowAsync(

@@ -66,7 +66,6 @@ public class AdminRemoveOrderItemHandlerTests
         order.Items.Should().NotContain(item);
         order.TotalAmountUsd.Should().Be(TestConstants.Commerce.ValidTierPriceUsd);
         _orderRepositoryMock.Verify(x => x.RemoveItemAsync(item, It.IsAny<CancellationToken>()), Times.Once);
-        _orderRepositoryMock.VerifyUpdateCalled(order);
         _unitOfWorkMock.VerifyCommitCalled(times: 1);
     }
 

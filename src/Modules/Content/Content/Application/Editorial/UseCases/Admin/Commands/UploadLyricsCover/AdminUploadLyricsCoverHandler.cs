@@ -53,8 +53,6 @@ public class AdminUploadLyricsCoverHandler(
                 );
 
                 lyrics.SetCoverImageFileId(coverImageFileId: uploaded.Reference.Id);
-
-                lyricsRepository.Update(lyrics: lyrics);
             },
             cancellationToken: cancellationToken
         );

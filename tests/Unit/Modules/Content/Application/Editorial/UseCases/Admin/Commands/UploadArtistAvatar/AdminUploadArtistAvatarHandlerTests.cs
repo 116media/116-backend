@@ -64,8 +64,6 @@ public class AdminUploadArtistAvatarHandlerTests
         result.AvatarUrl.Should().Be(fileEntity.StorageUrl);
         result.AvatarStorageKey.Should().Be(fileEntity.StorageKey);
         artist.AvatarFileId.Should().Be(fileEntity.Id);
-
-        _artistRepositoryMock.VerifyUpdateCalled(artist);
         _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 

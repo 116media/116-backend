@@ -25,8 +25,6 @@ public class AdminCancelOrderHandler(IContentOrderRepository contentOrderReposit
         ContentOrderEntity order = await contentOrderRepository.GetByIdOrThrowAsync(id: orderId, ct: cancellationToken);
 
         order.Cancel();
-
-        await contentOrderRepository.UpdateAsync(order: order, ct: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminCancelOrderResult(IsSuccess: true);

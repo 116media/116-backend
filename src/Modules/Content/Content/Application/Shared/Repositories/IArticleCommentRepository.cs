@@ -81,11 +81,6 @@ public interface IArticleCommentRepository
     );
 
     /// <summary>
-    /// Marks an existing comment as modified.
-    /// </summary>
-    void UpdateComment(ArticleCommentEntity comment);
-
-    /// <summary>
     /// Returns true if the user has already liked the given comment.
     /// </summary>
     Task<bool> HasLikedCommentAsync(Guid userId, Guid commentId, CancellationToken cancellationToken = default);

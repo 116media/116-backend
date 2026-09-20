@@ -37,8 +37,6 @@ public class PublicRenamePlaylistHandler(
             }
 
             playlist.Rename(name: command.Name);
-            playlistRepository.Update(playlist: playlist);
-
             await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
             return new PublicRenamePlaylistResult(IsSuccess: true);

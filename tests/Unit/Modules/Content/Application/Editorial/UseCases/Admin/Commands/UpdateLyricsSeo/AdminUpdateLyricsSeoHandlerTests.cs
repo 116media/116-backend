@@ -68,7 +68,6 @@ public class AdminUpdateLyricsSeoHandlerTests : BaseContentHandlerTest
         lyrics.StructuredData.Should().BeNull();
         result.Lyrics.MetaTitle.Should().Be("Updated SEO Title");
         result.Lyrics.MetaDescription.Should().Be("Updated SEO Description");
-        _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 

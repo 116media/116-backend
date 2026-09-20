@@ -74,7 +74,6 @@ public class AdminRemoveItemTierHandlerTests
         // Assert
         orderWithItems.TotalAmountUsd.Should().Be(remainingTier.PriceSnapshotUsd);
         _orderRepositoryMock.Verify(x => x.RemoveItemTierAsync(tier, It.IsAny<CancellationToken>()), Times.Once);
-        _orderRepositoryMock.VerifyUpdateCalled(orderWithItems);
         _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 
@@ -259,10 +258,6 @@ public class AdminRemoveItemTierHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
-        _orderRepositoryMock.Verify(
-            x => x.UpdateAsync(It.IsAny<ContentOrderEntity>(), It.IsAny<CancellationToken>()),
-            Times.Never
-        );
         _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 

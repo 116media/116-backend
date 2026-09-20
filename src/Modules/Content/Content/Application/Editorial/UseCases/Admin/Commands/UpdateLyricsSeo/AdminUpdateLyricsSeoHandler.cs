@@ -40,8 +40,6 @@ public class AdminUpdateLyricsSeoHandler(
             metaDescription: command.MetaDescription,
             structuredData: command.StructuredData
         );
-
-        lyricsRepository.Update(lyrics: lyrics);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         LyricsEntity updated = await lyricsRepository.GetByIdOrThrowAsync(

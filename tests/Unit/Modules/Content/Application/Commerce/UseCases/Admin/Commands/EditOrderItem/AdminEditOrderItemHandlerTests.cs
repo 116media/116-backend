@@ -83,8 +83,6 @@ public class AdminEditOrderItemHandlerTests : BaseContentHandlerTest
         order.TotalAmountUsd.Should().Be(0);
         result.Item.Id.Should().Be(item.Id);
         result.Item.SocialBoost.Should().BeTrue();
-        _orderRepositoryMock.Verify(x => x.UpdateItemAsync(item, It.IsAny<CancellationToken>()), Times.Once);
-        _orderRepositoryMock.VerifyUpdateCalled(order);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 

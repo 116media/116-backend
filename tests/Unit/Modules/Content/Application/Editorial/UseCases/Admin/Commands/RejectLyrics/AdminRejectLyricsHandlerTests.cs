@@ -58,7 +58,6 @@ public class AdminRejectLyricsHandlerTests
         // Assert
         lyrics.Status.Should().Be(EnumContentStatus.Rejected);
         lyrics.RejectionReason.Should().Be(TestConstants.Lyrics.ValidRejectionReason);
-        _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 

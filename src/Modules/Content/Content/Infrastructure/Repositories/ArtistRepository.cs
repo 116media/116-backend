@@ -1,9 +1,7 @@
-using _116.Content.Application.Editorial.Specifications;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
-using _116.Shared.Application.Specifications;
 using _116.Shared.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,21 +16,16 @@ public class ArtistRepository(ContentDbContext context) : ContentRepository<Arti
     /// <inheritdoc />
     public async Task<ArtistEntity?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default)
     {
-        var specification = new ArtistBySlugSpecification(slug: slug);
-        return await Context.Artists.FirstOrDefaultBySpecificationAsync(
-            specification: specification,
-            cancellationToken: cancellationToken
+        return await Context.Artists.FirstOrDefaultAsync(
+            artist => EF.Functions.ILike(artist.Slug, slug),
+            cancellationToken
         );
     }
 
     /// <inheritdoc />
     public async Task<ArtistEntity?> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        var specification = new ArtistByUserIdSpecification(userId: userId);
-        return await Context.Artists.FirstOrDefaultBySpecificationAsync(
-            specification: specification,
-            cancellationToken: cancellationToken
-        );
+        return await Context.Artists.FirstOrDefaultAsync(artist => artist.UserId == userId, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -47,8 +40,11 @@ public class ArtistRepository(ContentDbContext context) : ContentRepository<Arti
 
         if (!string.IsNullOrWhiteSpace(search))
         {
-            Specification<ArtistEntity> spec = new ArtistSearchSpecification(search: search);
-            query = query.ApplySpecification(specification: spec);
+            string pattern = $"%{search}%";
+            query = query.Where(artist =>
+                EF.Functions.ILike(artist.Name, pattern)
+                || (artist.Bio != null && EF.Functions.ILike(artist.Bio, pattern))
+            );
         }
 
         int totalCount = await query.CountAsync(cancellationToken);
@@ -71,14 +67,7 @@ public class ArtistRepository(ContentDbContext context) : ContentRepository<Arti
         CancellationToken cancellationToken = default
     )
     {
-        IQueryable<ArtistEntity> query = Context.Artists.ApplySpecification(
-            specification: new ArtistHasContentSpecification(
-                lyrics: Context.Lyrics,
-                videos: Context.Videos,
-                albums: Context.Albums,
-                articleArtists: Context.ArticleArtists
-            )
-        );
+        IQueryable<ArtistEntity> query = ArtistsWithPublicContent();
 
         if (!string.IsNullOrWhiteSpace(value: letter))
         {
@@ -122,15 +111,7 @@ public class ArtistRepository(ContentDbContext context) : ContentRepository<Arti
     /// <inheritdoc />
     public async Task<IReadOnlyList<string>> GetAvailableLettersAsync(CancellationToken cancellationToken = default)
     {
-        return await Context
-            .Artists.ApplySpecification(
-                specification: new ArtistHasContentSpecification(
-                    lyrics: Context.Lyrics,
-                    videos: Context.Videos,
-                    albums: Context.Albums,
-                    articleArtists: Context.ArticleArtists
-                )
-            )
+        return await ArtistsWithPublicContent()
             .Select(a => a.InitialLetter)
             .Distinct()
             .OrderBy(letter => letter)
@@ -192,14 +173,29 @@ public class ArtistRepository(ContentDbContext context) : ContentRepository<Arti
     }
 
     /// <inheritdoc />
-    public void UpdateSocialLink(ArtistSocialLinkEntity link)
-    {
-        Context.ArtistSocialLinks.Update(link);
-    }
-
-    /// <inheritdoc />
     public void RemoveSocialLink(ArtistSocialLinkEntity link)
     {
         Context.ArtistSocialLinks.Remove(link);
+    }
+
+    /// <summary>
+    /// Artists with at least one publicly visible piece of content — a published lyrics page,
+    /// video or tagged article, or a full-length album/mixtape. Term-for-term aligned with the
+    /// per-row counts in <see cref="GetPublicDirectoryAsync" /> and <see cref="GetTotalsAsync" />.
+    /// </summary>
+    /// <returns>The filtered artist query.</returns>
+    private IQueryable<ArtistEntity> ArtistsWithPublicContent()
+    {
+        return Context.Artists.Where(artist =>
+            Context.Lyrics.Any(l => l.ArtistId == artist.Id && l.Status == EnumContentStatus.Published)
+            || Context.Videos.Any(v => v.ArtistId == artist.Id && v.Status == EnumContentStatus.Published)
+            || Context.Albums.Any(a =>
+                a.ArtistId == artist.Id
+                && (a.ReleaseType == EnumReleaseType.Album || a.ReleaseType == EnumReleaseType.Mixtape)
+            )
+            || Context.ArticleArtists.Any(aa =>
+                aa.ArtistId == artist.Id && aa.Article.Status == EnumContentStatus.Published
+            )
+        );
     }
 }

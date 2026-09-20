@@ -59,8 +59,6 @@ public class AdminDecideLyricsRevisionHandlerTests
         revision.Status.Should().Be(EnumRevisionStatus.Accepted);
         revision.DecidedByUserId.Should().Be(moderatorId);
         lyrics.LyricsText.Should().Be("Moderator-approved lyrics text.");
-        _revisionRepositoryMock.VerifyUpdateCalled(revision);
-        _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -119,8 +117,6 @@ public class AdminDecideLyricsRevisionHandlerTests
         // Assert
         revision.Status.Should().Be(EnumRevisionStatus.Rejected);
         revision.DecidedByUserId.Should().Be(moderatorId);
-        _revisionRepositoryMock.VerifyUpdateCalled(revision);
-        _lyricsRepositoryMock.Verify(x => x.Update(It.IsAny<LyricsEntity>()), Times.Never);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 

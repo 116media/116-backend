@@ -76,7 +76,6 @@ public class AdminAddItemTierFactoryTests
         tierName.Should().Be(pricingTier.Name);
         order.TotalAmountUsd.Should().Be(existingTier.PriceSnapshotUsd);
         _orderRepositoryMock.Verify(x => x.AddItemTierAsync(tier, It.IsAny<CancellationToken>()), Times.Once);
-        _orderRepositoryMock.VerifyUpdateCalled(order);
         _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 

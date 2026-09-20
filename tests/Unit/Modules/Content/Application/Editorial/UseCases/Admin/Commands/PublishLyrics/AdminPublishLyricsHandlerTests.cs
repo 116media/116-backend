@@ -54,7 +54,6 @@ public class AdminPublishLyricsHandlerTests
         // Assert
         lyrics.Status.Should().Be(EnumContentStatus.Published);
         lyrics.PublishedAt.Should().NotBeNull();
-        _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 

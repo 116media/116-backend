@@ -67,7 +67,6 @@ public class AdminForceUnpromoteLyricsHandlerTests
         lyrics.UnpromotedAt.Should().NotBeNull();
         lyrics.UnpromotedBy.Should().Be(ActorUserId);
         lyrics.UnpromotedReason.Should().Be("Government takedown request.");
-        _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 

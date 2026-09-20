@@ -35,7 +35,6 @@ public class AdminApproveLyricsHandler(
         }
 
         lyrics.Approve();
-        lyricsRepository.Update(lyrics: lyrics);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminApproveLyricsResult(IsSuccess: true);

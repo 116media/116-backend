@@ -27,7 +27,6 @@ public class PublicRateVideoHandler(IVideoRepository videoRepository, IContentUn
         if (existingRating is not null)
         {
             existingRating.UpdateStars(stars: command.Stars);
-            videoRepository.UpdateRating(rating: existingRating);
         }
         else
         {

@@ -95,7 +95,6 @@ public class AdminAddItemTierFactory(
                         ?? throw contentOrderErrors.NotFound(id: orderId);
 
                     updated.RecalculateTotalFromItems();
-                    await contentOrderRepository.UpdateAsync(order: updated, ct: ct);
                 },
                 cancellationToken: cancellationToken
             );

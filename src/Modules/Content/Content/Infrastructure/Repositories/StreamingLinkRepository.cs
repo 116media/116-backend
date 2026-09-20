@@ -1,9 +1,7 @@
-using _116.Content.Application.Editorial.Specifications;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
-using _116.Shared.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace _116.Content.Infrastructure.Repositories;
@@ -24,11 +22,9 @@ public class StreamingLinkRepository(ContentDbContext context)
         CancellationToken cancellationToken = default
     )
     {
-        var specification = new StreamingLinkByAlbumAndPlatformSpecification(albumId: albumId, platform: platform);
         return await Context
             .StreamingLinks.AsTracking()
-            .ApplySpecification(specification: specification)
-            .FirstOrDefaultAsync(cancellationToken);
+            .FirstOrDefaultAsync(link => link.AlbumId == albumId && link.Platform == platform, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -37,9 +33,8 @@ public class StreamingLinkRepository(ContentDbContext context)
         CancellationToken cancellationToken = default
     )
     {
-        var specification = new StreamingLinkByAlbumSpecification(albumId: albumId);
         List<StreamingLinkEntity> links = await Context
-            .StreamingLinks.ApplySpecification(specification: specification)
+            .StreamingLinks.Where(link => link.AlbumId == albumId)
             .ToListAsync(cancellationToken);
 
         return links.ToDictionary(link => link.Platform, link => link.Url);
@@ -52,11 +47,9 @@ public class StreamingLinkRepository(ContentDbContext context)
         CancellationToken cancellationToken = default
     )
     {
-        var specification = new StreamingLinkByLyricsAndPlatformSpecification(lyricsId: lyricsId, platform: platform);
         return await Context
             .StreamingLinks.AsTracking()
-            .ApplySpecification(specification: specification)
-            .FirstOrDefaultAsync(cancellationToken);
+            .FirstOrDefaultAsync(link => link.LyricsId == lyricsId && link.Platform == platform, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -65,9 +58,8 @@ public class StreamingLinkRepository(ContentDbContext context)
         CancellationToken cancellationToken = default
     )
     {
-        var specification = new StreamingLinkByLyricsSpecification(lyricsId: lyricsId);
         List<StreamingLinkEntity> links = await Context
-            .StreamingLinks.ApplySpecification(specification: specification)
+            .StreamingLinks.Where(link => link.LyricsId == lyricsId)
             .ToListAsync(cancellationToken);
 
         return links.ToDictionary(link => link.Platform, link => link.Url);

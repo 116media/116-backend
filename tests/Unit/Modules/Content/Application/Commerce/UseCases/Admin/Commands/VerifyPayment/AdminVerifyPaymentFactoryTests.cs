@@ -59,8 +59,6 @@ public class AdminVerifyPaymentFactoryTests
         payment.VerifiedAt.Should().NotBeNull();
         payment.ReceiptUrl.Should().Be(ReceiptUrl);
         order.Status.Should().Be(EnumOrderStatus.Paid);
-        _orderRepositoryMock.Verify(x => x.UpdatePaymentAsync(payment, It.IsAny<CancellationToken>()), Times.Once);
-        _orderRepositoryMock.VerifyUpdateCalled(order);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 

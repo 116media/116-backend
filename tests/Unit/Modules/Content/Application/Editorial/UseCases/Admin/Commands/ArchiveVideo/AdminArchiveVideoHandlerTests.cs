@@ -50,7 +50,6 @@ public class AdminArchiveVideoHandlerTests
 
         // Assert
         video.Status.Should().Be(EnumContentStatus.Archived);
-        _videoRepositoryMock.VerifyUpdateCalled(video);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -92,7 +91,6 @@ public class AdminArchiveVideoHandlerTests
         // Assert
         video.Status.Should().Be(EnumContentStatus.Archived);
         video.DomainEvents.Should().BeEmpty();
-        _videoRepositoryMock.VerifyUpdateCalled(video);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 

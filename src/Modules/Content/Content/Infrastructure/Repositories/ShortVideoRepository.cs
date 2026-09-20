@@ -1,11 +1,7 @@
-using _116.Content.Application.Editorial.Builders;
-using _116.Content.Application.Editorial.Specifications;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
-using _116.Shared.Application.Exceptions;
-using _116.Shared.Application.Specifications;
 using _116.Shared.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 
@@ -30,14 +26,15 @@ public class ShortVideoRepository(ContentDbContext context)
     {
         IQueryable<ShortVideoEntity> query = Context.ShortVideos.Include(s => s.ParentVideo);
 
-        Specification<ShortVideoEntity>? spec = new ShortVideoQueryBuilder()
-            .WithSearch(search: search)
-            .WithIsActive(isActive: isActive)
-            .Build();
-
-        if (spec is not null)
+        if (!string.IsNullOrWhiteSpace(search))
         {
-            query = query.ApplySpecification(specification: spec);
+            string pattern = $"%{search}%";
+            query = query.Where(shortVideo => EF.Functions.ILike(shortVideo.Title, pattern));
+        }
+
+        if (isActive.HasValue)
+        {
+            query = query.Where(shortVideo => shortVideo.IsActive == isActive.Value);
         }
 
         int totalCount = await query.CountAsync(cancellationToken);
@@ -110,9 +107,8 @@ public class ShortVideoRepository(ContentDbContext context)
         CancellationToken cancellationToken = default
     )
     {
-        var specification = new ShortVideoLikeByUserIdSpecification(userId: userId);
         IQueryable<ShortVideoLikeEntity> query = Context
-            .ShortVideoLikes.ApplySpecification(specification: specification)
+            .ShortVideoLikes.Where(like => like.UserId == userId)
             .Where(like => like.ShortVideo.IsActive);
         int totalCount = await query.CountAsync(cancellationToken);
         List<ShortVideoLikeEntity> rows = await query
@@ -138,9 +134,8 @@ public class ShortVideoRepository(ContentDbContext context)
         CancellationToken cancellationToken = default
     )
     {
-        var specification = new ShortVideoBookmarkByUserIdSpecification(userId: userId);
         IQueryable<ShortVideoBookmarkEntity> query = Context
-            .ShortVideoBookmarks.ApplySpecification(specification: specification)
+            .ShortVideoBookmarks.Where(bookmark => bookmark.UserId == userId)
             .Where(bookmark => bookmark.ShortVideo.IsActive);
         int totalCount = await query.CountAsync(cancellationToken);
         List<ShortVideoBookmarkEntity> rows = await query
@@ -166,9 +161,8 @@ public class ShortVideoRepository(ContentDbContext context)
         CancellationToken cancellationToken = default
     )
     {
-        var specification = new ShortVideoShareByUserIdSpecification(userId: userId);
         var query = Context
-            .ShortVideoShares.ApplySpecification(specification: specification)
+            .ShortVideoShares.Where(share => share.UserId == userId)
             .Where(share => share.ShortVideo.IsActive)
             .GroupBy(share => share.ShortVideoId)
             .Select(group => new
@@ -204,23 +198,18 @@ public class ShortVideoRepository(ContentDbContext context)
     /// <inheritdoc />
     public async Task<ShortVideoEntity?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default)
     {
-        var specification = new ShortVideoBySlugSpecification(slug: slug);
         return await Context
             .ShortVideos.Include(s => s.ParentVideo)
-            .ApplySpecification(specification: specification)
-            .FirstOrDefaultAsync(cancellationToken);
+            .FirstOrDefaultAsync(shortVideo => shortVideo.Slug == slug, cancellationToken);
     }
 
     /// <inheritdoc />
     public async Task<bool> HasLikedAsync(Guid userId, Guid shortVideoId, CancellationToken cancellationToken = default)
     {
-        var specification = new ShortVideoLikeByUserAndShortVideoSpecification(
-            userId: userId,
-            shortVideoId: shortVideoId
+        return await Context.ShortVideoLikes.AnyAsync(
+            like => like.UserId == userId && like.ShortVideoId == shortVideoId,
+            cancellationToken
         );
-        return await Context
-            .ShortVideoLikes.ApplySpecification(specification: specification)
-            .AnyAsync(cancellationToken);
     }
 
     /// <inheritdoc />
@@ -232,14 +221,9 @@ public class ShortVideoRepository(ContentDbContext context)
     /// <inheritdoc />
     public async Task RemoveLikeAsync(Guid userId, Guid shortVideoId, CancellationToken cancellationToken = default)
     {
-        var specification = new ShortVideoLikeByUserAndShortVideoSpecification(
-            userId: userId,
-            shortVideoId: shortVideoId
-        );
         ShortVideoLikeEntity? like = await Context
             .ShortVideoLikes.AsTracking()
-            .ApplySpecification(specification: specification)
-            .FirstOrDefaultAsync(cancellationToken);
+            .FirstOrDefaultAsync(l => l.UserId == userId && l.ShortVideoId == shortVideoId, cancellationToken);
 
         if (like is not null)
         {
@@ -255,13 +239,10 @@ public class ShortVideoRepository(ContentDbContext context)
         CancellationToken cancellationToken = default
     )
     {
-        var specification = new ShortVideoBookmarkByUserAndShortVideoSpecification(
-            userId: userId,
-            shortVideoId: shortVideoId
+        return await Context.ShortVideoBookmarks.AnyAsync(
+            bookmark => bookmark.UserId == userId && bookmark.ShortVideoId == shortVideoId,
+            cancellationToken
         );
-        return await Context
-            .ShortVideoBookmarks.ApplySpecification(specification: specification)
-            .AnyAsync(cancellationToken);
     }
 
     /// <inheritdoc />
@@ -273,14 +254,9 @@ public class ShortVideoRepository(ContentDbContext context)
     /// <inheritdoc />
     public async Task RemoveBookmarkAsync(Guid userId, Guid shortVideoId, CancellationToken cancellationToken = default)
     {
-        var specification = new ShortVideoBookmarkByUserAndShortVideoSpecification(
-            userId: userId,
-            shortVideoId: shortVideoId
-        );
         ShortVideoBookmarkEntity? bookmark = await Context
             .ShortVideoBookmarks.AsTracking()
-            .ApplySpecification(specification: specification)
-            .FirstOrDefaultAsync(cancellationToken);
+            .FirstOrDefaultAsync(b => b.UserId == userId && b.ShortVideoId == shortVideoId, cancellationToken);
 
         if (bookmark is not null)
         {

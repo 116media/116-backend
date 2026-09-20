@@ -71,7 +71,6 @@ public class AdminForceUnpromoteArticleHandlerTests
         article.UnpromotedAt.Should().NotBeNull();
         result.ArticleId.Should().Be(article.Id);
         result.UnpromotedAt.Should().Be(article.UnpromotedAt);
-        _articleRepositoryMock.VerifyUpdateCalled(article);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 

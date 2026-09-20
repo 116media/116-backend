@@ -41,9 +41,6 @@ public class AdminActivatePricingTierHandler(
         {
             throw i18n.PricingTier.AlreadyActive();
         }
-
-        pricingTierRepository.Update(pricingTier: pricingTier);
-
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         var dto = pricingTier.ToPricingTierDto(mapper);

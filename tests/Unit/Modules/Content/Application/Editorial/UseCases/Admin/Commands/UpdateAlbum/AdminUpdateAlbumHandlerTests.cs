@@ -64,7 +64,6 @@ public class AdminUpdateAlbumHandlerTests
         result.Album.Name.Should().Be("Updated Name");
         result.Album.ReleaseYear.Should().Be(2001);
         result.Album.Label.Should().Be("Updated Label");
-        _albumRepositoryMock.VerifyUpdateCalled(album);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -84,7 +83,6 @@ public class AdminUpdateAlbumHandlerTests
         result.Album.CoverImageUrl.Should().BeNull();
         album.CoverImageFileId.Should().Be(coverImageFileId);
         album.Name.Should().Be("Updated Name");
-        _albumRepositoryMock.VerifyUpdateCalled(album);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 

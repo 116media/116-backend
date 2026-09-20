@@ -43,9 +43,6 @@ public class AdminVerifyPaymentFactory(
             verifiedAt: payment.VerifiedAt!.Value,
             promotionDurationsByLevelId: promotionDurations
         );
-
-        await contentOrderRepository.UpdatePaymentAsync(payment: payment, ct: cancellationToken);
-        await contentOrderRepository.UpdateAsync(order: order, ct: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
     }
 

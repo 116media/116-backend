@@ -52,7 +52,6 @@ public class AdminApproveArticleHandlerTests
 
         // Assert
         article.Status.Should().Be(EnumContentStatus.Approved);
-        _articleRepositoryMock.VerifyUpdateCalled(article);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 

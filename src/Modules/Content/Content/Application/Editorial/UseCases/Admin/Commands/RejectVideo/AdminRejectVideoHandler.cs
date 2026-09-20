@@ -32,7 +32,6 @@ public class AdminRejectVideoHandler(IVideoRepository videoRepository, IContentU
         }
 
         video.Reject(reason: command.Reason);
-        videoRepository.Update(video: video);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminRejectVideoResult(IsSuccess: true);

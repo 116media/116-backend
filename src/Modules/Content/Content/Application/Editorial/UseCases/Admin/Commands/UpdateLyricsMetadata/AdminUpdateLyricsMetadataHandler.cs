@@ -44,8 +44,6 @@ public class AdminUpdateLyricsMetadataHandler(
             songwriter: command.Songwriter,
             producer: command.Producer
         );
-
-        lyricsRepository.Update(lyrics: lyrics);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         LyricsEntity updated = await lyricsRepository.GetByIdOrThrowAsync(

@@ -77,7 +77,6 @@ public class AdminEditOrderHandlerTests : BaseContentHandlerTest
         result.Order.Id.Should().Be(order.Id);
         result.Order.Status.Should().Be(EnumOrderStatus.Draft);
         result.Order.TotalAmountUsd.Should().Be(order.TotalAmountUsd);
-        _orderRepositoryMock.VerifyUpdateCalled(order);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 

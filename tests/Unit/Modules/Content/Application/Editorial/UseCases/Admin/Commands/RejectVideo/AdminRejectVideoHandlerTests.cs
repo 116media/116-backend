@@ -56,7 +56,6 @@ public class AdminRejectVideoHandlerTests
         // Assert
         video.Status.Should().Be(EnumContentStatus.Rejected);
         video.RejectionReason.Should().Be(TestConstants.Video.ValidRejectionReason);
-        _videoRepositoryMock.VerifyUpdateCalled(video);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 

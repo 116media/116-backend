@@ -51,7 +51,6 @@ public class AdminArchiveLyricsHandlerTests
 
         // Assert
         lyrics.Status.Should().Be(EnumContentStatus.Archived);
-        _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -70,7 +69,6 @@ public class AdminArchiveLyricsHandlerTests
 
         // Assert
         lyrics.Status.Should().Be(EnumContentStatus.Archived);
-        _lyricsRepositoryMock.VerifyUpdateCalled(lyrics);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
