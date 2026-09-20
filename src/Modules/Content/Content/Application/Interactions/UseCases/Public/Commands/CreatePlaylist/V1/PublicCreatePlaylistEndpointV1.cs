@@ -71,7 +71,7 @@ public class PublicCreatePlaylistEndpointV1 : ICarterModule
             .WithSummary(summary: PublicCreatePlaylistMetaField.CreatePlaylist.Summary)
             .WithDescription(description: PublicCreatePlaylistMetaField.CreatePlaylist.Description)
             .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentContribution)
             .Produces<PublicCreatePlaylistResponse>(statusCode: StatusCodes.Status201Created)
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
