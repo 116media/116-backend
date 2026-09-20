@@ -69,7 +69,7 @@ public class AdminAssignPermissionToRoleEndpointV1 : ICarterModule
             .WithSummary(summary: AdminAssignPermissionToRoleMetaField.AssignPermissionToRole.Summary)
             .WithDescription(description: AdminAssignPermissionToRoleMetaField.AssignPermissionToRole.Description)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentManagement)
             .ProducesValidationProblem()
             .Produces<AdminAssignPermissionToRoleResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
