@@ -60,7 +60,7 @@ public class PublicBookmarkArticleEndpointV1 : ICarterModule
             .WithSummary(summary: PublicBookmarkArticleMetaField.BookmarkArticle.Summary)
             .WithDescription(description: PublicBookmarkArticleMetaField.BookmarkArticle.Description)
             .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentContribution)
             .Produces<PublicBookmarkArticleResponse>(statusCode: StatusCodes.Status200OK)
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
