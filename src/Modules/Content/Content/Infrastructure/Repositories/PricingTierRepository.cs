@@ -1,5 +1,6 @@
 using _116.Content.Application.Lookup.Specifications;
 using _116.Content.Application.Shared.Repositories;
+using _116.Content.Domain.Constants;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Shared.Infrastructure.Extensions;
@@ -35,7 +36,10 @@ public class PricingTierRepository(ContentDbContext context)
             ? Context.PricingTiers
             : Context.PricingTiers.ApplySpecification(new PricingTierSearchSpecification(search: search));
 
-        return await query.OrderBy(x => x.Name).ToListAsync(cancellationToken);
+        return await query
+            .OrderBy(x => x.Name)
+            .Take(ContentConstants.MaxReferenceListSize)
+            .ToListAsync(cancellationToken);
     }
 
     /// <inheritdoc />
