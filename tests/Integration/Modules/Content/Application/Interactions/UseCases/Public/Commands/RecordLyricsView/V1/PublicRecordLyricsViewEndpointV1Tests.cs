@@ -1,4 +1,5 @@
 using _116.Content.Application.Interactions.UseCases.Public.Commands.RecordLyricsView.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Shared.Application.Exceptions;
@@ -172,5 +173,35 @@ public class PublicRecordLyricsViewEndpointV1Tests(PostgresFixture db) : BaseApi
         await using var verifyDb = CreateDbContext<ContentDbContext>();
         LyricsEntity? updated = await verifyDb.Lyrics.FindAsync(lyrics.Id);
         updated!.ViewCount.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task RecordLyricsView_WithNegativeDwell_ReturnsTheLocalizedDwellError()
+    {
+        LyricsEntity lyrics = await SeedPublishedLyricsAsync();
+        Client.ClearAuthentication();
+
+        var response = await RecordViewAsync(lyrics.Id, dwellMs: -1, scrollDepthRatio: 0.5);
+
+        await response.ShouldBeValidationProblem(
+            "DwellMs",
+            Localized<LyricsInteractionErrorMessage>(m => m.DwellMsNegative())
+        );
+    }
+
+    [Theory]
+    [InlineData(-0.1)]
+    [InlineData(1.5)]
+    public async Task RecordLyricsView_WithScrollDepthOutOfRange_ReturnsTheLocalizedRangeError(double ratio)
+    {
+        LyricsEntity lyrics = await SeedPublishedLyricsAsync();
+        Client.ClearAuthentication();
+
+        var response = await RecordViewAsync(lyrics.Id, dwellMs: 1000, scrollDepthRatio: ratio);
+
+        await response.ShouldBeValidationProblem(
+            "ScrollDepthRatio",
+            Localized<LyricsInteractionErrorMessage>(m => m.ScrollDepthOutOfRange())
+        );
     }
 }
