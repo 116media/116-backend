@@ -17,9 +17,6 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class PublicProposeTranslationRevisionEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     [Fact]
     public async Task ProposeTranslationRevision_WithNoAuth_ReturnsUnauthorized()
     {
@@ -43,9 +40,9 @@ public class PublicProposeTranslationRevisionEndpointV1Tests(PostgresFixture db)
             new PublicProposeTranslationRevisionRequest(string.Empty, null)
         );
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("ProposedText", Localized<TranslationErrorMessage>(m => m.ProposedTextRequired()))
+        await response.ShouldBeValidationProblem(
+            "ProposedText",
+            Localized<TranslationErrorMessage>(m => m.ProposedTextRequired())
         );
     }
 
