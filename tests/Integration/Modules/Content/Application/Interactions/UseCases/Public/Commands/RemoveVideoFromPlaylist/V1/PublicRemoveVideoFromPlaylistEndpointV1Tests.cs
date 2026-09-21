@@ -86,10 +86,7 @@ public class PublicRemoveVideoFromPlaylistEndpointV1Tests(PostgresFixture db) : 
 
         var response = await Client.DeleteAsync(Routes.Public.Playlists.Video(playlist.Id, video.Id));
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        PublicRemoveVideoFromPlaylistResponse body =
-            await response.ReadAsAsync<PublicRemoveVideoFromPlaylistResponse>();
-        body.IsSuccess.Should().BeTrue();
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         await using ContentDbContext verifyDb = CreateDbContext<ContentDbContext>();
         (await verifyDb.PlaylistVideos.AnyAsync(pv => pv.PlaylistId == playlist.Id && pv.VideoId == video.Id))
