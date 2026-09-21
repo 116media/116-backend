@@ -16,9 +16,6 @@ namespace _116.Integration.Tests.Modules.Content.Application.Catalog.UseCases.Ad
 [Collection("Database")]
 public class AdminCreateCustomerEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     [Fact]
     public async Task CreateCustomer_WithNoAuth_ReturnsUnauthorized()
     {
@@ -94,9 +91,9 @@ public class AdminCreateCustomerEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Customers, request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("FullName", Localized<CustomerErrorMessage>(m => m.FullNameRequired()))
+        await response.ShouldBeValidationProblem(
+            "FullName",
+            Localized<CustomerErrorMessage>(m => m.FullNameRequired())
         );
     }
 
@@ -108,10 +105,7 @@ public class AdminCreateCustomerEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Customers, request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("Email", Localized<CustomerErrorMessage>(m => m.EmailRequired()))
-        );
+        await response.ShouldBeValidationProblem("Email", Localized<CustomerErrorMessage>(m => m.EmailRequired()));
     }
 
     [Fact]
@@ -122,10 +116,7 @@ public class AdminCreateCustomerEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Customers, request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("Email", Localized<CustomerErrorMessage>(m => m.EmailInvalidFormat()))
-        );
+        await response.ShouldBeValidationProblem("Email", Localized<CustomerErrorMessage>(m => m.EmailInvalidFormat()));
     }
 
     [Fact]
