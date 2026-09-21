@@ -1,5 +1,6 @@
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.RejectPayment.V1;
 using _116.Content.Application.Shared.Errors.Messages;
+using _116.Content.Domain.Constants;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
@@ -165,5 +166,33 @@ public class AdminRejectPaymentEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         await using ContentDbContext db = CreateDbContext<ContentDbContext>();
         (await db.ContentPayments.FindAsync(payment.Id))!.Status.Should().Be(EnumPaymentStatus.Verified);
+    }
+
+    [Fact]
+    public async Task RejectPayment_WithOversizedNotes_ReturnsBadRequestAndLeavesThePaymentPending()
+    {
+        ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
+        CustomerEntity customer = CustomerFactory.CreateWithId(order.CustomerId);
+        ContentPaymentEntity payment = ContentPaymentFactory.CreateWithProof(order.Id, Guid.NewGuid());
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            ctx.Customers.Add(customer);
+            ctx.ContentOrders.Add(order);
+            ctx.ContentPayments.Add(payment);
+        });
+
+        Client.AuthenticateAsSuperAdmin();
+        var request = new { Notes = new string('n', ContentConstants.MaxPaymentNotesLength + 1) };
+        var msg = new HttpRequestMessage(HttpMethod.Patch, Routes.Admin.Orders.RejectPayment(order.Id))
+        {
+            Content = JsonContent.Create(request),
+        };
+
+        var response = await Client.SendAsync(msg);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        await using ContentDbContext db = CreateDbContext<ContentDbContext>();
+        (await db.ContentPayments.FindAsync(payment.Id))!.Status.Should().NotBe(EnumPaymentStatus.Rejected);
     }
 }
