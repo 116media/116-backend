@@ -222,6 +222,13 @@ public static class ContentConstants
     public const int MaxPlaylistNameLength = 100;
 
     /// <summary>
+    /// Server-side cap on the bounded reference lists (tags, content types, pricing tiers,
+    /// promotion levels) returned without pagination. Bounds the response for a table that is
+    /// small by nature but has no structural limit.
+    /// </summary>
+    public const int MaxReferenceListSize = 500;
+
+    /// <summary>
     /// Maximum allowed length for a comment attached to a revision or translation vote.
     /// </summary>
     public const int MaxVoteCommentLength = 1000;
