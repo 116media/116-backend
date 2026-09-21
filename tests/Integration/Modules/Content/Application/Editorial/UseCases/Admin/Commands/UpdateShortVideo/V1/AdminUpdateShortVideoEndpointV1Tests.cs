@@ -16,9 +16,6 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminUpdateShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     private static object BuildRequest(string title, Guid? videoId = null) => new { Title = title, VideoId = videoId };
 
     [Fact]
@@ -84,10 +81,7 @@ public class AdminUpdateShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Shorts}/{id}", BuildRequest(string.Empty));
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("Title", Localized<ShortVideoErrorMessage>(m => m.TitleRequired()))
-        );
+        await response.ShouldBeValidationProblem("Title", Localized<ShortVideoErrorMessage>(m => m.TitleRequired()));
     }
 
     [Fact]
@@ -129,12 +123,9 @@ public class AdminUpdateShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiT
             BuildRequest(new string('T', 300))
         );
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail(
-                "Title",
-                Localized<ShortVideoErrorMessage>(m => m.TitleTooLong(ContentConstants.MaxShortVideoTitleLength))
-            )
+        await response.ShouldBeValidationProblem(
+            "Title",
+            Localized<ShortVideoErrorMessage>(m => m.TitleTooLong(ContentConstants.MaxShortVideoTitleLength))
         );
     }
 }
