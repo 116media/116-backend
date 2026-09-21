@@ -106,10 +106,7 @@ public class AdminDeleteVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Videos}/{video.Id}");
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        AdminDeleteVideoResponse body = await response.ReadAsAsync<AdminDeleteVideoResponse>();
-        body.IsSuccess.Should().BeTrue();
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         (await GetVideoStatusAsync(video.Id)).Should().BeNull();
     }
