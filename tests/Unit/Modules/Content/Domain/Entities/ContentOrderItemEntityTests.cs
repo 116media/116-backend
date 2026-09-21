@@ -75,6 +75,7 @@ public class ContentOrderItemEntityTests
 
         // Assert
         item.PromotionLevelId.Should().Be(newPromoLevelId);
+        item.PromoPriceSnapshotUsd.Should().NotBeNull();
         item.PromoPriceSnapshotUsd.Amount.Should().Be(newPromoPrice);
     }
 
