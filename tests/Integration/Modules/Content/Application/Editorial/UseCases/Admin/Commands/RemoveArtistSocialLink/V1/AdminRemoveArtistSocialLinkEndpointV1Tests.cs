@@ -48,7 +48,7 @@ public class AdminRemoveArtistSocialLinkEndpointV1Tests(PostgresFixture db) : Ba
 
         var response = await Client.DeleteAsync(Url(artist.Id, EnumSocialPlatform.TikTok));
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
         (await ctx.ArtistSocialLinks.AnyAsync(l => l.Id == link.Id)).Should().BeFalse();
