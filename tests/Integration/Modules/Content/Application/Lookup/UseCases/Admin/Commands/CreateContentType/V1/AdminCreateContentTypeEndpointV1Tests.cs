@@ -16,9 +16,6 @@ namespace _116.Integration.Tests.Modules.Content.Application.Lookup.UseCases.Adm
 [Collection("Database")]
 public class AdminCreateContentTypeEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     [Fact]
     public async Task CreateContentType_WithNoAuth_ReturnsUnauthorized()
     {
@@ -49,10 +46,7 @@ public class AdminCreateContentTypeEndpointV1Tests(PostgresFixture db) : BaseApi
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.ContentTypes, request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("Name", Localized<ContentTypeErrorMessage>(m => m.NameRequired()))
-        );
+        await response.ShouldBeValidationProblem("Name", Localized<ContentTypeErrorMessage>(m => m.NameRequired()));
     }
 
     [Fact]
