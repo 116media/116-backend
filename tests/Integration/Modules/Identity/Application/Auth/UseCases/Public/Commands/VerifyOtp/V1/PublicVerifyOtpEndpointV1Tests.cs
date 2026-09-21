@@ -18,9 +18,6 @@ namespace _116.Integration.Tests.Modules.Identity.Application.Auth.UseCases.Publ
 [Collection("Database")]
 public class PublicVerifyOtpEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     [Fact]
     public async Task VerifyOtp_WithEmptyEmail_ReturnsValidationError()
     {
@@ -29,10 +26,7 @@ public class PublicVerifyOtpEndpointV1Tests(PostgresFixture db) : BaseApiTest(db
 
         var response = await Client.PostAsJsonAsync(Routes.Public.Auth.VerifyOtp(), request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("Email", Localized<ValidationErrorMessage>(m => m.EmailRequired()))
-        );
+        await response.ShouldBeValidationProblem("Email", Localized<ValidationErrorMessage>(m => m.EmailRequired()));
     }
 
     [Fact]
