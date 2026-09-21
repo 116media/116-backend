@@ -22,9 +22,6 @@ public class AdminChangePasswordEndpointV1Tests(PostgresFixture db) : BaseApiTes
     private const string ChangePasswordUrl = $"{AuthUrl}/{AuthRouteConstants.ChangePassword}";
     private const string KnownPassword = TestAuth.ValidPassword;
 
-    private static string ValidationDetail(params (string Property, string Message)[] failures) =>
-        new ValidationException(failures.Select(f => new ValidationFailure(f.Property, f.Message))).Message;
-
     [Fact]
     public async Task ChangePassword_WithNoAuth_ReturnsUnauthorized()
     {
@@ -44,14 +41,11 @@ public class AdminChangePasswordEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.PatchAsJsonAsync(ChangePasswordUrl, request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail(
-                (
-                    "NewPassword",
-                    Localized<ValidationErrorMessage>(m =>
-                        m.PasswordTooShort(m.NewPasswordFieldName(), UserConstants.MinPasswordLength)
-                    )
+        await response.ShouldBeValidationProblem(
+            (
+                "NewPassword",
+                Localized<ValidationErrorMessage>(m =>
+                    m.PasswordTooShort(m.NewPasswordFieldName(), UserConstants.MinPasswordLength)
                 )
             )
         );
@@ -68,12 +62,9 @@ public class AdminChangePasswordEndpointV1Tests(PostgresFixture db) : BaseApiTes
             .Build();
         var response = await Client.PatchAsJsonAsync(ChangePasswordUrl, request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail(
-                ("OldPassword", Localized<ValidationErrorMessage>(m => m.CurrentPasswordRequired())),
-                ("NewPassword", Localized<ValidationErrorMessage>(m => m.PasswordRequired()))
-            )
+        await response.ShouldBeValidationProblem(
+            ("OldPassword", Localized<ValidationErrorMessage>(m => m.CurrentPasswordRequired())),
+            ("NewPassword", Localized<ValidationErrorMessage>(m => m.PasswordRequired()))
         );
     }
 
