@@ -1,4 +1,5 @@
 using _116.Content.Application.Interactions.UseCases.Public.Commands.RecordShortVideoView.V1;
+using _116.Content.Domain.Constants;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Shared.Application.Exceptions;
@@ -146,5 +147,20 @@ public class PublicRecordShortVideoViewEndpointV1Tests(PostgresFixture db) : Bas
 
         recorded.DedupKey.Should().Be("ip:203.0.113.9");
         recorded.IpAddress.Should().Be("203.0.113.9");
+    }
+
+    [Fact]
+    public async Task RecordShortVideoView_WithOversizedDeviceIdHeader_ReturnsBadRequestAndRecordsNothing()
+    {
+        ShortVideoEntity shortVideo = await SeedShortVideoAsync();
+        Client.ClearAuthentication();
+
+        var response = await RecordViewAsync(shortVideo.Id, new string('d', 200));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        await using var verifyDb = CreateDbContext<ContentDbContext>();
+        bool anyRecorded = await verifyDb.ShortVideoViewEvents.AnyAsync(e => e.ShortVideoId == shortVideo.Id);
+        anyRecorded.Should().BeFalse();
     }
 }
