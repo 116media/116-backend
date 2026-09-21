@@ -17,9 +17,6 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminUploadArtistAvatarEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     private async Task<ArtistEntity> SeedArtistAsync()
     {
         return await SeedAsync<ContentDbContext, ArtistEntity>(ctx =>
@@ -137,9 +134,6 @@ public class AdminUploadArtistAvatarEndpointV1Tests(PostgresFixture db) : BaseAp
 
         var response = await Client.PostAsync(Routes.Admin.Artists.Avatar(Guid.NewGuid()), formContent);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("File", Localized<LyricsErrorMessage>(m => m.FileRequired()))
-        );
+        await response.ShouldBeValidationProblem("File", Localized<LyricsErrorMessage>(m => m.FileRequired()));
     }
 }
