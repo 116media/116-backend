@@ -60,9 +60,7 @@ public class PublicUnlikeArticleEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.DeleteAsync(Routes.Public.Articles.Likes(article.Id));
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var body = await response.ReadAsAsync<PublicUnlikeArticleResponse>();
-        body.IsSuccess.Should().BeTrue();
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         await using var verifyDb = CreateDbContext<ContentDbContext>();
         (await verifyDb.ArticleLikes.AnyAsync(l => l.ArticleId == article.Id && l.UserId == TestUser.VisitorId))
