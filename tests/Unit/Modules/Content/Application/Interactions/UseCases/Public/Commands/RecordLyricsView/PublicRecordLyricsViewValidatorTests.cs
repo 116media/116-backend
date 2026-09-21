@@ -1,4 +1,5 @@
 using _116.Content.Application.Interactions.UseCases.Public.Commands.RecordLyricsView;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.Results;
 using Xunit;
@@ -10,7 +11,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Interactions.UseCases.Publ
 /// </summary>
 public class PublicRecordLyricsViewValidatorTests
 {
-    private readonly PublicRecordLyricsViewValidator _validator = new();
+    private readonly PublicRecordLyricsViewValidator _validator = new(TestErrorsFactory.CreateContentI18n());
 
     private static PublicRecordLyricsViewCommand BuildValidCommand(
         int dwellMs = 30_000,
