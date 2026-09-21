@@ -22,9 +22,6 @@ public class AdminLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
     private const string AuthUrl = ApiRoutes.Admin.Auth;
     private const string LoginUrl = $"{AuthUrl}/{AuthRouteConstants.Login}";
 
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     [Fact]
     public async Task Login_WithEmptyEmail_ReturnsValidationError()
     {
@@ -36,10 +33,7 @@ public class AdminLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
         var response = await Client.PostAsJsonAsync(LoginUrl, request);
 
         // Assert
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("Email", Localized<ValidationErrorMessage>(m => m.EmailRequired()))
-        );
+        await response.ShouldBeValidationProblem("Email", Localized<ValidationErrorMessage>(m => m.EmailRequired()));
     }
 
     [Fact]
@@ -56,9 +50,9 @@ public class AdminLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
         var response = await Client.PostAsJsonAsync(LoginUrl, request);
 
         // Assert
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("Password", Localized<ValidationErrorMessage>(m => m.PasswordRequired()))
+        await response.ShouldBeValidationProblem(
+            "Password",
+            Localized<ValidationErrorMessage>(m => m.PasswordRequired())
         );
     }
 
