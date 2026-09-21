@@ -17,9 +17,6 @@ namespace _116.Integration.Tests.Modules.Content.Application.Interactions.UseCas
 [Collection("Database")]
 public class PublicAddArticleCommentEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     private async Task<ArticleEntity> SeedArticleAsync()
     {
         return await SeedAsync<ContentDbContext, ArticleEntity>(ctx =>
@@ -69,9 +66,9 @@ public class PublicAddArticleCommentEndpointV1Tests(PostgresFixture db) : BaseAp
 
         var response = await Client.PostAsJsonAsync(Routes.Public.Articles.Comments(Guid.NewGuid()), request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("Body", Localized<ArticleInteractionErrorMessage>(m => m.CommentBodyRequired()))
+        await response.ShouldBeValidationProblem(
+            "Body",
+            Localized<ArticleInteractionErrorMessage>(m => m.CommentBodyRequired())
         );
     }
 
