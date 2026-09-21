@@ -22,6 +22,9 @@ public class DispatcherTests
     // Request without response
     private record TestCommand(string Data) : IRequest;
 
+    // IRequest<T> also implements IRequest, so one request type reaches both dispatch paths
+    private record DualPathRequest(string Data) : IRequest<TestQueryResponse>;
+
     // Handler with response
     private class TestQueryHandler : IRequestHandler<TestQuery, TestQueryResponse>
     {
@@ -56,6 +59,26 @@ public class DispatcherTests
         public Task<TestQueryResponse> Handle(TestQuery request, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(new TestQueryResponse("Invalid"));
+        }
+    }
+
+    // Handlers for the same request type on each dispatch path
+    private class DualPathResponseHandler : IRequestHandler<DualPathRequest, TestQueryResponse>
+    {
+        public Task<TestQueryResponse> Handle(DualPathRequest request, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(new TestQueryResponse($"Response path: {request.Data}"));
+        }
+    }
+
+    private class DualPathVoidHandler : IRequestHandler<DualPathRequest>
+    {
+        public bool WasCalled { get; private set; }
+
+        public Task Handle(DualPathRequest request, CancellationToken cancellationToken = default)
+        {
+            WasCalled = true;
+            return Task.CompletedTask;
         }
     }
 
@@ -313,6 +336,31 @@ public class DispatcherTests
         // Assert
         queryHandler.WasCalled.Should().BeTrue();
         commandHandler.WasCalled.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Send_WhenOneRequestTypeReachesBothDispatchPaths_ShouldResolveEachPathsOwnHandler()
+    {
+        // Arrange
+        DualPathResponseHandler responseHandler = new();
+        DualPathVoidHandler voidHandler = new();
+
+        Mock<IServiceProvider> serviceProviderMock = new();
+        serviceProviderMock
+            .Setup(sp => sp.GetService(typeof(IRequestHandler<DualPathRequest, TestQueryResponse>)))
+            .Returns(responseHandler);
+        serviceProviderMock.Setup(sp => sp.GetService(typeof(IRequestHandler<DualPathRequest>))).Returns(voidHandler);
+
+        Dispatcher dispatcher = new(serviceProviderMock.Object);
+        DualPathRequest request = new("payload");
+
+        // Act
+        TestQueryResponse response = await dispatcher.Send(request);
+        await dispatcher.Send((IRequest)request);
+
+        // Assert
+        response.Result.Should().Be("Response path: payload");
+        voidHandler.WasCalled.Should().BeTrue();
     }
 
     [Fact]
