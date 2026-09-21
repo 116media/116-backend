@@ -18,9 +18,6 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminCreateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     private async Task<CategoryEntity> SeedCategoryAsync()
     {
         return await SeedAsync<ContentDbContext, CategoryEntity>(ctx =>
@@ -124,10 +121,7 @@ public class AdminCreateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Articles, request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("Title", Localized<ArticleErrorMessage>(m => m.TitleRequired()))
-        );
+        await response.ShouldBeValidationProblem("Title", Localized<ArticleErrorMessage>(m => m.TitleRequired()));
     }
 
     [Fact]
