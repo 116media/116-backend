@@ -17,9 +17,6 @@ namespace _116.Integration.Tests.Modules.Content.Application.Catalog.UseCases.Ad
 [Collection("Database")]
 public class AdminAddCategoryPricingEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     [Fact]
     public async Task AddCategoryPricing_AsSuperAdmin_WithValidData_ReturnsCreated()
     {
@@ -186,9 +183,9 @@ public class AdminAddCategoryPricingEndpointV1Tests(PostgresFixture db) : BaseAp
 
         var response = await Client.PostAsJsonAsync(Routes.Admin.Categories.Pricing(category.Id), request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("PriceUsd", Localized<CategoryErrorMessage>(m => m.PriceMustBeNonNegative()))
+        await response.ShouldBeValidationProblem(
+            "PriceUsd",
+            Localized<CategoryErrorMessage>(m => m.PriceMustBeNonNegative())
         );
     }
 }
