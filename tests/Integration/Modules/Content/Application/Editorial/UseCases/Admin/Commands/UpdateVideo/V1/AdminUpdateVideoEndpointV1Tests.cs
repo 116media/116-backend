@@ -18,9 +18,6 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminUpdateVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     private async Task<(CategoryEntity Category, VideoEntity Video)> SeedVideoAsync(Func<Guid, VideoEntity> create)
     {
         CategoryEntity? seededCategory = null;
@@ -120,12 +117,9 @@ public class AdminUpdateVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Videos}/{id}", request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail(
-                "Title",
-                Localized<VideoErrorMessage>(m => m.TitleTooLong(ContentConstants.MaxTitleLength))
-            )
+        await response.ShouldBeValidationProblem(
+            "Title",
+            Localized<VideoErrorMessage>(m => m.TitleTooLong(ContentConstants.MaxTitleLength))
         );
     }
 
@@ -138,10 +132,7 @@ public class AdminUpdateVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Videos}/{id}", request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("Slug", Localized<VideoErrorMessage>(m => m.SlugInvalidFormat()))
-        );
+        await response.ShouldBeValidationProblem("Slug", Localized<VideoErrorMessage>(m => m.SlugInvalidFormat()));
     }
 
     [Fact]
@@ -153,9 +144,9 @@ public class AdminUpdateVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Videos}/{id}", request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("Slug", Localized<VideoErrorMessage>(m => m.SlugTooLong(ContentConstants.MaxSlugLength)))
+        await response.ShouldBeValidationProblem(
+            "Slug",
+            Localized<VideoErrorMessage>(m => m.SlugTooLong(ContentConstants.MaxSlugLength))
         );
     }
 
@@ -168,9 +159,9 @@ public class AdminUpdateVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Videos}/{id}", request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("Description", Localized<VideoErrorMessage>(m => m.DescriptionRequired()))
+        await response.ShouldBeValidationProblem(
+            "Description",
+            Localized<VideoErrorMessage>(m => m.DescriptionRequired())
         );
     }
 
@@ -183,12 +174,9 @@ public class AdminUpdateVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Videos}/{id}", request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail(
-                "MetaTitle",
-                Localized<ArticleErrorMessage>(m => m.MetaTitleTooShort(ContentConstants.MinMetaTitleLength))
-            )
+        await response.ShouldBeValidationProblem(
+            "MetaTitle",
+            Localized<ArticleErrorMessage>(m => m.MetaTitleTooShort(ContentConstants.MinMetaTitleLength))
         );
     }
 
@@ -201,14 +189,9 @@ public class AdminUpdateVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Videos}/{id}", request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail(
-                "MetaDescription",
-                Localized<ArticleErrorMessage>(m =>
-                    m.MetaDescriptionTooShort(ContentConstants.MinMetaDescriptionLength)
-                )
-            )
+        await response.ShouldBeValidationProblem(
+            "MetaDescription",
+            Localized<ArticleErrorMessage>(m => m.MetaDescriptionTooShort(ContentConstants.MinMetaDescriptionLength))
         );
     }
 }
