@@ -197,4 +197,25 @@ public class AdminUpsertSingleStreamingLinkEndpointV1Tests(PostgresFixture db) :
 
         anyPersisted.Should().BeFalse();
     }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("open.spotify.com/track/no-scheme")]
+    [InlineData("javascript:alert(1)")]
+    public async Task UpsertSingleStreamingLink_WithMalformedUrl_ReturnsBadRequest(string url)
+    {
+        LyricsEntity single = await SeedSingleAsync();
+        Client.AuthenticateAsAdmin();
+
+        var response = await Client.PutAsJsonAsync(
+            Url(single.Id, EnumStreamingPlatform.Spotify),
+            new AdminUpsertSingleStreamingLinkRequest(url)
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
+        bool anyPersisted = await ctx.StreamingLinks.AnyAsync(link => link.LyricsId == single.Id);
+        anyPersisted.Should().BeFalse();
+    }
 }
