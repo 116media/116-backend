@@ -18,9 +18,6 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminForceUnpromoteLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     private const string Reason = "Government takedown request";
 
     /// <summary>
@@ -113,9 +110,9 @@ public class AdminForceUnpromoteLyricsEndpointV1Tests(PostgresFixture db) : Base
             new AdminForceUnpromoteLyricsRequest(string.Empty)
         );
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("Reason", Localized<LyricsErrorMessage>(m => m.RejectionReasonRequired()))
+        await response.ShouldBeValidationProblem(
+            "Reason",
+            Localized<LyricsErrorMessage>(m => m.RejectionReasonRequired())
         );
 
         await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
@@ -139,12 +136,9 @@ public class AdminForceUnpromoteLyricsEndpointV1Tests(PostgresFixture db) : Base
             new AdminForceUnpromoteLyricsRequest(tooLongReason)
         );
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail(
-                "Reason",
-                Localized<LyricsErrorMessage>(m => m.RejectionReasonTooLong(ContentConstants.MaxRejectionReasonLength))
-            )
+        await response.ShouldBeValidationProblem(
+            "Reason",
+            Localized<LyricsErrorMessage>(m => m.RejectionReasonTooLong(ContentConstants.MaxRejectionReasonLength))
         );
 
         await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
