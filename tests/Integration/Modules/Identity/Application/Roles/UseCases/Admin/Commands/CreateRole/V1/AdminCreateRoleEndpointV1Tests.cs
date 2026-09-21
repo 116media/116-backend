@@ -18,9 +18,6 @@ public class AdminCreateRoleEndpointV1Tests(PostgresFixture db) : BaseApiTest(db
 {
     private static string ShortName(string prefix = "r") => $"{prefix}{Guid.NewGuid().ToString("N")[..8]}";
 
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     [Fact]
     public async Task CreateRole_AsSuperAdmin_WithValidData_ReturnsSuccess()
     {
@@ -95,9 +92,6 @@ public class AdminCreateRoleEndpointV1Tests(PostgresFixture db) : BaseApiTest(db
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Roles, request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("Name", Localized<ValidationErrorMessage>(m => m.RoleNameRequired()))
-        );
+        await response.ShouldBeValidationProblem("Name", Localized<ValidationErrorMessage>(m => m.RoleNameRequired()));
     }
 }
