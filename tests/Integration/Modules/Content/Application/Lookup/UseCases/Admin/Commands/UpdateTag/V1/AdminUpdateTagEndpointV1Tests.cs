@@ -19,9 +19,6 @@ namespace _116.Integration.Tests.Modules.Content.Application.Lookup.UseCases.Adm
 [Collection("Database")]
 public class AdminUpdateTagEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     [Fact]
     public async Task UpdateTag_WithNoAuth_ReturnsUnauthorized()
     {
@@ -86,9 +83,9 @@ public class AdminUpdateTagEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Tags}/{id}", request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("Slug", Localized<TagErrorMessage>(m => m.SlugTooLong(ContentConstants.MaxTagSlugLength)))
+        await response.ShouldBeValidationProblem(
+            "Slug",
+            Localized<TagErrorMessage>(m => m.SlugTooLong(ContentConstants.MaxTagSlugLength))
         );
     }
 
@@ -103,9 +100,9 @@ public class AdminUpdateTagEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Tags}/{id}", request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("Name", Localized<TagErrorMessage>(m => m.NameTooLong(ContentConstants.MaxTagNameLength)))
+        await response.ShouldBeValidationProblem(
+            "Name",
+            Localized<TagErrorMessage>(m => m.NameTooLong(ContentConstants.MaxTagNameLength))
         );
     }
 
@@ -118,9 +115,6 @@ public class AdminUpdateTagEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Tags}/{id}", request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("Slug", Localized<TagErrorMessage>(m => m.SlugInvalidFormat()))
-        );
+        await response.ShouldBeValidationProblem("Slug", Localized<TagErrorMessage>(m => m.SlugInvalidFormat()));
     }
 }
