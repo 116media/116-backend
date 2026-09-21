@@ -74,10 +74,7 @@ public class AdminDeleteShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Shorts}/{shortVideo.Id}");
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        AdminDeleteShortVideoResponse body = await response.ReadAsAsync<AdminDeleteShortVideoResponse>();
-        body.IsSuccess.Should().BeTrue();
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         await using ContentDbContext verifyContext = CreateDbContext<ContentDbContext>();
         ShortVideoEntity? persisted = await verifyContext.ShortVideos.FindAsync(shortVideo.Id);
