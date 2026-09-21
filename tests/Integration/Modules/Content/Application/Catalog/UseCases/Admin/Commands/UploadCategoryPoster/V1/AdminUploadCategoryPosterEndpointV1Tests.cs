@@ -21,9 +21,6 @@ public class AdminUploadCategoryPosterEndpointV1Tests(PostgresFixture db) : Base
 {
     private const string PosterSegment = "poster";
 
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     private static MultipartFormDataContent BuildPosterContent()
     {
         var content = new MultipartFormDataContent();
@@ -182,9 +179,6 @@ public class AdminUploadCategoryPosterEndpointV1Tests(PostgresFixture db) : Base
 
         var response = await Client.PutAsync($"{ApiRoutes.Admin.Categories}/{Guid.NewGuid()}/{PosterSegment}", content);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("File", Localized<CategoryErrorMessage>(m => m.FileRequired()))
-        );
+        await response.ShouldBeValidationProblem("File", Localized<CategoryErrorMessage>(m => m.FileRequired()));
     }
 }
