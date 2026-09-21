@@ -212,7 +212,7 @@ public class PublicGetOwnArticleFavoritesEndpointV1Tests(PostgresFixture db) : B
         );
         HttpResponseMessage collectionResponse = await Client.GetAsync(CommentedUrl);
 
-        deleteResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        deleteResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
         PaginatedResult<UserCommentedArticleDto> body = await collectionResponse.ReadAsAsync<
             PaginatedResult<UserCommentedArticleDto>
         >();
