@@ -172,4 +172,25 @@ public class AdminUpsertAlbumStreamingLinkEndpointV1Tests(PostgresFixture db) : 
         persisted.Should().Contain(link => link.Platform == EnumStreamingPlatform.Spotify);
         persisted.Should().Contain(link => link.Platform == EnumStreamingPlatform.Tidal);
     }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("open.spotify.com/album/no-scheme")]
+    [InlineData("javascript:alert(1)")]
+    public async Task UpsertAlbumStreamingLink_WithMalformedUrl_ReturnsBadRequest(string url)
+    {
+        AlbumEntity album = await SeedAlbumAsync();
+        Client.AuthenticateAsAdmin();
+
+        var response = await Client.PutAsJsonAsync(
+            Url(album.Id, EnumStreamingPlatform.Spotify),
+            new AdminUpsertAlbumStreamingLinkRequest(url)
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
+        bool anyPersisted = await ctx.StreamingLinks.AnyAsync(link => link.AlbumId == album.Id);
+        anyPersisted.Should().BeFalse();
+    }
 }
