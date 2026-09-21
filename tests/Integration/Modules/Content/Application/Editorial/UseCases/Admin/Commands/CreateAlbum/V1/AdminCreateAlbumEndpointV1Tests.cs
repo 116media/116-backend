@@ -1,4 +1,5 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateAlbum.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
@@ -112,5 +113,29 @@ public class AdminCreateAlbumEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task CreateAlbum_WithAReleaseTypeOutsideTheEnum_ReturnsTheLocalizedTypeError()
+    {
+        Client.AuthenticateAsSuperAdmin();
+
+        // An out-of-range integer binds to the enum, so the rule guards what the binder allows.
+        var response = await Client.PostAsJsonAsync(
+            ApiRoutes.Admin.Albums,
+            new
+            {
+                Name = "Album Name",
+                ArtistId = (Guid?)null,
+                ReleaseYear = (short?)null,
+                Label = (string?)null,
+                ReleaseType = 999,
+            }
+        );
+
+        await response.ShouldBeValidationProblem(
+            "ReleaseType",
+            Localized<AlbumErrorMessage>(m => m.InvalidReleaseType())
+        );
     }
 }
