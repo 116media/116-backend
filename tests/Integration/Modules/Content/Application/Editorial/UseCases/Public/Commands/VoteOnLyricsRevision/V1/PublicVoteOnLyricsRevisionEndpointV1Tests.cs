@@ -1,6 +1,7 @@
 using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Editorial.UseCases.Public.Commands.VoteOnLyricsRevision.V1;
 using _116.Content.Application.Shared.Errors.Messages;
+using _116.Content.Domain.Constants;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
@@ -30,6 +31,22 @@ public class PublicVoteOnLyricsRevisionEndpointV1Tests(PostgresFixture db) : Bas
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task VoteOnLyricsRevision_WithOversizedComment_ReturnsBadRequestBeforeReachingTheHandler()
+    {
+        Client.AuthenticateAsVisitor();
+
+        var response = await Client.PostAsJsonAsync(
+            Routes.Public.LyricsSubmissionsAndRevisions.RevisionVotes(Guid.NewGuid()),
+            new PublicVoteOnLyricsRevisionRequest(
+                EnumVote.Approve,
+                new string('c', ContentConstants.MaxVoteCommentLength + 1)
+            )
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact]
