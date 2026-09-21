@@ -132,7 +132,7 @@ public class CacheInvalidationRegressionTests(PostgresFixture db) : BaseApiTest(
         var delete = await Client.DeleteAsync(
             $"{ApiRoutes.Admin.Articles}/{article.Id}/{InteractionsRouteConstants.Comments}/{comment.Id}"
         );
-        delete.StatusCode.Should().Be(HttpStatusCode.OK);
+        delete.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         await using (ContentDbContext verify = CreateDbContext<ContentDbContext>())
         {
@@ -185,7 +185,7 @@ public class CacheInvalidationRegressionTests(PostgresFixture db) : BaseApiTest(
 
         Client.AuthenticateAsSuperAdmin();
         var delete = await Client.DeleteAsync($"{ApiRoutes.Admin.Articles}/{draft.Id}");
-        delete.StatusCode.Should().Be(HttpStatusCode.OK);
+        delete.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         Client.ClearAuthentication();
         var fresh = await Client.GetAsync($"{Routes.Public.Articles.Popular()}?limit=10");
@@ -229,7 +229,7 @@ public class CacheInvalidationRegressionTests(PostgresFixture db) : BaseApiTest(
 
         Client.AuthenticateAsSuperAdmin();
         var delete = await Client.DeleteAsync($"{ApiRoutes.Admin.Videos}/{draft.Id}");
-        delete.StatusCode.Should().Be(HttpStatusCode.OK);
+        delete.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         Client.ClearAuthentication();
         var fresh = await Client.GetAsync($"{Routes.Public.Videos.Popular()}?limit=10");
