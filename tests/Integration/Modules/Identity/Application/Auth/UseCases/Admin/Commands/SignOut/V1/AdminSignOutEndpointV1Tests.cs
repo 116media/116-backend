@@ -22,9 +22,6 @@ public class AdminSignOutEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
     private const string SignOutUrl = $"{AuthUrl}/{AuthRouteConstants.SignOut}";
     private const string SignOutAllUrl = $"{AuthUrl}/{AuthRouteConstants.SignOutAll}";
 
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     [Fact]
     public async Task SignOut_WithNoAuth_ReturnsUnauthorized()
     {
@@ -119,9 +116,9 @@ public class AdminSignOutEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
         var request = new AdminSignOutRequestBuilder().WithRefreshToken(string.Empty).Build();
         var response = await Client.PostAsJsonAsync(SignOutUrl, request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("RefreshToken", Localized<ValidationErrorMessage>(m => m.RefreshTokenRequired()))
+        await response.ShouldBeValidationProblem(
+            "RefreshToken",
+            Localized<ValidationErrorMessage>(m => m.RefreshTokenRequired())
         );
     }
 }
