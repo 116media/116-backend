@@ -3,6 +3,7 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.ResolveAlbumStr
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Exceptions;
 using _116.Content.Application.Shared.Services;
+using _116.Content.Domain.Constants;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
@@ -225,5 +226,38 @@ public class AdminResolveAlbumStreamingLinksEndpointV1Tests(PostgresFixture db) 
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task ResolveStreamingLinks_WithAnEmptySourceUrl_ReturnsTheLocalizedRequiredError()
+    {
+        AlbumEntity album = await SeedAlbumAsync();
+        Client.AuthenticateAsAdmin();
+
+        var response = await Client.PostAsJsonAsync(Url(album.Id), new AdminResolveAlbumStreamingLinksRequest(""));
+
+        await response.ShouldBeValidationProblem(
+            "SourceUrl",
+            Localized<StreamingLinkErrorMessage>(m => m.SourceUrlRequired())
+        );
+    }
+
+    [Fact]
+    public async Task ResolveStreamingLinks_WithAnOverlongSourceUrl_ReturnsTheLocalizedLengthError()
+    {
+        AlbumEntity album = await SeedAlbumAsync();
+        Client.AuthenticateAsAdmin();
+
+        var response = await Client.PostAsJsonAsync(
+            Url(album.Id),
+            new AdminResolveAlbumStreamingLinksRequest(
+                "https://open.spotify.com/" + new string('a', ContentConstants.MaxStreamingLinkUrlLength)
+            )
+        );
+
+        await response.ShouldBeValidationProblem(
+            "SourceUrl",
+            Localized<StreamingLinkErrorMessage>(m => m.SourceUrlTooLong(ContentConstants.MaxStreamingLinkUrlLength))
+        );
     }
 }
