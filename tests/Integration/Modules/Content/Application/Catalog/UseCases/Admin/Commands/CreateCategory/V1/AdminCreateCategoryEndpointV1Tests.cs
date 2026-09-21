@@ -16,9 +16,6 @@ namespace _116.Integration.Tests.Modules.Content.Application.Catalog.UseCases.Ad
 [Collection("Database")]
 public class AdminCreateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     private static string ShortName(string prefix = "c") => $"{prefix}{Guid.NewGuid().ToString("N")[..8]}";
 
     private static string ShortSlug(string prefix = "s") => $"{prefix}-{Guid.NewGuid().ToString("N")[..8]}";
@@ -155,10 +152,7 @@ public class AdminCreateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Categories}/{contentType.Id}", request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("Name", Localized<CategoryErrorMessage>(m => m.NameRequired()))
-        );
+        await response.ShouldBeValidationProblem("Name", Localized<CategoryErrorMessage>(m => m.NameRequired()));
     }
 
     [Fact]
@@ -179,10 +173,7 @@ public class AdminCreateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Categories}/{contentType.Id}", request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("Slug", Localized<CategoryErrorMessage>(m => m.SlugRequired()))
-        );
+        await response.ShouldBeValidationProblem("Slug", Localized<CategoryErrorMessage>(m => m.SlugRequired()));
     }
 
     [Fact]
@@ -201,9 +192,9 @@ public class AdminCreateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Categories}/not-a-guid", request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("ContentTypeId", Localized<ContentTypeErrorMessage>(m => m.Localizer["IdInvalid"].Value))
+        await response.ShouldBeValidationProblem(
+            "ContentTypeId",
+            Localized<ContentTypeErrorMessage>(m => m.Localizer["IdInvalid"].Value)
         );
     }
 
