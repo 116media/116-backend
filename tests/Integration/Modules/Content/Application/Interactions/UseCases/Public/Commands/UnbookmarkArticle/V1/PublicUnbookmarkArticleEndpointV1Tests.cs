@@ -60,9 +60,7 @@ public class PublicUnbookmarkArticleEndpointV1Tests(PostgresFixture db) : BaseAp
 
         var response = await Client.DeleteAsync(Routes.Public.Articles.Bookmarks(article.Id));
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var body = await response.ReadAsAsync<PublicUnbookmarkArticleResponse>();
-        body.IsSuccess.Should().BeTrue();
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         await using var verifyDb = CreateDbContext<ContentDbContext>();
         (await verifyDb.ArticleBookmarks.AnyAsync(b => b.ArticleId == article.Id && b.UserId == TestUser.VisitorId))
