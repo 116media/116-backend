@@ -18,33 +18,6 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class PublicGetArtistsEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
-    /// <summary>
-    /// Resolves FluentValidation's own built-in message for a rule that carries no
-    /// <c>WithMessage</c> override, through the same static language manager the in-process
-    /// test host resolved it with, under the culture a header-less request selects.
-    /// </summary>
-    /// <param name="validatorName">The FluentValidation validator name keying the message.</param>
-    /// <param name="arguments">The placeholder values to substitute into the template.</param>
-    /// <returns>The built-in message the endpoint produced.</returns>
-    private static string BuiltInRuleMessage(
-        string validatorName,
-        params (string Placeholder, string Value)[] arguments
-    )
-    {
-        using var cultureScope = new CultureScope(LocalizedMessage.DefaultCulture);
-
-        string template = ValidatorOptions.Global.LanguageManager.GetString(validatorName);
-
-        return arguments.Aggregate(
-            template,
-            (message, argument) =>
-                message.Replace($"{{{argument.Placeholder}}}", argument.Value, StringComparison.Ordinal)
-        );
-    }
-
     /// <summary>
     /// Seeds an artist with one published lyrics page so it clears the content predicate.
     /// </summary>
@@ -181,10 +154,7 @@ public class PublicGetArtistsEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         var response = await Client.GetAsync(Routes.Public.Artists.Directory($"?letter={letter}"));
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("Letter", BuiltInRuleMessage("PredicateValidator", ("PropertyName", "Letter")))
-        );
+        await response.ShouldBeValidationProblem("Letter", Localized<ArtistErrorMessage>(m => m.InvalidLetterBucket()));
     }
 
     [Fact]
@@ -194,17 +164,9 @@ public class PublicGetArtistsEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         var response = await Client.GetAsync(Routes.Public.Artists.Directory("?search=f"));
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail(
-                "Search",
-                BuiltInRuleMessage(
-                    "MinimumLengthValidator",
-                    ("PropertyName", "Search"),
-                    ("MinLength", ContentConstants.MinArtistSearchLength.ToString()),
-                    ("TotalLength", "1")
-                )
-            )
+        await response.ShouldBeValidationProblem(
+            "Search",
+            Localized<ArtistErrorMessage>(m => m.SearchTooShort(ContentConstants.MinArtistSearchLength))
         );
     }
 
@@ -215,9 +177,9 @@ public class PublicGetArtistsEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         var response = await Client.GetAsync(Routes.Public.Artists.Directory("?letter=F&search=fally"));
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail(string.Empty, Localized<ArtistErrorMessage>(m => m.LetterAndSearchExclusive()))
+        await response.ShouldBeValidationProblem(
+            string.Empty,
+            Localized<ArtistErrorMessage>(m => m.LetterAndSearchExclusive())
         );
     }
 }
