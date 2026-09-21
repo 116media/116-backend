@@ -23,9 +23,6 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class PublicSubmitLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     [Fact]
     public async Task SubmitLyrics_WithNoAuth_ReturnsUnauthorized()
     {
@@ -236,10 +233,7 @@ public class PublicSubmitLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest
             )
         );
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("Slug", Localized<LyricsErrorMessage>(m => m.SlugInvalidFormat()))
-        );
+        await response.ShouldBeValidationProblem("Slug", Localized<LyricsErrorMessage>(m => m.SlugInvalidFormat()));
 
         await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
         bool anySubmissionCreated = await ctx.LyricsSubmissions.AnyAsync();
