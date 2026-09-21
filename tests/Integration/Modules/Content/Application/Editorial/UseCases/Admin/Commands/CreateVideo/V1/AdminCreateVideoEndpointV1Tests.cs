@@ -18,9 +18,6 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminCreateVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     private async Task<CategoryEntity> SeedCategoryAsync()
     {
         return await SeedAsync<ContentDbContext, CategoryEntity>(ctx =>
@@ -122,10 +119,7 @@ public class AdminCreateVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Videos, request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("Title", Localized<VideoErrorMessage>(m => m.TitleRequired()))
-        );
+        await response.ShouldBeValidationProblem("Title", Localized<VideoErrorMessage>(m => m.TitleRequired()));
     }
 
     [Fact]
