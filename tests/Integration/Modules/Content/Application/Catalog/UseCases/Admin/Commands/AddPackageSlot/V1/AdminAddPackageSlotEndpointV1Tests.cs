@@ -17,9 +17,6 @@ namespace _116.Integration.Tests.Modules.Content.Application.Catalog.UseCases.Ad
 [Collection("Database")]
 public class AdminAddPackageSlotEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     private async Task<PackageEntity> SeedPackageAsync()
     {
         return await SeedAsync<ContentDbContext, PackageEntity>(ctx =>
@@ -74,9 +71,9 @@ public class AdminAddPackageSlotEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.PostAsJsonAsync(Routes.Admin.Packages.Slots(package.Id), request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("Quantity", Localized<PackageErrorMessage>(m => m.SlotQuantityMustBePositive()))
+        await response.ShouldBeValidationProblem(
+            "Quantity",
+            Localized<PackageErrorMessage>(m => m.SlotQuantityMustBePositive())
         );
     }
 
