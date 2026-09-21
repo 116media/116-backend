@@ -19,9 +19,6 @@ namespace _116.Integration.Tests.Modules.Content.Application.Lookup.UseCases.Adm
 [Collection("Database")]
 public class AdminUpdatePromotionLevelEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     [Fact]
     public async Task UpdatePromotionLevel_WithNoAuth_ReturnsUnauthorized()
     {
@@ -89,12 +86,9 @@ public class AdminUpdatePromotionLevelEndpointV1Tests(PostgresFixture db) : Base
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.PromotionLevels}/{id}", request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail(
-                "Name",
-                Localized<PromotionLevelErrorMessage>(m => m.NameTooLong(ContentConstants.MaxPromotionLevelNameLength))
-            )
+        await response.ShouldBeValidationProblem(
+            "Name",
+            Localized<PromotionLevelErrorMessage>(m => m.NameTooLong(ContentConstants.MaxPromotionLevelNameLength))
         );
     }
 
@@ -107,9 +101,9 @@ public class AdminUpdatePromotionLevelEndpointV1Tests(PostgresFixture db) : Base
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.PromotionLevels}/{id}", request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("PriceUsd", Localized<PromotionLevelErrorMessage>(m => m.PriceMustBeNonNegative()))
+        await response.ShouldBeValidationProblem(
+            "PriceUsd",
+            Localized<PromotionLevelErrorMessage>(m => m.PriceMustBeNonNegative())
         );
     }
 
@@ -122,9 +116,9 @@ public class AdminUpdatePromotionLevelEndpointV1Tests(PostgresFixture db) : Base
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.PromotionLevels}/{id}", request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("DurationDays", Localized<PromotionLevelErrorMessage>(m => m.DurationMustBePositive()))
+        await response.ShouldBeValidationProblem(
+            "DurationDays",
+            Localized<PromotionLevelErrorMessage>(m => m.DurationMustBePositive())
         );
     }
 
@@ -137,9 +131,9 @@ public class AdminUpdatePromotionLevelEndpointV1Tests(PostgresFixture db) : Base
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.PromotionLevels}/{id}", request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("SpotPriority", Localized<PromotionLevelErrorMessage>(m => m.InvalidSpotPriority()))
+        await response.ShouldBeValidationProblem(
+            "SpotPriority",
+            Localized<PromotionLevelErrorMessage>(m => m.InvalidSpotPriority())
         );
     }
 }
