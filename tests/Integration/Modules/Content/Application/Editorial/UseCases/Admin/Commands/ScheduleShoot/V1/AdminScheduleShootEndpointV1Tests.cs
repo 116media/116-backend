@@ -18,9 +18,6 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminScheduleShootEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     private async Task<VideoEntity> SeedVideoAsync()
     {
         return await SeedAsync<ContentDbContext, VideoEntity>(ctx =>
@@ -117,12 +114,9 @@ public class AdminScheduleShootEndpointV1Tests(PostgresFixture db) : BaseApiTest
             request
         );
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail(
-                "ShootingScheduledAt",
-                Localized<VideoErrorMessage>(m => m.ShootingScheduledDateMustBeInFuture())
-            )
+        await response.ShouldBeValidationProblem(
+            "ShootingScheduledAt",
+            Localized<VideoErrorMessage>(m => m.ShootingScheduledDateMustBeInFuture())
         );
     }
 }
