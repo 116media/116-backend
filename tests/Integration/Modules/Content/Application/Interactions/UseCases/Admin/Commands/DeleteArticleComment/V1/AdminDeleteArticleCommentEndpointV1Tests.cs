@@ -81,9 +81,7 @@ public class AdminDeleteArticleCommentEndpointV1Tests(PostgresFixture db) : Base
 
         var response = await Client.DeleteAsync(CommentUrl(article.Id, comment.Id));
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        AdminDeleteArticleCommentResponse body = await response.ReadAsAsync<AdminDeleteArticleCommentResponse>();
-        body.IsSuccess.Should().BeTrue();
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         await using ContentDbContext verifyDb = CreateDbContext<ContentDbContext>();
         ArticleCommentEntity? stored = await verifyDb
