@@ -15,9 +15,6 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminCreateShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     private static object BuildRequest(string title, string slug, Guid? videoId = null) =>
         new
         {
@@ -82,10 +79,7 @@ public class AdminCreateShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Shorts, BuildRequest(string.Empty, "valid-slug"));
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("Title", Localized<ShortVideoErrorMessage>(m => m.TitleRequired()))
-        );
+        await response.ShouldBeValidationProblem("Title", Localized<ShortVideoErrorMessage>(m => m.TitleRequired()));
     }
 
     [Fact]
@@ -95,10 +89,7 @@ public class AdminCreateShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Shorts, BuildRequest("Valid Title", string.Empty));
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("Slug", Localized<ShortVideoErrorMessage>(m => m.SlugRequired()))
-        );
+        await response.ShouldBeValidationProblem("Slug", Localized<ShortVideoErrorMessage>(m => m.SlugRequired()));
     }
 
     [Fact]
@@ -111,10 +102,7 @@ public class AdminCreateShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiT
             BuildRequest("Valid Title", "INVALID SLUG!!!")
         );
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("Slug", Localized<ShortVideoErrorMessage>(m => m.SlugInvalidFormat()))
-        );
+        await response.ShouldBeValidationProblem("Slug", Localized<ShortVideoErrorMessage>(m => m.SlugInvalidFormat()));
     }
 
     [Fact]
@@ -127,12 +115,9 @@ public class AdminCreateShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiT
             BuildRequest(new string('T', 300), "valid-slug")
         );
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail(
-                "Title",
-                Localized<ShortVideoErrorMessage>(m => m.TitleTooLong(ContentConstants.MaxShortVideoTitleLength))
-            )
+        await response.ShouldBeValidationProblem(
+            "Title",
+            Localized<ShortVideoErrorMessage>(m => m.TitleTooLong(ContentConstants.MaxShortVideoTitleLength))
         );
     }
 
@@ -146,12 +131,9 @@ public class AdminCreateShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiT
             BuildRequest("Valid Title", new string('a', 300))
         );
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail(
-                "Slug",
-                Localized<ShortVideoErrorMessage>(m => m.SlugTooLong(ContentConstants.MaxSlugLength))
-            )
+        await response.ShouldBeValidationProblem(
+            "Slug",
+            Localized<ShortVideoErrorMessage>(m => m.SlugTooLong(ContentConstants.MaxSlugLength))
         );
     }
 }
