@@ -41,10 +41,7 @@ public class InteractionFlowTests(PostgresFixture db) : BaseApiTest(db)
         }
 
         HttpResponseMessage unlikeResponse = await Client.DeleteAsync(Routes.Public.Articles.Likes(articleId));
-        unlikeResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        PublicUnlikeArticleResponse unlikeBody = await unlikeResponse.ReadAsAsync<PublicUnlikeArticleResponse>();
-        unlikeBody.IsSuccess.Should().BeTrue();
+        unlikeResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         await using (ContentDbContext unlikeContext = CreateDbContext<ContentDbContext>())
         {
