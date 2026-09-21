@@ -1,6 +1,7 @@
 using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpsertSingleStreamingLink.V1;
 using _116.Content.Application.Shared.Errors.Messages;
+using _116.Content.Domain.Constants;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
@@ -217,5 +218,24 @@ public class AdminUpsertSingleStreamingLinkEndpointV1Tests(PostgresFixture db) :
         await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
         bool anyPersisted = await ctx.StreamingLinks.AnyAsync(link => link.LyricsId == single.Id);
         anyPersisted.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task UpsertStreamingLink_WithAnOverlongUrl_ReturnsTheLocalizedLengthError()
+    {
+        LyricsEntity single = await SeedSingleAsync();
+        Client.AuthenticateAsAdmin();
+
+        var response = await Client.PutAsJsonAsync(
+            Url(single.Id, EnumStreamingPlatform.Spotify),
+            new AdminUpsertSingleStreamingLinkRequest(
+                "https://open.spotify.com/" + new string('a', ContentConstants.MaxStreamingLinkUrlLength)
+            )
+        );
+
+        await response.ShouldBeValidationProblem(
+            "Url",
+            Localized<StreamingLinkErrorMessage>(m => m.UrlTooLong(ContentConstants.MaxStreamingLinkUrlLength))
+        );
     }
 }
