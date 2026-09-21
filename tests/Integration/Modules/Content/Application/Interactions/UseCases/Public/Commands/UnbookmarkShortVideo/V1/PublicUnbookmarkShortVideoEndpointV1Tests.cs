@@ -56,9 +56,7 @@ public class PublicUnbookmarkShortVideoEndpointV1Tests(PostgresFixture db) : Bas
 
         var response = await Client.DeleteAsync(Routes.Public.Shorts.Bookmarks(shortVideo.Id));
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var body = await response.ReadAsAsync<PublicUnbookmarkShortVideoResponse>();
-        body.IsSuccess.Should().BeTrue();
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         await using var verifyDb = CreateDbContext<ContentDbContext>();
         (
