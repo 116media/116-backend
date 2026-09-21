@@ -1,8 +1,18 @@
 # Stage 16 — API contract & authorization hygiene
 
-Closes **[06 §3]**, **[06 §8]**, **[06 §10]** / **[08 §14]**, **[06 §11]**, **[06 §12]**,
-**[06 §13]**, **[08 §5]**, **[08 §11]**, **[08 §13]**, **[08 §19]**, **[07 S3]**, **[01 §1.4]**,
-**[01 §1.6]**, **[04 §16]**. The HTTP-surface debt no earlier stage owned.
+The HTTP-surface debt no earlier stage owned.
+
+**Closed:** **[06 §10]** / **[08 §14]** (routes), **[06 §11]** (rate limits), **[06 §13]**
+(validators), **[08 §5]** and **[08 §11]** (problem details), **[08 §13]** (v2), **[08 §19]**
+(DELETE semantics), **[07 S3]** (permissions decision), **[01 §1.4]** (dispatcher),
+**[01 §1.6]** (Mapster).
+
+**Partly closed:** **[06 §3]** / **[04 §16]** — the four bounded reference lists are capped;
+three derived reads remain, see the PR note at the end.
+
+**Still open:** **[06 §12]** — per-resource authorization
+tiers; 16.5 needs an owner decision. **[06 §8]** — admin/public dedup, opportunistic only and
+nothing was touched.
 
 (`pageSize` clamping `[06 §2]` / `[08 §6]` shipped in Stage 1 — `PaginatedRequest.MaxPageSize
 = 100` with constructor clamp, verified.)
@@ -81,7 +91,7 @@ Re-verified against the tree after Stage 15 landed (develop `be2eb195e`):
 ## Checklist
 
 - [ ] 16.1 — Census commit: unpaginated lists, misplaced routes, envelope DELETEs, validator-less commands
-- [ ] 16.2 — Unbounded lists paged/capped `[06 §3 / 04 §16]`
+- [~] 16.2 — Reference lists capped; three derived reads still open `[06 §3 / 04 §16]`
 - [x] 16.3 — The 7 misplaced public endpoints moved under `/public` `[06 §10 / 08 §14]`
 - [x] 16.4 — Write endpoints off `ContentBrowsing` onto write policies `[06 §11]`
 - [ ] 16.5 — Per-resource authorization unified (one admin tier per lifecycle) `[06 §12]`; S3 decision executed
@@ -445,4 +455,24 @@ shrinks; no consumer reads it — verified against dashboard/mobile before merge
 
 ---
 
-**PR:** `fix(api): pagination caps, route/rate-limit/authz hygiene and RFC 7807 completion`
+**PR (as landed):** `fix(api): route and rate-limit scoping, 204 deletes and RFC 7807 completion`
+
+The original title read `pagination caps, route/rate-limit/authz hygiene and RFC 7807
+completion`. Two of those did not land and the title is corrected rather than left aspirational:
+
+- **Pagination caps (16.2) — partly done.** D1's blanket cap is unsafe as one rule, so the item
+  was split rather than skipped. **Capped:** the four bounded reference lists — content types,
+  pricing tiers, promotion levels (`.Take(MaxReferenceListSize)` = 500) and tags, where the
+  builder's optional caller `limit` is now clamped to the same ceiling and applied even when the
+  caller sends none. `CategoryRepository.GetAllAsync` was already paginated and is untouched.
+  **Still open:** three derived reads where a cap would corrupt rather than truncate —
+  `GetAllRatingsForVideoAsync` feeds the average-rating computation in `VideoEngagementHandler`,
+  so a `Take(n)` there averages a subset and persists a wrong number; `GetAllByLyricsIdAsync`
+  and `GetAllByTranslationIdAsync` back "all translations/revisions for this item" reads. Those
+  need real pagination or a deliberate decision, not a cap.
+- **Authorization unification (16.5) — not done**, and it needs an owner decision, not a sweep.
+  Measured split: 88 Content endpoints on `RequireAdminOrSuperAdmin`, 54 on `RequireSuperAdminOnly`,
+  and the inconsistency is per resource — an Admin can upload an artist's avatar but not edit that
+  artist, deactivate a category but not create or update one, edit a video but not publish it.
+  Unifying moves production privilege up (locking admins out of work they do today) or down
+  (widening access). The S3 half is decided and recorded in D3.
