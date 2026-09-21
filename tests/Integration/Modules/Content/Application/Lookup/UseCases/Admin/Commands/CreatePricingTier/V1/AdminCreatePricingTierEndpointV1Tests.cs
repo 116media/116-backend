@@ -16,9 +16,6 @@ namespace _116.Integration.Tests.Modules.Content.Application.Lookup.UseCases.Adm
 [Collection("Database")]
 public class AdminCreatePricingTierEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     [Fact]
     public async Task CreatePricingTier_WithNoAuth_ReturnsUnauthorized()
     {
@@ -92,9 +89,6 @@ public class AdminCreatePricingTierEndpointV1Tests(PostgresFixture db) : BaseApi
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.PricingTiers, request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("Name", Localized<PricingTierErrorMessage>(m => m.NameRequired()))
-        );
+        await response.ShouldBeValidationProblem("Name", Localized<PricingTierErrorMessage>(m => m.NameRequired()));
     }
 }
