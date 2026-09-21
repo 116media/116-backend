@@ -30,10 +30,7 @@ public class AdminHardDeleteRoleEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.DeleteAsync(Routes.Admin.Roles.Hard(roleId));
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        var body = await response.ReadAsAsync<AdminHardDeleteRoleResponse>();
-        body.IsSuccess.Should().BeTrue();
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         await using IdentityDbContext verifyContext = CreateDbContext<IdentityDbContext>();
         bool exists = await verifyContext.Roles.AnyAsync(r => r.Id == roleId);
