@@ -38,9 +38,7 @@ public class AdminRemoveItemTierEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.DeleteAsync(Routes.Admin.Orders.ItemTier(order.Id, orderItem.Id, itemTier.Id));
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var body = await response.ReadAsAsync<AdminRemoveItemTierResponse>();
-        body.IsSuccess.Should().BeTrue();
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         await using ContentDbContext db = CreateDbContext<ContentDbContext>();
         ContentItemTierEntity? persisted = await db.ContentItemTiers.FindAsync(itemTier.Id);
