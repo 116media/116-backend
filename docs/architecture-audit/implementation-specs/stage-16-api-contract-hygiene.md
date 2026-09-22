@@ -7,22 +7,61 @@ Closes **[06 §3]**, **[06 §8]**, **[06 §10]** / **[08 §14]**, **[06 §11]**,
 (`pageSize` clamping `[06 §2]` / `[08 §6]` shipped in Stage 1 — `PaginatedRequest.MaxPageSize
 = 100` with constructor clamp, verified.)
 
-Verified in the current tree:
+Re-verified against the tree after Stage 15 landed (develop `be2eb195e`):
 
-- `Dispatcher.SendAsync` caches the handler **type** but calls
+- `Dispatcher.Send` caches the handler **type** but calls
   `handlerType.GetMethod("Handle", …)` and `handleMethod.Invoke(handler, parameters)` **per
-  request** `[01 §1.4]`.
-- `IdentityModule.cs:135` and `ContentModule.cs:136` both call
-  `services.AddSingleton(MappingRegistration.CreateConfiguration())` — two `TypeAdapterConfig`
-  singletons in one container; `GetRequiredService<TypeAdapterConfig>` resolves the last
-  registration, so the other module's mappings are silently discarded `[01 §1.6]`.
+  request** — `Shared/Application/Services/Dispatcher.cs:35,43,68,76` `[01 §1.4]`. Still true.
 - `ValidationDecorator` throws `ValidationException(failures)` carrying raw
-  `ValidationFailure` objects — which echo `AttemptedValue` (the submitted password, for a
-  password rule) back to the client `[08 §5]`.
-- Interaction DELETEs return `Results.Ok(new …Response(IsSuccess: true))` `[08 §19]`.
+  `ValidationFailure` objects, and `ValidationExceptionHandler:26` assigns them straight to
+  `problemDetails.Extensions["errors"]`, which `ExceptionHandler` writes with
+  `WriteAsJsonAsync`. The only serializer configuration is a `JsonStringEnumConverter`
+  (`Program.cs:149`), so nothing reshapes or filters the value `[08 §5]`. Still true, and
+  wider than the audit recorded — the serialized shape, measured against FluentValidation
+  12.0.0 with a real validator, is:
 
-> Draft — finalized against the tree Stage 15 lands on. Every census below re-runs at
-> finalization; Stages 9–15 move endpoints.
+  ```json
+  "errors": [{
+      "PropertyName": "Password",
+      "ErrorMessage": "The length of 'Password' must be at least 8 characters. You entered 7 characters.",
+      "AttemptedValue": "hunter2",
+      "CustomState": null,
+      "Severity": 0,
+      "ErrorCode": "MinimumLengthValidator",
+      "FormattedMessagePlaceholderValues": {
+          "MinLength": 8, "MaxLength": -1, "TotalLength": 7,
+          "PropertyName": "Password", "PropertyValue": "hunter2", "PropertyPath": "Password"
+      }
+  }]
+  ```
+
+  Three separate facts follow, and 16.7 has to close all three:
+
+  1. `FormattedMessagePlaceholderValues.PropertyValue` is a verbatim **second copy** of
+     `AttemptedValue`. Stripping `AttemptedValue` alone leaves the password in the response.
+  2. `detail` is a **third copy** of the same information: the handler passes
+     `exception.Message`, and FluentValidation builds it by concatenating every failure
+     message, newlines and a trailing `Severity: Error` included. Even where the message
+     omits the value it leaks around it — `You entered 7 characters` is a password-length
+     disclosure.
+  3. `CustomState`, `Severity` and `ErrorCode` are not disclosures. `WithState`,
+     `WithSeverity` and `WithErrorCode` are called **0 times** in `src/`, so the first two are
+     permanently `null` and `0`, and `ErrorCode` is whatever FluentValidation names its own
+     validator class. They are a contract defect, not a security one: three structurally dead
+     fields a client can still bind to, keyed in PascalCase inside a camelCase document.
+- Interaction DELETEs return `Results.Ok(new …Response(IsSuccess: true))` `[08 §19]`. Still
+  true; 28 `MapDelete` endpoints.
+- **Resolved before this stage.** The two competing `TypeAdapterConfig` singletons are gone.
+  All three modules now call `services.AddModuleMappings(new MappingRegistration())`, which
+  registers each `IRegister` and builds one config from `GetServices<IRegister>()` behind
+  `TryAddSingleton` (`Shared/Infrastructure/ModuleMappings.cs:22-32`). 16.9b has nothing left
+  to do `[01 §1.6]`.
+- **Resolved before this stage.** No `MapToApiVersion(2)` exists anywhere in `src/`. The
+  phantom version is already gone, so the v2 half of 16.8 and decision D2 are moot `[08 §13]`.
+- **Not a defect.** Route parameters bound as `string` and parsed with an unguarded
+  `Guid.Parse` do **not** produce a 500: `FormatExceptionStrategy` catches `FormatException`
+  and returns 400 with a localized "invalid identifier" message. Any validator work below is
+  about payload rules, not id parsing.
 
 ---
 
@@ -31,11 +70,11 @@ Verified in the current tree:
 | # | Question | Options weighed | Decision |
 | --- | --- | --- | --- |
 | D1 | Unbounded lists | paginate all 22, or cap the small ones | **Paginate the growing ones, cap the bounded-by-nature ones.** Tags/categories/content-types are small reference lists — a server-side `Take(500)` + doc note suffices. User-generated collections (comments already paginated; playlists, shares) get real pagination. `[04 §16]`'s unbounded reads join whichever bucket their table's growth implies. |
-| D2 | The v2 declaration | build v2, or delete it | **Delete.** One `MapToApiVersion(2)` exists in the codebase and nothing exercises it; carrying a phantom version costs every endpoint's `.WithApiVersionSet` ceremony. Re-introduce when a real v2 consumer exists `[08 §13]`. |
+| D2 | The v2 declaration | build v2, or delete it | **Moot — already deleted.** The decision was to delete, and no `MapToApiVersion(2)` remains anywhere in `src/`. Kept for the record; re-introduce a version when a real v2 consumer exists `[08 §13]`. |
 | D3 | S3 (28 permissions, checked nowhere) | enforce permissions per endpoint, or cut to roles | **Cut to roles, keep the tables.** The three-role model is what every endpoint actually checks (`UserRolePolicies.*`); enforcing 28 permissions retroactively would need a product decision per endpoint that nobody has asked for. The seeded data stays (it is correct), the JWT **stops carrying the permissions claim** (it bloats every token for zero checks), and the decision is recorded so the model is deliberate, not dead `[07 S3]`. |
 | D4 | Envelope removal | sweep all `{isSuccess}` responses, or DELETEs only | **DELETEs → 204 now; the rest stays.** The full envelope sweep breaks every consumer for cosmetic gain; DELETE-returns-body is the semantically wrong case, and the 28 DELETE endpoints are a bounded, coordinated break `[08 §19]`. |
 | D5 | Dispatcher | compiled delegates, or typed wrapper resolution | **Typed wrapper.** A cached `RequestHandlerWrapper<TResponse>` resolved per request type dispatches through a virtual call — no `MethodInfo`, no `Invoke`, no boxing, same DI semantics. |
-| D6 | Mapster | merge the two configs, or scan both into one | **One config, both registrations scan into it.** `TypeAdapterConfig` is registered once in the host; each module contributes via `MappingRegistration.Apply(config)`. Both modules' mappings finally coexist `[01 §1.6]`. |
+| D6 | Mapster | merge the two configs, or scan both into one | **Moot — already done.** `AddModuleMappings` registers each module's `IRegister` and builds a single `TypeAdapterConfig` from `GetServices<IRegister>()` under `TryAddSingleton`, so all three modules' mappings coexist. No competing singletons remain `[01 §1.6]`. |
 
 ---
 
@@ -46,10 +85,10 @@ Verified in the current tree:
 - [ ] 16.3 — The 7 misplaced public endpoints moved under `/public`; scope route-group helpers `[06 §10 / 08 §14]`
 - [ ] 16.4 — Write endpoints off `ContentBrowsing` onto write policies `[06 §11]`
 - [ ] 16.5 — Per-resource authorization unified (one admin tier per lifecycle) `[06 §12]`; S3 decision executed
-- [ ] 16.6 — Validators for the validator-less commands; `ProducesValidationProblem` on mutations `[06 §13]`
-- [ ] 16.7 — RFC 7807 completion: validation errors without `AttemptedValue`, `type` URIs, `traceId` `[08 §5 / 08 §11]`
-- [ ] 16.8 — DELETEs → 204; v2 declaration deleted `[08 §19 / 08 §13]`
-- [ ] 16.9 — Dispatcher wrapper; single Mapster config `[01 §1.4 / 01 §1.6]`
+- [ ] 16.6 — Validators for the 6 free-text commands; `ProducesValidationProblem` on mutations `[06 §13]`
+- [ ] 16.7 — RFC 7807 completion: validation errors reshaped (no raw `ValidationFailure`, no echoed input in `detail`), `type` URIs `[08 §5 / 08 §11]`
+- [ ] 16.8 — DELETEs → 204 (28 endpoints) `[08 §19]` — the v2 half is already done
+- [ ] 16.9 — Dispatcher wrapper `[01 §1.4]` — the single-Mapster-config half is already done
 - [ ] 16.10 — Verify (build 0/0, csharpier, unit, integration; censuses clean)
 
 ---
@@ -132,41 +171,103 @@ Each module's `MappingRegistration.CreateConfiguration()` becomes
 
 ## Part B — Validation and problem details
 
-`ValidationDecorator` keeps throwing, but the strategy that renders it maps to field errors
-without echoing input:
+`ValidationDecorator` keeps throwing. `ValidationExceptionHandler` — the existing class, kept
+under its existing name — stops assigning `exception.Errors` and projects the failures instead.
+Both copies of the submitted value die with the projection, and `detail` stops being
+`exception.Message`:
 
 ```csharp
 /// <summary>
-/// Renders FluentValidation failures as an RFC 9457 problem with one entry per field —
-/// property, message, rule code. The submitted value is deliberately never echoed.
+/// Renders FluentValidation failures as one entry per field, carrying messages only.
+/// The submitted value is never echoed, in the errors or in the detail.
 /// </summary>
-public class ValidationExceptionStrategy : BaseExceptionStrategy<ValidationException>
+public sealed class ValidationExceptionHandler : BaseExceptionStrategy<ValidationException>
 {
     /// <inheritdoc />
-    protected override int StatusCode => StatusCodes.Status400BadRequest;
-
-    /// <inheritdoc />
-    protected override void Enrich(ProblemDetails problem, ValidationException exception)
+    public override ProblemDetails CreateProblemDetails(ValidationException exception, HttpContext context)
     {
-        problem.Extensions["errors"] = exception
+        var msg = context.RequestServices.GetRequiredService<SharedExceptionMessage>();
+
+        ProblemDetails problemDetails = CreateStandardProblemDetails(
+            title: nameof(ValidationException),
+            detail: msg.ValidationFailed(),
+            statusCode: StatusCodes.Status400BadRequest,
+            context: context
+        );
+
+        problemDetails.Extensions["errors"] = exception
             .Errors.GroupBy(failure => failure.PropertyName)
             .ToDictionary(
                 group => JsonNamingPolicy.CamelCase.ConvertName(group.Key),
                 group => group.Select(failure => failure.ErrorMessage).ToArray()
             );
+
+        return problemDetails;
     }
 }
 ```
 
-Problem completion (`[08 §11]`) rides the Stage 7 vocabulary: `type` becomes
-`urn:116:problem:{RuleCode}` (or `about:blank` for non-rule problems), `Content-Type` asserts
-`application/problem+json`, and the correlation middleware from Stage 11 stamps
-`problem.Extensions["traceId"]`. The `ShouldBeProblem<TException>` test helper grows the
-matching assertions once, which re-verifies every endpoint suite.
+`SharedExceptionMessage.ValidationFailed()` is new and joins the three resx files beside
+`InvalidIdentifier()`, which `FormatExceptionStrategy` already uses the same way. A fixed
+localized sentence replaces the concatenated failure dump; the per-field detail is in
+`errors`, where a client can actually use it.
 
-The validator-less commands get validators in the house shape (rule extensions +
-`i18n.*.Msg`); the census at finalization decides the exact list (the audit's 44 predates
-Stages 6–9).
+**Test blast radius, measured — this is the real cost of 16.7 and it is not small.**
+`ValidationExceptionHandlerTests` asserts the defect directly
+(`Extensions["errors"].Should().BeEquivalentTo(failures)` at `:58`, and casts to
+`IEnumerable<ValidationFailure>` at `:115`); both are rewritten to the projected dictionary
+rather than kept. Bigger: **63 integration test files each declare their own private
+`ValidationDetail(...)` helper**, every one of them
+`new ValidationException(failures.Select(...)).Message` — the concatenated string — feeding
+**118 `ShouldBeProblem` assertions**. They pass today only because they rebuild the exact
+string the handler leaks. Changing `detail` breaks all 118 at once.
+
+Sequence that keeps it mechanical:
+
+1. Replace the 63 private helpers with one shared helper on the integration test base, and add
+   a companion `ShouldHaveFieldErrors((property, message), …)` that asserts the `errors`
+   dictionary instead of the detail string. The per-field expectations the 118 call sites
+   already pass move across unchanged — they are the right assertion, they were simply being
+   made against the wrong field.
+2. Only then change the handler. The suite now asserts the fixed `detail` once and the field
+   messages per case.
+
+A regression test submits a failing password and asserts the response body contains neither
+the submitted value nor `AttemptedValue`, `PropertyValue`, `CustomState`, `Severity`,
+`ErrorCode` or `FormattedMessagePlaceholderValues` as keys.
+
+Problem completion (`[08 §11]`) rides the Stage 7 vocabulary: `type` becomes
+`urn:116:problem:{RuleCode}` (or `about:blank` for non-rule problems) and `Content-Type`
+asserts `application/problem+json`. `traceId` is **already stamped** for every strategy —
+`BaseExceptionStrategy.CreateStandardProblemDetails:46` sets it from `context.TraceIdentifier`
+alongside a `timestamp` — so that half is done; Stage 11's correlation id only has to replace
+the source, not add the field. The `ShouldBeProblem<TException>` test helper grows the matching
+assertions once, which re-verifies every endpoint suite.
+
+### 16.6 The validator gap, measured
+
+Re-run across **all** modules after Stage 15: **205 commands, 158 with a validator, 47
+without** (44 Content, 2 Identity, 1 Mailer). The audit's "44" was close but Content-only.
+
+Thirty-five of the 47 take nothing but a `Guid` or an enum. Routing and the type system
+already reject anything else, and a malformed id returns 400 through
+`FormatExceptionStrategy`, so a validator there is ceremony. **They are deliberately left
+alone.**
+
+The remaining **six accept unbounded free text that reaches the database with no length or
+format check**, and those are the whole of 16.6:
+
+| Command | Unchecked input |
+| --- | --- |
+| `AdminUpsertAlbumStreamingLinkCommand` | `string Url` |
+| `AdminUpsertSingleStreamingLinkCommand` | `string Url` |
+| `PublicVoteOnLyricsRevisionCommand` | `string? Comment` |
+| `PublicVoteOnTranslationRevisionCommand` | `string? Comment` |
+| `AdminRejectPaymentCommand` | `string? Notes` |
+| `PublicRecordShortVideoViewCommand` | `string? DeviceId`, `string? IpAddress`, `string? UserAgent` |
+
+Both `Url` values want a well-formed absolute URL; the rest want a maximum length matching the
+column. `ProducesValidationProblem` still goes on every mutation regardless.
 
 ## Part C — Surface corrections
 
@@ -180,7 +281,9 @@ public static RouteGroupBuilder MapPublicGroup(this IEndpointRouteBuilder app, s
 ```
 
 The 7 endpoints outside `/public` move under it; old paths return
-`Results.Redirect(permanent: true)` stubs for one release, then die.
+`Results.Redirect(permanent: true)` stubs for one release, then die. Re-measured after Stage 15
+and still exactly 7, all in Editorial: propose/vote on lyrics revisions, propose/vote on
+translation revisions, get translation revisions, submit lyrics, request artist claim.
 
 **DELETE semantics `[08 §19]`** — the interaction unlike/unbookmark endpoints:
 
@@ -197,7 +300,14 @@ tests change their assertion from body to status.
 
 **Rate limits `[06 §11]`** — interaction/mutation endpoints move from
 `RateLimitPolicies.ContentBrowsing` (a fixed-window read policy) to the appropriate write
-policies; the census lists each endpoint's target policy in the PR description.
+policies; the census lists each endpoint's target policy in the PR description. `ContentBrowsing`
+is referenced 227 times across 295 endpoint files, so the sweep is mechanical but wide.
+
+**Unbounded lists `[06 §3]`** — re-measured after Stage 15: **22** queries return a collection
+with no `Page`/`PageSize` (19 Content, 3 Identity), matching the original count. Per D1 the
+reference lists (tags, categories, content types, pricing tiers, promotion levels) take a
+server-side cap; the growing ones (playlists, promotion feeds, popular/promoted lists, translation
+revisions, session export) take real pagination.
 
 **Authorization `[06 §12]` + S3** — per resource, one admin tier across its lifecycle (the
 census tabulates current SuperAdmin/Admin splits and the chosen tier). The JWT permissions
@@ -234,10 +344,14 @@ shrinks; no consumer reads it — verified against dashboard/mobile before merge
 ## Verification
 
 1. Build/format/unit/integration green.
-2. `grep -rn "MapToApiVersion(2" src/` → empty.
+2. `grep -rn "MapToApiVersion(2" src/` → empty. **Already empty before the stage starts.**
 3. `grep -rn "AddSingleton" src/Modules/*/*/[A-Z]*Module.cs | grep TypeAdapterConfig` → empty.
-4. `grep -rn "GetMethod(\"Handle\"" src/Shared` → empty.
-5. Route census: every mapped route matches `/api/v{version}/{scope}/…`.
+   **Already empty**; the modules call `AddModuleMappings` instead.
+4. `grep -rn "GetMethod(\"Handle\"" src/Shared` → empty. Currently 2 hits in
+   `Shared/Application/Services/Dispatcher.cs`; this is the real check for 16.9.
+5. Route census: every mapped route matches `/api/v{version}/{scope}/…`. Currently 7 fail.
+6. `MapDelete` endpoints returning a body → 0. Currently 28.
+7. Commands accepting free text without a validator → 0. Currently 6 (16.6's list).
 
 ---
 
