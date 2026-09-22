@@ -18,9 +18,6 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminUploadShortVideoFileEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     private static MultipartFormDataContent CreateVideoContent()
     {
         var formContent = new MultipartFormDataContent();
@@ -95,13 +92,10 @@ public class AdminUploadShortVideoFileEndpointV1Tests(PostgresFixture db) : Base
 
         formContent.Dispose();
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail(
-                "File",
-                Localized<ShortVideoErrorMessage>(m =>
-                    m.FileInvalidExtension(string.Join(", ", FileConstants.AllowedVideoExtensions))
-                )
+        await response.ShouldBeValidationProblem(
+            "File",
+            Localized<ShortVideoErrorMessage>(m =>
+                m.FileInvalidExtension(string.Join(", ", FileConstants.AllowedVideoExtensions))
             )
         );
     }
@@ -149,9 +143,6 @@ public class AdminUploadShortVideoFileEndpointV1Tests(PostgresFixture db) : Base
             formContent
         );
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("File", Localized<ShortVideoErrorMessage>(m => m.FileRequired()))
-        );
+        await response.ShouldBeValidationProblem("File", Localized<ShortVideoErrorMessage>(m => m.FileRequired()));
     }
 }

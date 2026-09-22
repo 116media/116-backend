@@ -92,7 +92,7 @@ public class PublicRecordShortVideoViewEndpointV1 : ICarterModule
             .WithSummary(summary: PublicRecordShortVideoViewMetaField.RecordShortVideoView.Summary)
             .WithDescription(description: PublicRecordShortVideoViewMetaField.RecordShortVideoView.Description)
             .AllowAnonymous()
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentContribution)
             .Produces<PublicRecordShortVideoViewResponse>(statusCode: StatusCodes.Status200OK)
             .ProducesProblem(statusCode: StatusCodes.Status404NotFound)
             .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);

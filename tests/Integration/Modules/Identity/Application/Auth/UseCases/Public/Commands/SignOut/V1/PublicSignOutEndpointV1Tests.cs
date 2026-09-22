@@ -17,9 +17,6 @@ namespace _116.Integration.Tests.Modules.Identity.Application.Auth.UseCases.Publ
 [Collection("Database")]
 public class PublicSignOutEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     [Fact]
     public async Task SignOut_WithNoAuth_ReturnsUnauthorized()
     {
@@ -39,9 +36,9 @@ public class PublicSignOutEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.PostAsJsonAsync(Routes.Public.Auth.SignOut(), request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("RefreshToken", Localized<ValidationErrorMessage>(m => m.RefreshTokenRequired()))
+        await response.ShouldBeValidationProblem(
+            "RefreshToken",
+            Localized<ValidationErrorMessage>(m => m.RefreshTokenRequired())
         );
     }
 

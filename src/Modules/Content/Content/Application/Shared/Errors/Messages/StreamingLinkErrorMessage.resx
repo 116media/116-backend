@@ -24,4 +24,19 @@
   <data name="NothingResolved" xml:space="preserve">
     <value>The provider found no other platforms for this release.</value>
   </data>
+  <data name="UrlRequired" xml:space="preserve">
+    <value>A streaming link URL is required.</value>
+  </data>
+  <data name="UrlTooLong" xml:space="preserve">
+    <value>The streaming link URL must not exceed {0} characters.</value>
+  </data>
+  <data name="UrlMalformed" xml:space="preserve">
+    <value>The streaming link URL must be an absolute http or https URL.</value>
+  </data>
+  <data name="SourceUrlRequired" xml:space="preserve">
+    <value>A source URL is required.</value>
+  </data>
+  <data name="SourceUrlTooLong" xml:space="preserve">
+    <value>The source URL must not exceed {0} characters.</value>
+  </data>
 </root>

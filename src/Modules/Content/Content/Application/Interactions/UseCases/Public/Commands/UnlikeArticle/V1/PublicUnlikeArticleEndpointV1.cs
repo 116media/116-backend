@@ -14,12 +14,6 @@ using Microsoft.AspNetCore.Routing;
 namespace _116.Content.Application.Interactions.UseCases.Public.Commands.UnlikeArticle.V1;
 
 /// <summary>
-/// Response model for a successful PublicUnlikeArticle operation.
-/// </summary>
-/// <param name="IsSuccess">Indicates if the operation was successful.</param>
-public record PublicUnlikeArticleResponse(bool IsSuccess);
-
-/// <summary>
 /// Defines the unlike article endpoint.
 /// </summary>
 public class PublicUnlikeArticleEndpointV1 : ICarterModule
@@ -46,21 +40,16 @@ public class PublicUnlikeArticleEndpointV1 : ICarterModule
                     Guid userId = claimsProvider.GetUserIdFromClaims(user: user);
 
                     var command = new PublicUnlikeArticleCommand(ArticleId: articleId, UserId: userId);
-                    PublicUnlikeArticleResult result = await dispatcher.Send(
-                        request: command,
-                        cancellationToken: cancellationToken
-                    );
-
-                    var response = new PublicUnlikeArticleResponse(IsSuccess: result.IsSuccess);
-                    return Results.Ok(response);
+                    await dispatcher.Send(request: command, cancellationToken: cancellationToken);
+                    return Results.NoContent();
                 }
             )
             .WithName(endpointName: PublicUnlikeArticleMetaField.UnlikeArticle.Name)
             .WithSummary(summary: PublicUnlikeArticleMetaField.UnlikeArticle.Summary)
             .WithDescription(description: PublicUnlikeArticleMetaField.UnlikeArticle.Description)
             .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
-            .Produces<PublicUnlikeArticleResponse>(statusCode: StatusCodes.Status200OK)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentContribution)
+            .Produces(statusCode: StatusCodes.Status204NoContent)
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
             .ProducesProblem(statusCode: StatusCodes.Status404NotFound)

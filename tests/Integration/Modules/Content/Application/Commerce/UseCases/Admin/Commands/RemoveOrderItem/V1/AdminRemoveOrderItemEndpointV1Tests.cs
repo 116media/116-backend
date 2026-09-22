@@ -34,9 +34,7 @@ public class AdminRemoveOrderItemEndpointV1Tests(PostgresFixture db) : BaseApiTe
 
         var response = await Client.DeleteAsync(Routes.Admin.Orders.Item(order.Id, orderItem.Id));
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var body = await response.ReadAsAsync<AdminRemoveOrderItemResponse>();
-        body.IsSuccess.Should().BeTrue();
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         await using ContentDbContext db = CreateDbContext<ContentDbContext>();
         ContentOrderItemEntity? persisted = await db.ContentOrderItems.FindAsync(orderItem.Id);

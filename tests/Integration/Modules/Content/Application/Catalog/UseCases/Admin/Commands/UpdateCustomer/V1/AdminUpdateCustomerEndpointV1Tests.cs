@@ -17,9 +17,6 @@ namespace _116.Integration.Tests.Modules.Content.Application.Catalog.UseCases.Ad
 [Collection("Database")]
 public class AdminUpdateCustomerEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     private async Task<CustomerEntity> SeedCustomerAsync()
     {
         return await SeedAsync<ContentDbContext, CustomerEntity>(ctx =>
@@ -127,9 +124,9 @@ public class AdminUpdateCustomerEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Customers}/{customer.Id}", request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("FullName", Localized<CustomerErrorMessage>(m => m.FullNameRequired()))
+        await response.ShouldBeValidationProblem(
+            "FullName",
+            Localized<CustomerErrorMessage>(m => m.FullNameRequired())
         );
     }
 
@@ -141,9 +138,9 @@ public class AdminUpdateCustomerEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Customers}/not-a-guid", request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("Id", Localized<CustomerErrorMessage>(m => m.Localizer["IdInvalid"].Value))
+        await response.ShouldBeValidationProblem(
+            "Id",
+            Localized<CustomerErrorMessage>(m => m.Localizer["IdInvalid"].Value)
         );
     }
 }

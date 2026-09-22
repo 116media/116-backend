@@ -225,4 +225,9 @@ public class LyricsErrorMessage(IStringLocalizer<LyricsErrorMessage> localizer)
     /// Gets an error message for when a lyrics page carries no active promotion.
     /// </summary>
     public string NotPromoted() => localizer["NotPromoted"];
+
+    /// <summary>
+    /// Gets the localized message for IdRequired.
+    /// </summary>
+    public string IdRequired() => localizer["IdRequired"];
 }

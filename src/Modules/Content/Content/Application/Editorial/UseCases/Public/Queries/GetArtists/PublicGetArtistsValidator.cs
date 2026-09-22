@@ -1,4 +1,5 @@
 using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Shared.Validators;
 using _116.Content.Domain.Constants;
 using FluentValidation;
 
@@ -18,20 +19,10 @@ public class PublicGetArtistsValidator : AbstractValidator<PublicGetArtistsQuery
     /// <param name="i18n">Content module i18n facade.</param>
     public PublicGetArtistsValidator(ContentI18n i18n)
     {
-        RuleFor(x => x)
-            .Must(x => string.IsNullOrWhiteSpace(x.Letter) || string.IsNullOrWhiteSpace(x.Search))
-            .WithMessage(i18n.Artist.Msg.LetterAndSearchExclusive());
+        RuleFor(x => x).ExclusiveArtistDirectoryFilters(x => x.Letter, x => x.Search, i18n.Artist.Msg);
 
-        RuleFor(x => x.Letter)
-            .Must(letter =>
-                letter is null
-                || letter == ContentConstants.NonAlphabeticLetterBucket
-                || (letter.Length == 1 && letter[0] is >= 'A' and <= 'Z')
-            )
-            .When(x => !string.IsNullOrWhiteSpace(x.Letter));
+        RuleFor(x => x.Letter).ValidArtistLetterBucket(i18n.Artist.Msg).When(x => !string.IsNullOrWhiteSpace(x.Letter));
 
-        RuleFor(x => x.Search)
-            .MinimumLength(minimumLength: ContentConstants.MinArtistSearchLength)
-            .When(x => !string.IsNullOrWhiteSpace(x.Search));
+        RuleFor(x => x.Search).ValidArtistSearch(i18n.Artist.Msg).When(x => !string.IsNullOrWhiteSpace(x.Search));
     }
 }

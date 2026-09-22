@@ -59,7 +59,7 @@ public class PublicBookmarkShortVideoEndpointV1 : ICarterModule
             .WithSummary(summary: PublicBookmarkShortVideoMetaField.BookmarkShortVideo.Summary)
             .WithDescription(description: PublicBookmarkShortVideoMetaField.BookmarkShortVideo.Description)
             .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentContribution)
             .Produces<PublicBookmarkShortVideoResponse>(statusCode: StatusCodes.Status200OK)
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)

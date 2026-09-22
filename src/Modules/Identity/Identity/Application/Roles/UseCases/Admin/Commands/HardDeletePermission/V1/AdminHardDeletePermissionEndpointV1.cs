@@ -12,12 +12,6 @@ using Microsoft.AspNetCore.Routing;
 namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.HardDeletePermission.V1;
 
 /// <summary>
-/// Response model for successful permission hard deletion.
-/// </summary>
-/// <param name="IsSuccess">Indicates whether the permission was successfully deleted.</param>
-public record AdminHardDeletePermissionResponse(bool IsSuccess);
-
-/// <summary>
 /// Defines the admin hard delete permission endpoint.
 /// Handles permanently deleting permissions.
 /// </summary>
@@ -41,22 +35,17 @@ public class AdminHardDeletePermissionEndpointV1 : ICarterModule
                 {
                     var command = new AdminHardDeletePermissionCommand(PermissionId: id);
 
-                    AdminHardDeletePermissionResult result = await dispatcher.Send(
-                        request: command,
-                        cancellationToken: cancellationToken
-                    );
-
-                    var response = new AdminHardDeletePermissionResponse(IsSuccess: result.IsSuccess);
-                    return Results.Ok(value: response);
+                    await dispatcher.Send(request: command, cancellationToken: cancellationToken);
+                    return Results.NoContent();
                 }
             )
             .WithName(endpointName: AdminHardDeletePermissionMetaField.HardDeletePermission.Name)
             .WithSummary(summary: AdminHardDeletePermissionMetaField.HardDeletePermission.Summary)
             .WithDescription(description: AdminHardDeletePermissionMetaField.HardDeletePermission.Description)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentManagement)
             .ProducesValidationProblem()
-            .Produces<AdminHardDeletePermissionResponse>()
+            .Produces(statusCode: StatusCodes.Status204NoContent)
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
             .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)

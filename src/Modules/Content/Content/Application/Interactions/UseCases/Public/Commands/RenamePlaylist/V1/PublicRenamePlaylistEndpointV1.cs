@@ -66,7 +66,7 @@ public class PublicRenamePlaylistEndpointV1 : ICarterModule
             .WithSummary(summary: PublicRenamePlaylistMetaField.RenamePlaylist.Summary)
             .WithDescription(description: PublicRenamePlaylistMetaField.RenamePlaylist.Description)
             .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentContribution)
             .Produces<PublicRenamePlaylistResponse>(statusCode: StatusCodes.Status200OK)
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)

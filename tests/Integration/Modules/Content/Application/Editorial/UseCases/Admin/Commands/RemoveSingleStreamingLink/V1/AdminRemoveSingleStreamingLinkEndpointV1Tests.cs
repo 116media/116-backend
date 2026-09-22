@@ -79,11 +79,7 @@ public class AdminRemoveSingleStreamingLinkEndpointV1Tests(PostgresFixture db) :
 
         var response = await Client.DeleteAsync(Url(lyrics.Id, EnumStreamingPlatform.Spotify));
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        AdminRemoveSingleStreamingLinkResponse body =
-            await response.ReadAsAsync<AdminRemoveSingleStreamingLinkResponse>();
-        body.IsSuccess.Should().BeTrue();
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
         List<EnumStreamingPlatform> remaining = await ctx
@@ -102,11 +98,7 @@ public class AdminRemoveSingleStreamingLinkEndpointV1Tests(PostgresFixture db) :
 
         var response = await Client.DeleteAsync(Url(lyrics.Id, EnumStreamingPlatform.AppleMusic));
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        AdminRemoveSingleStreamingLinkResponse body =
-            await response.ReadAsAsync<AdminRemoveSingleStreamingLinkResponse>();
-        body.IsSuccess.Should().BeTrue();
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
         int remaining = await ctx.StreamingLinks.CountAsync(link => link.LyricsId == lyrics.Id);
@@ -121,10 +113,6 @@ public class AdminRemoveSingleStreamingLinkEndpointV1Tests(PostgresFixture db) :
 
         var response = await Client.DeleteAsync(Url(Guid.NewGuid(), EnumStreamingPlatform.Spotify));
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        AdminRemoveSingleStreamingLinkResponse body =
-            await response.ReadAsAsync<AdminRemoveSingleStreamingLinkResponse>();
-        body.IsSuccess.Should().BeTrue();
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 }

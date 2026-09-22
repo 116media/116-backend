@@ -16,9 +16,6 @@ namespace _116.Integration.Tests.Modules.Identity.Application.User.UseCases.Publ
 [Collection("Database")]
 public class PublicUpdateAvatarEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     [Fact]
     public async Task UpdateAvatar_AsVisitor_WithValidSession_UpdatesAvatar()
     {
@@ -85,13 +82,10 @@ public class PublicUpdateAvatarEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PatchAsync(Routes.Public.Me.Avatar(), content);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail(
-                "AvatarFile",
-                Localized<ValidationErrorMessage>(m =>
-                    m.AvatarFileInvalidType(string.Join(", ", FileConstants.AllowedAvatarMimeTypes))
-                )
+        await response.ShouldBeValidationProblem(
+            "AvatarFile",
+            Localized<ValidationErrorMessage>(m =>
+                m.AvatarFileInvalidType(string.Join(", ", FileConstants.AllowedAvatarMimeTypes))
             )
         );
     }
@@ -106,9 +100,9 @@ public class PublicUpdateAvatarEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PatchAsync(Routes.Public.Me.Avatar(), content);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("AvatarFile", Localized<ValidationErrorMessage>(m => m.AvatarFileRequired()))
+        await response.ShouldBeValidationProblem(
+            "AvatarFile",
+            Localized<ValidationErrorMessage>(m => m.AvatarFileRequired())
         );
     }
 }

@@ -41,4 +41,10 @@ public class NewsletterErrorMessage(IStringLocalizer<NewsletterErrorMessage> loc
     {
         return localizer["TokenInvalid"];
     }
+
+    /// <summary>
+    /// Gets the localized message for EmailTooLong.
+    /// </summary>
+    /// <param name="max">The maximum allowed value.</param>
+    public string EmailTooLong(int max) => string.Format(localizer["EmailTooLong"], max);
 }

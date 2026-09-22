@@ -1,4 +1,5 @@
 using _116.Content.Application.Shared.Errors.Messages;
+using _116.Content.Domain.Constants;
 using _116.Content.Domain.Enums;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
@@ -91,5 +92,23 @@ public static class CommerceValidation
     )
     {
         return ruleBuilder.IsInEnum().WithMessage(i18n.InvalidPaymentMethod());
+    }
+
+    /// <summary>
+    /// Validates the admin notes recorded when rejecting a payment — optional, max length matching
+    /// the column.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the notes property.</param>
+    /// <param name="i18n">The content order error message provider.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, string?> ValidPaymentNotes<T>(
+        this IRuleBuilderInitial<T, string?> ruleBuilder,
+        ContentOrderErrorMessage i18n
+    )
+    {
+        return ruleBuilder
+            .MaximumLength(maximumLength: ContentConstants.MaxPaymentNotesLength)
+            .WithMessage(i18n.PaymentNotesTooLong(ContentConstants.MaxPaymentNotesLength));
     }
 }

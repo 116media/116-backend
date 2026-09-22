@@ -114,6 +114,16 @@ here → logged at Error and answered 500, poisoning error-rate alerting.
 
 ## 1.4 The `Dispatcher` uses per-request reflection on the hot path, with an ambiguous cache
 
+> **Resolved in Stage 16.** `Dispatcher` now resolves a cached `RequestHandlerWrapper<TResponse>`
+> per request type and dispatches through a virtual call — no `GetMethod`, no `MethodInfo.Invoke`.
+> The ambiguous cache was a live defect, not just a smell: one dictionary keyed on request type
+> served both `Send` overloads, and because `IRequest<T> : IRequest`, dispatching a request
+> through the response path poisoned the key so a later `Send((IRequest)x)` resolved the
+> *response* handler. There are now two caches, keyed `(RequestType, ResponseType)` and
+> `RequestType`. Regression test:
+> `DispatcherTests.Send_WhenOneRequestTypeReachesBothDispatchPaths_ShouldResolveEachPathsOwnHandler`,
+> confirmed failing against the previous implementation.
+
 **Severity: High**
 
 **Where:** `src/Shared/Shared/Application/Services/Dispatcher.cs:25` (`GetMethod` +
@@ -166,6 +176,10 @@ endpoints.
 ---
 
 ## 1.6 Two modules register `TypeAdapterConfig` as a singleton — Identity's mappings are discarded
+
+> **Resolved before Stage 16.** All three modules call `AddModuleMappings(...)`, which builds a
+> single `TypeAdapterConfig` from `GetServices<IRegister>()` behind `TryAddSingleton`
+> (`Shared/Infrastructure/ModuleMappings.cs:22-32`). No competing singletons remain.
 
 **Severity: High**
 

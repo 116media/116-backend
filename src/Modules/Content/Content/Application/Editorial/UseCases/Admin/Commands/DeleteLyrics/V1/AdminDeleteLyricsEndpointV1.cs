@@ -12,12 +12,6 @@ using Microsoft.AspNetCore.Routing;
 namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.DeleteLyrics.V1;
 
 /// <summary>
-/// Response model for a successful DeleteLyrics operation.
-/// </summary>
-/// <param name="IsSuccess">Indicates if the operation was successful.</param>
-public record AdminDeleteLyricsResponse(bool IsSuccess);
-
-/// <summary>
 /// Defines the admin delete lyrics endpoint.
 /// Handles permanent deletion of lyrics pages.
 /// </summary>
@@ -40,13 +34,8 @@ public class AdminDeleteLyricsEndpointV1 : ICarterModule
                 async (string id, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var command = new AdminDeleteLyricsCommand(Id: id);
-                    AdminDeleteLyricsResult result = await dispatcher.Send(
-                        request: command,
-                        cancellationToken: cancellationToken
-                    );
-
-                    var response = new AdminDeleteLyricsResponse(IsSuccess: result.IsSuccess);
-                    return Results.Ok(response);
+                    await dispatcher.Send(request: command, cancellationToken: cancellationToken);
+                    return Results.NoContent();
                 }
             )
             .WithName(endpointName: AdminDeleteLyricsMetaField.DeleteLyrics.Name)
@@ -54,8 +43,8 @@ public class AdminDeleteLyricsEndpointV1 : ICarterModule
             .WithDescription(description: AdminDeleteLyricsMetaField.DeleteLyrics.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
-            .Produces<AdminDeleteLyricsResponse>(statusCode: StatusCodes.Status200OK)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentManagement)
+            .Produces(statusCode: StatusCodes.Status204NoContent)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
             .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)
             .ProducesProblem(statusCode: StatusCodes.Status404NotFound)

@@ -18,9 +18,6 @@ namespace _116.Integration.Tests.Modules.Content.Application.Commerce.UseCases.A
 [Collection("Database")]
 public class AdminAttachPaymentProofEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     [Fact]
     public async Task AttachPaymentProof_AsSuperAdmin_WithValidFile_ReturnsOk()
     {
@@ -172,9 +169,9 @@ public class AdminAttachPaymentProofEndpointV1Tests(PostgresFixture db) : BaseAp
             content
         );
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("File", Localized<ContentOrderErrorMessage>(m => m.PaymentProofRequired()))
+        await response.ShouldBeValidationProblem(
+            "File",
+            Localized<ContentOrderErrorMessage>(m => m.PaymentProofRequired())
         );
     }
 }

@@ -20,9 +20,6 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminUpdateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     /// <summary>
     /// The target-state label <c>DomainRuleExceptionStrategy</c> phrases a NotEditable refusal
     /// with. It reaches the client verbatim, so the literal belongs in the assertion.
@@ -116,12 +113,9 @@ public class AdminUpdateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Articles}/{id}", request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail(
-                "Title",
-                Localized<ArticleErrorMessage>(m => m.TitleTooLong(ContentConstants.MaxTitleLength))
-            )
+        await response.ShouldBeValidationProblem(
+            "Title",
+            Localized<ArticleErrorMessage>(m => m.TitleTooLong(ContentConstants.MaxTitleLength))
         );
     }
 
@@ -134,10 +128,7 @@ public class AdminUpdateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Articles}/{id}", request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("Slug", Localized<ArticleErrorMessage>(m => m.SlugInvalidFormat()))
-        );
+        await response.ShouldBeValidationProblem("Slug", Localized<ArticleErrorMessage>(m => m.SlugInvalidFormat()));
     }
 
     [Fact]
@@ -149,12 +140,9 @@ public class AdminUpdateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Articles}/{id}", request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail(
-                "Headline",
-                Localized<ArticleErrorMessage>(m => m.HeadlineTooShort(ContentConstants.MinHeadlineLength))
-            )
+        await response.ShouldBeValidationProblem(
+            "Headline",
+            Localized<ArticleErrorMessage>(m => m.HeadlineTooShort(ContentConstants.MinHeadlineLength))
         );
     }
 
@@ -169,9 +157,9 @@ public class AdminUpdateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Articles}/{id}", request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("Slug", Localized<ArticleErrorMessage>(m => m.SlugTooLong(ContentConstants.MaxSlugLength)))
+        await response.ShouldBeValidationProblem(
+            "Slug",
+            Localized<ArticleErrorMessage>(m => m.SlugTooLong(ContentConstants.MaxSlugLength))
         );
     }
 
@@ -186,12 +174,9 @@ public class AdminUpdateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Articles}/{id}", request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail(
-                "Headline",
-                Localized<ArticleErrorMessage>(m => m.HeadlineTooLong(ContentConstants.MaxHeadlineLength))
-            )
+        await response.ShouldBeValidationProblem(
+            "Headline",
+            Localized<ArticleErrorMessage>(m => m.HeadlineTooLong(ContentConstants.MaxHeadlineLength))
         );
     }
 
@@ -204,12 +189,9 @@ public class AdminUpdateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Articles}/{id}", request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail(
-                "MetaTitle",
-                Localized<ArticleErrorMessage>(m => m.MetaTitleTooShort(ContentConstants.MinMetaTitleLength))
-            )
+        await response.ShouldBeValidationProblem(
+            "MetaTitle",
+            Localized<ArticleErrorMessage>(m => m.MetaTitleTooShort(ContentConstants.MinMetaTitleLength))
         );
     }
 
@@ -224,12 +206,9 @@ public class AdminUpdateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Articles}/{id}", request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail(
-                "MetaTitle",
-                Localized<ArticleErrorMessage>(m => m.MetaTitleTooLong(ContentConstants.MaxMetaTitleLength))
-            )
+        await response.ShouldBeValidationProblem(
+            "MetaTitle",
+            Localized<ArticleErrorMessage>(m => m.MetaTitleTooLong(ContentConstants.MaxMetaTitleLength))
         );
     }
 
@@ -244,14 +223,9 @@ public class AdminUpdateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Articles}/{id}", request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail(
-                "MetaDescription",
-                Localized<ArticleErrorMessage>(m =>
-                    m.MetaDescriptionTooShort(ContentConstants.MinMetaDescriptionLength)
-                )
-            )
+        await response.ShouldBeValidationProblem(
+            "MetaDescription",
+            Localized<ArticleErrorMessage>(m => m.MetaDescriptionTooShort(ContentConstants.MinMetaDescriptionLength))
         );
     }
 
@@ -266,12 +240,9 @@ public class AdminUpdateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Articles}/{id}", request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail(
-                "MetaDescription",
-                Localized<ArticleErrorMessage>(m => m.MetaDescriptionTooLong(ContentConstants.MaxMetaDescriptionLength))
-            )
+        await response.ShouldBeValidationProblem(
+            "MetaDescription",
+            Localized<ArticleErrorMessage>(m => m.MetaDescriptionTooLong(ContentConstants.MaxMetaDescriptionLength))
         );
     }
 
@@ -284,10 +255,7 @@ public class AdminUpdateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Articles}/{id}", request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("Body", Localized<ArticleErrorMessage>(m => m.BodyRequired()))
-        );
+        await response.ShouldBeValidationProblem("Body", Localized<ArticleErrorMessage>(m => m.BodyRequired()));
     }
 
     [Fact]

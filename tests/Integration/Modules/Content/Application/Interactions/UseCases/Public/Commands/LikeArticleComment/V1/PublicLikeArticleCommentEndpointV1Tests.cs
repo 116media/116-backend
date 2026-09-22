@@ -74,7 +74,7 @@ public class PublicLikeArticleCommentEndpointV1Tests(PostgresFixture db) : BaseA
 
         // Unlike
         var unlikeResponse = await Client.DeleteAsync(Routes.Public.Articles.CommentLike(comment.Id));
-        unlikeResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        unlikeResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
         (await GetLikeCountAsync(comment.Id)).Should().Be(0);
     }
 

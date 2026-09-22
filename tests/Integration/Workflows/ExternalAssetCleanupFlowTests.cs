@@ -69,7 +69,7 @@ public class ExternalAssetCleanupFlowTests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Articles}/{article.Id}");
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         await using ContentDbContext contentCtx = CreateDbContext<ContentDbContext>();
         (await contentCtx.Articles.FindAsync(article.Id)).Should().BeNull();
@@ -133,7 +133,7 @@ public class ExternalAssetCleanupFlowTests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Videos}/{video.Id}");
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         await using ContentDbContext contentCtx = CreateDbContext<ContentDbContext>();
         (await contentCtx.Videos.FindAsync(video.Id)).Should().BeNull();
@@ -164,7 +164,7 @@ public class ExternalAssetCleanupFlowTests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Shorts}/{shortVideo.Id}");
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         await using ContentDbContext contentCtx = CreateDbContext<ContentDbContext>();
         (await contentCtx.ShortVideos.FindAsync(shortVideo.Id)).Should().BeNull();

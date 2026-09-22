@@ -69,9 +69,7 @@ public class PublicDeletePlaylistEndpointV1Tests(PostgresFixture db) : BaseApiTe
 
         var response = await Client.DeleteAsync(Routes.Public.Playlists.ById(playlist.Id));
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        PublicDeletePlaylistResponse body = await response.ReadAsAsync<PublicDeletePlaylistResponse>();
-        body.IsSuccess.Should().BeTrue();
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         await using ContentDbContext verifyDb = CreateDbContext<ContentDbContext>();
         (await verifyDb.Playlists.AnyAsync(p => p.Id == playlist.Id)).Should().BeFalse();

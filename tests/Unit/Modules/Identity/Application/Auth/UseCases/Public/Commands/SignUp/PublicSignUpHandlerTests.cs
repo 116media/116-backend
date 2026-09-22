@@ -50,7 +50,7 @@ public class PublicSignUpHandlerTests : BaseHandlerTest
 
         // Assert
         result.User.Id.Should().Be(user.Id);
-        result.User.Email.Should().Be(user.Email);
+        result.User.Email.Should().Be(user.Email?.Value);
         result.User.UserName.Should().Be(user.UserName);
         result.VerificationRequired.Should().BeTrue();
     }

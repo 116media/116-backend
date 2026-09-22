@@ -58,4 +58,49 @@ public class StreamingLinkErrorMessage(IStringLocalizer<StreamingLinkErrorMessag
     {
         return localizer["NothingResolved"];
     }
+
+    /// <summary>
+    /// Gets an error message for when no streaming link URL was supplied.
+    /// </summary>
+    /// <returns>
+    /// An error message indicating the URL is required.
+    /// </returns>
+    public string UrlRequired()
+    {
+        return localizer["UrlRequired"];
+    }
+
+    /// <summary>
+    /// Gets an error message for when the streaming link URL exceeds the maximum length.
+    /// </summary>
+    /// <param name="max">The maximum allowed length.</param>
+    /// <returns>
+    /// An error message naming the maximum length.
+    /// </returns>
+    public string UrlTooLong(int max)
+    {
+        return string.Format(localizer["UrlTooLong"], max);
+    }
+
+    /// <summary>
+    /// Gets an error message for when the streaming link URL is not an absolute http(s) URL.
+    /// </summary>
+    /// <returns>
+    /// An error message asking for a well-formed absolute URL.
+    /// </returns>
+    public string UrlMalformed()
+    {
+        return localizer["UrlMalformed"];
+    }
+
+    /// <summary>
+    /// Gets the localized message for SourceUrlRequired.
+    /// </summary>
+    public string SourceUrlRequired() => localizer["SourceUrlRequired"];
+
+    /// <summary>
+    /// Gets the localized message for SourceUrlTooLong.
+    /// </summary>
+    /// <param name="max">The maximum allowed value.</param>
+    public string SourceUrlTooLong(int max) => string.Format(localizer["SourceUrlTooLong"], max);
 }

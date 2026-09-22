@@ -24,26 +24,6 @@ public static partial class TestConstants
         public const string ApiVersion = "v1";
         public const string BaseUrl = "/api";
 
-        /// <summary>
-        /// The unscoped artist claim-request route base — <c>POST /api/v1/artists/{id}/claim</c>
-        /// deliberately lives outside both the <c>admin</c> and <c>public</c> route groups.
-        /// </summary>
-        public const string Artists = $"{BaseUrl}/{ApiVersion}/{EditorialRouteConstants.Artists}";
-
-        /// <summary>
-        /// The unscoped lyrics submission/correction-revision route base — e.g.
-        /// <c>POST /api/v1/lyrics/submissions</c>, <c>POST /api/v1/lyrics/{id}/revisions</c> —
-        /// deliberately lives outside both the <c>admin</c> and <c>public</c> route groups.
-        /// </summary>
-        public const string Lyrics = $"{BaseUrl}/{ApiVersion}/{EditorialRouteConstants.Lyrics}";
-
-        /// <summary>
-        /// The unscoped translation-revision route base — e.g.
-        /// <c>POST /api/v1/translations/{id}/revisions</c> — deliberately lives outside both the
-        /// <c>admin</c> and <c>public</c> route groups.
-        /// </summary>
-        public const string Translations = $"{BaseUrl}/{ApiVersion}/{EditorialRouteConstants.Translations}";
-
         public static class Admin
         {
             public const string Base = $"{BaseUrl}/{ApiVersion}/{IdentityConstants.Admin}";
@@ -102,6 +82,7 @@ public static partial class TestConstants
             public const string PromotionLevels = $"{Base}/{LookupRouteConstants.PromotionLevels}";
             public const string Tags = $"{Base}/{LookupRouteConstants.Tags}";
             public const string Artists = $"{Base}/{EditorialRouteConstants.Artists}";
+            public const string Translations = $"{Base}/{EditorialRouteConstants.Translations}";
 
             /// <summary>
             /// Public newsletter routes (subscriptions, confirm, unsubscribe).

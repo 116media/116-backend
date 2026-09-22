@@ -222,6 +222,39 @@ public static class ContentConstants
     public const int MaxPlaylistNameLength = 100;
 
     /// <summary>
+    /// Server-side cap on the bounded reference lists (tags, content types, pricing tiers,
+    /// promotion levels) returned without pagination. Bounds the response for a table that is
+    /// small by nature but has no structural limit.
+    /// </summary>
+    public const int MaxReferenceListSize = 500;
+
+    /// <summary>
+    /// Maximum allowed length for a comment attached to a revision or translation vote.
+    /// </summary>
+    public const int MaxVoteCommentLength = 1000;
+
+    /// <summary>
+    /// Maximum allowed length for the admin notes recorded when rejecting a payment.
+    /// </summary>
+    public const int MaxPaymentNotesLength = 1000;
+
+    /// <summary>
+    /// Maximum allowed length for a caller-supplied device identifier on a view event.
+    /// Kept well under the dedup-key column, which stores this value behind a prefix.
+    /// </summary>
+    public const int MaxViewDeviceIdLength = 64;
+
+    /// <summary>
+    /// Maximum allowed length for a caller-supplied IP address on a view event.
+    /// </summary>
+    public const int MaxViewIpAddressLength = 64;
+
+    /// <summary>
+    /// Maximum allowed length for a caller-supplied user agent on a view event.
+    /// </summary>
+    public const int MaxViewUserAgentLength = 500;
+
+    /// <summary>
     /// Maximum allowed length for the album name on a lyrics page.
     /// </summary>
     public const int MaxAlbumNameLength = 200;

@@ -12,9 +12,6 @@ namespace _116.Integration.Tests.Modules.Identity.Application.Auth.UseCases.Publ
 [Collection("Database")]
 public class PublicForgotPasswordEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     [Fact]
     public async Task ForgotPassword_WithInvalidEmail_ReturnsValidationError()
     {
@@ -23,9 +20,9 @@ public class PublicForgotPasswordEndpointV1Tests(PostgresFixture db) : BaseApiTe
 
         var response = await Client.PostAsJsonAsync(Routes.Public.Auth.ForgotPassword(), request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("Email", Localized<ValidationErrorMessage>(m => m.InvalidEmailFormatMsg()))
+        await response.ShouldBeValidationProblem(
+            "Email",
+            Localized<ValidationErrorMessage>(m => m.InvalidEmailFormatMsg())
         );
     }
 

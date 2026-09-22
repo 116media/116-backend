@@ -21,4 +21,7 @@
   <data name="TokenInvalid" xml:space="preserve">
     <value>This link is invalid or has expired.</value>
   </data>
+  <data name="EmailTooLong" xml:space="preserve">
+    <value>The email address must not exceed {0} characters.</value>
+  </data>
 </root>

@@ -111,4 +111,36 @@ public class ArtistErrorMessage(IStringLocalizer<ArtistErrorMessage> localizer)
     {
         return localizer["LetterAndSearchExclusive"];
     }
+
+    /// <summary>
+    /// Gets the localized message for InvalidLetterBucket.
+    /// </summary>
+    public string InvalidLetterBucket() => localizer["InvalidLetterBucket"];
+
+    /// <summary>
+    /// Gets an error message for when the artist directory search term is too short.
+    /// </summary>
+    /// <param name="min">The minimum allowed length.</param>
+    public string SearchTooShort(int min) => string.Format(localizer["SearchTooShort"], min);
+
+    /// <summary>
+    /// Gets the localized message for InvalidSocialPlatform.
+    /// </summary>
+    public string InvalidSocialPlatform() => localizer["InvalidSocialPlatform"];
+
+    /// <summary>
+    /// Gets the localized message for SocialLinkUrlRequired.
+    /// </summary>
+    public string SocialLinkUrlRequired() => localizer["SocialLinkUrlRequired"];
+
+    /// <summary>
+    /// Gets the localized message for SocialLinkUrlTooLong.
+    /// </summary>
+    /// <param name="max">The maximum allowed value.</param>
+    public string SocialLinkUrlTooLong(int max) => string.Format(localizer["SocialLinkUrlTooLong"], max);
+
+    /// <summary>
+    /// Gets the localized message for SocialLinkUrlMustBeHttps.
+    /// </summary>
+    public string SocialLinkUrlMustBeHttps() => localizer["SocialLinkUrlMustBeHttps"];
 }

@@ -1,5 +1,7 @@
 using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpsertAlbumStreamingLink.V1;
+using _116.Content.Application.Shared.Errors.Messages;
+using _116.Content.Domain.Constants;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
@@ -171,5 +173,45 @@ public class AdminUpsertAlbumStreamingLinkEndpointV1Tests(PostgresFixture db) : 
         persisted.Should().HaveCount(2);
         persisted.Should().Contain(link => link.Platform == EnumStreamingPlatform.Spotify);
         persisted.Should().Contain(link => link.Platform == EnumStreamingPlatform.Tidal);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("open.spotify.com/album/no-scheme")]
+    [InlineData("javascript:alert(1)")]
+    public async Task UpsertAlbumStreamingLink_WithMalformedUrl_ReturnsBadRequest(string url)
+    {
+        AlbumEntity album = await SeedAlbumAsync();
+        Client.AuthenticateAsAdmin();
+
+        var response = await Client.PutAsJsonAsync(
+            Url(album.Id, EnumStreamingPlatform.Spotify),
+            new AdminUpsertAlbumStreamingLinkRequest(url)
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
+        bool anyPersisted = await ctx.StreamingLinks.AnyAsync(link => link.AlbumId == album.Id);
+        anyPersisted.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task UpsertStreamingLink_WithAnOverlongUrl_ReturnsTheLocalizedLengthError()
+    {
+        AlbumEntity album = await SeedAlbumAsync();
+        Client.AuthenticateAsAdmin();
+
+        var response = await Client.PutAsJsonAsync(
+            Url(album.Id, EnumStreamingPlatform.Spotify),
+            new AdminUpsertAlbumStreamingLinkRequest(
+                "https://open.spotify.com/" + new string('a', ContentConstants.MaxStreamingLinkUrlLength)
+            )
+        );
+
+        await response.ShouldBeValidationProblem(
+            "Url",
+            Localized<StreamingLinkErrorMessage>(m => m.UrlTooLong(ContentConstants.MaxStreamingLinkUrlLength))
+        );
     }
 }

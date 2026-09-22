@@ -23,4 +23,9 @@ public class AlbumErrorMessage(IStringLocalizer<AlbumErrorMessage> localizer)
     {
         return localizer["NameRequired"];
     }
+
+    /// <summary>
+    /// Gets an error message for when the release type is outside the supported set.
+    /// </summary>
+    public string InvalidReleaseType() => localizer["InvalidReleaseType"];
 }

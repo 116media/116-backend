@@ -1,4 +1,5 @@
 using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Shared.Validators;
 using FluentValidation;
 
 namespace _116.Content.Application.Editorial.UseCases.Public.Commands.ProposeTranslationRevision;
@@ -16,6 +17,6 @@ public class PublicProposeTranslationRevisionValidator : AbstractValidator<Publi
     /// <param name="i18n">Content module i18n facade.</param>
     public PublicProposeTranslationRevisionValidator(ContentI18n i18n)
     {
-        RuleFor(x => x.ProposedText).NotEmpty().WithMessage(i18n.Translation.Msg.ProposedTextRequired());
+        RuleFor(x => x.ProposedText).ValidProposedTranslationText(i18n.Translation.Msg);
     }
 }

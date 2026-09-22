@@ -108,4 +108,13 @@
   <data name="NotPromoted" xml:space="preserve">
     <value>L'article ne bénéficie actuellement d'aucune promotion.</value>
   </data>
+  <data name="ArtistIdsRequired" xml:space="preserve">
+    <value>La liste d'artistes est requise ; envoyez une liste vide pour l'effacer.</value>
+  </data>
+  <data name="TooManyArtists" xml:space="preserve">
+    <value>Un article peut être associé à au maximum {0} artistes.</value>
+  </data>
+  <data name="DuplicateArtists" xml:space="preserve">
+    <value>La liste d'artistes ne doit pas répéter le même artiste.</value>
+  </data>
 </root>

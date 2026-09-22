@@ -12,12 +12,6 @@ using Microsoft.AspNetCore.Routing;
 namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.DeleteShortVideo.V1;
 
 /// <summary>
-/// Response model for a successful DeleteShortVideo operation.
-/// </summary>
-/// <param name="IsSuccess">Indicates if the operation was successful.</param>
-public record AdminDeleteShortVideoResponse(bool IsSuccess);
-
-/// <summary>
 /// Defines the admin delete short video endpoint.
 /// Handles permanent deletion of a short video and its media assets.
 /// </summary>
@@ -40,13 +34,8 @@ public class AdminDeleteShortVideoEndpointV1 : ICarterModule
                 async (string id, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var command = new AdminDeleteShortVideoCommand(Id: id);
-                    AdminDeleteShortVideoResult result = await dispatcher.Send(
-                        request: command,
-                        cancellationToken: cancellationToken
-                    );
-
-                    var response = new AdminDeleteShortVideoResponse(IsSuccess: result.IsSuccess);
-                    return Results.Ok(response);
+                    await dispatcher.Send(request: command, cancellationToken: cancellationToken);
+                    return Results.NoContent();
                 }
             )
             .WithName(endpointName: AdminDeleteShortVideoMetaField.DeleteShortVideo.Name)
@@ -54,8 +43,8 @@ public class AdminDeleteShortVideoEndpointV1 : ICarterModule
             .WithDescription(description: AdminDeleteShortVideoMetaField.DeleteShortVideo.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
-            .Produces<AdminDeleteShortVideoResponse>(statusCode: StatusCodes.Status200OK)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentManagement)
+            .Produces(statusCode: StatusCodes.Status204NoContent)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
             .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)
             .ProducesProblem(statusCode: StatusCodes.Status404NotFound)

@@ -12,12 +12,6 @@ using Microsoft.AspNetCore.Routing;
 namespace _116.Content.Application.Interactions.UseCases.Admin.Commands.DeleteArticleComment.V1;
 
 /// <summary>
-/// Response model for a successful AdminDeleteArticleComment operation.
-/// </summary>
-/// <param name="IsSuccess">Indicates if the operation was successful.</param>
-public record AdminDeleteArticleCommentResponse(bool IsSuccess);
-
-/// <summary>
 /// Defines the admin delete article comment endpoint.
 /// </summary>
 public class AdminDeleteArticleCommentEndpointV1 : ICarterModule
@@ -42,21 +36,16 @@ public class AdminDeleteArticleCommentEndpointV1 : ICarterModule
                         CommentId: parsedCommentId
                     );
 
-                    AdminDeleteArticleCommentResult result = await dispatcher.Send(
-                        request: command,
-                        cancellationToken: cancellationToken
-                    );
-
-                    var response = new AdminDeleteArticleCommentResponse(IsSuccess: result.IsSuccess);
-                    return Results.Ok(response);
+                    await dispatcher.Send(request: command, cancellationToken: cancellationToken);
+                    return Results.NoContent();
                 }
             )
             .WithName(endpointName: AdminDeleteArticleCommentMetaField.DeleteArticleComment.Name)
             .WithSummary(summary: AdminDeleteArticleCommentMetaField.DeleteArticleComment.Summary)
             .WithDescription(description: AdminDeleteArticleCommentMetaField.DeleteArticleComment.Description)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
-            .Produces<AdminDeleteArticleCommentResponse>(statusCode: StatusCodes.Status200OK)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentManagement)
+            .Produces(statusCode: StatusCodes.Status204NoContent)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
             .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)
             .ProducesProblem(statusCode: StatusCodes.Status404NotFound)

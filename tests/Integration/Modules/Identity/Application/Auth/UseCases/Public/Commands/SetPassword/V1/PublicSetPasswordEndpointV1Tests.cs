@@ -18,9 +18,6 @@ namespace _116.Integration.Tests.Modules.Identity.Application.Auth.UseCases.Publ
 [Collection("Database")]
 public class PublicSetPasswordEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     [Fact]
     public async Task SetPassword_WithNoAuth_ReturnsUnauthorized()
     {
@@ -113,9 +110,9 @@ public class PublicSetPasswordEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.PostAsJsonAsync(Routes.Public.Auth.SetPassword(), request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("Password", Localized<ValidationErrorMessage>(m => m.PasswordRequired()))
+        await response.ShouldBeValidationProblem(
+            "Password",
+            Localized<ValidationErrorMessage>(m => m.PasswordRequired())
         );
     }
 }

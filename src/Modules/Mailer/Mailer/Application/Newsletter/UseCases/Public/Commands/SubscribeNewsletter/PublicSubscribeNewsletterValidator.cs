@@ -1,4 +1,5 @@
 using _116.Mailer.Application.Shared.Errors;
+using _116.Mailer.Application.Shared.Validators;
 using FluentValidation;
 
 namespace _116.Mailer.Application.Newsletter.UseCases.Public.Commands.SubscribeNewsletter;
@@ -16,13 +17,6 @@ public class PublicSubscribeNewsletterValidator : AbstractValidator<PublicSubscr
     /// <param name="errors">Newsletter error factory providing localized messages.</param>
     public PublicSubscribeNewsletterValidator(NewsletterErrors errors)
     {
-        RuleFor(x => x.Email)
-            .Cascade(cascadeMode: CascadeMode.Stop)
-            .NotEmpty()
-            .WithMessage(errors.Msg.EmailRequired())
-            .EmailAddress()
-            .WithMessage(errors.Msg.EmailInvalid())
-            .MaximumLength(maximumLength: 320)
-            .WithMessage(errors.Msg.EmailInvalid());
+        RuleFor(x => x.Email).ValidNewsletterEmail(errors.Msg);
     }
 }

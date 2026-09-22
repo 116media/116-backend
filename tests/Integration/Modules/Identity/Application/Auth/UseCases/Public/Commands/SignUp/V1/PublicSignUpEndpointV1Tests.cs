@@ -17,9 +17,6 @@ namespace _116.Integration.Tests.Modules.Identity.Application.Auth.UseCases.Publ
 [Collection("Database")]
 public class PublicSignUpEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     [Fact]
     public async Task SignUp_WithValidData_ReturnsCreated()
     {
@@ -113,10 +110,7 @@ public class PublicSignUpEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.PostAsJsonAsync(Routes.Public.Auth.SignUp(), request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("Email", Localized<ValidationErrorMessage>(m => m.EmailRequired()))
-        );
+        await response.ShouldBeValidationProblem("Email", Localized<ValidationErrorMessage>(m => m.EmailRequired()));
     }
 
     [Fact]
@@ -127,12 +121,9 @@ public class PublicSignUpEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.PostAsJsonAsync(Routes.Public.Auth.SignUp(), request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail(
-                "Password",
-                Localized<ValidationErrorMessage>(m => m.PasswordTooShort("Password", UserConstants.MinPasswordLength))
-            )
+        await response.ShouldBeValidationProblem(
+            "Password",
+            Localized<ValidationErrorMessage>(m => m.PasswordTooShort("Password", UserConstants.MinPasswordLength))
         );
     }
 
@@ -144,12 +135,9 @@ public class PublicSignUpEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.PostAsJsonAsync(Routes.Public.Auth.SignUp(), request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail(
-                "UserName",
-                Localized<ValidationErrorMessage>(m => m.UsernameTooShort(UserConstants.MinUserNameLength))
-            )
+        await response.ShouldBeValidationProblem(
+            "UserName",
+            Localized<ValidationErrorMessage>(m => m.UsernameTooShort(UserConstants.MinUserNameLength))
         );
     }
 }

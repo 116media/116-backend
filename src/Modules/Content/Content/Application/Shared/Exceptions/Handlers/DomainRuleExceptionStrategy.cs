@@ -78,6 +78,7 @@ public sealed class DomainRuleExceptionStrategy : BaseExceptionStrategy<ContentR
             context: context
         );
 
+        problem.Type = ProblemTypes.ForRule(exception.Code);
         problem.Extensions["code"] = exception.Code;
         problem.Extensions["args"] = exception.Args;
 

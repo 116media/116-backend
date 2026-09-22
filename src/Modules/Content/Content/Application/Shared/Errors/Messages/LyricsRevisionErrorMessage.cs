@@ -29,4 +29,10 @@ public class LyricsRevisionErrorMessage(IStringLocalizer<LyricsRevisionErrorMess
     /// been accepted or rejected.
     /// </summary>
     public string AlreadyDecided() => localizer["AlreadyDecided"];
+
+    /// <summary>
+    /// Gets an error message for when a vote comment exceeds the maximum length.
+    /// </summary>
+    /// <param name="max">The maximum allowed length.</param>
+    public string VoteCommentTooLong(int max) => string.Format(localizer["VoteCommentTooLong"], max);
 }

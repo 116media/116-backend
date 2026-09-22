@@ -72,7 +72,7 @@ public class AdminUpdateCategoryPricingEndpointV1 : ICarterModule
             .WithDescription(description: AdminUpdateCategoryPricingMetaField.UpdateCategoryPricing.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentManagement)
             .ProducesValidationProblem()
             .Produces<AdminUpdateCategoryPricingResponse>(statusCode: StatusCodes.Status200OK)
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)

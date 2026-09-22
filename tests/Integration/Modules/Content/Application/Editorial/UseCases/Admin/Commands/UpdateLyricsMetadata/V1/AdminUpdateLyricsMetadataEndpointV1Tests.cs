@@ -18,18 +18,6 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminUpdateLyricsMetadataEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    /// <summary>
-    /// Rebuilds the envelope FluentValidation puts in the ProblemDetails detail. The rules on
-    /// this command are independent, so a request that breaks several of them produces one
-    /// failure per property, in the order the validator declares them.
-    /// </summary>
-    /// <param name="failures">The expected property/message pairs, in validator order.</param>
-    /// <returns>The expected detail.</returns>
-    private static string ValidationDetail(params (string Property, string Message)[] failures) =>
-        new ValidationException(
-            failures.Select(failure => new ValidationFailure(failure.Property, failure.Message))
-        ).Message;
-
     private async Task<LyricsEntity> SeedLyricsAsync()
     {
         return await SeedAsync<ContentDbContext, LyricsEntity>(ctx =>
@@ -183,20 +171,14 @@ public class AdminUpdateLyricsMetadataEndpointV1Tests(PostgresFixture db) : Base
             request
         );
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail(
-                ("Album", Localized<LyricsErrorMessage>(m => m.AlbumTooLong(ContentConstants.MaxAlbumNameLength))),
-                ("Label", Localized<LyricsErrorMessage>(m => m.LabelTooLong(ContentConstants.MaxLabelNameLength))),
-                (
-                    "Songwriter",
-                    Localized<LyricsErrorMessage>(m => m.SongwriterTooLong(ContentConstants.MaxCreditNameLength))
-                ),
-                (
-                    "Producer",
-                    Localized<LyricsErrorMessage>(m => m.ProducerTooLong(ContentConstants.MaxCreditNameLength))
-                )
-            )
+        await response.ShouldBeValidationProblem(
+            ("Album", Localized<LyricsErrorMessage>(m => m.AlbumTooLong(ContentConstants.MaxAlbumNameLength))),
+            ("Label", Localized<LyricsErrorMessage>(m => m.LabelTooLong(ContentConstants.MaxLabelNameLength))),
+            (
+                "Songwriter",
+                Localized<LyricsErrorMessage>(m => m.SongwriterTooLong(ContentConstants.MaxCreditNameLength))
+            ),
+            ("Producer", Localized<LyricsErrorMessage>(m => m.ProducerTooLong(ContentConstants.MaxCreditNameLength)))
         );
 
         await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();

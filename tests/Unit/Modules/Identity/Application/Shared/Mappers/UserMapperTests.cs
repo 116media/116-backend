@@ -188,7 +188,7 @@ public class UserMapperTests
         FileEntity fileEntity = FileFactory.CreateJpeg();
 
         // Act
-        FileDto? result = fileEntity is null ? null : _mapper.Map<FileDto>(fileEntity.ToFileReferenceDto());
+        FileDto result = _mapper.Map<FileDto>(fileEntity.ToFileReferenceDto());
 
         // Assert
         result.Should().NotBeNull();

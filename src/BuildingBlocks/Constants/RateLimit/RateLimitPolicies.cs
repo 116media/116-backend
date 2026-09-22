@@ -66,4 +66,11 @@ public static class RateLimitPolicies
     /// are write paths open to any signed-in user, not just read traffic.
     /// </summary>
     public const string ContentContribution = "ContentContribution";
+
+    /// <summary>
+    /// Policy name for admin content-management writes (create, update, publish, delete).
+    /// Algorithm: Fixed Window. Separates state-changing admin traffic from the read policy so a
+    /// runaway write loop cannot consume the browsing budget.
+    /// </summary>
+    public const string ContentManagement = "ContentManagement";
 }

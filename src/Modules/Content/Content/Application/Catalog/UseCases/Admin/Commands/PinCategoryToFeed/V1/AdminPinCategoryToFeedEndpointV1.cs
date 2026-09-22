@@ -56,7 +56,7 @@ public class AdminPinCategoryToFeedEndpointV1 : ICarterModule
             .WithDescription(description: AdminPinCategoryToFeedMetaField.PinCategoryToFeed.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentManagement)
             .ProducesValidationProblem()
             .Produces<AdminPinCategoryToFeedResponse>(statusCode: StatusCodes.Status200OK)
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)

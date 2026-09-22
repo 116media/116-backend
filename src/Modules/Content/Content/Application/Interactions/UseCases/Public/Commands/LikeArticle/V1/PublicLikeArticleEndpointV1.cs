@@ -60,7 +60,7 @@ public class PublicLikeArticleEndpointV1 : ICarterModule
             .WithSummary(summary: PublicLikeArticleMetaField.LikeArticle.Summary)
             .WithDescription(description: PublicLikeArticleMetaField.LikeArticle.Description)
             .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentContribution)
             .Produces<PublicLikeArticleResponse>(statusCode: StatusCodes.Status200OK)
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)

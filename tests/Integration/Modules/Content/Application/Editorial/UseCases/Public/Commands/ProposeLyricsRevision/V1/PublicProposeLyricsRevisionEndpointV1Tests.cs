@@ -18,9 +18,6 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class PublicProposeLyricsRevisionEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     [Fact]
     public async Task ProposeLyricsRevision_WithNoAuth_ReturnsUnauthorized()
     {
@@ -44,9 +41,9 @@ public class PublicProposeLyricsRevisionEndpointV1Tests(PostgresFixture db) : Ba
             new PublicProposeLyricsRevisionRequest(string.Empty, null)
         );
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("ProposedText", Localized<LyricsRevisionErrorMessage>(m => m.ProposedTextRequired()))
+        await response.ShouldBeValidationProblem(
+            "ProposedText",
+            Localized<LyricsRevisionErrorMessage>(m => m.ProposedTextRequired())
         );
     }
 

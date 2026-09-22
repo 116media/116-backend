@@ -72,7 +72,7 @@ public class AdminAttachYoutubeVideoUrlEndpointV1 : ICarterModule
             .WithDescription(description: AdminAttachYoutubeVideoUrlMetaField.AttachYoutubeVideoUrl.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentManagement)
             .ProducesValidationProblem()
             .Produces<AdminAttachYoutubeVideoUrlResponse>(statusCode: StatusCodes.Status200OK)
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)

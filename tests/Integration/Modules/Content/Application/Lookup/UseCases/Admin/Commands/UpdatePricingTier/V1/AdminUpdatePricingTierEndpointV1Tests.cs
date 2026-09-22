@@ -19,9 +19,6 @@ namespace _116.Integration.Tests.Modules.Content.Application.Lookup.UseCases.Adm
 [Collection("Database")]
 public class AdminUpdatePricingTierEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     [Fact]
     public async Task UpdatePricingTier_WithNoAuth_ReturnsUnauthorized()
     {
@@ -86,12 +83,9 @@ public class AdminUpdatePricingTierEndpointV1Tests(PostgresFixture db) : BaseApi
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.PricingTiers}/{id}", request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail(
-                "Name",
-                Localized<PricingTierErrorMessage>(m => m.NameTooLong(ContentConstants.MaxPricingTierNameLength))
-            )
+        await response.ShouldBeValidationProblem(
+            "Name",
+            Localized<PricingTierErrorMessage>(m => m.NameTooLong(ContentConstants.MaxPricingTierNameLength))
         );
     }
 
@@ -106,13 +100,10 @@ public class AdminUpdatePricingTierEndpointV1Tests(PostgresFixture db) : BaseApi
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.PricingTiers}/{id}", request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail(
-                "Description",
-                Localized<PricingTierErrorMessage>(m =>
-                    m.DescriptionTooLong(ContentConstants.MaxPricingTierDescriptionLength)
-                )
+        await response.ShouldBeValidationProblem(
+            "Description",
+            Localized<PricingTierErrorMessage>(m =>
+                m.DescriptionTooLong(ContentConstants.MaxPricingTierDescriptionLength)
             )
         );
     }

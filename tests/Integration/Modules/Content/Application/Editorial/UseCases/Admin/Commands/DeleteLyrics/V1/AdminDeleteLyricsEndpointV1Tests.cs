@@ -80,9 +80,7 @@ public class AdminDeleteLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Lyrics}/{lyrics.Id}");
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var body = await response.ReadAsAsync<AdminDeleteLyricsResponse>();
-        body.IsSuccess.Should().BeTrue();
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
         LyricsEntity? persisted = await ctx.Lyrics.FindAsync(lyrics.Id);
@@ -118,7 +116,7 @@ public class AdminDeleteLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Lyrics}/{created.Lyrics.Id}");
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
         (await ctx.Lyrics.FindAsync(created.Lyrics.Id)).Should().BeNull();

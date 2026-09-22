@@ -19,9 +19,6 @@ namespace _116.Integration.Tests.Modules.Content.Application.Lookup.UseCases.Adm
 [Collection("Database")]
 public class AdminUpdateContentTypeEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     [Fact]
     public async Task UpdateContentType_WithNoAuth_ReturnsUnauthorized()
     {
@@ -84,12 +81,9 @@ public class AdminUpdateContentTypeEndpointV1Tests(PostgresFixture db) : BaseApi
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.ContentTypes}/{id}", request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail(
-                "Name",
-                Localized<ContentTypeErrorMessage>(m => m.NameTooLong(ContentConstants.MaxContentTypeNameLength))
-            )
+        await response.ShouldBeValidationProblem(
+            "Name",
+            Localized<ContentTypeErrorMessage>(m => m.NameTooLong(ContentConstants.MaxContentTypeNameLength))
         );
     }
 }

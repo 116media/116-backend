@@ -909,7 +909,7 @@ public class UserEntityTests
     {
         // Arrange
         UserEntity user = UserFactory.Create();
-        string? oldEmail = user.Email;
+        string? oldEmail = user.Email?.Value;
 
         // Act
         user.UpdateEmail("changed@example.com");

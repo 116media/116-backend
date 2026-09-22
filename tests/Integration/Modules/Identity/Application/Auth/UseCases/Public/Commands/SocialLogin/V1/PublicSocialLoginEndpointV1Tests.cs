@@ -28,9 +28,6 @@ public class PublicSocialLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
     private RemoteFileScript RemoteFile => Api.Services.GetRequiredService<RemoteFileScript>();
 
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     private static SocialTokenPayload Payload(
         string email,
         string subjectId,
@@ -66,9 +63,9 @@ public class PublicSocialLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.PostAsJsonAsync(Routes.Public.Auth.SocialLogin(), request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("Provider", Localized<ValidationErrorMessage>(m => m.AuthProviderInvalid()))
+        await response.ShouldBeValidationProblem(
+            "Provider",
+            Localized<ValidationErrorMessage>(m => m.AuthProviderInvalid())
         );
     }
 

@@ -72,6 +72,23 @@ and 6 dead strategies. Change strategy discovery to span the module assemblies.
 
 ## 8.5 Validation failures return raw `ValidationFailure` objects (echoing the submitted value) and don't match the OpenAPI contract
 
+> **Resolved in Stage 16**, and the finding understated it. Measured against FluentValidation
+> 12.0.0, the submitted value was echoed **three** times: `AttemptedValue`,
+> `FormattedMessagePlaceholderValues.PropertyValue` (a verbatim second copy — stripping
+> `AttemptedValue` alone would have left the password in the body), and `detail`, which carried
+> `exception.Message` — every failure message concatenated, including length disclosures like
+> "You entered 7 characters".
+>
+> `CustomState`, `Severity` and `ErrorCode` also serialized, but those are a contract defect
+> rather than a disclosure: `WithState`/`WithSeverity`/`WithErrorCode` are called 0 times in
+> `src/`, so they were structurally dead fields in PascalCase inside a camelCase document.
+>
+> `ValidationExceptionHandler` now projects to `{ "field": ["message", …] }` in camelCase and
+> `detail` is a fixed localized sentence. The 63 duplicated `ValidationDetail` test helpers were
+> deleted and their 118 assertions moved to `ShouldBeValidationProblem`, which asserts the
+> per-field messages **and** that none of the raw members appears in the body — so the leak
+> assertion now runs on all 118 sites.
+
 **Severity: High** · AREA: error handling · overlaps [06 §13](06-content-application.md).
 
 **Where:** `ValidationExceptionHandler.cs:24` puts `exception.Errors` (a list of `ValidationFailure`)
@@ -175,6 +192,16 @@ one of these into a named startup crash. Replace the static calls and indexer re
 
 ## 8.11 Error responses are not RFC 7807: no `type`, wrong `Content-Type`, and `traceId` correlates to nothing
 
+> **Resolved in Stage 16**, except the correlation half. `type` is now always set:
+> `about:blank` from `BaseExceptionStrategy.CreateStandardProblemDetails`, and
+> `urn:116:problem:{ruleCode}` from all three modules' `DomainRuleExceptionStrategy`.
+> `ExceptionHandler` writes `application/problem+json`.
+>
+> Correction to the finding: `traceId` was **already** stamped on every problem, from
+> `context.TraceIdentifier` (`BaseExceptionStrategy.CreateStandardProblemDetails:46`). What is
+> missing is a correlation id that spans services — that stays with Stage 11, which now only
+> has to change the *source* of the field, not add it.
+
 **Severity: Medium** · AREA: error handling + logging.
 
 **Where:** `ProblemDetails.Type` is never assigned; `Title` is a .NET class name. `AddProblemDetails()`
@@ -217,6 +244,9 @@ cause.
 
 ## 8.13 Versioning declares v2 but nothing exercises it, and the `V1` folder versions only the endpoint
 
+> **Resolved before Stage 16** for the v2 half: no `MapToApiVersion(2)` remains anywhere in
+> `src/`. The folder-versioning observation still stands.
+
 **Severity: Medium** · AREA: API design.
 
 **Where:** `ApiVersionExtension.cs:26` declares `HasApiVersion(2, 0)`; `MapApiVersionGroup(2)` × 0,
@@ -237,6 +267,14 @@ procedure.
 ---
 
 ## 8.14 7 endpoints violate the `/api/v{version}/{scope}/{resource}` pattern, and 101 endpoints defer GUID parsing into the handler
+
+> **Partly resolved in Stage 16.** The 7 misplaced routes are under `public/` (see
+> [06 §10](06-content-application.md)); the census re-runs clean.
+>
+> Correction to the finding: deferred `Guid.Parse` does **not** produce a 500.
+> `FormatExceptionStrategy` catches `FormatException` and returns 400 with a localized
+> "invalid identifier" message, so the 101 sites are a style issue, not a defect. They are
+> deliberately left alone.
 
 **Severity: Medium** · AREA: API design · overlaps [06 §10/§13](06-content-application.md).
 
@@ -341,6 +379,14 @@ localized path. Add a CI grep gate rejecting `new *Exception($"...")` outside `*
 ---
 
 ## 8.19 Response semantics are a `{isSuccess:true}` envelope over HTTP status; 28/28 DELETEs return a body, 0 use 204
+
+> **Resolved in Stage 16 for 22 of the 28**, deliberately not all. Six DELETEs do not return an
+> envelope — they return the resulting state: `AdminRemoveCategoryPricing` (remaining pricing),
+> `AdminRemovePackageSlot` (package), `AdminRemovePermissionFromRole` (role),
+> `AdminSoftDeletePermission` and `AdminSoftDeleteRole` (the updated resource), and
+> `AdminRemoveRoleFromUser` (remaining roles). Emptying those to 204 would delete information
+> and force a second round trip, so they keep 200. The other 22 return 204 with the response
+> record deleted. The wider `{isSuccess}` envelope on non-DELETE responses is untouched.
 
 **Severity: Low** · AREA: API design.
 

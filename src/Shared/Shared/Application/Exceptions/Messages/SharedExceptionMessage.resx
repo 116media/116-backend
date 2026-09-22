@@ -141,4 +141,7 @@
   <data name="DuplicateResourceConflict" xml:space="preserve">
     <value>This action was already performed, or the resource already exists.</value>
   </data>
+  <data name="ValidationFailed" xml:space="preserve">
+    <value>One or more fields are invalid. See the errors for details.</value>
+  </data>
 </root>

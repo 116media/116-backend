@@ -402,32 +402,30 @@ public static class Routes
         }
 
         /// <summary>
-        /// Unscoped community lyrics submission and lyrics-text correction-revision endpoints —
-        /// deliberately outside both the <c>admin</c> and <c>public</c> route groups, mirroring
-        /// the unscoped artist claim route.
+        /// Community lyrics submission and lyrics-text correction-revision endpoints, under the
+        /// <c>public</c> scope.
         /// </summary>
         public static class LyricsSubmissionsAndRevisions
         {
-            public static string Submissions() => $"{ApiRoutes.Lyrics}/{EditorialRouteConstants.Submissions}";
+            public static string Submissions() => $"{ApiRoutes.Public.Lyrics}/{EditorialRouteConstants.Submissions}";
 
             public static string Revisions(Guid lyricsId) =>
-                $"{ApiRoutes.Lyrics}/{lyricsId}/{EditorialRouteConstants.Revisions}";
+                $"{ApiRoutes.Public.Lyrics}/{lyricsId}/{EditorialRouteConstants.Revisions}";
 
             public static string RevisionVotes(Guid revisionId) =>
-                $"{ApiRoutes.Lyrics}/{EditorialRouteConstants.Revisions}/{revisionId}/{EditorialRouteConstants.Votes}";
+                $"{ApiRoutes.Public.Lyrics}/{EditorialRouteConstants.Revisions}/{revisionId}/{EditorialRouteConstants.Votes}";
         }
 
         /// <summary>
-        /// Unscoped translation-revision review endpoints — deliberately outside both the
-        /// <c>admin</c> and <c>public</c> route groups.
+        /// Public translation-revision review endpoints.
         /// </summary>
         public static class Translations
         {
             public static string Revisions(Guid translationId) =>
-                $"{ApiRoutes.Translations}/{translationId}/{EditorialRouteConstants.Revisions}";
+                $"{ApiRoutes.Public.Translations}/{translationId}/{EditorialRouteConstants.Revisions}";
 
             public static string RevisionVotes(Guid revisionId) =>
-                $"{ApiRoutes.Translations}/{EditorialRouteConstants.Revisions}/{revisionId}/{EditorialRouteConstants.Votes}";
+                $"{ApiRoutes.Public.Translations}/{EditorialRouteConstants.Revisions}/{revisionId}/{EditorialRouteConstants.Votes}";
         }
 
         /// <summary>
@@ -459,9 +457,9 @@ public static class Routes
                 $"{ApiRoutes.Public.Artists}/{slug}/{EditorialRouteConstants.Articles}{query}";
 
             /// <summary>
-            /// The unscoped claim-request route — <c>POST /api/v1/artists/{id}/claim</c>.
+            /// The claim-request route — <c>POST /api/v1/public/artists/{id}/claim</c>.
             /// </summary>
-            public static string Claim(Guid id) => $"{ApiRoutes.Artists}/{id}/{EditorialRouteConstants.Claim}";
+            public static string Claim(Guid id) => $"{ApiRoutes.Public.Artists}/{id}/{EditorialRouteConstants.Claim}";
         }
     }
 }

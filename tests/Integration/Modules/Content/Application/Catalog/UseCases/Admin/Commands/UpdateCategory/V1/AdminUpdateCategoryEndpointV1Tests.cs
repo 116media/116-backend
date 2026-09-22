@@ -17,9 +17,6 @@ namespace _116.Integration.Tests.Modules.Content.Application.Catalog.UseCases.Ad
 [Collection("Database")]
 public class AdminUpdateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     private static string ShortName(string prefix = "c") => $"{prefix}{Guid.NewGuid().ToString("N")[..8]}";
 
     private static string ShortSlug(string prefix = "s") => $"{prefix}-{Guid.NewGuid().ToString("N")[..8]}";
@@ -147,10 +144,7 @@ public class AdminUpdateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Categories}/{category.Id}", request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("Name", Localized<CategoryErrorMessage>(m => m.NameRequired()))
-        );
+        await response.ShouldBeValidationProblem("Name", Localized<CategoryErrorMessage>(m => m.NameRequired()));
     }
 
     [Fact]
@@ -168,9 +162,9 @@ public class AdminUpdateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Categories}/not-a-guid", request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("Id", Localized<CategoryErrorMessage>(m => m.Localizer["IdInvalid"].Value))
+        await response.ShouldBeValidationProblem(
+            "Id",
+            Localized<CategoryErrorMessage>(m => m.Localizer["IdInvalid"].Value)
         );
     }
 
@@ -190,12 +184,9 @@ public class AdminUpdateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Categories}/{id}", request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail(
-                "Name",
-                Localized<CategoryErrorMessage>(m => m.NameTooLong(ContentConstants.MaxCategoryNameLength))
-            )
+        await response.ShouldBeValidationProblem(
+            "Name",
+            Localized<CategoryErrorMessage>(m => m.NameTooLong(ContentConstants.MaxCategoryNameLength))
         );
     }
 
@@ -215,12 +206,9 @@ public class AdminUpdateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Categories}/{id}", request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail(
-                "Slug",
-                Localized<CategoryErrorMessage>(m => m.SlugTooLong(ContentConstants.MaxCategorySlugLength))
-            )
+        await response.ShouldBeValidationProblem(
+            "Slug",
+            Localized<CategoryErrorMessage>(m => m.SlugTooLong(ContentConstants.MaxCategorySlugLength))
         );
     }
 
@@ -240,14 +228,9 @@ public class AdminUpdateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Categories}/{id}", request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail(
-                "Description",
-                Localized<CategoryErrorMessage>(m =>
-                    m.DescriptionTooLong(ContentConstants.MaxCategoryDescriptionLength)
-                )
-            )
+        await response.ShouldBeValidationProblem(
+            "Description",
+            Localized<CategoryErrorMessage>(m => m.DescriptionTooLong(ContentConstants.MaxCategoryDescriptionLength))
         );
     }
 
@@ -267,10 +250,7 @@ public class AdminUpdateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Categories}/{id}", request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("Slug", Localized<CategoryErrorMessage>(m => m.SlugInvalidFormat()))
-        );
+        await response.ShouldBeValidationProblem("Slug", Localized<CategoryErrorMessage>(m => m.SlugInvalidFormat()));
     }
 
     [Fact]

@@ -72,7 +72,7 @@ public class AdminForceUnpromoteArticleEndpointV1 : ICarterModule
             .WithDescription(description: AdminForceUnpromoteArticleMetaField.ForceUnpromoteArticle.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentManagement)
             .ProducesValidationProblem()
             .Produces<AdminForceUnpromoteArticleResponse>(statusCode: StatusCodes.Status200OK)
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)

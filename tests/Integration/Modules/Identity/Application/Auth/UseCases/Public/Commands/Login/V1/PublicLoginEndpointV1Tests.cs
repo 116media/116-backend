@@ -24,9 +24,6 @@ namespace _116.Integration.Tests.Modules.Identity.Application.Auth.UseCases.Publ
 [Collection("Database")]
 public class PublicLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ValidationDetail(params (string Property, string Message)[] failures) =>
-        new ValidationException(failures.Select(f => new ValidationFailure(f.Property, f.Message))).Message;
-
     [Fact]
     public async Task Login_WithEmptyCredentials_ReturnsValidationError()
     {
@@ -35,12 +32,9 @@ public class PublicLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.PostAsJsonAsync(Routes.Public.Auth.Login(), request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail(
-                ("Credentials", Localized<ValidationErrorMessage>(m => m.EmailOrUsernameRequired())),
-                ("Password", Localized<ValidationErrorMessage>(m => m.PasswordRequired()))
-            )
+        await response.ShouldBeValidationProblem(
+            ("Credentials", Localized<ValidationErrorMessage>(m => m.EmailOrUsernameRequired())),
+            ("Password", Localized<ValidationErrorMessage>(m => m.PasswordRequired()))
         );
     }
 

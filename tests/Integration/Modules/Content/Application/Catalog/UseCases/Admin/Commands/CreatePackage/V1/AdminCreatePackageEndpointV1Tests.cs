@@ -14,9 +14,6 @@ namespace _116.Integration.Tests.Modules.Content.Application.Catalog.UseCases.Ad
 [Collection("Database")]
 public class AdminCreatePackageEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     [Fact]
     public async Task CreatePackage_WithNoAuth_ReturnsUnauthorized()
     {
@@ -47,10 +44,7 @@ public class AdminCreatePackageEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Packages, request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("Name", Localized<PackageErrorMessage>(m => m.NameRequired()))
-        );
+        await response.ShouldBeValidationProblem("Name", Localized<PackageErrorMessage>(m => m.NameRequired()));
     }
 
     [Fact]
@@ -63,9 +57,9 @@ public class AdminCreatePackageEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Packages, request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("Description", Localized<PackageErrorMessage>(m => m.DescriptionRequired()))
+        await response.ShouldBeValidationProblem(
+            "Description",
+            Localized<PackageErrorMessage>(m => m.DescriptionRequired())
         );
     }
 

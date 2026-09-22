@@ -20,6 +20,6 @@ public class AdminCreateAlbumValidator : AbstractValidator<AdminCreateAlbumComma
 
         RuleFor(x => x.ReleaseYear).ValidReleaseYear(timeProvider);
 
-        RuleFor(x => x.ReleaseType).IsInEnum();
+        RuleFor(x => x.ReleaseType).ValidAlbumReleaseType(i18n.Album.Msg);
     }
 }

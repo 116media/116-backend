@@ -14,12 +14,6 @@ using Microsoft.AspNetCore.Routing;
 namespace _116.Content.Application.Interactions.UseCases.Public.Commands.UnlikeArticleComment.V1;
 
 /// <summary>
-/// Response model for a successful PublicUnlikeArticleComment operation.
-/// </summary>
-/// <param name="IsSuccess">Indicates if the operation was successful.</param>
-public record PublicUnlikeArticleCommentResponse(bool IsSuccess);
-
-/// <summary>
 /// Defines the unlike article comment endpoint.
 /// </summary>
 public class PublicUnlikeArticleCommentEndpointV1 : ICarterModule
@@ -45,21 +39,16 @@ public class PublicUnlikeArticleCommentEndpointV1 : ICarterModule
                     Guid userId = claimsProvider.GetUserIdFromClaims(user: user);
 
                     var command = new PublicUnlikeArticleCommentCommand(CommentId: commentId, UserId: userId);
-                    PublicUnlikeArticleCommentResult result = await dispatcher.Send(
-                        request: command,
-                        cancellationToken: cancellationToken
-                    );
-
-                    var response = new PublicUnlikeArticleCommentResponse(IsSuccess: result.IsSuccess);
-                    return Results.Ok(response);
+                    await dispatcher.Send(request: command, cancellationToken: cancellationToken);
+                    return Results.NoContent();
                 }
             )
             .WithName(endpointName: PublicUnlikeArticleCommentMetaField.UnlikeArticleComment.Name)
             .WithSummary(summary: PublicUnlikeArticleCommentMetaField.UnlikeArticleComment.Summary)
             .WithDescription(description: PublicUnlikeArticleCommentMetaField.UnlikeArticleComment.Description)
             .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
-            .Produces<PublicUnlikeArticleCommentResponse>(statusCode: StatusCodes.Status200OK)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentContribution)
+            .Produces(statusCode: StatusCodes.Status204NoContent)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
             .ProducesProblem(statusCode: StatusCodes.Status404NotFound)
             .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);

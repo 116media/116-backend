@@ -56,9 +56,7 @@ public class PublicUnlikeShortVideoEndpointV1Tests(PostgresFixture db) : BaseApi
 
         var response = await Client.DeleteAsync(Routes.Public.Shorts.Likes(shortVideo.Id));
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var body = await response.ReadAsAsync<PublicUnlikeShortVideoResponse>();
-        body.IsSuccess.Should().BeTrue();
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         await using var verifyDb = CreateDbContext<ContentDbContext>();
         (

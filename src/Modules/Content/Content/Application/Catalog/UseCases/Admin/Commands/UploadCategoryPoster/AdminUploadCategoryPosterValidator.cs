@@ -1,4 +1,5 @@
 using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Shared.Validators;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
 
@@ -17,6 +18,6 @@ public class AdminUploadCategoryPosterValidator : AbstractValidator<AdminUploadC
     {
         RuleFor(x => x.Id).IsValidGuid(i18n.Category.Msg.Localizer);
 
-        RuleFor(x => x.File).NotNull().WithMessage(i18n.Category.Msg.FileRequired());
+        RuleFor(x => x.File).ValidUploadedFile(i18n.Category.Msg.FileRequired());
     }
 }

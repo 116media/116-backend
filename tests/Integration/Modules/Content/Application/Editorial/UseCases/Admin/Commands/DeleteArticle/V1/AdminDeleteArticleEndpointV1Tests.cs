@@ -84,9 +84,7 @@ public class AdminDeleteArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Articles}/{article.Id}");
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var body = await response.ReadAsAsync<AdminDeleteArticleResponse>();
-        body.IsSuccess.Should().BeTrue();
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
         ArticleEntity? persisted = await ctx.Articles.FindAsync(article.Id);

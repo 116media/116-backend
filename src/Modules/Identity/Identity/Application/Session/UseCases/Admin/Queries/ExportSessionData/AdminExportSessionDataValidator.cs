@@ -40,10 +40,7 @@ public class AdminExportSessionDataValidator : AbstractValidator<AdminExportSess
 
         When(
             x => x.FromDate.HasValue && x.ToDate.HasValue,
-            () =>
-                RuleFor(x => x.ToDate)
-                    .GreaterThanOrEqualTo(x => x.FromDate)
-                    .WithMessage(i18n.User.Validation.ExportDateRangeInvalid())
+            () => RuleFor(x => x.ToDate).ValidExportDateRange(x => x.FromDate, i18n.User.Validation)
         );
     }
 }

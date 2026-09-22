@@ -73,7 +73,7 @@ public class PublicAddVideoToPlaylistEndpointV1 : ICarterModule
             .WithSummary(summary: PublicAddVideoToPlaylistMetaField.AddVideoToPlaylist.Summary)
             .WithDescription(description: PublicAddVideoToPlaylistMetaField.AddVideoToPlaylist.Description)
             .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentContribution)
             .Produces<PublicAddVideoToPlaylistResponse>(statusCode: StatusCodes.Status200OK)
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)

@@ -17,9 +17,6 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminUploadLyricsCoverEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     private async Task<LyricsEntity> SeedLyricsAsync()
     {
         return await SeedAsync<ContentDbContext, LyricsEntity>(ctx =>
@@ -162,9 +159,6 @@ public class AdminUploadLyricsCoverEndpointV1Tests(PostgresFixture db) : BaseApi
             formContent
         );
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("File", Localized<LyricsErrorMessage>(m => m.FileRequired()))
-        );
+        await response.ShouldBeValidationProblem("File", Localized<LyricsErrorMessage>(m => m.FileRequired()));
     }
 }

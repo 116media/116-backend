@@ -59,7 +59,7 @@ public class PublicLikeLyricsEndpointV1 : ICarterModule
             .WithSummary(summary: PublicLikeLyricsMetaField.LikeLyrics.Summary)
             .WithDescription(description: PublicLikeLyricsMetaField.LikeLyrics.Description)
             .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentContribution)
             .Produces<PublicLikeLyricsResponse>(statusCode: StatusCodes.Status200OK)
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)

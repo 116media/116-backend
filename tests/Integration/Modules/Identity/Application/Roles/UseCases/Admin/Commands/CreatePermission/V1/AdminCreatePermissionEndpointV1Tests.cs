@@ -15,9 +15,6 @@ namespace _116.Integration.Tests.Modules.Identity.Application.Roles.UseCases.Adm
 [Collection("Database")]
 public class AdminCreatePermissionEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     [Fact]
     public async Task CreatePermission_ShouldReturnSuccess_WhenSuperAdminWithValidData()
     {
@@ -98,9 +95,9 @@ public class AdminCreatePermissionEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Permissions, request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("Resource", Localized<ValidationErrorMessage>(m => m.PermissionResourceRequired()))
+        await response.ShouldBeValidationProblem(
+            "Resource",
+            Localized<ValidationErrorMessage>(m => m.PermissionResourceRequired())
         );
     }
 }

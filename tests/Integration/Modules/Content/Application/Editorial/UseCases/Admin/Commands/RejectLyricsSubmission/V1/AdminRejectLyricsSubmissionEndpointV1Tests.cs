@@ -19,9 +19,6 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminRejectLyricsSubmissionEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     [Fact]
     public async Task RejectLyricsSubmission_WithNoAuth_ReturnsUnauthorized()
     {
@@ -65,9 +62,9 @@ public class AdminRejectLyricsSubmissionEndpointV1Tests(PostgresFixture db) : Ba
             new AdminRejectLyricsSubmissionRequest(string.Empty)
         );
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("Note", Localized<LyricsErrorMessage>(m => m.RejectionReasonRequired()))
+        await response.ShouldBeValidationProblem(
+            "Note",
+            Localized<LyricsErrorMessage>(m => m.RejectionReasonRequired())
         );
     }
 

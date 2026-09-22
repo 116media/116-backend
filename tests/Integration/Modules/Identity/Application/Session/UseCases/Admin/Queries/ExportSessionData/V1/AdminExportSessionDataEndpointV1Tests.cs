@@ -14,9 +14,6 @@ namespace _116.Integration.Tests.Modules.Identity.Application.Session.UseCases.A
 [Collection("Database")]
 public class AdminExportSessionDataEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     [Fact]
     public async Task AdminExportSessions_WithNoAuth_ReturnsUnauthorized()
     {
@@ -76,9 +73,9 @@ public class AdminExportSessionDataEndpointV1Tests(PostgresFixture db) : BaseApi
 
         var response = await Client.GetAsync($"{Routes.Admin.Sessions.Export()}?format=invalid_format");
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("Format", Localized<ValidationErrorMessage>(m => m.ExportFormatInvalid()))
+        await response.ShouldBeValidationProblem(
+            "Format",
+            Localized<ValidationErrorMessage>(m => m.ExportFormatInvalid())
         );
     }
 
@@ -127,9 +124,9 @@ public class AdminExportSessionDataEndpointV1Tests(PostgresFixture db) : BaseApi
 
         var response = await Client.GetAsync($"{Routes.Admin.Sessions.Export()}?status=invalid_status");
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("Status", Localized<ValidationErrorMessage>(m => m.ExportStatusInvalid()))
+        await response.ShouldBeValidationProblem(
+            "Status",
+            Localized<ValidationErrorMessage>(m => m.ExportStatusInvalid())
         );
     }
 }

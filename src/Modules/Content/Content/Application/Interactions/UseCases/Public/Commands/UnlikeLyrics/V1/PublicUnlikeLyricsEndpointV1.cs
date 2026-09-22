@@ -14,12 +14,6 @@ using Microsoft.AspNetCore.Routing;
 namespace _116.Content.Application.Interactions.UseCases.Public.Commands.UnlikeLyrics.V1;
 
 /// <summary>
-/// Response model for a successful PublicUnlikeLyrics operation.
-/// </summary>
-/// <param name="IsSuccess">Indicates if the operation was successful.</param>
-public record PublicUnlikeLyricsResponse(bool IsSuccess);
-
-/// <summary>
 /// Defines the unlike lyrics endpoint.
 /// </summary>
 public class PublicUnlikeLyricsEndpointV1 : ICarterModule
@@ -46,21 +40,16 @@ public class PublicUnlikeLyricsEndpointV1 : ICarterModule
                     Guid userId = claimsProvider.GetUserIdFromClaims(user: user);
 
                     var command = new PublicUnlikeLyricsCommand(LyricsId: lyricsId, UserId: userId);
-                    PublicUnlikeLyricsResult result = await dispatcher.Send(
-                        request: command,
-                        cancellationToken: cancellationToken
-                    );
-
-                    var response = new PublicUnlikeLyricsResponse(IsSuccess: result.IsSuccess);
-                    return Results.Ok(response);
+                    await dispatcher.Send(request: command, cancellationToken: cancellationToken);
+                    return Results.NoContent();
                 }
             )
             .WithName(endpointName: PublicUnlikeLyricsMetaField.UnlikeLyrics.Name)
             .WithSummary(summary: PublicUnlikeLyricsMetaField.UnlikeLyrics.Summary)
             .WithDescription(description: PublicUnlikeLyricsMetaField.UnlikeLyrics.Description)
             .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
-            .Produces<PublicUnlikeLyricsResponse>(statusCode: StatusCodes.Status200OK)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentContribution)
+            .Produces(statusCode: StatusCodes.Status204NoContent)
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
             .ProducesProblem(statusCode: StatusCodes.Status404NotFound)

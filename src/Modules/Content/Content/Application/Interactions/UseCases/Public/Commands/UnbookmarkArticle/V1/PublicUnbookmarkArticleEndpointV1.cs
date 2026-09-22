@@ -14,12 +14,6 @@ using Microsoft.AspNetCore.Routing;
 namespace _116.Content.Application.Interactions.UseCases.Public.Commands.UnbookmarkArticle.V1;
 
 /// <summary>
-/// Response model for a successful PublicUnbookmarkArticle operation.
-/// </summary>
-/// <param name="IsSuccess">Indicates if the operation was successful.</param>
-public record PublicUnbookmarkArticleResponse(bool IsSuccess);
-
-/// <summary>
 /// Defines the un-bookmark article endpoint.
 /// </summary>
 public class PublicUnbookmarkArticleEndpointV1 : ICarterModule
@@ -46,21 +40,16 @@ public class PublicUnbookmarkArticleEndpointV1 : ICarterModule
                     Guid userId = claimsProvider.GetUserIdFromClaims(user: user);
 
                     var command = new PublicUnbookmarkArticleCommand(ArticleId: articleId, UserId: userId);
-                    PublicUnbookmarkArticleResult result = await dispatcher.Send(
-                        request: command,
-                        cancellationToken: cancellationToken
-                    );
-
-                    var response = new PublicUnbookmarkArticleResponse(IsSuccess: result.IsSuccess);
-                    return Results.Ok(response);
+                    await dispatcher.Send(request: command, cancellationToken: cancellationToken);
+                    return Results.NoContent();
                 }
             )
             .WithName(endpointName: PublicUnbookmarkArticleMetaField.UnbookmarkArticle.Name)
             .WithSummary(summary: PublicUnbookmarkArticleMetaField.UnbookmarkArticle.Summary)
             .WithDescription(description: PublicUnbookmarkArticleMetaField.UnbookmarkArticle.Description)
             .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
-            .Produces<PublicUnbookmarkArticleResponse>(statusCode: StatusCodes.Status200OK)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentContribution)
+            .Produces(statusCode: StatusCodes.Status204NoContent)
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
             .ProducesProblem(statusCode: StatusCodes.Status404NotFound)

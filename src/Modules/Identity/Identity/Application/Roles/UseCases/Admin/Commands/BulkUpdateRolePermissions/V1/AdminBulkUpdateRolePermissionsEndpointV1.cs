@@ -69,7 +69,7 @@ public class AdminBulkUpdateRolePermissionsEndpointV1 : ICarterModule
             .WithSummary(summary: AdminBulkUpdateRolePermissionsMetaField.BulkUpdateRolePermissions.Summary)
             .WithDescription(description: AdminBulkUpdateRolePermissionsMetaField.BulkUpdateRolePermissions.Description)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentManagement)
             .ProducesValidationProblem()
             .Produces<AdminBulkUpdateRolePermissionsResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)

@@ -16,7 +16,7 @@ public class AdminForceUnpromoteLyricsValidator : AbstractValidator<AdminForceUn
     /// <param name="i18n">Content module i18n facade.</param>
     public AdminForceUnpromoteLyricsValidator(ContentI18n i18n)
     {
-        RuleFor(x => x.Id).NotEmpty();
+        RuleFor(x => x.Id).ValidLyricsId(i18n.Lyrics.Msg);
         RuleFor(x => x.Reason)
             .ValidUnpromoteReason(
                 reasonRequired: i18n.Lyrics.Msg.RejectionReasonRequired(),

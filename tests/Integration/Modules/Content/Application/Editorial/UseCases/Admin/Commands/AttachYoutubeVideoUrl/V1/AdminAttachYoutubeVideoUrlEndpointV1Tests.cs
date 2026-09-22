@@ -19,9 +19,6 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminAttachYoutubeVideoUrlEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     private const string ValidYoutubeUrl = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
 
     private async Task<VideoEntity> SeedVideoAsync(Func<Guid, VideoEntity> create)
@@ -152,9 +149,9 @@ public class AdminAttachYoutubeVideoUrlEndpointV1Tests(PostgresFixture db) : Bas
             request
         );
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("YoutubeVideoUrl", Localized<VideoErrorMessage>(m => m.YoutubeUrlInvalidFormat()))
+        await response.ShouldBeValidationProblem(
+            "YoutubeVideoUrl",
+            Localized<VideoErrorMessage>(m => m.YoutubeUrlInvalidFormat())
         );
     }
 }

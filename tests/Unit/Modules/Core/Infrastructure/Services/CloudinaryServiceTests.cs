@@ -416,13 +416,10 @@ public class CloudinaryServiceTests
     #region Resource types
 
     [Theory]
-    [InlineData(EnumStoredFileKind.Image, "image")]
-    [InlineData(EnumStoredFileKind.Video, "video")]
-    [InlineData(EnumStoredFileKind.Raw, "raw")]
-    public async Task DeleteAsync_ShouldAddressTheAssetUnderItsOwnResourceType(
-        EnumStoredFileKind kind,
-        string expectedResourceType
-    )
+    [InlineData(EnumStoredFileKind.Image)]
+    [InlineData(EnumStoredFileKind.Video)]
+    [InlineData(EnumStoredFileKind.Raw)]
+    public async Task DeleteAsync_ShouldHandTheClientTheKindItWasGiven(EnumStoredFileKind kind)
     {
         // Deleting a video or raw asset as an image is a silent no-op at the provider, so the
         // asset leaks forever.
@@ -441,13 +438,10 @@ public class CloudinaryServiceTests
     }
 
     [Theory]
-    [InlineData(EnumStoredFileKind.Image, "image")]
-    [InlineData(EnumStoredFileKind.Video, "video")]
-    [InlineData(EnumStoredFileKind.Raw, "raw")]
-    public async Task DeleteManyAsync_ShouldAddressEveryAssetUnderItsOwnResourceType(
-        EnumStoredFileKind kind,
-        string expectedResourceType
-    )
+    [InlineData(EnumStoredFileKind.Image)]
+    [InlineData(EnumStoredFileKind.Video)]
+    [InlineData(EnumStoredFileKind.Raw)]
+    public async Task DeleteManyAsync_ShouldHandTheClientTheKindItWasGiven(EnumStoredFileKind kind)
     {
         List<string>? capturedIds = null;
         EnumStoredFileKind? capturedKind = null;

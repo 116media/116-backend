@@ -1,3 +1,5 @@
+using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Shared.Validators;
 using _116.Content.Domain.Constants;
 using FluentValidation;
 
@@ -13,12 +15,8 @@ public class AdminSetArticleArtistsValidator : AbstractValidator<AdminSetArticle
     /// <summary>
     /// Initializes a new instance of <see cref="AdminSetArticleArtistsValidator" />.
     /// </summary>
-    public AdminSetArticleArtistsValidator()
+    public AdminSetArticleArtistsValidator(ContentI18n i18n)
     {
-        RuleFor(x => x.ArtistIds)
-            .Cascade(cascadeMode: CascadeMode.Stop)
-            .NotNull()
-            .Must(ids => ids.Count <= ContentConstants.MaxArticleArtistCount)
-            .Must(ids => ids.Distinct().Count() == ids.Count);
+        RuleFor(x => x.ArtistIds).ValidArticleArtistIds(i18n.Article.Msg);
     }
 }

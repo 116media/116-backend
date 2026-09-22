@@ -77,9 +77,7 @@ public class PublicUnlikeLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.DeleteAsync(Routes.Public.Lyrics.Likes(lyrics.Id));
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var body = await response.ReadAsAsync<PublicUnlikeLyricsResponse>();
-        body.IsSuccess.Should().BeTrue();
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         await using var verifyDb = CreateDbContext<ContentDbContext>();
         (await verifyDb.LyricsLikes.AnyAsync(l => l.LyricsId == lyrics.Id && l.UserId == TestUser.VisitorId))

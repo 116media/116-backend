@@ -12,12 +12,6 @@ using Microsoft.AspNetCore.Routing;
 namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.DeleteVideo.V1;
 
 /// <summary>
-/// Response model for a successful DeleteVideo operation.
-/// </summary>
-/// <param name="IsSuccess">Indicates if the operation was successful.</param>
-public record AdminDeleteVideoResponse(bool IsSuccess);
-
-/// <summary>
 /// Defines the admin delete video endpoint.
 /// Handles permanent deletion of draft or rejected videos.
 /// </summary>
@@ -40,13 +34,8 @@ public class AdminDeleteVideoEndpointV1 : ICarterModule
                 async (string id, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var command = new AdminDeleteVideoCommand(Id: id);
-                    AdminDeleteVideoResult result = await dispatcher.Send(
-                        request: command,
-                        cancellationToken: cancellationToken
-                    );
-
-                    var response = new AdminDeleteVideoResponse(IsSuccess: result.IsSuccess);
-                    return Results.Ok(response);
+                    await dispatcher.Send(request: command, cancellationToken: cancellationToken);
+                    return Results.NoContent();
                 }
             )
             .WithName(endpointName: AdminDeleteVideoMetaField.DeleteVideo.Name)
@@ -54,8 +43,8 @@ public class AdminDeleteVideoEndpointV1 : ICarterModule
             .WithDescription(description: AdminDeleteVideoMetaField.DeleteVideo.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
-            .Produces<AdminDeleteVideoResponse>(statusCode: StatusCodes.Status200OK)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentManagement)
+            .Produces(statusCode: StatusCodes.Status204NoContent)
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
             .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)

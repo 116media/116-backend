@@ -21,9 +21,6 @@ public class AdminUploadAlbumCoverEndpointV1Tests(PostgresFixture db) : BaseApiT
 {
     private StubCloudinaryEndpoint CloudinaryStub => Api.Services.GetRequiredService<StubCloudinaryEndpoint>();
 
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     private async Task<AlbumEntity> SeedAlbumAsync()
     {
         return await SeedAsync<ContentDbContext, AlbumEntity>(ctx =>
@@ -115,10 +112,7 @@ public class AdminUploadAlbumCoverEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         var response = await Client.PostAsync(Routes.Admin.Albums.Cover(Guid.NewGuid()), formContent);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("File", Localized<LyricsErrorMessage>(m => m.FileRequired()))
-        );
+        await response.ShouldBeValidationProblem("File", Localized<LyricsErrorMessage>(m => m.FileRequired()));
     }
 
     [Fact]

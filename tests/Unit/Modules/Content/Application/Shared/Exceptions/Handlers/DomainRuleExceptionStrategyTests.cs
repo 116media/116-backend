@@ -3,6 +3,7 @@ using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Exceptions.Handlers;
 using _116.Content.Domain.Exceptions;
 using _116.Content.Domain.StateMachines;
+using _116.Shared.Application.Exceptions.Handlers.Contracts;
 using _116.Shared.Application.Exceptions.Messages;
 using _116.Shared.Domain.Exceptions;
 using AwesomeAssertions;
@@ -99,6 +100,7 @@ public class DomainRuleExceptionStrategyTests
         problem.Status.Should().Be(StatusCodes.Status400BadRequest);
         problem.Detail.Should().Be(expected);
         problem.Extensions["code"].Should().Be(ContentRuleCodes.InvalidStatusTransition);
+        problem.Type.Should().Be(ProblemTypes.ForRule(ContentRuleCodes.InvalidStatusTransition));
         problem.Extensions["args"].Should().BeEquivalentTo(new[] { contentType, "Draft", "Published" });
     }
 

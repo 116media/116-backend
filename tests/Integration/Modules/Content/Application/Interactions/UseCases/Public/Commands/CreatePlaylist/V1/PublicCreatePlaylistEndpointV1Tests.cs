@@ -14,9 +14,6 @@ namespace _116.Integration.Tests.Modules.Content.Application.Interactions.UseCas
 [Collection("Database")]
 public class PublicCreatePlaylistEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     [Fact]
     public async Task CreatePlaylist_WithNoAuth_ReturnsUnauthorized()
     {
@@ -36,10 +33,7 @@ public class PublicCreatePlaylistEndpointV1Tests(PostgresFixture db) : BaseApiTe
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Public.Playlists, request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("Name", Localized<PlaylistErrorMessage>(m => m.NameRequired()))
-        );
+        await response.ShouldBeValidationProblem("Name", Localized<PlaylistErrorMessage>(m => m.NameRequired()));
     }
 
     [Fact]

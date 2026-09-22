@@ -12,12 +12,6 @@ using Microsoft.AspNetCore.Routing;
 namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.HardDeleteRole.V1;
 
 /// <summary>
-/// Response model for successful role hard deletion.
-/// </summary>
-/// <param name="IsSuccess">Indicates whether the role was successfully deleted.</param>
-public record AdminHardDeleteRoleResponse(bool IsSuccess);
-
-/// <summary>
 /// Defines the admin hard delete role endpoint.
 /// Handles permanently deleting roles.
 /// </summary>
@@ -41,22 +35,17 @@ public class AdminHardDeleteRoleEndpointV1 : ICarterModule
                 {
                     var command = new AdminHardDeleteRoleCommand(RoleId: id);
 
-                    AdminHardDeleteRoleResult result = await dispatcher.Send(
-                        request: command,
-                        cancellationToken: cancellationToken
-                    );
-
-                    var response = new AdminHardDeleteRoleResponse(IsSuccess: result.IsSuccess);
-                    return Results.Ok(value: response);
+                    await dispatcher.Send(request: command, cancellationToken: cancellationToken);
+                    return Results.NoContent();
                 }
             )
             .WithName(endpointName: AdminHardDeleteRoleMetaField.HardDeleteRole.Name)
             .WithSummary(summary: AdminHardDeleteRoleMetaField.HardDeleteRole.Summary)
             .WithDescription(description: AdminHardDeleteRoleMetaField.HardDeleteRole.Description)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentManagement)
             .ProducesValidationProblem()
-            .Produces<AdminHardDeleteRoleResponse>()
+            .Produces(statusCode: StatusCodes.Status204NoContent)
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
             .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)

@@ -22,9 +22,6 @@ public class AdminResetPasswordEndpointV1Tests(PostgresFixture db) : BaseApiTest
     private const string AuthUrl = ApiRoutes.Admin.Auth;
     private const string ResetPasswordUrl = $"{AuthUrl}/{AuthRouteConstants.ResetPassword}";
 
-    private static string ValidationDetail(params (string Property, string Message)[] failures) =>
-        new ValidationException(failures.Select(f => new ValidationFailure(f.Property, f.Message))).Message;
-
     [Fact]
     public async Task ResetPassword_WithEmptyFields_ReturnsValidationError()
     {
@@ -37,13 +34,10 @@ public class AdminResetPasswordEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PostAsJsonAsync(ResetPasswordUrl, request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail(
-                ("Email", Localized<ValidationErrorMessage>(m => m.EmailRequired())),
-                ("Code", Localized<ValidationErrorMessage>(m => m.OtpCodeRequired())),
-                ("NewPassword", Localized<ValidationErrorMessage>(m => m.PasswordRequired()))
-            )
+        await response.ShouldBeValidationProblem(
+            ("Email", Localized<ValidationErrorMessage>(m => m.EmailRequired())),
+            ("Code", Localized<ValidationErrorMessage>(m => m.OtpCodeRequired())),
+            ("NewPassword", Localized<ValidationErrorMessage>(m => m.PasswordRequired()))
         );
     }
 

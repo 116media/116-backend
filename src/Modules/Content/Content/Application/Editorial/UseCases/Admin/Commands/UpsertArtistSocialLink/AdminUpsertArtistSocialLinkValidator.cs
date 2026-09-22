@@ -1,4 +1,5 @@
 using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Shared.Validators;
 using _116.Content.Domain.Constants;
 using FluentValidation;
 
@@ -18,15 +19,8 @@ public class AdminUpsertArtistSocialLinkValidator : AbstractValidator<AdminUpser
     /// <param name="i18n">Content module i18n facade.</param>
     public AdminUpsertArtistSocialLinkValidator(ContentI18n i18n)
     {
-        RuleFor(x => x.Platform).IsInEnum();
+        RuleFor(x => x.Platform).ValidArtistSocialPlatform(i18n.Artist.Msg);
 
-        RuleFor(x => x.Url)
-            .Cascade(cascadeMode: CascadeMode.Stop)
-            .NotEmpty()
-            .MaximumLength(maximumLength: ContentConstants.MaxStreamingLinkUrlLength)
-            .Must(url =>
-                Uri.TryCreate(uriString: url, uriKind: UriKind.Absolute, out Uri? parsed)
-                && parsed.Scheme == Uri.UriSchemeHttps
-            );
+        RuleFor(x => x.Url).ValidArtistSocialLinkUrl(i18n.Artist.Msg);
     }
 }

@@ -58,7 +58,7 @@ public class PublicLikeArticleCommentEndpointV1 : ICarterModule
             .WithSummary(summary: PublicLikeArticleCommentMetaField.LikeArticleComment.Summary)
             .WithDescription(description: PublicLikeArticleCommentMetaField.LikeArticleComment.Description)
             .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentContribution)
             .Produces<PublicLikeArticleCommentResponse>(statusCode: StatusCodes.Status200OK)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
             .ProducesProblem(statusCode: StatusCodes.Status404NotFound)

@@ -19,9 +19,6 @@ public class AdminForgotPasswordEndpointV1Tests(PostgresFixture db) : BaseApiTes
     private const string AuthUrl = ApiRoutes.Admin.Auth;
     private const string ForgotPasswordUrl = $"{AuthUrl}/{AuthRouteConstants.ForgotPassword}";
 
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     [Fact]
     public async Task ForgotPassword_WithEmptyEmail_ReturnsValidationError()
     {
@@ -30,10 +27,7 @@ public class AdminForgotPasswordEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.PostAsJsonAsync(ForgotPasswordUrl, request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("Email", Localized<ValidationErrorMessage>(m => m.EmailRequired()))
-        );
+        await response.ShouldBeValidationProblem("Email", Localized<ValidationErrorMessage>(m => m.EmailRequired()));
     }
 
     [Fact]

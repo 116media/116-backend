@@ -50,10 +50,7 @@ public class AdminDeleteTagEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Tags}/{tag.Id}");
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        var body = await response.ReadAsAsync<AdminDeleteTagResponse>();
-        body.IsSuccess.Should().BeTrue();
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         await using ContentDbContext context = CreateDbContext<ContentDbContext>();
         (await context.Tags.AnyAsync(t => t.Id == tag.Id)).Should().BeFalse();

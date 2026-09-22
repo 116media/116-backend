@@ -36,10 +36,7 @@ public class AdminHardDeletePermissionEndpointV1Tests(PostgresFixture db) : Base
 
         var response = await Client.DeleteAsync(Routes.Admin.Permissions.Hard(permissionId));
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        var body = await response.ReadAsAsync<AdminHardDeletePermissionResponse>();
-        body.IsSuccess.Should().BeTrue();
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         await using IdentityDbContext context = CreateDbContext<IdentityDbContext>();
         bool exists = await context.Permissions.AnyAsync(p => p.Id == permissionId);

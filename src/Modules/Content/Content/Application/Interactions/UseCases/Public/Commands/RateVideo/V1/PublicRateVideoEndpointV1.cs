@@ -66,7 +66,7 @@ public class PublicRateVideoEndpointV1 : ICarterModule
             .WithSummary(summary: PublicRateVideoMetaField.RateVideo.Summary)
             .WithDescription(description: PublicRateVideoMetaField.RateVideo.Description)
             .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentContribution)
             .Produces<PublicRateVideoResponse>(statusCode: StatusCodes.Status200OK)
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)

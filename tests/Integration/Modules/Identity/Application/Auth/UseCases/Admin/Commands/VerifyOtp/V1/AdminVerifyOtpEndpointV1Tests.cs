@@ -20,9 +20,6 @@ public class AdminVerifyOtpEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
     private const string AuthUrl = ApiRoutes.Admin.Auth;
     private const string VerifyOtpUrl = $"{AuthUrl}/{AuthRouteConstants.VerifyOtp}";
 
-    private static string ValidationDetail(params (string Property, string Message)[] failures) =>
-        new ValidationException(failures.Select(f => new ValidationFailure(f.Property, f.Message))).Message;
-
     [Fact]
     public async Task VerifyOtp_WithEmptyFields_ReturnsValidationError()
     {
@@ -35,13 +32,10 @@ public class AdminVerifyOtpEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.PostAsJsonAsync(VerifyOtpUrl, request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail(
-                ("Email", Localized<ValidationErrorMessage>(m => m.EmailRequired())),
-                ("Code", Localized<ValidationErrorMessage>(m => m.OtpCodeRequired())),
-                ("Purpose", Localized<ValidationErrorMessage>(m => m.OtpPurposeRequired()))
-            )
+        await response.ShouldBeValidationProblem(
+            ("Email", Localized<ValidationErrorMessage>(m => m.EmailRequired())),
+            ("Code", Localized<ValidationErrorMessage>(m => m.OtpCodeRequired())),
+            ("Purpose", Localized<ValidationErrorMessage>(m => m.OtpPurposeRequired()))
         );
     }
 

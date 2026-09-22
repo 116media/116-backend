@@ -72,7 +72,7 @@ public class AdminCreateRoleEndpointV1 : ICarterModule
             .WithSummary(summary: AdminCreateRoleMetaField.CreateRole.Summary)
             .WithDescription(description: AdminCreateRoleMetaField.CreateRole.Description)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentManagement)
             .ProducesValidationProblem()
             .Produces<AdminCreateRoleResponse>(statusCode: StatusCodes.Status201Created)
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)

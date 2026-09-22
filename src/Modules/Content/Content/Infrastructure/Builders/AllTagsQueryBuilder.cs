@@ -1,4 +1,5 @@
 using _116.Content.Application.Lookup.Specifications;
+using _116.Content.Domain.Constants;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Builders.Contracts;
@@ -64,11 +65,8 @@ public class AllTagsQueryBuilder : IAllTagsQueryBuilder
 
         query = query.OrderBy(tag => tag.Name);
 
-        if (_limit.HasValue)
-        {
-            query = query.Take(_limit.Value);
-        }
+        int limit = Math.Min(_limit ?? ContentConstants.MaxReferenceListSize, ContentConstants.MaxReferenceListSize);
 
-        return query;
+        return query.Take(limit);
     }
 }

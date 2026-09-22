@@ -24,4 +24,19 @@
   <data name="NothingResolved" xml:space="preserve">
     <value>Le fournisseur n'a trouvé aucune autre plateforme pour cette sortie.</value>
   </data>
+  <data name="UrlRequired" xml:space="preserve">
+    <value>Une URL de lien de streaming est requise.</value>
+  </data>
+  <data name="UrlTooLong" xml:space="preserve">
+    <value>L'URL du lien de streaming ne doit pas dépasser {0} caractères.</value>
+  </data>
+  <data name="UrlMalformed" xml:space="preserve">
+    <value>L'URL du lien de streaming doit être une URL http ou https absolue.</value>
+  </data>
+  <data name="SourceUrlRequired" xml:space="preserve">
+    <value>Une URL source est requise.</value>
+  </data>
+  <data name="SourceUrlTooLong" xml:space="preserve">
+    <value>L'URL source ne doit pas dépasser {0} caractères.</value>
+  </data>
 </root>

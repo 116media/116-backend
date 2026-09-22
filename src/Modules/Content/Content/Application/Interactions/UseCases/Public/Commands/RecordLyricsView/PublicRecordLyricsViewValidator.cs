@@ -1,3 +1,5 @@
+using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Shared.Validators;
 using FluentValidation;
 
 namespace _116.Content.Application.Interactions.UseCases.Public.Commands.RecordLyricsView;
@@ -12,10 +14,10 @@ public class PublicRecordLyricsViewValidator : AbstractValidator<PublicRecordLyr
     /// <summary>
     /// Initializes a new instance of <see cref="PublicRecordLyricsViewValidator" />.
     /// </summary>
-    public PublicRecordLyricsViewValidator()
+    public PublicRecordLyricsViewValidator(ContentI18n i18n)
     {
-        RuleFor(x => x.DwellMs).GreaterThanOrEqualTo(0);
+        RuleFor(x => x.DwellMs).ValidViewDwellMs(i18n.LyricsInteraction.Msg);
 
-        RuleFor(x => x.ScrollDepthRatio).InclusiveBetween(0, 1);
+        RuleFor(x => x.ScrollDepthRatio).ValidViewScrollDepthRatio(i18n.LyricsInteraction.Msg);
     }
 }

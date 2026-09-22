@@ -98,4 +98,9 @@ public static class MailerConstants
     /// url-safe encoding.
     /// </summary>
     public const int NewsletterTokenBytes = 32;
+
+    /// <summary>
+    /// Maximum allowed length for a newsletter subscriber email address (RFC 5321 path limit).
+    /// </summary>
+    public const int MaxSubscriberEmailLength = 320;
 }

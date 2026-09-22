@@ -1,4 +1,5 @@
 using _116.Content.Application.Shared.Repositories;
+using _116.Content.Domain.Constants;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
@@ -136,5 +137,23 @@ public class ContentTypeRepositoryTests : BaseRepositoryTest
         result.Should().OnlyContain(x => x.IsActive);
         result.Should().Contain(x => x.Id == active.Id);
         result.Should().NotContain(x => x.Id == inactive.Id);
+    }
+
+    [Fact]
+    public async Task GetAllAsync_WhenTheTableOutgrowsTheCap_ReturnsAtMostTheCap()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        for (int i = 0; i < ContentConstants.MaxReferenceListSize + 20; i++)
+        {
+            seedContext.ContentTypes.Add(ContentTypeFactory.Create($"Bulk{i:D4}"));
+        }
+
+        await seedContext.SaveChangesAsync();
+
+        var repo = Resolve<IContentTypeRepository>();
+
+        var result = await repo.GetAllAsync();
+
+        result.Should().HaveCount(ContentConstants.MaxReferenceListSize);
     }
 }

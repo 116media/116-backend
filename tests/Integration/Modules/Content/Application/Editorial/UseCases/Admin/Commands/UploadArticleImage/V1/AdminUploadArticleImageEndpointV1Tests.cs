@@ -18,9 +18,6 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminUploadArticleImageEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     [Fact]
     public async Task UploadArticleImage_WithNoAuth_ReturnsUnauthorized()
     {
@@ -103,9 +100,9 @@ public class AdminUploadArticleImageEndpointV1Tests(PostgresFixture db) : BaseAp
             formContent
         );
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("ArticleId", Localized<ArticleErrorMessage>(m => m.Localizer["IdInvalid"].Value))
+        await response.ShouldBeValidationProblem(
+            "ArticleId",
+            Localized<ArticleErrorMessage>(m => m.Localizer["IdInvalid"].Value)
         );
     }
 
@@ -124,10 +121,7 @@ public class AdminUploadArticleImageEndpointV1Tests(PostgresFixture db) : BaseAp
             formContent
         );
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("File", Localized<ArticleErrorMessage>(m => m.FileRequired()))
-        );
+        await response.ShouldBeValidationProblem("File", Localized<ArticleErrorMessage>(m => m.FileRequired()));
     }
 
     [Fact]

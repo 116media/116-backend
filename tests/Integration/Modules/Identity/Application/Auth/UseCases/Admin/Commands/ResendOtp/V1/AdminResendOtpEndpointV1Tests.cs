@@ -16,9 +16,6 @@ public class AdminResendOtpEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
     private const string AuthUrl = ApiRoutes.Admin.Auth;
     private const string ResendOtpUrl = $"{AuthUrl}/{AuthRouteConstants.ResendOtp}";
 
-    private static string ValidationDetail(string property, string message) =>
-        new ValidationException([new ValidationFailure(property, message)]).Message;
-
     [Fact]
     public async Task ResendOtp_WithEmptyEmail_ReturnsValidationError()
     {
@@ -27,10 +24,7 @@ public class AdminResendOtpEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.PostAsJsonAsync(ResendOtpUrl, request);
 
-        await response.ShouldBeProblem<ValidationException>(
-            HttpStatusCode.BadRequest,
-            ValidationDetail("Email", Localized<ValidationErrorMessage>(m => m.EmailRequired()))
-        );
+        await response.ShouldBeValidationProblem("Email", Localized<ValidationErrorMessage>(m => m.EmailRequired()));
     }
 
     [Fact]
