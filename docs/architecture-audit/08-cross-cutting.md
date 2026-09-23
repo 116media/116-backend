@@ -317,15 +317,22 @@ to throw on `ResourceNotFound`.
 
 ---
 
-## 8.16 "Three languages" is two plus an English copy, and a dead second language middleware contradicts the negotiated culture
+## 8.16 The default culture is `fr` but the fallback resources are English, and a dead middleware contradicts the negotiated culture
 
 **Severity: Medium** · AREA: i18n.
 
-**Where:** `LocalizationExtension.cs` supports `["fr","en"]`, default `fr`; the neutral fallback
-`.resx` are English (match `.en` for 502/515, `.fr` for 0). `RequestCultureProviders` is replaced
-wholesale (no query/cookie override). Then a second hand-rolled middleware writes
-`HttpContext.Items["Language"]` — read **nowhere** — and resolves the header without q-values,
-disagreeing with the framework provider.
+**Where:** `LocalizationExtension.cs:17` supports `["fr","en"]` and `:22` sets
+`DefaultCulture = "fr"`, while the neutral fallback `.resx` are English (match `.en` for 502/515,
+`.fr` for 0). `RequestCultureProviders` is replaced wholesale (no query/cookie override). Then a
+second hand-rolled middleware writes `HttpContext.Items["Language"]` at `:72` — read **nowhere**,
+re-verified at 0 call sites — and resolves the header without q-values, disagreeing with the
+framework provider.
+
+**Correction to an earlier reading of this finding.** There is no phantom third language. The
+supported set is exactly two, `fr` and `en`. The neutral `Foo.resx` beside `Foo.en.resx` and
+`Foo.fr.resx` is the satellite-assembly fallback .NET requires, not a language, and its contents
+being English is only a problem because it disagrees with the configured default. This is a
+one-line fix, not a product decision about how many languages to ship.
 
 **Problem/why.** Any client sending no `Accept-Language` (server-to-server, mobile defaults, curl)
 gets French errors while the resource fallback is English — invisible until a French key is missing and
