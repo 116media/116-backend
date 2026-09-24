@@ -23,13 +23,11 @@ public interface IEmailService
     /// <param name="template">The template to render, from the catalog.</param>
     /// <param name="to">The recipient of the email.</param>
     /// <param name="tokens">The dynamic values the template requires.</param>
-    /// <param name="culture">The two-letter request culture (e.g. "en", "fr").</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
     Task EnqueueAsync(
-        EnumEmailTemplate template,
+        string template,
         EmailRecipientDto to,
         IReadOnlyDictionary<string, string> tokens,
-        string culture,
         CancellationToken cancellationToken
     );
 }
