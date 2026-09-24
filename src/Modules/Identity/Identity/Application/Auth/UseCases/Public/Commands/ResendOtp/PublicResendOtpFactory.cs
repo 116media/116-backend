@@ -4,7 +4,6 @@ using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.ResendOtp.Contracts;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Domain.ValueObjects;
-using _116.Shared.Application.Localization;
 
 namespace _116.Identity.Application.Auth.UseCases.Public.Commands.ResendOtp;
 
@@ -50,7 +49,7 @@ public class PublicResendOtpFactory(
 
         await otpRepository.AddAsync(otp: newOtp.Otp, cancellationToken: cancellationToken);
 
-        newOtp.Otp.MarkIssued(plainCode: newOtp.PlainCode, culture: EmailCulture.Current());
+        newOtp.Otp.MarkIssued(plainCode: newOtp.PlainCode);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return newOtp;
