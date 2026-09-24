@@ -1,4 +1,6 @@
 using _116.BuildingBlocks.Constants.RateLimit;
+using _116.Mailer.Application.Newsletter.Messages;
+using _116.Mailer.Application.Newsletter.Pages;
 using _116.Mailer.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
@@ -34,6 +36,26 @@ public class PublicConfirmNewsletterEndpointV1 : ICarterModule
 
         group
             .MapGet(
+                pattern: "confirm/{token}",
+                (string token, NewsletterPageMessage page, HttpContext httpContext) =>
+                    Results.Content(
+                        SubscriptionPage.Render(
+                            title: page.ConfirmTitle(),
+                            prompt: page.ConfirmPrompt(),
+                            buttonLabel: page.ConfirmButton(),
+                            action: httpContext.Request.Path
+                        ),
+                        contentType: "text/html"
+                    )
+            )
+            .WithName(endpointName: $"{PublicConfirmNewsletterMetaField.ConfirmNewsletter.Name}Page")
+            .WithSummary(summary: PublicConfirmNewsletterMetaField.ConfirmNewsletter.Summary)
+            .AllowAnonymous()
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
+            .Produces(statusCode: StatusCodes.Status200OK, contentType: "text/html");
+
+        group
+            .MapPost(
                 pattern: "confirm/{token}",
                 async (string token, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
