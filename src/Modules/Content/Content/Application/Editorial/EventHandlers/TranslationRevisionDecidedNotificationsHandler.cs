@@ -1,13 +1,13 @@
+using _116.Content.Application.Editorial.Messages;
 using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Events;
 using _116.Identity.Contracts.Application.DTOs;
 using _116.Identity.Contracts.Application.Services;
-using _116.Mailer.Contracts.Application.DTOs;
+using _116.Mailer.Contracts.Application.Messages;
 using _116.Mailer.Contracts.Application.Services;
 using _116.Mailer.Contracts.Domain.Enums;
-using _116.Shared.Application.Localization;
 using _116.Shared.Application.Services;
 using Microsoft.Extensions.Logging;
 
@@ -31,7 +31,7 @@ public class TranslationRevisionDecidedNotificationsHandler(
     IUserLookupService userLookupService,
     ITranslationRepository translationRepository,
     ILyricsRepository lyricsRepository,
-    IEmailService emailService,
+    IMessageDispatcher messageDispatcher,
     INotificationService notificationService,
     ILogger<TranslationRevisionDecidedNotificationsHandler> logger
 ) : IDomainEventHandler<TranslationRevisionDecidedEvent>
@@ -71,24 +71,23 @@ public class TranslationRevisionDecidedNotificationsHandler(
             return;
         }
 
-        string culture = EmailCulture.Current();
         string decision = domainEvent.Accepted ? "accepted" : "rejected";
 
         if (proposer.Email is not null)
         {
-            await emailService.EnqueueAsync(
-                template: EnumEmailTemplate.RevisionDecided,
-                to: new EmailRecipientDto(Address: proposer.Email, DisplayName: proposer.UserName),
-                tokens: new Dictionary<string, string>
-                {
-                    ["userName"] = proposer.UserName,
-                    ["songTitle"] = lyrics.SongTitle,
-                    ["decision"] = decision,
-                    ["lyricsUrl"] = ContentPublicLinks.Lyrics(lyrics.Slug),
-                },
-                culture: culture,
-                cancellationToken: cancellationToken
+            var message = new RevisionDecidedMessage(
+                Proposer: new MessageRecipient(
+                    UserId: domainEvent.ProposedByUserId,
+                    Address: proposer.Email,
+                    DisplayName: proposer.UserName,
+                    Locale: proposer.PreferredLocale
+                ),
+                SongTitle: lyrics.SongTitle,
+                Decision: decision,
+                LyricsUrl: ContentPublicLinks.Lyrics(lyrics.Slug)
             );
+
+            await messageDispatcher.DispatchAsync(message: message, cancellationToken: cancellationToken);
         }
         else
         {
@@ -107,7 +106,6 @@ public class TranslationRevisionDecidedNotificationsHandler(
                 ["decision"] = decision,
                 ["linkPath"] = $"/lyrics/{lyrics.Slug}",
             },
-            culture: culture,
             cancellationToken: cancellationToken
         );
     }
