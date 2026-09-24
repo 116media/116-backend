@@ -19,21 +19,24 @@ public partial class NotificationRenderer(NotificationMessage messages) : INotif
     public RenderedNotification Render(
         EnumNotificationType type,
         IReadOnlyDictionary<string, string> tokens,
-        string culture
+        string locale
     )
     {
         CultureInfo previous = CultureInfo.CurrentUICulture;
 
         try
         {
-            CultureInfo.CurrentUICulture = ResolveCulture(culture);
+            CultureInfo.CurrentUICulture = ResolveCulture(locale);
 
             string name = type.ToString();
-            string title = Substitute(messages.Title(name), tokens);
-            string body = Substitute(messages.Body(name), tokens);
+            string titleTemplate = messages.Title(name);
+            string bodyTemplate = messages.Body(name);
 
-            EnsureFullyResolved(type, title);
-            EnsureFullyResolved(type, body);
+            EnsureEveryPlaceholderHasAToken(type, titleTemplate, tokens);
+            EnsureEveryPlaceholderHasAToken(type, bodyTemplate, tokens);
+
+            string title = Substitute(titleTemplate, tokens);
+            string body = Substitute(bodyTemplate, tokens);
 
             return new RenderedNotification(title, body);
         }
@@ -59,18 +62,26 @@ public partial class NotificationRenderer(NotificationMessage messages) : INotif
     }
 
     /// <summary>
-    /// Throws when any <c>{{placeholder}}</c> survived substitution — a missing
-    /// token or a resource typo, both programming errors.
+    /// Throws when the template declares a <c>{{placeholder}}</c> no token supplies. Checked
+    /// against the template before substitution, so token values containing <c>{{text}}</c>
+    /// are delivered literally rather than mistaken for an unresolved placeholder.
     /// </summary>
-    private static void EnsureFullyResolved(EnumNotificationType type, string rendered)
+    private static void EnsureEveryPlaceholderHasAToken(
+        EnumNotificationType type,
+        string source,
+        IReadOnlyDictionary<string, string> tokens
+    )
     {
-        Match leftover = PlaceholderRegex().Match(rendered);
-
-        if (leftover.Success)
+        foreach (Match placeholder in PlaceholderRegex().Matches(source))
         {
-            throw new InvalidOperationException(
-                $"Notification '{type}' rendered with unresolved placeholder '{leftover.Value}'."
-            );
+            string name = placeholder.Value[2..^2];
+
+            if (!tokens.ContainsKey(name))
+            {
+                throw new InvalidOperationException(
+                    $"Notification '{type}' declares placeholder '{placeholder.Value}' with no token."
+                );
+            }
         }
     }
 
