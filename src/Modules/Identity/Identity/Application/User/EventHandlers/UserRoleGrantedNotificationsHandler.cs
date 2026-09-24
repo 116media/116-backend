@@ -1,10 +1,10 @@
+using _116.Identity.Application.Shared.Messages;
 using _116.Identity.Contracts.Application.DTOs;
 using _116.Identity.Contracts.Application.Services;
 using _116.Identity.Domain.Events;
-using _116.Mailer.Contracts.Application.DTOs;
+using _116.Mailer.Contracts.Application.Messages;
 using _116.Mailer.Contracts.Application.Services;
 using _116.Mailer.Contracts.Domain.Enums;
-using _116.Shared.Application.Localization;
 using _116.Shared.Application.Services;
 using Microsoft.Extensions.Logging;
 
@@ -21,7 +21,7 @@ namespace _116.Identity.Application.User.EventHandlers;
 /// <param name="logger">Logger recording skipped email deliveries.</param>
 public class UserRoleGrantedNotificationsHandler(
     IUserLookupService userLookupService,
-    IEmailService emailService,
+    IMessageDispatcher messageDispatcher,
     INotificationService notificationService,
     ILogger<UserRoleGrantedNotificationsHandler> logger
 ) : IDomainEventHandler<UserRoleGrantedEvent>
@@ -40,22 +40,20 @@ public class UserRoleGrantedNotificationsHandler(
             return;
         }
 
-        string culture = EmailCulture.Current();
-
         if (user.Email is not null)
         {
-            await emailService.EnqueueAsync(
-                template: EnumEmailTemplate.RoleChanged,
-                to: new EmailRecipientDto(Address: user.Email, DisplayName: user.UserName),
-                tokens: new Dictionary<string, string>
-                {
-                    ["userName"] = user.UserName,
-                    ["roleName"] = domainEvent.RoleName,
-                    ["action"] = "granted",
-                },
-                culture: culture,
-                cancellationToken: cancellationToken
+            var message = new RoleChangedMessage(
+                User: new MessageRecipient(
+                    UserId: domainEvent.UserId,
+                    Address: user.Email,
+                    DisplayName: user.UserName,
+                    Locale: user.PreferredLocale
+                ),
+                RoleName: domainEvent.RoleName,
+                Action: "granted"
             );
+
+            await messageDispatcher.DispatchAsync(message: message, cancellationToken: cancellationToken);
         }
         else
         {
@@ -66,7 +64,6 @@ public class UserRoleGrantedNotificationsHandler(
             userId: domainEvent.UserId,
             type: EnumNotificationType.RoleChanged,
             tokens: new Dictionary<string, string> { ["roleName"] = domainEvent.RoleName, ["action"] = "granted" },
-            culture: culture,
             cancellationToken: cancellationToken
         );
     }
