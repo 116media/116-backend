@@ -1,10 +1,8 @@
+using _116.Identity.Application.Shared.Messages;
 using _116.Identity.Contracts.Application.DTOs;
 using _116.Identity.Contracts.Application.Services;
 using _116.Identity.Domain.Events;
-using _116.Mailer.Contracts.Application.DTOs;
-using _116.Mailer.Contracts.Application.Services;
-using _116.Mailer.Contracts.Domain.Enums;
-using _116.Shared.Application.Localization;
+using _116.Mailer.Contracts.Application.Messages;
 using _116.Shared.Application.Services;
 using Microsoft.Extensions.Logging;
 
@@ -16,11 +14,11 @@ namespace _116.Identity.Application.Auth.EventHandlers;
 /// public flow.
 /// </summary>
 /// <param name="userLookupService">Lookup resolving the recipient's name and address by id.</param>
-/// <param name="emailService">Outbox mailer sending the welcome email.</param>
+/// <param name="messageDispatcher">Dispatcher routing the message to its recipients.</param>
 /// <param name="logger">Logger recording skipped deliveries.</param>
 public class UserVerifiedWelcomeEmailHandler(
     IUserLookupService userLookupService,
-    IEmailService emailService,
+    IMessageDispatcher messageDispatcher,
     ILogger<UserVerifiedWelcomeEmailHandler> logger
 ) : IDomainEventHandler<UserVerifiedEvent>
 {
@@ -38,12 +36,15 @@ public class UserVerifiedWelcomeEmailHandler(
             return;
         }
 
-        await emailService.EnqueueAsync(
-            template: EnumEmailTemplate.Welcome,
-            to: new EmailRecipientDto(Address: user.Email, DisplayName: user.UserName),
-            tokens: new Dictionary<string, string> { ["userName"] = user.UserName },
-            culture: EmailCulture.Current(),
-            cancellationToken: cancellationToken
+        var message = new WelcomeMessage(
+            User: new MessageRecipient(
+                UserId: domainEvent.UserId,
+                Address: user.Email,
+                DisplayName: user.UserName,
+                Locale: user.PreferredLocale
+            )
         );
+
+        await messageDispatcher.DispatchAsync(message: message, cancellationToken: cancellationToken);
     }
 }
