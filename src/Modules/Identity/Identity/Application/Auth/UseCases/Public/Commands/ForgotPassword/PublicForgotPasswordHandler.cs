@@ -4,7 +4,6 @@ using _116.Identity.Application.Auth.UseCases.Public.Commands.ForgotPassword.Con
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.ValueObjects;
-using _116.Shared.Application.Localization;
 using _116.Shared.Contracts.Application.CQRS;
 using Microsoft.Extensions.Logging;
 
