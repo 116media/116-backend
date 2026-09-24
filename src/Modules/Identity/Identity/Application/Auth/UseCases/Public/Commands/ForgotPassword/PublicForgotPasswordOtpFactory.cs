@@ -3,7 +3,6 @@ using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.ForgotPassword.Contracts;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Domain.Enums;
-using _116.Shared.Application.Localization;
 
 namespace _116.Identity.Application.Auth.UseCases.Public.Commands.ForgotPassword;
 
@@ -30,7 +29,7 @@ public class PublicForgotPasswordOtpFactory(
         );
         await otpRepository.AddAsync(otp: passwordResetOtp.Otp, cancellationToken: cancellationToken);
 
-        passwordResetOtp.Otp.MarkIssued(plainCode: passwordResetOtp.PlainCode, culture: EmailCulture.Current());
+        passwordResetOtp.Otp.MarkIssued(plainCode: passwordResetOtp.PlainCode);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return passwordResetOtp;
