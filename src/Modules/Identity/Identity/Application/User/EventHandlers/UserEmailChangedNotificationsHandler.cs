@@ -1,9 +1,10 @@
+using _116.Identity.Application.Shared.Messages;
+using _116.Identity.Contracts.Application.DTOs;
 using _116.Identity.Contracts.Application.Services;
 using _116.Identity.Domain.Events;
-using _116.Mailer.Contracts.Application.DTOs;
+using _116.Mailer.Contracts.Application.Messages;
 using _116.Mailer.Contracts.Application.Services;
 using _116.Mailer.Contracts.Domain.Enums;
-using _116.Shared.Application.Localization;
 using _116.Shared.Application.Services;
 using Microsoft.Extensions.Logging;
 
@@ -22,7 +23,7 @@ namespace _116.Identity.Application.User.EventHandlers;
 /// <param name="logger">Logger recording skipped deliveries.</param>
 public class UserEmailChangedNotificationsHandler(
     IUserLookupService userLookupService,
-    IEmailService emailService,
+    IMessageDispatcher messageDispatcher,
     INotificationService notificationService,
     ILogger<UserEmailChangedNotificationsHandler> logger
 ) : IDomainEventHandler<UserEmailChangedEvent>
@@ -30,50 +31,52 @@ public class UserEmailChangedNotificationsHandler(
     /// <inheritdoc />
     public async Task Handle(UserEmailChangedEvent domainEvent, CancellationToken cancellationToken = default)
     {
-        string? userName = await userLookupService.GetUserNameByIdAsync(
+        AuthorDto? user = await userLookupService.GetAuthorInfoByIdAsync(
             userId: domainEvent.UserId,
             ct: cancellationToken
         );
 
-        if (userName is null)
+        if (user is null)
         {
             logger.LogDebug("Email change notifications skipped: user {UserId} not found.", domainEvent.UserId);
             return;
         }
 
-        string culture = EmailCulture.Current();
-        string changeTime = DateTime.UtcNow.ToString("u");
+        DateTimeOffset changedAt = DateTimeOffset.UtcNow;
         string newEmailMasked = MaskEmail(email: domainEvent.NewEmail);
 
         if (domainEvent.OldEmail is not null)
         {
-            await emailService.EnqueueAsync(
-                template: EnumEmailTemplate.EmailChangedAlertOld,
-                to: new EmailRecipientDto(Address: domainEvent.OldEmail, DisplayName: userName),
-                tokens: new Dictionary<string, string>
-                {
-                    ["userName"] = userName,
-                    ["newEmailMasked"] = newEmailMasked,
-                    ["changeTime"] = changeTime,
-                },
-                culture: culture,
-                cancellationToken: cancellationToken
+            var alert = new EmailChangedAlertMessage(
+                FormerAddress: new MessageRecipient(
+                    UserId: domainEvent.UserId,
+                    Address: domainEvent.OldEmail,
+                    DisplayName: user.UserName,
+                    Locale: user.PreferredLocale
+                ),
+                NewEmailMasked: newEmailMasked,
+                ChangedAt: changedAt
             );
+
+            await messageDispatcher.DispatchAsync(message: alert, cancellationToken: cancellationToken);
         }
 
-        await emailService.EnqueueAsync(
-            template: EnumEmailTemplate.EmailChangedConfirmNew,
-            to: new EmailRecipientDto(Address: domainEvent.NewEmail, DisplayName: userName),
-            tokens: new Dictionary<string, string> { ["userName"] = userName, ["changeTime"] = changeTime },
-            culture: culture,
-            cancellationToken: cancellationToken
+        var confirmation = new EmailChangedConfirmationMessage(
+            NewAddress: new MessageRecipient(
+                UserId: domainEvent.UserId,
+                Address: domainEvent.NewEmail,
+                DisplayName: user.UserName,
+                Locale: user.PreferredLocale
+            ),
+            ChangedAt: changedAt
         );
+
+        await messageDispatcher.DispatchAsync(message: confirmation, cancellationToken: cancellationToken);
 
         await notificationService.NotifyAsync(
             userId: domainEvent.UserId,
             type: EnumNotificationType.EmailChanged,
             tokens: new Dictionary<string, string> { ["newEmailMasked"] = newEmailMasked },
-            culture: culture,
             cancellationToken: cancellationToken
         );
     }
