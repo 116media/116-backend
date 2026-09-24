@@ -1,13 +1,13 @@
 using _116.Content.Application.Editorial.Services;
+using _116.Content.Application.Interactions.Messages;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Events;
 using _116.Identity.Contracts.Application.DTOs;
 using _116.Identity.Contracts.Application.Services;
-using _116.Mailer.Contracts.Application.DTOs;
+using _116.Mailer.Contracts.Application.Messages;
 using _116.Mailer.Contracts.Application.Services;
 using _116.Mailer.Contracts.Domain.Enums;
-using _116.Shared.Application.Localization;
 using _116.Shared.Application.Services;
 using Microsoft.Extensions.Logging;
 
@@ -22,14 +22,14 @@ namespace _116.Content.Application.Interactions.EventHandlers;
 /// </summary>
 /// <param name="articleRepository">Repository resolving the reply, its parent comment, and the article.</param>
 /// <param name="userLookupService">Lookup resolving the parent author and the replier by id.</param>
-/// <param name="emailService">Outbox mailer sending the reply notice.</param>
+/// <param name="messageDispatcher">Dispatcher routing the reply notice to its recipients.</param>
 /// <param name="notificationService">Writer for the in-app notification row.</param>
 /// <param name="logger">Logger recording skipped deliveries.</param>
 public class CommentReplyAddedNotificationsHandler(
     IArticleRepository articleRepository,
     IArticleCommentRepository articleCommentRepository,
     IUserLookupService userLookupService,
-    IEmailService emailService,
+    IMessageDispatcher messageDispatcher,
     INotificationService notificationService,
     ILogger<CommentReplyAddedNotificationsHandler> logger
 ) : IDomainEventHandler<CommentReplyAddedEvent>
@@ -88,24 +88,22 @@ public class CommentReplyAddedNotificationsHandler(
             ct: cancellationToken
         );
 
-        string culture = EmailCulture.Current();
-
         if (parentAuthor.Email is not null)
         {
-            await emailService.EnqueueAsync(
-                template: EnumEmailTemplate.CommentReply,
-                to: new EmailRecipientDto(Address: parentAuthor.Email, DisplayName: parentAuthor.UserName),
-                tokens: new Dictionary<string, string>
-                {
-                    ["userName"] = parentAuthor.UserName,
-                    ["replierName"] = replierName ?? FallbackReplierName,
-                    ["articleTitle"] = article.Title,
-                    ["replyExcerpt"] = Excerpt(reply.Body),
-                    ["articleUrl"] = ContentPublicLinks.Article(article.Slug),
-                },
-                culture: culture,
-                cancellationToken: cancellationToken
+            var message = new CommentReplyMessage(
+                ParentAuthor: new MessageRecipient(
+                    UserId: parent.UserId,
+                    Address: parentAuthor.Email,
+                    DisplayName: parentAuthor.UserName,
+                    Locale: parentAuthor.PreferredLocale
+                ),
+                ReplierName: replierName ?? FallbackReplierName,
+                ArticleTitle: article.Title,
+                ReplyExcerpt: Excerpt(reply.Body),
+                ArticleUrl: ContentPublicLinks.Article(article.Slug)
             );
+
+            await messageDispatcher.DispatchAsync(message: message, cancellationToken: cancellationToken);
         }
         else
         {
@@ -121,7 +119,6 @@ public class CommentReplyAddedNotificationsHandler(
                 ["articleTitle"] = article.Title,
                 ["linkPath"] = $"/articles/{article.Slug}",
             },
-            culture: culture,
             cancellationToken: cancellationToken
         );
     }
