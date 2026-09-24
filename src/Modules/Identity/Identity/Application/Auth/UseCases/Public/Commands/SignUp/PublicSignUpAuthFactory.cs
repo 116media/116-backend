@@ -6,7 +6,6 @@ using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.ValueObjects;
-using _116.Shared.Application.Localization;
 
 namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp;
 
@@ -63,7 +62,7 @@ public class PublicSignUpAuthFactory(
 
         await otpRepository.AddAsync(otp: verificationOtp.Otp, cancellationToken: cancellationToken);
 
-        verificationOtp.Otp.MarkIssued(plainCode: verificationOtp.PlainCode, culture: EmailCulture.Current());
+        verificationOtp.Otp.MarkIssued(plainCode: verificationOtp.PlainCode);
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
