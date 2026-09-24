@@ -24,13 +24,11 @@ public interface INotificationService
     /// <param name="userId">The recipient platform user.</param>
     /// <param name="type">The notification type, from the catalog.</param>
     /// <param name="tokens">The dynamic values the notification copy requires.</param>
-    /// <param name="culture">The two-letter request culture (e.g. "en", "fr").</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
     Task NotifyAsync(
         Guid userId,
         EnumNotificationType type,
         IReadOnlyDictionary<string, string> tokens,
-        string culture,
         CancellationToken cancellationToken
     );
 }
