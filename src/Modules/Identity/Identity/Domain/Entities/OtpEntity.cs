@@ -92,10 +92,9 @@ public class OtpEntity : Aggregate<Guid>
     /// that issued it commits.
     /// </summary>
     /// <param name="plainCode">The code to deliver.</param>
-    /// <param name="culture">The culture the delivery should be rendered in.</param>
-    public void MarkIssued(string plainCode, string culture)
+    public void MarkIssued(string plainCode)
     {
-        AddDomainEvent(new OtpIssuedEvent(UserId: UserId, PlainCode: plainCode, Purpose: Purpose, Culture: culture));
+        AddDomainEvent(new OtpIssuedEvent(UserId: UserId, PlainCode: plainCode, Purpose: Purpose));
     }
 
     /// <summary>
