@@ -21,6 +21,12 @@ public class UserConfiguration : IEntityTypeConfiguration<UserEntity>
         // Primary key
         builder.HasKey(u => u.Id);
 
+        builder
+            .Property(u => u.PreferredLocale)
+            .HasMaxLength(maxLength: UserConstants.MaxLocaleLength)
+            .HasDefaultValue(UserConstants.DefaultLocale)
+            .IsRequired();
+
         // Properties configuration
         // The value object rides the existing varchar column; null stays null for external
         // auth providers, so the unique index semantics are unchanged.
