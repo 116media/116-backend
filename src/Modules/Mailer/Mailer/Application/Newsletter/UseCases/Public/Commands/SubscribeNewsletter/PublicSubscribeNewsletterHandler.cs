@@ -1,10 +1,10 @@
 using System.Globalization;
 using _116.BuildingBlocks.Constants;
-using _116.Mailer.Application.Newsletter.Messages;
+using _116.Mailer.Application.Newsletter.OutboundEmails;
 using _116.Mailer.Application.Newsletter.Services;
 using _116.Mailer.Application.Shared.Persistence;
 using _116.Mailer.Application.Shared.Repositories;
-using _116.Mailer.Contracts.Application.Messages;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 using _116.Mailer.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
 
@@ -23,7 +23,7 @@ namespace _116.Mailer.Application.Newsletter.UseCases.Public.Commands.SubscribeN
 public class PublicSubscribeNewsletterHandler(
     INewsletterRepository newsletterRepository,
     IMailerUnitOfWork unitOfWork,
-    IMessageDispatcher messageDispatcher
+    IEmailDispatcher messageDispatcher
 ) : ICommandHandler<PublicSubscribeNewsletterCommand, PublicSubscribeNewsletterResult>
 {
     /// <summary>
@@ -59,8 +59,8 @@ public class PublicSubscribeNewsletterHandler(
 
         await unitOfWork.CommitAsync(cancellationToken);
 
-        var message = new NewsletterConfirmMessage(
-            Subscriber: new MessageRecipient(
+        var message = new NewsletterConfirmEmail(
+            Subscriber: new EmailRecipient(
                 UserId: null,
                 Address: subscriber.Email,
                 DisplayName: null,
