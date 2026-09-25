@@ -1,22 +1,22 @@
-using _116.Mailer.Contracts.Application.Messages;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 
-namespace _116.Identity.Application.Shared.Messages;
+namespace _116.Identity.Application.Shared.OutboundEmails;
 
 /// <summary>
 /// An account's address was replaced: the confirmation to the address that now owns it.
 /// </summary>
 /// <param name="NewAddress">The address the account now uses.</param>
 /// <param name="ChangedAt">When the address was replaced.</param>
-public record EmailChangedConfirmationMessage(MessageRecipient NewAddress, DateTimeOffset ChangedAt) : Message
+public record EmailChangedConfirmationEmail(EmailRecipient NewAddress, DateTimeOffset ChangedAt) : OutboundEmail
 {
     /// <inheritdoc />
-    public override EnumMessageClass Class => EnumMessageClass.Transactional;
+    public override EnumEmailClass Class => EnumEmailClass.Transactional;
 
     /// <inheritdoc />
-    public override string TemplateName => IdentityMessageTemplates.EmailChangedConfirmNew;
+    public override string TemplateName => IdentityEmailTemplates.EmailChangedConfirmNew;
 
     /// <inheritdoc />
-    public override IReadOnlyList<MessageRecipient> Recipients => [NewAddress];
+    public override IReadOnlyList<EmailRecipient> Recipients => [NewAddress];
 
     /// <inheritdoc />
     public override IReadOnlyDictionary<string, string> Tokens =>
