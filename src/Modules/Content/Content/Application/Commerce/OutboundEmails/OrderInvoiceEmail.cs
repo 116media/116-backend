@@ -1,7 +1,7 @@
-using _116.Content.Application.Shared.Messages;
-using _116.Mailer.Contracts.Application.Messages;
+using _116.Content.Application.Shared.OutboundEmails;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 
-namespace _116.Content.Application.Commerce.Messages;
+namespace _116.Content.Application.Commerce.OutboundEmails;
 
 /// <summary>
 /// An order was placed: the invoice listing what it covers and how it can be paid.
@@ -11,22 +11,22 @@ namespace _116.Content.Application.Commerce.Messages;
 /// <param name="AmountUsd">The order total, formatted to two decimals.</param>
 /// <param name="PaymentMethods">The offline payment methods accepted.</param>
 /// <param name="ItemSummary">What the order covers, in one line.</param>
-public record OrderInvoiceMessage(
-    MessageRecipient Customer,
+public record OrderInvoiceEmail(
+    EmailRecipient Customer,
     string OrderReference,
     string AmountUsd,
     string PaymentMethods,
     string ItemSummary
-) : Message
+) : OutboundEmail
 {
     /// <inheritdoc />
-    public override EnumMessageClass Class => EnumMessageClass.Transactional;
+    public override EnumEmailClass Class => EnumEmailClass.Transactional;
 
     /// <inheritdoc />
-    public override string TemplateName => ContentMessageTemplates.OrderInvoice;
+    public override string TemplateName => ContentEmailTemplates.OrderInvoice;
 
     /// <inheritdoc />
-    public override IReadOnlyList<MessageRecipient> Recipients => [Customer];
+    public override IReadOnlyList<EmailRecipient> Recipients => [Customer];
 
     /// <inheritdoc />
     public override IReadOnlyDictionary<string, string> Tokens =>
