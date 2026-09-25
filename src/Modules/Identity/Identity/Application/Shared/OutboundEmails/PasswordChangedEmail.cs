@@ -1,7 +1,7 @@
 using _116.Identity.Domain.Enums;
-using _116.Mailer.Contracts.Application.Messages;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 
-namespace _116.Identity.Application.Shared.Messages;
+namespace _116.Identity.Application.Shared.OutboundEmails;
 
 /// <summary>
 /// An account password was replaced. The origin selects the template and, with it, the
@@ -10,23 +10,23 @@ namespace _116.Identity.Application.Shared.Messages;
 /// <param name="User">The account whose password changed.</param>
 /// <param name="Origin">The flow that replaced the password.</param>
 /// <param name="ChangedAt">When the password was replaced.</param>
-public record PasswordChangedMessage(MessageRecipient User, EnumPasswordChangeOrigin Origin, DateTimeOffset ChangedAt)
-    : Message
+public record PasswordChangedEmail(EmailRecipient User, EnumPasswordChangeOrigin Origin, DateTimeOffset ChangedAt)
+    : OutboundEmail
 {
     /// <inheritdoc />
-    public override EnumMessageClass Class => EnumMessageClass.Transactional;
+    public override EnumEmailClass Class => EnumEmailClass.Transactional;
 
     /// <inheritdoc />
     public override string TemplateName =>
         Origin switch
         {
-            EnumPasswordChangeOrigin.Reset => IdentityMessageTemplates.PasswordResetCompleted,
-            EnumPasswordChangeOrigin.SetLocal => IdentityMessageTemplates.LocalPasswordAdded,
-            _ => IdentityMessageTemplates.PasswordChanged,
+            EnumPasswordChangeOrigin.Reset => IdentityEmailTemplates.PasswordResetCompleted,
+            EnumPasswordChangeOrigin.SetLocal => IdentityEmailTemplates.LocalPasswordAdded,
+            _ => IdentityEmailTemplates.PasswordChanged,
         };
 
     /// <inheritdoc />
-    public override IReadOnlyList<MessageRecipient> Recipients => [User];
+    public override IReadOnlyList<EmailRecipient> Recipients => [User];
 
     /// <inheritdoc />
     public override IReadOnlyDictionary<string, string> Tokens =>
