@@ -1,5 +1,5 @@
 using _116.BuildingBlocks.Constants.RateLimit;
-using _116.Mailer.Application.Newsletter.Messages;
+using _116.Mailer.Application.Newsletter.OutboundEmails;
 using _116.Mailer.Application.Newsletter.Pages;
 using _116.Mailer.Domain.Constants;
 using _116.Shared.Application.Extensions;
