@@ -1,5 +1,5 @@
 using _116.Content.Application.Interactions.UseCases.Public.Commands.AddCommentReply.V1;
-using _116.Content.Application.Shared.Messages;
+using _116.Content.Application.Shared.OutboundEmails;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Identity.Domain.Entities;
@@ -78,7 +78,7 @@ public class NotificationRenderingFlowTests(PostgresFixture db) : BaseApiTest(db
             .OutboxEmails.Where(row => row.RecipientAddress == email)
             .ToListAsync();
 
-        return rows.Should().ContainSingle(row => row.Template == ContentMessageTemplates.CommentReply).Which;
+        return rows.Should().ContainSingle(row => row.Template == ContentEmailTemplates.CommentReply).Which;
     }
 
     [Fact]
