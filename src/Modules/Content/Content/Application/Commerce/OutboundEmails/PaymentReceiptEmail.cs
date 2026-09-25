@@ -1,7 +1,7 @@
-using _116.Content.Application.Shared.Messages;
-using _116.Mailer.Contracts.Application.Messages;
+using _116.Content.Application.Shared.OutboundEmails;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 
-namespace _116.Content.Application.Commerce.Messages;
+namespace _116.Content.Application.Commerce.OutboundEmails;
 
 /// <summary>
 /// A payment was verified: the receipt confirming the order is now paid.
@@ -11,22 +11,22 @@ namespace _116.Content.Application.Commerce.Messages;
 /// <param name="AmountUsd">The amount received, formatted to two decimals.</param>
 /// <param name="ReceiptUrl">Where the stored proof of payment can be seen.</param>
 /// <param name="PaidAt">When the payment was verified.</param>
-public record PaymentReceiptMessage(
-    MessageRecipient Customer,
+public record PaymentReceiptEmail(
+    EmailRecipient Customer,
     string OrderReference,
     string AmountUsd,
     string ReceiptUrl,
     DateTimeOffset PaidAt
-) : Message
+) : OutboundEmail
 {
     /// <inheritdoc />
-    public override EnumMessageClass Class => EnumMessageClass.Transactional;
+    public override EnumEmailClass Class => EnumEmailClass.Transactional;
 
     /// <inheritdoc />
-    public override string TemplateName => ContentMessageTemplates.PaymentReceipt;
+    public override string TemplateName => ContentEmailTemplates.PaymentReceipt;
 
     /// <inheritdoc />
-    public override IReadOnlyList<MessageRecipient> Recipients => [Customer];
+    public override IReadOnlyList<EmailRecipient> Recipients => [Customer];
 
     /// <inheritdoc />
     public override IReadOnlyDictionary<string, string> Tokens =>
