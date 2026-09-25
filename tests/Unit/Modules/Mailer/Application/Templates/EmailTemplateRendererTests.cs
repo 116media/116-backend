@@ -1,7 +1,7 @@
 using System.Reflection;
-using _116.Content.Application.Shared.Messages;
-using _116.Identity.Application.Shared.Messages;
-using _116.Mailer.Application.Newsletter.Messages;
+using _116.Content.Application.Shared.OutboundEmails;
+using _116.Identity.Application.Shared.OutboundEmails;
+using _116.Mailer.Application.Newsletter.OutboundEmails;
 using _116.Mailer.Application.Shared.Services;
 using _116.Mailer.Application.Templates;
 using _116.Mailer.Application.Templates.Messages;
@@ -96,7 +96,7 @@ public class EmailTemplateRendererTests
     [Fact]
     public void Render_ShouldWrapTheHtmlBodyInTheSharedLayout()
     {
-        RenderedEmail rendered = Renderer.Render(IdentityMessageTemplates.Welcome, AllTokens, "en");
+        RenderedEmail rendered = Renderer.Render(IdentityEmailTemplates.Welcome, AllTokens, "en");
 
         rendered.HtmlBody.Should().Contain("max-width:560px");
     }
@@ -106,7 +106,7 @@ public class EmailTemplateRendererTests
     {
         var incomplete = new Dictionary<string, string> { ["userName"] = "Fally" };
 
-        Action act = () => Renderer.Render(IdentityMessageTemplates.EmailVerificationOtp, incomplete, "en");
+        Action act = () => Renderer.Render(IdentityEmailTemplates.EmailVerificationOtp, incomplete, "en");
 
         act.Should().Throw<InvalidOperationException>().WithMessage("*with no token*");
     }
@@ -116,7 +116,7 @@ public class EmailTemplateRendererTests
     {
         var tokens = new Dictionary<string, string>(AllTokens) { ["userName"] = "<script>alert(1)</script>" };
 
-        RenderedEmail rendered = Renderer.Render(IdentityMessageTemplates.Welcome, tokens, "en");
+        RenderedEmail rendered = Renderer.Render(IdentityEmailTemplates.Welcome, tokens, "en");
 
         rendered.HtmlBody.Should().NotContain("<script>").And.Contain("&lt;script&gt;");
         rendered.TextBody.Should().Contain("<script>alert(1)</script>");
@@ -125,8 +125,8 @@ public class EmailTemplateRendererTests
     [Fact]
     public void Render_UnknownCulture_ShouldFallBackToNeutral()
     {
-        RenderedEmail neutral = Renderer.Render(IdentityMessageTemplates.Welcome, AllTokens, "xx");
-        RenderedEmail english = Renderer.Render(IdentityMessageTemplates.Welcome, AllTokens, "en");
+        RenderedEmail neutral = Renderer.Render(IdentityEmailTemplates.Welcome, AllTokens, "xx");
+        RenderedEmail english = Renderer.Render(IdentityEmailTemplates.Welcome, AllTokens, "en");
 
         neutral.Subject.Should().Be(english.Subject);
     }
@@ -134,8 +134,8 @@ public class EmailTemplateRendererTests
     [Fact]
     public void Render_WithAMalformedCultureName_ShouldFallBackToNeutral()
     {
-        RenderedEmail neutral = Renderer.Render(IdentityMessageTemplates.Welcome, AllTokens, "!! not a culture !!");
-        RenderedEmail english = Renderer.Render(IdentityMessageTemplates.Welcome, AllTokens, "en");
+        RenderedEmail neutral = Renderer.Render(IdentityEmailTemplates.Welcome, AllTokens, "!! not a culture !!");
+        RenderedEmail english = Renderer.Render(IdentityEmailTemplates.Welcome, AllTokens, "en");
 
         neutral.Subject.Should().Be(english.Subject);
         neutral.TextBody.Should().Be(english.TextBody);
@@ -144,8 +144,8 @@ public class EmailTemplateRendererTests
     [Fact]
     public void Render_French_ShouldDifferFromEnglish()
     {
-        RenderedEmail french = Renderer.Render(IdentityMessageTemplates.Welcome, AllTokens, "fr");
-        RenderedEmail english = Renderer.Render(IdentityMessageTemplates.Welcome, AllTokens, "en");
+        RenderedEmail french = Renderer.Render(IdentityEmailTemplates.Welcome, AllTokens, "fr");
+        RenderedEmail english = Renderer.Render(IdentityEmailTemplates.Welcome, AllTokens, "en");
 
         french.Subject.Should().NotBe(english.Subject);
     }
@@ -156,7 +156,7 @@ public class EmailTemplateRendererTests
         // A user typing "{{name}}" must not be mistaken for an unresolved template placeholder.
         Dictionary<string, string> tokens = new(AllTokens) { ["userName"] = "Fally {{notAToken}} Ipupa" };
 
-        RenderedEmail rendered = Renderer.Render(IdentityMessageTemplates.Welcome, tokens, "en");
+        RenderedEmail rendered = Renderer.Render(IdentityEmailTemplates.Welcome, tokens, "en");
 
         rendered.HtmlBody.Should().Contain("notAToken");
     }
@@ -167,7 +167,7 @@ public class EmailTemplateRendererTests
         Dictionary<string, string> tokens = new(AllTokens);
         tokens.Remove("userName");
 
-        Action act = () => Renderer.Render(IdentityMessageTemplates.Welcome, tokens, "en");
+        Action act = () => Renderer.Render(IdentityEmailTemplates.Welcome, tokens, "en");
 
         act.Should().Throw<InvalidOperationException>().WithMessage("*userName*");
     }
@@ -181,9 +181,9 @@ public class EmailTemplateRendererTests
     {
         Type[] catalogues =
         [
-            typeof(ContentMessageTemplates),
-            typeof(IdentityMessageTemplates),
-            typeof(NewsletterMessageTemplates),
+            typeof(ContentEmailTemplates),
+            typeof(IdentityEmailTemplates),
+            typeof(NewsletterEmailTemplates),
         ];
 
         return catalogues.SelectMany(catalogue =>
