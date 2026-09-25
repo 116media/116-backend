@@ -1,11 +1,11 @@
-using _116.Content.Application.Editorial.Messages;
+using _116.Content.Application.Editorial.OutboundEmails;
 using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Events;
 using _116.Identity.Contracts.Application.DTOs;
 using _116.Identity.Contracts.Application.Services;
-using _116.Mailer.Contracts.Application.Messages;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 using _116.Mailer.Contracts.Application.Services;
 using _116.Mailer.Contracts.Domain.Enums;
 using _116.Shared.Application.Services;
@@ -28,7 +28,7 @@ namespace _116.Content.Application.Editorial.EventHandlers;
 public class ArtistOwnershipVerifiedNotificationsHandler(
     IUserLookupService userLookupService,
     IArtistRepository artistRepository,
-    IMessageDispatcher messageDispatcher,
+    IEmailDispatcher messageDispatcher,
     INotificationService notificationService,
     ILogger<ArtistOwnershipVerifiedNotificationsHandler> logger
 ) : IDomainEventHandler<ArtistOwnershipVerifiedEvent>
@@ -63,8 +63,8 @@ public class ArtistOwnershipVerifiedNotificationsHandler(
 
         if (owner.Email is not null)
         {
-            var message = new ArtistVerifiedMessage(
-                Owner: new MessageRecipient(
+            var message = new ArtistVerifiedEmail(
+                Owner: new EmailRecipient(
                     UserId: domainEvent.UserId,
                     Address: owner.Email,
                     DisplayName: owner.UserName,
