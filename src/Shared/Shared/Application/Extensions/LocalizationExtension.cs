@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants;
 using _116.Shared.Application.Exceptions.Messages;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Localization;
@@ -17,11 +18,11 @@ public static class LocalizationExtension
     private static readonly string[] SupportedCultures = ["fr", "en"];
 
     /// <summary>
-    /// The default culture used when no Accept-Language header is provided. Matches the neutral
-    /// <c>.resx</c> fallback, which is English, so an unnegotiated request and a missing key
-    /// resolve to the same language.
+    /// The culture a request resolves to when it sends no Accept-Language header. The platform
+    /// default, so an unnegotiated request is served the same language as a user who has not
+    /// chosen one.
     /// </summary>
-    private const string DefaultCulture = "en";
+    private const string DefaultCulture = UserConstants.DefaultLocale;
 
     /// <summary>
     /// Registers localization services and configures supported cultures
