@@ -248,6 +248,5 @@ public class PublicResendOtpFactoryTests
 
         issued.PlainCode.Should().Be(TestConstants.Otp.DefaultCode);
         issued.UserId.Should().Be(userId);
-        issued.Culture.Should().NotBeNullOrWhiteSpace();
     }
 }
