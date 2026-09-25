@@ -15,7 +15,7 @@ public static class LocalizedMessage
     /// A request without the header is answered in this culture, so an assertion on such a
     /// response must resolve its expected detail in this culture too.
     /// </summary>
-    public const string DefaultCulture = "fr";
+    public const string DefaultCulture = "en";
 
     /// <summary>
     /// The culture a request selects by sending <c>Accept-Language: en</c>.
