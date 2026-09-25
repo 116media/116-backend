@@ -1,8 +1,9 @@
+using _116.Identity.Application.Shared.Messages;
 using _116.Identity.Application.User.EventHandlers;
 using _116.Identity.Contracts.Application.DTOs;
 using _116.Identity.Contracts.Application.Services;
 using _116.Identity.Domain.Events;
-using _116.Mailer.Contracts.Application.DTOs;
+using _116.Mailer.Contracts.Application.Messages;
 using _116.Mailer.Contracts.Application.Services;
 using _116.Mailer.Contracts.Domain.Enums;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -17,7 +18,7 @@ namespace _116.Unit.Tests.Modules.Identity.Application.User.EventHandlers;
 public class UserRoleRevokedNotificationsHandlerTests
 {
     private readonly Mock<IUserLookupService> _userLookupServiceMock = new();
-    private readonly Mock<IEmailService> _mailerMock = new();
+    private readonly Mock<IMessageDispatcher> _dispatcherMock = new();
     private readonly Mock<INotificationService> _notifierMock = new();
     private readonly UserRoleRevokedNotificationsHandler _handler;
 
@@ -25,7 +26,7 @@ public class UserRoleRevokedNotificationsHandlerTests
     {
         _handler = new UserRoleRevokedNotificationsHandler(
             _userLookupServiceMock.Object,
-            _mailerMock.Object,
+            _dispatcherMock.Object,
             _notifierMock.Object,
             NullLogger<UserRoleRevokedNotificationsHandler>.Instance
         );
@@ -42,15 +43,16 @@ public class UserRoleRevokedNotificationsHandlerTests
         await _handler.Handle(new UserRoleRevokedEvent(userId, Guid.NewGuid(), "Admin"), CancellationToken.None);
 
         // Assert
-        _mailerMock.Verify(
+        _dispatcherMock.Verify(
             x =>
-                x.EnqueueAsync(
-                    EnumEmailTemplate.RoleChanged,
-                    It.Is<EmailRecipientDto>(r => r.Address == "user@test.com"),
-                    It.Is<IReadOnlyDictionary<string, string>>(t =>
-                        t["userName"] == "Fally" && t["roleName"] == "Admin" && t["action"] == "revoked"
+                x.DispatchAsync(
+                    It.Is<Message>(m =>
+                        m.TemplateName == IdentityMessageTemplates.RoleChanged
+                        && m.Recipients[0].Address == "user@test.com"
+                        && m.Tokens["userName"] == "Fally"
+                        && m.Tokens["roleName"] == "Admin"
+                        && m.Tokens["action"] == "revoked"
                     ),
-                    It.IsAny<string>(),
                     It.IsAny<CancellationToken>()
                 ),
             Times.Once
@@ -76,7 +78,6 @@ public class UserRoleRevokedNotificationsHandlerTests
                     It.Is<IReadOnlyDictionary<string, string>>(t =>
                         t["roleName"] == "Admin" && t["action"] == "revoked"
                     ),
-                    It.IsAny<string>(),
                     It.IsAny<CancellationToken>()
                 ),
             Times.Once
@@ -94,14 +95,13 @@ public class UserRoleRevokedNotificationsHandlerTests
         await _handler.Handle(new UserRoleRevokedEvent(userId, Guid.NewGuid(), "Admin"), CancellationToken.None);
 
         // Assert
-        _mailerMock.VerifyNoOtherCalls();
+        _dispatcherMock.VerifyNoOtherCalls();
         _notifierMock.Verify(
             x =>
                 x.NotifyAsync(
                     userId,
                     EnumNotificationType.RoleChanged,
                     It.IsAny<IReadOnlyDictionary<string, string>>(),
-                    It.IsAny<string>(),
                     It.IsAny<CancellationToken>()
                 ),
             Times.Once
