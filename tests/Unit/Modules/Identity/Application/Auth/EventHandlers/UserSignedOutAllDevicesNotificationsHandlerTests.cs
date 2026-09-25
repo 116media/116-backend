@@ -1,9 +1,9 @@
 using _116.Identity.Application.Auth.EventHandlers;
-using _116.Identity.Application.Shared.Messages;
+using _116.Identity.Application.Shared.OutboundEmails;
 using _116.Identity.Contracts.Application.DTOs;
 using _116.Identity.Contracts.Application.Services;
 using _116.Identity.Domain.Events;
-using _116.Mailer.Contracts.Application.Messages;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 using _116.Mailer.Contracts.Application.Services;
 using _116.Mailer.Contracts.Domain.Enums;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -18,7 +18,7 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Auth.EventHandlers;
 public class UserSignedOutAllDevicesNotificationsHandlerTests
 {
     private readonly Mock<IUserLookupService> _userLookupServiceMock = new();
-    private readonly Mock<IMessageDispatcher> _dispatcherMock = new();
+    private readonly Mock<IEmailDispatcher> _dispatcherMock = new();
     private readonly Mock<INotificationService> _notifierMock = new();
     private readonly UserSignedOutAllDevicesNotificationsHandler _handler;
 
@@ -33,8 +33,8 @@ public class UserSignedOutAllDevicesNotificationsHandlerTests
     }
 
     [Theory]
-    [InlineData(false, IdentityMessageTemplates.SignedOutAllDevices, EnumNotificationType.SignedOutAllDevices)]
-    [InlineData(true, IdentityMessageTemplates.AccountForceLoggedOut, EnumNotificationType.AccountForceLoggedOut)]
+    [InlineData(false, IdentityEmailTemplates.SignedOutAllDevices, EnumNotificationType.SignedOutAllDevices)]
+    [InlineData(true, IdentityEmailTemplates.AccountForceLoggedOut, EnumNotificationType.AccountForceLoggedOut)]
     public async Task Handle_ShouldUseTheActorSpecificTemplateAndType(
         bool byAdmin,
         string expectedTemplate,
@@ -54,7 +54,7 @@ public class UserSignedOutAllDevicesNotificationsHandlerTests
         _dispatcherMock.Verify(
             x =>
                 x.DispatchAsync(
-                    It.Is<Message>(m =>
+                    It.Is<OutboundEmail>(m =>
                         m.TemplateName == expectedTemplate
                         && m.Recipients[0].Address == "fally@test.com"
                         && m.Tokens["userName"] == "Fally"
