@@ -17,9 +17,11 @@ public static class LocalizationExtension
     private static readonly string[] SupportedCultures = ["fr", "en"];
 
     /// <summary>
-    /// The default culture used when no Accept-Language header is provided.
+    /// The default culture used when no Accept-Language header is provided. Matches the neutral
+    /// <c>.resx</c> fallback, which is English, so an unnegotiated request and a missing key
+    /// resolve to the same language.
     /// </summary>
-    private const string DefaultCulture = "fr";
+    private const string DefaultCulture = "en";
 
     /// <summary>
     /// Registers localization services and configures supported cultures
@@ -38,7 +40,12 @@ public static class LocalizationExtension
                 .AddSupportedCultures(SupportedCultures)
                 .AddSupportedUICultures(SupportedCultures);
 
-            options.RequestCultureProviders = [new AcceptLanguageHeaderRequestCultureProvider()];
+            options.RequestCultureProviders =
+            [
+                new QueryStringRequestCultureProvider(),
+                new CookieRequestCultureProvider(),
+                new AcceptLanguageHeaderRequestCultureProvider(),
+            ];
         });
 
         // Register shared exception message class (IStringLocalizer-backed)
@@ -48,31 +55,13 @@ public static class LocalizationExtension
     }
 
     /// <summary>
-    /// Adds the request localization middleware and a lightweight language-detection
-    /// middleware that reads the Accept-Language header and stores the resolved
-    /// language code in <c>HttpContext.Items["Language"]</c>.
+    /// Adds the request localization middleware.
     /// </summary>
     /// <param name="app">The application builder.</param>
     /// <returns>The application builder for chaining.</returns>
     public static IApplicationBuilder UseAppLocalization(this IApplicationBuilder app)
     {
         app.UseRequestLocalization();
-
-        app.Use(
-            async (context, next) =>
-            {
-                string? header = context.Request.Headers.AcceptLanguage.FirstOrDefault();
-
-                string lang =
-                    header?.Split(',').FirstOrDefault()?.Trim().StartsWith("en", StringComparison.OrdinalIgnoreCase)
-                    == true
-                        ? "en"
-                        : DefaultCulture;
-
-                context.Items["Language"] = lang;
-                await next();
-            }
-        );
 
         return app;
     }
