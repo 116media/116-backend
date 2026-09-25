@@ -1,7 +1,7 @@
-using _116.Content.Application.Shared.Messages;
-using _116.Mailer.Contracts.Application.Messages;
+using _116.Content.Application.Shared.OutboundEmails;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 
-namespace _116.Content.Application.Interactions.Messages;
+namespace _116.Content.Application.Interactions.OutboundEmails;
 
 /// <summary>
 /// Someone replied to a comment: a courtesy to the parent comment's author.
@@ -11,22 +11,22 @@ namespace _116.Content.Application.Interactions.Messages;
 /// <param name="ArticleTitle">The article the conversation sits on.</param>
 /// <param name="ReplyExcerpt">The opening of the reply.</param>
 /// <param name="ArticleUrl">Where the conversation can be read.</param>
-public record CommentReplyMessage(
-    MessageRecipient ParentAuthor,
+public record CommentReplyEmail(
+    EmailRecipient ParentAuthor,
     string ReplierName,
     string ArticleTitle,
     string ReplyExcerpt,
     string ArticleUrl
-) : Message
+) : OutboundEmail
 {
     /// <inheritdoc />
-    public override EnumMessageClass Class => EnumMessageClass.Notification;
+    public override EnumEmailClass Class => EnumEmailClass.Notification;
 
     /// <inheritdoc />
-    public override string TemplateName => ContentMessageTemplates.CommentReply;
+    public override string TemplateName => ContentEmailTemplates.CommentReply;
 
     /// <inheritdoc />
-    public override IReadOnlyList<MessageRecipient> Recipients => [ParentAuthor];
+    public override IReadOnlyList<EmailRecipient> Recipients => [ParentAuthor];
 
     /// <inheritdoc />
     public override IReadOnlyDictionary<string, string> Tokens =>
