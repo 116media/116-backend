@@ -38,7 +38,7 @@ public class EmailDispatcher(
 
             await emailService.EnqueueAsync(
                 template: message.TemplateName,
-                to: new EmailRecipientDto(recipient.Address, recipient.DisplayName, recipient.Locale),
+                to: new EmailRecipientDto(recipient.Address, recipient.Locale, recipient.DisplayName),
                 tokens: message.Tokens,
                 cancellationToken: cancellationToken
             );
