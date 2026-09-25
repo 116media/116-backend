@@ -41,6 +41,7 @@ public class ResendEmailSenderService(HttpClient httpClient) : IEmailSenderServi
                 subject = message.Subject,
                 html = message.HtmlBody,
                 text = message.TextBody,
+                headers = message.Headers,
             }
         );
 
