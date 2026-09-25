@@ -1,9 +1,9 @@
 using _116.Identity.Application.Auth.EventHandlers;
-using _116.Identity.Application.Shared.Messages;
+using _116.Identity.Application.Shared.OutboundEmails;
 using _116.Identity.Contracts.Application.DTOs;
 using _116.Identity.Contracts.Application.Services;
 using _116.Identity.Domain.Events;
-using _116.Mailer.Contracts.Application.Messages;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 using _116.Mailer.Contracts.Domain.Enums;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -17,7 +17,7 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Auth.EventHandlers;
 public class UserVerifiedWelcomeEmailHandlerTests
 {
     private readonly Mock<IUserLookupService> _userLookupServiceMock = new();
-    private readonly Mock<IMessageDispatcher> _dispatcherMock = new();
+    private readonly Mock<IEmailDispatcher> _dispatcherMock = new();
     private readonly UserVerifiedWelcomeEmailHandler _handler;
 
     public UserVerifiedWelcomeEmailHandlerTests()
@@ -45,8 +45,8 @@ public class UserVerifiedWelcomeEmailHandlerTests
         _dispatcherMock.Verify(
             x =>
                 x.DispatchAsync(
-                    It.Is<Message>(m =>
-                        m.TemplateName == IdentityMessageTemplates.Welcome
+                    It.Is<OutboundEmail>(m =>
+                        m.TemplateName == IdentityEmailTemplates.Welcome
                         && m.Recipients[0].Address == "fally@test.com"
                         && m.Recipients[0].DisplayName == "Fally"
                         && m.Tokens["userName"] == "Fally"
