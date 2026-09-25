@@ -1,8 +1,8 @@
-using _116.Mailer.Application.Newsletter.Messages;
+using _116.Mailer.Application.Newsletter.OutboundEmails;
 using _116.Mailer.Application.Newsletter.UseCases.Public.Commands.SubscribeNewsletter;
 using _116.Mailer.Application.Shared.Persistence;
 using _116.Mailer.Application.Shared.Repositories;
-using _116.Mailer.Contracts.Application.Messages;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 using _116.Mailer.Contracts.Domain.Enums;
 using _116.Mailer.Domain.Entities;
 using AwesomeAssertions;
@@ -19,7 +19,7 @@ public class PublicSubscribeNewsletterHandlerTests
 {
     private readonly Mock<INewsletterRepository> _repository = new();
     private readonly Mock<IMailerUnitOfWork> _unitOfWork = new();
-    private readonly Mock<IMessageDispatcher> _mailer = new();
+    private readonly Mock<IEmailDispatcher> _mailer = new();
 
     private PublicSubscribeNewsletterHandler Handler => new(_repository.Object, _unitOfWork.Object, _mailer.Object);
 
@@ -40,9 +40,9 @@ public class PublicSubscribeNewsletterHandlerTests
         _mailer.Verify(
             d =>
                 d.DispatchAsync(
-                    It.Is<Message>(msg =>
-                        msg.TemplateName == NewsletterMessageTemplates.NewsletterConfirm
-                        && msg.Class == EnumMessageClass.Transactional
+                    It.Is<OutboundEmail>(msg =>
+                        msg.TemplateName == NewsletterEmailTemplates.NewsletterConfirm
+                        && msg.Class == EnumEmailClass.Transactional
                         && msg.Tokens.ContainsKey("confirmUrl")
                     ),
                     It.IsAny<CancellationToken>()
@@ -73,7 +73,7 @@ public class PublicSubscribeNewsletterHandlerTests
         _mailer.Verify(
             d =>
                 d.DispatchAsync(
-                    It.Is<Message>(msg => msg.TemplateName == NewsletterMessageTemplates.NewsletterConfirm),
+                    It.Is<OutboundEmail>(msg => msg.TemplateName == NewsletterEmailTemplates.NewsletterConfirm),
                     It.IsAny<CancellationToken>()
                 ),
             Times.Once
