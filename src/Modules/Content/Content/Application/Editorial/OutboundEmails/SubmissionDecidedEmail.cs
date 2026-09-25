@@ -1,7 +1,7 @@
-using _116.Content.Application.Shared.Messages;
-using _116.Mailer.Contracts.Application.Messages;
+using _116.Content.Application.Shared.OutboundEmails;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 
-namespace _116.Content.Application.Editorial.Messages;
+namespace _116.Content.Application.Editorial.OutboundEmails;
 
 /// <summary>
 /// A lyrics submission was reviewed: the outcome, with whatever note the reviewer left.
@@ -10,17 +10,17 @@ namespace _116.Content.Application.Editorial.Messages;
 /// <param name="SongTitle">The song the submission covers.</param>
 /// <param name="Outcome">The review outcome as the copy words it.</param>
 /// <param name="ReviewNote">The reviewer's note, empty when none was left.</param>
-public record SubmissionDecidedMessage(MessageRecipient Submitter, string SongTitle, string Outcome, string ReviewNote)
-    : Message
+public record SubmissionDecidedEmail(EmailRecipient Submitter, string SongTitle, string Outcome, string ReviewNote)
+    : OutboundEmail
 {
     /// <inheritdoc />
-    public override EnumMessageClass Class => EnumMessageClass.Notification;
+    public override EnumEmailClass Class => EnumEmailClass.Notification;
 
     /// <inheritdoc />
-    public override string TemplateName => ContentMessageTemplates.SubmissionDecided;
+    public override string TemplateName => ContentEmailTemplates.SubmissionDecided;
 
     /// <inheritdoc />
-    public override IReadOnlyList<MessageRecipient> Recipients => [Submitter];
+    public override IReadOnlyList<EmailRecipient> Recipients => [Submitter];
 
     /// <inheritdoc />
     public override IReadOnlyDictionary<string, string> Tokens =>
