@@ -1,8 +1,8 @@
-using _116.Identity.Application.Shared.Messages;
+using _116.Identity.Application.Shared.OutboundEmails;
 using _116.Identity.Contracts.Application.DTOs;
 using _116.Identity.Contracts.Application.Services;
 using _116.Identity.Domain.Events;
-using _116.Mailer.Contracts.Application.Messages;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 using _116.Mailer.Contracts.Application.Services;
 using _116.Mailer.Contracts.Domain.Enums;
 using _116.Shared.Application.Services;
@@ -23,7 +23,7 @@ namespace _116.Identity.Application.User.EventHandlers;
 /// <param name="logger">Logger recording skipped deliveries.</param>
 public class UserEmailChangedNotificationsHandler(
     IUserLookupService userLookupService,
-    IMessageDispatcher messageDispatcher,
+    IEmailDispatcher messageDispatcher,
     INotificationService notificationService,
     ILogger<UserEmailChangedNotificationsHandler> logger
 ) : IDomainEventHandler<UserEmailChangedEvent>
@@ -47,8 +47,8 @@ public class UserEmailChangedNotificationsHandler(
 
         if (domainEvent.OldEmail is not null)
         {
-            var alert = new EmailChangedAlertMessage(
-                FormerAddress: new MessageRecipient(
+            var alert = new EmailChangedAlertEmail(
+                FormerAddress: new EmailRecipient(
                     UserId: domainEvent.UserId,
                     Address: domainEvent.OldEmail,
                     DisplayName: user.UserName,
@@ -61,8 +61,8 @@ public class UserEmailChangedNotificationsHandler(
             await messageDispatcher.DispatchAsync(message: alert, cancellationToken: cancellationToken);
         }
 
-        var confirmation = new EmailChangedConfirmationMessage(
-            NewAddress: new MessageRecipient(
+        var confirmation = new EmailChangedConfirmationEmail(
+            NewAddress: new EmailRecipient(
                 UserId: domainEvent.UserId,
                 Address: domainEvent.NewEmail,
                 DisplayName: user.UserName,
