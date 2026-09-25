@@ -1,11 +1,11 @@
-using _116.Content.Application.Editorial.Messages;
+using _116.Content.Application.Editorial.OutboundEmails;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Domain.Events;
 using _116.Identity.Contracts.Application.DTOs;
 using _116.Identity.Contracts.Application.Services;
-using _116.Mailer.Contracts.Application.Messages;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 using _116.Mailer.Contracts.Application.Services;
 using _116.Mailer.Contracts.Domain.Enums;
 using _116.Shared.Application.Services;
@@ -32,7 +32,7 @@ public class LyricsSubmissionDecidedNotificationsHandler(
     IUserLookupService userLookupService,
     ILyricsSubmissionRepository submissionRepository,
     ILyricsRepository lyricsRepository,
-    IMessageDispatcher messageDispatcher,
+    IEmailDispatcher messageDispatcher,
     INotificationService notificationService,
     ILogger<LyricsSubmissionDecidedNotificationsHandler> logger
 ) : IDomainEventHandler<LyricsSubmissionDecidedEvent>
@@ -72,8 +72,8 @@ public class LyricsSubmissionDecidedNotificationsHandler(
 
         if (submitter.Email is not null)
         {
-            var message = new SubmissionDecidedMessage(
-                Submitter: new MessageRecipient(
+            var message = new SubmissionDecidedEmail(
+                Submitter: new EmailRecipient(
                     UserId: domainEvent.SubmittedByUserId,
                     Address: submitter.Email,
                     DisplayName: submitter.UserName,
