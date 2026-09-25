@@ -1,4 +1,4 @@
-namespace _116.Mailer.Contracts.Application.Messages;
+namespace _116.Mailer.Contracts.Application.OutboundEmails;
 
 /// <summary>
 /// A resolved recipient: who they are, where the message goes, and the locale it renders in
@@ -8,4 +8,4 @@ namespace _116.Mailer.Contracts.Application.Messages;
 /// <param name="Address">The email address the message is delivered to.</param>
 /// <param name="DisplayName">The name shown in the greeting and the To header.</param>
 /// <param name="Locale">The locale this recipient's copy renders in.</param>
-public record MessageRecipient(Guid? UserId, string Address, string? DisplayName, string Locale);
+public record EmailRecipient(Guid? UserId, string Address, string? DisplayName, string Locale);
