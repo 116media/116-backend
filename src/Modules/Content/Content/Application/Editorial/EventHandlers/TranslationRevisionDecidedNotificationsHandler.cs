@@ -1,11 +1,11 @@
-using _116.Content.Application.Editorial.Messages;
+using _116.Content.Application.Editorial.OutboundEmails;
 using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Events;
 using _116.Identity.Contracts.Application.DTOs;
 using _116.Identity.Contracts.Application.Services;
-using _116.Mailer.Contracts.Application.Messages;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 using _116.Mailer.Contracts.Application.Services;
 using _116.Mailer.Contracts.Domain.Enums;
 using _116.Shared.Application.Services;
@@ -31,7 +31,7 @@ public class TranslationRevisionDecidedNotificationsHandler(
     IUserLookupService userLookupService,
     ITranslationRepository translationRepository,
     ILyricsRepository lyricsRepository,
-    IMessageDispatcher messageDispatcher,
+    IEmailDispatcher messageDispatcher,
     INotificationService notificationService,
     ILogger<TranslationRevisionDecidedNotificationsHandler> logger
 ) : IDomainEventHandler<TranslationRevisionDecidedEvent>
@@ -75,8 +75,8 @@ public class TranslationRevisionDecidedNotificationsHandler(
 
         if (proposer.Email is not null)
         {
-            var message = new RevisionDecidedMessage(
-                Proposer: new MessageRecipient(
+            var message = new RevisionDecidedEmail(
+                Proposer: new EmailRecipient(
                     UserId: domainEvent.ProposedByUserId,
                     Address: proposer.Email,
                     DisplayName: proposer.UserName,
