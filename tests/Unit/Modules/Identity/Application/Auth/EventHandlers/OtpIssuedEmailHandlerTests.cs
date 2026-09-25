@@ -1,10 +1,10 @@
 using _116.Identity.Application.Auth.EventHandlers;
-using _116.Identity.Application.Shared.Messages;
+using _116.Identity.Application.Shared.OutboundEmails;
 using _116.Identity.Contracts.Application.DTOs;
 using _116.Identity.Contracts.Application.Services;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.Events;
-using _116.Mailer.Contracts.Application.Messages;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 using _116.Mailer.Contracts.Domain.Enums;
 using _116.Tests.Fixtures.Constants;
 using AwesomeAssertions;
@@ -21,7 +21,7 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Auth.EventHandlers;
 public class OtpIssuedEmailHandlerTests
 {
     private readonly Mock<IUserLookupService> _userLookupMock = new();
-    private readonly Mock<IMessageDispatcher> _dispatcherMock = new();
+    private readonly Mock<IEmailDispatcher> _dispatcherMock = new();
     private readonly OtpIssuedEmailHandler _handler;
 
     private static readonly Guid UserId = Guid.NewGuid();
@@ -47,8 +47,8 @@ public class OtpIssuedEmailHandlerTests
     }
 
     [Theory]
-    [InlineData(EnumOtpPurpose.EmailVerification, IdentityMessageTemplates.EmailVerificationOtp)]
-    [InlineData(EnumOtpPurpose.PasswordReset, IdentityMessageTemplates.PasswordResetOtp)]
+    [InlineData(EnumOtpPurpose.EmailVerification, IdentityEmailTemplates.EmailVerificationOtp)]
+    [InlineData(EnumOtpPurpose.PasswordReset, IdentityEmailTemplates.PasswordResetOtp)]
     public async Task Handle_ShouldSendThePurposeTemplateCarryingThePlainCode(
         EnumOtpPurpose purpose,
         string expectedTemplate
@@ -65,7 +65,7 @@ public class OtpIssuedEmailHandlerTests
         _dispatcherMock.Verify(
             x =>
                 x.DispatchAsync(
-                    It.Is<Message>(m =>
+                    It.Is<OutboundEmail>(m =>
                         m.TemplateName == expectedTemplate
                         && m.Recipients[0].Address == "fan@example.com"
                         && m.Tokens["otpCode"] == TestConstants.Otp.DefaultCode
@@ -87,7 +87,10 @@ public class OtpIssuedEmailHandlerTests
         await _handler.Handle(domainEvent, CancellationToken.None);
 
         // Assert
-        _dispatcherMock.Verify(x => x.DispatchAsync(It.IsAny<Message>(), It.IsAny<CancellationToken>()), Times.Once);
+        _dispatcherMock.Verify(
+            x => x.DispatchAsync(It.IsAny<OutboundEmail>(), It.IsAny<CancellationToken>()),
+            Times.Once
+        );
     }
 
     [Theory]
