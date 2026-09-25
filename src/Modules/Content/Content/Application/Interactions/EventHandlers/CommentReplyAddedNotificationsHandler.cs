@@ -1,11 +1,11 @@
 using _116.Content.Application.Editorial.Services;
-using _116.Content.Application.Interactions.Messages;
+using _116.Content.Application.Interactions.OutboundEmails;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Events;
 using _116.Identity.Contracts.Application.DTOs;
 using _116.Identity.Contracts.Application.Services;
-using _116.Mailer.Contracts.Application.Messages;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 using _116.Mailer.Contracts.Application.Services;
 using _116.Mailer.Contracts.Domain.Enums;
 using _116.Shared.Application.Services;
@@ -29,7 +29,7 @@ public class CommentReplyAddedNotificationsHandler(
     IArticleRepository articleRepository,
     IArticleCommentRepository articleCommentRepository,
     IUserLookupService userLookupService,
-    IMessageDispatcher messageDispatcher,
+    IEmailDispatcher messageDispatcher,
     INotificationService notificationService,
     ILogger<CommentReplyAddedNotificationsHandler> logger
 ) : IDomainEventHandler<CommentReplyAddedEvent>
@@ -90,8 +90,8 @@ public class CommentReplyAddedNotificationsHandler(
 
         if (parentAuthor.Email is not null)
         {
-            var message = new CommentReplyMessage(
-                ParentAuthor: new MessageRecipient(
+            var message = new CommentReplyEmail(
+                ParentAuthor: new EmailRecipient(
                     UserId: parent.UserId,
                     Address: parentAuthor.Email,
                     DisplayName: parentAuthor.UserName,
