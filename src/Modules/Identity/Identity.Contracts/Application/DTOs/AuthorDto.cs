@@ -9,10 +9,5 @@ namespace _116.Identity.Contracts.Application.DTOs;
 /// <param name="Email">The author's email address.</param>
 /// <param name="AvatarFileId">The file ID of the author's avatar, or null. Resolved to a URL by the consuming module.</param>
 /// <param name="Role">The author's primary role name (e.g., "SuperAdmin", "Admin").</param>
-public record AuthorDto(
-    string UserName,
-    string? Email,
-    Guid? AvatarFileId,
-    string? Role,
-    string PreferredLocale = "en"
-);
+/// <param name="PreferredLocale">The locale this author's mail and notifications render in.</param>
+public record AuthorDto(string UserName, string? Email, Guid? AvatarFileId, string? Role, string PreferredLocale);
