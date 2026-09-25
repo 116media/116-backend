@@ -1,10 +1,10 @@
-using _116.Mailer.Application.Newsletter.Messages;
+using _116.Mailer.Application.Newsletter.OutboundEmails;
 using _116.Mailer.Application.Newsletter.UseCases.Public.Commands.ConfirmNewsletter;
 using _116.Mailer.Application.Shared.Errors;
 using _116.Mailer.Application.Shared.Errors.Messages;
 using _116.Mailer.Application.Shared.Persistence;
 using _116.Mailer.Application.Shared.Repositories;
-using _116.Mailer.Contracts.Application.Messages;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 using _116.Mailer.Contracts.Domain.Enums;
 using _116.Mailer.Domain.Entities;
 using _116.Shared.Application.Exceptions;
@@ -23,7 +23,7 @@ public class PublicConfirmNewsletterHandlerTests
 {
     private readonly Mock<INewsletterRepository> _repository = new();
     private readonly Mock<IMailerUnitOfWork> _unitOfWork = new();
-    private readonly Mock<IMessageDispatcher> _mailer = new();
+    private readonly Mock<IEmailDispatcher> _mailer = new();
     private readonly NewsletterErrors _errors = new(LocalizerFactory.CreateMessage<NewsletterErrorMessage>());
 
     private PublicConfirmNewsletterHandler Handler =>
@@ -67,9 +67,9 @@ public class PublicConfirmNewsletterHandlerTests
         _mailer.Verify(
             d =>
                 d.DispatchAsync(
-                    It.Is<Message>(msg =>
-                        msg.TemplateName == NewsletterMessageTemplates.NewsletterWelcome
-                        && msg.Class == EnumMessageClass.Subscription
+                    It.Is<OutboundEmail>(msg =>
+                        msg.TemplateName == NewsletterEmailTemplates.NewsletterWelcome
+                        && msg.Class == EnumEmailClass.Subscription
                         && msg.Recipients[0].Address == "fan@example.com"
                         && msg.Tokens["unsubscribeUrl"].Contains(subscriber.UnsubscribeToken)
                     ),
