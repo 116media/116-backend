@@ -1,10 +1,10 @@
-namespace _116.Mailer.Contracts.Application.Messages;
+namespace _116.Mailer.Contracts.Application.OutboundEmails;
 
 /// <summary>
 /// The delivery policy a message is sent under. The class, not the caller, decides whether
 /// recipient preferences may suppress it.
 /// </summary>
-public enum EnumMessageClass
+public enum EnumEmailClass
 {
     /// <summary>
     /// Security and account facts. Always sent; preferences are never consulted.
