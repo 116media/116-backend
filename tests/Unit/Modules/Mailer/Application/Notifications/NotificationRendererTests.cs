@@ -110,7 +110,7 @@ public class NotificationRendererTests
 
         Action act = () => Renderer.Render(EnumNotificationType.EmailChanged, incomplete, "en");
 
-        act.Should().Throw<InvalidOperationException>().WithMessage("*unresolved placeholder*");
+        act.Should().Throw<InvalidOperationException>().WithMessage("*with no token*");
     }
 
     [Fact]
@@ -123,5 +123,16 @@ public class NotificationRendererTests
         Action act = () => Renderer.Render(unknown, AllTokens, "en");
 
         act.Should().Throw<InvalidOperationException>().WithMessage("*missing*");
+    }
+
+    [Fact]
+    public void Render_WhenATokenValueContainsPlaceholderSyntax_ShouldSendItLiterally()
+    {
+        // A user comment containing "{{x}}" must not be read as an unresolved template placeholder.
+        Dictionary<string, string> tokens = new(AllTokens) { ["articleTitle"] = "Eloko {{notAToken}} Oyo" };
+
+        RenderedNotification rendered = Renderer.Render(EnumNotificationType.CommentReply, tokens, "en");
+
+        (rendered.Title + rendered.Body).Should().Contain("notAToken");
     }
 }

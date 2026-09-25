@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants;
 using _116.Content.Application.Editorial.UseCases.Admin.Queries.GetShortById;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -73,7 +74,8 @@ public class AdminGetShortByIdHandlerTests : BaseContentHandlerTest
             TestConstants.User.ValidUserName,
             TestConstants.User.ValidEmail,
             null,
-            "SuperAdmin"
+            "SuperAdmin",
+            UserConstants.DefaultLocale
         );
         _userLookupMock
             .Setup(x => x.GetAuthorInfoByIdAsync(shortVideo.AuthorId, It.IsAny<CancellationToken>()))
@@ -103,7 +105,8 @@ public class AdminGetShortByIdHandlerTests : BaseContentHandlerTest
             TestConstants.User.ValidUserName,
             TestConstants.User.ValidEmail,
             avatarFileId,
-            "Admin"
+            "Admin",
+            UserConstants.DefaultLocale
         );
         _userLookupMock
             .Setup(x => x.GetAuthorInfoByIdAsync(shortVideo.AuthorId, It.IsAny<CancellationToken>()))
@@ -153,7 +156,13 @@ public class AdminGetShortByIdHandlerTests : BaseContentHandlerTest
         var query = new AdminGetShortByIdQuery(Id: shortVideo.Id);
         _shortVideoRepositoryMock.SetupGetByIdOrThrow(shortVideo);
 
-        var authorInfo = new AuthorDto(TestConstants.User.ValidUserName, TestConstants.User.ValidEmail, null, "Admin");
+        var authorInfo = new AuthorDto(
+            TestConstants.User.ValidUserName,
+            TestConstants.User.ValidEmail,
+            null,
+            "Admin",
+            UserConstants.DefaultLocale
+        );
         _userLookupMock
             .Setup(x => x.GetAuthorInfoByIdAsync(shortVideo.AuthorId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authorInfo);

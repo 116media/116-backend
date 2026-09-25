@@ -1,13 +1,13 @@
+using _116.Content.Application.Editorial.OutboundEmails;
 using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Events;
 using _116.Identity.Contracts.Application.DTOs;
 using _116.Identity.Contracts.Application.Services;
-using _116.Mailer.Contracts.Application.DTOs;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 using _116.Mailer.Contracts.Application.Services;
 using _116.Mailer.Contracts.Domain.Enums;
-using _116.Shared.Application.Localization;
 using _116.Shared.Application.Services;
 using Microsoft.Extensions.Logging;
 
@@ -28,7 +28,7 @@ namespace _116.Content.Application.Editorial.EventHandlers;
 public class ArtistOwnershipVerifiedNotificationsHandler(
     IUserLookupService userLookupService,
     IArtistRepository artistRepository,
-    IEmailService emailService,
+    IEmailDispatcher messageDispatcher,
     INotificationService notificationService,
     ILogger<ArtistOwnershipVerifiedNotificationsHandler> logger
 ) : IDomainEventHandler<ArtistOwnershipVerifiedEvent>
@@ -61,22 +61,20 @@ public class ArtistOwnershipVerifiedNotificationsHandler(
             return;
         }
 
-        string culture = EmailCulture.Current();
-
         if (owner.Email is not null)
         {
-            await emailService.EnqueueAsync(
-                template: EnumEmailTemplate.ArtistVerified,
-                to: new EmailRecipientDto(Address: owner.Email, DisplayName: owner.UserName),
-                tokens: new Dictionary<string, string>
-                {
-                    ["userName"] = owner.UserName,
-                    ["artistName"] = artist.Name,
-                    ["artistUrl"] = ContentPublicLinks.Artist(artist.Slug),
-                },
-                culture: culture,
-                cancellationToken: cancellationToken
+            var message = new ArtistVerifiedEmail(
+                Owner: new EmailRecipient(
+                    UserId: domainEvent.UserId,
+                    Address: owner.Email,
+                    DisplayName: owner.UserName,
+                    Locale: owner.PreferredLocale
+                ),
+                ArtistName: artist.Name,
+                ArtistUrl: ContentPublicLinks.Artist(artist.Slug)
             );
+
+            await messageDispatcher.DispatchAsync(message: message, cancellationToken: cancellationToken);
         }
         else
         {
@@ -94,7 +92,6 @@ public class ArtistOwnershipVerifiedNotificationsHandler(
                 ["artistName"] = artist.Name,
                 ["linkPath"] = $"/artists/{artist.Slug}",
             },
-            culture: culture,
             cancellationToken: cancellationToken
         );
     }

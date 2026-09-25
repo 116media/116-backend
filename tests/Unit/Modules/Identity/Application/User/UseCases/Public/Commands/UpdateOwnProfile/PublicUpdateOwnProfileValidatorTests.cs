@@ -39,7 +39,8 @@ public class PublicUpdateOwnProfileValidatorTests
             CountryName: "United States",
             PartialPhoneNumber: "1234567890",
             CountryIsoCode: "US",
-            CountryDialCode: "+1"
+            CountryDialCode: "+1",
+            PreferredLocale: null
         );
 
         // Act
@@ -62,7 +63,8 @@ public class PublicUpdateOwnProfileValidatorTests
             CountryName: null,
             PartialPhoneNumber: null,
             CountryIsoCode: null,
-            CountryDialCode: null
+            CountryDialCode: null,
+            PreferredLocale: null
         );
 
         // Act
@@ -89,7 +91,8 @@ public class PublicUpdateOwnProfileValidatorTests
             CountryName: null,
             PartialPhoneNumber: null,
             CountryIsoCode: null,
-            CountryDialCode: null
+            CountryDialCode: null,
+            PreferredLocale: null
         );
 
         // Act
@@ -113,7 +116,8 @@ public class PublicUpdateOwnProfileValidatorTests
             CountryName: null,
             PartialPhoneNumber: null,
             CountryIsoCode: null,
-            CountryDialCode: null
+            CountryDialCode: null,
+            PreferredLocale: null
         );
 
         // Act
@@ -140,7 +144,8 @@ public class PublicUpdateOwnProfileValidatorTests
             CountryName: null,
             PartialPhoneNumber: null,
             CountryIsoCode: null,
-            CountryDialCode: null
+            CountryDialCode: null,
+            PreferredLocale: null
         );
 
         // Act
@@ -163,7 +168,8 @@ public class PublicUpdateOwnProfileValidatorTests
             CountryName: null,
             PartialPhoneNumber: null,
             CountryIsoCode: null,
-            CountryDialCode: null
+            CountryDialCode: null,
+            PreferredLocale: null
         );
 
         // Act
@@ -186,7 +192,8 @@ public class PublicUpdateOwnProfileValidatorTests
             CountryName: null,
             PartialPhoneNumber: null,
             CountryIsoCode: null,
-            CountryDialCode: null
+            CountryDialCode: null,
+            PreferredLocale: null
         );
 
         // Act
@@ -213,7 +220,8 @@ public class PublicUpdateOwnProfileValidatorTests
             CountryName: new string('a', UserConstants.MaxCountryNameLength + 1),
             PartialPhoneNumber: null,
             CountryIsoCode: null,
-            CountryDialCode: null
+            CountryDialCode: null,
+            PreferredLocale: null
         );
 
         // Act
@@ -242,7 +250,8 @@ public class PublicUpdateOwnProfileValidatorTests
             CountryName: null,
             PartialPhoneNumber: null,
             CountryIsoCode: "USAA",
-            CountryDialCode: null
+            CountryDialCode: null,
+            PreferredLocale: null
         );
 
         // Act
@@ -265,7 +274,8 @@ public class PublicUpdateOwnProfileValidatorTests
             CountryName: null,
             PartialPhoneNumber: null,
             CountryIsoCode: "us",
-            CountryDialCode: null
+            CountryDialCode: null,
+            PreferredLocale: null
         );
 
         // Act
@@ -290,7 +300,8 @@ public class PublicUpdateOwnProfileValidatorTests
             CountryName: null,
             PartialPhoneNumber: null,
             CountryIsoCode: "US",
-            CountryDialCode: null
+            CountryDialCode: null,
+            PreferredLocale: null
         );
 
         // Act
@@ -312,7 +323,8 @@ public class PublicUpdateOwnProfileValidatorTests
             CountryName: null,
             PartialPhoneNumber: null,
             CountryIsoCode: "USA",
-            CountryDialCode: null
+            CountryDialCode: null,
+            PreferredLocale: null
         );
 
         // Act
@@ -338,7 +350,8 @@ public class PublicUpdateOwnProfileValidatorTests
             CountryName: null,
             PartialPhoneNumber: null,
             CountryIsoCode: null,
-            CountryDialCode: new string('1', UserConstants.MaxCountryDialCodeLength + 1)
+            CountryDialCode: new string('1', UserConstants.MaxCountryDialCodeLength + 1),
+            PreferredLocale: null
         );
 
         // Act
@@ -361,7 +374,8 @@ public class PublicUpdateOwnProfileValidatorTests
             CountryName: null,
             PartialPhoneNumber: null,
             CountryIsoCode: null,
-            CountryDialCode: "1"
+            CountryDialCode: "1",
+            PreferredLocale: null
         );
 
         // Act
@@ -384,7 +398,8 @@ public class PublicUpdateOwnProfileValidatorTests
             CountryName: null,
             PartialPhoneNumber: null,
             CountryIsoCode: null,
-            CountryDialCode: "+1"
+            CountryDialCode: "+1",
+            PreferredLocale: null
         );
 
         // Act
@@ -410,7 +425,8 @@ public class PublicUpdateOwnProfileValidatorTests
             CountryName: null,
             PartialPhoneNumber: new string('1', UserConstants.MaxPartialPhoneNumberLength + 1),
             CountryIsoCode: null,
-            CountryDialCode: null
+            CountryDialCode: null,
+            PreferredLocale: null
         );
 
         // Act
@@ -441,7 +457,8 @@ public class PublicUpdateOwnProfileValidatorTests
             CountryName: new string('a', UserConstants.MaxCountryNameLength + 1),
             PartialPhoneNumber: new string('1', UserConstants.MaxPartialPhoneNumberLength + 1),
             CountryIsoCode: "usaa",
-            CountryDialCode: "1"
+            CountryDialCode: "1",
+            PreferredLocale: null
         );
 
         // Act
@@ -453,4 +470,69 @@ public class PublicUpdateOwnProfileValidatorTests
     }
 
     #endregion
+
+    [Theory]
+    [InlineData("fr")]
+    [InlineData("en")]
+    public async Task Validate_WithASupportedPreferredLocale_ShouldNotHaveError(string locale)
+    {
+        PublicUpdateOwnProfileCommand command = new(
+            UserId: Guid.NewGuid(),
+            SessionId: Guid.NewGuid(),
+            Email: null,
+            UserName: null,
+            CountryName: null,
+            PartialPhoneNumber: null,
+            CountryIsoCode: null,
+            CountryDialCode: null,
+            PreferredLocale: locale
+        );
+
+        TestValidationResult<PublicUpdateOwnProfileCommand> result = await _validator.TestValidateAsync(command);
+
+        result.ShouldNotHaveValidationErrorFor(x => x.PreferredLocale);
+    }
+
+    [Theory]
+    [InlineData("de")]
+    [InlineData("ln")]
+    [InlineData("not-a-locale")]
+    public async Task Validate_WithAnUnsupportedPreferredLocale_ShouldHaveError(string locale)
+    {
+        PublicUpdateOwnProfileCommand command = new(
+            UserId: Guid.NewGuid(),
+            SessionId: Guid.NewGuid(),
+            Email: null,
+            UserName: null,
+            CountryName: null,
+            PartialPhoneNumber: null,
+            CountryIsoCode: null,
+            CountryDialCode: null,
+            PreferredLocale: locale
+        );
+
+        TestValidationResult<PublicUpdateOwnProfileCommand> result = await _validator.TestValidateAsync(command);
+
+        result.ShouldHaveValidationErrorFor(x => x.PreferredLocale);
+    }
+
+    [Fact]
+    public async Task Validate_WithoutAPreferredLocale_ShouldNotHaveError()
+    {
+        PublicUpdateOwnProfileCommand command = new(
+            UserId: Guid.NewGuid(),
+            SessionId: Guid.NewGuid(),
+            Email: null,
+            UserName: null,
+            CountryName: null,
+            PartialPhoneNumber: null,
+            CountryIsoCode: null,
+            CountryDialCode: null,
+            PreferredLocale: null
+        );
+
+        TestValidationResult<PublicUpdateOwnProfileCommand> result = await _validator.TestValidateAsync(command);
+
+        result.ShouldNotHaveValidationErrorFor(x => x.PreferredLocale);
+    }
 }

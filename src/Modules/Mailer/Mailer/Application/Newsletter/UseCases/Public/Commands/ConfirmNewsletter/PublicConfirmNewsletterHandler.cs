@@ -1,11 +1,11 @@
 using System.Globalization;
+using _116.BuildingBlocks.Constants;
+using _116.Mailer.Application.Newsletter.OutboundEmails;
 using _116.Mailer.Application.Newsletter.Services;
 using _116.Mailer.Application.Shared.Errors;
 using _116.Mailer.Application.Shared.Persistence;
 using _116.Mailer.Application.Shared.Repositories;
-using _116.Mailer.Contracts.Application.DTOs;
-using _116.Mailer.Contracts.Application.Services;
-using _116.Mailer.Contracts.Domain.Enums;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Domain.Enums;
 using _116.Shared.Contracts.Application.CQRS;
@@ -25,7 +25,7 @@ namespace _116.Mailer.Application.Newsletter.UseCases.Public.Commands.ConfirmNew
 public class PublicConfirmNewsletterHandler(
     INewsletterRepository newsletterRepository,
     IMailerUnitOfWork unitOfWork,
-    IEmailService emailService,
+    IEmailDispatcher messageDispatcher,
     NewsletterErrors errors
 ) : ICommandHandler<PublicConfirmNewsletterCommand, PublicConfirmNewsletterResult>
 {
@@ -47,16 +47,17 @@ public class PublicConfirmNewsletterHandler(
         {
             await unitOfWork.CommitAsync(cancellationToken);
 
-            await emailService.EnqueueAsync(
-                template: EnumEmailTemplate.NewsletterWelcome,
-                to: new EmailRecipientDto(subscriber.Email),
-                tokens: new Dictionary<string, string>
-                {
-                    ["unsubscribeUrl"] = NewsletterLinkBuilder.UnsubscribeUrl(subscriber.UnsubscribeToken),
-                },
-                culture: CultureInfo.CurrentUICulture.TwoLetterISOLanguageName,
-                cancellationToken: cancellationToken
+            var message = new NewsletterWelcomeEmail(
+                Subscriber: new EmailRecipient(
+                    UserId: null,
+                    Address: subscriber.Email,
+                    DisplayName: null,
+                    Locale: UserConstants.DefaultLocale
+                ),
+                UnsubscribeUrl: NewsletterLinkBuilder.UnsubscribeUrl(subscriber.UnsubscribeToken)
             );
+
+            await messageDispatcher.DispatchAsync(message: message, cancellationToken: cancellationToken);
         }
 
         return new PublicConfirmNewsletterResult(IsSubscribed: subscriber.Status == EnumNewsletterStatus.Subscribed);

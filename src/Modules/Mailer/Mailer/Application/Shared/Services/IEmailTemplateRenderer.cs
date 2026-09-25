@@ -22,8 +22,8 @@ public interface IEmailTemplateRenderer
     /// missing token is a programming error, never a runtime state.
     /// </summary>
     /// <param name="template">The template to render, from the catalog.</param>
+    /// <param name="locale">The recipient's locale the message renders in.</param>
     /// <param name="tokens">The dynamic values the template requires.</param>
-    /// <param name="culture">The two-letter culture (e.g. "en", "fr").</param>
     /// <returns>The rendered subject and bodies.</returns>
-    RenderedEmail Render(EnumEmailTemplate template, IReadOnlyDictionary<string, string> tokens, string culture);
+    RenderedEmail Render(string template, IReadOnlyDictionary<string, string> tokens, string locale);
 }

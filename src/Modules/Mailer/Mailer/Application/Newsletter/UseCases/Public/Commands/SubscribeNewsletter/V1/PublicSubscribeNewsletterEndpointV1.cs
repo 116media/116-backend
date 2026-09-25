@@ -1,4 +1,5 @@
 using _116.BuildingBlocks.Constants.RateLimit;
+using _116.Mailer.Application.Newsletter.Constants;
 using _116.Mailer.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
@@ -40,7 +41,7 @@ public class PublicSubscribeNewsletterEndpointV1 : ICarterModule
 
         group
             .MapPost(
-                pattern: "subscriptions",
+                pattern: NewsletterRouteConstants.Subscriptions,
                 async (
                     PublicSubscribeNewsletterRequest request,
                     IDispatcher dispatcher,

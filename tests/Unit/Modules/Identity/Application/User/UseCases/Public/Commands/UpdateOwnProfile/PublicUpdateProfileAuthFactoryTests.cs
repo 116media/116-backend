@@ -90,6 +90,7 @@ public class PublicUpdateProfileAuthFactoryTests
             countryIsoCode,
             countryDialCode,
             partialPhoneNumber,
+            null,
             CancellationToken.None
         );
 
@@ -122,6 +123,7 @@ public class PublicUpdateProfileAuthFactoryTests
         await _factory.UpdateProfileAsync(
             userId,
             sessionId,
+            null,
             null,
             null,
             null,
@@ -166,6 +168,7 @@ public class PublicUpdateProfileAuthFactoryTests
             null,
             null,
             null,
+            null,
             CancellationToken.None
         );
 
@@ -198,6 +201,7 @@ public class PublicUpdateProfileAuthFactoryTests
         await _factory.UpdateProfileAsync(
             userId,
             sessionId,
+            null,
             null,
             null,
             null,
@@ -242,6 +246,7 @@ public class PublicUpdateProfileAuthFactoryTests
             userId,
             sessionId,
             newEmail,
+            null,
             null,
             null,
             null,
@@ -294,6 +299,7 @@ public class PublicUpdateProfileAuthFactoryTests
             null,
             null,
             null,
+            null,
             CancellationToken.None
         );
 
@@ -333,6 +339,7 @@ public class PublicUpdateProfileAuthFactoryTests
             sessionId,
             null,
             userName,
+            null,
             null,
             null,
             null,
@@ -386,6 +393,7 @@ public class PublicUpdateProfileAuthFactoryTests
             "RW",
             countryDialCode,
             partialPhoneNumber,
+            null,
             CancellationToken.None
         );
 
@@ -435,6 +443,7 @@ public class PublicUpdateProfileAuthFactoryTests
             "RW",
             countryDialCode,
             partialPhoneNumber,
+            null,
             CancellationToken.None
         );
 
@@ -476,6 +485,7 @@ public class PublicUpdateProfileAuthFactoryTests
             null,
             null,
             null,
+            null,
             CancellationToken.None
         );
 
@@ -504,7 +514,18 @@ public class PublicUpdateProfileAuthFactoryTests
         _unitOfWorkMock.Setup(x => x.CommitAsync(cancellationToken)).ReturnsAsync(1);
 
         // Act
-        await _factory.UpdateProfileAsync(userId, sessionId, null, null, null, null, null, null, cancellationToken);
+        await _factory.UpdateProfileAsync(
+            userId,
+            sessionId,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            cancellationToken
+        );
 
         // Assert
         _authRepositoryMock.Verify(
@@ -576,6 +597,7 @@ public class PublicUpdateProfileAuthFactoryTests
             null,
             null,
             null,
+            null,
             CancellationToken.None
         );
 
@@ -614,6 +636,7 @@ public class PublicUpdateProfileAuthFactoryTests
             sessionId,
             null,
             "newusername",
+            null,
             null,
             null,
             null,

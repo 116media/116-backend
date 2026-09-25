@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants;
 using _116.Content.Application.Interactions.UseCases.Public.Commands.AddCommentReply;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -60,7 +61,7 @@ public class PublicAddCommentReplyHandlerTests : BaseContentHandlerTest
         _articleCommentRepositoryMock.SetupGetCommentByIdAsync(parent);
         _userLookupMock
             .Setup(x => x.GetAuthorInfoByIdAsync(replierId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new AuthorDto("bob", "bob@example.com", null, "Visitor"));
+            .ReturnsAsync(new AuthorDto("bob", "bob@example.com", null, "Visitor", UserConstants.DefaultLocale));
 
         var command = new PublicAddCommentReplyCommand(article.Id, parent.Id, replierId, "A valid reply body.");
 

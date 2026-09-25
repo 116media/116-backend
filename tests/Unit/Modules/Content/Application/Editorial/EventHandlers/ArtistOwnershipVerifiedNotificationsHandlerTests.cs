@@ -1,10 +1,12 @@
+using _116.BuildingBlocks.Constants;
 using _116.Content.Application.Editorial.EventHandlers;
+using _116.Content.Application.Shared.OutboundEmails;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Events;
 using _116.Identity.Contracts.Application.DTOs;
 using _116.Identity.Contracts.Application.Services;
-using _116.Mailer.Contracts.Application.DTOs;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 using _116.Mailer.Contracts.Application.Services;
 using _116.Mailer.Contracts.Domain.Enums;
 using _116.Tests.Fixtures.Factories.Content;
@@ -22,7 +24,7 @@ public class ArtistOwnershipVerifiedNotificationsHandlerTests
 {
     private readonly Mock<IUserLookupService> _userLookupServiceMock = new();
     private readonly Mock<IArtistRepository> _artistRepositoryMock;
-    private readonly Mock<IEmailService> _mailerMock = new();
+    private readonly Mock<IEmailDispatcher> _dispatcherMock = new();
     private readonly Mock<INotificationService> _notifierMock = new();
     private readonly ArtistOwnershipVerifiedNotificationsHandler _handler;
     private readonly ArtistEntity _artist;
@@ -38,7 +40,7 @@ public class ArtistOwnershipVerifiedNotificationsHandlerTests
         _handler = new ArtistOwnershipVerifiedNotificationsHandler(
             _userLookupServiceMock.Object,
             _artistRepositoryMock.Object,
-            _mailerMock.Object,
+            _dispatcherMock.Object,
             _notifierMock.Object,
             NullLogger<ArtistOwnershipVerifiedNotificationsHandler>.Instance
         );
@@ -55,15 +57,15 @@ public class ArtistOwnershipVerifiedNotificationsHandlerTests
         await _handler.Handle(new ArtistOwnershipVerifiedEvent(_artist.Id, ownerId), CancellationToken.None);
 
         // Assert
-        _mailerMock.Verify(
+        _dispatcherMock.Verify(
             x =>
-                x.EnqueueAsync(
-                    EnumEmailTemplate.ArtistVerified,
-                    It.Is<EmailRecipientDto>(r => r.Address == "owner@test.com"),
-                    It.Is<IReadOnlyDictionary<string, string>>(t =>
-                        t["userName"] == "Fally" && t["artistName"] == _artist.Name
+                x.DispatchAsync(
+                    It.Is<OutboundEmail>(m =>
+                        m.TemplateName == ContentEmailTemplates.ArtistVerified
+                        && m.Recipients[0].Address == "owner@test.com"
+                        && m.Tokens["userName"] == "Fally"
+                        && m.Tokens["artistName"] == _artist.Name
                     ),
-                    It.IsAny<string>(),
                     It.IsAny<CancellationToken>()
                 ),
             Times.Once
@@ -89,7 +91,6 @@ public class ArtistOwnershipVerifiedNotificationsHandlerTests
                     It.Is<IReadOnlyDictionary<string, string>>(t =>
                         t["artistName"] == _artist.Name && t["linkPath"] == $"/artists/{_artist.Slug}"
                     ),
-                    It.IsAny<string>(),
                     It.IsAny<CancellationToken>()
                 ),
             Times.Once
@@ -107,14 +108,13 @@ public class ArtistOwnershipVerifiedNotificationsHandlerTests
         await _handler.Handle(new ArtistOwnershipVerifiedEvent(_artist.Id, ownerId), CancellationToken.None);
 
         // Assert
-        _mailerMock.VerifyNoOtherCalls();
+        _dispatcherMock.VerifyNoOtherCalls();
         _notifierMock.Verify(
             x =>
                 x.NotifyAsync(
                     ownerId,
                     EnumNotificationType.ArtistVerified,
                     It.IsAny<IReadOnlyDictionary<string, string>>(),
-                    It.IsAny<string>(),
                     It.IsAny<CancellationToken>()
                 ),
             Times.Once
@@ -128,7 +128,7 @@ public class ArtistOwnershipVerifiedNotificationsHandlerTests
         await _handler.Handle(new ArtistOwnershipVerifiedEvent(_artist.Id, Guid.NewGuid()), CancellationToken.None);
 
         // Assert
-        _mailerMock.VerifyNoOtherCalls();
+        _dispatcherMock.VerifyNoOtherCalls();
         _notifierMock.VerifyNoOtherCalls();
     }
 
@@ -143,7 +143,7 @@ public class ArtistOwnershipVerifiedNotificationsHandlerTests
         await _handler.Handle(new ArtistOwnershipVerifiedEvent(Guid.NewGuid(), ownerId), CancellationToken.None);
 
         // Assert
-        _mailerMock.VerifyNoOtherCalls();
+        _dispatcherMock.VerifyNoOtherCalls();
         _notifierMock.VerifyNoOtherCalls();
     }
 
@@ -151,6 +151,6 @@ public class ArtistOwnershipVerifiedNotificationsHandlerTests
     {
         _userLookupServiceMock
             .Setup(x => x.GetAuthorInfoByIdAsync(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new AuthorDto("Fally", email, null, "Visitor"));
+            .ReturnsAsync(new AuthorDto("Fally", email, null, "Visitor", UserConstants.DefaultLocale));
     }
 }

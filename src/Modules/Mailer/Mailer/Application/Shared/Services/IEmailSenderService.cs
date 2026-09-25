@@ -11,7 +11,13 @@ namespace _116.Mailer.Application.Shared.Services;
 /// <param name="Subject">The rendered subject line.</param>
 /// <param name="HtmlBody">The rendered HTML body.</param>
 /// <param name="TextBody">The rendered plain-text body.</param>
-public record EmailMessage(EmailRecipientDto To, string Subject, string HtmlBody, string TextBody);
+public record EmailMessage(
+    EmailRecipientDto To,
+    string Subject,
+    string HtmlBody,
+    string TextBody,
+    IReadOnlyDictionary<string, string>? Headers = null
+);
 
 /// <summary>
 /// Transport seam to a concrete email provider. Implementations perform one

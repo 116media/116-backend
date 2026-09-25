@@ -1,11 +1,11 @@
+using _116.Identity.Application.Shared.OutboundEmails;
 using _116.Identity.Contracts.Application.DTOs;
 using _116.Identity.Contracts.Application.Services;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.Events;
-using _116.Mailer.Contracts.Application.DTOs;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 using _116.Mailer.Contracts.Application.Services;
 using _116.Mailer.Contracts.Domain.Enums;
-using _116.Shared.Application.Localization;
 using _116.Shared.Application.Services;
 using Microsoft.Extensions.Logging;
 
@@ -17,12 +17,12 @@ namespace _116.Identity.Application.Auth.EventHandlers;
 /// handled together because they share every lookup.
 /// </summary>
 /// <param name="userLookupService">Lookup resolving the recipient's name and address by id.</param>
-/// <param name="emailService">Outbox mailer sending the security confirmation.</param>
+/// <param name="messageDispatcher">Dispatcher routing the security confirmation to its recipients.</param>
 /// <param name="notificationService">Writer for the in-app notification row.</param>
 /// <param name="logger">Logger recording skipped email deliveries.</param>
 public class UserPasswordChangedNotificationsHandler(
     IUserLookupService userLookupService,
-    IEmailService emailService,
+    IEmailDispatcher messageDispatcher,
     INotificationService notificationService,
     ILogger<UserPasswordChangedNotificationsHandler> logger
 ) : IDomainEventHandler<UserPasswordChangedEvent>
@@ -41,17 +41,20 @@ public class UserPasswordChangedNotificationsHandler(
             return;
         }
 
-        string culture = EmailCulture.Current();
-
         if (user.Email is not null)
         {
-            await emailService.EnqueueAsync(
-                template: EmailTemplateFor(origin: domainEvent.Origin),
-                to: new EmailRecipientDto(Address: user.Email, DisplayName: user.UserName),
-                tokens: EmailTokensFor(origin: domainEvent.Origin, userName: user.UserName),
-                culture: culture,
-                cancellationToken: cancellationToken
+            var message = new PasswordChangedEmail(
+                User: new EmailRecipient(
+                    UserId: domainEvent.UserId,
+                    Address: user.Email,
+                    DisplayName: user.UserName,
+                    Locale: user.PreferredLocale
+                ),
+                Origin: domainEvent.Origin,
+                ChangedAt: DateTimeOffset.UtcNow
             );
+
+            await messageDispatcher.DispatchAsync(message: message, cancellationToken: cancellationToken);
         }
         else
         {
@@ -62,49 +65,8 @@ public class UserPasswordChangedNotificationsHandler(
             userId: domainEvent.UserId,
             type: NotificationTypeFor(origin: domainEvent.Origin),
             tokens: new Dictionary<string, string>(),
-            culture: culture,
             cancellationToken: cancellationToken
         );
-    }
-
-    /// <summary>
-    /// Maps the change origin to the email template shipped for that flow.
-    /// </summary>
-    /// <param name="origin">The flow that replaced the password.</param>
-    /// <returns>The template to render.</returns>
-    private static EnumEmailTemplate EmailTemplateFor(EnumPasswordChangeOrigin origin)
-    {
-        return origin switch
-        {
-            EnumPasswordChangeOrigin.Reset => EnumEmailTemplate.PasswordResetCompleted,
-            EnumPasswordChangeOrigin.SetLocal => EnumEmailTemplate.LocalPasswordAdded,
-            _ => EnumEmailTemplate.PasswordChanged,
-        };
-    }
-
-    /// <summary>
-    /// Builds the token set the origin's template requires. The change and reset templates carry
-    /// a timestamp under their historical token names; the set-local template needs only the name.
-    /// </summary>
-    /// <param name="origin">The flow that replaced the password.</param>
-    /// <param name="userName">The recipient's display name.</param>
-    /// <returns>The tokens for the template render.</returns>
-    private static Dictionary<string, string> EmailTokensFor(EnumPasswordChangeOrigin origin, string userName)
-    {
-        return origin switch
-        {
-            EnumPasswordChangeOrigin.Reset => new Dictionary<string, string>
-            {
-                ["userName"] = userName,
-                ["resetTime"] = DateTime.UtcNow.ToString("u"),
-            },
-            EnumPasswordChangeOrigin.SetLocal => new Dictionary<string, string> { ["userName"] = userName },
-            _ => new Dictionary<string, string>
-            {
-                ["userName"] = userName,
-                ["changeTime"] = DateTime.UtcNow.ToString("u"),
-            },
-        };
     }
 
     /// <summary>

@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants;
 using _116.Content.Application.Interactions.UseCases.Public.Queries.GetArticleComments;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Repositories;
@@ -52,7 +53,10 @@ public class PublicGetArticleCommentsHandlerTests : BaseContentHandlerTest
                 x.GetAuthorInfosByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>())
             )
             .ReturnsAsync(
-                new Dictionary<Guid, AuthorDto> { [userId] = new AuthorDto(userName, email, avatarFileId, role) }
+                new Dictionary<Guid, AuthorDto>
+                {
+                    [userId] = new AuthorDto(userName, email, avatarFileId, role, UserConstants.DefaultLocale),
+                }
             );
     }
 

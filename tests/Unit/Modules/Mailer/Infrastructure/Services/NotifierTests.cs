@@ -1,3 +1,5 @@
+using _116.Identity.Contracts.Application.DTOs;
+using _116.Identity.Contracts.Application.Services;
 using _116.Mailer.Application.Shared.Persistence;
 using _116.Mailer.Application.Shared.Repositories;
 using _116.Mailer.Application.Shared.Services;
@@ -19,11 +21,16 @@ public class NotifierTests
     private readonly Mock<INotificationRenderer> _renderer = new();
     private readonly Mock<INotificationRepository> _repository = new();
     private readonly Mock<IMailerUnitOfWork> _unitOfWork = new();
+    private readonly Mock<IUserLookupService> _userLookup = new();
 
     [Fact]
     public async Task NotifyAsync_ShouldPersistTheRenderedNotificationAndCommit()
     {
         var userId = Guid.NewGuid();
+        _userLookup
+            .Setup(l => l.GetAuthorInfoByIdAsync(userId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new AuthorDto("Aline", "aline@example.com", null, null, PreferredLocale: "fr"));
+
         _renderer
             .Setup(r =>
                 r.Render(EnumNotificationType.CommentReply, It.IsAny<IReadOnlyDictionary<string, string>>(), "fr")
@@ -35,13 +42,17 @@ public class NotifierTests
             .Setup(r => r.AddAsync(It.IsAny<NotificationEntity>(), It.IsAny<CancellationToken>()))
             .Callback<NotificationEntity, CancellationToken>((e, _) => captured = e);
 
-        var notificationService = new NotificationService(_renderer.Object, _repository.Object, _unitOfWork.Object);
+        var notificationService = new NotificationService(
+            _renderer.Object,
+            _repository.Object,
+            _unitOfWork.Object,
+            _userLookup.Object
+        );
 
         await notificationService.NotifyAsync(
             userId: userId,
             type: EnumNotificationType.CommentReply,
             tokens: new Dictionary<string, string> { ["replierName"] = "Aline", ["linkPath"] = "/articles/eloko-oyo" },
-            culture: "fr",
             cancellationToken: CancellationToken.None
         );
 
@@ -74,13 +85,17 @@ public class NotifierTests
             .Setup(r => r.AddAsync(It.IsAny<NotificationEntity>(), It.IsAny<CancellationToken>()))
             .Callback<NotificationEntity, CancellationToken>((e, _) => captured = e);
 
-        var notificationService = new NotificationService(_renderer.Object, _repository.Object, _unitOfWork.Object);
+        var notificationService = new NotificationService(
+            _renderer.Object,
+            _repository.Object,
+            _unitOfWork.Object,
+            _userLookup.Object
+        );
 
         await notificationService.NotifyAsync(
             userId: Guid.NewGuid(),
             type: EnumNotificationType.PasswordChanged,
             tokens: new Dictionary<string, string>(),
-            culture: "en",
             cancellationToken: CancellationToken.None
         );
 
@@ -101,14 +116,18 @@ public class NotifierTests
             )
             .Throws(new InvalidOperationException("unresolved placeholder"));
 
-        var notificationService = new NotificationService(_renderer.Object, _repository.Object, _unitOfWork.Object);
+        var notificationService = new NotificationService(
+            _renderer.Object,
+            _repository.Object,
+            _unitOfWork.Object,
+            _userLookup.Object
+        );
 
         Func<Task> act = () =>
             notificationService.NotifyAsync(
                 Guid.NewGuid(),
                 EnumNotificationType.PasswordChanged,
                 new Dictionary<string, string>(),
-                "en",
                 CancellationToken.None
             );
 

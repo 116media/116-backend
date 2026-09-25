@@ -1,6 +1,8 @@
 using _116.Mailer.Application.Newsletter.UseCases.Public.Commands.ConfirmNewsletter;
 using _116.Mailer.Application.Newsletter.UseCases.Public.Commands.SubscribeNewsletter;
 using _116.Mailer.Application.Newsletter.UseCases.Public.Commands.UnsubscribeNewsletter;
+using _116.Mailer.Application.Newsletter.UseCases.Public.Queries.GetNewsletterConfirmPage;
+using _116.Mailer.Application.Newsletter.UseCases.Public.Queries.GetNewsletterUnsubscribePage;
 using _116.Shared.Application.Metadata;
 using AwesomeAssertions;
 using Xunit;
@@ -44,6 +46,32 @@ public class NewsletterPublicMetaFieldTests
 
         metadata.Should().NotBeNull();
         metadata.Name.Should().Be("PublicUnsubscribeNewsletter");
+        metadata.Summary.Should().NotBeNullOrWhiteSpace();
+        metadata.Description.Should().NotBeNullOrWhiteSpace();
+    }
+
+    #endregion
+
+    #region Query MetaFields
+
+    [Fact]
+    public void PublicGetNewsletterConfirmPageMetaField_ShouldBeInitialized()
+    {
+        RouteMetadata metadata = PublicGetNewsletterConfirmPageMetaField.GetNewsletterConfirmPage;
+
+        metadata.Should().NotBeNull();
+        metadata.Name.Should().Be("PublicGetNewsletterConfirmPage");
+        metadata.Summary.Should().NotBeNullOrWhiteSpace();
+        metadata.Description.Should().NotBeNullOrWhiteSpace();
+    }
+
+    [Fact]
+    public void PublicGetNewsletterUnsubscribePageMetaField_ShouldBeInitialized()
+    {
+        RouteMetadata metadata = PublicGetNewsletterUnsubscribePageMetaField.GetNewsletterUnsubscribePage;
+
+        metadata.Should().NotBeNull();
+        metadata.Name.Should().Be("PublicGetNewsletterUnsubscribePage");
         metadata.Summary.Should().NotBeNullOrWhiteSpace();
         metadata.Description.Should().NotBeNullOrWhiteSpace();
     }

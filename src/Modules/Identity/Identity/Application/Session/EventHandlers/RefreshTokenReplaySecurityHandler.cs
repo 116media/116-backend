@@ -1,13 +1,11 @@
 using _116.Identity.Application.Session.Repositories;
+using _116.Identity.Application.Shared.OutboundEmails;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Contracts.Application.DTOs;
 using _116.Identity.Contracts.Application.Services;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.Events;
-using _116.Mailer.Contracts.Application.DTOs;
-using _116.Mailer.Contracts.Application.Services;
-using _116.Mailer.Contracts.Domain.Enums;
-using _116.Shared.Application.Localization;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 using _116.Shared.Application.Services;
 using Microsoft.Extensions.Logging;
 
@@ -21,13 +19,13 @@ namespace _116.Identity.Application.Session.EventHandlers;
 /// <param name="sessionRepository">Repository revoking the user's sessions.</param>
 /// <param name="unitOfWork">Unit of Work committing the revocation.</param>
 /// <param name="userLookupService">Lookup resolving the recipient's name and address by id.</param>
-/// <param name="emailService">Outbox mailer sending the security alert.</param>
+/// <param name="messageDispatcher">Dispatcher routing the security alert to its recipients.</param>
 /// <param name="logger">Logger recording skipped email deliveries.</param>
 public class RefreshTokenReplaySecurityHandler(
     ISessionRepository sessionRepository,
     IIdentityUnitOfWork unitOfWork,
     IUserLookupService userLookupService,
-    IEmailService emailService,
+    IEmailDispatcher messageDispatcher,
     ILogger<RefreshTokenReplaySecurityHandler> logger
 ) : IDomainEventHandler<RefreshTokenReplayDetectedEvent>
 {
@@ -56,16 +54,16 @@ public class RefreshTokenReplaySecurityHandler(
             return;
         }
 
-        await emailService.EnqueueAsync(
-            template: EnumEmailTemplate.RefreshTokenReplayAlert,
-            to: new EmailRecipientDto(Address: user.Email, DisplayName: user.UserName),
-            tokens: new Dictionary<string, string>
-            {
-                ["userName"] = user.UserName,
-                ["time"] = DateTime.UtcNow.ToString("u"),
-            },
-            culture: EmailCulture.Current(),
-            cancellationToken: cancellationToken
+        var message = new RefreshTokenReplayEmail(
+            User: new EmailRecipient(
+                UserId: domainEvent.UserId,
+                Address: user.Email,
+                DisplayName: user.UserName,
+                Locale: user.PreferredLocale
+            ),
+            DetectedAt: DateTimeOffset.UtcNow
         );
+
+        await messageDispatcher.DispatchAsync(message: message, cancellationToken: cancellationToken);
     }
 }

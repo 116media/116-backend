@@ -75,6 +75,7 @@ public class AdminUpdateProfileAuthFactoryTests
             countryIsoCode,
             countryDialCode,
             partialPhoneNumber,
+            null,
             CancellationToken.None
         );
 
@@ -103,7 +104,17 @@ public class AdminUpdateProfileAuthFactoryTests
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
-        await _factory.UpdateProfileAsync(userId, sessionId, null, null, null, null, null, CancellationToken.None);
+        await _factory.UpdateProfileAsync(
+            userId,
+            sessionId,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            CancellationToken.None
+        );
 
         // Assert
         _authRepositoryMock.Verify(x => x.IsUserAccountActive(user), Times.Once);
@@ -130,7 +141,17 @@ public class AdminUpdateProfileAuthFactoryTests
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
-        await _factory.UpdateProfileAsync(userId, sessionId, null, null, null, null, null, CancellationToken.None);
+        await _factory.UpdateProfileAsync(
+            userId,
+            sessionId,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            CancellationToken.None
+        );
 
         // Assert
         _authRepositoryMock.Verify(x => x.IsSessionValidAsync(sessionId, It.IsAny<CancellationToken>()), Times.Once);
@@ -171,6 +192,7 @@ public class AdminUpdateProfileAuthFactoryTests
             null,
             null,
             null,
+            null,
             CancellationToken.None
         );
 
@@ -204,7 +226,17 @@ public class AdminUpdateProfileAuthFactoryTests
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
-        await _factory.UpdateProfileAsync(userId, sessionId, userName, null, null, null, null, CancellationToken.None);
+        await _factory.UpdateProfileAsync(
+            userId,
+            sessionId,
+            userName,
+            null,
+            null,
+            null,
+            null,
+            null,
+            CancellationToken.None
+        );
 
         // Assert
         _authRepositoryMock.Verify(
@@ -250,6 +282,7 @@ public class AdminUpdateProfileAuthFactoryTests
             "RW",
             countryDialCode,
             partialPhoneNumber,
+            null,
             CancellationToken.None
         );
 
@@ -297,6 +330,7 @@ public class AdminUpdateProfileAuthFactoryTests
             "RW",
             countryDialCode,
             partialPhoneNumber,
+            null,
             CancellationToken.None
         );
 
@@ -328,7 +362,17 @@ public class AdminUpdateProfileAuthFactoryTests
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
-        await _factory.UpdateProfileAsync(userId, sessionId, null, null, null, null, null, CancellationToken.None);
+        await _factory.UpdateProfileAsync(
+            userId,
+            sessionId,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            CancellationToken.None
+        );
 
         // Assert
         _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
@@ -354,7 +398,7 @@ public class AdminUpdateProfileAuthFactoryTests
         _unitOfWorkMock.Setup(x => x.CommitAsync(cancellationToken)).ReturnsAsync(1);
 
         // Act
-        await _factory.UpdateProfileAsync(userId, sessionId, null, null, null, null, null, cancellationToken);
+        await _factory.UpdateProfileAsync(userId, sessionId, null, null, null, null, null, null, cancellationToken);
 
         // Assert
         _authRepositoryMock.Verify(

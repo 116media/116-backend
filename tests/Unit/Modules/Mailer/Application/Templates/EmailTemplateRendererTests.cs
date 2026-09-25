@@ -1,3 +1,7 @@
+using System.Reflection;
+using _116.Content.Application.Shared.OutboundEmails;
+using _116.Identity.Application.Shared.OutboundEmails;
+using _116.Mailer.Application.Newsletter.OutboundEmails;
 using _116.Mailer.Application.Shared.Services;
 using _116.Mailer.Application.Templates;
 using _116.Mailer.Application.Templates.Messages;
@@ -65,11 +69,11 @@ public class EmailTemplateRendererTests
         LocalizerFactory.CreateMessage<EmailTemplateMessage>()
     );
 
-    public static TheoryData<EnumEmailTemplate, string> AllTemplateCultures()
+    public static TheoryData<string, string> AllTemplateCultures()
     {
-        var data = new TheoryData<EnumEmailTemplate, string>();
+        var data = new TheoryData<string, string>();
 
-        foreach (EnumEmailTemplate template in Enum.GetValues<EnumEmailTemplate>())
+        foreach (string template in AllTemplateNames())
         {
             data.Add(template, "en");
             data.Add(template, "fr");
@@ -80,7 +84,7 @@ public class EmailTemplateRendererTests
 
     [Theory]
     [MemberData(nameof(AllTemplateCultures))]
-    public void Render_EveryTemplateInEveryCulture_ShouldLeaveNoPlaceholder(EnumEmailTemplate template, string culture)
+    public void Render_EveryTemplateInEveryCulture_ShouldLeaveNoPlaceholder(string template, string culture)
     {
         RenderedEmail rendered = Renderer.Render(template, AllTokens, culture);
 
@@ -92,7 +96,7 @@ public class EmailTemplateRendererTests
     [Fact]
     public void Render_ShouldWrapTheHtmlBodyInTheSharedLayout()
     {
-        RenderedEmail rendered = Renderer.Render(EnumEmailTemplate.Welcome, AllTokens, "en");
+        RenderedEmail rendered = Renderer.Render(IdentityEmailTemplates.Welcome, AllTokens, "en");
 
         rendered.HtmlBody.Should().Contain("max-width:560px");
     }
@@ -102,9 +106,9 @@ public class EmailTemplateRendererTests
     {
         var incomplete = new Dictionary<string, string> { ["userName"] = "Fally" };
 
-        Action act = () => Renderer.Render(EnumEmailTemplate.EmailVerificationOtp, incomplete, "en");
+        Action act = () => Renderer.Render(IdentityEmailTemplates.EmailVerificationOtp, incomplete, "en");
 
-        act.Should().Throw<InvalidOperationException>().WithMessage("*unresolved placeholder*");
+        act.Should().Throw<InvalidOperationException>().WithMessage("*with no token*");
     }
 
     [Fact]
@@ -112,7 +116,7 @@ public class EmailTemplateRendererTests
     {
         var tokens = new Dictionary<string, string>(AllTokens) { ["userName"] = "<script>alert(1)</script>" };
 
-        RenderedEmail rendered = Renderer.Render(EnumEmailTemplate.Welcome, tokens, "en");
+        RenderedEmail rendered = Renderer.Render(IdentityEmailTemplates.Welcome, tokens, "en");
 
         rendered.HtmlBody.Should().NotContain("<script>").And.Contain("&lt;script&gt;");
         rendered.TextBody.Should().Contain("<script>alert(1)</script>");
@@ -121,8 +125,8 @@ public class EmailTemplateRendererTests
     [Fact]
     public void Render_UnknownCulture_ShouldFallBackToNeutral()
     {
-        RenderedEmail neutral = Renderer.Render(EnumEmailTemplate.Welcome, AllTokens, "xx");
-        RenderedEmail english = Renderer.Render(EnumEmailTemplate.Welcome, AllTokens, "en");
+        RenderedEmail neutral = Renderer.Render(IdentityEmailTemplates.Welcome, AllTokens, "xx");
+        RenderedEmail english = Renderer.Render(IdentityEmailTemplates.Welcome, AllTokens, "en");
 
         neutral.Subject.Should().Be(english.Subject);
     }
@@ -130,8 +134,8 @@ public class EmailTemplateRendererTests
     [Fact]
     public void Render_WithAMalformedCultureName_ShouldFallBackToNeutral()
     {
-        RenderedEmail neutral = Renderer.Render(EnumEmailTemplate.Welcome, AllTokens, "!! not a culture !!");
-        RenderedEmail english = Renderer.Render(EnumEmailTemplate.Welcome, AllTokens, "en");
+        RenderedEmail neutral = Renderer.Render(IdentityEmailTemplates.Welcome, AllTokens, "!! not a culture !!");
+        RenderedEmail english = Renderer.Render(IdentityEmailTemplates.Welcome, AllTokens, "en");
 
         neutral.Subject.Should().Be(english.Subject);
         neutral.TextBody.Should().Be(english.TextBody);
@@ -140,9 +144,53 @@ public class EmailTemplateRendererTests
     [Fact]
     public void Render_French_ShouldDifferFromEnglish()
     {
-        RenderedEmail french = Renderer.Render(EnumEmailTemplate.Welcome, AllTokens, "fr");
-        RenderedEmail english = Renderer.Render(EnumEmailTemplate.Welcome, AllTokens, "en");
+        RenderedEmail french = Renderer.Render(IdentityEmailTemplates.Welcome, AllTokens, "fr");
+        RenderedEmail english = Renderer.Render(IdentityEmailTemplates.Welcome, AllTokens, "en");
 
         french.Subject.Should().NotBe(english.Subject);
+    }
+
+    [Fact]
+    public void Render_WhenATokenValueContainsPlaceholderSyntax_ShouldSendItLiterally()
+    {
+        // A user typing "{{name}}" must not be mistaken for an unresolved template placeholder.
+        Dictionary<string, string> tokens = new(AllTokens) { ["userName"] = "Fally {{notAToken}} Ipupa" };
+
+        RenderedEmail rendered = Renderer.Render(IdentityEmailTemplates.Welcome, tokens, "en");
+
+        rendered.HtmlBody.Should().Contain("notAToken");
+    }
+
+    [Fact]
+    public void Render_WhenATemplatePlaceholderHasNoToken_ShouldStillThrow()
+    {
+        Dictionary<string, string> tokens = new(AllTokens);
+        tokens.Remove("userName");
+
+        Action act = () => Renderer.Render(IdentityEmailTemplates.Welcome, tokens, "en");
+
+        act.Should().Throw<InvalidOperationException>().WithMessage("*userName*");
+    }
+
+    /// <summary>
+    /// Every template name the modules ship, read off their own constants so a new template is
+    /// covered here the moment it is declared.
+    /// </summary>
+    /// <returns>The declared template names.</returns>
+    private static IEnumerable<string> AllTemplateNames()
+    {
+        Type[] catalogues =
+        [
+            typeof(ContentEmailTemplates),
+            typeof(IdentityEmailTemplates),
+            typeof(NewsletterEmailTemplates),
+        ];
+
+        return catalogues.SelectMany(catalogue =>
+            catalogue
+                .GetFields(BindingFlags.Public | BindingFlags.Static)
+                .Where(field => field.IsLiteral && field.FieldType == typeof(string))
+                .Select(field => (string)field.GetRawConstantValue()!)
+        );
     }
 }

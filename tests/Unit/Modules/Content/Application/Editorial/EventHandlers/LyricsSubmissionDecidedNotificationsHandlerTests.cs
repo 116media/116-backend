@@ -1,11 +1,13 @@
+using _116.BuildingBlocks.Constants;
 using _116.Content.Application.Editorial.EventHandlers;
+using _116.Content.Application.Shared.OutboundEmails;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Domain.Events;
 using _116.Identity.Contracts.Application.DTOs;
 using _116.Identity.Contracts.Application.Services;
-using _116.Mailer.Contracts.Application.DTOs;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 using _116.Mailer.Contracts.Application.Services;
 using _116.Mailer.Contracts.Domain.Enums;
 using _116.Tests.Fixtures.Factories.Content;
@@ -24,7 +26,7 @@ public class LyricsSubmissionDecidedNotificationsHandlerTests
     private readonly Mock<IUserLookupService> _userLookupServiceMock = new();
     private readonly Mock<ILyricsSubmissionRepository> _submissionRepositoryMock;
     private readonly Mock<ILyricsRepository> _lyricsRepositoryMock;
-    private readonly Mock<IEmailService> _mailerMock = new();
+    private readonly Mock<IEmailDispatcher> _dispatcherMock = new();
     private readonly Mock<INotificationService> _notifierMock = new();
     private readonly LyricsSubmissionDecidedNotificationsHandler _handler;
     private readonly LyricsSubmissionEntity _submission;
@@ -43,7 +45,7 @@ public class LyricsSubmissionDecidedNotificationsHandlerTests
             _userLookupServiceMock.Object,
             _submissionRepositoryMock.Object,
             _lyricsRepositoryMock.Object,
-            _mailerMock.Object,
+            _dispatcherMock.Object,
             _notifierMock.Object,
             NullLogger<LyricsSubmissionDecidedNotificationsHandler>.Instance
         );
@@ -69,18 +71,17 @@ public class LyricsSubmissionDecidedNotificationsHandlerTests
         );
 
         // Assert
-        _mailerMock.Verify(
+        _dispatcherMock.Verify(
             x =>
-                x.EnqueueAsync(
-                    EnumEmailTemplate.SubmissionDecided,
-                    It.Is<EmailRecipientDto>(r => r.Address == "submitter@test.com"),
-                    It.Is<IReadOnlyDictionary<string, string>>(t =>
-                        t["userName"] == "Fally"
-                        && t["songTitle"] == _submission.SongTitle
-                        && t["outcome"] == "rejected"
-                        && t["reviewNote"] == "Duplicate of an existing song."
+                x.DispatchAsync(
+                    It.Is<OutboundEmail>(m =>
+                        m.TemplateName == ContentEmailTemplates.SubmissionDecided
+                        && m.Recipients[0].Address == "submitter@test.com"
+                        && m.Tokens["userName"] == "Fally"
+                        && m.Tokens["songTitle"] == _submission.SongTitle
+                        && m.Tokens["outcome"] == "rejected"
+                        && m.Tokens["reviewNote"] == "Duplicate of an existing song."
                     ),
-                    It.IsAny<string>(),
                     It.IsAny<CancellationToken>()
                 ),
             Times.Once
@@ -120,7 +121,6 @@ public class LyricsSubmissionDecidedNotificationsHandlerTests
                         && t["outcome"] == "approved"
                         && t["linkPath"] == $"/lyrics/{lyrics.Slug}"
                     ),
-                    It.IsAny<string>(),
                     It.IsAny<CancellationToken>()
                 ),
             Times.Once
@@ -155,7 +155,6 @@ public class LyricsSubmissionDecidedNotificationsHandlerTests
                     It.Is<IReadOnlyDictionary<string, string>>(t =>
                         t["outcome"] == "returned for revision" && !t.ContainsKey("linkPath")
                     ),
-                    It.IsAny<string>(),
                     It.IsAny<CancellationToken>()
                 ),
             Times.Once
@@ -182,14 +181,13 @@ public class LyricsSubmissionDecidedNotificationsHandlerTests
         );
 
         // Assert
-        _mailerMock.VerifyNoOtherCalls();
+        _dispatcherMock.VerifyNoOtherCalls();
         _notifierMock.Verify(
             x =>
                 x.NotifyAsync(
                     submitterId,
                     EnumNotificationType.SubmissionDecided,
                     It.IsAny<IReadOnlyDictionary<string, string>>(),
-                    It.IsAny<string>(),
                     It.IsAny<CancellationToken>()
                 ),
             Times.Once
@@ -212,7 +210,7 @@ public class LyricsSubmissionDecidedNotificationsHandlerTests
         );
 
         // Assert
-        _mailerMock.VerifyNoOtherCalls();
+        _dispatcherMock.VerifyNoOtherCalls();
         _notifierMock.VerifyNoOtherCalls();
     }
 
@@ -236,7 +234,7 @@ public class LyricsSubmissionDecidedNotificationsHandlerTests
         );
 
         // Assert
-        _mailerMock.VerifyNoOtherCalls();
+        _dispatcherMock.VerifyNoOtherCalls();
         _notifierMock.VerifyNoOtherCalls();
     }
 
@@ -244,6 +242,6 @@ public class LyricsSubmissionDecidedNotificationsHandlerTests
     {
         _userLookupServiceMock
             .Setup(x => x.GetAuthorInfoByIdAsync(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new AuthorDto("Fally", email, null, "Visitor"));
+            .ReturnsAsync(new AuthorDto("Fally", email, null, "Visitor", UserConstants.DefaultLocale));
     }
 }

@@ -23,23 +23,27 @@ public partial class EmailTemplateRenderer(EmailTemplateMessage messages) : IEma
     private const string ContentToken = "content";
 
     /// <inheritdoc />
-    public RenderedEmail Render(EnumEmailTemplate template, IReadOnlyDictionary<string, string> tokens, string culture)
+    public RenderedEmail Render(string template, IReadOnlyDictionary<string, string> tokens, string locale)
     {
         CultureInfo previous = CultureInfo.CurrentUICulture;
 
         try
         {
-            CultureInfo.CurrentUICulture = ResolveCulture(culture);
+            CultureInfo.CurrentUICulture = ResolveCulture(locale);
 
-            string name = template.ToString();
-            string subject = Substitute(messages.Subject(name), tokens, htmlEncode: false);
-            string body = Substitute(messages.Html(name), tokens, htmlEncode: true);
+            string name = template;
+            string subjectTemplate = messages.Subject(name);
+            string htmlTemplate = messages.Html(name);
+            string textTemplate = messages.Text(name);
+
+            EnsureEveryPlaceholderHasAToken(template, subjectTemplate, tokens);
+            EnsureEveryPlaceholderHasAToken(template, htmlTemplate, tokens);
+            EnsureEveryPlaceholderHasAToken(template, textTemplate, tokens);
+
+            string subject = Substitute(subjectTemplate, tokens, htmlEncode: false);
+            string body = Substitute(htmlTemplate, tokens, htmlEncode: true);
             string htmlBody = messages.LayoutHtml().Replace($"{{{{{ContentToken}}}}}", body);
-            string textBody = Substitute(messages.Text(name), tokens, htmlEncode: false);
-
-            EnsureFullyResolved(template, subject);
-            EnsureFullyResolved(template, htmlBody);
-            EnsureFullyResolved(template, textBody);
+            string textBody = Substitute(textTemplate, tokens, htmlEncode: false);
 
             return new RenderedEmail(subject, htmlBody, textBody);
         }
@@ -66,18 +70,26 @@ public partial class EmailTemplateRenderer(EmailTemplateMessage messages) : IEma
     }
 
     /// <summary>
-    /// Throws when any <c>{{placeholder}}</c> survived substitution — a missing
-    /// token or a resource typo, both programming errors.
+    /// Throws when the template declares a <c>{{placeholder}}</c> no token supplies. Checked
+    /// against the template before substitution, so token values containing <c>{{text}}</c>
+    /// are delivered literally rather than mistaken for an unresolved placeholder.
     /// </summary>
-    private static void EnsureFullyResolved(EnumEmailTemplate template, string rendered)
+    private static void EnsureEveryPlaceholderHasAToken(
+        string template,
+        string source,
+        IReadOnlyDictionary<string, string> tokens
+    )
     {
-        Match leftover = PlaceholderRegex().Match(rendered);
-
-        if (leftover.Success)
+        foreach (Match placeholder in PlaceholderRegex().Matches(source))
         {
-            throw new InvalidOperationException(
-                $"Template '{template}' rendered with unresolved placeholder '{leftover.Value}'."
-            );
+            string name = placeholder.Value[2..^2];
+
+            if (name != ContentToken && !tokens.ContainsKey(name))
+            {
+                throw new InvalidOperationException(
+                    $"Template '{template}' declares placeholder '{placeholder.Value}' with no token."
+                );
+            }
         }
     }
 

@@ -1,5 +1,6 @@
 using _116.BuildingBlocks.Constants.Authorization.Policies;
 using _116.BuildingBlocks.Constants.RateLimit;
+using _116.Mailer.Application.Newsletter.Constants;
 using _116.Mailer.Application.Shared.DTOs;
 using _116.Mailer.Domain.Constants;
 using _116.Mailer.Domain.Enums;
@@ -37,7 +38,7 @@ public class AdminGetNewsletterSubscribersEndpointV1 : ICarterModule
 
         group
             .MapGet(
-                pattern: "subscribers",
+                pattern: NewsletterRouteConstants.Subscribers,
                 async (
                     IDispatcher dispatcher,
                     CancellationToken cancellationToken,

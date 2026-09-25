@@ -1,13 +1,13 @@
+using _116.Content.Application.Editorial.OutboundEmails;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Domain.Events;
 using _116.Identity.Contracts.Application.DTOs;
 using _116.Identity.Contracts.Application.Services;
-using _116.Mailer.Contracts.Application.DTOs;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 using _116.Mailer.Contracts.Application.Services;
 using _116.Mailer.Contracts.Domain.Enums;
-using _116.Shared.Application.Localization;
 using _116.Shared.Application.Services;
 using Microsoft.Extensions.Logging;
 
@@ -32,7 +32,7 @@ public class LyricsSubmissionDecidedNotificationsHandler(
     IUserLookupService userLookupService,
     ILyricsSubmissionRepository submissionRepository,
     ILyricsRepository lyricsRepository,
-    IEmailService emailService,
+    IEmailDispatcher messageDispatcher,
     INotificationService notificationService,
     ILogger<LyricsSubmissionDecidedNotificationsHandler> logger
 ) : IDomainEventHandler<LyricsSubmissionDecidedEvent>
@@ -68,24 +68,23 @@ public class LyricsSubmissionDecidedNotificationsHandler(
             return;
         }
 
-        string culture = EmailCulture.Current();
         string outcome = OutcomeWord(domainEvent.Outcome);
 
         if (submitter.Email is not null)
         {
-            await emailService.EnqueueAsync(
-                template: EnumEmailTemplate.SubmissionDecided,
-                to: new EmailRecipientDto(Address: submitter.Email, DisplayName: submitter.UserName),
-                tokens: new Dictionary<string, string>
-                {
-                    ["userName"] = submitter.UserName,
-                    ["songTitle"] = submission.SongTitle,
-                    ["outcome"] = outcome,
-                    ["reviewNote"] = domainEvent.ReviewNote ?? string.Empty,
-                },
-                culture: culture,
-                cancellationToken: cancellationToken
+            var message = new SubmissionDecidedEmail(
+                Submitter: new EmailRecipient(
+                    UserId: domainEvent.SubmittedByUserId,
+                    Address: submitter.Email,
+                    DisplayName: submitter.UserName,
+                    Locale: submitter.PreferredLocale
+                ),
+                SongTitle: submission.SongTitle,
+                Outcome: outcome,
+                ReviewNote: domainEvent.ReviewNote ?? string.Empty
             );
+
+            await messageDispatcher.DispatchAsync(message: message, cancellationToken: cancellationToken);
         }
         else
         {
@@ -118,7 +117,6 @@ public class LyricsSubmissionDecidedNotificationsHandler(
             userId: domainEvent.SubmittedByUserId,
             type: EnumNotificationType.SubmissionDecided,
             tokens: notificationTokens,
-            culture: culture,
             cancellationToken: cancellationToken
         );
     }

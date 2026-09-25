@@ -37,7 +37,8 @@ public class UserLookupService(IdentityDbContext context) : IUserLookupService
             user.UserName,
             user.Email?.Value,
             user.AvatarFileId,
-            user.UserRoles.Select(ur => ur.Role.Name).FirstOrDefault()
+            user.UserRoles.Select(ur => ur.Role.Name).FirstOrDefault(),
+            user.PreferredLocale
         );
     }
 
@@ -66,7 +67,8 @@ public class UserLookupService(IdentityDbContext context) : IUserLookupService
                 user.UserName,
                 user.Email?.Value,
                 user.AvatarFileId,
-                user.UserRoles.Select(ur => ur.Role.Name).FirstOrDefault()
+                user.UserRoles.Select(ur => ur.Role.Name).FirstOrDefault(),
+                user.PreferredLocale
             )
         );
     }

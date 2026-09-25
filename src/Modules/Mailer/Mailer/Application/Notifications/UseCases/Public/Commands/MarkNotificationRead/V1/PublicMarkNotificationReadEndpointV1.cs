@@ -2,6 +2,7 @@ using System.Security.Claims;
 using _116.BuildingBlocks.Constants.Authorization.Policies;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Contracts.Application.Services;
+using _116.Mailer.Application.Notifications.Constants;
 using _116.Mailer.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
@@ -36,7 +37,7 @@ public class PublicMarkNotificationReadEndpointV1 : ICarterModule
 
         group
             .MapPatch(
-                pattern: "{id:guid}/read",
+                pattern: NotificationRouteConstants.Read,
                 async (
                     Guid id,
                     ClaimsPrincipal user,

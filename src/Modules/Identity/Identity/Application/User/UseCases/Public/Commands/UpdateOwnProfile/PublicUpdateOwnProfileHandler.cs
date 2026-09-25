@@ -44,6 +44,7 @@ public class PublicUpdateOwnProfileHandler(
             countryIsoCode: command.CountryIsoCode,
             countryDialCode: command.CountryDialCode,
             partialPhoneNumber: command.PartialPhoneNumber,
+            preferredLocale: command.PreferredLocale,
             cancellationToken: cancellationToken
         );
 

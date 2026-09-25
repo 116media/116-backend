@@ -51,7 +51,7 @@ public class LocalizationExtensionTests
     }
 
     [Fact]
-    public void AddAppLocalization_ShouldConfigureDefaultCultureToFrench()
+    public void AddAppLocalization_ShouldDefaultToThePlatformLanguage()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -66,7 +66,7 @@ public class LocalizationExtensionTests
     }
 
     [Fact]
-    public void AddAppLocalization_ShouldConfigureDefaultUICultureToFrench()
+    public void AddAppLocalization_ShouldDefaultTheUICultureToThePlatformLanguage()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -156,11 +156,11 @@ public class LocalizationExtensionTests
         var options = provider.GetRequiredService<IOptions<RequestLocalizationOptions>>();
 
         // Assert
-        options.Value.RequestCultureProviders.Should().ContainSingle();
+        options.Value.RequestCultureProviders.Should().HaveCount(3);
     }
 
     [Fact]
-    public void AddAppLocalization_ShouldUseAcceptLanguageHeaderProvider()
+    public void AddAppLocalization_ShouldOfferQueryThenCookieThenHeader()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -171,7 +171,14 @@ public class LocalizationExtensionTests
         var options = provider.GetRequiredService<IOptions<RequestLocalizationOptions>>();
 
         // Assert
-        options.Value.RequestCultureProviders.First().Should().BeOfType<AcceptLanguageHeaderRequestCultureProvider>();
+        options
+            .Value.RequestCultureProviders.Select(provider => provider.GetType())
+            .Should()
+            .Equal(
+                typeof(QueryStringRequestCultureProvider),
+                typeof(CookieRequestCultureProvider),
+                typeof(AcceptLanguageHeaderRequestCultureProvider)
+            );
     }
 
     [Fact]

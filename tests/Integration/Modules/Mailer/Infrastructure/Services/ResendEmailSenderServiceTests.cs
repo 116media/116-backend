@@ -1,4 +1,5 @@
 using System.Text;
+using _116.BuildingBlocks.Constants;
 using _116.Mailer.Application.Shared.Exceptions;
 using _116.Mailer.Application.Shared.Services;
 using _116.Mailer.Contracts.Application.DTOs;
@@ -117,7 +118,7 @@ public class ResendEmailSenderServiceTests : IDisposable
     private static EmailMessage Message()
     {
         return new EmailMessage(
-            To: new EmailRecipientDto("fan@example.com", "Fan"),
+            To: new EmailRecipientDto("fan@example.com", UserConstants.DefaultLocale, "Fan"),
             Subject: "Wire subject",
             HtmlBody: "<p>Hi</p>",
             TextBody: "Hi"

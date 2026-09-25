@@ -472,6 +472,14 @@ namespace _116.Identity.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("password_hash");
 
+                    b.Property<string>("PreferredLocale")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(5)
+                        .HasColumnType("character varying(5)")
+                        .HasDefaultValue("fr")
+                        .HasColumnName("preferred_locale");
+
                     b.Property<string>("ProviderSubjectId")
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)")

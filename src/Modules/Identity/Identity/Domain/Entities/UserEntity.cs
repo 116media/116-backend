@@ -100,6 +100,12 @@ public class UserEntity : Aggregate<Guid>
     /// <summary>
     /// Roles assigned to this user.
     /// </summary>
+    /// <summary>
+    /// The two-letter locale this user's mail and notifications render in, independent of the
+    /// culture of whoever triggered them.
+    /// </summary>
+    public string PreferredLocale { get; private set; } = UserConstants.DefaultLocale;
+
     public ICollection<UserRoleEntity> UserRoles { get; } = new List<UserRoleEntity>();
 
     /// <summary>
@@ -461,5 +467,22 @@ public class UserEntity : Aggregate<Guid>
     public bool HasRole(Guid roleId)
     {
         return UserRoles.Any(ur => ur.RoleId == roleId);
+    }
+
+    /// <summary>
+    /// Sets the locale this user's messages render in. No-ops when unchanged.
+    /// </summary>
+    /// <param name="locale">The two-letter locale code.</param>
+    /// <returns>True when the stored locale changed.</returns>
+    public bool SetPreferredLocale(string locale)
+    {
+        if (string.IsNullOrWhiteSpace(locale) || PreferredLocale == locale)
+        {
+            return false;
+        }
+
+        PreferredLocale = locale;
+
+        return true;
     }
 }

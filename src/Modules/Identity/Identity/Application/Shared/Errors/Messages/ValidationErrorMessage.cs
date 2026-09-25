@@ -494,4 +494,12 @@ public class ValidationErrorMessage(IStringLocalizer<ValidationErrorMessage> loc
     /// </summary>
     /// <param name="platform">The rejected platform value.</param>
     public string ClientPlatformInvalid(string platform) => string.Format(localizer["ClientPlatformInvalid"], platform);
+
+    /// <summary>
+    /// Message shown when the preferred locale is not one the platform ships copy for.
+    /// </summary>
+    /// <param name="supported">The comma-separated locales accepted.</param>
+    /// <returns>The localized message.</returns>
+    public string PreferredLocaleUnsupported(string supported) =>
+        string.Format(localizer["PreferredLocaleUnsupported"], supported);
 }

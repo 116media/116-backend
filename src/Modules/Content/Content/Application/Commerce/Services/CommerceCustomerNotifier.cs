@@ -1,32 +1,47 @@
+using _116.BuildingBlocks.Constants;
+using _116.Content.Application.Commerce.OutboundEmails;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
-using _116.Mailer.Contracts.Application.DTOs;
-using _116.Mailer.Contracts.Application.Services;
-using _116.Mailer.Contracts.Domain.Enums;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 
 namespace _116.Content.Application.Commerce.Services;
 
 /// <summary>
 /// Default <see cref="ICommerceCustomerNotifier" /> implementation over the
-/// outbox mailer. Customer emails render in the neutral culture: B2B customer
+/// message dispatcher. Customer emails render in the neutral culture: B2B customer
 /// records carry no language preference, and guessing from the admin's request
 /// culture would localize by the wrong person.
 /// </summary>
-/// <param name="emailService">The outbox mailer.</param>
+/// <param name="messageDispatcher">Dispatcher routing each message to its recipients.</param>
 /// <param name="customerRepository">Repository resolving customers by id.</param>
 /// <param name="categoryRepository">Repository resolving the item categories named in the invoice.</param>
 public class CommerceCustomerNotifier(
-    IEmailService emailService,
+    IEmailDispatcher messageDispatcher,
     ICustomerRepository customerRepository,
     ICategoryRepository categoryRepository
 ) : ICommerceCustomerNotifier
 {
     /// <summary>
-    /// The culture customer emails render in; neutral resources are the
-    /// English source of truth.
+    /// The locale customer emails render in. B2B customer records carry no language
+    /// preference, so they take the platform default rather than the acting admin's culture.
     /// </summary>
-    private const string CustomerCulture = "en";
+    private const string CustomerCulture = UserConstants.DefaultLocale;
+
+    /// <summary>
+    /// Resolves a customer row to the recipient the message renders for.
+    /// </summary>
+    /// <param name="customer">The customer receiving the message.</param>
+    /// <returns>The recipient, always in the platform default locale.</returns>
+    private static EmailRecipient RecipientFor(CustomerEntity customer)
+    {
+        return new EmailRecipient(
+            UserId: null,
+            Address: customer.Email,
+            DisplayName: customer.FullName,
+            Locale: CustomerCulture
+        );
+    }
 
     /// <inheritdoc />
     public async Task NotifyOrderInvoiceAsync(ContentOrderEntity order, CancellationToken cancellationToken)
@@ -43,20 +58,15 @@ public class CommerceCustomerNotifier(
             cancellationToken: cancellationToken
         );
 
-        await emailService.EnqueueAsync(
-            template: EnumEmailTemplate.OrderInvoice,
-            to: new EmailRecipientDto(Address: customer.Email, DisplayName: customer.FullName),
-            tokens: new Dictionary<string, string>
-            {
-                ["customerName"] = customer.FullName,
-                ["orderReference"] = OrderReference(order.Id),
-                ["amountUsd"] = FormatAmount(order.TotalAmountUsd),
-                ["paymentMethods"] = PaymentMethods(),
-                ["itemSummary"] = ItemSummary(order, categories),
-            },
-            culture: CustomerCulture,
-            cancellationToken: cancellationToken
+        var message = new OrderInvoiceEmail(
+            Customer: RecipientFor(customer),
+            OrderReference: OrderReference(order.Id),
+            AmountUsd: FormatAmount(order.TotalAmountUsd),
+            PaymentMethods: PaymentMethods(),
+            ItemSummary: ItemSummary(order, categories)
         );
+
+        await messageDispatcher.DispatchAsync(message: message, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
@@ -73,20 +83,15 @@ public class CommerceCustomerNotifier(
             return;
         }
 
-        await emailService.EnqueueAsync(
-            template: EnumEmailTemplate.PaymentReceipt,
-            to: new EmailRecipientDto(Address: customer.Email, DisplayName: customer.FullName),
-            tokens: new Dictionary<string, string>
-            {
-                ["customerName"] = customer.FullName,
-                ["orderReference"] = OrderReference(order.Id),
-                ["amountUsd"] = FormatAmount(payment.AmountUsd),
-                ["receiptUrl"] = payment.ReceiptUrl ?? string.Empty,
-                ["paidAt"] = DateTime.UtcNow.ToString("u"),
-            },
-            culture: CustomerCulture,
-            cancellationToken: cancellationToken
+        var message = new PaymentReceiptEmail(
+            Customer: RecipientFor(customer),
+            OrderReference: OrderReference(order.Id),
+            AmountUsd: FormatAmount(payment.AmountUsd),
+            ReceiptUrl: payment.ReceiptUrl ?? string.Empty,
+            PaidAt: DateTimeOffset.UtcNow
         );
+
+        await messageDispatcher.DispatchAsync(message: message, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
@@ -103,18 +108,13 @@ public class CommerceCustomerNotifier(
             return;
         }
 
-        await emailService.EnqueueAsync(
-            template: EnumEmailTemplate.PaymentRejected,
-            to: new EmailRecipientDto(Address: customer.Email, DisplayName: customer.FullName),
-            tokens: new Dictionary<string, string>
-            {
-                ["customerName"] = customer.FullName,
-                ["orderReference"] = OrderReference(order.Id),
-                ["notes"] = notes ?? string.Empty,
-            },
-            culture: CustomerCulture,
-            cancellationToken: cancellationToken
+        var message = new PaymentRejectedEmail(
+            Customer: RecipientFor(customer),
+            OrderReference: OrderReference(order.Id),
+            Notes: notes ?? string.Empty
         );
+
+        await messageDispatcher.DispatchAsync(message: message, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
@@ -130,17 +130,12 @@ public class CommerceCustomerNotifier(
             return;
         }
 
-        await emailService.EnqueueAsync(
-            template: EnumEmailTemplate.OrderCancelled,
-            to: new EmailRecipientDto(Address: customer.Email, DisplayName: customer.FullName),
-            tokens: new Dictionary<string, string>
-            {
-                ["customerName"] = customer.FullName,
-                ["orderReference"] = OrderReference(order.Id),
-            },
-            culture: CustomerCulture,
-            cancellationToken: cancellationToken
+        var message = new OrderCancelledEmail(
+            Customer: RecipientFor(customer),
+            OrderReference: OrderReference(order.Id)
         );
+
+        await messageDispatcher.DispatchAsync(message: message, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
@@ -158,19 +153,14 @@ public class CommerceCustomerNotifier(
             return;
         }
 
-        await emailService.EnqueueAsync(
-            template: EnumEmailTemplate.PromotionForceRemoved,
-            to: new EmailRecipientDto(Address: customer.Email, DisplayName: customer.FullName),
-            tokens: new Dictionary<string, string>
-            {
-                ["customerName"] = customer.FullName,
-                ["contentTitle"] = contentTitle,
-                ["reason"] = reason,
-                ["removedAt"] = DateTime.UtcNow.ToString("u"),
-            },
-            culture: CustomerCulture,
-            cancellationToken: cancellationToken
+        var message = new PromotionRemovedEmail(
+            Customer: RecipientFor(customer),
+            ContentTitle: contentTitle,
+            Reason: reason,
+            RemovedAt: DateTimeOffset.UtcNow
         );
+
+        await messageDispatcher.DispatchAsync(message: message, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
@@ -188,18 +178,13 @@ public class CommerceCustomerNotifier(
             return;
         }
 
-        await emailService.EnqueueAsync(
-            template: EnumEmailTemplate.CommissionedContentPublished,
-            to: new EmailRecipientDto(Address: customer.Email, DisplayName: customer.FullName),
-            tokens: new Dictionary<string, string>
-            {
-                ["customerName"] = customer.FullName,
-                ["contentTitle"] = contentTitle,
-                ["publicUrl"] = publicUrl,
-            },
-            culture: CustomerCulture,
-            cancellationToken: cancellationToken
+        var message = new CommissionedContentPublishedEmail(
+            Customer: RecipientFor(customer),
+            ContentTitle: contentTitle,
+            PublicUrl: publicUrl
         );
+
+        await messageDispatcher.DispatchAsync(message: message, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
@@ -217,18 +202,13 @@ public class CommerceCustomerNotifier(
             return;
         }
 
-        await emailService.EnqueueAsync(
-            template: EnumEmailTemplate.CommissionedContentRejected,
-            to: new EmailRecipientDto(Address: customer.Email, DisplayName: customer.FullName),
-            tokens: new Dictionary<string, string>
-            {
-                ["customerName"] = customer.FullName,
-                ["contentTitle"] = contentTitle,
-                ["reason"] = reason,
-            },
-            culture: CustomerCulture,
-            cancellationToken: cancellationToken
+        var message = new CommissionedContentRejectedEmail(
+            Customer: RecipientFor(customer),
+            ContentTitle: contentTitle,
+            Reason: reason
         );
+
+        await messageDispatcher.DispatchAsync(message: message, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
@@ -246,18 +226,13 @@ public class CommerceCustomerNotifier(
             return;
         }
 
-        await emailService.EnqueueAsync(
-            template: EnumEmailTemplate.ShootScheduled,
-            to: new EmailRecipientDto(Address: customer.Email, DisplayName: customer.FullName),
-            tokens: new Dictionary<string, string>
-            {
-                ["customerName"] = customer.FullName,
-                ["contentTitle"] = contentTitle,
-                ["shootDate"] = shootDate.ToString("u"),
-            },
-            culture: CustomerCulture,
-            cancellationToken: cancellationToken
+        var message = new ShootScheduledEmail(
+            Customer: RecipientFor(customer),
+            ContentTitle: contentTitle,
+            ShootDate: shootDate
         );
+
+        await messageDispatcher.DispatchAsync(message: message, cancellationToken: cancellationToken);
     }
 
     /// <summary>

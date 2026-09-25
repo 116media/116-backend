@@ -23,14 +23,13 @@ public class OutboxEmailService(
 {
     /// <inheritdoc />
     public async Task EnqueueAsync(
-        EnumEmailTemplate template,
+        string template,
         EmailRecipientDto to,
         IReadOnlyDictionary<string, string> tokens,
-        string culture,
         CancellationToken cancellationToken
     )
     {
-        RenderedEmail rendered = renderer.Render(template, tokens, culture);
+        RenderedEmail rendered = renderer.Render(template, tokens, to.Locale);
 
         OutboxEmailEntity email = OutboxEmailEntity.Enqueue(
             id: Guid.NewGuid(),

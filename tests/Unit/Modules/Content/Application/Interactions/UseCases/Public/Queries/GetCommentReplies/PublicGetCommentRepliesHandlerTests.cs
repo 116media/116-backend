@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants;
 using _116.Content.Application.Interactions.UseCases.Public.Queries.GetCommentReplies;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Repositories;
@@ -52,7 +53,12 @@ public class PublicGetCommentRepliesHandlerTests : BaseContentHandlerTest
             .Setup(x =>
                 x.GetAuthorInfosByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>())
             )
-            .ReturnsAsync(new Dictionary<Guid, AuthorDto> { [UserId] = new AuthorDto("jane", null, null, "Visitor") });
+            .ReturnsAsync(
+                new Dictionary<Guid, AuthorDto>
+                {
+                    [UserId] = new AuthorDto("jane", null, null, "Visitor", UserConstants.DefaultLocale),
+                }
+            );
 
     private static PublicGetCommentRepliesQuery Query(Guid? viewerUserId = null) =>
         new(ParentId, new PaginatedRequest(0, 10), viewerUserId);

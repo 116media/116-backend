@@ -1,8 +1,8 @@
+using _116.Mailer.Application.Newsletter.OutboundEmails;
 using _116.Mailer.Application.Newsletter.UseCases.Public.Commands.SubscribeNewsletter;
 using _116.Mailer.Application.Shared.Persistence;
 using _116.Mailer.Application.Shared.Repositories;
-using _116.Mailer.Contracts.Application.DTOs;
-using _116.Mailer.Contracts.Application.Services;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 using _116.Mailer.Contracts.Domain.Enums;
 using _116.Mailer.Domain.Entities;
 using AwesomeAssertions;
@@ -19,7 +19,7 @@ public class PublicSubscribeNewsletterHandlerTests
 {
     private readonly Mock<INewsletterRepository> _repository = new();
     private readonly Mock<IMailerUnitOfWork> _unitOfWork = new();
-    private readonly Mock<IEmailService> _mailer = new();
+    private readonly Mock<IEmailDispatcher> _mailer = new();
 
     private PublicSubscribeNewsletterHandler Handler => new(_repository.Object, _unitOfWork.Object, _mailer.Object);
 
@@ -38,12 +38,13 @@ public class PublicSubscribeNewsletterHandlerTests
         );
         _unitOfWork.Verify(u => u.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
         _mailer.Verify(
-            m =>
-                m.EnqueueAsync(
-                    EnumEmailTemplate.NewsletterConfirm,
-                    It.IsAny<EmailRecipientDto>(),
-                    It.Is<IReadOnlyDictionary<string, string>>(t => t.ContainsKey("confirmUrl")),
-                    It.IsAny<string>(),
+            d =>
+                d.DispatchAsync(
+                    It.Is<OutboundEmail>(msg =>
+                        msg.TemplateName == NewsletterEmailTemplates.NewsletterConfirm
+                        && msg.Class == EnumEmailClass.Transactional
+                        && msg.Tokens.ContainsKey("confirmUrl")
+                    ),
                     It.IsAny<CancellationToken>()
                 ),
             Times.Once
@@ -70,12 +71,9 @@ public class PublicSubscribeNewsletterHandlerTests
             Times.Never
         );
         _mailer.Verify(
-            m =>
-                m.EnqueueAsync(
-                    EnumEmailTemplate.NewsletterConfirm,
-                    It.IsAny<EmailRecipientDto>(),
-                    It.IsAny<IReadOnlyDictionary<string, string>>(),
-                    It.IsAny<string>(),
+            d =>
+                d.DispatchAsync(
+                    It.Is<OutboundEmail>(msg => msg.TemplateName == NewsletterEmailTemplates.NewsletterConfirm),
                     It.IsAny<CancellationToken>()
                 ),
             Times.Once

@@ -80,6 +80,11 @@ public class SmtpEmailSenderService : IEmailSenderService
         mime.Subject = message.Subject;
         mime.Body = new BodyBuilder { HtmlBody = message.HtmlBody, TextBody = message.TextBody }.ToMessageBody();
 
+        foreach ((string name, string value) in message.Headers ?? new Dictionary<string, string>())
+        {
+            mime.Headers.Add(name, value);
+        }
+
         return mime;
     }
 }

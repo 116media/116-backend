@@ -58,7 +58,8 @@ public class AdminUpdateOwnProfileEndpointV1Tests(PostgresFixture db) : BaseApiT
             CountryName: null,
             PartialPhoneNumber: null,
             CountryIsoCode: null,
-            CountryDialCode: null
+            CountryDialCode: null,
+            PreferredLocale: null
         );
 
         var response = await Client.PatchAsJsonAsync(AdminMeProfile, request);
@@ -78,7 +79,8 @@ public class AdminUpdateOwnProfileEndpointV1Tests(PostgresFixture db) : BaseApiT
             CountryName: null,
             PartialPhoneNumber: null,
             CountryIsoCode: null,
-            CountryDialCode: null
+            CountryDialCode: null,
+            PreferredLocale: null
         );
 
         var response = await Client.PatchAsJsonAsync(AdminMeProfile, request);

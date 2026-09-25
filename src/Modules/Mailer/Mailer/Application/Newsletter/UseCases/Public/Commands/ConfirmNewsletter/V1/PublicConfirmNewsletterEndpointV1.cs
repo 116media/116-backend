@@ -1,4 +1,5 @@
 using _116.BuildingBlocks.Constants.RateLimit;
+using _116.Mailer.Application.Newsletter.Constants;
 using _116.Mailer.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
@@ -16,8 +17,8 @@ namespace _116.Mailer.Application.Newsletter.UseCases.Public.Commands.ConfirmNew
 public record PublicConfirmNewsletterResponse(bool IsSubscribed);
 
 /// <summary>
-/// Defines the public newsletter confirmation endpoint. A GET because it is
-/// clicked from email clients; the mutation is idempotent by design.
+/// Defines the public newsletter confirmation endpoint. The POST completes the double
+/// opt-in; the GET on the same route renders the form that submits it.
 /// </summary>
 public class PublicConfirmNewsletterEndpointV1 : ICarterModule
 {
@@ -28,13 +29,11 @@ public class PublicConfirmNewsletterEndpointV1 : ICarterModule
     /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        RouteGroupBuilder group = app.MapApiVersionGroup(1)
+        app.MapApiVersionGroup(1)
             .MapGroup($"{MailerConstants.Public}/{MailerConstants.NewsletterRoute}")
-            .WithTags($"{MailerConstants.Public}::{MailerConstants.NewsletterRoute}");
-
-        group
-            .MapGet(
-                pattern: "confirm/{token}",
+            .WithTags($"{MailerConstants.Public}::{MailerConstants.NewsletterRoute}")
+            .MapPost(
+                pattern: NewsletterRouteConstants.ConfirmWithToken,
                 async (string token, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var command = new PublicConfirmNewsletterCommand(Token: token);

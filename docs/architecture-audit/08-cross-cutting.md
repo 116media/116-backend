@@ -317,25 +317,36 @@ to throw on `ResourceNotFound`.
 
 ---
 
-## 8.16 "Three languages" is two plus an English copy, and a dead second language middleware contradicts the negotiated culture
+## 8.16 The default culture is `fr` but the fallback resources are English, and a dead middleware contradicts the negotiated culture
 
 **Severity: Medium** · AREA: i18n.
 
-**Where:** `LocalizationExtension.cs` supports `["fr","en"]`, default `fr`; the neutral fallback
-`.resx` are English (match `.en` for 502/515, `.fr` for 0). `RequestCultureProviders` is replaced
-wholesale (no query/cookie override). Then a second hand-rolled middleware writes
-`HttpContext.Items["Language"]` — read **nowhere** — and resolves the header without q-values,
-disagreeing with the framework provider.
+**Where:** `LocalizationExtension.cs:17` supports `["fr","en"]` and `:22` sets
+`DefaultCulture = "fr"`, while the neutral fallback `.resx` are English (match `.en` for 502/515,
+`.fr` for 0). `RequestCultureProviders` is replaced wholesale (no query/cookie override). Then a
+second hand-rolled middleware writes `HttpContext.Items["Language"]` at `:72` — read **nowhere**,
+re-verified at 0 call sites — and resolves the header without q-values, disagreeing with the
+framework provider.
 
-**Problem/why.** Any client sending no `Accept-Language` (server-to-server, mobile defaults, curl)
-gets French errors while the resource fallback is English — invisible until a French key is missing and
-the user gets an English sentence mid-flow. The dead middleware looks like the language mechanism and
+**Correction to an earlier reading of this finding.** There is no phantom third language. The
+supported set is exactly two, `fr` and `en`. The neutral `Foo.resx` beside `Foo.en.resx` and
+`Foo.fr.resx` is the satellite-assembly fallback .NET requires, not a language, and its contents
+being English is only a problem because it disagrees with the configured default. This is a
+one-line fix, not a product decision about how many languages to ship.
+
+**Problem/why.** The dead middleware is the real defect here. The dead middleware looks like the language mechanism and
 isn't; the next person to "fix" localization will edit it and see no effect.
 
 **Solution.** Delete the dead `app.Use(...)` block. Restore the standard provider chain (query →
-cookie → header). Make the default and the neutral resources agree — setting `DefaultCulture = "en"`
-is a one-line, zero-translation fix since the neutral files are already English. Move the culture list
-into the `IOptions` binding.
+cookie → header). Move the culture list into the `IOptions` binding.
+
+**Resolved: keep `DefaultCulture = "fr"`.** French is the platform's default language, so the
+default is correct as it stands. The fallback concern above does not survive measurement:
+`ResourceCompletenessTests` asserts every neutral key is present and populated in `fr` across
+all 36 catalogues, with matching format placeholders, so the English neutral file is never
+reached at runtime. A client sending no `Accept-Language` gets French errors from French
+resources, which is the intended behaviour. Only the dead middleware and the provider chain
+were real defects, and both are fixed.
 
 ---
 

@@ -1,8 +1,8 @@
 using _116.Content.Application.Commerce.Services;
+using _116.Content.Application.Shared.OutboundEmails;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Mailer.Contracts.Application.DTOs;
-using _116.Mailer.Contracts.Application.Services;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 using _116.Mailer.Contracts.Domain.Enums;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Unit.Tests.Common.Mocks.Repositories;
@@ -19,7 +19,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Commerce.Services;
 /// </summary>
 public class CommerceCustomerNotifierTests
 {
-    private readonly Mock<IEmailService> _mailerMock = new();
+    private readonly Mock<IEmailDispatcher> _dispatcherMock = new();
     private readonly Mock<ICustomerRepository> _customerRepositoryMock = new();
     private readonly Mock<ICategoryRepository> _categoryRepositoryMock = MockCategoryRepository.Create();
     private readonly CommerceCustomerNotifier _notifier;
@@ -27,7 +27,7 @@ public class CommerceCustomerNotifierTests
     public CommerceCustomerNotifierTests()
     {
         _notifier = new CommerceCustomerNotifier(
-            _mailerMock.Object,
+            _dispatcherMock.Object,
             _customerRepositoryMock.Object,
             _categoryRepositoryMock.Object
         );
@@ -115,15 +115,14 @@ public class CommerceCustomerNotifierTests
         await _notifier.NotifyOrderCancelledAsync(order, CancellationToken.None);
 
         // Assert
-        _mailerMock.Verify(
+        _dispatcherMock.Verify(
             x =>
-                x.EnqueueAsync(
-                    EnumEmailTemplate.OrderCancelled,
-                    It.Is<EmailRecipientDto>(recipient => recipient.Address == "label@example.com"),
-                    It.Is<IReadOnlyDictionary<string, string>>(tokens =>
-                        tokens["orderReference"] == CommerceCustomerNotifier.OrderReference(order.Id)
+                x.DispatchAsync(
+                    It.Is<OutboundEmail>(m =>
+                        m.TemplateName == ContentEmailTemplates.OrderCancelled
+                        && m.Recipients[0].Address == "label@example.com"
+                        && m.Tokens["orderReference"] == CommerceCustomerNotifier.OrderReference(order.Id)
                     ),
-                    It.IsAny<string>(),
                     It.IsAny<CancellationToken>()
                 ),
             Times.Once
@@ -143,7 +142,7 @@ public class CommerceCustomerNotifierTests
         await _notifier.NotifyOrderCancelledAsync(order, CancellationToken.None);
 
         // Assert
-        _mailerMock.VerifyNoOtherCalls();
+        _dispatcherMock.VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -159,6 +158,6 @@ public class CommerceCustomerNotifierTests
 
         // Assert
         _customerRepositoryMock.VerifyNoOtherCalls();
-        _mailerMock.VerifyNoOtherCalls();
+        _dispatcherMock.VerifyNoOtherCalls();
     }
 }

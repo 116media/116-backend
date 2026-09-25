@@ -49,7 +49,8 @@ public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
             CountryName: null,
             PartialPhoneNumber: null,
             CountryIsoCode: null,
-            CountryDialCode: null
+            CountryDialCode: null,
+            PreferredLocale: null
         );
 
         PublicUpdateProfileAuthData authData = new(User: user);
@@ -61,6 +62,7 @@ public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
                     sessionId,
                     null,
                     newUserName,
+                    null,
                     null,
                     null,
                     null,
@@ -94,7 +96,8 @@ public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
             CountryName: null,
             PartialPhoneNumber: null,
             CountryIsoCode: null,
-            CountryDialCode: null
+            CountryDialCode: null,
+            PreferredLocale: null
         );
 
         PublicUpdateProfileAuthData authData = new(User: user);
@@ -106,6 +109,7 @@ public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
                     sessionId,
                     null,
                     newUserName,
+                    null,
                     null,
                     null,
                     null,
@@ -131,6 +135,7 @@ public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
                     null,
                     null,
                     null,
+                    null,
                     It.IsAny<CancellationToken>()
                 ),
             Times.Once
@@ -152,7 +157,8 @@ public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
             CountryName: null,
             PartialPhoneNumber: null,
             CountryIsoCode: null,
-            CountryDialCode: null
+            CountryDialCode: null,
+            PreferredLocale: null
         );
 
         PublicUpdateProfileAuthData authData = new(User: user);
@@ -162,6 +168,7 @@ public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
                 x.UpdateProfileAsync(
                     It.IsAny<Guid>(),
                     It.IsAny<Guid>(),
+                    It.IsAny<string?>(),
                     It.IsAny<string?>(),
                     It.IsAny<string?>(),
                     It.IsAny<string?>(),
@@ -199,7 +206,8 @@ public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
             CountryName: null,
             PartialPhoneNumber: null,
             CountryIsoCode: null,
-            CountryDialCode: null
+            CountryDialCode: null,
+            PreferredLocale: null
         );
 
         _authFactoryMock
@@ -207,6 +215,7 @@ public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
                 x.UpdateProfileAsync(
                     It.IsAny<Guid>(),
                     It.IsAny<Guid>(),
+                    It.IsAny<string?>(),
                     It.IsAny<string?>(),
                     It.IsAny<string?>(),
                     It.IsAny<string?>(),
@@ -239,7 +248,8 @@ public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
             CountryName: null,
             PartialPhoneNumber: null,
             CountryIsoCode: null,
-            CountryDialCode: null
+            CountryDialCode: null,
+            PreferredLocale: null
         );
 
         _authFactoryMock
@@ -247,6 +257,7 @@ public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
                 x.UpdateProfileAsync(
                     It.IsAny<Guid>(),
                     It.IsAny<Guid>(),
+                    It.IsAny<string?>(),
                     It.IsAny<string?>(),
                     It.IsAny<string?>(),
                     It.IsAny<string?>(),
@@ -279,7 +290,8 @@ public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
             CountryName: null,
             PartialPhoneNumber: null,
             CountryIsoCode: null,
-            CountryDialCode: null
+            CountryDialCode: null,
+            PreferredLocale: null
         );
 
         _authFactoryMock
@@ -287,6 +299,7 @@ public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
                 x.UpdateProfileAsync(
                     It.IsAny<Guid>(),
                     It.IsAny<Guid>(),
+                    It.IsAny<string?>(),
                     It.IsAny<string?>(),
                     It.IsAny<string?>(),
                     It.IsAny<string?>(),
@@ -325,7 +338,8 @@ public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
             CountryName: null,
             PartialPhoneNumber: null,
             CountryIsoCode: null,
-            CountryDialCode: null
+            CountryDialCode: null,
+            PreferredLocale: null
         );
 
         PublicUpdateProfileAuthData authData = new(User: user);
@@ -335,6 +349,7 @@ public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
                 x.UpdateProfileAsync(
                     It.IsAny<Guid>(),
                     It.IsAny<Guid>(),
+                    It.IsAny<string?>(),
                     It.IsAny<string?>(),
                     It.IsAny<string?>(),
                     It.IsAny<string?>(),
@@ -352,7 +367,7 @@ public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
 
         // Assert
         _authFactoryMock.Verify(
-            x => x.UpdateProfileAsync(user.Id, sessionId, null, "newusername", null, null, null, null, cts.Token),
+            x => x.UpdateProfileAsync(user.Id, sessionId, null, "newusername", null, null, null, null, null, cts.Token),
             Times.Once
         );
     }
@@ -373,7 +388,8 @@ public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
             CountryName: null,
             PartialPhoneNumber: null,
             CountryIsoCode: null,
-            CountryDialCode: null
+            CountryDialCode: null,
+            PreferredLocale: null
         );
 
         PublicUpdateProfileAuthData authData = new(User: user);
@@ -383,6 +399,7 @@ public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
                 x.UpdateProfileAsync(
                     It.IsAny<Guid>(),
                     It.IsAny<Guid>(),
+                    It.IsAny<string?>(),
                     It.IsAny<string?>(),
                     It.IsAny<string?>(),
                     It.IsAny<string?>(),

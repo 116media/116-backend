@@ -25,7 +25,8 @@ public record AdminUpdateOwnProfileCommand(
     string? CountryName,
     string? PartialPhoneNumber,
     string? CountryIsoCode,
-    string? CountryDialCode
+    string? CountryDialCode,
+    string? PreferredLocale
 ) : ICommand<AdminUpdateOwnProfileResult>;
 
 /// <summary>

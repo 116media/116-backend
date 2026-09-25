@@ -1,11 +1,10 @@
 using _116.BuildingBlocks.Constants;
+using _116.Identity.Application.Shared.OutboundEmails;
 using _116.Identity.Contracts.Application.DTOs;
 using _116.Identity.Contracts.Application.Services;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.Events;
-using _116.Mailer.Contracts.Application.DTOs;
-using _116.Mailer.Contracts.Application.Services;
-using _116.Mailer.Contracts.Domain.Enums;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 using _116.Shared.Application.Services;
 using Microsoft.Extensions.Logging;
 
@@ -17,18 +16,18 @@ namespace _116.Identity.Application.Auth.EventHandlers;
 /// event outbox re-delivers it if this handler dies.
 /// </summary>
 /// <param name="userLookupService">Lookup resolving the recipient's name and address by id.</param>
-/// <param name="emailService">Outbox mailer sending the code.</param>
+/// <param name="messageDispatcher">Dispatcher routing the message to its recipients.</param>
 /// <param name="logger">Logger recording skipped deliveries.</param>
 public class OtpIssuedEmailHandler(
     IUserLookupService userLookupService,
-    IEmailService emailService,
+    IEmailDispatcher messageDispatcher,
     ILogger<OtpIssuedEmailHandler> logger
 ) : IDomainEventHandler<OtpIssuedEvent>
 {
     /// <inheritdoc />
     public async Task Handle(OtpIssuedEvent domainEvent, CancellationToken cancellationToken = default)
     {
-        EnumEmailTemplate? template = TemplateFor(domainEvent.Purpose);
+        string? template = TemplateFor(domainEvent.Purpose);
 
         if (template is null)
         {
@@ -47,18 +46,19 @@ public class OtpIssuedEmailHandler(
             return;
         }
 
-        await emailService.EnqueueAsync(
-            template: template.Value,
-            to: new EmailRecipientDto(Address: user.Email, DisplayName: user.UserName),
-            tokens: new Dictionary<string, string>
-            {
-                ["userName"] = user.UserName,
-                ["otpCode"] = domainEvent.PlainCode,
-                ["expiryMinutes"] = UserConstants.OtpExpirationMinutes.ToString(),
-            },
-            culture: domainEvent.Culture,
-            cancellationToken: cancellationToken
+        var message = new OtpIssuedEmail(
+            User: new EmailRecipient(
+                UserId: domainEvent.UserId,
+                Address: user.Email,
+                DisplayName: user.UserName,
+                Locale: user.PreferredLocale
+            ),
+            Template: template,
+            PlainCode: domainEvent.PlainCode,
+            ExpiryMinutes: UserConstants.OtpExpirationMinutes
         );
+
+        await messageDispatcher.DispatchAsync(message: message, cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -66,11 +66,11 @@ public class OtpIssuedEmailHandler(
     /// </summary>
     /// <param name="purpose">What the code authorises.</param>
     /// <returns>The template, or null when the purpose has no live delivery flow.</returns>
-    private static EnumEmailTemplate? TemplateFor(EnumOtpPurpose purpose) =>
+    private static string? TemplateFor(EnumOtpPurpose purpose) =>
         purpose switch
         {
-            EnumOtpPurpose.EmailVerification => EnumEmailTemplate.EmailVerificationOtp,
-            EnumOtpPurpose.PasswordReset => EnumEmailTemplate.PasswordResetOtp,
+            EnumOtpPurpose.EmailVerification => IdentityEmailTemplates.EmailVerificationOtp,
+            EnumOtpPurpose.PasswordReset => IdentityEmailTemplates.PasswordResetOtp,
 
             // TwoFactorAuthentication and AccountRecovery have no live flow and therefore no
             // template; the OTP row still rotates.

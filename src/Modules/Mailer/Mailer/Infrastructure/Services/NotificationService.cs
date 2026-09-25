@@ -1,3 +1,5 @@
+using _116.BuildingBlocks.Constants;
+using _116.Identity.Contracts.Application.Services;
 using _116.Mailer.Application.Shared.Persistence;
 using _116.Mailer.Application.Shared.Repositories;
 using _116.Mailer.Application.Shared.Services;
@@ -17,10 +19,12 @@ namespace _116.Mailer.Infrastructure.Services;
 /// <param name="renderer">The notification copy renderer.</param>
 /// <param name="notificationRepository">The notification persistence port.</param>
 /// <param name="unitOfWork">The Mailer module unit of work.</param>
+/// <param name="userLookupService">Resolves the recipient's preferred locale.</param>
 public class NotificationService(
     INotificationRenderer renderer,
     INotificationRepository notificationRepository,
-    IMailerUnitOfWork unitOfWork
+    IMailerUnitOfWork unitOfWork,
+    IUserLookupService userLookupService
 ) : INotificationService
 {
     /// <summary>
@@ -35,11 +39,14 @@ public class NotificationService(
         Guid userId,
         EnumNotificationType type,
         IReadOnlyDictionary<string, string> tokens,
-        string culture,
         CancellationToken cancellationToken
     )
     {
-        RenderedNotification rendered = renderer.Render(type, tokens, culture);
+        string locale =
+            (await userLookupService.GetAuthorInfoByIdAsync(userId: userId, ct: cancellationToken))?.PreferredLocale
+            ?? UserConstants.DefaultLocale;
+
+        RenderedNotification rendered = renderer.Render(type, tokens, locale);
 
         tokens.TryGetValue(LinkPathToken, out string? linkPath);
 

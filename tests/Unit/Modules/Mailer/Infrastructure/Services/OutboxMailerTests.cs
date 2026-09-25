@@ -1,3 +1,5 @@
+using _116.BuildingBlocks.Constants;
+using _116.Identity.Application.Shared.OutboundEmails;
 using _116.Mailer.Application.Shared.Persistence;
 using _116.Mailer.Application.Shared.Repositories;
 using _116.Mailer.Application.Shared.Services;
@@ -26,7 +28,7 @@ public class OutboxMailerTests
     public async Task EnqueueAsync_ShouldPersistTheRenderedEmailAndCommit()
     {
         _renderer
-            .Setup(r => r.Render(EnumEmailTemplate.Welcome, It.IsAny<IReadOnlyDictionary<string, string>>(), "fr"))
+            .Setup(r => r.Render(IdentityEmailTemplates.Welcome, It.IsAny<IReadOnlyDictionary<string, string>>(), "fr"))
             .Returns(new RenderedEmail("Bienvenue", "<p>Salut</p>", "Salut"));
 
         OutboxEmailEntity? captured = null;
@@ -37,10 +39,9 @@ public class OutboxMailerTests
         var emailService = new OutboxEmailService(_renderer.Object, _repository.Object, _unitOfWork.Object);
 
         await emailService.EnqueueAsync(
-            template: EnumEmailTemplate.Welcome,
-            to: new EmailRecipientDto("fan@example.com", "Fan"),
+            template: IdentityEmailTemplates.Welcome,
+            to: new EmailRecipientDto("fan@example.com", "fr", "Fan"),
             tokens: new Dictionary<string, string> { ["userName"] = "Fan" },
-            culture: "fr",
             cancellationToken: CancellationToken.None
         );
 
@@ -50,7 +51,7 @@ public class OutboxMailerTests
         captured.Subject.Should().Be("Bienvenue");
         captured.HtmlBody.Should().Be("<p>Salut</p>");
         captured.TextBody.Should().Be("Salut");
-        captured.Template.Should().Be(nameof(EnumEmailTemplate.Welcome));
+        captured.Template.Should().Be(nameof(IdentityEmailTemplates.Welcome));
         captured.Status.Should().Be(EnumOutboxEmailStatus.Pending);
 
         _unitOfWork.Verify(u => u.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
@@ -61,11 +62,7 @@ public class OutboxMailerTests
     {
         _renderer
             .Setup(r =>
-                r.Render(
-                    It.IsAny<EnumEmailTemplate>(),
-                    It.IsAny<IReadOnlyDictionary<string, string>>(),
-                    It.IsAny<string>()
-                )
+                r.Render(It.IsAny<string>(), It.IsAny<IReadOnlyDictionary<string, string>>(), It.IsAny<string>())
             )
             .Throws(new InvalidOperationException("unresolved placeholder"));
 
@@ -73,10 +70,9 @@ public class OutboxMailerTests
 
         Func<Task> act = () =>
             emailService.EnqueueAsync(
-                EnumEmailTemplate.Welcome,
-                new EmailRecipientDto("fan@example.com"),
+                IdentityEmailTemplates.Welcome,
+                new EmailRecipientDto("fan@example.com", UserConstants.DefaultLocale),
                 new Dictionary<string, string>(),
-                "en",
                 CancellationToken.None
             );
 

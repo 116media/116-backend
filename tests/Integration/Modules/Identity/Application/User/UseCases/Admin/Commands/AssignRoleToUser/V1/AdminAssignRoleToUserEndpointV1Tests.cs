@@ -1,5 +1,6 @@
 using _116.Identity.Application.Roles.Constants;
 using _116.Identity.Application.Shared.Errors.Messages;
+using _116.Identity.Application.Shared.OutboundEmails;
 using _116.Identity.Application.User.UseCases.Admin.Commands.AssignRoleToUser.V1;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
@@ -50,7 +51,7 @@ public class AdminAssignRoleToUserEndpointV1Tests(PostgresFixture db) : BaseApiT
         await using var mailerContext = CreateDbContext<MailerDbContext>();
         (await mailerContext.OutboxEmails.Where(o => o.RecipientAddress == TestUser.AdminEmail).ToListAsync())
             .Should()
-            .ContainSingle(o => o.Template == nameof(EnumEmailTemplate.RoleChanged));
+            .ContainSingle(o => o.Template == nameof(IdentityEmailTemplates.RoleChanged));
     }
 
     [Fact]

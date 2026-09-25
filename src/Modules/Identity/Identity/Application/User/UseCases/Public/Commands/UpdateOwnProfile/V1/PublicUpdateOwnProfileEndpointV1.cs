@@ -23,6 +23,7 @@ namespace _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfi
 /// <param name="CountryName">The new country name (optional).</param>
 /// <param name="PartialPhoneNumber">The new partial phone number (optional).</param>
 /// <param name="CountryIsoCode">The new country ISO code (optional).</param>
+/// <param name="PreferredLocale">The locale the user's mail and notifications render in.</param>
 /// <param name="CountryDialCode">The new country dial code (optional).</param>
 public record PublicUpdateOwnProfileRequest(
     string? Email,
@@ -30,7 +31,8 @@ public record PublicUpdateOwnProfileRequest(
     string? CountryName,
     string? PartialPhoneNumber,
     string? CountryIsoCode,
-    string? CountryDialCode
+    string? CountryDialCode,
+    string? PreferredLocale
 );
 
 /// <summary>
@@ -78,6 +80,7 @@ public class PublicUpdateOwnProfileEndpointV1 : ICarterModule
                         CountryName: request.CountryName,
                         CountryIsoCode: request.CountryIsoCode,
                         CountryDialCode: request.CountryDialCode,
+                        PreferredLocale: request.PreferredLocale,
                         PartialPhoneNumber: request.PartialPhoneNumber
                     );
                     PublicUpdateOwnProfileResult result = await dispatcher.Send(

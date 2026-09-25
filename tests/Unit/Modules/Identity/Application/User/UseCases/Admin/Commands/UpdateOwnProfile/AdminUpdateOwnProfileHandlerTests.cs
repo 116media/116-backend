@@ -48,7 +48,8 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
             CountryName: null,
             PartialPhoneNumber: null,
             CountryIsoCode: null,
-            CountryDialCode: null
+            CountryDialCode: null,
+            PreferredLocale: null
         );
 
         AdminUpdateProfileAuthData authData = new(User: user);
@@ -59,6 +60,7 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
                     user.Id,
                     sessionId,
                     newUserName,
+                    null,
                     null,
                     null,
                     null,
@@ -91,7 +93,8 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
             CountryName: null,
             PartialPhoneNumber: null,
             CountryIsoCode: null,
-            CountryDialCode: null
+            CountryDialCode: null,
+            PreferredLocale: null
         );
 
         AdminUpdateProfileAuthData authData = new(User: user);
@@ -102,6 +105,7 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
                     user.Id,
                     sessionId,
                     newUserName,
+                    null,
                     null,
                     null,
                     null,
@@ -126,6 +130,7 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
                     null,
                     null,
                     null,
+                    null,
                     It.IsAny<CancellationToken>()
                 ),
             Times.Once
@@ -146,7 +151,8 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
             CountryName: null,
             PartialPhoneNumber: null,
             CountryIsoCode: null,
-            CountryDialCode: null
+            CountryDialCode: null,
+            PreferredLocale: null
         );
 
         AdminUpdateProfileAuthData authData = new(User: user);
@@ -156,6 +162,7 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
                 x.UpdateProfileAsync(
                     It.IsAny<Guid>(),
                     It.IsAny<Guid>(),
+                    It.IsAny<string?>(),
                     It.IsAny<string?>(),
                     It.IsAny<string?>(),
                     It.IsAny<string?>(),
@@ -191,7 +198,8 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
             CountryName: null,
             PartialPhoneNumber: null,
             CountryIsoCode: null,
-            CountryDialCode: null
+            CountryDialCode: null,
+            PreferredLocale: null
         );
 
         _authFactoryMock
@@ -199,6 +207,7 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
                 x.UpdateProfileAsync(
                     It.IsAny<Guid>(),
                     It.IsAny<Guid>(),
+                    It.IsAny<string?>(),
                     It.IsAny<string?>(),
                     It.IsAny<string?>(),
                     It.IsAny<string?>(),
@@ -229,7 +238,8 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
             CountryName: null,
             PartialPhoneNumber: null,
             CountryIsoCode: null,
-            CountryDialCode: null
+            CountryDialCode: null,
+            PreferredLocale: null
         );
 
         _authFactoryMock
@@ -237,6 +247,7 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
                 x.UpdateProfileAsync(
                     It.IsAny<Guid>(),
                     It.IsAny<Guid>(),
+                    It.IsAny<string?>(),
                     It.IsAny<string?>(),
                     It.IsAny<string?>(),
                     It.IsAny<string?>(),
@@ -273,7 +284,8 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
             CountryName: null,
             PartialPhoneNumber: null,
             CountryIsoCode: null,
-            CountryDialCode: null
+            CountryDialCode: null,
+            PreferredLocale: null
         );
 
         AdminUpdateProfileAuthData authData = new(User: user);
@@ -283,6 +295,7 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
                 x.UpdateProfileAsync(
                     It.IsAny<Guid>(),
                     It.IsAny<Guid>(),
+                    It.IsAny<string?>(),
                     It.IsAny<string?>(),
                     It.IsAny<string?>(),
                     It.IsAny<string?>(),
@@ -299,7 +312,7 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
 
         // Assert
         _authFactoryMock.Verify(
-            x => x.UpdateProfileAsync(user.Id, sessionId, "newusername", null, null, null, null, cts.Token),
+            x => x.UpdateProfileAsync(user.Id, sessionId, "newusername", null, null, null, null, null, cts.Token),
             Times.Once
         );
     }
@@ -319,7 +332,8 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
             CountryName: null,
             PartialPhoneNumber: null,
             CountryIsoCode: null,
-            CountryDialCode: null
+            CountryDialCode: null,
+            PreferredLocale: null
         );
 
         AdminUpdateProfileAuthData authData = new(User: user);
@@ -329,6 +343,7 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
                 x.UpdateProfileAsync(
                     It.IsAny<Guid>(),
                     It.IsAny<Guid>(),
+                    It.IsAny<string?>(),
                     It.IsAny<string?>(),
                     It.IsAny<string?>(),
                     It.IsAny<string?>(),
