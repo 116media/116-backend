@@ -1,10 +1,10 @@
 using _116.BuildingBlocks.Constants;
-using _116.Identity.Application.Shared.Messages;
+using _116.Identity.Application.Shared.OutboundEmails;
 using _116.Identity.Contracts.Application.DTOs;
 using _116.Identity.Contracts.Application.Services;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.Events;
-using _116.Mailer.Contracts.Application.Messages;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 using _116.Shared.Application.Services;
 using Microsoft.Extensions.Logging;
 
@@ -20,7 +20,7 @@ namespace _116.Identity.Application.Auth.EventHandlers;
 /// <param name="logger">Logger recording skipped deliveries.</param>
 public class OtpIssuedEmailHandler(
     IUserLookupService userLookupService,
-    IMessageDispatcher messageDispatcher,
+    IEmailDispatcher messageDispatcher,
     ILogger<OtpIssuedEmailHandler> logger
 ) : IDomainEventHandler<OtpIssuedEvent>
 {
@@ -46,8 +46,8 @@ public class OtpIssuedEmailHandler(
             return;
         }
 
-        var message = new OtpIssuedMessage(
-            User: new MessageRecipient(
+        var message = new OtpIssuedEmail(
+            User: new EmailRecipient(
                 UserId: domainEvent.UserId,
                 Address: user.Email,
                 DisplayName: user.UserName,
@@ -69,8 +69,8 @@ public class OtpIssuedEmailHandler(
     private static string? TemplateFor(EnumOtpPurpose purpose) =>
         purpose switch
         {
-            EnumOtpPurpose.EmailVerification => IdentityMessageTemplates.EmailVerificationOtp,
-            EnumOtpPurpose.PasswordReset => IdentityMessageTemplates.PasswordResetOtp,
+            EnumOtpPurpose.EmailVerification => IdentityEmailTemplates.EmailVerificationOtp,
+            EnumOtpPurpose.PasswordReset => IdentityEmailTemplates.PasswordResetOtp,
 
             // TwoFactorAuthentication and AccountRecovery have no live flow and therefore no
             // template; the OTP row still rotates.
