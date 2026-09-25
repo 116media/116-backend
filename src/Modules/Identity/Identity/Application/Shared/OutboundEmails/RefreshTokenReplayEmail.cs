@@ -1,6 +1,6 @@
-using _116.Mailer.Contracts.Application.Messages;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 
-namespace _116.Identity.Application.Shared.Messages;
+namespace _116.Identity.Application.Shared.OutboundEmails;
 
 /// <summary>
 /// A refresh token was replayed and every session was revoked: the security alert telling the
@@ -8,16 +8,16 @@ namespace _116.Identity.Application.Shared.Messages;
 /// </summary>
 /// <param name="User">The account whose sessions were revoked.</param>
 /// <param name="DetectedAt">When the replay was detected.</param>
-public record RefreshTokenReplayMessage(MessageRecipient User, DateTimeOffset DetectedAt) : Message
+public record RefreshTokenReplayEmail(EmailRecipient User, DateTimeOffset DetectedAt) : OutboundEmail
 {
     /// <inheritdoc />
-    public override EnumMessageClass Class => EnumMessageClass.Transactional;
+    public override EnumEmailClass Class => EnumEmailClass.Transactional;
 
     /// <inheritdoc />
-    public override string TemplateName => IdentityMessageTemplates.RefreshTokenReplayAlert;
+    public override string TemplateName => IdentityEmailTemplates.RefreshTokenReplayAlert;
 
     /// <inheritdoc />
-    public override IReadOnlyList<MessageRecipient> Recipients => [User];
+    public override IReadOnlyList<EmailRecipient> Recipients => [User];
 
     /// <inheritdoc />
     public override IReadOnlyDictionary<string, string> Tokens =>
