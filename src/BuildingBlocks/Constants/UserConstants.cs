@@ -143,7 +143,7 @@ public static class UserConstants
     /// <summary>
     /// The locale a user's messages render in until they choose another.
     /// </summary>
-    public const string DefaultLocale = "en";
+    public const string DefaultLocale = "fr";
 
     /// <summary>
     /// Maximum stored length of a user's preferred locale code.
