@@ -1,9 +1,9 @@
-using _116.Identity.Application.Shared.Messages;
+using _116.Identity.Application.Shared.OutboundEmails;
 using _116.Identity.Application.User.EventHandlers;
 using _116.Identity.Contracts.Application.DTOs;
 using _116.Identity.Contracts.Application.Services;
 using _116.Identity.Domain.Events;
-using _116.Mailer.Contracts.Application.Messages;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 using _116.Mailer.Contracts.Application.Services;
 using _116.Mailer.Contracts.Domain.Enums;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -18,7 +18,7 @@ namespace _116.Unit.Tests.Modules.Identity.Application.User.EventHandlers;
 public class UserEmailChangedNotificationsHandlerTests
 {
     private readonly Mock<IUserLookupService> _userLookupServiceMock = new();
-    private readonly Mock<IMessageDispatcher> _dispatcherMock = new();
+    private readonly Mock<IEmailDispatcher> _dispatcherMock = new();
     private readonly Mock<INotificationService> _notifierMock = new();
     private readonly UserEmailChangedNotificationsHandler _handler;
 
@@ -47,8 +47,8 @@ public class UserEmailChangedNotificationsHandlerTests
         _dispatcherMock.Verify(
             x =>
                 x.DispatchAsync(
-                    It.Is<Message>(m =>
-                        m.TemplateName == IdentityMessageTemplates.EmailChangedAlertOld
+                    It.Is<OutboundEmail>(m =>
+                        m.TemplateName == IdentityEmailTemplates.EmailChangedAlertOld
                         && m.Recipients[0].Address == "old@test.com"
                         && m.Tokens["newEmailMasked"] == "f***@example.com"
                         && m.Tokens["userName"] == "Fally"
@@ -74,8 +74,8 @@ public class UserEmailChangedNotificationsHandlerTests
         _dispatcherMock.Verify(
             x =>
                 x.DispatchAsync(
-                    It.Is<Message>(m =>
-                        m.TemplateName == IdentityMessageTemplates.EmailChangedConfirmNew
+                    It.Is<OutboundEmail>(m =>
+                        m.TemplateName == IdentityEmailTemplates.EmailChangedConfirmNew
                         && m.Recipients[0].Address == "fresh@example.com"
                         && m.Tokens["userName"] == "Fally"
                         && m.Tokens.ContainsKey("changeTime")
@@ -98,12 +98,15 @@ public class UserEmailChangedNotificationsHandlerTests
         await _handler.Handle(domainEvent, CancellationToken.None);
 
         // Assert
-        _dispatcherMock.Verify(x => x.DispatchAsync(It.IsAny<Message>(), It.IsAny<CancellationToken>()), Times.Once);
+        _dispatcherMock.Verify(
+            x => x.DispatchAsync(It.IsAny<OutboundEmail>(), It.IsAny<CancellationToken>()),
+            Times.Once
+        );
         _dispatcherMock.Verify(
             x =>
                 x.DispatchAsync(
-                    It.Is<Message>(m =>
-                        m.TemplateName == IdentityMessageTemplates.EmailChangedConfirmNew
+                    It.Is<OutboundEmail>(m =>
+                        m.TemplateName == IdentityEmailTemplates.EmailChangedConfirmNew
                         && m.Recipients[0].Address == "fresh@example.com"
                     ),
                     It.IsAny<CancellationToken>()
