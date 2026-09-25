@@ -1,10 +1,10 @@
-namespace _116.Identity.Application.Shared.Messages;
+namespace _116.Identity.Application.Shared.OutboundEmails;
 
 /// <summary>
 /// The message templates this module sends. Owning the names here keeps the module off a
 /// shared cross-module enum.
 /// </summary>
-public static class IdentityMessageTemplates
+public static class IdentityEmailTemplates
 {
     /// <summary>
     /// The AccountForceLoggedOut template name, resolved from this module's resources.
