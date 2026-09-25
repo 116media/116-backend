@@ -22,8 +22,8 @@ public interface INotificationRenderer
     /// state.
     /// </summary>
     /// <param name="type">The notification type to render, from the catalog.</param>
+    /// <param name="locale">The recipient's locale the message renders in.</param>
     /// <param name="tokens">The dynamic values the notification copy requires.</param>
-    /// <param name="culture">The two-letter culture (e.g. "en", "fr").</param>
     /// <returns>The rendered title and body.</returns>
-    RenderedNotification Render(EnumNotificationType type, IReadOnlyDictionary<string, string> tokens, string culture);
+    RenderedNotification Render(EnumNotificationType type, IReadOnlyDictionary<string, string> tokens, string locale);
 }
