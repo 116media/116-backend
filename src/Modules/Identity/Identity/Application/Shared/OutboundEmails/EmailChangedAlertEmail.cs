@@ -1,6 +1,6 @@
-using _116.Mailer.Contracts.Application.Messages;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 
-namespace _116.Identity.Application.Shared.Messages;
+namespace _116.Identity.Application.Shared.OutboundEmails;
 
 /// <summary>
 /// An account's address was replaced: the alert to the address that was removed, so a
@@ -9,17 +9,17 @@ namespace _116.Identity.Application.Shared.Messages;
 /// <param name="FormerAddress">The address the account used before the change.</param>
 /// <param name="NewEmailMasked">The new address with its local part masked.</param>
 /// <param name="ChangedAt">When the address was replaced.</param>
-public record EmailChangedAlertMessage(MessageRecipient FormerAddress, string NewEmailMasked, DateTimeOffset ChangedAt)
-    : Message
+public record EmailChangedAlertEmail(EmailRecipient FormerAddress, string NewEmailMasked, DateTimeOffset ChangedAt)
+    : OutboundEmail
 {
     /// <inheritdoc />
-    public override EnumMessageClass Class => EnumMessageClass.Transactional;
+    public override EnumEmailClass Class => EnumEmailClass.Transactional;
 
     /// <inheritdoc />
-    public override string TemplateName => IdentityMessageTemplates.EmailChangedAlertOld;
+    public override string TemplateName => IdentityEmailTemplates.EmailChangedAlertOld;
 
     /// <inheritdoc />
-    public override IReadOnlyList<MessageRecipient> Recipients => [FormerAddress];
+    public override IReadOnlyList<EmailRecipient> Recipients => [FormerAddress];
 
     /// <inheritdoc />
     public override IReadOnlyDictionary<string, string> Tokens =>
