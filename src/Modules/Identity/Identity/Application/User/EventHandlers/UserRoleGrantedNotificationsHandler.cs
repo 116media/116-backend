@@ -1,8 +1,8 @@
-using _116.Identity.Application.Shared.Messages;
+using _116.Identity.Application.Shared.OutboundEmails;
 using _116.Identity.Contracts.Application.DTOs;
 using _116.Identity.Contracts.Application.Services;
 using _116.Identity.Domain.Events;
-using _116.Mailer.Contracts.Application.Messages;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 using _116.Mailer.Contracts.Application.Services;
 using _116.Mailer.Contracts.Domain.Enums;
 using _116.Shared.Application.Services;
@@ -21,7 +21,7 @@ namespace _116.Identity.Application.User.EventHandlers;
 /// <param name="logger">Logger recording skipped email deliveries.</param>
 public class UserRoleGrantedNotificationsHandler(
     IUserLookupService userLookupService,
-    IMessageDispatcher messageDispatcher,
+    IEmailDispatcher messageDispatcher,
     INotificationService notificationService,
     ILogger<UserRoleGrantedNotificationsHandler> logger
 ) : IDomainEventHandler<UserRoleGrantedEvent>
@@ -42,8 +42,8 @@ public class UserRoleGrantedNotificationsHandler(
 
         if (user.Email is not null)
         {
-            var message = new RoleChangedMessage(
-                User: new MessageRecipient(
+            var message = new RoleChangedEmail(
+                User: new EmailRecipient(
                     UserId: domainEvent.UserId,
                     Address: user.Email,
                     DisplayName: user.UserName,
