@@ -1,9 +1,10 @@
 using _116.Identity.Application.Auth.EventHandlers;
+using _116.Identity.Application.Shared.Messages;
 using _116.Identity.Contracts.Application.DTOs;
 using _116.Identity.Contracts.Application.Services;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.Events;
-using _116.Mailer.Contracts.Application.DTOs;
+using _116.Mailer.Contracts.Application.Messages;
 using _116.Mailer.Contracts.Application.Services;
 using _116.Mailer.Contracts.Domain.Enums;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -18,7 +19,7 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Auth.EventHandlers;
 public class UserPasswordChangedNotificationsHandlerTests
 {
     private readonly Mock<IUserLookupService> _userLookupServiceMock = new();
-    private readonly Mock<IEmailService> _mailerMock = new();
+    private readonly Mock<IMessageDispatcher> _dispatcherMock = new();
     private readonly Mock<INotificationService> _notifierMock = new();
     private readonly UserPasswordChangedNotificationsHandler _handler;
 
@@ -26,18 +27,18 @@ public class UserPasswordChangedNotificationsHandlerTests
     {
         _handler = new UserPasswordChangedNotificationsHandler(
             _userLookupServiceMock.Object,
-            _mailerMock.Object,
+            _dispatcherMock.Object,
             _notifierMock.Object,
             NullLogger<UserPasswordChangedNotificationsHandler>.Instance
         );
     }
 
     [Theory]
-    [InlineData(EnumPasswordChangeOrigin.Changed, EnumEmailTemplate.PasswordChanged, "changeTime")]
-    [InlineData(EnumPasswordChangeOrigin.Reset, EnumEmailTemplate.PasswordResetCompleted, "resetTime")]
+    [InlineData(EnumPasswordChangeOrigin.Changed, IdentityMessageTemplates.PasswordChanged, "changeTime")]
+    [InlineData(EnumPasswordChangeOrigin.Reset, IdentityMessageTemplates.PasswordResetCompleted, "resetTime")]
     public async Task Handle_ShouldEnqueueTheOriginTemplateWithItsTimestampToken(
         EnumPasswordChangeOrigin origin,
-        EnumEmailTemplate expectedTemplate,
+        string expectedTemplate,
         string expectedTimeToken
     )
     {
@@ -49,15 +50,15 @@ public class UserPasswordChangedNotificationsHandlerTests
         await _handler.Handle(new UserPasswordChangedEvent(userId, origin), CancellationToken.None);
 
         // Assert
-        _mailerMock.Verify(
+        _dispatcherMock.Verify(
             x =>
-                x.EnqueueAsync(
-                    expectedTemplate,
-                    It.Is<EmailRecipientDto>(r => r.Address == "user@test.com"),
-                    It.Is<IReadOnlyDictionary<string, string>>(t =>
-                        t["userName"] == "Fally" && t.ContainsKey(expectedTimeToken)
+                x.DispatchAsync(
+                    It.Is<Message>(m =>
+                        m.TemplateName == expectedTemplate
+                        && m.Recipients[0].Address == "user@test.com"
+                        && m.Tokens["userName"] == "Fally"
+                        && m.Tokens.ContainsKey(expectedTimeToken)
                     ),
-                    It.IsAny<string>(),
                     It.IsAny<CancellationToken>()
                 ),
             Times.Once
@@ -78,13 +79,14 @@ public class UserPasswordChangedNotificationsHandlerTests
         );
 
         // Assert
-        _mailerMock.Verify(
+        _dispatcherMock.Verify(
             x =>
-                x.EnqueueAsync(
-                    EnumEmailTemplate.LocalPasswordAdded,
-                    It.IsAny<EmailRecipientDto>(),
-                    It.Is<IReadOnlyDictionary<string, string>>(t => t.Count == 1 && t["userName"] == "Fally"),
-                    It.IsAny<string>(),
+                x.DispatchAsync(
+                    It.Is<Message>(m =>
+                        m.TemplateName == IdentityMessageTemplates.LocalPasswordAdded
+                        && m.Tokens.Count == 1
+                        && m.Tokens["userName"] == "Fally"
+                    ),
                     It.IsAny<CancellationToken>()
                 ),
             Times.Once
@@ -114,7 +116,6 @@ public class UserPasswordChangedNotificationsHandlerTests
                     userId,
                     expectedType,
                     It.IsAny<IReadOnlyDictionary<string, string>>(),
-                    It.IsAny<string>(),
                     It.IsAny<CancellationToken>()
                 ),
             Times.Once
@@ -135,14 +136,13 @@ public class UserPasswordChangedNotificationsHandlerTests
         );
 
         // Assert
-        _mailerMock.VerifyNoOtherCalls();
+        _dispatcherMock.VerifyNoOtherCalls();
         _notifierMock.Verify(
             x =>
                 x.NotifyAsync(
                     userId,
                     EnumNotificationType.PasswordChanged,
                     It.IsAny<IReadOnlyDictionary<string, string>>(),
-                    It.IsAny<string>(),
                     It.IsAny<CancellationToken>()
                 ),
             Times.Once
@@ -165,7 +165,7 @@ public class UserPasswordChangedNotificationsHandlerTests
         );
 
         // Assert
-        _mailerMock.VerifyNoOtherCalls();
+        _dispatcherMock.VerifyNoOtherCalls();
         _notifierMock.VerifyNoOtherCalls();
     }
 
