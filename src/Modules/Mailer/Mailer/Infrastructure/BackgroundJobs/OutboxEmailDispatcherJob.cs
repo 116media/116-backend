@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants;
 using _116.Mailer.Application.Newsletter.Services;
 using _116.Mailer.Application.Shared.Exceptions;
 using _116.Mailer.Application.Shared.Repositories;
@@ -110,7 +111,7 @@ public class OutboxEmailDispatcherJob(IServiceScopeFactory scopeFactory, ILogger
         try
         {
             var message = new EmailMessage(
-                To: new EmailRecipientDto(email.RecipientAddress, email.RecipientName),
+                To: new EmailRecipientDto(email.RecipientAddress, UserConstants.DefaultLocale, email.RecipientName),
                 Subject: email.Subject,
                 HtmlBody: email.HtmlBody,
                 TextBody: email.TextBody,
