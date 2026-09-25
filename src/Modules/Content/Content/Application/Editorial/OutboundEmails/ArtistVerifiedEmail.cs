@@ -1,7 +1,7 @@
-using _116.Content.Application.Shared.Messages;
-using _116.Mailer.Contracts.Application.Messages;
+using _116.Content.Application.Shared.OutboundEmails;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 
-namespace _116.Content.Application.Editorial.Messages;
+namespace _116.Content.Application.Editorial.OutboundEmails;
 
 /// <summary>
 /// An artist profile claim was verified: the claimant now owns the profile.
@@ -9,16 +9,16 @@ namespace _116.Content.Application.Editorial.Messages;
 /// <param name="Owner">The user whose claim was verified.</param>
 /// <param name="ArtistName">The artist profile that was claimed.</param>
 /// <param name="ArtistUrl">Where the profile can be seen.</param>
-public record ArtistVerifiedMessage(MessageRecipient Owner, string ArtistName, string ArtistUrl) : Message
+public record ArtistVerifiedEmail(EmailRecipient Owner, string ArtistName, string ArtistUrl) : OutboundEmail
 {
     /// <inheritdoc />
-    public override EnumMessageClass Class => EnumMessageClass.Notification;
+    public override EnumEmailClass Class => EnumEmailClass.Notification;
 
     /// <inheritdoc />
-    public override string TemplateName => ContentMessageTemplates.ArtistVerified;
+    public override string TemplateName => ContentEmailTemplates.ArtistVerified;
 
     /// <inheritdoc />
-    public override IReadOnlyList<MessageRecipient> Recipients => [Owner];
+    public override IReadOnlyList<EmailRecipient> Recipients => [Owner];
 
     /// <inheritdoc />
     public override IReadOnlyDictionary<string, string> Tokens =>
