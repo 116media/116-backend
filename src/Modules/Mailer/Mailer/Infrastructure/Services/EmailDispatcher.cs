@@ -1,6 +1,6 @@
 using _116.Mailer.Application.Shared.Repositories;
 using _116.Mailer.Contracts.Application.DTOs;
-using _116.Mailer.Contracts.Application.Messages;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 using _116.Mailer.Contracts.Application.Services;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Domain.Enums;
@@ -9,22 +9,22 @@ using Microsoft.Extensions.Logging;
 namespace _116.Mailer.Infrastructure.Services;
 
 /// <summary>
-/// The <see cref="IMessageDispatcher" /> implementation: one enqueue per recipient the
+/// The <see cref="IEmailDispatcher" /> implementation: one enqueue per recipient the
 /// message's class permits, each rendered in that recipient's own locale.
 /// </summary>
 /// <param name="emailService">The outbox-backed email enqueue port.</param>
 /// <param name="newsletterRepository">Resolves an address's opt-in state.</param>
 /// <param name="logger">Logger recording suppressed recipients.</param>
-public class MessageDispatcher(
+public class EmailDispatcher(
     IEmailService emailService,
     INewsletterRepository newsletterRepository,
-    ILogger<MessageDispatcher> logger
-) : IMessageDispatcher
+    ILogger<EmailDispatcher> logger
+) : IEmailDispatcher
 {
     /// <inheritdoc />
-    public async Task DispatchAsync(Message message, CancellationToken cancellationToken = default)
+    public async Task DispatchAsync(OutboundEmail message, CancellationToken cancellationToken = default)
     {
-        foreach (MessageRecipient recipient in message.Recipients)
+        foreach (EmailRecipient recipient in message.Recipients)
         {
             if (!await MayReceiveAsync(message.Class, recipient, cancellationToken))
             {
@@ -55,12 +55,12 @@ public class MessageDispatcher(
     /// <param name="cancellationToken">Token to cancel the operation.</param>
     /// <returns><c>true</c> when the message may be enqueued for this recipient.</returns>
     private async Task<bool> MayReceiveAsync(
-        EnumMessageClass messageClass,
-        MessageRecipient recipient,
+        EnumEmailClass messageClass,
+        EmailRecipient recipient,
         CancellationToken cancellationToken
     )
     {
-        if (messageClass is EnumMessageClass.Transactional or EnumMessageClass.Operational)
+        if (messageClass is EnumEmailClass.Transactional or EnumEmailClass.Operational)
         {
             return true;
         }
@@ -72,7 +72,7 @@ public class MessageDispatcher(
 
         return messageClass switch
         {
-            EnumMessageClass.Subscription => subscriber?.Status == EnumNewsletterStatus.Subscribed,
+            EnumEmailClass.Subscription => subscriber?.Status == EnumNewsletterStatus.Subscribed,
             _ => subscriber?.Status != EnumNewsletterStatus.Unsubscribed,
         };
     }
