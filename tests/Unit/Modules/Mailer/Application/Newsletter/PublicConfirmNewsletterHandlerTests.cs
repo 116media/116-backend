@@ -1,10 +1,10 @@
+using _116.Mailer.Application.Newsletter.Messages;
 using _116.Mailer.Application.Newsletter.UseCases.Public.Commands.ConfirmNewsletter;
 using _116.Mailer.Application.Shared.Errors;
 using _116.Mailer.Application.Shared.Errors.Messages;
 using _116.Mailer.Application.Shared.Persistence;
 using _116.Mailer.Application.Shared.Repositories;
-using _116.Mailer.Contracts.Application.DTOs;
-using _116.Mailer.Contracts.Application.Services;
+using _116.Mailer.Contracts.Application.Messages;
 using _116.Mailer.Contracts.Domain.Enums;
 using _116.Mailer.Domain.Entities;
 using _116.Shared.Application.Exceptions;
@@ -23,7 +23,7 @@ public class PublicConfirmNewsletterHandlerTests
 {
     private readonly Mock<INewsletterRepository> _repository = new();
     private readonly Mock<IMailerUnitOfWork> _unitOfWork = new();
-    private readonly Mock<IEmailService> _mailer = new();
+    private readonly Mock<IMessageDispatcher> _mailer = new();
     private readonly NewsletterErrors _errors = new(LocalizerFactory.CreateMessage<NewsletterErrorMessage>());
 
     private PublicConfirmNewsletterHandler Handler =>
@@ -65,14 +65,14 @@ public class PublicConfirmNewsletterHandlerTests
         result.IsSubscribed.Should().BeTrue();
         _unitOfWork.Verify(u => u.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
         _mailer.Verify(
-            m =>
-                m.EnqueueAsync(
-                    EnumEmailTemplate.NewsletterWelcome,
-                    It.Is<EmailRecipientDto>(r => r.Address == "fan@example.com"),
-                    It.Is<IReadOnlyDictionary<string, string>>(t =>
-                        t["unsubscribeUrl"].Contains(subscriber.UnsubscribeToken)
+            d =>
+                d.DispatchAsync(
+                    It.Is<Message>(msg =>
+                        msg.TemplateName == NewsletterMessageTemplates.NewsletterWelcome
+                        && msg.Class == EnumMessageClass.Subscription
+                        && msg.Recipients[0].Address == "fan@example.com"
+                        && msg.Tokens["unsubscribeUrl"].Contains(subscriber.UnsubscribeToken)
                     ),
-                    It.IsAny<string>(),
                     It.IsAny<CancellationToken>()
                 ),
             Times.Once
