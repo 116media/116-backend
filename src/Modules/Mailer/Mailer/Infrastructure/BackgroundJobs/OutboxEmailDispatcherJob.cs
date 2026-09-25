@@ -1,3 +1,4 @@
+using _116.Mailer.Application.Newsletter.Services;
 using _116.Mailer.Application.Shared.Exceptions;
 using _116.Mailer.Application.Shared.Repositories;
 using _116.Mailer.Application.Shared.Services;
@@ -6,6 +7,7 @@ using _116.Mailer.Domain.Constants;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Infrastructure.Persistence;
 using _116.Shared.Application.Jobs;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Quartz;
@@ -57,10 +59,41 @@ public class OutboxEmailDispatcherJob(IServiceScopeFactory scopeFactory, ILogger
 
         foreach (OutboxEmailEntity email in batch)
         {
-            await DeliverAsync(email, sender, context.CancellationToken);
+            await DeliverAsync(email, sender, dbContext, context.CancellationToken);
         }
 
         await dbContext.SaveChangesAsync(CancellationToken.None);
+    }
+
+    /// <summary>
+    /// Builds the one-click unsubscribe headers for a recipient who is a newsletter subscriber.
+    /// Returns null for everyone else, so transactional mail carries no unsubscribe affordance.
+    /// </summary>
+    /// <param name="recipientAddress">The address the outbox row is addressed to.</param>
+    /// <param name="dbContext">The Mailer context the subscriber is read from.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The headers to attach, or null.</returns>
+    private static async Task<IReadOnlyDictionary<string, string>?> ResolveUnsubscribeHeadersAsync(
+        string recipientAddress,
+        MailerDbContext dbContext,
+        CancellationToken cancellationToken
+    )
+    {
+        string? token = await dbContext
+            .NewsletterSubscribers.Where(subscriber => subscriber.Email == recipientAddress)
+            .Select(subscriber => subscriber.UnsubscribeToken)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            return null;
+        }
+
+        return new Dictionary<string, string>
+        {
+            ["List-Unsubscribe"] = $"<{NewsletterLinkBuilder.UnsubscribeUrl(token)}>",
+            ["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click",
+        };
     }
 
     /// <summary>
@@ -70,6 +103,7 @@ public class OutboxEmailDispatcherJob(IServiceScopeFactory scopeFactory, ILogger
     private async Task DeliverAsync(
         OutboxEmailEntity email,
         IEmailSenderService sender,
+        MailerDbContext dbContext,
         CancellationToken cancellationToken
     )
     {
@@ -79,7 +113,8 @@ public class OutboxEmailDispatcherJob(IServiceScopeFactory scopeFactory, ILogger
                 To: new EmailRecipientDto(email.RecipientAddress, email.RecipientName),
                 Subject: email.Subject,
                 HtmlBody: email.HtmlBody,
-                TextBody: email.TextBody
+                TextBody: email.TextBody,
+                Headers: await ResolveUnsubscribeHeadersAsync(email.RecipientAddress, dbContext, cancellationToken)
             );
 
             await sender.SendAsync(message, cancellationToken);
