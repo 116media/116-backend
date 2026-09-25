@@ -1,6 +1,6 @@
-using _116.Mailer.Contracts.Application.Messages;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 
-namespace _116.Mailer.Application.Newsletter.Messages;
+namespace _116.Mailer.Application.Newsletter.OutboundEmails;
 
 /// <summary>
 /// The first mail a confirmed subscriber receives. Subscription-class, so it is suppressed
@@ -8,16 +8,16 @@ namespace _116.Mailer.Application.Newsletter.Messages;
 /// </summary>
 /// <param name="Subscriber">The address that confirmed.</param>
 /// <param name="UnsubscribeUrl">The one-click opt-out link.</param>
-public record NewsletterWelcomeMessage(MessageRecipient Subscriber, string UnsubscribeUrl) : Message
+public record NewsletterWelcomeEmail(EmailRecipient Subscriber, string UnsubscribeUrl) : OutboundEmail
 {
     /// <inheritdoc />
-    public override EnumMessageClass Class => EnumMessageClass.Subscription;
+    public override EnumEmailClass Class => EnumEmailClass.Subscription;
 
     /// <inheritdoc />
-    public override string TemplateName => NewsletterMessageTemplates.NewsletterWelcome;
+    public override string TemplateName => NewsletterEmailTemplates.NewsletterWelcome;
 
     /// <inheritdoc />
-    public override IReadOnlyList<MessageRecipient> Recipients => [Subscriber];
+    public override IReadOnlyList<EmailRecipient> Recipients => [Subscriber];
 
     /// <inheritdoc />
     public override IReadOnlyDictionary<string, string> Tokens =>
