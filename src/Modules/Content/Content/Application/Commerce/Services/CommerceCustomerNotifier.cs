@@ -1,8 +1,8 @@
-using _116.Content.Application.Commerce.Messages;
+using _116.Content.Application.Commerce.OutboundEmails;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
-using _116.Mailer.Contracts.Application.Messages;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 
 namespace _116.Content.Application.Commerce.Services;
 
@@ -16,7 +16,7 @@ namespace _116.Content.Application.Commerce.Services;
 /// <param name="customerRepository">Repository resolving customers by id.</param>
 /// <param name="categoryRepository">Repository resolving the item categories named in the invoice.</param>
 public class CommerceCustomerNotifier(
-    IMessageDispatcher messageDispatcher,
+    IEmailDispatcher messageDispatcher,
     ICustomerRepository customerRepository,
     ICategoryRepository categoryRepository
 ) : ICommerceCustomerNotifier
@@ -32,9 +32,9 @@ public class CommerceCustomerNotifier(
     /// </summary>
     /// <param name="customer">The customer receiving the message.</param>
     /// <returns>The recipient, always in the neutral culture.</returns>
-    private static MessageRecipient RecipientFor(CustomerEntity customer)
+    private static EmailRecipient RecipientFor(CustomerEntity customer)
     {
-        return new MessageRecipient(
+        return new EmailRecipient(
             UserId: null,
             Address: customer.Email,
             DisplayName: customer.FullName,
@@ -57,7 +57,7 @@ public class CommerceCustomerNotifier(
             cancellationToken: cancellationToken
         );
 
-        var message = new OrderInvoiceMessage(
+        var message = new OrderInvoiceEmail(
             Customer: RecipientFor(customer),
             OrderReference: OrderReference(order.Id),
             AmountUsd: FormatAmount(order.TotalAmountUsd),
@@ -82,7 +82,7 @@ public class CommerceCustomerNotifier(
             return;
         }
 
-        var message = new PaymentReceiptMessage(
+        var message = new PaymentReceiptEmail(
             Customer: RecipientFor(customer),
             OrderReference: OrderReference(order.Id),
             AmountUsd: FormatAmount(payment.AmountUsd),
@@ -107,7 +107,7 @@ public class CommerceCustomerNotifier(
             return;
         }
 
-        var message = new PaymentRejectedMessage(
+        var message = new PaymentRejectedEmail(
             Customer: RecipientFor(customer),
             OrderReference: OrderReference(order.Id),
             Notes: notes ?? string.Empty
@@ -129,7 +129,7 @@ public class CommerceCustomerNotifier(
             return;
         }
 
-        var message = new OrderCancelledMessage(
+        var message = new OrderCancelledEmail(
             Customer: RecipientFor(customer),
             OrderReference: OrderReference(order.Id)
         );
@@ -152,7 +152,7 @@ public class CommerceCustomerNotifier(
             return;
         }
 
-        var message = new PromotionRemovedMessage(
+        var message = new PromotionRemovedEmail(
             Customer: RecipientFor(customer),
             ContentTitle: contentTitle,
             Reason: reason,
@@ -177,7 +177,7 @@ public class CommerceCustomerNotifier(
             return;
         }
 
-        var message = new CommissionedContentPublishedMessage(
+        var message = new CommissionedContentPublishedEmail(
             Customer: RecipientFor(customer),
             ContentTitle: contentTitle,
             PublicUrl: publicUrl
@@ -201,7 +201,7 @@ public class CommerceCustomerNotifier(
             return;
         }
 
-        var message = new CommissionedContentRejectedMessage(
+        var message = new CommissionedContentRejectedEmail(
             Customer: RecipientFor(customer),
             ContentTitle: contentTitle,
             Reason: reason
@@ -225,7 +225,7 @@ public class CommerceCustomerNotifier(
             return;
         }
 
-        var message = new ShootScheduledMessage(
+        var message = new ShootScheduledEmail(
             Customer: RecipientFor(customer),
             ContentTitle: contentTitle,
             ShootDate: shootDate
