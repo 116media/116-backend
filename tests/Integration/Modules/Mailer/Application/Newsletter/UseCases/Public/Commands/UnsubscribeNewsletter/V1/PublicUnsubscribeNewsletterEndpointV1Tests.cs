@@ -24,7 +24,10 @@ public class PublicUnsubscribeNewsletterEndpointV1Tests(PostgresFixture db) : Ba
             return subscriber;
         });
 
-        var response = await Client.GetAsync($"{ApiRoutes.Public.Newsletter}/unsubscribe/{seeded.UnsubscribeToken}");
+        var response = await Client.PostAsync(
+            $"{ApiRoutes.Public.Newsletter}/unsubscribe/{seeded.UnsubscribeToken}",
+            content: null
+        );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         PublicUnsubscribeNewsletterResponse body = await response.ReadAsAsync<PublicUnsubscribeNewsletterResponse>();
@@ -53,8 +56,11 @@ public class PublicUnsubscribeNewsletterEndpointV1Tests(PostgresFixture db) : Ba
             return subscriber;
         });
 
-        await Client.GetAsync($"{ApiRoutes.Public.Newsletter}/unsubscribe/{seeded.UnsubscribeToken}");
-        var second = await Client.GetAsync($"{ApiRoutes.Public.Newsletter}/unsubscribe/{seeded.UnsubscribeToken}");
+        await Client.PostAsync($"{ApiRoutes.Public.Newsletter}/unsubscribe/{seeded.UnsubscribeToken}", content: null);
+        var second = await Client.PostAsync(
+            $"{ApiRoutes.Public.Newsletter}/unsubscribe/{seeded.UnsubscribeToken}",
+            content: null
+        );
 
         second.StatusCode.Should().Be(HttpStatusCode.OK);
         PublicUnsubscribeNewsletterResponse body = await second.ReadAsAsync<PublicUnsubscribeNewsletterResponse>();
@@ -64,11 +70,35 @@ public class PublicUnsubscribeNewsletterEndpointV1Tests(PostgresFixture db) : Ba
     [Fact]
     public async Task Unsubscribe_UnknownToken_ReturnsNotFound()
     {
-        var response = await Client.GetAsync($"{ApiRoutes.Public.Newsletter}/unsubscribe/nope");
+        var response = await Client.PostAsync($"{ApiRoutes.Public.Newsletter}/unsubscribe/nope", content: null);
 
         await response.ShouldBeProblem<NotFoundException>(
             HttpStatusCode.NotFound,
             Localized<NewsletterErrorMessage>(m => m.TokenInvalid())
         );
+    }
+
+    [Fact]
+    public async Task Get_ShouldRenderAPageWithoutChangingAnything()
+    {
+        NewsletterSubscriberEntity seeded = await SeedAsync<MailerDbContext, NewsletterSubscriberEntity>(ctx =>
+        {
+            var subscriber = NewsletterSubscriberEntity.Subscribe(Guid.NewGuid(), "scanner-unsub@example.com");
+            subscriber.Confirm(DateTime.UtcNow);
+            ctx.NewsletterSubscribers.Add(subscriber);
+            return subscriber;
+        });
+
+        var response = await Client.GetAsync($"{ApiRoutes.Public.Newsletter}/unsubscribe/{seeded.UnsubscribeToken}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Content.Headers.ContentType?.MediaType.Should().Be("text/html");
+
+        string html = await response.Content.ReadAsStringAsync();
+        html.Should().Contain("<form method=\"post\"");
+
+        await using MailerDbContext db = CreateDbContext<MailerDbContext>();
+        NewsletterSubscriberEntity? after = await db.NewsletterSubscribers.FindAsync(seeded.Id);
+        after!.Status.Should().NotBe(EnumNewsletterStatus.Unsubscribed);
     }
 }
