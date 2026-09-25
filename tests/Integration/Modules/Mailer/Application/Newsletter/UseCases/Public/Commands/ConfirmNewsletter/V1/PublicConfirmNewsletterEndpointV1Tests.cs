@@ -23,7 +23,10 @@ public class PublicConfirmNewsletterEndpointV1Tests(PostgresFixture db) : BaseAp
             return subscriber;
         });
 
-        var response = await Client.GetAsync($"{ApiRoutes.Public.Newsletter}/confirm/{seeded.ConfirmationToken}");
+        var response = await Client.PostAsync(
+            $"{ApiRoutes.Public.Newsletter}/confirm/{seeded.ConfirmationToken}",
+            content: null
+        );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         PublicConfirmNewsletterResponse body = await response.ReadAsAsync<PublicConfirmNewsletterResponse>();
@@ -50,8 +53,11 @@ public class PublicConfirmNewsletterEndpointV1Tests(PostgresFixture db) : BaseAp
             return subscriber;
         });
 
-        await Client.GetAsync($"{ApiRoutes.Public.Newsletter}/confirm/{seeded.ConfirmationToken}");
-        var second = await Client.GetAsync($"{ApiRoutes.Public.Newsletter}/confirm/{seeded.ConfirmationToken}");
+        await Client.PostAsync($"{ApiRoutes.Public.Newsletter}/confirm/{seeded.ConfirmationToken}", content: null);
+        var second = await Client.PostAsync(
+            $"{ApiRoutes.Public.Newsletter}/confirm/{seeded.ConfirmationToken}",
+            content: null
+        );
 
         second.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -65,11 +71,35 @@ public class PublicConfirmNewsletterEndpointV1Tests(PostgresFixture db) : BaseAp
     [Fact]
     public async Task Confirm_UnknownToken_ReturnsNotFound()
     {
-        var response = await Client.GetAsync($"{ApiRoutes.Public.Newsletter}/confirm/does-not-exist");
+        var response = await Client.PostAsync($"{ApiRoutes.Public.Newsletter}/confirm/does-not-exist", content: null);
 
         await response.ShouldBeProblem<NotFoundException>(
             HttpStatusCode.NotFound,
             Localized<NewsletterErrorMessage>(m => m.TokenInvalid())
         );
+    }
+
+    [Fact]
+    public async Task Get_ShouldRenderAPageWithoutChangingAnything()
+    {
+        NewsletterSubscriberEntity seeded = await SeedAsync<MailerDbContext, NewsletterSubscriberEntity>(ctx =>
+        {
+            // Left pending: the GET must not be what confirms them.
+            var subscriber = NewsletterSubscriberEntity.Subscribe(Guid.NewGuid(), "scanner-confirm@example.com");
+            ctx.NewsletterSubscribers.Add(subscriber);
+            return subscriber;
+        });
+
+        var response = await Client.GetAsync($"{ApiRoutes.Public.Newsletter}/confirm/{seeded.ConfirmationToken}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Content.Headers.ContentType?.MediaType.Should().Be("text/html");
+
+        string html = await response.Content.ReadAsStringAsync();
+        html.Should().Contain("<form method=\"post\"");
+
+        await using MailerDbContext db = CreateDbContext<MailerDbContext>();
+        NewsletterSubscriberEntity? after = await db.NewsletterSubscribers.FindAsync(seeded.Id);
+        after!.Status.Should().NotBe(EnumNewsletterStatus.Subscribed);
     }
 }
