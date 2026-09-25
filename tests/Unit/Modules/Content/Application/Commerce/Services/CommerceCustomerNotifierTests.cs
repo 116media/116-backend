@@ -1,8 +1,8 @@
 using _116.Content.Application.Commerce.Services;
-using _116.Content.Application.Shared.Messages;
+using _116.Content.Application.Shared.OutboundEmails;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Mailer.Contracts.Application.Messages;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 using _116.Mailer.Contracts.Domain.Enums;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Unit.Tests.Common.Mocks.Repositories;
@@ -19,7 +19,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Commerce.Services;
 /// </summary>
 public class CommerceCustomerNotifierTests
 {
-    private readonly Mock<IMessageDispatcher> _dispatcherMock = new();
+    private readonly Mock<IEmailDispatcher> _dispatcherMock = new();
     private readonly Mock<ICustomerRepository> _customerRepositoryMock = new();
     private readonly Mock<ICategoryRepository> _categoryRepositoryMock = MockCategoryRepository.Create();
     private readonly CommerceCustomerNotifier _notifier;
@@ -118,8 +118,8 @@ public class CommerceCustomerNotifierTests
         _dispatcherMock.Verify(
             x =>
                 x.DispatchAsync(
-                    It.Is<Message>(m =>
-                        m.TemplateName == ContentMessageTemplates.OrderCancelled
+                    It.Is<OutboundEmail>(m =>
+                        m.TemplateName == ContentEmailTemplates.OrderCancelled
                         && m.Recipients[0].Address == "label@example.com"
                         && m.Tokens["orderReference"] == CommerceCustomerNotifier.OrderReference(order.Id)
                     ),
