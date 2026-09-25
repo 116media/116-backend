@@ -1,21 +1,21 @@
-using _116.Mailer.Contracts.Application.Messages;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 
-namespace _116.Identity.Application.Shared.Messages;
+namespace _116.Identity.Application.Shared.OutboundEmails;
 
 /// <summary>
 /// An account finished verification: the welcome that every verification path produces.
 /// </summary>
 /// <param name="User">The newly verified account.</param>
-public record WelcomeMessage(MessageRecipient User) : Message
+public record WelcomeEmail(EmailRecipient User) : OutboundEmail
 {
     /// <inheritdoc />
-    public override EnumMessageClass Class => EnumMessageClass.Transactional;
+    public override EnumEmailClass Class => EnumEmailClass.Transactional;
 
     /// <inheritdoc />
-    public override string TemplateName => IdentityMessageTemplates.Welcome;
+    public override string TemplateName => IdentityEmailTemplates.Welcome;
 
     /// <inheritdoc />
-    public override IReadOnlyList<MessageRecipient> Recipients => [User];
+    public override IReadOnlyList<EmailRecipient> Recipients => [User];
 
     /// <inheritdoc />
     public override IReadOnlyDictionary<string, string> Tokens =>
