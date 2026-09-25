@@ -1,7 +1,7 @@
-using _116.Content.Application.Shared.Messages;
-using _116.Mailer.Contracts.Application.Messages;
+using _116.Content.Application.Shared.OutboundEmails;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 
-namespace _116.Content.Application.Commerce.Messages;
+namespace _116.Content.Application.Commerce.OutboundEmails;
 
 /// <summary>
 /// Commissioned content went live: which content, and where to read it.
@@ -9,17 +9,17 @@ namespace _116.Content.Application.Commerce.Messages;
 /// <param name="Customer">The customer the order belongs to.</param>
 /// <param name="ContentTitle">The content that was published.</param>
 /// <param name="PublicUrl">Where the published content can be read.</param>
-public record CommissionedContentPublishedMessage(MessageRecipient Customer, string ContentTitle, string PublicUrl)
-    : Message
+public record CommissionedContentPublishedEmail(EmailRecipient Customer, string ContentTitle, string PublicUrl)
+    : OutboundEmail
 {
     /// <inheritdoc />
-    public override EnumMessageClass Class => EnumMessageClass.Transactional;
+    public override EnumEmailClass Class => EnumEmailClass.Transactional;
 
     /// <inheritdoc />
-    public override string TemplateName => ContentMessageTemplates.CommissionedContentPublished;
+    public override string TemplateName => ContentEmailTemplates.CommissionedContentPublished;
 
     /// <inheritdoc />
-    public override IReadOnlyList<MessageRecipient> Recipients => [Customer];
+    public override IReadOnlyList<EmailRecipient> Recipients => [Customer];
 
     /// <inheritdoc />
     public override IReadOnlyDictionary<string, string> Tokens =>
