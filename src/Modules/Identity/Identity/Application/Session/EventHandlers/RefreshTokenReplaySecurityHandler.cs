@@ -1,11 +1,11 @@
 using _116.Identity.Application.Session.Repositories;
-using _116.Identity.Application.Shared.Messages;
+using _116.Identity.Application.Shared.OutboundEmails;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Contracts.Application.DTOs;
 using _116.Identity.Contracts.Application.Services;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.Events;
-using _116.Mailer.Contracts.Application.Messages;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 using _116.Shared.Application.Services;
 using Microsoft.Extensions.Logging;
 
@@ -25,7 +25,7 @@ public class RefreshTokenReplaySecurityHandler(
     ISessionRepository sessionRepository,
     IIdentityUnitOfWork unitOfWork,
     IUserLookupService userLookupService,
-    IMessageDispatcher messageDispatcher,
+    IEmailDispatcher messageDispatcher,
     ILogger<RefreshTokenReplaySecurityHandler> logger
 ) : IDomainEventHandler<RefreshTokenReplayDetectedEvent>
 {
@@ -54,8 +54,8 @@ public class RefreshTokenReplaySecurityHandler(
             return;
         }
 
-        var message = new RefreshTokenReplayMessage(
-            User: new MessageRecipient(
+        var message = new RefreshTokenReplayEmail(
+            User: new EmailRecipient(
                 UserId: domainEvent.UserId,
                 Address: user.Email,
                 DisplayName: user.UserName,
