@@ -361,7 +361,7 @@ public class PublicLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 
         await response.ShouldBeProblem<AuthenticationException>(
             HttpStatusCode.Unauthorized,
-            Localized<AuthenticationErrorMessage>(m => m.InvalidCredentials())
+            Localized<AuthenticationErrorMessage>(m => m.InvalidCredentials(), culture: "fr")
         );
 
         ProblemDetails problem = await response.ReadAsAsync<ProblemDetails>();
