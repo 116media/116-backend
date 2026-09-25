@@ -1,10 +1,11 @@
 using _116.Content.Application.Editorial.EventHandlers;
+using _116.Content.Application.Shared.Messages;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Events;
 using _116.Identity.Contracts.Application.DTOs;
 using _116.Identity.Contracts.Application.Services;
-using _116.Mailer.Contracts.Application.DTOs;
+using _116.Mailer.Contracts.Application.Messages;
 using _116.Mailer.Contracts.Application.Services;
 using _116.Mailer.Contracts.Domain.Enums;
 using _116.Tests.Fixtures.Factories.Content;
@@ -22,7 +23,7 @@ public class LyricsRevisionDecidedNotificationsHandlerTests
 {
     private readonly Mock<IUserLookupService> _userLookupServiceMock = new();
     private readonly Mock<ILyricsRepository> _lyricsRepositoryMock;
-    private readonly Mock<IEmailService> _mailerMock = new();
+    private readonly Mock<IMessageDispatcher> _dispatcherMock = new();
     private readonly Mock<INotificationService> _notifierMock = new();
     private readonly LyricsRevisionDecidedNotificationsHandler _handler;
     private readonly LyricsEntity _lyrics;
@@ -36,7 +37,7 @@ public class LyricsRevisionDecidedNotificationsHandlerTests
         _handler = new LyricsRevisionDecidedNotificationsHandler(
             _userLookupServiceMock.Object,
             _lyricsRepositoryMock.Object,
-            _mailerMock.Object,
+            _dispatcherMock.Object,
             _notifierMock.Object,
             NullLogger<LyricsRevisionDecidedNotificationsHandler>.Instance
         );
@@ -56,15 +57,16 @@ public class LyricsRevisionDecidedNotificationsHandlerTests
         );
 
         // Assert
-        _mailerMock.Verify(
+        _dispatcherMock.Verify(
             x =>
-                x.EnqueueAsync(
-                    EnumEmailTemplate.RevisionDecided,
-                    It.Is<EmailRecipientDto>(r => r.Address == "proposer@test.com"),
-                    It.Is<IReadOnlyDictionary<string, string>>(t =>
-                        t["userName"] == "Fally" && t["songTitle"] == _lyrics.SongTitle && t["decision"] == "accepted"
+                x.DispatchAsync(
+                    It.Is<Message>(m =>
+                        m.TemplateName == ContentMessageTemplates.RevisionDecided
+                        && m.Recipients[0].Address == "proposer@test.com"
+                        && m.Tokens["userName"] == "Fally"
+                        && m.Tokens["songTitle"] == _lyrics.SongTitle
+                        && m.Tokens["decision"] == "accepted"
                     ),
-                    It.IsAny<string>(),
                     It.IsAny<CancellationToken>()
                 ),
             Times.Once
@@ -95,7 +97,6 @@ public class LyricsRevisionDecidedNotificationsHandlerTests
                         && t["decision"] == "rejected"
                         && t["linkPath"] == $"/lyrics/{_lyrics.Slug}"
                     ),
-                    It.IsAny<string>(),
                     It.IsAny<CancellationToken>()
                 ),
             Times.Once
@@ -116,14 +117,13 @@ public class LyricsRevisionDecidedNotificationsHandlerTests
         );
 
         // Assert
-        _mailerMock.VerifyNoOtherCalls();
+        _dispatcherMock.VerifyNoOtherCalls();
         _notifierMock.Verify(
             x =>
                 x.NotifyAsync(
                     proposerId,
                     EnumNotificationType.RevisionDecided,
                     It.IsAny<IReadOnlyDictionary<string, string>>(),
-                    It.IsAny<string>(),
                     It.IsAny<CancellationToken>()
                 ),
             Times.Once
@@ -140,7 +140,7 @@ public class LyricsRevisionDecidedNotificationsHandlerTests
         );
 
         // Assert
-        _mailerMock.VerifyNoOtherCalls();
+        _dispatcherMock.VerifyNoOtherCalls();
         _notifierMock.VerifyNoOtherCalls();
     }
 
@@ -158,7 +158,7 @@ public class LyricsRevisionDecidedNotificationsHandlerTests
         );
 
         // Assert
-        _mailerMock.VerifyNoOtherCalls();
+        _dispatcherMock.VerifyNoOtherCalls();
         _notifierMock.VerifyNoOtherCalls();
     }
 
