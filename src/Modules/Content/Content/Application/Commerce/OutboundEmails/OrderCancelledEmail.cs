@@ -1,23 +1,23 @@
-using _116.Content.Application.Shared.Messages;
-using _116.Mailer.Contracts.Application.Messages;
+using _116.Content.Application.Shared.OutboundEmails;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 
-namespace _116.Content.Application.Commerce.Messages;
+namespace _116.Content.Application.Commerce.OutboundEmails;
 
 /// <summary>
 /// An order was cancelled: the confirmation that nothing further is owed on it.
 /// </summary>
 /// <param name="Customer">The customer the order belongs to.</param>
 /// <param name="OrderReference">The customer-facing order reference.</param>
-public record OrderCancelledMessage(MessageRecipient Customer, string OrderReference) : Message
+public record OrderCancelledEmail(EmailRecipient Customer, string OrderReference) : OutboundEmail
 {
     /// <inheritdoc />
-    public override EnumMessageClass Class => EnumMessageClass.Transactional;
+    public override EnumEmailClass Class => EnumEmailClass.Transactional;
 
     /// <inheritdoc />
-    public override string TemplateName => ContentMessageTemplates.OrderCancelled;
+    public override string TemplateName => ContentEmailTemplates.OrderCancelled;
 
     /// <inheritdoc />
-    public override IReadOnlyList<MessageRecipient> Recipients => [Customer];
+    public override IReadOnlyList<EmailRecipient> Recipients => [Customer];
 
     /// <inheritdoc />
     public override IReadOnlyDictionary<string, string> Tokens =>
