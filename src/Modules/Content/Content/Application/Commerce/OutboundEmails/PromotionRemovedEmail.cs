@@ -1,7 +1,7 @@
-using _116.Content.Application.Shared.Messages;
-using _116.Mailer.Contracts.Application.Messages;
+using _116.Content.Application.Shared.OutboundEmails;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 
-namespace _116.Content.Application.Commerce.Messages;
+namespace _116.Content.Application.Commerce.OutboundEmails;
 
 /// <summary>
 /// Promoted content was taken down early: which content, and on what grounds.
@@ -10,21 +10,21 @@ namespace _116.Content.Application.Commerce.Messages;
 /// <param name="ContentTitle">The content that was unpromoted.</param>
 /// <param name="Reason">Why the promotion was removed.</param>
 /// <param name="RemovedAt">When the promotion was removed.</param>
-public record PromotionRemovedMessage(
-    MessageRecipient Customer,
+public record PromotionRemovedEmail(
+    EmailRecipient Customer,
     string ContentTitle,
     string Reason,
     DateTimeOffset RemovedAt
-) : Message
+) : OutboundEmail
 {
     /// <inheritdoc />
-    public override EnumMessageClass Class => EnumMessageClass.Transactional;
+    public override EnumEmailClass Class => EnumEmailClass.Transactional;
 
     /// <inheritdoc />
-    public override string TemplateName => ContentMessageTemplates.PromotionForceRemoved;
+    public override string TemplateName => ContentEmailTemplates.PromotionForceRemoved;
 
     /// <inheritdoc />
-    public override IReadOnlyList<MessageRecipient> Recipients => [Customer];
+    public override IReadOnlyList<EmailRecipient> Recipients => [Customer];
 
     /// <inheritdoc />
     public override IReadOnlyDictionary<string, string> Tokens =>
