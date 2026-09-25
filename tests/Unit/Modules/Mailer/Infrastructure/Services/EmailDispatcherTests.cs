@@ -1,6 +1,6 @@
 using _116.Mailer.Application.Shared.Repositories;
 using _116.Mailer.Contracts.Application.DTOs;
-using _116.Mailer.Contracts.Application.Messages;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 using _116.Mailer.Contracts.Application.Services;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Infrastructure.Services;
@@ -12,38 +12,38 @@ using Xunit;
 namespace _116.Unit.Tests.Modules.Mailer.Infrastructure.Services;
 
 /// <summary>
-/// Unit tests for <see cref="MessageDispatcher" />: the message class decides whether an
+/// Unit tests for <see cref="EmailDispatcher" />: the message class decides whether an
 /// address's opt-in state may suppress delivery, and every permitted recipient is enqueued
 /// in their own locale.
 /// </summary>
-public class MessageDispatcherTests
+public class EmailDispatcherTests
 {
     private const string Address = "fan@example.com";
 
     private readonly Mock<IEmailService> _emailService = new();
     private readonly Mock<INewsletterRepository> _newsletter = new();
 
-    private MessageDispatcher Dispatcher =>
-        new(_emailService.Object, _newsletter.Object, NullLogger<MessageDispatcher>.Instance);
+    private EmailDispatcher Dispatcher =>
+        new(_emailService.Object, _newsletter.Object, NullLogger<EmailDispatcher>.Instance);
 
     /// <summary>
     /// A message whose class is supplied per test, so one record covers every policy branch.
     /// </summary>
-    private sealed record ClassifiedMessage(EnumMessageClass Class, params MessageRecipient[] To) : Message
+    private sealed record ClassifiedMessage(EnumEmailClass Class, params EmailRecipient[] To) : OutboundEmail
     {
-        public override EnumMessageClass Class { get; } = Class;
+        public override EnumEmailClass Class { get; } = Class;
 
         public override string TemplateName => "AnyTemplate";
 
-        public override IReadOnlyList<MessageRecipient> Recipients => To;
+        public override IReadOnlyList<EmailRecipient> Recipients => To;
 
         public override IReadOnlyDictionary<string, string> Tokens =>
             new Dictionary<string, string> { ["userName"] = "Fally" };
     }
 
-    private static MessageRecipient Recipient(string address = Address, string locale = "en")
+    private static EmailRecipient Recipient(string address = Address, string locale = "en")
     {
-        return new MessageRecipient(UserId: null, Address: address, DisplayName: "Fally", Locale: locale);
+        return new EmailRecipient(UserId: null, Address: address, DisplayName: "Fally", Locale: locale);
     }
 
     private void SubscriberIs(NewsletterSubscriberEntity? subscriber)
@@ -87,10 +87,10 @@ public class MessageDispatcherTests
     }
 
     [Theory]
-    [InlineData(EnumMessageClass.Transactional)]
-    [InlineData(EnumMessageClass.Operational)]
+    [InlineData(EnumEmailClass.Transactional)]
+    [InlineData(EnumEmailClass.Operational)]
     public async Task DispatchAsync_AlwaysSentClasses_ShouldEnqueueEvenForAnUnsubscribedAddress(
-        EnumMessageClass messageClass
+        EnumEmailClass messageClass
     )
     {
         SubscriberIs(Unsubscribed());
@@ -101,9 +101,9 @@ public class MessageDispatcherTests
     }
 
     [Theory]
-    [InlineData(EnumMessageClass.Transactional)]
-    [InlineData(EnumMessageClass.Operational)]
-    public async Task DispatchAsync_AlwaysSentClasses_ShouldNotEvenConsultTheOptInState(EnumMessageClass messageClass)
+    [InlineData(EnumEmailClass.Transactional)]
+    [InlineData(EnumEmailClass.Operational)]
+    public async Task DispatchAsync_AlwaysSentClasses_ShouldNotEvenConsultTheOptInState(EnumEmailClass messageClass)
     {
         await Dispatcher.DispatchAsync(new ClassifiedMessage(messageClass, Recipient()), CancellationToken.None);
 
@@ -116,7 +116,7 @@ public class MessageDispatcherTests
         SubscriberIs(null);
 
         await Dispatcher.DispatchAsync(
-            new ClassifiedMessage(EnumMessageClass.Notification, Recipient()),
+            new ClassifiedMessage(EnumEmailClass.Notification, Recipient()),
             CancellationToken.None
         );
 
@@ -129,7 +129,7 @@ public class MessageDispatcherTests
         SubscriberIs(Unsubscribed());
 
         await Dispatcher.DispatchAsync(
-            new ClassifiedMessage(EnumMessageClass.Notification, Recipient()),
+            new ClassifiedMessage(EnumEmailClass.Notification, Recipient()),
             CancellationToken.None
         );
 
@@ -142,7 +142,7 @@ public class MessageDispatcherTests
         SubscriberIs(Subscribed());
 
         await Dispatcher.DispatchAsync(
-            new ClassifiedMessage(EnumMessageClass.Subscription, Recipient()),
+            new ClassifiedMessage(EnumEmailClass.Subscription, Recipient()),
             CancellationToken.None
         );
 
@@ -155,7 +155,7 @@ public class MessageDispatcherTests
         SubscriberIs(Pending());
 
         await Dispatcher.DispatchAsync(
-            new ClassifiedMessage(EnumMessageClass.Subscription, Recipient()),
+            new ClassifiedMessage(EnumEmailClass.Subscription, Recipient()),
             CancellationToken.None
         );
 
@@ -168,7 +168,7 @@ public class MessageDispatcherTests
         SubscriberIs(null);
 
         await Dispatcher.DispatchAsync(
-            new ClassifiedMessage(EnumMessageClass.Subscription, Recipient()),
+            new ClassifiedMessage(EnumEmailClass.Subscription, Recipient()),
             CancellationToken.None
         );
 
@@ -179,7 +179,7 @@ public class MessageDispatcherTests
     public async Task DispatchAsync_ShouldEnqueueEachRecipientInTheirOwnLocale()
     {
         var message = new ClassifiedMessage(
-            EnumMessageClass.Transactional,
+            EnumEmailClass.Transactional,
             Recipient("en@example.com", "en"),
             Recipient("fr@example.com", "fr")
         );
@@ -211,7 +211,7 @@ public class MessageDispatcherTests
     [Fact]
     public async Task DispatchAsync_WithNoRecipients_ShouldEnqueueNothing()
     {
-        await Dispatcher.DispatchAsync(new ClassifiedMessage(EnumMessageClass.Transactional), CancellationToken.None);
+        await Dispatcher.DispatchAsync(new ClassifiedMessage(EnumEmailClass.Transactional), CancellationToken.None);
 
         _emailService.VerifyNoOtherCalls();
     }
@@ -220,7 +220,7 @@ public class MessageDispatcherTests
     public async Task DispatchAsync_ShouldCarryTheMessageTemplateAndTokensThrough()
     {
         await Dispatcher.DispatchAsync(
-            new ClassifiedMessage(EnumMessageClass.Transactional, Recipient()),
+            new ClassifiedMessage(EnumEmailClass.Transactional, Recipient()),
             CancellationToken.None
         );
 
