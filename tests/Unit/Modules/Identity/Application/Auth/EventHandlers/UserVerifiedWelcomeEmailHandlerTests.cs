@@ -1,9 +1,9 @@
 using _116.Identity.Application.Auth.EventHandlers;
+using _116.Identity.Application.Shared.Messages;
 using _116.Identity.Contracts.Application.DTOs;
 using _116.Identity.Contracts.Application.Services;
 using _116.Identity.Domain.Events;
-using _116.Mailer.Contracts.Application.DTOs;
-using _116.Mailer.Contracts.Application.Services;
+using _116.Mailer.Contracts.Application.Messages;
 using _116.Mailer.Contracts.Domain.Enums;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -17,14 +17,14 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Auth.EventHandlers;
 public class UserVerifiedWelcomeEmailHandlerTests
 {
     private readonly Mock<IUserLookupService> _userLookupServiceMock = new();
-    private readonly Mock<IEmailService> _mailerMock = new();
+    private readonly Mock<IMessageDispatcher> _dispatcherMock = new();
     private readonly UserVerifiedWelcomeEmailHandler _handler;
 
     public UserVerifiedWelcomeEmailHandlerTests()
     {
         _handler = new UserVerifiedWelcomeEmailHandler(
             _userLookupServiceMock.Object,
-            _mailerMock.Object,
+            _dispatcherMock.Object,
             NullLogger<UserVerifiedWelcomeEmailHandler>.Instance
         );
     }
@@ -42,13 +42,15 @@ public class UserVerifiedWelcomeEmailHandlerTests
         await _handler.Handle(new UserVerifiedEvent(userId), CancellationToken.None);
 
         // Assert
-        _mailerMock.Verify(
+        _dispatcherMock.Verify(
             x =>
-                x.EnqueueAsync(
-                    EnumEmailTemplate.Welcome,
-                    It.Is<EmailRecipientDto>(r => r.Address == "fally@test.com" && r.DisplayName == "Fally"),
-                    It.Is<IReadOnlyDictionary<string, string>>(t => t["userName"] == "Fally"),
-                    It.IsAny<string>(),
+                x.DispatchAsync(
+                    It.Is<Message>(m =>
+                        m.TemplateName == IdentityMessageTemplates.Welcome
+                        && m.Recipients[0].Address == "fally@test.com"
+                        && m.Recipients[0].DisplayName == "Fally"
+                        && m.Tokens["userName"] == "Fally"
+                    ),
                     It.IsAny<CancellationToken>()
                 ),
             Times.Once
@@ -68,7 +70,7 @@ public class UserVerifiedWelcomeEmailHandlerTests
         await _handler.Handle(new UserVerifiedEvent(userId), CancellationToken.None);
 
         // Assert
-        _mailerMock.VerifyNoOtherCalls();
+        _dispatcherMock.VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -84,6 +86,6 @@ public class UserVerifiedWelcomeEmailHandlerTests
         await _handler.Handle(new UserVerifiedEvent(userId), CancellationToken.None);
 
         // Assert
-        _mailerMock.VerifyNoOtherCalls();
+        _dispatcherMock.VerifyNoOtherCalls();
     }
 }
