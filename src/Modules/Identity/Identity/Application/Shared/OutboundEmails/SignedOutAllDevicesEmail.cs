@@ -1,6 +1,6 @@
-using _116.Mailer.Contracts.Application.Messages;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 
-namespace _116.Identity.Application.Shared.Messages;
+namespace _116.Identity.Application.Shared.OutboundEmails;
 
 /// <summary>
 /// Every session on an account was ended. Whether an admin did it selects the template, since
@@ -9,17 +9,17 @@ namespace _116.Identity.Application.Shared.Messages;
 /// <param name="User">The account that was signed out.</param>
 /// <param name="ByAdmin">Whether an administrator forced the sign-out.</param>
 /// <param name="SignedOutAt">When the sessions were ended.</param>
-public record SignedOutAllDevicesMessage(MessageRecipient User, bool ByAdmin, DateTimeOffset SignedOutAt) : Message
+public record SignedOutAllDevicesEmail(EmailRecipient User, bool ByAdmin, DateTimeOffset SignedOutAt) : OutboundEmail
 {
     /// <inheritdoc />
-    public override EnumMessageClass Class => EnumMessageClass.Transactional;
+    public override EnumEmailClass Class => EnumEmailClass.Transactional;
 
     /// <inheritdoc />
     public override string TemplateName =>
-        ByAdmin ? IdentityMessageTemplates.AccountForceLoggedOut : IdentityMessageTemplates.SignedOutAllDevices;
+        ByAdmin ? IdentityEmailTemplates.AccountForceLoggedOut : IdentityEmailTemplates.SignedOutAllDevices;
 
     /// <inheritdoc />
-    public override IReadOnlyList<MessageRecipient> Recipients => [User];
+    public override IReadOnlyList<EmailRecipient> Recipients => [User];
 
     /// <inheritdoc />
     public override IReadOnlyDictionary<string, string> Tokens =>
