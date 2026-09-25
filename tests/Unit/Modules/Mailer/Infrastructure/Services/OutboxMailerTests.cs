@@ -1,4 +1,4 @@
-using _116.Identity.Application.Shared.Messages;
+using _116.Identity.Application.Shared.OutboundEmails;
 using _116.Mailer.Application.Shared.Persistence;
 using _116.Mailer.Application.Shared.Repositories;
 using _116.Mailer.Application.Shared.Services;
@@ -27,9 +27,7 @@ public class OutboxMailerTests
     public async Task EnqueueAsync_ShouldPersistTheRenderedEmailAndCommit()
     {
         _renderer
-            .Setup(r =>
-                r.Render(IdentityMessageTemplates.Welcome, It.IsAny<IReadOnlyDictionary<string, string>>(), "fr")
-            )
+            .Setup(r => r.Render(IdentityEmailTemplates.Welcome, It.IsAny<IReadOnlyDictionary<string, string>>(), "fr"))
             .Returns(new RenderedEmail("Bienvenue", "<p>Salut</p>", "Salut"));
 
         OutboxEmailEntity? captured = null;
@@ -40,7 +38,7 @@ public class OutboxMailerTests
         var emailService = new OutboxEmailService(_renderer.Object, _repository.Object, _unitOfWork.Object);
 
         await emailService.EnqueueAsync(
-            template: IdentityMessageTemplates.Welcome,
+            template: IdentityEmailTemplates.Welcome,
             to: new EmailRecipientDto("fan@example.com", "Fan", Locale: "fr"),
             tokens: new Dictionary<string, string> { ["userName"] = "Fan" },
             cancellationToken: CancellationToken.None
@@ -52,7 +50,7 @@ public class OutboxMailerTests
         captured.Subject.Should().Be("Bienvenue");
         captured.HtmlBody.Should().Be("<p>Salut</p>");
         captured.TextBody.Should().Be("Salut");
-        captured.Template.Should().Be(nameof(IdentityMessageTemplates.Welcome));
+        captured.Template.Should().Be(nameof(IdentityEmailTemplates.Welcome));
         captured.Status.Should().Be(EnumOutboxEmailStatus.Pending);
 
         _unitOfWork.Verify(u => u.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
@@ -71,7 +69,7 @@ public class OutboxMailerTests
 
         Func<Task> act = () =>
             emailService.EnqueueAsync(
-                IdentityMessageTemplates.Welcome,
+                IdentityEmailTemplates.Welcome,
                 new EmailRecipientDto("fan@example.com"),
                 new Dictionary<string, string>(),
                 CancellationToken.None
