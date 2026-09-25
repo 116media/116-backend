@@ -1,8 +1,8 @@
-using _116.Identity.Application.Shared.Messages;
+using _116.Identity.Application.Shared.OutboundEmails;
 using _116.Identity.Contracts.Application.DTOs;
 using _116.Identity.Contracts.Application.Services;
 using _116.Identity.Domain.Events;
-using _116.Mailer.Contracts.Application.Messages;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 using _116.Shared.Application.Services;
 using Microsoft.Extensions.Logging;
 
@@ -18,7 +18,7 @@ namespace _116.Identity.Application.Auth.EventHandlers;
 /// <param name="logger">Logger recording skipped deliveries.</param>
 public class UserVerifiedWelcomeEmailHandler(
     IUserLookupService userLookupService,
-    IMessageDispatcher messageDispatcher,
+    IEmailDispatcher messageDispatcher,
     ILogger<UserVerifiedWelcomeEmailHandler> logger
 ) : IDomainEventHandler<UserVerifiedEvent>
 {
@@ -36,8 +36,8 @@ public class UserVerifiedWelcomeEmailHandler(
             return;
         }
 
-        var message = new WelcomeMessage(
-            User: new MessageRecipient(
+        var message = new WelcomeEmail(
+            User: new EmailRecipient(
                 UserId: domainEvent.UserId,
                 Address: user.Email,
                 DisplayName: user.UserName,
