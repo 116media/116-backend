@@ -1,12 +1,12 @@
 using _116.Identity.Application.Session.EventHandlers;
 using _116.Identity.Application.Session.Repositories;
-using _116.Identity.Application.Shared.Messages;
+using _116.Identity.Application.Shared.OutboundEmails;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Contracts.Application.DTOs;
 using _116.Identity.Contracts.Application.Services;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.Events;
-using _116.Mailer.Contracts.Application.Messages;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 using _116.Mailer.Contracts.Domain.Enums;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
@@ -24,7 +24,7 @@ public class RefreshTokenReplaySecurityHandlerTests
     private readonly Mock<ISessionRepository> _sessionRepositoryMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
     private readonly Mock<IUserLookupService> _userLookupServiceMock = new();
-    private readonly Mock<IMessageDispatcher> _dispatcherMock = new();
+    private readonly Mock<IEmailDispatcher> _dispatcherMock = new();
     private readonly RefreshTokenReplaySecurityHandler _handler;
 
     public RefreshTokenReplaySecurityHandlerTests()
@@ -79,8 +79,8 @@ public class RefreshTokenReplaySecurityHandlerTests
         _dispatcherMock.Verify(
             x =>
                 x.DispatchAsync(
-                    It.Is<Message>(m =>
-                        m.TemplateName == IdentityMessageTemplates.RefreshTokenReplayAlert
+                    It.Is<OutboundEmail>(m =>
+                        m.TemplateName == IdentityEmailTemplates.RefreshTokenReplayAlert
                         && m.Recipients[0].Address == "user@test.com"
                         && m.Tokens["userName"] == "Fally"
                         && m.Tokens.ContainsKey("time")
