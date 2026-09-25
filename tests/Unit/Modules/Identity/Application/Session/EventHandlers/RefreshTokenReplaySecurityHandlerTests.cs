@@ -1,12 +1,12 @@
 using _116.Identity.Application.Session.EventHandlers;
 using _116.Identity.Application.Session.Repositories;
+using _116.Identity.Application.Shared.Messages;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Contracts.Application.DTOs;
 using _116.Identity.Contracts.Application.Services;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.Events;
-using _116.Mailer.Contracts.Application.DTOs;
-using _116.Mailer.Contracts.Application.Services;
+using _116.Mailer.Contracts.Application.Messages;
 using _116.Mailer.Contracts.Domain.Enums;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
@@ -24,7 +24,7 @@ public class RefreshTokenReplaySecurityHandlerTests
     private readonly Mock<ISessionRepository> _sessionRepositoryMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
     private readonly Mock<IUserLookupService> _userLookupServiceMock = new();
-    private readonly Mock<IEmailService> _mailerMock = new();
+    private readonly Mock<IMessageDispatcher> _dispatcherMock = new();
     private readonly RefreshTokenReplaySecurityHandler _handler;
 
     public RefreshTokenReplaySecurityHandlerTests()
@@ -36,7 +36,7 @@ public class RefreshTokenReplaySecurityHandlerTests
             _sessionRepositoryMock.Object,
             _unitOfWorkMock.Object,
             _userLookupServiceMock.Object,
-            _mailerMock.Object,
+            _dispatcherMock.Object,
             NullLogger<RefreshTokenReplaySecurityHandler>.Instance
         );
     }
@@ -76,13 +76,15 @@ public class RefreshTokenReplaySecurityHandlerTests
         await _handler.Handle(new RefreshTokenReplayDetectedEvent(userId, Guid.NewGuid()), CancellationToken.None);
 
         // Assert
-        _mailerMock.Verify(
+        _dispatcherMock.Verify(
             x =>
-                x.EnqueueAsync(
-                    EnumEmailTemplate.RefreshTokenReplayAlert,
-                    It.Is<EmailRecipientDto>(r => r.Address == "user@test.com"),
-                    It.Is<IReadOnlyDictionary<string, string>>(t => t["userName"] == "Fally" && t.ContainsKey("time")),
-                    It.IsAny<string>(),
+                x.DispatchAsync(
+                    It.Is<Message>(m =>
+                        m.TemplateName == IdentityMessageTemplates.RefreshTokenReplayAlert
+                        && m.Recipients[0].Address == "user@test.com"
+                        && m.Tokens["userName"] == "Fally"
+                        && m.Tokens.ContainsKey("time")
+                    ),
                     It.IsAny<CancellationToken>()
                 ),
             Times.Once
@@ -110,7 +112,7 @@ public class RefreshTokenReplaySecurityHandlerTests
                 ),
             Times.Once
         );
-        _mailerMock.VerifyNoOtherCalls();
+        _dispatcherMock.VerifyNoOtherCalls();
     }
 
     private void SetupUser(Guid userId, string? email)
