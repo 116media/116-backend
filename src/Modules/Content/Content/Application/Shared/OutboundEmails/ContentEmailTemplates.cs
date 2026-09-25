@@ -1,10 +1,10 @@
-namespace _116.Content.Application.Shared.Messages;
+namespace _116.Content.Application.Shared.OutboundEmails;
 
 /// <summary>
 /// The message templates this module sends. Owning the names here keeps the module off a
 /// shared cross-module enum.
 /// </summary>
-public static class ContentMessageTemplates
+public static class ContentEmailTemplates
 {
     /// <summary>
     /// The ArtistVerified template name, resolved from this module's resources.
