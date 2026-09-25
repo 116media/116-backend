@@ -1,4 +1,4 @@
-using _116.Mailer.Application.Newsletter.Messages;
+using _116.Mailer.Application.Newsletter.OutboundEmails;
 using _116.Mailer.Application.Notifications;
 using _116.Mailer.Application.Notifications.Messages;
 using _116.Mailer.Application.Shared.Errors;
@@ -8,7 +8,7 @@ using _116.Mailer.Application.Shared.Repositories;
 using _116.Mailer.Application.Shared.Services;
 using _116.Mailer.Application.Templates;
 using _116.Mailer.Application.Templates.Messages;
-using _116.Mailer.Contracts.Application.Messages;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 using _116.Mailer.Contracts.Application.Services;
 using _116.Mailer.Domain.Constants;
 using _116.Mailer.Infrastructure.BackgroundJobs;
@@ -66,7 +66,7 @@ public static class MailerModule
         services.AddScoped<INewsletterRepository, NewsletterRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<IEmailService, OutboxEmailService>();
-        services.AddScoped<IMessageDispatcher, MessageDispatcher>();
+        services.AddScoped<IEmailDispatcher, EmailDispatcher>();
         services.AddScoped<INotificationService, NotificationService>();
 
         RegisterEmailSender(services);
