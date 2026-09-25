@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants;
 using _116.Content.Application.Commerce.OutboundEmails;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -22,16 +23,16 @@ public class CommerceCustomerNotifier(
 ) : ICommerceCustomerNotifier
 {
     /// <summary>
-    /// The culture customer emails render in; neutral resources are the
-    /// English source of truth.
+    /// The locale customer emails render in. B2B customer records carry no language
+    /// preference, so they take the platform default rather than the acting admin's culture.
     /// </summary>
-    private const string CustomerCulture = "en";
+    private const string CustomerCulture = UserConstants.DefaultLocale;
 
     /// <summary>
     /// Resolves a customer row to the recipient the message renders for.
     /// </summary>
     /// <param name="customer">The customer receiving the message.</param>
-    /// <returns>The recipient, always in the neutral culture.</returns>
+    /// <returns>The recipient, always in the platform default locale.</returns>
     private static EmailRecipient RecipientFor(CustomerEntity customer)
     {
         return new EmailRecipient(
