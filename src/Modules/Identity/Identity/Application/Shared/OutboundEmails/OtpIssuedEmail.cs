@@ -1,6 +1,6 @@
-using _116.Mailer.Contracts.Application.Messages;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 
-namespace _116.Identity.Application.Shared.Messages;
+namespace _116.Identity.Application.Shared.OutboundEmails;
 
 /// <summary>
 /// A one-time code was issued: the code itself, delivered to the account that requested it.
@@ -10,16 +10,16 @@ namespace _116.Identity.Application.Shared.Messages;
 /// <param name="Template">The template the issuing purpose maps to.</param>
 /// <param name="PlainCode">The code as the recipient must type it.</param>
 /// <param name="ExpiryMinutes">How long the code stays valid.</param>
-public record OtpIssuedMessage(MessageRecipient User, string Template, string PlainCode, int ExpiryMinutes) : Message
+public record OtpIssuedEmail(EmailRecipient User, string Template, string PlainCode, int ExpiryMinutes) : OutboundEmail
 {
     /// <inheritdoc />
-    public override EnumMessageClass Class => EnumMessageClass.Transactional;
+    public override EnumEmailClass Class => EnumEmailClass.Transactional;
 
     /// <inheritdoc />
     public override string TemplateName => Template;
 
     /// <inheritdoc />
-    public override IReadOnlyList<MessageRecipient> Recipients => [User];
+    public override IReadOnlyList<EmailRecipient> Recipients => [User];
 
     /// <inheritdoc />
     public override IReadOnlyDictionary<string, string> Tokens =>
