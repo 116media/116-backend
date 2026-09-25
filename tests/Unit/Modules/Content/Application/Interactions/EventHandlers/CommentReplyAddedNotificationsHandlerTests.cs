@@ -1,10 +1,11 @@
 using _116.Content.Application.Interactions.EventHandlers;
+using _116.Content.Application.Shared.Messages;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Events;
 using _116.Identity.Contracts.Application.DTOs;
 using _116.Identity.Contracts.Application.Services;
-using _116.Mailer.Contracts.Application.DTOs;
+using _116.Mailer.Contracts.Application.Messages;
 using _116.Mailer.Contracts.Application.Services;
 using _116.Mailer.Contracts.Domain.Enums;
 using _116.Tests.Fixtures.Factories.Content;
@@ -23,7 +24,7 @@ public class CommentReplyAddedNotificationsHandlerTests
     private readonly Mock<IArticleRepository> _articleRepositoryMock;
     private readonly Mock<IArticleCommentRepository> _articleCommentRepositoryMock;
     private readonly Mock<IUserLookupService> _userLookupServiceMock = new();
-    private readonly Mock<IEmailService> _mailerMock = new();
+    private readonly Mock<IMessageDispatcher> _dispatcherMock = new();
     private readonly Mock<INotificationService> _notifierMock = new();
     private readonly CommentReplyAddedNotificationsHandler _handler;
 
@@ -60,7 +61,7 @@ public class CommentReplyAddedNotificationsHandlerTests
             _articleRepositoryMock.Object,
             _articleCommentRepositoryMock.Object,
             _userLookupServiceMock.Object,
-            _mailerMock.Object,
+            _dispatcherMock.Object,
             _notifierMock.Object,
             NullLogger<CommentReplyAddedNotificationsHandler>.Instance
         );
@@ -80,18 +81,17 @@ public class CommentReplyAddedNotificationsHandlerTests
         );
 
         // Assert
-        _mailerMock.Verify(
+        _dispatcherMock.Verify(
             x =>
-                x.EnqueueAsync(
-                    EnumEmailTemplate.CommentReply,
-                    It.Is<EmailRecipientDto>(r => r.Address == "author@test.com"),
-                    It.Is<IReadOnlyDictionary<string, string>>(t =>
-                        t["userName"] == "Fally"
-                        && t["replierName"] == "Aline"
-                        && t["articleTitle"] == _article.Title
-                        && t["replyExcerpt"] == "Totally agree with you!"
+                x.DispatchAsync(
+                    It.Is<Message>(m =>
+                        m.TemplateName == ContentMessageTemplates.CommentReply
+                        && m.Recipients[0].Address == "author@test.com"
+                        && m.Tokens["userName"] == "Fally"
+                        && m.Tokens["replierName"] == "Aline"
+                        && m.Tokens["articleTitle"] == _article.Title
+                        && m.Tokens["replyExcerpt"] == "Totally agree with you!"
                     ),
-                    It.IsAny<string>(),
                     It.IsAny<CancellationToken>()
                 ),
             Times.Once
@@ -122,7 +122,6 @@ public class CommentReplyAddedNotificationsHandlerTests
                         && t["articleTitle"] == _article.Title
                         && t["linkPath"] == $"/articles/{_article.Slug}"
                     ),
-                    It.IsAny<string>(),
                     It.IsAny<CancellationToken>()
                 ),
             Times.Once
@@ -148,7 +147,6 @@ public class CommentReplyAddedNotificationsHandlerTests
                     _parentAuthorId,
                     EnumNotificationType.CommentReply,
                     It.Is<IReadOnlyDictionary<string, string>>(t => t["replierName"] == "Someone"),
-                    It.IsAny<string>(),
                     It.IsAny<CancellationToken>()
                 ),
             Times.Once
@@ -168,7 +166,7 @@ public class CommentReplyAddedNotificationsHandlerTests
         );
 
         // Assert
-        _mailerMock.VerifyNoOtherCalls();
+        _dispatcherMock.VerifyNoOtherCalls();
         _notifierMock.VerifyNoOtherCalls();
     }
 
@@ -186,14 +184,13 @@ public class CommentReplyAddedNotificationsHandlerTests
         );
 
         // Assert
-        _mailerMock.VerifyNoOtherCalls();
+        _dispatcherMock.VerifyNoOtherCalls();
         _notifierMock.Verify(
             x =>
                 x.NotifyAsync(
                     _parentAuthorId,
                     EnumNotificationType.CommentReply,
                     It.IsAny<IReadOnlyDictionary<string, string>>(),
-                    It.IsAny<string>(),
                     It.IsAny<CancellationToken>()
                 ),
             Times.Once
@@ -210,7 +207,7 @@ public class CommentReplyAddedNotificationsHandlerTests
         );
 
         // Assert
-        _mailerMock.VerifyNoOtherCalls();
+        _dispatcherMock.VerifyNoOtherCalls();
         _notifierMock.VerifyNoOtherCalls();
     }
 
@@ -224,7 +221,7 @@ public class CommentReplyAddedNotificationsHandlerTests
         );
 
         // Assert
-        _mailerMock.VerifyNoOtherCalls();
+        _dispatcherMock.VerifyNoOtherCalls();
         _notifierMock.VerifyNoOtherCalls();
     }
 
