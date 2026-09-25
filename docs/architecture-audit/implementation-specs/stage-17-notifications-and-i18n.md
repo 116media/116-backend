@@ -41,12 +41,12 @@ Verified in the current tree:
   needed extending for the new page-copy family.
 - `ContentI18n` carries 22 members (21 constructor parameters) and is injected in 230 files
   `[06 §9]`. The audit's "46 members / 232 files" is stale; the finding holds, the numbers do not.
-- **Landed (17.6).** `DefaultCulture` is now `en`, matching the neutral `.resx` fallback, so an
-  unnegotiated request and a missing key resolve to the same language. The dead
-  `Items["Language"]` middleware is gone and the provider chain is query → cookie → header.
-  One integration test surfaced a latent weakness rather than a regression: the French login
-  test sent `Accept-Language: fr` but resolved its expected message with the *default* culture,
-  passing only because the default was French; it now passes `culture: "fr"` explicitly.
+- **Landed (17.6), then corrected.** `DefaultCulture` briefly moved to `en` to match the
+  neutral `.resx` fallback. That was wrong: **French is the platform's default language**, and
+  the mismatch it was solving cannot occur, because `ResourceCompletenessTests` asserts every
+  neutral key exists and is populated in `fr` across all 36 catalogues. The fallback never
+  fires, so the default costs nothing to keep French. `DefaultCulture` is `fr`, as it was. The
+  dead `Items["Language"]` middleware is gone and the provider chain is query → cookie → header.
 
 **17.1, as landed, and what was deliberately left.** `EnumEmailTemplate` is **deleted** and
 `src/` carries zero references: each module now owns its template names
@@ -78,7 +78,7 @@ preferences arrive; migrating the call sites is the second half and should land 
 | D3 | Template safety | escape user tokens, or two-phase render | **Two-phase render.** Phase 1: substitute tokens into a copy where each placeholder site is tracked. Phase 2: assert *the template's* placeholders are all consumed — checked against the pre-substitution placeholder set, not by re-scanning the final string. User text containing `{{x}}` renders literally and can no longer be mistaken for a template bug. |
 | D4 | Subscription verbs | signed one-click POST forms, or keep GETs | **GET serves a confirmation page; the state change is a POST.** The email link opens a minimal HTML page whose single button POSTs the signed token. Scanners follow GETs, not forms `[05 §14]`. `List-Unsubscribe-Post` header covers mail clients' native one-click. |
 | D5 | Resource keys | generated accessors, or a completeness test | **Completeness test.** A test enumerates every `messages.Subject/Html/Text(name)` name and every notification type against the `.resx` for each supported culture — a missing key fails the build's test run, which is where this codebase's guarantees live `[08 §15]`. The interpolated-English escapees move into resources in the same sweep `[08 §18]`. |
-| D6 | Default culture vs fallback | change the default to `en`, or translate the neutral resources to French | **Set `DefaultCulture = "en"`.** Not a product decision, and not a language-set question: the supported set is already exactly `fr` + `en`, and the neutral `Foo.resx` is the .NET satellite fallback, not a third language. Its contents are English, so the one-line default change makes the two agree at zero translation cost; translating the neutral files instead would mean re-translating 502 keys to fix a config mismatch. The dead `Items["Language"]` middleware is deleted and the standard query/cookie/header provider chain restored `[08 §16]`. |
+| D6 | Default culture vs fallback | change the default to `en`, or keep French | **Keep `DefaultCulture = "fr"` — owner decision, reversing the original call.** French is the platform default. The mismatch the `en` change targeted is unreachable: `ResourceCompletenessTests` proves `fr` defines every neutral key with matching placeholders, so a request that falls back to neutral English cannot happen.  Not a product decision, and not a language-set question: the supported set is already exactly `fr` + `en`, and the neutral `Foo.resx` is the .NET satellite fallback, not a third language. Its contents are English, so the one-line default change makes the two agree at zero translation cost; translating the neutral files instead would mean re-translating 502 keys to fix a config mismatch. The dead `Items["Language"]` middleware is deleted and the standard query/cookie/header provider chain restored `[08 §16]`. |
 | D7 | `ContentI18n` | split the facade, or per-aggregate injection | **Per-aggregate injection.** Stage 7 already created per-aggregate catalogs; handlers take the one or two `*ErrorMessage` classes they use, `ContentI18n` shrinks to the shared plumbing and is deleted when its member count hits zero `[06 §9]`. Mechanical, compiler-led, spread over the stage's touched files first. |
 
 ---
@@ -90,7 +90,7 @@ preferences arrive; migrating the call sites is the second half and should land 
 - [x] 17.3 — Two-phase render; `{{x}}` in user content sends literally (**both** renderers)
 - [x] 17.4 — Confirm/unsubscribe: GET page + POST action + `List-Unsubscribe-Post`
 - [x] 17.5 — Resource completeness test **already existed**; catalogue guard extended to the new families
-- [x] 17.6 — `DefaultCulture` set to `en`; dead `Items["Language"]` middleware removed; provider chain restored
+- [x] 17.6 — `DefaultCulture` stays `fr` (platform default); dead `Items["Language"]` middleware removed; provider chain restored
 - [ ] 17.7 — **Dropped, owner decision.** `ContentI18n` stays; see below
 - [x] 17.8 — Verify (build 0/0, csharpier, 8501 unit, 2145 integration, 6 architecture; every test in the Tests section exists)
 
@@ -350,7 +350,7 @@ constructor parameter.
 
 `PreferredLocale` migration generated, unapplied; existing rows backfill to the platform
 default. The `List-Unsubscribe` headers and the GET→page change are deliverability-positive and
-scanner-safe immediately. Land D6's one-line `DefaultCulture` change before the resource sweep,
+scanner-safe immediately. D6 leaves `DefaultCulture` at `fr`,
 so the completeness test in 17.5 measures against the default the app actually serves.
 
 ---
