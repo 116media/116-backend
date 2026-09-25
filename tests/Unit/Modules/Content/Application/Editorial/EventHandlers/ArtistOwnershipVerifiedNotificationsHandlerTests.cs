@@ -1,11 +1,11 @@
 using _116.Content.Application.Editorial.EventHandlers;
-using _116.Content.Application.Shared.Messages;
+using _116.Content.Application.Shared.OutboundEmails;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Events;
 using _116.Identity.Contracts.Application.DTOs;
 using _116.Identity.Contracts.Application.Services;
-using _116.Mailer.Contracts.Application.Messages;
+using _116.Mailer.Contracts.Application.OutboundEmails;
 using _116.Mailer.Contracts.Application.Services;
 using _116.Mailer.Contracts.Domain.Enums;
 using _116.Tests.Fixtures.Factories.Content;
@@ -23,7 +23,7 @@ public class ArtistOwnershipVerifiedNotificationsHandlerTests
 {
     private readonly Mock<IUserLookupService> _userLookupServiceMock = new();
     private readonly Mock<IArtistRepository> _artistRepositoryMock;
-    private readonly Mock<IMessageDispatcher> _dispatcherMock = new();
+    private readonly Mock<IEmailDispatcher> _dispatcherMock = new();
     private readonly Mock<INotificationService> _notifierMock = new();
     private readonly ArtistOwnershipVerifiedNotificationsHandler _handler;
     private readonly ArtistEntity _artist;
@@ -59,8 +59,8 @@ public class ArtistOwnershipVerifiedNotificationsHandlerTests
         _dispatcherMock.Verify(
             x =>
                 x.DispatchAsync(
-                    It.Is<Message>(m =>
-                        m.TemplateName == ContentMessageTemplates.ArtistVerified
+                    It.Is<OutboundEmail>(m =>
+                        m.TemplateName == ContentEmailTemplates.ArtistVerified
                         && m.Recipients[0].Address == "owner@test.com"
                         && m.Tokens["userName"] == "Fally"
                         && m.Tokens["artistName"] == _artist.Name
