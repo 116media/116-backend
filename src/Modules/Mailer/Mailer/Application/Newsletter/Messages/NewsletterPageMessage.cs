@@ -1,4 +1,3 @@
-using _116.Mailer.Application.Newsletter.Messages;
 using Microsoft.Extensions.Localization;
 
 namespace _116.Mailer.Application.Newsletter.Messages;
