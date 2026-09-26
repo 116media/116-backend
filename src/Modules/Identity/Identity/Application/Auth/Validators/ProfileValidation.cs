@@ -86,4 +86,23 @@ public static class ProfileValidation
             .WithMessage(i18n.PartialPhoneNumberTooLong(UserConstants.MaxPartialPhoneNumberLength))
             .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "PartialPhoneNumber")));
     }
+
+    /// <summary>
+    /// Validates the preferred locale against the locales the platform ships copy for.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the preferred locale property.</param>
+    /// <param name="i18n">The validation message catalog.</param>
+    /// <returns>The configured rule.</returns>
+    public static IRuleBuilderOptions<T, string?> ValidPreferredLocale<T>(
+        this IRuleBuilderInitial<T, string?> ruleBuilder,
+        ValidationErrorMessage i18n
+    )
+    {
+        return ruleBuilder
+            .Cascade(cascadeMode: CascadeMode.Stop)
+            .Must(locale => UserConstants.SupportedLocales.Contains(locale))
+            .WithMessage(i18n.PreferredLocaleUnsupported(string.Join(", ", UserConstants.SupportedLocales)))
+            .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "PreferredLocale")));
+    }
 }
