@@ -38,7 +38,8 @@ public class AdminUpdateOwnProfileValidatorTests
             CountryName: "United States",
             PartialPhoneNumber: "1234567890",
             CountryIsoCode: "US",
-            CountryDialCode: "+1"
+            CountryDialCode: "+1",
+            PreferredLocale: null
         );
 
         // Act
@@ -60,7 +61,8 @@ public class AdminUpdateOwnProfileValidatorTests
             CountryName: null,
             PartialPhoneNumber: null,
             CountryIsoCode: null,
-            CountryDialCode: null
+            CountryDialCode: null,
+            PreferredLocale: null
         );
 
         // Act
@@ -86,7 +88,8 @@ public class AdminUpdateOwnProfileValidatorTests
             CountryName: null,
             PartialPhoneNumber: null,
             CountryIsoCode: null,
-            CountryDialCode: null
+            CountryDialCode: null,
+            PreferredLocale: null
         );
 
         // Act
@@ -108,7 +111,8 @@ public class AdminUpdateOwnProfileValidatorTests
             CountryName: null,
             PartialPhoneNumber: null,
             CountryIsoCode: null,
-            CountryDialCode: null
+            CountryDialCode: null,
+            PreferredLocale: null
         );
 
         // Act
@@ -130,7 +134,8 @@ public class AdminUpdateOwnProfileValidatorTests
             CountryName: null,
             PartialPhoneNumber: null,
             CountryIsoCode: null,
-            CountryDialCode: null
+            CountryDialCode: null,
+            PreferredLocale: null
         );
 
         // Act
@@ -156,7 +161,8 @@ public class AdminUpdateOwnProfileValidatorTests
             CountryName: new string('a', UserConstants.MaxCountryNameLength + 1),
             PartialPhoneNumber: null,
             CountryIsoCode: null,
-            CountryDialCode: null
+            CountryDialCode: null,
+            PreferredLocale: null
         );
 
         // Act
@@ -184,7 +190,8 @@ public class AdminUpdateOwnProfileValidatorTests
             CountryName: null,
             PartialPhoneNumber: null,
             CountryIsoCode: "USAA",
-            CountryDialCode: null
+            CountryDialCode: null,
+            PreferredLocale: null
         );
 
         // Act
@@ -206,7 +213,8 @@ public class AdminUpdateOwnProfileValidatorTests
             CountryName: null,
             PartialPhoneNumber: null,
             CountryIsoCode: "us",
-            CountryDialCode: null
+            CountryDialCode: null,
+            PreferredLocale: null
         );
 
         // Act
@@ -230,7 +238,8 @@ public class AdminUpdateOwnProfileValidatorTests
             CountryName: null,
             PartialPhoneNumber: null,
             CountryIsoCode: "US",
-            CountryDialCode: null
+            CountryDialCode: null,
+            PreferredLocale: null
         );
 
         // Act
@@ -251,7 +260,8 @@ public class AdminUpdateOwnProfileValidatorTests
             CountryName: null,
             PartialPhoneNumber: null,
             CountryIsoCode: "USA",
-            CountryDialCode: null
+            CountryDialCode: null,
+            PreferredLocale: null
         );
 
         // Act
@@ -276,7 +286,8 @@ public class AdminUpdateOwnProfileValidatorTests
             CountryName: null,
             PartialPhoneNumber: null,
             CountryIsoCode: null,
-            CountryDialCode: new string('1', UserConstants.MaxCountryDialCodeLength + 1)
+            CountryDialCode: new string('1', UserConstants.MaxCountryDialCodeLength + 1),
+            PreferredLocale: null
         );
 
         // Act
@@ -298,7 +309,8 @@ public class AdminUpdateOwnProfileValidatorTests
             CountryName: null,
             PartialPhoneNumber: null,
             CountryIsoCode: null,
-            CountryDialCode: "1"
+            CountryDialCode: "1",
+            PreferredLocale: null
         );
 
         // Act
@@ -320,7 +332,8 @@ public class AdminUpdateOwnProfileValidatorTests
             CountryName: null,
             PartialPhoneNumber: null,
             CountryIsoCode: null,
-            CountryDialCode: "+1"
+            CountryDialCode: "+1",
+            PreferredLocale: null
         );
 
         // Act
@@ -345,7 +358,8 @@ public class AdminUpdateOwnProfileValidatorTests
             CountryName: null,
             PartialPhoneNumber: new string('1', UserConstants.MaxPartialPhoneNumberLength + 1),
             CountryIsoCode: null,
-            CountryDialCode: null
+            CountryDialCode: null,
+            PreferredLocale: null
         );
 
         // Act
@@ -375,7 +389,8 @@ public class AdminUpdateOwnProfileValidatorTests
             CountryName: new string('a', UserConstants.MaxCountryNameLength + 1),
             PartialPhoneNumber: new string('1', UserConstants.MaxPartialPhoneNumberLength + 1),
             CountryIsoCode: "usaa",
-            CountryDialCode: "1"
+            CountryDialCode: "1",
+            PreferredLocale: null
         );
 
         // Act
