@@ -1,3 +1,5 @@
+using System.Net;
+using _116.Mailer.Application.Newsletter.Messages;
 using _116.Mailer.Application.Newsletter.UseCases.Public.Commands.UnsubscribeNewsletter.V1;
 using _116.Mailer.Application.Shared.Errors.Messages;
 using _116.Mailer.Domain.Entities;
@@ -96,6 +98,9 @@ public class PublicUnsubscribeNewsletterEndpointV1Tests(PostgresFixture db) : Ba
 
         string html = await response.Content.ReadAsStringAsync();
         html.Should().Contain("<form method=\"post\"");
+        html.Should().Contain(WebUtility.HtmlEncode(Localized<NewsletterPageMessage>(page => page.UnsubscribeTitle())));
+        html.Should()
+            .Contain(WebUtility.HtmlEncode(Localized<NewsletterPageMessage>(page => page.UnsubscribeButton())));
 
         await using MailerDbContext db = CreateDbContext<MailerDbContext>();
         NewsletterSubscriberEntity? after = await db.NewsletterSubscribers.FindAsync(seeded.Id);
