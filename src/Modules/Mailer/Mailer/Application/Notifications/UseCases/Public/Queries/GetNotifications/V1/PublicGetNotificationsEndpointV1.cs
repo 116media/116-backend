@@ -2,6 +2,7 @@ using System.Security.Claims;
 using _116.BuildingBlocks.Constants.Authorization.Policies;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Contracts.Application.Services;
+using _116.Mailer.Application.Notifications.Constants;
 using _116.Mailer.Application.Shared.DTOs;
 using _116.Mailer.Domain.Constants;
 using _116.Shared.Application.Extensions;
@@ -38,7 +39,7 @@ public class PublicGetNotificationsEndpointV1 : ICarterModule
 
         group
             .MapGet(
-                pattern: "/",
+                pattern: NotificationRouteConstants.Root,
                 async (
                     ClaimsPrincipal user,
                     IClaimsProvider claims,
