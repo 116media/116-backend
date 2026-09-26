@@ -30,5 +30,6 @@ public class AdminUpdateOwnProfileValidator : AbstractValidator<AdminUpdateOwnPr
         RuleFor(x => x.CountryIsoCode).ValidCountryIsoCode(i18n.User.Validation);
         RuleFor(x => x.CountryDialCode).ValidCountryDialCode(i18n.User.Validation);
         RuleFor(x => x.PartialPhoneNumber).ValidPartialPhoneNumber(i18n.User.Validation);
+        RuleFor(x => x.PreferredLocale).ValidPreferredLocale(i18n.User.Validation);
     }
 }
