@@ -146,6 +146,11 @@ public static class UserConstants
     public const string DefaultLocale = "fr";
 
     /// <summary>
+    /// The locales the platform ships copy for. A user's preferred locale must be one of them.
+    /// </summary>
+    public static readonly string[] SupportedLocales = ["fr", "en"];
+
+    /// <summary>
     /// Maximum stored length of a user's preferred locale code.
     /// </summary>
     public const int MaxLocaleLength = 5;
