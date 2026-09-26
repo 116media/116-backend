@@ -24,6 +24,7 @@ public class PublicUpdateOwnProfileRequestBuilder
     private string? _partialPhoneNumber;
     private string? _countryIsoCode;
     private string? _countryDialCode;
+    private string? _preferredLocale;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PublicUpdateOwnProfileRequestBuilder"/> class
@@ -87,6 +88,18 @@ public class PublicUpdateOwnProfileRequestBuilder
     /// Builds the <see cref="PublicUpdateOwnProfileRequest"/> instance.
     /// </summary>
     /// <returns>A configured PublicUpdateOwnProfileRequest instance.</returns>
+    /// <summary>
+    /// Sets the preferred locale.
+    /// </summary>
+    /// <param name="preferredLocale">The locale the user's mail renders in.</param>
+    /// <returns>The builder for chaining.</returns>
+    public PublicUpdateOwnProfileRequestBuilder WithPreferredLocale(string? preferredLocale)
+    {
+        _preferredLocale = preferredLocale;
+
+        return this;
+    }
+
     public PublicUpdateOwnProfileRequest Build()
     {
         return new PublicUpdateOwnProfileRequest(
@@ -95,7 +108,8 @@ public class PublicUpdateOwnProfileRequestBuilder
             CountryName: _countryName,
             PartialPhoneNumber: _partialPhoneNumber,
             CountryIsoCode: _countryIsoCode,
-            CountryDialCode: _countryDialCode
+            CountryDialCode: _countryDialCode,
+            PreferredLocale: _preferredLocale
         );
     }
 }
