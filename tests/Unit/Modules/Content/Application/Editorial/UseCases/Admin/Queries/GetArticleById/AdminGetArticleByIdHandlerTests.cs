@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants;
 using _116.Content.Application.Editorial.UseCases.Admin.Queries.GetArticleById;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -75,7 +76,8 @@ public class AdminGetArticleByIdHandlerTests : BaseContentHandlerTest
             TestConstants.User.ValidUserName,
             TestConstants.User.ValidEmail,
             null,
-            "SuperAdmin"
+            "SuperAdmin",
+            UserConstants.DefaultLocale
         );
         _userLookupMock
             .Setup(x => x.GetAuthorInfoByIdAsync(article.AuthorId, It.IsAny<CancellationToken>()))
@@ -105,7 +107,8 @@ public class AdminGetArticleByIdHandlerTests : BaseContentHandlerTest
             TestConstants.User.ValidUserName,
             TestConstants.User.ValidEmail,
             avatarFileId,
-            "Admin"
+            "Admin",
+            UserConstants.DefaultLocale
         );
         _userLookupMock
             .Setup(x => x.GetAuthorInfoByIdAsync(article.AuthorId, It.IsAny<CancellationToken>()))
@@ -151,7 +154,13 @@ public class AdminGetArticleByIdHandlerTests : BaseContentHandlerTest
         var query = new AdminGetArticleByIdQuery(Id: article.Id);
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
 
-        var authorInfo = new AuthorDto(TestConstants.User.ValidUserName, TestConstants.User.ValidEmail, null, "Admin");
+        var authorInfo = new AuthorDto(
+            TestConstants.User.ValidUserName,
+            TestConstants.User.ValidEmail,
+            null,
+            "Admin",
+            UserConstants.DefaultLocale
+        );
         _userLookupMock
             .Setup(x => x.GetAuthorInfoByIdAsync(article.AuthorId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authorInfo);
