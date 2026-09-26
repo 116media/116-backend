@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
@@ -939,4 +940,48 @@ public class UserEntityTests
     }
 
     #endregion
+
+    [Fact]
+    public void SetPreferredLocale_WithADifferentLocale_ShouldStoreItAndReportTheChange()
+    {
+        UserEntity user = UserFactory.Create();
+
+        bool changed = user.SetPreferredLocale("en");
+
+        changed.Should().BeTrue();
+        user.PreferredLocale.Should().Be("en");
+    }
+
+    [Fact]
+    public void SetPreferredLocale_WithTheLocaleAlreadyStored_ShouldReportNoChange()
+    {
+        UserEntity user = UserFactory.Create();
+
+        bool changed = user.SetPreferredLocale(user.PreferredLocale);
+
+        changed.Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData(null)]
+    public void SetPreferredLocale_WithNoLocale_ShouldKeepTheStoredOne(string? locale)
+    {
+        UserEntity user = UserFactory.Create();
+        string original = user.PreferredLocale;
+
+        bool changed = user.SetPreferredLocale(locale!);
+
+        changed.Should().BeFalse();
+        user.PreferredLocale.Should().Be(original);
+    }
+
+    [Fact]
+    public void PreferredLocale_OnANewUser_ShouldBeThePlatformDefault()
+    {
+        UserEntity user = UserFactory.Create();
+
+        user.PreferredLocale.Should().Be(UserConstants.DefaultLocale);
+    }
 }
