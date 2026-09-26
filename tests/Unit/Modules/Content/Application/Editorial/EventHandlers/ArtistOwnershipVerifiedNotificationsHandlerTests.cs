@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants;
 using _116.Content.Application.Editorial.EventHandlers;
 using _116.Content.Application.Shared.OutboundEmails;
 using _116.Content.Application.Shared.Repositories;
@@ -150,6 +151,6 @@ public class ArtistOwnershipVerifiedNotificationsHandlerTests
     {
         _userLookupServiceMock
             .Setup(x => x.GetAuthorInfoByIdAsync(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new AuthorDto("Fally", email, null, "Visitor"));
+            .ReturnsAsync(new AuthorDto("Fally", email, null, "Visitor", UserConstants.DefaultLocale));
     }
 }
