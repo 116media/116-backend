@@ -51,7 +51,7 @@ public class LocalizationExtensionTests
     }
 
     [Fact]
-    public void AddAppLocalization_ShouldDefaultToTheCultureOfTheNeutralResources()
+    public void AddAppLocalization_ShouldDefaultToThePlatformLanguage()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -62,11 +62,11 @@ public class LocalizationExtensionTests
         var options = provider.GetRequiredService<IOptions<RequestLocalizationOptions>>();
 
         // Assert
-        options.Value.DefaultRequestCulture.Culture.Name.Should().Be("en");
+        options.Value.DefaultRequestCulture.Culture.Name.Should().Be("fr");
     }
 
     [Fact]
-    public void AddAppLocalization_ShouldDefaultTheUICultureToTheNeutralResources()
+    public void AddAppLocalization_ShouldDefaultTheUICultureToThePlatformLanguage()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -77,7 +77,7 @@ public class LocalizationExtensionTests
         var options = provider.GetRequiredService<IOptions<RequestLocalizationOptions>>();
 
         // Assert
-        options.Value.DefaultRequestCulture.UICulture.Name.Should().Be("en");
+        options.Value.DefaultRequestCulture.UICulture.Name.Should().Be("fr");
     }
 
     [Fact]
