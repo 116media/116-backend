@@ -32,6 +32,7 @@ public interface IAdminUpdateProfileAuthFactory
         string? countryIsoCode,
         string? countryDialCode,
         string? partialPhoneNumber,
+        string? preferredLocale,
         CancellationToken cancellationToken
     );
 }
