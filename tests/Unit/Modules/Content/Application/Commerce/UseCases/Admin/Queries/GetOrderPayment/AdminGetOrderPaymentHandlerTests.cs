@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants;
 using _116.Content.Application.Commerce.Factories;
 using _116.Content.Application.Commerce.UseCases.Admin.Queries.GetOrderPayment;
 using _116.Content.Application.Shared.Repositories;
@@ -104,7 +105,13 @@ public class AdminGetOrderPaymentHandlerTests : BaseContentHandlerTest
         _userLookupMock.SetupGetAuthorInfosByIds(
             new Dictionary<Guid, AuthorDto>
             {
-                [verifierId] = new(TestConstants.User.ValidUserName, Email: null, AvatarFileId: null, Role: null),
+                [verifierId] = new(
+                    TestConstants.User.ValidUserName,
+                    Email: null,
+                    AvatarFileId: null,
+                    Role: null,
+                    PreferredLocale: UserConstants.DefaultLocale
+                ),
             }
         );
 
