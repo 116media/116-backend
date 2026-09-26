@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Application.Shared.Exceptions;
 using _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfile.V1;
@@ -167,7 +168,8 @@ public class PublicUpdateOwnProfileEndpointV1Tests(PostgresFixture db) : BaseApi
             CountryName: null,
             PartialPhoneNumber: null,
             CountryIsoCode: null,
-            CountryDialCode: null
+            CountryDialCode: null,
+            PreferredLocale: null
         );
 
         // Act
@@ -178,5 +180,49 @@ public class PublicUpdateOwnProfileEndpointV1Tests(PostgresFixture db) : BaseApi
             HttpStatusCode.Forbidden,
             Localized<AuthenticationErrorMessage>(m => m.InvalidRefreshToken())
         );
+    }
+
+    [Fact]
+    public async Task PublicUpdateOwnProfile_WithAPreferredLocale_PersistsItForLaterEmails()
+    {
+        var sessionId = Guid.NewGuid();
+        await SeedAsync<IdentityDbContext>(context =>
+        {
+            context.Sessions.Add(SessionFactory.CreateWithId(sessionId, TestUser.VisitorId));
+        });
+
+        Client.AuthenticateAs(TestUser.VisitorId, "Visitor", sessionId);
+
+        var request = new PublicUpdateOwnProfileRequestBuilder().WithPreferredLocale("en").Build();
+
+        var response = await Client.PatchAsJsonAsync(Routes.Public.Me.Profile(), request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        await using IdentityDbContext db = CreateDbContext<IdentityDbContext>();
+        UserEntity user = await db.Users.SingleAsync(candidate => candidate.Id == TestUser.VisitorId);
+        user.PreferredLocale.Should().Be("en");
+    }
+
+    [Fact]
+    public async Task PublicUpdateOwnProfile_WithAnUnsupportedLocale_ReturnsValidationProblem()
+    {
+        var sessionId = Guid.NewGuid();
+        await SeedAsync<IdentityDbContext>(context =>
+        {
+            context.Sessions.Add(SessionFactory.CreateWithId(sessionId, TestUser.VisitorId));
+        });
+
+        Client.AuthenticateAs(TestUser.VisitorId, "Visitor", sessionId);
+
+        var request = new PublicUpdateOwnProfileRequestBuilder().WithPreferredLocale("de").Build();
+
+        var response = await Client.PatchAsJsonAsync(Routes.Public.Me.Profile(), request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        await using IdentityDbContext db = CreateDbContext<IdentityDbContext>();
+        UserEntity user = await db.Users.SingleAsync(candidate => candidate.Id == TestUser.VisitorId);
+        user.PreferredLocale.Should().Be(UserConstants.DefaultLocale);
     }
 }
