@@ -1,3 +1,4 @@
+using _116.Mailer.Application.Newsletter.Messages;
 using _116.Mailer.Application.Newsletter.OutboundEmails;
 using _116.Mailer.Application.Notifications;
 using _116.Mailer.Application.Notifications.Messages;
