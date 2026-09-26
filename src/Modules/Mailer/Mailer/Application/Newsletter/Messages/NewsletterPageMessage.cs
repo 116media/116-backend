@@ -1,6 +1,7 @@
+using _116.Mailer.Application.Newsletter.Messages;
 using Microsoft.Extensions.Localization;
 
-namespace _116.Mailer.Application.Newsletter.OutboundEmails;
+namespace _116.Mailer.Application.Newsletter.Messages;
 
 /// <summary>
 /// Localized copy for the confirm and unsubscribe landing pages. The pages exist so the state
