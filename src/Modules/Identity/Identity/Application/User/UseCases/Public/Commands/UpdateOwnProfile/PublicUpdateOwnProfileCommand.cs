@@ -27,7 +27,8 @@ public record PublicUpdateOwnProfileCommand(
     string? CountryName,
     string? PartialPhoneNumber,
     string? CountryIsoCode,
-    string? CountryDialCode
+    string? CountryDialCode,
+    string? PreferredLocale
 ) : ICommand<PublicUpdateOwnProfileResult>;
 
 /// <summary>
