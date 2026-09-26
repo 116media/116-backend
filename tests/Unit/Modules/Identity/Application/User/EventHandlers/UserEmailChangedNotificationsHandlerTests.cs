@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Shared.OutboundEmails;
 using _116.Identity.Application.User.EventHandlers;
 using _116.Identity.Contracts.Application.DTOs;
@@ -189,6 +190,6 @@ public class UserEmailChangedNotificationsHandlerTests
     {
         _userLookupServiceMock
             .Setup(x => x.GetAuthorInfoByIdAsync(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new AuthorDto("Fally", "fresh@example.com", null, "Visitor"));
+            .ReturnsAsync(new AuthorDto("Fally", "fresh@example.com", null, "Visitor", UserConstants.DefaultLocale));
     }
 }
