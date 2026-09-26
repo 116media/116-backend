@@ -102,9 +102,6 @@ public class SmtpEmailSenderServiceTests : IDisposable
     [Fact]
     public async Task SendAsync_WithAConfiguredSenderNameAndAnAnonymousRecipient_ShouldStillBuildTheMessage()
     {
-        // A recipient without a display name and an explicit sender name are the
-        // other side of both identity fallbacks; the send is cancelled so the
-        // message is built without a connection ever being attempted.
         SmtpEmailSenderService sender = CreateSender(
             new Dictionary<string, string?>
             {
@@ -119,6 +116,35 @@ public class SmtpEmailSenderServiceTests : IDisposable
         await cancellation.CancelAsync();
 
         Func<Task> act = () => sender.SendAsync(Message(displayName: null), cancellation.Token);
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
+    }
+
+    [Fact]
+    public async Task SendAsync_WithListUnsubscribeHeaders_ShouldBuildTheMessageCarryingThem()
+    {
+        SmtpEmailSenderService sender = CreateSender(
+            new Dictionary<string, string?>
+            {
+                ["SMTP_HOST"] = "127.0.0.1",
+                ["SMTP_PORT"] = "1025",
+                ["EMAIL_FROM_ADDRESS"] = "no-reply@116.example",
+            }
+        );
+
+        EmailMessage message = Message() with
+        {
+            Headers = new Dictionary<string, string>
+            {
+                ["List-Unsubscribe"] = "<https://116.example/unsubscribe/tok>",
+                ["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click",
+            },
+        };
+
+        using var cancellation = new CancellationTokenSource();
+        await cancellation.CancelAsync();
+
+        Func<Task> act = () => sender.SendAsync(message, cancellation.Token);
 
         await act.Should().ThrowAsync<OperationCanceledException>();
     }
