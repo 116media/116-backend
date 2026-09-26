@@ -17,7 +17,7 @@ namespace _116.Identity.Infrastructure.Persistence.Migrations
                 type: "character varying(5)",
                 maxLength: 5,
                 nullable: false,
-                defaultValue: "en");
+                defaultValue: "fr");
         }
 
         /// <inheritdoc />
