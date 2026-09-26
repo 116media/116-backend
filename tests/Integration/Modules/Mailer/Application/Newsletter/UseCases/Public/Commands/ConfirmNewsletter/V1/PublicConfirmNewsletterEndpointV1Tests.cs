@@ -1,3 +1,5 @@
+using System.Net;
+using _116.Mailer.Application.Newsletter.Messages;
 using _116.Mailer.Application.Newsletter.UseCases.Public.Commands.ConfirmNewsletter.V1;
 using _116.Mailer.Application.Shared.Errors.Messages;
 using _116.Mailer.Domain.Entities;
@@ -97,6 +99,8 @@ public class PublicConfirmNewsletterEndpointV1Tests(PostgresFixture db) : BaseAp
 
         string html = await response.Content.ReadAsStringAsync();
         html.Should().Contain("<form method=\"post\"");
+        html.Should().Contain(WebUtility.HtmlEncode(Localized<NewsletterPageMessage>(page => page.ConfirmTitle())));
+        html.Should().Contain(WebUtility.HtmlEncode(Localized<NewsletterPageMessage>(page => page.ConfirmButton())));
 
         await using MailerDbContext db = CreateDbContext<MailerDbContext>();
         NewsletterSubscriberEntity? after = await db.NewsletterSubscribers.FindAsync(seeded.Id);
