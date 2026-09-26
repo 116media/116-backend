@@ -1,6 +1,5 @@
 using _116.BuildingBlocks.Constants.RateLimit;
-using _116.Mailer.Application.Newsletter.OutboundEmails;
-using _116.Mailer.Application.Newsletter.Pages;
+using _116.Mailer.Application.Newsletter.Constants;
 using _116.Mailer.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
@@ -18,8 +17,8 @@ namespace _116.Mailer.Application.Newsletter.UseCases.Public.Commands.Unsubscrib
 public record PublicUnsubscribeNewsletterResponse(bool IsUnsubscribed);
 
 /// <summary>
-/// Defines the public newsletter unsubscription endpoints. The GET renders a confirmation page
-/// and the POST performs the opt-out, so a link scanner fetching the URL changes nothing.
+/// Defines the public newsletter unsubscription endpoint. The POST performs the opt-out;
+/// the GET on the same route renders the form that submits it.
 /// </summary>
 public class PublicUnsubscribeNewsletterEndpointV1 : ICarterModule
 {
@@ -30,33 +29,11 @@ public class PublicUnsubscribeNewsletterEndpointV1 : ICarterModule
     /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        RouteGroupBuilder group = app.MapApiVersionGroup(1)
+        app.MapApiVersionGroup(1)
             .MapGroup($"{MailerConstants.Public}/{MailerConstants.NewsletterRoute}")
-            .WithTags($"{MailerConstants.Public}::{MailerConstants.NewsletterRoute}");
-
-        group
-            .MapGet(
-                pattern: "unsubscribe/{token}",
-                (string token, NewsletterPageMessage page, HttpContext httpContext) =>
-                    Results.Content(
-                        SubscriptionPage.Render(
-                            title: page.UnsubscribeTitle(),
-                            prompt: page.UnsubscribePrompt(),
-                            buttonLabel: page.UnsubscribeButton(),
-                            action: httpContext.Request.Path
-                        ),
-                        contentType: "text/html"
-                    )
-            )
-            .WithName(endpointName: $"{PublicUnsubscribeNewsletterMetaField.UnsubscribeNewsletter.Name}Page")
-            .WithSummary(summary: PublicUnsubscribeNewsletterMetaField.UnsubscribeNewsletter.Summary)
-            .AllowAnonymous()
-            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
-            .Produces(statusCode: StatusCodes.Status200OK, contentType: "text/html");
-
-        group
+            .WithTags($"{MailerConstants.Public}::{MailerConstants.NewsletterRoute}")
             .MapPost(
-                pattern: "unsubscribe/{token}",
+                pattern: NewsletterRouteConstants.UnsubscribeWithToken,
                 async (string token, IDispatcher dispatcher, CancellationToken cancellationToken) =>
                 {
                     var command = new PublicUnsubscribeNewsletterCommand(Token: token);
