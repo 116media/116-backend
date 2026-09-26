@@ -1,3 +1,5 @@
+using _116.Mailer.Application.Newsletter.Constants;
+using _116.Mailer.Domain.Constants;
 using _116.Shared.Application.Configurations.Schemas;
 
 namespace _116.Mailer.Application.Newsletter.Services;
@@ -16,7 +18,7 @@ public static class NewsletterLinkBuilder
     /// <returns>The absolute frontend confirmation URL.</returns>
     public static string ConfirmUrl(string token)
     {
-        return $"{BaseUrl()}/newsletter/confirm/{token}";
+        return $"{BaseUrl()}/{MailerConstants.NewsletterRoute}/{NewsletterRouteConstants.Confirm}/{token}";
     }
 
     /// <summary>
@@ -26,7 +28,7 @@ public static class NewsletterLinkBuilder
     /// <returns>The absolute frontend unsubscribe URL.</returns>
     public static string UnsubscribeUrl(string token)
     {
-        return $"{BaseUrl()}/newsletter/unsubscribe/{token}";
+        return $"{BaseUrl()}/{MailerConstants.NewsletterRoute}/{NewsletterRouteConstants.Unsubscribe}/{token}";
     }
 
     /// <summary>
