@@ -252,4 +252,7 @@
   <data name="ClientPlatformInvalid" xml:space="preserve">
     <value>The client platform '{0}' is not a known platform.</value>
   </data>
+  <data name="PreferredLocaleUnsupported" xml:space="preserve">
+    <value>The preferred locale must be one of: {0}.</value>
+  </data>
 </root>
