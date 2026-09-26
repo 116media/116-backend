@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
@@ -257,7 +258,9 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
         var userLookup = new Mock<IUserLookupService>();
         userLookup
             .Setup(x => x.GetAuthorInfoByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new AuthorDto("kinix_editor", "editor@example.com", null, "Admin"));
+            .ReturnsAsync(
+                new AuthorDto("kinix_editor", "editor@example.com", null, "Admin", UserConstants.DefaultLocale)
+            );
 
         // Act
         ShortVideoDto dto = await entity.ToShortVideoDtoAsync(
@@ -287,8 +290,8 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
 
         var authors = new Dictionary<Guid, AuthorDto>
         {
-            [liked.AuthorId] = new AuthorDto("kinix_editor", null, null, "Admin"),
-            [other.AuthorId] = new AuthorDto("kinix_editor", null, null, "Admin"),
+            [liked.AuthorId] = new AuthorDto("kinix_editor", null, null, "Admin", UserConstants.DefaultLocale),
+            [other.AuthorId] = new AuthorDto("kinix_editor", null, null, "Admin", UserConstants.DefaultLocale),
         };
         Mock<IUserLookupService> userLookup = MockUserLookupService.Create().SetupGetAuthorInfosByIds(authors);
         _fileStorageMock.SetupResolveMany(new Dictionary<Guid, FileReferenceDto>());
@@ -348,7 +351,7 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
         };
         var authors = new Dictionary<Guid, AuthorDto>
         {
-            [entity.AuthorId] = new AuthorDto("editor", null, null, "Admin"),
+            [entity.AuthorId] = new AuthorDto("editor", null, null, "Admin", UserConstants.DefaultLocale),
         };
 
         // Act
@@ -388,7 +391,13 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
         };
         var authors = new Dictionary<Guid, AuthorDto>
         {
-            [entity.AuthorId] = new AuthorDto("editor", "editor@116.com", avatarFileId, "Admin"),
+            [entity.AuthorId] = new AuthorDto(
+                "editor",
+                "editor@116.com",
+                avatarFileId,
+                "Admin",
+                UserConstants.DefaultLocale
+            ),
         };
 
         // Act
