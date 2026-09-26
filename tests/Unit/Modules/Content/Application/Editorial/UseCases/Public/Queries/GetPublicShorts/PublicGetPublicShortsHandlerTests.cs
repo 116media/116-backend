@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants;
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublicShorts;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -165,7 +166,7 @@ public class PublicGetPublicShortsHandlerTests : BaseContentHandlerTest
 
         Dictionary<Guid, AuthorDto> authors = shorts.ToDictionary(
             shortVideo => shortVideo.AuthorId,
-            _ => new AuthorDto("kinix_editor", null, null, "Admin")
+            _ => new AuthorDto("kinix_editor", null, null, "Admin", UserConstants.DefaultLocale)
         );
 
         _shortVideoRepositoryMock.SetupGetAllAsync(shorts, shorts.Count);
