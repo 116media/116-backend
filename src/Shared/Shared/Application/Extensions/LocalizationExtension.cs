@@ -15,7 +15,7 @@ public static class LocalizationExtension
     /// <summary>
     /// The supported culture codes for the application.
     /// </summary>
-    private static readonly string[] SupportedCultures = ["fr", "en"];
+    private static readonly string[] SupportedCultures = UserConstants.SupportedLocales;
 
     /// <summary>
     /// The culture a request resolves to when it sends no Accept-Language header. The platform
