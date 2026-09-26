@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Shared.OutboundEmails;
 using _116.Mailer.Application.Shared.Persistence;
 using _116.Mailer.Application.Shared.Repositories;
@@ -39,7 +40,7 @@ public class OutboxMailerTests
 
         await emailService.EnqueueAsync(
             template: IdentityEmailTemplates.Welcome,
-            to: new EmailRecipientDto("fan@example.com", "Fan", Locale: "fr"),
+            to: new EmailRecipientDto("fan@example.com", "fr", "Fan"),
             tokens: new Dictionary<string, string> { ["userName"] = "Fan" },
             cancellationToken: CancellationToken.None
         );
@@ -70,7 +71,7 @@ public class OutboxMailerTests
         Func<Task> act = () =>
             emailService.EnqueueAsync(
                 IdentityEmailTemplates.Welcome,
-                new EmailRecipientDto("fan@example.com"),
+                new EmailRecipientDto("fan@example.com", UserConstants.DefaultLocale),
                 new Dictionary<string, string>(),
                 CancellationToken.None
             );
