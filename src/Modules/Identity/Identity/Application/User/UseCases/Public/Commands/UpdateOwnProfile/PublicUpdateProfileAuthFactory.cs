@@ -38,6 +38,7 @@ public class PublicUpdateProfileAuthFactory(
         string? countryIsoCode,
         string? countryDialCode,
         string? partialPhoneNumber,
+        string? preferredLocale,
         CancellationToken cancellationToken
     )
     {
@@ -89,6 +90,11 @@ public class PublicUpdateProfileAuthFactory(
                 partialPhoneNumber: partialPhoneNumber,
                 fullPhoneNumber: $"{countryDialCode}{partialPhoneNumber}"
             );
+        }
+
+        if (!string.IsNullOrWhiteSpace(value: preferredLocale))
+        {
+            user!.SetPreferredLocale(locale: preferredLocale);
         }
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
