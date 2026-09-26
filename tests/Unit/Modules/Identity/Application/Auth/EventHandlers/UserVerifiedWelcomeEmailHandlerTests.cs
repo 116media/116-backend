@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.EventHandlers;
 using _116.Identity.Application.Shared.OutboundEmails;
 using _116.Identity.Contracts.Application.DTOs;
@@ -36,7 +37,7 @@ public class UserVerifiedWelcomeEmailHandlerTests
         var userId = Guid.NewGuid();
         _userLookupServiceMock
             .Setup(x => x.GetAuthorInfoByIdAsync(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new AuthorDto("Fally", "fally@test.com", null, "Visitor"));
+            .ReturnsAsync(new AuthorDto("Fally", "fally@test.com", null, "Visitor", UserConstants.DefaultLocale));
 
         // Act
         await _handler.Handle(new UserVerifiedEvent(userId), CancellationToken.None);
@@ -64,7 +65,7 @@ public class UserVerifiedWelcomeEmailHandlerTests
         var userId = Guid.NewGuid();
         _userLookupServiceMock
             .Setup(x => x.GetAuthorInfoByIdAsync(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new AuthorDto("Fally", null, null, "Visitor"));
+            .ReturnsAsync(new AuthorDto("Fally", null, null, "Visitor", UserConstants.DefaultLocale));
 
         // Act
         await _handler.Handle(new UserVerifiedEvent(userId), CancellationToken.None);
