@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Session.EventHandlers;
 using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Shared.OutboundEmails;
@@ -119,6 +120,6 @@ public class RefreshTokenReplaySecurityHandlerTests
     {
         _userLookupServiceMock
             .Setup(x => x.GetAuthorInfoByIdAsync(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new AuthorDto("Fally", email, null, "Visitor"));
+            .ReturnsAsync(new AuthorDto("Fally", email, null, "Visitor", UserConstants.DefaultLocale));
     }
 }
