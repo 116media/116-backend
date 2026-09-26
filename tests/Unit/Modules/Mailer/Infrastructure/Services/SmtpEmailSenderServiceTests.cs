@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants;
 using _116.Mailer.Application.Shared.Services;
 using _116.Mailer.Contracts.Application.DTOs;
 using _116.Mailer.Infrastructure.Services;
@@ -59,7 +60,7 @@ public class SmtpEmailSenderServiceTests : IDisposable
     private static EmailMessage Message(string? displayName = "Fan")
     {
         return new EmailMessage(
-            To: new EmailRecipientDto("fan@example.com", displayName),
+            To: new EmailRecipientDto("fan@example.com", UserConstants.DefaultLocale, displayName),
             Subject: "Welcome",
             HtmlBody: "<p>Welcome</p>",
             TextBody: "Welcome"
