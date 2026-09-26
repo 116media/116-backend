@@ -477,7 +477,7 @@ namespace _116.Identity.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(5)
                         .HasColumnType("character varying(5)")
-                        .HasDefaultValue("en")
+                        .HasDefaultValue("fr")
                         .HasColumnName("preferred_locale");
 
                     b.Property<string>("ProviderSubjectId")
