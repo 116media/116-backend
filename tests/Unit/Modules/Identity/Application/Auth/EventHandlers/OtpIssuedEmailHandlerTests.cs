@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.EventHandlers;
 using _116.Identity.Application.Shared.OutboundEmails;
 using _116.Identity.Contracts.Application.DTOs;
@@ -43,7 +44,15 @@ public class OtpIssuedEmailHandlerTests
     {
         _userLookupMock
             .Setup(x => x.GetAuthorInfoByIdAsync(UserId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new AuthorDto(UserName: "Fan", Email: email, AvatarFileId: null, Role: null));
+            .ReturnsAsync(
+                new AuthorDto(
+                    UserName: "Fan",
+                    Email: email,
+                    AvatarFileId: null,
+                    Role: null,
+                    UserConstants.DefaultLocale
+                )
+            );
     }
 
     [Theory]
