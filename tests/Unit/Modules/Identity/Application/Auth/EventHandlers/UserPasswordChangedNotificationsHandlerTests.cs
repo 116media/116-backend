@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.EventHandlers;
 using _116.Identity.Application.Shared.OutboundEmails;
 using _116.Identity.Contracts.Application.DTOs;
@@ -173,6 +174,6 @@ public class UserPasswordChangedNotificationsHandlerTests
     {
         _userLookupServiceMock
             .Setup(x => x.GetAuthorInfoByIdAsync(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new AuthorDto("Fally", email, null, "Visitor"));
+            .ReturnsAsync(new AuthorDto("Fally", email, null, "Visitor", UserConstants.DefaultLocale));
     }
 }
