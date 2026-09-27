@@ -1,0 +1,138 @@
+using _116.Identity.Domain.Enums;
+using _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
+using AwesomeAssertions;
+using AwesomeAssertions.Specialized;
+using Xunit;
+
+namespace _116.Identity.Unit.Tests.Infrastructure.Persistence.Seeds.SuperAdmin;
+
+/// <summary>
+/// Unit tests for <see cref="SuperAdminConfiguration"/>.
+/// </summary>
+[Collection("EnvironmentVariable")]
+public class SuperAdminConfigurationTests
+{
+    #region Constants Tests
+
+    [Fact]
+    public void Email_ShouldBeWellFormedEmailAddress()
+    {
+        // Arrange & Act
+        string email = SuperAdminConfiguration.Email;
+
+        // Assert
+        email.Should().Contain("@");
+        email.Should().Contain(".");
+        email.Should().Be("superadmin@116.com");
+    }
+
+    [Fact]
+    public void Username_ShouldBeNonEmpty()
+    {
+        // Arrange & Act
+        string username = SuperAdminConfiguration.Username;
+
+        // Assert
+        username.Should().NotBeNullOrWhiteSpace();
+        username.Should().Be("sigmacool");
+    }
+
+    [Fact]
+    public void RoleDescription_ShouldDescribeRole()
+    {
+        // Arrange & Act
+        string description = SuperAdminConfiguration.RoleDescription;
+
+        // Assert
+        description.Should().NotBeNullOrWhiteSpace();
+        description.Should().Contain("Super Administrator");
+        description.Should().ContainEquivalentOf("complete system access");
+    }
+
+    [Fact]
+    public void PermissionResource_ShouldBeSystem()
+    {
+        // Arrange & Act
+        string resource = SuperAdminConfiguration.PermissionResource;
+
+        // Assert
+        resource.Should().Be("system");
+    }
+
+    [Fact]
+    public void PermissionAction_ShouldBeAll()
+    {
+        // Arrange & Act
+        string action = SuperAdminConfiguration.PermissionAction;
+
+        // Assert
+        action.Should().Be("all");
+    }
+
+    [Fact]
+    public void PermissionDescription_ShouldDescribeSystemAccess()
+    {
+        // Arrange & Act
+        string description = SuperAdminConfiguration.PermissionDescription;
+
+        // Assert
+        description.Should().NotBeNullOrWhiteSpace();
+        description.Should().ContainEquivalentOf("system access");
+        description.Should().ContainEquivalentOf("all permissions");
+    }
+
+    #endregion
+
+    #region RoleName Property Tests
+
+    [Fact]
+    public void RoleName_ShouldMatchSuperAdminEnum()
+    {
+        // Arrange & Act
+        string roleName = SuperAdminConfiguration.RoleName;
+
+        // Assert
+        roleName.Should().Be(nameof(EnumCoreUserRole.SuperAdmin));
+        roleName.Should().Be("SuperAdmin");
+    }
+
+    [Fact]
+    public void RoleName_ShouldBeNonEmpty()
+    {
+        // Arrange & Act
+        string roleName = SuperAdminConfiguration.RoleName;
+
+        // Assert
+        roleName.Should().NotBeNullOrWhiteSpace();
+    }
+
+    #endregion
+
+    #region GetPassword Method Tests
+
+
+    [Fact]
+    public void GetPassword_WhenEnvironmentVariableIsSet_ShouldReturnPassword()
+    {
+        // Arrange
+        string? originalPassword = Environment.GetEnvironmentVariable("DEFAULT_USER_PASSWORD");
+        const string testPassword = "TestPassword123!";
+        Environment.SetEnvironmentVariable("DEFAULT_USER_PASSWORD", testPassword);
+
+        try
+        {
+            // Act
+            string result = SuperAdminConfiguration.GetPassword();
+
+            // Assert
+            result.Should().Be(testPassword);
+        }
+        finally
+        {
+            // Cleanup
+            Environment.SetEnvironmentVariable("DEFAULT_USER_PASSWORD", originalPassword);
+        }
+    }
+
+    #endregion
+}

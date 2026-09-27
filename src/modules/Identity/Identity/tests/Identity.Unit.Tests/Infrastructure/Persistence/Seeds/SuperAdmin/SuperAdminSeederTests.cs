@@ -1,0 +1,359 @@
+using _116.Identity.Application.Auth.Services;
+using _116.Identity.Application.Shared.Errors;
+using _116.Identity.Domain.Entities;
+using _116.Identity.Infrastructure.Persistence;
+using _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
+using _116.Identity.TestData.Factories;
+using _116.Identity.TestData.Mocks.Infrastructure;
+using _116.Identity.TestData.Mocks.Repositories;
+using _116.Identity.TestData.Mocks.Services;
+using _116.Storage.TestData.Factories;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Storage.TestData.Mocks.Services;
+using _116.Tests.TestData.Helpers;
+using _116.Tests.TestData.Mocks;
+using AwesomeAssertions;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Moq;
+using Xunit;
+
+namespace _116.Identity.Unit.Tests.Infrastructure.Persistence.Seeds.SuperAdmin;
+
+/// <summary>
+/// Unit tests for <see cref="SuperAdminSeeder"/> using SQLite in-memory database,
+/// which supports transactions unlike the EF Core InMemory provider.
+/// </summary>
+[Collection("EnvironmentVariable")]
+public class SuperAdminSeederTests : IDisposable
+{
+    private readonly Mock<ILogger<SuperAdminSeeder>> _seederLoggerMock;
+    private readonly Mock<ILogger<SuperAdminRepositoryManager>> _repositoryLoggerMock;
+    private readonly Mock<ILogger<SuperAdminSeedingStrategy>> _strategyLoggerMock;
+    private readonly Mock<IPasswordService> _passwordServiceMock;
+    private readonly UserErrors _userErrors = TestErrorsFactory.CreateUserErrors();
+    private readonly string? _originalPassword;
+
+    public SuperAdminSeederTests()
+    {
+        _seederLoggerMock = new Mock<ILogger<SuperAdminSeeder>>();
+        _repositoryLoggerMock = new Mock<ILogger<SuperAdminRepositoryManager>>();
+        _strategyLoggerMock = new Mock<ILogger<SuperAdminSeedingStrategy>>();
+        _passwordServiceMock = new Mock<IPasswordService>();
+        _passwordServiceMock.Setup(x => x.Hash(It.IsAny<string>())).Returns("hashedPassword");
+
+        _originalPassword = Environment.GetEnvironmentVariable("DEFAULT_USER_PASSWORD");
+        Environment.SetEnvironmentVariable("DEFAULT_USER_PASSWORD", "TestPassword123!");
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        Environment.SetEnvironmentVariable("DEFAULT_USER_PASSWORD", _originalPassword);
+        GC.SuppressFinalize(this);
+    }
+
+    private static (SqliteConnection connection, DbContextOptions<IdentityDbContext> options) CreateSqliteOptions()
+    {
+        var connection = new SqliteConnection("DataSource=:memory:");
+        connection.Open();
+        DbContextOptions<IdentityDbContext> options = new DbContextOptionsBuilder<IdentityDbContext>()
+            .UseSqlite(connection)
+            .UseSnakeCaseNamingConvention()
+            .Options;
+        return (connection, options);
+    }
+
+    private SuperAdminSeeder CreateSeeder(IdentityDbContext context)
+    {
+        return new SuperAdminSeeder(
+            context,
+            _passwordServiceMock.Object,
+            _userErrors,
+            _seederLoggerMock.Object,
+            _repositoryLoggerMock.Object,
+            _strategyLoggerMock.Object
+        );
+    }
+
+    #region SeedAsync — Happy Path (SuperAdmin does not exist)
+
+    [Fact]
+    public async Task SeedAsync_WhenSuperAdminDoesNotExist_ShouldCreateSuperAdminUser()
+    {
+        // Arrange
+        var (connection, options) = CreateSqliteOptions();
+        await using var _ = connection;
+        await using var context = new IdentityDbContext(options);
+        await context.Database.EnsureCreatedAsync();
+
+        SuperAdminSeeder seeder = CreateSeeder(context);
+
+        // Act
+        await seeder.SeedAsync();
+
+        // Assert
+        UserEntity? user = await context.Users.FirstOrDefaultAsync(u => u.Email == SuperAdminConfiguration.Email);
+        user.Should().NotBeNull();
+        user!.UserName.Should().Be(SuperAdminConfiguration.Username);
+    }
+
+    [Fact]
+    public async Task SeedAsync_WhenSuperAdminDoesNotExist_ShouldCreateSuperAdminRole()
+    {
+        // Arrange
+        var (connection, options) = CreateSqliteOptions();
+        await using var _ = connection;
+        await using var context = new IdentityDbContext(options);
+        await context.Database.EnsureCreatedAsync();
+
+        SuperAdminSeeder seeder = CreateSeeder(context);
+
+        // Act
+        await seeder.SeedAsync();
+
+        // Assert
+        RoleEntity? role = await context.Roles.FirstOrDefaultAsync(r => r.Name == SuperAdminConfiguration.RoleName);
+        role.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task SeedAsync_WhenSuperAdminDoesNotExist_ShouldCreateSystemPermission()
+    {
+        // Arrange
+        var (connection, options) = CreateSqliteOptions();
+        await using var _ = connection;
+        await using var context = new IdentityDbContext(options);
+        await context.Database.EnsureCreatedAsync();
+
+        SuperAdminSeeder seeder = CreateSeeder(context);
+
+        // Act
+        await seeder.SeedAsync();
+
+        // Assert
+        PermissionEntity? permission = await context.Permissions.FirstOrDefaultAsync(p =>
+            p.Resource == SuperAdminConfiguration.PermissionResource
+            && p.Action == SuperAdminConfiguration.PermissionAction
+        );
+        permission.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task SeedAsync_WhenSuperAdminDoesNotExist_ShouldLogCompletionMessage()
+    {
+        // Arrange
+        var (connection, options) = CreateSqliteOptions();
+        await using var _ = connection;
+        await using var context = new IdentityDbContext(options);
+        await context.Database.EnsureCreatedAsync();
+
+        SuperAdminSeeder seeder = CreateSeeder(context);
+
+        // Act
+        await seeder.SeedAsync();
+
+        // Assert
+        _seederLoggerMock.Verify(
+            x =>
+                x.Log(
+                    LogLevel.Information,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("completed successfully")),
+                    It.IsAny<Exception>(),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()
+                ),
+            Times.Once
+        );
+    }
+
+    [Fact]
+    public async Task SeedAsync_WhenSuperAdminDoesNotExist_ShouldHashPassword()
+    {
+        // Arrange
+        var (connection, options) = CreateSqliteOptions();
+        await using var _ = connection;
+        await using var context = new IdentityDbContext(options);
+        await context.Database.EnsureCreatedAsync();
+
+        SuperAdminSeeder seeder = CreateSeeder(context);
+
+        // Act
+        await seeder.SeedAsync();
+
+        // Assert
+        _passwordServiceMock.Verify(x => x.Hash(It.IsAny<string>()), Times.Once);
+    }
+
+    #endregion
+
+    #region SeedAsync — Already Exists (skip path)
+
+    [Fact]
+    public async Task SeedAsync_WhenSuperAdminAlreadyExists_ShouldSkipSeeding()
+    {
+        // Arrange
+        var (connection, options) = CreateSqliteOptions();
+        await using var _ = connection;
+        await using var context = new IdentityDbContext(options);
+        await context.Database.EnsureCreatedAsync();
+
+        var existingUser = UserEntity.Create(
+            Guid.NewGuid(),
+            SuperAdminConfiguration.Email,
+            "existingadmin",
+            "hashedPassword"
+        );
+        await context.Users.AddAsync(existingUser);
+        await context.SaveChangesAsync();
+
+        SuperAdminSeeder seeder = CreateSeeder(context);
+
+        // Act
+        await seeder.SeedAsync();
+
+        // Assert — user count stays at 1, no new seeding occurred
+        int userCount = await context.Users.CountAsync();
+        userCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task SeedAsync_WhenSuperAdminAlreadyExists_ShouldLogSkipMessage()
+    {
+        // Arrange
+        var (connection, options) = CreateSqliteOptions();
+        await using var _ = connection;
+        await using var context = new IdentityDbContext(options);
+        await context.Database.EnsureCreatedAsync();
+
+        var existingUser = UserEntity.Create(
+            Guid.NewGuid(),
+            SuperAdminConfiguration.Email,
+            "existingadmin",
+            "hashedPassword"
+        );
+        await context.Users.AddAsync(existingUser);
+        await context.SaveChangesAsync();
+
+        SuperAdminSeeder seeder = CreateSeeder(context);
+
+        // Act
+        await seeder.SeedAsync();
+
+        // Assert
+        _seederLoggerMock.Verify(
+            x =>
+                x.Log(
+                    LogLevel.Information,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("already exists")),
+                    It.IsAny<Exception>(),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()
+                ),
+            Times.Once
+        );
+    }
+
+    #endregion
+
+    #region SeedAsync — Exception / Rollback Path
+
+    [Fact]
+    public async Task SeedAsync_WhenExceptionOccurs_ShouldRethrowException()
+    {
+        // Arrange
+        _passwordServiceMock
+            .Setup(x => x.Hash(It.IsAny<string>()))
+            .Throws(new InvalidOperationException("Hash failed"));
+
+        var (connection, options) = CreateSqliteOptions();
+        await using var _ = connection;
+        await using var context = new IdentityDbContext(options);
+        await context.Database.EnsureCreatedAsync();
+
+        SuperAdminSeeder seeder = CreateSeeder(context);
+
+        // Act & Assert
+        Func<Task> act = async () => await seeder.SeedAsync();
+        await act.Should().ThrowExactlyAsync<InvalidOperationException>();
+    }
+
+    [Fact]
+    public async Task SeedAsync_WhenExceptionOccurs_ShouldLogError()
+    {
+        // Arrange
+        _passwordServiceMock
+            .Setup(x => x.Hash(It.IsAny<string>()))
+            .Throws(new InvalidOperationException("Hash failed"));
+
+        var (connection, options) = CreateSqliteOptions();
+        await using var _ = connection;
+        await using var context = new IdentityDbContext(options);
+        await context.Database.EnsureCreatedAsync();
+
+        SuperAdminSeeder seeder = CreateSeeder(context);
+
+        // Act
+        try
+        {
+            await seeder.SeedAsync();
+        }
+        catch
+        { /* expected */
+        }
+
+        // Assert — outer catch logs "Failed to seed Super Admin data"
+        _seederLoggerMock.Verify(
+            x =>
+                x.Log(
+                    LogLevel.Error,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Failed to seed Super Admin")),
+                    It.IsAny<Exception>(),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()
+                ),
+            Times.Once
+        );
+    }
+
+    [Fact]
+    public async Task SeedAsync_WhenExceptionOccursDuringTransaction_ShouldLogRollback()
+    {
+        // Arrange
+        _passwordServiceMock
+            .Setup(x => x.Hash(It.IsAny<string>()))
+            .Throws(new InvalidOperationException("Hash failed"));
+
+        var (connection, options) = CreateSqliteOptions();
+        await using var _ = connection;
+        await using var context = new IdentityDbContext(options);
+        await context.Database.EnsureCreatedAsync();
+
+        SuperAdminSeeder seeder = CreateSeeder(context);
+
+        // Act
+        try
+        {
+            await seeder.SeedAsync();
+        }
+        catch
+        { /* expected */
+        }
+
+        // Assert — inner catch inside ExecuteSeedingWithTransactionAsync logs rollback
+        _seederLoggerMock.Verify(
+            x =>
+                x.Log(
+                    LogLevel.Error,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Transaction rolled back")),
+                    It.IsAny<Exception>(),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()
+                ),
+            Times.Once
+        );
+    }
+
+    #endregion
+}
