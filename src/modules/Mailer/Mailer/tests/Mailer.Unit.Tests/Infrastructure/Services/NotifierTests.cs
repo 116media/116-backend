@@ -10,7 +10,7 @@ using AwesomeAssertions;
 using Moq;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Mailer.Infrastructure.Services;
+namespace _116.Mailer.Unit.Tests.Infrastructure.Services;
 
 /// <summary>
 /// Unit tests for <see cref="NotificationService" />: renders, persists a self-contained

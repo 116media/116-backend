@@ -1,13 +1,14 @@
+using _116.BuildingBlocks.Application.Pagination;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Domain.Enums;
 using _116.Mailer.Infrastructure.Persistence;
 using _116.Mailer.Infrastructure.Repositories;
-using _116.Shared.Application.Pagination;
+using _116.Mailer.TestData.Builders.Entities;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Mailer.Infrastructure.Repositories;
+namespace _116.Mailer.Unit.Tests.Infrastructure.Repositories;
 
 /// <summary>
 /// Unit tests for <see cref="NewsletterRepository" /> covering the token and
@@ -34,7 +35,7 @@ public class NewsletterRepositoryTests
     /// <returns>The persisted subscriber.</returns>
     private NewsletterSubscriberEntity Seed(string email)
     {
-        var subscriber = NewsletterSubscriberEntity.Subscribe(Guid.NewGuid(), email);
+        var subscriber = new NewsletterSubscriberBuilder().WithId(Guid.NewGuid()).WithEmail(email).Build();
         _context.NewsletterSubscribers.Add(subscriber);
         _context.SaveChanges();
         return subscriber;
@@ -44,7 +45,7 @@ public class NewsletterRepositoryTests
     public async Task AddAsync_ShouldPersistTheSubscriber()
     {
         // Arrange
-        var subscriber = NewsletterSubscriberEntity.Subscribe(Guid.NewGuid(), "fan@example.com");
+        var subscriber = new NewsletterSubscriberBuilder().WithId(Guid.NewGuid()).WithEmail("fan@example.com").Build();
 
         // Act
         await _repository.AddAsync(subscriber, CancellationToken.None);

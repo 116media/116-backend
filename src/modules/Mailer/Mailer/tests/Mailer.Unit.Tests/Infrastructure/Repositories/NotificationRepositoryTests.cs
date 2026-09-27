@@ -1,13 +1,14 @@
+using _116.BuildingBlocks.Application.Pagination;
 using _116.Mailer.Contracts.Domain.Enums;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Infrastructure.Persistence;
 using _116.Mailer.Infrastructure.Repositories;
-using _116.Shared.Application.Pagination;
+using _116.Mailer.TestData.Builders.Entities;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Mailer.Infrastructure.Repositories;
+namespace _116.Mailer.Unit.Tests.Infrastructure.Repositories;
 
 /// <summary>
 /// Unit tests for <see cref="NotificationRepository" /> covering user scoping,
@@ -36,14 +37,13 @@ public class NotificationRepositoryTests
     /// <returns>The persisted notification.</returns>
     private NotificationEntity Seed(Guid userId, bool read = false)
     {
-        var notification = NotificationEntity.Create(
-            Guid.NewGuid(),
-            userId,
-            EnumNotificationType.PasswordChanged,
-            title: "title",
-            body: "body",
-            linkPath: null
-        );
+        var notification = new NotificationBuilder()
+            .WithId(Guid.NewGuid())
+            .WithUserId(userId)
+            .WithType(EnumNotificationType.PasswordChanged)
+            .WithContent("title", "body")
+            .WithLinkPath(null)
+            .Build();
         if (read)
         {
             notification.MarkRead(DateTime.UtcNow);
@@ -58,14 +58,13 @@ public class NotificationRepositoryTests
     public async Task AddAsync_ShouldPersistTheNotification()
     {
         // Arrange
-        var notification = NotificationEntity.Create(
-            Guid.NewGuid(),
-            _userId,
-            EnumNotificationType.PasswordChanged,
-            title: "title",
-            body: "body",
-            linkPath: null
-        );
+        var notification = new NotificationBuilder()
+            .WithId(Guid.NewGuid())
+            .WithUserId(_userId)
+            .WithType(EnumNotificationType.PasswordChanged)
+            .WithContent("title", "body")
+            .WithLinkPath(null)
+            .Build();
 
         // Act
         await _repository.AddAsync(notification, CancellationToken.None);

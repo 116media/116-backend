@@ -1,12 +1,12 @@
+using _116.BuildingBlocks.Infrastructure.Outbox;
 using _116.Mailer.Infrastructure.BackgroundJobs;
 using _116.Mailer.Infrastructure.Persistence;
-using _116.Shared.Infrastructure.Outbox;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Mailer.Infrastructure.BackgroundJobs;
+namespace _116.Mailer.Unit.Tests.Infrastructure.BackgroundJobs;
 
 /// <summary>
 /// Unit tests for <see cref="MailerOutboxReplayJob" />: the job that re-dispatches the

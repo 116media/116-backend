@@ -5,6 +5,7 @@ using _116.Mailer.Domain.Entities;
 using _116.Mailer.Domain.Enums;
 using _116.Mailer.Infrastructure.BackgroundJobs;
 using _116.Mailer.Infrastructure.Persistence;
+using _116.Mailer.TestData.Builders.Entities;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -14,7 +15,7 @@ using Moq;
 using Quartz;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Mailer.Infrastructure.BackgroundJobs;
+namespace _116.Mailer.Unit.Tests.Infrastructure.BackgroundJobs;
 
 /// <summary>
 /// Unit tests for <see cref="OutboxEmailDispatcherJob" /> covering the empty
@@ -62,16 +63,13 @@ public class OutboxEmailDispatcherJobTests
     /// <returns>The pending email.</returns>
     private static OutboxEmailEntity PendingEmail(string address = "fan@example.com")
     {
-        return OutboxEmailEntity.Enqueue(
-            Guid.NewGuid(),
-            recipientAddress: address,
-            recipientName: null,
-            subject: "subject",
-            htmlBody: "<p>body</p>",
-            textBody: "body",
-            template: "NewsletterWelcome",
-            now: DateTime.UtcNow
-        );
+        return new OutboxEmailBuilder()
+            .WithId(Guid.NewGuid())
+            .WithRecipient(address, null)
+            .WithContent("subject", "<p>body</p>", "body")
+            .WithTemplate("NewsletterWelcome")
+            .At(DateTime.UtcNow)
+            .Build();
     }
 
     /// <summary>

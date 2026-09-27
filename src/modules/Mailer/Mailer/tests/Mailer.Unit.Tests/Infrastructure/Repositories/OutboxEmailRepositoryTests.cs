@@ -1,11 +1,12 @@
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Infrastructure.Persistence;
 using _116.Mailer.Infrastructure.Repositories;
+using _116.Mailer.TestData.Builders.Entities;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Mailer.Infrastructure.Repositories;
+namespace _116.Mailer.Unit.Tests.Infrastructure.Repositories;
 
 /// <summary>
 /// Unit tests for <see cref="OutboxEmailRepository" />. The skip-locked batch
@@ -30,16 +31,13 @@ public class OutboxEmailRepositoryTests
     public async Task AddAsync_ShouldPersistThePendingEmail()
     {
         // Arrange
-        var email = OutboxEmailEntity.Enqueue(
-            Guid.NewGuid(),
-            recipientAddress: "fan@example.com",
-            recipientName: "Fan",
-            subject: "subject",
-            htmlBody: "<p>body</p>",
-            textBody: "body",
-            template: "NewsletterWelcome",
-            now: DateTime.UtcNow
-        );
+        var email = new OutboxEmailBuilder()
+            .WithId(Guid.NewGuid())
+            .WithRecipient("fan@example.com", "Fan")
+            .WithContent("subject", "<p>body</p>", "body")
+            .WithTemplate("NewsletterWelcome")
+            .At(DateTime.UtcNow)
+            .Build();
 
         // Act
         await _repository.AddAsync(email, CancellationToken.None);

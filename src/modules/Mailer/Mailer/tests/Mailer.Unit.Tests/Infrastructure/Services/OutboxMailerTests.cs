@@ -1,4 +1,4 @@
-using _116.BuildingBlocks.Constants;
+using _116.BuildingBlocks.Presentation.Constants;
 using _116.Identity.Application.Shared.OutboundEmails;
 using _116.Mailer.Application.Shared.Persistence;
 using _116.Mailer.Application.Shared.Repositories;
@@ -8,11 +8,12 @@ using _116.Mailer.Contracts.Domain.Enums;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Domain.Enums;
 using _116.Mailer.Infrastructure.Services;
+using _116.Shared.Domain.Constants;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Mailer.Infrastructure.Services;
+namespace _116.Mailer.Unit.Tests.Infrastructure.Services;
 
 /// <summary>
 /// Unit tests for <see cref="OutboxEmailService" />: renders, persists a
@@ -71,7 +72,7 @@ public class OutboxMailerTests
         Func<Task> act = () =>
             emailService.EnqueueAsync(
                 IdentityEmailTemplates.Welcome,
-                new EmailRecipientDto("fan@example.com", UserConstants.DefaultLocale),
+                new EmailRecipientDto("fan@example.com", LocaleConstants.DefaultLocale),
                 new Dictionary<string, string>(),
                 CancellationToken.None
             );

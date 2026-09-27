@@ -1,12 +1,13 @@
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Infrastructure.Persistence;
+using _116.Mailer.TestData.Builders.Entities;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.InMemory.Internal;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Mailer.Infrastructure.Persistence;
+namespace _116.Mailer.Unit.Tests.Infrastructure.Persistence;
 
 /// <summary>
 /// Unit tests for <see cref="MailerUnitOfWork" />.
@@ -38,7 +39,7 @@ public class MailerUnitOfWorkTests
         // Arrange
         await using var context = new MailerDbContext(CreateOptions());
         var unitOfWork = new MailerUnitOfWork(context, [context]);
-        var subscriber = NewsletterSubscriberEntity.Subscribe(Guid.NewGuid(), "fan@example.com");
+        var subscriber = new NewsletterSubscriberBuilder().WithId(Guid.NewGuid()).WithEmail("fan@example.com").Build();
         context.NewsletterSubscribers.Add(subscriber);
 
         // Act

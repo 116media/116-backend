@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Mailer.Infrastructure.Persistence;
+namespace _116.Mailer.Unit.Tests.Infrastructure.Persistence;
 
 /// <summary>
 /// Unit tests for all Mailer entity configurations.

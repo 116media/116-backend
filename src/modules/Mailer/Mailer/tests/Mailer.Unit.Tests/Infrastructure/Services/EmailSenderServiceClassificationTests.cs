@@ -4,7 +4,7 @@ using _116.Mailer.Infrastructure.Services;
 using AwesomeAssertions;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Mailer.Infrastructure.Services;
+namespace _116.Mailer.Unit.Tests.Infrastructure.Services;
 
 /// <summary>
 /// Unit tests for the adapters' failure classification and the delivery

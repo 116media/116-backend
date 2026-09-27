@@ -1,11 +1,12 @@
-using _116.BuildingBlocks.Constants;
+using _116.BuildingBlocks.Presentation.Constants;
 using _116.Mailer.Application.Shared.Services;
 using _116.Mailer.Contracts.Application.DTOs;
 using _116.Mailer.Infrastructure.Services;
+using _116.Shared.Domain.Constants;
 using AwesomeAssertions;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Mailer.Infrastructure.Services;
+namespace _116.Mailer.Unit.Tests.Infrastructure.Services;
 
 /// <summary>
 /// Unit tests for <see cref="SmtpEmailSenderService"/>. The sender reads its settings from the
@@ -60,7 +61,7 @@ public class SmtpEmailSenderServiceTests : IDisposable
     private static EmailMessage Message(string? displayName = "Fan")
     {
         return new EmailMessage(
-            To: new EmailRecipientDto("fan@example.com", UserConstants.DefaultLocale, displayName),
+            To: new EmailRecipientDto("fan@example.com", LocaleConstants.DefaultLocale, displayName),
             Subject: "Welcome",
             HtmlBody: "<p>Welcome</p>",
             TextBody: "Welcome"

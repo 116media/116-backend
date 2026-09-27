@@ -4,12 +4,13 @@ using _116.Mailer.Contracts.Application.OutboundEmails;
 using _116.Mailer.Contracts.Application.Services;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Infrastructure.Services;
+using _116.Mailer.TestData.Builders.Entities;
 using AwesomeAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Mailer.Infrastructure.Services;
+namespace _116.Mailer.Unit.Tests.Infrastructure.Services;
 
 /// <summary>
 /// Unit tests for <see cref="EmailDispatcher" />: the message class decides whether an
@@ -53,7 +54,7 @@ public class EmailDispatcherTests
 
     private static NewsletterSubscriberEntity Pending()
     {
-        return NewsletterSubscriberEntity.Subscribe(Guid.NewGuid(), Address);
+        return new NewsletterSubscriberBuilder().WithId(Guid.NewGuid()).WithEmail(Address).Build();
     }
 
     private static NewsletterSubscriberEntity Subscribed()
