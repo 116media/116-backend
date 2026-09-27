@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace _116.Core.Infrastructure.Persistence.Migrations
+namespace _116.Storage.Infrastructure.Persistence.Migrations
 {
     /// <inheritdoc />
     public partial class AddStorageKeyToFileEntity : Migration

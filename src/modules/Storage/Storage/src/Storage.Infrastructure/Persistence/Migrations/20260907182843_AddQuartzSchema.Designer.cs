@@ -5,15 +5,15 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using _116.Core.Infrastructure.Persistence;
+using _116.Storage.Infrastructure.Persistence;
 
 #nullable disable
 
-namespace _116.Core.Infrastructure.Persistence.Migrations
+namespace _116.Storage.Infrastructure.Persistence.Migrations
 {
-    [DbContext(typeof(CoreDbContext))]
-    [Migration("20260624221433_MakeFileNameUniqueIndexPartial")]
-    partial class MakeFileNameUniqueIndexPartial
+    [DbContext(typeof(StorageDbContext))]
+    [Migration("20260907182843_AddQuartzSchema")]
+    partial class AddQuartzSchema
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -26,7 +26,7 @@ namespace _116.Core.Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("_116.Core.Domain.Entities.FileEntity", b =>
+            modelBuilder.Entity("_116.Storage.Domain.Entities.FileEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -45,11 +45,21 @@ namespace _116.Core.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("deleted_at");
 
+                    b.Property<string>("DominantColorHex")
+                        .HasMaxLength(7)
+                        .HasColumnType("character varying(7)")
+                        .HasColumnName("dominant_color_hex");
+
                     b.Property<string>("FileName")
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)")
                         .HasColumnName("file_name");
+
+                    b.Property<string>("ForegroundColorHex")
+                        .HasMaxLength(7)
+                        .HasColumnType("character varying(7)")
+                        .HasColumnName("foreground_color_hex");
 
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()

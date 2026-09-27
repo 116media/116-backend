@@ -1,10 +1,11 @@
-using _116.BuildingBlocks.Constants;
-using _116.Core.Domain.Entities;
-using _116.Core.Domain.Enums;
+using _116.BuildingBlocks.Presentation.Constants;
+using _116.Storage.Domain.Constants;
+using _116.Storage.Domain.Entities;
+using _116.Storage.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace _116.Core.Infrastructure.Persistence.Configurations;
+namespace _116.Storage.Infrastructure.Persistence.Configurations;
 
 /// <summary>
 /// Entity Framework configuration for the FileEntity.

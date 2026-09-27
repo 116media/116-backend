@@ -2,18 +2,21 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using _116.Core.Infrastructure.Persistence;
+using _116.Storage.Infrastructure.Persistence;
 
 #nullable disable
 
-namespace _116.Core.Infrastructure.Persistence.Migrations
+namespace _116.Storage.Infrastructure.Persistence.Migrations
 {
-    [DbContext(typeof(CoreDbContext))]
-    partial class CoreDbContextModelSnapshot : ModelSnapshot
+    [DbContext(typeof(StorageDbContext))]
+    [Migration("20260911181652_AddFileState")]
+    partial class AddFileState
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -23,12 +26,16 @@ namespace _116.Core.Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("_116.Core.Domain.Entities.FileEntity", b =>
+            modelBuilder.Entity("_116.Storage.Domain.Entities.FileEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
+
+                    b.Property<DateTime?>("ClaimedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("claimed_at");
 
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -102,10 +109,14 @@ namespace _116.Core.Infrastructure.Persistence.Migrations
                     b.HasKey("Id")
                         .HasName("pk_files");
 
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("ix_files_created_at")
+                        .HasFilter("claimed_at IS NULL AND is_deleted = false");
+
                     b.HasIndex("FileName")
                         .IsUnique()
                         .HasDatabaseName("ix_files_file_name")
-                        .HasFilter("state = 0");
+                        .HasFilter("is_deleted = false");
 
                     b.HasIndex("State")
                         .HasDatabaseName("ix_files_state");
@@ -113,7 +124,7 @@ namespace _116.Core.Infrastructure.Persistence.Migrations
                     b.ToTable("files", "core");
                 });
 
-            modelBuilder.Entity("_116.Shared.Infrastructure.Outbox.OutboxEventEntity", b =>
+            modelBuilder.Entity("_116.BuildingBlocks.Infrastructure.Outbox.OutboxEventEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -159,7 +170,7 @@ namespace _116.Core.Infrastructure.Persistence.Migrations
                     b.ToTable("domain_event_outbox", "core");
                 });
 
-            modelBuilder.Entity("_116.Shared.Infrastructure.Outbox.ProcessedDomainEventEntity", b =>
+            modelBuilder.Entity("_116.BuildingBlocks.Infrastructure.Outbox.ProcessedDomainEventEntity", b =>
                 {
                     b.Property<Guid>("EventId")
                         .HasColumnType("uuid")

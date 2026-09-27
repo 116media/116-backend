@@ -2,31 +2,28 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using _116.Core.Infrastructure.Persistence;
+using _116.Storage.Infrastructure.Persistence;
 
 #nullable disable
 
-namespace _116.Core.Infrastructure.Persistence.Migrations
+namespace _116.Storage.Infrastructure.Persistence.Migrations
 {
-    [DbContext(typeof(CoreDbContext))]
-    [Migration("20260909134455_AddDomainEventOutboxAndProcessedEvents")]
-    partial class AddDomainEventOutboxAndProcessedEvents
+    [DbContext(typeof(StorageDbContext))]
+    partial class StorageDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasDefaultSchema("core")
+                .HasDefaultSchema("storage")
                 .HasAnnotation("ProductVersion", "9.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("_116.Core.Domain.Entities.FileEntity", b =>
+            modelBuilder.Entity("_116.Storage.Domain.Entities.FileEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -61,12 +58,6 @@ namespace _116.Core.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(7)")
                         .HasColumnName("foreground_color_hex");
 
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnName("is_deleted");
-
                     b.Property<string>("MimeType")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -82,6 +73,12 @@ namespace _116.Core.Infrastructure.Persistence.Migrations
                     b.Property<long>("SizeInBytes")
                         .HasColumnType("bigint")
                         .HasColumnName("size_in_bytes");
+
+                    b.Property<int>("State")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("state");
 
                     b.Property<string>("StorageKey")
                         .HasMaxLength(100)
@@ -108,15 +105,15 @@ namespace _116.Core.Infrastructure.Persistence.Migrations
                     b.HasIndex("FileName")
                         .IsUnique()
                         .HasDatabaseName("ix_files_file_name")
-                        .HasFilter("is_deleted = false");
+                        .HasFilter("state = 0");
 
-                    b.HasIndex("IsDeleted")
-                        .HasDatabaseName("ix_files_is_deleted");
+                    b.HasIndex("State")
+                        .HasDatabaseName("ix_files_state");
 
-                    b.ToTable("files", "core");
+                    b.ToTable("files", "storage");
                 });
 
-            modelBuilder.Entity("_116.Shared.Infrastructure.Outbox.OutboxEventEntity", b =>
+            modelBuilder.Entity("_116.BuildingBlocks.Infrastructure.Outbox.OutboxEventEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -159,10 +156,10 @@ namespace _116.Core.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_domain_event_outbox_pending")
                         .HasFilter("dispatched_at IS NULL");
 
-                    b.ToTable("domain_event_outbox", "core");
+                    b.ToTable("domain_event_outbox", "storage");
                 });
 
-            modelBuilder.Entity("_116.Shared.Infrastructure.Outbox.ProcessedDomainEventEntity", b =>
+            modelBuilder.Entity("_116.BuildingBlocks.Infrastructure.Outbox.ProcessedDomainEventEntity", b =>
                 {
                     b.Property<Guid>("EventId")
                         .HasColumnType("uuid")
@@ -180,7 +177,7 @@ namespace _116.Core.Infrastructure.Persistence.Migrations
                     b.HasKey("EventId", "HandlerName")
                         .HasName("pk_processed_domain_events");
 
-                    b.ToTable("processed_domain_events", "core");
+                    b.ToTable("processed_domain_events", "storage");
                 });
 #pragma warning restore 612, 618
         }

@@ -5,15 +5,15 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using _116.Core.Infrastructure.Persistence;
+using _116.Storage.Infrastructure.Persistence;
 
 #nullable disable
 
-namespace _116.Core.Infrastructure.Persistence.Migrations
+namespace _116.Storage.Infrastructure.Persistence.Migrations
 {
-    [DbContext(typeof(CoreDbContext))]
-    [Migration("20260907182843_AddQuartzSchema")]
-    partial class AddQuartzSchema
+    [DbContext(typeof(StorageDbContext))]
+    [Migration("20260911233113_CollapseFileStates")]
+    partial class CollapseFileStates
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -26,7 +26,7 @@ namespace _116.Core.Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("_116.Core.Domain.Entities.FileEntity", b =>
+            modelBuilder.Entity("_116.Storage.Domain.Entities.FileEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -61,12 +61,6 @@ namespace _116.Core.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(7)")
                         .HasColumnName("foreground_color_hex");
 
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnName("is_deleted");
-
                     b.Property<string>("MimeType")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -82,6 +76,12 @@ namespace _116.Core.Infrastructure.Persistence.Migrations
                     b.Property<long>("SizeInBytes")
                         .HasColumnType("bigint")
                         .HasColumnName("size_in_bytes");
+
+                    b.Property<int>("State")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("state");
 
                     b.Property<string>("StorageKey")
                         .HasMaxLength(100)
@@ -108,12 +108,79 @@ namespace _116.Core.Infrastructure.Persistence.Migrations
                     b.HasIndex("FileName")
                         .IsUnique()
                         .HasDatabaseName("ix_files_file_name")
-                        .HasFilter("is_deleted = false");
+                        .HasFilter("state = 0");
 
-                    b.HasIndex("IsDeleted")
-                        .HasDatabaseName("ix_files_is_deleted");
+                    b.HasIndex("State")
+                        .HasDatabaseName("ix_files_state");
 
                     b.ToTable("files", "core");
+                });
+
+            modelBuilder.Entity("_116.BuildingBlocks.Infrastructure.Outbox.OutboxEventEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("AttemptCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("attempt_count");
+
+                    b.Property<DateTime?>("DispatchedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("dispatched_at");
+
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("event_type");
+
+                    b.Property<string>("LastError")
+                        .HasColumnType("text")
+                        .HasColumnName("last_error");
+
+                    b.Property<DateTime>("OccurredOn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("occurred_on");
+
+                    b.Property<string>("Payload")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("payload");
+
+                    b.HasKey("Id")
+                        .HasName("pk_domain_event_outbox");
+
+                    b.HasIndex("OccurredOn")
+                        .HasDatabaseName("ix_domain_event_outbox_pending")
+                        .HasFilter("dispatched_at IS NULL");
+
+                    b.ToTable("domain_event_outbox", "core");
+                });
+
+            modelBuilder.Entity("_116.BuildingBlocks.Infrastructure.Outbox.ProcessedDomainEventEntity", b =>
+                {
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("event_id");
+
+                    b.Property<string>("HandlerName")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("handler_name");
+
+                    b.Property<DateTime>("ProcessedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("processed_at");
+
+                    b.HasKey("EventId", "HandlerName")
+                        .HasName("pk_processed_domain_events");
+
+                    b.ToTable("processed_domain_events", "core");
                 });
 #pragma warning restore 612, 618
         }

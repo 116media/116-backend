@@ -5,13 +5,13 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using _116.Core.Infrastructure.Persistence;
+using _116.Storage.Infrastructure.Persistence;
 
 #nullable disable
 
-namespace _116.Core.Infrastructure.Persistence.Migrations
+namespace _116.Storage.Infrastructure.Persistence.Migrations
 {
-    [DbContext(typeof(CoreDbContext))]
+    [DbContext(typeof(StorageDbContext))]
     [Migration("20260111141504_InitCoreSchema")]
     partial class InitCoreSchema
     {
@@ -26,7 +26,7 @@ namespace _116.Core.Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("_116.Core.Domain.Entities.FileEntity", b =>
+            modelBuilder.Entity("_116.Storage.Domain.Entities.FileEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()

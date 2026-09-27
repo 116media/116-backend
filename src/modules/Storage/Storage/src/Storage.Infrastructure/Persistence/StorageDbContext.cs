@@ -1,22 +1,22 @@
 using System.Reflection;
-using _116.Core.Domain.Constants;
-using _116.Core.Domain.Entities;
-using _116.Core.Domain.Enums;
-using _116.Shared.Infrastructure.Outbox;
+using _116.BuildingBlocks.Infrastructure.Outbox;
+using _116.Storage.Domain.Constants;
+using _116.Storage.Domain.Entities;
+using _116.Storage.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
-namespace _116.Core.Infrastructure.Persistence;
+namespace _116.Storage.Infrastructure.Persistence;
 
 /// <summary>
 /// Entity Framework database context for the core module.
-/// Manages file entities and related core data within the "core" schema.
+/// Manages file entities and related core data within the "storage" schema.
 /// </summary>
 /// <param name="options">The database context configuration options</param>
 /// <remarks>
 /// This context provides access to system-wide data including file management.
-/// All entities are stored in the "core" schema.
+/// All entities are stored in the "storage" schema.
 /// </remarks>
-public class CoreDbContext(DbContextOptions<CoreDbContext> options) : DbContext(options)
+public class StorageDbContext(DbContextOptions<StorageDbContext> options) : DbContext(options)
 {
     /// <summary>
     /// Gets the collection of file entities representing uploaded files in the system.
@@ -33,7 +33,7 @@ public class CoreDbContext(DbContextOptions<CoreDbContext> options) : DbContext(
     /// </remarks>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.HasDefaultSchema(CoreConstants.SchemaName);
+        modelBuilder.HasDefaultSchema(StorageConstants.SchemaName);
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         modelBuilder.ApplyConfiguration(new OutboxEventConfiguration());
         modelBuilder.ApplyConfiguration(new ProcessedDomainEventConfiguration());

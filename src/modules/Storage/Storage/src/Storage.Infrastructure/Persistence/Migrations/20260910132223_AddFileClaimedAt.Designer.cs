@@ -5,15 +5,15 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using _116.Core.Infrastructure.Persistence;
+using _116.Storage.Infrastructure.Persistence;
 
 #nullable disable
 
-namespace _116.Core.Infrastructure.Persistence.Migrations
+namespace _116.Storage.Infrastructure.Persistence.Migrations
 {
-    [DbContext(typeof(CoreDbContext))]
-    [Migration("20260911233113_CollapseFileStates")]
-    partial class CollapseFileStates
+    [DbContext(typeof(StorageDbContext))]
+    [Migration("20260910132223_AddFileClaimedAt")]
+    partial class AddFileClaimedAt
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -26,12 +26,16 @@ namespace _116.Core.Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("_116.Core.Domain.Entities.FileEntity", b =>
+            modelBuilder.Entity("_116.Storage.Domain.Entities.FileEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
+
+                    b.Property<DateTime?>("ClaimedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("claimed_at");
 
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -61,6 +65,12 @@ namespace _116.Core.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(7)")
                         .HasColumnName("foreground_color_hex");
 
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_deleted");
+
                     b.Property<string>("MimeType")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -76,12 +86,6 @@ namespace _116.Core.Infrastructure.Persistence.Migrations
                     b.Property<long>("SizeInBytes")
                         .HasColumnType("bigint")
                         .HasColumnName("size_in_bytes");
-
-                    b.Property<int>("State")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0)
-                        .HasColumnName("state");
 
                     b.Property<string>("StorageKey")
                         .HasMaxLength(100)
@@ -105,18 +109,22 @@ namespace _116.Core.Infrastructure.Persistence.Migrations
                     b.HasKey("Id")
                         .HasName("pk_files");
 
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("ix_files_created_at")
+                        .HasFilter("claimed_at IS NULL AND is_deleted = false");
+
                     b.HasIndex("FileName")
                         .IsUnique()
                         .HasDatabaseName("ix_files_file_name")
-                        .HasFilter("state = 0");
+                        .HasFilter("is_deleted = false");
 
-                    b.HasIndex("State")
-                        .HasDatabaseName("ix_files_state");
+                    b.HasIndex("IsDeleted")
+                        .HasDatabaseName("ix_files_is_deleted");
 
                     b.ToTable("files", "core");
                 });
 
-            modelBuilder.Entity("_116.Shared.Infrastructure.Outbox.OutboxEventEntity", b =>
+            modelBuilder.Entity("_116.BuildingBlocks.Infrastructure.Outbox.OutboxEventEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -162,7 +170,7 @@ namespace _116.Core.Infrastructure.Persistence.Migrations
                     b.ToTable("domain_event_outbox", "core");
                 });
 
-            modelBuilder.Entity("_116.Shared.Infrastructure.Outbox.ProcessedDomainEventEntity", b =>
+            modelBuilder.Entity("_116.BuildingBlocks.Infrastructure.Outbox.ProcessedDomainEventEntity", b =>
                 {
                     b.Property<Guid>("EventId")
                         .HasColumnType("uuid")
