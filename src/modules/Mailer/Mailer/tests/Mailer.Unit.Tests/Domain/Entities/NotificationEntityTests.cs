@@ -1,9 +1,10 @@
 using _116.Mailer.Contracts.Domain.Enums;
 using _116.Mailer.Domain.Entities;
+using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Mailer.Domain.Entities;
+namespace _116.Mailer.Unit.Tests.Domain.Entities;
 
 /// <summary>
 /// Unit tests for <see cref="NotificationEntity" />: creation state and the

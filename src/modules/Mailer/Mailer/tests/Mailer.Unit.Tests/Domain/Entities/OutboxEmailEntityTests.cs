@@ -4,7 +4,7 @@ using _116.Mailer.Domain.Enums;
 using AwesomeAssertions;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Mailer.Domain.Entities;
+namespace _116.Mailer.Unit.Tests.Domain.Entities;
 
 /// <summary>
 /// Unit tests for <see cref="OutboxEmailEntity" /> covering the enqueue state
