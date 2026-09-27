@@ -1,0 +1,201 @@
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.Content.Application.Shared.Repositories;
+using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
+using _116.Content.Infrastructure.Persistence;
+using _116.Content.TestData.Factories;
+using _116.Content.TestData.Factories.Helpers;
+using _116.Content.TestData.Mocks.Factories;
+using _116.Content.TestData.Mocks.Infrastructure;
+using _116.Content.TestData.Mocks.Repositories;
+using _116.Content.TestData.Mocks.Services;
+using _116.Identity.TestData.Factories;
+using _116.Identity.TestData.Mocks.Infrastructure;
+using _116.Identity.TestData.Mocks.Repositories;
+using _116.Identity.TestData.Mocks.Services;
+using _116.Storage.TestData.Factories;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Storage.TestData.Mocks.Services;
+using _116.Tests.TestData.Mocks;
+
+namespace _116.Content.Integration.Tests.Infrastructure.Repositories;
+
+/// <summary>
+/// Integration tests for <see cref="ITagRepository"/> verifying persistence behavior against a real
+/// PostgreSQL database.
+/// </summary>
+[Collection("Database")]
+public class TagRepositoryTests : BaseRepositoryTest
+{
+    public TagRepositoryTests(PostgresFixture postgres)
+        : base(postgres) { }
+
+    [Fact]
+    public async Task GetByIdOrThrowAsync_WhenNotFound_ThrowsNotFoundException()
+    {
+        var repo = Resolve<ITagRepository>();
+
+        var act = () => repo.GetByIdOrThrowAsync(Guid.NewGuid());
+
+        await act.Should().ThrowAsync<NotFoundException>();
+    }
+
+    [Fact]
+    public async Task GetBySlugAsync_WhenExists_ReturnsEntity()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var tag = TagFactory.Create("Afrobeats", "afrobeats");
+        seedContext.Tags.Add(tag);
+        await seedContext.SaveChangesAsync();
+
+        var repo = Resolve<ITagRepository>();
+
+        var result = await repo.GetBySlugAsync("afrobeats");
+
+        result.Should().NotBeNull();
+        result!.Slug.Value.Should().Be("afrobeats");
+        result.Name.Should().Be("Afrobeats");
+    }
+
+    [Fact]
+    public async Task GetBySlugAsync_WhenNotFound_ReturnsNull()
+    {
+        var repo = Resolve<ITagRepository>();
+
+        var result = await repo.GetBySlugAsync("non-existent-slug");
+
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetByNameAsync_WhenExists_ReturnsCaseInsensitiveMatch()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var tag = TagFactory.Create("Kinshasa", "kinshasa");
+        seedContext.Tags.Add(tag);
+        await seedContext.SaveChangesAsync();
+
+        var repo = Resolve<ITagRepository>();
+
+        var result = await repo.GetByNameAsync("kinshasa");
+
+        result.Should().NotBeNull();
+        result!.Name.Should().Be("Kinshasa");
+    }
+
+    [Fact]
+    public async Task GetPopularAsync_WithLimit_RespectsLimit()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var tags = TagFactory.CreateMany(5);
+        seedContext.Tags.AddRange(tags);
+        await seedContext.SaveChangesAsync();
+
+        var repo = Resolve<ITagRepository>();
+
+        var result = await repo.GetPopularAsync(limit: 3);
+
+        result.Should().HaveCountLessThanOrEqualTo(3);
+    }
+
+    [Fact]
+    public async Task AddAsync_PersistsTagToDatabase()
+    {
+        var (repo, db) = CreateScopedRepository<ITagRepository, ContentDbContext>();
+        var tag = TagFactory.Create("NewTag", "new-tag");
+
+        await repo.AddAsync(tag);
+        await db.SaveChangesAsync();
+
+        await using var verifyContext = CreateDbContext<ContentDbContext>();
+        var persisted = await verifyContext.Tags.FirstOrDefaultAsync(t => t.Id == tag.Id);
+
+        persisted.Should().NotBeNull();
+        persisted!.Name.Should().Be("NewTag");
+        persisted.Slug.Value.Should().Be("new-tag");
+    }
+
+    [Fact]
+    public async Task GetAllAsync_WithArticleContentType_ReturnsOnlyArticleAssociatedTags()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var contentType = ContentTypeFactory.Create();
+        var category = CategoryFactory.Create(contentType.Id);
+        var article = ArticleFactory.Create(category.Id);
+        var video = VideoFactory.Create(category.Id);
+        var articleTag = TagFactory.Create("AllTagsArticleTag", "all-tags-article-tag");
+        var videoTag = TagFactory.Create("AllTagsVideoTag", "all-tags-video-tag");
+        seedContext.ContentTypes.Add(contentType);
+        seedContext.Categories.Add(category);
+        seedContext.Articles.Add(article);
+        seedContext.Videos.Add(video);
+        seedContext.Tags.AddRange(articleTag, videoTag);
+        article.ReplaceTags([.. article.Tags.Select(t => t.TagId), articleTag.Id]);
+        video.ReplaceTags([.. video.Tags.Select(t => t.TagId), videoTag.Id]);
+        await seedContext.SaveChangesAsync();
+
+        var repo = Resolve<ITagRepository>();
+
+        var result = await repo.GetAllAsync(search: null, contentType: EnumCoreContentType.Article);
+
+        result.Should().Contain(t => t.Id == articleTag.Id);
+        result.Should().NotContain(t => t.Id == videoTag.Id);
+    }
+
+    [Fact]
+    public async Task GetAllAsync_WithVideoContentType_ReturnsOnlyVideoAssociatedTags()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var contentType = ContentTypeFactory.Create();
+        var category = CategoryFactory.Create(contentType.Id);
+        var article = ArticleFactory.Create(category.Id);
+        var video = VideoFactory.Create(category.Id);
+        var articleTag = TagFactory.Create("AllTagsArticleOnly", "all-tags-article-only");
+        var videoTag = TagFactory.Create("AllTagsVideoOnly", "all-tags-video-only");
+        seedContext.ContentTypes.Add(contentType);
+        seedContext.Categories.Add(category);
+        seedContext.Articles.Add(article);
+        seedContext.Videos.Add(video);
+        seedContext.Tags.AddRange(articleTag, videoTag);
+        article.ReplaceTags([.. article.Tags.Select(t => t.TagId), articleTag.Id]);
+        video.ReplaceTags([.. video.Tags.Select(t => t.TagId), videoTag.Id]);
+        await seedContext.SaveChangesAsync();
+
+        var repo = Resolve<ITagRepository>();
+
+        var result = await repo.GetAllAsync(search: null, contentType: EnumCoreContentType.Video);
+
+        result.Should().Contain(t => t.Id == videoTag.Id);
+        result.Should().NotContain(t => t.Id == articleTag.Id);
+    }
+
+    [Fact]
+    public async Task GetAllAsync_WithSearchAndContentType_ComposesBothFilters()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var contentType = ContentTypeFactory.Create();
+        var category = CategoryFactory.Create(contentType.Id);
+        var article = ArticleFactory.Create(category.Id);
+        var video = VideoFactory.Create(category.Id);
+        var matching = TagFactory.Create("ComposeAfrobeats", "compose-afrobeats");
+        var searchMismatch = TagFactory.Create("ComposeReggae", "compose-reggae");
+        var associationMismatch = TagFactory.Create("ComposeAfropop", "compose-afropop");
+        seedContext.ContentTypes.Add(contentType);
+        seedContext.Categories.Add(category);
+        seedContext.Articles.Add(article);
+        seedContext.Videos.Add(video);
+        seedContext.Tags.AddRange(matching, searchMismatch, associationMismatch);
+        article.ReplaceTags([.. article.Tags.Select(t => t.TagId), matching.Id]);
+        article.ReplaceTags([.. article.Tags.Select(t => t.TagId), searchMismatch.Id]);
+        video.ReplaceTags([.. video.Tags.Select(t => t.TagId), associationMismatch.Id]);
+        await seedContext.SaveChangesAsync();
+
+        var repo = Resolve<ITagRepository>();
+
+        var result = await repo.GetAllAsync(search: "Afro", contentType: EnumCoreContentType.Article);
+
+        result.Should().Contain(t => t.Id == matching.Id);
+        result.Should().NotContain(t => t.Id == searchMismatch.Id);
+        result.Should().NotContain(t => t.Id == associationMismatch.Id);
+    }
+}
