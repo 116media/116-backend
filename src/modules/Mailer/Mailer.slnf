@@ -1,0 +1,26 @@
+{
+    "solution": {
+        "path": "../../../116_backend.sln",
+        "projects": [
+            "src/host/Api/Api.csproj",
+            "src/modules/Mailer/Mailer.Contracts/Mailer.Contracts.csproj",
+            "src/modules/Mailer/Mailer/src/Mailer.Application/Mailer.Application.csproj",
+            "src/modules/Mailer/Mailer/src/Mailer.Domain/Mailer.Domain.csproj",
+            "src/modules/Mailer/Mailer/src/Mailer.Infrastructure/Mailer.Infrastructure.csproj",
+            "src/modules/Mailer/Mailer/tests/Mailer.Integration.Tests/Mailer.Integration.Tests.csproj",
+            "src/modules/Mailer/Mailer/tests/Mailer.TestData/Mailer.TestData.csproj",
+            "src/modules/Mailer/Mailer/tests/Mailer.Unit.Tests/Mailer.Unit.Tests.csproj",
+            "src/shared/src/BuildingBlocks.Application/BuildingBlocks.Application.csproj",
+            "src/shared/src/BuildingBlocks.Domain/BuildingBlocks.Domain.csproj",
+            "src/shared/src/BuildingBlocks.Infrastructure/BuildingBlocks.Infrastructure.csproj",
+            "src/shared/src/BuildingBlocks.Presentation/BuildingBlocks.Presentation.csproj",
+            "src/shared/src/Shared.Domain/Shared.Domain.csproj",
+            "src/shared/tests/Shared.Integration.Tests/Shared.Integration.Tests.csproj",
+            "src/shared/tests/Shared.Unit.Tests/Shared.Unit.Tests.csproj",
+            "tests/Architecture.Tests/Architecture.Tests.csproj",
+            "tests/EndToEnd.Tests/EndToEnd.Tests.csproj",
+            "tests/Fixtures/Fixtures.csproj",
+            "tests/TestData/TestData.csproj"
+        ]
+    }
+}
