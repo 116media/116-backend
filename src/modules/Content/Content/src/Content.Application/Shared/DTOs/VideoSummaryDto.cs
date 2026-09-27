@@ -1,0 +1,77 @@
+using _116.BuildingBlocks.Application.DTOs;
+using _116.Content.Domain.Enums;
+
+namespace _116.Content.Application.Shared.DTOs;
+
+/// <summary>
+/// Data transfer object for a video in list and feed views.
+/// Contains all fields needed to render a video card.
+/// </summary>
+/// <param name="Id">
+/// The unique identifier of the video.
+/// </param>
+/// <param name="CategoryId">
+/// The identifier of the video's category.
+/// </param>
+/// <param name="CategoryName">
+/// The display name of the video's category.
+/// </param>
+/// <param name="Title">
+/// The video display title.
+/// </param>
+/// <param name="Slug">
+/// The URL-safe slug used in public video URLs.
+/// </param>
+/// <param name="ThumbnailUrl">
+/// The publicly accessible URL of the thumbnail image, resolved from the associated FileEntity.
+/// Null if no thumbnail has been uploaded.
+/// </param>
+/// <param name="AuthorId">
+/// The identity user UUID of the author.
+/// </param>
+/// <param name="Status">
+/// The current editorial workflow status.
+/// </param>
+/// <param name="YoutubeVideoUrl">
+/// The full YouTube video URL, or null if not yet attached.
+/// </param>
+/// <param name="IsPromoted">
+/// Whether the video has an active paid promotion.
+/// </param>
+/// <param name="HasLyrics">
+/// Whether a published lyrics page is linked to this video.
+/// </param>
+/// <param name="PublishedAt">
+/// When the video was published, or null if not yet published.
+/// </param>
+/// <param name="ShootingScheduledAt">
+/// The scheduled shooting date, or null if no shoot was booked.
+/// Used by the dashboard to determine whether a YouTube URL can be attached.
+/// </param>
+/// <param name="ShareCount">
+/// Cached number of shares. Incremented by interaction events.
+/// </param>
+/// <param name="RatingAverage">
+/// Cached average star rating (1–5), computed from all submitted ratings.
+/// </param>
+/// <param name="RatingCount">
+/// Cached total number of ratings received.
+/// </param>
+public record VideoSummaryDto(
+    Guid Id,
+    Guid CategoryId,
+    string CategoryName,
+    string Title,
+    string Slug,
+    string? ThumbnailUrl,
+    string AuthorId,
+    EnumContentStatus Status,
+    string? YoutubeVideoUrl,
+    bool IsPromoted,
+    bool HasLyrics,
+    DateTimeOffset? PublishedAt,
+    DateTimeOffset? ShootingScheduledAt,
+    int ShareCount,
+    decimal RatingAverage,
+    int RatingCount
+) : AuditableDto;
