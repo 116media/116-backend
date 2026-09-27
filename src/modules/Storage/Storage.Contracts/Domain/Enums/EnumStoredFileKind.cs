@@ -1,4 +1,4 @@
-namespace _116.Core.Contracts.Domain.Enums;
+namespace _116.Storage.Contracts.Domain.Enums;
 
 /// <summary>
 /// The storage class an asset is stored and deleted as.
