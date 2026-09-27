@@ -1,11 +1,11 @@
-using _116.Core.Application.Shared.Repositories;
-using _116.Core.Application.Shared.Services;
-using _116.Core.Domain.Entities;
-using _116.Core.Domain.Exceptions;
-using _116.Core.Domain.StateMachines;
+using _116.Storage.Application.Shared.Repositories;
+using _116.Storage.Application.Shared.Services;
+using _116.Storage.Domain.Entities;
+using _116.Storage.Domain.Exceptions;
+using _116.Storage.Domain.StateMachines;
 using Microsoft.AspNetCore.Http;
 
-namespace _116.Core.Infrastructure.Services;
+namespace _116.Storage.Infrastructure.Services;
 
 /// <summary>
 /// Uploads assets to cloud storage and stages their file rows. Staging never commits: the
@@ -155,7 +155,7 @@ public class FileUploadService(
     {
         if (file.IsRecorded)
         {
-            throw new CoreRuleException(CoreRuleCodes.FileAlreadyRecorded);
+            throw new StorageRuleException(StorageRuleCodes.FileAlreadyRecorded);
         }
 
         if (supersededFileId.HasValue)
@@ -175,17 +175,17 @@ public class FileUploadService(
     /// </summary>
     /// <param name="originalFileName">The filename as submitted.</param>
     /// <param name="mimeType">The uploaded file's MIME type.</param>
-    /// <exception cref="CoreRuleException">Either value is missing.</exception>
+    /// <exception cref="StorageRuleException">Either value is missing.</exception>
     private static void GuardMetadata(string originalFileName, string mimeType)
     {
         if (string.IsNullOrWhiteSpace(originalFileName))
         {
-            throw new CoreRuleException(CoreRuleCodes.OriginalFileNameRequired);
+            throw new StorageRuleException(StorageRuleCodes.OriginalFileNameRequired);
         }
 
         if (string.IsNullOrWhiteSpace(mimeType))
         {
-            throw new CoreRuleException(CoreRuleCodes.MimeTypeRequired);
+            throw new StorageRuleException(StorageRuleCodes.MimeTypeRequired);
         }
     }
 

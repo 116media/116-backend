@@ -1,10 +1,10 @@
 using System.Net;
 using System.Net.Sockets;
-using _116.Core.Application.Shared.Errors.Facade;
-using _116.Core.Application.Shared.Services;
+using _116.Storage.Application.Shared.Errors.Facade;
+using _116.Storage.Application.Shared.Services;
 using Microsoft.Extensions.Hosting;
 
-namespace _116.Core.Infrastructure.Services;
+namespace _116.Storage.Infrastructure.Services;
 
 /// <summary>
 /// Rejects URLs that would make the server dial itself or the private network (SSRF). Resolves the
@@ -12,8 +12,8 @@ namespace _116.Core.Infrastructure.Services;
 /// ports, and — outside Development — any non-HTTPS scheme.
 /// </summary>
 /// <param name="environment">The hosting environment, used to relax the HTTPS rule in Development.</param>
-/// <param name="i18n">The Core i18n facade, used to surface a generic, non-leaking failure.</param>
-public sealed class UrlSafetyGuard(IHostEnvironment environment, CoreI18n i18n) : IUrlSafetyGuard
+/// <param name="i18n">The Storage i18n facade, used to surface a generic, non-leaking failure.</param>
+public sealed class UrlSafetyGuard(IHostEnvironment environment, StorageI18n i18n) : IUrlSafetyGuard
 {
     /// <inheritdoc />
     public async Task EnsureSafeAsync(Uri uri, CancellationToken cancellationToken)

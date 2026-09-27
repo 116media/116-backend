@@ -1,12 +1,12 @@
-using _116.Core.Application.Shared.Services;
-using _116.Core.Contracts.Domain.Enums;
-using _116.Shared.Application.Configurations;
+using _116.BuildingBlocks.Application.Configurations;
+using _116.Storage.Application.Shared.Services;
+using _116.Storage.Contracts.Domain.Enums;
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using Microsoft.Extensions.Logging;
 using Polly;
 
-namespace _116.Core.Infrastructure.Services;
+namespace _116.Storage.Infrastructure.Services;
 
 /// <summary>
 /// Cloudinary-backed <see cref="ICloudStorageClient" />. The only type in the solution that

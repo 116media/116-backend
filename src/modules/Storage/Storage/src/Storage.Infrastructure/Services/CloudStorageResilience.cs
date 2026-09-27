@@ -2,7 +2,7 @@ using Polly;
 using Polly.CircuitBreaker;
 using Polly.Retry;
 
-namespace _116.Core.Infrastructure.Services;
+namespace _116.Storage.Infrastructure.Services;
 
 /// <summary>
 /// The resilience policy every cloud-storage call runs through.

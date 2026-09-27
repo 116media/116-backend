@@ -1,11 +1,11 @@
-using _116.Core.Application.Shared.Helpers;
-using _116.Core.Application.Shared.Services;
+using _116.Storage.Application.Shared.Helpers;
+using _116.Storage.Application.Shared.Services;
 using Microsoft.AspNetCore.Http;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 
-namespace _116.Core.Infrastructure.Services;
+namespace _116.Storage.Infrastructure.Services;
 
 /// <summary>
 /// Extracts the dominant color from an image with SixLabors.ImageSharp and

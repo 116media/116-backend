@@ -1,20 +1,20 @@
-using _116.Core.Application.Shared.Cache;
-using _116.Core.Application.Shared.Mappers;
-using _116.Core.Application.Shared.Repositories;
-using _116.Core.Application.Shared.Services;
-using _116.Core.Contracts.Application.DTOs;
-using _116.Core.Contracts.Application.Services;
-using _116.Core.Contracts.Domain.Enums;
-using _116.Core.Domain.Entities;
+using _116.Storage.Application.Shared.Cache;
+using _116.Storage.Application.Shared.Mappers;
+using _116.Storage.Application.Shared.Repositories;
+using _116.Storage.Application.Shared.Services;
+using _116.Storage.Contracts.Application.DTOs;
+using _116.Storage.Contracts.Application.Services;
+using _116.Storage.Contracts.Domain.Enums;
+using _116.Storage.Domain.Entities;
 using MapsterMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Hybrid;
 
-namespace _116.Core.Infrastructure.Services;
+namespace _116.Storage.Infrastructure.Services;
 
 /// <summary>
-/// Core's implementation of the cross-module storage contract. Translates between the opaque
-/// <see cref="FileReferenceDto" /> other modules hold and the file aggregate Core owns.
+/// Storage's implementation of the cross-module storage contract. Translates between the opaque
+/// <see cref="FileReferenceDto" /> other modules hold and the file aggregate Storage owns.
 /// </summary>
 /// <param name="fileRepository">Repository for file data access operations.</param>
 /// <param name="fileUploadService">Uploads assets and stages their rows.</param>
@@ -39,7 +39,7 @@ public class FileStorageService(
         LocalCacheExpiration = TimeSpan.FromMinutes(10),
     };
 
-    private static readonly string[] CacheTags = [CoreCacheTags.Files];
+    private static readonly string[] CacheTags = [StorageCacheTags.Files];
 
     /// <inheritdoc />
     public async Task<StoredFile> UploadAsync(

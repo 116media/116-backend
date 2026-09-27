@@ -1,12 +1,14 @@
-using _116.BuildingBlocks.Constants;
-using _116.Core.Application.Shared.Errors.Facade;
-using _116.Core.Application.Shared.Services;
-using _116.Core.Contracts.Domain.Enums;
-using _116.Shared.Application.Exceptions;
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.BuildingBlocks.Presentation.Constants;
+using _116.Storage.Application.Shared.Errors.Facade;
+using _116.Storage.Application.Shared.Services;
+using _116.Storage.Contracts.Domain.Constants;
+using _116.Storage.Contracts.Domain.Enums;
+using _116.Storage.Domain.Constants;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
-namespace _116.Core.Infrastructure.Services;
+namespace _116.Storage.Infrastructure.Services;
 
 /// <summary>
 /// Implementation of <see cref="ICloudinaryService"/> for Cloudinary cloud storage operations.
@@ -15,8 +17,8 @@ namespace _116.Core.Infrastructure.Services;
 /// </summary>
 /// <param name="client">The resilient seam over the provider SDK.</param>
 /// <param name="logger">Logger for upload and deletion diagnostics.</param>
-/// <param name="i18n">The Core i18n facade for localized errors.</param>
-public class CloudinaryService(ICloudStorageClient client, ILogger<CloudinaryService> logger, CoreI18n i18n)
+/// <param name="i18n">The Storage i18n facade for localized errors.</param>
+public class CloudinaryService(ICloudStorageClient client, ILogger<CloudinaryService> logger, StorageI18n i18n)
     : ICloudinaryService
 {
     /// <inheritdoc />
@@ -184,17 +186,20 @@ public class CloudinaryService(ICloudStorageClient client, ILogger<CloudinarySer
         }
 
         // Check file size
-        if (file.Length > FileConstants.MaxAvatarFileSizeBytes)
+        if (file.Length > FileUploadLimits.MaxAvatarFileSizeBytes)
         {
-            const long maxSizeMb = FileConstants.MaxAvatarFileSizeBytes / (1024 * 1024);
+            const long maxSizeMb = FileUploadLimits.MaxAvatarFileSizeBytes / (1024 * 1024);
             throw i18n.File.FileTooLarge(maxSizeMb);
         }
 
         // Check file extension first (more reliable than MIME type for mobile uploads)
         string extension = Path.GetExtension(file.FileName).ToLowerInvariant();
-        if (!FileConstants.AllowedAvatarExtensions.Contains(extension))
+        if (!FileUploadLimits.AllowedAvatarExtensions.Contains(extension))
         {
-            throw i18n.File.InvalidFileExtension(extension, string.Join(", ", FileConstants.AllowedAvatarExtensions));
+            throw i18n.File.InvalidFileExtension(
+                extension,
+                string.Join(", ", FileUploadLimits.AllowedAvatarExtensions)
+            );
         }
 
         // Extract content type without parameters (e.g., "image/jpeg" from "image/jpeg; boundary=...")
@@ -202,14 +207,14 @@ public class CloudinaryService(ICloudStorageClient client, ILogger<CloudinarySer
 
         // Allow if content type is in allowed list OR if it's a generic type (mobile uploads)
         bool isValidContentType =
-            FileConstants.AllowedAvatarMimeTypes.Contains(contentType)
+            FileUploadLimits.AllowedAvatarMimeTypes.Contains(contentType)
             || string.IsNullOrEmpty(contentType)
             || contentType == "application/octet-stream"
             || contentType == "multipart/form-data";
 
         if (!isValidContentType)
         {
-            throw i18n.File.InvalidFileType(contentType, string.Join(", ", FileConstants.AllowedAvatarMimeTypes));
+            throw i18n.File.InvalidFileType(contentType, string.Join(", ", FileUploadLimits.AllowedAvatarMimeTypes));
         }
     }
 
@@ -259,16 +264,16 @@ public class CloudinaryService(ICloudStorageClient client, ILogger<CloudinarySer
             throw i18n.File.FileRequired();
         }
 
-        if (file.Length > FileConstants.MaxVideoFileSizeBytes)
+        if (file.Length > FileUploadLimits.MaxVideoFileSizeBytes)
         {
-            const long maxSizeMb = FileConstants.MaxVideoFileSizeBytes / (1024 * 1024);
+            const long maxSizeMb = FileUploadLimits.MaxVideoFileSizeBytes / (1024 * 1024);
             throw i18n.File.FileTooLarge(maxSizeMb);
         }
 
         string extension = Path.GetExtension(file.FileName).ToLowerInvariant();
-        if (!FileConstants.AllowedVideoExtensions.Contains(extension))
+        if (!FileUploadLimits.AllowedVideoExtensions.Contains(extension))
         {
-            throw i18n.File.InvalidFileExtension(extension, string.Join(", ", FileConstants.AllowedVideoExtensions));
+            throw i18n.File.InvalidFileExtension(extension, string.Join(", ", FileUploadLimits.AllowedVideoExtensions));
         }
 
         string contentType = (file.ContentType?.Split(';')[0] ?? string.Empty).Trim().ToLowerInvariant();

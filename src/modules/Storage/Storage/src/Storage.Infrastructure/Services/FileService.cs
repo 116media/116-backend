@@ -1,12 +1,12 @@
 using System.Net.Http.Headers;
-using _116.Core.Application.Shared.Errors.Facade;
-using _116.Core.Application.Shared.Services;
-using _116.Core.Contracts.Domain.Enums;
-using _116.Shared.Application.Exceptions;
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.Storage.Application.Shared.Errors.Facade;
+using _116.Storage.Application.Shared.Services;
+using _116.Storage.Contracts.Domain.Enums;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
-namespace _116.Core.Infrastructure.Services;
+namespace _116.Storage.Infrastructure.Services;
 
 /// <summary>
 /// Implementation of <see cref="IFileService"/> for file operations including download, storage, and management.
@@ -14,13 +14,13 @@ namespace _116.Core.Infrastructure.Services;
 /// </summary>
 /// <param name="httpClient">HTTP client for downloading files from URLs.</param>
 /// <param name="cloudinaryService">Service for Cloudinary cloud storage operations.</param>
-/// <param name="i18n">The Core i18n facade for localized errors.</param>
+/// <param name="i18n">The Storage i18n facade for localized errors.</param>
 /// <param name="urlSafetyGuard">Guard that rejects SSRF-prone URLs before they are fetched.</param>
 /// <param name="logger">Logger for download diagnostics.</param>
 public class FileService(
     HttpClient httpClient,
     ICloudinaryService cloudinaryService,
-    CoreI18n i18n,
+    StorageI18n i18n,
     IUrlSafetyGuard urlSafetyGuard,
     ILogger<FileService> logger
 ) : IFileService
