@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Infrastructure.Seed;
 using _116.Identity;
 using _116.Identity.Application.Adapters.Wangkanai.Detection;
 using _116.Identity.Application.Auth.Repositories;
@@ -8,12 +9,11 @@ using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Enums;
+using _116.Identity.Infrastructure;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
 using _116.Identity.Infrastructure.Persistence.Seeds.Visitor;
-using _116.Shared.Infrastructure.Seed;
-using _116.Tests.Fixtures.Factories.Identity;
-using _116.Unit.Tests.Common;
+using _116.Tests.TestData;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
@@ -24,7 +24,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Identity;
+namespace _116.Identity.Unit.Tests;
 
 /// <summary>
 /// Unit tests for <see cref="IdentityModule"/>.
