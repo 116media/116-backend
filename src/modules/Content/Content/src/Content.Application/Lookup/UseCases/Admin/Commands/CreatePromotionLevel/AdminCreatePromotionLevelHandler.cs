@@ -1,0 +1,55 @@
+using _116.BuildingBlocks.Application.CQRS;
+using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Shared.Mappers;
+using _116.Content.Application.Shared.Persistence;
+using _116.Content.Application.Shared.Repositories;
+using _116.Content.Domain.Entities;
+using MapsterMapper;
+
+namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.CreatePromotionLevel;
+
+/// <summary>
+/// Handles the <see cref="AdminCreatePromotionLevelCommand" /> to create a new promotion level.
+/// </summary>
+/// <param name="promotionLevelRepository">Repository for promotion level data access operations.</param>
+/// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
+/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
+public class AdminCreatePromotionLevelHandler(
+    IPromotionLevelRepository promotionLevelRepository,
+    IContentUnitOfWork unitOfWork,
+    IMapper mapper,
+    ContentI18n i18n
+) : ICommandHandler<AdminCreatePromotionLevelCommand, AdminCreatePromotionLevelResult>
+{
+    /// <inheritdoc />
+    public async Task<AdminCreatePromotionLevelResult> Handle(
+        AdminCreatePromotionLevelCommand command,
+        CancellationToken cancellationToken
+    )
+    {
+        bool exists = await promotionLevelRepository.ExistsByNameAsync(
+            name: command.Name,
+            cancellationToken: cancellationToken
+        );
+
+        if (exists)
+        {
+            throw i18n.PromotionLevel.AlreadyExists(name: command.Name);
+        }
+
+        var promotionLevel = PromotionLevelEntity.Create(
+            id: Guid.NewGuid(),
+            name: command.Name,
+            durationDays: command.DurationDays,
+            priceUsd: command.PriceUsd,
+            spotPriority: command.SpotPriority
+        );
+
+        await promotionLevelRepository.AddAsync(promotionLevel: promotionLevel, cancellationToken: cancellationToken);
+        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+        var dto = promotionLevel.ToPromotionLevelDto(mapper);
+        return new AdminCreatePromotionLevelResult(PromotionLevel: dto);
+    }
+}

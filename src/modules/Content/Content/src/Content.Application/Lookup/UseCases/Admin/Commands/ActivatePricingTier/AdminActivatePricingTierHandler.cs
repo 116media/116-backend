@@ -1,0 +1,49 @@
+using _116.BuildingBlocks.Application.CQRS;
+using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Shared.Mappers;
+using _116.Content.Application.Shared.Persistence;
+using _116.Content.Application.Shared.Repositories;
+using _116.Content.Domain.Entities;
+using MapsterMapper;
+
+namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.ActivatePricingTier;
+
+/// <summary>
+/// Handles the <see cref="AdminActivatePricingTierCommand" /> to activate a pricing tier.
+/// </summary>
+/// <param name="pricingTierRepository">Repository for pricing tier data access operations.</param>
+/// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
+/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
+public class AdminActivatePricingTierHandler(
+    IPricingTierRepository pricingTierRepository,
+    IContentUnitOfWork unitOfWork,
+    IMapper mapper,
+    ContentI18n i18n
+) : ICommandHandler<AdminActivatePricingTierCommand, AdminActivatePricingTierResult>
+{
+    /// <inheritdoc />
+    public async Task<AdminActivatePricingTierResult> Handle(
+        AdminActivatePricingTierCommand command,
+        CancellationToken cancellationToken
+    )
+    {
+        Guid id = Guid.Parse(command.Id);
+
+        PricingTierEntity pricingTier = await pricingTierRepository.GetByIdOrThrowAsync(
+            id: id,
+            cancellationToken: cancellationToken
+        );
+
+        bool activated = pricingTier.Activate();
+
+        if (!activated)
+        {
+            throw i18n.PricingTier.AlreadyActive();
+        }
+        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+        var dto = pricingTier.ToPricingTierDto(mapper);
+        return new AdminActivatePricingTierResult(PricingTier: dto);
+    }
+}

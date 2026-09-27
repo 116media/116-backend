@@ -1,0 +1,76 @@
+using _116.BuildingBlocks.Application.CQRS;
+using _116.BuildingBlocks.Presentation.Constants.RateLimit;
+using _116.BuildingBlocks.Presentation.Extensions;
+using _116.Content.Application.Lookup.Constants;
+using _116.Content.Application.Shared.DTOs;
+using _116.Content.Domain.Constants;
+using _116.Content.Domain.Enums;
+using Carter;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+
+namespace _116.Content.Application.Lookup.UseCases.Public.Queries.GetAllTags.V1;
+
+/// <summary>
+/// Response model for listing all public tags.
+/// </summary>
+/// <param name="Tags">The list of tags.</param>
+public record PublicGetAllTagsResponse(IReadOnlyList<TagDto> Tags);
+
+/// <summary>
+/// Defines the public get all tags endpoint.
+/// Returns all tags for use in content discovery.
+/// </summary>
+internal class PublicGetAllTagsEndpointV1 : ICarterModule
+{
+    /// <summary>
+    /// Configures the tag retrieval route within the API pipeline.
+    /// Maps the <c>GET /api/v1/public/tags</c> endpoint to handle tag retrieval requests.
+    /// </summary>
+    /// <param name="app">The route builder used to register API endpoints.</param>
+    public void AddRoutes(IEndpointRouteBuilder app)
+    {
+        RouteGroupBuilder group = app.MapApiVersionGroup(1)
+            .MapGroup($"{ContentConstants.Public}/{LookupRouteConstants.Tags}")
+            .WithTags($"{ContentConstants.Public}::{LookupRouteConstants.Tags}");
+
+        group
+            .MapGet(
+                "/",
+                async (
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
+                    string? search = null,
+                    string? contentType = null,
+                    int? limit = null
+                ) =>
+                {
+                    EnumCoreContentType? parsedContentType = Enum.TryParse(
+                        contentType,
+                        ignoreCase: true,
+                        out EnumCoreContentType parsed
+                    )
+                        ? parsed
+                        : null;
+
+                    var query = new PublicGetAllTagsQuery(Search: search, ContentType: parsedContentType, Limit: limit);
+
+                    PublicGetAllTagsResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
+
+                    var response = new PublicGetAllTagsResponse(Tags: result.Tags);
+                    return Results.Ok(response);
+                }
+            )
+            .WithName(endpointName: PublicGetAllTagsMetaField.GetAllTags.Name)
+            .WithSummary(summary: PublicGetAllTagsMetaField.GetAllTags.Summary)
+            .WithDescription(description: PublicGetAllTagsMetaField.GetAllTags.Description)
+            .AllowAnonymous()
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
+            .Produces<PublicGetAllTagsResponse>(statusCode: StatusCodes.Status200OK)
+            .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
+    }
+}
