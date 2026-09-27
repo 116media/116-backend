@@ -1,12 +1,12 @@
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.BuildingBlocks.Domain.Specifications;
+using _116.BuildingBlocks.Infrastructure.Extensions;
 using _116.Content.Application.Editorial.Builders;
 using _116.Content.Application.Editorial.Specifications;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
-using _116.Shared.Application.Exceptions;
-using _116.Shared.Application.Specifications;
-using _116.Shared.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace _116.Content.Infrastructure.Repositories;

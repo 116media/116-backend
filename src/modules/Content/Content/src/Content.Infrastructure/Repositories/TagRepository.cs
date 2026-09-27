@@ -1,10 +1,10 @@
+using _116.BuildingBlocks.Infrastructure.Extensions;
 using _116.Content.Application.Lookup.Specifications;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Builders;
 using _116.Content.Infrastructure.Persistence;
-using _116.Shared.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace _116.Content.Infrastructure.Repositories;
