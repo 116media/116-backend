@@ -1,7 +1,7 @@
-using _116.Core.Contracts.Domain.Enums;
 using _116.Shared.Domain;
+using _116.Storage.Contracts.Domain.Enums;
 
-namespace _116.Core.Domain.Events;
+namespace _116.Storage.Domain.Events;
 
 /// <summary>
 /// Raised when a file row is superseded by a newer upload. The old storage
