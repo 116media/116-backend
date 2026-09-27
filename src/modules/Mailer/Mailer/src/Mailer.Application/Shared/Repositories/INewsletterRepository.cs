@@ -1,6 +1,6 @@
+using _116.BuildingBlocks.Application.Pagination;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Domain.Enums;
-using _116.Shared.Application.Pagination;
 
 namespace _116.Mailer.Application.Shared.Repositories;
 

@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Domain;
 using _116.Shared.Domain;
 
 namespace _116.Mailer.Application.Shared.Repositories;

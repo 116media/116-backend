@@ -1,4 +1,4 @@
-using _116.Shared.Application.Persistence;
+using _116.BuildingBlocks.Application.Persistence;
 
 namespace _116.Mailer.Application.Shared.Persistence;
 

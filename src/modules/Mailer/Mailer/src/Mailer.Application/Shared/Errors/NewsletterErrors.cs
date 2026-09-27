@@ -1,5 +1,5 @@
+using _116.BuildingBlocks.Application.Exceptions;
 using _116.Mailer.Application.Shared.Errors.Messages;
-using _116.Shared.Application.Exceptions;
 
 namespace _116.Mailer.Application.Shared.Errors;
 
