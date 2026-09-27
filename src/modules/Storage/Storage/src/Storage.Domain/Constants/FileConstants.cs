@@ -1,4 +1,4 @@
-namespace _116.BuildingBlocks.Constants;
+namespace _116.Storage.Domain.Constants;
 
 /// <summary>
 /// Contains constants related to file entity business rules and constraints.
@@ -36,28 +36,6 @@ public static class FileConstants
     public const int ColorHexLength = 7;
 
     /// <summary>
-    /// Maximum file size for avatar uploads (2MB).
-    /// </summary>
-    public const long MaxAvatarFileSizeBytes = 2 * 1024 * 1024;
-
-    /// <summary>
-    /// Allowed image MIME types for avatar uploads.
-    /// </summary>
-    public static readonly string[] AllowedAvatarMimeTypes =
-    [
-        "image/jpeg",
-        "image/jpg",
-        "image/png",
-        "image/gif",
-        "image/webp",
-    ];
-
-    /// <summary>
-    /// Allowed file extensions for avatar uploads.
-    /// </summary>
-    public static readonly string[] AllowedAvatarExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
-
-    /// <summary>
     /// Maximum file size for raw file uploads, e.g. document attachments (5MB).
     /// </summary>
     public const long MaxRawFileSizeBytes = 5 * 1024 * 1024;
@@ -81,11 +59,6 @@ public static class FileConstants
     public static readonly string[] AllowedRawFileExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".pdf"];
 
     /// <summary>
-    /// Maximum file size for video uploads (350 MB).
-    /// </summary>
-    public const long MaxVideoFileSizeBytes = 350L * 1024 * 1024;
-
-    /// <summary>
     /// Allowed MIME types for video uploads.
     /// </summary>
     public static readonly string[] AllowedVideoMimeTypes =
@@ -97,9 +70,4 @@ public static class FileConstants
         "video/x-matroska",
         "video/3gpp",
     ];
-
-    /// <summary>
-    /// Allowed file extensions for video uploads.
-    /// </summary>
-    public static readonly string[] AllowedVideoExtensions = [".mp4", ".mov", ".webm", ".avi", ".mkv", ".3gp"];
 }
