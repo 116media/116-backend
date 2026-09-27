@@ -13,8 +13,8 @@ using _116.Content.Infrastructure.Persistence;
 namespace _116.Content.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ContentDbContext))]
-    [Migration("20260909134446_AddDomainEventOutboxAndProcessedEvents")]
-    partial class AddDomainEventOutboxAndProcessedEvents
+    [Migration("20260910172727_DropRedundantProcessedDomainEvents")]
+    partial class DropRedundantProcessedDomainEvents
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -3183,7 +3183,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                     b.ToTable("video_tags", "content");
                 });
 
-            modelBuilder.Entity("_116.Shared.Infrastructure.Outbox.OutboxEventEntity", b =>
+            modelBuilder.Entity("_116.BuildingBlocks.Infrastructure.Outbox.OutboxEventEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -3227,27 +3227,6 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasFilter("dispatched_at IS NULL");
 
                     b.ToTable("domain_event_outbox", "content");
-                });
-
-            modelBuilder.Entity("_116.Shared.Infrastructure.Outbox.ProcessedDomainEventEntity", b =>
-                {
-                    b.Property<Guid>("EventId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("event_id");
-
-                    b.Property<string>("HandlerName")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("handler_name");
-
-                    b.Property<DateTime>("ProcessedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("processed_at");
-
-                    b.HasKey("EventId", "HandlerName")
-                        .HasName("pk_processed_domain_events");
-
-                    b.ToTable("processed_domain_events", "content");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.AlbumEntity", b =>

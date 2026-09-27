@@ -1,7 +1,7 @@
 using System.Reflection;
+using _116.BuildingBlocks.Infrastructure.Outbox;
 using _116.Content.Domain.Constants;
 using _116.Content.Domain.Entities;
-using _116.Shared.Infrastructure.Outbox;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 

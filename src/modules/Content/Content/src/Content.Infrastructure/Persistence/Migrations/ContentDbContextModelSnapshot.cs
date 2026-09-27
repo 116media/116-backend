@@ -3129,7 +3129,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                     b.ToTable("video_tags", "content");
                 });
 
-            modelBuilder.Entity("_116.Shared.Infrastructure.Outbox.OutboxEventEntity", b =>
+            modelBuilder.Entity("_116.BuildingBlocks.Infrastructure.Outbox.OutboxEventEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid")

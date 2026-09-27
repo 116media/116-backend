@@ -13,8 +13,8 @@ using _116.Content.Infrastructure.Persistence;
 namespace _116.Content.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ContentDbContext))]
-    [Migration("20260920140442_DropVideoHasLyrics")]
-    partial class DropVideoHasLyrics
+    [Migration("20260909134446_AddDomainEventOutboxAndProcessedEvents")]
+    partial class AddDomainEventOutboxAndProcessedEvents
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -30,6 +30,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.AlbumEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -90,6 +91,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.ArticleArtistEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -133,6 +135,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.ArticleBookmarkEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -176,6 +179,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.ArticleCommentEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -248,6 +252,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.ArticleCommentLikeEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -288,6 +293,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.ArticleEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -475,6 +481,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.ArticleImageEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -528,6 +535,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.ArticleLikeEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -571,6 +579,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.ArticleShareEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -620,6 +629,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.ArticleTagEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -663,6 +673,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.ArtistClaimRequestEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -709,6 +720,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.ArtistEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -813,6 +825,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.ArtistSocialLinkEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -859,6 +872,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.CategoryEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -977,6 +991,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.CategoryPricingEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -1024,6 +1039,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.ContentItemTierEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -1070,6 +1086,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.ContentOrderEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -1120,6 +1137,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.ContentOrderItemEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -1185,6 +1203,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.ContentPaymentEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -1255,6 +1274,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.ContentTypeEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -1299,6 +1319,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.CustomerEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -1358,6 +1379,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.LyricsEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -1551,16 +1573,13 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                     b.HasIndex("ArtistId", "Status")
                         .HasDatabaseName("ix_lyrics_artist_id_status");
 
-                    b.HasIndex(new[] { "VideoId" }, "ix_lyrics_video_id_published")
-                        .HasDatabaseName("ix_lyrics_video_id_published")
-                        .HasFilter("status = 'Published'");
-
                     b.ToTable("lyrics", "content");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.LyricsLikeEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -1604,6 +1623,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.LyricsRevisionEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -1663,6 +1683,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.LyricsRevisionVoteEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -1712,6 +1733,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.LyricsShareEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -1761,6 +1783,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.LyricsSubmissionEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -1835,6 +1858,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.LyricsTagEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -1878,6 +1902,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.LyricsTranslationEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -1929,6 +1954,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.LyricsTranslationRevisionEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -1988,6 +2014,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.LyricsTranslationVoteEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -2037,6 +2064,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.LyricsViewEventEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -2104,6 +2132,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.PackageEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -2150,6 +2179,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.PackageSlotEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -2200,6 +2230,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.PlaylistEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -2241,6 +2272,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.PlaylistVideoEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -2288,6 +2320,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.PricingTierEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -2338,6 +2371,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.PromotionLevelEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -2398,6 +2432,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.ShortVideoBookmarkEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -2441,6 +2476,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.ShortVideoEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -2555,6 +2591,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.ShortVideoLikeEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -2598,6 +2635,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.ShortVideoShareEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -2647,6 +2685,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.ShortVideoViewEventEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -2710,6 +2749,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.StreamingLinkEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -2767,6 +2807,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.TagEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -2815,6 +2856,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.VideoEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -2846,6 +2888,12 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("description");
+
+                    b.Property<bool>("HasLyrics")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("has_lyrics");
 
                     b.Property<bool>("IsPromoted")
                         .ValueGeneratedOnAdd()
@@ -2995,6 +3043,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.VideoRatingEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -3043,6 +3092,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.VideoShareEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -3092,6 +3142,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.VideoTagEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -3132,9 +3183,10 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                     b.ToTable("video_tags", "content");
                 });
 
-            modelBuilder.Entity("_116.Shared.Infrastructure.Outbox.OutboxEventEntity", b =>
+            modelBuilder.Entity("_116.BuildingBlocks.Infrastructure.Outbox.OutboxEventEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -3177,6 +3229,27 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                     b.ToTable("domain_event_outbox", "content");
                 });
 
+            modelBuilder.Entity("_116.BuildingBlocks.Infrastructure.Outbox.ProcessedDomainEventEntity", b =>
+                {
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("event_id");
+
+                    b.Property<string>("HandlerName")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("handler_name");
+
+                    b.Property<DateTime>("ProcessedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("processed_at");
+
+                    b.HasKey("EventId", "HandlerName")
+                        .HasName("pk_processed_domain_events");
+
+                    b.ToTable("processed_domain_events", "content");
+                });
+
             modelBuilder.Entity("_116.Content.Domain.Entities.AlbumEntity", b =>
                 {
                     b.HasOne("_116.Content.Domain.Entities.ArtistEntity", null)
@@ -3189,7 +3262,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.ArticleArtistEntity", b =>
                 {
                     b.HasOne("_116.Content.Domain.Entities.ArticleEntity", "Article")
-                        .WithMany("Artists")
+                        .WithMany()
                         .HasForeignKey("ArticleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
@@ -3281,12 +3354,14 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("_116.Content.Domain.Entities.ArticleImageEntity", b =>
                 {
-                    b.HasOne("_116.Content.Domain.Entities.ArticleEntity", null)
+                    b.HasOne("_116.Content.Domain.Entities.ArticleEntity", "Article")
                         .WithMany("Images")
                         .HasForeignKey("ArticleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_article_images_articles_article_id");
+
+                    b.Navigation("Article");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.ArticleLikeEntity", b =>
@@ -3315,7 +3390,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("_116.Content.Domain.Entities.ArticleTagEntity", b =>
                 {
-                    b.HasOne("_116.Content.Domain.Entities.ArticleEntity", null)
+                    b.HasOne("_116.Content.Domain.Entities.ArticleEntity", "Article")
                         .WithMany("Tags")
                         .HasForeignKey("ArticleId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3329,17 +3404,21 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_article_tags_tags_tag_id");
 
+                    b.Navigation("Article");
+
                     b.Navigation("Tag");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.ArtistSocialLinkEntity", b =>
                 {
-                    b.HasOne("_116.Content.Domain.Entities.ArtistEntity", null)
-                        .WithMany("SocialLinks")
+                    b.HasOne("_116.Content.Domain.Entities.ArtistEntity", "Artist")
+                        .WithMany()
                         .HasForeignKey("ArtistId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_artist_social_links_artists_artist_id");
+
+                    b.Navigation("Artist");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.CategoryEntity", b =>
@@ -3356,7 +3435,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("_116.Content.Domain.Entities.CategoryPricingEntity", b =>
                 {
-                    b.HasOne("_116.Content.Domain.Entities.CategoryEntity", null)
+                    b.HasOne("_116.Content.Domain.Entities.CategoryEntity", "Category")
                         .WithMany("Pricing")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3369,6 +3448,8 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_category_pricing_pricing_tiers_pricing_tier_id");
+
+                    b.Navigation("Category");
 
                     b.Navigation("PricingTier");
                 });
@@ -3541,7 +3622,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("_116.Content.Domain.Entities.LyricsTagEntity", b =>
                 {
-                    b.HasOne("_116.Content.Domain.Entities.LyricsEntity", null)
+                    b.HasOne("_116.Content.Domain.Entities.LyricsEntity", "Lyrics")
                         .WithMany("Tags")
                         .HasForeignKey("LyricsId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3554,6 +3635,8 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_lyrics_tags_tags_tag_id");
+
+                    b.Navigation("Lyrics");
 
                     b.Navigation("Tag");
                 });
@@ -3608,7 +3691,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_package_slots_categories_category_id");
 
-                    b.HasOne("_116.Content.Domain.Entities.PackageEntity", null)
+                    b.HasOne("_116.Content.Domain.Entities.PackageEntity", "Package")
                         .WithMany("Slots")
                         .HasForeignKey("PackageId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3616,11 +3699,13 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasConstraintName("fk_package_slots_packages_package_id");
 
                     b.Navigation("Category");
+
+                    b.Navigation("Package");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.PlaylistVideoEntity", b =>
                 {
-                    b.HasOne("_116.Content.Domain.Entities.PlaylistEntity", null)
+                    b.HasOne("_116.Content.Domain.Entities.PlaylistEntity", "Playlist")
                         .WithMany("Videos")
                         .HasForeignKey("PlaylistId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3633,6 +3718,8 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_playlist_videos_videos_video_id");
+
+                    b.Navigation("Playlist");
 
                     b.Navigation("Video");
                 });
@@ -3782,7 +3869,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_video_tags_tags_tag_id");
 
-                    b.HasOne("_116.Content.Domain.Entities.VideoEntity", null)
+                    b.HasOne("_116.Content.Domain.Entities.VideoEntity", "Video")
                         .WithMany("Tags")
                         .HasForeignKey("VideoId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3790,20 +3877,15 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasConstraintName("fk_video_tags_videos_video_id");
 
                     b.Navigation("Tag");
+
+                    b.Navigation("Video");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.ArticleEntity", b =>
                 {
-                    b.Navigation("Artists");
-
                     b.Navigation("Images");
 
                     b.Navigation("Tags");
-                });
-
-            modelBuilder.Entity("_116.Content.Domain.Entities.ArtistEntity", b =>
-                {
-                    b.Navigation("SocialLinks");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.CategoryEntity", b =>

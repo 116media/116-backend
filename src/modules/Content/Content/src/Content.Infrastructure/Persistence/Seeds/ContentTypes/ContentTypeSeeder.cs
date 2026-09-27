@@ -1,6 +1,6 @@
+using _116.BuildingBlocks.Infrastructure.Seed;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
-using _116.Shared.Infrastructure.Seed;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
