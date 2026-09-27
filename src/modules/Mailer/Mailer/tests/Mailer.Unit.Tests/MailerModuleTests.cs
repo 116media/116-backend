@@ -10,6 +10,7 @@ using _116.Mailer.Application.Templates;
 using _116.Mailer.Application.Templates.Messages;
 using _116.Mailer.Contracts.Application.Services;
 using _116.Mailer.Domain.Constants;
+using _116.Mailer.Infrastructure;
 using _116.Mailer.Infrastructure.Persistence;
 using _116.Mailer.Infrastructure.Repositories;
 using _116.Mailer.Infrastructure.Services;
@@ -22,7 +23,7 @@ using Moq;
 using Quartz;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Mailer;
+namespace _116.Mailer.Unit.Tests;
 
 /// <summary>
 /// Unit tests for <see cref="MailerModule" />.
