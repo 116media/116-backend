@@ -1,6 +1,6 @@
+using _116.BuildingBlocks.Application.Configurations.Schemas;
 using _116.Mailer.Application.Shared.Exceptions;
 using _116.Mailer.Application.Shared.Services;
-using _116.Shared.Application.Configurations.Schemas;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using MimeKit;

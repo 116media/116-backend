@@ -1,9 +1,9 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using _116.BuildingBlocks.Application.Configurations.Schemas;
 using _116.Mailer.Application.Shared.Exceptions;
 using _116.Mailer.Application.Shared.Services;
-using _116.Shared.Application.Configurations.Schemas;
 
 namespace _116.Mailer.Infrastructure.Services;
 

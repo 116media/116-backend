@@ -1,4 +1,4 @@
-using _116.BuildingBlocks.Constants;
+using _116.BuildingBlocks.Presentation.Constants;
 using _116.Identity.Contracts.Application.Services;
 using _116.Mailer.Application.Shared.Persistence;
 using _116.Mailer.Application.Shared.Repositories;
@@ -6,6 +6,7 @@ using _116.Mailer.Application.Shared.Services;
 using _116.Mailer.Contracts.Application.Services;
 using _116.Mailer.Contracts.Domain.Enums;
 using _116.Mailer.Domain.Entities;
+using _116.Shared.Domain.Constants;
 
 namespace _116.Mailer.Infrastructure.Services;
 
@@ -44,7 +45,7 @@ public class NotificationService(
     {
         string locale =
             (await userLookupService.GetAuthorInfoByIdAsync(userId: userId, ct: cancellationToken))?.PreferredLocale
-            ?? UserConstants.DefaultLocale;
+            ?? LocaleConstants.DefaultLocale;
 
         RenderedNotification rendered = renderer.Render(type, tokens, locale);
 
