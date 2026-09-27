@@ -3,12 +3,12 @@ using _116.Mailer.Application.Newsletter.UseCases.Public.Commands.SubscribeNewsl
 using _116.Mailer.Application.Newsletter.UseCases.Public.Commands.UnsubscribeNewsletter;
 using _116.Mailer.Application.Shared.Errors;
 using _116.Mailer.Application.Shared.Errors.Messages;
-using _116.Tests.Fixtures.Helpers;
+using _116.Tests.TestData.Helpers;
 using AwesomeAssertions;
 using FluentValidation.Results;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Mailer.Application.Newsletter;
+namespace _116.Mailer.Unit.Tests.Application.Newsletter;
 
 /// <summary>
 /// Unit tests for the newsletter command validators.

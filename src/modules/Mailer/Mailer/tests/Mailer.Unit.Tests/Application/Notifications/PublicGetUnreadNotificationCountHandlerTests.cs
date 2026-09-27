@@ -4,7 +4,7 @@ using AwesomeAssertions;
 using Moq;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Mailer.Application.Notifications;
+namespace _116.Mailer.Unit.Tests.Application.Notifications;
 
 /// <summary>
 /// Unit tests for <see cref="PublicGetUnreadNotificationCountHandler" />:

@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Application.Exceptions;
 using _116.Mailer.Application.Newsletter.UseCases.Public.Commands.UnsubscribeNewsletter;
 using _116.Mailer.Application.Shared.Errors;
 using _116.Mailer.Application.Shared.Errors.Messages;
@@ -5,13 +6,13 @@ using _116.Mailer.Application.Shared.Persistence;
 using _116.Mailer.Application.Shared.Repositories;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Domain.Enums;
-using _116.Shared.Application.Exceptions;
-using _116.Tests.Fixtures.Helpers;
+using _116.Mailer.TestData.Builders.Entities;
+using _116.Tests.TestData.Helpers;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Mailer.Application.Newsletter;
+namespace _116.Mailer.Unit.Tests.Application.Newsletter;
 
 /// <summary>
 /// Unit tests for <see cref="PublicUnsubscribeNewsletterHandler" /> covering
@@ -45,8 +46,11 @@ public class PublicUnsubscribeNewsletterHandlerTests
     public async Task Handle_SubscribedRow_ShouldOptOutAndCommit()
     {
         // Arrange
-        var subscriber = NewsletterSubscriberEntity.Subscribe(Guid.NewGuid(), "fan@example.com");
-        subscriber.Confirm(DateTime.UtcNow);
+        var subscriber = new NewsletterSubscriberBuilder()
+            .WithId(Guid.NewGuid())
+            .WithEmail("fan@example.com")
+            .AsConfirmed()
+            .Build();
         _repository
             .Setup(r => r.GetByUnsubscribeTokenAsync(subscriber.UnsubscribeToken, It.IsAny<CancellationToken>()))
             .ReturnsAsync(subscriber);
@@ -67,9 +71,11 @@ public class PublicUnsubscribeNewsletterHandlerTests
     public async Task Handle_ReClick_ShouldChangeNothingAndStillReportUnsubscribed()
     {
         // Arrange
-        var subscriber = NewsletterSubscriberEntity.Subscribe(Guid.NewGuid(), "fan@example.com");
-        subscriber.Confirm(DateTime.UtcNow);
-        subscriber.Unsubscribe(DateTime.UtcNow);
+        var subscriber = new NewsletterSubscriberBuilder()
+            .WithId(Guid.NewGuid())
+            .WithEmail("fan@example.com")
+            .AsUnsubscribed()
+            .Build();
         _repository
             .Setup(r => r.GetByUnsubscribeTokenAsync(subscriber.UnsubscribeToken, It.IsAny<CancellationToken>()))
             .ReturnsAsync(subscriber);

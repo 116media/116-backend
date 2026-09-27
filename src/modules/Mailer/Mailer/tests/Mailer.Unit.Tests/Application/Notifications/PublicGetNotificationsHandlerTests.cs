@@ -1,13 +1,14 @@
+using _116.BuildingBlocks.Application.Pagination;
 using _116.Mailer.Application.Notifications.UseCases.Public.Queries.GetNotifications;
 using _116.Mailer.Application.Shared.Repositories;
 using _116.Mailer.Contracts.Domain.Enums;
 using _116.Mailer.Domain.Entities;
-using _116.Shared.Application.Pagination;
+using _116.Mailer.TestData.Builders.Entities;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Mailer.Application.Notifications;
+namespace _116.Mailer.Unit.Tests.Application.Notifications;
 
 /// <summary>
 /// Unit tests for <see cref="PublicGetNotificationsHandler" />: pages the
@@ -19,14 +20,13 @@ public class PublicGetNotificationsHandlerTests
 
     private static NotificationEntity CreateNotification(Guid userId)
     {
-        return NotificationEntity.Create(
-            id: Guid.NewGuid(),
-            userId: userId,
-            type: EnumNotificationType.PasswordChanged,
-            title: "Password changed",
-            body: "Your password was changed.",
-            linkPath: null
-        );
+        return new NotificationBuilder()
+            .WithId(Guid.NewGuid())
+            .WithUserId(userId)
+            .WithType(EnumNotificationType.PasswordChanged)
+            .WithContent("Password changed", "Your password was changed.")
+            .WithLinkPath(null)
+            .Build();
     }
 
     [Fact]

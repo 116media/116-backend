@@ -1,13 +1,14 @@
+using _116.BuildingBlocks.Application.Pagination;
 using _116.Mailer.Application.Newsletter.UseCases.Admin.Queries.GetNewsletterSubscribers;
 using _116.Mailer.Application.Shared.Repositories;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Domain.Enums;
-using _116.Shared.Application.Pagination;
+using _116.Mailer.TestData.Builders.Entities;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Mailer.Application.Newsletter;
+namespace _116.Mailer.Unit.Tests.Application.Newsletter;
 
 /// <summary>
 /// Unit tests for <see cref="AdminGetNewsletterSubscribersHandler" /> covering
@@ -23,7 +24,7 @@ public class AdminGetNewsletterSubscribersHandlerTests
     public async Task Handle_ShouldProjectThePageToDtosPreservingThePagingEnvelope()
     {
         // Arrange
-        var subscriber = NewsletterSubscriberEntity.Subscribe(Guid.NewGuid(), "fan@example.com");
+        var subscriber = new NewsletterSubscriberBuilder().WithId(Guid.NewGuid()).WithEmail("fan@example.com").Build();
         var page = new PaginatedResult<NewsletterSubscriberEntity>(
             pageIndex: 2,
             pageSize: 10,

@@ -1,12 +1,12 @@
 using _116.Mailer.Application.Notifications.UseCases.Public.Commands.MarkNotificationRead;
 using _116.Mailer.Application.Shared.Errors;
 using _116.Mailer.Application.Shared.Errors.Messages;
-using _116.Tests.Fixtures.Helpers;
+using _116.Tests.TestData.Helpers;
 using AwesomeAssertions;
 using FluentValidation.Results;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Mailer.Application.Notifications;
+namespace _116.Mailer.Unit.Tests.Application.Notifications;
 
 /// <summary>
 /// Unit tests for the notification command validators.

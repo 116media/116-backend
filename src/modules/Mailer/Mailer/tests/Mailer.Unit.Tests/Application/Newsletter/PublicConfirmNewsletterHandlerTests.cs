@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Application.Exceptions;
 using _116.Mailer.Application.Newsletter.OutboundEmails;
 using _116.Mailer.Application.Newsletter.UseCases.Public.Commands.ConfirmNewsletter;
 using _116.Mailer.Application.Shared.Errors;
@@ -7,13 +8,13 @@ using _116.Mailer.Application.Shared.Repositories;
 using _116.Mailer.Contracts.Application.OutboundEmails;
 using _116.Mailer.Contracts.Domain.Enums;
 using _116.Mailer.Domain.Entities;
-using _116.Shared.Application.Exceptions;
-using _116.Tests.Fixtures.Helpers;
+using _116.Mailer.TestData.Builders.Entities;
+using _116.Tests.TestData.Helpers;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Mailer.Application.Newsletter;
+namespace _116.Mailer.Unit.Tests.Application.Newsletter;
 
 /// <summary>
 /// Unit tests for <see cref="PublicConfirmNewsletterHandler" /> covering the
@@ -50,7 +51,7 @@ public class PublicConfirmNewsletterHandlerTests
     public async Task Handle_PendingSubscriber_ShouldCommitAndSendTheWelcomeEmail()
     {
         // Arrange
-        var subscriber = NewsletterSubscriberEntity.Subscribe(Guid.NewGuid(), "fan@example.com");
+        var subscriber = new NewsletterSubscriberBuilder().WithId(Guid.NewGuid()).WithEmail("fan@example.com").Build();
         _repository
             .Setup(r => r.GetByConfirmationTokenAsync(subscriber.ConfirmationToken, It.IsAny<CancellationToken>()))
             .ReturnsAsync(subscriber);
@@ -83,8 +84,11 @@ public class PublicConfirmNewsletterHandlerTests
     public async Task Handle_ReClick_ShouldChangeNothingAndSendNoSecondWelcome()
     {
         // Arrange
-        var subscriber = NewsletterSubscriberEntity.Subscribe(Guid.NewGuid(), "fan@example.com");
-        subscriber.Confirm(DateTime.UtcNow);
+        var subscriber = new NewsletterSubscriberBuilder()
+            .WithId(Guid.NewGuid())
+            .WithEmail("fan@example.com")
+            .AsConfirmed()
+            .Build();
         _repository
             .Setup(r => r.GetByConfirmationTokenAsync(subscriber.ConfirmationToken, It.IsAny<CancellationToken>()))
             .ReturnsAsync(subscriber);
@@ -105,9 +109,11 @@ public class PublicConfirmNewsletterHandlerTests
     public async Task Handle_UnsubscribedRow_ShouldReportNotSubscribed()
     {
         // Arrange
-        var subscriber = NewsletterSubscriberEntity.Subscribe(Guid.NewGuid(), "fan@example.com");
-        subscriber.Confirm(DateTime.UtcNow);
-        subscriber.Unsubscribe(DateTime.UtcNow);
+        var subscriber = new NewsletterSubscriberBuilder()
+            .WithId(Guid.NewGuid())
+            .WithEmail("fan@example.com")
+            .AsUnsubscribed()
+            .Build();
         _repository
             .Setup(r => r.GetByConfirmationTokenAsync(subscriber.ConfirmationToken, It.IsAny<CancellationToken>()))
             .ReturnsAsync(subscriber);

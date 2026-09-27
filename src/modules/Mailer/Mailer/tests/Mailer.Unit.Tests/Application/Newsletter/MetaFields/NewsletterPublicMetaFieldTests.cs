@@ -1,13 +1,13 @@
+using _116.BuildingBlocks.Application.Metadata;
 using _116.Mailer.Application.Newsletter.UseCases.Public.Commands.ConfirmNewsletter;
 using _116.Mailer.Application.Newsletter.UseCases.Public.Commands.SubscribeNewsletter;
 using _116.Mailer.Application.Newsletter.UseCases.Public.Commands.UnsubscribeNewsletter;
 using _116.Mailer.Application.Newsletter.UseCases.Public.Queries.GetNewsletterConfirmPage;
 using _116.Mailer.Application.Newsletter.UseCases.Public.Queries.GetNewsletterUnsubscribePage;
-using _116.Shared.Application.Metadata;
 using AwesomeAssertions;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Mailer.Application.Newsletter.MetaFields;
+namespace _116.Mailer.Unit.Tests.Application.Newsletter.MetaFields;
 
 /// <summary>
 /// Tests that all Newsletter public MetaField static fields are correctly initialized.

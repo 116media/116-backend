@@ -1,9 +1,9 @@
+using _116.BuildingBlocks.Application.Metadata;
 using _116.Mailer.Application.Newsletter.UseCases.Admin.Queries.GetNewsletterSubscribers;
-using _116.Shared.Application.Metadata;
 using AwesomeAssertions;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Mailer.Application.Newsletter.MetaFields;
+namespace _116.Mailer.Unit.Tests.Application.Newsletter.MetaFields;
 
 /// <summary>
 /// Tests that all Newsletter admin MetaField static fields are correctly initialized.

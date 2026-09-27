@@ -6,11 +6,11 @@ using _116.Mailer.Application.Shared.Services;
 using _116.Mailer.Application.Templates;
 using _116.Mailer.Application.Templates.Messages;
 using _116.Mailer.Contracts.Domain.Enums;
-using _116.Tests.Fixtures.Helpers;
+using _116.Tests.TestData.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Mailer.Application.Templates;
+namespace _116.Mailer.Unit.Tests.Application.Templates;
 
 /// <summary>
 /// Unit tests for <see cref="EmailTemplateRenderer" /> against the real

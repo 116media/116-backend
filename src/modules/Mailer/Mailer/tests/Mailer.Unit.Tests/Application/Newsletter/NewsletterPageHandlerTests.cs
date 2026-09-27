@@ -2,11 +2,11 @@ using System.Net;
 using _116.Mailer.Application.Newsletter.Messages;
 using _116.Mailer.Application.Newsletter.UseCases.Public.Queries.GetNewsletterConfirmPage;
 using _116.Mailer.Application.Newsletter.UseCases.Public.Queries.GetNewsletterUnsubscribePage;
-using _116.Tests.Fixtures.Helpers;
+using _116.Tests.TestData.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Mailer.Application.Newsletter;
+namespace _116.Mailer.Unit.Tests.Application.Newsletter;
 
 /// <summary>
 /// Unit tests for the two newsletter page handlers against the real resource catalog: the

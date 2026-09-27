@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Application.Exceptions;
 using _116.Mailer.Application.Notifications.UseCases.Public.Commands.MarkNotificationRead;
 using _116.Mailer.Application.Shared.Errors;
 using _116.Mailer.Application.Shared.Errors.Messages;
@@ -5,13 +6,13 @@ using _116.Mailer.Application.Shared.Persistence;
 using _116.Mailer.Application.Shared.Repositories;
 using _116.Mailer.Contracts.Domain.Enums;
 using _116.Mailer.Domain.Entities;
-using _116.Shared.Application.Exceptions;
-using _116.Tests.Fixtures.Helpers;
+using _116.Mailer.TestData.Builders.Entities;
+using _116.Tests.TestData.Helpers;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Mailer.Application.Notifications;
+namespace _116.Mailer.Unit.Tests.Application.Notifications;
 
 /// <summary>
 /// Unit tests for <see cref="PublicMarkNotificationReadHandler" />: first
@@ -27,14 +28,13 @@ public class PublicMarkNotificationReadHandlerTests
 
     private static NotificationEntity CreateNotification(Guid userId)
     {
-        return NotificationEntity.Create(
-            id: Guid.NewGuid(),
-            userId: userId,
-            type: EnumNotificationType.PasswordChanged,
-            title: "Password changed",
-            body: "Your password was changed.",
-            linkPath: null
-        );
+        return new NotificationBuilder()
+            .WithId(Guid.NewGuid())
+            .WithUserId(userId)
+            .WithType(EnumNotificationType.PasswordChanged)
+            .WithContent("Password changed", "Your password was changed.")
+            .WithLinkPath(null)
+            .Build();
     }
 
     private PublicMarkNotificationReadHandler CreateHandler()

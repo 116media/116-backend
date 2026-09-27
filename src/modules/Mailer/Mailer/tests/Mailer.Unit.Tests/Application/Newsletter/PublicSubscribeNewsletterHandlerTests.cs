@@ -5,11 +5,12 @@ using _116.Mailer.Application.Shared.Repositories;
 using _116.Mailer.Contracts.Application.OutboundEmails;
 using _116.Mailer.Contracts.Domain.Enums;
 using _116.Mailer.Domain.Entities;
+using _116.Mailer.TestData.Builders.Entities;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Mailer.Application.Newsletter;
+namespace _116.Mailer.Unit.Tests.Application.Newsletter;
 
 /// <summary>
 /// Unit tests for <see cref="PublicSubscribeNewsletterHandler" /> covering the
@@ -54,9 +55,11 @@ public class PublicSubscribeNewsletterHandlerTests
     [Fact]
     public async Task Handle_UnsubscribedAddress_ShouldReissueConfirmationWithAFreshToken()
     {
-        var existing = NewsletterSubscriberEntity.Subscribe(Guid.NewGuid(), "fan@example.com");
-        existing.Confirm(DateTime.UtcNow);
-        existing.Unsubscribe(DateTime.UtcNow);
+        var existing = new NewsletterSubscriberBuilder()
+            .WithId(Guid.NewGuid())
+            .WithEmail("fan@example.com")
+            .AsUnsubscribed()
+            .Build();
         string oldToken = existing.ConfirmationToken;
 
         _repository
@@ -83,8 +86,11 @@ public class PublicSubscribeNewsletterHandlerTests
     [Fact]
     public async Task Handle_AlreadySubscribed_ShouldChangeNothingAndStillSucceed()
     {
-        var existing = NewsletterSubscriberEntity.Subscribe(Guid.NewGuid(), "fan@example.com");
-        existing.Confirm(DateTime.UtcNow);
+        var existing = new NewsletterSubscriberBuilder()
+            .WithId(Guid.NewGuid())
+            .WithEmail("fan@example.com")
+            .AsConfirmed()
+            .Build();
 
         _repository
             .Setup(r => r.GetByEmailAsync("fan@example.com", It.IsAny<CancellationToken>()))

@@ -1,11 +1,11 @@
+using _116.BuildingBlocks.Application.Exceptions;
 using _116.Mailer.Application.Shared.Errors;
 using _116.Mailer.Application.Shared.Errors.Messages;
-using _116.Shared.Application.Exceptions;
-using _116.Tests.Fixtures.Helpers;
+using _116.Tests.TestData.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Mailer.Application.Shared.Errors;
+namespace _116.Mailer.Unit.Tests.Application.Shared.Errors;
 
 /// <summary>
 /// Unit tests for <see cref="NewsletterErrors" /> factory methods and the

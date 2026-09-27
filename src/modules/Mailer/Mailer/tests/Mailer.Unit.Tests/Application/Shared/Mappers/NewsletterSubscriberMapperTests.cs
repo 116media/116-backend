@@ -2,10 +2,11 @@ using _116.Mailer.Application.Shared.DTOs;
 using _116.Mailer.Application.Shared.Mappers;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Domain.Enums;
+using _116.Mailer.TestData.Builders.Entities;
 using AwesomeAssertions;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Mailer.Application.Shared.Mappers;
+namespace _116.Mailer.Unit.Tests.Application.Shared.Mappers;
 
 /// <summary>
 /// Unit tests for <see cref="NewsletterSubscriberMapper" />: the admin-facing
@@ -16,7 +17,10 @@ public class NewsletterSubscriberMapperTests
 {
     private static NewsletterSubscriberEntity CreateSubscriber(string email, DateTime? createdAt = null)
     {
-        NewsletterSubscriberEntity subscriber = NewsletterSubscriberEntity.Subscribe(Guid.NewGuid(), email);
+        NewsletterSubscriberEntity subscriber = new NewsletterSubscriberBuilder()
+            .WithId(Guid.NewGuid())
+            .WithEmail(email)
+            .Build();
         subscriber.CreatedAt = createdAt;
 
         return subscriber;

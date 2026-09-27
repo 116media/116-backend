@@ -8,11 +8,11 @@ using _116.Mailer.Application.Shared.Services;
 using _116.Mailer.Application.Templates;
 using _116.Mailer.Application.Templates.Messages;
 using _116.Mailer.Contracts.Application.OutboundEmails;
-using _116.Tests.Fixtures.Helpers;
+using _116.Tests.TestData.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Mailer.Application.OutboundEmails;
+namespace _116.Mailer.Unit.Tests.Application.OutboundEmails;
 
 /// <summary>
 /// Unit tests over every <see cref="OutboundEmail" /> record the modules ship: each declares a

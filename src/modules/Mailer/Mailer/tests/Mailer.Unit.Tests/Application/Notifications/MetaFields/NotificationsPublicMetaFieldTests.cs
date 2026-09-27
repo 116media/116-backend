@@ -1,12 +1,12 @@
+using _116.BuildingBlocks.Application.Metadata;
 using _116.Mailer.Application.Notifications.UseCases.Public.Commands.MarkAllNotificationsRead;
 using _116.Mailer.Application.Notifications.UseCases.Public.Commands.MarkNotificationRead;
 using _116.Mailer.Application.Notifications.UseCases.Public.Queries.GetNotifications;
 using _116.Mailer.Application.Notifications.UseCases.Public.Queries.GetUnreadNotificationCount;
-using _116.Shared.Application.Metadata;
 using AwesomeAssertions;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Mailer.Application.Notifications.MetaFields;
+namespace _116.Mailer.Unit.Tests.Application.Notifications.MetaFields;
 
 /// <summary>
 /// Tests that all Notifications public MetaField static fields are correctly initialized.

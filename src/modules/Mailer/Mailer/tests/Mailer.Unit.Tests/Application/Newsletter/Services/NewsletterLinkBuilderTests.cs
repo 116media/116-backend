@@ -2,7 +2,7 @@ using _116.Mailer.Application.Newsletter.Services;
 using AwesomeAssertions;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Mailer.Application.Newsletter.Services;
+namespace _116.Mailer.Unit.Tests.Application.Newsletter.Services;
 
 /// <summary>
 /// Unit tests for <see cref="NewsletterLinkBuilder" />: the frontend routes the
