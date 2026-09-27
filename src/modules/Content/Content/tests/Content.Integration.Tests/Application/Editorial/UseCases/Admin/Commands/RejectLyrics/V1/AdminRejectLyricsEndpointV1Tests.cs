@@ -1,0 +1,149 @@
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.BuildingBlocks.Application.Exceptions.Messages;
+using _116.Content.Application.Editorial.Constants;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.RejectLyrics.V1;
+using _116.Content.Application.Shared.Errors.Messages;
+using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
+using _116.Content.Infrastructure.Persistence;
+using _116.Content.TestData.Factories;
+using _116.Content.TestData.Factories.Helpers;
+using _116.Content.TestData.Mocks.Factories;
+using _116.Content.TestData.Mocks.Infrastructure;
+using _116.Content.TestData.Mocks.Repositories;
+using _116.Content.TestData.Mocks.Services;
+using _116.Identity.TestData.Factories;
+using _116.Identity.TestData.Mocks.Infrastructure;
+using _116.Identity.TestData.Mocks.Repositories;
+using _116.Identity.TestData.Mocks.Services;
+using _116.Storage.TestData.Factories;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Storage.TestData.Mocks.Services;
+using _116.Tests.TestData.Constants;
+using _116.Tests.TestData.Mocks;
+
+namespace _116.Content.Integration.Tests.Application.Editorial.UseCases.Admin.Commands.RejectLyrics.V1;
+
+/// <summary>
+/// Integration tests for the AdminRejectLyrics endpoint.
+/// </summary>
+[Collection("Database")]
+public class AdminRejectLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
+{
+    private async Task<LyricsEntity> SeedLyricsAsync(Func<Guid, LyricsEntity> create)
+    {
+        return await SeedAsync<ContentDbContext, LyricsEntity>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            CategoryEntity category = CategoryFactory.Create(contentType.Id);
+            LyricsEntity lyrics = create(category.Id);
+            ctx.ContentTypes.Add(contentType);
+            ctx.Categories.Add(category);
+            ctx.Lyrics.Add(lyrics);
+            return lyrics;
+        });
+    }
+
+    private async Task<LyricsEntity> GetLyricsAsync(Guid id)
+    {
+        await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
+        LyricsEntity? lyrics = await ctx.Lyrics.FindAsync(id);
+        return lyrics!;
+    }
+
+    [Fact]
+    public async Task RejectLyrics_WithNoAuth_ReturnsUnauthorized()
+    {
+        Client.ClearAuthentication();
+
+        var response = await Client.PatchAsJsonAsync(
+            Routes.Admin.Editorial.Reject(EditorialRouteConstants.Lyrics, Guid.NewGuid()),
+            new { Reason = "test" }
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task RejectLyrics_AsVisitor_ReturnsForbidden()
+    {
+        Client.AuthenticateAsVisitor();
+
+        var response = await Client.PatchAsJsonAsync(
+            Routes.Admin.Editorial.Reject(EditorialRouteConstants.Lyrics, Guid.NewGuid()),
+            new { Reason = "test" }
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task RejectLyrics_AsAdmin_ReturnsForbidden()
+    {
+        Client.AuthenticateAsAdmin();
+
+        var response = await Client.PatchAsJsonAsync(
+            Routes.Admin.Editorial.Reject(EditorialRouteConstants.Lyrics, Guid.NewGuid()),
+            new { Reason = "test" }
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task RejectLyrics_AsSuperAdmin_WithNonExistentId_ReturnsError()
+    {
+        Client.AuthenticateAsSuperAdmin();
+        var request = new AdminRejectLyricsRequest(TestConstants.Lyrics.ValidRejectionReason);
+
+        var response = await Client.PatchAsJsonAsync(
+            Routes.Admin.Editorial.Reject(EditorialRouteConstants.Lyrics, Guid.NewGuid()),
+            request
+        );
+
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Lyrics"))
+        );
+    }
+
+    [Fact]
+    public async Task RejectLyrics_WhenAlreadyRejected_ReturnsConflict()
+    {
+        LyricsEntity lyrics = await SeedLyricsAsync(LyricsFactory.CreateRejected);
+        Client.AuthenticateAsSuperAdmin();
+        var request = new AdminRejectLyricsRequest(TestConstants.Lyrics.ValidRejectionReason);
+
+        var response = await Client.PatchAsJsonAsync(
+            Routes.Admin.Editorial.Reject(EditorialRouteConstants.Lyrics, lyrics.Id),
+            request
+        );
+
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<LyricsErrorMessage>(m => m.AlreadyRejected())
+        );
+        (await GetLyricsAsync(lyrics.Id)).Status.Should().Be(EnumContentStatus.Rejected);
+    }
+
+    [Fact]
+    public async Task RejectLyrics_AsSuperAdmin_PendingReviewLyrics_ReturnsOk()
+    {
+        LyricsEntity lyrics = await SeedLyricsAsync(LyricsFactory.CreatePendingReview);
+        Client.AuthenticateAsSuperAdmin();
+        var request = new AdminRejectLyricsRequest(TestConstants.Lyrics.ValidRejectionReason);
+
+        var response = await Client.PatchAsJsonAsync(
+            Routes.Admin.Editorial.Reject(EditorialRouteConstants.Lyrics, lyrics.Id),
+            request
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.ReadAsAsync<AdminRejectLyricsResponse>();
+        body.IsSuccess.Should().BeTrue();
+
+        LyricsEntity persisted = await GetLyricsAsync(lyrics.Id);
+        persisted.Status.Should().Be(EnumContentStatus.Rejected);
+        persisted.RejectionReason.Should().Be(request.Reason);
+    }
+}
