@@ -1,4 +1,4 @@
-using _116.Shared.Contracts.Application.CQRS;
+using _116.BuildingBlocks.Application.CQRS;
 
 namespace _116.Mailer.Application.Notifications.UseCases.Public.Commands.MarkNotificationRead;
 

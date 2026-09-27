@@ -1,9 +1,9 @@
+using _116.BuildingBlocks.Application.CQRS;
+using _116.BuildingBlocks.Application.Pagination;
 using _116.Mailer.Application.Shared.DTOs;
 using _116.Mailer.Application.Shared.Mappers;
 using _116.Mailer.Application.Shared.Repositories;
 using _116.Mailer.Domain.Entities;
-using _116.Shared.Application.Pagination;
-using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Mailer.Application.Notifications.UseCases.Public.Queries.GetNotifications;
 

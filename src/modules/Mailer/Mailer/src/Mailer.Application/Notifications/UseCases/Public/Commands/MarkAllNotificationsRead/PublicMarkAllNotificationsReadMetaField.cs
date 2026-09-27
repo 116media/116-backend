@@ -1,4 +1,4 @@
-using _116.Shared.Application.Metadata;
+using _116.BuildingBlocks.Application.Metadata;
 
 namespace _116.Mailer.Application.Notifications.UseCases.Public.Commands.MarkAllNotificationsRead;
 

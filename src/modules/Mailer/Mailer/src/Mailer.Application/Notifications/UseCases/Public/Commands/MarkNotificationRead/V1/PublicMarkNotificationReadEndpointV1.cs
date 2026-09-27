@@ -1,32 +1,32 @@
 using System.Security.Claims;
-using _116.BuildingBlocks.Constants.Authorization.Policies;
-using _116.BuildingBlocks.Constants.RateLimit;
+using _116.BuildingBlocks.Application.CQRS;
+using _116.BuildingBlocks.Presentation.Constants.Authorization.Policies;
+using _116.BuildingBlocks.Presentation.Constants.RateLimit;
+using _116.BuildingBlocks.Presentation.Extensions;
 using _116.Identity.Contracts.Application.Services;
 using _116.Mailer.Application.Notifications.Constants;
 using _116.Mailer.Domain.Constants;
-using _116.Shared.Application.Extensions;
-using _116.Shared.Contracts.Application.CQRS;
 using Carter;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 
-namespace _116.Mailer.Application.Notifications.UseCases.Public.Commands.MarkAllNotificationsRead.V1;
+namespace _116.Mailer.Application.Notifications.UseCases.Public.Commands.MarkNotificationRead.V1;
 
 /// <summary>
-/// Response model for the mark-all-notifications-read use-case.
+/// Response model for the mark-notification-read use-case.
 /// </summary>
-/// <param name="MarkedCount">The number of notifications transitioned to read by this call.</param>
-public record PublicMarkAllNotificationsReadResponse(int MarkedCount);
+/// <param name="IsRead">Whether the notification is read after the call.</param>
+public record PublicMarkNotificationReadResponse(bool IsRead);
 
 /// <summary>
-/// Defines the mark-all-notifications-read endpoint for authenticated public users.
+/// Defines the mark-notification-read endpoint for authenticated public users.
 /// </summary>
-public class PublicMarkAllNotificationsReadEndpointV1 : ICarterModule
+internal class PublicMarkNotificationReadEndpointV1 : ICarterModule
 {
     /// <summary>
-    /// Configures the read-all route within the API pipeline.
-    /// Maps the <c>PATCH /api/v1/public/notifications/read-all</c> endpoint.
+    /// Configures the mark-read route within the API pipeline.
+    /// Maps the <c>PATCH /api/v1/public/notifications/{id}/read</c> endpoint.
     /// </summary>
     /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)
@@ -37,8 +37,9 @@ public class PublicMarkAllNotificationsReadEndpointV1 : ICarterModule
 
         group
             .MapPatch(
-                pattern: NotificationRouteConstants.ReadAll,
+                pattern: NotificationRouteConstants.Read,
                 async (
+                    Guid id,
                     ClaimsPrincipal user,
                     IClaimsProvider claims,
                     IDispatcher dispatcher,
@@ -47,25 +48,27 @@ public class PublicMarkAllNotificationsReadEndpointV1 : ICarterModule
                 {
                     Guid userId = claims.GetUserIdFromClaims(user: user);
 
-                    var command = new PublicMarkAllNotificationsReadCommand(UserId: userId);
-                    PublicMarkAllNotificationsReadResult result = await dispatcher.Send(
+                    var command = new PublicMarkNotificationReadCommand(UserId: userId, NotificationId: id);
+                    PublicMarkNotificationReadResult result = await dispatcher.Send(
                         request: command,
                         cancellationToken: cancellationToken
                     );
 
-                    var response = new PublicMarkAllNotificationsReadResponse(MarkedCount: result.MarkedCount);
+                    var response = new PublicMarkNotificationReadResponse(IsRead: result.IsRead);
 
                     return Results.Ok(value: response);
                 }
             )
-            .WithName(endpointName: PublicMarkAllNotificationsReadMetaField.MarkAllNotificationsRead.Name)
-            .WithSummary(summary: PublicMarkAllNotificationsReadMetaField.MarkAllNotificationsRead.Summary)
-            .WithDescription(description: PublicMarkAllNotificationsReadMetaField.MarkAllNotificationsRead.Description)
+            .WithName(endpointName: PublicMarkNotificationReadMetaField.MarkNotificationRead.Name)
+            .WithSummary(summary: PublicMarkNotificationReadMetaField.MarkNotificationRead.Summary)
+            .WithDescription(description: PublicMarkNotificationReadMetaField.MarkNotificationRead.Description)
             .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.UserProfile)
-            .Produces<PublicMarkAllNotificationsReadResponse>()
+            .ProducesValidationProblem()
+            .Produces<PublicMarkNotificationReadResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
             .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)
+            .ProducesProblem(statusCode: StatusCodes.Status404NotFound)
             .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
     }
 }

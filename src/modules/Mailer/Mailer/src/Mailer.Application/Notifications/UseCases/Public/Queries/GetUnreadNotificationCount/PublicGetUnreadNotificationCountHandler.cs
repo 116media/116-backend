@@ -1,5 +1,5 @@
+using _116.BuildingBlocks.Application.CQRS;
 using _116.Mailer.Application.Shared.Repositories;
-using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Mailer.Application.Notifications.UseCases.Public.Queries.GetUnreadNotificationCount;
 
