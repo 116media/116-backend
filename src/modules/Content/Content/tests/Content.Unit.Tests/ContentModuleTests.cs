@@ -1,16 +1,17 @@
+using _116.BuildingBlocks.Infrastructure.Seed;
 using _116.Content;
 using _116.Content.Application.Shared.Errors;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Application.Shared.Services;
+using _116.Content.Infrastructure;
 using _116.Content.Infrastructure.Persistence;
 using _116.Content.Infrastructure.Persistence.Seeds.ContentTypes;
 using _116.Content.Infrastructure.Repositories;
 using _116.Content.Infrastructure.Services;
-using _116.Shared.Infrastructure.Seed;
-using _116.Unit.Tests.Common;
-using _116.Unit.Tests.Common.Helpers;
+using _116.Tests.TestData;
+using _116.Tests.TestData.Helpers;
 using AwesomeAssertions;
 using Mapster;
 using MapsterMapper;
@@ -24,7 +25,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Content;
+namespace _116.Content.Unit.Tests;
 
 /// <summary>
 /// Unit tests for <see cref="ContentModule"/>.
