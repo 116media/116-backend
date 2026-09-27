@@ -2,9 +2,9 @@ using _116.Identity.Application.Roles.UseCases.Admin.Commands.CreatePermission;
 using _116.Identity.Application.Roles.UseCases.Admin.Commands.CreateRole;
 using _116.Identity.Application.Roles.UseCases.Admin.Commands.UpdatePermission;
 using _116.Identity.Application.Roles.UseCases.Admin.Commands.UpdateRole;
-using _116.Tests.Fixtures.Builders.Commands.Roles;
+using _116.Identity.TestData.Builders.Commands.Roles;
 
-namespace _116.Tests.Fixtures.Factories.Identity;
+namespace _116.Identity.TestData.Factories;
 
 /// <summary>
 /// Named aliases for role and permission command-builder chains that three or more tests share

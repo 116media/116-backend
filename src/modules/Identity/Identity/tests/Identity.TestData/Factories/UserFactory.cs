@@ -1,9 +1,9 @@
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
-using _116.Tests.Fixtures.Builders.Entities.Identity;
-using _116.Tests.Fixtures.Constants;
+using _116.Identity.TestData.Builders.Entities;
+using _116.Tests.TestData.Constants;
 
-namespace _116.Tests.Fixtures.Factories.Identity;
+namespace _116.Identity.TestData.Factories;
 
 /// <summary>
 /// Named aliases for <see cref="UserBuilder" /> chains that three or more tests share verbatim.

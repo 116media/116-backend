@@ -1,7 +1,7 @@
 using _116.Identity.Domain.Entities;
-using _116.Tests.Fixtures.Builders.Entities.Identity;
+using _116.Identity.TestData.Builders.Entities;
 
-namespace _116.Tests.Fixtures.Factories.Identity;
+namespace _116.Identity.TestData.Factories;
 
 /// <summary>
 /// Named aliases for <see cref="RolePermissionBuilder" /> chains that three or more tests share verbatim.
