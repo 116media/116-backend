@@ -1,7 +1,7 @@
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 
-namespace _116.Integration.Tests.Modules.Content;
+namespace _116.Content.Integration.Tests;
 
 /// <summary>
 /// Covers the seeding branch of <c>UseContentModule</c> through a host booted as Development,

@@ -1,38 +1,31 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
+        <RootNamespace>_116.Content.Integration.Tests</RootNamespace>
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
         <NoWarn>$(NoWarn);xUnit1051;EF1001</NoWarn>
     </PropertyGroup>
 
-    <PropertyGroup>
-        <RootNamespace>_116.Integration.Tests</RootNamespace>
-    </PropertyGroup>
-
     <ItemGroup>
-        <Content Include="xunit.runner.json">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-    </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
-        <PackageReference Include="Microsoft.NET.Test.Sdk" />
-        <PackageReference Include="Testcontainers.PostgreSql" />
-        <PackageReference Include="Testcontainers.Redis" />
         <PackageReference Include="xunit.v3" />
         <PackageReference Include="xunit.runner.visualstudio">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
         </PackageReference>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" />
+
         <PackageReference Include="AwesomeAssertions" />
         <PackageReference Include="AwesomeAssertions.Analyzers">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
         </PackageReference>
+
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+        <PackageReference Include="Testcontainers.PostgreSql" />
+        <PackageReference Include="Testcontainers.Redis" />
+        <PackageReference Include="Respawn" />
         <PackageReference Include="Bogus" />
         <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
-        <PackageReference Include="Respawn" />
         <PackageReference Include="EFCore.NamingConventions" />
 
         <PackageReference Include="coverlet.msbuild">
@@ -46,14 +39,13 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Api\Api.csproj" />
-        <ProjectReference Include="..\..\src\Modules\Identity\Identity\Identity.csproj" />
-        <ProjectReference Include="..\..\src\Modules\Content\Content\Content.csproj" />
-        <ProjectReference Include="..\..\src\Modules\Mailer\Mailer\Mailer.csproj" />
-        <ProjectReference Include="..\..\src\Modules\Core\Core\Core.csproj" />
-        <ProjectReference Include="..\..\src\Shared\Shared\Shared.csproj" />
-        <ProjectReference Include="..\..\src\Shared\Shared.Contracts\Shared.Contracts.csproj" />
-        <ProjectReference Include="..\..\src\BuildingBlocks\BuildingBlocks.csproj" />
-        <ProjectReference Include="..\Fixtures\_116.Tests.Fixtures.csproj" />
+        <ProjectReference Include="../../../../Identity/Identity/tests/Identity.TestData/Identity.TestData.csproj" />
+        <ProjectReference Include="../../../../Storage/Storage/tests/Storage.TestData/Storage.TestData.csproj" />
+        <ProjectReference Include="../../src/Content.Domain/Content.Domain.csproj" />
+        <ProjectReference Include="../../src/Content.Application/Content.Application.csproj" />
+        <ProjectReference Include="../../src/Content.Infrastructure/Content.Infrastructure.csproj" />
+        <ProjectReference Include="../Content.TestData/Content.TestData.csproj" />
+        <ProjectReference Include="../../../../../../tests/Fixtures/Fixtures.csproj" />
+        <ProjectReference Include="../../../../../../tests/TestData/TestData.csproj" />
     </ItemGroup>
 </Project>
