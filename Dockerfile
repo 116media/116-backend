@@ -2,35 +2,20 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
-# Copy solution and project files (cached layer - only rebuilds if .csproj changes)
-COPY *.sln ./
-COPY src/Api/*.csproj ./src/Api/
-COPY src/Shared/Shared/*.csproj ./src/Shared/Shared/
-COPY src/Shared/Shared.Contracts/*.csproj ./src/Shared/Shared.Contracts/
-COPY src/BuildingBlocks/*.csproj ./src/BuildingBlocks/
-COPY src/Modules/Core/Core/*.csproj ./src/Modules/Core/Core/
-COPY src/Modules/Identity/Identity/*.csproj ./src/Modules/Identity/Identity/
-COPY src/Modules/Identity/Identity.Contracts/*.csproj ./src/Modules/Identity/Identity.Contracts/
-COPY src/Modules/Content/Content/*.csproj ./src/Modules/Content/Content/
-COPY src/Modules/Mailer/Mailer/*.csproj ./src/Modules/Mailer/Mailer/
-COPY src/Modules/Mailer/Mailer.Contracts/*.csproj ./src/Modules/Mailer/Mailer.Contracts/
-COPY tests/Unit/*.csproj ./tests/Unit/
-COPY tests/Integration/*.csproj ./tests/Integration/
-COPY tests/Fixtures/*.csproj ./tests/Fixtures/
-
-# Restore dependencies (cached layer - only rebuilds if dependencies change)
-# Use BuildKit cache mount for faster restores
-RUN --mount=type=cache,target=/root/.nuget/packages \
-    dotnet restore
-
-# Copy source code (this layer changes frequently)
+# One copy of src/ rather than a line per project: the project list changes with every module split, and
+# Docker flattens a `**/*.csproj` glob unless the labs `COPY --parents` is available, which CI cannot assume.
+COPY Directory.Build.props Directory.Packages.props ./
 COPY src/ ./src/
+
+# Restore only what the host needs. The test projects are not copied, so restoring the solution would fail.
+RUN --mount=type=cache,target=/root/.nuget/packages \
+    dotnet restore src/host/Api/Api.csproj
 
 # Build and publish with BuildKit cache mounts
 RUN --mount=type=cache,target=/root/.nuget/packages \
     --mount=type=cache,target=/src/obj \
     --mount=type=cache,target=/src/bin \
-    dotnet publish src/Api/Api.csproj -c Release -o /app/publish
+    dotnet publish src/host/Api/Api.csproj -c Release -o /app/publish --no-restore
 
 # Runtime stage (smallest possible image)
 FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine AS runtime

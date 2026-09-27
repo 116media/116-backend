@@ -26,7 +26,8 @@
         <PackageVersion Include="MailKit" Version="4.17.0" />
         <PackageVersion Include="Mapster" Version="7.4.2-pre02" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.11" />
-        <PackageVersion Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0" />
+        <PackageVersion Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.13" />
+        <PackageVersion Include="Microsoft.AspNetCore.HttpOverrides" Version="2.3.13" />
         <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.7" />
         <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="9.0.7" />
         <PackageVersion Include="Microsoft.AspNetCore.Routing.Abstractions" Version="2.3.0" />
@@ -43,7 +44,10 @@
             Include="Microsoft.Extensions.DependencyInjection.Abstractions"
             Version="9.0.10"
         />
+        <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.0" />
+        <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.10" />
         <PackageVersion Include="Microsoft.Extensions.Localization" Version="9.0.17" />
+        <PackageVersion Include="Microsoft.Extensions.Localization.Abstractions" Version="9.0.10" />
         <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="9.10.0" />
         <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="8.2.1" />
         <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
@@ -71,5 +75,6 @@
         <PackageVersion Include="Wangkanai.Detection" Version="8.20.0" />
         <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
         <PackageVersion Include="xunit.v3" Version="1.1.0" />
+        <PackageVersion Include="xunit.v3.extensibility.core" Version="1.1.0" />
     </ItemGroup>
 </Project>

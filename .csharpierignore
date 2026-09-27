@@ -1,1 +1,5 @@
 **/Migrations/*.cs
+
+# The pre-swap tree, kept until it is deleted; it is not formatted or built any more.
+src.old/
+tests.old/

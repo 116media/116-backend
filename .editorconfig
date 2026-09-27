@@ -28,8 +28,8 @@ indent_size = 4
 indent_style = space
 indent_size = 4
 
-# JSON files
-[*.{json,json5}]
+# JSON files — .slnf solution filters are JSON too
+[*.{json,json5,slnf}]
 indent_style = space
 indent_size = 4
 
