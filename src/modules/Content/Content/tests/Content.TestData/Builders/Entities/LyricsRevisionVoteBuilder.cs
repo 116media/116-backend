@@ -1,0 +1,69 @@
+using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
+using _116.Content.TestData.Factories;
+using _116.Content.TestData.Factories.Helpers;
+using _116.Content.TestData.Mocks.Factories;
+using _116.Content.TestData.Mocks.Infrastructure;
+using _116.Content.TestData.Mocks.Repositories;
+using _116.Content.TestData.Mocks.Services;
+using _116.Tests.TestData.Mocks;
+
+namespace _116.Content.TestData.Builders.Entities;
+
+/// <summary>
+/// Fluent builder for creating <see cref="LyricsRevisionVoteEntity" /> instances in tests.
+/// Drives the real domain transitions, so every state it produces is one the application can reach.
+/// Use it for any shape a test needs; LyricsRevisionVoteFactory only names chains three or more tests share.
+/// </summary>
+public class LyricsRevisionVoteBuilder
+{
+    private Guid _id = Guid.NewGuid();
+    private Guid _revisionId = Guid.NewGuid();
+    private Guid _userId = Guid.NewGuid();
+    private EnumVote _vote = EnumVote.Approve;
+
+    /// <summary>
+    /// Sets the lyrics revision being voted on.
+    /// </summary>
+    public LyricsRevisionVoteBuilder WithRevisionId(Guid revisionId)
+    {
+        _revisionId = revisionId;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the identity user UUID of the voter.
+    /// </summary>
+    public LyricsRevisionVoteBuilder WithUserId(Guid userId)
+    {
+        _userId = userId;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the cast vote direction.
+    /// </summary>
+    public LyricsRevisionVoteBuilder WithVote(EnumVote vote)
+    {
+        _vote = vote;
+        return this;
+    }
+
+    /// <summary>
+    /// Builds the <see cref="LyricsRevisionVoteEntity"/> instance.
+    /// </summary>
+    public LyricsRevisionVoteEntity Build()
+    {
+        LyricsRevisionVoteEntity entity = LyricsRevisionVoteEntity.Create(
+            id: _id,
+            revisionId: _revisionId,
+            userId: _userId,
+            vote: _vote,
+            comment: null
+        );
+
+        entity.CreatedAt = DateTime.UtcNow;
+
+        return entity;
+    }
+}

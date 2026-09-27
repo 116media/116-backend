@@ -1,0 +1,71 @@
+using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
+using _116.Tests.TestData.Constants;
+
+namespace _116.Content.TestData.Builders.Entities;
+
+/// <summary>
+/// Fluent builder for creating <see cref="ArticleImageEntity" /> instances in tests.
+/// Drives the real domain transitions, so every state it produces is one the application can reach.
+/// Use it for any shape a test needs; ArticleImageFactory only names chains three or more tests share.
+/// </summary>
+public class ArticleImageBuilder
+{
+    private Guid _id = Guid.NewGuid();
+    private readonly ArticleEntity _article;
+    private string _storageKey = TestConstants.ArticleImage.ValidStorageKey;
+    private string _url = TestConstants.ArticleImage.ValidUrl;
+    private EnumArticleImageType _imageType = EnumArticleImageType.Body;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ArticleImageBuilder"/> class with a required article ID.
+    /// </summary>
+    public ArticleImageBuilder(ArticleEntity article)
+    {
+        _article = article;
+    }
+
+    /// <summary>
+    /// Sets the storage key.
+    /// </summary>
+    public ArticleImageBuilder WithStorageKey(string storageKey)
+    {
+        _storageKey = storageKey;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the public URL.
+    /// </summary>
+    public ArticleImageBuilder WithUrl(string url)
+    {
+        _url = url;
+        return this;
+    }
+
+    /// <summary>
+    /// Marks the image as a cover image.
+    /// </summary>
+    public ArticleImageBuilder AsCover()
+    {
+        _imageType = EnumArticleImageType.Cover;
+        return this;
+    }
+
+    /// <summary>
+    /// Marks the image as a body image.
+    /// </summary>
+    public ArticleImageBuilder AsBody()
+    {
+        _imageType = EnumArticleImageType.Body;
+        return this;
+    }
+
+    /// <summary>
+    /// Builds the <see cref="ArticleImageEntity"/> instance.
+    /// </summary>
+    public ArticleImageEntity Build()
+    {
+        return _article.AddImage(id: _id, storageKey: _storageKey, url: _url, imageType: _imageType);
+    }
+}

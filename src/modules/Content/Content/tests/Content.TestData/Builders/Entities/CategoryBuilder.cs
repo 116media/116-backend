@@ -1,0 +1,185 @@
+using System.Reflection;
+using _116.Content.Domain.Entities;
+using _116.Content.TestData.Factories;
+using _116.Content.TestData.Factories.Helpers;
+using _116.Content.TestData.Mocks.Factories;
+using _116.Content.TestData.Mocks.Infrastructure;
+using _116.Content.TestData.Mocks.Repositories;
+using _116.Content.TestData.Mocks.Services;
+using _116.Tests.TestData.Constants;
+using _116.Tests.TestData.Helpers;
+using _116.Tests.TestData.Mocks;
+using Bogus;
+
+namespace _116.Content.TestData.Builders.Entities;
+
+/// <summary>
+/// Fluent builder for creating <see cref="CategoryEntity" /> instances in tests.
+/// Drives the real domain transitions, so every state it produces is one the application can reach.
+/// Use it for any shape a test needs; CategoryFactory only names chains three or more tests share.
+/// </summary>
+public class CategoryBuilder
+{
+    private readonly Faker _faker = TestFaker.Create();
+
+    private Guid _id;
+    private Guid _contentTypeId;
+    private string _name;
+    private string _slug;
+    private string _description = "Default category description";
+    private bool _isFree;
+    private bool _isActive = true;
+    private bool _isExclusive;
+    private bool _isGossip;
+    private bool _isDefaultForLyrics;
+    private Guid? _posterFileId;
+    private DateTimeOffset? _pinnedToFeedAt;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CategoryBuilder"/> class with random default values.
+    /// </summary>
+    public CategoryBuilder(Guid contentTypeId)
+    {
+        _id = Guid.NewGuid();
+        _contentTypeId = contentTypeId;
+        string suffix = Guid.NewGuid().ToString("N")[..8];
+        string word = _faker.Lorem.Word().ToLower();
+        _name = $"{word}-{suffix}"[..Math.Min(TestConstants.Category.NameMaxLength, $"{word}-{suffix}".Length)];
+        _slug = $"{word}-{suffix}"[..Math.Min(TestConstants.Category.SlugMaxLength, $"{word}-{suffix}".Length)];
+    }
+
+    /// <summary>
+    /// Sets the category name.
+    /// </summary>
+    public CategoryBuilder WithName(string name)
+    {
+        _name = name;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the category slug.
+    /// </summary>
+    public CategoryBuilder WithSlug(string slug)
+    {
+        _slug = slug;
+        return this;
+    }
+
+    /// <summary>
+    /// Marks the category as free.
+    /// </summary>
+    public CategoryBuilder AsFree()
+    {
+        _isFree = true;
+        return this;
+    }
+
+    /// <summary>
+    /// Marks the category as paid.
+    /// </summary>
+    public CategoryBuilder AsPaid()
+    {
+        _isFree = false;
+        return this;
+    }
+
+    /// <summary>
+    /// Marks the category as inactive.
+    /// </summary>
+    public CategoryBuilder AsInactive()
+    {
+        _isActive = false;
+        return this;
+    }
+
+    /// <summary>
+    /// Marks the category as exclusive.
+    /// </summary>
+    public CategoryBuilder WithIsExclusive(bool isExclusive = true)
+    {
+        _isExclusive = isExclusive;
+        return this;
+    }
+
+    /// <summary>
+    /// Marks the category as the gossip fallback source (IsGossip = true).
+    /// </summary>
+    public CategoryBuilder AsGossip()
+    {
+        _isGossip = true;
+        return this;
+    }
+
+    /// <summary>
+    /// Marks the category as the default category for lyrics pages (IsDefaultForLyrics = true).
+    /// </summary>
+    public CategoryBuilder AsDefaultForLyrics()
+    {
+        _isDefaultForLyrics = true;
+        return this;
+    }
+
+    /// <summary>
+    /// Marks the category as pinned to the feed at the given time (defaults to "now").
+    /// Pass distinct timestamps across categories to exercise FIFO ordering/eviction.
+    /// </summary>
+    public CategoryBuilder PinnedToFeedAt(DateTimeOffset? pinnedAt = null)
+    {
+        _pinnedToFeedAt = pinnedAt ?? DateTimeOffset.UtcNow;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the content type navigation property via reflection.
+    /// </summary>
+    public CategoryBuilder WithContentType(ContentTypeEntity contentType)
+    {
+        _contentTypeId = contentType.Id;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the poster file ID.
+    /// </summary>
+    public CategoryBuilder WithPosterFileId(Guid? posterFileId = null)
+    {
+        _posterFileId = posterFileId ?? Guid.NewGuid();
+        return this;
+    }
+
+    /// <summary>
+    /// Builds the <see cref="CategoryEntity"/> instance.
+    /// </summary>
+    public CategoryEntity Build()
+    {
+        var entity = CategoryEntity.Create(
+            _id,
+            _contentTypeId,
+            _name,
+            _slug,
+            _description,
+            _isFree,
+            isGossip: _isGossip,
+            isExclusive: _isExclusive,
+            isDefaultForLyrics: _isDefaultForLyrics
+        );
+
+        if (!_isActive)
+        {
+            entity.Deactivate();
+        }
+
+        if (_posterFileId.HasValue)
+        {
+            entity.SetPosterFileId(_posterFileId);
+        }
+
+        if (_pinnedToFeedAt.HasValue)
+        {
+            entity.PinToFeed(now: _pinnedToFeedAt.Value);
+        }
+
+        return entity;
+    }
+}
