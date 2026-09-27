@@ -1,0 +1,260 @@
+using _116.Content.Application.Shared.DTOs;
+using _116.Content.Application.Shared.Mappers;
+using _116.Content.Domain.Entities;
+using _116.Content.TestData;
+using _116.Content.TestData.Factories;
+using _116.Content.TestData.Factories.Helpers;
+using _116.Content.TestData.Mocks.Factories;
+using _116.Content.TestData.Mocks.Infrastructure;
+using _116.Content.TestData.Mocks.Repositories;
+using _116.Content.TestData.Mocks.Services;
+using _116.Identity.TestData.Factories;
+using _116.Identity.TestData.Mocks.Infrastructure;
+using _116.Identity.TestData.Mocks.Repositories;
+using _116.Identity.TestData.Mocks.Services;
+using _116.Storage.Application.Shared.Repositories;
+using _116.Storage.Contracts.Application.DTOs;
+using _116.Storage.Contracts.Application.Services;
+using _116.Storage.Domain.Entities;
+using _116.Storage.TestData.Factories;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Storage.TestData.Mocks.Services;
+using _116.Tests.TestData;
+using _116.Tests.TestData.Mocks;
+using AwesomeAssertions;
+using Moq;
+using Xunit;
+
+namespace _116.Content.Unit.Tests.Application.Shared.Mappers;
+
+/// <summary>
+/// Tests for mapper extension methods (collection and single-item mappings)
+/// that are not exercised by the handler tests.
+/// </summary>
+public class MapperExtensionTests : BaseContentHandlerTest
+{
+    /// <summary>
+    /// An empty category map, for slots whose category is open or irrelevant to the assertion.
+    /// </summary>
+    private static readonly IReadOnlyDictionary<Guid, CategoryEntity> NoCategories =
+        new Dictionary<Guid, CategoryEntity>();
+
+    #region CustomerMapper Extensions
+
+    [Fact]
+    public void ToCustomerDtos_WithMultipleEntities_ShouldReturnMappedList()
+    {
+        // Arrange
+        IReadOnlyList<CustomerEntity> entities = CustomerFactory.CreateMany(3).AsReadOnly();
+
+        // Act
+        IReadOnlyList<CustomerDto> result = entities.ToCustomerDtos(Mapper);
+
+        // Assert
+        result.Should().HaveCount(3);
+        result.Should().AllSatisfy(dto => dto.Should().NotBeNull());
+    }
+
+    [Fact]
+    public void ToCustomerDtos_WithEmptyList_ShouldReturnEmptyList()
+    {
+        // Arrange
+        IReadOnlyList<CustomerEntity> entities = new List<CustomerEntity>().AsReadOnly();
+
+        // Act
+        IReadOnlyList<CustomerDto> result = entities.ToCustomerDtos(Mapper);
+
+        // Assert
+        result.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ToCustomerDto_WithEntity_ShouldMapCorrectly()
+    {
+        // Arrange
+        CustomerEntity entity = CustomerFactory.CreateDefault();
+
+        // Act
+        var result = entity.ToCustomerDto(Mapper);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Id.Should().Be(entity.Id);
+        result.FullName.Should().Be(entity.FullName);
+        result.Email.Should().Be(entity.Email);
+    }
+
+    #endregion
+
+    #region PackageMapper Extensions
+
+    [Fact]
+    public void ToPackageDto_WithEntity_ShouldMapCorrectly()
+    {
+        // Arrange
+        PackageEntity entity = PackageFactory.Create();
+
+        // Act
+        var result = entity.ToPackageDto(Mapper, NoCategories);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Id.Should().Be(entity.Id);
+        result.Name.Should().Be(entity.Name);
+    }
+
+    [Fact]
+    public void ToPackageDtos_WithMultipleEntities_ShouldReturnMappedList()
+    {
+        // Arrange
+        IReadOnlyList<PackageEntity> entities = new List<PackageEntity>
+        {
+            PackageFactory.Create("Package A"),
+            PackageFactory.Create("Package B"),
+        }.AsReadOnly();
+
+        // Act
+        IReadOnlyList<PackageDto> result = entities.ToPackageDtos(Mapper, NoCategories);
+
+        // Assert
+        result.Should().HaveCount(2);
+        result.Should().AllSatisfy(dto => dto.Should().NotBeNull());
+    }
+
+    [Fact]
+    public void ToPackageDtos_WithEmptyList_ShouldReturnEmptyList()
+    {
+        // Arrange
+        IReadOnlyList<PackageEntity> entities = new List<PackageEntity>().AsReadOnly();
+
+        // Act
+        IReadOnlyList<PackageDto> result = entities.ToPackageDtos(Mapper, NoCategories);
+
+        // Assert
+        result.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ToPackageSlotDto_WithOpenSlot_ShouldMapWithNullCategoryName()
+    {
+        // Arrange
+        PackageSlotEntity entity = PackageSlotFactory.CreateOpen(PackageFactory.Create());
+
+        // Act
+        var result = entity.ToPackageSlotDto(Mapper, NoCategories);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Id.Should().Be(entity.Id);
+        result.CategoryName.Should().BeNull();
+    }
+
+    #endregion
+
+    #region LyricsMapper Extensions
+
+    [Fact]
+    public async Task ToLyricsSummaryDtosAsync_WithMultipleEntities_ShouldReturnMappedList()
+    {
+        // Arrange
+        Guid categoryId = Guid.NewGuid();
+        IReadOnlyList<LyricsEntity> entities = LyricsFactory.CreateMany(categoryId, 3).AsReadOnly();
+        Mock<IFileStorageService> fileStorageMock = MockFileStorageService.Create();
+
+        // Act
+        IReadOnlyList<LyricsSummaryDto> result = await entities.ToLyricsSummaryDtosAsync(
+            ContentLookups.Empty,
+            fileStorageMock.Object
+        );
+
+        // Assert
+        result.Should().HaveCount(3);
+        result.Should().AllSatisfy(dto => dto.Should().NotBeNull());
+    }
+
+    [Fact]
+    public async Task ToLyricsSummaryDtosAsync_WithEmptyList_ShouldReturnEmptyList()
+    {
+        // Arrange
+        IReadOnlyList<LyricsEntity> entities = new List<LyricsEntity>().AsReadOnly();
+        Mock<IFileStorageService> fileStorageMock = MockFileStorageService.Create();
+
+        // Act
+        IReadOnlyList<LyricsSummaryDto> result = await entities.ToLyricsSummaryDtosAsync(
+            ContentLookups.Empty,
+            fileStorageMock.Object
+        );
+
+        // Assert
+        result.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ToLyricsSummaryDtoAsync_WithSingleEntity_ShouldMapCoreFields()
+    {
+        // Arrange
+        Guid categoryId = Guid.NewGuid();
+        LyricsEntity entity = LyricsFactory.Create(categoryId);
+        Mock<IFileStorageService> fileStorageMock = MockFileStorageService.Create();
+
+        // Act
+        LyricsSummaryDto dto = await entity.ToLyricsSummaryDtoAsync(ContentLookups.Empty, fileStorageMock.Object);
+
+        // Assert
+        dto.Id.Should().Be(entity.Id);
+        dto.CategoryId.Should().Be(entity.CategoryId);
+        dto.SongTitle.Should().Be(entity.SongTitle);
+        dto.ArtistName.Should().Be(entity.ArtistName);
+        dto.Slug.Should().Be(entity.Slug);
+        dto.Language.Should().Be(entity.Language);
+        dto.Status.Should().Be(entity.Status);
+    }
+
+    #endregion
+
+    #region ShortVideoMapper Extensions
+
+    [Fact]
+    public async Task ToShortVideoDtosAsync_WithMultipleEntities_ShouldReturnMappedList()
+    {
+        // Arrange
+        IReadOnlyList<ShortVideoEntity> entities = ShortVideoFactory.CreateMany(3).AsReadOnly();
+        Mock<IFileStorageService> fileStorageMock = MockFileStorageService.Create();
+        FileReferenceDto videoFile = FileReferenceDtoFactory.CreateVideo();
+        fileStorageMock.SetupResolve(videoFile);
+        fileStorageMock.SetupResolveMany(new Dictionary<Guid, FileReferenceDto>());
+
+        // Act
+        IReadOnlyList<ShortVideoDto> result = await entities.ToShortVideoDtosAsync(
+            Mapper,
+            fileStorageMock.Object,
+            MockVideoRepository.Create().Object,
+            CancellationToken.None
+        );
+
+        // Assert
+        result.Should().HaveCount(3);
+        result.Should().AllSatisfy(dto => dto.Should().NotBeNull());
+    }
+
+    [Fact]
+    public async Task ToShortVideoDtosAsync_WithEmptyList_ShouldReturnEmptyList()
+    {
+        // Arrange
+        IReadOnlyList<ShortVideoEntity> entities = new List<ShortVideoEntity>().AsReadOnly();
+        Mock<IFileStorageService> fileStorageMock = MockFileStorageService.Create();
+
+        // Act
+        IReadOnlyList<ShortVideoDto> result = await entities.ToShortVideoDtosAsync(
+            Mapper,
+            fileStorageMock.Object,
+            MockVideoRepository.Create().Object,
+            CancellationToken.None
+        );
+
+        // Assert
+        result.Should().BeEmpty();
+    }
+
+    #endregion
+}

@@ -1,0 +1,179 @@
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.Content.Application.Lookup.UseCases.Admin.Commands.CreatePromotionLevel;
+using _116.Content.Application.Shared.Persistence;
+using _116.Content.Application.Shared.Repositories;
+using _116.Content.TestData;
+using _116.Content.TestData.Factories;
+using _116.Content.TestData.Factories.Helpers;
+using _116.Content.TestData.Mocks.Factories;
+using _116.Content.TestData.Mocks.Infrastructure;
+using _116.Content.TestData.Mocks.Repositories;
+using _116.Content.TestData.Mocks.Services;
+using _116.Identity.TestData.Factories;
+using _116.Identity.TestData.Mocks.Infrastructure;
+using _116.Identity.TestData.Mocks.Repositories;
+using _116.Identity.TestData.Mocks.Services;
+using _116.Storage.TestData.Factories;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Storage.TestData.Mocks.Services;
+using _116.Tests.TestData;
+using _116.Tests.TestData.Constants;
+using _116.Tests.TestData.Helpers;
+using _116.Tests.TestData.Mocks;
+using AwesomeAssertions;
+using Moq;
+using Xunit;
+
+namespace _116.Content.Unit.Tests.Application.Lookup.UseCases.Admin.Commands.CreatePromotionLevel;
+
+/// <summary>
+/// Unit tests for <see cref="AdminCreatePromotionLevelHandler"/>.
+/// </summary>
+public class AdminCreatePromotionLevelHandlerTests : BaseContentHandlerTest
+{
+    private readonly Mock<IPromotionLevelRepository> _promotionLevelRepositoryMock;
+    private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
+    private readonly AdminCreatePromotionLevelHandler _handler;
+
+    public AdminCreatePromotionLevelHandlerTests()
+    {
+        _promotionLevelRepositoryMock = MockPromotionLevelRepository.Create();
+        _unitOfWorkMock = MockContentUnitOfWork.Create();
+        _handler = new AdminCreatePromotionLevelHandler(
+            _promotionLevelRepositoryMock.Object,
+            _unitOfWorkMock.Object,
+            Mapper,
+            TestErrorsFactory.CreateContentI18n()
+        );
+    }
+
+    #region Success Cases
+
+    [Fact]
+    public async Task Handle_WhenNameDoesNotExist_ShouldCreateAndReturnDto()
+    {
+        // Arrange
+        string name = TestConstants.PromotionLevel.ValidName;
+        int durationDays = TestConstants.PromotionLevel.ValidDurationDays;
+        decimal priceUsd = TestConstants.PromotionLevel.ValidPriceUsd;
+        var command = new AdminCreatePromotionLevelCommand(
+            Name: name,
+            DurationDays: durationDays,
+            PriceUsd: priceUsd,
+            SpotPriority: 1
+        );
+
+        _promotionLevelRepositoryMock.SetupPromotionLevelExistsByName(name, false);
+
+        // Act
+        AdminCreatePromotionLevelResult result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.PromotionLevel.Name.Should().Be(name);
+        result.PromotionLevel.DurationDays.Should().Be(durationDays);
+        result.PromotionLevel.PriceUsd.Should().Be(priceUsd);
+        result.PromotionLevel.IsActive.Should().BeTrue();
+
+        _promotionLevelRepositoryMock.VerifyAddPromotionLevelCalled();
+        _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    [Fact]
+    public async Task Handle_WithZeroPrice_ShouldCreateSuccessfully()
+    {
+        // Arrange
+        string name = TestConstants.PromotionLevel.ValidName;
+        int durationDays = TestConstants.PromotionLevel.ValidDurationDays;
+        decimal priceUsd = TestConstants.PromotionLevel.ZeroPriceUsd;
+        var command = new AdminCreatePromotionLevelCommand(
+            Name: name,
+            DurationDays: durationDays,
+            PriceUsd: priceUsd,
+            SpotPriority: 1
+        );
+
+        _promotionLevelRepositoryMock.SetupPromotionLevelExistsByName(name, false);
+
+        // Act
+        AdminCreatePromotionLevelResult result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.PromotionLevel.PriceUsd.Should().Be(0m);
+    }
+
+    #endregion
+
+    #region Failure Cases
+
+    [Fact]
+    public async Task Handle_WhenNameAlreadyExists_ShouldThrowConflictException()
+    {
+        // Arrange
+        string name = TestConstants.PromotionLevel.ValidName;
+        var command = new AdminCreatePromotionLevelCommand(
+            Name: name,
+            DurationDays: 7,
+            PriceUsd: 49.99m,
+            SpotPriority: 1
+        );
+
+        _promotionLevelRepositoryMock.SetupPromotionLevelExistsByName(name, true);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<ConflictException>();
+    }
+
+    [Fact]
+    public async Task Handle_WhenNameAlreadyExists_ShouldNotAddOrCommit()
+    {
+        // Arrange
+        string name = TestConstants.PromotionLevel.ValidName;
+        var command = new AdminCreatePromotionLevelCommand(
+            Name: name,
+            DurationDays: 7,
+            PriceUsd: 49.99m,
+            SpotPriority: 1
+        );
+
+        _promotionLevelRepositoryMock.SetupPromotionLevelExistsByName(name, true);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<ConflictException>();
+        _promotionLevelRepositoryMock.VerifyAddPromotionLevelNotCalled();
+        _unitOfWorkMock.VerifyCommitNotCalled();
+    }
+
+    #endregion
+
+    #region Cancellation Token
+
+    [Fact]
+    public async Task Handle_WithCancellationToken_ShouldPassTokenToRepository()
+    {
+        // Arrange
+        string name = TestConstants.PromotionLevel.ValidName;
+        var command = new AdminCreatePromotionLevelCommand(
+            Name: name,
+            DurationDays: 7,
+            PriceUsd: 49.99m,
+            SpotPriority: 1
+        );
+        using var cts = new CancellationTokenSource();
+
+        _promotionLevelRepositoryMock.SetupPromotionLevelExistsByName(name, false);
+
+        // Act
+        await _handler.Handle(command, cts.Token);
+
+        // Assert
+        _unitOfWorkMock.Verify(x => x.CommitAsync(cts.Token), Times.Once);
+    }
+
+    #endregion
+}

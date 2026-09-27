@@ -1,0 +1,141 @@
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.Content.Application.Catalog.UseCases.Admin.Commands.RemovePackageSlot;
+using _116.Content.Application.Shared.Persistence;
+using _116.Content.Application.Shared.Repositories;
+using _116.Content.Domain.Entities;
+using _116.Content.TestData;
+using _116.Content.TestData.Factories;
+using _116.Content.TestData.Factories.Helpers;
+using _116.Content.TestData.Mocks.Factories;
+using _116.Content.TestData.Mocks.Infrastructure;
+using _116.Content.TestData.Mocks.Repositories;
+using _116.Content.TestData.Mocks.Services;
+using _116.Identity.TestData.Factories;
+using _116.Identity.TestData.Mocks.Infrastructure;
+using _116.Identity.TestData.Mocks.Repositories;
+using _116.Identity.TestData.Mocks.Services;
+using _116.Storage.TestData.Factories;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Storage.TestData.Mocks.Services;
+using _116.Tests.TestData;
+using _116.Tests.TestData.Helpers;
+using _116.Tests.TestData.Mocks;
+using AwesomeAssertions;
+using Moq;
+using Xunit;
+
+namespace _116.Content.Unit.Tests.Application.Catalog.UseCases.Admin.Commands.RemovePackageSlot;
+
+/// <summary>
+/// Unit tests for <see cref="AdminRemovePackageSlotHandler"/>.
+/// </summary>
+public class AdminRemovePackageSlotHandlerTests : BaseContentHandlerTest
+{
+    private readonly Mock<IPackageRepository> _packageRepositoryMock;
+    private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
+    private readonly AdminRemovePackageSlotHandler _handler;
+
+    public AdminRemovePackageSlotHandlerTests()
+    {
+        _packageRepositoryMock = MockPackageRepository.Create();
+        _unitOfWorkMock = MockContentUnitOfWork.Create();
+        _handler = new AdminRemovePackageSlotHandler(
+            _packageRepositoryMock.Object,
+            _unitOfWorkMock.Object,
+            CreatePackageDtoFactory(),
+            TestErrorsFactory.CreateContentI18n()
+        );
+    }
+
+    #region Success Cases
+
+    [Fact]
+    public async Task Handle_WhenSlotExists_ShouldRemoveAndReturnUpdatedPackage()
+    {
+        // Arrange
+        PackageEntity package = PackageFactory.Create();
+        PackageSlotEntity slot = PackageSlotFactory.Create(package);
+
+        var command = new AdminRemovePackageSlotCommand(PackageId: package.Id.ToString(), SlotId: slot.Id.ToString());
+
+        _packageRepositoryMock.SetupGetByIdOrThrow(package);
+
+        // Act
+        AdminRemovePackageSlotResult result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.Package.Id.Should().Be(package.Id);
+
+        package.Slots.Should().BeEmpty();
+        _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    #endregion
+
+    #region Failure Cases
+
+    [Fact]
+    public async Task Handle_WhenPackageNotFound_ShouldThrowNotFoundException()
+    {
+        var nonExistentPackageId = Guid.NewGuid();
+
+        var command = new AdminRemovePackageSlotCommand(
+            PackageId: nonExistentPackageId.ToString(),
+            SlotId: Guid.NewGuid().ToString()
+        );
+
+        _packageRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentPackageId);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
+    }
+
+    [Fact]
+    public async Task Handle_WhenSlotNotFound_ShouldThrowNotFoundException()
+    {
+        // Arrange
+        PackageEntity package = PackageFactory.Create();
+        var nonExistentSlotId = Guid.NewGuid();
+
+        var command = new AdminRemovePackageSlotCommand(
+            PackageId: package.Id.ToString(),
+            SlotId: nonExistentSlotId.ToString()
+        );
+
+        _packageRepositoryMock.SetupGetByIdOrThrow(package);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
+    }
+
+    [Fact]
+    public async Task Handle_WhenSlotBelongsToAnotherPackage_ShouldThrowNotFoundExceptionWithoutRemoving()
+    {
+        PackageEntity addressedPackage = PackageFactory.Create();
+        PackageEntity owningPackage = PackageFactory.Create();
+        PackageSlotEntity slot = PackageSlotFactory.Create(owningPackage);
+
+        var command = new AdminRemovePackageSlotCommand(
+            PackageId: addressedPackage.Id.ToString(),
+            SlotId: slot.Id.ToString()
+        );
+
+        _packageRepositoryMock.SetupGetByIdOrThrow(addressedPackage);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
+        owningPackage.Slots.Should().ContainSingle();
+        _unitOfWorkMock.VerifyCommitNotCalled();
+    }
+
+    #endregion
+}

@@ -1,0 +1,186 @@
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.Content.Application.Catalog.Factories;
+using _116.Content.Application.Catalog.UseCases.Admin.Commands.SetExclusiveCategory;
+using _116.Content.Application.Shared.Persistence;
+using _116.Content.Application.Shared.Repositories;
+using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
+using _116.Content.TestData;
+using _116.Content.TestData.Factories;
+using _116.Content.TestData.Factories.Helpers;
+using _116.Content.TestData.Mocks.Factories;
+using _116.Content.TestData.Mocks.Infrastructure;
+using _116.Content.TestData.Mocks.Repositories;
+using _116.Content.TestData.Mocks.Services;
+using _116.Identity.TestData.Factories;
+using _116.Identity.TestData.Mocks.Infrastructure;
+using _116.Identity.TestData.Mocks.Repositories;
+using _116.Identity.TestData.Mocks.Services;
+using _116.Storage.Application.Shared.Repositories;
+using _116.Storage.Contracts.Application.Services;
+using _116.Storage.TestData.Factories;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Storage.TestData.Mocks.Services;
+using _116.Tests.TestData;
+using _116.Tests.TestData.Helpers;
+using _116.Tests.TestData.Mocks;
+using AwesomeAssertions;
+using Moq;
+using Xunit;
+
+namespace _116.Content.Unit.Tests.Application.Catalog.UseCases.Admin.Commands.SetExclusiveCategory;
+
+/// <summary>
+/// Unit tests for <see cref="AdminSetExclusiveCategoryHandler"/>.
+/// </summary>
+public class AdminSetExclusiveCategoryHandlerTests : BaseContentHandlerTest
+{
+    private readonly Mock<ICategoryRepository> _categoryRepositoryMock;
+    private readonly Mock<IContentTypeRepository> _contentTypeRepositoryMock;
+    private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
+    private readonly Mock<IFileStorageService> _fileStorageMock;
+    private readonly AdminSetExclusiveCategoryHandler _handler;
+
+    public AdminSetExclusiveCategoryHandlerTests()
+    {
+        _categoryRepositoryMock = MockCategoryRepository.Create();
+        _contentTypeRepositoryMock = MockContentTypeRepository.Create();
+        _unitOfWorkMock = MockContentUnitOfWork.Create();
+        _fileStorageMock = MockFileStorageService.Create();
+        _handler = new AdminSetExclusiveCategoryHandler(
+            _categoryRepositoryMock.Object,
+            _contentTypeRepositoryMock.Object,
+            _unitOfWorkMock.Object,
+            CreateCategoryDtoFactory(_fileStorageMock.Object),
+            TestErrorsFactory.CreateContentI18n()
+        );
+    }
+
+    #region Success Cases
+
+    [Fact]
+    public async Task Handle_WhenNoCurrentExclusive_ShouldSetExclusive()
+    {
+        // Arrange
+        ContentTypeEntity videoType = ContentTypeFactory.Create(nameof(EnumCoreContentType.Video));
+        _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrow(videoType);
+        CategoryEntity category = CategoryFactory.Create(videoType);
+
+        var command = new AdminSetExclusiveCategoryCommand(Id: category.Id.ToString());
+
+        _categoryRepositoryMock.SetupGetByIdOrThrow(category);
+        _categoryRepositoryMock.SetupGetExclusiveCategory(null);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        category.IsExclusive.Should().BeTrue();
+        _unitOfWorkMock.VerifyExecutedInTransaction();
+    }
+
+    [Fact]
+    public async Task Handle_WhenDifferentCategoryIsExclusive_ShouldClearOldAndSetNew()
+    {
+        // Arrange
+        ContentTypeEntity videoType = ContentTypeFactory.Create(nameof(EnumCoreContentType.Video));
+        _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrow(videoType);
+        CategoryEntity category = CategoryFactory.Create(videoType);
+        CategoryEntity currentExclusive = CategoryFactory.Create(videoType);
+        currentExclusive.SetExclusive();
+
+        var command = new AdminSetExclusiveCategoryCommand(Id: category.Id.ToString());
+
+        _categoryRepositoryMock.SetupGetByIdOrThrow(category);
+        _categoryRepositoryMock.SetupGetExclusiveCategory(currentExclusive);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        currentExclusive.IsExclusive.Should().BeFalse();
+        category.IsExclusive.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Handle_WhenSameCategoryIsAlreadyExclusive_ShouldNotClearSelf()
+    {
+        // Arrange
+        ContentTypeEntity videoType = ContentTypeFactory.Create(nameof(EnumCoreContentType.Video));
+        _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrow(videoType);
+        CategoryEntity category = CategoryFactory.Create(videoType);
+        category.SetExclusive();
+
+        var command = new AdminSetExclusiveCategoryCommand(Id: category.Id.ToString());
+
+        _categoryRepositoryMock.SetupGetByIdOrThrow(category);
+        _categoryRepositoryMock.SetupGetExclusiveCategory(category);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        category.IsExclusive.Should().BeTrue();
+    }
+
+    #endregion
+
+    #region Failure Cases
+
+    [Fact]
+    public async Task Handle_WhenCategoryIsInactive_ShouldThrowBadRequestException()
+    {
+        // Arrange
+        ContentTypeEntity contentType = ContentTypeFactory.Create();
+        _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
+        CategoryEntity inactive = CategoryFactory.CreateInactive(contentType.Id);
+
+        var command = new AdminSetExclusiveCategoryCommand(Id: inactive.Id.ToString());
+
+        _categoryRepositoryMock.SetupGetByIdOrThrow(inactive);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<BadRequestException>();
+    }
+
+    [Fact]
+    public async Task Handle_WhenNonVideoCategory_ShouldThrowBadRequestException()
+    {
+        // Arrange
+        ContentTypeEntity articleType = ContentTypeFactory.Create(nameof(EnumCoreContentType.Article));
+        _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrow(articleType);
+        CategoryEntity category = CategoryFactory.Create(articleType);
+
+        var command = new AdminSetExclusiveCategoryCommand(Id: category.Id.ToString());
+
+        _categoryRepositoryMock.SetupGetByIdOrThrow(category);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<BadRequestException>();
+    }
+
+    [Fact]
+    public async Task Handle_WhenCategoryNotFound_ShouldThrowNotFoundException()
+    {
+        // Arrange
+        var nonExistentId = Guid.NewGuid();
+
+        var command = new AdminSetExclusiveCategoryCommand(Id: nonExistentId.ToString());
+
+        _categoryRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentId);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
+    }
+
+    #endregion
+}

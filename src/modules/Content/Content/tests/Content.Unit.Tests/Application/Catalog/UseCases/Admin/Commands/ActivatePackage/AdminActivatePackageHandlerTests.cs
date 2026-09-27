@@ -1,0 +1,130 @@
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.Content.Application.Catalog.UseCases.Admin.Commands.ActivatePackage;
+using _116.Content.Application.Shared.Persistence;
+using _116.Content.Application.Shared.Repositories;
+using _116.Content.Domain.Entities;
+using _116.Content.TestData;
+using _116.Content.TestData.Factories;
+using _116.Content.TestData.Factories.Helpers;
+using _116.Content.TestData.Mocks.Factories;
+using _116.Content.TestData.Mocks.Infrastructure;
+using _116.Content.TestData.Mocks.Repositories;
+using _116.Content.TestData.Mocks.Services;
+using _116.Identity.TestData.Factories;
+using _116.Identity.TestData.Mocks.Infrastructure;
+using _116.Identity.TestData.Mocks.Repositories;
+using _116.Identity.TestData.Mocks.Services;
+using _116.Storage.TestData.Factories;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Storage.TestData.Mocks.Services;
+using _116.Tests.TestData;
+using _116.Tests.TestData.Helpers;
+using _116.Tests.TestData.Mocks;
+using AwesomeAssertions;
+using Moq;
+using Xunit;
+
+namespace _116.Content.Unit.Tests.Application.Catalog.UseCases.Admin.Commands.ActivatePackage;
+
+/// <summary>
+/// Unit tests for <see cref="AdminActivatePackageHandler"/>.
+/// </summary>
+public class AdminActivatePackageHandlerTests : BaseContentHandlerTest
+{
+    private readonly Mock<IPackageRepository> _packageRepositoryMock;
+    private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
+    private readonly AdminActivatePackageHandler _handler;
+
+    public AdminActivatePackageHandlerTests()
+    {
+        _packageRepositoryMock = MockPackageRepository.Create();
+        _unitOfWorkMock = MockContentUnitOfWork.Create();
+        _handler = new AdminActivatePackageHandler(
+            _packageRepositoryMock.Object,
+            _unitOfWorkMock.Object,
+            CreatePackageDtoFactory(),
+            TestErrorsFactory.CreateContentI18n()
+        );
+    }
+
+    #region Success Cases
+
+    [Fact]
+    public async Task Handle_WhenInactive_ShouldActivateAndReturnDto()
+    {
+        // Arrange
+        PackageEntity inactive = PackageFactory.CreateInactive();
+        var command = new AdminActivatePackageCommand(Id: inactive.Id.ToString());
+
+        _packageRepositoryMock.SetupGetByIdOrThrow(inactive);
+
+        // Act
+        AdminActivatePackageResult result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        inactive.IsActive.Should().BeTrue();
+        result.Package.Id.Should().Be(inactive.Id);
+        result.Package.IsActive.Should().BeTrue();
+        _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    [Fact]
+    public async Task Handle_WhenSuccessful_ShouldReloadAfterCommit()
+    {
+        // Arrange
+        PackageEntity inactive = PackageFactory.CreateInactive();
+        var command = new AdminActivatePackageCommand(Id: inactive.Id.ToString());
+
+        _packageRepositoryMock.SetupGetByIdOrThrow(inactive);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        _packageRepositoryMock.Verify(
+            x => x.GetByIdOrThrowAsync(inactive.Id, It.IsAny<CancellationToken>()),
+            Times.Exactly(2)
+        );
+    }
+
+    #endregion
+
+    #region Failure Cases
+
+    [Fact]
+    public async Task Handle_WhenAlreadyActive_ShouldThrowConflictException()
+    {
+        // Arrange
+        PackageEntity active = PackageFactory.Create();
+        var command = new AdminActivatePackageCommand(Id: active.Id.ToString());
+
+        _packageRepositoryMock.SetupGetByIdOrThrow(active);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<ConflictException>();
+        active.IsActive.Should().BeTrue();
+        _unitOfWorkMock.VerifyCommitNotCalled();
+    }
+
+    [Fact]
+    public async Task Handle_WhenNotFound_ShouldThrowNotFoundException()
+    {
+        // Arrange
+        var nonExistentId = Guid.NewGuid();
+        var command = new AdminActivatePackageCommand(Id: nonExistentId.ToString());
+
+        _packageRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentId);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
+    }
+
+    #endregion
+}

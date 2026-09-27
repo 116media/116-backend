@@ -1,0 +1,115 @@
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArticleSeo;
+using _116.Content.Application.Shared.Persistence;
+using _116.Content.Application.Shared.Repositories;
+using _116.Content.Domain.Entities;
+using _116.Content.TestData;
+using _116.Content.TestData.Factories;
+using _116.Content.TestData.Factories.Helpers;
+using _116.Content.TestData.Mocks.Factories;
+using _116.Content.TestData.Mocks.Infrastructure;
+using _116.Content.TestData.Mocks.Repositories;
+using _116.Content.TestData.Mocks.Services;
+using _116.Identity.TestData.Factories;
+using _116.Identity.TestData.Mocks.Infrastructure;
+using _116.Identity.TestData.Mocks.Repositories;
+using _116.Identity.TestData.Mocks.Services;
+using _116.Storage.Application.Shared.Repositories;
+using _116.Storage.Contracts.Application.DTOs;
+using _116.Storage.Contracts.Application.Services;
+using _116.Storage.Domain.Entities;
+using _116.Storage.TestData.Factories;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Storage.TestData.Mocks.Services;
+using _116.Tests.TestData;
+using _116.Tests.TestData.Mocks;
+using AwesomeAssertions;
+using Moq;
+using Xunit;
+
+namespace _116.Content.Unit.Tests.Application.Editorial.UseCases.Admin.Commands.UpdateArticleSeo;
+
+/// <summary>
+/// Unit tests for <see cref="AdminUpdateArticleSeoHandler"/>.
+/// </summary>
+public class AdminUpdateArticleSeoHandlerTests : BaseContentHandlerTest
+{
+    private readonly Mock<IArticleRepository> _articleRepositoryMock;
+    private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
+    private readonly Mock<IFileStorageService> _fileStorageMock;
+    private readonly AdminUpdateArticleSeoHandler _handler;
+
+    private static readonly Guid CategoryId = Guid.NewGuid();
+
+    public AdminUpdateArticleSeoHandlerTests()
+    {
+        _articleRepositoryMock = MockArticleRepository.Create();
+        _unitOfWorkMock = MockContentUnitOfWork.Create();
+        _fileStorageMock = MockFileStorageService.Create();
+        FileReferenceDto coverFile = FileReferenceDtoFactory.CreateImage();
+        _fileStorageMock.SetupResolve(coverFile);
+        _handler = new AdminUpdateArticleSeoHandler(
+            _articleRepositoryMock.Object,
+            _unitOfWorkMock.Object,
+            _fileStorageMock.Object,
+            Mapper,
+            CreateContentLookupFactory()
+        );
+    }
+
+    #region Success Cases
+
+    [Fact]
+    public async Task Handle_WhenValidRequest_ShouldUpdateSeoAndReturnArticle()
+    {
+        // Arrange
+        ArticleEntity article = ArticleFactory.Create(CategoryId);
+        var command = new AdminUpdateArticleSeoCommand(
+            Id: article.Id.ToString(),
+            MetaTitle: "Custom SEO Title",
+            MetaDescription: "Custom SEO description for testing."
+        );
+
+        _articleRepositoryMock.SetupGetByIdOrThrow(article);
+        _articleRepositoryMock
+            .Setup(x => x.GetByIdOrThrowAsync(article.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(article);
+
+        // Act
+        AdminUpdateArticleSeoResult result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        article.MetaTitle.Should().Be("Custom SEO Title");
+        article.MetaDescription.Should().Be("Custom SEO description for testing.");
+        result.Article.Id.Should().Be(article.Id);
+        result.Article.MetaTitle.Should().Be("Custom SEO Title");
+        result.Article.MetaDescription.Should().Be("Custom SEO description for testing.");
+        _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    #endregion
+
+    #region Failure Cases
+
+    [Fact]
+    public async Task Handle_WhenArticleNotFound_ShouldThrowNotFoundException()
+    {
+        // Arrange
+        Guid nonExistentId = Guid.NewGuid();
+        var command = new AdminUpdateArticleSeoCommand(
+            Id: nonExistentId.ToString(),
+            MetaTitle: null,
+            MetaDescription: null
+        );
+        _articleRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentId);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
+    }
+
+    #endregion
+}

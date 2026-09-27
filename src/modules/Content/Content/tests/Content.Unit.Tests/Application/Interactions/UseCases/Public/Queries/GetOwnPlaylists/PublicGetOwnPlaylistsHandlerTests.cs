@@ -1,0 +1,89 @@
+using _116.Content.Application.Interactions.Factories;
+using _116.Content.Application.Interactions.Persistence;
+using _116.Content.Application.Interactions.UseCases.Public.Queries.GetOwnPlaylists;
+using _116.Content.Domain.Entities;
+using _116.Content.TestData;
+using _116.Content.TestData.Factories;
+using _116.Content.TestData.Factories.Helpers;
+using _116.Content.TestData.Mocks.Factories;
+using _116.Content.TestData.Mocks.Infrastructure;
+using _116.Content.TestData.Mocks.Repositories;
+using _116.Content.TestData.Mocks.Services;
+using _116.Identity.TestData.Factories;
+using _116.Identity.TestData.Mocks.Infrastructure;
+using _116.Identity.TestData.Mocks.Repositories;
+using _116.Identity.TestData.Mocks.Services;
+using _116.Storage.Application.Shared.Repositories;
+using _116.Storage.Contracts.Application.Services;
+using _116.Storage.TestData.Factories;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Storage.TestData.Mocks.Services;
+using _116.Tests.TestData;
+using _116.Tests.TestData.Mocks;
+using AwesomeAssertions;
+using Moq;
+using Xunit;
+
+namespace _116.Content.Unit.Tests.Application.Interactions.UseCases.Public.Queries.GetOwnPlaylists;
+
+/// <summary>
+/// Unit tests for <see cref="PublicGetOwnPlaylistsHandler"/>.
+/// </summary>
+public class PublicGetOwnPlaylistsHandlerTests : BaseContentHandlerTest
+{
+    private static readonly Guid UserId = Guid.NewGuid();
+
+    private readonly Mock<IPlaylistRepository> _playlistRepositoryMock;
+    private readonly Mock<IFileStorageService> _fileStorageMock;
+    private readonly PublicGetOwnPlaylistsHandler _handler;
+
+    public PublicGetOwnPlaylistsHandlerTests()
+    {
+        _playlistRepositoryMock = MockPlaylistRepository.Create();
+        _fileStorageMock = MockFileStorageService.Create();
+        _handler = new PublicGetOwnPlaylistsHandler(
+            _playlistRepositoryMock.Object,
+            new PlaylistDtoFactory(
+                Mapper,
+                _fileStorageMock.Object,
+                MockVideoRepository.Create().Object,
+                MockCategoryRepository.Create().Object
+            )
+        );
+    }
+
+    #region Success Cases
+
+    [Fact]
+    public async Task Handle_WhenUserHasPlaylists_ShouldReturnMappedPlaylists()
+    {
+        // Arrange
+        IReadOnlyList<PlaylistEntity> playlists = PlaylistFactory.CreateMany(2, UserId);
+        _playlistRepositoryMock.SetupGetByUserIdAsync(playlists);
+
+        var query = new PublicGetOwnPlaylistsQuery(UserId: UserId);
+
+        // Act
+        PublicGetOwnPlaylistsResult result = await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        result.Playlists.Count.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task Handle_WhenUserHasNoPlaylists_ShouldReturnEmptyList()
+    {
+        // Arrange
+        _playlistRepositoryMock.SetupGetByUserIdAsync(new List<PlaylistEntity>());
+
+        var query = new PublicGetOwnPlaylistsQuery(UserId: UserId);
+
+        // Act
+        PublicGetOwnPlaylistsResult result = await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        result.Playlists.Should().BeEmpty();
+    }
+
+    #endregion
+}

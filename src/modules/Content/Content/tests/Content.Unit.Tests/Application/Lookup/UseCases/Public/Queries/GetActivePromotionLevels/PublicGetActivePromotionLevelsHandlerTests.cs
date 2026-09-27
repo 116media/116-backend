@@ -1,0 +1,74 @@
+using _116.Content.Application.Lookup.UseCases.Public.Queries.GetActivePromotionLevels;
+using _116.Content.Application.Shared.Repositories;
+using _116.Content.Domain.Entities;
+using _116.Content.TestData;
+using _116.Content.TestData.Factories;
+using _116.Content.TestData.Factories.Helpers;
+using _116.Content.TestData.Mocks.Factories;
+using _116.Content.TestData.Mocks.Infrastructure;
+using _116.Content.TestData.Mocks.Repositories;
+using _116.Content.TestData.Mocks.Services;
+using _116.Identity.TestData.Factories;
+using _116.Identity.TestData.Mocks.Infrastructure;
+using _116.Identity.TestData.Mocks.Repositories;
+using _116.Identity.TestData.Mocks.Services;
+using _116.Storage.TestData.Factories;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Storage.TestData.Mocks.Services;
+using _116.Tests.TestData;
+using _116.Tests.TestData.Mocks;
+using AwesomeAssertions;
+using Moq;
+using Xunit;
+
+namespace _116.Content.Unit.Tests.Application.Lookup.UseCases.Public.Queries.GetActivePromotionLevels;
+
+/// <summary>
+/// Unit tests for <see cref="PublicGetActivePromotionLevelsHandler"/>.
+/// </summary>
+public class PublicGetActivePromotionLevelsHandlerTests : BaseContentHandlerTest
+{
+    private readonly Mock<IPromotionLevelRepository> _promotionLevelRepositoryMock;
+    private readonly PublicGetActivePromotionLevelsHandler _handler;
+
+    public PublicGetActivePromotionLevelsHandlerTests()
+    {
+        _promotionLevelRepositoryMock = MockPromotionLevelRepository.Create();
+        _handler = new PublicGetActivePromotionLevelsHandler(_promotionLevelRepositoryMock.Object, Mapper);
+    }
+
+    #region Success Cases
+
+    [Fact]
+    public async Task Handle_ShouldReturnOnlyActivePromotionLevels()
+    {
+        // Arrange
+        List<PromotionLevelEntity> activeList = PromotionLevelFactory.CreateMany(2);
+        _promotionLevelRepositoryMock.SetupGetActivePromotionLevels(activeList);
+
+        var query = new PublicGetActivePromotionLevelsQuery();
+
+        // Act
+        PublicGetActivePromotionLevelsResult result = await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        result.PromotionLevels.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public async Task Handle_WithEmptyList_ShouldReturnEmptyList()
+    {
+        // Arrange
+        _promotionLevelRepositoryMock.SetupGetActivePromotionLevels(new List<PromotionLevelEntity>());
+
+        var query = new PublicGetActivePromotionLevelsQuery();
+
+        // Act
+        PublicGetActivePromotionLevelsResult result = await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        result.PromotionLevels.Should().BeEmpty();
+    }
+
+    #endregion
+}

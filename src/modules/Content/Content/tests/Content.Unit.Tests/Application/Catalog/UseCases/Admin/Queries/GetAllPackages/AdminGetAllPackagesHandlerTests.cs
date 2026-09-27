@@ -1,0 +1,79 @@
+using _116.BuildingBlocks.Application.Pagination;
+using _116.Content.Application.Catalog.UseCases.Admin.Queries.GetAllPackages;
+using _116.Content.Application.Shared.Repositories;
+using _116.Content.Domain.Entities;
+using _116.Content.TestData;
+using _116.Content.TestData.Factories;
+using _116.Content.TestData.Factories.Helpers;
+using _116.Content.TestData.Mocks.Factories;
+using _116.Content.TestData.Mocks.Infrastructure;
+using _116.Content.TestData.Mocks.Repositories;
+using _116.Content.TestData.Mocks.Services;
+using _116.Identity.TestData.Factories;
+using _116.Identity.TestData.Mocks.Infrastructure;
+using _116.Identity.TestData.Mocks.Repositories;
+using _116.Identity.TestData.Mocks.Services;
+using _116.Storage.TestData.Factories;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Storage.TestData.Mocks.Services;
+using _116.Tests.TestData;
+using _116.Tests.TestData.Mocks;
+using AwesomeAssertions;
+using Moq;
+using Xunit;
+
+namespace _116.Content.Unit.Tests.Application.Catalog.UseCases.Admin.Queries.GetAllPackages;
+
+/// <summary>
+/// Unit tests for <see cref="AdminGetAllPackagesHandler"/>.
+/// </summary>
+public class AdminGetAllPackagesHandlerTests : BaseContentHandlerTest
+{
+    private readonly Mock<IPackageRepository> _packageRepositoryMock;
+    private readonly AdminGetAllPackagesHandler _handler;
+
+    public AdminGetAllPackagesHandlerTests()
+    {
+        _packageRepositoryMock = MockPackageRepository.Create();
+        _handler = new AdminGetAllPackagesHandler(_packageRepositoryMock.Object, CreatePackageDtoFactory());
+    }
+
+    #region Success Cases
+
+    [Fact]
+    public async Task Handle_WithMultiplePackages_ShouldReturnPaginatedResult()
+    {
+        // Arrange
+        List<PackageEntity> packages = PackageFactory.CreateMany(3);
+        int totalCount = 3;
+
+        _packageRepositoryMock.SetupGetAllAsync(packages, totalCount);
+
+        var query = new AdminGetAllPackagesQuery(PaginatedRequest: new PaginatedRequest(0, 10), IsActive: null);
+
+        // Act
+        AdminGetAllPackagesResult result = await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        result.Packages.Items.Should().HaveCount(3);
+        result.Packages.Count.Should().Be(totalCount);
+    }
+
+    [Fact]
+    public async Task Handle_WithEmptyList_ShouldReturnEmptyPaginatedResult()
+    {
+        // Arrange
+        _packageRepositoryMock.SetupGetAllAsync(new List<PackageEntity>(), 0);
+
+        var query = new AdminGetAllPackagesQuery(PaginatedRequest: new PaginatedRequest(0, 10), IsActive: null);
+
+        // Act
+        AdminGetAllPackagesResult result = await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        result.Packages.Items.Should().BeEmpty();
+        result.Packages.Count.Should().Be(0);
+    }
+
+    #endregion
+}

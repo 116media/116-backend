@@ -1,0 +1,102 @@
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCustomer;
+using _116.Content.Application.Shared.Persistence;
+using _116.Content.Application.Shared.Repositories;
+using _116.Content.TestData;
+using _116.Content.TestData.Factories;
+using _116.Content.TestData.Factories.Helpers;
+using _116.Content.TestData.Mocks.Factories;
+using _116.Content.TestData.Mocks.Infrastructure;
+using _116.Content.TestData.Mocks.Repositories;
+using _116.Content.TestData.Mocks.Services;
+using _116.Identity.TestData.Factories;
+using _116.Identity.TestData.Mocks.Infrastructure;
+using _116.Identity.TestData.Mocks.Repositories;
+using _116.Identity.TestData.Mocks.Services;
+using _116.Storage.TestData.Factories;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Storage.TestData.Mocks.Services;
+using _116.Tests.TestData;
+using _116.Tests.TestData.Constants;
+using _116.Tests.TestData.Helpers;
+using _116.Tests.TestData.Mocks;
+using AwesomeAssertions;
+using Moq;
+using Xunit;
+
+namespace _116.Content.Unit.Tests.Application.Catalog.UseCases.Admin.Commands.UpdateCustomer;
+
+/// <summary>
+/// Unit tests for <see cref="AdminUpdateCustomerHandler"/>.
+/// </summary>
+public class AdminUpdateCustomerHandlerTests : BaseContentHandlerTest
+{
+    private readonly Mock<ICustomerRepository> _customerRepositoryMock;
+    private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
+    private readonly AdminUpdateCustomerHandler _handler;
+
+    public AdminUpdateCustomerHandlerTests()
+    {
+        _customerRepositoryMock = MockCustomerRepository.Create();
+        _unitOfWorkMock = MockContentUnitOfWork.Create();
+        _handler = new AdminUpdateCustomerHandler(_customerRepositoryMock.Object, _unitOfWorkMock.Object, Mapper);
+    }
+
+    #region Success Cases
+
+    [Fact]
+    public async Task Handle_WhenCustomerExists_ShouldUpdateAndReturnDto()
+    {
+        // Arrange
+        var customer = CustomerFactory.CreateDefault();
+        string newFullName = "Jane Smith";
+
+        var command = new AdminUpdateCustomerCommand(
+            Id: customer.Id.ToString(),
+            FullName: newFullName,
+            Email: "jane@example.com",
+            Phone: "+123456789",
+            Company: "New Company",
+            Notes: "Updated notes"
+        );
+
+        _customerRepositoryMock.SetupGetByIdOrThrow(customer);
+
+        // Act
+        AdminUpdateCustomerResult result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.Customer.FullName.Should().Be(newFullName);
+        _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    #endregion
+
+    #region Failure Cases
+
+    [Fact]
+    public async Task Handle_WhenCustomerNotFound_ShouldThrowNotFoundException()
+    {
+        // Arrange
+        var nonExistentId = Guid.NewGuid();
+
+        var command = new AdminUpdateCustomerCommand(
+            Id: nonExistentId.ToString(),
+            FullName: TestConstants.Customer.ValidFullName,
+            Email: TestConstants.Customer.ValidEmail,
+            Phone: null,
+            Company: null,
+            Notes: null
+        );
+
+        _customerRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentId);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
+    }
+
+    #endregion
+}

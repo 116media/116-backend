@@ -1,0 +1,109 @@
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.Content.Application.Interactions.UseCases.Public.Commands.LikeLyrics;
+using _116.Content.Application.Shared.Persistence;
+using _116.Content.Application.Shared.Repositories;
+using _116.Content.Domain.Entities;
+using _116.Content.TestData.Factories;
+using _116.Content.TestData.Factories.Helpers;
+using _116.Content.TestData.Mocks.Factories;
+using _116.Content.TestData.Mocks.Infrastructure;
+using _116.Content.TestData.Mocks.Repositories;
+using _116.Content.TestData.Mocks.Services;
+using _116.Identity.TestData.Factories;
+using _116.Identity.TestData.Mocks.Infrastructure;
+using _116.Identity.TestData.Mocks.Repositories;
+using _116.Identity.TestData.Mocks.Services;
+using _116.Storage.TestData.Factories;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Storage.TestData.Mocks.Services;
+using _116.Tests.TestData.Helpers;
+using _116.Tests.TestData.Mocks;
+using AwesomeAssertions;
+using Moq;
+using Xunit;
+
+namespace _116.Content.Unit.Tests.Application.Interactions.UseCases.Public.Commands.LikeLyrics;
+
+/// <summary>
+/// Unit tests for <see cref="PublicLikeLyricsHandler"/>.
+/// </summary>
+public class PublicLikeLyricsHandlerTests
+{
+    private readonly Mock<ILyricsRepository> _lyricsRepositoryMock;
+    private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
+    private readonly PublicLikeLyricsHandler _handler;
+
+    public PublicLikeLyricsHandlerTests()
+    {
+        _lyricsRepositoryMock = MockLyricsRepository.Create();
+        _unitOfWorkMock = MockContentUnitOfWork.Create();
+        _handler = new PublicLikeLyricsHandler(
+            _lyricsRepositoryMock.Object,
+            _unitOfWorkMock.Object,
+            TestErrorsFactory.CreateContentI18n()
+        );
+    }
+
+    #region Success Cases
+
+    [Fact]
+    public async Task Handle_WhenLyricsExistsAndNotLiked_ShouldAddLikeAndCommit()
+    {
+        // Arrange
+        LyricsEntity lyrics = LyricsFactory.Create(Guid.NewGuid());
+        var userId = Guid.NewGuid();
+
+        _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
+        _lyricsRepositoryMock.SetupHasLikedAsync(userId, lyrics.Id, result: false);
+
+        var command = new PublicLikeLyricsCommand(LyricsId: lyrics.Id, UserId: userId);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        _lyricsRepositoryMock.VerifyAddLikeCalled();
+        _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    #endregion
+
+    #region Failure Cases
+
+    [Fact]
+    public async Task Handle_WhenLyricsNotFound_ShouldThrowNotFoundException()
+    {
+        // Arrange
+        Guid id = Guid.NewGuid();
+        _lyricsRepositoryMock.SetupGetByIdOrThrowNotFound(id);
+
+        var command = new PublicLikeLyricsCommand(LyricsId: id, UserId: Guid.NewGuid());
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
+    }
+
+    [Fact]
+    public async Task Handle_WhenAlreadyLiked_ShouldThrowConflictException()
+    {
+        // Arrange
+        LyricsEntity lyrics = LyricsFactory.Create(Guid.NewGuid());
+        var userId = Guid.NewGuid();
+
+        _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
+        _lyricsRepositoryMock.SetupHasLikedAsync(userId, lyrics.Id, result: true);
+
+        var command = new PublicLikeLyricsCommand(LyricsId: lyrics.Id, UserId: userId);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<ConflictException>();
+    }
+
+    #endregion
+}

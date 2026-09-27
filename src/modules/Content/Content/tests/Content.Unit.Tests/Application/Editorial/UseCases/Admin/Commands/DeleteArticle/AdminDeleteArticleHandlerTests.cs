@@ -1,0 +1,169 @@
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.DeleteArticle;
+using _116.Content.Application.Shared.Persistence;
+using _116.Content.Application.Shared.Repositories;
+using _116.Content.Domain.Entities;
+using _116.Content.Domain.Events;
+using _116.Content.TestData.Builders.Entities;
+using _116.Content.TestData.Factories;
+using _116.Content.TestData.Factories.Helpers;
+using _116.Content.TestData.Mocks.Factories;
+using _116.Content.TestData.Mocks.Infrastructure;
+using _116.Content.TestData.Mocks.Repositories;
+using _116.Content.TestData.Mocks.Services;
+using _116.Identity.TestData.Factories;
+using _116.Identity.TestData.Mocks.Infrastructure;
+using _116.Identity.TestData.Mocks.Repositories;
+using _116.Identity.TestData.Mocks.Services;
+using _116.Storage.TestData.Factories;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Storage.TestData.Mocks.Services;
+using _116.Tests.TestData.Helpers;
+using _116.Tests.TestData.Mocks;
+using AwesomeAssertions;
+using Moq;
+using Xunit;
+
+namespace _116.Content.Unit.Tests.Application.Editorial.UseCases.Admin.Commands.DeleteArticle;
+
+/// <summary>
+/// Unit tests for <see cref="AdminDeleteArticleHandler"/>.
+/// </summary>
+public class AdminDeleteArticleHandlerTests
+{
+    private readonly Mock<IArticleRepository> _articleRepositoryMock;
+    private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
+    private readonly AdminDeleteArticleHandler _handler;
+
+    private static readonly Guid CategoryId = Guid.NewGuid();
+
+    public AdminDeleteArticleHandlerTests()
+    {
+        _articleRepositoryMock = MockArticleRepository.Create();
+        _unitOfWorkMock = MockContentUnitOfWork.Create();
+        _handler = new AdminDeleteArticleHandler(
+            _articleRepositoryMock.Object,
+            _unitOfWorkMock.Object,
+            TestErrorsFactory.CreateContentI18n()
+        );
+    }
+
+    #region Success Cases
+
+    [Fact]
+    public async Task Handle_WhenDraftArticleWithNoImages_ShouldDeleteAndReturnSuccess()
+    {
+        // Arrange
+        ArticleEntity article = ArticleFactory.Create(CategoryId);
+        var command = new AdminDeleteArticleCommand(Id: article.Id.ToString());
+
+        _articleRepositoryMock.SetupGetByIdOrThrow(article);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        _articleRepositoryMock.VerifyRemoveCalled(article);
+        _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    [Fact]
+    public async Task Handle_WhenDraftArticleWithImages_ShouldRaiseDeletionEventWithCapturedKeys()
+    {
+        // Arrange
+        ArticleEntity article = ArticleFactory.Create(CategoryId);
+        List<ArticleImageEntity> images = ArticleImageFactory.CreateMany(article, 2);
+        var command = new AdminDeleteArticleCommand(Id: article.Id.ToString());
+
+        _articleRepositoryMock.SetupGetByIdOrThrow(article);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        article
+            .DomainEvents.OfType<ArticleDeletedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.BodyImageStorageKeys.Should()
+            .BeEquivalentTo(images.Select(img => img.StorageKey));
+        _articleRepositoryMock.VerifyRemoveCalled(article);
+        _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    [Fact]
+    public async Task Handle_WhenArticleHasACoverImageRow_ShouldCaptureOnlyTheBodyImageKeys()
+    {
+        // Arrange
+        ArticleEntity article = ArticleFactory.Create(CategoryId);
+        ArticleImageEntity cover = ArticleImageFactory.CreateCover(article);
+        ArticleImageEntity body = ArticleImageFactory.CreateBody(article);
+        var command = new AdminDeleteArticleCommand(Id: article.Id.ToString());
+
+        _articleRepositoryMock.SetupGetByIdOrThrow(article);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        article
+            .DomainEvents.OfType<ArticleDeletedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.BodyImageStorageKeys.Should()
+            .BeEquivalentTo([body.StorageKey]);
+    }
+
+    [Fact]
+    public async Task Handle_WhenRejectedArticle_ShouldDeleteAndReturnSuccess()
+    {
+        // Arrange
+        ArticleEntity article = new ArticleBuilder(CategoryId).AsRejected().Build();
+        var command = new AdminDeleteArticleCommand(Id: article.Id.ToString());
+
+        _articleRepositoryMock.SetupGetByIdOrThrow(article);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        _articleRepositoryMock.VerifyRemoveCalled(article);
+        _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    #endregion
+
+    #region Failure Cases
+
+    [Fact]
+    public async Task Handle_WhenArticleNotFound_ShouldThrowNotFoundException()
+    {
+        // Arrange
+        Guid nonExistentId = Guid.NewGuid();
+        var command = new AdminDeleteArticleCommand(Id: nonExistentId.ToString());
+        _articleRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentId);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
+    }
+
+    [Fact]
+    public async Task Handle_WhenArticleIsPublished_ShouldThrowBadRequestException()
+    {
+        // Arrange
+        ArticleEntity article = ArticleFactory.CreatePublished(CategoryId);
+        var command = new AdminDeleteArticleCommand(Id: article.Id.ToString());
+        _articleRepositoryMock.SetupGetByIdOrThrow(article);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<BadRequestException>();
+    }
+
+    #endregion
+}

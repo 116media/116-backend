@@ -1,0 +1,133 @@
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.RejectLyricsSubmission;
+using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Shared.Persistence;
+using _116.Content.Application.Shared.Repositories;
+using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
+using _116.Content.Domain.Events;
+using _116.Content.Domain.Exceptions;
+using _116.Content.Domain.StateMachines;
+using _116.Content.TestData.Factories;
+using _116.Content.TestData.Factories.Helpers;
+using _116.Content.TestData.Mocks.Factories;
+using _116.Content.TestData.Mocks.Infrastructure;
+using _116.Content.TestData.Mocks.Repositories;
+using _116.Content.TestData.Mocks.Services;
+using _116.Identity.TestData.Factories;
+using _116.Identity.TestData.Mocks.Infrastructure;
+using _116.Identity.TestData.Mocks.Repositories;
+using _116.Identity.TestData.Mocks.Services;
+using _116.Storage.TestData.Factories;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Storage.TestData.Mocks.Services;
+using _116.Tests.TestData.Helpers;
+using _116.Tests.TestData.Mocks;
+using AwesomeAssertions;
+using Moq;
+using Xunit;
+
+namespace _116.Content.Unit.Tests.Application.Editorial.UseCases.Admin.Commands.RejectLyricsSubmission;
+
+/// <summary>
+/// Unit tests for <see cref="AdminRejectLyricsSubmissionHandler"/>.
+/// </summary>
+public class AdminRejectLyricsSubmissionHandlerTests
+{
+    private readonly Mock<ILyricsSubmissionRepository> _submissionRepositoryMock;
+    private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
+    private readonly ContentI18n _i18n = TestErrorsFactory.CreateContentI18n();
+    private readonly AdminRejectLyricsSubmissionHandler _handler;
+
+    public AdminRejectLyricsSubmissionHandlerTests()
+    {
+        _submissionRepositoryMock = MockLyricsSubmissionRepository.Create();
+        _unitOfWorkMock = MockContentUnitOfWork.Create();
+        _handler = new AdminRejectLyricsSubmissionHandler(
+            _submissionRepositoryMock.Object,
+            _unitOfWorkMock.Object,
+            _i18n
+        );
+    }
+
+    #region Success Cases
+
+    [Fact]
+    public async Task Handle_WithValidCommand_ShouldSetRejectedStatusAndNote()
+    {
+        // Arrange
+        LyricsSubmissionEntity submission = LyricsSubmissionFactory.Create();
+        _submissionRepositoryMock.SetupGetByIdOrThrow(submission);
+        var reviewerId = Guid.NewGuid();
+        const string note = "Duplicate of an existing song.";
+        var command = new AdminRejectLyricsSubmissionCommand(submission.Id, note, reviewerId);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        submission.Status.Should().Be(EnumSubmissionStatus.Rejected);
+        submission.ReviewedByUserId.Should().Be(reviewerId);
+        submission.ReviewNote.Should().Be(note);
+        _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    [Fact]
+    public async Task Handle_WithValidCommand_ShouldRaiseLyricsSubmissionDecidedEvent()
+    {
+        // Arrange
+        LyricsSubmissionEntity submission = LyricsSubmissionFactory.Create();
+        submission.ClearDomainEvents();
+        _submissionRepositoryMock.SetupGetByIdOrThrow(submission);
+        var reviewerId = Guid.NewGuid();
+        const string note = "Duplicate of an existing song.";
+        var command = new AdminRejectLyricsSubmissionCommand(submission.Id, note, reviewerId);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        submission
+            .DomainEvents.OfType<LyricsSubmissionDecidedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(
+                new LyricsSubmissionDecidedEvent(
+                    SubmissionId: submission.Id,
+                    SubmittedByUserId: submission.SubmittedByUserId,
+                    Outcome: EnumSubmissionStatus.Rejected,
+                    ReviewNote: note,
+                    PublishedLyricsId: null
+                )
+            );
+    }
+
+    #endregion
+
+    #region Failure Cases
+
+    [Fact]
+    public async Task Handle_WhenSubmissionAlreadyDecided_ShouldThrowAlreadyDecidedRule()
+    {
+        // Arrange
+        LyricsSubmissionEntity submission = LyricsSubmissionFactory.CreateApproved(Guid.NewGuid(), Guid.NewGuid());
+        submission.ClearDomainEvents();
+        _submissionRepositoryMock.SetupGetByIdOrThrow(submission);
+        var command = new AdminRejectLyricsSubmissionCommand(submission.Id, "Too late.", Guid.NewGuid());
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should()
+            .ThrowAsync<ContentRuleException>()
+            .Where(exception => exception.Code == ContentRuleCodes.SubmissionAlreadyDecided);
+        submission.Status.Should().Be(EnumSubmissionStatus.Approved);
+        submission.ReviewNote.Should().BeNull();
+        submission.DomainEvents.Should().BeEmpty();
+        _unitOfWorkMock.VerifyCommitNotCalled();
+    }
+
+    #endregion
+}

@@ -1,0 +1,106 @@
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.Content.Application.Interactions.UseCases.Public.Commands.LikeArticle;
+using _116.Content.Application.Shared.Persistence;
+using _116.Content.Application.Shared.Repositories;
+using _116.Content.Domain.Entities;
+using _116.Content.TestData.Factories;
+using _116.Content.TestData.Factories.Helpers;
+using _116.Content.TestData.Mocks.Factories;
+using _116.Content.TestData.Mocks.Infrastructure;
+using _116.Content.TestData.Mocks.Repositories;
+using _116.Content.TestData.Mocks.Services;
+using _116.Identity.TestData.Factories;
+using _116.Identity.TestData.Mocks.Infrastructure;
+using _116.Identity.TestData.Mocks.Repositories;
+using _116.Identity.TestData.Mocks.Services;
+using _116.Storage.TestData.Factories;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Storage.TestData.Mocks.Services;
+using _116.Tests.TestData.Helpers;
+using _116.Tests.TestData.Mocks;
+using AwesomeAssertions;
+using Moq;
+using Xunit;
+
+namespace _116.Content.Unit.Tests.Application.Interactions.UseCases.Public.Commands.LikeArticle;
+
+/// <summary>
+/// Unit tests for <see cref="PublicLikeArticleHandler"/>.
+/// </summary>
+public class PublicLikeArticleHandlerTests
+{
+    private readonly Mock<IArticleInteractionRepository> _articleInteractionRepositoryMock;
+    private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
+    private readonly PublicLikeArticleHandler _handler;
+
+    private static readonly Guid CategoryId = Guid.NewGuid();
+
+    public PublicLikeArticleHandlerTests()
+    {
+        _articleInteractionRepositoryMock = MockArticleInteractionRepository.Create();
+        _unitOfWorkMock = MockContentUnitOfWork.Create();
+        _handler = new PublicLikeArticleHandler(
+            _articleInteractionRepositoryMock.Object,
+            _unitOfWorkMock.Object,
+            TestErrorsFactory.CreateContentI18n()
+        );
+    }
+
+    #region Success Cases
+
+    [Fact]
+    public async Task Handle_WhenArticleExistsAndNotLiked_ShouldAddLikeAndCommit()
+    {
+        // Arrange
+        ArticleEntity article = ArticleFactory.CreatePublished(CategoryId);
+        var userId = Guid.NewGuid();
+        var command = new PublicLikeArticleCommand(ArticleId: article.Id, UserId: userId);
+        _articleInteractionRepositoryMock.SetupExistsOrThrow(article.Id);
+        _articleInteractionRepositoryMock.SetupHasLikedAsync(userId, article.Id, result: false);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        _articleInteractionRepositoryMock.VerifyAddLikeCalled();
+        _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    #endregion
+
+    #region Failure Cases
+
+    [Fact]
+    public async Task Handle_WhenArticleNotFound_ShouldThrowNotFoundException()
+    {
+        // Arrange
+        Guid articleId = Guid.NewGuid();
+        var command = new PublicLikeArticleCommand(ArticleId: articleId, UserId: Guid.NewGuid());
+        _articleInteractionRepositoryMock.SetupExistsOrThrowNotFound(articleId);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
+    }
+
+    [Fact]
+    public async Task Handle_WhenAlreadyLiked_ShouldThrowConflictException()
+    {
+        // Arrange
+        ArticleEntity article = ArticleFactory.CreatePublished(CategoryId);
+        var userId = Guid.NewGuid();
+        var command = new PublicLikeArticleCommand(ArticleId: article.Id, UserId: userId);
+        _articleInteractionRepositoryMock.SetupExistsOrThrow(article.Id);
+        _articleInteractionRepositoryMock.SetupHasLikedAsync(userId, article.Id, result: true);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<ConflictException>();
+    }
+
+    #endregion
+}

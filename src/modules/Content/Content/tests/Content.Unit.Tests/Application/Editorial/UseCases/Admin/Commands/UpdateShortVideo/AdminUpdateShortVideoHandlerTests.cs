@@ -1,0 +1,167 @@
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateShortVideo;
+using _116.Content.Application.Shared.Persistence;
+using _116.Content.Application.Shared.Repositories;
+using _116.Content.Domain.Entities;
+using _116.Content.TestData;
+using _116.Content.TestData.Factories;
+using _116.Content.TestData.Factories.Helpers;
+using _116.Content.TestData.Mocks.Factories;
+using _116.Content.TestData.Mocks.Infrastructure;
+using _116.Content.TestData.Mocks.Repositories;
+using _116.Content.TestData.Mocks.Services;
+using _116.Identity.TestData.Factories;
+using _116.Identity.TestData.Mocks.Infrastructure;
+using _116.Identity.TestData.Mocks.Repositories;
+using _116.Identity.TestData.Mocks.Services;
+using _116.Storage.Application.Shared.Repositories;
+using _116.Storage.Contracts.Application.Services;
+using _116.Storage.TestData.Factories;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Storage.TestData.Mocks.Services;
+using _116.Tests.TestData;
+using _116.Tests.TestData.Constants;
+using _116.Tests.TestData.Helpers;
+using _116.Tests.TestData.Mocks;
+using AwesomeAssertions;
+using Moq;
+using Xunit;
+
+namespace _116.Content.Unit.Tests.Application.Editorial.UseCases.Admin.Commands.UpdateShortVideo;
+
+/// <summary>
+/// Unit tests for <see cref="AdminUpdateShortVideoHandler"/>.
+/// </summary>
+public class AdminUpdateShortVideoHandlerTests : BaseContentHandlerTest
+{
+    private readonly Mock<IShortVideoRepository> _shortVideoRepositoryMock;
+    private readonly Mock<IFileStorageService> _fileStorageMock;
+    private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
+    private readonly AdminUpdateShortVideoHandler _handler;
+
+    public AdminUpdateShortVideoHandlerTests()
+    {
+        _shortVideoRepositoryMock = MockShortVideoRepository.Create();
+        _fileStorageMock = MockFileStorageService.Create();
+        _unitOfWorkMock = MockContentUnitOfWork.Create();
+
+        _handler = new AdminUpdateShortVideoHandler(
+            _shortVideoRepositoryMock.Object,
+            _fileStorageMock.Object,
+            _unitOfWorkMock.Object,
+            Mapper,
+            MockVideoRepository.Create().Object
+        );
+    }
+
+    private static AdminUpdateShortVideoCommand BuildCommand(
+        string? id = null,
+        string? title = null,
+        Guid? videoId = null
+    ) =>
+        new(Id: id ?? Guid.NewGuid().ToString(), Title: title ?? TestConstants.ShortVideo.ValidTitle, VideoId: videoId);
+
+    #region Success Cases
+
+    [Fact]
+    public async Task Handle_WithValidData_ShouldUpdateAndReturnShortVideo()
+    {
+        // Arrange
+        ShortVideoEntity existing = ShortVideoFactory.Create();
+        var command = BuildCommand(id: existing.Id.ToString());
+
+        _shortVideoRepositoryMock
+            .Setup(x => x.GetByIdOrThrowAsync(existing.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(existing);
+
+        // Act
+        AdminUpdateShortVideoResult result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.ShortVideo.Title.Should().Be(command.Title);
+        _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    [Fact]
+    public async Task Handle_WithVideoId_ShouldLinkToParentVideo()
+    {
+        // Arrange
+        ShortVideoEntity existing = ShortVideoFactory.Create();
+        Guid parentVideoId = Guid.NewGuid();
+        var command = BuildCommand(id: existing.Id.ToString(), videoId: parentVideoId);
+
+        _shortVideoRepositoryMock
+            .Setup(x => x.GetByIdOrThrowAsync(existing.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(existing);
+
+        // Act
+        AdminUpdateShortVideoResult result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.ShortVideo.HasFullVideo.Should().BeTrue();
+        _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    [Fact]
+    public async Task Handle_WithNullVideoId_ShouldMakeStandalone()
+    {
+        // Arrange
+        Guid videoId = Guid.NewGuid();
+        ShortVideoEntity existing = ShortVideoFactory.CreateTeaser(videoId);
+        var command = BuildCommand(id: existing.Id.ToString(), videoId: null);
+
+        _shortVideoRepositoryMock
+            .Setup(x => x.GetByIdOrThrowAsync(existing.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(existing);
+
+        // Act
+        AdminUpdateShortVideoResult result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.ShortVideo.HasFullVideo.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task Handle_ShouldLeaveTheStoredVideoFileUntouched()
+    {
+        // Arrange
+        ShortVideoEntity existing = ShortVideoFactory.Create();
+        Guid? originalVideoFileId = existing.VideoFileId;
+        var command = BuildCommand(id: existing.Id.ToString());
+
+        _shortVideoRepositoryMock
+            .Setup(x => x.GetByIdOrThrowAsync(existing.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(existing);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        _unitOfWorkMock.VerifyCommitCalled();
+        existing.VideoFileId.Should().Be(originalVideoFileId);
+    }
+
+    #endregion
+
+    #region Failure Cases
+
+    [Fact]
+    public async Task Handle_WhenNotFound_ShouldThrowNotFoundException()
+    {
+        // Arrange
+        Guid id = Guid.NewGuid();
+        var command = BuildCommand(id: id.ToString());
+
+        _shortVideoRepositoryMock
+            .Setup(x => x.GetByIdOrThrowAsync(id, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new NotFoundException("ShortVideo.NotFound", "Short video not found"));
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
+    }
+
+    #endregion
+}
