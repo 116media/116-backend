@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using _116.Mailer.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using _116.Mailer.Infrastructure.Persistence;
 namespace _116.Mailer.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(MailerDbContext))]
-    partial class MailerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260909134511_AddDomainEventOutboxAndProcessedEvents")]
+    partial class AddDomainEventOutboxAndProcessedEvents
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -258,7 +261,7 @@ namespace _116.Mailer.Infrastructure.Persistence.Migrations
                     b.ToTable("outbox_emails", "mailer");
                 });
 
-            modelBuilder.Entity("_116.Shared.Infrastructure.Outbox.OutboxEventEntity", b =>
+            modelBuilder.Entity("_116.BuildingBlocks.Infrastructure.Outbox.OutboxEventEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -302,6 +305,27 @@ namespace _116.Mailer.Infrastructure.Persistence.Migrations
                         .HasFilter("dispatched_at IS NULL");
 
                     b.ToTable("domain_event_outbox", "mailer");
+                });
+
+            modelBuilder.Entity("_116.BuildingBlocks.Infrastructure.Outbox.ProcessedDomainEventEntity", b =>
+                {
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("event_id");
+
+                    b.Property<string>("HandlerName")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("handler_name");
+
+                    b.Property<DateTime>("ProcessedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("processed_at");
+
+                    b.HasKey("EventId", "HandlerName")
+                        .HasName("pk_processed_domain_events");
+
+                    b.ToTable("processed_domain_events", "mailer");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,7 +1,7 @@
 using System.Reflection;
+using _116.BuildingBlocks.Infrastructure.Outbox;
 using _116.Mailer.Domain.Constants;
 using _116.Mailer.Domain.Entities;
-using _116.Shared.Infrastructure.Outbox;
 using Microsoft.EntityFrameworkCore;
 
 namespace _116.Mailer.Infrastructure.Persistence;

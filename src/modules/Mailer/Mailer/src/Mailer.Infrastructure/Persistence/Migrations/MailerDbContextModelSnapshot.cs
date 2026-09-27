@@ -2,7 +2,6 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using _116.Mailer.Infrastructure.Persistence;
@@ -12,11 +11,9 @@ using _116.Mailer.Infrastructure.Persistence;
 namespace _116.Mailer.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(MailerDbContext))]
-    [Migration("20260910172748_DropRedundantProcessedDomainEvents")]
-    partial class DropRedundantProcessedDomainEvents
+    partial class MailerDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -261,7 +258,7 @@ namespace _116.Mailer.Infrastructure.Persistence.Migrations
                     b.ToTable("outbox_emails", "mailer");
                 });
 
-            modelBuilder.Entity("_116.Shared.Infrastructure.Outbox.OutboxEventEntity", b =>
+            modelBuilder.Entity("_116.BuildingBlocks.Infrastructure.Outbox.OutboxEventEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
