@@ -1,4 +1,4 @@
-namespace _116.Core.Domain.Enums;
+namespace _116.Storage.Domain.Enums;
 
 /// <summary>
 /// The lifecycle position of a stored file. The three states are mutually exclusive and total.
