@@ -1,0 +1,55 @@
+using _116.BuildingBlocks.Application.CQRS;
+using _116.Content.Application.Editorial.Factories;
+using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Shared.Mappers;
+using _116.Content.Application.Shared.Persistence;
+using _116.Content.Application.Shared.Repositories;
+using _116.Content.Domain.Entities;
+
+namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateAlbum;
+
+/// <summary>
+/// Handles the <see cref="AdminCreateAlbumCommand" /> to create a new album.
+/// </summary>
+/// <param name="albumRepository">Repository for album data access operations.</param>
+/// <param name="artistRepository">Repository for artist profile data access operations.</param>
+/// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
+/// <param name="albumDtoFactory">Builds album projections with their covers resolved.</param>
+public class AdminCreateAlbumHandler(
+    IAlbumRepository albumRepository,
+    IArtistRepository artistRepository,
+    IContentUnitOfWork unitOfWork,
+    IAlbumDtoFactory albumDtoFactory
+) : ICommandHandler<AdminCreateAlbumCommand, AdminCreateAlbumResult>
+{
+    /// <inheritdoc />
+    public async Task<AdminCreateAlbumResult> Handle(
+        AdminCreateAlbumCommand command,
+        CancellationToken cancellationToken
+    )
+    {
+        if (command.ArtistId.HasValue)
+        {
+            await artistRepository.GetByIdOrThrowAsync(
+                id: command.ArtistId.Value,
+                cancellationToken: cancellationToken
+            );
+        }
+
+        AlbumEntity album = AlbumEntity.Create(
+            id: Guid.NewGuid(),
+            name: command.Name,
+            artistId: command.ArtistId,
+            coverImageFileId: null,
+            releaseYear: command.ReleaseYear,
+            label: command.Label,
+            releaseType: command.ReleaseType
+        );
+
+        await albumRepository.AddAsync(album: album, cancellationToken: cancellationToken);
+        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+        var dto = await albumDtoFactory.CreateAsync(album, cancellationToken);
+        return new AdminCreateAlbumResult(Album: dto);
+    }
+}

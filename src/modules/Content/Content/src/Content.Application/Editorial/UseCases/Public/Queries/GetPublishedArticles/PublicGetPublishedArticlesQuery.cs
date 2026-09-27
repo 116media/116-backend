@@ -1,0 +1,52 @@
+using _116.BuildingBlocks.Application.CQRS;
+using _116.BuildingBlocks.Application.Pagination;
+using _116.Content.Application.Shared.Cache;
+using _116.Content.Application.Shared.DTOs;
+
+namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublishedArticles;
+
+/// <summary>
+/// Query for retrieving a paginated list of published articles for public consumption.
+/// Supports optional filtering by category and tag slug.
+/// </summary>
+/// <param name="PaginatedRequest">Pagination parameters (page index and page size).</param>
+/// <param name="Search">Optional search term matched against title, headline, body, meta title, and meta description.</param>
+/// <param name="CategoryId">Optional filter by category identifier.</param>
+/// <param name="TagSlug">Optional filter by tag slug (aspirational — reserved for future use).</param>
+/// <param name="CurrentUserId">
+/// The authenticated caller's id, or null for an anonymous request. When null, the per-user
+/// interaction flags on the returned summaries resolve to false.
+/// </param>
+public record PublicGetPublishedArticlesQuery(
+    PaginatedRequest PaginatedRequest,
+    string? Search,
+    Guid? CategoryId,
+    string? TagSlug,
+    Guid? CurrentUserId = null
+) : IQuery<PublicGetPublishedArticlesResult>, IConditionallyCacheableRequest
+{
+    /// <inheritdoc />
+    /// <remarks>
+    /// Only the anonymous projection is stored: an authenticated response carries per-user
+    /// interaction flags, and caching it would show one reader another reader's likes.
+    /// Free-text search additionally produces an unbounded key space.
+    /// </remarks>
+    public bool IsCacheable => CurrentUserId is null && string.IsNullOrWhiteSpace(Search);
+
+    /// <inheritdoc />
+    public string CacheKey =>
+        $"published_articles:{PaginatedRequest.PageIndex}:{PaginatedRequest.PageSize}"
+        + $":{CategoryId?.ToString() ?? "all"}:{TagSlug ?? "all"}";
+
+    /// <inheritdoc />
+    public TimeSpan Ttl => TimeSpan.FromMinutes(10);
+
+    /// <inheritdoc />
+    public IReadOnlyList<string> CacheTags => [ContentCacheTags.Articles];
+}
+
+/// <summary>
+/// Result of the <see cref="PublicGetPublishedArticlesQuery" /> containing a paginated list of article summaries.
+/// </summary>
+/// <param name="Articles">The paginated result containing article summary DTOs.</param>
+public record PublicGetPublishedArticlesResult(PaginatedResult<PublicArticleSummaryDto> Articles);

@@ -1,0 +1,28 @@
+using _116.BuildingBlocks.Application.CQRS;
+using _116.Content.Application.Shared.DTOs;
+
+namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetVideoBySlug;
+
+/// <summary>
+/// Query for retrieving the full details of a published video by its URL slug,
+/// including the current user's interaction state.
+/// </summary>
+/// <param name="Slug">The URL-safe slug of the video to retrieve.</param>
+/// <param name="CurrentUserId">
+/// The authenticated caller's id, or null for an anonymous request. When null, the per-user
+/// rating fields on the returned DTO resolve to their unrated defaults.
+/// </param>
+public record PublicGetVideoBySlugQuery(string Slug, Guid? CurrentUserId = null) : IQuery<PublicGetVideoBySlugResult>;
+
+/// <summary>
+/// Result of the <see cref="PublicGetVideoBySlugQuery" /> containing the full video details
+/// and the linked artist's slug when a profile exists.
+/// </summary>
+/// <param name="Video">The detailed video information.</param>
+/// <param name="ArtistSlug">
+/// The linked artist profile's slug, or null when the video has no linked profile — the
+/// common case at launch. Mirrors the lyrics detail response: the client renders a link to
+/// the artist page when present and plain text otherwise, and never slugifies a name
+/// client-side.
+/// </param>
+public record PublicGetVideoBySlugResult(PublicVideoDetailDto Video, string? ArtistSlug);

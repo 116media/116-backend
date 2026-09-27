@@ -1,0 +1,20 @@
+using _116.BuildingBlocks.Presentation.Extensions;
+using _116.Content.Application.Shared.Errors.Facade;
+using FluentValidation;
+
+namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.PublishArticle;
+
+/// <summary>
+/// Validator for the <see cref="AdminPublishArticleCommand" /> ensuring a valid article ID is provided.
+/// </summary>
+public class AdminPublishArticleValidator : AbstractValidator<AdminPublishArticleCommand>
+{
+    /// <summary>
+    /// Initializes a new instance of <see cref="AdminPublishArticleValidator" /> with the specified error message provider.
+    /// </summary>
+    /// <param name="i18n">Content module i18n facade.</param>
+    public AdminPublishArticleValidator(ContentI18n i18n)
+    {
+        RuleFor(x => x.Id).IsValidGuid(i18n.Article.Msg.Localizer);
+    }
+}

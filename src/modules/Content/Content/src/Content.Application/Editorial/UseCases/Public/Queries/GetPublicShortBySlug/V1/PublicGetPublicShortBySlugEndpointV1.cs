@@ -1,0 +1,76 @@
+using System.Security.Claims;
+using _116.BuildingBlocks.Application.CQRS;
+using _116.BuildingBlocks.Presentation.Constants.RateLimit;
+using _116.BuildingBlocks.Presentation.Extensions;
+using _116.Content.Application.Editorial.Constants;
+using _116.Content.Application.Shared.DTOs;
+using _116.Content.Domain.Constants;
+using _116.Identity.Contracts.Application.Services;
+using Carter;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+
+namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublicShortBySlug.V1;
+
+/// <summary>
+/// Response model for retrieving a public short video by its slug.
+/// </summary>
+/// <param name="ShortVideo">The short video detail information.</param>
+public record PublicGetPublicShortBySlugResponse(PublicShortVideoDto ShortVideo);
+
+/// <summary>
+/// Defines the public get short video by slug endpoint.
+/// Returns the full details of a single active short video.
+/// </summary>
+internal class PublicGetPublicShortBySlugEndpointV1 : ICarterModule
+{
+    /// <summary>
+    /// Configures the short video detail retrieval route within the API pipeline.
+    /// Maps the <c>GET /api/v1/public/shorts/{slug}</c> endpoint.
+    /// </summary>
+    /// <param name="app">The route builder used to register API endpoints.</param>
+    public void AddRoutes(IEndpointRouteBuilder app)
+    {
+        RouteGroupBuilder group = app.MapApiVersionGroup(1)
+            .MapGroup($"{ContentConstants.Public}/{EditorialRouteConstants.Shorts}")
+            .WithTags($"{ContentConstants.Public}::{EditorialRouteConstants.Shorts}");
+
+        group
+            .MapGet(
+                "/{slug}",
+                async (
+                    string slug,
+                    ClaimsPrincipal user,
+                    IClaimsProvider claimsProvider,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
+                {
+                    Guid? userId = null;
+
+                    if (user.Identity?.IsAuthenticated == true)
+                    {
+                        userId = claimsProvider.GetUserIdFromClaims(user: user);
+                    }
+
+                    var query = new PublicGetPublicShortBySlugQuery(Slug: slug, CurrentUserId: userId);
+                    PublicGetPublicShortBySlugResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
+
+                    var response = new PublicGetPublicShortBySlugResponse(ShortVideo: result.ShortVideo);
+                    return Results.Ok(response);
+                }
+            )
+            .WithName(endpointName: PublicGetPublicShortBySlugMetaField.GetPublicShortBySlug.Name)
+            .WithSummary(summary: PublicGetPublicShortBySlugMetaField.GetPublicShortBySlug.Summary)
+            .WithDescription(description: PublicGetPublicShortBySlugMetaField.GetPublicShortBySlug.Description)
+            .AllowAnonymous()
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
+            .Produces<PublicGetPublicShortBySlugResponse>(statusCode: StatusCodes.Status200OK)
+            .ProducesProblem(statusCode: StatusCodes.Status404NotFound)
+            .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
+    }
+}
