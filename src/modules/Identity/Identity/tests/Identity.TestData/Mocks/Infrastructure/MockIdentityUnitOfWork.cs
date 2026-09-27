@@ -1,7 +1,7 @@
 using _116.Identity.Application.Shared.Persistence;
 using Moq;
 
-namespace _116.Unit.Tests.Common.Mocks.Infrastructure;
+namespace _116.Identity.TestData.Mocks.Infrastructure;
 
 /// <summary>
 /// Provides mock setup helpers for <see cref="IIdentityUnitOfWork"/>.

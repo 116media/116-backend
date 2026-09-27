@@ -1,11 +1,11 @@
+using _116.BuildingBlocks.Application.Exceptions;
 using _116.Identity.Application.Auth.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
-using _116.Shared.Application.Exceptions;
-using _116.Tests.Fixtures.Constants;
+using _116.Tests.TestData.Constants;
 using Moq;
 
-namespace _116.Unit.Tests.Common.Mocks.Repositories;
+namespace _116.Identity.TestData.Mocks.Repositories;
 
 /// <summary>
 /// Provides mock setup helpers for <see cref="IOtpRepository"/>.

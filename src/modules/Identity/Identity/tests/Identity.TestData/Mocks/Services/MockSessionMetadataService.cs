@@ -1,10 +1,10 @@
 using _116.Identity.Application.Adapters.Wangkanai.Detection;
 using _116.Identity.Application.Session.Services;
 using _116.Identity.Domain.Enums;
-using _116.Tests.Fixtures.Constants;
+using _116.Tests.TestData.Constants;
 using Moq;
 
-namespace _116.Unit.Tests.Common.Mocks.Services;
+namespace _116.Identity.TestData.Mocks.Services;
 
 /// <summary>
 /// Provides mock setup helpers for <see cref="ISessionMetadataService"/>.

@@ -2,7 +2,7 @@ using _116.Identity.Contracts.Application.DTOs;
 using _116.Identity.Contracts.Application.Services;
 using Moq;
 
-namespace _116.Unit.Tests.Common.Mocks.Services;
+namespace _116.Identity.TestData.Mocks.Services;
 
 /// <summary>
 /// Provides mock setup helpers for <see cref="IUserLookupService"/>.

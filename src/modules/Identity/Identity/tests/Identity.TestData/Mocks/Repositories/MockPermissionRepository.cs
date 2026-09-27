@@ -1,9 +1,9 @@
+using _116.BuildingBlocks.Application.Exceptions;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
-using _116.Shared.Application.Exceptions;
 using Moq;
 
-namespace _116.Unit.Tests.Common.Mocks.Repositories;
+namespace _116.Identity.TestData.Mocks.Repositories;
 
 /// <summary>
 /// Provides mock setup helpers for <see cref="IPermissionRepository"/>.

@@ -1,11 +1,10 @@
-using _116.Core.Contracts.Application.DTOs;
-using _116.Core.Contracts.Application.Services;
 using _116.Identity.Application.User.Services;
-using _116.Tests.Fixtures.Factories.Core;
+using _116.Storage.Contracts.Application.DTOs;
+using _116.Storage.Contracts.Application.Services;
 using Microsoft.AspNetCore.Http;
 using Moq;
 
-namespace _116.Unit.Tests.Common.Mocks.Services;
+namespace _116.Identity.TestData.Mocks.Services;
 
 /// <summary>
 /// Mock for <see cref="IAvatarService" />, Identity's avatar workflow.

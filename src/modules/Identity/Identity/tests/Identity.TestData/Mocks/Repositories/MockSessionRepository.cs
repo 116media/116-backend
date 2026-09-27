@@ -3,7 +3,7 @@ using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using Moq;
 
-namespace _116.Unit.Tests.Common.Mocks.Repositories;
+namespace _116.Identity.TestData.Mocks.Repositories;
 
 /// <summary>
 /// Provides mock setup helpers for <see cref="ISessionRepository"/>.
