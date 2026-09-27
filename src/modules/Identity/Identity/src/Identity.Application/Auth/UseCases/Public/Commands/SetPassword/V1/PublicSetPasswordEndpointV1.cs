@@ -1,0 +1,87 @@
+using System.Security.Claims;
+using _116.BuildingBlocks.Application.CQRS;
+using _116.BuildingBlocks.Presentation.Constants.Authorization.Policies;
+using _116.BuildingBlocks.Presentation.Constants.RateLimit;
+using _116.BuildingBlocks.Presentation.Extensions;
+using _116.Identity.Application.Auth.Constants;
+using _116.Identity.Contracts.Application.Services;
+using _116.Identity.Domain.Constants;
+using Carter;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+
+namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SetPassword.V1;
+
+/// <summary>
+/// Request model for the public user to set password.
+/// </summary>
+/// <param name="Password">The password to set for the user.</param>
+public record PublicSetPasswordRequest(string Password);
+
+/// <summary>
+/// Response model for the public user to set password.
+/// </summary>
+/// <param name="IsSuccess">Indicates whether the password was set successfully.</param>
+public record PublicSetPasswordResponse(bool IsSuccess);
+
+/// <summary>
+/// Defines the password set endpoint for authenticated users who used external authentication.
+/// Handles password setting for Google/Facebook users to enable local authentication.
+/// </summary>
+internal class PublicSetPasswordEndpointV1 : ICarterModule
+{
+    /// <summary>
+    /// Configures the public password set route within the API pipeline.
+    /// Maps the <c>/api/v1/public/auth/set-password</c> endpoint to handle password set requests.
+    /// </summary>
+    /// <param name="app">The route builder used to register API endpoints.</param>
+    public void AddRoutes(IEndpointRouteBuilder app)
+    {
+        RouteGroupBuilder group = app.MapApiVersionGroup(1)
+            .MapGroup($"{IdentityConstants.Public}/{AuthRouteConstants.Endpoint}")
+            .WithTags($"{IdentityConstants.Public}::{IdentityConstants.SchemaName}");
+
+        group
+            .MapPost(
+                pattern: AuthRouteConstants.SetPassword,
+                async (
+                    PublicSetPasswordRequest request,
+                    ClaimsPrincipal user,
+                    IClaimsProvider authProvider,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
+                {
+                    Guid userId = authProvider.GetUserIdFromClaims(user: user);
+                    Guid sessionId = authProvider.GetSessionIdFromClaims(user: user);
+
+                    var command = new PublicSetPasswordCommand(
+                        UserId: userId,
+                        SessionId: sessionId,
+                        Password: request.Password
+                    );
+                    PublicSetPasswordResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
+
+                    var response = new PublicSetPasswordResponse(IsSuccess: result.IsSuccess);
+
+                    return Results.Ok(value: response);
+                }
+            )
+            .WithName(endpointName: PublicSetPasswordMetaField.SetPassword.Name)
+            .WithSummary(summary: PublicSetPasswordMetaField.SetPassword.Summary)
+            .WithDescription(description: PublicSetPasswordMetaField.SetPassword.Description)
+            .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
+            .RequireRateLimiting(policyName: RateLimitPolicies.PasswordManagement)
+            .ProducesValidationProblem()
+            .Produces<PublicSetPasswordResponse>()
+            .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
+            .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
+            .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)
+            .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests)
+            .ProducesProblem(statusCode: StatusCodes.Status404NotFound);
+    }
+}

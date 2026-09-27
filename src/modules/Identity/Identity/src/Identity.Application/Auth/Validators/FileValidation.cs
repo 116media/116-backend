@@ -1,0 +1,130 @@
+using System.Reflection;
+using _116.BuildingBlocks.Presentation.Constants;
+using _116.Identity.Application.Shared.Errors.Messages;
+using _116.Storage.Contracts.Domain.Constants;
+using FluentValidation;
+using Microsoft.AspNetCore.Http;
+
+namespace _116.Identity.Application.Auth.Validators;
+
+/// <summary>
+/// FluentValidation extensions for file upload validation (avatar, images).
+/// </summary>
+public static class FileValidation
+{
+    /// <summary>
+    /// Validates the avatar file with size, type, and extension constraints.
+    /// The extension internally resolves error messages from the <see cref="ValidationErrorMessage"/>
+    /// using the relevant <see cref="FileUploadLimits"/> values.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the avatar file property.</param>
+    /// <param name="i18n">Validation error messages for rule configuration.</param>
+    /// <param name="isRequired">Whether the avatar file is required (default: false).</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, IFormFile?> ValidAvatar<T>(
+        this IRuleBuilderInitial<T, IFormFile?> ruleBuilder,
+        ValidationErrorMessage i18n,
+        bool isRequired = false
+    )
+    {
+        string avatarFileTooLarge = i18n.AvatarFileTooLarge(FileUploadLimits.MaxAvatarFileSizeBytes / (1024 * 1024));
+        string avatarFileInvalidType = i18n.AvatarFileInvalidType(
+            string.Join(", ", FileUploadLimits.AllowedAvatarMimeTypes)
+        );
+        string avatarFileInvalidExtension = i18n.AvatarFileInvalidExtension(
+            string.Join(", ", FileUploadLimits.AllowedAvatarExtensions)
+        );
+
+        if (isRequired)
+        {
+            return ruleBuilder
+                .Cascade(cascadeMode: CascadeMode.Stop)
+                .NotNull()
+                .WithMessage(i18n.AvatarFileRequired())
+                .Must(predicate: BeValidFileSize)
+                .WithMessage(avatarFileTooLarge)
+                .Must(predicate: BeValidImageType)
+                .WithMessage(avatarFileInvalidType)
+                .Must(predicate: BeValidFileExtension)
+                .WithMessage(avatarFileInvalidExtension);
+        }
+
+        return ruleBuilder
+            .Cascade(cascadeMode: CascadeMode.Stop)
+            .Must(predicate: BeValidFileSize)
+            .WithMessage(avatarFileTooLarge)
+            .Must(predicate: BeValidImageType)
+            .WithMessage(avatarFileInvalidType)
+            .Must(predicate: BeValidFileExtension)
+            .WithMessage(avatarFileInvalidExtension)
+            .When(x => GetAvatarFileValue(instance: x) != null);
+    }
+
+    /// <summary>
+    /// Validates that a file has valid size constraints.
+    /// </summary>
+    /// <param name="file">The file to validate.</param>
+    /// <returns>True if file size is valid, false otherwise.</returns>
+    private static bool BeValidFileSize(IFormFile? file)
+    {
+        return file?.Length is > 0 and <= FileUploadLimits.MaxAvatarFileSizeBytes;
+    }
+
+    /// <summary>
+    /// Validates that a file has a valid image MIME type.
+    /// </summary>
+    /// <param name="file">The file to validate.</param>
+    /// <returns>True if MIME type is valid, false otherwise.</returns>
+    private static bool BeValidImageType(IFormFile? file)
+    {
+        if (file == null)
+        {
+            return false;
+        }
+
+        // Extract content type without parameters (e.g., "image/jpeg" from "image/jpeg; boundary=...")
+        string contentType = (file.ContentType ?? string.Empty).Split(';')[0].Trim().ToLowerInvariant();
+
+        // Accept if content type is in the allowed list
+        if (FileUploadLimits.AllowedAvatarMimeTypes.Contains(value: contentType))
+        {
+            return true;
+        }
+
+        // For generic/missing content types (common with mobile uploads), validate by extension
+        bool isGenericContentType =
+            string.IsNullOrEmpty(value: contentType)
+            || contentType == "application/octet-stream"
+            || contentType == "multipart/form-data";
+        return isGenericContentType && BeValidFileExtension(file: file);
+    }
+
+    /// <summary>
+    /// Validates that a file has valid extension.
+    /// </summary>
+    /// <param name="file">The file to validate.</param>
+    /// <returns>True if extension is valid, false otherwise.</returns>
+    private static bool BeValidFileExtension(IFormFile? file)
+    {
+        if (file == null)
+        {
+            return false;
+        }
+
+        string extension = Path.GetExtension(path: file.FileName).ToLowerInvariant();
+        return FileUploadLimits.AllowedAvatarExtensions.Contains(value: extension);
+    }
+
+    /// <summary>
+    /// Gets the AvatarFile property value from an instance using reflection.
+    /// </summary>
+    /// <typeparam name="T">The type of the instance.</typeparam>
+    /// <param name="instance">The instance to get the AvatarFile property from.</param>
+    /// <returns>The AvatarFile property value, or null if not found.</returns>
+    private static IFormFile? GetAvatarFileValue<T>(T instance)
+    {
+        PropertyInfo? property = typeof(T).GetProperty("AvatarFile");
+        return property?.GetValue(obj: instance) as IFormFile;
+    }
+}
