@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <RootNamespace>_116.Mailer.Application</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Mailer.Infrastructure" />
+        <InternalsVisibleTo Include="Mailer.Unit.Tests" />
+        <InternalsVisibleTo Include="Mailer.Integration.Tests" />
+        <InternalsVisibleTo Include="Fixtures" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="../Mailer.Domain/Mailer.Domain.csproj" />
+        <ProjectReference Include="../../../../../shared/src/BuildingBlocks.Presentation/BuildingBlocks.Presentation.csproj" />
+        <ProjectReference Include="../../../Mailer.Contracts/Mailer.Contracts.csproj" />
+        <ProjectReference Include="../../../../Identity/Identity.Contracts/Identity.Contracts.csproj" />
+    </ItemGroup>
+</Project>
