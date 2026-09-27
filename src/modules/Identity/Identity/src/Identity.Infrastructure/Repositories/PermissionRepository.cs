@@ -1,11 +1,11 @@
+using _116.BuildingBlocks.Domain.Specifications;
+using _116.BuildingBlocks.Infrastructure.Extensions;
 using _116.Identity.Application.Roles.Builders;
 using _116.Identity.Application.Roles.Builders.Contracts;
 using _116.Identity.Application.Roles.Specifications;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
-using _116.Shared.Application.Specifications;
-using _116.Shared.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace _116.Identity.Infrastructure.Repositories;

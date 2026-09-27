@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Domain.Specifications;
 using _116.Identity.Application.Session.Builders;
 using _116.Identity.Application.Session.Builders.Contracts;
 using _116.Identity.Application.Session.Repositories;
@@ -5,7 +6,6 @@ using _116.Identity.Application.Session.Specifications;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence;
-using _116.Shared.Application.Specifications;
 using Microsoft.EntityFrameworkCore;
 
 namespace _116.Identity.Infrastructure.Repositories;

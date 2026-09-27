@@ -1,14 +1,15 @@
-using _116.BuildingBlocks.Constants;
+using _116.BuildingBlocks.Infrastructure.Extensions;
+using _116.BuildingBlocks.Presentation.Constants;
 using _116.Identity.Application.Auth.Repositories;
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.Specifications;
 using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Application.Shared.Repositories;
+using _116.Identity.Domain.Constants;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.ValueObjects;
 using _116.Identity.Infrastructure.Persistence;
-using _116.Shared.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace _116.Identity.Infrastructure.Repositories;

@@ -1,7 +1,7 @@
+using _116.BuildingBlocks.Infrastructure.Repositories;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Shared.Domain;
-using _116.Shared.Infrastructure.Repositories;
 
 namespace _116.Identity.Infrastructure.Repositories;
 
