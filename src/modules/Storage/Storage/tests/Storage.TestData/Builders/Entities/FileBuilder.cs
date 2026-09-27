@@ -1,9 +1,13 @@
-using _116.Core.Domain.Entities;
-using _116.Tests.Fixtures.Constants;
-using _116.Tests.Fixtures.Helpers;
+using _116.Storage.Domain.Entities;
+using _116.Storage.TestData.Factories;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Storage.TestData.Mocks.Services;
+using _116.Tests.TestData.Constants;
+using _116.Tests.TestData.Helpers;
+using _116.Tests.TestData.Mocks;
 using Bogus;
 
-namespace _116.Tests.Fixtures.Builders.Entities.Core;
+namespace _116.Storage.TestData.Builders.Entities;
 
 /// <summary>
 /// Fluent builder for creating <see cref="FileEntity" /> instances in tests.
