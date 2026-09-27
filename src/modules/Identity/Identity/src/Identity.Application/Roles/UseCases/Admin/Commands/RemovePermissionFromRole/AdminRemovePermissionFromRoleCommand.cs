@@ -1,0 +1,19 @@
+using _116.BuildingBlocks.Application.CQRS;
+using _116.Identity.Application.Shared.DTOs;
+
+namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.RemovePermissionFromRole;
+
+/// <summary>
+/// Command for removing a permission from a role.
+/// </summary>
+/// <param name="RoleId">The unique identifier of the role.</param>
+/// <param name="PermissionId">The unique identifier of the permission to remove.</param>
+public record AdminRemovePermissionFromRoleCommand(string RoleId, string PermissionId)
+    : ICommand<AdminRemovePermissionFromRoleResult>;
+
+/// <summary>
+/// Result of the <see cref="AdminRemovePermissionFromRoleCommand" /> containing the role with updated permissions.
+/// </summary>
+/// <param name="Role">The role information with permissions.</param>
+/// <param name="IsSuccess">Indicates whether the permission was successfully removed from the role.</param>
+public record AdminRemovePermissionFromRoleResult(RoleWithPermissionsDto Role, bool IsSuccess);

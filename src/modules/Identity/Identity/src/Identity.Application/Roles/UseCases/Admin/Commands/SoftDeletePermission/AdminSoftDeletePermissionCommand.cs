@@ -1,0 +1,17 @@
+using _116.BuildingBlocks.Application.CQRS;
+using _116.Identity.Application.Shared.DTOs;
+
+namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.SoftDeletePermission;
+
+/// <summary>
+/// Command for soft deleting a permission.
+/// </summary>
+/// <param name="PermissionId">The unique identifier of the permission to soft-delete.</param>
+public record AdminSoftDeletePermissionCommand(string PermissionId) : ICommand<AdminSoftDeletePermissionResult>;
+
+/// <summary>
+/// Result of the <see cref="AdminSoftDeletePermissionCommand" /> containing the soft deleted permission details.
+/// </summary>
+/// <param name="Permission">The soft-deleted permission information.</param>
+/// <param name="IsSuccess">Indicates whether the permission was successfully soft deleted.</param>
+public record AdminSoftDeletePermissionResult(PermissionDto Permission, bool IsSuccess);

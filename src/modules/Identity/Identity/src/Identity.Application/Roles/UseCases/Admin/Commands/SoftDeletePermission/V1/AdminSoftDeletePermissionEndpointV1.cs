@@ -1,0 +1,72 @@
+using _116.BuildingBlocks.Application.CQRS;
+using _116.BuildingBlocks.Presentation.Constants.Authorization.Policies;
+using _116.BuildingBlocks.Presentation.Constants.RateLimit;
+using _116.BuildingBlocks.Presentation.Extensions;
+using _116.Identity.Application.Roles.Constants;
+using _116.Identity.Application.Shared.DTOs;
+using _116.Identity.Domain.Constants;
+using Carter;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+
+namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.SoftDeletePermission.V1;
+
+/// <summary>
+/// Response model for successful permission soft deletion.
+/// </summary>
+/// <param name="Permission">The soft deleted permission information.</param>
+/// <param name="IsSuccess">Indicates whether the permission was successfully soft deleted.</param>
+public record AdminSoftDeletePermissionResponse(PermissionDto Permission, bool IsSuccess);
+
+/// <summary>
+/// Defines the admin soft delete permission endpoint.
+/// Handles soft deleting permissions.
+/// </summary>
+internal class AdminSoftDeletePermissionEndpointV1 : ICarterModule
+{
+    /// <summary>
+    /// Configures the admin soft delete permission route within the API pipeline.
+    /// Maps the <c>/api/v1/admin/permissions/{id}</c> endpoint to handle permission soft delete requests.
+    /// </summary>
+    /// <param name="app">The route builder used to register API endpoints.</param>
+    public void AddRoutes(IEndpointRouteBuilder app)
+    {
+        RouteGroupBuilder group = app.MapApiVersionGroup(1)
+            .MapGroup($"{IdentityConstants.Admin}/{PermissionRouteConstants.Endpoint}")
+            .WithTags($"{IdentityConstants.Admin}::{PermissionRouteConstants.Endpoint}");
+
+        group
+            .MapDelete(
+                "{id}",
+                async (string id, IDispatcher dispatcher, CancellationToken cancellationToken) =>
+                {
+                    var command = new AdminSoftDeletePermissionCommand(PermissionId: id);
+
+                    AdminSoftDeletePermissionResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
+
+                    var response = new AdminSoftDeletePermissionResponse(
+                        Permission: result.Permission,
+                        IsSuccess: result.IsSuccess
+                    );
+                    return Results.Ok(value: response);
+                }
+            )
+            .WithName(endpointName: AdminSoftDeletePermissionMetaField.SoftDeletePermission.Name)
+            .WithSummary(summary: AdminSoftDeletePermissionMetaField.SoftDeletePermission.Summary)
+            .WithDescription(description: AdminSoftDeletePermissionMetaField.SoftDeletePermission.Description)
+            .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentManagement)
+            .ProducesValidationProblem()
+            .Produces<AdminSoftDeletePermissionResponse>()
+            .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
+            .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
+            .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)
+            .ProducesProblem(statusCode: StatusCodes.Status404NotFound)
+            .ProducesProblem(statusCode: StatusCodes.Status409Conflict)
+            .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
+    }
+}
