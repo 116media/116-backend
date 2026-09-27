@@ -1,7 +1,24 @@
 # 05 — Testing Strategy Under the Restructure
 
+> **Overruled in part by [stage 18](../implementation-specs/stage-18-project-restructure.md) D8–D10.**
+> Per-module integration test projects **are** being built — one per module — on the owner's decision.
+> The 4× Testcontainers cost this doc prices is not inherent: `TestPostgresContainer` already leases
+> each fixture a private database from one migrated template, and a `pg_advisory_lock` on the template
+> migration lets a single container serve every assembly (D9). **Measured in 18.8:** `.WithReuse(true)`
+> is not the mechanism — it attaches but then times out re-checking readiness on the running container —
+> so the container is coordinated by a fixed name and port with cleanup disabled, and Redis stays
+> per-assembly because the between-test flush would clobber a shared keyspace.
+> The two shared libraries are **`TestData`** (builders, factories, constants — today's misnamed `tests/Fixtures`)
+> and **`Fixtures`** (the xUnit fixtures and containers — today's `tests/Integration/Common`), per stage 18 D10.
+> **Measured in 18.7:** the *collections* do not go in `Fixtures` with them. xUnit resolves a
+> `[CollectionDefinition]` only inside the assembly that uses it, and the same holds for
+> `[assembly: AssemblyFixture]`, so every suite declares its own collections and arms the container fixture
+> itself; only the fixture classes are shared. Also measured: `TestConstants` is one partial class imported
+> statically by every integration suite, so it stays whole in `TestData` instead of splitting per module.
+
+
 **Verdict: split *unit* tests per module (clean, cheap); keep *integration* tests in one shared project
-(the harness is intrinsically whole-app); a shared `TestKit` is unavoidable.** Per-module integration test
+(the harness is intrinsically whole-app); a shared `Fixtures` is unavoidable.** Per-module integration test
 projects would ~4× the Testcontainers cost for no CI win — the decisive finding.
 
 ---
@@ -25,7 +42,7 @@ Three test projects. Module-ownable files vs structurally-shared files:
 ## Unit tests split cleanly (do it)
 
 They use mocks only, no container, no host, and are already grouped by module. Move
-`Unit/Modules/<M>` → `modules/<M>/tests/<M>.Unit.Tests`, each referencing the shared `TestKit`
+`Unit/Modules/<M>` → `src/modules/<M>/<M>/tests/<M>.Unit.Tests`, each referencing the shared `Fixtures`
 (mocks + fixtures). Clean and low-risk. `Unit/Common` (shared mocks/handler bases) and `Unit/Shared`
 stay shared.
 
@@ -65,13 +82,20 @@ has the same cross-module coupling (Content tests already depend on Identity's `
 ## Recommended test layout
 
 ```
-modules/<M>/tests/<M>.Unit.Tests        (per module — mocks only)
-shared/tests/Integration.Tests          (ONE project: harness + all Modules/<M> integration + Workflows)
-shared/tests/Shared.TestKit             (builders, factories, constants, mocks, the Api/Postgres harness)
-shared/tests/Shared.Unit.Tests          (Shared kernel + BuildingBlocks unit tests)
+src/modules/<M>/<M>/tests/<M>.Unit.Tests        (per module — mocks only)
+src/shared/tests/Integration.Tests          (ONE project: harness + all Modules/<M> integration + Workflows)
+src/shared/tests/Fixtures                   (builders, factories, constants, mocks, the Api/Postgres boot)
+src/shared/tests/Shared.Unit.Tests          (Shared kernel + BuildingBlocks unit tests)
 ```
 
-`Shared.TestKit` (the harness) **must** reference the `Api` host and all four module infra projects —
+> **What is actually being built** ([stage 18](../implementation-specs/stage-18-project-restructure.md) 18.7,
+> drawn in full in [03](03-full-target-structure.md)): `src/modules/<M>/<M>/tests/{<M>.TestData,<M>.Unit.Tests,<M>.Integration.Tests}`,
+> `src/shared/tests/{Shared.Unit.Tests,Shared.Integration.Tests}`, and top-level
+> `tests/{TestData,Fixtures,EndToEnd.Tests,Architecture.Tests}` — `Fixtures` (the boot library) is
+> separate from `TestData` so Testcontainers stays out of every unit-test graph, and the whole-app
+> flows land in `EndToEnd.Tests`.
+
+The harness **must** reference the `Api` host and all four module infra projects —
 because `ApiFixture` boots the whole app. This project is inherently whole-app; it moves the coupling into
 one honest place rather than pretending each module owns its integration tests.
 

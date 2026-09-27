@@ -1,5 +1,14 @@
 # 07 — Final Verdict & Migration Plan
 
+> **Partly overruled by [stage 18](../implementation-specs/stage-18-project-restructure.md).** The
+> verdict below still stands on endpoints staying in `Application`, but not on the module split: the owner
+> ruled that **every** module is layered, so the small-module exception is gone. Four items changed: per-module **integration** test projects are being built (D8/D9,
+> owner decision — the 4× container cost is removable); the shared foundation is
+> `Shared.Domain` + `BuildingBlocks.{Domain,Application,Infrastructure,Presentation}`, not
+> `Shared.Kernel` (D2); and items 1–3 of "Do these" are already delivered — CPM, `Directory.Build.props`,
+> the architecture rules, and the 24 Domain→Application violations, which now measure **0**.
+
+
 ## The verdict, plainly
 
 **There is no *huge* advantage in the full restructure (per-module `src/`+`tests/` + every layer as its own
@@ -39,7 +48,8 @@ delivered by a much smaller set of moves.
 ## Consider these (targeted, only on measured pain)
 
 6. **Per-module *unit* test projects** — clean, cheap, gives each module its own unit-test home. Keep **one
-   shared** `Integration.Tests` + `Shared.TestKit`. → [01](01-decision-a-per-module-src-tests.md),
+   shared** integration project + fixtures library. *(Overruled by stage 18 D8: integration is split per
+   module too, and the test libraries become `<M>.TestData` + `tests/TestData` (data) and `tests/Fixtures` (the xUnit fixtures and containers).)* → [01](01-decision-a-per-module-src-tests.md),
    [05](05-testing-strategy.md)
 7. **Split Content/Identity *Application* by feature area** (`Commerce/Interactions/Editorial/Catalog/Lookup`)
    — *only if* incremental build time on those two modules is a recurring, measured pain. This matches the
@@ -49,7 +59,7 @@ delivered by a much smaller set of moves.
 
 - ❌ Split every module into Domain/Application/Infrastructure/Presentation projects.
 - ❌ A separate Presentation project (shreds the 293 vertical slices).
-- ❌ Layer-split the small modules (Core, Mailer, BuildingBlocks, Contracts) — pure overhead.
+- ❌ Layer-split the small modules (Storage, Mailer, BuildingBlocks, Contracts) — pure overhead.
 - ❌ Per-module integration test projects (~4× Testcontainers cost).
 
 ## The recommended pragmatic structure
@@ -59,25 +69,39 @@ the *recommended* shape is **3 projects per big module, 1 per small module** —
 [03](03-full-target-structure.md):
 
 ```
-modules/
-  Content/
-    src/  Content.Domain/  Content.Application/  Content.Infrastructure/   (endpoints stay in Application)
-    tests/  Content.Unit.Tests/
-  Identity/
-    src/  Identity.Domain/  Identity.Application/  Identity.Infrastructure/  Identity.Contracts/
-    tests/  Identity.Unit.Tests/
-  Core/     src/ Core/ (one project) + Core.Contracts/     tests/ Core.Unit.Tests/
-  Mailer/   src/ Mailer/ (one project) + Mailer.Contracts/ tests/ Mailer.Unit.Tests/
-shared/
-  src/   Shared.Kernel/  Shared.Application/  Shared.Infrastructure/  Shared.Contracts/  BuildingBlocks/
-  tests/ Integration.Tests/  Shared.TestKit/  Shared.Unit.Tests/  Architecture.Tests/
-host/
-  Api/
+src/
+  modules/
+    Content/Content/    src/ Content.Domain/ Content.Application/ Content.Infrastructure/  (endpoints stay in Application)
+                        tests/ Content.TestData/ Content.Unit.Tests/ Content.Integration.Tests/
+    Identity/Identity/  src/ Identity.Domain/ Identity.Application/ Identity.Infrastructure/
+                        tests/ Identity.TestData/ Identity.Unit.Tests/ Identity.Integration.Tests/
+    Identity/Identity.Contracts/
+    Storage/Storage/    src/ Storage.Domain/ Storage.Application/ Storage.Infrastructure/
+                        tests/ Storage.{TestData,Unit.Tests,Integration.Tests}/
+    Storage/Storage.Contracts/
+    Mailer/Mailer/      src/ Mailer.Domain/ Mailer.Application/ Mailer.Infrastructure/
+                        tests/ Mailer.{TestData,Unit.Tests,Integration.Tests}/
+    Mailer/Mailer.Contracts/
+  shared/
+    src/    Shared.Domain/  BuildingBlocks.{Domain,Application,Infrastructure,Presentation}/
+    tests/  Shared.Unit.Tests/  Shared.Integration.Tests/
+  host/
+    Api/
+tests/
+  TestData/  Fixtures/  EndToEnd.Tests/  Architecture.Tests/
 ```
 
-Key differences from the all-in tree in [03](03-full-target-structure.md): **endpoints stay in
-`<M>.Application`** (no `<M>.Api`), **Core/Mailer are one project each** (not layer-split), and the
-`Architecture.Tests` project carries the `NetArchTest` rules that replace the compile-time layer boundary.
+> Updated to stage 18's ruling: `Shared.Domain` + four `BuildingBlocks.*` replace `Shared.Kernel`
+> and the layered `Shared.*` (D2/D3); `Core` is `Storage` (D7); and the integration suite **is**
+> split per module (D8/D9), against this document's own recommendation — the 4× container cost is
+> removable, and the owner took that trade.
+
+There is no remaining difference from the all-in tree in [03](03-full-target-structure.md): the owner
+ruled that **Storage and Mailer are layered too**, so this document's small-module exception is gone and
+the two trees are the same shape. Endpoints stay in `<M>.Application` in both — 03 was corrected, because a `<M>.Api` project moves the endpoint out of its slice while its
+`*EndpointV1Tests.cs` stays behind, which is the shredding this document warns about, paid for and not
+bought. The `Architecture.Tests` project carries the `NetArchTest` rules that replace the compile-time
+layer boundary.
 The full all-in tree in [03] is kept only so you can see the maximal version — this pragmatic shape is the
 recommendation. (See [11](../11-project-structure-and-packages.md) for how the Shared split and CPM were
 already adopted.)

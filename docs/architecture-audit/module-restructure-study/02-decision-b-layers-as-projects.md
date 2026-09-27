@@ -1,5 +1,9 @@
 # 02 — Decision B: Each Layer as Its Own Project
 
+> **Counts here are historical.** The study framed the question as "13 projects → ~30". The
+> solution is **15** projects today and [stage 18](../implementation-specs/stage-18-project-restructure.md) lands **39** — every
+> module is layered (owner decision), and the growth is mostly test/fixture projects.
+
 The proposal: split each module's `Domain` / `Application` / `Infrastructure` (and a new `Presentation`)
 from folders inside one `.csproj` into separate projects, so the Clean-Architecture dependency rule is
 enforced by the compiler. This takes the solution from 13 projects toward ~30.

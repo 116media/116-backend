@@ -1,5 +1,9 @@
 # 06 — EF Core Migrations Under the Restructure
 
+> **Target names per [stage 18](../implementation-specs/stage-18-project-restructure.md) D2:** the shared
+> infrastructure project is `BuildingBlocks.Infrastructure`, not `Shared.Infrastructure`; migrations
+> relocate rather than regenerate (D11).
+
 **Verdict: NEUTRAL now, trending EASIER once four small design-time factories exist.** Migrations are not a
 blocker for the restructure — the dependency direction, per-schema history isolation, and interceptor
 sharing all survive untouched. This is the one area where the split has no real downside.
@@ -53,16 +57,16 @@ so it scaffolds fine even with absent values; only `database update` needs a liv
 Keeping the Api host (works today, zero new files):
 
 ```bash
-dotnet ef migrations add <Name> --project modules/Content/src/Content.Infrastructure   --startup-project host/Api --context ContentDbContext
-dotnet ef migrations add <Name> --project modules/Identity/src/Identity.Infrastructure --startup-project host/Api --context IdentityDbContext
-dotnet ef migrations add <Name> --project modules/Core/src/Core.Infrastructure         --startup-project host/Api --context CoreDbContext
-dotnet ef migrations add <Name> --project modules/Mailer/src/Mailer.Infrastructure     --startup-project host/Api --context MailerDbContext
+dotnet ef migrations add <Name> --project src/modules/Content/Content/src/Content.Infrastructure   --startup-project src/host/Api --context ContentDbContext
+dotnet ef migrations add <Name> --project src/modules/Identity/Identity/src/Identity.Infrastructure --startup-project src/host/Api --context IdentityDbContext
+dotnet ef migrations add <Name> --project src/modules/Storage/Storage/src/Storage                    --startup-project src/host/Api --context StorageDbContext
+dotnet ef migrations add <Name> --project src/modules/Mailer/Mailer/src/Mailer.Infrastructure     --startup-project src/host/Api --context MailerDbContext
 ```
 
 Standalone (module independence — requires the factory below):
 
 ```bash
-dotnet ef migrations add <Name> --project modules/Content/src/Content.Infrastructure --startup-project modules/Content/src/Content.Infrastructure
+dotnet ef migrations add <Name> --project src/modules/Content/Content/src/Content.Infrastructure --startup-project src/modules/Content/Content/src/Content.Infrastructure
 ```
 
 ### The four factories to add (~15 lines each)
@@ -86,8 +90,9 @@ public sealed class ContentDbContextFactory : IDesignTimeDbContextFactory<Conten
 }
 ```
 
-The tree in [03](03-full-target-structure.md) already places these as
-`modules/<M>/src/<M>.Infrastructure/Persistence/<M>DbContextFactory.cs`.
+These would live at `src/modules/<M>/<M>/src/<M>.Infrastructure/Persistence/<M>DbContextFactory.cs`. They
+are **not** in the tree in [03](03-full-target-structure.md), which lists only files that exist today —
+and none do.
 
 ## Bottom line
 

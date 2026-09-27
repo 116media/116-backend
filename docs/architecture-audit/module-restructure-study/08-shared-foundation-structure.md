@@ -1,5 +1,13 @@
 # 08 — Shared Foundation: `SharedKernel` + `BuildingBlocks`
 
+> **Superseded on naming and shape by [stage 18](../implementation-specs/stage-18-project-restructure.md) D2/D3.**
+> The two projects below became five: **`Shared.Domain`** (the zero-package domain primitives — the
+> name `SharedKernel` was rejected because these base types are not a domain model co-owned by two
+> bounded contexts) plus **`BuildingBlocks.{Domain,Application,Infrastructure,Presentation}`**, which
+> is [09](09-sharedkernel-vs-buildingblocks-rules.md)'s shape. That also settles the open question this
+> doc left on `Specification<T>`: it lands in `BuildingBlocks.Domain`, not the kernel. The file-level
+> placement is drawn in [03](03-full-target-structure.md).
+
 **Decision (adopted):** the one kitchen-sink `Shared` project is split into **two** foundation projects:
 
 - **`SharedKernel`** — shared **domain-model primitives** every module's *Domain layer* is expressed
@@ -16,7 +24,8 @@ imports.
 
 > Project naming note (once): in strict DDD, `SharedKernel`'s contents are the *tactical building
 > blocks / SeedWork*, and a true "Shared Kernel" is co-owned domain model between contexts (none exists
-> here). We adopt the project **name** `SharedKernel` as decided; the hard zero-dependency rule is what
+> here). This doc keeps the working name `SharedKernel` throughout — **stage 18 D2 renames it `Shared.Domain`**,
+> for exactly the reason stated in this paragraph. The hard zero-dependency rule is what
 > actually keeps it honest, not the label.
 
 ---
@@ -47,7 +56,8 @@ Everything here compiles with **no `PackageReference`**. Heaviest import is `Sys
   moves to `BuildingBlocks.Domain` rather than SharedKernel. 09 is the current placement.)* (The **EF bridge**
   `SpecificationExtensions.ApplySpecification` is the framework-bound part — that goes to
   BuildingBlocks, which is what lets the family itself stay pure.)
-- **`SlugHelper`** — today buried in `Core/Application/Shared/Helpers/`, but it is a BCL-only slug
+- ~~**`SlugHelper`**~~ *(closed — Stage 14 moved it to `Content/Application/Shared/Helpers/SlugHelper.cs`,
+  its only consumers' module, rather than hoisting it here.)* — was buried in `Core/Application/Shared/Helpers/`, a BCL-only slug
   utility with **zero Core call sites** (its only consumers are 2 Content files). A slug is a
   cross-cutting domain concept (articles, videos, categories, artists all have one). Hoist it here as a
   domain utility (ideally later promoted to a `Slug` value object). This also removes one of the
@@ -129,7 +139,7 @@ Content) is a marginal win — optional `MapsterConfigBuilder` helper, low prior
 | File(s) | Today | New home | Why |
 |---|---|---|---|
 | `UserConstants`, `RoleConstants`, `PermissionConstants`, `SessionConstants`, `JwtClaimsConstants` | BuildingBlocks/Constants | **Identity** (`Identity.Domain/Constants`, keep JWT claims beside `IClaimsProvider`) | grep: consumed **only** by Identity |
-| `CloudinarySettings`, `CloudinaryExtensions` | Shared/Application | **Core** (the file-management module) | Cloudinary is Core's storage provider; nothing else consumes it |
+| `CloudinarySettings`, `CloudinaryExtensions` | Shared/Application | **Storage** (the file-management module) — adopted, see stage 18's mapping-rule exception | Cloudinary is Storage's storage provider; nothing else consumes it |
 
 `AppEnvironment` (env-var accessor) stays in BuildingBlocks for now but is a grab-bag whose `Jwt()` /
 `Cloudinary()` / `EmailProvider()` / `FrontendBaseUrl()` members each serve one module — a candidate to
@@ -140,7 +150,7 @@ dissolve per-module in a later pass (bind as validated `IOptions`, [08 §10](../
 ## The `shared/` tree
 
 ```text
-shared/
+src/shared/
 ├── src/
 │   ├── SharedKernel/                  # domain-model primitives — ZERO packages
 │   │   ├── Entities/                  #   IEntity, Entity, IAggregate, Aggregate
@@ -158,7 +168,7 @@ shared/
 │       ├── Persistence/               #   IUnitOfWork, UnitOfWork<TContext> (hoisted), DbSet/Specification/EntityEntry EF exts
 │       ├── Modules/                   #   BaseModule, ModuleOptions, IDataSeeder, ApplicationBuilder migrate/seed exts
 │       ├── Interceptors/              #   AuditableEntityInterceptor, DispatchDomainEventsInterceptor
-│       ├── Actor/                     #   ICurrentActor, HttpCurrentActor
+│       ├── Actor/                     #   ICurrentActor (.Application), HttpCurrentActor (.Presentation, measured 18.2)
 │       ├── Validation/                #   IsValidGuid, ValidationUtils (hoisted), ValidHttpUrl + file-upload predicates (hoisted)
 │       ├── Web/                       #   Carter/ApiVersion/Authorization/Swagger/ResourceNotFound exts, middleware, RouteMetadata, ApiVersionUrl
 │       ├── RateLimiting/              #   3 builders + RateLimitingExtension + RateLimitPolicies + 10 numeric constants
@@ -168,9 +178,9 @@ shared/
 │       ├── Constants/                 #   FileConstants, UserRolePolicies, AccountStatusPolicies
 │       └── BuildingBlocks.csproj
 └── tests/
-    ├── SharedKernel.Unit.Tests/
+    ├── Shared.Unit.Tests/
     ├── BuildingBlocks.Unit.Tests/
-    └── Shared.TestKit/               # builders/factories/constants + the whole-app integration harness
+    └── Fixtures/                      # builders/factories/constants + the whole-app integration harness
 ```
 
 Reference direction: `SharedKernel` (leaf, zero packages) ← `BuildingBlocks` (references SharedKernel +
