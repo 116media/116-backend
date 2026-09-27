@@ -1,4 +1,10 @@
 using System.Text;
+using _116.BuildingBlocks.Application.Configurations.Schemas;
+using _116.BuildingBlocks.Application.Services;
+using _116.BuildingBlocks.Infrastructure;
+using _116.BuildingBlocks.Infrastructure.Seed;
+using _116.BuildingBlocks.Presentation.Exceptions.Handlers.Contracts;
+using _116.BuildingBlocks.Presentation.Extensions;
 using _116.Identity.Application.Adapters.SocialAuth;
 using _116.Identity.Application.Adapters.Wangkanai.Detection;
 using _116.Identity.Application.Auth.EventHandlers;
@@ -70,18 +76,12 @@ using _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
 using _116.Identity.Infrastructure.Persistence.Seeds.Visitor;
 using _116.Identity.Infrastructure.Repositories;
 using _116.Identity.Infrastructure.Services;
-using _116.Shared.Application.Configurations.Schemas;
-using _116.Shared.Application.Exceptions.Handlers.Contracts;
-using _116.Shared.Application.Extensions;
-using _116.Shared.Application.Services;
-using _116.Shared.Infrastructure;
-using _116.Shared.Infrastructure.Seed;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 
-namespace _116.Identity;
+namespace _116.Identity.Infrastructure;
 
 /// <summary>
 /// Provides extension methods to register and configure the Identity module's services and middleware.
@@ -116,6 +116,7 @@ public static class IdentityModule
     /// </example>
     public static IServiceCollection AddIdentityModule(this IServiceCollection services, IHostEnvironment environment)
     {
+        services.AddHttpCurrentActor();
         services.AddModuleDatabase(GetModuleOptions());
 
         // Register error message classes (IStringLocalizer-backed)
