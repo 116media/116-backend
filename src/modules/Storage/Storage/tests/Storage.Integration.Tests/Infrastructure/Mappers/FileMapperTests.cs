@@ -1,12 +1,12 @@
-using _116.Core.Application.Shared.Mappers;
-using _116.Core.Contracts.Application.DTOs;
-using _116.Core.Domain.Entities;
-using _116.Core.Infrastructure.Persistence;
-using _116.Tests.Fixtures.Factories.Core;
+using _116.Storage.Application.Shared.Mappers;
+using _116.Storage.Contracts.Application.DTOs;
+using _116.Storage.Domain.Entities;
+using _116.Storage.Infrastructure.Persistence;
+using _116.Storage.TestData.Factories;
 using MapsterMapper;
-using CoreMappingRegistration = _116.Core.Application.Shared.Mappers.MappingRegistration;
+using StorageMappingRegistration = _116.Storage.Application.Shared.Mappers.MappingRegistration;
 
-namespace _116.Integration.Tests.Modules.Core.Mappers;
+namespace _116.Storage.Integration.Tests.Infrastructure.Mappers;
 
 /// <summary>
 /// Integration tests for <see cref="FileMapper" />.
@@ -15,17 +15,17 @@ namespace _116.Integration.Tests.Modules.Core.Mappers;
 [Collection("Database")]
 public class FileMapperTests(PostgresFixture postgres) : BaseRepositoryTest(postgres)
 {
-    private readonly IMapper _mapper = new Mapper(CoreMappingRegistration.CreateConfiguration());
+    private readonly IMapper _mapper = new Mapper(StorageMappingRegistration.CreateConfiguration());
 
     [Fact]
     public async Task ToFileReferenceDto_ShouldMapAllFields()
     {
-        await using var seedContext = CreateDbContext<CoreDbContext>();
+        await using var seedContext = CreateDbContext<StorageDbContext>();
         FileEntity entity = FileFactory.CreateJpeg();
         seedContext.Files.Add(entity);
         await seedContext.SaveChangesAsync();
 
-        await using var readContext = CreateDbContext<CoreDbContext>();
+        await using var readContext = CreateDbContext<StorageDbContext>();
         FileEntity loaded = await readContext.Files.FirstAsync(f => f.Id == entity.Id);
 
         FileReferenceDto dto = loaded.ToFileReferenceDto(_mapper);
@@ -42,12 +42,12 @@ public class FileMapperTests(PostgresFixture postgres) : BaseRepositoryTest(post
     [Fact]
     public async Task ToFileReferenceDto_ShouldMapTheExtractedColours()
     {
-        await using var seedContext = CreateDbContext<CoreDbContext>();
+        await using var seedContext = CreateDbContext<StorageDbContext>();
         FileEntity entity = FileFactory.CreateWithColors(dominantColorHex: "#101010", foregroundColorHex: "#f0f0f0");
         seedContext.Files.Add(entity);
         await seedContext.SaveChangesAsync();
 
-        await using var readContext = CreateDbContext<CoreDbContext>();
+        await using var readContext = CreateDbContext<StorageDbContext>();
         FileEntity loaded = await readContext.Files.FirstAsync(f => f.Id == entity.Id);
 
         FileReferenceDto dto = loaded.ToFileReferenceDto(_mapper);
@@ -59,12 +59,12 @@ public class FileMapperTests(PostgresFixture postgres) : BaseRepositoryTest(post
     [Fact]
     public async Task ToFileReferenceDtoOrNull_WithAPersistedFile_ShouldMapIt()
     {
-        await using var seedContext = CreateDbContext<CoreDbContext>();
+        await using var seedContext = CreateDbContext<StorageDbContext>();
         FileEntity entity = FileFactory.CreatePng();
         seedContext.Files.Add(entity);
         await seedContext.SaveChangesAsync();
 
-        await using var readContext = CreateDbContext<CoreDbContext>();
+        await using var readContext = CreateDbContext<StorageDbContext>();
         FileEntity? loaded = await readContext.Files.FirstOrDefaultAsync(f => f.Id == entity.Id);
 
         FileReferenceDto? dto = loaded.ToFileReferenceDtoOrNull(_mapper);
@@ -76,7 +76,7 @@ public class FileMapperTests(PostgresFixture postgres) : BaseRepositoryTest(post
     [Fact]
     public async Task ToFileReferenceDtoOrNull_WhenTheFileIsAbsent_ShouldReturnNull()
     {
-        await using var readContext = CreateDbContext<CoreDbContext>();
+        await using var readContext = CreateDbContext<StorageDbContext>();
         FileEntity? missing = await readContext.Files.FirstOrDefaultAsync(f => f.Id == Guid.NewGuid());
 
         FileReferenceDto? dto = missing.ToFileReferenceDtoOrNull(_mapper);
@@ -87,12 +87,12 @@ public class FileMapperTests(PostgresFixture postgres) : BaseRepositoryTest(post
     [Fact]
     public async Task MapReferenceToFileDto_ShouldPreserveTheWireShape()
     {
-        await using var seedContext = CreateDbContext<CoreDbContext>();
+        await using var seedContext = CreateDbContext<StorageDbContext>();
         FileEntity entity = FileFactory.CreateJpeg();
         seedContext.Files.Add(entity);
         await seedContext.SaveChangesAsync();
 
-        await using var readContext = CreateDbContext<CoreDbContext>();
+        await using var readContext = CreateDbContext<StorageDbContext>();
         FileEntity loaded = await readContext.Files.FirstAsync(f => f.Id == entity.Id);
 
         FileReferenceDto reference = loaded.ToFileReferenceDto(_mapper);
@@ -109,12 +109,12 @@ public class FileMapperTests(PostgresFixture postgres) : BaseRepositoryTest(post
     [Fact]
     public async Task MapReferenceToFileDto_ShouldNeverReportAStoredFileAsDeleted()
     {
-        await using var seedContext = CreateDbContext<CoreDbContext>();
+        await using var seedContext = CreateDbContext<StorageDbContext>();
         FileEntity entity = FileFactory.CreateJpeg();
         seedContext.Files.Add(entity);
         await seedContext.SaveChangesAsync();
 
-        await using var readContext = CreateDbContext<CoreDbContext>();
+        await using var readContext = CreateDbContext<StorageDbContext>();
         FileEntity loaded = await readContext.Files.FirstAsync(f => f.Id == entity.Id);
 
         FileDto dto = _mapper.Map<FileDto>(loaded.ToFileReferenceDto(_mapper));
