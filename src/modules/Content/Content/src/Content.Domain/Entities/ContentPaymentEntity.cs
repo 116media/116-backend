@@ -31,7 +31,7 @@ public class ContentPaymentEntity : Entity<Guid>
     public EnumPaymentMethod? PaymentMethod { get; private set; }
 
     /// <summary>
-    /// The ID of the file record in <c>core.files</c> for the uploaded payment proof.
+    /// The ID of the file record in <c>storage.files</c> for the uploaded payment proof.
     /// Set when the admin attaches the proof via <see cref="AttachProof" />.
     /// </summary>
     public Guid? PaymentProofFileId { get; private set; }
@@ -93,7 +93,7 @@ public class ContentPaymentEntity : Entity<Guid>
     /// Records the customer's payment proof file and payment method.
     /// Called by <c>AttachPaymentProofHandler</c> after the admin uploads the receipt file.
     /// </summary>
-    /// <param name="proofFileId">The ID of the file record stored in <c>core.files</c>.</param>
+    /// <param name="proofFileId">The ID of the file record stored in <c>storage.files</c>.</param>
     /// <param name="paymentMethod">The payment method used by the customer.</param>
     /// <exception cref="ContentRuleException">
     /// Thrown when the payment is no longer pending — proof must not be overwritten
