@@ -1,0 +1,72 @@
+using _116.BuildingBlocks.Application.CQRS;
+using _116.BuildingBlocks.Presentation.Constants.Authorization.Policies;
+using _116.BuildingBlocks.Presentation.Constants.RateLimit;
+using _116.BuildingBlocks.Presentation.Extensions;
+using _116.Content.Application.Commerce.Constants;
+using _116.Content.Domain.Constants;
+using Carter;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+
+namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.RejectPayment.V1;
+
+/// <summary>
+/// Request model for rejecting an order payment.
+/// </summary>
+/// <param name="Notes">Optional notes explaining the rejection reason.</param>
+internal record AdminRejectPaymentRequest(string? Notes);
+
+/// <summary>
+/// Response model for rejecting an order payment.
+/// </summary>
+/// <param name="IsSuccess">Indicates whether the payment was successfully rejected.</param>
+public record AdminRejectPaymentResponse(bool IsSuccess);
+
+/// <summary>
+/// Defines the admin reject payment endpoint.
+/// </summary>
+internal class AdminRejectPaymentEndpointV1 : ICarterModule
+{
+    /// <inheritdoc />
+    public void AddRoutes(IEndpointRouteBuilder app)
+    {
+        RouteGroupBuilder group = app.MapApiVersionGroup(1)
+            .MapGroup($"{ContentConstants.Admin}/{CommerceRouteConstants.Orders}")
+            .WithTags($"{ContentConstants.Admin}::{CommerceRouteConstants.Orders}");
+
+        group
+            .MapPatch(
+                $"/{{id}}/{CommerceRouteConstants.Payment}/{CommerceRouteConstants.Reject}",
+                async (
+                    string id,
+                    AdminRejectPaymentRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
+                {
+                    var command = new AdminRejectPaymentCommand(OrderId: id, Notes: request.Notes);
+
+                    AdminRejectPaymentResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
+
+                    var response = new AdminRejectPaymentResponse(IsSuccess: result.IsSuccess);
+                    return Results.Ok(response);
+                }
+            )
+            .WithName(endpointName: AdminRejectPaymentMetaField.RejectPayment.Name)
+            .WithSummary(summary: AdminRejectPaymentMetaField.RejectPayment.Summary)
+            .WithDescription(description: AdminRejectPaymentMetaField.RejectPayment.Description)
+            .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
+            .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentManagement)
+            .Produces<AdminRejectPaymentResponse>(statusCode: StatusCodes.Status200OK)
+            .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
+            .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)
+            .ProducesProblem(statusCode: StatusCodes.Status404NotFound)
+            .ProducesProblem(statusCode: StatusCodes.Status409Conflict)
+            .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
+    }
+}

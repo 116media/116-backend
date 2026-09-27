@@ -1,0 +1,34 @@
+using _116.BuildingBlocks.Domain.Specifications;
+using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
+
+namespace _116.Content.Application.Commerce.Builders.Contracts;
+
+/// <summary>
+/// Interface for building dynamic content order queries using specifications.
+/// Implements the Builder pattern to construct complex queries without conditional logic.
+/// </summary>
+public interface IContentOrderQueryBuilder
+{
+    /// <summary>
+    /// Adds a status filter to the query.
+    /// </summary>
+    IContentOrderQueryBuilder WithStatus(EnumOrderStatus? status);
+
+    /// <summary>
+    /// Adds a customer ID filter to the query.
+    /// </summary>
+    IContentOrderQueryBuilder WithCustomerId(Guid? customerId);
+
+    /// <summary>
+    /// Adds a filter matching the ordering customer's name, email, or company.
+    /// </summary>
+    IContentOrderQueryBuilder WithSearch(string? search);
+
+    /// <summary>
+    /// Builds and returns the final specification, resolving the customer search against the
+    /// supplied customer rows. Returns null if no filters were applied.
+    /// </summary>
+    /// <param name="customers">The customer rows the customer search probes.</param>
+    Specification<ContentOrderEntity>? Build(IQueryable<CustomerEntity> customers);
+}
