@@ -1,3 +1,8 @@
+using _116.BuildingBlocks.Application.Services;
+using _116.BuildingBlocks.Infrastructure;
+using _116.BuildingBlocks.Infrastructure.Seed;
+using _116.BuildingBlocks.Presentation.Exceptions.Handlers.Contracts;
+using _116.BuildingBlocks.Presentation.Extensions;
 using _116.Content.Application.Catalog.Factories;
 using _116.Content.Application.Commerce.EventHandlers;
 using _116.Content.Application.Commerce.Factories;
@@ -34,15 +39,10 @@ using _116.Content.Infrastructure.Persistence;
 using _116.Content.Infrastructure.Persistence.Seeds.ContentTypes;
 using _116.Content.Infrastructure.Repositories;
 using _116.Content.Infrastructure.Services;
-using _116.Shared.Application.Exceptions.Handlers.Contracts;
-using _116.Shared.Application.Extensions;
-using _116.Shared.Application.Services;
-using _116.Shared.Infrastructure;
-using _116.Shared.Infrastructure.Seed;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace _116.Content;
+namespace _116.Content.Infrastructure;
 
 /// <summary>
 /// Provides extension methods to register and configure the Content module's services and middleware.
@@ -70,6 +70,7 @@ public static class ContentModule
     /// <returns>The updated <see cref="IServiceCollection" /> for chaining.</returns>
     public static IServiceCollection AddContentModule(this IServiceCollection services, IHostEnvironment environment)
     {
+        services.AddHttpCurrentActor();
         services.AddModuleDatabase(GetModuleOptions());
 
         // Register error message classes (IStringLocalizer-backed)
