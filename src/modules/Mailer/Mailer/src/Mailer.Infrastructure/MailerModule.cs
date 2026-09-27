@@ -1,3 +1,6 @@
+using _116.BuildingBlocks.Application.Configurations.Schemas;
+using _116.BuildingBlocks.Infrastructure;
+using _116.BuildingBlocks.Presentation.Extensions;
 using _116.Mailer.Application.Newsletter.Messages;
 using _116.Mailer.Application.Newsletter.OutboundEmails;
 using _116.Mailer.Application.Notifications;
@@ -16,13 +19,10 @@ using _116.Mailer.Infrastructure.BackgroundJobs;
 using _116.Mailer.Infrastructure.Persistence;
 using _116.Mailer.Infrastructure.Repositories;
 using _116.Mailer.Infrastructure.Services;
-using _116.Shared.Application.Configurations.Schemas;
-using _116.Shared.Application.Extensions;
-using _116.Shared.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace _116.Mailer;
+namespace _116.Mailer.Infrastructure;
 
 /// <summary>
 /// Provides extension methods to register and configure the Mailer module's services and middleware.
@@ -46,6 +46,7 @@ public static class MailerModule
     /// <returns>The updated <see cref="IServiceCollection" /> for chaining.</returns>
     public static IServiceCollection AddMailerModule(this IServiceCollection services, IHostEnvironment environment)
     {
+        services.AddHttpCurrentActor();
         services.AddModuleDatabase(GetModuleOptions());
 
         services.AddScoped<NewsletterErrorMessage>();
