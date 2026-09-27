@@ -1,4 +1,4 @@
-namespace _116.Integration.Tests.Modules.Mailer;
+namespace _116.Mailer.Integration.Tests;
 
 /// <summary>
 /// Verifies which email adapter a real host registers for a given <c>EMAIL_PROVIDER</c>, and that a
