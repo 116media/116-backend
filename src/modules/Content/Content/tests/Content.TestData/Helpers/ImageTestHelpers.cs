@@ -1,7 +1,7 @@
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
-namespace _116.Tests.Fixtures.Helpers;
+namespace _116.Content.TestData.Helpers;
 
 /// <summary>
 /// Helpers for generating real, decodable image bytes in tests — used by code
