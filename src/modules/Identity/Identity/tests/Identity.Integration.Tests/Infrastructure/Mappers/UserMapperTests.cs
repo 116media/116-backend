@@ -2,11 +2,11 @@ using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
-using _116.Tests.Fixtures.Factories.Identity;
+using _116.Identity.TestData.Factories;
 using MapsterMapper;
 using IdentityMappingRegistration = _116.Identity.Application.Shared.Mappers.MappingRegistration;
 
-namespace _116.Integration.Tests.Modules.Identity.Mappers;
+namespace _116.Identity.Integration.Tests.Infrastructure.Mappers;
 
 /// <summary>
 /// Integration tests for <see cref="UserMapper" />.

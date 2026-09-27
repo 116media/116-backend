@@ -2,7 +2,7 @@ using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Enums;
 
-namespace _116.Integration.Tests.Modules.Identity.Infrastructure.Services;
+namespace _116.Identity.Integration.Tests.Infrastructure.Services;
 
 /// <summary>
 /// Integration tests for <see cref="ITokenDeliveryService" /> verifying

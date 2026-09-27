@@ -1,8 +1,15 @@
 using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Infrastructure.Persistence;
-using _116.Tests.Fixtures.Factories.Identity;
+using _116.Identity.TestData.Factories;
+using _116.Identity.TestData.Mocks.Infrastructure;
+using _116.Identity.TestData.Mocks.Repositories;
+using _116.Identity.TestData.Mocks.Services;
+using _116.Storage.TestData.Factories;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Storage.TestData.Mocks.Services;
+using _116.Tests.TestData.Mocks;
 
-namespace _116.Integration.Tests.Modules.Identity.Infrastructure.Repositories;
+namespace _116.Identity.Integration.Tests.Infrastructure.Repositories;
 
 /// <summary>
 /// Integration tests for <see cref="ISessionRepository"/> verifying

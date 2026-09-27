@@ -2,7 +2,7 @@ using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
 
-namespace _116.Integration.Tests.Modules.Identity.Seeders;
+namespace _116.Identity.Integration.Tests.Infrastructure.Seeders;
 
 /// <summary>
 /// Integration tests for <see cref="SuperAdminSeeder" />.
