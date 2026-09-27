@@ -1,0 +1,9 @@
+captured	2026-09-26T14:01Z
+recaptured	2026-09-26T18:40Z
+method	dotnet test <dir> -c Release --no-build, run totals (theory rows counted individually)
+commit	55f8c1ca0
+unit	8523
+integration	2152
+architecture	6
+projects	15
+note	the first unit capture read 8460 from a Debug listing; 18.12 compares run totals, so all four rows above are run totals
