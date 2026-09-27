@@ -1,4 +1,4 @@
-namespace _116.BuildingBlocks.Constants;
+namespace _116.Identity.Domain.Constants;
 
 /// <summary>
 /// Provides JWT (JSON Web Token) related constants including default expiration times,

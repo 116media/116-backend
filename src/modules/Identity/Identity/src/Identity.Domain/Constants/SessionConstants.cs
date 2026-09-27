@@ -1,4 +1,4 @@
-namespace _116.BuildingBlocks.Constants;
+namespace _116.Identity.Domain.Constants;
 
 /// <summary>
 /// Constants for session management and refresh token handling.

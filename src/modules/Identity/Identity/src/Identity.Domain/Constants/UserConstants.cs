@@ -1,4 +1,4 @@
-namespace _116.BuildingBlocks.Constants;
+namespace _116.Identity.Domain.Constants;
 
 /// <summary>
 /// Contains constants related to user entity business rules and constraints.
@@ -139,19 +139,4 @@ public static class UserConstants
     /// hash version, mirroring the allowance made for the user password hash column.
     /// </summary>
     public const int OtpCodeHashLength = 100;
-
-    /// <summary>
-    /// The locale a user's messages render in until they choose another.
-    /// </summary>
-    public const string DefaultLocale = "fr";
-
-    /// <summary>
-    /// The locales the platform ships copy for. A user's preferred locale must be one of them.
-    /// </summary>
-    public static readonly string[] SupportedLocales = ["fr", "en"];
-
-    /// <summary>
-    /// Maximum stored length of a user's preferred locale code.
-    /// </summary>
-    public const int MaxLocaleLength = 5;
 }

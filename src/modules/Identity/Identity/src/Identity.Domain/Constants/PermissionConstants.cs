@@ -1,4 +1,4 @@
-namespace _116.BuildingBlocks.Constants;
+namespace _116.Identity.Domain.Constants;
 
 /// <summary>
 /// Contains constants related to permission entity business rules and constraints.
