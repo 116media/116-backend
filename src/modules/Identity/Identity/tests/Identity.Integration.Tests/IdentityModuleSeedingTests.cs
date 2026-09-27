@@ -1,7 +1,7 @@
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence;
 
-namespace _116.Integration.Tests.Modules.Identity;
+namespace _116.Identity.Integration.Tests;
 
 /// <summary>
 /// Covers the seeding branch of <c>UseIdentityModule</c> through a host booted as Development,
