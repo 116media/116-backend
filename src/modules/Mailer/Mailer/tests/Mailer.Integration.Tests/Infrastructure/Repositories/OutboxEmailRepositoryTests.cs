@@ -3,8 +3,9 @@ using _116.Mailer.Domain.Constants;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Domain.Enums;
 using _116.Mailer.Infrastructure.Persistence;
+using _116.Mailer.TestData.Builders.Entities;
 
-namespace _116.Integration.Tests.Modules.Mailer.Infrastructure.Repositories;
+namespace _116.Mailer.Integration.Tests.Infrastructure.Repositories;
 
 /// <summary>
 /// Integration tests for <see cref="IOutboxEmailRepository" />'s claim: the dispatcher's batch
@@ -107,16 +108,13 @@ public class OutboxEmailRepositoryTests(PostgresFixture db) : BaseRepositoryTest
     {
         await using MailerDbContext context = CreateDbContext<MailerDbContext>();
 
-        OutboxEmailEntity email = OutboxEmailEntity.Enqueue(
-            id: Guid.NewGuid(),
-            recipientAddress: $"claim-{Guid.NewGuid():N}@test.com",
-            recipientName: "Fan",
-            subject: "subject",
-            htmlBody: "<p>body</p>",
-            textBody: "body",
-            template: "Welcome",
-            now: dueAt
-        );
+        OutboxEmailEntity email = new OutboxEmailBuilder()
+            .WithId(Guid.NewGuid())
+            .WithRecipient($"claim-{Guid.NewGuid():N}@test.com", "Fan")
+            .WithContent("subject", "<p>body</p>", "body")
+            .WithTemplate("Welcome")
+            .At(dueAt)
+            .Build();
 
         context.OutboxEmails.Add(email);
         await context.SaveChangesAsync();

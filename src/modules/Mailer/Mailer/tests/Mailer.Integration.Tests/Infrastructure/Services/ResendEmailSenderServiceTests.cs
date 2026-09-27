@@ -1,12 +1,13 @@
 using System.Text;
-using _116.BuildingBlocks.Constants;
+using _116.BuildingBlocks.Presentation.Constants;
 using _116.Mailer.Application.Shared.Exceptions;
 using _116.Mailer.Application.Shared.Services;
 using _116.Mailer.Contracts.Application.DTOs;
 using _116.Mailer.Infrastructure.Services;
+using _116.Shared.Domain.Constants;
 using Microsoft.Extensions.Configuration;
 
-namespace _116.Integration.Tests.Modules.Mailer.Infrastructure.Services;
+namespace _116.Mailer.Integration.Tests.Infrastructure.Services;
 
 /// <summary>
 /// Integration tests for <see cref="ResendEmailSenderService" /> against a real
@@ -118,7 +119,7 @@ public class ResendEmailSenderServiceTests : IDisposable
     private static EmailMessage Message()
     {
         return new EmailMessage(
-            To: new EmailRecipientDto("fan@example.com", UserConstants.DefaultLocale, "Fan"),
+            To: new EmailRecipientDto("fan@example.com", LocaleConstants.DefaultLocale, "Fan"),
             Subject: "Wire subject",
             HtmlBody: "<p>Hi</p>",
             TextBody: "Hi"
