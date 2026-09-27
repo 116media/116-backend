@@ -1,14 +1,14 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using _116.BuildingBlocks.Constants;
-using _116.Core.Contracts.Domain.Enums;
-using _116.Core.Domain.Enums;
-using _116.Core.Domain.Events;
-using _116.Core.Domain.Exceptions;
-using _116.Core.Domain.StateMachines;
 using _116.Shared.Domain;
+using _116.Storage.Contracts.Domain.Enums;
+using _116.Storage.Domain.Constants;
+using _116.Storage.Domain.Enums;
+using _116.Storage.Domain.Events;
+using _116.Storage.Domain.Exceptions;
+using _116.Storage.Domain.StateMachines;
 
-namespace _116.Core.Domain.Entities;
+namespace _116.Storage.Domain.Entities;
 
 /// <summary>
 /// Represents a file uploaded to the system, containing metadata and storage information
@@ -134,19 +134,19 @@ public class FileEntity : Aggregate<Guid>
     {
         Exception? error = (fileName, originalFileName, mimeType, storageUrl, sizeInBytes) switch
         {
-            var (f, _, _, _, _) when string.IsNullOrWhiteSpace(f) => new CoreRuleException(
-                CoreRuleCodes.FileNameRequired
+            var (f, _, _, _, _) when string.IsNullOrWhiteSpace(f) => new StorageRuleException(
+                StorageRuleCodes.FileNameRequired
             ),
-            var (_, o, _, _, _) when string.IsNullOrWhiteSpace(o) => new CoreRuleException(
-                CoreRuleCodes.OriginalFileNameRequired
+            var (_, o, _, _, _) when string.IsNullOrWhiteSpace(o) => new StorageRuleException(
+                StorageRuleCodes.OriginalFileNameRequired
             ),
-            var (_, _, m, _, _) when string.IsNullOrWhiteSpace(m) => new CoreRuleException(
-                CoreRuleCodes.MimeTypeRequired
+            var (_, _, m, _, _) when string.IsNullOrWhiteSpace(m) => new StorageRuleException(
+                StorageRuleCodes.MimeTypeRequired
             ),
-            var (_, _, _, s, _) when string.IsNullOrWhiteSpace(s) => new CoreRuleException(
-                CoreRuleCodes.StorageUrlRequired
+            var (_, _, _, s, _) when string.IsNullOrWhiteSpace(s) => new StorageRuleException(
+                StorageRuleCodes.StorageUrlRequired
             ),
-            (_, _, _, _, <= 0) => new CoreRuleException(CoreRuleCodes.FileSizeMustBePositive),
+            (_, _, _, _, <= 0) => new StorageRuleException(StorageRuleCodes.FileSizeMustBePositive),
             _ => null,
         };
 
