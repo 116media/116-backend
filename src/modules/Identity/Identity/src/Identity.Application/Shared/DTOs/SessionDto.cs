@@ -1,0 +1,30 @@
+using _116.BuildingBlocks.Application.DTOs;
+using _116.Identity.Domain.Enums;
+
+namespace _116.Identity.Application.Shared.DTOs;
+
+/// <summary>
+/// Data transfer object representing session information for display to users.
+/// </summary>
+/// <param name="Id">The unique identifier of the session.</param>
+/// <param name="IpAddress">IP address where the login happened.</param>
+/// <param name="UserAgent">Raw user agent string from the browser/device.</param>
+/// <param name="Browser">Browser type detected from the user agent.</param>
+/// <param name="Device">Device type detected from the user agent.</param>
+/// <param name="Platform">Platform/OS detected from the user agent.</param>
+/// <param name="Client">Client application type that initiated the session.</param>
+/// <param name="ExpiresAt">When this session expires.</param>
+/// <param name="IsActive">Whether this session is currently active (not deleted and not expired).</param>
+/// <param name="IsCurrent">Whether this session belongs to the current request.</param>
+public record SessionDto(
+    Guid Id,
+    string? IpAddress,
+    string? UserAgent,
+    EnumBrowser Browser,
+    EnumDevice Device,
+    EnumPlatform Platform,
+    EnumClient Client,
+    DateTime ExpiresAt,
+    bool IsActive,
+    bool IsCurrent = false
+) : AuditableDto;
