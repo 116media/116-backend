@@ -1,12 +1,12 @@
-using _116.Core.Application.Shared.Repositories;
-using _116.Core.Application.Shared.Specifications;
-using _116.Core.Domain.Entities;
-using _116.Core.Domain.Enums;
-using _116.Core.Infrastructure.Persistence;
-using _116.Shared.Infrastructure.Extensions;
+using _116.BuildingBlocks.Infrastructure.Extensions;
+using _116.Storage.Application.Shared.Repositories;
+using _116.Storage.Application.Shared.Specifications;
+using _116.Storage.Domain.Entities;
+using _116.Storage.Domain.Enums;
+using _116.Storage.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace _116.Core.Infrastructure.Repositories;
+namespace _116.Storage.Infrastructure.Repositories;
 
 /// <summary>
 /// Implementation of <see cref="IFileRepository" /> using Entity Framework Core. Uploads live in
@@ -14,8 +14,8 @@ namespace _116.Core.Infrastructure.Repositories;
 /// </summary>
 /// <param name="context">The core database context.</param>
 /// <param name="timeProvider">The clock the lifecycle stamps are read from.</param>
-public class FileRepository(CoreDbContext context, TimeProvider timeProvider)
-    : CoreRepository<FileEntity>(context),
+public class FileRepository(StorageDbContext context, TimeProvider timeProvider)
+    : StorageRepository<FileEntity>(context),
         IFileRepository
 {
     /// <inheritdoc />
