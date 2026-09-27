@@ -1,7 +1,7 @@
+using _116.BuildingBlocks.Application.Pagination;
 using _116.Mailer.Application.Shared.Repositories;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Infrastructure.Persistence;
-using _116.Shared.Application.Pagination;
 using Microsoft.EntityFrameworkCore;
 
 namespace _116.Mailer.Infrastructure.Repositories;
