@@ -68,10 +68,12 @@ assets with no reconciliation. The fix — a transactional outbox — already ex
 > roots into real aggregates, and dissolving `Application/Shared` — not more modules. Full
 > reasoning in [10 — Should the Content module be split?](10-content-module-sizing.md).
 >
-> **Adopted decision:** the layer-into-projects split is the standard for **every** module (still
-> one monolith deploy), with Central Package Management so ~20 projects can't drift on versions —
-> target structure and package strategy in
-> [11 — Target Project Structure & Packages](11-project-structure-and-packages.md).
+> **Adopted decision:** the layer-into-projects split (still one monolith deploy), with Central
+> Package Management so the projects can't drift on versions — target structure and package strategy
+> in [11 — Target Project Structure & Packages](11-project-structure-and-packages.md).
+> *Confirmed by [stage 18](implementation-specs/stage-18-project-restructure.md) D1, on the owner's
+> decision: **every** module is layered — Storage and Mailer too, so a module's shape does not depend on
+> its size. The solution goes from 15 projects to 39, not "~20".*
 >
 > **Foundation & naming:** `Shared` and `BuildingBlocks` are not a principled split — see
 > [12](12-shared-kernel-and-buildingblocks.md) for what a Shared Kernel vs a constants leaf should

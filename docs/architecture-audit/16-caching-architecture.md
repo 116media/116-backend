@@ -136,7 +136,7 @@ Recorded so a later reader does not treat the omissions as oversights.
 `HybridCache` is an **abstract class in `Microsoft.Extensions.Caching.Abstractions`**, not an
 implementation — the same category `IMemoryCache` occupies today. Application-layer code may name
 it: the three cache event handlers inject it to call `RemoveByTagAsync`, and the decorator lives in
-`Shared.Application` alongside the three it joins.
+`BuildingBlocks.Application` alongside the three it joins (the project [stage 18](implementation-specs/stage-18-project-restructure.md) D2 renames `Shared.Application` to).
 
 What must not appear in an application layer after this stage: `MemoryCacheEntryOptions`,
 `CancellationChangeToken`, `IDistributedCache`, or any Redis type. Those are store-specific and are

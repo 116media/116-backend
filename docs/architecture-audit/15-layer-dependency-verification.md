@@ -1,5 +1,9 @@
 # 15 — Layer dependency verification
 
+> **§15.2 is fixed.** `NewsletterSubscriberEntity` uses `Base64Url.EncodeToString` and no `Domain/`
+> file imports `Microsoft.AspNetCore` in any module, so the Stage 18 prerequisite this doc raises
+> is already met.
+
 A re-run of the inward dependency rule against the tree **as it stands after Stage 9**, rather
 than against the tree the original audit read. Every import edge in `src/` was enumerated in both
 directions: `Domain → *`, `Application → Infrastructure`, and cross-module.
@@ -89,7 +93,7 @@ and a rule that has to carry an exception.
 
 It is invisible today because `Shared.csproj` already drags the web stack into every domain's
 transitive graph `[01 §1.9]` — so the compiler never objects. When Stage 18 splits
-`Shared.Kernel` out with zero packages, this file stops compiling.
+`Shared.Domain` out with zero packages, this file stops compiling.
 
 **Solution.** `System.Buffers.Text.Base64Url.EncodeToString(...)`, which ships in the `net9.0`
 reference assemblies and produces byte-identical output:
