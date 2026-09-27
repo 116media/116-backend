@@ -1,6 +1,6 @@
 using System.Data.Common;
+using _116.BuildingBlocks.Infrastructure.Persistence;
 using _116.Identity.Application.Shared.Persistence;
-using _116.Shared.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace _116.Identity.Infrastructure.Persistence;

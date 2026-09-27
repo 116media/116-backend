@@ -1,6 +1,6 @@
+using _116.BuildingBlocks.Application.Configurations;
+using _116.BuildingBlocks.Application.Configurations.Schemas;
 using _116.Identity.Domain.Enums;
-using _116.Shared.Application.Configurations;
-using _116.Shared.Application.Configurations.Schemas;
 
 namespace _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
 

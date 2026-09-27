@@ -2,7 +2,6 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using _116.Identity.Infrastructure.Persistence;
@@ -12,11 +11,9 @@ using _116.Identity.Infrastructure.Persistence;
 namespace _116.Identity.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(IdentityDbContext))]
-    [Migration("20260910172740_DropRedundantProcessedDomainEvents")]
-    partial class DropRedundantProcessedDomainEvents
+    partial class IdentityDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -449,10 +446,6 @@ namespace _116.Identity.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(254)")
                         .HasColumnName("email");
 
-                    b.Property<int>("FailedLoginAttempts")
-                        .HasColumnType("integer")
-                        .HasColumnName("failed_login_attempts");
-
                     b.Property<string>("FullPhoneNumber")
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
@@ -470,10 +463,6 @@ namespace _116.Identity.Infrastructure.Persistence.Migrations
                         .HasDefaultValue(false)
                         .HasColumnName("is_verified");
 
-                    b.Property<DateTime?>("LockedUntil")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("locked_until");
-
                     b.Property<string>("PartialPhoneNumber")
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)")
@@ -482,6 +471,14 @@ namespace _116.Identity.Infrastructure.Persistence.Migrations
                     b.Property<string>("PasswordHash")
                         .HasColumnType("text")
                         .HasColumnName("password_hash");
+
+                    b.Property<string>("PreferredLocale")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(5)
+                        .HasColumnType("character varying(5)")
+                        .HasDefaultValue("fr")
+                        .HasColumnName("preferred_locale");
 
                     b.Property<string>("ProviderSubjectId")
                         .HasMaxLength(255)
@@ -519,6 +516,44 @@ namespace _116.Identity.Infrastructure.Persistence.Migrations
                         .HasFilter("provider_subject_id IS NOT NULL");
 
                     b.ToTable("users", "identity");
+                });
+
+            modelBuilder.Entity("_116.Identity.Domain.Entities.UserLoginStateEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<int>("FailedAttempts")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("failed_attempts");
+
+                    b.Property<DateTime?>("LockedUntil")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("locked_until");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_user_login_state");
+
+                    b.ToTable("user_login_state", "identity");
                 });
 
             modelBuilder.Entity("_116.Identity.Domain.Entities.UserOtpStateEntity", b =>
@@ -641,7 +676,7 @@ namespace _116.Identity.Infrastructure.Persistence.Migrations
                     b.ToTable("user_token_state", "identity");
                 });
 
-            modelBuilder.Entity("_116.Shared.Infrastructure.Outbox.OutboxEventEntity", b =>
+            modelBuilder.Entity("_116.BuildingBlocks.Infrastructure.Outbox.OutboxEventEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -730,6 +765,16 @@ namespace _116.Identity.Infrastructure.Persistence.Migrations
                         .HasConstraintName("fk_sessions_users_user_id");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("_116.Identity.Domain.Entities.UserLoginStateEntity", b =>
+                {
+                    b.HasOne("_116.Identity.Domain.Entities.UserEntity", null)
+                        .WithOne()
+                        .HasForeignKey("_116.Identity.Domain.Entities.UserLoginStateEntity", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_user_login_state_users_user_id");
                 });
 
             modelBuilder.Entity("_116.Identity.Domain.Entities.UserOtpStateEntity", b =>

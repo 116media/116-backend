@@ -1,6 +1,8 @@
-using _116.BuildingBlocks.Constants;
+using _116.BuildingBlocks.Presentation.Constants;
+using _116.Identity.Domain.Constants;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.ValueObjects;
+using _116.Shared.Domain.Constants;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -23,8 +25,8 @@ public class UserConfiguration : IEntityTypeConfiguration<UserEntity>
 
         builder
             .Property(u => u.PreferredLocale)
-            .HasMaxLength(maxLength: UserConstants.MaxLocaleLength)
-            .HasDefaultValue(UserConstants.DefaultLocale)
+            .HasMaxLength(maxLength: LocaleConstants.MaxLocaleLength)
+            .HasDefaultValue(LocaleConstants.DefaultLocale)
             .IsRequired();
 
         // Properties configuration
