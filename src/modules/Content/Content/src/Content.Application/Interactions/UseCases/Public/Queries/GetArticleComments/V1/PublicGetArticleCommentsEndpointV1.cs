@@ -1,0 +1,72 @@
+using System.Security.Claims;
+using _116.BuildingBlocks.Application.CQRS;
+using _116.BuildingBlocks.Application.Pagination;
+using _116.BuildingBlocks.Presentation.Constants.RateLimit;
+using _116.BuildingBlocks.Presentation.Extensions;
+using _116.Content.Application.Interactions.Constants;
+using _116.Content.Application.Shared.DTOs;
+using _116.Content.Domain.Constants;
+using _116.Identity.Contracts.Application.Services;
+using Carter;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+
+namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetArticleComments.V1;
+
+/// <summary>
+/// Defines the get article comments endpoint. Allows anonymous access.
+/// </summary>
+internal class PublicGetArticleCommentsEndpointV1 : ICarterModule
+{
+    /// <inheritdoc />
+    public void AddRoutes(IEndpointRouteBuilder app)
+    {
+        RouteGroupBuilder group = app.MapApiVersionGroup(1)
+            .MapGroup($"{ContentConstants.Public}/{InteractionsRouteConstants.Articles}")
+            .WithTags($"{ContentConstants.Public}::{InteractionsRouteConstants.Articles}");
+
+        group
+            .MapGet(
+                $"/{{id:guid}}/{InteractionsRouteConstants.Comments}",
+                async (
+                    Guid id,
+                    ClaimsPrincipal user,
+                    IClaimsProvider claimsProvider,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
+                    int pageIndex = 0,
+                    int pageSize = 10
+                ) =>
+                {
+                    Guid? viewerUserId = null;
+
+                    if (user.Identity?.IsAuthenticated == true)
+                    {
+                        viewerUserId = claimsProvider.GetUserIdFromClaims(user: user);
+                    }
+
+                    var paginatedRequest = new PaginatedRequest(pageIndex: pageIndex, pageSize: pageSize);
+                    var query = new PublicGetArticleCommentsQuery(
+                        ArticleId: id,
+                        PaginatedRequest: paginatedRequest,
+                        ViewerUserId: viewerUserId
+                    );
+
+                    PublicGetArticleCommentsResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
+                    return Results.Ok(result.Comments);
+                }
+            )
+            .WithName(endpointName: PublicGetArticleCommentsMetaField.GetArticleComments.Name)
+            .WithSummary(summary: PublicGetArticleCommentsMetaField.GetArticleComments.Summary)
+            .WithDescription(description: PublicGetArticleCommentsMetaField.GetArticleComments.Description)
+            .AllowAnonymous()
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
+            .Produces<PaginatedResult<PublicArticleCommentDto>>(statusCode: StatusCodes.Status200OK)
+            .ProducesProblem(statusCode: StatusCodes.Status404NotFound)
+            .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
+    }
+}

@@ -1,0 +1,104 @@
+using _116.BuildingBlocks.Application.CQRS;
+using _116.Content.Application.Shared.DTOs;
+using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Shared.Mappers;
+using _116.Content.Application.Shared.Persistence;
+using _116.Content.Application.Shared.Repositories;
+using _116.Content.Domain.Entities;
+using _116.Identity.Contracts.Application.DTOs;
+using _116.Identity.Contracts.Application.Services;
+using _116.Storage.Contracts.Application.DTOs;
+using _116.Storage.Contracts.Application.Services;
+
+namespace _116.Content.Application.Interactions.UseCases.Public.Commands.AddCommentReply;
+
+/// <summary>
+/// Handles the <see cref="PublicAddCommentReplyCommand" /> to post a single-level reply to a
+/// top-level article comment. Enforces that the parent exists, belongs to the given article,
+/// and is itself a top-level comment (replies to replies are rejected). The created reply is
+/// returned with its author resolved through the same cross-module mechanism used elsewhere.
+/// Notifying the parent comment's author happens post-commit, behind the reply's domain event.
+/// </summary>
+/// <param name="articleCommentRepository">Repository for article comment data access operations.</param>
+/// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
+/// <param name="userLookup">Cross-module service for resolving the replier's profile.</param>
+/// <param name="fileStorage">Core's storage contract.</param>
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
+public class PublicAddCommentReplyHandler(
+    IArticleCommentRepository articleCommentRepository,
+    IContentUnitOfWork unitOfWork,
+    IUserLookupService userLookup,
+    IFileStorageService fileStorage,
+    ContentI18n i18n
+) : ICommandHandler<PublicAddCommentReplyCommand, PublicAddCommentReplyResult>
+{
+    /// <inheritdoc />
+    public async Task<PublicAddCommentReplyResult> Handle(
+        PublicAddCommentReplyCommand command,
+        CancellationToken cancellationToken
+    )
+    {
+        await articleCommentRepository.ExistsOrThrowAsync(
+            articleId: command.ArticleId,
+            cancellationToken: cancellationToken
+        );
+
+        ArticleCommentEntity? parent = await articleCommentRepository.GetCommentByIdAsync(
+            commentId: command.ParentCommentId,
+            cancellationToken: cancellationToken
+        );
+
+        if (parent is null || parent.ArticleId != command.ArticleId || parent.IsDeleted)
+        {
+            throw i18n.ArticleInteraction.CommentNotFound(command.ParentCommentId);
+        }
+
+        if (parent.ParentCommentId is not null)
+        {
+            throw i18n.ArticleInteraction.CannotReplyToReply();
+        }
+
+        var reply = ArticleCommentEntity.CreateReply(
+            id: Guid.NewGuid(),
+            userId: command.UserId,
+            articleId: command.ArticleId,
+            parentCommentId: command.ParentCommentId,
+            body: command.Body
+        );
+
+        await articleCommentRepository.AddCommentAsync(comment: reply, cancellationToken: cancellationToken);
+
+        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+        PublicAuthorDto? author = await ResolveAuthorAsync(command.UserId, cancellationToken);
+        PublicArticleCommentDto dto = reply.ToPublicArticleCommentDto() with { Author = author };
+
+        return new PublicAddCommentReplyResult(Reply: dto);
+    }
+
+    /// <summary>
+    /// Resolves the replier's public author profile (user name, avatar URL, role). The email is
+    /// never populated on the public projection. Returns null when the user cannot be resolved.
+    /// </summary>
+    /// <param name="userId">The replier's identity user id.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The resolved author DTO, or null.</returns>
+    private async Task<PublicAuthorDto?> ResolveAuthorAsync(Guid userId, CancellationToken cancellationToken)
+    {
+        AuthorDto? info = await userLookup.GetAuthorInfoByIdAsync(userId: userId, ct: cancellationToken);
+
+        if (info is null)
+        {
+            return null;
+        }
+
+        string? avatarUrl = null;
+        if (info.AvatarFileId.HasValue)
+        {
+            FileReferenceDto? avatarFile = await fileStorage.ResolveAsync(info.AvatarFileId.Value, cancellationToken);
+            avatarUrl = avatarFile?.StorageUrl;
+        }
+
+        return new PublicAuthorDto(UserName: info.UserName, AvatarUrl: avatarUrl);
+    }
+}

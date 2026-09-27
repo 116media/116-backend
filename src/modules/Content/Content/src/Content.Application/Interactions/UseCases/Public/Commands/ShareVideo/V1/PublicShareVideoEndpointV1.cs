@@ -1,0 +1,84 @@
+using System.Security.Claims;
+using _116.BuildingBlocks.Application.CQRS;
+using _116.BuildingBlocks.Presentation.Constants.RateLimit;
+using _116.BuildingBlocks.Presentation.Extensions;
+using _116.Content.Application.Interactions.Constants;
+using _116.Content.Domain.Constants;
+using _116.Content.Domain.ValueObjects;
+using _116.Identity.Contracts.Application.Services;
+using Carter;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+
+namespace _116.Content.Application.Interactions.UseCases.Public.Commands.ShareVideo.V1;
+
+/// <summary>
+/// Request body for the PublicShareVideo operation. Optional — a missing body records no channel.
+/// </summary>
+/// <param name="ShareChannel">The channel the share targeted (e.g. facebook, x, whatsapp, clipboard, web-share).</param>
+internal record PublicShareVideoRequest(string? ShareChannel);
+
+/// <summary>
+/// Response model for a successful PublicShareVideo operation.
+/// </summary>
+/// <param name="IsSuccess">Indicates if the operation was successful.</param>
+public record PublicShareVideoResponse(bool IsSuccess);
+
+/// <summary>
+/// Defines the share video endpoint. Allows anonymous access.
+/// </summary>
+internal class PublicShareVideoEndpointV1 : ICarterModule
+{
+    /// <inheritdoc />
+    public void AddRoutes(IEndpointRouteBuilder app)
+    {
+        RouteGroupBuilder group = app.MapApiVersionGroup(1)
+            .MapGroup($"{ContentConstants.Public}/{InteractionsRouteConstants.Videos}")
+            .WithTags($"{ContentConstants.Public}::{InteractionsRouteConstants.Videos}");
+
+        group
+            .MapPost(
+                $"/{{id}}/{InteractionsRouteConstants.Shares}",
+                async (
+                    string id,
+                    PublicShareVideoRequest? request,
+                    ClaimsPrincipal user,
+                    IClaimsProvider claimsProvider,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
+                {
+                    Guid videoId = Guid.Parse(id);
+                    Guid? userId = null;
+
+                    if (user.Identity?.IsAuthenticated == true)
+                    {
+                        userId = claimsProvider.GetUserIdFromClaims(user: user);
+                    }
+
+                    var command = new PublicShareVideoCommand(
+                        VideoId: videoId,
+                        UserId: userId,
+                        ShareChannel: ShareChannel.TryFrom(request?.ShareChannel)?.Value
+                    );
+
+                    PublicShareVideoResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
+
+                    var response = new PublicShareVideoResponse(IsSuccess: result.IsSuccess);
+                    return Results.Ok(response);
+                }
+            )
+            .WithName(endpointName: PublicShareVideoMetaField.ShareVideo.Name)
+            .WithSummary(summary: PublicShareVideoMetaField.ShareVideo.Summary)
+            .WithDescription(description: PublicShareVideoMetaField.ShareVideo.Description)
+            .AllowAnonymous()
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentContribution)
+            .Produces<PublicShareVideoResponse>(statusCode: StatusCodes.Status200OK)
+            .ProducesProblem(statusCode: StatusCodes.Status404NotFound)
+            .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
+    }
+}

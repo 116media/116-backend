@@ -1,0 +1,58 @@
+using System.Security.Claims;
+using _116.BuildingBlocks.Application.CQRS;
+using _116.BuildingBlocks.Presentation.Constants.Authorization.Policies;
+using _116.BuildingBlocks.Presentation.Constants.RateLimit;
+using _116.BuildingBlocks.Presentation.Extensions;
+using _116.Content.Application.Interactions.Constants;
+using _116.Content.Domain.Constants;
+using _116.Identity.Contracts.Application.Services;
+using Carter;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+
+namespace _116.Content.Application.Interactions.UseCases.Public.Commands.UnbookmarkShortVideo.V1;
+
+/// <summary>
+/// Defines the unbookmark short video endpoint.
+/// </summary>
+internal class PublicUnbookmarkShortVideoEndpointV1 : ICarterModule
+{
+    /// <inheritdoc />
+    public void AddRoutes(IEndpointRouteBuilder app)
+    {
+        RouteGroupBuilder group = app.MapApiVersionGroup(1)
+            .MapGroup($"{ContentConstants.Public}/{InteractionsRouteConstants.Shorts}")
+            .WithTags($"{ContentConstants.Public}::{InteractionsRouteConstants.Shorts}");
+
+        group
+            .MapDelete(
+                $"/{{id}}/{InteractionsRouteConstants.Bookmarks}",
+                async (
+                    string id,
+                    ClaimsPrincipal user,
+                    IClaimsProvider claimsProvider,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
+                {
+                    Guid shortVideoId = Guid.Parse(id);
+                    Guid userId = claimsProvider.GetUserIdFromClaims(user: user);
+
+                    var command = new PublicUnbookmarkShortVideoCommand(ShortVideoId: shortVideoId, UserId: userId);
+                    await dispatcher.Send(request: command, cancellationToken: cancellationToken);
+                    return Results.NoContent();
+                }
+            )
+            .WithName(endpointName: PublicUnbookmarkShortVideoMetaField.UnbookmarkShortVideo.Name)
+            .WithSummary(summary: PublicUnbookmarkShortVideoMetaField.UnbookmarkShortVideo.Summary)
+            .WithDescription(description: PublicUnbookmarkShortVideoMetaField.UnbookmarkShortVideo.Description)
+            .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentContribution)
+            .Produces(statusCode: StatusCodes.Status204NoContent)
+            .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
+            .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
+            .ProducesProblem(statusCode: StatusCodes.Status404NotFound)
+            .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
+    }
+}
