@@ -1,47 +1,47 @@
-using _116.Core.Application.Shared.Errors;
-using _116.Core.Application.Shared.Errors.Facade;
-using _116.Core.Application.Shared.Errors.Messages;
-using _116.Core.Application.Shared.EventHandlers;
-using _116.Core.Application.Shared.Exceptions.Handlers;
-using _116.Core.Application.Shared.Mappers;
-using _116.Core.Application.Shared.Persistence;
-using _116.Core.Application.Shared.Repositories;
-using _116.Core.Application.Shared.Services;
-using _116.Core.Contracts.Application.Services;
-using _116.Core.Domain.Constants;
-using _116.Core.Domain.Events;
-using _116.Core.Infrastructure.BackgroundJobs;
-using _116.Core.Infrastructure.Outbox;
-using _116.Core.Infrastructure.Persistence;
-using _116.Core.Infrastructure.Repositories;
-using _116.Core.Infrastructure.Services;
-using _116.Shared.Application.Configurations;
-using _116.Shared.Application.Exceptions.Handlers.Contracts;
-using _116.Shared.Application.Extensions;
-using _116.Shared.Application.Services;
-using _116.Shared.Infrastructure;
+using _116.BuildingBlocks.Application.Configurations;
+using _116.BuildingBlocks.Application.Services;
+using _116.BuildingBlocks.Infrastructure;
+using _116.BuildingBlocks.Presentation.Exceptions.Handlers.Contracts;
+using _116.BuildingBlocks.Presentation.Extensions;
+using _116.Storage.Application.Shared.Errors;
+using _116.Storage.Application.Shared.Errors.Facade;
+using _116.Storage.Application.Shared.Errors.Messages;
+using _116.Storage.Application.Shared.EventHandlers;
+using _116.Storage.Application.Shared.Exceptions.Handlers;
+using _116.Storage.Application.Shared.Mappers;
+using _116.Storage.Application.Shared.Persistence;
+using _116.Storage.Application.Shared.Repositories;
+using _116.Storage.Application.Shared.Services;
+using _116.Storage.Contracts.Application.Services;
+using _116.Storage.Domain.Constants;
+using _116.Storage.Domain.Events;
+using _116.Storage.Infrastructure.BackgroundJobs;
+using _116.Storage.Infrastructure.Outbox;
+using _116.Storage.Infrastructure.Persistence;
+using _116.Storage.Infrastructure.Repositories;
+using _116.Storage.Infrastructure.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace _116.Core;
+namespace _116.Storage.Infrastructure;
 
 /// <summary>
-/// Provides extension methods to register and configure the Core module's services and middleware.
+/// Provides extension methods to register and configure the Storage module's services and middleware.
 /// </summary>
-public static class CoreModule
+public static class StorageModule
 {
     /// <summary>
-    /// Gets the shared module configuration options for the Core module.
+    /// Gets the shared module configuration options for the Storage module.
     /// Migrations run in every environment except Testing; the module owns no seeders.
     /// </summary>
     /// <param name="environment">The host environment the options are derived from.</param>
     /// <returns>The module options for the supplied environment.</returns>
-    private static ModuleOptions<CoreDbContext> GetModuleOptions() =>
-        new() { ModuleName = CoreConstants.ModuleName, SchemaName = CoreConstants.SchemaName };
+    private static ModuleOptions<StorageDbContext> GetModuleOptions() =>
+        new() { ModuleName = StorageConstants.ModuleName, SchemaName = StorageConstants.SchemaName };
 
     /// <summary>
-    /// Adds the Core module's services to the dependency injection container.
+    /// Adds the Storage module's services to the dependency injection container.
     /// </summary>
     /// <param name="services">The service collection to register services into.</param>
     /// <param name="environment">The host environment deciding whether the module migrates at startup.</param>
@@ -54,6 +54,7 @@ public static class CoreModule
     public static IServiceCollection AddCoreModule(this IServiceCollection services, IHostEnvironment environment)
     {
         // Register the database with base module infrastructure
+        services.AddHttpCurrentActor();
         services.AddModuleDatabase(GetModuleOptions());
 
         // Register error message classes (IStringLocalizer-backed)
@@ -64,20 +65,20 @@ public static class CoreModule
 
         // Register error factory classes
         services.AddScoped<FileErrors>();
-        services.AddScoped<CoreI18n>();
+        services.AddScoped<StorageI18n>();
 
         // Register Unit of Work for transaction management
-        services.AddScoped<ICoreUnitOfWork, CoreUnitOfWork>();
-        services.AddScoped(typeof(ICoreRepository<>), typeof(CoreRepository<>));
-        services.AddScoped<IProcessedDomainEventStore, CoreProcessedDomainEventStore>();
+        services.AddScoped<IStorageUnitOfWork, StorageUnitOfWork>();
+        services.AddScoped(typeof(IStorageRepository<>), typeof(StorageRepository<>));
+        services.AddScoped<IProcessedDomainEventStore, StorageProcessedDomainEventStore>();
 
         // Replay delivers events raised inside a transaction, not just retries failed dispatches.
-        services.AddScheduledJob<CoreOutboxReplayJob>(cronExpression: "0 */1 * * * ?");
+        services.AddScheduledJob<StorageOutboxReplayJob>(cronExpression: "0 */1 * * * ?");
 
         // Sweeps uploads no referencing write ever claimed; the two cannot share a transaction.
 
         // Register core repositories
-        // Contribute Core mappings to the shared cross-module Mapster config
+        // Contribute Storage mappings to the shared cross-module Mapster config
         services.AddModuleMappings(new MappingRegistration());
 
         services.AddScoped<IFileRepository, FileRepository>();

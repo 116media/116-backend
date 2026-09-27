@@ -1,8 +1,8 @@
-using _116.Shared.Application.Configurations;
-using _116.Shared.Application.Configurations.Schemas;
+using _116.BuildingBlocks.Application.Configurations;
+using _116.BuildingBlocks.Application.Configurations.Schemas;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace _116.Shared.Application.Extensions;
+namespace _116.Storage.Infrastructure;
 
 /// <summary>
 /// Extension methods for registering Cloudinary configuration.

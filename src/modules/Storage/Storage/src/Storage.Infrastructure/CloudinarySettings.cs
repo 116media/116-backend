@@ -1,4 +1,4 @@
-namespace _116.Shared.Application.Configurations;
+namespace _116.Storage.Infrastructure;
 
 /// <summary>
 /// Configuration settings for Cloudinary cloud storage integration.
