@@ -1,0 +1,82 @@
+using System.Security.Claims;
+using _116.BuildingBlocks.Application.CQRS;
+using _116.BuildingBlocks.Presentation.Constants.Authorization.Policies;
+using _116.BuildingBlocks.Presentation.Constants.RateLimit;
+using _116.BuildingBlocks.Presentation.Extensions;
+using _116.Identity.Application.Shared.DTOs;
+using _116.Identity.Application.User.Constants;
+using _116.Identity.Contracts.Application.Services;
+using _116.Identity.Domain.Constants;
+using Carter;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+
+namespace _116.Identity.Application.User.UseCases.Admin.Commands.UpdateAvatar.V1;
+
+/// <summary>
+/// Response model for updating admin user avatar.
+/// </summary>
+/// <param name="User">The updated admin user information with the new avatar.</param>
+public record AdminUpdateAvatarResponse(UserResponseDto User);
+
+/// <summary>
+/// Defines the update avatar endpoint for authenticated admin users.
+/// This endpoint accepts multipart/form-data file uploads.
+/// </summary>
+internal class AdminUpdateAvatarEndpointV1 : ICarterModule
+{
+    /// <summary>
+    /// Configures the admin update avatar route within the API pipeline.
+    /// Maps the <c>/api/v1/admin/me/avatar</c> endpoint to handle admin avatar update requests.
+    /// </summary>
+    /// <param name="app">The route builder used to register API endpoints.</param>
+    public void AddRoutes(IEndpointRouteBuilder app)
+    {
+        RouteGroupBuilder group = app.MapApiVersionGroup(1)
+            .MapGroup($"{IdentityConstants.Admin}/{IdentityConstants.Me}")
+            .WithTags($"{IdentityConstants.Admin}::{IdentityConstants.Me}");
+
+        group
+            .MapPatch(
+                pattern: UserRouteConstants.Avatar,
+                async (
+                    IFormFile? avatarFile,
+                    ClaimsPrincipal user,
+                    IClaimsProvider authProvider,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
+                {
+                    Guid userId = authProvider.GetUserIdFromClaims(user: user);
+                    Guid sessionId = authProvider.GetSessionIdFromClaims(user: user);
+
+                    var command = new AdminUpdateAvatarCommand(
+                        UserId: userId,
+                        SessionId: sessionId,
+                        AvatarFile: avatarFile
+                    );
+                    AdminUpdateAvatarResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
+
+                    var response = new AdminUpdateAvatarResponse(User: result.User);
+                    return Results.Ok(value: response);
+                }
+            )
+            .WithName(endpointName: AdminUpdateAvatarMetaField.UpdateAvatar.Name)
+            .WithSummary(summary: AdminUpdateAvatarMetaField.UpdateAvatar.Summary)
+            .WithDescription(description: AdminUpdateAvatarMetaField.UpdateAvatar.Description)
+            .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
+            .RequireRateLimiting(policyName: RateLimitPolicies.FileUpload)
+            .DisableAntiforgery()
+            .ProducesValidationProblem()
+            .Produces<AdminUpdateAvatarResponse>()
+            .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
+            .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
+            .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)
+            .ProducesProblem(statusCode: StatusCodes.Status404NotFound)
+            .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
+    }
+}
