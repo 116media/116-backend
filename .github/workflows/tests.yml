@@ -32,7 +32,7 @@ jobs:
 
             - name: Run Unit Tests with Coverage
               run: |
-                  dotnet test tests/Unit \
+                  dotnet test tests/unit.slnf \
                     --configuration Release \
                     --no-restore \
                     --settings tests/coverage.unit.runsettings \
@@ -85,7 +85,7 @@ jobs:
             # No coverage: these rules reflect over assemblies and execute no product code.
             - name: Run Architecture Tests
               run: |
-                  dotnet test tests/Architecture \
+                  dotnet test tests/Architecture.Tests \
                     --configuration Release \
                     --no-restore \
                     --logger "trx;LogFileName=architecture-test-results.trx" \
@@ -116,7 +116,7 @@ jobs:
 
             - name: Run Integration Tests with Coverage
               run: |
-                  dotnet test tests/Integration \
+                  dotnet test tests/integration.slnf \
                     --configuration Release \
                     --no-restore \
                     --settings tests/coverage.runsettings \
