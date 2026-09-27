@@ -1,0 +1,205 @@
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.Identity.Application.Roles.UseCases.Admin.Commands.SoftDeletePermission;
+using _116.Identity.Application.Shared.Errors.Facade;
+using _116.Identity.Application.Shared.Persistence;
+using _116.Identity.Application.Shared.Repositories;
+using _116.Identity.Domain.Entities;
+using _116.Identity.TestData.Factories;
+using _116.Identity.TestData.Mocks.Infrastructure;
+using _116.Identity.TestData.Mocks.Repositories;
+using _116.Identity.TestData.Mocks.Services;
+using _116.Storage.TestData.Factories;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Storage.TestData.Mocks.Services;
+using _116.Tests.TestData;
+using _116.Tests.TestData.Constants;
+using _116.Tests.TestData.Helpers;
+using _116.Tests.TestData.Mocks;
+using AwesomeAssertions;
+using Moq;
+using Xunit;
+
+namespace _116.Identity.Unit.Tests.Application.Roles.UseCases.Admin.Commands.SoftDeletePermission;
+
+/// <summary>
+/// Unit tests for <see cref="AdminSoftDeletePermissionHandler"/>.
+/// </summary>
+public class AdminSoftDeletePermissionHandlerTests : BaseHandlerTest
+{
+    private readonly Mock<IPermissionRepository> _permissionRepositoryMock;
+    private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
+    private readonly IdentityI18n _userErrors;
+    private readonly AdminSoftDeletePermissionHandler _handler;
+
+    public AdminSoftDeletePermissionHandlerTests()
+    {
+        _permissionRepositoryMock = MockPermissionRepository.Create();
+        _unitOfWorkMock = MockIdentityUnitOfWork.Create();
+        _userErrors = TestErrorsFactory.CreateIdentityI18n();
+
+        _handler = new AdminSoftDeletePermissionHandler(
+            _permissionRepositoryMock.Object,
+            _unitOfWorkMock.Object,
+            Mapper,
+            _userErrors,
+            TimeProvider.System
+        );
+    }
+
+    #region Success Cases
+
+    [Fact]
+    public async Task Handle_WithActivePermission_ShouldSoftDeleteAndReturnResult()
+    {
+        // Arrange
+        PermissionEntity activePermission = PermissionFactory.Create(
+            TestConstants.Permission.ValidResource,
+            TestConstants.Permission.ValidAction
+        );
+
+        AdminSoftDeletePermissionCommand command = new(PermissionId: activePermission.Id.ToString());
+
+        _permissionRepositoryMock.SetupGetByIdOrThrow(activePermission);
+
+        // Act
+        AdminSoftDeletePermissionResult result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.Permission.Id.Should().Be(activePermission.Id);
+        _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    [Fact]
+    public async Task Handle_WithActivePermission_ShouldSetIsDeletedToTrue()
+    {
+        // Arrange
+        PermissionEntity activePermission = PermissionFactory.Create(
+            TestConstants.Permission.ValidResource,
+            TestConstants.Permission.ValidAction
+        );
+
+        AdminSoftDeletePermissionCommand command = new(PermissionId: activePermission.Id.ToString());
+
+        _permissionRepositoryMock.SetupGetByIdOrThrow(activePermission);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        activePermission.IsDeleted.Should().BeTrue();
+        activePermission.DeletedAt.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task Handle_WithActivePermission_ShouldAlsoDeactivate()
+    {
+        // Arrange
+        PermissionEntity activePermission = PermissionFactory.Create(
+            TestConstants.Permission.ValidResource,
+            TestConstants.Permission.ValidAction
+        );
+
+        AdminSoftDeletePermissionCommand command = new(PermissionId: activePermission.Id.ToString());
+
+        _permissionRepositoryMock.SetupGetByIdOrThrow(activePermission);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        activePermission.IsActive.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region Failure Cases
+
+    [Fact]
+    public async Task Handle_WhenPermissionNotFound_ShouldThrowNotFoundException()
+    {
+        // Arrange
+        var nonExistentPermissionId = Guid.NewGuid();
+        AdminSoftDeletePermissionCommand command = new(PermissionId: nonExistentPermissionId.ToString());
+
+        _permissionRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentPermissionId);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
+    }
+
+    [Fact]
+    public async Task Handle_WhenPermissionAlreadyDeleted_ShouldThrowConflictException()
+    {
+        // Arrange
+        PermissionEntity deletedPermission = PermissionFactory.Create(
+            TestConstants.Permission.ValidResource,
+            TestConstants.Permission.ValidAction
+        );
+        deletedPermission.SoftDelete(now: DateTime.UtcNow);
+
+        AdminSoftDeletePermissionCommand command = new(PermissionId: deletedPermission.Id.ToString());
+
+        _permissionRepositoryMock.SetupGetByIdOrThrow(deletedPermission);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<ConflictException>();
+    }
+
+    [Fact]
+    public async Task Handle_WhenPermissionAlreadyDeleted_ShouldNotCommit()
+    {
+        // Arrange
+        PermissionEntity deletedPermission = PermissionFactory.Create(
+            TestConstants.Permission.ValidResource,
+            TestConstants.Permission.ValidAction
+        );
+        deletedPermission.SoftDelete(now: DateTime.UtcNow);
+
+        AdminSoftDeletePermissionCommand command = new(PermissionId: deletedPermission.Id.ToString());
+
+        _permissionRepositoryMock.SetupGetByIdOrThrow(deletedPermission);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<ConflictException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
+    }
+
+    #endregion
+
+    #region Edge Cases
+
+    [Fact]
+    public async Task Handle_WithCancellationToken_ShouldPassToRepository()
+    {
+        // Arrange
+        PermissionEntity activePermission = PermissionFactory.Create(
+            TestConstants.Permission.ValidResource,
+            TestConstants.Permission.ValidAction
+        );
+
+        AdminSoftDeletePermissionCommand command = new(PermissionId: activePermission.Id.ToString());
+
+        using CancellationTokenSource cts = new();
+        _permissionRepositoryMock.SetupGetByIdOrThrow(activePermission);
+
+        // Act
+        await _handler.Handle(command, cts.Token);
+
+        // Assert
+        _permissionRepositoryMock.Verify(
+            x => x.GetPermissionByIdOrThrowAsync(activePermission.Id, cts.Token),
+            Times.Once
+        );
+    }
+
+    #endregion
+}

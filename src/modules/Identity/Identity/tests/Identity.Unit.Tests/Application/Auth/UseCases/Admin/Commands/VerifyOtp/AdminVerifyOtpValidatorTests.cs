@@ -1,0 +1,211 @@
+using _116.BuildingBlocks.Presentation.Constants;
+using _116.Identity.Application.Auth.UseCases.Admin.Commands.VerifyOtp;
+using _116.Identity.Application.Shared.Errors.Facade;
+using _116.Identity.Domain.Constants;
+using _116.Identity.Domain.Enums;
+using _116.Tests.TestData.Constants;
+using _116.Tests.TestData.Helpers;
+using AwesomeAssertions;
+using FluentValidation.TestHelper;
+using Xunit;
+
+namespace _116.Identity.Unit.Tests.Application.Auth.UseCases.Admin.Commands.VerifyOtp;
+
+/// <summary>
+/// Unit tests for <see cref="AdminVerifyOtpValidator"/>.
+/// </summary>
+public class AdminVerifyOtpValidatorTests
+{
+    private readonly IdentityI18n _i18n = TestErrorsFactory.CreateIdentityI18n();
+    private readonly AdminVerifyOtpValidator _validator;
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="AdminVerifyOtpValidatorTests"/>.
+    /// </summary>
+    public AdminVerifyOtpValidatorTests()
+    {
+        _validator = new AdminVerifyOtpValidator(_i18n);
+    }
+
+    #region Valid Command Tests
+
+    [Fact]
+    public async Task Validate_WithValidCommand_ShouldNotHaveErrors()
+    {
+        // Arrange
+        AdminVerifyOtpCommand command = new(
+            Email: TestConstants.User.ValidEmail,
+            Code: TestConstants.Otp.ValidCode,
+            Purpose: nameof(EnumOtpPurpose.EmailVerification)
+        );
+
+        // Act
+        TestValidationResult<AdminVerifyOtpCommand>? result = await _validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeTrue();
+        result.Errors.Should().BeEmpty();
+    }
+
+    #endregion
+
+    #region Email Validation Tests
+
+    [Fact]
+    public async Task Validate_WithNullEmail_ShouldHaveError()
+    {
+        // Arrange
+        AdminVerifyOtpCommand command = new(
+            Email: null!,
+            Code: TestConstants.Otp.ValidCode,
+            Purpose: nameof(EnumOtpPurpose.EmailVerification)
+        );
+
+        // Act
+        TestValidationResult<AdminVerifyOtpCommand>? result = await _validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.ShouldHaveValidationErrorFor(x => x.Email);
+    }
+
+    [Fact]
+    public async Task Validate_WithInvalidEmailFormat_ShouldHaveError()
+    {
+        // Arrange
+        AdminVerifyOtpCommand command = new(
+            Email: "notanemail",
+            Code: TestConstants.Otp.ValidCode,
+            Purpose: nameof(EnumOtpPurpose.EmailVerification)
+        );
+
+        // Act
+        TestValidationResult<AdminVerifyOtpCommand>? result = await _validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.ShouldHaveValidationErrorFor(x => x.Email);
+    }
+
+    #endregion
+
+    #region Code Validation Tests
+
+    [Fact]
+    public async Task Validate_WithNullCode_ShouldHaveError()
+    {
+        // Arrange
+        AdminVerifyOtpCommand command = new(
+            Email: TestConstants.User.ValidEmail,
+            Code: null!,
+            Purpose: nameof(EnumOtpPurpose.EmailVerification)
+        );
+
+        // Act
+        TestValidationResult<AdminVerifyOtpCommand>? result = await _validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.ShouldHaveValidationErrorFor(x => x.Code);
+    }
+
+    [Fact]
+    public async Task Validate_WithInvalidCodeLength_ShouldHaveError()
+    {
+        // Arrange
+        AdminVerifyOtpCommand command = new(
+            Email: TestConstants.User.ValidEmail,
+            Code: "12345",
+            Purpose: nameof(EnumOtpPurpose.EmailVerification)
+        );
+
+        // Act
+        TestValidationResult<AdminVerifyOtpCommand>? result = await _validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .ShouldHaveValidationErrorFor(x => x.Code)
+            .WithErrorMessage(_i18n.User.Validation.OtpCodeWrongLength(UserConstants.OtpCodeLength));
+    }
+
+    [Fact]
+    public async Task Validate_WithNonNumericCode_ShouldHaveError()
+    {
+        // Arrange
+        AdminVerifyOtpCommand command = new(
+            Email: TestConstants.User.ValidEmail,
+            Code: "ABC123",
+            Purpose: nameof(EnumOtpPurpose.EmailVerification)
+        );
+
+        // Act
+        TestValidationResult<AdminVerifyOtpCommand>? result = await _validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.ShouldHaveValidationErrorFor(x => x.Code);
+    }
+
+    #endregion
+
+    #region Purpose Validation Tests
+
+    [Fact]
+    public async Task Validate_WithNullPurpose_ShouldHaveError()
+    {
+        // Arrange
+        AdminVerifyOtpCommand command = new(
+            Email: TestConstants.User.ValidEmail,
+            Code: TestConstants.Otp.ValidCode,
+            Purpose: null!
+        );
+
+        // Act
+        TestValidationResult<AdminVerifyOtpCommand>? result = await _validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .ShouldHaveValidationErrorFor(x => x.Purpose)
+            .WithErrorMessage(_i18n.User.Validation.OtpPurposeRequired());
+    }
+
+    [Fact]
+    public async Task Validate_WithInvalidPurpose_ShouldHaveError()
+    {
+        // Arrange
+        AdminVerifyOtpCommand command = new(
+            Email: TestConstants.User.ValidEmail,
+            Code: TestConstants.Otp.ValidCode,
+            Purpose: "InvalidPurpose"
+        );
+
+        // Act
+        TestValidationResult<AdminVerifyOtpCommand>? result = await _validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.ShouldHaveValidationErrorFor(x => x.Purpose).WithErrorMessage(_i18n.User.Validation.OtpPurposeInvalid());
+    }
+
+    #endregion
+
+    #region Multiple Validation Errors Tests
+
+    [Fact]
+    public async Task Validate_WithAllInvalidValues_ShouldHaveMultipleErrors()
+    {
+        // Arrange
+        AdminVerifyOtpCommand command = new(Email: "invalid", Code: "abc", Purpose: "invalid");
+
+        // Act
+        TestValidationResult<AdminVerifyOtpCommand>? result = await _validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().HaveCountGreaterThanOrEqualTo(3);
+    }
+
+    #endregion
+}

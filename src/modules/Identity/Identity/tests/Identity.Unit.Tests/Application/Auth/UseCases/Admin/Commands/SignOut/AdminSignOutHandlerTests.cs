@@ -1,0 +1,188 @@
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.Identity.Application.Auth.UseCases.Admin.Commands.SignOut;
+using _116.Identity.Application.Auth.UseCases.Admin.Commands.SignOut.Contracts;
+using _116.Identity.Application.Shared.Repositories;
+using _116.Identity.Domain.Entities;
+using _116.Identity.TestData.Factories;
+using _116.Identity.TestData.Mocks.Infrastructure;
+using _116.Identity.TestData.Mocks.Repositories;
+using _116.Identity.TestData.Mocks.Services;
+using _116.Storage.TestData.Factories;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Storage.TestData.Mocks.Services;
+using _116.Tests.TestData.Mocks;
+using AwesomeAssertions;
+using Moq;
+using Xunit;
+
+namespace _116.Identity.Unit.Tests.Application.Auth.UseCases.Admin.Commands.SignOut;
+
+/// <summary>
+/// Unit tests for <see cref="AdminSignOutHandler"/>.
+/// </summary>
+public class AdminSignOutHandlerTests
+{
+    private readonly Mock<IAdminSignOutSessionFactory> _sessionFactoryMock;
+    private readonly Mock<IAuthRepository> _authRepositoryMock;
+    private readonly AdminSignOutHandler _handler;
+
+    public AdminSignOutHandlerTests()
+    {
+        _sessionFactoryMock = new Mock<IAdminSignOutSessionFactory>();
+        _authRepositoryMock = MockAuthRepository.Create();
+
+        _handler = new AdminSignOutHandler(_sessionFactoryMock.Object, _authRepositoryMock.Object);
+    }
+
+    #region Success Cases
+
+    [Fact]
+    public async Task Handle_ShouldCallSessionFactorySignOut()
+    {
+        // Arrange
+        UserEntity user = UserFactory.CreateVerifiedActive();
+        string refreshToken = "valid-refresh-token";
+        AdminSignOutCommand command = new(UserId: user.Id, RefreshToken: refreshToken);
+
+        _authRepositoryMock.SetupFindUserByIdOrThrow(user);
+        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
+        _sessionFactoryMock
+            .Setup(x => x.SignOutAsync(refreshToken, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        _sessionFactoryMock.Verify(x => x.SignOutAsync(refreshToken, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_ShouldFindUserFirst()
+    {
+        // Arrange
+        UserEntity user = UserFactory.CreateVerifiedActive();
+        string refreshToken = "valid-refresh-token";
+        AdminSignOutCommand command = new(UserId: user.Id, RefreshToken: refreshToken);
+
+        _authRepositoryMock.SetupFindUserByIdOrThrow(user);
+        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
+        _sessionFactoryMock
+            .Setup(x => x.SignOutAsync(refreshToken, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        _authRepositoryMock.Verify(x => x.FindUserByIdOrThrow(user.Id, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_ShouldValidateUserAccountIsActive()
+    {
+        // Arrange
+        UserEntity user = UserFactory.CreateVerifiedActive();
+        string refreshToken = "valid-refresh-token";
+        AdminSignOutCommand command = new(UserId: user.Id, RefreshToken: refreshToken);
+
+        _authRepositoryMock.SetupFindUserByIdOrThrow(user);
+        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
+        _sessionFactoryMock
+            .Setup(x => x.SignOutAsync(refreshToken, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        _authRepositoryMock.Verify(x => x.IsUserAccountActive(It.IsAny<UserEntity>()), Times.Once);
+    }
+
+    #endregion
+
+    #region Failure Cases
+
+    [Fact]
+    public async Task Handle_WhenUserNotFound_ShouldThrowNotFoundException()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        AdminSignOutCommand command = new(UserId: userId, RefreshToken: "token");
+
+        _authRepositoryMock.SetupFindUserByIdOrThrowNotFound(userId);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
+    }
+
+    [Fact]
+    public async Task Handle_WhenUserNotFound_ShouldNotCallSessionFactory()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        AdminSignOutCommand command = new(UserId: userId, RefreshToken: "token");
+
+        _authRepositoryMock.SetupFindUserByIdOrThrowNotFound(userId);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
+        _sessionFactoryMock.Verify(x => x.SignOutAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    #endregion
+
+    #region Cancellation Token Tests
+
+    [Fact]
+    public async Task Handle_WithCancellationToken_ShouldPassToAuthRepository()
+    {
+        // Arrange
+        UserEntity user = UserFactory.CreateVerifiedActive();
+        string refreshToken = "valid-refresh-token";
+        AdminSignOutCommand command = new(UserId: user.Id, RefreshToken: refreshToken);
+        using CancellationTokenSource cts = new();
+
+        _authRepositoryMock.SetupFindUserByIdOrThrow(user);
+        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
+        _sessionFactoryMock
+            .Setup(x => x.SignOutAsync(refreshToken, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        // Act
+        await _handler.Handle(command, cts.Token);
+
+        // Assert
+        _authRepositoryMock.Verify(x => x.FindUserByIdOrThrow(user.Id, cts.Token), Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_WithCancellationToken_ShouldPassToSessionFactory()
+    {
+        // Arrange
+        UserEntity user = UserFactory.CreateVerifiedActive();
+        string refreshToken = "valid-refresh-token";
+        AdminSignOutCommand command = new(UserId: user.Id, RefreshToken: refreshToken);
+        using CancellationTokenSource cts = new();
+
+        _authRepositoryMock.SetupFindUserByIdOrThrow(user);
+        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
+        _sessionFactoryMock
+            .Setup(x => x.SignOutAsync(refreshToken, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        // Act
+        await _handler.Handle(command, cts.Token);
+
+        // Assert
+        _sessionFactoryMock.Verify(x => x.SignOutAsync(refreshToken, cts.Token), Times.Once);
+    }
+
+    #endregion
+}

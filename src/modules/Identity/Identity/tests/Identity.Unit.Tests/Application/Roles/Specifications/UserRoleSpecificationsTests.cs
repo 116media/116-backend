@@ -1,0 +1,163 @@
+using _116.Identity.Application.Roles.Specifications;
+using _116.Identity.Domain.Entities;
+using _116.Identity.TestData.Factories;
+using _116.Identity.TestData.Mocks.Infrastructure;
+using _116.Identity.TestData.Mocks.Repositories;
+using _116.Identity.TestData.Mocks.Services;
+using _116.Storage.TestData.Factories;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Storage.TestData.Mocks.Services;
+using _116.Tests.TestData.Helpers;
+using _116.Tests.TestData.Mocks;
+using AwesomeAssertions;
+using Xunit;
+
+namespace _116.Identity.Unit.Tests.Application.Roles.Specifications;
+
+/// <summary>
+/// Unit tests for UserRole specifications.
+/// </summary>
+public class UserRoleSpecificationsTests
+{
+    #region UserHasAdminRoleSpecification Tests
+
+    [Fact]
+    public void UserHasAdminRoleSpecification_WithAdminRole_ShouldReturnTrue()
+    {
+        // Arrange
+        RoleEntity adminRole = RoleFactory.CreateAdmin();
+        UserEntity user = UserFactory.CreateWithRole(adminRole);
+        UserHasAdminRoleSpecification spec = new();
+
+        // Act
+        bool result = spec.IsSatisfiedBy(user);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public void UserHasAdminRoleSpecification_WithSuperAdminRole_ShouldReturnTrue()
+    {
+        // Arrange
+        RoleEntity superAdminRole = RoleFactory.CreateSuperAdmin();
+        UserEntity user = UserFactory.CreateWithRole(superAdminRole);
+        UserHasAdminRoleSpecification spec = new();
+
+        // Act
+        bool result = spec.IsSatisfiedBy(user);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public void UserHasAdminRoleSpecification_WithVisitorRole_ShouldReturnFalse()
+    {
+        // Arrange
+        RoleEntity visitorRole = RoleFactory.CreateVisitor();
+        UserEntity user = UserFactory.CreateWithRole(visitorRole);
+        UserHasAdminRoleSpecification spec = new();
+
+        // Act
+        bool result = spec.IsSatisfiedBy(user);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void UserHasAdminRoleSpecification_WithNoRoles_ShouldReturnFalse()
+    {
+        // Arrange
+        UserEntity user = UserFactory.Create();
+        UserHasAdminRoleSpecification spec = new();
+
+        // Act
+        bool result = spec.IsSatisfiedBy(user);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region UserIsActiveAdminSpecification Tests
+
+    [Fact]
+    public void UserIsActiveAdminSpecification_WithActiveAdminUser_ShouldReturnTrue()
+    {
+        // Arrange
+        RoleEntity adminRole = RoleFactory.CreateAdmin();
+        UserEntity user = UserFactory.CreateWithRole(adminRole);
+        UserIsActiveAdminSpecification spec = new();
+
+        // Act
+        bool result = spec.IsSatisfiedBy(user);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public void UserIsActiveAdminSpecification_WithActiveSuperAdminUser_ShouldReturnTrue()
+    {
+        // Arrange
+        RoleEntity superAdminRole = RoleFactory.CreateSuperAdmin();
+        UserEntity user = UserFactory.CreateWithRole(superAdminRole);
+        UserIsActiveAdminSpecification spec = new();
+
+        // Act
+        bool result = spec.IsSatisfiedBy(user);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public void UserIsActiveAdminSpecification_WithInactiveAdminUser_ShouldReturnFalse()
+    {
+        // Arrange
+        RoleEntity adminRole = RoleFactory.CreateAdmin();
+        UserEntity user = UserFactory.CreateInactive();
+        user.GrantInitialRole(adminRole.Id);
+        UserIsActiveAdminSpecification spec = new();
+
+        // Act
+        bool result = spec.IsSatisfiedBy(user);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void UserIsActiveAdminSpecification_WithActiveVisitorUser_ShouldReturnFalse()
+    {
+        // Arrange
+        RoleEntity visitorRole = RoleFactory.CreateVisitor();
+        UserEntity user = UserFactory.CreateWithRole(visitorRole);
+        UserIsActiveAdminSpecification spec = new();
+
+        // Act
+        bool result = spec.IsSatisfiedBy(user);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void UserIsActiveAdminSpecification_WithInactiveUserNoRoles_ShouldReturnFalse()
+    {
+        // Arrange
+        UserEntity user = UserFactory.CreateInactive();
+        UserIsActiveAdminSpecification spec = new();
+
+        // Act
+        bool result = spec.IsSatisfiedBy(user);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    #endregion
+}

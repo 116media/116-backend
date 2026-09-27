@@ -1,0 +1,226 @@
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.Identity.Application.Shared.Repositories;
+using _116.Identity.Application.User.Services;
+using _116.Identity.Application.User.UseCases.Public.Queries.GetOwnProfile;
+using _116.Identity.Domain.Entities;
+using _116.Identity.TestData.Factories;
+using _116.Identity.TestData.Mocks.Infrastructure;
+using _116.Identity.TestData.Mocks.Repositories;
+using _116.Identity.TestData.Mocks.Services;
+using _116.Storage.Application.Shared.Repositories;
+using _116.Storage.TestData.Factories;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Storage.TestData.Mocks.Services;
+using _116.Tests.TestData;
+using _116.Tests.TestData.Mocks;
+using AwesomeAssertions;
+using Moq;
+using Xunit;
+
+namespace _116.Identity.Unit.Tests.Application.User.UseCases.Public.Queries.GetOwnProfile;
+
+/// <summary>
+/// Unit tests for <see cref="PublicGetOwnProfileHandler"/>.
+/// </summary>
+public class PublicGetOwnProfileHandlerTests : BaseHandlerTest
+{
+    private readonly Mock<IAuthRepository> _authRepositoryMock;
+    private readonly Mock<IAvatarService> _avatarServiceMock;
+    private readonly PublicGetOwnProfileHandler _handler;
+
+    public PublicGetOwnProfileHandlerTests()
+    {
+        _authRepositoryMock = MockAuthRepository.Create();
+        _avatarServiceMock = MockAvatarService.Create();
+
+        _handler = new PublicGetOwnProfileHandler(_authRepositoryMock.Object, _avatarServiceMock.Object, Mapper);
+    }
+
+    #region Success Cases
+
+    [Fact]
+    public async Task Handle_WithValidUser_ShouldReturnUserProfile()
+    {
+        // Arrange
+        UserEntity user = UserFactory.CreateVerifiedActive();
+        PublicGetOwnProfileQuery query = new(UserId: user.Id);
+
+        _authRepositoryMock.SetupGetUserWithRolesAndPermissionsById(user);
+        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
+        _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
+        _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
+
+        // Act
+        PublicGetOwnProfileResult result = await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        result.User.Id.Should().Be(user.Id);
+    }
+
+    [Fact]
+    public async Task Handle_ShouldFetchUserWithRolesAndPermissions()
+    {
+        // Arrange
+        UserEntity user = UserFactory.CreateVerifiedActive();
+        PublicGetOwnProfileQuery query = new(UserId: user.Id);
+
+        _authRepositoryMock.SetupGetUserWithRolesAndPermissionsById(user);
+        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
+        _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
+        _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
+
+        // Act
+        await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        _authRepositoryMock.Verify(
+            x => x.GetUserWithRolesAndPermissionsByIdOrThrow(user.Id, It.IsAny<CancellationToken>()),
+            Times.Once
+        );
+    }
+
+    [Fact]
+    public async Task Handle_ShouldValidateUserAccountIsActive()
+    {
+        // Arrange
+        UserEntity user = UserFactory.CreateVerifiedActive();
+        PublicGetOwnProfileQuery query = new(UserId: user.Id);
+
+        _authRepositoryMock.SetupGetUserWithRolesAndPermissionsById(user);
+        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
+        _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
+        _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
+
+        // Act
+        await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        _authRepositoryMock.Verify(x => x.IsUserAccountActive(It.IsAny<UserEntity>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_ShouldValidateUserAccountIsVerified()
+    {
+        // Arrange
+        UserEntity user = UserFactory.CreateVerifiedActive();
+        PublicGetOwnProfileQuery query = new(UserId: user.Id);
+
+        _authRepositoryMock.SetupGetUserWithRolesAndPermissionsById(user);
+        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
+        _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
+        _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
+
+        // Act
+        await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        _authRepositoryMock.Verify(x => x.IsUserAccountVerified(It.IsAny<UserEntity>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_ShouldExtractRolesAndPermissions()
+    {
+        // Arrange
+        UserEntity user = UserFactory.CreateVerifiedActive();
+        PublicGetOwnProfileQuery query = new(UserId: user.Id);
+
+        _authRepositoryMock.SetupGetUserWithRolesAndPermissionsById(user);
+        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
+        _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
+        _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
+
+        // Act
+        await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        _authRepositoryMock.Verify(
+            x => x.GetUserWithRolesAndPermissionsByIdOrThrow(user.Id, It.IsAny<CancellationToken>()),
+            Times.Once
+        );
+    }
+
+    [Fact]
+    public async Task Handle_ShouldFetchAvatarFile()
+    {
+        // Arrange
+        UserEntity user = UserFactory.CreateVerifiedActive();
+        PublicGetOwnProfileQuery query = new(UserId: user.Id);
+
+        _authRepositoryMock.SetupGetUserWithRolesAndPermissionsById(user);
+        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
+        _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
+        _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
+
+        // Act
+        await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        _avatarServiceMock.Verify(x => x.GetAvatarAsync(user.AvatarFileId, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    #endregion
+
+    #region Failure Cases
+
+    [Fact]
+    public async Task Handle_WhenUserNotFound_ShouldThrowNotFoundException()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        PublicGetOwnProfileQuery query = new(UserId: userId);
+
+        _authRepositoryMock.SetupGetUserWithRolesAndPermissionsByIdNotFound(userId);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
+    }
+
+    #endregion
+
+    #region Cancellation Token Tests
+
+    [Fact]
+    public async Task Handle_WithCancellationToken_ShouldPassToAuthRepository()
+    {
+        // Arrange
+        UserEntity user = UserFactory.CreateVerifiedActive();
+        PublicGetOwnProfileQuery query = new(UserId: user.Id);
+        using CancellationTokenSource cts = new();
+
+        _authRepositoryMock.SetupGetUserWithRolesAndPermissionsById(user);
+        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
+        _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
+        _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
+
+        // Act
+        await _handler.Handle(query, cts.Token);
+
+        // Assert
+        _authRepositoryMock.Verify(x => x.GetUserWithRolesAndPermissionsByIdOrThrow(user.Id, cts.Token), Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_WithCancellationToken_ShouldPassToFileRepository()
+    {
+        // Arrange
+        UserEntity user = UserFactory.CreateVerifiedActive();
+        PublicGetOwnProfileQuery query = new(UserId: user.Id);
+        using CancellationTokenSource cts = new();
+
+        _authRepositoryMock.SetupGetUserWithRolesAndPermissionsById(user);
+        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
+        _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
+        _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
+
+        // Act
+        await _handler.Handle(query, cts.Token);
+
+        // Assert
+        _avatarServiceMock.Verify(x => x.GetAvatarAsync(user.AvatarFileId, cts.Token), Times.Once);
+    }
+
+    #endregion
+}

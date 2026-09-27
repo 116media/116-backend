@@ -1,0 +1,30 @@
+using _116.Identity.Application.Auth.Exceptions;
+using _116.Identity.Application.Auth.Exceptions.Handlers;
+using AwesomeAssertions;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Xunit;
+
+namespace _116.Identity.Unit.Tests.Application.Auth.Exceptions.Handlers;
+
+public class OtpExpirationExceptionHandlerTests
+{
+    private readonly OtpExpirationExceptionHandler _handler = new();
+
+    [Fact]
+    public void ExceptionType_ShouldReturnOtpExpirationExceptionType()
+    {
+        _handler.ExceptionType.Should().Be(typeof(OtpExpirationException));
+    }
+
+    [Fact]
+    public void CreateProblemDetails_ShouldReturn410StatusCode()
+    {
+        var exception = new OtpExpirationException("OTP expired");
+        var context = new DefaultHttpContext { Request = { Path = "/api/test" } };
+
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
+
+        problemDetails.Status.Should().Be(StatusCodes.Status410Gone);
+    }
+}

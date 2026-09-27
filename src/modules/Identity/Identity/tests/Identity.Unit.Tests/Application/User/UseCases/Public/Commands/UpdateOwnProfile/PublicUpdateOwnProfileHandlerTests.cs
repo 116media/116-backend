@@ -1,0 +1,428 @@
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.Identity.Application.User.Services;
+using _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfile;
+using _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfile.Contracts;
+using _116.Identity.Domain.Entities;
+using _116.Identity.TestData.Factories;
+using _116.Identity.TestData.Mocks.Infrastructure;
+using _116.Identity.TestData.Mocks.Repositories;
+using _116.Identity.TestData.Mocks.Services;
+using _116.Storage.Application.Shared.Repositories;
+using _116.Storage.TestData.Factories;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Storage.TestData.Mocks.Services;
+using _116.Tests.TestData;
+using _116.Tests.TestData.Mocks;
+using AwesomeAssertions;
+using Moq;
+using Xunit;
+
+namespace _116.Identity.Unit.Tests.Application.User.UseCases.Public.Commands.UpdateOwnProfile;
+
+/// <summary>
+/// Unit tests for <see cref="PublicUpdateOwnProfileHandler"/>.
+/// </summary>
+public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
+{
+    private readonly Mock<IPublicUpdateProfileAuthFactory> _authFactoryMock;
+    private readonly Mock<IAvatarService> _avatarServiceMock;
+    private readonly PublicUpdateOwnProfileHandler _handler;
+
+    public PublicUpdateOwnProfileHandlerTests()
+    {
+        _authFactoryMock = new Mock<IPublicUpdateProfileAuthFactory>();
+        _avatarServiceMock = MockAvatarService.Create();
+
+        _handler = new PublicUpdateOwnProfileHandler(_authFactoryMock.Object, _avatarServiceMock.Object, Mapper);
+    }
+
+    #region Success Cases
+
+    [Fact]
+    public async Task Handle_WithValidRequest_ShouldReturnUpdatedProfile()
+    {
+        // Arrange
+        UserEntity user = UserFactory.CreateVerifiedActive();
+        var sessionId = Guid.NewGuid();
+        string newUserName = "newusername";
+
+        PublicUpdateOwnProfileCommand command = new(
+            UserId: user.Id,
+            SessionId: sessionId,
+            Email: null,
+            UserName: newUserName,
+            CountryName: null,
+            PartialPhoneNumber: null,
+            CountryIsoCode: null,
+            CountryDialCode: null,
+            PreferredLocale: null
+        );
+
+        PublicUpdateProfileAuthData authData = new(User: user);
+
+        _authFactoryMock
+            .Setup(x =>
+                x.UpdateProfileAsync(
+                    user.Id,
+                    sessionId,
+                    null,
+                    newUserName,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync(authData);
+        _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
+
+        // Act
+        PublicUpdateOwnProfileResult result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.User.Id.Should().Be(user.Id);
+    }
+
+    [Fact]
+    public async Task Handle_ShouldCallAuthFactoryUpdateProfile()
+    {
+        // Arrange
+        UserEntity user = UserFactory.CreateVerifiedActive();
+        var sessionId = Guid.NewGuid();
+        string newUserName = "newusername";
+
+        PublicUpdateOwnProfileCommand command = new(
+            UserId: user.Id,
+            SessionId: sessionId,
+            Email: null,
+            UserName: newUserName,
+            CountryName: null,
+            PartialPhoneNumber: null,
+            CountryIsoCode: null,
+            CountryDialCode: null,
+            PreferredLocale: null
+        );
+
+        PublicUpdateProfileAuthData authData = new(User: user);
+
+        _authFactoryMock
+            .Setup(x =>
+                x.UpdateProfileAsync(
+                    user.Id,
+                    sessionId,
+                    null,
+                    newUserName,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync(authData);
+        _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        _authFactoryMock.Verify(
+            x =>
+                x.UpdateProfileAsync(
+                    user.Id,
+                    sessionId,
+                    null,
+                    newUserName,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Once
+        );
+    }
+
+    [Fact]
+    public async Task Handle_ShouldFetchAvatarFile()
+    {
+        // Arrange
+        UserEntity user = UserFactory.CreateVerifiedActive();
+        var sessionId = Guid.NewGuid();
+
+        PublicUpdateOwnProfileCommand command = new(
+            UserId: user.Id,
+            SessionId: sessionId,
+            Email: null,
+            UserName: "newusername",
+            CountryName: null,
+            PartialPhoneNumber: null,
+            CountryIsoCode: null,
+            CountryDialCode: null,
+            PreferredLocale: null
+        );
+
+        PublicUpdateProfileAuthData authData = new(User: user);
+
+        _authFactoryMock
+            .Setup(x =>
+                x.UpdateProfileAsync(
+                    It.IsAny<Guid>(),
+                    It.IsAny<Guid>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync(authData);
+        _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        _avatarServiceMock.Verify(x => x.GetAvatarAsync(user.AvatarFileId, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    #endregion
+
+    #region Failure Cases
+
+    [Fact]
+    public async Task Handle_WhenUserNotFound_ShouldThrowNotFoundException()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
+        PublicUpdateOwnProfileCommand command = new(
+            UserId: userId,
+            SessionId: sessionId,
+            Email: null,
+            UserName: "newusername",
+            CountryName: null,
+            PartialPhoneNumber: null,
+            CountryIsoCode: null,
+            CountryDialCode: null,
+            PreferredLocale: null
+        );
+
+        _authFactoryMock
+            .Setup(x =>
+                x.UpdateProfileAsync(
+                    It.IsAny<Guid>(),
+                    It.IsAny<Guid>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ThrowsAsync(new NotFoundException("User not found."));
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
+    }
+
+    [Fact]
+    public async Task Handle_WhenEmailAlreadyExists_ShouldThrowConflictException()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
+        PublicUpdateOwnProfileCommand command = new(
+            UserId: userId,
+            SessionId: sessionId,
+            Email: "existing@example.com",
+            UserName: null,
+            CountryName: null,
+            PartialPhoneNumber: null,
+            CountryIsoCode: null,
+            CountryDialCode: null,
+            PreferredLocale: null
+        );
+
+        _authFactoryMock
+            .Setup(x =>
+                x.UpdateProfileAsync(
+                    It.IsAny<Guid>(),
+                    It.IsAny<Guid>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ThrowsAsync(new ConflictException("Email already exists."));
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<ConflictException>();
+    }
+
+    [Fact]
+    public async Task Handle_WhenUserNameAlreadyExists_ShouldThrowConflictException()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
+        PublicUpdateOwnProfileCommand command = new(
+            UserId: userId,
+            SessionId: sessionId,
+            Email: null,
+            UserName: "existinguser",
+            CountryName: null,
+            PartialPhoneNumber: null,
+            CountryIsoCode: null,
+            CountryDialCode: null,
+            PreferredLocale: null
+        );
+
+        _authFactoryMock
+            .Setup(x =>
+                x.UpdateProfileAsync(
+                    It.IsAny<Guid>(),
+                    It.IsAny<Guid>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ThrowsAsync(new ConflictException("Username already exists."));
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<ConflictException>();
+    }
+
+    #endregion
+
+    #region Cancellation Token Tests
+
+    [Fact]
+    public async Task Handle_WithCancellationToken_ShouldPassToAuthFactory()
+    {
+        // Arrange
+        UserEntity user = UserFactory.CreateVerifiedActive();
+        var sessionId = Guid.NewGuid();
+        using CancellationTokenSource cts = new();
+
+        PublicUpdateOwnProfileCommand command = new(
+            UserId: user.Id,
+            SessionId: sessionId,
+            Email: null,
+            UserName: "newusername",
+            CountryName: null,
+            PartialPhoneNumber: null,
+            CountryIsoCode: null,
+            CountryDialCode: null,
+            PreferredLocale: null
+        );
+
+        PublicUpdateProfileAuthData authData = new(User: user);
+
+        _authFactoryMock
+            .Setup(x =>
+                x.UpdateProfileAsync(
+                    It.IsAny<Guid>(),
+                    It.IsAny<Guid>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync(authData);
+        _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
+
+        // Act
+        await _handler.Handle(command, cts.Token);
+
+        // Assert
+        _authFactoryMock.Verify(
+            x => x.UpdateProfileAsync(user.Id, sessionId, null, "newusername", null, null, null, null, null, cts.Token),
+            Times.Once
+        );
+    }
+
+    [Fact]
+    public async Task Handle_WithCancellationToken_ShouldPassToFileRepository()
+    {
+        // Arrange
+        UserEntity user = UserFactory.CreateVerifiedActive();
+        var sessionId = Guid.NewGuid();
+        using CancellationTokenSource cts = new();
+
+        PublicUpdateOwnProfileCommand command = new(
+            UserId: user.Id,
+            SessionId: sessionId,
+            Email: null,
+            UserName: "newusername",
+            CountryName: null,
+            PartialPhoneNumber: null,
+            CountryIsoCode: null,
+            CountryDialCode: null,
+            PreferredLocale: null
+        );
+
+        PublicUpdateProfileAuthData authData = new(User: user);
+
+        _authFactoryMock
+            .Setup(x =>
+                x.UpdateProfileAsync(
+                    It.IsAny<Guid>(),
+                    It.IsAny<Guid>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync(authData);
+        _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
+
+        // Act
+        await _handler.Handle(command, cts.Token);
+
+        // Assert
+        _avatarServiceMock.Verify(x => x.GetAvatarAsync(user.AvatarFileId, cts.Token), Times.Once);
+    }
+
+    #endregion
+}
