@@ -1,0 +1,268 @@
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.Content.Domain.Entities;
+using _116.Content.Domain.Events;
+using _116.Content.Domain.Exceptions;
+using _116.Content.Domain.StateMachines;
+using _116.Content.TestData.Factories;
+using _116.Content.TestData.Factories.Helpers;
+using _116.Content.TestData.Mocks.Factories;
+using _116.Content.TestData.Mocks.Infrastructure;
+using _116.Content.TestData.Mocks.Repositories;
+using _116.Content.TestData.Mocks.Services;
+using _116.Identity.TestData.Factories;
+using _116.Identity.TestData.Mocks.Infrastructure;
+using _116.Identity.TestData.Mocks.Repositories;
+using _116.Identity.TestData.Mocks.Services;
+using _116.Storage.TestData.Factories;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Storage.TestData.Mocks.Services;
+using _116.Tests.TestData.Constants;
+using _116.Tests.TestData.Helpers;
+using _116.Tests.TestData.Mocks;
+using AwesomeAssertions;
+using Xunit;
+
+namespace _116.Content.Unit.Tests.Domain.Entities;
+
+/// <summary>
+/// Unit tests for <see cref="PricingTierEntity"/>.
+/// </summary>
+public class PricingTierEntityTests
+{
+    #region Create Tests
+
+    [Fact]
+    public void Create_WithValidName_ShouldCreatePricingTier()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        string name = TestConstants.PricingTier.ValidName;
+        string description = TestConstants.PricingTier.ValidDescription;
+
+        // Act
+        var entity = PricingTierEntity.Create(id, name, description);
+
+        // Assert
+        entity.Id.Should().Be(id);
+        entity.Name.Should().Be(name);
+        entity.Description.Should().Be(description);
+        entity.IsActive.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Create_WithDescription_ShouldSetDescription()
+    {
+        // Arrange
+        string description = TestConstants.PricingTier.ValidDescription;
+
+        // Act
+        var entity = PricingTierEntity.Create(Guid.NewGuid(), TestConstants.PricingTier.ValidName, description);
+
+        // Assert
+        entity.Description.Should().Be(description);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Create_WithInvalidName_ShouldThrowBadRequestException(string? invalidName)
+    {
+        // Act
+        Action act = () =>
+            PricingTierEntity.Create(Guid.NewGuid(), invalidName!, TestConstants.PricingTier.ValidDescription);
+
+        // Assert
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.PricingTierNameRequired);
+    }
+
+    #endregion
+
+    #region Update Tests
+
+    [Fact]
+    public void Update_WithValidValues_ShouldUpdate()
+    {
+        // Arrange
+        var entity = PricingTierEntity.Create(
+            Guid.NewGuid(),
+            TestConstants.PricingTier.ValidName,
+            TestConstants.PricingTier.ValidDescription
+        );
+
+        // Act
+        entity.Update(TestConstants.PricingTier.AnotherValidName, TestConstants.PricingTier.ValidDescription);
+
+        // Assert
+        entity.Name.Should().Be(TestConstants.PricingTier.AnotherValidName);
+        entity.Description.Should().Be(TestConstants.PricingTier.ValidDescription);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Update_WithInvalidName_ShouldThrowBadRequestException(string? invalidName)
+    {
+        // Arrange
+        var entity = PricingTierEntity.Create(
+            Guid.NewGuid(),
+            TestConstants.PricingTier.ValidName,
+            TestConstants.PricingTier.ValidDescription
+        );
+
+        // Act
+        Action act = () => entity.Update(invalidName!, TestConstants.PricingTier.ValidDescription);
+
+        // Assert
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.PricingTierNameRequired);
+    }
+
+    [Fact]
+    public void Update_WithNewDescription_ShouldUpdateDescription()
+    {
+        // Arrange
+        var entity = PricingTierEntity.Create(
+            Guid.NewGuid(),
+            TestConstants.PricingTier.ValidName,
+            TestConstants.PricingTier.ValidDescription
+        );
+        const string newDescription = "Updated pricing tier description.";
+
+        // Act
+        entity.Update(TestConstants.PricingTier.ValidName, newDescription);
+
+        // Assert
+        entity.Description.Should().Be(newDescription);
+    }
+
+    #endregion
+
+    #region Activate Tests
+
+    [Fact]
+    public void Activate_WhenInactive_ShouldReturnTrue()
+    {
+        // Arrange
+        var entity = PricingTierEntity.Create(
+            Guid.NewGuid(),
+            TestConstants.PricingTier.ValidName,
+            TestConstants.PricingTier.ValidDescription
+        );
+        entity.Deactivate();
+
+        // Act
+        bool result = entity.Activate();
+
+        // Assert
+        result.Should().BeTrue();
+        entity.IsActive.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Activate_WhenAlreadyActive_ShouldReturnFalse()
+    {
+        // Arrange
+        var entity = PricingTierEntity.Create(
+            Guid.NewGuid(),
+            TestConstants.PricingTier.ValidName,
+            TestConstants.PricingTier.ValidDescription
+        );
+
+        // Act
+        bool result = entity.Activate();
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region Deactivate Tests
+
+    [Fact]
+    public void Deactivate_WhenActive_ShouldReturnTrue()
+    {
+        // Arrange
+        var entity = PricingTierEntity.Create(
+            Guid.NewGuid(),
+            TestConstants.PricingTier.ValidName,
+            TestConstants.PricingTier.ValidDescription
+        );
+
+        // Act
+        bool result = entity.Deactivate();
+
+        // Assert
+        result.Should().BeTrue();
+        entity.IsActive.Should().BeFalse();
+    }
+
+    [Fact]
+    public void Deactivate_WhenAlreadyInactive_ShouldReturnFalse()
+    {
+        // Arrange
+        var entity = PricingTierEntity.Create(
+            Guid.NewGuid(),
+            TestConstants.PricingTier.ValidName,
+            TestConstants.PricingTier.ValidDescription
+        );
+        entity.Deactivate();
+
+        // Act
+        bool result = entity.Deactivate();
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region Domain Events
+
+    [Fact]
+    public void Create_ShouldRaisePricingTierChangedEvent()
+    {
+        // Act
+        var entity = PricingTierEntity.Create(Guid.NewGuid(), TestConstants.PricingTier.ValidName, "desc");
+
+        // Assert
+        entity
+            .DomainEvents.OfType<PricingTierChangedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(new PricingTierChangedEvent(entity.Id));
+    }
+
+    [Fact]
+    public void Update_ShouldRaisePricingTierChangedEvent()
+    {
+        // Arrange
+        var entity = PricingTierEntity.Create(Guid.NewGuid(), TestConstants.PricingTier.ValidName, "desc");
+        entity.ClearDomainEvents();
+
+        // Act
+        entity.Update("Premium", "updated");
+
+        // Assert
+        entity.DomainEvents.OfType<PricingTierChangedEvent>().Should().ContainSingle();
+    }
+
+    [Fact]
+    public void Deactivate_WhenAlreadyInactive_ShouldRaiseNothing()
+    {
+        // Arrange
+        var entity = PricingTierEntity.Create(Guid.NewGuid(), TestConstants.PricingTier.ValidName, "desc");
+        entity.Deactivate();
+        entity.ClearDomainEvents();
+
+        // Act
+        entity.Deactivate();
+
+        // Assert
+        entity.DomainEvents.Should().BeEmpty();
+    }
+
+    #endregion
+}

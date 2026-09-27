@@ -1,0 +1,319 @@
+using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
+using _116.Content.Domain.Events;
+using _116.Content.Domain.Exceptions;
+using _116.Content.Domain.StateMachines;
+using _116.Content.TestData.Factories;
+using _116.Content.TestData.Factories.Helpers;
+using _116.Content.TestData.Mocks.Factories;
+using _116.Content.TestData.Mocks.Infrastructure;
+using _116.Content.TestData.Mocks.Repositories;
+using _116.Content.TestData.Mocks.Services;
+using _116.Identity.TestData.Factories;
+using _116.Identity.TestData.Mocks.Infrastructure;
+using _116.Identity.TestData.Mocks.Repositories;
+using _116.Identity.TestData.Mocks.Services;
+using _116.Storage.TestData.Factories;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Storage.TestData.Mocks.Services;
+using _116.Tests.TestData.Mocks;
+using AwesomeAssertions;
+using Xunit;
+
+namespace _116.Content.Unit.Tests.Domain.Entities;
+
+/// <summary>
+/// Unit tests for <see cref="LyricsTranslationRevisionEntity"/>.
+/// </summary>
+public class LyricsTranslationRevisionEntityTests
+{
+    #region Propose Tests
+
+    [Fact]
+    public void Propose_WithValidParams_ShouldAssignAllFields()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var translationId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        const string proposedText = "Proposed replacement text.";
+        const string editSummary = "Fixed a typo.";
+
+        // Act
+        LyricsTranslationRevisionEntity revision = LyricsTranslationRevisionEntity.Propose(
+            id,
+            translationId,
+            proposedText,
+            editSummary,
+            userId
+        );
+
+        // Assert
+        revision.Id.Should().Be(id);
+        revision.TranslationId.Should().Be(translationId);
+        revision.ProposedText.Should().Be(proposedText);
+        revision.EditSummary.Should().Be(editSummary);
+        revision.ProposedByUserId.Should().Be(userId);
+    }
+
+    [Fact]
+    public void Propose_ShouldStartInPendingStatus()
+    {
+        // Act
+        LyricsTranslationRevisionEntity revision = LyricsTranslationRevisionEntity.Propose(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            "Proposed replacement text.",
+            null,
+            Guid.NewGuid()
+        );
+
+        // Assert
+        revision.Status.Should().Be(EnumRevisionStatus.Pending);
+        revision.DecidedByUserId.Should().BeNull();
+    }
+
+    [Fact]
+    public void Propose_WithNullEditSummary_ShouldAllowNull()
+    {
+        // Act
+        LyricsTranslationRevisionEntity revision = LyricsTranslationRevisionEntity.Propose(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            "Proposed replacement text.",
+            null,
+            Guid.NewGuid()
+        );
+
+        // Assert
+        revision.EditSummary.Should().BeNull();
+    }
+
+    #endregion
+
+    #region Accept Tests
+
+    [Fact]
+    public void Accept_WithModeratorId_ShouldSetStatusAndDecidedByUserId()
+    {
+        // Arrange
+        LyricsTranslationRevisionEntity revision = CreatePendingRevision();
+        var moderatorId = Guid.NewGuid();
+
+        // Act
+        revision.Accept(moderatorId);
+
+        // Assert
+        revision.Status.Should().Be(EnumRevisionStatus.Accepted);
+        revision.DecidedByUserId.Should().Be(moderatorId);
+    }
+
+    [Fact]
+    public void Accept_WithNullDecidedByUserId_ShouldAcceptAsAutoAccepted()
+    {
+        // Arrange
+        LyricsTranslationRevisionEntity revision = CreatePendingRevision();
+
+        // Act
+        revision.Accept(null);
+
+        // Assert
+        revision.Status.Should().Be(EnumRevisionStatus.Accepted);
+        revision.DecidedByUserId.Should().BeNull();
+    }
+
+    [Fact]
+    public void Accept_ByModerator_ShouldRaiseDecidedEventWithModeratorFlag()
+    {
+        // Arrange
+        LyricsTranslationRevisionEntity revision = CreatePendingRevision();
+
+        // Act
+        revision.Accept(Guid.NewGuid());
+
+        // Assert
+        revision
+            .DomainEvents.OfType<TranslationRevisionDecidedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(
+                new TranslationRevisionDecidedEvent(
+                    revision.Id,
+                    revision.TranslationId,
+                    revision.ProposedByUserId,
+                    true,
+                    true
+                )
+            );
+    }
+
+    [Fact]
+    public void Accept_ByVoteThreshold_ShouldRaiseDecidedEventWithoutModeratorFlag()
+    {
+        // Arrange
+        LyricsTranslationRevisionEntity revision = CreatePendingRevision();
+
+        // Act
+        revision.Accept(null);
+
+        // Assert
+        revision
+            .DomainEvents.OfType<TranslationRevisionDecidedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(
+                new TranslationRevisionDecidedEvent(
+                    revision.Id,
+                    revision.TranslationId,
+                    revision.ProposedByUserId,
+                    true,
+                    false
+                )
+            );
+    }
+
+    #endregion
+
+    #region Reject Tests
+
+    [Fact]
+    public void Reject_ShouldSetStatusAndDecidedByUserId()
+    {
+        // Arrange
+        LyricsTranslationRevisionEntity revision = CreatePendingRevision();
+        var moderatorId = Guid.NewGuid();
+
+        // Act
+        revision.Reject(moderatorId);
+
+        // Assert
+        revision.Status.Should().Be(EnumRevisionStatus.Rejected);
+        revision.DecidedByUserId.Should().Be(moderatorId);
+    }
+
+    [Fact]
+    public void Reject_ShouldRaiseDecidedEventWithModeratorFlag()
+    {
+        // Arrange
+        LyricsTranslationRevisionEntity revision = CreatePendingRevision();
+
+        // Act
+        revision.Reject(Guid.NewGuid());
+
+        // Assert
+        revision
+            .DomainEvents.OfType<TranslationRevisionDecidedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(
+                new TranslationRevisionDecidedEvent(
+                    revision.Id,
+                    revision.TranslationId,
+                    revision.ProposedByUserId,
+                    false,
+                    true
+                )
+            );
+    }
+
+    #endregion
+
+    private static LyricsTranslationRevisionEntity CreatePendingRevision()
+    {
+        return LyricsTranslationRevisionEntity.Propose(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            "Proposed replacement text.",
+            "Fixed a typo.",
+            Guid.NewGuid()
+        );
+    }
+
+    #region Decision idempotence
+
+    [Fact]
+    public void Accept_WhenAlreadyAccepted_ShouldReturnFalseAndRaiseNoSecondEvent()
+    {
+        // Arrange
+        LyricsTranslationRevisionEntity revision = LyricsTranslationRevisionFactory.Create(Guid.NewGuid());
+        revision.Accept(Guid.NewGuid());
+        revision.ClearDomainEvents();
+
+        // Act
+        bool result = revision.Accept(Guid.NewGuid());
+
+        // Assert
+        result.Should().BeFalse();
+        revision.DomainEvents.Should().BeEmpty();
+        revision.Status.Should().Be(EnumRevisionStatus.Accepted);
+    }
+
+    [Fact]
+    public void Reject_WhenAlreadyRejected_ShouldReturnFalseAndRaiseNoSecondEvent()
+    {
+        // Arrange
+        LyricsTranslationRevisionEntity revision = LyricsTranslationRevisionFactory.Create(Guid.NewGuid());
+        revision.Reject(Guid.NewGuid());
+        revision.ClearDomainEvents();
+
+        // Act
+        bool result = revision.Reject(Guid.NewGuid());
+
+        // Assert
+        result.Should().BeFalse();
+        revision.DomainEvents.Should().BeEmpty();
+        revision.Status.Should().Be(EnumRevisionStatus.Rejected);
+    }
+
+    [Fact]
+    public void Accept_WhenAlreadyRejected_ShouldThrowAlreadyDecided()
+    {
+        // Arrange
+        LyricsTranslationRevisionEntity revision = LyricsTranslationRevisionFactory.Create(Guid.NewGuid());
+        revision.Reject(Guid.NewGuid());
+
+        // Act
+        Action act = () => revision.Accept(Guid.NewGuid());
+
+        // Assert
+        act.Should()
+            .Throw<ContentRuleException>()
+            .Where(exception => exception.Code == ContentRuleCodes.RevisionAlreadyDecided);
+        revision.Status.Should().Be(EnumRevisionStatus.Rejected);
+    }
+
+    [Fact]
+    public void Reject_WhenAlreadyAccepted_ShouldThrowAlreadyDecided()
+    {
+        // Arrange
+        LyricsTranslationRevisionEntity revision = LyricsTranslationRevisionFactory.Create(Guid.NewGuid());
+        revision.Accept(Guid.NewGuid());
+
+        // Act
+        Action act = () => revision.Reject(Guid.NewGuid());
+
+        // Assert
+        act.Should()
+            .Throw<ContentRuleException>()
+            .Where(exception => exception.Code == ContentRuleCodes.RevisionAlreadyDecided);
+        revision.Status.Should().Be(EnumRevisionStatus.Accepted);
+    }
+
+    [Fact]
+    public void Accept_WhenPending_ShouldReturnTrue()
+    {
+        // Arrange
+        LyricsTranslationRevisionEntity revision = LyricsTranslationRevisionFactory.Create(Guid.NewGuid());
+
+        // Act
+        bool result = revision.Accept(Guid.NewGuid());
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    #endregion
+}

@@ -1,0 +1,367 @@
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.Content.Domain.Entities;
+using _116.Content.Domain.Events;
+using _116.Content.Domain.Exceptions;
+using _116.Content.Domain.StateMachines;
+using _116.Content.TestData.Factories;
+using _116.Tests.TestData.Constants;
+using _116.Tests.TestData.Helpers;
+using AwesomeAssertions;
+using Xunit;
+
+namespace _116.Content.Unit.Tests.Domain.Entities;
+
+/// <summary>
+/// Unit tests for <see cref="ShortVideoEntity"/>.
+/// </summary>
+public class ShortVideoEntityTests
+{
+    private static readonly Guid AuthorId = Guid.NewGuid();
+
+    private static ShortVideoEntity CreateStandalone() =>
+        ShortVideoEntity.CreateStandalone(
+            Guid.NewGuid(),
+            TestConstants.ShortVideo.ValidTitle,
+            TestConstants.ShortVideo.ValidSlug,
+            AuthorId
+        );
+
+    #region CreateStandalone Tests
+
+    [Fact]
+    public void CreateStandalone_WithValidParams_ShouldCreateInactiveDraftWithoutVideoFile()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        const string title = TestConstants.ShortVideo.ValidTitle;
+        const string slug = TestConstants.ShortVideo.ValidSlug;
+
+        // Act
+        ShortVideoEntity shortVideo = ShortVideoEntity.CreateStandalone(id, title, slug, AuthorId);
+
+        // Assert
+        shortVideo.Id.Should().Be(id);
+        shortVideo.Title.Should().Be(title);
+        shortVideo.Slug.Value.Should().Be(slug);
+        shortVideo.VideoFileId.Should().BeNull();
+        shortVideo.AuthorId.Should().Be(AuthorId);
+        shortVideo.IsActive.Should().BeFalse();
+        shortVideo.HasFullVideo.Should().BeFalse();
+        shortVideo.VideoId.Should().BeNull();
+        shortVideo.ThumbnailFileId.Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void CreateStandalone_WithEmptyTitle_ShouldThrowBadRequestException(string? invalidTitle)
+    {
+        // Act
+        Action act = () =>
+            ShortVideoEntity.CreateStandalone(
+                Guid.NewGuid(),
+                invalidTitle!,
+                TestConstants.ShortVideo.ValidSlug,
+                AuthorId
+            );
+
+        // Assert
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.ShortVideoTitleRequired);
+    }
+
+    #endregion
+
+    #region CreateTeaser Tests
+
+    [Fact]
+    public void CreateTeaser_ShouldSetVideoIdAndHasFullVideoTrueAndStayInactive()
+    {
+        // Arrange
+        var videoId = Guid.NewGuid();
+
+        // Act
+        ShortVideoEntity shortVideo = ShortVideoEntity.CreateTeaser(
+            Guid.NewGuid(),
+            TestConstants.ShortVideo.ValidTitle,
+            TestConstants.ShortVideo.ValidSlug,
+            videoId,
+            AuthorId
+        );
+
+        // Assert
+        shortVideo.VideoId.Should().Be(videoId);
+        shortVideo.HasFullVideo.Should().BeTrue();
+        shortVideo.IsActive.Should().BeFalse();
+        shortVideo.VideoFileId.Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void CreateTeaser_WithEmptyTitle_ShouldThrowBadRequestException(string? invalidTitle)
+    {
+        // Act
+        Action act = () =>
+            ShortVideoEntity.CreateTeaser(
+                Guid.NewGuid(),
+                invalidTitle!,
+                TestConstants.ShortVideo.ValidSlug,
+                Guid.NewGuid(),
+                AuthorId
+            );
+
+        // Assert
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.ShortVideoTitleRequired);
+    }
+
+    #endregion
+
+    #region Activate / Deactivate Tests
+
+    [Fact]
+    public void Deactivate_WhenActive_ShouldReturnTrue()
+    {
+        // Arrange
+        ShortVideoEntity shortVideo = CreateStandalone();
+        shortVideo.ReplaceVideoFile(Guid.NewGuid());
+        shortVideo.Activate();
+
+        // Act
+        bool result = shortVideo.Deactivate();
+
+        // Assert
+        result.Should().BeTrue();
+        shortVideo.IsActive.Should().BeFalse();
+    }
+
+    [Fact]
+    public void Deactivate_WhenAlreadyInactive_ShouldReturnFalse()
+    {
+        // Arrange
+        ShortVideoEntity shortVideo = CreateStandalone();
+
+        // Act
+        bool result = shortVideo.Deactivate();
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void Activate_WhenInactiveWithVideoFile_ShouldReturnTrue()
+    {
+        // Arrange
+        ShortVideoEntity shortVideo = CreateStandalone();
+        shortVideo.ReplaceVideoFile(Guid.NewGuid());
+
+        // Act
+        bool result = shortVideo.Activate();
+
+        // Assert
+        result.Should().BeTrue();
+        shortVideo.IsActive.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Activate_WhenAlreadyActive_ShouldReturnFalse()
+    {
+        // Arrange
+        ShortVideoEntity shortVideo = CreateStandalone();
+        shortVideo.ReplaceVideoFile(Guid.NewGuid());
+        shortVideo.Activate();
+
+        // Act
+        bool result = shortVideo.Activate();
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void Activate_WhenNoVideoFile_ShouldThrowBadRequestException()
+    {
+        // Arrange
+        ShortVideoEntity shortVideo = CreateStandalone();
+
+        // Act
+        Action act = () => shortVideo.Activate();
+
+        // Assert
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.ShortVideoFileRequired);
+        shortVideo.IsActive.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region SetThumbnailFileId Tests
+
+    [Fact]
+    public void SetThumbnailFileId_ShouldSetThumbnailFileId()
+    {
+        // Arrange
+        ShortVideoEntity shortVideo = CreateStandalone();
+        var thumbnailFileId = Guid.NewGuid();
+
+        // Act
+        shortVideo.SetThumbnailFileId(thumbnailFileId);
+
+        // Assert
+        shortVideo.ThumbnailFileId.Should().Be(thumbnailFileId);
+    }
+
+    [Fact]
+    public void SetThumbnailFileId_WithNull_ShouldClearThumbnailFileId()
+    {
+        // Arrange
+        ShortVideoEntity shortVideo = CreateStandalone();
+        shortVideo.SetThumbnailFileId(Guid.NewGuid());
+
+        // Act
+        shortVideo.SetThumbnailFileId(null);
+
+        // Assert
+        shortVideo.ThumbnailFileId.Should().BeNull();
+    }
+
+    #endregion
+
+    #region ReplaceVideoFile Tests
+
+    [Fact]
+    public void ReplaceVideoFile_ShouldUpdateVideoFileId()
+    {
+        // Arrange
+        ShortVideoEntity shortVideo = CreateStandalone();
+        var newFileId = Guid.NewGuid();
+
+        // Act
+        shortVideo.ReplaceVideoFile(newFileId);
+
+        // Assert
+        shortVideo.VideoFileId.Should().Be(newFileId);
+    }
+
+    #endregion
+
+    #region Counter Tests
+
+    #endregion
+
+    #region Update Tests
+
+    [Fact]
+    public void Update_WithValidParams_ShouldUpdateFields()
+    {
+        // Arrange
+        ShortVideoEntity shortVideo = CreateStandalone();
+
+        // Act
+        shortVideo.Update("New Title", null);
+
+        // Assert
+        shortVideo.Title.Should().Be("New Title");
+        shortVideo.Slug.Value.Should().Be(TestConstants.ShortVideo.ValidSlug);
+        shortVideo.VideoId.Should().BeNull();
+        shortVideo.HasFullVideo.Should().BeFalse();
+    }
+
+    [Fact]
+    public void Update_WithVideoId_ShouldSetHasFullVideo()
+    {
+        // Arrange
+        ShortVideoEntity shortVideo = CreateStandalone();
+        Guid parentVideoId = Guid.NewGuid();
+
+        // Act
+        shortVideo.Update("Updated", parentVideoId);
+
+        // Assert
+        shortVideo.VideoId.Should().Be(parentVideoId);
+        shortVideo.HasFullVideo.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Update_WithNullVideoId_ShouldRemoveParentLink()
+    {
+        // Arrange
+        Guid parentVideoId = Guid.NewGuid();
+        ShortVideoEntity shortVideo = ShortVideoEntity.CreateTeaser(
+            Guid.NewGuid(),
+            TestConstants.ShortVideo.ValidTitle,
+            TestConstants.ShortVideo.ValidSlug,
+            parentVideoId,
+            AuthorId
+        );
+
+        // Act
+        shortVideo.Update("Standalone Now", null);
+
+        // Assert
+        shortVideo.VideoId.Should().BeNull();
+        shortVideo.HasFullVideo.Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Update_WithEmptyTitle_ShouldThrowBadRequestException(string? invalidTitle)
+    {
+        // Arrange
+        ShortVideoEntity shortVideo = CreateStandalone();
+
+        // Act
+        Action act = () => shortVideo.Update(invalidTitle!, null);
+
+        // Assert
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.ShortVideoTitleRequired);
+    }
+
+    #endregion
+
+    #region MarkDeleted Tests
+
+    [Fact]
+    public void MarkDeleted_ShouldRaiseShortVideoDeletedEventWithCapturedFileIds()
+    {
+        // Arrange
+        ShortVideoEntity shortVideo = CreateStandalone();
+        Guid videoFileId = Guid.NewGuid();
+        Guid thumbnailFileId = Guid.NewGuid();
+        shortVideo.ReplaceVideoFile(videoFileId);
+        shortVideo.SetThumbnailFileId(thumbnailFileId);
+
+        // Act
+        shortVideo.MarkDeleted();
+
+        // Assert
+        shortVideo
+            .DomainEvents.OfType<ShortVideoDeletedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(new ShortVideoDeletedEvent(shortVideo.Id, videoFileId, thumbnailFileId));
+    }
+
+    [Fact]
+    public void MarkDeleted_WhenNoFilesUploaded_ShouldRaiseEventWithNullFileIds()
+    {
+        // Arrange
+        ShortVideoEntity shortVideo = CreateStandalone();
+
+        // Act
+        shortVideo.MarkDeleted();
+
+        // Assert
+        ShortVideoDeletedEvent deletedEvent = shortVideo
+            .DomainEvents.OfType<ShortVideoDeletedEvent>()
+            .Should()
+            .ContainSingle()
+            .Subject;
+        deletedEvent.VideoFileId.Should().BeNull();
+        deletedEvent.ThumbnailFileId.Should().BeNull();
+    }
+
+    #endregion
+}
