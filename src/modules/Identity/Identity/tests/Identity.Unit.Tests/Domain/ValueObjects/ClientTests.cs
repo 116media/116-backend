@@ -6,7 +6,7 @@ using AwesomeAssertions;
 using AwesomeAssertions.Specialized;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Identity.Domain.ValueObjects;
+namespace _116.Identity.Unit.Tests.Domain.ValueObjects;
 
 /// <summary>
 /// Unit tests for <see cref="Client"/> value object.

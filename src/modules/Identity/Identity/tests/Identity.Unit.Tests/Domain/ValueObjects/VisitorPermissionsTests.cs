@@ -1,11 +1,11 @@
 using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.ValueObjects;
-using _116.Tests.Fixtures.Helpers;
+using _116.Tests.TestData.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Identity.Domain.ValueObjects;
+namespace _116.Identity.Unit.Tests.Domain.ValueObjects;
 
 /// <summary>
 /// Unit tests for <see cref="VisitorPermissions"/> static class.

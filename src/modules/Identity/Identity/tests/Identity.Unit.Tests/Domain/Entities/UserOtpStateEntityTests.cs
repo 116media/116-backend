@@ -1,8 +1,16 @@
 using _116.Identity.Domain.Entities;
+using _116.Identity.TestData.Factories;
+using _116.Identity.TestData.Mocks.Infrastructure;
+using _116.Identity.TestData.Mocks.Repositories;
+using _116.Identity.TestData.Mocks.Services;
+using _116.Storage.TestData.Factories;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Storage.TestData.Mocks.Services;
+using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Identity.Domain.Entities;
+namespace _116.Identity.Unit.Tests.Domain.Entities;
 
 /// <summary>
 /// Unit tests for <see cref="UserOtpStateEntity" />. The record is read-only by design — the
