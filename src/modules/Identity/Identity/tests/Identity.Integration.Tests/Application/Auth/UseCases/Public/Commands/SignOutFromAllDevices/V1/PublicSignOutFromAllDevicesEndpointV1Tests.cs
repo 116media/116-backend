@@ -1,0 +1,62 @@
+using _116.Identity.Application.Auth.UseCases.Public.Commands.SignOutFromAllDevices.V1;
+using _116.Identity.Infrastructure.Persistence;
+using _116.Identity.TestData.Factories;
+using _116.Identity.TestData.Mocks.Infrastructure;
+using _116.Identity.TestData.Mocks.Repositories;
+using _116.Identity.TestData.Mocks.Services;
+using _116.Storage.TestData.Factories;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Storage.TestData.Mocks.Services;
+using _116.Tests.TestData.Mocks;
+
+namespace _116.Identity.Integration.Tests.Application.Auth.UseCases.Public.Commands.SignOutFromAllDevices.V1;
+
+/// <summary>
+/// Integration tests for the PublicSignOutFromAllDevices endpoint.
+/// </summary>
+[Collection("Database")]
+public class PublicSignOutFromAllDevicesEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
+{
+    [Fact]
+    public async Task SignOutFromAllDevices_WithNoAuth_ReturnsUnauthorized()
+    {
+        Client.ClearAuthentication();
+
+        var response = await Client.PostAsync(Routes.Public.Auth.SignOutAll(), null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task SignOutFromAllDevices_AsVisitor_ReturnsOk()
+    {
+        await using var context = CreateDbContext<IdentityDbContext>();
+        var session = SessionFactory.Create(TestUser.VisitorId);
+        context.Sessions.Add(session);
+        await context.SaveChangesAsync();
+
+        Client.AuthenticateAsVisitor();
+
+        var response = await Client.PostAsync(Routes.Public.Auth.SignOutAll(), null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        PublicSignOutFromAllDevicesResponse body = await response.ReadAsAsync<PublicSignOutFromAllDevicesResponse>();
+        body.IsSuccess.Should().BeTrue();
+
+        await using var verifyContext = CreateDbContext<IdentityDbContext>();
+        var sessions = await verifyContext.Sessions.Where(s => s.UserId == TestUser.VisitorId).ToListAsync();
+        sessions.Should().NotBeEmpty();
+        sessions.Should().OnlyContain(s => s.IsRevoked);
+    }
+
+    [Fact]
+    public async Task SignOutFromAllDevices_AsAdmin_ReturnsForbidden()
+    {
+        Client.AuthenticateAsAdmin();
+
+        var response = await Client.PostAsync(Routes.Public.Auth.SignOutAll(), null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+}
