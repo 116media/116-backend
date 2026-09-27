@@ -1,6 +1,6 @@
+using _116.BuildingBlocks.Infrastructure.Jobs;
 using _116.Identity.Application.Auth.Repositories;
 using _116.Identity.Application.Shared.Persistence;
-using _116.Shared.Application.Jobs;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Quartz;
