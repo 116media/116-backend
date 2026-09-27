@@ -4,9 +4,9 @@ using _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin.Contra
 using _116.Identity.Application.Session.Factories.Contracts;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Entities;
-using _116.Tests.Fixtures.Builders;
+using _116.Identity.TestData.Builders;
 
-namespace _116.Tests.Fixtures.Helpers;
+namespace _116.Identity.TestData.Helpers;
 
 /// <summary>
 /// Shared test helpers for authentication and session-related tests.
