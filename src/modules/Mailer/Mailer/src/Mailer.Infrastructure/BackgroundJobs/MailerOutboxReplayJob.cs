@@ -1,5 +1,5 @@
+using _116.BuildingBlocks.Infrastructure.Outbox;
 using _116.Mailer.Infrastructure.Persistence;
-using _116.Shared.Infrastructure.Outbox;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 

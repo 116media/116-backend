@@ -1,4 +1,5 @@
-using _116.BuildingBlocks.Constants;
+using _116.BuildingBlocks.Infrastructure.Jobs;
+using _116.BuildingBlocks.Presentation.Constants;
 using _116.Mailer.Application.Newsletter.Services;
 using _116.Mailer.Application.Shared.Exceptions;
 using _116.Mailer.Application.Shared.Repositories;
@@ -7,7 +8,7 @@ using _116.Mailer.Contracts.Application.DTOs;
 using _116.Mailer.Domain.Constants;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Infrastructure.Persistence;
-using _116.Shared.Application.Jobs;
+using _116.Shared.Domain.Constants;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -111,7 +112,7 @@ public class OutboxEmailDispatcherJob(IServiceScopeFactory scopeFactory, ILogger
         try
         {
             var message = new EmailMessage(
-                To: new EmailRecipientDto(email.RecipientAddress, UserConstants.DefaultLocale, email.RecipientName),
+                To: new EmailRecipientDto(email.RecipientAddress, LocaleConstants.DefaultLocale, email.RecipientName),
                 Subject: email.Subject,
                 HtmlBody: email.HtmlBody,
                 TextBody: email.TextBody,
