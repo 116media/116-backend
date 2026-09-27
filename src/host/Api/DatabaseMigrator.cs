@@ -1,7 +1,7 @@
 using _116.Content.Infrastructure.Persistence;
-using _116.Core.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Mailer.Infrastructure.Persistence;
+using _116.Storage.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace _116.Api;
@@ -24,7 +24,7 @@ public static class DatabaseMigrator
     {
         using IServiceScope scope = serviceProvider.CreateScope();
 
-        await scope.ServiceProvider.GetRequiredService<CoreDbContext>().Database.MigrateAsync(cancellationToken);
+        await scope.ServiceProvider.GetRequiredService<StorageDbContext>().Database.MigrateAsync(cancellationToken);
         await scope.ServiceProvider.GetRequiredService<IdentityDbContext>().Database.MigrateAsync(cancellationToken);
         await scope.ServiceProvider.GetRequiredService<ContentDbContext>().Database.MigrateAsync(cancellationToken);
         await scope.ServiceProvider.GetRequiredService<MailerDbContext>().Database.MigrateAsync(cancellationToken);

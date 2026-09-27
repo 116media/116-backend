@@ -4,13 +4,14 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="../Modules/Core/Core/Core.csproj" />
-        <ProjectReference Include="../Modules/Identity/Identity/Identity.csproj" />
-        <ProjectReference Include="../Modules/Content/Content/Content.csproj" />
-        <ProjectReference Include="../Modules/Mailer/Mailer/Mailer.csproj" />
+        <ProjectReference Include="../../modules/Storage/Storage/src/Storage.Infrastructure/Storage.Infrastructure.csproj" />
+        <ProjectReference Include="../../modules/Identity/Identity/src/Identity.Infrastructure/Identity.Infrastructure.csproj" />
+        <ProjectReference Include="../../modules/Content/Content/src/Content.Infrastructure/Content.Infrastructure.csproj" />
+        <ProjectReference Include="../../modules/Mailer/Mailer/src/Mailer.Infrastructure/Mailer.Infrastructure.csproj" />
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="DotNetEnv" />
         <PackageReference Include="Asp.Versioning.Http" />
         <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" />
         <PackageReference Include="AspNetCore.HealthChecks.NpgSql" />
