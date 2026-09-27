@@ -1,0 +1,65 @@
+using _116.BuildingBlocks.Application.CQRS;
+using _116.BuildingBlocks.Presentation.Constants.Authorization.Policies;
+using _116.BuildingBlocks.Presentation.Constants.RateLimit;
+using _116.BuildingBlocks.Presentation.Extensions;
+using _116.Content.Application.Catalog.Constants;
+using _116.Content.Application.Shared.DTOs;
+using _116.Content.Domain.Constants;
+using Carter;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+
+namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.DeactivateCategory.V1;
+
+/// <summary>
+/// Response model for a successful category deactivation.
+/// </summary>
+/// <param name="Category">The updated category information.</param>
+internal record AdminDeactivateCategoryResponse(CategoryDto Category);
+
+/// <summary>
+/// Defines the admin deactivate category endpoint.
+/// </summary>
+internal class AdminDeactivateCategoryEndpointV1 : ICarterModule
+{
+    /// <summary>
+    /// Configures the category deactivation route within the API pipeline.
+    /// Maps the <c>PATCH /api/v1/admin/categories/{id:guid}/deactivate</c> endpoint to handle category deactivation requests.
+    /// </summary>
+    /// <param name="app">The route builder used to register API endpoints.</param>
+    public void AddRoutes(IEndpointRouteBuilder app)
+    {
+        RouteGroupBuilder group = app.MapApiVersionGroup(1)
+            .MapGroup($"{ContentConstants.Admin}/{CatalogRouteConstants.Categories}")
+            .WithTags($"{ContentConstants.Admin}::{CatalogRouteConstants.Categories}");
+
+        group
+            .MapPatch(
+                $"/{{id}}/{CatalogRouteConstants.Deactivate}",
+                async (string id, IDispatcher dispatcher, CancellationToken cancellationToken) =>
+                {
+                    var command = new AdminDeactivateCategoryCommand(Id: id);
+                    AdminDeactivateCategoryResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
+
+                    var response = new AdminDeactivateCategoryResponse(Category: result.Category);
+                    return Results.Ok(response);
+                }
+            )
+            .WithName(endpointName: AdminDeactivateCategoryMetaField.DeactivateCategory.Name)
+            .WithSummary(summary: AdminDeactivateCategoryMetaField.DeactivateCategory.Summary)
+            .WithDescription(description: AdminDeactivateCategoryMetaField.DeactivateCategory.Description)
+            .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
+            .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentManagement)
+            .Produces<AdminDeactivateCategoryResponse>(statusCode: StatusCodes.Status200OK)
+            .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
+            .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)
+            .ProducesProblem(statusCode: StatusCodes.Status404NotFound)
+            .ProducesProblem(statusCode: StatusCodes.Status409Conflict)
+            .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
+    }
+}
