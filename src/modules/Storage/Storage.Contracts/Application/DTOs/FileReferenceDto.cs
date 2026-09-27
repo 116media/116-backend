@@ -1,4 +1,4 @@
-namespace _116.Core.Contracts.Application.DTOs;
+namespace _116.Storage.Contracts.Application.DTOs;
 
 /// <summary>
 /// An opaque reference to a stored file: everything a consuming module may know about it.

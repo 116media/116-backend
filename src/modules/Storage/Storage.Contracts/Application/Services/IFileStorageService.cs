@@ -1,8 +1,8 @@
-using _116.Core.Contracts.Application.DTOs;
-using _116.Core.Contracts.Domain.Enums;
+using _116.Storage.Contracts.Application.DTOs;
+using _116.Storage.Contracts.Domain.Enums;
 using Microsoft.AspNetCore.Http;
 
-namespace _116.Core.Contracts.Application.Services;
+namespace _116.Storage.Contracts.Application.Services;
 
 /// <summary>
 /// An asset that is in storage but has no row behind it yet. Returned by the store's upload
@@ -25,7 +25,7 @@ public sealed record StoredFile
 }
 
 /// <summary>
-/// The storage capability Core exposes to other modules. Upload, record, resolve and delete —
+/// The storage capability Storage exposes to other modules. Upload, record, resolve and delete —
 /// no entity, no persistence detail and no provider type crosses this seam.
 /// </summary>
 public interface IFileStorageService

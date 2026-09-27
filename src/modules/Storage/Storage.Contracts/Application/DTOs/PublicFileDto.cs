@@ -1,4 +1,4 @@
-namespace _116.Core.Contracts.Application.DTOs;
+namespace _116.Storage.Contracts.Application.DTOs;
 
 /// <summary>
 /// The public projection of a stored file: what a client needs to render it. Carries no
