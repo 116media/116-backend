@@ -1,4 +1,4 @@
-namespace _116.Integration.Tests.Api;
+namespace _116.EndToEnd.Tests.Api;
 
 /// <summary>
 /// Integration tests for the health endpoints: liveness reports process-up without probing

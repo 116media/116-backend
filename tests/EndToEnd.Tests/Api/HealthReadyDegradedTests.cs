@@ -1,4 +1,4 @@
-namespace _116.Integration.Tests.Api;
+namespace _116.EndToEnd.Tests.Api;
 
 /// <summary>
 /// Verifies that readiness degrades to 503 when the database is unreachable while liveness
