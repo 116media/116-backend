@@ -1,11 +1,11 @@
-using _116.BuildingBlocks.Utils;
-using _116.Tests.Fixtures.Constants;
+using _116.BuildingBlocks.Presentation.Utils;
+using _116.Tests.TestData.Constants;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Xunit;
 
-namespace _116.Unit.Tests.BuildingBlocks.Utils;
+namespace _116.Shared.Unit.Tests.BuildingBlocks.Utils;
 
 /// <summary>
 /// Unit tests for <see cref="ApiVersionUrl"/>.
