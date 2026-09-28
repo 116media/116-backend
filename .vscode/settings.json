@@ -10,7 +10,8 @@
     "omnisharp.enableEditorConfigSupport": true,
     "omnisharp.enableRoslynAnalyzers": true,
     "files.associations": {
-        "*.cs": "csharp"
+        "*.cs": "csharp",
+        "*.slnf": "json"
     },
     "editor.insertSpaces": true,
     "editor.tabSize": 4,
