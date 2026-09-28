@@ -1,0 +1,53 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <RootNamespace>_116.Shared.Integration.Tests</RootNamespace>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+        <NoWarn>$(NoWarn);xUnit1051;EF1001</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="xunit.v3" />
+        <PackageReference Include="xunit.runner.visualstudio">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" />
+
+        <PackageReference Include="AwesomeAssertions" />
+        <PackageReference Include="AwesomeAssertions.Analyzers">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+        </PackageReference>
+
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+        <PackageReference Include="Testcontainers.PostgreSql" />
+        <PackageReference Include="Testcontainers.Redis" />
+        <PackageReference Include="Respawn" />
+        <PackageReference Include="Bogus" />
+        <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
+        <PackageReference Include="EFCore.NamingConventions" />
+
+        <PackageReference Include="coverlet.msbuild">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="coverlet.collector">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="../../../modules/Content/Content/tests/Content.TestData/Content.TestData.csproj" />
+        <ProjectReference Include="../../../modules/Identity/Identity/tests/Identity.TestData/Identity.TestData.csproj" />
+        <ProjectReference Include="../../../modules/Storage/Storage/tests/Storage.TestData/Storage.TestData.csproj" />
+        <ProjectReference Include="../../src/Shared.Domain/Shared.Domain.csproj" />
+        <ProjectReference Include="../../src/BuildingBlocks.Domain/BuildingBlocks.Domain.csproj" />
+        <ProjectReference Include="../../src/BuildingBlocks.Application/BuildingBlocks.Application.csproj" />
+        <ProjectReference Include="../../src/BuildingBlocks.Infrastructure/BuildingBlocks.Infrastructure.csproj" />
+        <ProjectReference Include="../../src/BuildingBlocks.Presentation/BuildingBlocks.Presentation.csproj" />
+        <ProjectReference Include="../../../../tests/Fixtures/Fixtures.csproj" />
+        <ProjectReference Include="../../../../tests/TestData/TestData.csproj" />
+    </ItemGroup>
+</Project>
