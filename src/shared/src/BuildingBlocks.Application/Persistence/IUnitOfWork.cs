@@ -1,4 +1,4 @@
-namespace _116.Shared.Application.Persistence;
+namespace _116.BuildingBlocks.Application.Persistence;
 
 /// <summary>
 /// Unit of Work's pattern for managing database transactions.
