@@ -1,28 +1,14 @@
 using _116.BuildingBlocks.Application.Exceptions;
-using _116.Content.Application.Editorial.UseCases.Admin.Commands.RejectLyricsSubmission.V1;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Content.TestData.Builders.Requests;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
 using _116.Mailer.Contracts.Domain.Enums;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Infrastructure.Persistence;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Mocks;
 using FluentValidation;
-using FluentValidation.Results;
 
 namespace _116.Content.Integration.Tests.Application.Editorial.UseCases.Admin.Commands.RejectLyricsSubmission.V1;
 
@@ -39,7 +25,7 @@ public class AdminRejectLyricsSubmissionEndpointV1Tests(PostgresFixture db) : Ba
 
         var response = await Client.PatchAsJsonAsync(
             Routes.Admin.Lyrics.RejectSubmission(Guid.NewGuid()),
-            new AdminRejectLyricsSubmissionRequest("Not a good fit.")
+            new AdminRejectLyricsSubmissionRequestBuilder().Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -52,7 +38,7 @@ public class AdminRejectLyricsSubmissionEndpointV1Tests(PostgresFixture db) : Ba
 
         var response = await Client.PatchAsJsonAsync(
             Routes.Admin.Lyrics.RejectSubmission(Guid.NewGuid()),
-            new AdminRejectLyricsSubmissionRequest("Not a good fit.")
+            new AdminRejectLyricsSubmissionRequestBuilder().Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
@@ -72,7 +58,7 @@ public class AdminRejectLyricsSubmissionEndpointV1Tests(PostgresFixture db) : Ba
 
         var response = await Client.PatchAsJsonAsync(
             Routes.Admin.Lyrics.RejectSubmission(submission.Id),
-            new AdminRejectLyricsSubmissionRequest(string.Empty)
+            new AdminRejectLyricsSubmissionRequestBuilder().WithNote(string.Empty).Build()
         );
 
         await response.ShouldBeValidationProblem(
@@ -95,7 +81,9 @@ public class AdminRejectLyricsSubmissionEndpointV1Tests(PostgresFixture db) : Ba
 
         var response = await Client.PatchAsJsonAsync(
             Routes.Admin.Lyrics.RejectSubmission(submission.Id),
-            new AdminRejectLyricsSubmissionRequest("Les paroles contiennent des erreurs de transcription.")
+            new AdminRejectLyricsSubmissionRequestBuilder()
+                .WithNote("Les paroles contiennent des erreurs de transcription.")
+                .Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -127,13 +115,13 @@ public class AdminRejectLyricsSubmissionEndpointV1Tests(PostgresFixture db) : Ba
 
         var first = await Client.PatchAsJsonAsync(
             Routes.Admin.Lyrics.RejectSubmission(submission.Id),
-            new AdminRejectLyricsSubmissionRequest("Not a good fit.")
+            new AdminRejectLyricsSubmissionRequestBuilder().Build()
         );
         first.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var second = await Client.PatchAsJsonAsync(
             Routes.Admin.Lyrics.RejectSubmission(submission.Id),
-            new AdminRejectLyricsSubmissionRequest("Not a good fit.")
+            new AdminRejectLyricsSubmissionRequestBuilder().Build()
         );
 
         await second.ShouldBeProblem<ConflictException>(
