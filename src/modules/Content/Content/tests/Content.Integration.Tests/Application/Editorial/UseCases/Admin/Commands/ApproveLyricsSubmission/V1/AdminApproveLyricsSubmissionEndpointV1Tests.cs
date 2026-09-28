@@ -5,20 +5,8 @@ using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Content.TestData.Builders.Requests;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Mocks;
 
 namespace _116.Content.Integration.Tests.Application.Editorial.UseCases.Admin.Commands.ApproveLyricsSubmission.V1;
 
@@ -35,7 +23,7 @@ public class AdminApproveLyricsSubmissionEndpointV1Tests(PostgresFixture db) : B
 
         var response = await Client.PutAsJsonAsync(
             Routes.Admin.Lyrics.Submission(Guid.NewGuid()),
-            new AdminApproveLyricsSubmissionRequest("some-slug")
+            new AdminApproveLyricsSubmissionRequestBuilder().WithSlug("some-slug").Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -48,7 +36,7 @@ public class AdminApproveLyricsSubmissionEndpointV1Tests(PostgresFixture db) : B
 
         var response = await Client.PutAsJsonAsync(
             Routes.Admin.Lyrics.Submission(Guid.NewGuid()),
-            new AdminApproveLyricsSubmissionRequest("some-slug")
+            new AdminApproveLyricsSubmissionRequestBuilder().WithSlug("some-slug").Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
@@ -61,7 +49,7 @@ public class AdminApproveLyricsSubmissionEndpointV1Tests(PostgresFixture db) : B
 
         var response = await Client.PutAsJsonAsync(
             Routes.Admin.Lyrics.Submission(Guid.NewGuid()),
-            new AdminApproveLyricsSubmissionRequest("some-slug")
+            new AdminApproveLyricsSubmissionRequestBuilder().WithSlug("some-slug").Build()
         );
 
         await response.ShouldBeProblem<NotFoundException>(
@@ -88,7 +76,7 @@ public class AdminApproveLyricsSubmissionEndpointV1Tests(PostgresFixture db) : B
 
         var response = await Client.PutAsJsonAsync(
             Routes.Admin.Lyrics.Submission(submission.Id),
-            new AdminApproveLyricsSubmissionRequest("eloko-oyo-approved")
+            new AdminApproveLyricsSubmissionRequestBuilder().WithSlug("eloko-oyo-approved").Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -134,7 +122,7 @@ public class AdminApproveLyricsSubmissionEndpointV1Tests(PostgresFixture db) : B
 
         var response = await Client.PutAsJsonAsync(
             Routes.Admin.Lyrics.Submission(submission.Id),
-            new AdminApproveLyricsSubmissionRequest("already-taken-slug")
+            new AdminApproveLyricsSubmissionRequestBuilder().WithSlug("already-taken-slug").Build()
         );
 
         await response.ShouldBeProblem<ConflictException>(
@@ -166,7 +154,7 @@ public class AdminApproveLyricsSubmissionEndpointV1Tests(PostgresFixture db) : B
 
         var response = await Client.PutAsJsonAsync(
             Routes.Admin.Lyrics.Submission(submission.Id),
-            new AdminApproveLyricsSubmissionRequest("some-other-slug")
+            new AdminApproveLyricsSubmissionRequestBuilder().WithSlug("some-other-slug").Build()
         );
 
         await response.ShouldBeProblem<ConflictException>(
