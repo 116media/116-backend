@@ -1,12 +1,12 @@
 using System.Text.Json;
-using _116.Shared.Application.Exceptions.Handlers.Contracts;
-using _116.Shared.Application.Exceptions.Messages;
+using _116.BuildingBlocks.Application.Exceptions.Messages;
+using _116.BuildingBlocks.Presentation.Exceptions.Handlers.Contracts;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace _116.Shared.Application.Exceptions.Handlers.Strategies;
+namespace _116.BuildingBlocks.Presentation.Exceptions.Handlers.Strategies;
 
 /// <summary>
 /// Strategy for handling FluentValidation ValidationException instances. Renders the failures as

@@ -1,4 +1,4 @@
-namespace _116.Shared.Application.Exceptions.Handlers.Contracts;
+namespace _116.BuildingBlocks.Presentation.Exceptions.Handlers.Contracts;
 
 /// <summary>
 /// The <c>type</c> URIs carried by RFC 9457 problem responses. A rule-coded problem is

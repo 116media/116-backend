@@ -1,10 +1,10 @@
 using System.Collections.Concurrent;
-using _116.Shared.Application.Exceptions.Handlers.Contracts;
-using _116.Shared.Application.Exceptions.Handlers.Strategies;
+using _116.BuildingBlocks.Presentation.Exceptions.Handlers.Contracts;
+using _116.BuildingBlocks.Presentation.Exceptions.Handlers.Strategies;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace _116.Shared.Application.Exceptions.Handlers;
+namespace _116.BuildingBlocks.Presentation.Exceptions.Handlers;
 
 /// <summary>
 /// Thread-safe registry that maps exception types to their corresponding handling strategies.

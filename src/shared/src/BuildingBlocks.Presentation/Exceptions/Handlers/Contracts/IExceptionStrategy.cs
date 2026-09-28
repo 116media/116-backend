@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace _116.Shared.Application.Exceptions.Handlers.Contracts;
+namespace _116.BuildingBlocks.Presentation.Exceptions.Handlers.Contracts;
 
 /// <summary>
 /// Defines the contract for handling specific exception types and converting them to ProblemDetails.

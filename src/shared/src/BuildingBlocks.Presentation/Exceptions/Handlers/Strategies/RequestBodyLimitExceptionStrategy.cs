@@ -1,8 +1,8 @@
-using _116.Shared.Application.Exceptions.Handlers.Contracts;
+using _116.BuildingBlocks.Presentation.Exceptions.Handlers.Contracts;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace _116.Shared.Application.Exceptions.Handlers.Strategies;
+namespace _116.BuildingBlocks.Presentation.Exceptions.Handlers.Strategies;
 
 /// <summary>
 /// Strategy for handling <see cref="BadHttpRequestException" /> instances, so a request-body

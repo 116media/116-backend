@@ -1,9 +1,10 @@
+using _116.BuildingBlocks.Application.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
-namespace _116.Shared.Application.Exceptions.Handlers;
+namespace _116.BuildingBlocks.Presentation.Exceptions.Handlers;
 
 /// <summary>
 /// Enterprise-grade exception handler using the Strategy pattern for maximum maintainability.
