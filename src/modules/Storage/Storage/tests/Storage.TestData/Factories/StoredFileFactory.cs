@@ -1,8 +1,11 @@
-using _116.Core.Contracts.Application.DTOs;
-using _116.Core.Contracts.Application.Services;
-using _116.Core.Domain.Entities;
+using _116.Storage.Contracts.Application.DTOs;
+using _116.Storage.Contracts.Application.Services;
+using _116.Storage.Domain.Entities;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Storage.TestData.Mocks.Services;
+using _116.Tests.TestData.Mocks;
 
-namespace _116.Tests.Fixtures.Factories.Core;
+namespace _116.Storage.TestData.Factories;
 
 /// <summary>
 /// Builds <see cref="StoredFile" /> handles, the uploaded-but-unrecorded shape the storage

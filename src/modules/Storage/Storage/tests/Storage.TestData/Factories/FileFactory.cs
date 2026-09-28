@@ -1,8 +1,8 @@
-using _116.Core.Domain.Entities;
-using _116.Tests.Fixtures.Builders.Entities.Core;
-using _116.Tests.Fixtures.Constants;
+using _116.Storage.Domain.Entities;
+using _116.Storage.TestData.Builders.Entities;
+using _116.Tests.TestData.Constants;
 
-namespace _116.Tests.Fixtures.Factories.Core;
+namespace _116.Storage.TestData.Factories;
 
 /// <summary>
 /// Named aliases for <see cref="FileBuilder" /> chains that three or more tests share verbatim.
