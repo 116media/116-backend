@@ -1,8 +1,8 @@
 using System.Security.Claims;
-using _116.Shared.Application.Services;
+using _116.BuildingBlocks.Application.Services;
 using Microsoft.AspNetCore.Http;
 
-namespace _116.Shared.Infrastructure.Services;
+namespace _116.BuildingBlocks.Presentation.Services;
 
 /// <summary>
 /// Resolves the current actor from the active HTTP context.
