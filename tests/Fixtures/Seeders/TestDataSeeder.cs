@@ -2,7 +2,7 @@ using _116.Content.Infrastructure.Persistence.Seeds.ContentTypes;
 using _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
 using _116.Identity.Infrastructure.Persistence.Seeds.Visitor;
 
-namespace _116.Integration.Tests.Common.Seeders;
+namespace _116.Tests.Fixtures.Seeders;
 
 /// <summary>
 /// Provides reusable seed-data helpers for integration tests that need

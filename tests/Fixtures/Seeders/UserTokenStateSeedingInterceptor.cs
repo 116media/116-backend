@@ -1,9 +1,17 @@
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
-using _116.Tests.Fixtures.Constants;
+using _116.Identity.TestData.Factories;
+using _116.Identity.TestData.Mocks.Infrastructure;
+using _116.Identity.TestData.Mocks.Repositories;
+using _116.Identity.TestData.Mocks.Services;
+using _116.Storage.TestData.Factories;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Storage.TestData.Mocks.Services;
+using _116.Tests.TestData.Constants;
+using _116.Tests.TestData.Mocks;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
-namespace _116.Integration.Tests.Common.Seeders;
+namespace _116.Tests.Fixtures.Seeders;
 
 /// <summary>
 /// Test-host interceptor that gives every user inserted by a test a token-invalidation record
