@@ -1,4 +1,4 @@
-namespace _116.Shared.Application.Metadata;
+namespace _116.BuildingBlocks.Application.Metadata;
 
 /// <summary>
 /// Represents metadata information for an API route.
