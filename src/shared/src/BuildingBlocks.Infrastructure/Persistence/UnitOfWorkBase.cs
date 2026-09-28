@@ -1,9 +1,9 @@
 using System.Data.Common;
-using _116.Shared.Application.Persistence;
+using _116.BuildingBlocks.Application.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace _116.Shared.Infrastructure.Persistence;
+namespace _116.BuildingBlocks.Infrastructure.Persistence;
 
 /// <summary>
 /// Commits one module's context and runs transactions that also cover the other module contexts
