@@ -326,7 +326,17 @@ def refactor_path(new: str) -> str:
 
 
 def main() -> int:
-    # After the swap the pre-move tree is `src.old/` + `tests.old/`; the map is a record of it either way.
+    # The map is computed from the pre-move tree: `src/` + `tests/` before the swap, `src.old/` +
+    # `tests.old/` after it. Once those are deleted the generator can no longer reproduce it, and the
+    # committed TSV is the record; regenerating from the post-swap tree would emit new -> new rows.
+    if not (REPO / "src.old").exists() and (REPO / "src/modules").exists():
+        print(
+            "refusing to regenerate: the pre-move tree is gone, so "
+            "docs/architecture-audit/implementation-specs/stage-18-move-map.tsv is the record",
+            file=sys.stderr,
+        )
+        return 1
+
     roots = ["src.old", "tests.old"] if (REPO / "src.old").exists() else ["src", "tests"]
     tracked = [
         f.split(".old", 1)[0] + f.split(".old", 1)[1] if ".old" in f else f
