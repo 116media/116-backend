@@ -1,12 +1,12 @@
 using System.Reflection;
-using _116.Shared.Application.Extensions;
-using _116.Shared.Application.Services;
-using _116.Shared.Contracts.Application.CQRS;
+using _116.BuildingBlocks.Application.CQRS;
+using _116.BuildingBlocks.Application.Services;
+using _116.BuildingBlocks.Presentation.Extensions;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace _116.Unit.Tests.Shared.Application.Extensions;
+namespace _116.EndToEnd.Tests;
 
 /// <summary>
 /// Unit tests for <see cref="CqrsExtension"/>.
@@ -78,7 +78,7 @@ public class CqrsExtensionTests
         var services = new ServiceCollection();
         services.AddLogging();
         // Use Identity assembly which has actual handlers
-        Assembly identityAssembly = Assembly.Load("Identity");
+        Assembly identityAssembly = Assembly.Load("Identity.Application");
 
         // Act
         services.AddCqrsWithAssemblies(identityAssembly);
@@ -94,7 +94,7 @@ public class CqrsExtensionTests
         // Arrange
         var services = new ServiceCollection();
         services.AddLogging();
-        Assembly identityAssembly = Assembly.Load("Identity");
+        Assembly identityAssembly = Assembly.Load("Identity.Application");
         services.AddCqrsWithAssemblies(identityAssembly);
 
         // Act
@@ -112,7 +112,7 @@ public class CqrsExtensionTests
         // Arrange
         var services = new ServiceCollection();
         services.AddLogging();
-        Assembly identityAssembly = Assembly.Load("Identity");
+        Assembly identityAssembly = Assembly.Load("Identity.Application");
         services.AddCqrsWithAssemblies(identityAssembly);
 
         // Act

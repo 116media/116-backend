@@ -3,15 +3,19 @@ using System.Globalization;
 using System.Reflection;
 using System.Resources;
 using System.Text.RegularExpressions;
+using _116.BuildingBlocks.Application.Exceptions.Messages;
 using _116.Content;
-using _116.Core;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Identity;
+using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Mailer;
-using _116.Shared.Application.Exceptions.Messages;
+using _116.Mailer.Application.Shared.Validators;
+using _116.Storage;
+using _116.Storage.Application.Shared.Errors.Facade;
 using AwesomeAssertions;
 using Xunit;
 
-namespace _116.Unit.Tests.Shared.Application.Localization;
+namespace _116.EndToEnd.Tests;
 
 /// <summary>
 /// Asserts that every key defined in a neutral message catalogue is present and populated in the
@@ -42,10 +46,10 @@ public class ResourceCompletenessTests
     private static readonly Assembly[] ResourceAssemblies =
     [
         typeof(SharedExceptionMessage).Assembly,
-        typeof(CoreModule).Assembly,
-        typeof(IdentityModule).Assembly,
-        typeof(ContentModule).Assembly,
-        typeof(MailerModule).Assembly,
+        typeof(StorageI18n).Assembly,
+        typeof(IdentityI18n).Assembly,
+        typeof(ContentI18n).Assembly,
+        typeof(MailerValidation).Assembly,
     ];
 
     /// <summary>

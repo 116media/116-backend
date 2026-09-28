@@ -1,6 +1,6 @@
 using _116.Identity.Infrastructure.Persistence;
 
-namespace _116.Integration.Tests;
+namespace _116.EndToEnd.Tests;
 
 /// <summary>
 /// Validates that the integration test infrastructure boots correctly.
