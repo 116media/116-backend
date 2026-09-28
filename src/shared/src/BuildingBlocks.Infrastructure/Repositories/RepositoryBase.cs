@@ -1,9 +1,10 @@
-using _116.Shared.Application.Exceptions;
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.BuildingBlocks.Domain;
+using _116.BuildingBlocks.Infrastructure.Extensions;
 using _116.Shared.Domain;
-using _116.Shared.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 
-namespace _116.Shared.Infrastructure.Repositories;
+namespace _116.BuildingBlocks.Infrastructure.Repositories;
 
 /// <summary>
 /// Entity Framework implementation of <see cref="IRepository{TEntity, TId}" />. Derived types
