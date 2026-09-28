@@ -4,20 +4,8 @@ using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.LinkLyricsArtist.V1;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Content.TestData.Builders.Requests;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Mocks;
 
 namespace _116.Content.Integration.Tests.Application.Editorial.UseCases.Admin.Commands.LinkLyricsArtist.V1;
 
@@ -54,7 +42,7 @@ public class AdminLinkLyricsArtistEndpointV1Tests(PostgresFixture db) : BaseApiT
                 Guid.NewGuid(),
                 EditorialRouteConstants.Artist
             ),
-            new AdminLinkLyricsArtistRequest(null)
+            new AdminLinkLyricsArtistRequestBuilder().Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -71,7 +59,7 @@ public class AdminLinkLyricsArtistEndpointV1Tests(PostgresFixture db) : BaseApiT
                 Guid.NewGuid(),
                 EditorialRouteConstants.Artist
             ),
-            new AdminLinkLyricsArtistRequest(null)
+            new AdminLinkLyricsArtistRequestBuilder().Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
@@ -88,7 +76,7 @@ public class AdminLinkLyricsArtistEndpointV1Tests(PostgresFixture db) : BaseApiT
                 Guid.NewGuid(),
                 EditorialRouteConstants.Artist
             ),
-            new AdminLinkLyricsArtistRequest(null)
+            new AdminLinkLyricsArtistRequestBuilder().Build()
         );
 
         await response.ShouldBeProblem<NotFoundException>(
@@ -105,7 +93,7 @@ public class AdminLinkLyricsArtistEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         var response = await Client.PutAsJsonAsync(
             Routes.Admin.Editorial.Action(EditorialRouteConstants.Lyrics, lyrics.Id, EditorialRouteConstants.Artist),
-            new AdminLinkLyricsArtistRequest(artist.Id)
+            new AdminLinkLyricsArtistRequestBuilder().WithArtistId(artist.Id).Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -127,7 +115,7 @@ public class AdminLinkLyricsArtistEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         await Client.PutAsJsonAsync(
             Routes.Admin.Editorial.Action(EditorialRouteConstants.Lyrics, lyrics.Id, EditorialRouteConstants.Artist),
-            new AdminLinkLyricsArtistRequest(artist.Id)
+            new AdminLinkLyricsArtistRequestBuilder().WithArtistId(artist.Id).Build()
         );
 
         await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
@@ -143,7 +131,7 @@ public class AdminLinkLyricsArtistEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         var response = await Client.PutAsJsonAsync(
             Routes.Admin.Editorial.Action(EditorialRouteConstants.Lyrics, lyrics.Id, EditorialRouteConstants.Artist),
-            new AdminLinkLyricsArtistRequest(Guid.NewGuid())
+            new AdminLinkLyricsArtistRequestBuilder().WithArtistId(Guid.NewGuid()).Build()
         );
 
         await response.ShouldBeProblem<NotFoundException>(
@@ -160,12 +148,12 @@ public class AdminLinkLyricsArtistEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         await Client.PutAsJsonAsync(
             Routes.Admin.Editorial.Action(EditorialRouteConstants.Lyrics, lyrics.Id, EditorialRouteConstants.Artist),
-            new AdminLinkLyricsArtistRequest(artist.Id)
+            new AdminLinkLyricsArtistRequestBuilder().WithArtistId(artist.Id).Build()
         );
 
         var response = await Client.PutAsJsonAsync(
             Routes.Admin.Editorial.Action(EditorialRouteConstants.Lyrics, lyrics.Id, EditorialRouteConstants.Artist),
-            new AdminLinkLyricsArtistRequest(null)
+            new AdminLinkLyricsArtistRequestBuilder().Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -190,12 +178,12 @@ public class AdminLinkLyricsArtistEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         await Client.PutAsJsonAsync(
             Routes.Admin.Editorial.Action(EditorialRouteConstants.Lyrics, lyrics.Id, EditorialRouteConstants.Artist),
-            new AdminLinkLyricsArtistRequest(firstArtist.Id)
+            new AdminLinkLyricsArtistRequestBuilder().WithArtistId(firstArtist.Id).Build()
         );
 
         var response = await Client.PutAsJsonAsync(
             Routes.Admin.Editorial.Action(EditorialRouteConstants.Lyrics, lyrics.Id, EditorialRouteConstants.Artist),
-            new AdminLinkLyricsArtistRequest(secondArtist.Id)
+            new AdminLinkLyricsArtistRequestBuilder().WithArtistId(secondArtist.Id).Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
