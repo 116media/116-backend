@@ -1,8 +1,12 @@
 using System.Reflection;
 using _116.Content;
-using _116.Core;
+using _116.Content.Infrastructure;
 using _116.Identity;
+using _116.Identity.Infrastructure;
 using _116.Mailer;
+using _116.Mailer.Infrastructure;
+using _116.Storage;
+using _116.Storage.Infrastructure;
 using AwesomeAssertions;
 using NetArchTest.Rules;
 
@@ -19,6 +23,13 @@ public record Module(string Name, Assembly Assembly)
     /// The module's namespace root, for example <c>_116.Content</c>.
     /// </summary>
     public string Root => $"_116.{Name}";
+
+    /// <summary>
+    /// The module's three layer assemblies. Loaded by name because the module class only identifies the
+    /// outermost one, while the rules below filter types across every layer.
+    /// </summary>
+    public IEnumerable<Assembly> Assemblies =>
+        new[] { "Domain", "Application", "Infrastructure" }.Select(layer => Assembly.Load($"{Name}.{layer}"));
 }
 
 /// <summary>
@@ -32,7 +43,7 @@ public static class ArchitectureRule
     /// </summary>
     public static readonly IReadOnlyList<Module> Modules =
     [
-        new("Core", typeof(CoreModule).Assembly),
+        new("Storage", typeof(StorageModule).Assembly),
         new("Identity", typeof(IdentityModule).Assembly),
         new("Content", typeof(ContentModule).Assembly),
         new("Mailer", typeof(MailerModule).Assembly),
