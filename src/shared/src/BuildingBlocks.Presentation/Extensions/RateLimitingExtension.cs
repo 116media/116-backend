@@ -1,13 +1,14 @@
 using System.Threading.RateLimiting;
-using _116.BuildingBlocks.Constants.RateLimit;
-using _116.Shared.Application.Builders.RateLimit;
-using _116.Shared.Application.Exceptions;
+using _116.BuildingBlocks.Application.Builders.RateLimit;
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.BuildingBlocks.Presentation.Builders.RateLimit;
+using _116.BuildingBlocks.Presentation.Constants.RateLimit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace _116.Shared.Application.Extensions;
+namespace _116.BuildingBlocks.Presentation.Extensions;
 
 /// <summary>
 /// Extension methods for configuring rate limiting using a hybrid three-tier strategy:

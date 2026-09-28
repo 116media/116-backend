@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace _116.Shared.Application.Extensions;
+namespace _116.BuildingBlocks.Presentation.Extensions;
 
 /// <summary>
 /// Resolves services from the current request's container, for code handed an

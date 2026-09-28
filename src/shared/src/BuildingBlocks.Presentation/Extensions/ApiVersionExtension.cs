@@ -4,13 +4,13 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace _116.Shared.Application.Extensions;
+namespace _116.BuildingBlocks.Presentation.Extensions;
 
 /// <summary>
 /// Holds the root versioned route group for one host. Registered as a per-host singleton so two
 /// hosts in one process — the integration fixtures — never share routing state.
 /// </summary>
-public sealed class RootVersionedGroupHolder
+internal sealed class RootVersionedGroupHolder
 {
     private RouteGroupBuilder? _group;
 

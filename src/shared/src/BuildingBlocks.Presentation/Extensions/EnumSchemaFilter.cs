@@ -2,7 +2,7 @@ using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace _116.Shared.Application.Extensions;
+namespace _116.BuildingBlocks.Presentation.Extensions;
 
 /// <summary>
 /// Swagger schema filter that converts enum schemas to use string values

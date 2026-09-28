@@ -1,11 +1,11 @@
 using System.Reflection;
-using _116.Shared.Application.Exceptions.Handlers;
-using _116.Shared.Application.Exceptions.Handlers.Contracts;
-using _116.Shared.Application.Exceptions.Handlers.Strategies;
+using _116.BuildingBlocks.Presentation.Exceptions.Handlers;
+using _116.BuildingBlocks.Presentation.Exceptions.Handlers.Contracts;
+using _116.BuildingBlocks.Presentation.Exceptions.Handlers.Strategies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace _116.Shared.Application.Extensions;
+namespace _116.BuildingBlocks.Presentation.Extensions;
 
 /// <summary>
 /// Extension methods for configuring the enterprise-grade exception handling system.

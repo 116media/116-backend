@@ -1,10 +1,11 @@
-using _116.BuildingBlocks.Constants;
-using _116.Shared.Application.Exceptions.Messages;
+using _116.BuildingBlocks.Application.Exceptions.Messages;
+using _116.BuildingBlocks.Presentation.Constants;
+using _116.Shared.Domain.Constants;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace _116.Shared.Application.Extensions;
+namespace _116.BuildingBlocks.Presentation.Extensions;
 
 /// <summary>
 /// Extension methods for configuring request localization with supported cultures
@@ -15,14 +16,14 @@ public static class LocalizationExtension
     /// <summary>
     /// The supported culture codes for the application.
     /// </summary>
-    private static readonly string[] SupportedCultures = UserConstants.SupportedLocales;
+    private static readonly string[] SupportedCultures = LocaleConstants.SupportedLocales;
 
     /// <summary>
     /// The culture a request resolves to when it sends no Accept-Language header. The platform
     /// default, so an unnegotiated request is served the same language as a user who has not
     /// chosen one.
     /// </summary>
-    private const string DefaultCulture = UserConstants.DefaultLocale;
+    private const string DefaultCulture = LocaleConstants.DefaultLocale;
 
     /// <summary>
     /// Registers localization services and configures supported cultures

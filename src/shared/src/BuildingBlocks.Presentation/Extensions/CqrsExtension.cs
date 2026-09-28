@@ -1,12 +1,12 @@
 using System.Reflection;
-using _116.Shared.Application.Decorators;
-using _116.Shared.Application.Services;
-using _116.Shared.Contracts.Application.CQRS;
+using _116.BuildingBlocks.Application.CQRS;
+using _116.BuildingBlocks.Application.Decorators;
+using _116.BuildingBlocks.Application.Services;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace _116.Shared.Application.Extensions;
+namespace _116.BuildingBlocks.Presentation.Extensions;
 
 /// <summary>
 /// Extension methods for registering CQRS services and handlers.
@@ -55,7 +55,7 @@ public static class CqrsExtension
                             typeof(ICommandHandler<,>),
                             typeof(IQueryHandler<,>)
                         ),
-                    publicOnly: true
+                    publicOnly: false
                 )
                 .AsImplementedInterfaces()
                 .WithScopedLifetime()

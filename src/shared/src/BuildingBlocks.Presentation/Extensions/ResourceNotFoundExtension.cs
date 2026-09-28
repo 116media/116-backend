@@ -1,7 +1,7 @@
-using _116.Shared.Application.Middleware;
+using _116.BuildingBlocks.Presentation.Middleware;
 using Microsoft.AspNetCore.Builder;
 
-namespace _116.Shared.Application.Extensions;
+namespace _116.BuildingBlocks.Presentation.Extensions;
 
 /// <summary>
 /// Extension methods for configuring the ResourceNotFoundMiddleware.

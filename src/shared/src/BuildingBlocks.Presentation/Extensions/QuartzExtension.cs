@@ -1,11 +1,11 @@
-using _116.Shared.Application.Configurations;
-using _116.Shared.Application.Configurations.Schemas;
-using _116.Shared.Application.Jobs;
+using _116.BuildingBlocks.Application.Configurations;
+using _116.BuildingBlocks.Application.Configurations.Schemas;
+using _116.BuildingBlocks.Infrastructure.Jobs;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Quartz;
 
-namespace _116.Shared.Application.Extensions;
+namespace _116.BuildingBlocks.Presentation.Extensions;
 
 /// <summary>
 /// Extension methods for registering Quartz.NET scheduled jobs.

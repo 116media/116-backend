@@ -2,7 +2,7 @@ using System.Reflection;
 using Carter;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace _116.Shared.Application.Extensions;
+namespace _116.BuildingBlocks.Presentation.Extensions;
 
 /// <summary>
 /// Extension methods for registering Carter modules from specified assemblies.
