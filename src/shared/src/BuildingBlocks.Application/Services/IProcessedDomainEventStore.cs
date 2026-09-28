@@ -1,4 +1,4 @@
-namespace _116.Shared.Application.Services;
+namespace _116.BuildingBlocks.Application.Services;
 
 /// <summary>
 /// Guards non-idempotent handlers against replayed events.

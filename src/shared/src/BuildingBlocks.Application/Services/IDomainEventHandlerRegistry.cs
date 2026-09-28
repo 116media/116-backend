@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 
-namespace _116.Shared.Application.Services;
+namespace _116.BuildingBlocks.Application.Services;
 
 /// <summary>
 /// Exposes the container registrations that back a domain event's handler fan-out.

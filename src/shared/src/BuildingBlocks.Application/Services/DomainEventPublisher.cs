@@ -5,7 +5,7 @@ using _116.Shared.Domain;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace _116.Shared.Application.Services;
+namespace _116.BuildingBlocks.Application.Services;
 
 /// <summary>
 /// Publishes domain events to all registered event handlers.

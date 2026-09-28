@@ -1,4 +1,4 @@
-namespace _116.Shared.Application.Services;
+namespace _116.BuildingBlocks.Application.Services;
 
 /// <summary>
 /// The fallback guard for hosts with no module registered: every invocation is treated as a

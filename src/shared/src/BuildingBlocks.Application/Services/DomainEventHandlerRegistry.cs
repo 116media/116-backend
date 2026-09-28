@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace _116.Shared.Application.Services;
+namespace _116.BuildingBlocks.Application.Services;
 
 /// <summary>
 /// Reads domain event handler registrations from the service collection the application was

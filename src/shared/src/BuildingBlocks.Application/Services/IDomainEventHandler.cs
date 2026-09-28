@@ -1,6 +1,6 @@
 using _116.Shared.Domain;
 
-namespace _116.Shared.Application.Services;
+namespace _116.BuildingBlocks.Application.Services;
 
 /// <summary>
 /// Interface for handling domain events.

@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
-using _116.Shared.Contracts.Application.CQRS;
+using _116.BuildingBlocks.Application.CQRS;
 
-namespace _116.Shared.Application.Services;
+namespace _116.BuildingBlocks.Application.Services;
 
 /// <summary>
 /// Dispatches command and query requests to their corresponding handlers, resolved from the

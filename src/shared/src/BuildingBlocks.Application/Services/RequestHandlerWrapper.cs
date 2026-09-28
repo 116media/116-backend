@@ -1,14 +1,14 @@
-using _116.Shared.Contracts.Application.CQRS;
+using _116.BuildingBlocks.Application.CQRS;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace _116.Shared.Application.Services;
+namespace _116.BuildingBlocks.Application.Services;
 
 /// <summary>
 /// Untyped dispatch seam for requests returning a response. One concrete wrapper is built per
 /// request type and cached for the process lifetime.
 /// </summary>
 /// <typeparam name="TResponse">The response the request produces.</typeparam>
-internal abstract class RequestHandlerWrapper<TResponse>
+public abstract class RequestHandlerWrapper<TResponse>
 {
     /// <summary>
     /// Resolves the typed handler and invokes it.
@@ -28,7 +28,7 @@ internal abstract class RequestHandlerWrapper<TResponse>
 /// Untyped dispatch seam for requests returning no response. One concrete wrapper is built per
 /// request type and cached for the process lifetime.
 /// </summary>
-internal abstract class RequestHandlerWrapper
+public abstract class RequestHandlerWrapper
 {
     /// <summary>
     /// Resolves the typed handler and invokes it.
@@ -46,7 +46,7 @@ internal abstract class RequestHandlerWrapper
 /// </summary>
 /// <typeparam name="TRequest">The concrete request type.</typeparam>
 /// <typeparam name="TResponse">The response the request produces.</typeparam>
-internal sealed class RequestHandlerWrapperImpl<TRequest, TResponse> : RequestHandlerWrapper<TResponse>
+public sealed class RequestHandlerWrapperImpl<TRequest, TResponse> : RequestHandlerWrapper<TResponse>
     where TRequest : IRequest<TResponse>
 {
     /// <inheritdoc />
@@ -72,7 +72,7 @@ internal sealed class RequestHandlerWrapperImpl<TRequest, TResponse> : RequestHa
 /// virtual call, so no reflection runs per request.
 /// </summary>
 /// <typeparam name="TRequest">The concrete request type.</typeparam>
-internal sealed class RequestHandlerWrapperImpl<TRequest> : RequestHandlerWrapper
+public sealed class RequestHandlerWrapperImpl<TRequest> : RequestHandlerWrapper
     where TRequest : IRequest
 {
     /// <inheritdoc />

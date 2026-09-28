@@ -1,4 +1,4 @@
-namespace _116.Shared.Application.Services;
+namespace _116.BuildingBlocks.Application.Services;
 
 /// <summary>
 /// Provides information about the actor triggering the current operation.
