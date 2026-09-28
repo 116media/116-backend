@@ -1,7 +1,7 @@
-using _116.Shared.Application.Exceptions;
+using _116.BuildingBlocks.Application.Exceptions;
 using Microsoft.AspNetCore.Http;
 
-namespace _116.Shared.Application.Middleware;
+namespace _116.BuildingBlocks.Presentation.Middleware;
 
 /// <summary>
 /// Middleware that intercepts 404 and 405 responses and throws appropriate exceptions to ensure

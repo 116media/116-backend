@@ -2,7 +2,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
 
-namespace _116.Shared.Application.Middleware;
+namespace _116.BuildingBlocks.Presentation.Middleware;
 
 /// <summary>
 /// Middleware that converts \n to newlines in Swagger JSON description fields for UI rendering.
