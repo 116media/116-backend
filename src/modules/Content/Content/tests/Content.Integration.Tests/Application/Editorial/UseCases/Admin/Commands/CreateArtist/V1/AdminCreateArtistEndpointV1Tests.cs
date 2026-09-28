@@ -3,6 +3,7 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateArtist.V1
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Content.TestData.Builders.Requests;
 using _116.Content.TestData.Factories;
 
 namespace _116.Content.Integration.Tests.Application.Editorial.UseCases.Admin.Commands.CreateArtist.V1;
@@ -20,7 +21,7 @@ public class AdminCreateArtistEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.PostAsJsonAsync(
             ApiRoutes.Admin.Artists,
-            new AdminCreateArtistRequest("Fally Ipupa", "fally-ipupa", null, null, null, null, null)
+            new AdminCreateArtistRequestBuilder().WithName("Fally Ipupa").WithSlug("fally-ipupa").Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -33,7 +34,7 @@ public class AdminCreateArtistEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.PostAsJsonAsync(
             ApiRoutes.Admin.Artists,
-            new AdminCreateArtistRequest("Fally Ipupa", "fally-ipupa", null, null, null, null, null)
+            new AdminCreateArtistRequestBuilder().WithName("Fally Ipupa").WithSlug("fally-ipupa").Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
@@ -46,7 +47,11 @@ public class AdminCreateArtistEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.PostAsJsonAsync(
             ApiRoutes.Admin.Artists,
-            new AdminCreateArtistRequest("Fally Ipupa", "fally-ipupa", "Congolese singer.", null, null, null, null)
+            new AdminCreateArtistRequestBuilder()
+                .WithName("Fally Ipupa")
+                .WithSlug("fally-ipupa")
+                .WithBio("Congolese singer.")
+                .Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -76,7 +81,7 @@ public class AdminCreateArtistEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.PostAsJsonAsync(
             ApiRoutes.Admin.Artists,
-            new AdminCreateArtistRequest("Fally Ipupa Copy", "fally-ipupa", null, null, null, null, null)
+            new AdminCreateArtistRequestBuilder().WithName("Fally Ipupa Copy").WithSlug("fally-ipupa").Build()
         );
 
         await response.ShouldBeProblem<ConflictException>(
@@ -92,7 +97,7 @@ public class AdminCreateArtistEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.PostAsJsonAsync(
             ApiRoutes.Admin.Artists,
-            new AdminCreateArtistRequest(string.Empty, "some-slug", null, null, null, null, null)
+            new AdminCreateArtistRequestBuilder().WithName(string.Empty).WithSlug("some-slug").Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -105,15 +110,10 @@ public class AdminCreateArtistEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.PostAsJsonAsync(
             ApiRoutes.Admin.Artists,
-            new AdminCreateArtistRequest(
-                "Drake",
-                $"slug-{Guid.NewGuid():N}",
-                null,
-                null,
-                ["Drizzy", "drizzy", "  ", "Champagne Papi"],
-                null,
-                null
-            )
+            new AdminCreateArtistRequestBuilder()
+                .WithName("Drake")
+                .WithAliases(["Drizzy", "drizzy", " ", "Champagne Papi"])
+                .Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -134,7 +134,7 @@ public class AdminCreateArtistEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.PostAsJsonAsync(
             ApiRoutes.Admin.Artists,
-            new AdminCreateArtistRequest("Name", $"slug-{Guid.NewGuid():N}", null, null, aliases, null, null)
+            new AdminCreateArtistRequestBuilder().WithAliases(aliases).Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -147,15 +147,7 @@ public class AdminCreateArtistEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.PostAsJsonAsync(
             ApiRoutes.Admin.Artists,
-            new AdminCreateArtistRequest(
-                "Name",
-                $"slug-{Guid.NewGuid():N}",
-                null,
-                null,
-                [new string('a', 101)],
-                null,
-                null
-            )
+            new AdminCreateArtistRequestBuilder().WithAliases([new string('a', 101)]).Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -169,7 +161,7 @@ public class AdminCreateArtistEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.PostAsJsonAsync(
             ApiRoutes.Admin.Artists,
-            new AdminCreateArtistRequest("Name", $"slug-{Guid.NewGuid():N}", null, null, null, future, null)
+            new AdminCreateArtistRequestBuilder().WithBirthdate(future).Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -182,27 +174,11 @@ public class AdminCreateArtistEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var longRealName = await Client.PostAsJsonAsync(
             ApiRoutes.Admin.Artists,
-            new AdminCreateArtistRequest(
-                "Name",
-                $"slug-{Guid.NewGuid():N}",
-                null,
-                new string('r', 151),
-                null,
-                null,
-                null
-            )
+            new AdminCreateArtistRequestBuilder().WithRealName(new string('r', 151)).Build()
         );
         var longHometown = await Client.PostAsJsonAsync(
             ApiRoutes.Admin.Artists,
-            new AdminCreateArtistRequest(
-                "Name",
-                $"slug-{Guid.NewGuid():N}",
-                null,
-                null,
-                null,
-                null,
-                new string('h', 121)
-            )
+            new AdminCreateArtistRequestBuilder().WithHometown(new string('h', 121)).Build()
         );
 
         longRealName.StatusCode.Should().Be(HttpStatusCode.BadRequest);
