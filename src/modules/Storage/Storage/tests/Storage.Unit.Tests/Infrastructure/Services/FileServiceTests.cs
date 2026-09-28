@@ -1,9 +1,9 @@
 using System.Net;
-using _116.Core.Application.Shared.Errors.Facade;
-using _116.Core.Application.Shared.Services;
-using _116.Core.Infrastructure.Services;
-using _116.Shared.Application.Exceptions;
-using _116.Tests.Fixtures.Helpers;
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.Storage.Application.Shared.Errors.Facade;
+using _116.Storage.Application.Shared.Services;
+using _116.Storage.Infrastructure.Services;
+using _116.Tests.TestData.Helpers;
 using AwesomeAssertions;
 using AwesomeAssertions.Specialized;
 using Microsoft.AspNetCore.Http;
@@ -12,7 +12,7 @@ using Moq;
 using Moq.Protected;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Core.Infrastructure.Services;
+namespace _116.Storage.Unit.Tests.Infrastructure.Services;
 
 /// <summary>
 /// Unit tests for <see cref="FileService"/>.
@@ -34,7 +34,7 @@ public class FileServiceTests
             .Setup(x => x.EnsureSafeAsync(It.IsAny<Uri>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
-        CoreI18n coreI18n = TestErrorsFactory.CreateCoreI18n();
+        StorageI18n coreI18n = TestErrorsFactory.CreateCoreI18n();
 
         _service = new FileService(
             httpClient,

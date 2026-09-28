@@ -1,8 +1,9 @@
-using _116.Shared.Application.Configurations;
+using _116.BuildingBlocks.Application.Configurations;
+using _116.Storage.Infrastructure;
 using AwesomeAssertions;
 using Xunit;
 
-namespace _116.Unit.Tests.Shared.Application.Configurations;
+namespace _116.Storage.Unit.Tests.Infrastructure;
 
 /// <summary>
 /// Unit tests for <see cref="CloudinarySettings"/>.

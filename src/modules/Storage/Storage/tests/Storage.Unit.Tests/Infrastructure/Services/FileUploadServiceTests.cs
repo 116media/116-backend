@@ -1,14 +1,17 @@
-using _116.Core.Application.Shared.Services;
-using _116.Core.Domain.Entities;
-using _116.Core.Domain.Enums;
-using _116.Core.Domain.Exceptions;
-using _116.Core.Domain.StateMachines;
-using _116.Core.Infrastructure.Persistence;
-using _116.Core.Infrastructure.Repositories;
-using _116.Core.Infrastructure.Services;
-using _116.Shared.Application.Services;
-using _116.Shared.Infrastructure.interceptors;
-using _116.Tests.Fixtures.Factories.Core;
+using _116.BuildingBlocks.Application.Services;
+using _116.BuildingBlocks.Infrastructure.interceptors;
+using _116.Storage.Application.Shared.Services;
+using _116.Storage.Domain.Entities;
+using _116.Storage.Domain.Enums;
+using _116.Storage.Domain.Exceptions;
+using _116.Storage.Domain.StateMachines;
+using _116.Storage.Infrastructure.Persistence;
+using _116.Storage.Infrastructure.Repositories;
+using _116.Storage.Infrastructure.Services;
+using _116.Storage.TestData.Factories;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Storage.TestData.Mocks.Services;
+using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -16,7 +19,7 @@ using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Core.Infrastructure.Services;
+namespace _116.Storage.Unit.Tests.Infrastructure.Services;
 
 /// <summary>
 /// Unit tests for <see cref="FileUploadService" />: uploads describe what reached storage without
@@ -27,7 +30,7 @@ public class FileUploadServiceTests : IDisposable
     private static readonly DateTime StartInstant = new(2026, 9, 11, 12, 0, 0, DateTimeKind.Utc);
 
     private readonly FakeTimeProvider _time = new(new DateTimeOffset(StartInstant));
-    private readonly CoreDbContext _context;
+    private readonly StorageDbContext _context;
     private readonly Mock<IFileService> _fileServiceMock = new();
     private readonly Mock<IImageColorService> _imageColorServiceMock = new();
     private readonly FileUploadService _service;
@@ -36,7 +39,7 @@ public class FileUploadServiceTests : IDisposable
     {
         // The audit interceptor is what stamps CreatedAt, which is how a recorded file is told
         // from an unrecorded one; without it a seeded row would not look persisted.
-        DbContextOptions<CoreDbContext> options = new DbContextOptionsBuilder<CoreDbContext>()
+        DbContextOptions<StorageDbContext> options = new DbContextOptionsBuilder<StorageDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .AddInterceptors(
                 new AuditableEntityInterceptor(
@@ -48,7 +51,7 @@ public class FileUploadServiceTests : IDisposable
             )
             .Options;
 
-        _context = new CoreDbContext(options);
+        _context = new StorageDbContext(options);
 
         _service = new FileUploadService(
             new FileRepository(_context, _time),
@@ -410,8 +413,8 @@ public class FileUploadServiceTests : IDisposable
 
         // Assert
         await act.Should()
-            .ThrowAsync<CoreRuleException>()
-            .Where(exception => exception.Code == CoreRuleCodes.FileAlreadyRecorded);
+            .ThrowAsync<StorageRuleException>()
+            .Where(exception => exception.Code == StorageRuleCodes.FileAlreadyRecorded);
     }
 
     [Theory]
@@ -428,8 +431,8 @@ public class FileUploadServiceTests : IDisposable
 
         // Assert
         await act.Should()
-            .ThrowAsync<CoreRuleException>()
-            .Where(exception => exception.Code == CoreRuleCodes.MimeTypeRequired);
+            .ThrowAsync<StorageRuleException>()
+            .Where(exception => exception.Code == StorageRuleCodes.MimeTypeRequired);
         _fileServiceMock.Verify(
             x =>
                 x.UploadFileAsync(
@@ -454,8 +457,8 @@ public class FileUploadServiceTests : IDisposable
 
         // Assert
         await act.Should()
-            .ThrowAsync<CoreRuleException>()
-            .Where(exception => exception.Code == CoreRuleCodes.OriginalFileNameRequired);
+            .ThrowAsync<StorageRuleException>()
+            .Where(exception => exception.Code == StorageRuleCodes.OriginalFileNameRequired);
         _fileServiceMock.Verify(
             x =>
                 x.UploadFileAsync(

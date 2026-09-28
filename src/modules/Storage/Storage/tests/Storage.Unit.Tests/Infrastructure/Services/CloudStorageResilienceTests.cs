@@ -1,11 +1,11 @@
-using _116.Core.Infrastructure.Services;
+using _116.Storage.Infrastructure.Services;
 using AwesomeAssertions;
 using Polly;
 using Polly.CircuitBreaker;
 using Polly.Timeout;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Core.Infrastructure.Services;
+namespace _116.Storage.Unit.Tests.Infrastructure.Services;
 
 /// <summary>
 /// Unit tests for the cloud-storage resilience policy. These assert the policy itself rather than

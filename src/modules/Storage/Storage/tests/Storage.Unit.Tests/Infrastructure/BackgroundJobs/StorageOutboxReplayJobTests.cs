@@ -1,18 +1,18 @@
-using _116.Core.Infrastructure.BackgroundJobs;
-using _116.Core.Infrastructure.Persistence;
-using _116.Shared.Infrastructure.Outbox;
+using _116.BuildingBlocks.Infrastructure.Outbox;
+using _116.Storage.Infrastructure.BackgroundJobs;
+using _116.Storage.Infrastructure.Persistence;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Core.Infrastructure.BackgroundJobs;
+namespace _116.Storage.Unit.Tests.Infrastructure.BackgroundJobs;
 
 /// <summary>
-/// Unit tests for <see cref="CoreOutboxReplayJob" />: the job that re-dispatches the
-/// Core module's undispatched events.
+/// Unit tests for <see cref="StorageOutboxReplayJob" />: the job that re-dispatches the
+/// Storage module's undispatched events.
 /// </summary>
-public class CoreOutboxReplayJobTests
+public class StorageOutboxReplayJobTests
 {
     [Fact]
     public void Constructor_ShouldBindTheReplayJobToTheModulesOwnContext()
@@ -24,12 +24,12 @@ public class CoreOutboxReplayJobTests
         ServiceProvider provider = services.BuildServiceProvider();
 
         // Act
-        var job = new CoreOutboxReplayJob(
+        var job = new StorageOutboxReplayJob(
             provider.GetRequiredService<IServiceScopeFactory>(),
-            NullLogger<CoreOutboxReplayJob>.Instance
+            NullLogger<StorageOutboxReplayJob>.Instance
         );
 
         // Assert
-        job.Should().BeAssignableTo<OutboxReplayJob<CoreDbContext>>();
+        job.Should().BeAssignableTo<OutboxReplayJob<StorageDbContext>>();
     }
 }

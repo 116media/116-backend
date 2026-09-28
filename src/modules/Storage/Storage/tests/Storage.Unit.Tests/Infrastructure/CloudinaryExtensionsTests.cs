@@ -1,10 +1,11 @@
-using _116.Shared.Application.Configurations;
-using _116.Shared.Application.Extensions;
+using _116.BuildingBlocks.Application.Configurations;
+using _116.BuildingBlocks.Presentation.Extensions;
+using _116.Storage.Infrastructure;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace _116.Unit.Tests.Shared.Application.Extensions;
+namespace _116.Storage.Unit.Tests.Infrastructure;
 
 /// <summary>
 /// Unit tests for <see cref="CloudinaryExtensions"/>.

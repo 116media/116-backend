@@ -1,15 +1,16 @@
-using _116.Core.Application.Shared.Services;
-using _116.Core.Contracts.Domain.Enums;
-using _116.Core.Infrastructure.Services;
-using _116.Shared.Application.Configurations;
-using _116.Unit.Tests.Common.Mocks.Infrastructure;
+using _116.BuildingBlocks.Application.Configurations;
+using _116.Storage.Application.Shared.Services;
+using _116.Storage.Contracts.Domain.Enums;
+using _116.Storage.Infrastructure;
+using _116.Storage.Infrastructure.Services;
+using _116.Storage.TestData.Mocks.Infrastructure;
 using AwesomeAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Polly;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Core.Infrastructure.Services;
+namespace _116.Storage.Unit.Tests.Infrastructure.Services;
 
 /// <summary>
 /// Unit tests for <see cref="CloudinaryStorageClient"/>, the one type that speaks to the provider

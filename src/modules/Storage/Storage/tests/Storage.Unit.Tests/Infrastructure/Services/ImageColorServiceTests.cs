@@ -1,13 +1,13 @@
-using _116.Core.Application.Shared.Services;
-using _116.Core.Infrastructure.Services;
-using _116.Tests.Fixtures.Helpers;
+using _116.Storage.Application.Shared.Services;
+using _116.Storage.Infrastructure.Services;
+using _116.Tests.TestData.Helpers;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Core.Infrastructure.Services;
+namespace _116.Storage.Unit.Tests.Infrastructure.Services;
 
 /// <summary>
 /// Unit tests for <see cref="ImageColorService"/> covering dominant-color

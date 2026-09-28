@@ -1,10 +1,12 @@
-using _116.BuildingBlocks.Constants;
-using _116.Core.Application.Shared.Errors.Facade;
-using _116.Core.Application.Shared.Services;
-using _116.Core.Contracts.Domain.Enums;
-using _116.Core.Infrastructure.Services;
-using _116.Shared.Application.Exceptions;
-using _116.Tests.Fixtures.Helpers;
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.BuildingBlocks.Presentation.Constants;
+using _116.Storage.Application.Shared.Errors.Facade;
+using _116.Storage.Application.Shared.Services;
+using _116.Storage.Contracts.Domain.Constants;
+using _116.Storage.Contracts.Domain.Enums;
+using _116.Storage.Domain.Constants;
+using _116.Storage.Infrastructure.Services;
+using _116.Tests.TestData.Helpers;
 using AwesomeAssertions;
 using AwesomeAssertions.Specialized;
 using Microsoft.AspNetCore.Http;
@@ -12,7 +14,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Core.Infrastructure.Services;
+namespace _116.Storage.Unit.Tests.Infrastructure.Services;
 
 /// <summary>
 /// Unit tests for <see cref="CloudinaryService"/>. The three upload entry points each run their
@@ -28,7 +30,7 @@ public class CloudinaryServiceTests
     private const long BytesPerMegabyte = 1024 * 1024;
 
     private readonly Mock<ILogger<CloudinaryService>> _loggerMock = new();
-    private readonly CoreI18n _i18n = TestErrorsFactory.CreateCoreI18n();
+    private readonly StorageI18n _i18n = TestErrorsFactory.CreateCoreI18n();
     private readonly Mock<ICloudStorageClient> _clientMock = new();
 
     public CloudinaryServiceTests()
@@ -117,9 +119,9 @@ public class CloudinaryServiceTests
     private static string[] AllowedExtensions(UploadTarget target) =>
         target switch
         {
-            UploadTarget.Image => FileConstants.AllowedAvatarExtensions,
+            UploadTarget.Image => FileUploadLimits.AllowedAvatarExtensions,
             UploadTarget.Raw => FileConstants.AllowedRawFileExtensions,
-            UploadTarget.Video => FileConstants.AllowedVideoExtensions,
+            UploadTarget.Video => FileUploadLimits.AllowedVideoExtensions,
             _ => throw new ArgumentOutOfRangeException(nameof(target), target, "Unmapped upload target"),
         };
 
@@ -131,7 +133,7 @@ public class CloudinaryServiceTests
     private static string[] AllowedMimeTypes(UploadTarget target) =>
         target switch
         {
-            UploadTarget.Image => FileConstants.AllowedAvatarMimeTypes,
+            UploadTarget.Image => FileUploadLimits.AllowedAvatarMimeTypes,
             UploadTarget.Raw => FileConstants.AllowedRawFileMimeTypes,
             UploadTarget.Video => FileConstants.AllowedVideoMimeTypes,
             _ => throw new ArgumentOutOfRangeException(nameof(target), target, "Unmapped upload target"),
@@ -145,9 +147,9 @@ public class CloudinaryServiceTests
     private static long MaxSizeBytes(UploadTarget target) =>
         target switch
         {
-            UploadTarget.Image => FileConstants.MaxAvatarFileSizeBytes,
+            UploadTarget.Image => FileUploadLimits.MaxAvatarFileSizeBytes,
             UploadTarget.Raw => FileConstants.MaxRawFileSizeBytes,
-            UploadTarget.Video => FileConstants.MaxVideoFileSizeBytes,
+            UploadTarget.Video => FileUploadLimits.MaxVideoFileSizeBytes,
             _ => throw new ArgumentOutOfRangeException(nameof(target), target, "Unmapped upload target"),
         };
 
@@ -209,9 +211,9 @@ public class CloudinaryServiceTests
     }
 
     [Theory]
-    [InlineData(UploadTarget.Image, "avatar.jpg", "image/jpeg", FileConstants.MaxAvatarFileSizeBytes + 1)]
+    [InlineData(UploadTarget.Image, "avatar.jpg", "image/jpeg", FileUploadLimits.MaxAvatarFileSizeBytes + 1)]
     [InlineData(UploadTarget.Raw, "proof.pdf", "application/pdf", FileConstants.MaxRawFileSizeBytes + 1)]
-    [InlineData(UploadTarget.Video, "clip.mp4", "video/mp4", FileConstants.MaxVideoFileSizeBytes + 1)]
+    [InlineData(UploadTarget.Video, "clip.mp4", "video/mp4", FileUploadLimits.MaxVideoFileSizeBytes + 1)]
     public async Task Upload_JustOverTheSizeCeiling_ShouldThrowBadRequestException(
         UploadTarget target,
         string fileName,
@@ -390,9 +392,9 @@ public class CloudinaryServiceTests
     }
 
     [Theory]
-    [InlineData(UploadTarget.Image, "avatar.jpg", "image/jpeg", FileConstants.MaxAvatarFileSizeBytes)]
+    [InlineData(UploadTarget.Image, "avatar.jpg", "image/jpeg", FileUploadLimits.MaxAvatarFileSizeBytes)]
     [InlineData(UploadTarget.Raw, "proof.pdf", "application/pdf", FileConstants.MaxRawFileSizeBytes)]
-    [InlineData(UploadTarget.Video, "clip.mp4", "video/mp4", FileConstants.MaxVideoFileSizeBytes)]
+    [InlineData(UploadTarget.Video, "clip.mp4", "video/mp4", FileUploadLimits.MaxVideoFileSizeBytes)]
     public async Task Upload_AtExactlyTheSizeCeiling_ShouldPassValidation(
         UploadTarget target,
         string fileName,

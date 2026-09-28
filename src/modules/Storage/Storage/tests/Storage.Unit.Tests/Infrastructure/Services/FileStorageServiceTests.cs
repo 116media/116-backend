@@ -1,13 +1,13 @@
-using _116.Core.Application.Shared.Mappers;
-using _116.Core.Application.Shared.Repositories;
-using _116.Core.Application.Shared.Services;
-using _116.Core.Contracts.Application.DTOs;
-using _116.Core.Contracts.Application.Services;
-using _116.Core.Contracts.Domain.Enums;
-using _116.Core.Domain.Entities;
-using _116.Core.Infrastructure.Services;
-using _116.Tests.Fixtures.Factories.Core;
-using _116.Unit.Tests.Common.Mocks.Infrastructure;
+using _116.Storage.Application.Shared.Mappers;
+using _116.Storage.Application.Shared.Repositories;
+using _116.Storage.Application.Shared.Services;
+using _116.Storage.Contracts.Application.DTOs;
+using _116.Storage.Contracts.Application.Services;
+using _116.Storage.Contracts.Domain.Enums;
+using _116.Storage.Domain.Entities;
+using _116.Storage.Infrastructure.Services;
+using _116.Storage.TestData.Factories;
+using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Mapster;
 using MapsterMapper;
@@ -15,10 +15,10 @@ using Microsoft.AspNetCore.Http;
 using Moq;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Core.Infrastructure.Services;
+namespace _116.Storage.Unit.Tests.Infrastructure.Services;
 
 /// <summary>
-/// Unit tests for <see cref="FileStorageService"/>, Core's implementation of the cross-module
+/// Unit tests for <see cref="FileStorageService"/>, Storage's implementation of the cross-module
 /// storage contract.
 /// </summary>
 public class FileStorageServiceTests

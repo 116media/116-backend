@@ -1,30 +1,33 @@
-using _116.Core.Domain.Entities;
-using _116.Core.Infrastructure.Persistence;
-using _116.Tests.Fixtures.Factories.Core;
+using _116.Storage.Domain.Entities;
+using _116.Storage.Infrastructure.Persistence;
+using _116.Storage.TestData.Factories;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Storage.TestData.Mocks.Services;
+using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.InMemory.Internal;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Core.Infrastructure.Persistence;
+namespace _116.Storage.Unit.Tests.Infrastructure.Persistence;
 
 /// <summary>
-/// Unit tests for <see cref="CoreUnitOfWork"/>.
+/// Unit tests for <see cref="StorageUnitOfWork"/>.
 /// </summary>
-public class CoreUnitOfWorkTests : IDisposable
+public class StorageUnitOfWorkTests : IDisposable
 {
-    private readonly CoreDbContext _context;
-    private readonly CoreUnitOfWork _unitOfWork;
+    private readonly StorageDbContext _context;
+    private readonly StorageUnitOfWork _unitOfWork;
 
-    public CoreUnitOfWorkTests()
+    public StorageUnitOfWorkTests()
     {
-        DbContextOptions<CoreDbContext> options = new DbContextOptionsBuilder<CoreDbContext>()
+        DbContextOptions<StorageDbContext> options = new DbContextOptionsBuilder<StorageDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
 
-        _context = new CoreDbContext(options);
-        _unitOfWork = new CoreUnitOfWork(_context, [_context]);
+        _context = new StorageDbContext(options);
+        _unitOfWork = new StorageUnitOfWork(_context, [_context]);
     }
 
     public void Dispose()
@@ -153,8 +156,8 @@ public class CoreUnitOfWorkTests : IDisposable
     /// The provider ignores it, which is enough to drive the surrounding orchestration.
     /// </summary>
     /// <returns>Options with the transaction warning suppressed.</returns>
-    private static DbContextOptions<CoreDbContext> CreateTransactionalOptions() =>
-        new DbContextOptionsBuilder<CoreDbContext>()
+    private static DbContextOptions<StorageDbContext> CreateTransactionalOptions() =>
+        new DbContextOptionsBuilder<StorageDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .ConfigureWarnings(warnings => warnings.Ignore(InMemoryEventId.TransactionIgnoredWarning))
             .Options;
@@ -163,8 +166,8 @@ public class CoreUnitOfWorkTests : IDisposable
     public async Task ExecuteInTransactionAsync_ShouldRunTheOperation()
     {
         // Arrange
-        await using var context = new CoreDbContext(CreateTransactionalOptions());
-        var unitOfWork = new CoreUnitOfWork(context, [context]);
+        await using var context = new StorageDbContext(CreateTransactionalOptions());
+        var unitOfWork = new StorageUnitOfWork(context, [context]);
         var ran = false;
 
         // Act
@@ -183,8 +186,8 @@ public class CoreUnitOfWorkTests : IDisposable
     {
         // Arrange
         // The seam commits once at the end, so the operation itself never saves.
-        await using var context = new CoreDbContext(CreateTransactionalOptions());
-        var unitOfWork = new CoreUnitOfWork(context, [context]);
+        await using var context = new StorageDbContext(CreateTransactionalOptions());
+        var unitOfWork = new StorageUnitOfWork(context, [context]);
 
         // Act
         await unitOfWork.ExecuteInTransactionAsync(_ =>
@@ -203,8 +206,8 @@ public class CoreUnitOfWorkTests : IDisposable
     {
         // Arrange
         // A failure has to reach the caller; swallowing it would commit a half-applied change.
-        await using var context = new CoreDbContext(CreateTransactionalOptions());
-        var unitOfWork = new CoreUnitOfWork(context, [context]);
+        await using var context = new StorageDbContext(CreateTransactionalOptions());
+        var unitOfWork = new StorageUnitOfWork(context, [context]);
         var failure = new InvalidOperationException("operation failed");
 
         // Act
@@ -220,8 +223,8 @@ public class CoreUnitOfWorkTests : IDisposable
     public async Task ExecuteInTransactionAsync_ShouldPassTheTokenToTheOperation()
     {
         // Arrange
-        await using var context = new CoreDbContext(CreateTransactionalOptions());
-        var unitOfWork = new CoreUnitOfWork(context, [context]);
+        await using var context = new StorageDbContext(CreateTransactionalOptions());
+        var unitOfWork = new StorageUnitOfWork(context, [context]);
         using var cts = new CancellationTokenSource();
         CancellationToken observed = default;
 
