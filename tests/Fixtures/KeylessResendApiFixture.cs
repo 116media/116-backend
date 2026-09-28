@@ -1,4 +1,4 @@
-namespace _116.Integration.Tests.Common.Fixtures;
+namespace _116.Tests.Fixtures;
 
 /// <summary>
 /// A <see cref="ResendApiFixture" /> booting without the Resend credential, so the guard that

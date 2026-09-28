@@ -1,6 +1,6 @@
 using Testcontainers.Redis;
 
-namespace _116.Integration.Tests.Common.Fixtures;
+namespace _116.Tests.Fixtures;
 
 /// <summary>
 /// Owns the single Redis container the whole integration assembly caches into. The host connects

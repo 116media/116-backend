@@ -1,4 +1,4 @@
-namespace _116.Integration.Tests.Common.Fixtures;
+namespace _116.Tests.Fixtures;
 
 /// <summary>
 /// An <see cref="ApiFixture" /> whose <c>POSTGRES_PORT</c> points at a closed port, so the

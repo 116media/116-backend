@@ -1,7 +1,8 @@
+using System.Reflection;
 using Npgsql;
 using Respawn;
 
-namespace _116.Integration.Tests.Common.Fixtures;
+namespace _116.Tests.Fixtures;
 
 /// <summary>
 /// Provides a migrated PostgreSQL database for an integration test collection.
@@ -33,10 +34,19 @@ public class PostgresFixture : IAsyncLifetime
     public ApiFixture Api => _apiFixture ?? throw new InvalidOperationException("PostgresFixture not initialized");
 
     /// <summary>
-    /// The database this fixture leases. Derived from the fixture type so that every fixture
-    /// gets its own database on the shared container without a name having to be maintained.
+    /// The test assembly this fixture runs in, as a database-name fragment: its first segment, which
+    /// names the suite while leaving room under the 63-byte identifier limit, past which PostgreSQL
+    /// truncates silently, so two fixtures whose names then matched would share one database.
+    /// Each xunit v3 suite is its own executable, so the entry assembly is the suite, not this library.
     /// </summary>
-    protected virtual string DatabaseName => $"test_116_{GetType().Name.ToLowerInvariant()}";
+    private static string AssemblyPrefix =>
+        (Assembly.GetEntryAssembly()?.GetName().Name ?? "tests").Split(separator: '.')[0].ToLowerInvariant();
+
+    /// <summary>
+    /// The database this fixture leases, named for the assembly and the fixture type so that no two
+    /// fixtures collide on the container every assembly shares.
+    /// </summary>
+    protected virtual string DatabaseName => $"test_116_{AssemblyPrefix}_{GetType().Name.ToLowerInvariant()}";
 
     /// <inheritdoc />
     public async ValueTask InitializeAsync()

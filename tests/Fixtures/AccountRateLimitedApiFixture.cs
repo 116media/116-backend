@@ -1,4 +1,4 @@
-namespace _116.Integration.Tests.Common.Fixtures;
+namespace _116.Tests.Fixtures;
 
 /// <summary>
 /// An <see cref="ApiFixture" /> that keeps the real per-account throttle while leaving the middleware

@@ -1,4 +1,4 @@
-namespace _116.Integration.Tests.Common.Fixtures;
+namespace _116.Tests.Fixtures;
 
 /// <summary>
 /// A <see cref="ResendApiFixture" /> booting with a provider no adapter implements, so the

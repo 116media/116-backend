@@ -1,4 +1,4 @@
-namespace _116.Integration.Tests.Common.Fixtures;
+namespace _116.Tests.Fixtures;
 
 /// <summary>
 /// An <see cref="ApiFixture" /> that boots the application with no <c>OTP_PEPPER</c> configured, so

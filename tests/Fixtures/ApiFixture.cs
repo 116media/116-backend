@@ -1,22 +1,24 @@
 using System.Data.Common;
 using System.Reflection;
 using System.Threading.RateLimiting;
-using _116.BuildingBlocks.Constants.RateLimit;
+using _116.BuildingBlocks.Application.Builders.RateLimit;
+using _116.BuildingBlocks.Presentation.Builders.RateLimit;
+using _116.BuildingBlocks.Presentation.Constants.RateLimit;
+using _116.BuildingBlocks.Presentation.Extensions;
 using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Shared.Services;
 using _116.Content.Infrastructure.Persistence;
-using _116.Core.Application.Shared.Services;
-using _116.Core.Infrastructure.Persistence;
-using _116.Core.Infrastructure.Services;
 using _116.Identity.Application.Adapters.SocialAuth;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence;
-using _116.Integration.Tests.Common.Seeders;
-using _116.Integration.Tests.Common.Stubs;
 using _116.Mailer.Application.Shared.Services;
 using _116.Mailer.Infrastructure.Persistence;
-using _116.Shared.Application.Builders.RateLimit;
-using _116.Shared.Application.Extensions;
+using _116.Storage.Application.Shared.Services;
+using _116.Storage.Infrastructure.Persistence;
+using _116.Storage.Infrastructure.Services;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Tests.Fixtures.Seeders;
+using _116.Tests.Fixtures.Stubs;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -30,7 +32,7 @@ using Microsoft.Extensions.Hosting;
 using Npgsql;
 using Quartz;
 
-namespace _116.Integration.Tests.Common.Fixtures;
+namespace _116.Tests.Fixtures;
 
 /// <summary>
 /// Wraps <see cref="WebApplicationFactory{TEntryPoint}" /> for integration tests.
@@ -168,7 +170,7 @@ public class ApiFixture(PostgresFixture db) : WebApplicationFactory<Program>
     private void ReplaceDbContexts(IServiceCollection services)
     {
         ReplaceDbContext<IdentityDbContext>(services);
-        ReplaceDbContext<CoreDbContext>(services);
+        ReplaceDbContext<StorageDbContext>(services);
         ReplaceDbContext<ContentDbContext>(services);
         ReplaceDbContext<MailerDbContext>(services);
     }

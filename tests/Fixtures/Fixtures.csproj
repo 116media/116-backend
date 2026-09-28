@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <RootNamespace>_116.Tests.Fixtures</RootNamespace>
+        <NoWarn>$(NoWarn);EF1001</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="xunit.v3.extensibility.core" />
+        <PackageReference Include="AwesomeAssertions" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+        <PackageReference Include="Testcontainers.PostgreSql" />
+        <PackageReference Include="Testcontainers.Redis" />
+        <PackageReference Include="Respawn" />
+        <PackageReference Include="Moq" />
+        <PackageReference Include="Bogus" />
+        <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
+        <PackageReference Include="EFCore.NamingConventions" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="../../src/modules/Identity/Identity/tests/Identity.TestData/Identity.TestData.csproj" />
+        <ProjectReference Include="../../src/modules/Storage/Storage/tests/Storage.TestData/Storage.TestData.csproj" />
+        <ProjectReference Include="../../src/host/Api/Api.csproj" />
+        <ProjectReference Include="../TestData/TestData.csproj" />
+    </ItemGroup>
+</Project>

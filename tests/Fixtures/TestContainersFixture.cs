@@ -1,6 +1,6 @@
 [assembly: AssemblyFixture(typeof(TestContainersFixture))]
 
-namespace _116.Integration.Tests.Common.Fixtures;
+namespace _116.Tests.Fixtures;
 
 /// <summary>
 /// Ties the lifetime of the assembly-wide PostgreSQL and Redis containers to the test run, so
