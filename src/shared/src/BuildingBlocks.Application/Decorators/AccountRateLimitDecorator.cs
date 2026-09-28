@@ -1,7 +1,7 @@
-using _116.Shared.Application.Builders.RateLimit;
-using _116.Shared.Contracts.Application.CQRS;
+using _116.BuildingBlocks.Application.Builders.RateLimit;
+using _116.BuildingBlocks.Application.CQRS;
 
-namespace _116.Shared.Application.Decorators;
+namespace _116.BuildingBlocks.Application.Decorators;
 
 /// <summary>
 /// Decorator that throttles a command per target account before the handler runs, when the command

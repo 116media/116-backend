@@ -1,7 +1,7 @@
-using _116.Shared.Contracts.Application.CQRS;
+using _116.BuildingBlocks.Application.CQRS;
 using Microsoft.Extensions.Logging;
 
-namespace _116.Shared.Application.Decorators;
+namespace _116.BuildingBlocks.Application.Decorators;
 
 /// <summary>
 /// Decorator that logs request execution lifecycle and measures performance.

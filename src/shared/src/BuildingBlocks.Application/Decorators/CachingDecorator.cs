@@ -1,8 +1,8 @@
 using System.Globalization;
-using _116.Shared.Contracts.Application.CQRS;
+using _116.BuildingBlocks.Application.CQRS;
 using Microsoft.Extensions.Caching.Hybrid;
 
-namespace _116.Shared.Application.Decorators;
+namespace _116.BuildingBlocks.Application.Decorators;
 
 /// <summary>
 /// Decorator that serves <see cref="ICacheableRequest" /> results from the hybrid cache and
