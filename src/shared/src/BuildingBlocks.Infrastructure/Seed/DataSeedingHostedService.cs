@@ -1,10 +1,10 @@
-using _116.Shared.Application.Configurations.Schemas;
+using _116.BuildingBlocks.Application.Configurations.Schemas;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Npgsql;
 
-namespace _116.Shared.Infrastructure.Seed;
+namespace _116.BuildingBlocks.Infrastructure.Seed;
 
 /// <summary>
 /// Runs every registered <see cref="IDataSeeder" /> once per startup under a Postgres advisory

@@ -1,4 +1,4 @@
-namespace _116.Shared.Infrastructure.Seed;
+namespace _116.BuildingBlocks.Infrastructure.Seed;
 
 /// <summary>
 /// Defines a contract for seeding initial data into the application's data store.
