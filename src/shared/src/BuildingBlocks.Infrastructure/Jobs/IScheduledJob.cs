@@ -1,6 +1,6 @@
 using Quartz;
 
-namespace _116.Shared.Application.Jobs;
+namespace _116.BuildingBlocks.Infrastructure.Jobs;
 
 /// <summary>
 /// Marker interface for all scheduled background jobs across modules.
