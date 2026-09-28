@@ -1,7 +1,7 @@
 using _116.Content.Application.Editorial.Services;
 using Microsoft.AspNetCore.Http;
 
-namespace _116.Integration.Tests.Common.Stubs;
+namespace _116.Tests.Fixtures.Stubs;
 
 /// <summary>
 /// In-memory stub that returns a fake thumbnail without downloading from YouTube.

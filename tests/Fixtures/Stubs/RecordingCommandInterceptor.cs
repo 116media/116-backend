@@ -1,7 +1,7 @@
 using System.Data.Common;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
-namespace _116.Integration.Tests.Common.Stubs;
+namespace _116.Tests.Fixtures.Stubs;
 
 /// <summary>
 /// Captures the SQL text of every command the host executes, so a test can assert on the shape

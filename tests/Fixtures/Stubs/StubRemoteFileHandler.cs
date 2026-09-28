@@ -1,7 +1,7 @@
 using System.Net;
 using System.Net.Http.Headers;
 
-namespace _116.Integration.Tests.Common.Stubs;
+namespace _116.Tests.Fixtures.Stubs;
 
 /// <summary>
 /// Stub HTTP transport for the remote-file client. Answers every request with a small, valid JPEG

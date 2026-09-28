@@ -1,6 +1,6 @@
 using Quartz;
 
-namespace _116.Integration.Tests.Common.Stubs;
+namespace _116.Tests.Fixtures.Stubs;
 
 /// <summary>
 /// Minimal <see cref="IJobExecutionContext" /> used to drive a real Quartz job once from a test.

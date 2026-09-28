@@ -1,8 +1,8 @@
 using System.Net;
 using System.Text;
-using _116.Core.Contracts.Domain.Enums;
+using _116.Storage.Contracts.Domain.Enums;
 
-namespace _116.Integration.Tests.Common.Stubs;
+namespace _116.Tests.Fixtures.Stubs;
 
 /// <summary>
 /// Stands in for Cloudinary's HTTP endpoint. Sitting at the transport rather than replacing

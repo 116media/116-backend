@@ -1,7 +1,7 @@
 using _116.Identity.Application.Adapters.SocialAuth;
 using _116.Identity.Application.Auth.Exceptions;
 
-namespace _116.Integration.Tests.Common.Stubs;
+namespace _116.Tests.Fixtures.Stubs;
 
 /// <summary>
 /// In-memory stub replacing the real Google/Facebook token verifiers so integration tests never call

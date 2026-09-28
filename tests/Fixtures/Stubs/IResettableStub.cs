@@ -1,4 +1,4 @@
-namespace _116.Integration.Tests.Common.Stubs;
+namespace _116.Tests.Fixtures.Stubs;
 
 /// <summary>
 /// Implemented by every external-service stub that carries state across requests.

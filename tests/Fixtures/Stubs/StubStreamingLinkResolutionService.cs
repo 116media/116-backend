@@ -2,7 +2,7 @@ using _116.Content.Application.Shared.Exceptions;
 using _116.Content.Application.Shared.Services;
 using _116.Content.Domain.Enums;
 
-namespace _116.Integration.Tests.Common.Stubs;
+namespace _116.Tests.Fixtures.Stubs;
 
 /// <summary>
 /// In-memory stub replacing the Odesli-backed resolution service so integration tests never

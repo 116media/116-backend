@@ -1,6 +1,7 @@
-using _116.Shared.Application.Builders.RateLimit;
+using _116.BuildingBlocks.Application.Builders.RateLimit;
+using _116.BuildingBlocks.Presentation.Builders.RateLimit;
 
-namespace _116.Integration.Tests.Common.Stubs;
+namespace _116.Tests.Fixtures.Stubs;
 
 /// <summary>
 /// No-op <see cref="IAccountRateLimiter" /> for the general test host, so per-account throttling never

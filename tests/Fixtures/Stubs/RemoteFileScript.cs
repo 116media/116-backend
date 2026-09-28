@@ -1,4 +1,4 @@
-namespace _116.Integration.Tests.Common.Stubs;
+namespace _116.Tests.Fixtures.Stubs;
 
 /// <summary>
 /// Shared script driving <see cref="StubRemoteFileHandler" />. Lets a test stage the redirect

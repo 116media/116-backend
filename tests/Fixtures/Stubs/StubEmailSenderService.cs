@@ -1,7 +1,7 @@
 using _116.Mailer.Application.Shared.Exceptions;
 using _116.Mailer.Application.Shared.Services;
 
-namespace _116.Integration.Tests.Common.Stubs;
+namespace _116.Tests.Fixtures.Stubs;
 
 /// <summary>
 /// Records every message the outbox dispatcher hands it instead of contacting a provider.
