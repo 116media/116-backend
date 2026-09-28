@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 
-namespace _116.BuildingBlocks.Utils;
+namespace _116.BuildingBlocks.Presentation.Utils;
 
 /// <summary>
 /// Provides utilities for constructing versioned API URLs without hardcoded version numbers.
