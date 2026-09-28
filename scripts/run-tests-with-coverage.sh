@@ -34,6 +34,19 @@ print_error() {
     echo -e "${RED}$1${NC}"
 }
 
+# The CI runsettings turn SourceLink on so Codecov can link each line to GitHub. Locally that
+# makes the collector record raw.githubusercontent URLs instead of file paths, and the report
+# generator then 404s on every file that is not pushed yet. This writes a local copy with that
+# one setting flipped, leaving the CI settings untouched.
+local_runsettings() {
+    local source="$1"
+    local target="$COVERAGE_DIR/$(basename "${source%.runsettings}").local.runsettings"
+
+    mkdir -p "$COVERAGE_DIR"
+    sed 's|<UseSourceLink>true</UseSourceLink>|<UseSourceLink>false</UseSourceLink>|' "$source" > "$target"
+    echo "$target"
+}
+
 cleanup() {
     print_header "Cleaning up previous coverage data"
     rm -rf "$COVERAGE_DIR"
@@ -43,17 +56,15 @@ cleanup() {
 
 run_unit_tests() {
     print_header "Running Unit Tests"
-    # Using coverlet.msbuild for accurate coverage with C# 12 primary constructors.
-    # Endpoint classes are excluded from the unit accounting: routing is owned by
-    # the integration suite, which keeps counting them.
-    dotnet test "$PROJECT_ROOT/tests/Unit" \
+    # The same solution filter, collector and runsettings the CI unit job uses, so local
+    # numbers match what Codecov reports. Endpoint classes are excluded from the unit
+    # accounting by coverage.unit.runsettings: routing is owned by the integration suite.
+    dotnet test "$PROJECT_ROOT/tests/unit.slnf" \
         --configuration Release \
-        --logger "console;verbosity=normal" \
-        /p:CollectCoverage=true \
-        /p:CoverletOutputFormat=opencover \
-        /p:CoverletOutput="$COVERAGE_DIR/unit/coverage.opencover.xml" \
-        /p:ExcludeByFile="\"**/Migrations/**,**/obj/**/*.g.cs,**/*.Designer.cs,**/*EndpointV1.cs\"" \
-        /p:ExcludeByAttribute="\"GeneratedCodeAttribute,CompilerGeneratedAttribute\""
+        --settings "$(local_runsettings "$PROJECT_ROOT/tests/coverage.unit.runsettings")" \
+        --collect:"XPlat Code Coverage" \
+        --results-directory "$COVERAGE_DIR/unit" \
+        --logger "console;verbosity=normal"
 }
 
 run_integration_tests() {
@@ -65,21 +76,19 @@ run_integration_tests() {
         exit 1
     fi
 
-    # Using coverlet.msbuild for accurate coverage with C# 12 primary constructors
-    DOTNET_ENVIRONMENT=Testing dotnet test "$PROJECT_ROOT/tests/Integration" \
+    # The same collector and runsettings as the CI integration job, which keeps endpoints counted.
+    DOTNET_ENVIRONMENT=Testing dotnet test "$PROJECT_ROOT/tests/integration.slnf" \
         --configuration Release \
-        --logger "console;verbosity=normal" \
-        /p:CollectCoverage=true \
-        /p:CoverletOutputFormat=opencover \
-        /p:CoverletOutput="$COVERAGE_DIR/integration/coverage.opencover.xml" \
-        /p:ExcludeByFile="\"**/Migrations/**,**/obj/**/*.g.cs,**/*.Designer.cs\"" \
-        /p:ExcludeByAttribute="\"GeneratedCodeAttribute,CompilerGeneratedAttribute\""
+        --settings "$(local_runsettings "$PROJECT_ROOT/tests/coverage.runsettings")" \
+        --collect:"XPlat Code Coverage" \
+        --results-directory "$COVERAGE_DIR/integration" \
+        --logger "console;verbosity=normal"
 }
 
 run_architecture_tests() {
     print_header "Running Architecture Tests"
     # No coverage: these rules reflect over assemblies and execute no product code.
-    dotnet test "$PROJECT_ROOT/tests/Architecture" \
+    dotnet test "$PROJECT_ROOT/tests/Architecture.Tests" \
         --configuration Release \
         --logger "console;verbosity=normal"
 }
@@ -90,15 +99,15 @@ run_architecture_tests() {
 generate_suite_report() {
     local suite="$1"
     local label="$2"
-    local report="$COVERAGE_DIR/$suite/coverage.opencover.xml"
+    local reports="$COVERAGE_DIR/$suite/**/coverage.opencover.xml"
 
-    if [ ! -f "$report" ]; then
-        print_warning "No $label coverage found at $report — skipping"
+    if [ -z "$(find "$COVERAGE_DIR/$suite" -name 'coverage.opencover.xml' 2>/dev/null | head -1)" ]; then
+        print_warning "No $label coverage found under $COVERAGE_DIR/$suite — skipping"
         return
     fi
 
     reportgenerator \
-        -reports:"$report" \
+        -reports:"$reports" \
         -targetdir:"$COVERAGE_DIR/report/$suite" \
         -reporttypes:"Html;TextSummary;MarkdownSummaryGithub" \
         -assemblyfilters:"-*Tests*;-*Migrations*" \
@@ -143,8 +152,8 @@ show_help() {
     echo "  $0 integration  # Run only integration tests with coverage"
     echo "  $0 report       # Generate report from existing coverage files"
     echo ""
-    echo "Note: This script uses coverlet.msbuild for accurate coverage"
-    echo "      with C# 12 primary constructors."
+    echo "Note: this runs the same solution filters, collector and runsettings as CI,"
+    echo "      so the numbers match what Codecov reports."
 }
 
 # Main script
