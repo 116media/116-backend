@@ -1,11 +1,11 @@
-using _116.Shared.Application.Services;
+using _116.BuildingBlocks.Application.Services;
+using _116.BuildingBlocks.Infrastructure.Extensions;
 using _116.Shared.Domain;
-using _116.Shared.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
-namespace _116.Shared.Infrastructure.interceptors;
+namespace _116.BuildingBlocks.Infrastructure.interceptors;
 
 /// <summary>
 /// Intercepts EF Core save changes operations to automatically update audit fields

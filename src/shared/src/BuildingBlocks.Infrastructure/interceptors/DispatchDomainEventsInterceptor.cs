@@ -1,13 +1,13 @@
 using System.Runtime.CompilerServices;
-using _116.Shared.Application.Services;
+using _116.BuildingBlocks.Application.Services;
+using _116.BuildingBlocks.Infrastructure.Outbox;
 using _116.Shared.Domain;
-using _116.Shared.Infrastructure.Outbox;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace _116.Shared.Infrastructure.interceptors;
+namespace _116.BuildingBlocks.Infrastructure.interceptors;
 
 /// <summary>
 /// Dispatches domain events after a successful save: collected from tracked aggregates during
