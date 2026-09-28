@@ -1,6 +1,6 @@
-using _116.Tests.Fixtures.Helpers;
+using _116.Tests.TestData.Helpers;
 
-namespace _116.Integration.Tests.Common.Helpers;
+namespace _116.Tests.Fixtures.Helpers;
 
 /// <summary>
 /// Resolves the application's own <c>*ErrorMessage</c> / <c>*ExceptionMessage</c> classes out of
