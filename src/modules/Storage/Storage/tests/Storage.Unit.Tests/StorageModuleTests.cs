@@ -1,13 +1,14 @@
-using _116.Core;
-using _116.Core.Application.Shared.Persistence;
-using _116.Core.Application.Shared.Repositories;
-using _116.Core.Application.Shared.Services;
-using _116.Core.Infrastructure.Persistence;
-using _116.Core.Infrastructure.Repositories;
-using _116.Core.Infrastructure.Services;
-using _116.Shared.Application.Configurations;
-using _116.Unit.Tests.Common;
-using _116.Unit.Tests.Common.Helpers;
+using _116.BuildingBlocks.Application.Configurations;
+using _116.Storage;
+using _116.Storage.Application.Shared.Persistence;
+using _116.Storage.Application.Shared.Repositories;
+using _116.Storage.Application.Shared.Services;
+using _116.Storage.Infrastructure;
+using _116.Storage.Infrastructure.Persistence;
+using _116.Storage.Infrastructure.Repositories;
+using _116.Storage.Infrastructure.Services;
+using _116.Tests.TestData;
+using _116.Tests.TestData.Helpers;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
@@ -17,18 +18,18 @@ using Microsoft.Extensions.Hosting;
 using Moq;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Core;
+namespace _116.Storage.Unit.Tests;
 
 /// <summary>
-/// Unit tests for <see cref="CoreModule"/>.
+/// Unit tests for <see cref="StorageModule"/>.
 /// </summary>
-public class CoreModuleTests : IDisposable
+public class StorageModuleTests : IDisposable
 {
     private readonly ServiceCollection _services;
     private readonly TestDatabaseEnvironment _environment = new();
     private readonly CloudinarySettings _cloudinarySettings;
 
-    public CoreModuleTests()
+    public StorageModuleTests()
     {
         _services = [];
         _services.AddLogging();
@@ -69,7 +70,7 @@ public class CoreModuleTests : IDisposable
         var services = new ServiceCollection();
         services.AddLogging();
         services.AddLocalization();
-        services.AddDbContext<CoreDbContext>(options => options.UseInMemoryDatabase("TestDb"));
+        services.AddDbContext<StorageDbContext>(options => options.UseInMemoryDatabase("TestDb"));
 
         var cloudinarySettings = new CloudinarySettings
         {
@@ -85,7 +86,7 @@ public class CoreModuleTests : IDisposable
         ServiceProvider serviceProvider = services.BuildServiceProvider();
 
         // Assert
-        var dbContext = serviceProvider.GetService<CoreDbContext>();
+        var dbContext = serviceProvider.GetService<StorageDbContext>();
         dbContext.Should().NotBeNull();
     }
 
@@ -96,7 +97,7 @@ public class CoreModuleTests : IDisposable
         var services = new ServiceCollection();
         services.AddLogging();
         services.AddLocalization();
-        services.AddDbContext<CoreDbContext>(options => options.UseInMemoryDatabase("TestDb"));
+        services.AddDbContext<StorageDbContext>(options => options.UseInMemoryDatabase("TestDb"));
 
         var cloudinarySettings = new CloudinarySettings
         {
@@ -112,9 +113,9 @@ public class CoreModuleTests : IDisposable
         ServiceProvider serviceProvider = services.BuildServiceProvider();
 
         // Assert
-        var unitOfWork = serviceProvider.GetService<ICoreUnitOfWork>();
+        var unitOfWork = serviceProvider.GetService<IStorageUnitOfWork>();
         unitOfWork.Should().NotBeNull();
-        unitOfWork.Should().BeOfType<CoreUnitOfWork>();
+        unitOfWork.Should().BeOfType<StorageUnitOfWork>();
     }
 
     [Fact]
@@ -124,7 +125,7 @@ public class CoreModuleTests : IDisposable
         var services = new ServiceCollection();
         services.AddLogging();
         services.AddLocalization();
-        services.AddDbContext<CoreDbContext>(options => options.UseInMemoryDatabase("TestDb"));
+        services.AddDbContext<StorageDbContext>(options => options.UseInMemoryDatabase("TestDb"));
 
         var cloudinarySettings = new CloudinarySettings
         {
@@ -152,7 +153,7 @@ public class CoreModuleTests : IDisposable
         var services = new ServiceCollection();
         services.AddLogging();
         services.AddLocalization();
-        services.AddDbContext<CoreDbContext>(options => options.UseInMemoryDatabase("TestDb"));
+        services.AddDbContext<StorageDbContext>(options => options.UseInMemoryDatabase("TestDb"));
 
         var cloudinarySettings = new CloudinarySettings
         {
@@ -180,7 +181,7 @@ public class CoreModuleTests : IDisposable
         var services = new ServiceCollection();
         services.AddLogging();
         services.AddLocalization();
-        services.AddDbContext<CoreDbContext>(options => options.UseInMemoryDatabase("TestDb"));
+        services.AddDbContext<StorageDbContext>(options => options.UseInMemoryDatabase("TestDb"));
 
         var cloudinarySettings = new CloudinarySettings
         {
@@ -246,8 +247,8 @@ public class CoreModuleTests : IDisposable
         ServiceProvider serviceProvider = _services.BuildServiceProvider();
 
         // Assert - verify all services are registered
-        serviceProvider.GetService<CoreDbContext>().Should().NotBeNull();
-        serviceProvider.GetService<ICoreUnitOfWork>().Should().NotBeNull();
+        serviceProvider.GetService<StorageDbContext>().Should().NotBeNull();
+        serviceProvider.GetService<IStorageUnitOfWork>().Should().NotBeNull();
         serviceProvider.GetService<IFileRepository>().Should().NotBeNull();
         serviceProvider.GetService<IFileService>().Should().NotBeNull();
         serviceProvider.GetService<ICloudinaryService>().Should().NotBeNull();
