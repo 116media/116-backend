@@ -1,4 +1,4 @@
-namespace _116.Shared.Application.Builders.RateLimit;
+namespace _116.BuildingBlocks.Application.Builders.RateLimit;
 
 /// <summary>
 /// A per-account rate limiter for the pre-auth security endpoints, keyed by a stable account
