@@ -6,21 +6,8 @@ using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Content.TestData.Builders.Requests;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Constants;
-using _116.Tests.TestData.Mocks;
 
 namespace _116.Content.Integration.Tests.Application.Editorial.UseCases.Admin.Commands.RejectLyrics.V1;
 
@@ -94,7 +81,7 @@ public class AdminRejectLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
     public async Task RejectLyrics_AsSuperAdmin_WithNonExistentId_ReturnsError()
     {
         Client.AuthenticateAsSuperAdmin();
-        var request = new AdminRejectLyricsRequest(TestConstants.Lyrics.ValidRejectionReason);
+        var request = new AdminRejectLyricsRequestBuilder().Build();
 
         var response = await Client.PatchAsJsonAsync(
             Routes.Admin.Editorial.Reject(EditorialRouteConstants.Lyrics, Guid.NewGuid()),
@@ -112,7 +99,7 @@ public class AdminRejectLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
     {
         LyricsEntity lyrics = await SeedLyricsAsync(LyricsFactory.CreateRejected);
         Client.AuthenticateAsSuperAdmin();
-        var request = new AdminRejectLyricsRequest(TestConstants.Lyrics.ValidRejectionReason);
+        var request = new AdminRejectLyricsRequestBuilder().Build();
 
         var response = await Client.PatchAsJsonAsync(
             Routes.Admin.Editorial.Reject(EditorialRouteConstants.Lyrics, lyrics.Id),
@@ -131,7 +118,7 @@ public class AdminRejectLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
     {
         LyricsEntity lyrics = await SeedLyricsAsync(LyricsFactory.CreatePendingReview);
         Client.AuthenticateAsSuperAdmin();
-        var request = new AdminRejectLyricsRequest(TestConstants.Lyrics.ValidRejectionReason);
+        var request = new AdminRejectLyricsRequestBuilder().Build();
 
         var response = await Client.PatchAsJsonAsync(
             Routes.Admin.Editorial.Reject(EditorialRouteConstants.Lyrics, lyrics.Id),
