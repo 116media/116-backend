@@ -1,12 +1,12 @@
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.BuildingBlocks.Application.Exceptions.Messages;
+using _116.BuildingBlocks.Presentation.Exceptions.Handlers.Contracts;
 using _116.Identity.Application.Shared.Errors.Messages;
-using _116.Shared.Application.Exceptions;
-using _116.Shared.Application.Exceptions.Handlers.Contracts;
-using _116.Shared.Application.Exceptions.Messages;
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
 
-namespace _116.Integration.Tests.Shared.Exceptions.Handlers;
+namespace _116.Shared.Integration.Tests.Exceptions.Handlers;
 
 /// <summary>
 /// Verifies that all exception handler strategies return correct HTTP status codes

@@ -1,13 +1,26 @@
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.BuildingBlocks.Application.Exceptions.Messages;
 using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.ResolveSingleStreamingLinks.V1;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
-using _116.Integration.Tests.Common.Stubs;
-using _116.Shared.Application.Exceptions;
-using _116.Shared.Application.Exceptions.Messages;
-using _116.Tests.Fixtures.Factories.Content;
+using _116.Content.TestData.Factories;
+using _116.Content.TestData.Factories.Helpers;
+using _116.Content.TestData.Mocks.Factories;
+using _116.Content.TestData.Mocks.Infrastructure;
+using _116.Content.TestData.Mocks.Repositories;
+using _116.Content.TestData.Mocks.Services;
+using _116.Identity.TestData.Factories;
+using _116.Identity.TestData.Mocks.Infrastructure;
+using _116.Identity.TestData.Mocks.Repositories;
+using _116.Identity.TestData.Mocks.Services;
+using _116.Storage.TestData.Factories;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Storage.TestData.Mocks.Services;
+using _116.Tests.Fixtures.Stubs;
+using _116.Tests.TestData.Mocks;
 
-namespace _116.Integration.Tests.Shared.Exceptions.Handlers;
+namespace _116.Shared.Integration.Tests.Exceptions.Handlers;
 
 /// <summary>
 /// Covers the two strategies no mapped-exception test can reach: the fallback for an unexpected
