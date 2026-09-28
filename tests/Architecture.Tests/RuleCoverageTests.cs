@@ -21,7 +21,11 @@ public class RuleCoverageTests
             {
                 IReadOnlyList<Type> found =
                 [
-                    .. Types.InAssembly(module.Assembly).That().ResideInNamespace($"{module.Root}.{layer}").GetTypes(),
+                    .. Types
+                        .InAssemblies(module.Assemblies)
+                        .That()
+                        .ResideInNamespace($"{module.Root}.{layer}")
+                        .GetTypes(),
                 ];
 
                 found.Should().NotBeEmpty($"{module.Name}.{layer} must contain types for its rules to mean anything");

@@ -32,7 +32,7 @@ public class LayerDependencyTests
         foreach (Module module in ArchitectureRule.Modules)
         {
             Types
-                .InAssembly(module.Assembly)
+                .InAssemblies(module.Assemblies)
                 .That()
                 .ResideInNamespace($"{module.Root}.Domain")
                 .ShouldNot()
@@ -48,7 +48,7 @@ public class LayerDependencyTests
         foreach (Module module in ArchitectureRule.Modules)
         {
             Types
-                .InAssembly(module.Assembly)
+                .InAssemblies(module.Assemblies)
                 .That()
                 .ResideInNamespace($"{module.Root}.Domain")
                 .ShouldNot()
@@ -66,7 +66,7 @@ public class LayerDependencyTests
             foreach (string layer in (string[])["Domain", "Application"])
             {
                 Types
-                    .InAssembly(module.Assembly)
+                    .InAssemblies(module.Assemblies)
                     .That()
                     .ResideInNamespace($"{module.Root}.{layer}")
                     .ShouldNot()
@@ -83,7 +83,7 @@ public class LayerDependencyTests
         foreach (Module module in ArchitectureRule.Modules)
         {
             Types
-                .InAssembly(module.Assembly)
+                .InAssemblies(module.Assemblies)
                 .That()
                 .ResideInNamespace($"{module.Root}.Application")
                 .ShouldNot()

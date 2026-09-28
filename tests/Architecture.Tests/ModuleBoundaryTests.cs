@@ -29,7 +29,7 @@ public class ModuleBoundaryTests
             ];
 
             Types
-                .InAssembly(module.Assembly)
+                .InAssemblies(module.Assemblies)
                 .ShouldNot()
                 .HaveDependencyOnAny(forbidden)
                 .GetResult()

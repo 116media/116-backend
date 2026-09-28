@@ -32,12 +32,10 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Modules\Core\Core\Core.csproj" />
-        <ProjectReference Include="..\..\src\Modules\Identity\Identity\Identity.csproj" />
-        <ProjectReference Include="..\..\src\Modules\Content\Content\Content.csproj" />
-        <ProjectReference Include="..\..\src\Modules\Mailer\Mailer\Mailer.csproj" />
-        <ProjectReference Include="..\..\src\Shared\Shared\Shared.csproj" />
-        <ProjectReference Include="..\..\src\Shared\Shared.Contracts\Shared.Contracts.csproj" />
-        <ProjectReference Include="..\..\src\BuildingBlocks\BuildingBlocks.csproj" />
+        <ProjectReference Include="../../src/modules/Storage/Storage/src/Storage.Infrastructure/Storage.Infrastructure.csproj" />
+        <ProjectReference Include="../../src/modules/Identity/Identity/src/Identity.Infrastructure/Identity.Infrastructure.csproj" />
+        <ProjectReference Include="../../src/modules/Content/Content/src/Content.Infrastructure/Content.Infrastructure.csproj" />
+        <ProjectReference Include="../../src/modules/Mailer/Mailer/src/Mailer.Infrastructure/Mailer.Infrastructure.csproj" />
+        <ProjectReference Include="../../src/shared/src/BuildingBlocks.Presentation/BuildingBlocks.Presentation.csproj" />
     </ItemGroup>
 </Project>
