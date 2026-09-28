@@ -1,8 +1,8 @@
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.BuildingBlocks.Application.Exceptions.Messages;
 using _116.Identity.Application.Roles.UseCases.Admin.Queries.GetAllRoles.V1;
-using _116.Shared.Application.Exceptions;
-using _116.Shared.Application.Exceptions.Messages;
 
-namespace _116.Integration.Tests.Shared.Application.Decorators;
+namespace _116.Shared.Integration.Tests.Application.Decorators;
 
 /// <summary>
 /// Verifies that the LoggingDecorator does not interfere with

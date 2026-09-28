@@ -4,7 +4,7 @@ using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
 
-namespace _116.Integration.Tests.Shared.Application.Decorators;
+namespace _116.Shared.Integration.Tests.Application.Decorators;
 
 /// <summary>
 /// Verifies that the ValidationDecorator intercepts invalid requests

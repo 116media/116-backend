@@ -1,4 +1,4 @@
-namespace _116.Integration.Tests.Shared.Application.Cors;
+namespace _116.Shared.Integration.Tests.Application.Cors;
 
 /// <summary>
 /// Verifies that the default CORS policy built in <c>Program.cs</c> from

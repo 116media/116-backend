@@ -1,4 +1,4 @@
-namespace _116.Integration.Tests.Shared.Application.Configurations;
+namespace _116.Shared.Integration.Tests.Application.Configurations;
 
 /// <summary>
 /// Verifies that a host started without <c>OTP_PEPPER</c> refuses to boot, rather than falling

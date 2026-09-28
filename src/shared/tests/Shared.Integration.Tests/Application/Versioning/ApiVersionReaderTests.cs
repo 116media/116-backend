@@ -1,6 +1,6 @@
 using _116.Identity.Application.User.UseCases.Public.Queries.GetOwnProfile.V1;
 
-namespace _116.Integration.Tests.Shared.Application.Versioning;
+namespace _116.Shared.Integration.Tests.Application.Versioning;
 
 /// <summary>
 /// Verifies that the header arm of the combined API version reader configured in

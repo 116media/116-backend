@@ -1,9 +1,9 @@
 using System.Text.Json;
-using _116.BuildingBlocks.Constants.RateLimit;
-using _116.Shared.Application.Exceptions;
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.BuildingBlocks.Presentation.Constants.RateLimit;
 using Microsoft.AspNetCore.Mvc;
 
-namespace _116.Integration.Tests.Shared.Application.Extensions;
+namespace _116.Shared.Integration.Tests.Application.Extensions;
 
 /// <summary>
 /// Verifies that <c>RateLimitingExtension.AddRateLimiting</c> is wired into the real HTTP

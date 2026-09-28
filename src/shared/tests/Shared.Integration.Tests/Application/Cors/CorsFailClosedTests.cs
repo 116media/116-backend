@@ -1,4 +1,4 @@
-namespace _116.Integration.Tests.Shared.Application.Cors;
+namespace _116.Shared.Integration.Tests.Application.Cors;
 
 /// <summary>
 /// Verifies that the default host — booted outside Development with no origins configured — fails CORS

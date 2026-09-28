@@ -1,6 +1,6 @@
-using _116.BuildingBlocks.Constants.RateLimit;
+using _116.BuildingBlocks.Presentation.Constants.RateLimit;
 
-namespace _116.Integration.Tests.Shared.Application.RateLimiting;
+namespace _116.Shared.Integration.Tests.Application.RateLimiting;
 
 /// <summary>
 /// Verifies the per-account throttle applied inside the pre-auth handlers. This host disables the
