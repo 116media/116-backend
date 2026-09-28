@@ -1,10 +1,10 @@
-using _116.Core.Application.Shared.Specifications;
-using _116.Core.Domain.Entities;
-using _116.Tests.Fixtures.Factories.Core;
+using _116.Storage.Application.Shared.Specifications;
+using _116.Storage.Domain.Entities;
+using _116.Storage.TestData.Factories;
 using AwesomeAssertions;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Core.Application.Shared.Specifications;
+namespace _116.Storage.Unit.Tests.Application.Shared.Specifications;
 
 /// <summary>
 /// Unit tests for File type specifications.

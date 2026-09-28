@@ -1,16 +1,16 @@
-using _116.Core.Application.Shared.Errors;
-using _116.Core.Application.Shared.Errors.Messages;
-using _116.Shared.Application.Exceptions;
-using _116.Tests.Fixtures.Helpers;
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.Storage.Application.Shared.Errors;
+using _116.Storage.Application.Shared.Errors.Messages;
+using _116.Tests.TestData.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Core.Application.Shared.Errors;
+namespace _116.Storage.Unit.Tests.Application.Shared.Errors;
 
 /// <summary>
 /// Unit tests for <see cref="FileErrors"/>.
 /// </summary>
-public class CoreErrorsTests
+public class StorageErrorsTests
 {
     private readonly FileErrors _errors = TestErrorsFactory.CreateFileErrors();
     private readonly ValidationErrorMessage _i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>();

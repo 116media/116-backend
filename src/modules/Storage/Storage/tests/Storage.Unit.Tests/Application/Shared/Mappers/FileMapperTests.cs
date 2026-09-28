@@ -1,13 +1,16 @@
-using _116.Core.Application.Shared.Mappers;
-using _116.Core.Contracts.Application.DTOs;
-using _116.Core.Domain.Entities;
-using _116.Tests.Fixtures.Factories.Core;
+using _116.Storage.Application.Shared.Mappers;
+using _116.Storage.Contracts.Application.DTOs;
+using _116.Storage.Domain.Entities;
+using _116.Storage.TestData.Factories;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Storage.TestData.Mocks.Services;
+using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Mapster;
 using MapsterMapper;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Core.Application.Shared.Mappers;
+namespace _116.Storage.Unit.Tests.Application.Shared.Mappers;
 
 /// <summary>
 /// Unit tests for <see cref="FileMapper"/>, the single owner of the aggregate-to-reference and

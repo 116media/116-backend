@@ -1,16 +1,16 @@
 using System.Reflection;
-using _116.Core.Application.Shared.Errors.Messages;
-using _116.Core.Application.Shared.Exceptions.Handlers;
-using _116.Core.Domain.Exceptions;
-using _116.Core.Domain.StateMachines;
-using _116.Shared.Application.Exceptions;
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.Storage.Application.Shared.Errors.Messages;
+using _116.Storage.Application.Shared.Exceptions.Handlers;
+using _116.Storage.Domain.Exceptions;
+using _116.Storage.Domain.StateMachines;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Core.Application.Shared.Exceptions.Handlers;
+namespace _116.Storage.Unit.Tests.Application.Shared.Exceptions.Handlers;
 
 /// <summary>
 /// Unit tests for <see cref="DomainRuleExceptionStrategy"/>: the domain's culture-free codes come
@@ -41,7 +41,7 @@ public class DomainRuleExceptionStrategyTests
     public void ExceptionType_ShouldReturnCoreRuleExceptionType()
     {
         // Act & Assert
-        _strategy.ExceptionType.Should().Be(typeof(CoreRuleException));
+        _strategy.ExceptionType.Should().Be(typeof(StorageRuleException));
     }
 
     [Fact]
@@ -50,7 +50,7 @@ public class DomainRuleExceptionStrategyTests
         // Arrange
         DefaultHttpContext context = CreateContext();
         string expected = context.RequestServices.GetRequiredService<ValidationErrorMessage>().FileNameRequired();
-        var exception = new CoreRuleException(CoreRuleCodes.FileNameRequired);
+        var exception = new StorageRuleException(StorageRuleCodes.FileNameRequired);
 
         // Act
         ProblemDetails problem = _strategy.CreateProblemDetails(exception, context);
@@ -59,7 +59,7 @@ public class DomainRuleExceptionStrategyTests
         problem.Status.Should().Be(StatusCodes.Status400BadRequest);
         problem.Title.Should().Be(nameof(BadRequestException));
         problem.Detail.Should().Be(expected);
-        problem.Extensions["code"].Should().Be(CoreRuleCodes.FileNameRequired);
+        problem.Extensions["code"].Should().Be(StorageRuleCodes.FileNameRequired);
     }
 
     [Fact]
@@ -67,7 +67,7 @@ public class DomainRuleExceptionStrategyTests
     {
         // Arrange
         DefaultHttpContext context = CreateContext();
-        var exception = new CoreRuleException("core.some-future-rule");
+        var exception = new StorageRuleException("core.some-future-rule");
 
         // Act
         ProblemDetails problem = _strategy.CreateProblemDetails(exception, context);
@@ -84,7 +84,7 @@ public class DomainRuleExceptionStrategyTests
     {
         TheoryData<string> data = [];
 
-        foreach (FieldInfo field in typeof(CoreRuleCodes).GetFields(BindingFlags.Public | BindingFlags.Static))
+        foreach (FieldInfo field in typeof(StorageRuleCodes).GetFields(BindingFlags.Public | BindingFlags.Static))
         {
             if (field is { IsLiteral: true } && field.FieldType == typeof(string))
             {
@@ -101,7 +101,7 @@ public class DomainRuleExceptionStrategyTests
     {
         // Arrange
         DefaultHttpContext context = CreateContext();
-        var exception = new CoreRuleException(code, "value");
+        var exception = new StorageRuleException(code, "value");
 
         // Act
         ProblemDetails problem = _strategy.CreateProblemDetails(exception, context);
