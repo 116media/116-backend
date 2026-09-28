@@ -9,7 +9,6 @@ using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.TestData.Builders.Requests;
 using _116.Identity.TestData.Factories;
 using _116.Mailer.Infrastructure.Persistence;
-using _116.Storage.TestData.Factories;
 
 namespace _116.Identity.Integration.Tests.Application.Session.UseCases.Public.Commands.RefreshToken.V1;
 

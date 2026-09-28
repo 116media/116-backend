@@ -1,14 +1,7 @@
 using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Session.UseCases.Admin.Queries.GetSessionMetrics;
 using _116.Identity.Domain.Enums;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
 using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Moq;
 using Xunit;

@@ -1,14 +1,6 @@
 using _116.Identity.Application.Adapters.SocialAuth;
 using _116.Identity.Application.Auth.Exceptions;
 using _116.Identity.Infrastructure.Adapters.SocialAuth;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Microsoft.Extensions.Options;
 using Xunit;

@@ -1,9 +1,6 @@
 using _116.BuildingBlocks.Application.Services;
 using _116.BuildingBlocks.Infrastructure.interceptors;
 using _116.Shared.Domain;
-using _116.Shared.Unit.Tests.Shared.Domain;
-using _116.Shared.Unit.Tests.Shared.Infrastructure.Extensions;
-using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;

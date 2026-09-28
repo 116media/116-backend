@@ -3,8 +3,6 @@ using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Content.TestData.Builders.Requests;
-using FluentValidation;
-using FluentValidation.Results;
 
 namespace _116.Content.Integration.Tests.Application.Interactions.UseCases.Public.Commands.CreatePlaylist.V1;
 

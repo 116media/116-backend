@@ -1,7 +1,6 @@
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
 using AwesomeAssertions;
-using AwesomeAssertions.Specialized;
 using Xunit;
 
 namespace _116.Identity.Unit.Tests.Infrastructure.Persistence.Seeds.SuperAdmin;

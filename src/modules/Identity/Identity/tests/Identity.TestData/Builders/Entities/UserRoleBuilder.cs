@@ -1,10 +1,5 @@
 using System.Reflection;
 using _116.Identity.Domain.Entities;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Tests.TestData.Mocks;
 
 namespace _116.Identity.TestData.Builders.Entities;
 

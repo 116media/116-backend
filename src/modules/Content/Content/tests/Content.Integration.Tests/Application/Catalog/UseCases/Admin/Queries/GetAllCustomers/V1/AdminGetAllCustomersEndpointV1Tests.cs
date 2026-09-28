@@ -2,7 +2,6 @@ using _116.Content.Application.Catalog.UseCases.Admin.Queries.GetAllCustomers.V1
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Content.TestData.Factories;
-using _116.Identity.TestData.Factories;
 
 namespace _116.Content.Integration.Tests.Application.Catalog.UseCases.Admin.Queries.GetAllCustomers.V1;
 

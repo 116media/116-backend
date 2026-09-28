@@ -7,15 +7,6 @@ using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.TestData.Builders.Requests;
 using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Mocks;
-using FluentValidation;
-using FluentValidation.Results;
 
 namespace _116.Identity.Integration.Tests.Application.Auth.UseCases.Public.Commands.VerifyOtp.V1;
 

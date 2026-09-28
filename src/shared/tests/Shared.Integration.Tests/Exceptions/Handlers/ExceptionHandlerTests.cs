@@ -2,8 +2,6 @@ using _116.BuildingBlocks.Application.Exceptions;
 using _116.BuildingBlocks.Application.Exceptions.Messages;
 using _116.BuildingBlocks.Presentation.Exceptions.Handlers.Contracts;
 using _116.Identity.Application.Shared.Errors.Messages;
-using FluentValidation;
-using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
 
 namespace _116.Shared.Integration.Tests.Exceptions.Handlers;

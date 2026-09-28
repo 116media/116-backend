@@ -5,7 +5,6 @@ using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Exceptions.Handlers;
 using _116.Content.Domain.Exceptions;
 using _116.Content.Domain.StateMachines;
-using _116.Shared.Domain.Exceptions;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

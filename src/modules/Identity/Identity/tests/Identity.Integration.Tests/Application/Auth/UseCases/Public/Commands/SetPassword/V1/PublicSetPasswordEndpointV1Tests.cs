@@ -7,8 +7,6 @@ using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.TestData.Builders.Requests;
 using _116.Identity.TestData.Factories;
-using FluentValidation;
-using FluentValidation.Results;
 
 namespace _116.Identity.Integration.Tests.Application.Auth.UseCases.Public.Commands.SetPassword.V1;
 

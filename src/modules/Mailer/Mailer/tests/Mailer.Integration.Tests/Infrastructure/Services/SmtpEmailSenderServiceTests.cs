@@ -1,12 +1,10 @@
 using System.Net.Sockets;
 using System.Text;
-using _116.BuildingBlocks.Presentation.Constants;
 using _116.Mailer.Application.Shared.Exceptions;
 using _116.Mailer.Application.Shared.Services;
 using _116.Mailer.Contracts.Application.DTOs;
 using _116.Mailer.Infrastructure.Services;
 using _116.Shared.Domain.Constants;
-using Microsoft.Extensions.Configuration;
 
 namespace _116.Mailer.Integration.Tests.Infrastructure.Services;
 

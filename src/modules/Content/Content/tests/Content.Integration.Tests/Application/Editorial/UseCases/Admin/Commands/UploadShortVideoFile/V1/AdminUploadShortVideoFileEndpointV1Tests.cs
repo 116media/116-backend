@@ -1,6 +1,5 @@
 using _116.BuildingBlocks.Application.Exceptions;
 using _116.BuildingBlocks.Application.Exceptions.Messages;
-using _116.BuildingBlocks.Presentation.Constants;
 using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadShortVideoFile.V1;
 using _116.Content.Application.Shared.Errors.Messages;
@@ -8,8 +7,6 @@ using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Content.TestData.Factories;
 using _116.Storage.Contracts.Domain.Constants;
-using FluentValidation;
-using FluentValidation.Results;
 
 namespace _116.Content.Integration.Tests.Application.Editorial.UseCases.Admin.Commands.UploadShortVideoFile.V1;
 

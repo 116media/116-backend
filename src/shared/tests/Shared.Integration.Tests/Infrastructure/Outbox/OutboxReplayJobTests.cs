@@ -1,25 +1,11 @@
 using _116.BuildingBlocks.Infrastructure.Jobs;
 using _116.BuildingBlocks.Infrastructure.Outbox;
-using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
 using _116.Identity.Infrastructure.BackgroundJobs;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
 using _116.Mailer.Infrastructure.BackgroundJobs;
 using _116.Shared.Domain;
 using _116.Storage.Infrastructure.BackgroundJobs;
 using _116.Storage.Infrastructure.Persistence;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
 using _116.Tests.Fixtures.Stubs;
-using _116.Tests.TestData.Mocks;
 
 namespace _116.Shared.Integration.Tests.Infrastructure.Outbox;
 

@@ -1,4 +1,3 @@
-using _116.BuildingBlocks.Presentation.Constants;
 using _116.Identity.Application.Shared.OutboundEmails;
 using _116.Identity.Application.User.EventHandlers;
 using _116.Identity.Contracts.Application.DTOs;

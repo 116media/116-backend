@@ -3,7 +3,6 @@ using _116.Content.Domain.Exceptions;
 using _116.Content.Domain.StateMachines;
 using _116.Content.Domain.ValueObjects;
 using AwesomeAssertions;
-using AwesomeAssertions.Specialized;
 using Xunit;
 
 namespace _116.Content.Unit.Tests.Domain.ValueObjects;

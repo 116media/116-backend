@@ -1,13 +1,6 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateLyrics.V1;
-using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
 using _116.Tests.TestData.Constants;
 using _116.Tests.TestData.Helpers;
-using _116.Tests.TestData.Mocks;
 using Bogus;
 
 namespace _116.Content.TestData.Builders.Requests;

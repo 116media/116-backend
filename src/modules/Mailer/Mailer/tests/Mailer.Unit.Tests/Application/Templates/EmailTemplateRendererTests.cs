@@ -5,7 +5,6 @@ using _116.Mailer.Application.Newsletter.OutboundEmails;
 using _116.Mailer.Application.Shared.Services;
 using _116.Mailer.Application.Templates;
 using _116.Mailer.Application.Templates.Messages;
-using _116.Mailer.Contracts.Domain.Enums;
 using _116.Tests.TestData.Helpers;
 using AwesomeAssertions;
 using Xunit;

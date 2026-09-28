@@ -3,24 +3,12 @@ using _116.Content.Application.Catalog.UseCases.Public.Queries.GetActiveCategori
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
 using _116.Storage.Application.Shared.Cache;
 using _116.Storage.Application.Shared.EventHandlers;
 using _116.Storage.Domain.Entities;
 using _116.Storage.Domain.Events;
 using _116.Storage.Infrastructure.Persistence;
 using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Mocks;
 
 namespace _116.EndToEnd.Tests.Workflows;
 

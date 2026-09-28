@@ -1,6 +1,3 @@
-using _116.Tests.Fixtures;
-using Xunit;
-
 namespace _116.Mailer.Integration.Tests;
 
 /// <summary>

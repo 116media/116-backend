@@ -2,9 +2,6 @@ using System.Reflection;
 using _116.BuildingBlocks.Application.CQRS;
 using _116.BuildingBlocks.Application.Services;
 using _116.BuildingBlocks.Presentation.Extensions;
-using AwesomeAssertions;
-using Microsoft.Extensions.DependencyInjection;
-using Xunit;
 
 namespace _116.EndToEnd.Tests;
 

@@ -1,4 +1,3 @@
-using _116.BuildingBlocks.Presentation.Constants;
 using _116.Identity.Application.Auth.EventHandlers;
 using _116.Identity.Application.Shared.OutboundEmails;
 using _116.Identity.Contracts.Application.DTOs;
@@ -6,10 +5,8 @@ using _116.Identity.Contracts.Application.Services;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.Events;
 using _116.Mailer.Contracts.Application.OutboundEmails;
-using _116.Mailer.Contracts.Domain.Enums;
 using _116.Shared.Domain.Constants;
 using _116.Tests.TestData.Constants;
-using AwesomeAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;

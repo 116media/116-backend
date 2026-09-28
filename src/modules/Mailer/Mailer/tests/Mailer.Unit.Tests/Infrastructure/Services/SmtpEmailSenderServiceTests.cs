@@ -1,4 +1,3 @@
-using _116.BuildingBlocks.Presentation.Constants;
 using _116.Mailer.Application.Shared.Services;
 using _116.Mailer.Contracts.Application.DTOs;
 using _116.Mailer.Infrastructure.Services;

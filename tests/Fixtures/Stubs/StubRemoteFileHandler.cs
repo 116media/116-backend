@@ -1,4 +1,3 @@
-using System.Net;
 using System.Net.Http.Headers;
 
 namespace _116.Tests.Fixtures.Stubs;

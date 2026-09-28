@@ -1,4 +1,3 @@
-using _116.BuildingBlocks.Application.Configurations;
 using _116.Storage.Infrastructure;
 using AwesomeAssertions;
 using Xunit;

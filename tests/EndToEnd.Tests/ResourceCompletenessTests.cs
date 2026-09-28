@@ -4,16 +4,10 @@ using System.Reflection;
 using System.Resources;
 using System.Text.RegularExpressions;
 using _116.BuildingBlocks.Application.Exceptions.Messages;
-using _116.Content;
 using _116.Content.Application.Shared.Errors.Facade;
-using _116.Identity;
 using _116.Identity.Application.Shared.Errors.Facade;
-using _116.Mailer;
 using _116.Mailer.Application.Shared.Validators;
-using _116.Storage;
 using _116.Storage.Application.Shared.Errors.Facade;
-using AwesomeAssertions;
-using Xunit;
 
 namespace _116.EndToEnd.Tests;
 

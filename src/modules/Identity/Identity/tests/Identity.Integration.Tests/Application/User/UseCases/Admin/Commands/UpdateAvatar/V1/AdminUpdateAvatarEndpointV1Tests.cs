@@ -1,5 +1,4 @@
 using System.Net.Http.Headers;
-using _116.BuildingBlocks.Presentation.Constants;
 using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Application.User.Constants;
 using _116.Identity.Application.User.UseCases.Admin.Commands.UpdateAvatar.V1;
@@ -8,9 +7,6 @@ using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.TestData.Factories;
 using _116.Storage.Contracts.Domain.Constants;
-using _116.Storage.TestData.Factories;
-using FluentValidation;
-using FluentValidation.Results;
 
 namespace _116.Identity.Integration.Tests.Application.User.UseCases.Admin.Commands.UpdateAvatar.V1;
 

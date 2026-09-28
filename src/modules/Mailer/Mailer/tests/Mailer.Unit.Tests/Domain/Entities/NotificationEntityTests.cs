@@ -1,6 +1,5 @@
 using _116.Mailer.Contracts.Domain.Enums;
 using _116.Mailer.Domain.Entities;
-using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Xunit;
 

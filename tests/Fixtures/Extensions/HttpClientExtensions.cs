@@ -2,7 +2,6 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
-using _116.BuildingBlocks.Presentation.Constants;
 using _116.Identity.Domain.Constants;
 using _116.Identity.Domain.Enums;
 using Microsoft.IdentityModel.Tokens;

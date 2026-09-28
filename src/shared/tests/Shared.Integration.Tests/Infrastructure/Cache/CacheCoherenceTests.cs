@@ -1,8 +1,6 @@
 using _116.BuildingBlocks.Infrastructure.Cache;
-using AwesomeAssertions;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Hybrid;
-using Microsoft.Extensions.DependencyInjection;
 using StackExchange.Redis;
 using Testcontainers.Redis;
 

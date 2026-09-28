@@ -1,8 +1,5 @@
 using _116.BuildingBlocks.Infrastructure.Extensions;
 using _116.Shared.Domain;
-using _116.Shared.Unit.Tests.Shared.Domain;
-using _116.Shared.Unit.Tests.Shared.Infrastructure.Interceptors;
-using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;

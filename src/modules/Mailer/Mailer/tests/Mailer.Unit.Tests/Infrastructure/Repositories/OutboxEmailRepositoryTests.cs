@@ -1,4 +1,3 @@
-using _116.Mailer.Domain.Entities;
 using _116.Mailer.Infrastructure.Persistence;
 using _116.Mailer.Infrastructure.Repositories;
 using _116.Mailer.TestData.Builders.Entities;

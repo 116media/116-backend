@@ -1,4 +1,3 @@
-using _116.Mailer;
 using _116.Mailer.Application.Notifications;
 using _116.Mailer.Application.Notifications.Messages;
 using _116.Mailer.Application.Shared.Errors;
@@ -15,7 +14,6 @@ using _116.Mailer.Infrastructure.Persistence;
 using _116.Mailer.Infrastructure.Repositories;
 using _116.Mailer.Infrastructure.Services;
 using AwesomeAssertions;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;

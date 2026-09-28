@@ -1,5 +1,4 @@
 using _116.BuildingBlocks.Application.Exceptions;
-using _116.BuildingBlocks.Presentation.Constants;
 using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Application.Shared.Exceptions;
 using _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfile.V1;
@@ -10,7 +9,6 @@ using _116.Identity.TestData.Factories;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Infrastructure.Persistence;
 using _116.Shared.Domain.Constants;
-using _116.Storage.TestData.Factories;
 
 namespace _116.Identity.Integration.Tests.Application.User.UseCases.Public.Commands.UpdateOwnProfile.V1;
 

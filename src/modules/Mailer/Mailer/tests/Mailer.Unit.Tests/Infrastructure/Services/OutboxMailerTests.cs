@@ -1,10 +1,8 @@
-using _116.BuildingBlocks.Presentation.Constants;
 using _116.Identity.Application.Shared.OutboundEmails;
 using _116.Mailer.Application.Shared.Persistence;
 using _116.Mailer.Application.Shared.Repositories;
 using _116.Mailer.Application.Shared.Services;
 using _116.Mailer.Contracts.Application.DTOs;
-using _116.Mailer.Contracts.Domain.Enums;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Domain.Enums;
 using _116.Mailer.Infrastructure.Services;

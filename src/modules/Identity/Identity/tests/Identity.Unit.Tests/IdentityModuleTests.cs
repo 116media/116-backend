@@ -1,26 +1,17 @@
 using _116.BuildingBlocks.Infrastructure.Seed;
-using _116.Identity;
 using _116.Identity.Application.Adapters.Wangkanai.Detection;
 using _116.Identity.Application.Auth.Repositories;
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Session.Services;
-using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
-using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure;
-using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
 using _116.Identity.Infrastructure.Persistence.Seeds.Visitor;
-using _116.Tests.TestData;
 using AwesomeAssertions;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 

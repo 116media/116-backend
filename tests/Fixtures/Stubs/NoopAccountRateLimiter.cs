@@ -1,5 +1,4 @@
 using _116.BuildingBlocks.Application.Builders.RateLimit;
-using _116.BuildingBlocks.Presentation.Builders.RateLimit;
 
 namespace _116.Tests.Fixtures.Stubs;
 

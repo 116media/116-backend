@@ -2,8 +2,6 @@ using _116.Identity.Application.Auth.Constants;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.ResendOtp.V1;
 using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.TestData.Builders.Requests;
-using FluentValidation;
-using FluentValidation.Results;
 
 namespace _116.Identity.Integration.Tests.Application.Auth.UseCases.Admin.Commands.ResendOtp.V1;
 

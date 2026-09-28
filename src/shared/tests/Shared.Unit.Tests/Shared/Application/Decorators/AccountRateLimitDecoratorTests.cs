@@ -1,7 +1,6 @@
 using _116.BuildingBlocks.Application.Builders.RateLimit;
 using _116.BuildingBlocks.Application.CQRS;
 using _116.BuildingBlocks.Application.Decorators;
-using _116.BuildingBlocks.Presentation.Builders.RateLimit;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
