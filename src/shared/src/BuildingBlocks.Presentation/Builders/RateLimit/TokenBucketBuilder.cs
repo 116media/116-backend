@@ -1,7 +1,7 @@
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
 
-namespace _116.Shared.Application.Builders.RateLimit;
+namespace _116.BuildingBlocks.Presentation.Builders.RateLimit;
 
 /// <summary>
 /// Builder for configuring Token Bucket rate limiting policies.

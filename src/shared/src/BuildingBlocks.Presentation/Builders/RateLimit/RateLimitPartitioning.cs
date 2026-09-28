@@ -1,7 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 
-namespace _116.Shared.Application.Builders.RateLimit;
+namespace _116.BuildingBlocks.Presentation.Builders.RateLimit;
 
 /// <summary>
 /// Resolves the partition key every rate-limit policy is bucketed by: the authenticated subject when

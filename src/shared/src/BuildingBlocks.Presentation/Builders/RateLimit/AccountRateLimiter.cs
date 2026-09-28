@@ -1,8 +1,9 @@
 using System.Threading.RateLimiting;
-using _116.BuildingBlocks.Constants.RateLimit;
-using _116.Shared.Application.Exceptions;
+using _116.BuildingBlocks.Application.Builders.RateLimit;
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.BuildingBlocks.Presentation.Constants.RateLimit;
 
-namespace _116.Shared.Application.Builders.RateLimit;
+namespace _116.BuildingBlocks.Presentation.Builders.RateLimit;
 
 /// <summary>
 /// In-process <see cref="IAccountRateLimiter" />. Holds one sliding-window limiter per pre-auth
