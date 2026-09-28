@@ -1,20 +1,20 @@
-using _116.Core.Application.Shared.Persistence;
+using _116.Storage.Application.Shared.Persistence;
 using Moq;
 
-namespace _116.Unit.Tests.Common.Mocks.Infrastructure;
+namespace _116.Storage.TestData.Mocks.Infrastructure;
 
 /// <summary>
-/// Provides mock setup helpers for <see cref="ICoreUnitOfWork"/>.
+/// Provides mock setup helpers for <see cref="IStorageUnitOfWork"/>.
 /// </summary>
 public static class MockCoreUnitOfWork
 {
     /// <summary>
-    /// Creates a new mock instance of ICoreUnitOfWork.
+    /// Creates a new mock instance of IStorageUnitOfWork.
     /// </summary>
-    /// <returns>A configured Mock of ICoreUnitOfWork.</returns>
-    public static Mock<ICoreUnitOfWork> Create()
+    /// <returns>A configured Mock of IStorageUnitOfWork.</returns>
+    public static Mock<IStorageUnitOfWork> Create()
     {
-        Mock<ICoreUnitOfWork> mock = new();
+        Mock<IStorageUnitOfWork> mock = new();
         SetupDefaultCommit(mock);
         SetupExecuteInTransaction(mock);
         return mock;
@@ -26,7 +26,7 @@ public static class MockCoreUnitOfWork
     /// <param name="mock">The mock instance.</param>
     /// <param name="result">The number of affected rows to return (default: 1).</param>
     /// <returns>The mock instance for chaining.</returns>
-    public static Mock<ICoreUnitOfWork> SetupCommit(this Mock<ICoreUnitOfWork> mock, int result = 1)
+    public static Mock<IStorageUnitOfWork> SetupCommit(this Mock<IStorageUnitOfWork> mock, int result = 1)
     {
         mock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(result);
         return mock;
@@ -38,7 +38,7 @@ public static class MockCoreUnitOfWork
     /// <param name="mock">The mock instance.</param>
     /// <param name="exception">The exception to throw.</param>
     /// <returns>The mock instance for chaining.</returns>
-    public static Mock<ICoreUnitOfWork> SetupCommitThrows(this Mock<ICoreUnitOfWork> mock, Exception exception)
+    public static Mock<IStorageUnitOfWork> SetupCommitThrows(this Mock<IStorageUnitOfWork> mock, Exception exception)
     {
         mock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ThrowsAsync(exception);
         return mock;
@@ -49,7 +49,7 @@ public static class MockCoreUnitOfWork
     /// </summary>
     /// <param name="mock">The mock instance.</param>
     /// <returns>The mock, for chaining.</returns>
-    public static Mock<ICoreUnitOfWork> SetupExecuteInTransaction(this Mock<ICoreUnitOfWork> mock)
+    public static Mock<IStorageUnitOfWork> SetupExecuteInTransaction(this Mock<IStorageUnitOfWork> mock)
     {
         mock.Setup(x =>
                 x.ExecuteInTransactionAsync(It.IsAny<Func<CancellationToken, Task>>(), It.IsAny<CancellationToken>())
@@ -66,7 +66,7 @@ public static class MockCoreUnitOfWork
     /// <typeparam name="TResult">What the operation produces.</typeparam>
     /// <param name="mock">The mock instance.</param>
     /// <returns>The mock, for chaining.</returns>
-    public static Mock<ICoreUnitOfWork> SetupExecuteInTransaction<TResult>(this Mock<ICoreUnitOfWork> mock)
+    public static Mock<IStorageUnitOfWork> SetupExecuteInTransaction<TResult>(this Mock<IStorageUnitOfWork> mock)
     {
         mock.Setup(x =>
                 x.ExecuteInTransactionAsync(
@@ -85,7 +85,7 @@ public static class MockCoreUnitOfWork
     /// <typeparam name="TResult">What the operation produced.</typeparam>
     /// <param name="mock">The mock instance.</param>
     /// <param name="times">How many transactions were expected.</param>
-    public static void VerifyExecutedInTransaction<TResult>(this Mock<ICoreUnitOfWork> mock, int times = 1)
+    public static void VerifyExecutedInTransaction<TResult>(this Mock<IStorageUnitOfWork> mock, int times = 1)
     {
         mock.Verify(
             x =>
@@ -102,7 +102,7 @@ public static class MockCoreUnitOfWork
     /// </summary>
     /// <param name="mock">The mock instance.</param>
     /// <param name="times">How many transactions were expected.</param>
-    public static void VerifyExecutedInTransaction(this Mock<ICoreUnitOfWork> mock, int times = 1)
+    public static void VerifyExecutedInTransaction(this Mock<IStorageUnitOfWork> mock, int times = 1)
     {
         mock.Verify(
             x => x.ExecuteInTransactionAsync(It.IsAny<Func<CancellationToken, Task>>(), It.IsAny<CancellationToken>()),
@@ -110,7 +110,7 @@ public static class MockCoreUnitOfWork
         );
     }
 
-    public static void VerifyCommitCalled(this Mock<ICoreUnitOfWork> mock)
+    public static void VerifyCommitCalled(this Mock<IStorageUnitOfWork> mock)
     {
         mock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
@@ -119,7 +119,7 @@ public static class MockCoreUnitOfWork
     /// Verifies that CommitAsync was never called.
     /// </summary>
     /// <param name="mock">The mock instance.</param>
-    public static void VerifyCommitNotCalled(this Mock<ICoreUnitOfWork> mock)
+    public static void VerifyCommitNotCalled(this Mock<IStorageUnitOfWork> mock)
     {
         mock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
@@ -129,7 +129,7 @@ public static class MockCoreUnitOfWork
     /// </summary>
     /// <param name="mock">The mock instance.</param>
     /// <param name="times">The number of times the method should have been called.</param>
-    public static void VerifyCommitCalled(this Mock<ICoreUnitOfWork> mock, int times)
+    public static void VerifyCommitCalled(this Mock<IStorageUnitOfWork> mock, int times)
     {
         mock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Exactly(times));
     }
@@ -137,7 +137,7 @@ public static class MockCoreUnitOfWork
     /// <summary>
     /// Sets up default behavior for the mock.
     /// </summary>
-    private static void SetupDefaultCommit(Mock<ICoreUnitOfWork> mock)
+    private static void SetupDefaultCommit(Mock<IStorageUnitOfWork> mock)
     {
         mock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
     }

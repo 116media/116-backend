@@ -1,7 +1,7 @@
 using System.Net;
 using System.Text;
 
-namespace _116.Unit.Tests.Common.Mocks.Infrastructure;
+namespace _116.Storage.TestData.Mocks.Infrastructure;
 
 /// <summary>
 /// Stands in for Cloudinary's HTTP endpoint. The SDK sends real requests over the

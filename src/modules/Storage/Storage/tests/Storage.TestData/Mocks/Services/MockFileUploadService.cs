@@ -1,9 +1,9 @@
-using _116.Core.Application.Shared.Services;
-using _116.Core.Domain.Entities;
+using _116.Storage.Application.Shared.Services;
+using _116.Storage.Domain.Entities;
 using Microsoft.AspNetCore.Http;
 using Moq;
 
-namespace _116.Unit.Tests.Common.Mocks.Services;
+namespace _116.Storage.TestData.Mocks.Services;
 
 /// <summary>
 /// Builds a mock <see cref="IFileUploadService" /> and the setup and verification helpers the

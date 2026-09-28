@@ -1,8 +1,8 @@
-using _116.Core.Application.Shared.Services;
-using _116.Core.Contracts.Domain.Enums;
+using _116.Storage.Application.Shared.Services;
+using _116.Storage.Contracts.Domain.Enums;
 using Moq;
 
-namespace _116.Unit.Tests.Common.Mocks.Services;
+namespace _116.Storage.TestData.Mocks.Services;
 
 /// <summary>
 /// Provides mock setup helpers for <see cref="IFileService"/>.
