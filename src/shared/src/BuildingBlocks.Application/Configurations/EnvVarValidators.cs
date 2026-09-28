@@ -1,4 +1,4 @@
-namespace _116.Shared.Application.Configurations;
+namespace _116.BuildingBlocks.Application.Configurations;
 
 /// <summary>
 /// Reusable validators for environment variable declarations.

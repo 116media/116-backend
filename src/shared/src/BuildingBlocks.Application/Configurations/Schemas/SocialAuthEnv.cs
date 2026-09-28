@@ -1,4 +1,4 @@
-namespace _116.Shared.Application.Configurations.Schemas;
+namespace _116.BuildingBlocks.Application.Configurations.Schemas;
 
 /// <summary>
 /// Social login provider credentials.

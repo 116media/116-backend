@@ -1,7 +1,7 @@
 using System.Net;
 using IPNetwork = Microsoft.AspNetCore.HttpOverrides.IPNetwork;
 
-namespace _116.Shared.Application.Configurations.Schemas;
+namespace _116.BuildingBlocks.Application.Configurations.Schemas;
 
 /// <summary>
 /// Browser origin, public URL and proxy trust variables.

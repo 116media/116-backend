@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
-using _116.Shared.Application.Configurations.Schemas;
+using _116.BuildingBlocks.Application.Configurations.Schemas;
 
-namespace _116.Shared.Application.Configurations;
+namespace _116.BuildingBlocks.Application.Configurations;
 
 /// <summary>
 /// Registry of every declared environment variable. Validation walks all declarations and

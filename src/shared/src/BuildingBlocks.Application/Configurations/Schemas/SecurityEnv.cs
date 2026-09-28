@@ -1,4 +1,4 @@
-namespace _116.Shared.Application.Configurations.Schemas;
+namespace _116.BuildingBlocks.Application.Configurations.Schemas;
 
 /// <summary>
 /// Security material for account and OTP flows, plus the optional distributed-cache layer.

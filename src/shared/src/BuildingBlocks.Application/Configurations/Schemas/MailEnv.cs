@@ -1,4 +1,4 @@
-namespace _116.Shared.Application.Configurations.Schemas;
+namespace _116.BuildingBlocks.Application.Configurations.Schemas;
 
 /// <summary>
 /// Email delivery configuration. Provider-specific credentials are optional here and checked
