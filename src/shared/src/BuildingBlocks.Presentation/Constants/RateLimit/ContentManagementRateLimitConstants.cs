@@ -1,4 +1,4 @@
-namespace _116.BuildingBlocks.Constants.RateLimit;
+namespace _116.BuildingBlocks.Presentation.Constants.RateLimit;
 
 /// <summary>
 /// Rate limiting configuration for admin content-management writes (create, update, publish,

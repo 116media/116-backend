@@ -1,4 +1,4 @@
-namespace _116.BuildingBlocks.Constants.RateLimit;
+namespace _116.BuildingBlocks.Presentation.Constants.RateLimit;
 
 /// <summary>
 /// Defines rate limiting policy names for different endpoint categories.
