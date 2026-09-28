@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <RootNamespace>_116.BuildingBlocks.Domain</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Shared.Unit.Tests" />
+        <InternalsVisibleTo Include="Shared.Integration.Tests" />
+        <InternalsVisibleTo Include="Fixtures" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="../Shared.Domain/Shared.Domain.csproj" />
+    </ItemGroup>
+</Project>

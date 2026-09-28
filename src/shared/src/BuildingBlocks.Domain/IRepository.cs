@@ -1,6 +1,6 @@
-using _116.Shared.Application.Exceptions;
+using _116.Shared.Domain;
 
-namespace _116.Shared.Domain;
+namespace _116.BuildingBlocks.Domain;
 
 /// <summary>
 /// Data access common to every aggregate: identity reads, existence probes, the tracked load
@@ -35,7 +35,6 @@ public interface IRepository<TEntity, in TId>
     /// </summary>
     /// <param name="id">The aggregate identifier.</param>
     /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
-    /// <exception cref="NotFoundException">Thrown when no aggregate has the supplied id.</exception>
     Task ExistsOrThrowAsync(TId id, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -44,7 +43,6 @@ public interface IRepository<TEntity, in TId>
     /// <param name="id">The aggregate identifier.</param>
     /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
     /// <returns>The tracked aggregate.</returns>
-    /// <exception cref="NotFoundException">Thrown when no aggregate has the supplied id.</exception>
     Task<TEntity> GetByIdOrThrowAsync(TId id, CancellationToken cancellationToken = default);
 
     /// <summary>
