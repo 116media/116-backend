@@ -1,18 +1,21 @@
-using _116.Core.Application.Shared.Errors.Facade;
-using _116.Core.Contracts.Domain.Enums;
-using _116.Core.Domain.Entities;
-using _116.Core.Domain.Enums;
-using _116.Core.Domain.Events;
-using _116.Core.Domain.Exceptions;
-using _116.Core.Domain.StateMachines;
-using _116.Shared.Application.Exceptions;
-using _116.Tests.Fixtures.Constants;
-using _116.Tests.Fixtures.Factories.Core;
-using _116.Tests.Fixtures.Helpers;
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.Storage.Application.Shared.Errors.Facade;
+using _116.Storage.Contracts.Domain.Enums;
+using _116.Storage.Domain.Entities;
+using _116.Storage.Domain.Enums;
+using _116.Storage.Domain.Events;
+using _116.Storage.Domain.Exceptions;
+using _116.Storage.Domain.StateMachines;
+using _116.Storage.TestData.Factories;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Storage.TestData.Mocks.Services;
+using _116.Tests.TestData.Constants;
+using _116.Tests.TestData.Helpers;
+using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Core.Domain.Entities;
+namespace _116.Storage.Unit.Tests.Domain.Entities;
 
 /// <summary>
 /// Unit tests for <see cref="FileEntity"/>.
@@ -21,7 +24,7 @@ public class FileEntityTests
 {
     private static readonly DateTime Now = new(2026, 9, 11, 12, 0, 0, DateTimeKind.Utc);
 
-    private readonly CoreI18n _coreErrors = TestErrorsFactory.CreateCoreI18n();
+    private readonly StorageI18n _coreErrors = TestErrorsFactory.CreateCoreI18n();
 
     #region Create Tests
 
@@ -111,7 +114,7 @@ public class FileEntityTests
             );
 
         // Assert
-        act.Should().Throw<CoreRuleException>().Which.Code.Should().Be(CoreRuleCodes.FileNameRequired);
+        act.Should().Throw<StorageRuleException>().Which.Code.Should().Be(StorageRuleCodes.FileNameRequired);
     }
 
     [Theory]
@@ -135,7 +138,7 @@ public class FileEntityTests
             );
 
         // Assert
-        act.Should().Throw<CoreRuleException>().Which.Code.Should().Be(CoreRuleCodes.OriginalFileNameRequired);
+        act.Should().Throw<StorageRuleException>().Which.Code.Should().Be(StorageRuleCodes.OriginalFileNameRequired);
     }
 
     [Theory]
@@ -159,7 +162,7 @@ public class FileEntityTests
             );
 
         // Assert
-        act.Should().Throw<CoreRuleException>().Which.Code.Should().Be(CoreRuleCodes.MimeTypeRequired);
+        act.Should().Throw<StorageRuleException>().Which.Code.Should().Be(StorageRuleCodes.MimeTypeRequired);
     }
 
     [Theory]
@@ -183,7 +186,7 @@ public class FileEntityTests
             );
 
         // Assert
-        act.Should().Throw<CoreRuleException>().Which.Code.Should().Be(CoreRuleCodes.StorageUrlRequired);
+        act.Should().Throw<StorageRuleException>().Which.Code.Should().Be(StorageRuleCodes.StorageUrlRequired);
     }
 
     [Theory]
@@ -207,7 +210,7 @@ public class FileEntityTests
             );
 
         // Assert
-        act.Should().Throw<CoreRuleException>().Which.Code.Should().Be(CoreRuleCodes.FileSizeMustBePositive);
+        act.Should().Throw<StorageRuleException>().Which.Code.Should().Be(StorageRuleCodes.FileSizeMustBePositive);
     }
 
     #endregion
