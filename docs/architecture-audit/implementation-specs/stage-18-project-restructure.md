@@ -225,7 +225,26 @@ Measured against the tree, not assumed:
       module's schema — see that section). Item 8, `git log --follow` on a sampled moved file, is the only one
       still open: it cannot be checked until the swap commit exists. Staged and ready, git already reports
       4,257 renames, which is what item 8 will read.
-- [ ] 18.13 — Delete `src.old/` and `tests.old/` on the owner's explicit go-ahead, once the new suites have been green in CI
+- [x] 18.11b — **`scripts/run-tests-with-coverage.sh` follows the swap.** CI was switched at 18.11 but the
+      local script was missed and still ran `tests/Unit`, `tests/Integration` and `tests/Architecture`,
+      none of which exist after the restructure. It now runs `tests/unit.slnf`, `tests/integration.slnf`
+      and `tests/Architecture.Tests` through the same collector and runsettings as CI, so local numbers
+      match Codecov. One local-only difference is generated on the fly: the CI runsettings set
+      `UseSourceLink=true` so Codecov can link lines to GitHub, which locally makes the collector record
+      `raw.githubusercontent` URLs and the report generator 404 on every file of the restructure that is
+      not pushed yet; the script writes a copy with that one setting flipped and leaves the CI settings
+      untouched. Verified: `architecture` 14/14, `unit` green over all five projects with zero SourceLink
+      errors and a generated HTML report.
+
+- [x] 18.13 — Delete `src.old/` and `tests.old/` on the owner's explicit go-ahead, once the new suites have been green in CI.
+      **Done, and it turned out to be a prerequisite for rule (1) rather than a tidy-up.** With both trees staged,
+      git read the change as *the old tree moved aside and a new one appeared*: all 4,257 detected renames pointed
+      at `src.old/` / `tests.old/`, and exactly **one** landed in the new tree, so `git log --follow` on a file
+      under the new `src/` would have shown nothing. Removing the old trees with `git rm -r` re-pointed rename
+      detection at the real target: **4,223 renames now land in `src/` or `tests/`** (`src/Api/Api.csproj` →
+      `src/host/Api/Api.csproj`, and so on) and **zero** point at a `.old` path. The old content stays reachable
+      in `HEAD` until the swap is committed. `scripts/stage18-move-map.py` now refuses to regenerate the map once
+      the pre-move tree is gone — `stage-18-move-map.tsv` is the record from here on.
 
 ---
 
