@@ -1,3 +1,10 @@
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.Content.TestData.Factories;
+using _116.Content.TestData.Factories.Helpers;
+using _116.Content.TestData.Mocks.Factories;
+using _116.Content.TestData.Mocks.Infrastructure;
+using _116.Content.TestData.Mocks.Repositories;
+using _116.Content.TestData.Mocks.Services;
 using _116.Identity.Application.Auth.Exceptions;
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Shared.Errors;
@@ -5,12 +12,18 @@ using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence;
-using _116.Shared.Application.Exceptions;
-using _116.Tests.Fixtures.Builders.Requests.Identity;
-using _116.Tests.Fixtures.Factories.Identity;
-using _116.Tests.Fixtures.Helpers;
+using _116.Identity.TestData.Builders.Requests;
+using _116.Identity.TestData.Factories;
+using _116.Identity.TestData.Mocks.Infrastructure;
+using _116.Identity.TestData.Mocks.Repositories;
+using _116.Identity.TestData.Mocks.Services;
+using _116.Storage.TestData.Factories;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Storage.TestData.Mocks.Services;
+using _116.Tests.TestData.Helpers;
+using _116.Tests.TestData.Mocks;
 
-namespace _116.Integration.Tests.Workflows;
+namespace _116.EndToEnd.Tests.Workflows;
 
 /// <summary>
 /// Flows driving credentials whose stored hash cannot be read back — a truncated column, a partial

@@ -1,13 +1,26 @@
 using _116.Content.Application.Editorial.Constants;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Content.TestData.Builders.Entities;
+using _116.Content.TestData.Factories;
+using _116.Content.TestData.Factories.Helpers;
+using _116.Content.TestData.Mocks.Factories;
+using _116.Content.TestData.Mocks.Infrastructure;
+using _116.Content.TestData.Mocks.Repositories;
+using _116.Content.TestData.Mocks.Services;
+using _116.Identity.TestData.Factories;
+using _116.Identity.TestData.Mocks.Infrastructure;
+using _116.Identity.TestData.Mocks.Repositories;
+using _116.Identity.TestData.Mocks.Services;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Infrastructure.Persistence;
-using _116.Tests.Fixtures.Builders.Entities.Content;
-using _116.Tests.Fixtures.Constants;
-using _116.Tests.Fixtures.Factories.Content;
+using _116.Storage.TestData.Factories;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Storage.TestData.Mocks.Services;
+using _116.Tests.TestData.Constants;
+using _116.Tests.TestData.Mocks;
 
-namespace _116.Integration.Tests.Workflows;
+namespace _116.EndToEnd.Tests.Workflows;
 
 /// <summary>
 /// End-to-end proof that the four customer-facing emails a commissioned piece produces are

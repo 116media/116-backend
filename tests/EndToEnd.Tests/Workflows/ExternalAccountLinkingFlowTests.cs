@@ -1,15 +1,18 @@
-using _116.BuildingBlocks.Constants;
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.BuildingBlocks.Presentation.Constants;
+using _116.Content.TestData.Factories;
 using _116.Identity.Application.Adapters.SocialAuth;
 using _116.Identity.Application.Shared.Errors.Messages;
+using _116.Identity.Domain.Constants;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence;
-using _116.Integration.Tests.Common.Stubs;
-using _116.Shared.Application.Exceptions;
-using _116.Tests.Fixtures.Builders.Requests.Identity;
-using _116.Tests.Fixtures.Factories.Identity;
+using _116.Identity.TestData.Builders.Requests;
+using _116.Identity.TestData.Factories;
+using _116.Storage.TestData.Factories;
+using _116.Tests.Fixtures.Stubs;
 
-namespace _116.Integration.Tests.Workflows;
+namespace _116.EndToEnd.Tests.Workflows;
 
 /// <summary>
 /// Flows covering what a social login does to the local row: an account predating provider-subject

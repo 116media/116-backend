@@ -2,17 +2,28 @@ using System.Net.Http.Headers;
 using _116.Content.Application.Editorial.Constants;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
-using _116.Core.Domain.Entities;
-using _116.Core.Infrastructure.Persistence;
+using _116.Content.TestData.Builders.Requests;
+using _116.Content.TestData.Factories;
+using _116.Content.TestData.Factories.Helpers;
+using _116.Content.TestData.Mocks.Factories;
+using _116.Content.TestData.Mocks.Infrastructure;
+using _116.Content.TestData.Mocks.Repositories;
+using _116.Content.TestData.Mocks.Services;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
-using _116.Integration.Tests.Common.Stubs;
-using _116.Tests.Fixtures.Builders.Requests.Content;
-using _116.Tests.Fixtures.Factories.Content;
-using _116.Tests.Fixtures.Factories.Core;
-using _116.Tests.Fixtures.Factories.Identity;
+using _116.Identity.TestData.Factories;
+using _116.Identity.TestData.Mocks.Infrastructure;
+using _116.Identity.TestData.Mocks.Repositories;
+using _116.Identity.TestData.Mocks.Services;
+using _116.Storage.Domain.Entities;
+using _116.Storage.Infrastructure.Persistence;
+using _116.Storage.TestData.Factories;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Storage.TestData.Mocks.Services;
+using _116.Tests.Fixtures.Stubs;
+using _116.Tests.TestData.Mocks;
 
-namespace _116.Integration.Tests.Workflows;
+namespace _116.EndToEnd.Tests.Workflows;
 
 /// <summary>
 /// Failure-injection regressions for post-commit external-asset cleanup.
@@ -44,7 +55,7 @@ public class ExternalAssetCleanupFlowTests(PostgresFixture db) : BaseApiTest(db)
 
     private async Task<FileEntity> SeedFileAsync(string storageKey)
     {
-        return await SeedAsync<CoreDbContext, FileEntity>(ctx =>
+        return await SeedAsync<StorageDbContext, FileEntity>(ctx =>
         {
             FileEntity file = FileFactory.CreateWithStorageKey(storageKey);
             ctx.Files.Add(file);
@@ -75,7 +86,7 @@ public class ExternalAssetCleanupFlowTests(PostgresFixture db) : BaseApiTest(db)
         (await contentCtx.Articles.FindAsync(article.Id)).Should().BeNull();
         (await contentCtx.ArticleImages.CountAsync(img => img.ArticleId == article.Id)).Should().Be(0);
 
-        await using CoreDbContext coreCtx = CreateDbContext<CoreDbContext>();
+        await using StorageDbContext coreCtx = CreateDbContext<StorageDbContext>();
         FileEntity? cover = await coreCtx.Files.IgnoreQueryFilters().FirstOrDefaultAsync(f => f.Id == coverFile.Id);
         cover!.IsDeleted.Should().BeTrue();
     }
@@ -138,7 +149,7 @@ public class ExternalAssetCleanupFlowTests(PostgresFixture db) : BaseApiTest(db)
         await using ContentDbContext contentCtx = CreateDbContext<ContentDbContext>();
         (await contentCtx.Videos.FindAsync(video.Id)).Should().BeNull();
 
-        await using CoreDbContext coreCtx = CreateDbContext<CoreDbContext>();
+        await using StorageDbContext coreCtx = CreateDbContext<StorageDbContext>();
         FileEntity? thumbnail = await coreCtx
             .Files.IgnoreQueryFilters()
             .FirstOrDefaultAsync(f => f.Id == thumbnailFile.Id);
@@ -169,7 +180,7 @@ public class ExternalAssetCleanupFlowTests(PostgresFixture db) : BaseApiTest(db)
         await using ContentDbContext contentCtx = CreateDbContext<ContentDbContext>();
         (await contentCtx.ShortVideos.FindAsync(shortVideo.Id)).Should().BeNull();
 
-        await using CoreDbContext coreCtx = CreateDbContext<CoreDbContext>();
+        await using StorageDbContext coreCtx = CreateDbContext<StorageDbContext>();
         (await coreCtx.Files.IgnoreQueryFilters().FirstOrDefaultAsync(f => f.Id == videoFile.Id))!
             .IsDeleted.Should()
             .BeTrue();
@@ -210,7 +221,7 @@ public class ExternalAssetCleanupFlowTests(PostgresFixture db) : BaseApiTest(db)
         persisted.ThumbnailFileId.Should().NotBeNull();
         persisted.ThumbnailFileId.Should().NotBe(oldThumbnail.Id);
 
-        await using CoreDbContext coreCtx = CreateDbContext<CoreDbContext>();
+        await using StorageDbContext coreCtx = CreateDbContext<StorageDbContext>();
         (await coreCtx.Files.IgnoreQueryFilters().FirstOrDefaultAsync(f => f.Id == oldThumbnail.Id))!
             .IsDeleted.Should()
             .BeTrue();
@@ -246,7 +257,7 @@ public class ExternalAssetCleanupFlowTests(PostgresFixture db) : BaseApiTest(db)
         updatedUser!.AvatarFileId.Should().NotBeNull();
         updatedUser.AvatarFileId.Should().NotBe(firstAvatarFileId);
 
-        await using CoreDbContext coreCtx = CreateDbContext<CoreDbContext>();
+        await using StorageDbContext coreCtx = CreateDbContext<StorageDbContext>();
         FileEntity? oldAvatar = await coreCtx
             .Files.IgnoreQueryFilters()
             .FirstOrDefaultAsync(f => f.Id == firstAvatarFileId);

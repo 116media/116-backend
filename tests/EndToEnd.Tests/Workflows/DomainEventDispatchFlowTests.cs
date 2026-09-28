@@ -1,16 +1,18 @@
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.Content.TestData.Factories;
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Identity.TestData.Builders.Requests;
+using _116.Identity.TestData.Factories;
 using _116.Mailer.Contracts.Domain.Enums;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Infrastructure.Persistence;
-using _116.Shared.Application.Exceptions;
-using _116.Tests.Fixtures.Builders.Requests.Identity;
-using _116.Tests.Fixtures.Factories.Identity;
-using _116.Tests.Fixtures.Helpers;
+using _116.Storage.TestData.Factories;
+using _116.Tests.TestData.Helpers;
 
-namespace _116.Integration.Tests.Workflows;
+namespace _116.EndToEnd.Tests.Workflows;
 
 /// <summary>
 /// End-to-end proof of the post-commit domain event pipeline: a committed operation over real

@@ -1,12 +1,15 @@
-using _116.BuildingBlocks.Constants;
+using _116.BuildingBlocks.Presentation.Constants;
+using _116.Content.TestData.Factories;
+using _116.Identity.Domain.Constants;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.ValueObjects;
 using _116.Identity.Infrastructure.Persistence;
-using _116.Tests.Fixtures.Builders.Requests.Identity;
-using _116.Tests.Fixtures.Factories.Identity;
+using _116.Identity.TestData.Builders.Requests;
+using _116.Identity.TestData.Factories;
+using _116.Storage.TestData.Factories;
 using Microsoft.AspNetCore.Mvc;
 
-namespace _116.Integration.Tests.Workflows;
+namespace _116.EndToEnd.Tests.Workflows;
 
 /// <summary>
 /// End-to-end flows for the per-account brute-force counters: repeated wrong passwords lock the

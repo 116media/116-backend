@@ -1,16 +1,28 @@
+using _116.BuildingBlocks.Application.Services;
 using _116.Content.Application.Catalog.UseCases.Public.Queries.GetActiveCategories.V1;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
-using _116.Core.Application.Shared.Cache;
-using _116.Core.Application.Shared.EventHandlers;
-using _116.Core.Domain.Entities;
-using _116.Core.Domain.Events;
-using _116.Core.Infrastructure.Persistence;
-using _116.Shared.Application.Services;
-using _116.Tests.Fixtures.Factories.Content;
-using _116.Tests.Fixtures.Factories.Core;
+using _116.Content.TestData.Factories;
+using _116.Content.TestData.Factories.Helpers;
+using _116.Content.TestData.Mocks.Factories;
+using _116.Content.TestData.Mocks.Infrastructure;
+using _116.Content.TestData.Mocks.Repositories;
+using _116.Content.TestData.Mocks.Services;
+using _116.Identity.TestData.Factories;
+using _116.Identity.TestData.Mocks.Infrastructure;
+using _116.Identity.TestData.Mocks.Repositories;
+using _116.Identity.TestData.Mocks.Services;
+using _116.Storage.Application.Shared.Cache;
+using _116.Storage.Application.Shared.EventHandlers;
+using _116.Storage.Domain.Entities;
+using _116.Storage.Domain.Events;
+using _116.Storage.Infrastructure.Persistence;
+using _116.Storage.TestData.Factories;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Storage.TestData.Mocks.Services;
+using _116.Tests.TestData.Mocks;
 
-namespace _116.Integration.Tests.Workflows;
+namespace _116.EndToEnd.Tests.Workflows;
 
 /// <summary>
 /// Covers the file projection cache: a resolved file must be served from cache rather than
@@ -27,7 +39,7 @@ public class FileProjectionCacheFlowTests(PostgresFixture db) : BaseApiTest(db)
     [Fact]
     public async Task ResolvedFileUrl_ShouldBeServedFromCacheRatherThanRequeried()
     {
-        FileEntity poster = await SeedAsync<CoreDbContext, FileEntity>(ctx =>
+        FileEntity poster = await SeedAsync<StorageDbContext, FileEntity>(ctx =>
         {
             FileEntity file = FileFactory.CreateWithStorageUrl(OriginalUrl);
             ctx.Files.Add(file);
@@ -51,7 +63,7 @@ public class FileProjectionCacheFlowTests(PostgresFixture db) : BaseApiTest(db)
         warmed.Categories.Should().ContainSingle().Which.PosterUrl.Should().Be(OriginalUrl);
 
         // Poison the row directly, bypassing the event pipeline that would evict.
-        await using (CoreDbContext poisonCtx = CreateDbContext<CoreDbContext>())
+        await using (StorageDbContext poisonCtx = CreateDbContext<StorageDbContext>())
         {
             await poisonCtx
                 .Files.Where(file => file.Id == poster.Id)
@@ -86,7 +98,7 @@ public class FileProjectionCacheFlowTests(PostgresFixture db) : BaseApiTest(db)
     {
         // The tag is the contract between the projection and its evictors; a rename in one place
         // silently stops eviction.
-        CoreCacheTags.Files.Should().Be("core:files");
+        StorageCacheTags.Files.Should().Be("core:files");
     }
 
     /// <summary>

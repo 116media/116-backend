@@ -1,4 +1,7 @@
 using System.Net.Http.Headers;
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.BuildingBlocks.Application.Exceptions.Messages;
+using _116.Content.TestData.Factories;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.Login.V1;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SignOut.V1;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp.V1;
@@ -8,11 +11,10 @@ using _116.Identity.Application.User.UseCases.Public.Queries.GetOwnProfile.V1;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence;
-using _116.Shared.Application.Exceptions;
-using _116.Shared.Application.Exceptions.Messages;
-using _116.Tests.Fixtures.Factories.Identity;
+using _116.Identity.TestData.Factories;
+using _116.Storage.TestData.Factories;
 
-namespace _116.Integration.Tests.Workflows;
+namespace _116.EndToEnd.Tests.Workflows;
 
 /// <summary>
 /// Cross-module workflow tests for the authentication lifecycle:

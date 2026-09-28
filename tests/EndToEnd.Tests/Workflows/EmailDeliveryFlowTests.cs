@@ -1,4 +1,6 @@
 using System.Text.RegularExpressions;
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.Content.TestData.Factories;
 using _116.Identity.Application.Auth.Exceptions;
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.ForgotPassword.V1;
@@ -10,7 +12,7 @@ using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence;
-using _116.Integration.Tests.Common.Stubs;
+using _116.Identity.TestData.Factories;
 using _116.Mailer.Application.Shared.Exceptions;
 using _116.Mailer.Application.Shared.Repositories;
 using _116.Mailer.Domain.Constants;
@@ -18,11 +20,11 @@ using _116.Mailer.Domain.Entities;
 using _116.Mailer.Domain.Enums;
 using _116.Mailer.Infrastructure.BackgroundJobs;
 using _116.Mailer.Infrastructure.Persistence;
-using _116.Shared.Application.Exceptions;
-using _116.Tests.Fixtures.Factories.Identity;
+using _116.Storage.TestData.Factories;
+using _116.Tests.Fixtures.Stubs;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace _116.Integration.Tests.Workflows;
+namespace _116.EndToEnd.Tests.Workflows;
 
 /// <summary>
 /// End-to-end flows for email delivery: real HTTP triggers persist outbox rows

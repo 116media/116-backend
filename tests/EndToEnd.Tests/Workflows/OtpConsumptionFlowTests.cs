@@ -1,14 +1,28 @@
-using _116.BuildingBlocks.Constants;
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.BuildingBlocks.Presentation.Constants;
+using _116.Content.TestData.Factories;
+using _116.Content.TestData.Factories.Helpers;
+using _116.Content.TestData.Mocks.Factories;
+using _116.Content.TestData.Mocks.Infrastructure;
+using _116.Content.TestData.Mocks.Repositories;
+using _116.Content.TestData.Mocks.Services;
 using _116.Identity.Application.Auth.Exceptions;
 using _116.Identity.Application.Auth.Repositories;
 using _116.Identity.Application.Shared.Repositories;
+using _116.Identity.Domain.Constants;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence;
-using _116.Shared.Application.Exceptions;
-using _116.Tests.Fixtures.Factories.Identity;
+using _116.Identity.TestData.Factories;
+using _116.Identity.TestData.Mocks.Infrastructure;
+using _116.Identity.TestData.Mocks.Repositories;
+using _116.Identity.TestData.Mocks.Services;
+using _116.Storage.TestData.Factories;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Storage.TestData.Mocks.Services;
+using _116.Tests.TestData.Mocks;
 
-namespace _116.Integration.Tests.Workflows;
+namespace _116.EndToEnd.Tests.Workflows;
 
 /// <summary>
 /// Flows covering the OTP defects Stage 5 closes: a superseded code must not pass as verified, a
