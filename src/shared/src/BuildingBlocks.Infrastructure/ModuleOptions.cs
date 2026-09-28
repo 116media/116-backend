@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace _116.Shared.Infrastructure;
+namespace _116.BuildingBlocks.Infrastructure;
 
 /// <summary>
 /// Configuration options for module registration and setup.

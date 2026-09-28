@@ -1,16 +1,15 @@
 using System.Data.Common;
-using _116.Shared.Application.Configurations;
-using _116.Shared.Application.Configurations.Schemas;
-using _116.Shared.Application.Services;
-using _116.Shared.Infrastructure.interceptors;
-using _116.Shared.Infrastructure.Services;
+using _116.BuildingBlocks.Application.Configurations;
+using _116.BuildingBlocks.Application.Configurations.Schemas;
+using _116.BuildingBlocks.Application.Services;
+using _116.BuildingBlocks.Infrastructure.interceptors;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Npgsql;
 
-namespace _116.Shared.Infrastructure;
+namespace _116.BuildingBlocks.Infrastructure;
 
 /// <summary>
 /// Base class for module registration providing common database and infrastructure setup.
@@ -84,9 +83,6 @@ public static class BaseModule
     /// <param name="services">The service collection</param>
     private static void RegisterInterceptorsIfNotExists(IServiceCollection services)
     {
-        services.AddHttpContextAccessor();
-        services.TryAddSingleton<ICurrentActor, HttpCurrentActor>();
-
         // The audit interceptor reads the clock through TimeProvider, so the seam must be present
         // wherever a module database is registered, not only in the API host.
         services.TryAddSingleton(TimeProvider.System);

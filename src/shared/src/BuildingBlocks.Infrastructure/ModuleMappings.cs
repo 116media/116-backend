@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 
-namespace _116.Shared.Infrastructure;
+namespace _116.BuildingBlocks.Infrastructure;
 
 /// <summary>
 /// Merges every module's Mapster registrations into the single TypeAdapterConfig behind the
