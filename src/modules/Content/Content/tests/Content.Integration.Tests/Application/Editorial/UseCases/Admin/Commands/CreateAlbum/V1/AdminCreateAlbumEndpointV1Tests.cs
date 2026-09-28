@@ -3,22 +3,9 @@ using _116.BuildingBlocks.Application.Exceptions.Messages;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateAlbum.V1;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
-using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Content.TestData.Builders.Requests;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Mocks;
 
 namespace _116.Content.Integration.Tests.Application.Editorial.UseCases.Admin.Commands.CreateAlbum.V1;
 
@@ -35,7 +22,7 @@ public class AdminCreateAlbumEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         var response = await Client.PostAsJsonAsync(
             ApiRoutes.Admin.Albums,
-            new AdminCreateAlbumRequest("Album Name", null, null, null, EnumReleaseType.Album)
+            new AdminCreateAlbumRequestBuilder().Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -48,7 +35,7 @@ public class AdminCreateAlbumEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         var response = await Client.PostAsJsonAsync(
             ApiRoutes.Admin.Albums,
-            new AdminCreateAlbumRequest("Album Name", null, null, null, EnumReleaseType.Album)
+            new AdminCreateAlbumRequestBuilder().Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
@@ -61,7 +48,11 @@ public class AdminCreateAlbumEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         var response = await Client.PostAsJsonAsync(
             ApiRoutes.Admin.Albums,
-            new AdminCreateAlbumRequest("Le Grand Kalle", null, 1960, "Fiesta", EnumReleaseType.Album)
+            new AdminCreateAlbumRequestBuilder()
+                .WithName("Le Grand Kalle")
+                .WithReleaseYear(1960)
+                .WithLabel("Fiesta")
+                .Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -90,7 +81,7 @@ public class AdminCreateAlbumEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         var response = await Client.PostAsJsonAsync(
             ApiRoutes.Admin.Albums,
-            new AdminCreateAlbumRequest("Album Name", artist.Id, null, null, EnumReleaseType.Album)
+            new AdminCreateAlbumRequestBuilder().WithArtistId(artist.Id).Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -106,7 +97,7 @@ public class AdminCreateAlbumEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         var response = await Client.PostAsJsonAsync(
             ApiRoutes.Admin.Albums,
-            new AdminCreateAlbumRequest("Album Name", Guid.NewGuid(), null, null, EnumReleaseType.Album)
+            new AdminCreateAlbumRequestBuilder().WithArtistId(Guid.NewGuid()).Build()
         );
 
         await response.ShouldBeProblem<NotFoundException>(
@@ -122,7 +113,7 @@ public class AdminCreateAlbumEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         var response = await Client.PostAsJsonAsync(
             ApiRoutes.Admin.Albums,
-            new AdminCreateAlbumRequest(string.Empty, null, null, null, EnumReleaseType.Album)
+            new AdminCreateAlbumRequestBuilder().WithName(string.Empty).Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
