@@ -4,26 +4,13 @@ using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.ResolveAlbumStreamingLinks.V1;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Exceptions;
-using _116.Content.Application.Shared.Services;
 using _116.Content.Domain.Constants;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Content.TestData.Builders.Requests;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
 using _116.Tests.Fixtures.Stubs;
-using _116.Tests.TestData.Mocks;
 
 namespace _116.Content.Integration.Tests.Application.Editorial.UseCases.Admin.Commands.ResolveAlbumStreamingLinks.V1;
 
@@ -60,7 +47,7 @@ public class AdminResolveAlbumStreamingLinksEndpointV1Tests(PostgresFixture db) 
 
         var response = await Client.PostAsJsonAsync(
             Url(Guid.NewGuid()),
-            new AdminResolveAlbumStreamingLinksRequest(SourceUrl)
+            new AdminResolveAlbumStreamingLinksRequestBuilder().WithSourceUrl(SourceUrl).Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -73,7 +60,7 @@ public class AdminResolveAlbumStreamingLinksEndpointV1Tests(PostgresFixture db) 
 
         var response = await Client.PostAsJsonAsync(
             Url(Guid.NewGuid()),
-            new AdminResolveAlbumStreamingLinksRequest(SourceUrl)
+            new AdminResolveAlbumStreamingLinksRequestBuilder().WithSourceUrl(SourceUrl).Build()
         );
 
         await response.ShouldBeProblem<NotFoundException>(
@@ -90,7 +77,7 @@ public class AdminResolveAlbumStreamingLinksEndpointV1Tests(PostgresFixture db) 
 
         var response = await Client.PostAsJsonAsync(
             Url(album.Id),
-            new AdminResolveAlbumStreamingLinksRequest(SourceUrl)
+            new AdminResolveAlbumStreamingLinksRequestBuilder().WithSourceUrl(SourceUrl).Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -112,7 +99,10 @@ public class AdminResolveAlbumStreamingLinksEndpointV1Tests(PostgresFixture db) 
         AlbumEntity album = await SeedAlbumAsync();
         Client.AuthenticateAsAdmin();
 
-        await Client.PostAsJsonAsync(Url(album.Id), new AdminResolveAlbumStreamingLinksRequest(SourceUrl));
+        await Client.PostAsJsonAsync(
+            Url(album.Id),
+            new AdminResolveAlbumStreamingLinksRequestBuilder().WithSourceUrl(SourceUrl).Build()
+        );
 
         StreamingStub.NextResult = new Dictionary<EnumStreamingPlatform, string>
         {
@@ -120,7 +110,7 @@ public class AdminResolveAlbumStreamingLinksEndpointV1Tests(PostgresFixture db) 
         };
         var response = await Client.PostAsJsonAsync(
             Url(album.Id),
-            new AdminResolveAlbumStreamingLinksRequest(SourceUrl)
+            new AdminResolveAlbumStreamingLinksRequestBuilder().WithSourceUrl(SourceUrl).Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -157,7 +147,7 @@ public class AdminResolveAlbumStreamingLinksEndpointV1Tests(PostgresFixture db) 
 
         var response = await Client.PostAsJsonAsync(
             Url(album.Id),
-            new AdminResolveAlbumStreamingLinksRequest(SourceUrl)
+            new AdminResolveAlbumStreamingLinksRequestBuilder().WithSourceUrl(SourceUrl).Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -180,7 +170,7 @@ public class AdminResolveAlbumStreamingLinksEndpointV1Tests(PostgresFixture db) 
 
         var response = await Client.PostAsJsonAsync(
             Url(album.Id),
-            new AdminResolveAlbumStreamingLinksRequest(SourceUrl)
+            new AdminResolveAlbumStreamingLinksRequestBuilder().WithSourceUrl(SourceUrl).Build()
         );
 
         await response.ShouldBeProblem<NotFoundException>(
@@ -198,7 +188,7 @@ public class AdminResolveAlbumStreamingLinksEndpointV1Tests(PostgresFixture db) 
 
         var response = await Client.PostAsJsonAsync(
             Url(album.Id),
-            new AdminResolveAlbumStreamingLinksRequest(SourceUrl)
+            new AdminResolveAlbumStreamingLinksRequestBuilder().WithSourceUrl(SourceUrl).Build()
         );
 
         await response.ShouldBeProblem<StreamingLinkResolutionException>(
@@ -216,7 +206,7 @@ public class AdminResolveAlbumStreamingLinksEndpointV1Tests(PostgresFixture db) 
 
         var response = await Client.PostAsJsonAsync(
             Url(album.Id),
-            new AdminResolveAlbumStreamingLinksRequest(SourceUrl)
+            new AdminResolveAlbumStreamingLinksRequestBuilder().WithSourceUrl(SourceUrl).Build()
         );
 
         await response.ShouldBeProblem<StreamingLinkResolutionException>(
@@ -235,7 +225,7 @@ public class AdminResolveAlbumStreamingLinksEndpointV1Tests(PostgresFixture db) 
 
         var response = await Client.PostAsJsonAsync(
             Url(album.Id),
-            new AdminResolveAlbumStreamingLinksRequest(sourceUrl)
+            new AdminResolveAlbumStreamingLinksRequestBuilder().WithSourceUrl(sourceUrl).Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -247,7 +237,10 @@ public class AdminResolveAlbumStreamingLinksEndpointV1Tests(PostgresFixture db) 
         AlbumEntity album = await SeedAlbumAsync();
         Client.AuthenticateAsAdmin();
 
-        var response = await Client.PostAsJsonAsync(Url(album.Id), new AdminResolveAlbumStreamingLinksRequest(""));
+        var response = await Client.PostAsJsonAsync(
+            Url(album.Id),
+            new AdminResolveAlbumStreamingLinksRequestBuilder().WithSourceUrl("").Build()
+        );
 
         await response.ShouldBeValidationProblem(
             "SourceUrl",
@@ -263,9 +256,11 @@ public class AdminResolveAlbumStreamingLinksEndpointV1Tests(PostgresFixture db) 
 
         var response = await Client.PostAsJsonAsync(
             Url(album.Id),
-            new AdminResolveAlbumStreamingLinksRequest(
-                "https://open.spotify.com/" + new string('a', ContentConstants.MaxStreamingLinkUrlLength)
-            )
+            new AdminResolveAlbumStreamingLinksRequestBuilder()
+                .WithSourceUrl(
+                    "https://open.spotify.com/" + new string('a', ContentConstants.MaxStreamingLinkUrlLength)
+                )
+                .Build()
         );
 
         await response.ShouldBeValidationProblem(
