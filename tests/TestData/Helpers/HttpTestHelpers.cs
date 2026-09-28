@@ -1,11 +1,11 @@
+using _116.BuildingBlocks.Application.Exceptions.Messages;
 using _116.Identity.Application.Shared.Errors.Messages;
-using _116.Shared.Application.Exceptions.Messages;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 
-namespace _116.Tests.Fixtures.Helpers;
+namespace _116.Tests.TestData.Helpers;
 
 /// <summary>
 /// Shared test helpers for HTTP context and request/response tests.

@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace _116.Tests.Fixtures.Helpers;
+namespace _116.Tests.TestData.Helpers;
 
 /// <summary>
 /// Builds real <c>*ErrorMessage</c> instances backed by embedded .resx resources for use in unit tests.

@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace _116.Tests.Fixtures.Helpers;
+namespace _116.Tests.TestData.Helpers;
 
 /// <summary>
 /// Sets the formatting culture and the resource-lookup culture for the duration of a test

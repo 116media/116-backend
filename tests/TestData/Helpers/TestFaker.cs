@@ -1,6 +1,6 @@
 using Bogus;
 
-namespace _116.Tests.Fixtures.Helpers;
+namespace _116.Tests.TestData.Helpers;
 
 /// <summary>
 /// Creates <see cref="Faker" /> instances that do not share Bogus's process-wide randomizer.

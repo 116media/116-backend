@@ -1,7 +1,7 @@
 using System.Reflection;
 using _116.Content.Domain.Entities;
 
-namespace _116.Tests.Fixtures.Helpers;
+namespace _116.Tests.TestData.Helpers;
 
 /// <summary>
 /// Test-only arrangement for the denormalized engagement counters. Production applies these

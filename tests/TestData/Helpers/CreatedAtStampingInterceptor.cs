@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
-namespace _116.Unit.Tests.Common.Helpers;
+namespace _116.Tests.TestData.Helpers;
 
 /// <summary>
 /// Stamps <c>CreatedAt</c> on inserts for the bare in-memory contexts these repository tests

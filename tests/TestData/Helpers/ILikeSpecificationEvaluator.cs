@@ -1,9 +1,9 @@
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using _116.Shared.Application.Specifications;
+using _116.BuildingBlocks.Domain.Specifications;
 
-namespace _116.Unit.Tests.Common.Helpers;
+namespace _116.Tests.TestData.Helpers;
 
 /// <summary>
 /// Evaluates specifications whose expressions call <c>EF.Functions.ILike</c> or

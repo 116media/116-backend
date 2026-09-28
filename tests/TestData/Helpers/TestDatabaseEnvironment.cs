@@ -1,4 +1,4 @@
-namespace _116.Unit.Tests.Common.Helpers;
+namespace _116.Tests.TestData.Helpers;
 
 /// <summary>
 /// Sets the Postgres variables registration code reads, restoring the previous values on

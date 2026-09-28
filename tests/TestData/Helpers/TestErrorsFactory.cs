@@ -1,17 +1,17 @@
 using _116.Content.Application.Shared.Errors;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Errors.Messages;
-using _116.Core.Application.Shared.Errors;
-using _116.Core.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Errors.Messages;
-using CoreInternalServerMsg = _116.Core.Application.Shared.Errors.Messages.InternalServerErrorMessage;
-using CoreValidationMsg = _116.Core.Application.Shared.Errors.Messages.ValidationErrorMessage;
+using _116.Storage.Application.Shared.Errors;
+using _116.Storage.Application.Shared.Errors.Facade;
 using IdentityConflictMsg = _116.Identity.Application.Shared.Errors.Messages.ConflictErrorMessage;
 using IdentityValidationMsg = _116.Identity.Application.Shared.Errors.Messages.ValidationErrorMessage;
+using StorageInternalServerMsg = _116.Storage.Application.Shared.Errors.Messages.InternalServerErrorMessage;
+using StorageValidationMsg = _116.Storage.Application.Shared.Errors.Messages.ValidationErrorMessage;
 
-namespace _116.Tests.Fixtures.Helpers;
+namespace _116.Tests.TestData.Helpers;
 
 /// <summary>
 /// Builds real <c>*Errors</c> instances backed by embedded .resx resources for use in test builders.
@@ -218,8 +218,8 @@ public static class TestErrorsFactory
     public static FileErrors CreateFileErrors()
     {
         return new FileErrors(
-            LocalizerFactory.CreateMessage<CoreValidationMsg>(),
-            LocalizerFactory.CreateMessage<CoreInternalServerMsg>()
+            LocalizerFactory.CreateMessage<StorageValidationMsg>(),
+            LocalizerFactory.CreateMessage<StorageInternalServerMsg>()
         );
     }
 
@@ -273,10 +273,10 @@ public static class TestErrorsFactory
     }
 
     /// <summary>
-    /// Creates a real <see cref="CoreI18n"/> instance for use in Core handler tests.
+    /// Creates a real <see cref="StorageI18n"/> instance for use in Core handler tests.
     /// </summary>
-    public static CoreI18n CreateCoreI18n()
+    public static StorageI18n CreateCoreI18n()
     {
-        return new CoreI18n(CreateFileErrors());
+        return new StorageI18n(CreateFileErrors());
     }
 }
