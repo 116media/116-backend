@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
 using Bogus;
 
-namespace _116.Tests.Fixtures;
+namespace _116.Tests.TestData;
 
 /// <summary>
 /// Seeds Bogus's process-wide randomizer as a backstop for any <see cref="Bogus.Faker" />

@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace _116.Unit.Tests.Common;
+namespace _116.Tests.TestData;
 
 /// <summary>
 /// Migrator replacing the relational one on a test <c>DbContext</c> so the

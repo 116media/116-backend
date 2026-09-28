@@ -2,7 +2,7 @@ using _116.Identity.Application.Shared.Mappers;
 using Mapster;
 using MapsterMapper;
 
-namespace _116.Unit.Tests.Common;
+namespace _116.Tests.TestData;
 
 /// <summary>
 /// Base class for handler tests that provides a configured IMapper instance.
