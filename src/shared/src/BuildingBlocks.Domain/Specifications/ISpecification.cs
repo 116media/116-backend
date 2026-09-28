@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 
-namespace _116.Shared.Application.Specifications;
+namespace _116.BuildingBlocks.Domain.Specifications;
 
 /// <summary>
 /// Represents a specification pattern that defines filtering criteria for objects of type <typeparamref name="T"/>.

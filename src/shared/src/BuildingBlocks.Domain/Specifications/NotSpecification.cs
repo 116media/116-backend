@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 
-namespace _116.Shared.Application.Specifications;
+namespace _116.BuildingBlocks.Domain.Specifications;
 
 /// <summary>
 /// Inverts a specification using the logical NOT.

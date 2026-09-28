@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 
-namespace _116.Shared.Application.Specifications;
+namespace _116.BuildingBlocks.Domain.Specifications;
 
 /// <summary>
 /// Base class for defining specifications and composing them using logical operators.
