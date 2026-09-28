@@ -6,21 +6,9 @@ using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Content.TestData.Builders.Requests;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
 using _116.Tests.Fixtures.Stubs;
-using _116.Tests.TestData.Mocks;
 
 namespace _116.Content.Integration.Tests.Application.Editorial.UseCases.Admin.Commands.ResolveSingleStreamingLinks.V1;
 
@@ -72,7 +60,7 @@ public class AdminResolveSingleStreamingLinksEndpointV1Tests(PostgresFixture db)
 
         var response = await Client.PostAsJsonAsync(
             Url(lyrics.Id),
-            new AdminResolveSingleStreamingLinksRequest(SourceUrl)
+            new AdminResolveSingleStreamingLinksRequestBuilder().WithSourceUrl(SourceUrl).Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -104,7 +92,7 @@ public class AdminResolveSingleStreamingLinksEndpointV1Tests(PostgresFixture db)
 
         var response = await Client.PostAsJsonAsync(
             Url(lyrics.Id),
-            new AdminResolveSingleStreamingLinksRequest(SourceUrl)
+            new AdminResolveSingleStreamingLinksRequestBuilder().WithSourceUrl(SourceUrl).Build()
         );
 
         await response.ShouldBeProblem<ConflictException>(
@@ -123,7 +111,7 @@ public class AdminResolveSingleStreamingLinksEndpointV1Tests(PostgresFixture db)
 
         var response = await Client.PostAsJsonAsync(
             Url(Guid.NewGuid()),
-            new AdminResolveSingleStreamingLinksRequest(SourceUrl)
+            new AdminResolveSingleStreamingLinksRequestBuilder().WithSourceUrl(SourceUrl).Build()
         );
 
         await response.ShouldBeProblem<NotFoundException>(
@@ -149,7 +137,10 @@ public class AdminResolveSingleStreamingLinksEndpointV1Tests(PostgresFixture db)
         });
 
         Client.AuthenticateAsAdmin();
-        await Client.PostAsJsonAsync(Url(lyrics.Id), new AdminResolveSingleStreamingLinksRequest(SourceUrl));
+        await Client.PostAsJsonAsync(
+            Url(lyrics.Id),
+            new AdminResolveSingleStreamingLinksRequestBuilder().WithSourceUrl(SourceUrl).Build()
+        );
 
         Client.ClearAuthentication();
         var publicResponse = await Client.GetAsync($"{ApiRoutes.Public.Lyrics}/{lyrics.Slug}");
