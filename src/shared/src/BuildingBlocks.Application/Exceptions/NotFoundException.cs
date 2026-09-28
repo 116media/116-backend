@@ -1,4 +1,4 @@
-namespace _116.Shared.Application.Exceptions;
+namespace _116.BuildingBlocks.Application.Exceptions;
 
 /// <summary>
 /// Exception that represents a not found error, typically indicating that a requested resource does not exist.

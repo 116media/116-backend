@@ -1,4 +1,4 @@
-namespace _116.Shared.Application.Exceptions.Problems;
+namespace _116.BuildingBlocks.Application.Exceptions.Problems;
 
 /// <summary>
 /// Composes a module's per-aggregate catalogs into the single lookup its strategy reads.

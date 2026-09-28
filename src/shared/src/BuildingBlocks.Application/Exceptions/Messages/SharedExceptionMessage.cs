@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Localization;
 
-namespace _116.Shared.Application.Exceptions.Messages;
+namespace _116.BuildingBlocks.Application.Exceptions.Messages;
 
 /// <summary>
 /// Provides localized error messages for shared exception types

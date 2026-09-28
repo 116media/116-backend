@@ -1,4 +1,4 @@
-namespace _116.Shared.Application.Exceptions;
+namespace _116.BuildingBlocks.Application.Exceptions;
 
 /// <summary>
 /// Exception for resource conflict scenarios (e.g., duplicate entries, concurrent modifications).

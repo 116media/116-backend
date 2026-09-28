@@ -1,4 +1,4 @@
-namespace _116.Shared.Application.Exceptions;
+namespace _116.BuildingBlocks.Application.Exceptions;
 
 /// <summary>
 /// Exception that represents an upstream service failure (HTTP 502 Bad Gateway),

@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Http;
 
-namespace _116.Shared.Application.Exceptions.Problems;
+namespace _116.BuildingBlocks.Application.Exceptions.Problems;
 
 /// <summary>
 /// The RFC 9457 problem a violated domain rule answers with: the status and title the rule

@@ -1,4 +1,4 @@
-namespace _116.Shared.Application.Exceptions.Problems;
+namespace _116.BuildingBlocks.Application.Exceptions.Problems;
 
 /// <summary>
 /// One aggregate's contribution to a module's problem catalog. Each aggregate owns its entries so
