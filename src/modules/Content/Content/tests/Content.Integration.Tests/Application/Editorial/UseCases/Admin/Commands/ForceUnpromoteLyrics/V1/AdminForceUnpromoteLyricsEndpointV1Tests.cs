@@ -6,22 +6,8 @@ using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Constants;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Content.TestData.Builders.Requests;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Mocks;
-using FluentValidation;
-using FluentValidation.Results;
 
 namespace _116.Content.Integration.Tests.Application.Editorial.UseCases.Admin.Commands.ForceUnpromoteLyrics.V1;
 
@@ -77,7 +63,7 @@ public class AdminForceUnpromoteLyricsEndpointV1Tests(PostgresFixture db) : Base
 
         var response = await Client.PostAsJsonAsync(
             Routes.Admin.Editorial.Unpromote(EditorialRouteConstants.Lyrics, Guid.NewGuid()),
-            new AdminForceUnpromoteLyricsRequest(Reason)
+            new AdminForceUnpromoteLyricsRequestBuilder().WithReason(Reason).Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -90,7 +76,7 @@ public class AdminForceUnpromoteLyricsEndpointV1Tests(PostgresFixture db) : Base
 
         var response = await Client.PostAsJsonAsync(
             Routes.Admin.Editorial.Unpromote(EditorialRouteConstants.Lyrics, Guid.NewGuid()),
-            new AdminForceUnpromoteLyricsRequest(Reason)
+            new AdminForceUnpromoteLyricsRequestBuilder().WithReason(Reason).Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
@@ -103,7 +89,7 @@ public class AdminForceUnpromoteLyricsEndpointV1Tests(PostgresFixture db) : Base
 
         var response = await Client.PostAsJsonAsync(
             Routes.Admin.Editorial.Unpromote(EditorialRouteConstants.Lyrics, Guid.NewGuid()),
-            new AdminForceUnpromoteLyricsRequest(Reason)
+            new AdminForceUnpromoteLyricsRequestBuilder().WithReason(Reason).Build()
         );
 
         await response.ShouldBeProblem<NotFoundException>(
@@ -120,7 +106,7 @@ public class AdminForceUnpromoteLyricsEndpointV1Tests(PostgresFixture db) : Base
 
         var response = await Client.PostAsJsonAsync(
             Routes.Admin.Editorial.Unpromote(EditorialRouteConstants.Lyrics, lyrics.Id),
-            new AdminForceUnpromoteLyricsRequest(string.Empty)
+            new AdminForceUnpromoteLyricsRequestBuilder().WithReason(string.Empty).Build()
         );
 
         await response.ShouldBeValidationProblem(
@@ -146,7 +132,7 @@ public class AdminForceUnpromoteLyricsEndpointV1Tests(PostgresFixture db) : Base
 
         var response = await Client.PostAsJsonAsync(
             Routes.Admin.Editorial.Unpromote(EditorialRouteConstants.Lyrics, lyrics.Id),
-            new AdminForceUnpromoteLyricsRequest(tooLongReason)
+            new AdminForceUnpromoteLyricsRequestBuilder().WithReason(tooLongReason).Build()
         );
 
         await response.ShouldBeValidationProblem(
@@ -169,7 +155,7 @@ public class AdminForceUnpromoteLyricsEndpointV1Tests(PostgresFixture db) : Base
 
         var response = await Client.PostAsJsonAsync(
             Routes.Admin.Editorial.Unpromote(EditorialRouteConstants.Lyrics, lyrics.Id),
-            new AdminForceUnpromoteLyricsRequest(Reason)
+            new AdminForceUnpromoteLyricsRequestBuilder().WithReason(Reason).Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -204,7 +190,7 @@ public class AdminForceUnpromoteLyricsEndpointV1Tests(PostgresFixture db) : Base
 
         var response = await Client.PostAsJsonAsync(
             Routes.Admin.Editorial.Unpromote(EditorialRouteConstants.Lyrics, lyrics.Id),
-            new AdminForceUnpromoteLyricsRequest(Reason)
+            new AdminForceUnpromoteLyricsRequestBuilder().WithReason(Reason).Build()
         );
 
         await response.ShouldBeProblem<BadRequestException>(
