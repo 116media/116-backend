@@ -1,7 +1,7 @@
-using _116.Shared.Contracts.Application.CQRS;
+using _116.BuildingBlocks.Application.CQRS;
 using Moq;
 
-namespace _116.Unit.Tests.Common.Mocks.Infrastructure;
+namespace _116.Tests.TestData.Mocks;
 
 /// <summary>
 /// Provides mock setup helpers for <see cref="IDispatcher"/>.

@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Caching.Hybrid;
 
-namespace _116.Unit.Tests.Common.Mocks.Infrastructure;
+namespace _116.Tests.TestData.Mocks;
 
 /// <summary>
 /// A <see cref="HybridCache"/> that stores nothing: every read runs the factory and every write
