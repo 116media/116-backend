@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 
-namespace _116.Shared.Infrastructure.Extensions;
+namespace _116.BuildingBlocks.Infrastructure.Extensions;
 
 /// <summary>
 /// Provides extension methods for <see cref="EntityEntry"/> to help with tracking owned entity changes.

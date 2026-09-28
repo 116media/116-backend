@@ -1,9 +1,9 @@
 using System.Linq.Expressions;
-using _116.Shared.Application.Exceptions;
+using _116.BuildingBlocks.Application.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 
-namespace _116.Shared.Infrastructure.Extensions;
+namespace _116.BuildingBlocks.Infrastructure.Extensions;
 
 /// <summary>
 /// Provides extension methods for <see cref="DbSet{TEntity}"/>.

@@ -1,7 +1,7 @@
-using _116.Shared.Application.Specifications;
+using _116.BuildingBlocks.Domain.Specifications;
 using Microsoft.EntityFrameworkCore;
 
-namespace _116.Shared.Infrastructure.Extensions;
+namespace _116.BuildingBlocks.Infrastructure.Extensions;
 
 /// <summary>
 /// Extension methods for applying specifications to Entity Framework queries.
