@@ -1,4 +1,4 @@
-namespace _116.Shared.Contracts.Application.CQRS;
+namespace _116.BuildingBlocks.Application.CQRS;
 
 /// <summary>
 /// Base interface for request handlers that do not return a response.

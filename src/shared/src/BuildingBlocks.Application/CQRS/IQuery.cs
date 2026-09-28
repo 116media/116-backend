@@ -1,4 +1,4 @@
-namespace _116.Shared.Contracts.Application.CQRS;
+namespace _116.BuildingBlocks.Application.CQRS;
 
 /// <summary>
 /// Represents a query that returns a response of type <typeparamref name="TResponse"/>.

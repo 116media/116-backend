@@ -1,4 +1,4 @@
-namespace _116.Shared.Contracts.Application.CQRS;
+namespace _116.BuildingBlocks.Application.CQRS;
 
 /// <summary>
 /// Service that dispatches commands and queries to their corresponding handlers.
