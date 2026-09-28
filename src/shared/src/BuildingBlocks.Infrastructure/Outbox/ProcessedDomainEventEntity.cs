@@ -1,4 +1,4 @@
-namespace _116.Shared.Infrastructure.Outbox;
+namespace _116.BuildingBlocks.Infrastructure.Outbox;
 
 /// <summary>
 /// Records that one handler completed for one event, so a replayed event cannot apply a

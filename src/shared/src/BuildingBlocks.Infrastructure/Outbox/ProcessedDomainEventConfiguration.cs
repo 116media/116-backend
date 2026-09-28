@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace _116.Shared.Infrastructure.Outbox;
+namespace _116.BuildingBlocks.Infrastructure.Outbox;
 
 /// <summary>
 /// Entity Framework Core configuration for <see cref="ProcessedDomainEventEntity" />. The

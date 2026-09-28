@@ -1,7 +1,7 @@
 using System.Text.Json;
 using _116.Shared.Domain;
 
-namespace _116.Shared.Infrastructure.Outbox;
+namespace _116.BuildingBlocks.Infrastructure.Outbox;
 
 /// <summary>
 /// A domain event captured durably in the same transaction as the state change that raised it,

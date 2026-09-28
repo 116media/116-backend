@@ -1,7 +1,7 @@
-using _116.Shared.Application.Services;
+using _116.BuildingBlocks.Application.Services;
 using Microsoft.EntityFrameworkCore;
 
-namespace _116.Shared.Infrastructure.Outbox;
+namespace _116.BuildingBlocks.Infrastructure.Outbox;
 
 /// <summary>
 /// Claims handler invocations through an insert that loses the race silently, so two dispatchers

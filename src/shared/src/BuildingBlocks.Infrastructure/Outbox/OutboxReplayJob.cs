@@ -1,12 +1,12 @@
-using _116.Shared.Application.Jobs;
-using _116.Shared.Application.Services;
+using _116.BuildingBlocks.Application.Services;
+using _116.BuildingBlocks.Infrastructure.Jobs;
 using _116.Shared.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Quartz;
 
-namespace _116.Shared.Infrastructure.Outbox;
+namespace _116.BuildingBlocks.Infrastructure.Outbox;
 
 /// <summary>
 /// Re-dispatches domain events whose original dispatch died after the commit. The handler
