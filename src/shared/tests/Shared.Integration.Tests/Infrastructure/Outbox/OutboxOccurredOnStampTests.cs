@@ -1,10 +1,10 @@
-using _116.Core.Application.Shared.Repositories;
-using _116.Core.Domain.Entities;
-using _116.Core.Infrastructure.Persistence;
-using _116.Shared.Infrastructure.Outbox;
-using _116.Tests.Fixtures.Factories.Core;
+using _116.BuildingBlocks.Infrastructure.Outbox;
+using _116.Storage.Application.Shared.Repositories;
+using _116.Storage.Domain.Entities;
+using _116.Storage.Infrastructure.Persistence;
+using _116.Storage.TestData.Factories;
 
-namespace _116.Integration.Tests.Shared.Infrastructure.Outbox;
+namespace _116.Shared.Integration.Tests.Infrastructure.Outbox;
 
 /// <summary>
 /// Integration tests proving the dispatch interceptor is wired into the real module contexts
@@ -19,7 +19,7 @@ public class OutboxOccurredOnStampTests(PostgresFixture db) : BaseRepositoryTest
     /// <returns>The persisted file id.</returns>
     private async Task<Guid> SeedFileAsync()
     {
-        await using CoreDbContext context = CreateDbContext<CoreDbContext>();
+        await using StorageDbContext context = CreateDbContext<StorageDbContext>();
 
         FileEntity file = FileFactory.CreateImage();
         context.Files.Add(file);
@@ -35,7 +35,7 @@ public class OutboxOccurredOnStampTests(PostgresFixture db) : BaseRepositoryTest
     /// <returns>The outbox row, or null when none was written.</returns>
     private async Task<OutboxEventEntity?> ReadOutboxRowAsync(Guid fileId)
     {
-        await using CoreDbContext context = CreateDbContext<CoreDbContext>();
+        await using StorageDbContext context = CreateDbContext<StorageDbContext>();
 
         return await context
             .Set<OutboxEventEntity>()
@@ -50,7 +50,7 @@ public class OutboxOccurredOnStampTests(PostgresFixture db) : BaseRepositoryTest
         // Arrange
         Guid fileId = await SeedFileAsync();
         DateTime beforeDelete = DateTime.UtcNow.AddMinutes(-1);
-        var (repository, context) = CreateScopedRepository<IFileRepository, CoreDbContext>();
+        var (repository, context) = CreateScopedRepository<IFileRepository, StorageDbContext>();
 
         // Act
         await repository.SoftDeleteByIdAsync(fileId);
@@ -70,7 +70,7 @@ public class OutboxOccurredOnStampTests(PostgresFixture db) : BaseRepositoryTest
         // Arrange
         Guid firstFile = await SeedFileAsync();
         Guid secondFile = await SeedFileAsync();
-        var (repository, context) = CreateScopedRepository<IFileRepository, CoreDbContext>();
+        var (repository, context) = CreateScopedRepository<IFileRepository, StorageDbContext>();
 
         // Act
         await repository.SoftDeleteByIdAsync(firstFile);

@@ -1,4 +1,4 @@
-using _116.Shared.Infrastructure.Cache;
+using _116.BuildingBlocks.Infrastructure.Cache;
 using AwesomeAssertions;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Hybrid;
@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using StackExchange.Redis;
 using Testcontainers.Redis;
 
-namespace _116.Integration.Tests.Shared.Infrastructure.Cache;
+namespace _116.Shared.Integration.Tests.Infrastructure.Cache;
 
 /// <summary>
 /// Proves the hybrid cache's distributed layer across two independent cache instances sharing

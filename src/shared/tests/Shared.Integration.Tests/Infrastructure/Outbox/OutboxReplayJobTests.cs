@@ -1,13 +1,27 @@
-using _116.Core.Infrastructure.BackgroundJobs;
-using _116.Core.Infrastructure.Persistence;
+using _116.BuildingBlocks.Infrastructure.Jobs;
+using _116.BuildingBlocks.Infrastructure.Outbox;
+using _116.Content.TestData.Factories;
+using _116.Content.TestData.Factories.Helpers;
+using _116.Content.TestData.Mocks.Factories;
+using _116.Content.TestData.Mocks.Infrastructure;
+using _116.Content.TestData.Mocks.Repositories;
+using _116.Content.TestData.Mocks.Services;
 using _116.Identity.Infrastructure.BackgroundJobs;
-using _116.Integration.Tests.Common.Stubs;
+using _116.Identity.TestData.Factories;
+using _116.Identity.TestData.Mocks.Infrastructure;
+using _116.Identity.TestData.Mocks.Repositories;
+using _116.Identity.TestData.Mocks.Services;
 using _116.Mailer.Infrastructure.BackgroundJobs;
-using _116.Shared.Application.Jobs;
 using _116.Shared.Domain;
-using _116.Shared.Infrastructure.Outbox;
+using _116.Storage.Infrastructure.BackgroundJobs;
+using _116.Storage.Infrastructure.Persistence;
+using _116.Storage.TestData.Factories;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Storage.TestData.Mocks.Services;
+using _116.Tests.Fixtures.Stubs;
+using _116.Tests.TestData.Mocks;
 
-namespace _116.Integration.Tests.Shared.Infrastructure.Outbox;
+namespace _116.Shared.Integration.Tests.Infrastructure.Outbox;
 
 /// <summary>
 /// Integration tests for the per-module replay jobs. Each module schedules its own, so each has
@@ -44,7 +58,7 @@ public class OutboxReplayJobTests(PostgresFixture db) : BaseRepositoryTest(db)
         // Act
         Func<Task> act = async () =>
         {
-            await RunAsync<CoreOutboxReplayJob>();
+            await RunAsync<StorageOutboxReplayJob>();
             await RunAsync<IdentityOutboxReplayJob>();
             await RunAsync<MailerOutboxReplayJob>();
         };
@@ -61,17 +75,17 @@ public class OutboxReplayJobTests(PostgresFixture db) : BaseRepositoryTest(db)
         var marker = Guid.NewGuid();
         OutboxEventEntity row = OutboxEventEntity.Create(new UnhandledReplayEvent(marker));
 
-        await using (CoreDbContext seed = CreateDbContext<CoreDbContext>())
+        await using (StorageDbContext seed = CreateDbContext<StorageDbContext>())
         {
             seed.Set<OutboxEventEntity>().Add(row);
             await seed.SaveChangesAsync();
         }
 
         // Act
-        await RunAsync<CoreOutboxReplayJob>();
+        await RunAsync<StorageOutboxReplayJob>();
 
         // Assert
-        await using CoreDbContext context = CreateDbContext<CoreDbContext>();
+        await using StorageDbContext context = CreateDbContext<StorageDbContext>();
         OutboxEventEntity replayed = await context.Set<OutboxEventEntity>().SingleAsync(r => r.Id == row.Id);
         replayed.DispatchedAt.Should().NotBeNull();
     }
@@ -85,17 +99,17 @@ public class OutboxReplayJobTests(PostgresFixture db) : BaseRepositoryTest(db)
         row.MarkDispatched();
         DateTime? dispatchedAt = row.DispatchedAt;
 
-        await using (CoreDbContext seed = CreateDbContext<CoreDbContext>())
+        await using (StorageDbContext seed = CreateDbContext<StorageDbContext>())
         {
             seed.Set<OutboxEventEntity>().Add(row);
             await seed.SaveChangesAsync();
         }
 
         // Act
-        await RunAsync<CoreOutboxReplayJob>();
+        await RunAsync<StorageOutboxReplayJob>();
 
         // Assert
-        await using CoreDbContext context = CreateDbContext<CoreDbContext>();
+        await using StorageDbContext context = CreateDbContext<StorageDbContext>();
         OutboxEventEntity untouched = await context.Set<OutboxEventEntity>().SingleAsync(r => r.Id == row.Id);
         untouched.DispatchedAt.Should().BeCloseTo(dispatchedAt!.Value, TimeSpan.FromSeconds(1));
     }

@@ -1,8 +1,8 @@
-using _116.Shared.Application.Exceptions;
-using _116.Shared.Application.Exceptions.Messages;
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.BuildingBlocks.Application.Exceptions.Messages;
 using Microsoft.AspNetCore.Mvc;
 
-namespace _116.Integration.Tests.Shared.Infrastructure.Middleware;
+namespace _116.Shared.Integration.Tests.Infrastructure.Middleware;
 
 /// <summary>
 /// Verifies that the ResourceNotFoundMiddleware converts 404 responses
