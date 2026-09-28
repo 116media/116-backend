@@ -1,4 +1,4 @@
-namespace _116.Shared.Application.Pagination;
+namespace _116.BuildingBlocks.Application.Pagination;
 
 /// <summary>
 /// A pagination request whose bounds are enforced at construction. <see cref="PageIndex"/> is floored at
