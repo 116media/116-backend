@@ -1,0 +1,12 @@
+{
+    "solution": {
+        "path": "../116_backend.sln",
+        "projects": [
+            "src/modules/Content/Content/tests/Content.Unit.Tests/Content.Unit.Tests.csproj",
+            "src/modules/Identity/Identity/tests/Identity.Unit.Tests/Identity.Unit.Tests.csproj",
+            "src/modules/Mailer/Mailer/tests/Mailer.Unit.Tests/Mailer.Unit.Tests.csproj",
+            "src/modules/Storage/Storage/tests/Storage.Unit.Tests/Storage.Unit.Tests.csproj",
+            "src/shared/tests/Shared.Unit.Tests/Shared.Unit.Tests.csproj"
+        ]
+    }
+}

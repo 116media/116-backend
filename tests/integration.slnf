@@ -1,0 +1,13 @@
+{
+    "solution": {
+        "path": "../116_backend.sln",
+        "projects": [
+            "src/modules/Content/Content/tests/Content.Integration.Tests/Content.Integration.Tests.csproj",
+            "src/modules/Identity/Identity/tests/Identity.Integration.Tests/Identity.Integration.Tests.csproj",
+            "src/modules/Mailer/Mailer/tests/Mailer.Integration.Tests/Mailer.Integration.Tests.csproj",
+            "src/modules/Storage/Storage/tests/Storage.Integration.Tests/Storage.Integration.Tests.csproj",
+            "src/shared/tests/Shared.Integration.Tests/Shared.Integration.Tests.csproj",
+            "tests/EndToEnd.Tests/EndToEnd.Tests.csproj"
+        ]
+    }
+}
