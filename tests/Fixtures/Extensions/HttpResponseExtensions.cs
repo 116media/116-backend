@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 
-namespace _116.Integration.Tests.Common.Extensions;
+namespace _116.Tests.Fixtures.Extensions;
 
 /// <summary>
 /// Assertion-friendly helpers for reading and validating HTTP response bodies in

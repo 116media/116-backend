@@ -2,11 +2,12 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
-using _116.BuildingBlocks.Constants;
+using _116.BuildingBlocks.Presentation.Constants;
+using _116.Identity.Domain.Constants;
 using _116.Identity.Domain.Enums;
 using Microsoft.IdentityModel.Tokens;
 
-namespace _116.Integration.Tests.Common.Extensions;
+namespace _116.Tests.Fixtures.Extensions;
 
 /// <summary>
 /// Extension methods for <see cref="HttpClient" /> that attach JWT Bearer tokens
