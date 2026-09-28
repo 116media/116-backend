@@ -4,20 +4,8 @@ using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.LinkVideoArtist.V1;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Content.TestData.Builders.Requests;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Mocks;
 
 namespace _116.Content.Integration.Tests.Application.Editorial.UseCases.Admin.Commands.LinkVideoArtist.V1;
 
@@ -54,7 +42,7 @@ public class AdminLinkVideoArtistEndpointV1Tests(PostgresFixture db) : BaseApiTe
                 Guid.NewGuid(),
                 EditorialRouteConstants.Artist
             ),
-            new AdminLinkVideoArtistRequest(null)
+            new AdminLinkVideoArtistRequestBuilder().Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -71,7 +59,7 @@ public class AdminLinkVideoArtistEndpointV1Tests(PostgresFixture db) : BaseApiTe
                 Guid.NewGuid(),
                 EditorialRouteConstants.Artist
             ),
-            new AdminLinkVideoArtistRequest(null)
+            new AdminLinkVideoArtistRequestBuilder().Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
@@ -85,7 +73,7 @@ public class AdminLinkVideoArtistEndpointV1Tests(PostgresFixture db) : BaseApiTe
 
         var response = await Client.PutAsJsonAsync(
             Routes.Admin.Editorial.Action(EditorialRouteConstants.Videos, video.Id, EditorialRouteConstants.Artist),
-            new AdminLinkVideoArtistRequest(artist.Id)
+            new AdminLinkVideoArtistRequestBuilder().WithArtistId(artist.Id).Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -110,7 +98,7 @@ public class AdminLinkVideoArtistEndpointV1Tests(PostgresFixture db) : BaseApiTe
                 Guid.NewGuid(),
                 EditorialRouteConstants.Artist
             ),
-            new AdminLinkVideoArtistRequest(artist.Id)
+            new AdminLinkVideoArtistRequestBuilder().WithArtistId(artist.Id).Build()
         );
 
         await response.ShouldBeProblem<NotFoundException>(
@@ -127,7 +115,7 @@ public class AdminLinkVideoArtistEndpointV1Tests(PostgresFixture db) : BaseApiTe
 
         var response = await Client.PutAsJsonAsync(
             Routes.Admin.Editorial.Action(EditorialRouteConstants.Videos, video.Id, EditorialRouteConstants.Artist),
-            new AdminLinkVideoArtistRequest(Guid.NewGuid())
+            new AdminLinkVideoArtistRequestBuilder().WithArtistId(Guid.NewGuid()).Build()
         );
 
         await response.ShouldBeProblem<NotFoundException>(
@@ -144,12 +132,12 @@ public class AdminLinkVideoArtistEndpointV1Tests(PostgresFixture db) : BaseApiTe
 
         await Client.PutAsJsonAsync(
             Routes.Admin.Editorial.Action(EditorialRouteConstants.Videos, video.Id, EditorialRouteConstants.Artist),
-            new AdminLinkVideoArtistRequest(artist.Id)
+            new AdminLinkVideoArtistRequestBuilder().WithArtistId(artist.Id).Build()
         );
 
         var response = await Client.PutAsJsonAsync(
             Routes.Admin.Editorial.Action(EditorialRouteConstants.Videos, video.Id, EditorialRouteConstants.Artist),
-            new AdminLinkVideoArtistRequest(null)
+            new AdminLinkVideoArtistRequestBuilder().Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -174,12 +162,12 @@ public class AdminLinkVideoArtistEndpointV1Tests(PostgresFixture db) : BaseApiTe
 
         await Client.PutAsJsonAsync(
             Routes.Admin.Editorial.Action(EditorialRouteConstants.Videos, video.Id, EditorialRouteConstants.Artist),
-            new AdminLinkVideoArtistRequest(firstArtist.Id)
+            new AdminLinkVideoArtistRequestBuilder().WithArtistId(firstArtist.Id).Build()
         );
 
         var response = await Client.PutAsJsonAsync(
             Routes.Admin.Editorial.Action(EditorialRouteConstants.Videos, video.Id, EditorialRouteConstants.Artist),
-            new AdminLinkVideoArtistRequest(secondArtist.Id)
+            new AdminLinkVideoArtistRequestBuilder().WithArtistId(secondArtist.Id).Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
