@@ -7,9 +7,9 @@ using _116.Identity.Application.Auth.Constants;
 using _116.Identity.Application.Roles.Constants;
 using _116.Identity.Application.Session.Constants;
 using _116.Identity.Application.User.Constants;
-using static _116.Tests.Fixtures.Constants.TestConstants;
+using static _116.Tests.TestData.Constants.TestConstants;
 
-namespace _116.Tests.Fixtures.Routes;
+namespace _116.Tests.TestData.Routes;
 
 /// <summary>
 /// Builds sub-resource and action URLs for integration tests from the production
