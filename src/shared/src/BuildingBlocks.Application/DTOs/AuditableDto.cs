@@ -1,6 +1,6 @@
 using _116.Shared.Domain;
 
-namespace _116.Shared.Application.DTOs;
+namespace _116.BuildingBlocks.Application.DTOs;
 
 /// <summary>
 /// Base record for admin-facing DTOs that must expose all entity audit fields.
