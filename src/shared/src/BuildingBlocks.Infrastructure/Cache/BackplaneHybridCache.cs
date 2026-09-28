@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Caching.Hybrid;
 using StackExchange.Redis;
 
-namespace _116.Shared.Infrastructure.Cache;
+namespace _116.BuildingBlocks.Infrastructure.Cache;
 
 /// <summary>
 /// Decorator over <see cref="HybridCache" /> that broadcasts evictions on a Redis channel and
