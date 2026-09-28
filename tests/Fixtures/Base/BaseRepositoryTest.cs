@@ -1,6 +1,6 @@
-using _116.Integration.Tests.Common.Stubs;
+using _116.Tests.Fixtures.Stubs;
 
-namespace _116.Integration.Tests.Common.Base;
+namespace _116.Tests.Fixtures.Base;
 
 /// <summary>
 /// Base class for repository-level integration tests that operate directly on a DbContext
