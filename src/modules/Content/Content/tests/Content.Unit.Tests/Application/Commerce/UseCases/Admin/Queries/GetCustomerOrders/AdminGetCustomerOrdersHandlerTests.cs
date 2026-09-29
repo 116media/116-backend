@@ -3,22 +3,8 @@ using _116.Content.Application.Commerce.UseCases.Admin.Queries.GetCustomerOrders
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.TestData;
-using _116.Content.TestData.Builders.Entities;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
 using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData;
-using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -49,7 +35,7 @@ public class AdminGetCustomerOrdersHandlerTests : BaseContentHandlerTest
         Guid customerId = Guid.NewGuid();
         List<ContentOrderEntity> orders = Enumerable
             .Range(0, 2)
-            .Select(_ => new ContentOrderBuilder().WithCustomer(_customer).Build())
+            .Select(_ => ContentOrderFactory.CreateForCustomer(_customer.Id))
             .ToList();
 
         _orderRepositoryMock.SetupGetAllAsync(orders, orders.Count);
