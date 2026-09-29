@@ -7,21 +7,12 @@ using _116.Content.Domain.Exceptions;
 using _116.Content.Domain.StateMachines;
 using _116.Content.TestData.Builders.Entities;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
 using _116.Content.TestData.Mocks.Infrastructure;
 using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
 using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
 using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
 using _116.Tests.TestData.Constants;
 using _116.Tests.TestData.Helpers;
-using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -55,7 +46,7 @@ public class AdminRemoveOrderItemHandlerTests
     {
         // Arrange
         CustomerEntity customer = CustomerFactory.Create();
-        ContentOrderEntity order = new ContentOrderBuilder().WithCustomer(customer).Build();
+        ContentOrderEntity order = ContentOrderFactory.CreateForCustomer(customer.Id);
 
         ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, Guid.NewGuid());
         ContentOrderItemEntity remainingItem = ContentOrderItemFactory.Create(order.Id, Guid.NewGuid());
@@ -129,7 +120,7 @@ public class AdminRemoveOrderItemHandlerTests
     {
         // Arrange
         CustomerEntity customer = CustomerFactory.Create();
-        ContentOrderEntity order = new ContentOrderBuilder().WithCustomer(customer).Build();
+        ContentOrderEntity order = ContentOrderFactory.CreateForCustomer(customer.Id);
         Guid missingItemId = Guid.NewGuid();
 
         _orderRepositoryMock
