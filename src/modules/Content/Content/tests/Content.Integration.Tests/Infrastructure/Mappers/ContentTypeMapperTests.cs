@@ -4,20 +4,7 @@ using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Content.TestData.Factories;
 using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Mocks;
 using MapsterMapper;
-using ContentMappingRegistration = _116.Content.Application.Shared.Mappers.MappingRegistration;
 
 namespace _116.Content.Integration.Tests.Infrastructure.Mappers;
 
@@ -28,7 +15,7 @@ namespace _116.Content.Integration.Tests.Infrastructure.Mappers;
 [Collection("Database")]
 public class ContentTypeMapperTests(PostgresFixture postgres) : BaseRepositoryTest(postgres)
 {
-    private readonly IMapper _mapper = new Mapper(ContentMappingRegistration.CreateConfiguration());
+    private readonly IMapper _mapper = ContentMapperFactory.Create();
 
     [Fact]
     public async Task ToContentTypeDto_ShouldMapAllFields()
