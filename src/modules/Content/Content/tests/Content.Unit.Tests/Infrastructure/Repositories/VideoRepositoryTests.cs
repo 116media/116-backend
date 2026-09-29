@@ -7,19 +7,6 @@ using _116.Content.Infrastructure.Repositories;
 using _116.Content.TestData.Builders.Entities;
 using _116.Content.TestData.Factories;
 using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Helpers;
-using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -36,12 +23,7 @@ public class VideoRepositoryTests : IDisposable
 
     public VideoRepositoryTests()
     {
-        DbContextOptions<ContentDbContext> options = new DbContextOptionsBuilder<ContentDbContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-            .AddInterceptors(new CreatedAtStampingInterceptor())
-            .Options;
-
-        _context = new ContentDbContext(options);
+        _context = ContentDbContextFactory.CreateInMemory();
         _repository = new VideoRepository(_context);
     }
 
@@ -793,7 +775,7 @@ public class VideoRepositoryTests : IDisposable
         _context.Videos.Add(video);
         await _context.SaveChangesAsync();
 
-        VideoShareEntity share = VideoShareEntity.Create(Guid.NewGuid(), null, video.Id);
+        VideoShareEntity share = VideoShareFactory.CreateAnonymous(video.Id);
 
         // Act
         await _repository.AddShareAsync(share);
@@ -865,10 +847,10 @@ public class VideoRepositoryTests : IDisposable
         VideoEntity reratedVideo = VideoFactory.CreatePublished(categoryId);
         VideoEntity unpublishedVideo = VideoFactory.Create(categoryId);
         _context.Videos.AddRange(olderVideo, reratedVideo, unpublishedVideo);
-        VideoRatingEntity older = VideoRatingEntity.Create(Guid.NewGuid(), userId, olderVideo.Id, 2);
-        VideoRatingEntity rerated = VideoRatingEntity.Create(Guid.NewGuid(), userId, reratedVideo.Id, 5);
-        VideoRatingEntity unpublished = VideoRatingEntity.Create(Guid.NewGuid(), userId, unpublishedVideo.Id, 4);
-        VideoRatingEntity otherUser = VideoRatingEntity.Create(Guid.NewGuid(), Guid.NewGuid(), olderVideo.Id, 1);
+        VideoRatingEntity older = VideoRatingFactory.Create(olderVideo.Id, userId, 2);
+        VideoRatingEntity rerated = VideoRatingFactory.Create(reratedVideo.Id, userId, 5);
+        VideoRatingEntity unpublished = VideoRatingFactory.Create(unpublishedVideo.Id, userId, 4);
+        VideoRatingEntity otherUser = VideoRatingFactory.Create(olderVideo.Id, Guid.NewGuid(), 1);
         DateTime now = DateTime.UtcNow;
         SetActivityTime(older, now.AddDays(-2));
         SetActivityTime(rerated, now.AddDays(-3), now);
@@ -895,7 +877,7 @@ public class VideoRepositoryTests : IDisposable
         DateTime tie = DateTime.UtcNow;
         foreach (VideoEntity video in videos)
         {
-            VideoRatingEntity rating = VideoRatingEntity.Create(Guid.NewGuid(), userId, video.Id, 3);
+            VideoRatingEntity rating = VideoRatingFactory.Create(video.Id, userId, 3);
             SetActivityTime(rating, tie);
             _context.VideoRatings.Add(rating);
         }
@@ -917,26 +899,16 @@ public class VideoRepositoryTests : IDisposable
         VideoEntity unpublished = VideoFactory.Create(categoryId);
         _context.Videos.AddRange(published, unpublished);
         DateTime latest = DateTime.UtcNow;
-        VideoShareEntity older = VideoShareEntity.Create(
-            Guid.NewGuid(),
-            userId,
-            published.Id,
-            EnumShareChannel.Facebook
-        );
-        VideoShareEntity newer = VideoShareEntity.Create(
-            Guid.NewGuid(),
-            userId,
-            published.Id,
-            EnumShareChannel.WhatsApp
-        );
+        VideoShareEntity older = VideoShareFactory.Create(userId, published.Id, EnumShareChannel.Facebook);
+        VideoShareEntity newer = VideoShareFactory.Create(userId, published.Id, EnumShareChannel.WhatsApp);
         older.CreatedAt = latest.AddDays(-1);
         newer.CreatedAt = latest;
         _context.VideoShares.AddRange(
             older,
             newer,
-            VideoShareEntity.Create(Guid.NewGuid(), null, published.Id, EnumShareChannel.X),
-            VideoShareEntity.Create(Guid.NewGuid(), Guid.NewGuid(), published.Id, EnumShareChannel.Clipboard),
-            VideoShareEntity.Create(Guid.NewGuid(), userId, unpublished.Id, EnumShareChannel.WebShare)
+            VideoShareFactory.CreateAnonymous(published.Id, EnumShareChannel.X),
+            VideoShareFactory.Create(Guid.NewGuid(), published.Id, EnumShareChannel.Clipboard),
+            VideoShareFactory.Create(userId, unpublished.Id, EnumShareChannel.WebShare)
         );
         await _context.SaveChangesAsync();
 
@@ -960,7 +932,7 @@ public class VideoRepositoryTests : IDisposable
         DateTime baseTime = DateTime.UtcNow;
         for (int index = 0; index < videos.Length; index++)
         {
-            VideoShareEntity share = VideoShareEntity.Create(Guid.NewGuid(), userId, videos[index].Id);
+            VideoShareEntity share = VideoShareFactory.Create(userId, videos[index].Id);
             share.CreatedAt = baseTime.AddMinutes(index);
             _context.VideoShares.Add(share);
         }
