@@ -2,22 +2,7 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Domain.Entities;
 using _116.Content.TestData;
-using _116.Content.TestData.Builders.Entities;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData;
-using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Xunit;
 
@@ -33,7 +18,7 @@ public class ContentOrderMapperTests : BaseContentHandlerTest
     /// <summary>
     /// Creates an order placed by the shared customer, whose row the mapper reads from lookups.
     /// </summary>
-    private ContentOrderEntity CreateOrderWithCustomer() => new ContentOrderBuilder().WithCustomer(_customer).Build();
+    private ContentOrderEntity CreateOrderWithCustomer() => ContentOrderFactory.CreateForCustomer(_customer.Id);
 
     /// <summary>
     /// The resolved customer rows, keyed by id, as the DTO factory hands them to the mapper.
