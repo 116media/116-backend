@@ -34,41 +34,4 @@ public static class MockAddOrderItemFactory
             .ReturnsAsync(result);
         return mock;
     }
-
-    public static Mock<IAddOrderItemFactory> SetupCreateItemAsyncThrows(
-        this Mock<IAddOrderItemFactory> mock,
-        Exception exception
-    )
-    {
-        mock.Setup(x =>
-                x.CreateItemAsync(
-                    It.IsAny<ContentOrderEntity>(),
-                    It.IsAny<EnumCoreContentType>(),
-                    It.IsAny<Guid>(),
-                    It.IsAny<Guid?>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<CancellationToken>()
-                )
-            )
-            .ThrowsAsync(exception);
-        return mock;
-    }
-
-    public static void VerifyCreateItemCalled(this Mock<IAddOrderItemFactory> mock)
-    {
-        mock.Verify(
-            x =>
-                x.CreateItemAsync(
-                    It.IsAny<ContentOrderEntity>(),
-                    It.IsAny<EnumCoreContentType>(),
-                    It.IsAny<Guid>(),
-                    It.IsAny<Guid?>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<CancellationToken>()
-                ),
-            Times.Once
-        );
-    }
 }
