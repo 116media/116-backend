@@ -7,20 +7,9 @@ using _116.Content.Domain.Constants;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Content.TestData.Builders.Requests;
 using _116.Content.TestData.Factories;
 using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Mocks;
 
 namespace _116.Content.Integration.Tests.Application.Editorial.UseCases.Admin.Commands.UpsertSingleStreamingLink.V1;
 
@@ -46,19 +35,7 @@ public class AdminUpsertSingleStreamingLinkEndpointV1Tests(PostgresFixture db) :
     /// Seeds the content type and category rows a lyrics page depends on.
     /// </summary>
     /// <returns>The seeded category identifier.</returns>
-    private async Task<Guid> SeedCategoryAsync()
-    {
-        return await SeedAsync<ContentDbContext, Guid>(ctx =>
-        {
-            ContentTypeEntity contentType = ContentTypeFactory.Create();
-            ctx.ContentTypes.Add(contentType);
-
-            CategoryEntity category = CategoryFactory.Create(contentType.Id);
-            ctx.Categories.Add(category);
-
-            return category.Id;
-        });
-    }
+    private async Task<Guid> SeedCategoryAsync() => await SeedAsync<ContentDbContext, Guid>(ContentSeeder.AddCategory);
 
     /// <summary>
     /// Seeds a standalone single — a lyrics page with no owning album.
@@ -83,7 +60,7 @@ public class AdminUpsertSingleStreamingLinkEndpointV1Tests(PostgresFixture db) :
 
         var response = await Client.PutAsJsonAsync(
             Url(Guid.NewGuid(), EnumStreamingPlatform.Spotify),
-            new AdminUpsertSingleStreamingLinkRequest(SpotifyUrl)
+            new AdminUpsertSingleStreamingLinkRequestBuilder().WithUrl(SpotifyUrl).Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -96,7 +73,7 @@ public class AdminUpsertSingleStreamingLinkEndpointV1Tests(PostgresFixture db) :
 
         var response = await Client.PutAsJsonAsync(
             Url(Guid.NewGuid(), EnumStreamingPlatform.Spotify),
-            new AdminUpsertSingleStreamingLinkRequest(SpotifyUrl)
+            new AdminUpsertSingleStreamingLinkRequestBuilder().WithUrl(SpotifyUrl).Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
@@ -109,7 +86,7 @@ public class AdminUpsertSingleStreamingLinkEndpointV1Tests(PostgresFixture db) :
 
         var response = await Client.PutAsJsonAsync(
             Url(Guid.NewGuid(), EnumStreamingPlatform.Spotify),
-            new AdminUpsertSingleStreamingLinkRequest(SpotifyUrl)
+            new AdminUpsertSingleStreamingLinkRequestBuilder().WithUrl(SpotifyUrl).Build()
         );
 
         await response.ShouldBeProblem<NotFoundException>(
@@ -126,7 +103,7 @@ public class AdminUpsertSingleStreamingLinkEndpointV1Tests(PostgresFixture db) :
 
         var response = await Client.PutAsJsonAsync(
             Url(lyrics.Id, EnumStreamingPlatform.Spotify),
-            new AdminUpsertSingleStreamingLinkRequest(SpotifyUrl)
+            new AdminUpsertSingleStreamingLinkRequestBuilder().WithUrl(SpotifyUrl).Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -155,14 +132,14 @@ public class AdminUpsertSingleStreamingLinkEndpointV1Tests(PostgresFixture db) :
 
         var firstResponse = await Client.PutAsJsonAsync(
             Url(lyrics.Id, EnumStreamingPlatform.Spotify),
-            new AdminUpsertSingleStreamingLinkRequest(SpotifyUrl)
+            new AdminUpsertSingleStreamingLinkRequestBuilder().WithUrl(SpotifyUrl).Build()
         );
         AdminUpsertSingleStreamingLinkResponse firstBody =
             await firstResponse.ReadAsAsync<AdminUpsertSingleStreamingLinkResponse>();
 
         var response = await Client.PutAsJsonAsync(
             Url(lyrics.Id, EnumStreamingPlatform.Spotify),
-            new AdminUpsertSingleStreamingLinkRequest(ReplacementUrl)
+            new AdminUpsertSingleStreamingLinkRequestBuilder().WithUrl(ReplacementUrl).Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -198,7 +175,7 @@ public class AdminUpsertSingleStreamingLinkEndpointV1Tests(PostgresFixture db) :
 
         var response = await Client.PutAsJsonAsync(
             Url(lyrics.Id, EnumStreamingPlatform.Spotify),
-            new AdminUpsertSingleStreamingLinkRequest(SpotifyUrl)
+            new AdminUpsertSingleStreamingLinkRequestBuilder().WithUrl(SpotifyUrl).Build()
         );
 
         await response.ShouldBeProblem<ConflictException>(
@@ -223,7 +200,7 @@ public class AdminUpsertSingleStreamingLinkEndpointV1Tests(PostgresFixture db) :
 
         var response = await Client.PutAsJsonAsync(
             Url(single.Id, EnumStreamingPlatform.Spotify),
-            new AdminUpsertSingleStreamingLinkRequest(url)
+            new AdminUpsertSingleStreamingLinkRequestBuilder().WithUrl(url).Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -241,9 +218,9 @@ public class AdminUpsertSingleStreamingLinkEndpointV1Tests(PostgresFixture db) :
 
         var response = await Client.PutAsJsonAsync(
             Url(single.Id, EnumStreamingPlatform.Spotify),
-            new AdminUpsertSingleStreamingLinkRequest(
-                "https://open.spotify.com/" + new string('a', ContentConstants.MaxStreamingLinkUrlLength)
-            )
+            new AdminUpsertSingleStreamingLinkRequestBuilder()
+                .WithUrl("https://open.spotify.com/" + new string('a', ContentConstants.MaxStreamingLinkUrlLength))
+                .Build()
         );
 
         await response.ShouldBeValidationProblem(
