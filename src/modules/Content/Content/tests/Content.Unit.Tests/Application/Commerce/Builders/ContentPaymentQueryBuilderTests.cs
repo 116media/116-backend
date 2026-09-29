@@ -4,6 +4,7 @@ using _116.Content.Application.Commerce.Builders.Contracts;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.TestData.Builders.Entities;
+using _116.Content.TestData.Factories;
 using _116.Tests.TestData.Constants;
 using _116.Tests.TestData.Helpers;
 using AwesomeAssertions;
@@ -63,7 +64,7 @@ public class ContentPaymentQueryBuilderTests
             .WithEmail(email)
             .WithCompany(company)
             .Build();
-        ContentOrderEntity order = new ContentOrderBuilder().WithCustomer(customer).Build();
+        ContentOrderEntity order = ContentOrderFactory.CreateForCustomer(customer.Id);
         order.AttachPayment();
 
         return (customer, order);
