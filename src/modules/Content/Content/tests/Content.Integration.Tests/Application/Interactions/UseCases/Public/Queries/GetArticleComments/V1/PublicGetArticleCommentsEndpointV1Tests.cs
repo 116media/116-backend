@@ -3,22 +3,10 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
 using _116.Tests.TestData.Constants;
-using _116.Tests.TestData.Mocks;
 
 namespace _116.Content.Integration.Tests.Application.Interactions.UseCases.Public.Queries.GetArticleComments.V1;
 
@@ -190,10 +178,9 @@ public class PublicGetArticleCommentsEndpointV1Tests(PostgresFixture db) : BaseA
 
         ArticleCommentEntity reply = await SeedAsync<ContentDbContext, ArticleCommentEntity>(ctx =>
         {
-            ArticleCommentEntity r = ArticleCommentEntity.CreateReply(
-                Guid.NewGuid(),
-                TestUser.VisitorId,
+            ArticleCommentEntity r = ArticleCommentFactory.CreateReply(
                 article.Id,
+                TestUser.VisitorId,
                 topLevel.Id,
                 "a reply"
             );
