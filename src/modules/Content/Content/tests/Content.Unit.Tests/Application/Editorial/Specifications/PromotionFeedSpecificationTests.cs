@@ -4,19 +4,6 @@ using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.TestData.Builders.Entities;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Xunit;
 
@@ -113,7 +100,7 @@ public class PromotionFeedSpecificationTests
         ArticleEntity article = status switch
         {
             EnumContentStatus.Published => ArticleFactory.CreatePublished(gossipCategoryId),
-            EnumContentStatus.Archived => new ArticleBuilder(gossipCategoryId).AsArchived().Build(),
+            EnumContentStatus.Archived => ArticleFactory.CreateArchived(gossipCategoryId),
             _ => ArticleFactory.Create(gossipCategoryId),
         };
 
@@ -202,7 +189,7 @@ public class PromotionFeedSpecificationTests
     public void GossipCategory_WhenGossipFallbackAndActive_ShouldReturnTrue()
     {
         // Arrange
-        CategoryEntity category = new CategoryBuilder(Guid.NewGuid()).AsGossip().Build();
+        CategoryEntity category = CategoryFactory.CreateGossip(Guid.NewGuid());
         var spec = new GossipCategorySpecification();
         Func<CategoryEntity, bool> predicate = spec.ToExpression().Compile();
 
@@ -217,7 +204,7 @@ public class PromotionFeedSpecificationTests
     public void GossipCategory_WhenGossipFallbackButInactive_ShouldReturnFalse()
     {
         // Arrange
-        CategoryEntity category = new CategoryBuilder(Guid.NewGuid()).AsGossip().Build();
+        CategoryEntity category = CategoryFactory.CreateGossip(Guid.NewGuid());
         category.Deactivate();
         var spec = new GossipCategorySpecification();
         Func<CategoryEntity, bool> predicate = spec.ToExpression().Compile();
