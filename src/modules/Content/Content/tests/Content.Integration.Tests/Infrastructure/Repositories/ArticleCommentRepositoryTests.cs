@@ -2,20 +2,7 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
 using _116.Tests.TestData.Constants;
-using _116.Tests.TestData.Mocks;
 
 namespace _116.Content.Integration.Tests.Infrastructure.Repositories;
 
@@ -138,8 +125,8 @@ public class ArticleCommentRepositoryTests(PostgresFixture postgres) : BaseRepos
         await context.SaveChangesAsync();
 
         context.ArticleCommentLikes.AddRange(
-            ArticleCommentLikeEntity.Create(id: Guid.NewGuid(), userId: viewerUserId, commentId: liked.Id),
-            ArticleCommentLikeEntity.Create(id: Guid.NewGuid(), userId: otherUserId, commentId: likedByOther.Id)
+            ArticleCommentLikeFactory.Create(viewerUserId, liked.Id),
+            ArticleCommentLikeFactory.Create(otherUserId, likedByOther.Id)
         );
         await context.SaveChangesAsync();
 
@@ -154,12 +141,11 @@ public class ArticleCommentRepositoryTests(PostgresFixture postgres) : BaseRepos
     }
 
     private static ArticleCommentEntity CreateReply(Guid articleId, Guid userId, Guid parentCommentId) =>
-        ArticleCommentEntity.CreateReply(
-            id: Guid.NewGuid(),
-            userId: userId,
-            articleId: articleId,
-            parentCommentId: parentCommentId,
-            body: TestConstants.Interactions.ValidCommentBody
+        ArticleCommentFactory.CreateReply(
+            articleId,
+            userId,
+            parentCommentId,
+            TestConstants.Interactions.ValidCommentBody
         );
 
     private static async Task<ArticleEntity> SeedPublishedArticleAsync(ContentDbContext context)
