@@ -1,13 +1,8 @@
 using System.Reflection;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
 using _116.Tests.TestData.Constants;
 using _116.Tests.TestData.Helpers;
-using _116.Tests.TestData.Mocks;
 using Bogus;
 
 namespace _116.Identity.TestData.Builders.Entities;
@@ -50,6 +45,7 @@ public class SessionBuilder
         _absoluteExpiresAt = DateTime.UtcNow.AddDays(TestConstants.Session.DefaultAbsoluteLifetimeDays);
         _ipAddress = TestConstants.Session.ValidIpAddress;
         _userAgent = TestConstants.Session.ValidUserAgent;
+        _createdAt = DateTime.UtcNow;
     }
 
     /// <summary>
