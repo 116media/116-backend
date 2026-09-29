@@ -5,22 +5,8 @@ using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Content.TestData.Builders.Requests;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Mocks;
-using FluentValidation;
-using FluentValidation.Results;
 
 namespace _116.Content.Integration.Tests.Application.Editorial.UseCases.Public.Commands.ProposeTranslationRevision.V1;
 
@@ -37,7 +23,7 @@ public class PublicProposeTranslationRevisionEndpointV1Tests(PostgresFixture db)
 
         var response = await Client.PostAsJsonAsync(
             Routes.Public.Translations.Revisions(Guid.NewGuid()),
-            new PublicProposeTranslationRevisionRequest("New text", null)
+            new PublicProposeTranslationRevisionRequestBuilder().WithProposedText("New text").Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -50,7 +36,7 @@ public class PublicProposeTranslationRevisionEndpointV1Tests(PostgresFixture db)
 
         var response = await Client.PostAsJsonAsync(
             Routes.Public.Translations.Revisions(Guid.NewGuid()),
-            new PublicProposeTranslationRevisionRequest(string.Empty, null)
+            new PublicProposeTranslationRevisionRequestBuilder().WithProposedText(string.Empty).Build()
         );
 
         await response.ShouldBeValidationProblem(
@@ -66,7 +52,7 @@ public class PublicProposeTranslationRevisionEndpointV1Tests(PostgresFixture db)
 
         var response = await Client.PostAsJsonAsync(
             Routes.Public.Translations.Revisions(Guid.NewGuid()),
-            new PublicProposeTranslationRevisionRequest("New text", null)
+            new PublicProposeTranslationRevisionRequestBuilder().WithProposedText("New text").Build()
         );
 
         await response.ShouldBeProblem<NotFoundException>(
@@ -95,7 +81,7 @@ public class PublicProposeTranslationRevisionEndpointV1Tests(PostgresFixture db)
 
         var response = await Client.PostAsJsonAsync(
             Routes.Public.Translations.Revisions(translation.Id),
-            new PublicProposeTranslationRevisionRequest("A better translation", "Fixed a typo")
+            new PublicProposeTranslationRevisionRequestBuilder().WithEditSummary("Fixed a typo").Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
