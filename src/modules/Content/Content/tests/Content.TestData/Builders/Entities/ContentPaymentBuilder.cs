@@ -1,15 +1,6 @@
-using System.Reflection;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
-using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
 using _116.Tests.TestData.Constants;
-using _116.Tests.TestData.Helpers;
-using _116.Tests.TestData.Mocks;
 
 namespace _116.Content.TestData.Builders.Entities;
 
@@ -72,8 +63,7 @@ public class ContentPaymentBuilder
     }
 
     /// <summary>
-    /// Attaches the Order navigation EF Core populates through <c>.Include(p =&gt; p.Order)</c>,
-    /// and points the foreign key at the same order.
+    /// Points the payment's order foreign key at the given order.
     /// </summary>
     public ContentPaymentBuilder WithOrder(ContentOrderEntity order)
     {
