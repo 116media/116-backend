@@ -8,27 +8,15 @@ using _116.Content.Domain.Events;
 using _116.Content.Domain.Exceptions;
 using _116.Content.Domain.StateMachines;
 using _116.Content.TestData;
-using _116.Content.TestData.Builders.Entities;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
 using _116.Content.TestData.Mocks.Infrastructure;
 using _116.Content.TestData.Mocks.Repositories;
 using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
 using _116.Identity.TestData.Mocks.Infrastructure;
 using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.Application.Shared.Repositories;
-using _116.Storage.Application.Shared.Services;
 using _116.Storage.Contracts.Application.Services;
-using _116.Storage.TestData.Factories;
 using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData;
 using _116.Tests.TestData.Constants;
-using _116.Tests.TestData.Helpers;
-using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -67,19 +55,15 @@ public class AdminAttachYoutubeVideoUrlHandlerTests : BaseContentHandlerTest
     }
 
     /// <summary>
-    /// Builds a video carrying the Category navigation EF Core would populate, so the mapper can
-    /// read Category.Name.
+    /// Builds a video filed under a category, optionally with a shoot already scheduled.
     /// </summary>
     private static VideoEntity CreateVideoWithCategory(DateTimeOffset? shootingScheduledAt = null)
     {
-        var builder = new VideoBuilder(CategoryId).WithCategory(CategoryFactory.Create(CategoryId));
+        CategoryEntity category = CategoryFactory.Create(CategoryId);
 
-        if (shootingScheduledAt.HasValue)
-        {
-            builder.WithShootingScheduledAt(shootingScheduledAt.Value);
-        }
-
-        return builder.Build();
+        return shootingScheduledAt.HasValue
+            ? VideoFactory.CreateWithShootingScheduledAt(category, shootingScheduledAt.Value)
+            : VideoFactory.CreateWithCategory(category);
     }
 
     #region Success Cases
@@ -95,9 +79,7 @@ public class AdminAttachYoutubeVideoUrlHandlerTests : BaseContentHandlerTest
         );
 
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
-        _videoRepositoryMock
-            .Setup(x => x.GetByIdOrThrowAsync(video.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(video);
+        _videoRepositoryMock.SetupGetByIdOrThrow(video);
 
         // Act
         AdminAttachYoutubeVideoUrlResult result = await _handler.Handle(command, CancellationToken.None);
@@ -121,9 +103,7 @@ public class AdminAttachYoutubeVideoUrlHandlerTests : BaseContentHandlerTest
         );
 
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
-        _videoRepositoryMock
-            .Setup(x => x.GetByIdOrThrowAsync(video.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(video);
+        _videoRepositoryMock.SetupGetByIdOrThrow(video);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
@@ -194,9 +174,7 @@ public class AdminAttachYoutubeVideoUrlHandlerTests : BaseContentHandlerTest
             YoutubeVideoUrl: TestConstants.Video.ValidYoutubeVideoUrl
         );
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
-        _videoRepositoryMock
-            .Setup(x => x.GetByIdOrThrowAsync(video.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(video);
+        _videoRepositoryMock.SetupGetByIdOrThrow(video);
 
         // Act
         AdminAttachYoutubeVideoUrlResult result = await _handler.Handle(command, CancellationToken.None);
