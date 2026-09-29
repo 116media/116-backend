@@ -1,4 +1,3 @@
-using System.Reflection;
 using _116.Content.Domain.Entities;
 
 namespace _116.Content.TestData.Builders.Entities;
@@ -32,12 +31,10 @@ public class PlaylistVideoBuilder
     }
 
     /// <summary>
-    /// Attaches the Video navigation EF Core populates through <c>.Include(l =&gt; l.Video)</c>,
-    /// and points the foreign key at the same video.
+    /// Points the entry's video foreign key at the given video.
     /// </summary>
     public PlaylistVideoBuilder WithVideo(VideoEntity video)
     {
-        _videoId = video.Id;
         _videoId = video.Id;
         return this;
     }
