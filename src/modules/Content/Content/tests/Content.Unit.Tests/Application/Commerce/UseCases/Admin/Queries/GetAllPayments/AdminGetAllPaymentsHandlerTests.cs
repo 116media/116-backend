@@ -1,31 +1,17 @@
 using _116.BuildingBlocks.Application.Pagination;
-using _116.BuildingBlocks.Presentation.Constants;
 using _116.Content.Application.Commerce.Factories;
 using _116.Content.Application.Commerce.UseCases.Admin.Queries.GetAllPayments;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.TestData;
-using _116.Content.TestData.Builders.Entities;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
 using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
 using _116.Identity.Contracts.Application.DTOs;
 using _116.Identity.Contracts.Application.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
 using _116.Identity.TestData.Mocks.Services;
 using _116.Shared.Domain.Constants;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData;
 using _116.Tests.TestData.Constants;
-using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -58,7 +44,7 @@ public class AdminGetAllPaymentsHandlerTests : BaseContentHandlerTest
     public async Task Handle_ShouldReturnPaginatedResult()
     {
         // Arrange
-        ContentOrderEntity order = new ContentOrderBuilder().WithCustomer(_customer).Build();
+        ContentOrderEntity order = ContentOrderFactory.CreateForCustomer(_customer.Id);
         order.AttachPayment();
 
         List<ContentOrderEntity> orders = [order];
@@ -82,7 +68,7 @@ public class AdminGetAllPaymentsHandlerTests : BaseContentHandlerTest
     public async Task Handle_WithVerifiedPayment_ShouldResolveVerifierUserName()
     {
         // Arrange
-        ContentOrderEntity order = new ContentOrderBuilder().WithCustomer(_customer).Build();
+        ContentOrderEntity order = ContentOrderFactory.CreateForCustomer(_customer.Id);
         ContentPaymentEntity payment = order.AttachPayment();
         payment.AttachProof(proofFileId: Guid.NewGuid(), paymentMethod: EnumPaymentMethod.BankTransfer);
         payment.Verify(
@@ -128,7 +114,7 @@ public class AdminGetAllPaymentsHandlerTests : BaseContentHandlerTest
     public async Task Handle_WithUnverifiedPayment_ShouldNotCallUserLookup()
     {
         // Arrange
-        ContentOrderEntity order = new ContentOrderBuilder().WithCustomer(_customer).Build();
+        ContentOrderEntity order = ContentOrderFactory.CreateForCustomer(_customer.Id);
         order.AttachPayment();
 
         List<ContentOrderEntity> orders = [order];
