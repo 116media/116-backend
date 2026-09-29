@@ -3,19 +3,6 @@ using _116.Content.Application.Editorial.UseCases.Public.Queries.GetPromotedArti
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Mocks;
 
 namespace _116.Content.Integration.Tests.Application.Editorial.UseCases.Public.Queries.GetPromotedArticles.V1;
 
@@ -83,15 +70,15 @@ public class PublicGetPromotedArticlesEndpointV1Tests(PostgresFixture db) : Base
         {
             ArticleEntity entity = ArticleFactory.CreatePromoted(categoryId, promotionLevelId);
             ctx.Articles.Add(entity);
-            ctx.ArticleLikes.Add(ArticleLikeEntity.Create(Guid.NewGuid(), userId, entity.Id));
-            ctx.ArticleBookmarks.Add(ArticleBookmarkEntity.Create(Guid.NewGuid(), userId, entity.Id));
+            ctx.ArticleLikes.Add(ArticleLikeFactory.Create(userId, entity.Id));
+            ctx.ArticleBookmarks.Add(ArticleBookmarkFactory.Create(userId, entity.Id));
             return entity;
         });
         ArticleEntity otherUsersArticle = await SeedAsync<ContentDbContext, ArticleEntity>(ctx =>
         {
             ArticleEntity entity = ArticleFactory.CreatePromoted(categoryId, promotionLevelId);
             ctx.Articles.Add(entity);
-            ctx.ArticleLikes.Add(ArticleLikeEntity.Create(Guid.NewGuid(), otherUserId, entity.Id));
+            ctx.ArticleLikes.Add(ArticleLikeFactory.Create(otherUserId, entity.Id));
             return entity;
         });
 
