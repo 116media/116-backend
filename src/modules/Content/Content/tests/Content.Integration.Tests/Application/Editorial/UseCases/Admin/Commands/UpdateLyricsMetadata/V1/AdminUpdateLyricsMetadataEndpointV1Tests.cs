@@ -6,22 +6,8 @@ using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Constants;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Content.TestData.Builders.Requests;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Mocks;
-using FluentValidation;
-using FluentValidation.Results;
 
 namespace _116.Content.Integration.Tests.Application.Editorial.UseCases.Admin.Commands.UpdateLyricsMetadata.V1;
 
@@ -78,7 +64,7 @@ public class AdminUpdateLyricsMetadataEndpointV1Tests(PostgresFixture db) : Base
 
         var response = await Client.PutAsJsonAsync(
             Routes.Admin.Editorial.Metadata(EditorialRouteConstants.Lyrics, Guid.NewGuid()),
-            new AdminUpdateLyricsMetadataRequest(null, null, null, null, null)
+            new AdminUpdateLyricsMetadataRequestBuilder().Build()
         );
 
         await response.ShouldBeProblem<NotFoundException>(
@@ -93,13 +79,13 @@ public class AdminUpdateLyricsMetadataEndpointV1Tests(PostgresFixture db) : Base
         LyricsEntity lyrics = await SeedLyricsAsync();
         Client.AuthenticateAsSuperAdmin();
 
-        var request = new AdminUpdateLyricsMetadataRequest(
-            Album: "Testament",
-            ReleaseYear: 1995,
-            Label: "Sonodisc",
-            Songwriter: "Papa Wemba",
-            Producer: "Viviane Arnoux"
-        );
+        var request = new AdminUpdateLyricsMetadataRequestBuilder()
+            .WithAlbum("Testament")
+            .WithReleaseYear(1995)
+            .WithLabel("Sonodisc")
+            .WithSongwriter("Papa Wemba")
+            .WithProducer("Viviane Arnoux")
+            .Build();
 
         var response = await Client.PutAsJsonAsync(
             Routes.Admin.Editorial.Metadata(EditorialRouteConstants.Lyrics, lyrics.Id),
@@ -132,12 +118,18 @@ public class AdminUpdateLyricsMetadataEndpointV1Tests(PostgresFixture db) : Base
 
         await Client.PutAsJsonAsync(
             Routes.Admin.Editorial.Metadata(EditorialRouteConstants.Lyrics, lyrics.Id),
-            new AdminUpdateLyricsMetadataRequest("Album", 1990, "Label", "Songwriter", "Producer")
+            new AdminUpdateLyricsMetadataRequestBuilder()
+                .WithAlbum("Album")
+                .WithReleaseYear(1990)
+                .WithLabel("Label")
+                .WithSongwriter("Songwriter")
+                .WithProducer("Producer")
+                .Build()
         );
 
         var response = await Client.PutAsJsonAsync(
             Routes.Admin.Editorial.Metadata(EditorialRouteConstants.Lyrics, lyrics.Id),
-            new AdminUpdateLyricsMetadataRequest(null, 1990, null, "Songwriter", null)
+            new AdminUpdateLyricsMetadataRequestBuilder().WithReleaseYear(1990).WithSongwriter("Songwriter").Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -159,7 +151,7 @@ public class AdminUpdateLyricsMetadataEndpointV1Tests(PostgresFixture db) : Base
 
         var response = await Client.PutAsJsonAsync(
             Routes.Admin.Editorial.Metadata(EditorialRouteConstants.Lyrics, lyrics.Id),
-            new AdminUpdateLyricsMetadataRequest(null, 1899, null, null, null)
+            new AdminUpdateLyricsMetadataRequestBuilder().WithReleaseYear(1899).Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -171,13 +163,12 @@ public class AdminUpdateLyricsMetadataEndpointV1Tests(PostgresFixture db) : Base
         LyricsEntity lyrics = await SeedLyricsAsync();
         Client.AuthenticateAsSuperAdmin();
 
-        var request = new AdminUpdateLyricsMetadataRequest(
-            Album: new string('a', ContentConstants.MaxAlbumNameLength + 1),
-            ReleaseYear: null,
-            Label: new string('l', ContentConstants.MaxLabelNameLength + 1),
-            Songwriter: new string('s', ContentConstants.MaxCreditNameLength + 1),
-            Producer: new string('p', ContentConstants.MaxCreditNameLength + 1)
-        );
+        var request = new AdminUpdateLyricsMetadataRequestBuilder()
+            .WithAlbum(new string('a', ContentConstants.MaxAlbumNameLength + 1))
+            .WithLabel(new string('l', ContentConstants.MaxLabelNameLength + 1))
+            .WithSongwriter(new string('s', ContentConstants.MaxCreditNameLength + 1))
+            .WithProducer(new string('p', ContentConstants.MaxCreditNameLength + 1))
+            .Build();
 
         var response = await Client.PutAsJsonAsync(
             Routes.Admin.Editorial.Metadata(EditorialRouteConstants.Lyrics, lyrics.Id),
