@@ -1,0 +1,12 @@
+global using System.Net;
+global using System.Net.Http.Json;
+global using _116.Tests.Fixtures;
+global using _116.Tests.Fixtures.Base;
+global using _116.Tests.Fixtures.Extensions;
+global using static _116.Tests.TestData.Constants.TestConstants;
+global using _116.Tests.TestData.Routes;
+global using AwesomeAssertions;
+global using Microsoft.EntityFrameworkCore;
+global using Microsoft.Extensions.DependencyInjection;
+global using Xunit;
+global using TestUser = _116.Tests.TestData.Constants.TestConstants.User;

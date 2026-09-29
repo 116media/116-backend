@@ -31,25 +31,36 @@ OUT="${3:-coverage/comment.md}"
 CHANGED="${4:-}"
 
 python3 - "$UNIT_DIR" "$INT_DIR" "$OUT" "$CHANGED" <<'PY'
-import sys, glob, os
+import sys, glob, os, re
 import xml.etree.ElementTree as ET
 
 unit_dir, int_dir, out, changed_path = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
 
 
-def normalize(filename):
-    """Reduce any absolute/CI path to a repo-relative 'src/...' path."""
-    path = filename.replace("\\", "/").strip()
-    marker = path.find("/src/")
-    if marker != -1:
-        return path[marker + 1:]
-    return path
+def normalize(filename, source=""):
+    """Reduce a coverage path to a repo-relative 'src/...' path.
+
+    Cobertura stores each filename relative to the report's <source> root, which is the
+    repository's src directory, and a module path carries a second 'src' segment
+    (modules/Content/Content/src/...). Anchoring on the source root keeps both straight.
+    """
+    path = (filename or "").replace("\\", "/").strip()
+    if path.startswith("/"):
+        marker = path.find("/src/")
+        return path[marker + 1:] if marker != -1 else path
+    root = (source or "").replace("\\", "/").strip().rstrip("/")
+    anchor = re.search(r"/(src)(/|$)", root)
+    prefix = root[anchor.start() + 1:] if anchor else ""
+    return f"{prefix}/{path}" if prefix else path
 
 
 def is_ignored(name):
     """Paths excluded from coverage reporting (mirrors codecov.yml `ignore`)."""
     slashed = "/" + name
     if "/Migrations/" in slashed or "/tests/" in slashed:
+        return True
+    # The host composition root is wiring, reached only by suites that build the real host.
+    if name.startswith("src/host/"):
         return True
     if name.endswith(".Designer.cs") or name.endswith("Program.cs"):
         return True
@@ -58,24 +69,30 @@ def is_ignored(name):
 
 def collect(directory):
     """Map each source file to (covered_line_count, coverable_line_count)."""
-    covered, total = {}, {}
+    hits = {}
     pattern = os.path.join(directory, "**", "coverage.cobertura.xml")
     for report in glob.glob(pattern, recursive=True):
         try:
             root = ET.parse(report).getroot()
         except ET.ParseError:
             continue
+        source = next((s.text for s in root.iter("source") if s.text), "")
         for cls in root.iter("class"):
-            name = normalize(cls.get("filename", ""))
+            name = normalize(cls.get("filename") or "", source)
             if not name.startswith("src/") or is_ignored(name):
                 continue
             lines = cls.find("lines")
             if lines is None:
                 continue
-            hit = sum(1 for ln in lines.findall("line") if int(ln.get("hits", "0")) > 0)
-            count = len(lines.findall("line"))
-            covered[name] = covered.get(name, 0) + hit
-            total[name] = total.get(name, 0) + count
+            # A file is measured once per test project, so the reports are merged per line:
+            # a line counts as covered when any suite hit it. Summing instead would multiply
+            # the line count by the number of reports and read as a coverage gap.
+            seen = hits.setdefault(name, {})
+            for ln in lines.findall("line"):
+                number = int(ln.get("number"))
+                seen[number] = seen.get(number, False) or int(ln.get("hits", "0")) > 0
+    covered = {name: sum(1 for hit in lines.values() if hit) for name, lines in hits.items()}
+    total = {name: len(lines) for name, lines in hits.items()}
     return covered, total
 
 

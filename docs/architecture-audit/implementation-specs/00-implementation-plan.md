@@ -32,7 +32,7 @@ shippable work. **Rules of engagement:**
 - [ ] **Stage 15 — Domain model hardening (aggregate boundaries, guards, events)** → [`stage-15-domain-model-hardening.md`](stage-15-domain-model-hardening.md)
 - [ ] **Stage 16 — API contract & authorization hygiene** → [`stage-16-api-contract-hygiene.md`](stage-16-api-contract-hygiene.md)
 - [ ] **Stage 17 — Notifications, email & i18n overhaul** → [`stage-17-notifications-and-i18n.md`](stage-17-notifications-and-i18n.md)
-- [ ] **Stage 18 — Project restructure (SharedKernel/BuildingBlocks, layer projects, entity/behavior split)** → [`stage-18-project-restructure.md`](stage-18-project-restructure.md)
+- [ ] **Stage 18 — Project restructure (shared foundation, layer projects, per-module tests)** → [`stage-18-project-restructure.md`](stage-18-project-restructure.md)
 - [ ] **Stage 19 — Documentation restructure** → [`stage-19-documentation-restructure.md`](stage-19-documentation-restructure.md)
 - [ ] **Stage 20 — Layer boundary hardening (Npgsql out of Application, web stack out of Mailer.Domain)** → [`stage-20-layer-boundary-hardening.md`](stage-20-layer-boundary-hardening.md)
 
@@ -233,14 +233,18 @@ Small, isolated, high-urgency fixes with no cross-module surgery. Full code in t
 
 ### Stage 18 — Project restructure
 
-- [ ] Split `Shared` into `SharedKernel` + `BuildingBlocks.{Domain,Application,Infrastructure,Presentation}`
-      `[01 §1.9 / 02 §10 / study 08 / 09]`
-- [ ] Split each module into `Domain/Application/Infrastructure` (+ `Api`) projects; complete the
-      Core→Storage rename `[study 02 / 11 / 13]`
+- [ ] Split `Shared` into `Shared.Domain` (zero packages) + `BuildingBlocks.{Domain,Application,Infrastructure,Presentation}`
+      `[01 §1.9 / 02 §10 / study 08 / 09 / 12]`
+- [ ] Per-module tests: `<M>.TestData` + `<M>.Unit.Tests` + `<M>.Integration.Tests`; one
+      shared container across assemblies `[study 05, overruled by owner decision]`
+- [ ] Split **every module** into `Domain/Application/Infrastructure`; endpoints stay in
+      `Application` `[11, over study 02 / 07 — owner decision]`
+- [ ] Complete the Core→Storage rename, **schema included** (`ALTER SCHEMA core RENAME TO storage`);
+      `IImageColorService` stays, Mailer does not move in `[13 / study 02 / 11]`
 - [ ] Entity/behavior partial split (`Entities/` + `Behaviors/`) `[study 10]`
 - [ ] Demote junction/child entities from aggregate roots `[03 §1]`
 - [ ] `internal` by default; architecture-test allowlist → 0 `[02 §7]`
-- **PR:** `refactor(structure): shared kernel split, layer projects and the storage rename`
+- **PR:** `refactor(structure): shared foundation split, layer projects, per-module tests and the storage rename`
 
 ### Stage 19 — Documentation restructure
 

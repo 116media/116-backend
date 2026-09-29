@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <RootNamespace>_116.Tests.TestData</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="xunit.v3.extensibility.core" />
+        <PackageReference Include="AwesomeAssertions" />
+        <PackageReference Include="Moq" />
+        <PackageReference Include="Bogus" />
+        <PackageReference Include="Microsoft.Extensions.Localization" />
+        <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
+        <PackageReference Include="EFCore.NamingConventions" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="../../src/modules/Content/Content/src/Content.Domain/Content.Domain.csproj" />
+        <ProjectReference Include="../../src/modules/Content/Content/src/Content.Application/Content.Application.csproj" />
+        <ProjectReference Include="../../src/modules/Identity/Identity/src/Identity.Domain/Identity.Domain.csproj" />
+        <ProjectReference Include="../../src/modules/Identity/Identity/src/Identity.Application/Identity.Application.csproj" />
+        <ProjectReference Include="../../src/modules/Storage/Storage/src/Storage.Domain/Storage.Domain.csproj" />
+        <ProjectReference Include="../../src/modules/Storage/Storage/src/Storage.Application/Storage.Application.csproj" />
+    </ItemGroup>
+</Project>

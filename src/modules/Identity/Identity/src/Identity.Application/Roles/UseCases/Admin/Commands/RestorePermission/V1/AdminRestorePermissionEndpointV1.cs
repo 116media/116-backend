@@ -1,0 +1,68 @@
+using _116.BuildingBlocks.Application.CQRS;
+using _116.BuildingBlocks.Presentation.Constants.Authorization.Policies;
+using _116.BuildingBlocks.Presentation.Constants.RateLimit;
+using _116.BuildingBlocks.Presentation.Extensions;
+using _116.Identity.Application.Roles.Constants;
+using _116.Identity.Application.Shared.DTOs;
+using _116.Identity.Domain.Constants;
+using Carter;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+
+namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.RestorePermission.V1;
+
+/// <summary>
+/// Response model for successful permission restoration.
+/// </summary>
+/// <param name="Permission">The restored permission information.</param>
+public record AdminRestorePermissionResponse(PermissionDto Permission);
+
+/// <summary>
+/// Defines the admin restore permission endpoint.
+/// Handles restoring soft-deleted permissions.
+/// </summary>
+internal class AdminRestorePermissionEndpointV1 : ICarterModule
+{
+    /// <summary>
+    /// Configures the admin restore permission route within the API pipeline.
+    /// Maps the <c>/api/v1/admin/permissions/{id}/restore</c> endpoint to handle permission restore requests.
+    /// </summary>
+    /// <param name="app">The route builder used to register API endpoints.</param>
+    public void AddRoutes(IEndpointRouteBuilder app)
+    {
+        RouteGroupBuilder group = app.MapApiVersionGroup(1)
+            .MapGroup($"{IdentityConstants.Admin}/{PermissionRouteConstants.Endpoint}")
+            .WithTags($"{IdentityConstants.Admin}::{PermissionRouteConstants.Endpoint}");
+
+        group
+            .MapPatch(
+                $"{{id}}/{PermissionRouteConstants.Restore}",
+                async (string id, IDispatcher dispatcher, CancellationToken cancellationToken) =>
+                {
+                    var command = new AdminRestorePermissionCommand(PermissionId: id);
+
+                    AdminRestorePermissionResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
+
+                    var response = new AdminRestorePermissionResponse(Permission: result.Permission);
+                    return Results.Ok(value: response);
+                }
+            )
+            .WithName(endpointName: AdminRestorePermissionMetaField.RestorePermission.Name)
+            .WithSummary(summary: AdminRestorePermissionMetaField.RestorePermission.Summary)
+            .WithDescription(description: AdminRestorePermissionMetaField.RestorePermission.Description)
+            .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentManagement)
+            .ProducesValidationProblem()
+            .Produces<AdminRestorePermissionResponse>()
+            .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
+            .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
+            .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)
+            .ProducesProblem(statusCode: StatusCodes.Status404NotFound)
+            .ProducesProblem(statusCode: StatusCodes.Status409Conflict)
+            .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
+    }
+}

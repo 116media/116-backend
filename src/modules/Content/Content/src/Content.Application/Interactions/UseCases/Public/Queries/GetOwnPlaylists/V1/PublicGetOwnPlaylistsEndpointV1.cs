@@ -1,0 +1,58 @@
+using System.Security.Claims;
+using _116.BuildingBlocks.Application.CQRS;
+using _116.BuildingBlocks.Presentation.Constants.Authorization.Policies;
+using _116.BuildingBlocks.Presentation.Constants.RateLimit;
+using _116.BuildingBlocks.Presentation.Extensions;
+using _116.Content.Application.Interactions.Constants;
+using _116.Content.Application.Shared.DTOs;
+using _116.Content.Domain.Constants;
+using _116.Identity.Contracts.Application.Services;
+using Carter;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+
+namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetOwnPlaylists.V1;
+
+/// <summary>
+/// Defines the endpoint to get my playlists.
+/// </summary>
+internal class PublicGetOwnPlaylistsEndpointV1 : ICarterModule
+{
+    /// <inheritdoc />
+    public void AddRoutes(IEndpointRouteBuilder app)
+    {
+        RouteGroupBuilder group = app.MapApiVersionGroup(1)
+            .MapGroup($"{ContentConstants.Public}/{InteractionsRouteConstants.Playlists}")
+            .WithTags($"{ContentConstants.Public}::{InteractionsRouteConstants.Playlists}");
+
+        group
+            .MapGet(
+                "/",
+                async (
+                    ClaimsPrincipal user,
+                    IClaimsProvider claimsProvider,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
+                {
+                    Guid userId = claimsProvider.GetUserIdFromClaims(user: user);
+                    var query = new PublicGetOwnPlaylistsQuery(UserId: userId);
+
+                    PublicGetOwnPlaylistsResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
+                    return Results.Ok(result.Playlists);
+                }
+            )
+            .WithName(endpointName: PublicGetOwnPlaylistsMetaField.GetOwnPlaylists.Name)
+            .WithSummary(summary: PublicGetOwnPlaylistsMetaField.GetOwnPlaylists.Summary)
+            .WithDescription(description: PublicGetOwnPlaylistsMetaField.GetOwnPlaylists.Description)
+            .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
+            .Produces<IReadOnlyList<PlaylistDto>>(statusCode: StatusCodes.Status200OK)
+            .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
+            .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
+    }
+}

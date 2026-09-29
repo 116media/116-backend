@@ -1,0 +1,209 @@
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.Content.Application.Lookup.UseCases.Admin.Commands.UpdatePricingTier;
+using _116.Content.Application.Shared.Persistence;
+using _116.Content.Application.Shared.Repositories;
+using _116.Content.Domain.Entities;
+using _116.Content.TestData;
+using _116.Content.TestData.Factories;
+using _116.Content.TestData.Mocks.Infrastructure;
+using _116.Content.TestData.Mocks.Repositories;
+using _116.Identity.TestData.Mocks.Infrastructure;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Tests.TestData.Constants;
+using _116.Tests.TestData.Helpers;
+using AwesomeAssertions;
+using Moq;
+using Xunit;
+
+namespace _116.Content.Unit.Tests.Application.Lookup.UseCases.Admin.Commands.UpdatePricingTier;
+
+/// <summary>
+/// Unit tests for <see cref="AdminUpdatePricingTierHandler"/>.
+/// </summary>
+public class AdminUpdatePricingTierHandlerTests : BaseContentHandlerTest
+{
+    private readonly Mock<IPricingTierRepository> _pricingTierRepositoryMock;
+    private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
+    private readonly AdminUpdatePricingTierHandler _handler;
+
+    public AdminUpdatePricingTierHandlerTests()
+    {
+        _pricingTierRepositoryMock = MockPricingTierRepository.Create();
+        _unitOfWorkMock = MockContentUnitOfWork.Create();
+        _handler = new AdminUpdatePricingTierHandler(
+            _pricingTierRepositoryMock.Object,
+            _unitOfWorkMock.Object,
+            Mapper,
+            TestErrorsFactory.CreateContentI18n()
+        );
+    }
+
+    #region Success Cases
+
+    [Fact]
+    public async Task Handle_WithNewName_ShouldUpdateAndReturnDto()
+    {
+        // Arrange
+        PricingTierEntity existing = PricingTierFactory.CreateDefault();
+        string newName = TestConstants.PricingTier.AnotherValidName;
+        var command = new AdminUpdatePricingTierCommand(
+            Id: existing.Id.ToString(),
+            Name: newName,
+            Description: TestConstants.PricingTier.ValidDescription
+        );
+
+        _pricingTierRepositoryMock.SetupGetPricingTierByIdOrThrow(existing);
+        _pricingTierRepositoryMock.SetupPricingTierExistsByName(newName, false);
+
+        // Act
+        AdminUpdatePricingTierResult result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.PricingTier.Name.Should().Be(newName);
+        _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    [Fact]
+    public async Task Handle_WithSameName_ShouldAllowUpdateDespiteConflict()
+    {
+        // Arrange
+        string sameName = TestConstants.PricingTier.ValidName;
+        PricingTierEntity existing = PricingTierFactory.Create(sameName);
+        var command = new AdminUpdatePricingTierCommand(
+            Id: existing.Id.ToString(),
+            Name: sameName,
+            Description: TestConstants.PricingTier.ValidDescription
+        );
+
+        _pricingTierRepositoryMock.SetupGetPricingTierByIdOrThrow(existing);
+        _pricingTierRepositoryMock.SetupPricingTierExistsByName(sameName, true);
+
+        // Act
+        AdminUpdatePricingTierResult result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.PricingTier.Name.Should().Be(sameName);
+        _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    [Fact]
+    public async Task Handle_WithDescription_ShouldUpdateWithDescription()
+    {
+        // Arrange
+        PricingTierEntity existing = PricingTierFactory.CreateDefault();
+        string newName = TestConstants.PricingTier.AnotherValidName;
+        string description = TestConstants.PricingTier.ValidDescription;
+        var command = new AdminUpdatePricingTierCommand(
+            Id: existing.Id.ToString(),
+            Name: newName,
+            Description: description
+        );
+
+        _pricingTierRepositoryMock.SetupGetPricingTierByIdOrThrow(existing);
+        _pricingTierRepositoryMock.SetupPricingTierExistsByName(newName, false);
+
+        // Act
+        AdminUpdatePricingTierResult result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.PricingTier.Description.Should().Be(description);
+    }
+
+    #endregion
+
+    #region Failure Cases
+
+    [Fact]
+    public async Task Handle_WhenNotFound_ShouldThrowNotFoundException()
+    {
+        // Arrange
+        var nonExistentId = Guid.NewGuid();
+        var command = new AdminUpdatePricingTierCommand(
+            Id: nonExistentId.ToString(),
+            Name: TestConstants.PricingTier.ValidName,
+            Description: TestConstants.PricingTier.ValidDescription
+        );
+
+        _pricingTierRepositoryMock.SetupGetPricingTierByIdOrThrowNotFound(nonExistentId);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
+    }
+
+    [Fact]
+    public async Task Handle_WhenNameConflictWithDifferentEntity_ShouldThrowConflictException()
+    {
+        // Arrange
+        PricingTierEntity existing = PricingTierFactory.CreateDefault();
+        string conflictingName = TestConstants.PricingTier.AnotherValidName;
+        var command = new AdminUpdatePricingTierCommand(
+            Id: existing.Id.ToString(),
+            Name: conflictingName,
+            Description: TestConstants.PricingTier.ValidDescription
+        );
+
+        _pricingTierRepositoryMock.SetupGetPricingTierByIdOrThrow(existing);
+        _pricingTierRepositoryMock.SetupPricingTierExistsByName(conflictingName, true);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<ConflictException>();
+    }
+
+    [Fact]
+    public async Task Handle_WhenNameConflictWithDifferentEntity_ShouldNotCommit()
+    {
+        // Arrange
+        PricingTierEntity existing = PricingTierFactory.CreateDefault();
+        string conflictingName = TestConstants.PricingTier.AnotherValidName;
+        var command = new AdminUpdatePricingTierCommand(
+            Id: existing.Id.ToString(),
+            Name: conflictingName,
+            Description: TestConstants.PricingTier.ValidDescription
+        );
+
+        _pricingTierRepositoryMock.SetupGetPricingTierByIdOrThrow(existing);
+        _pricingTierRepositoryMock.SetupPricingTierExistsByName(conflictingName, true);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<ConflictException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
+    }
+
+    #endregion
+
+    #region Cancellation Token
+
+    [Fact]
+    public async Task Handle_WithCancellationToken_ShouldPassTokenToRepository()
+    {
+        // Arrange
+        PricingTierEntity existing = PricingTierFactory.CreateDefault();
+        string newName = TestConstants.PricingTier.AnotherValidName;
+        var command = new AdminUpdatePricingTierCommand(
+            Id: existing.Id.ToString(),
+            Name: newName,
+            Description: TestConstants.PricingTier.ValidDescription
+        );
+        using var cts = new CancellationTokenSource();
+
+        _pricingTierRepositoryMock.SetupGetPricingTierByIdOrThrow(existing);
+        _pricingTierRepositoryMock.SetupPricingTierExistsByName(newName, false);
+
+        // Act
+        await _handler.Handle(command, cts.Token);
+
+        // Assert
+        _unitOfWorkMock.Verify(x => x.CommitAsync(cts.Token), Times.Once);
+    }
+
+    #endregion
+}

@@ -1,0 +1,114 @@
+using _116.Identity.Domain.Entities;
+using _116.Tests.TestData.Constants;
+using _116.Tests.TestData.Helpers;
+using Bogus;
+
+namespace _116.Identity.TestData.Builders.Entities;
+
+/// <summary>
+/// Fluent builder for creating <see cref="PermissionEntity" /> instances in tests.
+/// Drives the real domain transitions, so every state it produces is one the application can reach.
+/// Use it for any shape a test needs; PermissionFactory only names chains three or more tests share.
+/// </summary>
+public class PermissionBuilder
+{
+    private readonly Faker _faker = TestFaker.Create();
+
+    private Guid _id;
+    private string _resource;
+    private string _action;
+    private string _description;
+    private bool _isActive = true;
+    private bool _isDeleted;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PermissionBuilder"/> class with random default values.
+    /// </summary>
+    public PermissionBuilder()
+    {
+        _id = Guid.NewGuid();
+        string word = _faker.Lorem.Word();
+        string prefix = word.Length > 4 ? word[..4] : word;
+        string unique = $"{prefix}{Guid.NewGuid():N}";
+        _resource = unique[..Math.Min(TestConstants.Permission.ResourceMaxLength, unique.Length)];
+        _action = _faker.PickRandom("read", "create", "update", "delete", "approve");
+        _description = _faker.Lorem.Sentence(wordCount: 5);
+    }
+
+    /// <summary>
+    /// Sets the permission ID.
+    /// </summary>
+    /// <param name="id">The permission identifier.</param>
+    /// <returns>The builder instance for chaining.</returns>
+    public PermissionBuilder WithId(Guid id)
+    {
+        _id = id;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the resource and action together.
+    /// </summary>
+    /// <param name="resource">The resource name.</param>
+    /// <param name="action">The action name.</param>
+    /// <returns>The builder instance for chaining.</returns>
+    public PermissionBuilder WithResourceAction(string resource, string action)
+    {
+        _resource = resource;
+        _action = action;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the permission description.
+    /// </summary>
+    /// <param name="description">The permission description.</param>
+    /// <returns>The builder instance for chaining.</returns>
+    public PermissionBuilder WithDescription(string description)
+    {
+        _description = description;
+        return this;
+    }
+
+    /// <summary>
+    /// Marks the permission as inactive.
+    /// </summary>
+    /// <returns>The builder instance for chaining.</returns>
+    public PermissionBuilder AsInactive()
+    {
+        _isActive = false;
+        return this;
+    }
+
+    /// <summary>
+    /// Marks the permission as soft-deleted.
+    /// </summary>
+    /// <returns>The builder instance for chaining.</returns>
+    public PermissionBuilder AsDeleted()
+    {
+        _isDeleted = true;
+        _isActive = false;
+        return this;
+    }
+
+    /// <summary>
+    /// Builds the <see cref="PermissionEntity"/> instance.
+    /// </summary>
+    /// <returns>A configured PermissionEntity instance.</returns>
+    public PermissionEntity Build()
+    {
+        var permission = PermissionEntity.Create(_id, _resource, _action, _description);
+
+        if (!_isActive)
+        {
+            permission.Deactivate();
+        }
+
+        if (_isDeleted)
+        {
+            permission.SoftDelete(now: DateTime.UtcNow);
+        }
+
+        return permission;
+    }
+}

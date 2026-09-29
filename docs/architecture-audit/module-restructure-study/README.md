@@ -1,5 +1,15 @@
 # Module Restructure Study
 
+> **Read [stage 18](../implementation-specs/stage-18-project-restructure.md) first if you are implementing.** It is the ruling document and it
+> overrules this study on two points: **integration tests are split per module** (the 4× container
+> cost priced here is removable — one reused container serves every assembly), and the shared
+> foundation is `Shared.Domain` + `BuildingBlocks.{Domain,Application,Infrastructure,Presentation}`.
+> Also overruled: the small-module exception — on the owner's decision **every** module is layer-split,
+> Storage and Mailer included. What still stands: endpoints stay in `Application`, and `<M>.Contracts`
+> sits at the module root. The built shape is drawn in
+> [03](03-full-target-structure.md). Counts here are historical: the solution is **15** projects
+> today, and stage 18 lands **39**.
+
 A deep, evidence-backed evaluation of two proposed structural changes to the backend:
 
 - **(A)** each module gets its own top-level folder with its own `src/` and `tests/`;

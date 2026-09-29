@@ -1,0 +1,41 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+        <NoWarn>$(NoWarn);xUnit1051</NoWarn>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <RootNamespace>_116.Architecture.Tests</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Content Include="KnownViolations.txt">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="NetArchTest.Rules" />
+        <PackageReference Include="xunit.v3" />
+        <PackageReference Include="xunit.runner.visualstudio">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" />
+
+        <PackageReference Include="AwesomeAssertions" />
+        <PackageReference Include="AwesomeAssertions.Analyzers">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="../../src/modules/Storage/Storage/src/Storage.Infrastructure/Storage.Infrastructure.csproj" />
+        <ProjectReference Include="../../src/modules/Identity/Identity/src/Identity.Infrastructure/Identity.Infrastructure.csproj" />
+        <ProjectReference Include="../../src/modules/Content/Content/src/Content.Infrastructure/Content.Infrastructure.csproj" />
+        <ProjectReference Include="../../src/modules/Mailer/Mailer/src/Mailer.Infrastructure/Mailer.Infrastructure.csproj" />
+        <ProjectReference Include="../../src/shared/src/BuildingBlocks.Presentation/BuildingBlocks.Presentation.csproj" />
+    </ItemGroup>
+</Project>

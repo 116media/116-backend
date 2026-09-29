@@ -272,9 +272,16 @@ directly there is nothing to map. Delete both in the same commit as each module'
 put the next module's internals there too. A change to `MaxStorageUrlLength` (a Core
 migration) recompiles all four modules.
 
+> **Update — `UserConstants` is no longer Identity-only.** It has since acquired
+> `DefaultLocale` / `SupportedLocales` / `MaxLocaleLength`, read by `LocalizationExtension`,
+> Mailer (4 sites) and Content (1). Those three stay global; only the other 26 members go home.
+> See [stage 18](implementation-specs/stage-18-project-restructure.md) D4.
+
 **Solution.** Move the five Identity constant files into `Identity/Domain/Constants/`
 (pure move, ~26 usings within Identity), mark `internal`. Move `FileConstants` into Core
-after §2.1 and expose only the values validators need via `Core.Contracts`. Keep
+after §2.1 and expose only the values validators need via `Core.Contracts` — measured in stage 18.6,
+that is five of its sixteen members: the video pair Content validates against and the avatar trio
+Identity validates against, which become `Storage.Contracts/Domain/Constants/FileUploadLimits.cs`. Keep
 `UserRolePolicies` in BuildingBlocks — inert cross-cutting routing strings are genuinely
 shared; document that BuildingBlocks holds only those.
 

@@ -1,0 +1,87 @@
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.ActivateShortVideo;
+using _116.Content.Application.Shared.Persistence;
+using _116.Content.Application.Shared.Repositories;
+using _116.Content.Domain.Entities;
+using _116.Content.TestData.Factories;
+using _116.Content.TestData.Mocks.Infrastructure;
+using _116.Content.TestData.Mocks.Repositories;
+using _116.Identity.TestData.Mocks.Infrastructure;
+using _116.Identity.TestData.Mocks.Repositories;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Tests.TestData.Helpers;
+using AwesomeAssertions;
+using Moq;
+using Xunit;
+
+namespace _116.Content.Unit.Tests.Application.Editorial.UseCases.Admin.Commands.ActivateShortVideo;
+
+/// <summary>
+/// Unit tests for <see cref="AdminActivateShortVideoHandler"/>.
+/// </summary>
+public class AdminActivateShortVideoHandlerTests
+{
+    private readonly Mock<IShortVideoRepository> _shortVideoRepositoryMock;
+    private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
+    private readonly AdminActivateShortVideoHandler _handler;
+
+    public AdminActivateShortVideoHandlerTests()
+    {
+        _shortVideoRepositoryMock = MockShortVideoRepository.Create();
+        _unitOfWorkMock = MockContentUnitOfWork.Create();
+        _handler = new AdminActivateShortVideoHandler(
+            _shortVideoRepositoryMock.Object,
+            _unitOfWorkMock.Object,
+            TestErrorsFactory.CreateContentI18n()
+        );
+    }
+
+    [Fact]
+    public async Task Handle_WhenShortVideoIsInactive_ShouldActivateAndReturnSuccess()
+    {
+        // Arrange
+        ShortVideoEntity shortVideo = ShortVideoFactory.CreateInactive();
+        var command = new AdminActivateShortVideoCommand(Id: shortVideo.Id.ToString());
+        _shortVideoRepositoryMock.SetupGetByIdOrThrow(shortVideo);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        shortVideo.IsActive.Should().BeTrue();
+        _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    [Fact]
+    public async Task Handle_WhenShortVideoAlreadyActive_ShouldThrowConflictException()
+    {
+        // Arrange
+        ShortVideoEntity shortVideo = ShortVideoFactory.Create();
+        var command = new AdminActivateShortVideoCommand(Id: shortVideo.Id.ToString());
+        _shortVideoRepositoryMock.SetupGetByIdOrThrow(shortVideo);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<ConflictException>();
+        shortVideo.IsActive.Should().BeTrue();
+        _unitOfWorkMock.VerifyCommitNotCalled();
+    }
+
+    [Fact]
+    public async Task Handle_WhenShortVideoNotFound_ShouldThrowNotFoundException()
+    {
+        // Arrange
+        Guid nonExistentId = Guid.NewGuid();
+        var command = new AdminActivateShortVideoCommand(Id: nonExistentId.ToString());
+        _shortVideoRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentId);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
+    }
+}

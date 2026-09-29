@@ -1,0 +1,25 @@
+{
+    "solution": {
+        "path": "../../../116_backend.sln",
+        "projects": [
+            "src/host/Api/Api.csproj",
+            "src/modules/Content/Content/src/Content.Application/Content.Application.csproj",
+            "src/modules/Content/Content/src/Content.Domain/Content.Domain.csproj",
+            "src/modules/Content/Content/src/Content.Infrastructure/Content.Infrastructure.csproj",
+            "src/modules/Content/Content/tests/Content.Integration.Tests/Content.Integration.Tests.csproj",
+            "src/modules/Content/Content/tests/Content.TestData/Content.TestData.csproj",
+            "src/modules/Content/Content/tests/Content.Unit.Tests/Content.Unit.Tests.csproj",
+            "src/shared/src/BuildingBlocks.Application/BuildingBlocks.Application.csproj",
+            "src/shared/src/BuildingBlocks.Domain/BuildingBlocks.Domain.csproj",
+            "src/shared/src/BuildingBlocks.Infrastructure/BuildingBlocks.Infrastructure.csproj",
+            "src/shared/src/BuildingBlocks.Presentation/BuildingBlocks.Presentation.csproj",
+            "src/shared/src/Shared.Domain/Shared.Domain.csproj",
+            "src/shared/tests/Shared.Integration.Tests/Shared.Integration.Tests.csproj",
+            "src/shared/tests/Shared.Unit.Tests/Shared.Unit.Tests.csproj",
+            "tests/Architecture.Tests/Architecture.Tests.csproj",
+            "tests/EndToEnd.Tests/EndToEnd.Tests.csproj",
+            "tests/Fixtures/Fixtures.csproj",
+            "tests/TestData/TestData.csproj"
+        ]
+    }
+}

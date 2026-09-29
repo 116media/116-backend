@@ -1,0 +1,232 @@
+using System.Net.Http.Headers;
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.Identity.Application.Auth.UseCases.Public.Commands.Login.V1;
+using _116.Identity.Application.Auth.UseCases.Public.Commands.SignOut.V1;
+using _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp.V1;
+using _116.Identity.Application.Shared.Errors.Messages;
+using _116.Identity.Application.User.UseCases.Public.Queries.GetOwnProfile.V1;
+using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.Enums;
+using _116.Identity.Infrastructure.Persistence;
+using _116.Identity.TestData.Factories;
+
+namespace _116.EndToEnd.Tests.Workflows;
+
+/// <summary>
+/// Cross-module workflow tests for the authentication lifecycle:
+/// signup → email verification → login → access protected endpoint.
+/// Signup issues no credentials; tokens only exist after the verified user logs in.
+/// </summary>
+[Collection("Database")]
+public class AuthenticationFlowTests(PostgresFixture db) : BaseApiTest(db)
+{
+    [Fact]
+    public async Task SignUp_PersistsTheUserUnverifiedAndReturnsNoTokens()
+    {
+        await SeedAsync<IdentityDbContext>(context =>
+            context.Roles.Add(RoleFactory.CreateWithId(Guid.NewGuid(), nameof(EnumCoreUserRole.Visitor)))
+        );
+
+        Client.ClearAuthentication();
+        Client.DefaultRequestHeaders.Add("X-Device-Id", Guid.NewGuid().ToString());
+
+        string email = $"flow-{Guid.NewGuid():N}@test.com";
+        string userName = $"u{Guid.NewGuid():N}"[..10];
+        var signupRequest = new PublicSignUpRequest(Email: email, UserName: userName, Password: TestAuth.ValidPassword);
+
+        HttpResponseMessage signupResponse = await Client.PostAsJsonAsync(Routes.Public.Auth.SignUp(), signupRequest);
+        signupResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        PublicSignUpResponse signupBody = await signupResponse.ReadAsAsync<PublicSignUpResponse>();
+        signupBody.VerificationRequired.Should().BeTrue();
+        signupBody.User.Email.Should().Be(email);
+        signupBody.User.UserName.Should().Be(userName);
+
+        string rawBody = await signupResponse.Content.ReadAsStringAsync();
+        rawBody.Should().NotContainAny("accessToken", "refreshToken");
+
+        await using IdentityDbContext verifyContext = CreateDbContext<IdentityDbContext>();
+        UserEntity? created = await verifyContext.Users.FirstOrDefaultAsync(u => u.Id == signupBody.User.Id);
+        created.Should().NotBeNull();
+        created!.IsVerified.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task Login_WithValidCredentials_ShouldReturnTokens()
+    {
+        await SeedAsync<IdentityDbContext>(context =>
+            context.Roles.Add(RoleFactory.CreateWithId(Guid.NewGuid(), nameof(EnumCoreUserRole.Visitor)))
+        );
+
+        Client.ClearAuthentication();
+        Client.DefaultRequestHeaders.Add("X-Device-Id", Guid.NewGuid().ToString());
+
+        string email = $"login-{Guid.NewGuid():N}@test.com";
+        string userName = $"u{Guid.NewGuid():N}"[..10];
+        var signupRequest = new PublicSignUpRequest(Email: email, UserName: userName, Password: TestAuth.ValidPassword);
+
+        HttpResponseMessage signupResponse = await Client.PostAsJsonAsync(Routes.Public.Auth.SignUp(), signupRequest);
+        signupResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        PublicSignUpResponse signupBody = await signupResponse.ReadAsAsync<PublicSignUpResponse>();
+        Guid userId = signupBody.User.Id;
+
+        await using (IdentityDbContext verifyContext = CreateDbContext<IdentityDbContext>())
+        {
+            var user = await verifyContext.Users.FirstAsync(u => u.Id == userId);
+            user.MarkAsVerified();
+            user.Activate();
+            await verifyContext.SaveChangesAsync();
+        }
+
+        var loginRequest = new PublicLoginRequest(Credentials: email, Password: TestAuth.ValidPassword);
+
+        HttpResponseMessage loginResponse = await Client.PostAsJsonAsync(Routes.Public.Auth.Login(), loginRequest);
+        loginResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        PublicLoginMobileResponse loginBody = await loginResponse.ReadAsAsync<PublicLoginMobileResponse>();
+        loginBody.AccessToken.Should().NotBeNullOrEmpty();
+        loginBody.RefreshToken.Should().NotBeNullOrEmpty();
+        loginBody.AccessToken.Split('.').Should().HaveCount(3);
+        loginBody.User.Id.Should().Be(userId);
+        loginBody.User.Email.Should().Be(email);
+    }
+
+    [Fact]
+    public async Task Login_ThenCallProtectedEndpointWithTheIssuedToken_ResolvesTheCaller()
+    {
+        await SeedAsync<IdentityDbContext>(context =>
+            context.Roles.Add(RoleFactory.CreateWithId(Guid.NewGuid(), nameof(EnumCoreUserRole.Visitor)))
+        );
+
+        Client.ClearAuthentication();
+        Client.DefaultRequestHeaders.Add("X-Device-Id", Guid.NewGuid().ToString());
+
+        string email = $"issued-{Guid.NewGuid():N}@test.com";
+        string userName = $"u{Guid.NewGuid():N}"[..10];
+        var signupRequest = new PublicSignUpRequest(Email: email, UserName: userName, Password: TestAuth.ValidPassword);
+
+        HttpResponseMessage signupResponse = await Client.PostAsJsonAsync(Routes.Public.Auth.SignUp(), signupRequest);
+        signupResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        await using (IdentityDbContext seedContext = CreateDbContext<IdentityDbContext>())
+        {
+            UserEntity user = await seedContext.Users.FirstAsync(u => u.Email == email);
+            user.MarkAsVerified();
+            user.Activate();
+            await seedContext.SaveChangesAsync();
+        }
+
+        var loginRequest = new PublicLoginRequest(Credentials: email, Password: TestAuth.ValidPassword);
+
+        HttpResponseMessage loginResponse = await Client.PostAsJsonAsync(Routes.Public.Auth.Login(), loginRequest);
+        loginResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        PublicLoginMobileResponse loginBody = await loginResponse.ReadAsAsync<PublicLoginMobileResponse>();
+        Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", loginBody.AccessToken);
+
+        HttpResponseMessage protectedResponse = await Client.GetAsync(Routes.Public.Me.Profile());
+
+        protectedResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        PublicGetOwnProfileResponse profile = await protectedResponse.ReadAsAsync<PublicGetOwnProfileResponse>();
+        profile.User.Email.Should().Be(email, "the endpoint resolved the caller from the issued token's claims");
+    }
+
+    [Fact]
+    public async Task Login_AfterSignOutOnTheSameDevice_ReactivatesTheRevokedSession()
+    {
+        await SeedAsync<IdentityDbContext>(context =>
+            context.Roles.Add(RoleFactory.CreateWithId(Guid.NewGuid(), nameof(EnumCoreUserRole.Visitor)))
+        );
+
+        Client.ClearAuthentication();
+        Client.DefaultRequestHeaders.Add("X-Device-Id", Guid.NewGuid().ToString());
+
+        string email = $"revive-{Guid.NewGuid():N}@test.com";
+        string userName = $"u{Guid.NewGuid():N}"[..10];
+        var signupRequest = new PublicSignUpRequest(Email: email, UserName: userName, Password: TestAuth.ValidPassword);
+        HttpResponseMessage signupResponse = await Client.PostAsJsonAsync(Routes.Public.Auth.SignUp(), signupRequest);
+        signupResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        Guid userId;
+        await using (IdentityDbContext seedContext = CreateDbContext<IdentityDbContext>())
+        {
+            UserEntity user = await seedContext.Users.FirstAsync(u => u.UserName == userName);
+            user.MarkAsVerified();
+            user.Activate();
+            await seedContext.SaveChangesAsync();
+            userId = user.Id;
+        }
+
+        var loginRequest = new PublicLoginRequest(Credentials: email, Password: TestAuth.ValidPassword);
+        HttpResponseMessage firstLogin = await Client.PostAsJsonAsync(Routes.Public.Auth.Login(), loginRequest);
+        firstLogin.StatusCode.Should().Be(HttpStatusCode.OK);
+        PublicLoginMobileResponse firstBody = await firstLogin.ReadAsAsync<PublicLoginMobileResponse>();
+
+        Guid sessionId;
+        await using (IdentityDbContext verifyContext = CreateDbContext<IdentityDbContext>())
+        {
+            SessionEntity session = await verifyContext.Sessions.SingleAsync(s => s.UserId == userId);
+            sessionId = session.Id;
+        }
+
+        Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", firstBody.AccessToken);
+        var signOutRequest = new PublicSignOutRequest(RefreshToken: firstBody.RefreshToken);
+        HttpResponseMessage signOutResponse = await Client.PostAsJsonAsync(
+            Routes.Public.Auth.SignOut(),
+            signOutRequest
+        );
+        signOutResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        await using (IdentityDbContext verifyContext = CreateDbContext<IdentityDbContext>())
+        {
+            (await verifyContext.Sessions.SingleAsync(s => s.Id == sessionId)).IsRevoked.Should().BeTrue();
+        }
+
+        // Act — logging in again on the same device revives the revoked session row
+        Client.DefaultRequestHeaders.Authorization = null;
+        HttpResponseMessage secondLogin = await Client.PostAsJsonAsync(Routes.Public.Auth.Login(), loginRequest);
+        secondLogin.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        await using IdentityDbContext finalContext = CreateDbContext<IdentityDbContext>();
+        SessionEntity revived = await finalContext.Sessions.SingleAsync(s => s.UserId == userId);
+        revived.Id.Should().Be(sessionId, "the (user, device) unique row is reused instead of inserted");
+        revived.IsRevoked.Should().BeFalse();
+        revived.RevokedAt.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task SignUp_WithDuplicateEmail_ShouldReturnConflict()
+    {
+        Client.ClearAuthentication();
+
+        var request = new PublicSignUpRequest(
+            Email: TestUser.SuperAdminEmail,
+            UserName: $"u{Guid.NewGuid():N}"[..10],
+            Password: TestAuth.ValidPassword
+        );
+
+        HttpResponseMessage response = await Client.PostAsJsonAsync(Routes.Public.Auth.SignUp(), request);
+
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<ConflictErrorMessage>(m => m.EmailAlreadyExists(TestUser.SuperAdminEmail))
+        );
+    }
+
+    [Fact]
+    public async Task Login_WithInvalidCredentials_ReturnsInvalidCredentialsUnauthorized()
+    {
+        Client.ClearAuthentication();
+
+        var request = new PublicLoginRequest(Credentials: "nonexistent@nobody.com", Password: TestAuth.ValidPassword);
+
+        HttpResponseMessage response = await Client.PostAsJsonAsync(Routes.Public.Auth.Login(), request);
+
+        await response.ShouldBeProblem<AuthenticationException>(
+            HttpStatusCode.Unauthorized,
+            Localized<AuthenticationErrorMessage>(m => m.InvalidCredentials())
+        );
+    }
+}

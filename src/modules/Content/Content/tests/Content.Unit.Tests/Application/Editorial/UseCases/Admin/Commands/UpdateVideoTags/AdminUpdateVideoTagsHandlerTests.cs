@@ -1,0 +1,264 @@
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateVideoTags;
+using _116.Content.Application.Shared.Persistence;
+using _116.Content.Application.Shared.Repositories;
+using _116.Content.Domain.Entities;
+using _116.Content.TestData.Factories;
+using _116.Content.TestData.Mocks.Infrastructure;
+using _116.Content.TestData.Mocks.Repositories;
+using _116.Identity.TestData.Mocks.Infrastructure;
+using _116.Identity.TestData.Mocks.Repositories;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using AwesomeAssertions;
+using Moq;
+using Xunit;
+
+namespace _116.Content.Unit.Tests.Application.Editorial.UseCases.Admin.Commands.UpdateVideoTags;
+
+/// <summary>
+/// Unit tests for <see cref="AdminUpdateVideoTagsHandler"/>.
+/// </summary>
+public class AdminUpdateVideoTagsHandlerTests
+{
+    private readonly Mock<IVideoRepository> _videoRepositoryMock;
+    private readonly Mock<ITagRepository> _tagRepositoryMock;
+    private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
+    private readonly AdminUpdateVideoTagsHandler _handler;
+
+    private static readonly Guid CategoryId = Guid.NewGuid();
+
+    public AdminUpdateVideoTagsHandlerTests()
+    {
+        _videoRepositoryMock = MockVideoRepository.Create();
+        _tagRepositoryMock = MockTagRepository.Create();
+        _unitOfWorkMock = MockContentUnitOfWork.Create();
+        _handler = new AdminUpdateVideoTagsHandler(
+            _videoRepositoryMock.Object,
+            _tagRepositoryMock.Object,
+            _unitOfWorkMock.Object
+        );
+    }
+
+    #region Success Cases
+
+    [Fact]
+    public async Task Handle_WhenEmptyTagNames_ShouldClearExistingTagsAndReturnSuccess()
+    {
+        // Arrange
+        VideoEntity video = VideoFactory.Create(CategoryId);
+        TagEntity existingTag = TagFactory.Create();
+        video.ReplaceTags([existingTag.Id]);
+        var command = new AdminUpdateVideoTagsCommand(VideoId: video.Id.ToString(), TagNames: new List<string>());
+
+        _videoRepositoryMock.SetupGetByIdOrThrow(video);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        video.Tags.Should().BeEmpty();
+        _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    [Fact]
+    public async Task Handle_WhenTagNamesMatchExistingTags_ShouldReuseExistingTagsAndReturnSuccess()
+    {
+        // Arrange
+        VideoEntity video = VideoFactory.Create(CategoryId);
+        TagEntity tag1 = TagFactory.Create("Fally Ipupa", "fally-ipupa");
+        TagEntity tag2 = TagFactory.Create("Kinshasa", "kinshasa");
+
+        var command = new AdminUpdateVideoTagsCommand(
+            VideoId: video.Id.ToString(),
+            TagNames: new List<string> { "Fally Ipupa", "Kinshasa" }
+        );
+
+        _videoRepositoryMock.SetupGetByIdOrThrow(video);
+        _tagRepositoryMock.SetupGetTagByName("Fally Ipupa", tag1);
+        _tagRepositoryMock.SetupGetTagByName("Kinshasa", tag2);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        video.Tags.Select(t => t.TagId).Should().BeEquivalentTo([tag1.Id, tag2.Id]);
+        video.Tags.Should().OnlyContain(t => t.VideoId == video.Id);
+        _tagRepositoryMock.VerifyAddTagNotCalled();
+        _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    [Fact]
+    public async Task Handle_WhenTagNamesAreNew_ShouldCreateTagsAndReturnSuccess()
+    {
+        // Arrange
+        VideoEntity video = VideoFactory.Create(CategoryId);
+
+        var command = new AdminUpdateVideoTagsCommand(
+            VideoId: video.Id.ToString(),
+            TagNames: new List<string> { "Afrobeats", "Rumba" }
+        );
+
+        _videoRepositoryMock.SetupGetByIdOrThrow(video);
+        _tagRepositoryMock.SetupGetTagByName("Afrobeats", null);
+        _tagRepositoryMock.SetupGetTagByName("Rumba", null);
+
+        var created = new List<TagEntity>();
+        _tagRepositoryMock
+            .Setup(x => x.AddAsync(Capture.In(created), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        created.Select(t => t.Name).Should().Equal("Afrobeats", "Rumba");
+        _tagRepositoryMock.Verify(
+            x => x.AddAsync(It.Is<TagEntity>(t => t.Name == "Afrobeats"), It.IsAny<CancellationToken>()),
+            Times.Once
+        );
+        _tagRepositoryMock.Verify(
+            x => x.AddAsync(It.Is<TagEntity>(t => t.Name == "Rumba"), It.IsAny<CancellationToken>()),
+            Times.Once
+        );
+        _tagRepositoryMock.Verify(
+            x => x.AddAsync(It.IsAny<TagEntity>(), It.IsAny<CancellationToken>()),
+            Times.Exactly(2)
+        );
+        video.Tags.Select(t => t.TagId).Should().BeEquivalentTo(created.Select(t => t.Id));
+        _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    [Fact]
+    public async Task Handle_WhenMixedExistingAndNewTagNames_ShouldUpsertAndReturnSuccess()
+    {
+        // Arrange
+        VideoEntity video = VideoFactory.Create(CategoryId);
+        TagEntity existingTag = TagFactory.Create("Fally Ipupa", "fally-ipupa");
+
+        var command = new AdminUpdateVideoTagsCommand(
+            VideoId: video.Id.ToString(),
+            TagNames: new List<string> { "Fally Ipupa", "NewArtist" }
+        );
+
+        _videoRepositoryMock.SetupGetByIdOrThrow(video);
+        _tagRepositoryMock.SetupGetTagByName("Fally Ipupa", existingTag);
+        _tagRepositoryMock.SetupGetTagByName("NewArtist", null);
+
+        var created = new List<TagEntity>();
+        _tagRepositoryMock
+            .Setup(x => x.AddAsync(Capture.In(created), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        created.Select(t => t.Name).Should().Equal("NewArtist");
+        _tagRepositoryMock.Verify(
+            x => x.AddAsync(It.Is<TagEntity>(t => t.Name == "NewArtist"), It.IsAny<CancellationToken>()),
+            Times.Once
+        );
+        _tagRepositoryMock.Verify(x => x.AddAsync(It.IsAny<TagEntity>(), It.IsAny<CancellationToken>()), Times.Once);
+        video.Tags.Select(t => t.TagId).Should().BeEquivalentTo([existingTag.Id, created[0].Id]);
+        _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    [Fact]
+    public async Task Handle_WhenTagNameHasDiacritics_ShouldSlugifyAndUpsertCorrectly()
+    {
+        // Arrange
+        VideoEntity video = VideoFactory.Create(CategoryId);
+
+        var command = new AdminUpdateVideoTagsCommand(
+            VideoId: video.Id.ToString(),
+            TagNames: new List<string> { "Café & Crème" }
+        );
+
+        _videoRepositoryMock.SetupGetByIdOrThrow(video);
+        _tagRepositoryMock.SetupGetTagByName("Café & Crème", null);
+
+        var created = new List<TagEntity>();
+        _tagRepositoryMock
+            .Setup(x => x.AddAsync(Capture.In(created), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        created.Should().ContainSingle();
+        created[0].Name.Should().Be("Café & Crème");
+        created[0].Slug.Value.Should().StartWith("cafe-creme-");
+        _tagRepositoryMock.Verify(
+            x =>
+                x.GetByNamesAsync(
+                    It.Is<IReadOnlyCollection<string>>(names => names.Contains("Café & Crème")),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Once
+        );
+    }
+
+    [Fact]
+    public async Task Handle_WhenExistingTagsPresent_ShouldRemoveThemBeforeAddingNew()
+    {
+        // Arrange
+        VideoEntity video = VideoFactory.Create(CategoryId);
+        TagEntity oldTag = TagFactory.Create();
+        video.ReplaceTags([oldTag.Id]);
+
+        TagEntity newTag = TagFactory.Create("Kinshasa", "kinshasa");
+
+        var command = new AdminUpdateVideoTagsCommand(
+            VideoId: video.Id.ToString(),
+            TagNames: new List<string> { "Kinshasa" }
+        );
+
+        _videoRepositoryMock.SetupGetByIdOrThrow(video);
+        _tagRepositoryMock.SetupGetTagByName("Kinshasa", newTag);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        video.Tags.Select(t => t.TagId).Should().BeEquivalentTo([newTag.Id]);
+        _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    #endregion
+
+    #region Failure Cases
+
+    [Fact]
+    public async Task Handle_WhenVideoNotFound_ShouldThrowNotFoundException()
+    {
+        // Arrange
+        Guid nonExistentId = Guid.NewGuid();
+        var command = new AdminUpdateVideoTagsCommand(VideoId: nonExistentId.ToString(), TagNames: new List<string>());
+        _videoRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentId);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
+    }
+
+    [Fact]
+    public async Task Handle_WhenVideoNotFound_ShouldNotModifyTagsOrCommit()
+    {
+        // Arrange
+        Guid nonExistentId = Guid.NewGuid();
+        var command = new AdminUpdateVideoTagsCommand(VideoId: nonExistentId.ToString(), TagNames: new List<string>());
+        _videoRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentId);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
+    }
+
+    #endregion
+}

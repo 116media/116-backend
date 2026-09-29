@@ -1,0 +1,95 @@
+using _116.Mailer.Application.Newsletter.OutboundEmails;
+using _116.Mailer.Application.Newsletter.UseCases.Public.Commands.SubscribeNewsletter;
+using _116.Mailer.Application.Shared.Persistence;
+using _116.Mailer.Application.Shared.Repositories;
+using _116.Mailer.Contracts.Application.OutboundEmails;
+using _116.Mailer.Domain.Entities;
+using _116.Mailer.TestData.Factories;
+using AwesomeAssertions;
+using Moq;
+using Xunit;
+
+namespace _116.Mailer.Unit.Tests.Application.Newsletter;
+
+/// <summary>
+/// Unit tests for <see cref="PublicSubscribeNewsletterHandler" /> covering the
+/// three subscription states and the enumeration-proof neutral result.
+/// </summary>
+public class PublicSubscribeNewsletterHandlerTests
+{
+    private readonly Mock<INewsletterRepository> _repository = new();
+    private readonly Mock<IMailerUnitOfWork> _unitOfWork = new();
+    private readonly Mock<IEmailDispatcher> _mailer = new();
+
+    private PublicSubscribeNewsletterHandler Handler => new(_repository.Object, _unitOfWork.Object, _mailer.Object);
+
+    [Fact]
+    public async Task Handle_NewAddress_ShouldPersistPendingSubscriberAndSendConfirmation()
+    {
+        _repository
+            .Setup(r => r.GetByEmailAsync("fan@example.com", It.IsAny<CancellationToken>()))
+            .ReturnsAsync((NewsletterSubscriberEntity?)null);
+
+        await Handler.Handle(new PublicSubscribeNewsletterCommand("fan@example.com"), CancellationToken.None);
+
+        _repository.Verify(
+            r => r.AddAsync(It.IsAny<NewsletterSubscriberEntity>(), It.IsAny<CancellationToken>()),
+            Times.Once
+        );
+        _unitOfWork.Verify(u => u.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _mailer.Verify(
+            d =>
+                d.DispatchAsync(
+                    It.Is<OutboundEmail>(msg =>
+                        msg.TemplateName == NewsletterEmailTemplates.NewsletterConfirm
+                        && msg.Class == EnumEmailClass.Transactional
+                        && msg.Tokens.ContainsKey("confirmUrl")
+                    ),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Once
+        );
+    }
+
+    [Fact]
+    public async Task Handle_UnsubscribedAddress_ShouldReissueConfirmationWithAFreshToken()
+    {
+        var existing = NewsletterSubscriberFactory.CreateUnsubscribed("fan@example.com");
+        string oldToken = existing.ConfirmationToken;
+
+        _repository
+            .Setup(r => r.GetByEmailAsync("fan@example.com", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(existing);
+
+        await Handler.Handle(new PublicSubscribeNewsletterCommand("fan@example.com"), CancellationToken.None);
+
+        existing.ConfirmationToken.Should().NotBe(oldToken);
+        _repository.Verify(
+            r => r.AddAsync(It.IsAny<NewsletterSubscriberEntity>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
+        _mailer.Verify(
+            d =>
+                d.DispatchAsync(
+                    It.Is<OutboundEmail>(msg => msg.TemplateName == NewsletterEmailTemplates.NewsletterConfirm),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Once
+        );
+    }
+
+    [Fact]
+    public async Task Handle_AlreadySubscribed_ShouldChangeNothingAndStillSucceed()
+    {
+        var existing = NewsletterSubscriberFactory.CreateConfirmed("fan@example.com");
+
+        _repository
+            .Setup(r => r.GetByEmailAsync("fan@example.com", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(existing);
+
+        await Handler.Handle(new PublicSubscribeNewsletterCommand("fan@example.com"), CancellationToken.None);
+
+        _unitOfWork.Verify(u => u.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
+        _mailer.VerifyNoOtherCalls();
+    }
+}

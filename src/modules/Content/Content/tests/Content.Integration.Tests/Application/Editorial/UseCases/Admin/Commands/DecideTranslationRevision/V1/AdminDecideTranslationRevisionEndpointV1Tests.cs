@@ -1,0 +1,222 @@
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.BuildingBlocks.Application.Exceptions.Messages;
+using _116.Content.Application.Shared.Errors.Messages;
+using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
+using _116.Content.Infrastructure.Persistence;
+using _116.Content.TestData.Builders.Requests;
+using _116.Content.TestData.Factories;
+using _116.Mailer.Contracts.Domain.Enums;
+using _116.Mailer.Domain.Entities;
+using _116.Mailer.Infrastructure.Persistence;
+
+namespace _116.Content.Integration.Tests.Application.Editorial.UseCases.Admin.Commands.DecideTranslationRevision.V1;
+
+/// <summary>
+/// Integration tests for the AdminDecideTranslationRevision endpoint.
+/// </summary>
+[Collection("Database")]
+public class AdminDecideTranslationRevisionEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
+{
+    [Fact]
+    public async Task DecideTranslationRevision_WithNoAuth_ReturnsUnauthorized()
+    {
+        Client.ClearAuthentication();
+
+        var response = await Client.PutAsJsonAsync(
+            Routes.Admin.Translations.Revision(Guid.NewGuid()),
+            new AdminDecideTranslationRevisionRequestBuilder().Build()
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task DecideTranslationRevision_AsVisitor_ReturnsForbidden()
+    {
+        Client.AuthenticateAsVisitor();
+
+        var response = await Client.PutAsJsonAsync(
+            Routes.Admin.Translations.Revision(Guid.NewGuid()),
+            new AdminDecideTranslationRevisionRequestBuilder().Build()
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task DecideTranslationRevision_AsAdmin_WithNonExistentRevision_ReturnsNotFound()
+    {
+        Client.AuthenticateAsAdmin();
+
+        var response = await Client.PutAsJsonAsync(
+            Routes.Admin.Translations.Revision(Guid.NewGuid()),
+            new AdminDecideTranslationRevisionRequestBuilder().Build()
+        );
+
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("LyricsTranslationRevision"))
+        );
+    }
+
+    [Fact]
+    public async Task DecideTranslationRevision_AdminAcceptsWithZeroVotes_BypassesTallyAndAppliesText()
+    {
+        (LyricsTranslationEntity translation, LyricsTranslationRevisionEntity revision) = await SeedAsync<
+            ContentDbContext,
+            (LyricsTranslationEntity, LyricsTranslationRevisionEntity)
+        >(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            CategoryEntity category = CategoryFactory.Create(contentType.Id);
+            LyricsEntity lyrics = LyricsFactory.CreatePublished(category.Id);
+            LyricsTranslationEntity translation = LyricsTranslationFactory.CreateWithText(
+                lyrics.Id,
+                "es",
+                "Original text"
+            );
+            LyricsTranslationRevisionEntity revision = LyricsTranslationRevisionFactory.Create(
+                translation.Id,
+                Guid.NewGuid(),
+                "Moderator-accepted text"
+            );
+            ctx.ContentTypes.Add(contentType);
+            ctx.Categories.Add(category);
+            ctx.Lyrics.Add(lyrics);
+            ctx.LyricsTranslations.Add(translation);
+            ctx.LyricsTranslationRevisions.Add(revision);
+            return (translation, revision);
+        });
+
+        Client.AuthenticateAsAdmin();
+
+        var response = await Client.PutAsJsonAsync(
+            Routes.Admin.Translations.Revision(revision.Id),
+            new AdminDecideTranslationRevisionRequestBuilder().Build()
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
+        LyricsTranslationRevisionEntity? persistedRevision = await ctx.LyricsTranslationRevisions.FindAsync(
+            revision.Id
+        );
+        LyricsTranslationEntity? persistedTranslation = await ctx.LyricsTranslations.FindAsync(translation.Id);
+
+        persistedRevision.Should().NotBeNull();
+        persistedRevision!.Status.Should().Be(EnumRevisionStatus.Accepted);
+        persistedRevision.DecidedByUserId.Should().Be(TestUser.AdminId);
+
+        persistedTranslation.Should().NotBeNull();
+        persistedTranslation!.Text.Should().Be("Moderator-accepted text");
+        persistedTranslation.Source.Should().Be(EnumTranslationSource.Community);
+    }
+
+    [Fact]
+    public async Task DecideTranslationRevision_AdminRejectsWithSomeApprovalVotes_BypassesTallyAndLeavesTranslationUnchanged()
+    {
+        (LyricsTranslationEntity translation, LyricsTranslationRevisionEntity revision) = await SeedAsync<
+            ContentDbContext,
+            (LyricsTranslationEntity, LyricsTranslationRevisionEntity)
+        >(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            CategoryEntity category = CategoryFactory.Create(contentType.Id);
+            LyricsEntity lyrics = LyricsFactory.CreatePublished(category.Id);
+            LyricsTranslationEntity translation = LyricsTranslationFactory.CreateWithText(
+                lyrics.Id,
+                "es",
+                "Original text"
+            );
+            LyricsTranslationRevisionEntity revision = LyricsTranslationRevisionFactory.Create(
+                translation.Id,
+                Guid.NewGuid(),
+                "Rejected proposed text"
+            );
+            LyricsTranslationVoteEntity vote = LyricsTranslationVoteFactory.CreateApprove(revision.Id);
+            ctx.ContentTypes.Add(contentType);
+            ctx.Categories.Add(category);
+            ctx.Lyrics.Add(lyrics);
+            ctx.LyricsTranslations.Add(translation);
+            ctx.LyricsTranslationRevisions.Add(revision);
+            ctx.LyricsTranslationVotes.Add(vote);
+            return (translation, revision);
+        });
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.PutAsJsonAsync(
+            Routes.Admin.Translations.Revision(revision.Id),
+            new AdminDecideTranslationRevisionRequestBuilder().WithAccept(false).Build()
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
+        LyricsTranslationRevisionEntity? persistedRevision = await ctx.LyricsTranslationRevisions.FindAsync(
+            revision.Id
+        );
+        LyricsTranslationEntity? persistedTranslation = await ctx.LyricsTranslations.FindAsync(translation.Id);
+
+        persistedRevision.Should().NotBeNull();
+        persistedRevision!.Status.Should().Be(EnumRevisionStatus.Rejected);
+        persistedRevision.DecidedByUserId.Should().Be(TestUser.SuperAdminId);
+
+        persistedTranslation.Should().NotBeNull();
+        persistedTranslation!.Text.Should().Be("Original text");
+    }
+
+    [Fact]
+    public async Task DecideTranslationRevision_AcceptedTwice_ReturnsConflictAndKeepsOneDecision()
+    {
+        LyricsTranslationRevisionEntity revision = await SeedAsync<ContentDbContext, LyricsTranslationRevisionEntity>(
+            ctx =>
+            {
+                ContentTypeEntity contentType = ContentTypeFactory.Create();
+                CategoryEntity category = CategoryFactory.Create(contentType.Id);
+                LyricsEntity lyrics = LyricsFactory.CreatePublished(category.Id);
+                LyricsTranslationEntity translation = LyricsTranslationFactory.CreateWithText(
+                    lyrics.Id,
+                    "es",
+                    "Original text"
+                );
+                LyricsTranslationRevisionEntity revision = LyricsTranslationRevisionFactory.Create(
+                    translation.Id,
+                    TestUser.VisitorId,
+                    "Accepted once only"
+                );
+                ctx.ContentTypes.Add(contentType);
+                ctx.Categories.Add(category);
+                ctx.Lyrics.Add(lyrics);
+                ctx.LyricsTranslations.Add(translation);
+                ctx.LyricsTranslationRevisions.Add(revision);
+                return revision;
+            }
+        );
+
+        Client.AuthenticateAsAdmin();
+
+        var first = await Client.PutAsJsonAsync(
+            Routes.Admin.Translations.Revision(revision.Id),
+            new AdminDecideTranslationRevisionRequestBuilder().Build()
+        );
+        first.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var second = await Client.PutAsJsonAsync(
+            Routes.Admin.Translations.Revision(revision.Id),
+            new AdminDecideTranslationRevisionRequestBuilder().Build()
+        );
+
+        await second.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<TranslationErrorMessage>(m => m.AlreadyDecided())
+        );
+
+        await using MailerDbContext mailerContext = CreateDbContext<MailerDbContext>();
+        List<NotificationEntity> notifications = await mailerContext
+            .Notifications.Where(n => n.UserId == TestUser.VisitorId)
+            .ToListAsync();
+        notifications.Should().ContainSingle(n => n.Type == EnumNotificationType.RevisionDecided);
+    }
+}

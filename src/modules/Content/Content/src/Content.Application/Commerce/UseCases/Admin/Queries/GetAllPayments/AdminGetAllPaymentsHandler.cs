@@ -1,0 +1,55 @@
+using _116.BuildingBlocks.Application.CQRS;
+using _116.BuildingBlocks.Application.Pagination;
+using _116.Content.Application.Commerce.Factories;
+using _116.Content.Application.Shared.DTOs;
+using _116.Content.Application.Shared.Mappers;
+using _116.Content.Application.Shared.Repositories;
+using _116.Content.Domain.Entities;
+using _116.Identity.Contracts.Application.Services;
+using MapsterMapper;
+
+namespace _116.Content.Application.Commerce.UseCases.Admin.Queries.GetAllPayments;
+
+/// <summary>
+/// Handles the <see cref="AdminGetAllPaymentsQuery" /> to retrieve a paginated list of payments.
+/// </summary>
+/// <param name="contentOrderRepository">Repository for content order data access operations.</param>
+/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="userLookup">Cross-module service for resolving admin user names.</param>
+public class AdminGetAllPaymentsHandler(
+    IContentOrderRepository contentOrderRepository,
+    IPaymentDtoFactory paymentDtoFactory
+) : IQueryHandler<AdminGetAllPaymentsQuery, AdminGetAllPaymentsResult>
+{
+    /// <inheritdoc />
+    public async Task<AdminGetAllPaymentsResult> Handle(
+        AdminGetAllPaymentsQuery query,
+        CancellationToken cancellationToken
+    )
+    {
+        int pageSize = query.PaginatedRequest.PageSize;
+        int pageIndex = query.PaginatedRequest.PageIndex;
+
+        (IReadOnlyList<ContentOrderEntity> orders, int totalCount) =
+            await contentOrderRepository.GetOrdersWithPaymentAsync(
+                page: pageIndex + 1,
+                pageSize: pageSize,
+                status: query.Status,
+                method: query.Method,
+                search: query.Search,
+                orderByAscending: false,
+                ct: cancellationToken
+            );
+
+        IReadOnlyList<PaymentSummaryDto> dtoList = await paymentDtoFactory.CreateManyAsync(orders, cancellationToken);
+
+        var paginatedResult = new PaginatedResult<PaymentSummaryDto>(
+            pageIndex: pageIndex,
+            pageSize: pageSize,
+            count: totalCount,
+            items: dtoList
+        );
+
+        return new AdminGetAllPaymentsResult(Payments: paginatedResult);
+    }
+}

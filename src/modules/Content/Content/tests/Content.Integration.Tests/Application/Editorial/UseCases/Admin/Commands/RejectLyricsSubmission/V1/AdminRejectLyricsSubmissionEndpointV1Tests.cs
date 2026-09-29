@@ -1,0 +1,138 @@
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.Content.Application.Shared.Errors.Messages;
+using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
+using _116.Content.Infrastructure.Persistence;
+using _116.Content.TestData.Builders.Requests;
+using _116.Content.TestData.Factories;
+using _116.Mailer.Contracts.Domain.Enums;
+using _116.Mailer.Domain.Entities;
+using _116.Mailer.Infrastructure.Persistence;
+using FluentValidation;
+
+namespace _116.Content.Integration.Tests.Application.Editorial.UseCases.Admin.Commands.RejectLyricsSubmission.V1;
+
+/// <summary>
+/// Integration tests for the AdminRejectLyricsSubmission endpoint.
+/// </summary>
+[Collection("Database")]
+public class AdminRejectLyricsSubmissionEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
+{
+    [Fact]
+    public async Task RejectLyricsSubmission_WithNoAuth_ReturnsUnauthorized()
+    {
+        Client.ClearAuthentication();
+
+        var response = await Client.PatchAsJsonAsync(
+            Routes.Admin.Lyrics.RejectSubmission(Guid.NewGuid()),
+            new AdminRejectLyricsSubmissionRequestBuilder().Build()
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task RejectLyricsSubmission_AsVisitor_ReturnsForbidden()
+    {
+        Client.AuthenticateAsVisitor();
+
+        var response = await Client.PatchAsJsonAsync(
+            Routes.Admin.Lyrics.RejectSubmission(Guid.NewGuid()),
+            new AdminRejectLyricsSubmissionRequestBuilder().Build()
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task RejectLyricsSubmission_AsAdmin_WithBlankNote_ReturnsBadRequest()
+    {
+        LyricsSubmissionEntity submission = await SeedAsync<ContentDbContext, LyricsSubmissionEntity>(ctx =>
+        {
+            LyricsSubmissionEntity submission = LyricsSubmissionFactory.Create();
+            ctx.LyricsSubmissions.Add(submission);
+            return submission;
+        });
+
+        Client.AuthenticateAsAdmin();
+
+        var response = await Client.PatchAsJsonAsync(
+            Routes.Admin.Lyrics.RejectSubmission(submission.Id),
+            new AdminRejectLyricsSubmissionRequestBuilder().WithNote(string.Empty).Build()
+        );
+
+        await response.ShouldBeValidationProblem(
+            "Note",
+            Localized<LyricsErrorMessage>(m => m.RejectionReasonRequired())
+        );
+    }
+
+    [Fact]
+    public async Task RejectLyricsSubmission_HappyPath_SetsStatusAndNoteWithoutCreatingLyrics()
+    {
+        LyricsSubmissionEntity submission = await SeedAsync<ContentDbContext, LyricsSubmissionEntity>(ctx =>
+        {
+            LyricsSubmissionEntity submission = LyricsSubmissionFactory.Create();
+            ctx.LyricsSubmissions.Add(submission);
+            return submission;
+        });
+
+        Client.AuthenticateAsAdmin();
+
+        var response = await Client.PatchAsJsonAsync(
+            Routes.Admin.Lyrics.RejectSubmission(submission.Id),
+            new AdminRejectLyricsSubmissionRequestBuilder()
+                .WithNote("Les paroles contiennent des erreurs de transcription.")
+                .Build()
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
+        LyricsSubmissionEntity? persisted = await ctx.LyricsSubmissions.FindAsync(submission.Id);
+
+        persisted.Should().NotBeNull();
+        persisted!.Status.Should().Be(EnumSubmissionStatus.Rejected);
+        persisted.ReviewNote.Should().Be("Les paroles contiennent des erreurs de transcription.");
+        persisted.ReviewedByUserId.Should().Be(TestUser.AdminId);
+        persisted.PublishedLyricsId.Should().BeNull();
+
+        bool anyLyricsCreated = await ctx.Lyrics.AnyAsync();
+        anyLyricsCreated.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task RejectLyricsSubmission_RejectedTwice_ReturnsConflictAndNotifiesOnce()
+    {
+        LyricsSubmissionEntity submission = await SeedAsync<ContentDbContext, LyricsSubmissionEntity>(ctx =>
+        {
+            LyricsSubmissionEntity submission = LyricsSubmissionFactory.Create(TestUser.VisitorId);
+            ctx.LyricsSubmissions.Add(submission);
+            return submission;
+        });
+
+        Client.AuthenticateAsAdmin();
+
+        var first = await Client.PatchAsJsonAsync(
+            Routes.Admin.Lyrics.RejectSubmission(submission.Id),
+            new AdminRejectLyricsSubmissionRequestBuilder().Build()
+        );
+        first.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var second = await Client.PatchAsJsonAsync(
+            Routes.Admin.Lyrics.RejectSubmission(submission.Id),
+            new AdminRejectLyricsSubmissionRequestBuilder().Build()
+        );
+
+        await second.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<SubmissionErrorMessage>(m => m.NotPending())
+        );
+
+        await using MailerDbContext mailerContext = CreateDbContext<MailerDbContext>();
+        List<NotificationEntity> notifications = await mailerContext
+            .Notifications.Where(n => n.UserId == TestUser.VisitorId)
+            .ToListAsync();
+        notifications.Should().ContainSingle(n => n.Type == EnumNotificationType.SubmissionDecided);
+    }
+}

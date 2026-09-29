@@ -68,7 +68,7 @@ grep -rl "^status: archived" docs --include="*.md" | grep -v docs/archive && exi
 | Rule | Enforced by |
 | --- | --- |
 | Modules touch other modules via Contracts only | `Architecture.Tests/ModuleBoundaryTests` |
-| Domain references only Shared.Kernel | `Architecture.Tests/LayerTests` |
+| Domain references only Shared.Domain + BuildingBlocks.Domain | `Architecture.Tests/LayerTests` |
 | One commit per handler | Stage 13 verification grep |
 ```
 

@@ -1,0 +1,175 @@
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.Content.Application.Catalog.UseCases.Admin.Commands.AddCategoryPricing;
+using _116.Content.Application.Shared.Persistence;
+using _116.Content.Application.Shared.Repositories;
+using _116.Content.Domain.Entities;
+using _116.Content.TestData;
+using _116.Content.TestData.Factories;
+using _116.Content.TestData.Mocks.Infrastructure;
+using _116.Content.TestData.Mocks.Repositories;
+using _116.Identity.TestData.Mocks.Infrastructure;
+using _116.Identity.TestData.Mocks.Repositories;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Tests.TestData.Constants;
+using _116.Tests.TestData.Helpers;
+using AwesomeAssertions;
+using Moq;
+using Xunit;
+
+namespace _116.Content.Unit.Tests.Application.Catalog.UseCases.Admin.Commands.AddCategoryPricing;
+
+/// <summary>
+/// Unit tests for <see cref="AdminAddCategoryPricingHandler"/>.
+/// </summary>
+public class AdminAddCategoryPricingHandlerTests : BaseContentHandlerTest
+{
+    private readonly Mock<ICategoryRepository> _categoryRepositoryMock;
+    private readonly Mock<IPricingTierRepository> _pricingTierRepositoryMock;
+    private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
+    private readonly AdminAddCategoryPricingHandler _handler;
+
+    public AdminAddCategoryPricingHandlerTests()
+    {
+        _categoryRepositoryMock = MockCategoryRepository.Create();
+        _pricingTierRepositoryMock = MockPricingTierRepository.Create();
+        _unitOfWorkMock = MockContentUnitOfWork.Create();
+        _handler = new AdminAddCategoryPricingHandler(
+            _categoryRepositoryMock.Object,
+            _pricingTierRepositoryMock.Object,
+            _unitOfWorkMock.Object,
+            Mapper,
+            TestErrorsFactory.CreateContentI18n()
+        );
+    }
+
+    #region Success Cases
+
+    [Fact]
+    public async Task Handle_WhenValidRequest_ShouldAddPricingAndReturnDto()
+    {
+        // Arrange
+        ContentTypeEntity contentType = ContentTypeFactory.Create();
+        CategoryEntity category = CategoryFactory.Create(contentType.Id);
+        PricingTierEntity pricingTier = PricingTierFactory.CreateDefault();
+        decimal priceUsd = TestConstants.CategoryPricing.ValidPriceUsd;
+
+        var command = new AdminAddCategoryPricingCommand(
+            CategoryId: category.Id.ToString(),
+            PricingTierId: pricingTier.Id,
+            PriceUsd: priceUsd
+        );
+
+        _categoryRepositoryMock.SetupGetByIdOrThrow(category);
+        _pricingTierRepositoryMock.SetupGetPricingTierByIdOrThrow(pricingTier);
+        // Act
+        AdminAddCategoryPricingResult result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.Pricing.TierId.Should().Be(pricingTier.Id);
+        result.Pricing.PriceUsd.Should().Be(priceUsd);
+
+        category.FindPricing(pricingTier.Id).Should().NotBeNull();
+        _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    #endregion
+
+    #region Failure Cases
+
+    [Fact]
+    public async Task Handle_WhenCategoryNotFound_ShouldThrowNotFoundException()
+    {
+        // Arrange
+        var nonExistentCategoryId = Guid.NewGuid();
+
+        var command = new AdminAddCategoryPricingCommand(
+            CategoryId: nonExistentCategoryId.ToString(),
+            PricingTierId: Guid.NewGuid(),
+            PriceUsd: TestConstants.CategoryPricing.ValidPriceUsd
+        );
+
+        _categoryRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentCategoryId);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
+    }
+
+    [Fact]
+    public async Task Handle_WhenPricingTierNotFound_ShouldThrowNotFoundException()
+    {
+        // Arrange
+        ContentTypeEntity contentType = ContentTypeFactory.Create();
+        CategoryEntity category = CategoryFactory.Create(contentType.Id);
+        var nonExistentTierId = Guid.NewGuid();
+
+        var command = new AdminAddCategoryPricingCommand(
+            CategoryId: category.Id.ToString(),
+            PricingTierId: nonExistentTierId,
+            PriceUsd: TestConstants.CategoryPricing.ValidPriceUsd
+        );
+
+        _categoryRepositoryMock.SetupGetByIdOrThrow(category);
+        _pricingTierRepositoryMock.SetupGetPricingTierByIdOrThrowNotFound(nonExistentTierId);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
+    }
+
+    [Fact]
+    public async Task Handle_WhenPricingTierInactive_ShouldThrowBadRequestException()
+    {
+        // Arrange
+        ContentTypeEntity contentType = ContentTypeFactory.Create();
+        CategoryEntity category = CategoryFactory.Create(contentType.Id);
+        PricingTierEntity inactiveTier = PricingTierFactory.CreateInactive();
+
+        var command = new AdminAddCategoryPricingCommand(
+            CategoryId: category.Id.ToString(),
+            PricingTierId: inactiveTier.Id,
+            PriceUsd: TestConstants.CategoryPricing.ValidPriceUsd
+        );
+
+        _categoryRepositoryMock.SetupGetByIdOrThrow(category);
+        _pricingTierRepositoryMock.SetupGetPricingTierByIdOrThrow(inactiveTier);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<BadRequestException>();
+    }
+
+    [Fact]
+    public async Task Handle_WhenPricingAlreadyExists_ShouldThrowConflictException()
+    {
+        // Arrange
+        ContentTypeEntity contentType = ContentTypeFactory.Create();
+        CategoryEntity category = CategoryFactory.Create(contentType.Id);
+        PricingTierEntity pricingTier = PricingTierFactory.CreateDefault();
+
+        var command = new AdminAddCategoryPricingCommand(
+            CategoryId: category.Id.ToString(),
+            PricingTierId: pricingTier.Id,
+            PriceUsd: TestConstants.CategoryPricing.ValidPriceUsd
+        );
+
+        _categoryRepositoryMock.SetupGetByIdOrThrow(category);
+        _pricingTierRepositoryMock.SetupGetPricingTierByIdOrThrow(pricingTier);
+
+        CategoryPricingFactory.Create(category, pricingTier.Id);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<ConflictException>();
+    }
+
+    #endregion
+}

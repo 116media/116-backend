@@ -1,5 +1,14 @@
 # 09 — SharedKernel vs BuildingBlocks: the rule, and the adapted structure
 
+> **Ruled on in [stage 18](../implementation-specs/stage-18-project-restructure.md).** The
+> four-project `BuildingBlocks` structure below is adopted. The `SharedKernel` name is replaced by
+> **`Shared.Domain`** ([12](../12-shared-kernel-and-buildingblocks.md) shows the DDD term does not
+> apply to base types). The open item this doc raises — "`Specification` → `BuildingBlocks.Domain`
+> … that one line in 08 should be reconciled" — is settled in favour of this doc. The dead-package
+> claim is corrected: measured, only `Bogus` is unused in `Shared/`; `Mapster` and
+> `StackExchange.Redis` are live.
+
+
 **The rule (adopted, non-negotiable):**
 
 - **`SharedKernel` = reusable DOMAIN concepts.** Things a domain expert would recognise, expressible
@@ -83,8 +92,8 @@ BuildingBlocks.Domain            (refs SharedKernel; System.Linq.Expressions onl
     ▲
 BuildingBlocks.Application       (refs SharedKernel + .Domain; FluentValidation, DI abstractions)
     ▲                     ▲
-BuildingBlocks.Infrastructure   BuildingBlocks.Presentation
-(refs .Application; EF,          (refs .Application; ASP.NET, Carter,
+BuildingBlocks.Infrastructure ◄─ BuildingBlocks.Presentation
+(refs .Application; EF,          (refs .Infrastructure; ASP.NET, Carter,
  Npgsql, Quartz, Redis)           Swashbuckle, Asp.Versioning)
 ```
 
@@ -226,10 +235,16 @@ BuildingBlocks.Application/
 │   └── ValidationExtensions.cs                 (exists, = IsValidGuid + hoisted ValidHttpUrl / ValidationUtils)
 ├── Dtos/
 │   └── AuditableDto.cs                         (exists)
-└── Constants/
-    ├── RateLimitPolicies.cs                    (exists)  # policy NAME registry (endpoints + wiring both see it here)
-    └── FileConstants.cs                        (exists)  # cross-module file/size/MIME rules
+└── Configurations/                          # env schema: EnvVar, EnvSchema, the 8 *Env schemas
+    └── (measured 18.2 — BaseModule reads DatabaseEnv, so it cannot sit above .Application)
 ```
+
+Two constants entries this doc placed here landed elsewhere, measured in stage 18: `RateLimitPolicies`
+is read by endpoint attributes and the policy wiring, both presentation, so it is
+`BuildingBlocks.Presentation/Constants/RateLimit/`; `FileConstants` is not cross-module — stage 18 D4
+splits it, the video and avatar upload limits going to `Storage.Contracts` and the locale trio to
+`Shared.Domain/Constants/LocaleConstants.cs` (measured in 18.4: a module's `Domain` reads `DefaultLocale`,
+and `Domain` sees no layer above `BuildingBlocks.Domain`).
 
 ### `BuildingBlocks.Infrastructure` — frameworks & drivers
 
@@ -263,7 +278,6 @@ BuildingBlocks.Infrastructure/
 │   ├── IDomainEventHandlerRegistry.cs          (exists)
 │   └── DomainEventHandlerRegistry.cs           (exists)
 ├── Security/
-│   ├── HttpCurrentActor.cs                     (exists)  # ICurrentActor impl
 │   └── Authorization/
 │       ├── PermissionRequirement.cs            (add)     # generic permission machinery (07 S3 — concrete roles stay in Identity)
 │       ├── PermissionAuthorizationHandler.cs   (add)
@@ -299,7 +313,7 @@ BuildingBlocks.Infrastructure/
 
 ```text
 BuildingBlocks.Presentation/
-├── BuildingBlocks.Presentation.csproj          # refs .Application; ASP.NET, Carter, Swashbuckle, Asp.Versioning
+├── BuildingBlocks.Presentation.csproj          # refs .Infrastructure (stage 18 D2); ASP.NET, Carter, Swashbuckle, Asp.Versioning
 ├── Endpoints/
 │   └── CarterRegistration.cs                   (exists, = CarterExtension)
 ├── Errors/
@@ -324,6 +338,14 @@ BuildingBlocks.Presentation/
 │   ├── SwaggerExtension.cs                      (exists)  # gate behind non-prod (08 §7)
 │   ├── SwaggerMiddlewareExtension.cs           (exists)
 │   └── EnumSchemaFilter.cs                     (exists)
+├── Security/
+│   ├── HttpCurrentActor.cs                     (exists)  # ICurrentActor impl — measured 18.2: IHttpContextAccessor + ClaimsPrincipal.FindFirstValue
+│   └── CurrentActorExtension.cs                (add)     # AddHttpCurrentActor(), carved out of BaseModule in 18.2
+├── RateLimiting/
+│   ├── RateLimitingExtension.cs                (exists)  # policy wiring
+│   ├── AccountRateLimiter.cs                   (exists)  # IAccountRateLimiter stays in .Application (its decorator is there)
+│   ├── RateLimitPartitioning.cs                (exists)
+│   └── {Fixed,Sliding}Window/TokenBucketBuilder.cs (exists)
 └── Metadata/
     └── RouteMetadata.cs                        (exists)
 ```

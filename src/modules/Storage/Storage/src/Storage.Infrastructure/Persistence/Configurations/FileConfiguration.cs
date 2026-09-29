@@ -1,0 +1,52 @@
+using _116.BuildingBlocks.Presentation.Constants;
+using _116.Storage.Domain.Constants;
+using _116.Storage.Domain.Entities;
+using _116.Storage.Domain.Enums;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
+namespace _116.Storage.Infrastructure.Persistence.Configurations;
+
+/// <summary>
+/// Entity Framework configuration for the FileEntity.
+/// Defines database mapping, constraints, and indexes for file management.
+/// </summary>
+public class FileConfiguration : IEntityTypeConfiguration<FileEntity>
+{
+    /// <summary>
+    /// Configures the FileEntity mapping and constraints.
+    /// </summary>
+    /// <param name="builder">The entity type builder used to configure the FileEntity</param>
+    public void Configure(EntityTypeBuilder<FileEntity> builder)
+    {
+        // Primary key
+        builder.HasKey(f => f.Id);
+
+        // Properties configuration
+        builder.Property(f => f.FileName).HasMaxLength(FileConstants.MaxFileNameLength).IsRequired();
+
+        builder.Property(f => f.OriginalFileName).HasMaxLength(FileConstants.MaxOriginalFileNameLength).IsRequired();
+
+        builder.Property(f => f.MimeType).HasMaxLength(FileConstants.MaxMimeTypeLength).IsRequired();
+
+        builder.Property(f => f.StorageUrl).HasMaxLength(FileConstants.MaxStorageUrlLength).IsRequired();
+
+        builder.Property(f => f.SizeInBytes).IsRequired();
+
+        builder.Property(f => f.StorageKey).HasMaxLength(FileConstants.MaxStorageKeyLength).IsRequired(false);
+
+        builder.Property(f => f.DominantColorHex).HasMaxLength(FileConstants.ColorHexLength).IsRequired(false);
+
+        builder.Property(f => f.ForegroundColorHex).HasMaxLength(FileConstants.ColorHexLength).IsRequired(false);
+
+        builder.Property(f => f.State).HasDefaultValue(EnumFileState.Stored).IsRequired();
+
+        builder.Property(f => f.DeletedAt).IsRequired(false);
+
+        // Indexes
+        // Unique among stored rows only; deleted and replaced rows keep their file_name.
+        builder.HasIndex(f => f.FileName).IsUnique().HasFilter("state = 0");
+
+        builder.HasIndex(f => f.State);
+    }
+}

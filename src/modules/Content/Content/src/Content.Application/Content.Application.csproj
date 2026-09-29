@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <RootNamespace>_116.Content.Application</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Content.Infrastructure" />
+        <InternalsVisibleTo Include="Content.Unit.Tests" />
+        <InternalsVisibleTo Include="Content.Integration.Tests" />
+        <InternalsVisibleTo Include="Content.TestData" />
+        <InternalsVisibleTo Include="Fixtures" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="../Content.Domain/Content.Domain.csproj" />
+        <ProjectReference Include="../../../../../shared/src/BuildingBlocks.Presentation/BuildingBlocks.Presentation.csproj" />
+        <ProjectReference Include="../../../../Identity/Identity.Contracts/Identity.Contracts.csproj" />
+        <ProjectReference Include="../../../../Mailer/Mailer.Contracts/Mailer.Contracts.csproj" />
+        <ProjectReference Include="../../../../Storage/Storage.Contracts/Storage.Contracts.csproj" />
+    </ItemGroup>
+</Project>

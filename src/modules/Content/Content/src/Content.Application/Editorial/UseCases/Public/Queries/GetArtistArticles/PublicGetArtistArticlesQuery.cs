@@ -1,0 +1,33 @@
+using _116.BuildingBlocks.Application.CQRS;
+using _116.BuildingBlocks.Application.Pagination;
+using _116.Content.Application.Shared.Cache;
+using _116.Content.Application.Shared.DTOs;
+
+namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetArtistArticles;
+
+/// <summary>
+/// Query for retrieving a page of published articles tagged to an artist, addressed by the
+/// artist's slug. Returns the articles module's own summary DTO so the client renders its
+/// existing article card — a bespoke news DTO would fork that card.
+/// </summary>
+/// <param name="Slug">The URL-safe slug of the artist profile.</param>
+/// <param name="Page">Pagination parameters for the article list.</param>
+public record PublicGetArtistArticlesQuery(string Slug, PaginatedRequest Page)
+    : IQuery<PublicGetArtistArticlesResult>,
+        ICacheableRequest
+{
+    /// <inheritdoc />
+    public string CacheKey => $"artist_articles:{Slug}:{Page.PageIndex}:{Page.PageSize}";
+
+    /// <inheritdoc />
+    public TimeSpan Ttl => TimeSpan.FromMinutes(10);
+
+    /// <inheritdoc />
+    public IReadOnlyList<string> CacheTags => [ContentCacheTags.Artists, ContentCacheTags.Articles];
+}
+
+/// <summary>
+/// Result of the <see cref="PublicGetArtistArticlesQuery" /> containing the paginated articles.
+/// </summary>
+/// <param name="Articles">The published articles tagged to the artist, newest first.</param>
+public record PublicGetArtistArticlesResult(PaginatedResult<PublicArticleSummaryDto> Articles);

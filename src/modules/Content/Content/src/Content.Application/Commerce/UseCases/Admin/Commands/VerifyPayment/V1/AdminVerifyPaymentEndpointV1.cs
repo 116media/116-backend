@@ -1,0 +1,84 @@
+using System.Security.Claims;
+using _116.BuildingBlocks.Application.CQRS;
+using _116.BuildingBlocks.Presentation.Constants.Authorization.Policies;
+using _116.BuildingBlocks.Presentation.Constants.RateLimit;
+using _116.BuildingBlocks.Presentation.Extensions;
+using _116.Content.Application.Commerce.Constants;
+using _116.Content.Domain.Constants;
+using _116.Identity.Contracts.Application.Services;
+using Carter;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+
+namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPayment.V1;
+
+/// <summary>
+/// Request model for verifying an order payment.
+/// </summary>
+/// <param name="ReceiptUrl">The URL of the official payment receipt.</param>
+internal record AdminVerifyPaymentRequest(string ReceiptUrl);
+
+/// <summary>
+/// Response model for verifying an order payment.
+/// </summary>
+/// <param name="IsSuccess">Indicates whether the payment was successfully verified.</param>
+public record AdminVerifyPaymentResponse(bool IsSuccess);
+
+/// <summary>
+/// Defines the admin verify payment endpoint.
+/// </summary>
+internal class AdminVerifyPaymentEndpointV1 : ICarterModule
+{
+    /// <inheritdoc />
+    public void AddRoutes(IEndpointRouteBuilder app)
+    {
+        RouteGroupBuilder group = app.MapApiVersionGroup(1)
+            .MapGroup($"{ContentConstants.Admin}/{CommerceRouteConstants.Orders}")
+            .WithTags($"{ContentConstants.Admin}::{CommerceRouteConstants.Orders}");
+
+        group
+            .MapPatch(
+                $"/{{id}}/{CommerceRouteConstants.Payment}/{CommerceRouteConstants.Verify}",
+                async (
+                    string id,
+                    AdminVerifyPaymentRequest request,
+                    ClaimsPrincipal user,
+                    IClaimsProvider claimsProvider,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
+                {
+                    Guid adminUserId = claimsProvider.GetUserIdFromClaims(user: user);
+
+                    var command = new AdminVerifyPaymentCommand(
+                        OrderId: id,
+                        ReceiptUrl: request.ReceiptUrl,
+                        AdminUserId: adminUserId
+                    );
+
+                    AdminVerifyPaymentResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
+
+                    var response = new AdminVerifyPaymentResponse(IsSuccess: result.IsSuccess);
+                    return Results.Ok(response);
+                }
+            )
+            .WithName(endpointName: AdminVerifyPaymentMetaField.VerifyPayment.Name)
+            .WithSummary(summary: AdminVerifyPaymentMetaField.VerifyPayment.Summary)
+            .WithDescription(description: AdminVerifyPaymentMetaField.VerifyPayment.Description)
+            .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
+            .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentManagement)
+            .ProducesValidationProblem()
+            .Produces<AdminVerifyPaymentResponse>(statusCode: StatusCodes.Status200OK)
+            .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
+            .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
+            .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)
+            .ProducesProblem(statusCode: StatusCodes.Status404NotFound)
+            .ProducesProblem(statusCode: StatusCodes.Status409Conflict)
+            .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
+    }
+}

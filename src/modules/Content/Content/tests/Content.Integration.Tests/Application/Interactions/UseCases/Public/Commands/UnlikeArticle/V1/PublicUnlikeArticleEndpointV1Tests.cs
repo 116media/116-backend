@@ -1,0 +1,83 @@
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.BuildingBlocks.Application.Exceptions.Messages;
+using _116.Content.Application.Shared.Errors.Messages;
+using _116.Content.Domain.Entities;
+using _116.Content.Infrastructure.Persistence;
+using _116.Content.TestData.Factories;
+
+namespace _116.Content.Integration.Tests.Application.Interactions.UseCases.Public.Commands.UnlikeArticle.V1;
+
+/// <summary>
+/// Integration tests for the PublicUnlikeArticle endpoint.
+/// </summary>
+[Collection("Database")]
+public class PublicUnlikeArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
+{
+    private async Task<ArticleEntity> SeedArticleAsync()
+    {
+        return await SeedAsync<ContentDbContext, ArticleEntity>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            ctx.ContentTypes.Add(contentType);
+            CategoryEntity category = CategoryFactory.Create(contentType.Id);
+            ctx.Categories.Add(category);
+            ArticleEntity article = ArticleFactory.CreatePublished(category.Id);
+            ctx.Articles.Add(article);
+            return article;
+        });
+    }
+
+    [Fact]
+    public async Task UnlikeArticle_WithNoAuth_ReturnsUnauthorized()
+    {
+        Client.ClearAuthentication();
+
+        var response = await Client.DeleteAsync(Routes.Public.Articles.Likes(Guid.NewGuid()));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task UnlikeArticle_AsVisitor_NonExistentArticle_ReturnsNotFound()
+    {
+        Client.AuthenticateAsVisitor();
+
+        var response = await Client.DeleteAsync(Routes.Public.Articles.Likes(Guid.NewGuid()));
+
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Article"))
+        );
+    }
+
+    [Fact]
+    public async Task UnlikeArticle_WhenLiked_RemovesLikeAndPersists()
+    {
+        ArticleEntity article = await SeedArticleAsync();
+        Client.AuthenticateAsVisitor();
+        await Client.PostAsync(Routes.Public.Articles.Likes(article.Id), null);
+
+        var response = await Client.DeleteAsync(Routes.Public.Articles.Likes(article.Id));
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+        await using var verifyDb = CreateDbContext<ContentDbContext>();
+        (await verifyDb.ArticleLikes.AnyAsync(l => l.ArticleId == article.Id && l.UserId == TestUser.VisitorId))
+            .Should()
+            .BeFalse();
+    }
+
+    [Fact]
+    public async Task UnlikeArticle_WhenNotLiked_ReturnsBadRequest()
+    {
+        ArticleEntity article = await SeedArticleAsync();
+        Client.AuthenticateAsVisitor();
+
+        var response = await Client.DeleteAsync(Routes.Public.Articles.Likes(article.Id));
+
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<ArticleInteractionErrorMessage>(m => m.LikeNotFound())
+        );
+    }
+}

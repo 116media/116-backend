@@ -1,0 +1,172 @@
+using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.Enums;
+using _116.Identity.TestData.Builders.Entities;
+using _116.Tests.TestData.Constants;
+
+namespace _116.Identity.TestData.Factories;
+
+/// <summary>
+/// Named aliases for <see cref="UserBuilder" /> chains that three or more tests share verbatim.
+/// A shape fewer tests need belongs at the call site as a builder chain, not here —
+/// factory names carry the combinatorics, and combinatorics multiply.
+/// </summary>
+public static class UserFactory
+{
+    /// <summary>
+    /// Creates a user with default random values.
+    /// </summary>
+    /// <returns>A new UserEntity with random values.</returns>
+    public static UserEntity Create() => new UserBuilder().Build();
+
+    /// <summary>
+    /// Creates a user with a specific email.
+    /// </summary>
+    /// <param name="email">The user's email address.</param>
+    /// <returns>A new UserEntity with the specified email.</returns>
+    public static UserEntity Create(string email) => new UserBuilder().WithEmail(email).Build();
+
+    /// <summary>
+    /// Creates a user with a specific email and username.
+    /// </summary>
+    /// <param name="email">The user's email address.</param>
+    /// <param name="userName">The user's username.</param>
+    /// <returns>A new UserEntity with the specified values.</returns>
+    public static UserEntity Create(string email, string userName) =>
+        new UserBuilder().WithEmail(email).WithUserName(userName).Build();
+
+    /// <summary>
+    /// Creates a user with a specific ID.
+    /// </summary>
+    /// <param name="id">The user identifier.</param>
+    /// <returns>A new UserEntity with the specified ID.</returns>
+    public static UserEntity CreateWithId(Guid id) => new UserBuilder().WithId(id).Build();
+
+    /// <summary>
+    /// Creates a user with a specific ID and email.
+    /// </summary>
+    /// <param name="id">The user identifier.</param>
+    /// <param name="email">The user's email address.</param>
+    /// <returns>A new UserEntity with the specified values.</returns>
+    public static UserEntity CreateWithId(Guid id, string email) =>
+        new UserBuilder().WithId(id).WithEmail(email).Build();
+
+    /// <summary>
+    /// Creates a verified and active user.
+    /// </summary>
+    /// <returns>A new verified and active UserEntity.</returns>
+    public static UserEntity CreateVerifiedActive() => new UserBuilder().AsVerified().AsActive().Build();
+
+    /// <summary>
+    /// Creates an unverified user.
+    /// </summary>
+    /// <returns>A new unverified UserEntity.</returns>
+    public static UserEntity CreateUnverified() => new UserBuilder().AsUnverified().Build();
+
+    /// <summary>
+    /// Creates an inactive user.
+    /// </summary>
+    /// <returns>A new inactive UserEntity.</returns>
+    public static UserEntity CreateInactive() => new UserBuilder().AsInactive().Build();
+
+    /// <summary>
+    /// Creates a user with a specific role.
+    /// </summary>
+    /// <param name="role">The role to assign.</param>
+    /// <returns>A new UserEntity with the specified role.</returns>
+    public static UserEntity CreateWithRole(RoleEntity role) =>
+        new UserBuilder().AsVerified().AsActive().WithRole(role).Build();
+
+    /// <summary>
+    /// Creates an external auth user (e.g., Google, Facebook).
+    /// </summary>
+    /// <param name="authProvider">The authentication provider.</param>
+    /// <returns>A new external auth UserEntity.</returns>
+    public static UserEntity CreateExternal(EnumAuthProvider authProvider) =>
+        new UserBuilder().WithAuthProvider(authProvider).AsVerified().Build();
+
+    /// <summary>
+    /// Creates an external auth user pinned to a known provider subject, user name and email —
+    /// the three values the external-linking tests assert on.
+    /// </summary>
+    /// <param name="authProvider">The authentication provider.</param>
+    /// <param name="providerSubjectId">The provider's subject identifier.</param>
+    /// <param name="userName">The user name.</param>
+    /// <param name="email">The email address.</param>
+    /// <returns>A new external auth UserEntity.</returns>
+    public static UserEntity CreateExternalWithSubject(
+        EnumAuthProvider authProvider,
+        string providerSubjectId,
+        string userName,
+        string email
+    ) =>
+        new UserBuilder()
+            .WithAuthProvider(authProvider)
+            .WithProviderSubjectId(providerSubjectId)
+            .WithUserName(userName)
+            .WithEmail(email)
+            .AsVerified()
+            .Build();
+
+    /// <summary>
+    /// Creates an external auth user whose provider shared no email address, so the
+    /// account has a usable identity but nothing to send mail to.
+    /// </summary>
+    /// <param name="authProvider">The authentication provider.</param>
+    /// <returns>A new external auth UserEntity with a null email.</returns>
+    public static UserEntity CreateExternalWithoutEmail(EnumAuthProvider authProvider) =>
+        new UserBuilder().WithAuthProvider(authProvider).WithoutEmail().AsVerified().Build();
+
+    /// <summary>
+    /// Creates a user with a phone number set.
+    /// </summary>
+    /// <param name="fullPhoneNumber">The full international phone number (e.g. "+1234567890").</param>
+    /// <param name="partialPhoneNumber">The partial/local phone number.</param>
+    /// <returns>A new UserEntity with phone number fields populated.</returns>
+    public static UserEntity CreateWithPhoneNumber(string fullPhoneNumber, string partialPhoneNumber) =>
+        new UserBuilder().WithPhoneNumber(fullPhoneNumber, partialPhoneNumber).Build();
+
+    /// <summary>
+    /// Creates a SuperAdmin user with the SuperAdmin role.
+    /// </summary>
+    /// <returns>A UserEntity with SuperAdmin role.</returns>
+    public static UserEntity CreateSuperAdmin()
+    {
+        RoleEntity superAdminRole = RoleFactory.CreateSuperAdmin();
+        return new UserBuilder()
+            .WithEmail(TestConstants.User.SuperAdminEmail)
+            .AsVerified()
+            .AsActive()
+            .WithRole(superAdminRole)
+            .Build();
+    }
+
+    /// <summary>
+    /// Creates an Admin user with the Admin role.
+    /// </summary>
+    /// <returns>A UserEntity with Admin role.</returns>
+    public static UserEntity CreateAdmin()
+    {
+        RoleEntity adminRole = RoleFactory.CreateAdmin();
+        return new UserBuilder()
+            .WithEmail(TestConstants.User.AdminEmail)
+            .AsVerified()
+            .AsActive()
+            .WithRole(adminRole)
+            .Build();
+    }
+
+    /// <summary>
+    /// Creates a Visitor user with the Visitor role.
+    /// </summary>
+    /// <returns>A UserEntity with Visitor role.</returns>
+    public static UserEntity CreateVisitor()
+    {
+        RoleEntity visitorRole = RoleFactory.CreateVisitor();
+        return new UserBuilder()
+            .WithEmail(TestConstants.User.VisitorEmail)
+            .AsVerified()
+            .AsActive()
+            .WithRole(visitorRole)
+            .Build();
+    }
+}

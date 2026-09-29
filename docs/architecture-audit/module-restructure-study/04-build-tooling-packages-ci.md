@@ -1,5 +1,9 @@
 # 04 — Build, Tooling, Packages & CI
 
+> **Counts here are historical.** The study framed the question as "13 projects → ~30". The
+> solution is **15** projects today and [stage 18](../implementation-specs/stage-18-project-restructure.md) lands **39** — every
+> module is layered (owner decision), and the growth is mostly test/fixture projects.
+
 The high-ROI part of this study. Independent of whether you split anything, three tooling moves capture
 most of the "organized, no drift, enforced" feeling — and two are prerequisites if you ever do split.
 

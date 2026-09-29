@@ -1,0 +1,65 @@
+using System.Security.Claims;
+using _116.BuildingBlocks.Application.CQRS;
+using _116.BuildingBlocks.Application.Pagination;
+using _116.BuildingBlocks.Presentation.Constants.Authorization.Policies;
+using _116.BuildingBlocks.Presentation.Constants.RateLimit;
+using _116.BuildingBlocks.Presentation.Extensions;
+using _116.Content.Application.Interactions.Constants;
+using _116.Content.Application.Shared.DTOs;
+using _116.Content.Domain.Constants;
+using _116.Identity.Contracts.Application.Services;
+using Carter;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+
+namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetOwnArticleBookmarks.V1;
+
+/// <summary>
+/// Defines the get my article bookmarks endpoint.
+/// </summary>
+internal class PublicGetOwnArticleBookmarksEndpointV1 : ICarterModule
+{
+    /// <inheritdoc />
+    public void AddRoutes(IEndpointRouteBuilder app)
+    {
+        RouteGroupBuilder group = app.MapApiVersionGroup(1)
+            .MapGroup($"{ContentConstants.Public}/{InteractionsRouteConstants.Articles}")
+            .WithTags($"{ContentConstants.Public}::{InteractionsRouteConstants.Articles}");
+
+        group
+            .MapGet(
+                $"/{InteractionsRouteConstants.Bookmarks}",
+                async (
+                    ClaimsPrincipal user,
+                    IClaimsProvider claimsProvider,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
+                    int pageIndex = 0,
+                    int pageSize = 10
+                ) =>
+                {
+                    Guid userId = claimsProvider.GetUserIdFromClaims(user: user);
+                    var paginatedRequest = new PaginatedRequest(pageIndex: pageIndex, pageSize: pageSize);
+                    var query = new PublicGetOwnArticleBookmarksQuery(
+                        UserId: userId,
+                        PaginatedRequest: paginatedRequest
+                    );
+
+                    PublicGetOwnArticleBookmarksResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
+                    return Results.Ok(result.Articles);
+                }
+            )
+            .WithName(endpointName: PublicGetOwnArticleBookmarksMetaField.GetOwnArticleBookmarks.Name)
+            .WithSummary(summary: PublicGetOwnArticleBookmarksMetaField.GetOwnArticleBookmarks.Summary)
+            .WithDescription(description: PublicGetOwnArticleBookmarksMetaField.GetOwnArticleBookmarks.Description)
+            .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
+            .Produces<PaginatedResult<UserBookmarkedArticleDto>>(statusCode: StatusCodes.Status200OK)
+            .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
+            .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
+    }
+}

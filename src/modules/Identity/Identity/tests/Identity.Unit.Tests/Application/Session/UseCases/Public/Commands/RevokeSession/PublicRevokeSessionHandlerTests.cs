@@ -1,0 +1,246 @@
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.Identity.Application.Session.Repositories;
+using _116.Identity.Application.Session.UseCases.Public.Commands.RevokeSession;
+using _116.Identity.Application.Shared.Errors.Facade;
+using _116.Identity.Application.Shared.Persistence;
+using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.Enums;
+using _116.Identity.TestData.Factories;
+using _116.Identity.TestData.Mocks.Infrastructure;
+using _116.Identity.TestData.Mocks.Repositories;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Tests.TestData.Helpers;
+using AwesomeAssertions;
+using Moq;
+using Xunit;
+
+namespace _116.Identity.Unit.Tests.Application.Session.UseCases.Public.Commands.RevokeSession;
+
+/// <summary>
+/// Unit tests for <see cref="PublicRevokeSessionHandler"/>.
+/// </summary>
+public class PublicRevokeSessionHandlerTests
+{
+    private readonly Mock<ISessionRepository> _sessionRepositoryMock;
+    private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
+    private readonly PublicRevokeSessionHandler _handler;
+
+    public PublicRevokeSessionHandlerTests()
+    {
+        _sessionRepositoryMock = MockSessionRepository.Create();
+        _unitOfWorkMock = MockIdentityUnitOfWork.Create();
+
+        IdentityI18n identityI18n = TestErrorsFactory.CreateIdentityI18n();
+
+        _handler = new PublicRevokeSessionHandler(_sessionRepositoryMock.Object, _unitOfWorkMock.Object, identityI18n);
+    }
+
+    #region Success Cases
+
+    [Fact]
+    public async Task Handle_WithValidSessionBelongingToUser_ShouldReturnSuccess()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        SessionEntity session = SessionFactory.Create(userId);
+        PublicRevokeSessionCommand command = new(UserId: userId, SessionId: session.Id.ToString());
+
+        _sessionRepositoryMock.SetupGetById(session);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        _sessionRepositoryMock.VerifyRevokeCalled(session.Id);
+        _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    [Fact]
+    public async Task Handle_ShouldCallRevokeAsync()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        SessionEntity session = SessionFactory.Create(userId);
+        PublicRevokeSessionCommand command = new(UserId: userId, SessionId: session.Id.ToString());
+
+        _sessionRepositoryMock.SetupGetById(session);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        _sessionRepositoryMock.VerifyRevokeCalled(session.Id);
+    }
+
+    [Fact]
+    public async Task Handle_ShouldCommitUnitOfWork()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        SessionEntity session = SessionFactory.Create(userId);
+        PublicRevokeSessionCommand command = new(UserId: userId, SessionId: session.Id.ToString());
+
+        _sessionRepositoryMock.SetupGetById(session);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    #endregion
+
+    #region Failure Cases
+
+    [Fact]
+    public async Task Handle_WhenSessionNotFound_ShouldThrowNotFoundException()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
+        PublicRevokeSessionCommand command = new(UserId: userId, SessionId: sessionId.ToString());
+
+        _sessionRepositoryMock.SetupGetByIdReturnsNull(sessionId);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
+    }
+
+    [Fact]
+    public async Task Handle_WhenSessionBelongsToAnotherUser_ShouldThrowNotFoundException()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var anotherUserId = Guid.NewGuid();
+        SessionEntity session = SessionFactory.Create(anotherUserId);
+        PublicRevokeSessionCommand command = new(UserId: userId, SessionId: session.Id.ToString());
+
+        _sessionRepositoryMock.SetupGetById(session);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
+    }
+
+    [Fact]
+    public async Task Handle_WhenSessionNotFound_ShouldNotCallRevoke()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
+        PublicRevokeSessionCommand command = new(UserId: userId, SessionId: sessionId.ToString());
+
+        _sessionRepositoryMock.SetupGetByIdReturnsNull(sessionId);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
+        _sessionRepositoryMock.Verify(
+            x => x.RevokeAsync(It.IsAny<Guid>(), It.IsAny<EnumSessionRevokeReason>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
+    }
+
+    [Fact]
+    public async Task Handle_WhenSessionNotFound_ShouldNotCommit()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
+        PublicRevokeSessionCommand command = new(UserId: userId, SessionId: sessionId.ToString());
+
+        _sessionRepositoryMock.SetupGetByIdReturnsNull(sessionId);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
+    }
+
+    [Fact]
+    public async Task Handle_WithInvalidGuid_ShouldThrowFormatException()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        PublicRevokeSessionCommand command = new(UserId: userId, SessionId: "invalid-guid");
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<FormatException>();
+    }
+
+    #endregion
+
+    #region Cancellation Token Tests
+
+    [Fact]
+    public async Task Handle_WithCancellationToken_ShouldPassToGetByIdAsync()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        SessionEntity session = SessionFactory.Create(userId);
+        PublicRevokeSessionCommand command = new(UserId: userId, SessionId: session.Id.ToString());
+        using CancellationTokenSource cts = new();
+
+        _sessionRepositoryMock.SetupGetById(session);
+
+        // Act
+        await _handler.Handle(command, cts.Token);
+
+        // Assert
+        _sessionRepositoryMock.Verify(x => x.GetByIdAsync(session.Id, cts.Token), Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_WithCancellationToken_ShouldPassToRevokeAsync()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        SessionEntity session = SessionFactory.Create(userId);
+        PublicRevokeSessionCommand command = new(UserId: userId, SessionId: session.Id.ToString());
+        using CancellationTokenSource cts = new();
+
+        _sessionRepositoryMock.SetupGetById(session);
+
+        // Act
+        await _handler.Handle(command, cts.Token);
+
+        // Assert
+        _sessionRepositoryMock.Verify(
+            x => x.RevokeAsync(session.Id, It.IsAny<EnumSessionRevokeReason>(), cts.Token),
+            Times.Once
+        );
+    }
+
+    [Fact]
+    public async Task Handle_WithCancellationToken_ShouldPassToUnitOfWork()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        SessionEntity session = SessionFactory.Create(userId);
+        PublicRevokeSessionCommand command = new(UserId: userId, SessionId: session.Id.ToString());
+        using CancellationTokenSource cts = new();
+
+        _sessionRepositoryMock.SetupGetById(session);
+
+        // Act
+        await _handler.Handle(command, cts.Token);
+
+        // Assert
+        _unitOfWorkMock.Verify(x => x.CommitAsync(cts.Token), Times.Once);
+    }
+
+    #endregion
+}

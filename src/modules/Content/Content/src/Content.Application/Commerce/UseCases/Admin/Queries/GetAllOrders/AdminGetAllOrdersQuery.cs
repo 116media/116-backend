@@ -1,0 +1,26 @@
+using _116.BuildingBlocks.Application.CQRS;
+using _116.BuildingBlocks.Application.Pagination;
+using _116.Content.Application.Shared.DTOs;
+using _116.Content.Domain.Enums;
+
+namespace _116.Content.Application.Commerce.UseCases.Admin.Queries.GetAllOrders;
+
+/// <summary>
+/// Query for retrieving a paginated list of orders with optional status, customer, and search filters.
+/// </summary>
+/// <param name="PaginatedRequest">Pagination parameters.</param>
+/// <param name="Status">Optional filter by order status.</param>
+/// <param name="CustomerId">Optional filter by customer identifier.</param>
+/// <param name="Search">Optional search term matching customer name, email, or company.</param>
+public record AdminGetAllOrdersQuery(
+    PaginatedRequest PaginatedRequest,
+    EnumOrderStatus? Status,
+    Guid? CustomerId,
+    string? Search = null
+) : IQuery<AdminGetAllOrdersResult>;
+
+/// <summary>
+/// Result of the <see cref="AdminGetAllOrdersQuery" /> containing paginated order summaries.
+/// </summary>
+/// <param name="Orders">Paginated result containing order summary DTOs.</param>
+public record AdminGetAllOrdersResult(PaginatedResult<ContentOrderSummaryDto> Orders);

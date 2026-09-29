@@ -71,3 +71,4 @@ nunit-*.xml
 
 # Test coverage
 coverage/
+TestResults/

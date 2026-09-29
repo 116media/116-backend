@@ -1,0 +1,96 @@
+using _116.BuildingBlocks.Application.CQRS;
+using _116.BuildingBlocks.Presentation.Constants.Authorization.Policies;
+using _116.BuildingBlocks.Presentation.Constants.RateLimit;
+using _116.BuildingBlocks.Presentation.Extensions;
+using _116.BuildingBlocks.Presentation.Utils;
+using _116.Content.Application.Lookup.Constants;
+using _116.Content.Application.Shared.DTOs;
+using _116.Content.Domain.Constants;
+using Carter;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+
+namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.CreatePromotionLevel.V1;
+
+/// <summary>
+/// Request model for creating a promotion level.
+/// </summary>
+/// <param name="Name">The display name of the promotion level.</param>
+/// <param name="DurationDays">The homepage placement duration in days.</param>
+/// <param name="PriceUsd">The price of this promotion level in USD.</param>
+/// <param name="SpotPriority">
+/// The homepage grid spot this promotion level maps to (1, 2, or 3).
+/// Optional — when omitted the promotion level has no dedicated grid spot.
+/// </param>
+public record AdminCreatePromotionLevelRequest(string Name, int DurationDays, decimal PriceUsd, int? SpotPriority);
+
+/// <summary>
+/// Response model for successful promotion level creation.
+/// </summary>
+/// <param name="PromotionLevel">The created promotion level information.</param>
+public record AdminCreatePromotionLevelResponse(PromotionLevelDto PromotionLevel);
+
+/// <summary>
+/// Defines the admin create promotion level endpoint.
+/// Handles creation of new promotion levels (e.g., "Featured — 7 days").
+/// </summary>
+internal class AdminCreatePromotionLevelEndpointV1 : ICarterModule
+{
+    /// <summary>
+    /// Configures the promotion level creation route within the API pipeline.
+    /// Maps the <c>POST /api/v1/admin/promotion-levels</c> endpoint to handle promotion level creation requests.
+    /// </summary>
+    /// <param name="app">The route builder used to register API endpoints.</param>
+    public void AddRoutes(IEndpointRouteBuilder app)
+    {
+        RouteGroupBuilder group = app.MapApiVersionGroup(1)
+            .MapGroup($"{ContentConstants.Admin}/{LookupRouteConstants.PromotionLevels}")
+            .WithTags($"{ContentConstants.Admin}::{LookupRouteConstants.PromotionLevels}");
+
+        group
+            .MapPost(
+                "/",
+                async (
+                    AdminCreatePromotionLevelRequest request,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken,
+                    HttpContext httpContext
+                ) =>
+                {
+                    var command = new AdminCreatePromotionLevelCommand(
+                        Name: request.Name,
+                        DurationDays: request.DurationDays,
+                        PriceUsd: request.PriceUsd,
+                        SpotPriority: request.SpotPriority
+                    );
+
+                    AdminCreatePromotionLevelResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
+
+                    var response = new AdminCreatePromotionLevelResponse(PromotionLevel: result.PromotionLevel);
+                    Guid promotionLevelId = response.PromotionLevel.Id;
+
+                    string path = $"{ContentConstants.Admin}/{LookupRouteConstants.PromotionLevels}/{promotionLevelId}";
+                    string locationUrl = ApiVersionUrl.Build(context: httpContext, path: path);
+
+                    return Results.Created(uri: locationUrl, value: response);
+                }
+            )
+            .WithName(endpointName: AdminCreatePromotionLevelMetaField.CreatePromotionLevel.Name)
+            .WithSummary(summary: AdminCreatePromotionLevelMetaField.CreatePromotionLevel.Summary)
+            .WithDescription(description: AdminCreatePromotionLevelMetaField.CreatePromotionLevel.Description)
+            .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
+            .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentManagement)
+            .ProducesValidationProblem()
+            .Produces<AdminCreatePromotionLevelResponse>(statusCode: StatusCodes.Status201Created)
+            .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
+            .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
+            .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)
+            .ProducesProblem(statusCode: StatusCodes.Status409Conflict)
+            .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
+    }
+}

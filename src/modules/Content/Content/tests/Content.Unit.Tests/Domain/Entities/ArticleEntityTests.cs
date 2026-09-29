@@ -1,0 +1,1073 @@
+using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
+using _116.Content.Domain.Events;
+using _116.Content.Domain.Exceptions;
+using _116.Content.Domain.StateMachines;
+using _116.Shared.Domain.Exceptions;
+using _116.Tests.TestData.Constants;
+using AwesomeAssertions;
+using Xunit;
+
+namespace _116.Content.Unit.Tests.Domain.Entities;
+
+/// <summary>
+/// Unit tests for <see cref="ArticleEntity"/>.
+/// </summary>
+public class ArticleEntityTests
+{
+    private static readonly Guid CategoryId = Guid.NewGuid();
+    private static readonly Guid AuthorId = Guid.NewGuid();
+
+    #region CreateFree Tests
+
+    [Fact]
+    public void CreateFree_WithValidParams_ShouldCreateDraftArticle()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        const string title = TestConstants.Article.ValidTitle;
+        const string slug = TestConstants.Article.ValidSlug;
+
+        // Act
+        ArticleEntity article = ArticleEntity.CreateFree(id, CategoryId, title, slug, AuthorId);
+
+        // Assert
+        article.Id.Should().Be(id);
+        article.CategoryId.Should().Be(CategoryId);
+        article.Title.Should().Be(title);
+        article.Slug.Value.Should().Be(slug);
+        article.AuthorId.Should().Be(AuthorId);
+        article.Status.Should().Be(EnumContentStatus.Draft);
+        article.CustomerId.Should().BeNull();
+        article.OrderItemId.Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void CreateFree_WithEmptyTitle_ShouldThrowBadRequestException(string? invalidTitle)
+    {
+        // Act
+        Action act = () =>
+            ArticleEntity.CreateFree(
+                Guid.NewGuid(),
+                CategoryId,
+                invalidTitle!,
+                TestConstants.Article.ValidSlug,
+                AuthorId
+            );
+
+        // Assert
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.ArticleTitleRequired);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void CreateFree_WithEmptySlug_ShouldThrowBadRequestException(string? invalidSlug)
+    {
+        // Act
+        Action act = () =>
+            ArticleEntity.CreateFree(
+                Guid.NewGuid(),
+                CategoryId,
+                TestConstants.Article.ValidTitle,
+                invalidSlug!,
+                AuthorId
+            );
+
+        // Assert
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.ArticleSlugRequired);
+    }
+
+    #endregion
+
+    #region CreatePaid Tests
+
+    [Fact]
+    public void CreatePaid_WithValidParams_ShouldSetCustomerAndOrderItem()
+    {
+        // Arrange
+        var customerId = Guid.NewGuid();
+        var orderItemId = Guid.NewGuid();
+
+        // Act
+        ArticleEntity article = ArticleEntity.CreatePaid(
+            Guid.NewGuid(),
+            customerId,
+            orderItemId,
+            CategoryId,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
+            AuthorId
+        );
+
+        // Assert
+        article.CustomerId.Should().Be(customerId);
+        article.OrderItemId.Should().Be(orderItemId);
+        article.Status.Should().Be(EnumContentStatus.Draft);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void CreatePaid_WithEmptyTitle_ShouldThrowBadRequestException(string? invalidTitle)
+    {
+        // Act
+        Action act = () =>
+            ArticleEntity.CreatePaid(
+                Guid.NewGuid(),
+                Guid.NewGuid(),
+                Guid.NewGuid(),
+                CategoryId,
+                invalidTitle!,
+                TestConstants.Article.ValidSlug,
+                AuthorId
+            );
+
+        // Assert
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.ArticleTitleRequired);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void CreatePaid_WithEmptySlug_ShouldThrowBadRequestException(string? invalidSlug)
+    {
+        // Act
+        Action act = () =>
+            ArticleEntity.CreatePaid(
+                Guid.NewGuid(),
+                Guid.NewGuid(),
+                Guid.NewGuid(),
+                CategoryId,
+                TestConstants.Article.ValidTitle,
+                invalidSlug!,
+                AuthorId
+            );
+
+        // Assert
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.ArticleSlugRequired);
+    }
+
+    #endregion
+
+    #region Status Transition Tests
+
+    [Fact]
+    public void Submit_WhenDraft_ShouldTransitionToPendingPayment()
+    {
+        // Arrange
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
+            AuthorId
+        );
+
+        // Act
+        bool result = article.Submit();
+
+        // Assert
+        result.Should().BeTrue();
+        article.Status.Should().Be(EnumContentStatus.PendingPayment);
+    }
+
+    [Fact]
+    public void Submit_WhenAlreadyPendingPayment_ShouldReturnFalse()
+    {
+        // Arrange
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
+            AuthorId
+        );
+        article.Submit();
+
+        // Act
+        bool result = article.Submit();
+
+        // Assert
+        result.Should().BeFalse();
+        article.Status.Should().Be(EnumContentStatus.PendingPayment);
+    }
+
+    [Fact]
+    public void Submit_WhenPublished_ShouldThrow()
+    {
+        // Arrange
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
+            AuthorId
+        );
+        article.MarkPendingReview();
+        article.Approve();
+        article.Publish(TestConstants.Clock.Instant);
+
+        // Act
+        Action act = () => article.Submit();
+
+        // Assert
+        act.Should().Throw<DomainRuleException>().Which.Code.Should().Be(ContentRuleCodes.InvalidStatusTransition);
+        article.Status.Should().Be(EnumContentStatus.Published);
+    }
+
+    [Fact]
+    public void MarkPendingReview_ShouldTransitionToPendingReview()
+    {
+        // Arrange
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
+            AuthorId
+        );
+
+        // Act
+        bool result = article.MarkPendingReview();
+
+        // Assert
+        result.Should().BeTrue();
+        article.Status.Should().Be(EnumContentStatus.PendingReview);
+    }
+
+    [Fact]
+    public void MarkPendingReview_WhenAlreadyPendingReview_ShouldReturnFalse()
+    {
+        // Arrange
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
+            AuthorId
+        );
+        article.MarkPendingReview();
+
+        // Act
+        bool result = article.MarkPendingReview();
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void MarkPendingReview_WhenAlreadyPublished_ShouldReturnFalseAndNotDisturbPublishedStatus()
+    {
+        // Arrange
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
+            AuthorId
+        );
+        article.MarkPendingReview();
+        article.Approve();
+        article.Publish(TestConstants.Clock.Instant);
+
+        // Act
+        bool result = article.MarkPendingReview();
+
+        // Assert
+        result.Should().BeFalse();
+        article.Status.Should().Be(EnumContentStatus.Published);
+    }
+
+    [Fact]
+    public void MarkPendingReview_WhenAlreadyApproved_ShouldReturnFalseAndKeepApprovedStatus()
+    {
+        // Arrange
+        // content back into the review queue.
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
+            AuthorId
+        );
+        article.MarkPendingReview();
+        article.Approve();
+
+        // Act
+        bool result = article.MarkPendingReview();
+
+        // Assert
+        result.Should().BeFalse();
+        article.Status.Should().Be(EnumContentStatus.Approved);
+    }
+
+    [Fact]
+    public void MarkPendingReview_WhenRejected_ShouldReturnTrueSoTheContentCanBeResubmitted()
+    {
+        // Arrange
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
+            AuthorId
+        );
+        article.MarkPendingReview();
+        article.Reject("needs sources");
+
+        // Act
+        bool result = article.MarkPendingReview();
+
+        // Assert
+        result.Should().BeTrue();
+        article.Status.Should().Be(EnumContentStatus.PendingReview);
+    }
+
+    [Fact]
+    public void Approve_ShouldTransitionToApproved()
+    {
+        // Arrange
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
+            AuthorId
+        );
+        article.MarkPendingReview();
+
+        // Act
+        bool result = article.Approve();
+
+        // Assert
+        result.Should().BeTrue();
+        article.Status.Should().Be(EnumContentStatus.Approved);
+    }
+
+    [Fact]
+    public void Approve_WhenAlreadyApproved_ShouldReturnFalse()
+    {
+        // Arrange
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
+            AuthorId
+        );
+        article.MarkPendingReview();
+        article.Approve();
+
+        // Act
+        bool result = article.Approve();
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void Publish_ShouldTransitionToPublished_AndSetPublishedAt()
+    {
+        // Arrange
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
+            AuthorId
+        );
+        article.MarkPendingReview();
+        article.Approve();
+
+        // Act
+        bool result = article.Publish(TestConstants.Clock.Instant);
+
+        // Assert
+        result.Should().BeTrue();
+        article.Status.Should().Be(EnumContentStatus.Published);
+        article.PublishedAt.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void Publish_WhenAlreadyPublished_ShouldReturnFalse()
+    {
+        // Arrange
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
+            AuthorId
+        );
+        article.MarkPendingReview();
+        article.Approve();
+        article.Publish(TestConstants.Clock.Instant);
+
+        // Act
+        bool result = article.Publish(TestConstants.Clock.Instant);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void Publish_ShouldRaiseCommissionedContentPublishedEvent()
+    {
+        // Arrange
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
+            AuthorId
+        );
+        article.MarkPendingReview();
+        article.Approve();
+        article.ClearDomainEvents();
+
+        // Act
+        article.Publish(TestConstants.Clock.Instant);
+
+        // Assert
+        article
+            .DomainEvents.OfType<CommissionedContentPublishedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(
+                new CommissionedContentPublishedEvent(
+                    article.Id,
+                    EnumCoreContentType.Article,
+                    article.CustomerId,
+                    article.Title,
+                    article.Slug
+                )
+            );
+    }
+
+    [Fact]
+    public void Publish_WhenAlreadyPublished_ShouldRaiseNothing()
+    {
+        // Arrange
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
+            AuthorId
+        );
+        article.MarkPendingReview();
+        article.Approve();
+        article.Publish(TestConstants.Clock.Instant);
+        article.ClearDomainEvents();
+
+        // Act
+        article.Publish(TestConstants.Clock.Instant);
+
+        // Assert
+        article.DomainEvents.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Reject_ShouldSetRejectionReason_AndTransitionToRejected()
+    {
+        // Arrange
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
+            AuthorId
+        );
+        const string reason = TestConstants.Article.ValidRejectionReason;
+        article.MarkPendingReview();
+
+        // Act
+        bool result = article.Reject(reason);
+
+        // Assert
+        result.Should().BeTrue();
+        article.Status.Should().Be(EnumContentStatus.Rejected);
+        article.RejectionReason.Should().Be(reason);
+    }
+
+    [Fact]
+    public void Reject_WhenAlreadyRejected_ShouldReturnFalse()
+    {
+        // Arrange
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
+            AuthorId
+        );
+        article.MarkPendingReview();
+        article.Reject(TestConstants.Article.ValidRejectionReason);
+
+        // Act
+        bool result = article.Reject(TestConstants.Article.ValidRejectionReason);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void Reject_ShouldRaiseCommissionedContentRejectedEvent()
+    {
+        // Arrange
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
+            AuthorId
+        );
+        const string reason = TestConstants.Article.ValidRejectionReason;
+        article.MarkPendingReview();
+
+        // Act
+        article.Reject(reason);
+
+        // Assert
+        article
+            .DomainEvents.OfType<CommissionedContentRejectedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(
+                new CommissionedContentRejectedEvent(
+                    article.Id,
+                    EnumCoreContentType.Article,
+                    article.CustomerId,
+                    article.Title,
+                    reason
+                )
+            );
+    }
+
+    [Fact]
+    public void Archive_ShouldTransitionToArchived()
+    {
+        // Arrange
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
+            AuthorId
+        );
+        article.MarkPendingReview();
+        article.Approve();
+        article.Publish(TestConstants.Clock.Instant);
+
+        // Act
+        bool result = article.Archive();
+
+        // Assert
+        result.Should().BeTrue();
+        article.Status.Should().Be(EnumContentStatus.Archived);
+    }
+
+    [Fact]
+    public void Archive_WhenAlreadyArchived_ShouldReturnFalse()
+    {
+        // Arrange
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
+            AuthorId
+        );
+        article.MarkPendingReview();
+        article.Approve();
+        article.Publish(TestConstants.Clock.Instant);
+        article.Archive();
+
+        // Act
+        bool result = article.Archive();
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region Stamp Tests
+
+    [Fact]
+    public void StampSocialBoost_ShouldSetSocialBoostTrue()
+    {
+        // Arrange
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
+            AuthorId
+        );
+
+        // Act
+        article.StampSocialBoost();
+
+        // Assert
+        article.SocialBoost.Should().BeTrue();
+    }
+
+    [Fact]
+    public void StampPromotion_ShouldSetIsPromotedAndPromotedUntil()
+    {
+        // Arrange
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
+            AuthorId
+        );
+        DateTimeOffset until = DateTimeOffset.UtcNow.AddDays(7);
+
+        // Act
+        article.StampPromotion(Guid.NewGuid(), until);
+
+        // Assert
+        article.IsPromoted.Should().BeTrue();
+        article.PromotedUntil.Should().Be(until);
+    }
+
+    #endregion
+
+    #region ForceUnpromote Tests
+
+    [Fact]
+    public void ForceUnpromote_WhenArticleIsPromoted_ShouldClearPromotionAndRecordAudit()
+    {
+        // Arrange
+        const string superAdminId = "super-admin-uuid";
+        const string reason = "government takedown request";
+
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
+            AuthorId
+        );
+        article.StampPromotion(Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(7));
+
+        // Act
+        article.ForceUnpromote(superAdminId, reason, TestConstants.Clock.Instant);
+
+        // Assert
+        article.IsPromoted.Should().BeFalse();
+        article.PromotedUntil.Should().BeNull();
+        article.PromotionLevelId.Should().BeNull();
+        article.UnpromotedBy.Should().Be(superAdminId);
+        article.UnpromotedReason.Should().Be(reason);
+        article.UnpromotedAt.Should().NotBeNull();
+        article.UnpromotedAt!.Value.Should().Be(TestConstants.Clock.Instant);
+    }
+
+    [Fact]
+    public void ForceUnpromote_ShouldRaiseContentPromotionRemovedEvent()
+    {
+        // Arrange
+        const string reason = "policy violation";
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
+            AuthorId
+        );
+        article.StampPromotion(Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(7));
+        article.ClearDomainEvents();
+
+        // Act
+        article.ForceUnpromote("super-admin-uuid", reason, TestConstants.Clock.Instant);
+
+        // Assert
+        article
+            .DomainEvents.OfType<ContentPromotionRemovedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(
+                new ContentPromotionRemovedEvent(
+                    article.Id,
+                    EnumCoreContentType.Article,
+                    article.CustomerId,
+                    article.Title,
+                    reason
+                )
+            );
+    }
+
+    [Fact]
+    public void ForceUnpromote_WhenArticleIsNotPromoted_ShouldThrowBadRequestException()
+    {
+        // Arrange
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
+            AuthorId
+        );
+
+        // Act
+        Action act = () => article.ForceUnpromote("super-admin-uuid", "reason", TestConstants.Clock.Instant);
+
+        // Assert
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.ArticleNotPromoted);
+    }
+
+    [Fact]
+    public void ForceUnpromote_ShouldNotAffectOtherFields()
+    {
+        // Arrange
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
+            AuthorId
+        );
+        article.MarkPendingReview();
+        article.Approve();
+        article.Publish(TestConstants.Clock.Instant);
+        article.StampSocialBoost();
+        article.StampPromotion(Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(7));
+
+        // Act
+        article.ForceUnpromote("super-admin-uuid", "reason", TestConstants.Clock.Instant);
+
+        // Assert
+        article.Status.Should().Be(EnumContentStatus.Published);
+        article.SocialBoost.Should().BeTrue();
+        article.Title.Should().Be(TestConstants.Article.ValidTitle);
+        article.Slug.Value.Should().Be(TestConstants.Article.ValidSlug);
+    }
+
+    #endregion
+
+    #region Counter Tests
+
+    #endregion
+
+    #region Edit Verb Tests
+
+    [Fact]
+    public void ReviseSeo_ShouldSetMetaFields()
+    {
+        // Arrange
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
+            AuthorId
+        );
+
+        // Act
+        article.ReviseSeo("My SEO Title", "My SEO Description");
+
+        // Assert
+        article.MetaTitle.Should().Be("My SEO Title");
+        article.MetaDescription.Should().Be("My SEO Description");
+    }
+
+    [Fact]
+    public void UpdateCoverImage_ShouldSetCoverImageFileId()
+    {
+        // Arrange
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
+            AuthorId
+        );
+        Guid coverImageFileId = Guid.NewGuid();
+
+        // Act
+        article.UpdateCoverImage(coverImageFileId: coverImageFileId);
+
+        // Assert
+        article.CoverImageFileId.Should().Be(coverImageFileId);
+    }
+
+    [Fact]
+    public void EditVerbs_ShouldEachSetTheirOwnFields()
+    {
+        // Arrange
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
+            AuthorId
+        );
+        Guid newCategoryId = Guid.NewGuid();
+        Guid customerId = Guid.NewGuid();
+        Guid orderItemId = Guid.NewGuid();
+
+        // Act
+        article.Recategorize(categoryId: newCategoryId);
+        article.Retitle(title: "Updated Title", slug: "updated-slug");
+        article.ReviseBody(headline: "Updated headline for the article", body: "<p>Updated body</p>");
+        article.AssignCommission(customerId: customerId, orderItemId: orderItemId, socialBoost: true);
+        article.ReviseSeo(metaTitle: "Updated Meta", metaDescription: "Updated description");
+
+        // Assert
+        article.CategoryId.Should().Be(newCategoryId);
+        article.Title.Should().Be("Updated Title");
+        article.Slug.Value.Should().Be("updated-slug");
+        article.Headline.Should().Be("Updated headline for the article");
+        article.Body.Should().Be("<p>Updated body</p>");
+        article.CustomerId.Should().Be(customerId);
+        article.OrderItemId.Should().Be(orderItemId);
+        article.SocialBoost.Should().BeTrue();
+        article.MetaTitle.Should().Be("Updated Meta");
+        article.MetaDescription.Should().Be("Updated description");
+        article.DomainEvents.OfType<ArticleBodyImagesOrphanedEvent>().Should().BeEmpty();
+    }
+
+    [Fact]
+    public void EditVerbs_WithUnchangedValues_ShouldEachReportFalse()
+    {
+        // Arrange
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
+            AuthorId
+        );
+        article.ReviseBody(headline: "A headline", body: "<p>Body</p>");
+
+        // Act & Assert
+        article.Recategorize(categoryId: CategoryId).Should().BeFalse();
+        article.Retitle(title: article.Title, slug: article.Slug).Should().BeFalse();
+        article.ReviseBody(headline: "A headline", body: "<p>Body</p>").Should().BeFalse();
+        article.AssignCommission(customerId: null, orderItemId: null, socialBoost: false).Should().BeFalse();
+        article.ReviseSeo(metaTitle: null, metaDescription: null).Should().BeFalse();
+    }
+
+    [Fact]
+    public void ReviseBody_WhenBodyImagesDropOut_ShouldRaiseOrphanedEventWithCapturedKeys()
+    {
+        // Arrange
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
+            AuthorId
+        );
+        List<string> orphanedKeys = ["content/articles/image-0", "content/articles/image-1"];
+
+        // Act
+        article.ReviseBody(
+            headline: "Updated headline for the article",
+            body: "<p>Updated body without images</p>",
+            orphanedBodyImageStorageKeys: orphanedKeys
+        );
+
+        // Assert
+        article
+            .DomainEvents.OfType<ArticleBodyImagesOrphanedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(new ArticleBodyImagesOrphanedEvent(article.Id, orphanedKeys));
+    }
+
+    [Fact]
+    public void ReviseBody_WhenOrphanedKeyListIsEmpty_ShouldNotRaiseOrphanedEvent()
+    {
+        // Arrange
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
+            AuthorId
+        );
+
+        // Act
+        article.ReviseBody(
+            headline: "Updated headline for the article",
+            body: "<p>Updated body</p>",
+            orphanedBodyImageStorageKeys: []
+        );
+
+        // Assert
+        article.DomainEvents.OfType<ArticleBodyImagesOrphanedEvent>().Should().BeEmpty();
+    }
+
+    #endregion
+
+    [Fact]
+    public void Publish_ShouldRaiseArticlePublishedEvent()
+    {
+        // Arrange
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
+            AuthorId
+        );
+        article.MarkPendingReview();
+        article.Approve();
+        article.ClearDomainEvents();
+
+        // Act
+        article.Publish(TestConstants.Clock.Instant);
+
+        // Assert
+        article
+            .DomainEvents.OfType<ArticlePublishedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(new ArticlePublishedEvent(article.Id));
+    }
+
+    [Fact]
+    public void Reject_WhenPublished_ShouldRaiseArticleUnpublishedEvent()
+    {
+        // Arrange
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
+            AuthorId
+        );
+        article.MarkPendingReview();
+        article.Approve();
+        article.Publish(TestConstants.Clock.Instant);
+        article.ClearDomainEvents();
+        article.MarkPendingReview();
+
+        // Act
+        article.Reject("not suitable anymore");
+
+        // Assert
+        article
+            .DomainEvents.OfType<ArticleUnpublishedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(new ArticleUnpublishedEvent(article.Id));
+    }
+
+    [Fact]
+    public void Reject_WhenNotPublished_ShouldNotRaiseArticleUnpublishedEvent()
+    {
+        // Arrange
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
+            AuthorId
+        );
+        article.MarkPendingReview();
+        article.ClearDomainEvents();
+        article.MarkPendingReview();
+
+        // Act
+        article.Reject("not suitable");
+
+        // Assert
+        article.DomainEvents.OfType<ArticleUnpublishedEvent>().Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Archive_WhenPublished_ShouldRaiseArticleUnpublishedEvent()
+    {
+        // Arrange
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
+            AuthorId
+        );
+        article.MarkPendingReview();
+        article.Approve();
+        article.Publish(TestConstants.Clock.Instant);
+        article.ClearDomainEvents();
+
+        // Act
+        article.Archive();
+
+        // Assert
+        article
+            .DomainEvents.OfType<ArticleUnpublishedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(new ArticleUnpublishedEvent(article.Id));
+    }
+
+    [Fact]
+    public void Archive_WhenNotPublished_ShouldNotRaiseArticleUnpublishedEvent()
+    {
+        // Arrange
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
+            AuthorId
+        );
+        article.ClearDomainEvents();
+        article.MarkPendingReview();
+        article.Approve();
+
+        // Act
+        article.Archive();
+
+        // Assert
+        article.DomainEvents.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void MarkDeleted_ShouldRaiseArticleDeletedEventWithCapturedAssets()
+    {
+        // Arrange
+        var coverFileId = Guid.NewGuid();
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
+            AuthorId
+        );
+        article.UpdateCoverImage(coverFileId);
+        article.ClearDomainEvents();
+
+        // Act
+        article.MarkDeleted(["articles/body-1", "articles/body-2"]);
+
+        // Assert
+        ArticleDeletedEvent deletedEvent = article
+            .DomainEvents.OfType<ArticleDeletedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which;
+        deletedEvent.ArticleId.Should().Be(article.Id);
+        deletedEvent.CoverFileId.Should().Be(coverFileId);
+        deletedEvent.BodyImageStorageKeys.Should().Equal("articles/body-1", "articles/body-2");
+    }
+}

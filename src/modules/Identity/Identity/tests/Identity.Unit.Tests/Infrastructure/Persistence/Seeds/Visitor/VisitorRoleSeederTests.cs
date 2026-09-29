@@ -1,0 +1,295 @@
+using _116.Identity.Application.Shared.Errors;
+using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.Enums;
+using _116.Identity.Infrastructure.Persistence;
+using _116.Identity.Infrastructure.Persistence.Seeds.Visitor;
+using _116.Identity.TestData.Factories;
+using _116.Tests.TestData.Helpers;
+using AwesomeAssertions;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Moq;
+using Xunit;
+
+namespace _116.Identity.Unit.Tests.Infrastructure.Persistence.Seeds.Visitor;
+
+/// <summary>
+/// Collection definition to prevent parallel test execution for VisitorRoleSeeder tests.
+/// </summary>
+[CollectionDefinition("VisitorRoleSeeder", DisableParallelization = true)]
+public class VisitorRoleSeederCollection { }
+
+/// <summary>
+/// Unit tests for <see cref="VisitorRoleSeeder"/>.
+/// </summary>
+[Collection("VisitorRoleSeeder")]
+public class VisitorRoleSeederTests
+{
+    private readonly Mock<ILogger<VisitorRoleSeeder>> _loggerMock;
+    private readonly UserErrors _userErrors = TestErrorsFactory.CreateUserErrors();
+
+    public VisitorRoleSeederTests()
+    {
+        _loggerMock = new Mock<ILogger<VisitorRoleSeeder>>();
+    }
+
+    private DbContextOptions<IdentityDbContext> CreateOptions()
+    {
+        return new DbContextOptionsBuilder<IdentityDbContext>()
+            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString(), b => b.EnableNullChecks(false))
+            .UseInternalServiceProvider(
+                new ServiceCollection().AddEntityFrameworkInMemoryDatabase().BuildServiceProvider()
+            )
+            .Options;
+    }
+
+    #region SeedAsync Tests
+
+    [Fact]
+    public async Task SeedAsync_WhenVisitorRoleDoesNotExist_ShouldCreateVisitorRole()
+    {
+        // Arrange
+        DbContextOptions<IdentityDbContext> options = CreateOptions();
+        await using var context = new IdentityDbContext(options);
+        var seeder = new VisitorRoleSeeder(context, _loggerMock.Object);
+
+        // Act
+        await seeder.SeedAsync();
+
+        // Assert
+        RoleEntity? visitorRole = await context.Roles.FirstOrDefaultAsync(r =>
+            r.Name == nameof(EnumCoreUserRole.Visitor)
+        );
+        visitorRole.Should().NotBeNull();
+        visitorRole.Name.Should().Be(nameof(EnumCoreUserRole.Visitor));
+    }
+
+    [Fact]
+    public async Task SeedAsync_WhenVisitorRoleDoesNotExist_ShouldCreatePermissions()
+    {
+        // Arrange
+        DbContextOptions<IdentityDbContext> options = CreateOptions();
+        await using var context = new IdentityDbContext(options);
+        var seeder = new VisitorRoleSeeder(context, _loggerMock.Object);
+
+        // Act
+        await seeder.SeedAsync();
+
+        // Assert
+        int permissionCount = await context.Permissions.CountAsync();
+        (permissionCount > 0).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task SeedAsync_WhenVisitorRoleDoesNotExist_ShouldCreate29Permissions()
+    {
+        // Arrange
+        DbContextOptions<IdentityDbContext> options = CreateOptions();
+        await using var context = new IdentityDbContext(options);
+        var seeder = new VisitorRoleSeeder(context, _loggerMock.Object);
+
+        // Act
+        await seeder.SeedAsync();
+
+        // Assert
+        int permissionCount = await context.Permissions.CountAsync();
+        permissionCount.Should().Be(29);
+    }
+
+    [Fact]
+    public async Task SeedAsync_WhenVisitorRoleDoesNotExist_ShouldCreateRolePermissionAssociations()
+    {
+        // Arrange
+        DbContextOptions<IdentityDbContext> options = CreateOptions();
+        await using var context = new IdentityDbContext(options);
+        var seeder = new VisitorRoleSeeder(context, _loggerMock.Object);
+
+        // Act
+        await seeder.SeedAsync();
+
+        // Assert - count actual permissions and role-permissions
+        int permissionCount = await context.Permissions.CountAsync();
+        int rolePermissionCount = await context.RolePermissions.CountAsync();
+
+        // Both should be 29 since we create 29 permissions and 29 role-permission mappings
+        permissionCount.Should().Be(29);
+        rolePermissionCount.Should().Be(29);
+    }
+
+    [Fact]
+    public async Task SeedAsync_WhenVisitorRoleAlreadyExists_ShouldSkipSeeding()
+    {
+        // Arrange
+        DbContextOptions<IdentityDbContext> options = CreateOptions();
+        await using var context = new IdentityDbContext(options);
+
+        // Pre-seed visitor role
+        var existingRole = RoleFactory.Create(nameof(EnumCoreUserRole.Visitor), "Existing role");
+        await context.Roles.AddAsync(existingRole);
+        await context.SaveChangesAsync();
+
+        var seeder = new VisitorRoleSeeder(context, _loggerMock.Object);
+
+        // Act
+        await seeder.SeedAsync();
+
+        // Assert
+        int roleCount = await context.Roles.CountAsync();
+        roleCount.Should().Be(1); // Should still be just the original role
+    }
+
+    [Fact]
+    public async Task SeedAsync_WhenVisitorRoleAlreadyExists_ShouldNotAddPermissions()
+    {
+        // Arrange
+        DbContextOptions<IdentityDbContext> options = CreateOptions();
+        await using var context = new IdentityDbContext(options);
+
+        // Pre-seed visitor role
+        var existingRole = RoleFactory.Create(nameof(EnumCoreUserRole.Visitor), "Existing role");
+        await context.Roles.AddAsync(existingRole);
+        await context.SaveChangesAsync();
+
+        var seeder = new VisitorRoleSeeder(context, _loggerMock.Object);
+
+        // Act
+        await seeder.SeedAsync();
+
+        // Assert
+        int permissionCount = await context.Permissions.CountAsync();
+        permissionCount.Should().Be(0); // No permissions should be added
+    }
+
+    [Fact]
+    public async Task SeedAsync_WhenVisitorRoleAlreadyExists_ShouldLogSkipMessage()
+    {
+        // Arrange
+        DbContextOptions<IdentityDbContext> options = CreateOptions();
+        await using var context = new IdentityDbContext(options);
+
+        // Pre-seed visitor role
+        var existingRole = RoleFactory.Create(nameof(EnumCoreUserRole.Visitor), "Existing role");
+        await context.Roles.AddAsync(existingRole);
+        await context.SaveChangesAsync();
+
+        var seeder = new VisitorRoleSeeder(context, _loggerMock.Object);
+
+        // Act
+        await seeder.SeedAsync();
+
+        // Assert
+        _loggerMock.Verify(
+            x =>
+                x.Log(
+                    LogLevel.Information,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("already exists")),
+                    It.IsAny<Exception>(),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()
+                ),
+            Times.Once
+        );
+    }
+
+    [Fact]
+    public async Task SeedAsync_WhenSeeding_ShouldLogStartMessage()
+    {
+        // Arrange
+        DbContextOptions<IdentityDbContext> options = CreateOptions();
+        await using var context = new IdentityDbContext(options);
+        var seeder = new VisitorRoleSeeder(context, _loggerMock.Object);
+
+        // Act
+        await seeder.SeedAsync();
+
+        // Assert
+        _loggerMock.Verify(
+            x =>
+                x.Log(
+                    LogLevel.Information,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Starting Visitor role seeding")),
+                    It.IsAny<Exception>(),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()
+                ),
+            Times.Once
+        );
+    }
+
+    [Fact]
+    public async Task SeedAsync_WhenSeedingCompletes_ShouldLogCompletionMessage()
+    {
+        // Arrange
+        DbContextOptions<IdentityDbContext> options = CreateOptions();
+        await using var context = new IdentityDbContext(options);
+        var seeder = new VisitorRoleSeeder(context, _loggerMock.Object);
+
+        // Act
+        await seeder.SeedAsync();
+
+        // Assert
+        _loggerMock.Verify(
+            x =>
+                x.Log(
+                    LogLevel.Information,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("completed successfully")),
+                    It.IsAny<Exception>(),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()
+                ),
+            Times.Once
+        );
+    }
+
+    [Fact]
+    public async Task SeedAsync_WhenSeedingSucceeds_ShouldLogPermissionCount()
+    {
+        // Arrange
+        DbContextOptions<IdentityDbContext> options = CreateOptions();
+        await using var context = new IdentityDbContext(options);
+        var seeder = new VisitorRoleSeeder(context, _loggerMock.Object);
+
+        // Act
+        await seeder.SeedAsync();
+
+        // Assert
+        _loggerMock.Verify(
+            x =>
+                x.Log(
+                    LogLevel.Information,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("29 permissions")),
+                    It.IsAny<Exception>(),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()
+                ),
+            Times.Once
+        );
+    }
+
+    #endregion
+
+    #region Role Description Tests
+
+    [Fact]
+    public async Task SeedAsync_ShouldSetCorrectRoleDescription()
+    {
+        // Arrange
+        DbContextOptions<IdentityDbContext> options = CreateOptions();
+        await using var context = new IdentityDbContext(options);
+        var seeder = new VisitorRoleSeeder(context, _loggerMock.Object);
+
+        // Act
+        await seeder.SeedAsync();
+
+        // Assert
+        RoleEntity? visitorRole = await context.Roles.FirstOrDefaultAsync(r =>
+            r.Name == nameof(EnumCoreUserRole.Visitor)
+        );
+        visitorRole.Should().NotBeNull();
+        visitorRole.Description.Should().Contain("Standard public");
+        visitorRole.Description.Should().Contain("content access");
+    }
+
+    #endregion
+}

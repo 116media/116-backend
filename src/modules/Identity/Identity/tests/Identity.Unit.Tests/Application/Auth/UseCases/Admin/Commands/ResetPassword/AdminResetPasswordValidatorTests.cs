@@ -1,0 +1,243 @@
+using _116.Identity.Application.Auth.UseCases.Admin.Commands.ResetPassword;
+using _116.Identity.Application.Shared.Errors.Facade;
+using _116.Identity.Domain.Constants;
+using _116.Tests.TestData.Constants;
+using _116.Tests.TestData.Helpers;
+using AwesomeAssertions;
+using FluentValidation.TestHelper;
+using Xunit;
+
+namespace _116.Identity.Unit.Tests.Application.Auth.UseCases.Admin.Commands.ResetPassword;
+
+/// <summary>
+/// Unit tests for <see cref="AdminResetPasswordValidator"/>.
+/// </summary>
+public class AdminResetPasswordValidatorTests
+{
+    private readonly IdentityI18n _i18n = TestErrorsFactory.CreateIdentityI18n();
+    private readonly AdminResetPasswordValidator _validator;
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="AdminResetPasswordValidatorTests"/>.
+    /// </summary>
+    public AdminResetPasswordValidatorTests()
+    {
+        _validator = new AdminResetPasswordValidator(_i18n);
+    }
+
+    #region Valid Command Tests
+
+    [Fact]
+    public async Task Validate_WithValidCommand_ShouldNotHaveErrors()
+    {
+        // Arrange
+        AdminResetPasswordCommand command = new(
+            Email: TestConstants.User.ValidEmail,
+            Code: TestConstants.Otp.ValidCode,
+            NewPassword: TestConstants.User.ValidPassword
+        );
+
+        // Act
+        TestValidationResult<AdminResetPasswordCommand>? result = await _validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeTrue();
+        result.Errors.Should().BeEmpty();
+    }
+
+    #endregion
+
+    #region Email Validation Tests
+
+    [Fact]
+    public async Task Validate_WithNullEmail_ShouldHaveError()
+    {
+        // Arrange
+        AdminResetPasswordCommand command = new(
+            Email: null!,
+            Code: TestConstants.Otp.ValidCode,
+            NewPassword: TestConstants.User.ValidPassword
+        );
+
+        // Act
+        TestValidationResult<AdminResetPasswordCommand>? result = await _validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.ShouldHaveValidationErrorFor(x => x.Email);
+    }
+
+    [Fact]
+    public async Task Validate_WithInvalidEmailFormat_ShouldHaveError()
+    {
+        // Arrange
+        AdminResetPasswordCommand command = new(
+            Email: "notanemail",
+            Code: TestConstants.Otp.ValidCode,
+            NewPassword: TestConstants.User.ValidPassword
+        );
+
+        // Act
+        TestValidationResult<AdminResetPasswordCommand>? result = await _validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.ShouldHaveValidationErrorFor(x => x.Email);
+    }
+
+    #endregion
+
+    #region Code Validation Tests
+
+    [Fact]
+    public async Task Validate_WithNullCode_ShouldHaveError()
+    {
+        // Arrange
+        AdminResetPasswordCommand command = new(
+            Email: TestConstants.User.ValidEmail,
+            Code: null!,
+            NewPassword: TestConstants.User.ValidPassword
+        );
+
+        // Act
+        TestValidationResult<AdminResetPasswordCommand>? result = await _validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.ShouldHaveValidationErrorFor(x => x.Code);
+    }
+
+    [Fact]
+    public async Task Validate_WithTooShortCode_ShouldHaveError()
+    {
+        // Arrange
+        AdminResetPasswordCommand command = new(
+            Email: TestConstants.User.ValidEmail,
+            Code: "12345", // Too short
+            NewPassword: TestConstants.User.ValidPassword
+        );
+
+        // Act
+        TestValidationResult<AdminResetPasswordCommand>? result = await _validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .ShouldHaveValidationErrorFor(x => x.Code)
+            .WithErrorMessage(_i18n.User.Validation.OtpCodeWrongLength(UserConstants.OtpCodeLength));
+    }
+
+    [Fact]
+    public async Task Validate_WithTooLongCode_ShouldHaveError()
+    {
+        // Arrange
+        AdminResetPasswordCommand command = new(
+            Email: TestConstants.User.ValidEmail,
+            Code: "1234567", // Too long
+            NewPassword: TestConstants.User.ValidPassword
+        );
+
+        // Act
+        TestValidationResult<AdminResetPasswordCommand>? result = await _validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.ShouldHaveValidationErrorFor(x => x.Code);
+    }
+
+    [Fact]
+    public async Task Validate_WithNonNumericCode_ShouldHaveError()
+    {
+        // Arrange
+        AdminResetPasswordCommand command = new(
+            Email: TestConstants.User.ValidEmail,
+            Code: "ABC123", // Contains letters
+            NewPassword: TestConstants.User.ValidPassword
+        );
+
+        // Act
+        TestValidationResult<AdminResetPasswordCommand>? result = await _validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.ShouldHaveValidationErrorFor(x => x.Code).WithErrorMessage(_i18n.User.Validation.OtpCodeNotNumeric());
+    }
+
+    #endregion
+
+    #region NewPassword Validation Tests
+
+    [Fact]
+    public async Task Validate_WithNullNewPassword_ShouldHaveError()
+    {
+        // Arrange
+        AdminResetPasswordCommand command = new(
+            Email: TestConstants.User.ValidEmail,
+            Code: TestConstants.Otp.ValidCode,
+            NewPassword: null!
+        );
+
+        // Act
+        TestValidationResult<AdminResetPasswordCommand>? result = await _validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.ShouldHaveValidationErrorFor(x => x.NewPassword);
+    }
+
+    [Fact]
+    public async Task Validate_WithTooShortNewPassword_ShouldHaveError()
+    {
+        // Arrange
+        AdminResetPasswordCommand command = new(
+            Email: TestConstants.User.ValidEmail,
+            Code: TestConstants.Otp.ValidCode,
+            NewPassword: "Pass1"
+        );
+
+        // Act
+        TestValidationResult<AdminResetPasswordCommand>? result = await _validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.ShouldHaveValidationErrorFor(x => x.NewPassword);
+    }
+
+    [Fact]
+    public async Task Validate_WithWeakNewPassword_ShouldHaveError()
+    {
+        // Arrange
+        AdminResetPasswordCommand command = new(
+            Email: TestConstants.User.ValidEmail,
+            Code: TestConstants.Otp.ValidCode,
+            NewPassword: "weakpassword"
+        );
+
+        // Act
+        TestValidationResult<AdminResetPasswordCommand>? result = await _validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.ShouldHaveValidationErrorFor(x => x.NewPassword);
+    }
+
+    #endregion
+
+    #region Multiple Validation Errors Tests
+
+    [Fact]
+    public async Task Validate_WithAllInvalidValues_ShouldHaveMultipleErrors()
+    {
+        // Arrange
+        AdminResetPasswordCommand command = new(Email: "invalid", Code: "abc", NewPassword: "weak");
+
+        // Act
+        TestValidationResult<AdminResetPasswordCommand>? result = await _validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().HaveCountGreaterThanOrEqualTo(3);
+    }
+
+    #endregion
+}

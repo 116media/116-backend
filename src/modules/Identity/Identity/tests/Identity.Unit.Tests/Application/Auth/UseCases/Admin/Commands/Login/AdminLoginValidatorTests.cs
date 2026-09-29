@@ -1,0 +1,208 @@
+using _116.Identity.Application.Auth.UseCases.Admin.Commands.Login;
+using _116.Identity.Application.Shared.Errors.Facade;
+using _116.Identity.Domain.Constants;
+using _116.Tests.TestData.Constants;
+using _116.Tests.TestData.Helpers;
+using AwesomeAssertions;
+using FluentValidation.TestHelper;
+using Xunit;
+
+namespace _116.Identity.Unit.Tests.Application.Auth.UseCases.Admin.Commands.Login;
+
+/// <summary>
+/// Unit tests for <see cref="AdminLoginValidator"/>.
+/// </summary>
+public class AdminLoginValidatorTests
+{
+    private readonly IdentityI18n _i18n = TestErrorsFactory.CreateIdentityI18n();
+    private readonly AdminLoginValidator _validator;
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="AdminLoginValidatorTests"/>.
+    /// </summary>
+    public AdminLoginValidatorTests()
+    {
+        _validator = new AdminLoginValidator(_i18n);
+    }
+
+    #region Valid Command Tests
+
+    [Fact]
+    public async Task Validate_WithValidCommand_ShouldNotHaveErrors()
+    {
+        // Arrange
+        AdminLoginCommand command = new(
+            Email: TestConstants.User.ValidEmail,
+            Password: TestConstants.User.ValidPassword
+        );
+
+        // Act
+        TestValidationResult<AdminLoginCommand>? result = await _validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeTrue();
+        result.Errors.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Validate_WithMaxLengthEmail_ShouldNotHaveErrors()
+    {
+        // Arrange
+        string maxEmail = new string('a', UserConstants.MaxEmailLength - "@test.com".Length) + "@test.com";
+        AdminLoginCommand command = new(Email: maxEmail, Password: TestConstants.User.ValidPassword);
+
+        // Act
+        TestValidationResult<AdminLoginCommand>? result = await _validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeTrue();
+        result.Errors.Should().BeEmpty();
+    }
+
+    #endregion
+
+    #region Email Validation Tests
+
+    [Fact]
+    public async Task Validate_WithNullEmail_ShouldHaveError()
+    {
+        // Arrange
+        AdminLoginCommand command = new(Email: null!, Password: TestConstants.User.ValidPassword);
+
+        // Act
+        TestValidationResult<AdminLoginCommand>? result = await _validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.ShouldHaveValidationErrorFor(x => x.Email).WithErrorMessage(_i18n.User.Validation.EmailRequired());
+    }
+
+    [Fact]
+    public async Task Validate_WithEmptyEmail_ShouldHaveError()
+    {
+        // Arrange
+        AdminLoginCommand command = new(Email: string.Empty, Password: TestConstants.User.ValidPassword);
+
+        // Act
+        TestValidationResult<AdminLoginCommand>? result = await _validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.ShouldHaveValidationErrorFor(x => x.Email).WithErrorMessage(_i18n.User.Validation.EmailRequired());
+    }
+
+    [Fact]
+    public async Task Validate_WithWhitespaceEmail_ShouldHaveError()
+    {
+        // Arrange
+        AdminLoginCommand command = new(Email: "   ", Password: TestConstants.User.ValidPassword);
+
+        // Act
+        TestValidationResult<AdminLoginCommand>? result = await _validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.ShouldHaveValidationErrorFor(x => x.Email).WithErrorMessage(_i18n.User.Validation.EmailRequired());
+    }
+
+    [Fact]
+    public async Task Validate_WithInvalidEmailFormat_ShouldHaveError()
+    {
+        // Arrange
+        AdminLoginCommand command = new(Email: "notanemail", Password: TestConstants.User.ValidPassword);
+
+        // Act
+        TestValidationResult<AdminLoginCommand>? result = await _validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .ShouldHaveValidationErrorFor(x => x.Email)
+            .WithErrorMessage(_i18n.User.Validation.InvalidEmailFormatMsg());
+    }
+
+    [Fact]
+    public async Task Validate_WithEmailExceedingMaxLength_ShouldHaveError()
+    {
+        // Arrange
+        string longEmail = new string('a', UserConstants.MaxEmailLength + 1) + "@test.com";
+        AdminLoginCommand command = new(Email: longEmail, Password: TestConstants.User.ValidPassword);
+
+        // Act
+        TestValidationResult<AdminLoginCommand>? result = await _validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .ShouldHaveValidationErrorFor(x => x.Email)
+            .WithErrorMessage(_i18n.User.Validation.EmailTooLong(UserConstants.MaxEmailLength));
+    }
+
+    #endregion
+
+    #region Password Validation Tests
+
+    [Fact]
+    public async Task Validate_WithNullPassword_ShouldHaveError()
+    {
+        // Arrange
+        AdminLoginCommand command = new(Email: TestConstants.User.ValidEmail, Password: null!);
+
+        // Act
+        TestValidationResult<AdminLoginCommand>? result = await _validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.ShouldHaveValidationErrorFor(x => x.Password).WithErrorMessage(_i18n.User.Validation.PasswordRequired());
+    }
+
+    [Fact]
+    public async Task Validate_WithEmptyPassword_ShouldHaveError()
+    {
+        // Arrange
+        AdminLoginCommand command = new(Email: TestConstants.User.ValidEmail, Password: string.Empty);
+
+        // Act
+        TestValidationResult<AdminLoginCommand>? result = await _validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.ShouldHaveValidationErrorFor(x => x.Password).WithErrorMessage(_i18n.User.Validation.PasswordRequired());
+    }
+
+    [Fact]
+    public async Task Validate_WithWhitespacePassword_ShouldHaveError()
+    {
+        // Arrange
+        AdminLoginCommand command = new(Email: TestConstants.User.ValidEmail, Password: "   ");
+
+        // Act
+        TestValidationResult<AdminLoginCommand>? result = await _validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.ShouldHaveValidationErrorFor(x => x.Password).WithErrorMessage(_i18n.User.Validation.PasswordRequired());
+    }
+
+    #endregion
+
+    #region Multiple Validation Errors Tests
+
+    [Fact]
+    public async Task Validate_WithAllInvalidValues_ShouldHaveMultipleErrors()
+    {
+        // Arrange
+        AdminLoginCommand command = new(Email: string.Empty, Password: string.Empty);
+
+        // Act
+        TestValidationResult<AdminLoginCommand>? result = await _validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().HaveCountGreaterThanOrEqualTo(2);
+        result.ShouldHaveValidationErrorFor(x => x.Email);
+        result.ShouldHaveValidationErrorFor(x => x.Password);
+    }
+
+    #endregion
+}

@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <RootNamespace>_116.BuildingBlocks.Presentation</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Asp.Versioning.Http" />
+        <PackageReference Include="Carter" />
+        <PackageReference Include="FluentValidation.AspNetCore" />
+        <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
+        <PackageReference Include="Quartz.AspNetCore" />
+        <PackageReference Include="Quartz.Serialization.SystemTextJson" />
+        <PackageReference Include="Scrutor" />
+        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Shared.Unit.Tests" />
+        <InternalsVisibleTo Include="Shared.Integration.Tests" />
+        <InternalsVisibleTo Include="Fixtures" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="../BuildingBlocks.Infrastructure/BuildingBlocks.Infrastructure.csproj" />
+    </ItemGroup>
+</Project>

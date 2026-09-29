@@ -1,0 +1,89 @@
+using _116.Content.Application.Catalog.UseCases.Admin.Commands.CreatePackage;
+using _116.Content.Application.Shared.Persistence;
+using _116.Content.Application.Shared.Repositories;
+using _116.Content.Domain.Entities;
+using _116.Content.TestData;
+using _116.Content.TestData.Factories;
+using _116.Content.TestData.Mocks.Infrastructure;
+using _116.Content.TestData.Mocks.Repositories;
+using _116.Identity.TestData.Mocks.Infrastructure;
+using _116.Identity.TestData.Mocks.Repositories;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Tests.TestData.Constants;
+using AwesomeAssertions;
+using Moq;
+using Xunit;
+
+namespace _116.Content.Unit.Tests.Application.Catalog.UseCases.Admin.Commands.CreatePackage;
+
+/// <summary>
+/// Unit tests for <see cref="AdminCreatePackageHandler"/>.
+/// </summary>
+public class AdminCreatePackageHandlerTests : BaseContentHandlerTest
+{
+    private readonly Mock<IPackageRepository> _packageRepositoryMock;
+    private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
+    private readonly AdminCreatePackageHandler _handler;
+
+    public AdminCreatePackageHandlerTests()
+    {
+        _packageRepositoryMock = MockPackageRepository.Create();
+        _unitOfWorkMock = MockContentUnitOfWork.Create();
+        _handler = new AdminCreatePackageHandler(
+            _packageRepositoryMock.Object,
+            _unitOfWorkMock.Object,
+            CreatePackageDtoFactory()
+        );
+    }
+
+    #region Success Cases
+
+    [Fact]
+    public async Task Handle_ShouldCreatePackageAndReloadWithSlots()
+    {
+        // Arrange
+        string name = TestConstants.Package.ValidName;
+
+        var command = new AdminCreatePackageCommand(Name: name, Description: TestConstants.Package.ValidDescription);
+
+        PackageEntity created = PackageFactory.Create(name);
+        _packageRepositoryMock
+            .Setup(x => x.GetByIdOrThrowAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(created);
+
+        // Act
+        AdminCreatePackageResult result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.Package.Name.Should().Be(name);
+
+        _packageRepositoryMock.VerifyAddCalled();
+        _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    [Fact]
+    public async Task Handle_ShouldCallGetByIdWithSlotsOrThrowAfterCommit()
+    {
+        // Arrange
+        var command = new AdminCreatePackageCommand(
+            Name: TestConstants.Package.ValidName,
+            Description: TestConstants.Package.ValidDescription
+        );
+
+        PackageEntity created = PackageFactory.Create();
+        _packageRepositoryMock
+            .Setup(x => x.GetByIdOrThrowAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(created);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        _packageRepositoryMock.Verify(
+            x => x.GetByIdOrThrowAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+            Times.Once
+        );
+    }
+
+    #endregion
+}

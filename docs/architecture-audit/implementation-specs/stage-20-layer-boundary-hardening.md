@@ -10,7 +10,7 @@ Eleven files. No behaviour change except where Stage 11 already intends one.
 > the tree before planning: the violations this stage was written against are no longer all there.
 
 **Numbered 20, but it does not run last.** Both fixes are prerequisites, not follow-ups:
-§15.2 must land before Stage 18 splits `Shared.Kernel` (the file stops compiling at that
+§15.2 must land before Stage 18 splits `Shared.Domain` (the file stops compiling at that
 moment), and §15.1 must be folded into Stage 11 (which rewrites the same method). The stage
 number records where the finding entered the audit, not the execution slot.
 

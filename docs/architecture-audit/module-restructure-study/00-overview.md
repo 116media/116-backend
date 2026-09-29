@@ -1,5 +1,15 @@
 # Module Restructure Study — Overview
 
+> **Read [stage 18](../implementation-specs/stage-18-project-restructure.md) first if you are implementing.** It is the ruling document and it
+> overrules this study on two points: **integration tests are split per module** (the 4× container
+> cost priced here is removable — one reused container serves every assembly), and the shared
+> foundation is `Shared.Domain` + `BuildingBlocks.{Domain,Application,Infrastructure,Presentation}`.
+> Also overruled: the small-module exception — on the owner's decision **every** module is layer-split,
+> Storage and Mailer included. What still stands: endpoints stay in `Application`, and `<M>.Contracts`
+> sits at the module root. The built shape is drawn in
+> [03](03-full-target-structure.md). Counts here are historical: the solution is **15** projects
+> today, and stage 18 lands **39**.
+
 ## The question
 
 Is there a **huge advantage** in restructuring so that:
@@ -53,7 +63,7 @@ The request bundles two independent decisions. They have different answers:
 - **[04 — Build, tooling, packages, CI](04-build-tooling-packages-ci.md)** — CPM, `Directory.Build.props`,
   `.slnf`, the Dockerfile cost, why affected-project CI is premature here.
 - **[05 — Testing strategy](05-testing-strategy.md)** — per-module unit + one shared integration +
-  shared TestKit; the Testcontainers 4× regression quantified.
+  shared Fixtures; the Testcontainers 4× regression quantified.
 - **[06 — EF Core migrations](06-ef-migrations.md)** — neutral, trending easier; four design-time
   factories needed for true module independence.
 - **[07 — Migration plan & final verdict](07-migration-plan-and-verdict.md)** — the recommended

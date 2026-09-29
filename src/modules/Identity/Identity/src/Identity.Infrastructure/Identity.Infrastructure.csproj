@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <RootNamespace>_116.Identity.Infrastructure</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="ClosedXML" />
+        <PackageReference Include="CsvHelper" />
+        <PackageReference Include="Google.Apis.Auth" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+        <PackageReference Include="Microsoft.IdentityModel.Tokens" />
+        <PackageReference Include="System.IdentityModel.Tokens.Jwt" />
+        <PackageReference Include="Wangkanai.Detection" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Identity.Unit.Tests" />
+        <InternalsVisibleTo Include="Identity.Integration.Tests" />
+        <InternalsVisibleTo Include="Identity.TestData" />
+        <InternalsVisibleTo Include="Fixtures" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="../Identity.Application/Identity.Application.csproj" />
+    </ItemGroup>
+</Project>

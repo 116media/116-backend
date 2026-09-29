@@ -1,0 +1,84 @@
+using System.Security.Claims;
+using _116.BuildingBlocks.Application.CQRS;
+using _116.BuildingBlocks.Presentation.Constants.Authorization.Policies;
+using _116.BuildingBlocks.Presentation.Constants.RateLimit;
+using _116.BuildingBlocks.Presentation.Extensions;
+using _116.Content.Application.Interactions.Constants;
+using _116.Content.Domain.Constants;
+using _116.Identity.Contracts.Application.Services;
+using Carter;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+
+namespace _116.Content.Application.Interactions.UseCases.Public.Commands.EditArticleComment.V1;
+
+/// <summary>
+/// Request body for editing an article comment.
+/// </summary>
+/// <param name="Body">The new comment text.</param>
+public record PublicEditArticleCommentRequest(string Body);
+
+/// <summary>
+/// Response model for a successful PublicEditArticleComment operation.
+/// </summary>
+/// <param name="IsSuccess">Indicates if the operation was successful.</param>
+public record PublicEditArticleCommentResponse(bool IsSuccess);
+
+/// <summary>
+/// Defines the edit article comment endpoint.
+/// </summary>
+internal class PublicEditArticleCommentEndpointV1 : ICarterModule
+{
+    /// <inheritdoc />
+    public void AddRoutes(IEndpointRouteBuilder app)
+    {
+        RouteGroupBuilder group = app.MapApiVersionGroup(1)
+            .MapGroup($"{ContentConstants.Public}/{InteractionsRouteConstants.Articles}")
+            .WithTags($"{ContentConstants.Public}::{InteractionsRouteConstants.Articles}");
+
+        group
+            .MapPut(
+                $"/{{id}}/{InteractionsRouteConstants.Comments}/{{commentId}}",
+                async (
+                    string id,
+                    string commentId,
+                    PublicEditArticleCommentRequest request,
+                    ClaimsPrincipal user,
+                    IClaimsProvider claimsProvider,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
+                {
+                    Guid articleId = Guid.Parse(id);
+                    Guid parsedCommentId = Guid.Parse(commentId);
+                    Guid userId = claimsProvider.GetUserIdFromClaims(user: user);
+
+                    var command = new PublicEditArticleCommentCommand(
+                        ArticleId: articleId,
+                        CommentId: parsedCommentId,
+                        UserId: userId,
+                        Body: request.Body
+                    );
+
+                    PublicEditArticleCommentResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
+
+                    var response = new PublicEditArticleCommentResponse(IsSuccess: result.IsSuccess);
+                    return Results.Ok(response);
+                }
+            )
+            .WithName(endpointName: PublicEditArticleCommentMetaField.EditArticleComment.Name)
+            .WithSummary(summary: PublicEditArticleCommentMetaField.EditArticleComment.Summary)
+            .WithDescription(description: PublicEditArticleCommentMetaField.EditArticleComment.Description)
+            .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentContribution)
+            .Produces<PublicEditArticleCommentResponse>(statusCode: StatusCodes.Status200OK)
+            .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
+            .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
+            .ProducesProblem(statusCode: StatusCodes.Status404NotFound)
+            .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
+    }
+}

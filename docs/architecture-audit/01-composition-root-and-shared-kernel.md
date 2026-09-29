@@ -97,7 +97,7 @@ history and rotating any secret that transited these endpoints, not just a code 
 `DbUpdateException`, EF translation failures, SDK errors — has its `.Message` shipped to
 anonymous callers in production.
 
-**Why it's a problem.** Npgsql messages embed host/database/username; `DbUpdateException`
+**Why it's a problem.** Npgsql messages embed src/host/database/username; `DbUpdateException`
 embeds table and constraint names; EF embeds the failing LINQ. Free reconnaissance on
 public endpoints. Separately, `OperationCanceledException` (client disconnect) also lands
 here → logged at Error and answered 500, poisoning error-rate alerting.
@@ -285,15 +285,20 @@ public setter lets application code rewrite an aggregate's identity or forge `Cr
 `HttpContext` — the compiler allows it. The encapsulation DDD depends on is open at the
 base class.
 
-**Solution.** Split `Shared` along the dependency rule into three projects:
-`Shared.Domain` (zero packages — `Aggregate`, `Entity`, `IDomainEvent`, specifications;
-make `Id` `protected set`, audit fields `internal set`), `Shared.Application`
-(FluentValidation + Mapster — decorators, `IUnitOfWork`, pagination, exceptions), and
-`Shared.Web` (Carter/EF/Quartz/Swashbuckle host wiring). Namespaces already differ by
-folder, so the move is largely mechanical; tighten module `.csproj` references one at a
-time and the compile errors are the dependency-rule violations. Move Bogus to the test
-fixtures project; pin Mapster to a stable release. Delete `IRepository<T>` or give it real
-members.
+**Solution.** Split `Shared` along the dependency rule. **[Stage 18](implementation-specs/stage-18-project-restructure.md)
+D2 executes this as five projects, not three**, and none is called `Shared.Web`:
+`Shared.Domain` (zero packages — `Aggregate`, `Entity`, `IDomainEvent`; make `Id`
+`protected set`, audit fields `internal set`), then
+`BuildingBlocks.Domain` (the specifications and `IRepository<T>` — they need
+`System.Linq.Expressions`, which is what would break `Shared.Domain`'s zero-package rule, D3),
+`BuildingBlocks.Application` (FluentValidation + Mapster — decorators, `IUnitOfWork`, pagination,
+exceptions, and the folded-in CQRS interfaces), `BuildingBlocks.Infrastructure` (EF/Npgsql/Quartz)
+and `BuildingBlocks.Presentation` (Carter/Swashbuckle/versioning host wiring). Namespaces here **do**
+change — 2,395 files (D14) — unlike the module split, which changes none. Tighten module `.csproj`
+references one at a time and the compile errors are the dependency-rule violations. Bogus leaves the
+shared graph in 18.2; the `Mapster` pin stays, measured — every stable release above `7.4.2-pre02` is
+Mapster 10.x, a major upgrade that is its own follow-up. `IRepository<T>` got real members rather than
+being deleted — see the note below.
 
 > **The `IRepository<T>` half is Stage 10 Part D**, not Stage 18 (recount: 26 inheritors, not 27).
 > One of them, `ILookupRepository : IRepository<ContentTypeEntity>`, names a single aggregate while

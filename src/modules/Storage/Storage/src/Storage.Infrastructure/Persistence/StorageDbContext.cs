@@ -1,0 +1,48 @@
+using System.Reflection;
+using _116.BuildingBlocks.Infrastructure.Outbox;
+using _116.Storage.Domain.Constants;
+using _116.Storage.Domain.Entities;
+using _116.Storage.Domain.Enums;
+using Microsoft.EntityFrameworkCore;
+
+namespace _116.Storage.Infrastructure.Persistence;
+
+/// <summary>
+/// Entity Framework database context for the core module.
+/// Manages file entities and related core data within the "storage" schema.
+/// </summary>
+/// <param name="options">The database context configuration options</param>
+/// <remarks>
+/// This context provides access to system-wide data including file management.
+/// All entities are stored in the "storage" schema.
+/// </remarks>
+public class StorageDbContext(DbContextOptions<StorageDbContext> options) : DbContext(options)
+{
+    /// <summary>
+    /// Gets the collection of file entities representing uploaded files in the system.
+    /// </summary>
+    /// <value>DbSet of FileEntity for managing file metadata</value>
+    public DbSet<FileEntity> Files => Set<FileEntity>();
+
+    /// <summary>
+    /// Configures the model for the context using Fluent API.
+    /// </summary>
+    /// <param name="modelBuilder">The builder used to construct the model for the context.</param>
+    /// <remarks>
+    /// Sets the default schema to "System" and applies all entity configurations from the current assembly.
+    /// </remarks>
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.HasDefaultSchema(StorageConstants.SchemaName);
+        modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+        modelBuilder.ApplyConfiguration(new OutboxEventConfiguration());
+        modelBuilder.ApplyConfiguration(new ProcessedDomainEventConfiguration());
+
+        // Soft-deleted files never resolve for consumers; no read path renders deleted files.
+        modelBuilder
+            .Entity<FileEntity>()
+            .HasQueryFilter(file => file.State != EnumFileState.Deleted && file.State != EnumFileState.Replaced);
+
+        base.OnModelCreating(modelBuilder);
+    }
+}

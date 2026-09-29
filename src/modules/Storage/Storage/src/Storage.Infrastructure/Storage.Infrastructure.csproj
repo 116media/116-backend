@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <RootNamespace>_116.Storage.Infrastructure</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="CloudinaryDotNet" />
+        <PackageReference Include="Polly.Core" />
+        <PackageReference Include="SixLabors.ImageSharp" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Storage.Unit.Tests" />
+        <InternalsVisibleTo Include="Storage.Integration.Tests" />
+        <InternalsVisibleTo Include="Storage.TestData" />
+        <InternalsVisibleTo Include="Fixtures" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="../Storage.Application/Storage.Application.csproj" />
+    </ItemGroup>
+</Project>

@@ -1,0 +1,132 @@
+using _116.Content.Domain.Entities;
+using _116.Content.TestData.Builders.Entities;
+
+namespace _116.Content.TestData.Factories;
+
+/// <summary>
+/// Named aliases for <see cref="VideoBuilder" /> chains that three or more tests share verbatim.
+/// A shape fewer tests need belongs at the call site as a builder chain, not here —
+/// factory names carry the combinatorics, and combinatorics multiply.
+/// </summary>
+public static class VideoFactory
+{
+    /// <summary>
+    /// Creates a free video in Draft status with the given category.
+    /// </summary>
+    public static VideoEntity Create(Guid categoryId) => new VideoBuilder(categoryId).Build();
+
+    /// <summary>
+    /// Creates a paid video in Draft status.
+    /// </summary>
+    public static VideoEntity CreatePaid(Guid categoryId, Guid customerId, Guid orderItemId) =>
+        new VideoBuilder(categoryId).WithCustomer(customerId, orderItemId).Build();
+
+    /// <summary>
+    /// Creates a published free video (requires YouTube URL).
+    /// </summary>
+    public static VideoEntity CreatePublished(Guid categoryId) => new VideoBuilder(categoryId).AsPublished().Build();
+
+    /// <summary>
+    /// Creates a published free video with an explicit PublishedAt, for deterministic ordering.
+    /// </summary>
+    public static VideoEntity CreatePublishedAt(Guid categoryId, DateTimeOffset publishedAt) =>
+        new VideoBuilder(categoryId).AsPublishedAt(publishedAt).Build();
+
+    /// <summary>
+    /// Creates a rejected free video.
+    /// </summary>
+    public static VideoEntity CreateRejected(Guid categoryId) => new VideoBuilder(categoryId).AsRejected().Build();
+
+    /// <summary>
+    /// Creates an approved free video.
+    /// </summary>
+    public static VideoEntity CreateApproved(Guid categoryId) => new VideoBuilder(categoryId).AsApproved().Build();
+
+    /// <summary>
+    /// Creates a video with a known slug.
+    /// </summary>
+    public static VideoEntity CreateWithSlug(Guid categoryId, string slug) =>
+        new VideoBuilder(categoryId).WithSlug(slug).Build();
+
+    /// <summary>
+    /// Creates a video linked to a real, addressable artist profile.
+    /// </summary>
+    public static VideoEntity CreateForArtist(Guid categoryId, Guid artistId) =>
+        new VideoBuilder(categoryId).WithArtistId(artistId).Build();
+
+    /// <summary>
+    /// Creates a published video linked to a real, addressable artist profile.
+    /// </summary>
+    public static VideoEntity CreatePublishedForArtist(Guid categoryId, Guid artistId) =>
+        new VideoBuilder(categoryId).WithArtistId(artistId).AsPublished().Build();
+
+    /// <summary>
+    /// Creates a list of free videos in Draft status.
+    /// </summary>
+    public static List<VideoEntity> CreateMany(Guid categoryId, int count) =>
+        Enumerable.Range(0, count).Select(_ => Create(categoryId)).ToList();
+
+    /// <summary>
+    /// Creates a list of published videos.
+    /// </summary>
+    public static List<VideoEntity> CreateManyPublished(Guid categoryId, int count) =>
+        Enumerable.Range(0, count).Select(_ => CreatePublished(categoryId)).ToList();
+
+    /// <summary>
+    /// Creates a promoted published video with a future expiry. Pass
+    /// <paramref name="promotionLevelId" /> referencing a seeded promotion level to satisfy
+    /// the foreign key when the video is persisted.
+    /// </summary>
+    public static VideoEntity CreatePromoted(Guid categoryId, Guid? promotionLevelId = null) =>
+        new VideoBuilder(categoryId)
+            .AsPublished()
+            .AsPromoted(DateTimeOffset.UtcNow.AddDays(7), promotionLevelId)
+            .Build();
+
+    /// <summary>
+    /// Creates a free video in PendingReview status.
+    /// </summary>
+    public static VideoEntity CreatePendingReview(Guid categoryId) =>
+        new VideoBuilder(categoryId).AsPendingReview().Build();
+
+    /// <summary>
+    /// Creates an archived free video.
+    /// </summary>
+    public static VideoEntity CreateArchived(Guid categoryId) => new VideoBuilder(categoryId).AsArchived().Build();
+
+    /// <summary>
+    /// Creates a free video with a thumbnail set (for delete cleanup tests).
+    /// </summary>
+    public static VideoEntity CreateWithThumbnail(Guid categoryId) =>
+        new VideoBuilder(categoryId).WithThumbnail().Build();
+
+    /// <summary>
+    /// Creates an approved free video with a YouTube URL attached (ready to publish).
+    /// </summary>
+    public static VideoEntity CreateApprovedWithYoutubeUrl(Guid categoryId) =>
+        new VideoBuilder(categoryId).WithYoutubeUrl().AsApproved().Build();
+
+    /// <summary>
+    /// Creates a free video filed under the given category. The category name reaches a
+    /// projection through the resolved lookups, not through the video.
+    /// </summary>
+    public static VideoEntity CreateWithCategory(CategoryEntity category) => Create(category.Id);
+
+    /// <summary>
+    /// Creates a list of free videos filed under the given category.
+    /// </summary>
+    public static List<VideoEntity> CreateManyWithCategory(CategoryEntity category, int count) =>
+        Enumerable.Range(0, count).Select(_ => CreateWithCategory(category)).ToList();
+
+    /// <summary>
+    /// Creates a free video filed under the given category with a shoot already scheduled.
+    /// </summary>
+    public static VideoEntity CreateWithShootingScheduledAt(CategoryEntity category, DateTimeOffset scheduledAt) =>
+        new VideoBuilder(category.Id).WithShootingScheduledAt(scheduledAt).Build();
+
+    /// <summary>
+    /// Creates a free video in Draft status with a specific title.
+    /// </summary>
+    public static VideoEntity CreateWithTitle(Guid categoryId, string title) =>
+        new VideoBuilder(categoryId).WithTitle(title).Build();
+}

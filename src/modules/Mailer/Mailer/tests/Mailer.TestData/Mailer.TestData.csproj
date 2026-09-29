@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <RootNamespace>_116.Mailer.TestData</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Bogus" />
+        <PackageReference Include="Moq" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="../../src/Mailer.Domain/Mailer.Domain.csproj" />
+        <ProjectReference Include="../../../../../../tests/TestData/TestData.csproj" />
+    </ItemGroup>
+</Project>

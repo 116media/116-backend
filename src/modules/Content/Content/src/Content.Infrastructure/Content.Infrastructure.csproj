@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <RootNamespace>_116.Content.Infrastructure</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Content.Unit.Tests" />
+        <InternalsVisibleTo Include="Content.Integration.Tests" />
+        <InternalsVisibleTo Include="Content.TestData" />
+        <InternalsVisibleTo Include="Fixtures" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="../Content.Application/Content.Application.csproj" />
+    </ItemGroup>
+</Project>

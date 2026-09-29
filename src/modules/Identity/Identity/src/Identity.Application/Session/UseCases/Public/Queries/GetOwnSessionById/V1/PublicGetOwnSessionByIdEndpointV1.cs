@@ -1,0 +1,76 @@
+using System.Security.Claims;
+using _116.BuildingBlocks.Application.CQRS;
+using _116.BuildingBlocks.Presentation.Constants.Authorization.Policies;
+using _116.BuildingBlocks.Presentation.Constants.RateLimit;
+using _116.BuildingBlocks.Presentation.Extensions;
+using _116.Identity.Application.Session.Constants;
+using _116.Identity.Application.Shared.DTOs;
+using _116.Identity.Contracts.Application.Services;
+using _116.Identity.Domain.Constants;
+using Carter;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+
+namespace _116.Identity.Application.Session.UseCases.Public.Queries.GetOwnSessionById.V1;
+
+/// <summary>
+/// Response model for retrieving a single session.
+/// </summary>
+/// <param name="Session">The session DTO associated with the requested ID.</param>
+public record PublicGetOwnSessionByIdResponse(PublicSessionDto Session);
+
+/// <summary>
+/// Defines the get own session by ID endpoint for authenticated public users.
+/// Handles retrieval of a specific session's details.
+/// </summary>
+internal class PublicGetOwnSessionByIdEndpointV1 : ICarterModule
+{
+    /// <summary>
+    /// Configures the get own session by ID route within the API pipeline.
+    /// Maps the <c>/api/v1/public/me/sessions/{id:guid}</c> endpoint to handle session retrieval requests.
+    /// </summary>
+    /// <param name="app">The route builder used to register API endpoints.</param>
+    public void AddRoutes(IEndpointRouteBuilder app)
+    {
+        RouteGroupBuilder group = app.MapApiVersionGroup(1)
+            .MapGroup($"{IdentityConstants.Public}/{IdentityConstants.Me}/{SessionRouteConstants.Endpoint}")
+            .WithTags($"{IdentityConstants.Public}::{IdentityConstants.Me}::{SessionRouteConstants.Endpoint}");
+
+        group
+            .MapGet(
+                "{id:guid}",
+                async (
+                    Guid id,
+                    ClaimsPrincipal user,
+                    IClaimsProvider authProvider,
+                    IDispatcher dispatcher,
+                    CancellationToken cancellationToken
+                ) =>
+                {
+                    Guid userId = authProvider.GetUserIdFromClaims(user: user);
+
+                    var query = new PublicGetOwnSessionByIdQuery(UserId: userId, SessionId: id);
+                    PublicGetOwnSessionByIdResult result = await dispatcher.Send(
+                        request: query,
+                        cancellationToken: cancellationToken
+                    );
+
+                    var response = new PublicGetOwnSessionByIdResponse(Session: result.Session);
+                    return Results.Ok(value: response);
+                }
+            )
+            .WithName(endpointName: PublicGetOwnSessionByIdMetaField.GetOwnSessionById.Name)
+            .WithSummary(summary: PublicGetOwnSessionByIdMetaField.GetOwnSessionById.Summary)
+            .WithDescription(description: PublicGetOwnSessionByIdMetaField.GetOwnSessionById.Description)
+            .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
+            .RequireRateLimiting(policyName: RateLimitPolicies.SessionManagement)
+            .ProducesValidationProblem()
+            .Produces<PublicGetOwnSessionByIdResponse>()
+            .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
+            .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
+            .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)
+            .ProducesProblem(statusCode: StatusCodes.Status404NotFound)
+            .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
+    }
+}

@@ -1,0 +1,57 @@
+using _116.Content.Domain.Entities;
+using _116.Tests.TestData.Constants;
+
+namespace _116.Content.TestData.Factories;
+
+/// <summary>
+/// Named aliases for <see cref="ArticleCommentEntity" /> arrangements that three or more tests share verbatim.
+/// A shape fewer tests need belongs at the call site as a builder chain, not here —
+/// factory names carry the combinatorics, and combinatorics multiply.
+/// </summary>
+public static class ArticleCommentFactory
+{
+    /// <summary>
+    /// Creates a non-deleted comment on the given article by the given user.
+    /// </summary>
+    public static ArticleCommentEntity Create(Guid articleId, Guid userId) =>
+        ArticleCommentEntity.Create(
+            id: Guid.NewGuid(),
+            userId: userId,
+            articleId: articleId,
+            body: TestConstants.Interactions.ValidCommentBody
+        );
+
+    /// <summary>
+    /// Creates a non-deleted comment carrying a specific body, for tests that assert on ordering
+    /// or on the body itself.
+    /// </summary>
+    public static ArticleCommentEntity Create(Guid articleId, Guid userId, string body) =>
+        ArticleCommentEntity.Create(id: Guid.NewGuid(), userId: userId, articleId: articleId, body: body);
+
+    /// <summary>
+    /// Creates a reply to an existing comment on the given article.
+    /// </summary>
+    public static ArticleCommentEntity CreateReply(
+        Guid articleId,
+        Guid userId,
+        Guid parentCommentId,
+        string? body = null
+    ) =>
+        ArticleCommentEntity.CreateReply(
+            id: Guid.NewGuid(),
+            userId: userId,
+            articleId: articleId,
+            parentCommentId: parentCommentId,
+            body: body ?? TestConstants.Interactions.ValidCommentBody
+        );
+
+    /// <summary>
+    /// Creates a soft-deleted comment on the given article by the given user.
+    /// </summary>
+    public static ArticleCommentEntity CreateDeleted(Guid articleId, Guid userId)
+    {
+        ArticleCommentEntity comment = Create(articleId, userId);
+        comment.SoftDelete(now: TestConstants.Clock.Instant);
+        return comment;
+    }
+}

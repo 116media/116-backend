@@ -1,0 +1,183 @@
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.Content.Application.Commerce.UseCases.Admin.Commands.EditOrderItem;
+using _116.Content.Application.Shared.Persistence;
+using _116.Content.Application.Shared.Repositories;
+using _116.Content.Domain.Entities;
+using _116.Content.Domain.Exceptions;
+using _116.Content.Domain.StateMachines;
+using _116.Content.TestData;
+using _116.Content.TestData.Builders.Entities;
+using _116.Content.TestData.Factories;
+using _116.Content.TestData.Mocks.Infrastructure;
+using _116.Content.TestData.Mocks.Repositories;
+using _116.Identity.TestData.Mocks.Infrastructure;
+using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Tests.TestData.Helpers;
+using AwesomeAssertions;
+using Moq;
+using Xunit;
+
+namespace _116.Content.Unit.Tests.Application.Commerce.UseCases.Admin.Commands.EditOrderItem;
+
+/// <summary>
+/// Unit tests for <see cref="AdminEditOrderItemHandler"/>.
+/// </summary>
+public class AdminEditOrderItemHandlerTests : BaseContentHandlerTest
+{
+    private readonly Mock<IContentOrderRepository> _orderRepositoryMock;
+    private readonly Mock<ICategoryRepository> _categoryRepositoryMock;
+    private readonly Mock<IPromotionLevelRepository> _promotionLevelRepositoryMock;
+    private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
+    private readonly AdminEditOrderItemHandler _handler;
+
+    public AdminEditOrderItemHandlerTests()
+    {
+        _orderRepositoryMock = MockContentOrderRepository.Create();
+        _categoryRepositoryMock = MockCategoryRepository.Create();
+        _promotionLevelRepositoryMock = MockPromotionLevelRepository.Create();
+        _unitOfWorkMock = MockContentUnitOfWork.Create();
+        _handler = new AdminEditOrderItemHandler(
+            _orderRepositoryMock.Object,
+            _categoryRepositoryMock.Object,
+            _promotionLevelRepositoryMock.Object,
+            _unitOfWorkMock.Object,
+            CreateOrderDtoFactory(),
+            TestErrorsFactory.CreateContentI18n()
+        );
+    }
+
+    #region Success Cases
+
+    [Fact]
+    public async Task Handle_WhenDraftOrder_ShouldApplySocialBoostAndRecalculateTotal()
+    {
+        // Arrange
+        CustomerEntity customer = CustomerFactory.Create();
+        ContentOrderEntity order = ContentOrderFactory.CreateForCustomer(customer.Id);
+
+        Guid categoryId = Guid.NewGuid();
+        ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, categoryId);
+        order.Items.Add(item);
+
+        _orderRepositoryMock
+            .Setup(x => x.GetByIdWithItemsAsync(order.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(order);
+
+        var command = new AdminEditOrderItemCommand(
+            OrderId: order.Id.ToString(),
+            ItemId: item.Id.ToString(),
+            ContentKind: null,
+            CategoryId: null,
+            PromotionLevelId: null,
+            SocialBoost: true,
+            IsBonus: null
+        );
+
+        // Act
+        AdminEditOrderItemResult result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        item.SocialBoost.Should().BeTrue();
+        item.CategoryId.Should().Be(categoryId);
+        item.PromotionLevelId.Should().BeNull();
+        item.PromoPriceSnapshotUsd.Should().BeNull();
+        order.TotalAmountUsd.Amount.Should().Be(0);
+        result.Item.Id.Should().Be(item.Id);
+        result.Item.SocialBoost.Should().BeTrue();
+        _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    #endregion
+
+    #region Failure Cases
+
+    [Fact]
+    public async Task Handle_WhenOrderNotFound_ShouldThrowNotFoundException()
+    {
+        // Arrange
+        Guid orderId = Guid.NewGuid();
+        _orderRepositoryMock
+            .Setup(x => x.GetByIdWithItemsAsync(orderId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((ContentOrderEntity?)null);
+
+        var command = new AdminEditOrderItemCommand(
+            OrderId: orderId.ToString(),
+            ItemId: Guid.NewGuid().ToString(),
+            ContentKind: null,
+            CategoryId: null,
+            PromotionLevelId: null,
+            SocialBoost: null,
+            IsBonus: null
+        );
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
+    }
+
+    [Fact]
+    public async Task Handle_WhenNotDraft_ShouldThrowBadRequestException()
+    {
+        // Arrange
+        CustomerEntity customer = CustomerFactory.Create();
+        ContentOrderEntity order = new ContentOrderBuilder().AsSubmitted().WithCustomer(customer).Build();
+
+        _orderRepositoryMock
+            .Setup(x => x.GetByIdWithItemsAsync(order.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(order);
+
+        var command = new AdminEditOrderItemCommand(
+            OrderId: order.Id.ToString(),
+            ItemId: Guid.NewGuid().ToString(),
+            ContentKind: null,
+            CategoryId: null,
+            PromotionLevelId: null,
+            SocialBoost: null,
+            IsBonus: null
+        );
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        (await act.Should().ThrowAsync<ContentRuleException>())
+            .Which.Code.Should()
+            .Be(ContentRuleCodes.CannotAddItemToNonDraftOrder);
+        _unitOfWorkMock.VerifyCommitNotCalled();
+    }
+
+    [Fact]
+    public async Task Handle_WhenItemNotFound_ShouldThrowNotFoundException()
+    {
+        // Arrange
+        CustomerEntity customer = CustomerFactory.Create();
+        ContentOrderEntity order = ContentOrderFactory.CreateForCustomer(customer.Id);
+        Guid missingItemId = Guid.NewGuid();
+
+        _orderRepositoryMock
+            .Setup(x => x.GetByIdWithItemsAsync(order.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(order);
+
+        var command = new AdminEditOrderItemCommand(
+            OrderId: order.Id.ToString(),
+            ItemId: missingItemId.ToString(),
+            ContentKind: null,
+            CategoryId: null,
+            PromotionLevelId: null,
+            SocialBoost: null,
+            IsBonus: null
+        );
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWorkMock.VerifyCommitNotCalled();
+    }
+
+    #endregion
+}

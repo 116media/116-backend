@@ -1,0 +1,156 @@
+using _116.Identity.Application.Auth.UseCases.Public.Commands.ChangePassword;
+using _116.Identity.Application.Shared.Errors.Facade;
+using _116.Identity.Domain.Constants;
+using _116.Tests.TestData.Constants;
+using _116.Tests.TestData.Helpers;
+using AwesomeAssertions;
+using FluentValidation.TestHelper;
+using Xunit;
+
+namespace _116.Identity.Unit.Tests.Application.Auth.UseCases.Public.Commands.ChangePassword;
+
+/// <summary>
+/// Unit tests for <see cref="PublicChangePasswordValidator"/>.
+/// </summary>
+public class PublicChangePasswordValidatorTests
+{
+    private readonly IdentityI18n _i18n = TestErrorsFactory.CreateIdentityI18n();
+    private readonly PublicChangePasswordValidator _validator;
+
+    public PublicChangePasswordValidatorTests()
+    {
+        _validator = new PublicChangePasswordValidator(_i18n);
+    }
+
+    #region Valid Command Tests
+
+    [Fact]
+    public async Task Validate_WithValidCommand_ShouldNotHaveErrors()
+    {
+        // Arrange
+        PublicChangePasswordCommand command = new(
+            UserId: Guid.NewGuid(),
+            SessionId: Guid.NewGuid(),
+            OldPassword: TestConstants.User.ValidPassword,
+            NewPassword: "NewSecure1Pass"
+        );
+
+        // Act
+        TestValidationResult<PublicChangePasswordCommand>? result = await _validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeTrue();
+        result.Errors.Should().BeEmpty();
+    }
+
+    #endregion
+
+    #region OldPassword Validation Tests
+
+    [Fact]
+    public async Task Validate_WithNullOldPassword_ShouldHaveError()
+    {
+        // Arrange
+        PublicChangePasswordCommand command = new(
+            UserId: Guid.NewGuid(),
+            SessionId: Guid.NewGuid(),
+            OldPassword: null!,
+            NewPassword: "NewSecure1Pass"
+        );
+
+        // Act
+        TestValidationResult<PublicChangePasswordCommand>? result = await _validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.ShouldHaveValidationErrorFor(x => x.OldPassword);
+    }
+
+    #endregion
+
+    #region NewPassword Validation Tests
+
+    [Fact]
+    public async Task Validate_WithNullNewPassword_ShouldHaveError()
+    {
+        // Arrange
+        PublicChangePasswordCommand command = new(
+            UserId: Guid.NewGuid(),
+            SessionId: Guid.NewGuid(),
+            OldPassword: TestConstants.User.ValidPassword,
+            NewPassword: null!
+        );
+
+        // Act
+        TestValidationResult<PublicChangePasswordCommand>? result = await _validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.ShouldHaveValidationErrorFor(x => x.NewPassword);
+    }
+
+    [Fact]
+    public async Task Validate_WithTooShortNewPassword_ShouldHaveError()
+    {
+        // Arrange
+        PublicChangePasswordCommand command = new(
+            UserId: Guid.NewGuid(),
+            SessionId: Guid.NewGuid(),
+            OldPassword: TestConstants.User.ValidPassword,
+            NewPassword: "Pass1"
+        );
+
+        // Act
+        TestValidationResult<PublicChangePasswordCommand>? result = await _validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .ShouldHaveValidationErrorFor(x => x.NewPassword)
+            .WithErrorMessage(_i18n.User.Validation.PasswordTooShort("New password", UserConstants.MinPasswordLength));
+    }
+
+    [Fact]
+    public async Task Validate_WithWeakNewPassword_ShouldHaveError()
+    {
+        // Arrange
+        PublicChangePasswordCommand command = new(
+            UserId: Guid.NewGuid(),
+            SessionId: Guid.NewGuid(),
+            OldPassword: TestConstants.User.ValidPassword,
+            NewPassword: "weakpassword"
+        );
+
+        // Act
+        TestValidationResult<PublicChangePasswordCommand>? result = await _validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.ShouldHaveValidationErrorFor(x => x.NewPassword);
+    }
+
+    #endregion
+
+    #region Multiple Validation Errors Tests
+
+    [Fact]
+    public async Task Validate_WithAllInvalidValues_ShouldHaveMultipleErrors()
+    {
+        // Arrange
+        PublicChangePasswordCommand command = new(
+            UserId: Guid.NewGuid(),
+            SessionId: Guid.NewGuid(),
+            OldPassword: string.Empty,
+            NewPassword: "weak"
+        );
+
+        // Act
+        TestValidationResult<PublicChangePasswordCommand>? result = await _validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().HaveCountGreaterThanOrEqualTo(2);
+    }
+
+    #endregion
+}

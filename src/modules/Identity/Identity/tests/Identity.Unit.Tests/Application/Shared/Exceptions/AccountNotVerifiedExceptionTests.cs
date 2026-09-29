@@ -1,0 +1,42 @@
+using _116.Identity.Application.Shared.Exceptions;
+using AwesomeAssertions;
+using Xunit;
+
+namespace _116.Identity.Unit.Tests.Application.Shared.Exceptions;
+
+/// <summary>
+/// Unit tests for <see cref="AccountNotVerifiedException"/>.
+/// </summary>
+public class AccountNotVerifiedExceptionTests
+{
+    [Fact]
+    public void Constructor_WithMessage_ShouldSetMessage()
+    {
+        // Arrange
+        string message = "Account is not verified";
+
+        // Act
+        var exception = new AccountNotVerifiedException(message);
+
+        // Assert
+        exception.Should().NotBeNull();
+        exception.Message.Should().Be(message);
+        exception.Details.Should().BeNull();
+    }
+
+    [Fact]
+    public void Constructor_WithMessageAndDetails_ShouldSetBothProperties()
+    {
+        // Arrange
+        string message = "Account is not verified";
+        string details = "Please verify your email address to continue";
+
+        // Act
+        var exception = new AccountNotVerifiedException(message, details);
+
+        // Assert
+        exception.Should().NotBeNull();
+        exception.Message.Should().Be(message);
+        exception.Details.Should().Be(details);
+    }
+}

@@ -1,0 +1,97 @@
+using _116.BuildingBlocks.Application.Exceptions;
+using _116.BuildingBlocks.Domain.Specifications;
+using _116.BuildingBlocks.Infrastructure.Extensions;
+using _116.Identity.Application.Roles.Builders;
+using _116.Identity.Application.Roles.Builders.Contracts;
+using _116.Identity.Application.Roles.Specifications;
+using _116.Identity.Application.Shared.Repositories;
+using _116.Identity.Domain.Entities;
+using _116.Identity.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
+
+namespace _116.Identity.Infrastructure.Repositories;
+
+/// <summary>
+/// Implementation of <see cref="IRoleRepository" /> for processing user roles and permissions.
+/// </summary>
+/// <param name="context">The database context for accessing role data.</param>
+public class RoleRepository(IdentityDbContext context) : IdentityRepository<RoleEntity>(context), IRoleRepository
+{
+    /// <inheritdoc />
+    public async Task<RoleEntity?> GetRoleByIdWithPermissionsOrThrowAsync(
+        Guid roleId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var specification = new RoleByIdSpecification(roleId: roleId);
+        return await Context
+            .Roles.ApplySpecification(specification: specification)
+            .Include(r => r.RolePermissions)
+                .ThenInclude(rp => rp.Permission)
+            .AsSplitQuery()
+            .FirstDefaultOrThrowAsync(keyValue: roleId, cancellationToken: cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<RoleEntity?> GetRoleByIdOrThrowAsync(Guid roleId, CancellationToken cancellationToken = default)
+    {
+        var specification = new RoleByIdSpecification(roleId: roleId);
+        return await Context
+            .Roles.ApplySpecification(specification: specification)
+            .FirstDefaultOrThrowAsync(keyValue: roleId, cancellationToken: cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> ExistsByNameAsync(string name, CancellationToken cancellationToken = default)
+    {
+        var specification = new RoleByNameSpecification(roleName: name);
+        return await Context.Roles.ApplySpecification(specification: specification).AnyAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task ExistsByIdOrThrowAsync(Guid roleId, CancellationToken cancellationToken = default)
+    {
+        bool exists = await Context.Roles.AnyAsync(role => role.Id == roleId, cancellationToken);
+
+        if (!exists)
+        {
+            throw new NotFoundException(nameof(RoleEntity), roleId);
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<(List<RoleEntity> Roles, int TotalCount)> GetAllWithPaginationAsync(
+        int page,
+        int pageSize,
+        string? search = null,
+        bool? isActive = null,
+        bool? isDeleted = null,
+        CancellationToken cancellationToken = default
+    )
+    {
+        IRoleQueryBuilder builder = new RoleQueryBuilder()
+            .WithSearch(search: search)
+            .WithActiveStatus(isActive: isActive)
+            .WithDeletedStatus(isDeleted: isDeleted);
+
+        Specification<RoleEntity>? spec = builder.Build();
+
+        IQueryable<RoleEntity> query = spec is not null ? Context.Roles.Where(spec.ToExpression()) : Context.Roles;
+
+        int totalCount = await query.CountAsync(cancellationToken: cancellationToken);
+
+        List<RoleEntity> roles = await query
+            .OrderByDescending(r => r.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken: cancellationToken);
+
+        return (roles, totalCount);
+    }
+
+    /// <inheritdoc />
+    public void Delete(RoleEntity entity)
+    {
+        Context.Roles.Remove(entity);
+    }
+}

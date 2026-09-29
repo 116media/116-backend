@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <RootNamespace>_116.Storage.Application</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Storage.Infrastructure" />
+        <InternalsVisibleTo Include="Storage.Unit.Tests" />
+        <InternalsVisibleTo Include="Storage.Integration.Tests" />
+        <InternalsVisibleTo Include="Storage.TestData" />
+        <InternalsVisibleTo Include="Fixtures" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="../Storage.Domain/Storage.Domain.csproj" />
+        <ProjectReference Include="../../../../../shared/src/BuildingBlocks.Presentation/BuildingBlocks.Presentation.csproj" />
+        <ProjectReference Include="../../../Storage.Contracts/Storage.Contracts.csproj" />
+    </ItemGroup>
+</Project>

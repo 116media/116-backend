@@ -1,0 +1,97 @@
+using _116.Content.Application.Lookup.UseCases.Admin.Queries.GetAllPromotionLevels;
+using _116.Content.Application.Shared.Repositories;
+using _116.Content.Domain.Entities;
+using _116.Content.TestData;
+using _116.Content.TestData.Factories;
+using _116.Content.TestData.Mocks.Repositories;
+using _116.Tests.TestData.Constants;
+using AwesomeAssertions;
+using Moq;
+using Xunit;
+
+namespace _116.Content.Unit.Tests.Application.Lookup.UseCases.Admin.Queries.GetAllPromotionLevels;
+
+/// <summary>
+/// Unit tests for <see cref="AdminGetAllPromotionLevelsHandler"/>.
+/// </summary>
+public class AdminGetAllPromotionLevelsHandlerTests : BaseContentHandlerTest
+{
+    private readonly Mock<IPromotionLevelRepository> _promotionLevelRepositoryMock;
+    private readonly AdminGetAllPromotionLevelsHandler _handler;
+
+    public AdminGetAllPromotionLevelsHandlerTests()
+    {
+        _promotionLevelRepositoryMock = MockPromotionLevelRepository.Create();
+        _handler = new AdminGetAllPromotionLevelsHandler(_promotionLevelRepositoryMock.Object, Mapper);
+    }
+
+    #region Success Cases
+
+    [Fact]
+    public async Task Handle_WithNoSearch_ShouldReturnAllPromotionLevels()
+    {
+        // Arrange
+        List<PromotionLevelEntity> promotionLevels = PromotionLevelFactory.CreateMany(3);
+        _promotionLevelRepositoryMock.SetupGetAllPromotionLevels(promotionLevels);
+
+        var query = new AdminGetAllPromotionLevelsQuery(Search: null);
+
+        // Act
+        AdminGetAllPromotionLevelsResult result = await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        result.PromotionLevels.Should().HaveCount(3);
+    }
+
+    [Fact]
+    public async Task Handle_WithSearchTerm_ShouldPassSearchToRepository()
+    {
+        // Arrange
+        string searchTerm = TestConstants.PromotionLevel.ValidName;
+        PromotionLevelEntity level = PromotionLevelFactory.CreateDefault();
+        _promotionLevelRepositoryMock.SetupGetAllPromotionLevels(new List<PromotionLevelEntity> { level });
+
+        var query = new AdminGetAllPromotionLevelsQuery(Search: searchTerm);
+
+        // Act
+        AdminGetAllPromotionLevelsResult result = await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        result.PromotionLevels.Should().ContainSingle();
+        _promotionLevelRepositoryMock.Verify(x => x.GetAllAsync(searchTerm, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_WithEmptyList_ShouldReturnEmptyList()
+    {
+        // Arrange
+        _promotionLevelRepositoryMock.SetupGetAllPromotionLevels(new List<PromotionLevelEntity>());
+
+        var query = new AdminGetAllPromotionLevelsQuery();
+
+        // Act
+        AdminGetAllPromotionLevelsResult result = await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        result.PromotionLevels.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Handle_WithSinglePromotionLevel_ShouldReturnMappedDto()
+    {
+        // Arrange
+        PromotionLevelEntity level = PromotionLevelFactory.CreateDefault();
+        _promotionLevelRepositoryMock.SetupGetAllPromotionLevels(new List<PromotionLevelEntity> { level });
+
+        var query = new AdminGetAllPromotionLevelsQuery();
+
+        // Act
+        AdminGetAllPromotionLevelsResult result = await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        result.PromotionLevels.Should().ContainSingle();
+        result.PromotionLevels[0].Name.Should().Be(level.Name);
+    }
+
+    #endregion
+}

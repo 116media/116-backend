@@ -1,0 +1,55 @@
+using _116.BuildingBlocks.Application.CQRS;
+using _116.Identity.Application.Shared.Errors.Facade;
+using _116.Identity.Application.Shared.Mappers;
+using _116.Identity.Application.Shared.Persistence;
+using _116.Identity.Application.Shared.Repositories;
+using _116.Identity.Domain.Entities;
+using MapsterMapper;
+
+namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.ActivatePermission;
+
+/// <summary>
+/// Handles the <see cref="AdminActivatePermissionCommand" /> to activate a permission.
+/// </summary>
+/// <param name="permissionRepository">Repository for permission data access operations.</param>
+/// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
+/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="i18n">Single i18n entry point for the Identity module.</param>
+public class AdminActivatePermissionHandler(
+    IPermissionRepository permissionRepository,
+    IIdentityUnitOfWork unitOfWork,
+    IMapper mapper,
+    IdentityI18n i18n
+) : ICommandHandler<AdminActivatePermissionCommand, AdminActivatePermissionResult>
+{
+    /// <summary>
+    /// Handles the permission activation command.
+    /// </summary>
+    /// <param name="command">The command containing the permission ID to activate.</param>
+    /// <param name="cancellationToken">Token to cancel the operation.</param>
+    /// <returns>A <see cref="AdminActivatePermissionResult" /> containing the activated permission.</returns>
+    public async Task<AdminActivatePermissionResult> Handle(
+        AdminActivatePermissionCommand command,
+        CancellationToken cancellationToken
+    )
+    {
+        Guid permissionId = Guid.Parse(input: command.PermissionId);
+
+        PermissionEntity? permission = await permissionRepository.GetPermissionByIdOrThrowAsync(
+            permissionId: permissionId,
+            cancellationToken: cancellationToken
+        );
+
+        bool wasActivated = permission!.Activate();
+
+        if (!wasActivated)
+        {
+            throw i18n.User.PermissionAlreadyActive();
+        }
+
+        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+        var permissionDto = permission.ToPermissionDto(mapper);
+        return new AdminActivatePermissionResult(Permission: permissionDto);
+    }
+}

@@ -1,0 +1,24 @@
+using _116.Content.Domain.Entities;
+using _116.Content.TestData.Builders.Entities;
+
+namespace _116.Content.TestData.Factories;
+
+/// <summary>
+/// Named aliases for <see cref="CategoryPricingBuilder" /> chains that three or more tests share verbatim.
+/// A shape fewer tests need belongs at the call site as a builder chain, not here —
+/// factory names carry the combinatorics, and combinatorics multiply.
+/// </summary>
+public static class CategoryPricingFactory
+{
+    /// <summary>
+    /// Creates a category pricing with default price.
+    /// </summary>
+    public static CategoryPricingEntity Create(CategoryEntity category, Guid pricingTierId) =>
+        new CategoryPricingBuilder(category, pricingTierId).Build();
+
+    /// <summary>
+    /// Creates a category pricing with a specific price.
+    /// </summary>
+    public static CategoryPricingEntity Create(CategoryEntity category, Guid pricingTierId, decimal priceUsd) =>
+        new CategoryPricingBuilder(category, pricingTierId).WithPriceUsd(priceUsd).Build();
+}

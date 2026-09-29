@@ -1,0 +1,63 @@
+using _116.BuildingBlocks.Application.CQRS;
+using _116.BuildingBlocks.Presentation.Constants.Authorization.Policies;
+using _116.BuildingBlocks.Presentation.Constants.RateLimit;
+using _116.BuildingBlocks.Presentation.Extensions;
+using _116.Identity.Application.Session.Constants;
+using _116.Identity.Domain.Constants;
+using Carter;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+
+namespace _116.Identity.Application.Session.UseCases.Admin.Commands.CleanupExpiredSessions.V1;
+
+/// <summary>
+/// Response model for cleanup expired sessions.
+/// </summary>
+/// <param name="DeletedCount">Number of expired sessions that were deleted.</param>
+public record AdminCleanupExpiredSessionsResponse(int DeletedCount);
+
+/// <summary>
+/// Defines the admin cleanup expired sessions endpoint.
+/// Handles cleanup of expired sessions from the system.
+/// </summary>
+internal class AdminCleanupExpiredSessionsEndpointV1 : ICarterModule
+{
+    /// <summary>
+    /// Configures the admin cleanup expired sessions route within the API pipeline.
+    /// Maps the <c>/api/v1/admin/sessions/cleanup</c> endpoint to handle cleanup requests.
+    /// </summary>
+    /// <param name="app">The route builder used to register API endpoints.</param>
+    public void AddRoutes(IEndpointRouteBuilder app)
+    {
+        RouteGroupBuilder group = app.MapApiVersionGroup(1)
+            .MapGroup($"{IdentityConstants.Admin}/{SessionRouteConstants.Endpoint}")
+            .WithTags($"{IdentityConstants.Admin}::{SessionRouteConstants.Endpoint}");
+
+        group
+            .MapPost(
+                pattern: SessionRouteConstants.Cleanup,
+                async (IDispatcher dispatcher, CancellationToken cancellationToken) =>
+                {
+                    var command = new AdminCleanupExpiredSessionsCommand();
+                    AdminCleanupExpiredSessionsResult result = await dispatcher.Send(
+                        request: command,
+                        cancellationToken: cancellationToken
+                    );
+
+                    var response = new AdminCleanupExpiredSessionsResponse(DeletedCount: result.DeletedCount);
+                    return Results.Ok(value: response);
+                }
+            )
+            .WithName(endpointName: AdminCleanupExpiredSessionsMetaField.CleanupExpiredSessions.Name)
+            .WithSummary(summary: AdminCleanupExpiredSessionsMetaField.CleanupExpiredSessions.Summary)
+            .WithDescription(description: AdminCleanupExpiredSessionsMetaField.CleanupExpiredSessions.Description)
+            .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
+            .RequireRateLimiting(policyName: RateLimitPolicies.SessionManagement)
+            .ProducesValidationProblem()
+            .Produces<AdminCleanupExpiredSessionsResponse>()
+            .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
+            .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)
+            .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
+    }
+}

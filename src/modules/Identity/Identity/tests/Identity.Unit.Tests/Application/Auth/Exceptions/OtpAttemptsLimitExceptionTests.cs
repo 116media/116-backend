@@ -1,0 +1,42 @@
+using _116.Identity.Application.Auth.Exceptions;
+using AwesomeAssertions;
+using Xunit;
+
+namespace _116.Identity.Unit.Tests.Application.Auth.Exceptions;
+
+/// <summary>
+/// Unit tests for <see cref="OtpAttemptsLimitException"/>.
+/// </summary>
+public class OtpAttemptsLimitExceptionTests
+{
+    [Fact]
+    public void Constructor_WithMessage_ShouldSetMessage()
+    {
+        // Arrange
+        string message = "Too many OTP attempts";
+
+        // Act
+        var exception = new OtpAttemptsLimitException(message);
+
+        // Assert
+        exception.Should().NotBeNull();
+        exception.Message.Should().Be(message);
+        exception.Details.Should().BeNull();
+    }
+
+    [Fact]
+    public void Constructor_WithMessageAndDetails_ShouldSetBothProperties()
+    {
+        // Arrange
+        string message = "Too many OTP attempts";
+        string details = "User has exceeded the maximum of 5 attempts";
+
+        // Act
+        var exception = new OtpAttemptsLimitException(message, details);
+
+        // Assert
+        exception.Should().NotBeNull();
+        exception.Message.Should().Be(message);
+        exception.Details.Should().Be(details);
+    }
+}

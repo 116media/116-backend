@@ -1,0 +1,111 @@
+using _116.Content.Domain.Entities;
+
+namespace _116.Content.TestData.Builders.Entities;
+
+/// <summary>
+/// Fluent builder for creating <see cref="ContentOrderEntity" /> instances in tests.
+/// Drives the real domain transitions, so every state it produces is one the application can reach.
+/// Use it for any shape a test needs; ContentOrderFactory only names chains three or more tests share.
+/// </summary>
+public class ContentOrderBuilder
+{
+    private Guid _id = Guid.NewGuid();
+    private Guid _customerId = Guid.NewGuid();
+    private Guid? _packageId;
+    private bool _submitted;
+    private bool _paid;
+    private bool _cancelled;
+    private bool _attachPayment;
+
+    public ContentOrderBuilder WithId(Guid id)
+    {
+        _id = id;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the package the order was created from.
+    /// </summary>
+    /// <param name="packageId">The package identifier.</param>
+    /// <returns>The builder instance for chaining.</returns>
+    public ContentOrderBuilder WithPackageId(Guid packageId)
+    {
+        _packageId = packageId;
+        return this;
+    }
+
+    public ContentOrderBuilder WithCustomerId(Guid customerId)
+    {
+        _customerId = customerId;
+        return this;
+    }
+
+    public ContentOrderBuilder AsSubmitted()
+    {
+        _submitted = true;
+        return this;
+    }
+
+    public ContentOrderBuilder AsPaid()
+    {
+        _submitted = true;
+        _paid = true;
+        return this;
+    }
+
+    public ContentOrderBuilder AsCancelled()
+    {
+        _cancelled = true;
+        return this;
+    }
+
+    /// <summary>
+    /// Points the order's customer foreign key at the given customer.
+    /// </summary>
+    public ContentOrderBuilder WithCustomer(CustomerEntity customer)
+    {
+        _customerId = customer.Id;
+        return this;
+    }
+
+    /// <summary>
+    /// Attaches a payment for the order's total, as the submission flow does. Read it back from
+    /// the built order's <c>Payment</c> to arrange it further.
+    /// </summary>
+    public ContentOrderBuilder WithPayment()
+    {
+        _attachPayment = true;
+        return this;
+    }
+
+    public ContentOrderEntity Build()
+    {
+        var order = ContentOrderEntity.Create(_id, _customerId, _packageId);
+
+        if (_submitted)
+        {
+            order.Submit();
+        }
+
+        if (_paid)
+        {
+            order.MarkPaid(
+                paymentId: Guid.NewGuid(),
+                verifiedAt: DateTimeOffset.UtcNow,
+                promotionDurationsByLevelId: new Dictionary<Guid, int>()
+            );
+        }
+
+        if (_cancelled)
+        {
+            order.Cancel();
+        }
+
+        if (_attachPayment)
+        {
+            order.AttachPayment();
+        }
+
+        return order;
+    }
+}

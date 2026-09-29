@@ -1,7 +1,16 @@
 # 01 — Decision A: Per-Module `src/` and `tests/`
 
+
+> **Overruled on the test split by [stage 18](../implementation-specs/stage-18-project-restructure.md) D8/D9.**
+> Integration tests **are** split per module; the 4× Testcontainers cost priced here is not
+> inherent (one reused container plus an advisory-locked template migration serves every
+> assembly). The shared library also splits: `<M>.TestData` per module, plus top-level
+> `tests/TestData` (module-agnostic data) and `tests/Fixtures` (the xUnit fixtures and containers —
+> today's `Integration/Common`, which is where the real fixtures always were). The cross-module
+> workflow tests this doc calls ownerless land in `tests/EndToEnd.Tests`.
+
 The proposal: give each module its own top-level folder containing its own `src/` and `tests/`, e.g.
-`modules/Identity/src/...` and `modules/Identity/tests/...`, instead of the current single `src/Modules/…`
+`src/modules/Identity/Identity/src/...` and `src/modules/Identity/Identity/tests/...`, instead of the current single `src/Modules/…`
 + shared root `tests/`.
 
 **Verdict: worth it only in its light form.** Re-rooting `src/` is cheap and neutral; splitting *unit*
@@ -16,7 +25,7 @@ Modules already live in their own folders — `src/Modules/{Identity,Content,Cor
 `.csproj`, and the cross-module boundaries that matter are **already enforced by dedicated `.Contracts`
 projects** (`Content.csproj` references `Identity.Contracts`, `Mailer.Contracts`, `Shared.Contracts`,
 never the implementation assemblies). The valuable part of "module autonomy" — a contract seam between
-modules — is present. Moving `src/Modules/Identity/Identity/**` to `modules/Identity/src/**` **relocates
+modules — is present. Moving `src/Modules/Identity/Identity/**` to `src/modules/Identity/Identity/src/**` **relocates
 folders without changing the build graph**. It buys clearer ownership and enables per-module `.slnf`
 filters ([04](04-build-tooling-packages-ci.md)); it does not buy isolation you don't already have.
 
@@ -42,7 +51,7 @@ Today there are exactly three test projects, already foldered by module inside t
 
 Unit tests are already grouped under `Unit/Modules/<M>`, use **mocks only** (no container, no host), and
 have no cross-module dependencies beyond the shared mock/`Fixtures` helpers. Moving them to
-`modules/<M>/tests/<M>.Unit.Tests` is a clean, low-risk relocation that genuinely gives each module its
+`src/modules/<M>/<M>/tests/<M>.Unit.Tests` is a clean, low-risk relocation that genuinely gives each module its
 own unit-test project. This is the one part of Decision A with real, uncomplicated value.
 
 ### Integration tests **cannot** split — the harness is whole-app
@@ -65,9 +74,10 @@ suite** — while the cross-module tests still force a shared integration projec
 
 ## Recommendation
 
-1. **If you re-root:** move each module to `modules/<M>/{src,tests}`, put **unit** tests under
-   `modules/<M>/tests/<M>.Unit.Tests`, but keep **one shared** `Integration.Tests` project and a shared
-   `Shared.TestKit` (builders/factories/harness) — see the tree in [03](03-full-target-structure.md) and
+1. **If you re-root:** move each module to `src/modules/<M>/{src,tests}`, put **unit** tests under
+   `src/modules/<M>/<M>/tests/<M>.Unit.Tests`, but keep **one shared** `Integration.Tests` project and a shared
+   `Shared.Fixtures` (builders/factories/harness) *(overruled — stage 18 D8/D10 splits it into
+   `TestData` and `Fixtures`)* — see the tree in [03](03-full-target-structure.md) and
    the rationale in [05](05-testing-strategy.md).
 2. **If you don't:** you lose very little. The contract seams — the part that actually enforces module
    autonomy — already exist.

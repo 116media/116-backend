@@ -63,8 +63,9 @@ error — the offending files stop compiling, which is how you find and fix them
 *perceived* size far more than a feature split would, because most of the cognitive load is the
 absent layer boundary, not the line count.
 
-> This layer-into-projects split has been **adopted as the standard for every module**, not just
-> Content, with Central Package Management so ~20 projects can't drift on versions. Content is
+> This layer-into-projects split has been adopted for **every module** — [stage 18](implementation-specs/stage-18-project-restructure.md) D1,
+> on the owner's decision that shape should not follow size, so Storage and Mailer are layered too — with
+> Central Package Management so the 39 projects can't drift on versions. Content is
 > where it pays off most (the leaks are real and numerous here), but the target structure, the
 > reference graph, and the package strategy are in
 > [11 — Target Project Structure & Package Management](11-project-structure-and-packages.md).

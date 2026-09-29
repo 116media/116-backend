@@ -1,0 +1,525 @@
+using _116.Content.Domain.Entities;
+using _116.Content.Domain.Events;
+using _116.Content.Domain.Exceptions;
+using _116.Content.Domain.StateMachines;
+using _116.Content.TestData.Factories;
+using _116.Tests.TestData.Constants;
+using _116.Tests.TestData.Helpers;
+using AwesomeAssertions;
+using Xunit;
+
+namespace _116.Content.Unit.Tests.Domain.Entities;
+
+/// <summary>
+/// Unit tests for <see cref="CategoryEntity"/> domain behaviour.
+/// </summary>
+public class CategoryEntityTests
+{
+    #region Create
+
+    [Fact]
+    public void Create_WithValidArguments_ShouldReturnEntity()
+    {
+        Guid contentTypeId = Guid.NewGuid();
+        CategoryEntity category = CategoryFactory.Create(contentTypeId);
+
+        category.Should().NotBeNull();
+        category.IsActive.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Create_WithEmptyName_ShouldThrowBadRequestException()
+    {
+        Guid id = Guid.NewGuid();
+        Guid contentTypeId = Guid.NewGuid();
+        var errors = TestErrorsFactory.CreateCategoryErrors();
+
+        Action act = () => CategoryEntity.Create(id, contentTypeId, "   ", "valid-slug", "desc", false);
+
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.CategoryNameRequired);
+    }
+
+    [Fact]
+    public void Create_WithEmptySlug_ShouldThrowBadRequestException()
+    {
+        Guid id = Guid.NewGuid();
+        Guid contentTypeId = Guid.NewGuid();
+        var errors = TestErrorsFactory.CreateCategoryErrors();
+
+        Action act = () => CategoryEntity.Create(id, contentTypeId, "Valid Name", "", "desc", false);
+
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.CategorySlugRequired);
+    }
+
+    [Fact]
+    public void Create_WithIsExclusive_ShouldSetProperty()
+    {
+        Guid id = Guid.NewGuid();
+        Guid contentTypeId = Guid.NewGuid();
+        var errors = TestErrorsFactory.CreateCategoryErrors();
+
+        CategoryEntity category = CategoryEntity.Create(
+            id,
+            contentTypeId,
+            "Test",
+            "test",
+            "desc",
+            false,
+            isExclusive: true
+        );
+
+        category.IsExclusive.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Create_DefaultIsExclusive_ShouldBeFalse()
+    {
+        Guid contentTypeId = Guid.NewGuid();
+        CategoryEntity category = CategoryFactory.Create(contentTypeId);
+
+        category.IsExclusive.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region Rename / Redescribe
+
+    [Fact]
+    public void Rename_WithValidArguments_ShouldSetNameAndSlug()
+    {
+        Guid contentTypeId = Guid.NewGuid();
+        CategoryEntity category = CategoryFactory.Create(contentTypeId);
+
+        bool changed = category.Rename("New Name", "new-slug");
+
+        changed.Should().BeTrue();
+        category.Name.Should().Be("New Name");
+        category.Slug.Value.Should().Be("new-slug");
+    }
+
+    [Fact]
+    public void Rename_WithTheSameValues_ShouldReportUnchangedAndRaiseNothing()
+    {
+        Guid contentTypeId = Guid.NewGuid();
+        CategoryEntity category = CategoryFactory.Create(contentTypeId);
+        category.ClearDomainEvents();
+
+        bool changed = category.Rename(category.Name, category.Slug);
+
+        changed.Should().BeFalse();
+        category.DomainEvents.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Redescribe_ShouldSetTheDescription()
+    {
+        Guid contentTypeId = Guid.NewGuid();
+        CategoryEntity category = CategoryFactory.Create(contentTypeId);
+
+        bool changed = category.Redescribe("New description");
+
+        changed.Should().BeTrue();
+        category.Description.Should().Be("New description");
+    }
+
+    [Fact]
+    public void Redescribe_WithTheSameDescription_ShouldReportUnchanged()
+    {
+        Guid contentTypeId = Guid.NewGuid();
+        CategoryEntity category = CategoryFactory.Create(contentTypeId);
+
+        bool changed = category.Redescribe(category.Description);
+
+        changed.Should().BeFalse();
+    }
+
+    [Fact]
+    public void Rename_WithEmptyName_ShouldThrowBadRequestException()
+    {
+        Guid contentTypeId = Guid.NewGuid();
+        CategoryEntity category = CategoryFactory.Create(contentTypeId);
+
+        Action act = () => category.Rename("", "valid-slug");
+
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.CategoryNameRequired);
+    }
+
+    [Fact]
+    public void Rename_WithEmptySlug_ShouldThrowBadRequestException()
+    {
+        Guid contentTypeId = Guid.NewGuid();
+        CategoryEntity category = CategoryFactory.Create(contentTypeId);
+
+        Action act = () => category.Rename("Valid Name", "  ");
+
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.CategorySlugRequired);
+    }
+
+    #endregion
+
+    #region EnsureCommissionable
+
+    [Fact]
+    public void EnsureCommissionable_WhenActiveAndPaid_ShouldNotThrow()
+    {
+        Guid contentTypeId = Guid.NewGuid();
+        CategoryEntity category = CategoryFactory.CreatePaid(contentTypeId);
+
+        Action act = () => category.EnsureCommissionable();
+
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void EnsureCommissionable_WhenInactive_ShouldThrowNotFoundException()
+    {
+        Guid contentTypeId = Guid.NewGuid();
+        CategoryEntity category = CategoryFactory.CreateInactive(contentTypeId);
+
+        Action act = () => category.EnsureCommissionable();
+
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.CategoryNotFound);
+    }
+
+    [Fact]
+    public void EnsureCommissionable_WhenFree_ShouldThrowNotFoundException()
+    {
+        Guid contentTypeId = Guid.NewGuid();
+        CategoryEntity category = CategoryFactory.CreateFree(contentTypeId);
+
+        Action act = () => category.EnsureCommissionable();
+
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.CategoryNotFound);
+    }
+
+    #endregion
+
+    #region Activate
+
+    [Fact]
+    public void Activate_WhenInactive_ShouldReturnTrueAndSetActive()
+    {
+        Guid contentTypeId = Guid.NewGuid();
+        CategoryEntity category = CategoryFactory.CreateInactive(contentTypeId);
+
+        bool result = category.Activate();
+
+        result.Should().BeTrue();
+        category.IsActive.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Activate_WhenAlreadyActive_ShouldReturnFalse()
+    {
+        Guid contentTypeId = Guid.NewGuid();
+        CategoryEntity category = CategoryFactory.Create(contentTypeId);
+
+        bool result = category.Activate();
+
+        result.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region Deactivate
+
+    [Fact]
+    public void Deactivate_WhenActive_ShouldReturnTrueAndSetInactive()
+    {
+        Guid contentTypeId = Guid.NewGuid();
+        CategoryEntity category = CategoryFactory.Create(contentTypeId);
+
+        bool result = category.Deactivate();
+
+        result.Should().BeTrue();
+        category.IsActive.Should().BeFalse();
+    }
+
+    [Fact]
+    public void Deactivate_WhenAlreadyInactive_ShouldReturnFalse()
+    {
+        Guid contentTypeId = Guid.NewGuid();
+        CategoryEntity category = CategoryFactory.CreateInactive(contentTypeId);
+
+        bool result = category.Deactivate();
+
+        result.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region Reclassify IsExclusive
+
+    [Fact]
+    public void Reclassify_SetsIsExclusive()
+    {
+        Guid contentTypeId = Guid.NewGuid();
+        CategoryEntity category = CategoryFactory.Create(contentTypeId);
+
+        category.Reclassify(isGossip: false, isExclusive: true, isDefaultForLyrics: false);
+
+        category.IsExclusive.Should().BeTrue();
+    }
+
+    #endregion
+
+    #region SetExclusive / ClearExclusive
+
+    [Fact]
+    public void SetExclusive_ShouldSetToTrue()
+    {
+        Guid contentTypeId = Guid.NewGuid();
+        CategoryEntity category = CategoryFactory.Create(contentTypeId);
+
+        category.SetExclusive();
+
+        category.IsExclusive.Should().BeTrue();
+    }
+
+    [Fact]
+    public void ClearExclusive_ShouldSetToFalse()
+    {
+        Guid contentTypeId = Guid.NewGuid();
+        CategoryEntity category = CategoryFactory.Create(contentTypeId);
+        category.SetExclusive();
+
+        category.ClearExclusive();
+
+        category.IsExclusive.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region SetPosterFileId
+
+    [Fact]
+    public void SetPosterFileId_ShouldSetValue()
+    {
+        Guid contentTypeId = Guid.NewGuid();
+        CategoryEntity category = CategoryFactory.Create(contentTypeId);
+        Guid posterFileId = Guid.NewGuid();
+
+        category.SetPosterFileId(posterFileId);
+
+        category.PosterFileId.Should().Be(posterFileId);
+    }
+
+    [Fact]
+    public void SetPosterFileId_WithNull_ShouldClearValue()
+    {
+        Guid contentTypeId = Guid.NewGuid();
+        CategoryEntity category = CategoryFactory.Create(contentTypeId);
+        category.SetPosterFileId(Guid.NewGuid());
+
+        category.SetPosterFileId(null);
+
+        category.PosterFileId.Should().BeNull();
+    }
+
+    #endregion
+
+    #region PinToFeed / UnpinFromFeed
+
+    [Fact]
+    public void PinToFeed_WhenNotPinned_ShouldSetTimestampAndFlag()
+    {
+        CategoryEntity category = CategoryFactory.Create(Guid.NewGuid());
+
+        category.PinToFeed(TestConstants.Clock.Instant);
+
+        category.PinnedToFeedAt.Should().NotBeNull();
+        category.IsPinnedToFeed.Should().BeTrue();
+    }
+
+    [Fact]
+    public void PinToFeed_WhenAlreadyPinned_ShouldRefreshTimestampForward()
+    {
+        CategoryEntity category = CategoryFactory.Create(Guid.NewGuid());
+        category.PinToFeed(TestConstants.Clock.Instant);
+        DateTimeOffset first = category.PinnedToFeedAt!.Value;
+
+        category.PinToFeed(TestConstants.Clock.Instant);
+
+        category.PinnedToFeedAt!.Value.Should().BeOnOrAfter(first);
+    }
+
+    [Fact]
+    public void UnpinFromFeed_WhenPinned_ShouldClearAndReturnTrue()
+    {
+        CategoryEntity category = CategoryFactory.Create(Guid.NewGuid());
+        category.PinToFeed(TestConstants.Clock.Instant);
+
+        bool result = category.UnpinFromFeed();
+
+        result.Should().BeTrue();
+        category.PinnedToFeedAt.Should().BeNull();
+        category.IsPinnedToFeed.Should().BeFalse();
+    }
+
+    [Fact]
+    public void UnpinFromFeed_WhenNotPinned_ShouldReturnFalse()
+    {
+        CategoryEntity category = CategoryFactory.Create(Guid.NewGuid());
+
+        bool result = category.UnpinFromFeed();
+
+        result.Should().BeFalse();
+        category.PinnedToFeedAt.Should().BeNull();
+    }
+
+    [Fact]
+    public void IsPinnedToFeed_ShouldReflectTimestampPresence()
+    {
+        CategoryEntity category = CategoryFactory.Create(Guid.NewGuid());
+
+        category.IsPinnedToFeed.Should().BeFalse();
+        category.PinToFeed(TestConstants.Clock.Instant);
+        category.IsPinnedToFeed.Should().BeTrue();
+    }
+
+    #endregion
+
+    #region IsDefaultForLyrics
+
+    [Fact]
+    public void Create_DefaultIsDefaultForLyrics_ShouldBeFalse()
+    {
+        Guid contentTypeId = Guid.NewGuid();
+        CategoryEntity category = CategoryFactory.Create(contentTypeId);
+
+        category.IsDefaultForLyrics.Should().BeFalse();
+    }
+
+    [Fact]
+    public void Create_WithIsDefaultForLyrics_ShouldSetProperty()
+    {
+        Guid id = Guid.NewGuid();
+        Guid contentTypeId = Guid.NewGuid();
+        var errors = TestErrorsFactory.CreateCategoryErrors();
+
+        CategoryEntity category = CategoryEntity.Create(
+            id,
+            contentTypeId,
+            "Test",
+            "test",
+            "desc",
+            false,
+            isDefaultForLyrics: true
+        );
+
+        category.IsDefaultForLyrics.Should().BeTrue();
+    }
+
+    [Fact]
+    public void SetDefaultForLyrics_ShouldSetToTrue()
+    {
+        Guid contentTypeId = Guid.NewGuid();
+        CategoryEntity category = CategoryFactory.Create(contentTypeId);
+
+        category.SetDefaultForLyrics();
+
+        category.IsDefaultForLyrics.Should().BeTrue();
+    }
+
+    [Fact]
+    public void ClearDefaultForLyrics_ShouldSetToFalse()
+    {
+        Guid contentTypeId = Guid.NewGuid();
+        CategoryEntity category = CategoryFactory.Create(contentTypeId);
+        category.SetDefaultForLyrics();
+
+        category.ClearDefaultForLyrics();
+
+        category.IsDefaultForLyrics.Should().BeFalse();
+    }
+
+    [Fact]
+    public void Reclassify_SetsIsDefaultForLyrics()
+    {
+        Guid contentTypeId = Guid.NewGuid();
+        CategoryEntity category = CategoryFactory.Create(contentTypeId);
+
+        category.Reclassify(isGossip: false, isExclusive: false, isDefaultForLyrics: true);
+
+        category.IsDefaultForLyrics.Should().BeTrue();
+    }
+
+    #endregion
+
+    #region Domain Events
+
+    [Fact]
+    public void Create_ShouldRaiseCategoryChangedEvent()
+    {
+        // Act
+        var entity = CategoryEntity.Create(Guid.NewGuid(), Guid.NewGuid(), "Music", "music", "desc", isFree: true);
+
+        // Assert
+        entity
+            .DomainEvents.OfType<CategoryChangedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(new CategoryChangedEvent(entity.Id));
+    }
+
+    [Fact]
+    public void Rename_ShouldRaiseCategoryChangedEvent()
+    {
+        // Arrange
+        var entity = CategoryEntity.Create(Guid.NewGuid(), Guid.NewGuid(), "Music", "music", "desc", isFree: true);
+        entity.ClearDomainEvents();
+
+        // Act
+        entity.Rename("Culture", "culture");
+
+        // Assert
+        entity.DomainEvents.OfType<CategoryChangedEvent>().Should().ContainSingle();
+    }
+
+    [Fact]
+    public void EditVerbs_CalledTogether_ShouldRaiseOneCategoryChangedEvent()
+    {
+        // Arrange
+        var entity = CategoryEntity.Create(Guid.NewGuid(), Guid.NewGuid(), "Music", "music", "desc", isFree: true);
+        entity.ClearDomainEvents();
+
+        // Act
+        entity.Rename("Culture", "culture");
+        entity.Redescribe("Another description");
+        entity.Reclassify(isGossip: true, isExclusive: false, isDefaultForLyrics: false);
+
+        // Assert
+        entity.DomainEvents.OfType<CategoryChangedEvent>().Should().ContainSingle();
+    }
+
+    [Fact]
+    public void PinToFeed_ShouldRaiseCategoryChangedEvent()
+    {
+        // Arrange
+        var entity = CategoryEntity.Create(Guid.NewGuid(), Guid.NewGuid(), "Music", "music", "desc", isFree: true);
+        entity.ClearDomainEvents();
+
+        // Act
+        entity.PinToFeed(TestConstants.Clock.Instant);
+
+        // Assert
+        entity.DomainEvents.OfType<CategoryChangedEvent>().Should().ContainSingle();
+    }
+
+    [Fact]
+    public void UnpinFromFeed_WhenNotPinned_ShouldRaiseNothing()
+    {
+        // Arrange
+        var entity = CategoryEntity.Create(Guid.NewGuid(), Guid.NewGuid(), "Music", "music", "desc", isFree: true);
+        entity.ClearDomainEvents();
+
+        // Act
+        entity.UnpinFromFeed();
+
+        // Assert
+        entity.DomainEvents.Should().BeEmpty();
+    }
+
+    #endregion
+}

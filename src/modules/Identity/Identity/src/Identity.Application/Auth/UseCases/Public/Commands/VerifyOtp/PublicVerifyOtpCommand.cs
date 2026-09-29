@@ -1,0 +1,34 @@
+using _116.BuildingBlocks.Application.CQRS;
+using _116.BuildingBlocks.Presentation.Constants.RateLimit;
+
+namespace _116.Identity.Application.Auth.UseCases.Public.Commands.VerifyOtp;
+
+/// <summary>
+/// Command for verifying an OTP code for user account verification.
+/// </summary>
+/// <param name="Email">The user's email address.</param>
+/// <param name="Code">The OTP code to verify.</param>
+/// <param name="Purpose">The purpose for which the OTP is being verified (EmailVerification or AccountRecovery).</param>
+/// <remarks>
+/// This command is used to verify the OTP code sent to the user's email for various purposes.
+/// Upon successful verification, the user's account will be marked as verified for email verification purpose.
+/// </remarks>
+public record PublicVerifyOtpCommand(string Email, string Code, string Purpose)
+    : ICommand<PublicVerifyOtpResult>,
+        IAccountRateLimited
+{
+    /// <inheritdoc />
+    public string RateLimitPolicy => RateLimitPolicies.Otp;
+
+    /// <inheritdoc />
+    public string AccountKey => Email;
+}
+
+/// <summary>
+/// Result of the <see cref="PublicVerifyOtpCommand" /> containing verification status.
+/// </summary>
+/// <param name="IsSuccess">Indicates whether the OTP verification was successful.</param>
+/// <remarks>
+/// Contains the verification result and a user-friendly message explaining the outcome.
+/// </remarks>
+public record PublicVerifyOtpResult(bool IsSuccess);

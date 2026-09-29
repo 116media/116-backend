@@ -1,14 +1,21 @@
 # 12 — Shared Kernel vs BuildingBlocks: what each should really be
 
-> **Correction (superseded on two points by
-> [module-restructure-study/08](module-restructure-study/08-shared-foundation-structure.md)).** This
-> doc uses "Shared Kernel" for the shared **domain base types** (`Aggregate`, `Entity`, `Specification`).
-> That is inaccurate: a DDD *Shared Kernel* is domain **model co-owned by ≥2 bounded contexts** (which
-> this codebase does not have) — the base types are the tactical **building blocks / SeedWork**, and the
-> honest project name is **`Shared.Domain`**, not `Shared.Kernel`. Also, `BuildingBlocks` should be
-> **deleted** (its files each have an owner), and its residual web vocabulary belongs in a **`Shared.Web`**
-> presentation layer, **not** in any `.Contracts` project. Read [08](module-restructure-study/08-shared-foundation-structure.md)
-> for the corrected model; the reasoning below still holds, only the naming is fixed there.
+> **Superseded in part by [stage 18](implementation-specs/stage-18-project-restructure.md).** The
+> reasoning here is adopted; the name is not. This document's own header argues a DDD Shared Kernel
+> is domain model co-owned by ≥2 bounded contexts — which these base types are not — so the project
+> is **`Shared.Domain`**, not `Shared.Kernel`. The technical half splits four ways as
+> `BuildingBlocks.{Domain,Application,Infrastructure,Presentation}` per
+> [study 09](module-restructure-study/09-sharedkernel-vs-buildingblocks-rules.md), rather than
+> folding into a constants leaf.
+
+
+> **Earlier correction, itself partly superseded.** An interim note here said `BuildingBlocks` should be
+> **deleted** and its residual web vocabulary moved to a **`Shared.Web`** presentation layer. Stage 18
+> rules otherwise: `BuildingBlocks` is not deleted, it becomes the four-project
+> `BuildingBlocks.{Domain,Application,Infrastructure,Presentation}` family, and the web vocabulary lands
+> in `BuildingBlocks.Presentation` — there is no `Shared.Web`. The part of that note that still stands is
+> the naming argument above: these base types are tactical building blocks / SeedWork, so the project is
+> `Shared.Domain`.
 
 Scope: `src/Shared/Shared`, `src/Shared/Shared.Contracts`, and `src/BuildingBlocks` — the three
 "foundation" projects every module depends on. The question: do they make sense under DDD and
@@ -65,30 +72,45 @@ Apply the same layer rule adopted for modules in [11](11-project-structure-and-p
 foundation. Target:
 
 ```
-Shared.Kernel          (#1 — Aggregate<T>, Entity<T>, IDomainEvent, Specification<T>, VO bases; ZERO packages)
-Shared.Application     (#2a — CQRS abstractions + decorators + IUnitOfWork + pagination + exception model; FluentValidation, Mapster)
-Shared.Infrastructure  (#2b — BaseModule, interceptors, EF/Carter/Quartz/Swagger host wiring)
-Shared.Constants       (#3 — the genuinely-global inert constants + ApiVersionUrl; ZERO packages)
+Shared.Domain                  (#1 — Aggregate<T>, Entity<T>, IDomainEvent, DomainRuleException; ZERO packages)
+BuildingBlocks.Domain          (#1b — Specification<T>, IRepository<T>; System.Linq.Expressions only)
+BuildingBlocks.Application     (#2a — CQRS abstractions + decorators + IUnitOfWork + pagination + exception model)
+BuildingBlocks.Infrastructure  (#2b — BaseModule, interceptors, outbox, cache, seeding; EF/Npgsql/Quartz/Redis)
+BuildingBlocks.Presentation    (#2c + #3 — middleware, host wiring, the global inert constants, ApiVersionUrl; ASP.NET/Carter/Swashbuckle)
 ```
+
+*This doc originally wrote these as `Shared.Kernel` / `Shared.Application` / `Shared.Infrastructure` /
+`Shared.Constants`. The block above is the shape [stage 18](implementation-specs/stage-18-project-restructure.md)
+D2/D3 actually builds; the prose below keeps the original names, and the mapping is one-to-one except
+that `Specification<T>` moves out of the kernel and the constants gain a layer instead of a project.*
 
 - **`Shared.Kernel`** is the real DDD Shared Kernel. Every `*.Domain` project references it and
   nothing else. It is the one place `Aggregate`/`Entity`/`IDomainEvent` may live so a module's
   domain can use them without inheriting Carter/EF. Fix `IEntity`/`Entity<T>` here too:
   `Id` becomes `protected set`, the audit fields `internal set`
-  ([01 §1.9](01-composition-root-and-shared-kernel.md)), and delete the empty-marker `IRepository<T>`
+  ([01 §1.9](01-composition-root-and-shared-kernel.md)), and keep `IRepository<T>` — it is 68 lines of real
+  contract, not an empty marker, and stage 18 D3 files it under `BuildingBlocks.Domain`
   (27 interfaces inherit it and gain nothing).
-- **`Shared.Application`** absorbs `Shared.Contracts` (the CQRS interfaces) or keeps it as a
-  sub-leaf — either is fine; the point is these are *application* abstractions, not a kernel.
-- **`Shared.Infrastructure`** is the only foundation project that references Carter/EF/Quartz. Move
-  **Bogus** out entirely (it belongs in the test-fixtures project) and pin Mapster to a stable
-  release ([01 §1.9](01-composition-root-and-shared-kernel.md)).
+- **`BuildingBlocks.Application`** (this doc called it `Shared.Application`) absorbs `Shared.Contracts` —
+  stage 18 D2 folds the nine CQRS interfaces in rather than keeping a sub-leaf; the point stands either
+  way, these are *application* abstractions, not a kernel.
+- **`BuildingBlocks.Infrastructure`** and **`BuildingBlocks.Presentation`** (this doc called the pair
+  `Shared.Infrastructure`) are the only foundation projects that reference EF/Quartz and Carter
+  respectively. Move **Bogus** out entirely (it belongs in the fixtures library) — that is 18.2. The
+  `Mapster` pin stays on `7.4.2-pre02` ([01 §1.9](01-composition-root-and-shared-kernel.md)): measured in
+  18.2, the only stable releases above it are Mapster 10.x, so the bump is a follow-up, not a
+  restructure one-liner.
 
-**`BuildingBlocks` → `Shared.Constants` (shrunk to what is actually global):**
+**`BuildingBlocks` → `BuildingBlocks.Presentation` (this doc proposed `Shared.Constants`; stage 18 D2
+keeps the `BuildingBlocks` name and gives it a layer) — shrunk to what is actually global:**
 
 - **Keep** (genuinely cross-cutting, inert): the rate-limit policy *name* constants,
   `UserRolePolicies`/`AccountStatusPolicies` *name* strings, `ApiVersionUrl`. These are routing
   vocabulary every module's endpoints need and carry no behaviour.
-- **Move home** (single-module — [02 §10](02-module-boundaries.md)): `UserConstants`,
+- **Move home** (single-module — [02 §10](02-module-boundaries.md)), *except the two cross-module
+  carve-outs [stage 18](implementation-specs/stage-18-project-restructure.md) D4 measured: the locale
+  trio in `UserConstants` stays global, and `FileConstants`' two video-upload members go to
+  `Storage.Contracts`*: `UserConstants`,
   `RoleConstants`, `JwtClaimsConstants`, `SessionConstants`, `PermissionConstants` → Identity's
   `Domain/Constants/` (mark `internal`); `FileConstants` → the storage module's `Domain/Constants/`
   ([13](13-core-storage-and-settings-module.md)).

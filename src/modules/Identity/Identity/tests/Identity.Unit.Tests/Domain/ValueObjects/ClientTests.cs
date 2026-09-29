@@ -1,0 +1,261 @@
+using _116.Identity.Domain.Enums;
+using _116.Identity.Domain.Exceptions;
+using _116.Identity.Domain.StateMachines;
+using _116.Identity.Domain.ValueObjects;
+using AwesomeAssertions;
+using Xunit;
+
+namespace _116.Identity.Unit.Tests.Domain.ValueObjects;
+
+/// <summary>
+/// Unit tests for <see cref="Client"/> value object.
+/// </summary>
+public class ClientTests
+{
+    #region Constructor Tests (Enum)
+
+    [Fact]
+    public void Constructor_WithValidEnumValue_ShouldCreateInstance()
+    {
+        // Arrange
+        var clientEnum = EnumClient.WebApp;
+
+        // Act
+        Client client = new(clientEnum);
+
+        // Assert
+        client.Should().NotBeNull();
+        client.Value.Should().Be(EnumClient.WebApp);
+    }
+
+    [Theory]
+    [InlineData(EnumClient.WebApp)]
+    [InlineData(EnumClient.MobileApp)]
+    public void Constructor_WithAllValidEnumValues_ShouldNotThrow(EnumClient clientEnum)
+    {
+        // Act
+        Client client = new(clientEnum);
+
+        // Assert
+        client.Should().NotBeNull();
+        client.Value.Should().Be(clientEnum);
+    }
+
+    [Fact]
+    public void Constructor_WithInvalidEnumValue_ShouldThrowArgumentException()
+    {
+        // Arrange
+        var invalidEnum = (EnumClient)999;
+
+        // Act & Assert
+        Action act = () => new Client(invalidEnum);
+        act.Should()
+            .ThrowExactly<IdentityRuleException>()
+            .Which.Code.Should()
+            .Be(IdentityRuleCodes.InvalidClientPlatform);
+    }
+
+    #endregion
+
+    #region Constructor Tests (String)
+
+    [Fact]
+    public void Constructor_WithValidStringValue_ShouldCreateInstance()
+    {
+        // Arrange
+        string clientString = "WebApp";
+
+        // Act
+        Client client = new(clientString);
+
+        // Assert
+        client.Should().NotBeNull();
+        client.Value.Should().Be(EnumClient.WebApp);
+    }
+
+    [Theory]
+    [InlineData("WebApp", EnumClient.WebApp)]
+    [InlineData("MobileApp", EnumClient.MobileApp)]
+    public void Constructor_WithValidStringValues_ShouldParseCorrectly(string input, EnumClient expected)
+    {
+        // Act
+        Client client = new(input);
+
+        // Assert
+        client.Value.Should().Be(expected);
+    }
+
+    [Theory]
+    [InlineData("webapp")]
+    [InlineData("WEBAPP")]
+    [InlineData("WebAPP")]
+    public void Constructor_WithCaseInsensitiveString_ShouldParseCorrectly(string input)
+    {
+        // Act
+        Client client = new(input);
+
+        // Assert
+        client.Value.Should().Be(EnumClient.WebApp);
+    }
+
+    [Theory]
+    [InlineData("InvalidClient")]
+    [InlineData("")]
+    [InlineData(null)]
+    public void Constructor_WithInvalidStringValue_ShouldThrowTheInvalidPlatformRule(string? invalid)
+    {
+        // Act & Assert
+        Action act = () => new Client(invalid!);
+        act.Should()
+            .ThrowExactly<IdentityRuleException>()
+            .Which.Code.Should()
+            .Be(IdentityRuleCodes.InvalidClientPlatform);
+    }
+
+    #endregion
+
+    #region Implicit Conversion Tests
+
+    [Fact]
+    public void ImplicitConversionToEnum_ShouldReturnValue()
+    {
+        // Arrange
+        Client client = new(EnumClient.MobileApp);
+
+        // Act
+        EnumClient result = client;
+
+        // Assert
+        result.Should().Be(EnumClient.MobileApp);
+    }
+
+    [Fact]
+    public void ImplicitConversionToString_ShouldReturnEnumName()
+    {
+        // Arrange
+        Client client = new(EnumClient.MobileApp);
+
+        // Act
+        string result = client;
+
+        // Assert
+        result.Should().Be("MobileApp");
+    }
+
+    [Fact]
+    public void ImplicitConversionFromEnum_ShouldCreateInstance()
+    {
+        // Arrange
+        var clientEnum = EnumClient.WebApp;
+
+        // Act
+        Client client = clientEnum;
+
+        // Assert
+        client.Should().NotBeNull();
+        client.Value.Should().Be(EnumClient.WebApp);
+    }
+
+    [Fact]
+    public void ImplicitConversionFromString_ShouldCreateInstance()
+    {
+        // Arrange
+        string clientString = "MobileApp";
+
+        // Act
+        Client client = clientString;
+
+        // Assert
+        client.Should().NotBeNull();
+        client.Value.Should().Be(EnumClient.MobileApp);
+    }
+
+    [Fact]
+    public void ImplicitConversionFromString_WithInvalidValue_ShouldThrowTheInvalidPlatformRule()
+    {
+        // Arrange
+        string invalidClient = "InvalidClient";
+
+        // Act & Assert
+        Action act = () =>
+        {
+            Client client = invalidClient;
+        };
+        act.Should()
+            .ThrowExactly<IdentityRuleException>()
+            .Which.Code.Should()
+            .Be(IdentityRuleCodes.InvalidClientPlatform);
+    }
+
+    #endregion
+
+    #region Equality Tests
+
+    [Fact]
+    public void Equals_WithSameValue_ShouldBeEqual()
+    {
+        // Arrange
+        Client client1 = new(EnumClient.WebApp);
+        Client client2 = new(EnumClient.WebApp);
+
+        // Act & Assert
+        client1.Should().Be(client2);
+    }
+
+    [Fact]
+    public void Equals_WithDifferentValue_ShouldNotBeEqual()
+    {
+        // Arrange
+        Client client1 = new(EnumClient.WebApp);
+        Client client2 = new(EnumClient.MobileApp);
+
+        // Act & Assert
+        client1.Should().NotBe(client2);
+    }
+
+    [Fact]
+    public void GetHashCode_WithSameValue_ShouldReturnSameHashCode()
+    {
+        // Arrange
+        Client client1 = new(EnumClient.WebApp);
+        Client client2 = new(EnumClient.WebApp);
+
+        // Act
+        int hash1 = client1.GetHashCode();
+        int hash2 = client2.GetHashCode();
+
+        // Assert
+        hash1.Should().Be(hash2);
+    }
+
+    #endregion
+
+    #region TryFrom (untrusted boundary)
+
+    [Theory]
+    [InlineData("MobileApp", EnumClient.MobileApp)]
+    [InlineData("webapp", EnumClient.WebApp)]
+    [InlineData("Dashboard", EnumClient.Dashboard)]
+    public void TryFrom_WithKnownLabel_ShouldReturnThePlatform(string label, EnumClient expected)
+    {
+        // Act
+        Client? client = Client.TryFrom(label);
+
+        // Assert
+        client.Should().NotBeNull();
+        client!.Value.Should().Be(expected);
+    }
+
+    [Theory]
+    [InlineData("InvalidClient")]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData(null)]
+    public void TryFrom_WhenMissingOrUnknown_ShouldReturnNull(string? label)
+    {
+        // Act & Assert — the header is optional and untrusted, so it never rejects
+        Client.TryFrom(label).Should().BeNull();
+    }
+
+    #endregion
+}
