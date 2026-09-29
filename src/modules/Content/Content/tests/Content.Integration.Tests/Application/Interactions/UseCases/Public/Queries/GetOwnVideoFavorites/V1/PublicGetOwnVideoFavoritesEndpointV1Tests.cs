@@ -4,19 +4,6 @@ using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Mocks;
 
 namespace _116.Content.Integration.Tests.Application.Interactions.UseCases.Public.Queries.GetOwnVideoFavorites.V1;
 
@@ -63,9 +50,9 @@ public class PublicGetOwnVideoFavoritesEndpointV1Tests(PostgresFixture db) : Bas
         await using (ContentDbContext context = CreateDbContext<ContentDbContext>())
         {
             context.VideoRatings.AddRange(
-                VideoRatingEntity.Create(Guid.NewGuid(), TestUser.VisitorId, published.Id, stars: 4),
-                VideoRatingEntity.Create(Guid.NewGuid(), TestUser.VisitorId, unpublished.Id, stars: 5),
-                VideoRatingEntity.Create(Guid.NewGuid(), Guid.NewGuid(), published.Id, stars: 2)
+                VideoRatingFactory.Create(published.Id, TestUser.VisitorId, 4),
+                VideoRatingFactory.Create(unpublished.Id, TestUser.VisitorId, 5),
+                VideoRatingFactory.Create(published.Id, Guid.NewGuid(), 2)
             );
             await context.SaveChangesAsync();
         }
@@ -90,12 +77,7 @@ public class PublicGetOwnVideoFavoritesEndpointV1Tests(PostgresFixture db) : Bas
         (VideoEntity published, _) = await SeedVideosAsync();
         await using (ContentDbContext context = CreateDbContext<ContentDbContext>())
         {
-            VideoRatingEntity rating = VideoRatingEntity.Create(
-                Guid.NewGuid(),
-                TestUser.VisitorId,
-                published.Id,
-                stars: 2
-            );
+            VideoRatingEntity rating = VideoRatingFactory.Create(published.Id, TestUser.VisitorId, 2);
             context.VideoRatings.Add(rating);
             await context.SaveChangesAsync();
             DateTime createdAt = rating.CreatedAt!.Value;
@@ -122,14 +104,14 @@ public class PublicGetOwnVideoFavoritesEndpointV1Tests(PostgresFixture db) : Bas
         await using (ContentDbContext context = CreateDbContext<ContentDbContext>())
         {
             context.VideoShares.Add(
-                VideoShareEntity.Create(Guid.NewGuid(), TestUser.VisitorId, published.Id, EnumShareChannel.Facebook)
+                VideoShareFactory.Create(TestUser.VisitorId, published.Id, EnumShareChannel.Facebook)
             );
             await context.SaveChangesAsync();
             context.VideoShares.AddRange(
-                VideoShareEntity.Create(Guid.NewGuid(), TestUser.VisitorId, published.Id, EnumShareChannel.WhatsApp),
-                VideoShareEntity.Create(Guid.NewGuid(), null, published.Id, EnumShareChannel.X),
-                VideoShareEntity.Create(Guid.NewGuid(), Guid.NewGuid(), published.Id, EnumShareChannel.Clipboard),
-                VideoShareEntity.Create(Guid.NewGuid(), TestUser.VisitorId, unpublished.Id, EnumShareChannel.WebShare)
+                VideoShareFactory.Create(TestUser.VisitorId, published.Id, EnumShareChannel.WhatsApp),
+                VideoShareFactory.CreateAnonymous(published.Id, EnumShareChannel.X),
+                VideoShareFactory.Create(Guid.NewGuid(), published.Id, EnumShareChannel.Clipboard),
+                VideoShareFactory.Create(TestUser.VisitorId, unpublished.Id, EnumShareChannel.WebShare)
             );
             await context.SaveChangesAsync();
         }
@@ -161,15 +143,15 @@ public class PublicGetOwnVideoFavoritesEndpointV1Tests(PostgresFixture db) : Bas
             if (rated)
             {
                 context.VideoRatings.AddRange(
-                    VideoRatingEntity.Create(Guid.NewGuid(), TestUser.VisitorId, first.Id, 3),
-                    VideoRatingEntity.Create(Guid.NewGuid(), TestUser.VisitorId, second.Id, 4)
+                    VideoRatingFactory.Create(first.Id, TestUser.VisitorId, 3),
+                    VideoRatingFactory.Create(second.Id, TestUser.VisitorId, 4)
                 );
             }
             else
             {
                 context.VideoShares.AddRange(
-                    VideoShareEntity.Create(Guid.NewGuid(), TestUser.VisitorId, first.Id),
-                    VideoShareEntity.Create(Guid.NewGuid(), TestUser.VisitorId, second.Id)
+                    VideoShareFactory.Create(TestUser.VisitorId, first.Id),
+                    VideoShareFactory.Create(TestUser.VisitorId, second.Id)
                 );
             }
             await context.SaveChangesAsync();
