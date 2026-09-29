@@ -1,14 +1,6 @@
-using System.Reflection;
 using _116.Content.Domain.Entities;
-using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
 using _116.Tests.TestData.Constants;
 using _116.Tests.TestData.Helpers;
-using _116.Tests.TestData.Mocks;
 using Bogus;
 
 namespace _116.Content.TestData.Builders.Entities;
@@ -131,7 +123,7 @@ public class CategoryBuilder
     }
 
     /// <summary>
-    /// Sets the content type navigation property via reflection.
+    /// Points the category's content type foreign key at the given content type.
     /// </summary>
     public CategoryBuilder WithContentType(ContentTypeEntity contentType)
     {
