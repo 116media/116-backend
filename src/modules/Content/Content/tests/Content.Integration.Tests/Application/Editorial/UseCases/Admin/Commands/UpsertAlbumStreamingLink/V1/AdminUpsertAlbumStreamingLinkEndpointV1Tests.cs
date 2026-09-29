@@ -7,20 +7,8 @@ using _116.Content.Domain.Constants;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Content.TestData.Builders.Requests;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Mocks;
 
 namespace _116.Content.Integration.Tests.Application.Editorial.UseCases.Admin.Commands.UpsertAlbumStreamingLink.V1;
 
@@ -63,7 +51,7 @@ public class AdminUpsertAlbumStreamingLinkEndpointV1Tests(PostgresFixture db) : 
 
         var response = await Client.PutAsJsonAsync(
             Url(Guid.NewGuid(), EnumStreamingPlatform.Spotify),
-            new AdminUpsertAlbumStreamingLinkRequest(SpotifyUrl)
+            new AdminUpsertAlbumStreamingLinkRequestBuilder().WithUrl(SpotifyUrl).Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -76,7 +64,7 @@ public class AdminUpsertAlbumStreamingLinkEndpointV1Tests(PostgresFixture db) : 
 
         var response = await Client.PutAsJsonAsync(
             Url(Guid.NewGuid(), EnumStreamingPlatform.Spotify),
-            new AdminUpsertAlbumStreamingLinkRequest(SpotifyUrl)
+            new AdminUpsertAlbumStreamingLinkRequestBuilder().WithUrl(SpotifyUrl).Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
@@ -89,7 +77,7 @@ public class AdminUpsertAlbumStreamingLinkEndpointV1Tests(PostgresFixture db) : 
 
         var response = await Client.PutAsJsonAsync(
             Url(Guid.NewGuid(), EnumStreamingPlatform.Spotify),
-            new AdminUpsertAlbumStreamingLinkRequest(SpotifyUrl)
+            new AdminUpsertAlbumStreamingLinkRequestBuilder().WithUrl(SpotifyUrl).Build()
         );
 
         await response.ShouldBeProblem<NotFoundException>(
@@ -106,7 +94,7 @@ public class AdminUpsertAlbumStreamingLinkEndpointV1Tests(PostgresFixture db) : 
 
         var response = await Client.PutAsJsonAsync(
             Url(album.Id, EnumStreamingPlatform.Spotify),
-            new AdminUpsertAlbumStreamingLinkRequest(SpotifyUrl)
+            new AdminUpsertAlbumStreamingLinkRequestBuilder().WithUrl(SpotifyUrl).Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -135,14 +123,14 @@ public class AdminUpsertAlbumStreamingLinkEndpointV1Tests(PostgresFixture db) : 
 
         var firstResponse = await Client.PutAsJsonAsync(
             Url(album.Id, EnumStreamingPlatform.Spotify),
-            new AdminUpsertAlbumStreamingLinkRequest(SpotifyUrl)
+            new AdminUpsertAlbumStreamingLinkRequestBuilder().WithUrl(SpotifyUrl).Build()
         );
         AdminUpsertAlbumStreamingLinkResponse firstBody =
             await firstResponse.ReadAsAsync<AdminUpsertAlbumStreamingLinkResponse>();
 
         var response = await Client.PutAsJsonAsync(
             Url(album.Id, EnumStreamingPlatform.Spotify),
-            new AdminUpsertAlbumStreamingLinkRequest(ReplacementUrl)
+            new AdminUpsertAlbumStreamingLinkRequestBuilder().WithUrl(ReplacementUrl).Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -168,12 +156,12 @@ public class AdminUpsertAlbumStreamingLinkEndpointV1Tests(PostgresFixture db) : 
 
         await Client.PutAsJsonAsync(
             Url(album.Id, EnumStreamingPlatform.Spotify),
-            new AdminUpsertAlbumStreamingLinkRequest(SpotifyUrl)
+            new AdminUpsertAlbumStreamingLinkRequestBuilder().WithUrl(SpotifyUrl).Build()
         );
 
         var response = await Client.PutAsJsonAsync(
             Url(album.Id, EnumStreamingPlatform.Tidal),
-            new AdminUpsertAlbumStreamingLinkRequest("https://tidal.com/browse/album/curated")
+            new AdminUpsertAlbumStreamingLinkRequestBuilder().WithUrl("https://tidal.com/browse/album/curated").Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -199,7 +187,7 @@ public class AdminUpsertAlbumStreamingLinkEndpointV1Tests(PostgresFixture db) : 
 
         var response = await Client.PutAsJsonAsync(
             Url(album.Id, EnumStreamingPlatform.Spotify),
-            new AdminUpsertAlbumStreamingLinkRequest(url)
+            new AdminUpsertAlbumStreamingLinkRequestBuilder().WithUrl(url).Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -217,9 +205,9 @@ public class AdminUpsertAlbumStreamingLinkEndpointV1Tests(PostgresFixture db) : 
 
         var response = await Client.PutAsJsonAsync(
             Url(album.Id, EnumStreamingPlatform.Spotify),
-            new AdminUpsertAlbumStreamingLinkRequest(
-                "https://open.spotify.com/" + new string('a', ContentConstants.MaxStreamingLinkUrlLength)
-            )
+            new AdminUpsertAlbumStreamingLinkRequestBuilder()
+                .WithUrl("https://open.spotify.com/" + new string('a', ContentConstants.MaxStreamingLinkUrlLength))
+                .Build()
         );
 
         await response.ShouldBeValidationProblem(
