@@ -5,22 +5,9 @@ using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.TestData;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
 using _116.Content.TestData.Mocks.Repositories;
 using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.Application.Shared.Repositories;
 using _116.Storage.Contracts.Application.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData;
-using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -71,7 +58,7 @@ public class PublicGetVideoFeedHandlerTests : BaseContentHandlerTest
         CategoryEntity withVideos = CategoryFactory.CreatePinned(videoType);
         CategoryEntity empty = CategoryFactory.CreatePinned(videoType);
 
-        List<VideoEntity> videos = VideoFactory.CreateManyWithCategory(withVideos.Id, withVideos, 3);
+        List<VideoEntity> videos = VideoFactory.CreateManyWithCategory(withVideos, 3);
 
         _categoryRepositoryMock.SetupGetPinnedToFeedCategories([withVideos, empty]);
         _videoRepositoryMock.SetupGetLatestPublishedByCategory(withVideos.Id, videos);
@@ -96,10 +83,7 @@ public class PublicGetVideoFeedHandlerTests : BaseContentHandlerTest
         CategoryEntity article = CategoryFactory.CreatePinned(articleType);
 
         _categoryRepositoryMock.SetupGetPinnedToFeedCategories([video, article]);
-        _videoRepositoryMock.SetupGetLatestPublishedByCategory(
-            video.Id,
-            VideoFactory.CreateManyWithCategory(video.Id, video, 2)
-        );
+        _videoRepositoryMock.SetupGetLatestPublishedByCategory(video.Id, VideoFactory.CreateManyWithCategory(video, 2));
 
         PublicGetVideoFeedResult result = await _handler.Handle(new PublicGetVideoFeedQuery(), CancellationToken.None);
 
@@ -116,7 +100,7 @@ public class PublicGetVideoFeedHandlerTests : BaseContentHandlerTest
         _categoryRepositoryMock.SetupGetPinnedToFeedCategories([category]);
         _videoRepositoryMock.SetupGetLatestPublishedByCategory(
             category.Id,
-            VideoFactory.CreateManyWithCategory(category.Id, category, 1)
+            VideoFactory.CreateManyWithCategory(category, 1)
         );
 
         await _handler.Handle(new PublicGetVideoFeedQuery(), CancellationToken.None);
