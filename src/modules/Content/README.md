@@ -1,9 +1,17 @@
 # Content
 
-Content owns the editorial catalogue and the commerce around it: articles, videos, shorts, lyrics,
-artists, albums, categories, tags, playlists, promotions, orders and payments. It is one module of
-the 116 modular monolith: its own database schema (`content`), its own layer projects, and no direct
-dependency on another module's internals.
+Content owns five areas, each a folder in `Content.Application`:
+
+| Area | Owns |
+| --- | --- |
+| `Editorial` | Articles, videos, shorts, lyrics, artists, albums, streaming links, and the submit / review / publish / promote workflows over them |
+| `Catalog` | Categories, category pricing, packages, package slots, customers |
+| `Lookup` | Tags, content types, pricing tiers, promotion levels |
+| `Interactions` | Likes, bookmarks, shares, ratings, comments, playlists, view events |
+| `Commerce` | Orders, order items, item tiers, payments |
+
+It is one module of the 116 modular monolith: its own database schema (`content`), its own layer
+projects, and no direct dependency on another module's internals.
 
 ## Layout
 
