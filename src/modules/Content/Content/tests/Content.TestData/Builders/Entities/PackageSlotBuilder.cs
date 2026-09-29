@@ -1,7 +1,5 @@
-using System.Reflection;
 using _116.Content.Domain.Entities;
 using _116.Tests.TestData.Constants;
-using _116.Tests.TestData.Helpers;
 
 namespace _116.Content.TestData.Builders.Entities;
 
@@ -54,12 +52,10 @@ public class PackageSlotBuilder
     }
 
     /// <summary>
-    /// Attaches the Category navigation EF Core populates through <c>.Include(s =&gt; s.Category)</c>,
-    /// and points the foreign key at the same category.
+    /// Points the slot's category foreign key at the given category.
     /// </summary>
     public PackageSlotBuilder WithCategory(CategoryEntity category)
     {
-        _categoryId = category.Id;
         _categoryId = category.Id;
         return this;
     }
