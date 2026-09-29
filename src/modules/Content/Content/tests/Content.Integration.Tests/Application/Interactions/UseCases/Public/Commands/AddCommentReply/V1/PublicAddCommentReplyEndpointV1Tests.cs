@@ -4,22 +4,10 @@ using _116.Content.Application.Interactions.UseCases.Public.Commands.AddCommentR
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Content.TestData.Builders.Requests;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Infrastructure.Persistence;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Mocks;
 
 namespace _116.Content.Integration.Tests.Application.Interactions.UseCases.Public.Commands.AddCommentReply.V1;
 
@@ -59,7 +47,7 @@ public class PublicAddCommentReplyEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         var response = await Client.PostAsJsonAsync(
             Routes.Public.Articles.CommentReplies(Guid.NewGuid(), Guid.NewGuid()),
-            new PublicAddCommentReplyRequest("hello")
+            new PublicAddCommentReplyRequestBuilder().WithBody("hello").Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -73,7 +61,7 @@ public class PublicAddCommentReplyEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         var response = await Client.PostAsJsonAsync(
             Routes.Public.Articles.CommentReplies(article.Id, parent.Id),
-            new PublicAddCommentReplyRequest("a valid reply body")
+            new PublicAddCommentReplyRequestBuilder().WithBody("a valid reply body").Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -92,10 +80,9 @@ public class PublicAddCommentReplyEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         ArticleCommentEntity reply = await SeedAsync<ContentDbContext, ArticleCommentEntity>(ctx =>
         {
-            ArticleCommentEntity r = ArticleCommentEntity.CreateReply(
-                Guid.NewGuid(),
-                TestUser.VisitorId,
+            ArticleCommentEntity r = ArticleCommentFactory.CreateReply(
                 article.Id,
+                TestUser.VisitorId,
                 parent.Id,
                 "first reply"
             );
@@ -107,7 +94,7 @@ public class PublicAddCommentReplyEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         var response = await Client.PostAsJsonAsync(
             Routes.Public.Articles.CommentReplies(article.Id, reply.Id),
-            new PublicAddCommentReplyRequest("nested reply")
+            new PublicAddCommentReplyRequestBuilder().WithBody("nested reply").Build()
         );
 
         await response.ShouldBeProblem<BadRequestException>(
@@ -124,7 +111,7 @@ public class PublicAddCommentReplyEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         var response = await Client.PostAsJsonAsync(
             Routes.Public.Articles.CommentReplies(article.Id, Guid.NewGuid()),
-            new PublicAddCommentReplyRequest("reply")
+            new PublicAddCommentReplyRequestBuilder().WithBody("reply").Build()
         );
 
         await response.ShouldBeProblem<NotFoundException>(
@@ -172,7 +159,7 @@ public class PublicAddCommentReplyEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         var response = await Client.PostAsJsonAsync(
             Routes.Public.Articles.CommentReplies(article.Id, parent.Id),
-            new PublicAddCommentReplyRequest(body)
+            new PublicAddCommentReplyRequestBuilder().WithBody(body).Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -203,7 +190,7 @@ public class PublicAddCommentReplyEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         var response = await Client.PostAsJsonAsync(
             Routes.Public.Articles.CommentReplies(article.Id, parent.Id),
-            new PublicAddCommentReplyRequest(body)
+            new PublicAddCommentReplyRequestBuilder().WithBody(body).Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
