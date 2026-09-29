@@ -10,5 +10,4 @@ global using AwesomeAssertions;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.Extensions.DependencyInjection;
 global using Xunit;
-global using TestAuth = _116.Tests.TestData.Constants.TestConstants.Auth;
 global using TestUser = _116.Tests.TestData.Constants.TestConstants.User;
