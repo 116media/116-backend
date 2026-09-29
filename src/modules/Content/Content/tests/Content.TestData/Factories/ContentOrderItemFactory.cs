@@ -42,11 +42,4 @@ public static class ContentOrderItemFactory
     /// </summary>
     public static ContentOrderItemEntity CreateBonus(Guid orderId, Guid categoryId) =>
         new ContentOrderItemBuilder().WithOrderId(orderId).WithCategoryId(categoryId).AsBonus().Build();
-
-    /// <summary>
-    /// Creates an order item whose category navigation is populated, as loading
-    /// the item with its category included would.
-    /// </summary>
-    public static ContentOrderItemEntity CreateWithCategory(Guid orderId, CategoryEntity category) =>
-        new ContentOrderItemBuilder().WithOrderId(orderId).WithCategory(category).Build();
 }
