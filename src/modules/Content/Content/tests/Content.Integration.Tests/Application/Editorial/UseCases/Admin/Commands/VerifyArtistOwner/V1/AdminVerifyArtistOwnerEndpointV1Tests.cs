@@ -1,23 +1,10 @@
 using _116.BuildingBlocks.Application.Exceptions;
 using _116.BuildingBlocks.Application.Exceptions.Messages;
-using _116.Content.Application.Editorial.UseCases.Admin.Commands.VerifyArtistOwner.V1;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Content.TestData.Builders.Requests;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Mocks;
 
 namespace _116.Content.Integration.Tests.Application.Editorial.UseCases.Admin.Commands.VerifyArtistOwner.V1;
 
@@ -44,7 +31,7 @@ public class AdminVerifyArtistOwnerEndpointV1Tests(PostgresFixture db) : BaseApi
 
         var response = await Client.PostAsJsonAsync(
             Routes.Admin.Artists.VerifyOwner(Guid.NewGuid()),
-            new AdminVerifyArtistOwnerRequest(Guid.NewGuid())
+            new AdminVerifyArtistOwnerRequestBuilder().Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -57,7 +44,7 @@ public class AdminVerifyArtistOwnerEndpointV1Tests(PostgresFixture db) : BaseApi
 
         var response = await Client.PostAsJsonAsync(
             Routes.Admin.Artists.VerifyOwner(Guid.NewGuid()),
-            new AdminVerifyArtistOwnerRequest(Guid.NewGuid())
+            new AdminVerifyArtistOwnerRequestBuilder().Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
@@ -70,7 +57,7 @@ public class AdminVerifyArtistOwnerEndpointV1Tests(PostgresFixture db) : BaseApi
 
         var response = await Client.PostAsJsonAsync(
             Routes.Admin.Artists.VerifyOwner(Guid.NewGuid()),
-            new AdminVerifyArtistOwnerRequest(Guid.NewGuid())
+            new AdminVerifyArtistOwnerRequestBuilder().Build()
         );
 
         await response.ShouldBeProblem<NotFoundException>(
@@ -88,7 +75,7 @@ public class AdminVerifyArtistOwnerEndpointV1Tests(PostgresFixture db) : BaseApi
 
         var response = await Client.PostAsJsonAsync(
             Routes.Admin.Artists.VerifyOwner(artist.Id),
-            new AdminVerifyArtistOwnerRequest(userId)
+            new AdminVerifyArtistOwnerRequestBuilder().WithUserId(userId).Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -114,7 +101,7 @@ public class AdminVerifyArtistOwnerEndpointV1Tests(PostgresFixture db) : BaseApi
 
         var response = await Client.PostAsJsonAsync(
             Routes.Admin.Artists.VerifyOwner(artist.Id),
-            new AdminVerifyArtistOwnerRequest(Guid.NewGuid())
+            new AdminVerifyArtistOwnerRequestBuilder().Build()
         );
 
         await response.ShouldBeProblem<ConflictException>(
