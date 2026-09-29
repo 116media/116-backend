@@ -1,4 +1,3 @@
-using _116.BuildingBlocks.Application.Exceptions;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
@@ -6,19 +5,6 @@ using _116.Content.Infrastructure.Persistence;
 using _116.Content.Infrastructure.Repositories;
 using _116.Content.TestData.Factories;
 using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Helpers;
-using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -35,12 +21,7 @@ public class ArticleInteractionRepositoryTests : IDisposable
 
     public ArticleInteractionRepositoryTests()
     {
-        DbContextOptions<ContentDbContext> options = new DbContextOptionsBuilder<ContentDbContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-            .AddInterceptors(new CreatedAtStampingInterceptor())
-            .Options;
-
-        _context = new ContentDbContext(options);
+        _context = ContentDbContextFactory.CreateInMemory();
         _repository = new ArticleInteractionRepository(_context);
     }
 
@@ -74,7 +55,7 @@ public class ArticleInteractionRepositoryTests : IDisposable
         Guid categoryId = await SeedCategoryAsync();
         ArticleEntity article = ArticleFactory.Create(categoryId);
         _context.Articles.Add(article);
-        ArticleLikeEntity like = ArticleLikeEntity.Create(Guid.NewGuid(), userId, article.Id);
+        ArticleLikeEntity like = ArticleLikeFactory.Create(userId, article.Id);
         _context.ArticleLikes.Add(like);
         await _context.SaveChangesAsync();
 
@@ -109,7 +90,7 @@ public class ArticleInteractionRepositoryTests : IDisposable
         _context.Articles.Add(article);
         await _context.SaveChangesAsync();
 
-        ArticleLikeEntity like = ArticleLikeEntity.Create(Guid.NewGuid(), userId, article.Id);
+        ArticleLikeEntity like = ArticleLikeFactory.Create(userId, article.Id);
 
         // Act
         await _repository.AddLikeAsync(like);
@@ -132,7 +113,7 @@ public class ArticleInteractionRepositoryTests : IDisposable
         Guid categoryId = await SeedCategoryAsync();
         ArticleEntity article = ArticleFactory.Create(categoryId);
         _context.Articles.Add(article);
-        ArticleLikeEntity like = ArticleLikeEntity.Create(Guid.NewGuid(), userId, article.Id);
+        ArticleLikeEntity like = ArticleLikeFactory.Create(userId, article.Id);
         _context.ArticleLikes.Add(like);
         await _context.SaveChangesAsync();
 
@@ -167,7 +148,7 @@ public class ArticleInteractionRepositoryTests : IDisposable
         Guid categoryId = await SeedCategoryAsync();
         ArticleEntity article = ArticleFactory.Create(categoryId);
         _context.Articles.Add(article);
-        ArticleBookmarkEntity bookmark = ArticleBookmarkEntity.Create(Guid.NewGuid(), userId, article.Id);
+        ArticleBookmarkEntity bookmark = ArticleBookmarkFactory.Create(userId, article.Id);
         _context.ArticleBookmarks.Add(bookmark);
         await _context.SaveChangesAsync();
 
@@ -202,7 +183,7 @@ public class ArticleInteractionRepositoryTests : IDisposable
         _context.Articles.Add(article);
         await _context.SaveChangesAsync();
 
-        ArticleBookmarkEntity bookmark = ArticleBookmarkEntity.Create(Guid.NewGuid(), userId, article.Id);
+        ArticleBookmarkEntity bookmark = ArticleBookmarkFactory.Create(userId, article.Id);
 
         // Act
         await _repository.AddBookmarkAsync(bookmark);
@@ -225,7 +206,7 @@ public class ArticleInteractionRepositoryTests : IDisposable
         Guid categoryId = await SeedCategoryAsync();
         ArticleEntity article = ArticleFactory.Create(categoryId);
         _context.Articles.Add(article);
-        ArticleBookmarkEntity bookmark = ArticleBookmarkEntity.Create(Guid.NewGuid(), userId, article.Id);
+        ArticleBookmarkEntity bookmark = ArticleBookmarkFactory.Create(userId, article.Id);
         _context.ArticleBookmarks.Add(bookmark);
         await _context.SaveChangesAsync();
 
@@ -262,13 +243,13 @@ public class ArticleInteractionRepositoryTests : IDisposable
         List<ArticleEntity> articles = ArticleFactory.CreateManyPublished(categoryId, 3);
         _context.Articles.AddRange(articles);
         _context.ArticleLikes.AddRange(
-            ArticleLikeEntity.Create(Guid.NewGuid(), userId, articles[0].Id),
-            ArticleLikeEntity.Create(Guid.NewGuid(), otherUserId, articles[1].Id),
-            ArticleLikeEntity.Create(Guid.NewGuid(), userId, articles[2].Id)
+            ArticleLikeFactory.Create(userId, articles[0].Id),
+            ArticleLikeFactory.Create(otherUserId, articles[1].Id),
+            ArticleLikeFactory.Create(userId, articles[2].Id)
         );
         _context.ArticleBookmarks.AddRange(
-            ArticleBookmarkEntity.Create(Guid.NewGuid(), userId, articles[1].Id),
-            ArticleBookmarkEntity.Create(Guid.NewGuid(), otherUserId, articles[0].Id)
+            ArticleBookmarkFactory.Create(userId, articles[1].Id),
+            ArticleBookmarkFactory.Create(otherUserId, articles[0].Id)
         );
         await _context.SaveChangesAsync();
 
@@ -294,12 +275,12 @@ public class ArticleInteractionRepositoryTests : IDisposable
         List<ArticleEntity> articles = ArticleFactory.CreateManyPublished(categoryId, 2);
         _context.Articles.AddRange(articles);
         _context.ArticleLikes.AddRange(
-            ArticleLikeEntity.Create(Guid.NewGuid(), userId, articles[0].Id),
-            ArticleLikeEntity.Create(Guid.NewGuid(), userId, articles[1].Id)
+            ArticleLikeFactory.Create(userId, articles[0].Id),
+            ArticleLikeFactory.Create(userId, articles[1].Id)
         );
         _context.ArticleBookmarks.AddRange(
-            ArticleBookmarkEntity.Create(Guid.NewGuid(), userId, articles[0].Id),
-            ArticleBookmarkEntity.Create(Guid.NewGuid(), userId, articles[1].Id)
+            ArticleBookmarkFactory.Create(userId, articles[0].Id),
+            ArticleBookmarkFactory.Create(userId, articles[1].Id)
         );
         await _context.SaveChangesAsync();
 
@@ -321,7 +302,7 @@ public class ArticleInteractionRepositoryTests : IDisposable
         Guid categoryId = await SeedCategoryAsync();
         ArticleEntity article = ArticleFactory.CreatePublished(categoryId);
         _context.Articles.Add(article);
-        _context.ArticleLikes.Add(ArticleLikeEntity.Create(Guid.NewGuid(), Guid.NewGuid(), article.Id));
+        _context.ArticleLikes.Add(ArticleLikeFactory.Create(Guid.NewGuid(), article.Id));
         await _context.SaveChangesAsync();
 
         // Act
@@ -362,7 +343,7 @@ public class ArticleInteractionRepositoryTests : IDisposable
         _context.Articles.Add(article);
         await _context.SaveChangesAsync();
 
-        ArticleShareEntity share = ArticleShareEntity.Create(Guid.NewGuid(), null, article.Id);
+        ArticleShareEntity share = ArticleShareFactory.CreateAnonymous(article.Id);
         share.CreatedAt = DateTime.UtcNow;
 
         // Act
@@ -386,10 +367,10 @@ public class ArticleInteractionRepositoryTests : IDisposable
         ArticleEntity published = ArticleFactory.CreatePublished(categoryId);
         ArticleEntity draft = ArticleFactory.Create(categoryId);
         DateTime bookmarkedAt = DateTime.UtcNow.AddDays(-3);
-        ArticleBookmarkEntity bookmark = ArticleBookmarkEntity.Create(Guid.NewGuid(), userId, published.Id);
+        ArticleBookmarkEntity bookmark = ArticleBookmarkFactory.Create(userId, published.Id);
         bookmark.CreatedAt = bookmarkedAt;
         _context.Articles.AddRange(published, draft);
-        _context.ArticleBookmarks.AddRange(bookmark, ArticleBookmarkEntity.Create(Guid.NewGuid(), userId, draft.Id));
+        _context.ArticleBookmarks.AddRange(bookmark, ArticleBookmarkFactory.Create(userId, draft.Id));
         await _context.SaveChangesAsync();
 
         (List<BookmarkedArticleActivity> activities, int count) = await _repository.GetBookmarkedArticlesAsync(
@@ -410,26 +391,16 @@ public class ArticleInteractionRepositoryTests : IDisposable
         Guid userId = Guid.NewGuid();
         Guid categoryId = await SeedCategoryAsync();
         ArticleEntity article = ArticleFactory.CreatePublished(categoryId);
-        ArticleShareEntity older = ArticleShareEntity.Create(
-            Guid.NewGuid(),
-            userId,
-            article.Id,
-            EnumShareChannel.Facebook
-        );
+        ArticleShareEntity older = ArticleShareFactory.Create(userId, article.Id, EnumShareChannel.Facebook);
         older.CreatedAt = DateTime.UtcNow.AddHours(-2);
-        ArticleShareEntity latest = ArticleShareEntity.Create(
-            Guid.NewGuid(),
-            userId,
-            article.Id,
-            EnumShareChannel.WhatsApp
-        );
+        ArticleShareEntity latest = ArticleShareFactory.Create(userId, article.Id, EnumShareChannel.WhatsApp);
         latest.CreatedAt = DateTime.UtcNow.AddHours(-1);
         _context.Articles.Add(article);
         _context.ArticleShares.AddRange(
             older,
             latest,
-            ArticleShareEntity.Create(Guid.NewGuid(), Guid.NewGuid(), article.Id),
-            ArticleShareEntity.Create(Guid.NewGuid(), null, article.Id)
+            ArticleShareFactory.Create(Guid.NewGuid(), article.Id),
+            ArticleShareFactory.CreateAnonymous(article.Id)
         );
         await _context.SaveChangesAsync();
 
