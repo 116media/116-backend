@@ -37,12 +37,4 @@ public static class MockAddItemTierFactory
             .ThrowsAsync(exception);
         return mock;
     }
-
-    public static void VerifyAttachTierCalled(this Mock<IAddItemTierFactory> mock)
-    {
-        mock.Verify(
-            x => x.AttachTierAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
-            Times.Once
-        );
-    }
 }
