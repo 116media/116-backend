@@ -5,24 +5,14 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.TestData;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
 using _116.Content.TestData.Mocks.Infrastructure;
 using _116.Content.TestData.Mocks.Repositories;
 using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
 using _116.Identity.TestData.Mocks.Infrastructure;
 using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.Application.Shared.Repositories;
 using _116.Storage.Contracts.Application.Services;
-using _116.Storage.TestData.Factories;
 using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData;
 using _116.Tests.TestData.Constants;
-using _116.Tests.TestData.Helpers;
-using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -70,9 +60,7 @@ public class AdminUpdateShortVideoHandlerTests : BaseContentHandlerTest
         ShortVideoEntity existing = ShortVideoFactory.Create();
         var command = BuildCommand(id: existing.Id.ToString());
 
-        _shortVideoRepositoryMock
-            .Setup(x => x.GetByIdOrThrowAsync(existing.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(existing);
+        _shortVideoRepositoryMock.SetupGetByIdOrThrow(existing);
 
         // Act
         AdminUpdateShortVideoResult result = await _handler.Handle(command, CancellationToken.None);
@@ -90,9 +78,7 @@ public class AdminUpdateShortVideoHandlerTests : BaseContentHandlerTest
         Guid parentVideoId = Guid.NewGuid();
         var command = BuildCommand(id: existing.Id.ToString(), videoId: parentVideoId);
 
-        _shortVideoRepositoryMock
-            .Setup(x => x.GetByIdOrThrowAsync(existing.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(existing);
+        _shortVideoRepositoryMock.SetupGetByIdOrThrow(existing);
 
         // Act
         AdminUpdateShortVideoResult result = await _handler.Handle(command, CancellationToken.None);
@@ -110,9 +96,7 @@ public class AdminUpdateShortVideoHandlerTests : BaseContentHandlerTest
         ShortVideoEntity existing = ShortVideoFactory.CreateTeaser(videoId);
         var command = BuildCommand(id: existing.Id.ToString(), videoId: null);
 
-        _shortVideoRepositoryMock
-            .Setup(x => x.GetByIdOrThrowAsync(existing.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(existing);
+        _shortVideoRepositoryMock.SetupGetByIdOrThrow(existing);
 
         // Act
         AdminUpdateShortVideoResult result = await _handler.Handle(command, CancellationToken.None);
@@ -129,9 +113,7 @@ public class AdminUpdateShortVideoHandlerTests : BaseContentHandlerTest
         Guid? originalVideoFileId = existing.VideoFileId;
         var command = BuildCommand(id: existing.Id.ToString());
 
-        _shortVideoRepositoryMock
-            .Setup(x => x.GetByIdOrThrowAsync(existing.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(existing);
+        _shortVideoRepositoryMock.SetupGetByIdOrThrow(existing);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
