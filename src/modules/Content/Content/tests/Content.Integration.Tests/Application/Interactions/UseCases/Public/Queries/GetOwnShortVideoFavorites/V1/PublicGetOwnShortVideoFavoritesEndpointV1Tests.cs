@@ -3,19 +3,6 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Mocks;
 
 namespace _116.Content.Integration.Tests.Application.Interactions.UseCases.Public.Queries.GetOwnShortVideoFavorites.V1;
 
@@ -78,16 +65,12 @@ public class PublicGetOwnShortVideoFavoritesEndpointV1Tests(PostgresFixture db) 
 
             ShortVideoLikeEntity firstLike = ShortVideoLikeEntity.Create(firstLikeId, TestUser.VisitorId, first.Id);
             ShortVideoLikeEntity secondLike = ShortVideoLikeEntity.Create(secondLikeId, TestUser.VisitorId, second.Id);
-            ShortVideoLikeEntity inactiveLike = ShortVideoLikeEntity.Create(
-                Guid.NewGuid(),
-                TestUser.VisitorId,
-                inactive.Id
-            );
+            ShortVideoLikeEntity inactiveLike = ShortVideoLikeFactory.Create(TestUser.VisitorId, inactive.Id);
             ctx.ShortVideoLikes.AddRange(
                 firstLike,
                 secondLike,
                 inactiveLike,
-                ShortVideoLikeEntity.Create(Guid.NewGuid(), otherUserId, other.Id)
+                ShortVideoLikeFactory.Create(otherUserId, other.Id)
             );
             return first.Id.CompareTo(second.Id) > 0 ? (first, second) : (second, first);
         });
@@ -134,8 +117,8 @@ public class PublicGetOwnShortVideoFavoritesEndpointV1Tests(PostgresFixture db) 
             );
             ctx.ShortVideoBookmarks.AddRange(
                 bookmark,
-                ShortVideoBookmarkEntity.Create(Guid.NewGuid(), TestUser.VisitorId, inactive.Id),
-                ShortVideoBookmarkEntity.Create(Guid.NewGuid(), Guid.NewGuid(), other.Id)
+                ShortVideoBookmarkFactory.Create(TestUser.VisitorId, inactive.Id),
+                ShortVideoBookmarkFactory.Create(Guid.NewGuid(), other.Id)
             );
             return active;
         });
@@ -179,9 +162,9 @@ public class PublicGetOwnShortVideoFavoritesEndpointV1Tests(PostgresFixture db) 
             ctx.ShortVideoShares.AddRange(
                 first,
                 second,
-                ShortVideoShareEntity.Create(Guid.NewGuid(), null, anonymous.Id),
-                ShortVideoShareEntity.Create(Guid.NewGuid(), Guid.NewGuid(), other.Id),
-                ShortVideoShareEntity.Create(Guid.NewGuid(), TestUser.VisitorId, inactive.Id)
+                ShortVideoShareFactory.CreateAnonymous(anonymous.Id),
+                ShortVideoShareFactory.Create(Guid.NewGuid(), other.Id),
+                ShortVideoShareFactory.Create(TestUser.VisitorId, inactive.Id)
             );
             return active;
         });
