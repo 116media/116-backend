@@ -3,20 +3,8 @@ using _116.BuildingBlocks.Application.Exceptions.Messages;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArtist.V1;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Content.TestData.Builders.Requests;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Mocks;
 
 namespace _116.Content.Integration.Tests.Application.Editorial.UseCases.Admin.Commands.UpdateArtist.V1;
 
@@ -43,7 +31,7 @@ public class AdminUpdateArtistEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.PutAsJsonAsync(
             $"{ApiRoutes.Admin.Artists}/{Guid.NewGuid()}",
-            new AdminUpdateArtistRequest("Name", null, null, null, null, null)
+            new AdminUpdateArtistRequestBuilder().Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -56,7 +44,7 @@ public class AdminUpdateArtistEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.PutAsJsonAsync(
             $"{ApiRoutes.Admin.Artists}/{Guid.NewGuid()}",
-            new AdminUpdateArtistRequest("Name", null, null, null, null, null)
+            new AdminUpdateArtistRequestBuilder().Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
@@ -69,7 +57,7 @@ public class AdminUpdateArtistEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.PutAsJsonAsync(
             $"{ApiRoutes.Admin.Artists}/{Guid.NewGuid()}",
-            new AdminUpdateArtistRequest("Name", null, null, null, null, null)
+            new AdminUpdateArtistRequestBuilder().Build()
         );
 
         await response.ShouldBeProblem<NotFoundException>(
@@ -86,7 +74,7 @@ public class AdminUpdateArtistEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.PutAsJsonAsync(
             $"{ApiRoutes.Admin.Artists}/{artist.Id}",
-            new AdminUpdateArtistRequest("Updated Name", "Updated Bio", null, null, null, null)
+            new AdminUpdateArtistRequestBuilder().WithName("Updated Name").WithBio("Updated Bio").Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -109,7 +97,7 @@ public class AdminUpdateArtistEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         await Client.PutAsJsonAsync(
             $"{ApiRoutes.Admin.Artists}/{artist.Id}",
-            new AdminUpdateArtistRequest("New Name", null, null, null, null, null)
+            new AdminUpdateArtistRequestBuilder().WithName("New Name").Build()
         );
 
         await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
@@ -125,7 +113,7 @@ public class AdminUpdateArtistEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.PutAsJsonAsync(
             $"{ApiRoutes.Admin.Artists}/{artist.Id}",
-            new AdminUpdateArtistRequest(string.Empty, null, null, null, null, null)
+            new AdminUpdateArtistRequestBuilder().WithName(string.Empty).Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
