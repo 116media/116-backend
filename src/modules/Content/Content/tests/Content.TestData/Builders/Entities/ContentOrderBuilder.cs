@@ -1,13 +1,4 @@
-using System.Reflection;
 using _116.Content.Domain.Entities;
-using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Tests.TestData.Helpers;
-using _116.Tests.TestData.Mocks;
 
 namespace _116.Content.TestData.Builders.Entities;
 
@@ -69,8 +60,7 @@ public class ContentOrderBuilder
     }
 
     /// <summary>
-    /// Attaches the Customer navigation EF Core populates through <c>.Include(o =&gt; o.Customer)</c>,
-    /// and points the foreign key at the same customer.
+    /// Points the order's customer foreign key at the given customer.
     /// </summary>
     public ContentOrderBuilder WithCustomer(CustomerEntity customer)
     {
