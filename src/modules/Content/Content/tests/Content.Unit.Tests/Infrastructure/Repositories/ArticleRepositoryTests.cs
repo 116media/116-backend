@@ -1,24 +1,10 @@
 using _116.BuildingBlocks.Application.Exceptions;
-using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Content.Infrastructure.Repositories;
 using _116.Content.TestData.Factories;
 using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Helpers;
-using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -35,12 +21,7 @@ public class ArticleRepositoryTests : IDisposable
 
     public ArticleRepositoryTests()
     {
-        DbContextOptions<ContentDbContext> options = new DbContextOptionsBuilder<ContentDbContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-            .AddInterceptors(new CreatedAtStampingInterceptor())
-            .Options;
-
-        _context = new ContentDbContext(options);
+        _context = ContentDbContextFactory.CreateInMemory();
         _repository = new ArticleRepository(_context);
     }
 
