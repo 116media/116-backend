@@ -1,28 +1,16 @@
 using _116.BuildingBlocks.Application.Exceptions;
 using _116.BuildingBlocks.Application.Exceptions.Messages;
 using _116.Content.Application.Editorial.Constants;
-using _116.Content.Application.Editorial.UseCases.Public.Commands.VoteOnLyricsRevision.V1;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Constants;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Content.TestData.Builders.Requests;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Mocks;
 
 namespace _116.Content.Integration.Tests.Application.Editorial.UseCases.Public.Commands.VoteOnLyricsRevision.V1;
 
@@ -39,7 +27,7 @@ public class PublicVoteOnLyricsRevisionEndpointV1Tests(PostgresFixture db) : Bas
 
         var response = await Client.PostAsJsonAsync(
             Routes.Public.LyricsSubmissionsAndRevisions.RevisionVotes(Guid.NewGuid()),
-            new PublicVoteOnLyricsRevisionRequest(EnumVote.Approve, null)
+            new PublicVoteOnLyricsRevisionRequestBuilder().Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -52,10 +40,9 @@ public class PublicVoteOnLyricsRevisionEndpointV1Tests(PostgresFixture db) : Bas
 
         var response = await Client.PostAsJsonAsync(
             Routes.Public.LyricsSubmissionsAndRevisions.RevisionVotes(Guid.NewGuid()),
-            new PublicVoteOnLyricsRevisionRequest(
-                EnumVote.Approve,
-                new string('c', ContentConstants.MaxVoteCommentLength + 1)
-            )
+            new PublicVoteOnLyricsRevisionRequestBuilder()
+                .WithComment(new string('c', ContentConstants.MaxVoteCommentLength + 1))
+                .Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -68,7 +55,7 @@ public class PublicVoteOnLyricsRevisionEndpointV1Tests(PostgresFixture db) : Bas
 
         var response = await Client.PostAsJsonAsync(
             Routes.Public.LyricsSubmissionsAndRevisions.RevisionVotes(Guid.NewGuid()),
-            new PublicVoteOnLyricsRevisionRequest(EnumVote.Approve, null)
+            new PublicVoteOnLyricsRevisionRequestBuilder().Build()
         );
 
         await response.ShouldBeProblem<NotFoundException>(
@@ -97,13 +84,13 @@ public class PublicVoteOnLyricsRevisionEndpointV1Tests(PostgresFixture db) : Bas
 
         var firstVote = await Client.PostAsJsonAsync(
             Routes.Public.LyricsSubmissionsAndRevisions.RevisionVotes(revision.Id),
-            new PublicVoteOnLyricsRevisionRequest(EnumVote.Approve, null)
+            new PublicVoteOnLyricsRevisionRequestBuilder().Build()
         );
         firstVote.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var secondVote = await Client.PostAsJsonAsync(
             Routes.Public.LyricsSubmissionsAndRevisions.RevisionVotes(revision.Id),
-            new PublicVoteOnLyricsRevisionRequest(EnumVote.Approve, null)
+            new PublicVoteOnLyricsRevisionRequestBuilder().Build()
         );
 
         await secondVote.ShouldBeProblem<ConflictException>(
@@ -155,7 +142,7 @@ public class PublicVoteOnLyricsRevisionEndpointV1Tests(PostgresFixture db) : Bas
 
             var response = await Client.PostAsJsonAsync(
                 Routes.Public.LyricsSubmissionsAndRevisions.RevisionVotes(revision.Id),
-                new PublicVoteOnLyricsRevisionRequest(EnumVote.Approve, null)
+                new PublicVoteOnLyricsRevisionRequestBuilder().Build()
             );
 
             response.StatusCode.Should().Be(HttpStatusCode.OK);
