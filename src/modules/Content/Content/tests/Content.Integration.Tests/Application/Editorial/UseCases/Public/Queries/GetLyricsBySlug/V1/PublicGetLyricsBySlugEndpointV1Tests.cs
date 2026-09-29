@@ -5,20 +5,7 @@ using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Content.TestData.Factories;
 using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Constants;
 using _116.Tests.TestData.Helpers;
-using _116.Tests.TestData.Mocks;
 
 namespace _116.Content.Integration.Tests.Application.Editorial.UseCases.Public.Queries.GetLyricsBySlug.V1;
 
@@ -28,19 +15,7 @@ namespace _116.Content.Integration.Tests.Application.Editorial.UseCases.Public.Q
 [Collection("Database")]
 public class PublicGetLyricsBySlugEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private async Task<Guid> SeedCategoryAsync()
-    {
-        return await SeedAsync<ContentDbContext, Guid>(ctx =>
-        {
-            ContentTypeEntity contentType = ContentTypeFactory.Create();
-            ctx.ContentTypes.Add(contentType);
-
-            CategoryEntity category = CategoryFactory.Create(contentType.Id);
-            ctx.Categories.Add(category);
-
-            return category.Id;
-        });
-    }
+    private async Task<Guid> SeedCategoryAsync() => await SeedAsync<ContentDbContext, Guid>(ContentSeeder.AddCategory);
 
     [Fact]
     public async Task GetLyricsBySlug_WithExistingLyrics_ReturnsLyrics()
@@ -50,10 +25,7 @@ public class PublicGetLyricsBySlugEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         LyricsEntity lyrics = await SeedAsync<ContentDbContext, LyricsEntity>(ctx =>
         {
-            LyricsEntity entity = LyricsFactory.CreateWithSlug(categoryId, slug);
-            entity.MarkPendingReview();
-            entity.Approve();
-            entity.Publish(TestConstants.Clock.Instant);
+            LyricsEntity entity = LyricsFactory.CreatePublishedWithSlug(categoryId, slug);
             ctx.Lyrics.Add(entity);
             return entity;
         });
@@ -136,20 +108,24 @@ public class PublicGetLyricsBySlugEndpointV1Tests(PostgresFixture db) : BaseApiT
     {
         Guid categoryId = await SeedCategoryAsync();
         string slug = $"unique-slug-song-{Guid.NewGuid():N}";
-        Guid staleVideoId = Guid.NewGuid();
 
-        await SeedAsync<ContentDbContext, LyricsEntity>(ctx =>
+        VideoEntity video = await SeedAsync<ContentDbContext, VideoEntity>(ctx =>
         {
-            LyricsEntity entity = LyricsFactory.CreateForVideo(categoryId, staleVideoId);
-            entity = LyricsFactory.CreateWithSlug(categoryId, slug);
-            entity.MarkPendingReview();
-            entity.Approve();
-            entity.MarkPendingReview();
-            entity.Approve();
-            entity.Publish(TestConstants.Clock.Instant);
+            VideoEntity video = VideoFactory.Create(categoryId);
+            LyricsEntity entity = LyricsFactory.CreatePublishedForVideoWithSlug(categoryId, video.Id, slug);
+            ctx.Videos.Add(video);
             ctx.Lyrics.Add(entity);
-            return entity;
+            return video;
         });
+
+        // The FK's OnDelete(DeleteBehavior.SetNull) nulls out VideoId on the linked lyrics
+        // row once the video is deleted, simulating a stale link without violating the FK.
+        await using (ContentDbContext deleteCtx = CreateDbContext<ContentDbContext>())
+        {
+            VideoEntity? videoToDelete = await deleteCtx.Videos.FindAsync(video.Id);
+            deleteCtx.Videos.Remove(videoToDelete!);
+            await deleteCtx.SaveChangesAsync();
+        }
 
         Client.ClearAuthentication();
 
@@ -168,12 +144,7 @@ public class PublicGetLyricsBySlugEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         await SeedAsync<ContentDbContext, LyricsEntity>(ctx =>
         {
-            LyricsEntity entity = LyricsFactory.CreateWithSlug(categoryId, slug);
-            entity.MarkPendingReview();
-            entity.Approve();
-            entity.MarkPendingReview();
-            entity.Approve();
-            entity.Publish(TestConstants.Clock.Instant);
+            LyricsEntity entity = LyricsFactory.CreatePublishedWithSlug(categoryId, slug);
             ctx.Lyrics.Add(entity);
             return entity;
         });
@@ -198,13 +169,8 @@ public class PublicGetLyricsBySlugEndpointV1Tests(PostgresFixture db) : BaseApiT
         await SeedAsync<ContentDbContext, ArtistEntity>(ctx =>
         {
             ArtistEntity artist = ArtistFactory.CreateWithSlug(artistSlug);
-            LyricsEntity entity = LyricsFactory.CreateWithSlug(categoryId, slug);
+            LyricsEntity entity = LyricsFactory.CreatePublishedWithSlug(categoryId, slug);
             entity.LinkArtist(artist.Id);
-            entity.MarkPendingReview();
-            entity.Approve();
-            entity.MarkPendingReview();
-            entity.Approve();
-            entity.Publish(TestConstants.Clock.Instant);
             ctx.Artists.Add(artist);
             ctx.Lyrics.Add(entity);
             return artist;
@@ -228,13 +194,8 @@ public class PublicGetLyricsBySlugEndpointV1Tests(PostgresFixture db) : BaseApiT
         (_, ArtistEntity artist) = await SeedAsync<ContentDbContext, (LyricsEntity, ArtistEntity)>(ctx =>
         {
             ArtistEntity artist = ArtistFactory.Create();
-            LyricsEntity entity = LyricsFactory.CreateWithSlug(categoryId, slug);
+            LyricsEntity entity = LyricsFactory.CreatePublishedWithSlug(categoryId, slug);
             entity.LinkArtist(artist.Id);
-            entity.MarkPendingReview();
-            entity.Approve();
-            entity.MarkPendingReview();
-            entity.Approve();
-            entity.Publish(TestConstants.Clock.Instant);
             ctx.Artists.Add(artist);
             ctx.Lyrics.Add(entity);
             return (entity, artist);
@@ -266,12 +227,7 @@ public class PublicGetLyricsBySlugEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         await SeedAsync<ContentDbContext, LyricsEntity>(ctx =>
         {
-            LyricsEntity entity = LyricsFactory.CreateWithSlug(categoryId, slug);
-            entity.MarkPendingReview();
-            entity.Approve();
-            entity.MarkPendingReview();
-            entity.Approve();
-            entity.Publish(TestConstants.Clock.Instant);
+            LyricsEntity entity = LyricsFactory.CreatePublishedWithSlug(categoryId, slug);
             ctx.Lyrics.Add(entity);
             return entity;
         });
@@ -293,10 +249,7 @@ public class PublicGetLyricsBySlugEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         LyricsEntity lyrics = await SeedAsync<ContentDbContext, LyricsEntity>(ctx =>
         {
-            LyricsEntity entity = LyricsFactory.CreateWithSlug(categoryId, slug);
-            entity.MarkPendingReview();
-            entity.Approve();
-            entity.Publish(TestConstants.Clock.Instant);
+            LyricsEntity entity = LyricsFactory.CreatePublishedWithSlug(categoryId, slug);
             entity.WithViewCount(2);
             entity.WithShareCount(1);
             ctx.Lyrics.Add(entity);
@@ -324,10 +277,7 @@ public class PublicGetLyricsBySlugEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         LyricsEntity lyrics = await SeedAsync<ContentDbContext, LyricsEntity>(ctx =>
         {
-            LyricsEntity entity = LyricsFactory.CreateWithSlug(categoryId, slug);
-            entity.MarkPendingReview();
-            entity.Approve();
-            entity.Publish(TestConstants.Clock.Instant);
+            LyricsEntity entity = LyricsFactory.CreatePublishedWithSlug(categoryId, slug);
             ctx.Lyrics.Add(entity);
             return entity;
         });
