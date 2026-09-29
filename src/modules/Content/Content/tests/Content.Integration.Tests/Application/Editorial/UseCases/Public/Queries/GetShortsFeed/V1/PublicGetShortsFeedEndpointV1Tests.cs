@@ -3,19 +3,6 @@ using _116.Content.Application.Editorial.UseCases.Public.Queries.GetShortsFeed.V
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Mocks;
 
 namespace _116.Content.Integration.Tests.Application.Editorial.UseCases.Public.Queries.GetShortsFeed.V1;
 
@@ -101,7 +88,7 @@ public class PublicGetShortsFeedEndpointV1Tests(PostgresFixture db) : BaseApiTes
         {
             ShortVideoEntity entity = ShortVideoFactory.Create();
             ctx.ShortVideos.Add(entity);
-            ctx.ShortVideoLikes.Add(ShortVideoLikeEntity.Create(Guid.NewGuid(), userId, entity.Id));
+            ctx.ShortVideoLikes.Add(ShortVideoLikeFactory.Create(userId, entity.Id));
             return entity;
         });
 
