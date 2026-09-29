@@ -1,25 +1,10 @@
-using _116.BuildingBlocks.Application.Exceptions;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Content.Infrastructure.Repositories;
 using _116.Content.TestData.Factories;
 using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
 using _116.Tests.TestData.Constants;
-using _116.Tests.TestData.Helpers;
-using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -36,12 +21,7 @@ public class ArticleCommentRepositoryTests : IDisposable
 
     public ArticleCommentRepositoryTests()
     {
-        DbContextOptions<ContentDbContext> options = new DbContextOptionsBuilder<ContentDbContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-            .AddInterceptors(new CreatedAtStampingInterceptor())
-            .Options;
-
-        _context = new ContentDbContext(options);
+        _context = ContentDbContextFactory.CreateInMemory();
         _repository = new ArticleCommentRepository(_context);
     }
 
@@ -76,12 +56,7 @@ public class ArticleCommentRepositoryTests : IDisposable
         _context.Articles.Add(article);
         await _context.SaveChangesAsync();
 
-        ArticleCommentEntity comment = ArticleCommentEntity.Create(
-            Guid.NewGuid(),
-            Guid.NewGuid(),
-            article.Id,
-            "Test comment body"
-        );
+        ArticleCommentEntity comment = ArticleCommentFactory.Create(article.Id, Guid.NewGuid(), "Test comment body");
         _context.ArticleComments.Add(comment);
         await _context.SaveChangesAsync();
 
@@ -108,7 +83,7 @@ public class ArticleCommentRepositoryTests : IDisposable
         _context.Articles.Add(article);
         await _context.SaveChangesAsync();
 
-        ArticleCommentEntity comment = ArticleCommentEntity.Create(Guid.NewGuid(), Guid.NewGuid(), article.Id, "Hello");
+        ArticleCommentEntity comment = ArticleCommentFactory.Create(article.Id, Guid.NewGuid(), "Hello");
 
         // Act
         await _repository.AddCommentAsync(comment);
@@ -132,8 +107,8 @@ public class ArticleCommentRepositoryTests : IDisposable
         _context.Articles.Add(article);
 
         _context.ArticleComments.AddRange(
-            ArticleCommentEntity.Create(Guid.NewGuid(), Guid.NewGuid(), article.Id, "Comment 1"),
-            ArticleCommentEntity.Create(Guid.NewGuid(), Guid.NewGuid(), article.Id, "Comment 2")
+            ArticleCommentFactory.Create(article.Id, Guid.NewGuid(), "Comment 1"),
+            ArticleCommentFactory.Create(article.Id, Guid.NewGuid(), "Comment 2")
         );
         await _context.SaveChangesAsync();
 
@@ -167,7 +142,7 @@ public class ArticleCommentRepositoryTests : IDisposable
         Guid categoryId = await SeedCategoryAsync();
         ArticleEntity article = ArticleFactory.Create(categoryId);
         _context.Articles.Add(article);
-        ArticleCommentEntity comment = ArticleCommentEntity.Create(Guid.NewGuid(), Guid.NewGuid(), article.Id, "Test");
+        ArticleCommentEntity comment = ArticleCommentFactory.Create(article.Id, Guid.NewGuid(), "Test");
         _context.ArticleComments.Add(comment);
         await _context.SaveChangesAsync();
 
@@ -199,14 +174,8 @@ public class ArticleCommentRepositoryTests : IDisposable
         Guid categoryId = await SeedCategoryAsync();
         ArticleEntity article = ArticleFactory.Create(categoryId);
         _context.Articles.Add(article);
-        ArticleCommentEntity top = ArticleCommentEntity.Create(Guid.NewGuid(), Guid.NewGuid(), article.Id, "top");
-        ArticleCommentEntity reply = ArticleCommentEntity.CreateReply(
-            Guid.NewGuid(),
-            Guid.NewGuid(),
-            article.Id,
-            top.Id,
-            "reply"
-        );
+        ArticleCommentEntity top = ArticleCommentFactory.Create(article.Id, Guid.NewGuid(), "top");
+        ArticleCommentEntity reply = ArticleCommentFactory.CreateReply(article.Id, Guid.NewGuid(), top.Id, "reply");
         _context.ArticleComments.AddRange(top, reply);
         await _context.SaveChangesAsync();
 
@@ -223,21 +192,9 @@ public class ArticleCommentRepositoryTests : IDisposable
         Guid categoryId = await SeedCategoryAsync();
         ArticleEntity article = ArticleFactory.Create(categoryId);
         _context.Articles.Add(article);
-        ArticleCommentEntity top = ArticleCommentEntity.Create(Guid.NewGuid(), Guid.NewGuid(), article.Id, "top");
-        ArticleCommentEntity reply1 = ArticleCommentEntity.CreateReply(
-            Guid.NewGuid(),
-            Guid.NewGuid(),
-            article.Id,
-            top.Id,
-            "r1"
-        );
-        ArticleCommentEntity reply2 = ArticleCommentEntity.CreateReply(
-            Guid.NewGuid(),
-            Guid.NewGuid(),
-            article.Id,
-            top.Id,
-            "r2"
-        );
+        ArticleCommentEntity top = ArticleCommentFactory.Create(article.Id, Guid.NewGuid(), "top");
+        ArticleCommentEntity reply1 = ArticleCommentFactory.CreateReply(article.Id, Guid.NewGuid(), top.Id, "r1");
+        ArticleCommentEntity reply2 = ArticleCommentFactory.CreateReply(article.Id, Guid.NewGuid(), top.Id, "r2");
         reply2.SoftDelete(TestConstants.Clock.Instant);
         _context.ArticleComments.AddRange(top, reply1, reply2);
         await _context.SaveChangesAsync();
@@ -254,22 +211,10 @@ public class ArticleCommentRepositoryTests : IDisposable
         Guid categoryId = await SeedCategoryAsync();
         ArticleEntity article = ArticleFactory.Create(categoryId);
         _context.Articles.Add(article);
-        ArticleCommentEntity parentA = ArticleCommentEntity.Create(Guid.NewGuid(), Guid.NewGuid(), article.Id, "A");
-        ArticleCommentEntity parentB = ArticleCommentEntity.Create(Guid.NewGuid(), Guid.NewGuid(), article.Id, "B");
-        ArticleCommentEntity a1 = ArticleCommentEntity.CreateReply(
-            Guid.NewGuid(),
-            Guid.NewGuid(),
-            article.Id,
-            parentA.Id,
-            "a1"
-        );
-        ArticleCommentEntity a2 = ArticleCommentEntity.CreateReply(
-            Guid.NewGuid(),
-            Guid.NewGuid(),
-            article.Id,
-            parentA.Id,
-            "a2"
-        );
+        ArticleCommentEntity parentA = ArticleCommentFactory.Create(article.Id, Guid.NewGuid(), "A");
+        ArticleCommentEntity parentB = ArticleCommentFactory.Create(article.Id, Guid.NewGuid(), "B");
+        ArticleCommentEntity a1 = ArticleCommentFactory.CreateReply(article.Id, Guid.NewGuid(), parentA.Id, "a1");
+        ArticleCommentEntity a2 = ArticleCommentFactory.CreateReply(article.Id, Guid.NewGuid(), parentA.Id, "a2");
         _context.ArticleComments.AddRange(parentA, parentB, a1, a2);
         await _context.SaveChangesAsync();
 
@@ -287,19 +232,13 @@ public class ArticleCommentRepositoryTests : IDisposable
         Guid userId = Guid.NewGuid();
         Guid categoryId = await SeedCategoryAsync();
         ArticleEntity article = ArticleFactory.CreatePublished(categoryId);
-        ArticleCommentEntity parent = ArticleCommentEntity.Create(Guid.NewGuid(), userId, article.Id, "parent");
+        ArticleCommentEntity parent = ArticleCommentFactory.Create(article.Id, userId, "parent");
         parent.CreatedAt = DateTime.UtcNow.AddHours(-2);
-        ArticleCommentEntity reply = ArticleCommentEntity.CreateReply(
-            Guid.NewGuid(),
-            userId,
-            article.Id,
-            parent.Id,
-            "reply"
-        );
+        ArticleCommentEntity reply = ArticleCommentFactory.CreateReply(article.Id, userId, parent.Id, "reply");
         reply.CreatedAt = DateTime.UtcNow.AddHours(-1);
-        ArticleCommentEntity deleted = ArticleCommentEntity.Create(Guid.NewGuid(), userId, article.Id, "deleted");
+        ArticleCommentEntity deleted = ArticleCommentFactory.Create(article.Id, userId, "deleted");
         deleted.SoftDelete(TestConstants.Clock.Instant);
-        ArticleCommentEntity other = ArticleCommentEntity.Create(Guid.NewGuid(), Guid.NewGuid(), article.Id, "other");
+        ArticleCommentEntity other = ArticleCommentFactory.Create(article.Id, Guid.NewGuid(), "other");
         _context.Articles.Add(article);
         _context.ArticleComments.AddRange(parent, reply, deleted, other);
         await _context.SaveChangesAsync();
@@ -322,18 +261,18 @@ public class ArticleCommentRepositoryTests : IDisposable
         Guid userId = Guid.NewGuid();
         Guid categoryId = await SeedCategoryAsync();
         ArticleEntity article = ArticleFactory.CreatePublished(categoryId);
-        ArticleCommentEntity first = ArticleCommentEntity.Create(Guid.NewGuid(), userId, article.Id, "first");
+        ArticleCommentEntity first = ArticleCommentFactory.Create(article.Id, userId, "first");
         first.CreatedAt = DateTime.UtcNow.AddHours(-2);
-        ArticleCommentEntity second = ArticleCommentEntity.Create(Guid.NewGuid(), userId, article.Id, "second");
+        ArticleCommentEntity second = ArticleCommentFactory.Create(article.Id, userId, "second");
         second.CreatedAt = DateTime.UtcNow.AddHours(-1);
-        ArticleCommentEntity deleted = ArticleCommentEntity.Create(Guid.NewGuid(), userId, article.Id, "deleted");
+        ArticleCommentEntity deleted = ArticleCommentFactory.Create(article.Id, userId, "deleted");
         deleted.SoftDelete(TestConstants.Clock.Instant);
         _context.Articles.Add(article);
         _context.ArticleComments.AddRange(
             first,
             second,
             deleted,
-            ArticleCommentEntity.Create(Guid.NewGuid(), Guid.NewGuid(), article.Id, "other")
+            ArticleCommentFactory.Create(article.Id, Guid.NewGuid(), "other")
         );
         await _context.SaveChangesAsync();
 
@@ -358,9 +297,9 @@ public class ArticleCommentRepositoryTests : IDisposable
         Guid categoryId = await SeedCategoryAsync();
         ArticleEntity article = ArticleFactory.Create(categoryId);
         _context.Articles.Add(article);
-        ArticleCommentEntity comment = ArticleCommentEntity.Create(Guid.NewGuid(), Guid.NewGuid(), article.Id, "c");
+        ArticleCommentEntity comment = ArticleCommentFactory.Create(article.Id, Guid.NewGuid(), "c");
         _context.ArticleComments.Add(comment);
-        _context.ArticleCommentLikes.Add(ArticleCommentLikeEntity.Create(Guid.NewGuid(), userId, comment.Id));
+        _context.ArticleCommentLikes.Add(ArticleCommentLikeFactory.Create(userId, comment.Id));
         await _context.SaveChangesAsync();
 
         (await _repository.HasLikedCommentAsync(userId, comment.Id)).Should().BeTrue();
@@ -375,12 +314,12 @@ public class ArticleCommentRepositoryTests : IDisposable
         Guid categoryId = await SeedCategoryAsync();
         ArticleEntity article = ArticleFactory.Create(categoryId);
         _context.Articles.Add(article);
-        ArticleCommentEntity c1 = ArticleCommentEntity.Create(Guid.NewGuid(), Guid.NewGuid(), article.Id, "c1");
-        ArticleCommentEntity c2 = ArticleCommentEntity.Create(Guid.NewGuid(), Guid.NewGuid(), article.Id, "c2");
+        ArticleCommentEntity c1 = ArticleCommentFactory.Create(article.Id, Guid.NewGuid(), "c1");
+        ArticleCommentEntity c2 = ArticleCommentFactory.Create(article.Id, Guid.NewGuid(), "c2");
         _context.ArticleComments.AddRange(c1, c2);
         _context.ArticleCommentLikes.AddRange(
-            ArticleCommentLikeEntity.Create(Guid.NewGuid(), viewerId, c1.Id),
-            ArticleCommentLikeEntity.Create(Guid.NewGuid(), otherId, c2.Id)
+            ArticleCommentLikeFactory.Create(viewerId, c1.Id),
+            ArticleCommentLikeFactory.Create(otherId, c2.Id)
         );
         await _context.SaveChangesAsync();
 
@@ -396,9 +335,9 @@ public class ArticleCommentRepositoryTests : IDisposable
         Guid categoryId = await SeedCategoryAsync();
         ArticleEntity article = ArticleFactory.Create(categoryId);
         _context.Articles.Add(article);
-        ArticleCommentEntity comment = ArticleCommentEntity.Create(Guid.NewGuid(), Guid.NewGuid(), article.Id, "c");
+        ArticleCommentEntity comment = ArticleCommentFactory.Create(article.Id, Guid.NewGuid(), "c");
         _context.ArticleComments.Add(comment);
-        _context.ArticleCommentLikes.Add(ArticleCommentLikeEntity.Create(Guid.NewGuid(), userId, comment.Id));
+        _context.ArticleCommentLikes.Add(ArticleCommentLikeFactory.Create(userId, comment.Id));
         await _context.SaveChangesAsync();
 
         await _repository.RemoveCommentLikeAsync(userId, comment.Id);
