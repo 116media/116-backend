@@ -4,20 +4,8 @@ using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.SetArticleArtists.V1;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Content.TestData.Builders.Requests;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Mocks;
 
 namespace _116.Content.Integration.Tests.Application.Editorial.UseCases.Admin.Commands.SetArticleArtists.V1;
 
@@ -60,7 +48,7 @@ public class AdminSetArticleArtistsEndpointV1Tests(PostgresFixture db) : BaseApi
 
         var response = await Client.PutAsJsonAsync(
             Url(Guid.NewGuid()),
-            new AdminSetArticleArtistsRequest([Guid.NewGuid()])
+            new AdminSetArticleArtistsRequestBuilder().WithArtistIds([Guid.NewGuid()]).Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -71,7 +59,10 @@ public class AdminSetArticleArtistsEndpointV1Tests(PostgresFixture db) : BaseApi
     {
         Client.AuthenticateAsAdmin();
 
-        var response = await Client.PutAsJsonAsync(Url(Guid.NewGuid()), new AdminSetArticleArtistsRequest([]));
+        var response = await Client.PutAsJsonAsync(
+            Url(Guid.NewGuid()),
+            new AdminSetArticleArtistsRequestBuilder().Build()
+        );
 
         await response.ShouldBeProblem<NotFoundException>(
             HttpStatusCode.NotFound,
@@ -87,7 +78,7 @@ public class AdminSetArticleArtistsEndpointV1Tests(PostgresFixture db) : BaseApi
 
         var response = await Client.PutAsJsonAsync(
             Url(article.Id),
-            new AdminSetArticleArtistsRequest([Guid.NewGuid()])
+            new AdminSetArticleArtistsRequestBuilder().WithArtistIds([Guid.NewGuid()]).Build()
         );
 
         await response.ShouldBeProblem<NotFoundException>(
@@ -102,8 +93,14 @@ public class AdminSetArticleArtistsEndpointV1Tests(PostgresFixture db) : BaseApi
         (ArticleEntity article, ArtistEntity artistA, ArtistEntity artistB) = await SeedArticleWithArtistsAsync();
         Client.AuthenticateAsAdmin();
 
-        await Client.PutAsJsonAsync(Url(article.Id), new AdminSetArticleArtistsRequest([artistA.Id, artistB.Id]));
-        var response = await Client.PutAsJsonAsync(Url(article.Id), new AdminSetArticleArtistsRequest([artistB.Id]));
+        await Client.PutAsJsonAsync(
+            Url(article.Id),
+            new AdminSetArticleArtistsRequestBuilder().WithArtistIds([artistA.Id, artistB.Id]).Build()
+        );
+        var response = await Client.PutAsJsonAsync(
+            Url(article.Id),
+            new AdminSetArticleArtistsRequestBuilder().WithArtistIds([artistB.Id]).Build()
+        );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         AdminSetArticleArtistsResponse body = await response.ReadAsAsync<AdminSetArticleArtistsResponse>();
@@ -121,8 +118,11 @@ public class AdminSetArticleArtistsEndpointV1Tests(PostgresFixture db) : BaseApi
         (ArticleEntity article, ArtistEntity artistA, _) = await SeedArticleWithArtistsAsync();
         Client.AuthenticateAsAdmin();
 
-        await Client.PutAsJsonAsync(Url(article.Id), new AdminSetArticleArtistsRequest([artistA.Id]));
-        var response = await Client.PutAsJsonAsync(Url(article.Id), new AdminSetArticleArtistsRequest([]));
+        await Client.PutAsJsonAsync(
+            Url(article.Id),
+            new AdminSetArticleArtistsRequestBuilder().WithArtistIds([artistA.Id]).Build()
+        );
+        var response = await Client.PutAsJsonAsync(Url(article.Id), new AdminSetArticleArtistsRequestBuilder().Build());
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -138,7 +138,7 @@ public class AdminSetArticleArtistsEndpointV1Tests(PostgresFixture db) : BaseApi
 
         var response = await Client.PutAsJsonAsync(
             Url(article.Id),
-            new AdminSetArticleArtistsRequest([artistA.Id, artistA.Id])
+            new AdminSetArticleArtistsRequestBuilder().WithArtistIds([artistA.Id, artistA.Id]).Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -149,7 +149,10 @@ public class AdminSetArticleArtistsEndpointV1Tests(PostgresFixture db) : BaseApi
     {
         (ArticleEntity article, ArtistEntity artistA, _) = await SeedArticleWithArtistsAsync();
         Client.AuthenticateAsAdmin();
-        await Client.PutAsJsonAsync(Url(article.Id), new AdminSetArticleArtistsRequest([artistA.Id]));
+        await Client.PutAsJsonAsync(
+            Url(article.Id),
+            new AdminSetArticleArtistsRequestBuilder().WithArtistIds([artistA.Id]).Build()
+        );
 
         await using (ContentDbContext ctx = CreateDbContext<ContentDbContext>())
         {
