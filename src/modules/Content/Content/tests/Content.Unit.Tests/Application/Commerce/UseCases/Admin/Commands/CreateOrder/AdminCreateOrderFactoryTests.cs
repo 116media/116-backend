@@ -4,20 +4,7 @@ using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.TestData.Builders.Entities;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
 using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Helpers;
-using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -50,11 +37,7 @@ public class AdminCreateOrderFactoryTests
         Guid contentTypeId = Guid.NewGuid();
         CategoryEntity category = CreateCategoryWithContentType(contentTypeId, "Video");
         PackageEntity package = PackageFactory.Create();
-        PackageSlotEntity slot = new PackageSlotBuilder(package)
-            .WithCategory(category)
-            .WithIsRequired(true)
-            .WithQuantity(1)
-            .Build();
+        PackageSlotEntity slot = PackageSlotFactory.Create(package, category.Id, true, 1);
 
         CategoryPricingEntity pricing = CategoryPricingFactory.Create(category, Guid.NewGuid(), 50m);
 
@@ -77,11 +60,7 @@ public class AdminCreateOrderFactoryTests
         Guid contentTypeId = Guid.NewGuid();
         CategoryEntity category = CreateCategoryWithContentType(contentTypeId, "Article");
         PackageEntity package = PackageFactory.Create();
-        PackageSlotEntity slot = new PackageSlotBuilder(package)
-            .WithCategory(category)
-            .WithIsRequired(false)
-            .WithQuantity(1)
-            .Build();
+        PackageSlotEntity slot = PackageSlotFactory.Create(package, category.Id, false, 1);
 
         // Act
         int count = await _factory.PopulateFromPackageAsync(order, package, CancellationToken.None);
@@ -120,11 +99,7 @@ public class AdminCreateOrderFactoryTests
         Guid contentTypeId = Guid.NewGuid();
         CategoryEntity category = CreateCategoryWithContentType(contentTypeId, "Video");
         PackageEntity package = PackageFactory.Create();
-        PackageSlotEntity slot = new PackageSlotBuilder(package)
-            .WithCategory(category)
-            .WithIsRequired(true)
-            .WithQuantity(3)
-            .Build();
+        PackageSlotEntity slot = PackageSlotFactory.Create(package, category.Id, true, 3);
 
         // Act
         int count = await _factory.PopulateFromPackageAsync(order, package, CancellationToken.None);
@@ -142,11 +117,7 @@ public class AdminCreateOrderFactoryTests
         Guid contentTypeId = Guid.NewGuid();
         CategoryEntity category = CreateCategoryWithContentType(contentTypeId, "Video");
         PackageEntity package = PackageFactory.Create();
-        PackageSlotEntity slot = new PackageSlotBuilder(package)
-            .WithCategory(category)
-            .WithIsRequired(false)
-            .WithQuantity(1)
-            .Build();
+        PackageSlotEntity slot = PackageSlotFactory.Create(package, category.Id, false, 1);
 
         CategoryPricingEntity pricing = CategoryPricingFactory.Create(category, Guid.NewGuid(), 100m);
 
@@ -165,11 +136,7 @@ public class AdminCreateOrderFactoryTests
         Guid contentTypeId = Guid.NewGuid();
         CategoryEntity category = CreateCategoryWithContentType(contentTypeId, "PhotoShoot");
         PackageEntity package = PackageFactory.Create();
-        PackageSlotEntity slot = new PackageSlotBuilder(package)
-            .WithCategory(category)
-            .WithIsRequired(true)
-            .WithQuantity(1)
-            .Build();
+        PackageSlotEntity slot = PackageSlotFactory.Create(package, category.Id, true, 1);
 
         // Act
         await _factory.PopulateFromPackageAsync(order, package, CancellationToken.None);
