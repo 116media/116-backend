@@ -1,21 +1,7 @@
 using _116.Content.Application.Editorial.Specifications;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
-using _116.Content.TestData.Builders.Entities;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Xunit;
 
@@ -113,7 +99,7 @@ public class ArtistContentSpecificationsTests
     {
         ArtistEntity artist = ArtistFactory.Create();
         ArticleEntity article = ArticleFactory.CreatePublished(CategoryId);
-        ArticleArtistEntity join = new ArticleArtistBuilder().WithArticle(article).WithArtistId(artist.Id).Build();
+        ArticleArtistEntity join = ArticleArtistFactory.Link(article, artist.Id);
         List<ArticleEntity> articles = [article];
 
         Evaluate(artist, taggedArticles: [join], articles: articles).Should().BeTrue();
@@ -126,7 +112,7 @@ public class ArtistContentSpecificationsTests
         // the article's status.
         ArtistEntity artist = ArtistFactory.Create();
         ArticleEntity draft = ArticleFactory.Create(CategoryId);
-        ArticleArtistEntity join = new ArticleArtistBuilder().WithArticle(draft).WithArtistId(artist.Id).Build();
+        ArticleArtistEntity join = ArticleArtistFactory.Link(draft, artist.Id);
 
         Evaluate(artist, taggedArticles: [join]).Should().BeFalse();
     }
@@ -178,7 +164,7 @@ public class ArtistContentSpecificationsTests
     {
         ArtistEntity artist = ArtistFactory.Create();
         ArticleEntity draft = ArticleFactory.Create(CategoryId);
-        ArticleArtistEntity join = new ArticleArtistBuilder().WithArticle(draft).WithArtistId(artist.Id).Build();
+        ArticleArtistEntity join = ArticleArtistFactory.Link(draft, artist.Id);
         var spec = new ArtistHasPublishedArticleSpecification(
             articleArtists: new List<ArticleArtistEntity> { join }.AsQueryable(),
             articles: new List<ArticleEntity> { draft }.AsQueryable()
