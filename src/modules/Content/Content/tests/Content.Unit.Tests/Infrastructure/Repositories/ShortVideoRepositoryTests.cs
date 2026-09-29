@@ -4,20 +4,7 @@ using _116.Content.Infrastructure.Persistence;
 using _116.Content.Infrastructure.Repositories;
 using _116.Content.TestData.Factories;
 using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
 using _116.Shared.Domain;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Helpers;
-using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -34,12 +21,7 @@ public class ShortVideoRepositoryTests : IDisposable
 
     public ShortVideoRepositoryTests()
     {
-        DbContextOptions<ContentDbContext> options = new DbContextOptionsBuilder<ContentDbContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-            .AddInterceptors(new CreatedAtStampingInterceptor())
-            .Options;
-
-        _context = new ContentDbContext(options);
+        _context = ContentDbContextFactory.CreateInMemory();
         _repository = new ShortVideoRepository(_context);
     }
 
@@ -296,7 +278,7 @@ public class ShortVideoRepositoryTests : IDisposable
         Guid userId = Guid.NewGuid();
         ShortVideoEntity shortVideo = ShortVideoFactory.Create();
         _context.ShortVideos.Add(shortVideo);
-        ShortVideoLikeEntity like = ShortVideoLikeEntity.Create(Guid.NewGuid(), userId, shortVideo.Id);
+        ShortVideoLikeEntity like = ShortVideoLikeFactory.Create(userId, shortVideo.Id);
         _context.ShortVideoLikes.Add(like);
         await _context.SaveChangesAsync();
 
@@ -330,7 +312,7 @@ public class ShortVideoRepositoryTests : IDisposable
         _context.ShortVideos.Add(shortVideo);
         await _context.SaveChangesAsync();
 
-        ShortVideoLikeEntity like = ShortVideoLikeEntity.Create(Guid.NewGuid(), userId, shortVideo.Id);
+        ShortVideoLikeEntity like = ShortVideoLikeFactory.Create(userId, shortVideo.Id);
 
         // Act
         await _repository.AddLikeAsync(like);
@@ -354,7 +336,7 @@ public class ShortVideoRepositoryTests : IDisposable
         Guid userId = Guid.NewGuid();
         ShortVideoEntity shortVideo = ShortVideoFactory.Create();
         _context.ShortVideos.Add(shortVideo);
-        ShortVideoLikeEntity like = ShortVideoLikeEntity.Create(Guid.NewGuid(), userId, shortVideo.Id);
+        ShortVideoLikeEntity like = ShortVideoLikeFactory.Create(userId, shortVideo.Id);
         _context.ShortVideoLikes.Add(like);
         await _context.SaveChangesAsync();
 
@@ -390,7 +372,7 @@ public class ShortVideoRepositoryTests : IDisposable
         Guid userId = Guid.NewGuid();
         ShortVideoEntity shortVideo = ShortVideoFactory.Create();
         _context.ShortVideos.Add(shortVideo);
-        ShortVideoBookmarkEntity bookmark = ShortVideoBookmarkEntity.Create(Guid.NewGuid(), userId, shortVideo.Id);
+        ShortVideoBookmarkEntity bookmark = ShortVideoBookmarkFactory.Create(userId, shortVideo.Id);
         _context.ShortVideoBookmarks.Add(bookmark);
         await _context.SaveChangesAsync();
 
@@ -424,7 +406,7 @@ public class ShortVideoRepositoryTests : IDisposable
         _context.ShortVideos.Add(shortVideo);
         await _context.SaveChangesAsync();
 
-        ShortVideoBookmarkEntity bookmark = ShortVideoBookmarkEntity.Create(Guid.NewGuid(), userId, shortVideo.Id);
+        ShortVideoBookmarkEntity bookmark = ShortVideoBookmarkFactory.Create(userId, shortVideo.Id);
 
         // Act
         await _repository.AddBookmarkAsync(bookmark);
@@ -448,7 +430,7 @@ public class ShortVideoRepositoryTests : IDisposable
         Guid userId = Guid.NewGuid();
         ShortVideoEntity shortVideo = ShortVideoFactory.Create();
         _context.ShortVideos.Add(shortVideo);
-        ShortVideoBookmarkEntity bookmark = ShortVideoBookmarkEntity.Create(Guid.NewGuid(), userId, shortVideo.Id);
+        ShortVideoBookmarkEntity bookmark = ShortVideoBookmarkFactory.Create(userId, shortVideo.Id);
         _context.ShortVideoBookmarks.Add(bookmark);
         await _context.SaveChangesAsync();
 
@@ -485,7 +467,7 @@ public class ShortVideoRepositoryTests : IDisposable
         _context.ShortVideos.Add(shortVideo);
         await _context.SaveChangesAsync();
 
-        ShortVideoShareEntity share = ShortVideoShareEntity.Create(Guid.NewGuid(), null, shortVideo.Id);
+        ShortVideoShareEntity share = ShortVideoShareFactory.CreateAnonymous(shortVideo.Id);
         share.CreatedAt = DateTime.UtcNow;
 
         // Act
@@ -511,15 +493,15 @@ public class ShortVideoRepositoryTests : IDisposable
         ShortVideoEntity other = ShortVideoFactory.Create();
         _context.ShortVideos.AddRange(first, second, inactive, other);
         DateTime tie = DateTime.UtcNow.AddHours(-1);
-        ShortVideoLikeEntity firstLike = ShortVideoLikeEntity.Create(Guid.NewGuid(), userId, first.Id);
-        ShortVideoLikeEntity secondLike = ShortVideoLikeEntity.Create(Guid.NewGuid(), userId, second.Id);
+        ShortVideoLikeEntity firstLike = ShortVideoLikeFactory.Create(userId, first.Id);
+        ShortVideoLikeEntity secondLike = ShortVideoLikeFactory.Create(userId, second.Id);
         SetCreatedAt(firstLike, tie);
         SetCreatedAt(secondLike, tie);
         _context.ShortVideoLikes.AddRange(
             firstLike,
             secondLike,
-            ShortVideoLikeEntity.Create(Guid.NewGuid(), userId, inactive.Id),
-            ShortVideoLikeEntity.Create(Guid.NewGuid(), Guid.NewGuid(), other.Id)
+            ShortVideoLikeFactory.Create(userId, inactive.Id),
+            ShortVideoLikeFactory.Create(Guid.NewGuid(), other.Id)
         );
         await _context.SaveChangesAsync();
 
@@ -537,8 +519,8 @@ public class ShortVideoRepositoryTests : IDisposable
         ShortVideoEntity olderShort = ShortVideoFactory.Create();
         ShortVideoEntity newerShort = ShortVideoFactory.Create();
         _context.ShortVideos.AddRange(olderShort, newerShort);
-        ShortVideoBookmarkEntity older = ShortVideoBookmarkEntity.Create(Guid.NewGuid(), userId, olderShort.Id);
-        ShortVideoBookmarkEntity newer = ShortVideoBookmarkEntity.Create(Guid.NewGuid(), userId, newerShort.Id);
+        ShortVideoBookmarkEntity older = ShortVideoBookmarkFactory.Create(userId, olderShort.Id);
+        ShortVideoBookmarkEntity newer = ShortVideoBookmarkFactory.Create(userId, newerShort.Id);
         DateTime expectedTime = DateTime.UtcNow.AddMinutes(-1);
         SetCreatedAt(older, expectedTime.AddDays(-1));
         SetCreatedAt(newer, expectedTime);
@@ -562,17 +544,17 @@ public class ShortVideoRepositoryTests : IDisposable
         ShortVideoEntity inactive = ShortVideoFactory.CreateInactive();
         _context.ShortVideos.AddRange(active, anonymous, inactive);
         DateTime latest = DateTime.UtcNow;
-        ShortVideoShareEntity older = ShortVideoShareEntity.Create(Guid.NewGuid(), userId, active.Id);
+        ShortVideoShareEntity older = ShortVideoShareFactory.Create(userId, active.Id);
         older.CreatedAt = DateTime.UtcNow;
-        ShortVideoShareEntity newer = ShortVideoShareEntity.Create(Guid.NewGuid(), userId, active.Id);
+        ShortVideoShareEntity newer = ShortVideoShareFactory.Create(userId, active.Id);
         newer.CreatedAt = DateTime.UtcNow;
         SetCreatedAt(older, latest.AddDays(-1));
         SetCreatedAt(newer, latest);
         _context.ShortVideoShares.AddRange(
             older,
             newer,
-            ShortVideoShareEntity.Create(Guid.NewGuid(), null, anonymous.Id),
-            ShortVideoShareEntity.Create(Guid.NewGuid(), userId, inactive.Id)
+            ShortVideoShareFactory.CreateAnonymous(anonymous.Id),
+            ShortVideoShareFactory.Create(userId, inactive.Id)
         );
         await _context.SaveChangesAsync();
 
