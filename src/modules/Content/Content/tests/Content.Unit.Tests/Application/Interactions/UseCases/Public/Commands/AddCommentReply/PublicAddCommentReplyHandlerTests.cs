@@ -1,31 +1,19 @@
 using _116.BuildingBlocks.Application.Exceptions;
-using _116.BuildingBlocks.Presentation.Constants;
 using _116.Content.Application.Interactions.UseCases.Public.Commands.AddCommentReply;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.TestData;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
 using _116.Content.TestData.Mocks.Infrastructure;
 using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
 using _116.Identity.Contracts.Application.DTOs;
 using _116.Identity.Contracts.Application.Services;
-using _116.Identity.TestData.Factories;
 using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
 using _116.Shared.Domain.Constants;
-using _116.Storage.Application.Shared.Repositories;
 using _116.Storage.Contracts.Application.Services;
-using _116.Storage.TestData.Factories;
 using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData;
 using _116.Tests.TestData.Helpers;
-using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -92,12 +80,11 @@ public class PublicAddCommentReplyHandlerTests : BaseContentHandlerTest
     {
         ArticleEntity article = ArticleFactory.CreatePublished(CategoryId);
         ArticleCommentEntity grandparent = ArticleCommentFactory.Create(article.Id, Guid.NewGuid());
-        ArticleCommentEntity parentReply = ArticleCommentEntity.CreateReply(
-            id: Guid.NewGuid(),
-            userId: Guid.NewGuid(),
-            articleId: article.Id,
-            parentCommentId: grandparent.Id,
-            body: "I am already a reply."
+        ArticleCommentEntity parentReply = ArticleCommentFactory.CreateReply(
+            article.Id,
+            Guid.NewGuid(),
+            grandparent.Id,
+            "I am already a reply."
         );
 
         _articleCommentRepositoryMock.SetupExistsOrThrow(article.Id);
