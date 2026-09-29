@@ -34,9 +34,4 @@ public static class MockOrderPaymentFactory
             .ThrowsAsync(new NotFoundException($"Payment for order '{orderId}' was not found."));
         return mock;
     }
-
-    public static void VerifyGetByOrderIdCalled(this Mock<IOrderPaymentFactory> mock, Guid orderId)
-    {
-        mock.Verify(x => x.GetByOrderIdOrThrowAsync(orderId, It.IsAny<CancellationToken>()), Times.Once);
-    }
 }
