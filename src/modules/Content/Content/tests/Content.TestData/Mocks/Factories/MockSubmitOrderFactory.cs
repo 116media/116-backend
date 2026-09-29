@@ -21,16 +21,6 @@ public static class MockSubmitOrderFactory
         return mock;
     }
 
-    public static Mock<ISubmitOrderFactory> SetupSubmitAsyncThrows(
-        this Mock<ISubmitOrderFactory> mock,
-        Exception exception
-    )
-    {
-        mock.Setup(x => x.SubmitAsync(It.IsAny<ContentOrderEntity>(), It.IsAny<CancellationToken>()))
-            .ThrowsAsync(exception);
-        return mock;
-    }
-
     public static void VerifySubmitCalled(this Mock<ISubmitOrderFactory> mock)
     {
         mock.Verify(x => x.SubmitAsync(It.IsAny<ContentOrderEntity>(), It.IsAny<CancellationToken>()), Times.Once);
