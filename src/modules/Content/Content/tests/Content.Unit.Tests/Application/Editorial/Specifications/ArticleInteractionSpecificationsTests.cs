@@ -1,19 +1,6 @@
 using _116.Content.Application.Editorial.Specifications;
 using _116.Content.Domain.Entities;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Xunit;
 
@@ -60,7 +47,7 @@ public class ArticleInteractionSpecificationsTests
     {
         Guid userId = Guid.NewGuid();
         Guid articleId = Guid.NewGuid();
-        ArticleLikeEntity like = ArticleLikeEntity.Create(Guid.NewGuid(), userId: userId, articleId: articleId);
+        ArticleLikeEntity like = ArticleLikeFactory.Create(userId, articleId);
         var spec = new ArticleLikeByUserAndArticleSpecification(userId, articleId);
 
         bool result = spec.IsSatisfiedBy(like);
@@ -71,11 +58,7 @@ public class ArticleInteractionSpecificationsTests
     [Fact]
     public void ArticleLikeByUserAndArticleSpecification_WithDifferentUserId_ShouldReturnFalse()
     {
-        ArticleLikeEntity like = ArticleLikeEntity.Create(
-            Guid.NewGuid(),
-            userId: Guid.NewGuid(),
-            articleId: Guid.NewGuid()
-        );
+        ArticleLikeEntity like = ArticleLikeFactory.Create(Guid.NewGuid(), Guid.NewGuid());
         var spec = new ArticleLikeByUserAndArticleSpecification(Guid.NewGuid(), like.ArticleId);
 
         bool result = spec.IsSatisfiedBy(like);
@@ -87,7 +70,7 @@ public class ArticleInteractionSpecificationsTests
     public void ArticleLikeByUserAndArticleSpecification_WithDifferentArticleId_ShouldReturnFalse()
     {
         Guid userId = Guid.NewGuid();
-        ArticleLikeEntity like = ArticleLikeEntity.Create(Guid.NewGuid(), userId: userId, articleId: Guid.NewGuid());
+        ArticleLikeEntity like = ArticleLikeFactory.Create(userId, Guid.NewGuid());
         var spec = new ArticleLikeByUserAndArticleSpecification(userId, Guid.NewGuid());
 
         bool result = spec.IsSatisfiedBy(like);
@@ -104,11 +87,7 @@ public class ArticleInteractionSpecificationsTests
     {
         Guid userId = Guid.NewGuid();
         Guid articleId = Guid.NewGuid();
-        ArticleBookmarkEntity bookmark = ArticleBookmarkEntity.Create(
-            Guid.NewGuid(),
-            userId: userId,
-            articleId: articleId
-        );
+        ArticleBookmarkEntity bookmark = ArticleBookmarkFactory.Create(userId, articleId);
         var spec = new ArticleBookmarkByUserAndArticleSpecification(userId, articleId);
 
         bool result = spec.IsSatisfiedBy(bookmark);
@@ -119,11 +98,7 @@ public class ArticleInteractionSpecificationsTests
     [Fact]
     public void ArticleBookmarkByUserAndArticleSpecification_WithDifferentUserId_ShouldReturnFalse()
     {
-        ArticleBookmarkEntity bookmark = ArticleBookmarkEntity.Create(
-            Guid.NewGuid(),
-            userId: Guid.NewGuid(),
-            articleId: Guid.NewGuid()
-        );
+        ArticleBookmarkEntity bookmark = ArticleBookmarkFactory.Create(Guid.NewGuid(), Guid.NewGuid());
         var spec = new ArticleBookmarkByUserAndArticleSpecification(Guid.NewGuid(), bookmark.ArticleId);
 
         bool result = spec.IsSatisfiedBy(bookmark);
@@ -135,11 +110,7 @@ public class ArticleInteractionSpecificationsTests
     public void ArticleBookmarkByUserAndArticleSpecification_WithDifferentArticleId_ShouldReturnFalse()
     {
         Guid userId = Guid.NewGuid();
-        ArticleBookmarkEntity bookmark = ArticleBookmarkEntity.Create(
-            Guid.NewGuid(),
-            userId: userId,
-            articleId: Guid.NewGuid()
-        );
+        ArticleBookmarkEntity bookmark = ArticleBookmarkFactory.Create(userId, Guid.NewGuid());
         var spec = new ArticleBookmarkByUserAndArticleSpecification(userId, Guid.NewGuid());
 
         bool result = spec.IsSatisfiedBy(bookmark);
@@ -155,11 +126,7 @@ public class ArticleInteractionSpecificationsTests
     public void ArticleBookmarkByUserIdSpecification_WithMatchingUserId_ShouldReturnTrue()
     {
         Guid userId = Guid.NewGuid();
-        ArticleBookmarkEntity bookmark = ArticleBookmarkEntity.Create(
-            Guid.NewGuid(),
-            userId: userId,
-            articleId: Guid.NewGuid()
-        );
+        ArticleBookmarkEntity bookmark = ArticleBookmarkFactory.Create(userId, Guid.NewGuid());
         var spec = new ArticleBookmarkByUserIdSpecification(userId);
 
         bool result = spec.IsSatisfiedBy(bookmark);
@@ -170,11 +137,7 @@ public class ArticleInteractionSpecificationsTests
     [Fact]
     public void ArticleBookmarkByUserIdSpecification_WithDifferentUserId_ShouldReturnFalse()
     {
-        ArticleBookmarkEntity bookmark = ArticleBookmarkEntity.Create(
-            Guid.NewGuid(),
-            userId: Guid.NewGuid(),
-            articleId: Guid.NewGuid()
-        );
+        ArticleBookmarkEntity bookmark = ArticleBookmarkFactory.Create(Guid.NewGuid(), Guid.NewGuid());
         var spec = new ArticleBookmarkByUserIdSpecification(Guid.NewGuid());
 
         bool result = spec.IsSatisfiedBy(bookmark);
@@ -190,12 +153,7 @@ public class ArticleInteractionSpecificationsTests
     public void ArticleCommentByArticleIdSpecification_WithMatchingArticleId_ShouldReturnTrue()
     {
         Guid articleId = Guid.NewGuid();
-        ArticleCommentEntity comment = ArticleCommentEntity.Create(
-            Guid.NewGuid(),
-            userId: Guid.NewGuid(),
-            articleId: articleId,
-            body: "test"
-        );
+        ArticleCommentEntity comment = ArticleCommentFactory.Create(articleId, Guid.NewGuid(), "test");
         var spec = new ArticleCommentByArticleIdSpecification(articleId);
 
         bool result = spec.IsSatisfiedBy(comment);
@@ -206,12 +164,7 @@ public class ArticleInteractionSpecificationsTests
     [Fact]
     public void ArticleCommentByArticleIdSpecification_WithDifferentArticleId_ShouldReturnFalse()
     {
-        ArticleCommentEntity comment = ArticleCommentEntity.Create(
-            Guid.NewGuid(),
-            userId: Guid.NewGuid(),
-            articleId: Guid.NewGuid(),
-            body: "test"
-        );
+        ArticleCommentEntity comment = ArticleCommentFactory.Create(Guid.NewGuid(), Guid.NewGuid(), "test");
         var spec = new ArticleCommentByArticleIdSpecification(Guid.NewGuid());
 
         bool result = spec.IsSatisfiedBy(comment);
@@ -243,12 +196,7 @@ public class ArticleInteractionSpecificationsTests
     [Fact]
     public void ArticleCommentByIdSpecification_WithDifferentId_ShouldReturnFalse()
     {
-        ArticleCommentEntity comment = ArticleCommentEntity.Create(
-            Guid.NewGuid(),
-            userId: Guid.NewGuid(),
-            articleId: Guid.NewGuid(),
-            body: "test"
-        );
+        ArticleCommentEntity comment = ArticleCommentFactory.Create(Guid.NewGuid(), Guid.NewGuid(), "test");
         var spec = new ArticleCommentByIdSpecification(Guid.NewGuid());
 
         bool result = spec.IsSatisfiedBy(comment);
@@ -265,11 +213,7 @@ public class ArticleInteractionSpecificationsTests
     {
         // Arrange
         Guid userId = Guid.NewGuid();
-        ArticleCommentLikeEntity like = ArticleCommentLikeEntity.Create(
-            id: Guid.NewGuid(),
-            userId: userId,
-            commentId: Guid.NewGuid()
-        );
+        ArticleCommentLikeEntity like = ArticleCommentLikeFactory.Create(userId, Guid.NewGuid());
         var spec = new ArticleCommentLikeByUserIdSpecification(userId: userId);
 
         // Act
@@ -283,11 +227,7 @@ public class ArticleInteractionSpecificationsTests
     public void ArticleCommentLikeByUserIdSpecification_WithDifferentUser_ShouldReturnFalse()
     {
         // Arrange
-        ArticleCommentLikeEntity like = ArticleCommentLikeEntity.Create(
-            id: Guid.NewGuid(),
-            userId: Guid.NewGuid(),
-            commentId: Guid.NewGuid()
-        );
+        ArticleCommentLikeEntity like = ArticleCommentLikeFactory.Create(Guid.NewGuid(), Guid.NewGuid());
         var spec = new ArticleCommentLikeByUserIdSpecification(userId: Guid.NewGuid());
 
         // Act
