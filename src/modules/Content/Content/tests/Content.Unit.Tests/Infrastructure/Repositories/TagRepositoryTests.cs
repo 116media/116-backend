@@ -1,25 +1,10 @@
-using _116.BuildingBlocks.Application.Exceptions;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Content.Infrastructure.Repositories;
 using _116.Content.TestData.Factories;
 using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Helpers;
-using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
-using Microsoft.EntityFrameworkCore;
 using Xunit;
 
 namespace _116.Content.Unit.Tests.Infrastructure.Repositories;
@@ -34,12 +19,7 @@ public class TagRepositoryTests : IDisposable
 
     public TagRepositoryTests()
     {
-        DbContextOptions<ContentDbContext> options = new DbContextOptionsBuilder<ContentDbContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-            .AddInterceptors(new CreatedAtStampingInterceptor())
-            .Options;
-
-        _context = new ContentDbContext(options);
+        _context = ContentDbContextFactory.CreateInMemory();
         _repository = new TagRepository(_context);
     }
 
@@ -116,8 +96,8 @@ public class TagRepositoryTests : IDisposable
         TagEntity videoTag = TagFactory.Create("Beta", "beta");
         TagEntity unusedTag = TagFactory.Create("Gamma", "gamma");
         _context.Tags.AddRange(articleTag, videoTag, unusedTag);
-        _context.ArticleTags.Add(ArticleTagEntity.Create(Guid.NewGuid(), Guid.NewGuid(), articleTag.Id));
-        _context.VideoTags.Add(VideoTagEntity.Create(Guid.NewGuid(), Guid.NewGuid(), videoTag.Id));
+        _context.ArticleTags.Add(ArticleTagFactory.Create(Guid.NewGuid(), articleTag.Id));
+        _context.VideoTags.Add(VideoTagFactory.Create(Guid.NewGuid(), videoTag.Id));
         await _context.SaveChangesAsync();
 
         // Act
@@ -139,8 +119,8 @@ public class TagRepositoryTests : IDisposable
         TagEntity videoTag = TagFactory.Create("Beta", "beta");
         TagEntity unusedTag = TagFactory.Create("Gamma", "gamma");
         _context.Tags.AddRange(articleTag, videoTag, unusedTag);
-        _context.ArticleTags.Add(ArticleTagEntity.Create(Guid.NewGuid(), Guid.NewGuid(), articleTag.Id));
-        _context.VideoTags.Add(VideoTagEntity.Create(Guid.NewGuid(), Guid.NewGuid(), videoTag.Id));
+        _context.ArticleTags.Add(ArticleTagFactory.Create(Guid.NewGuid(), articleTag.Id));
+        _context.VideoTags.Add(VideoTagFactory.Create(Guid.NewGuid(), videoTag.Id));
         await _context.SaveChangesAsync();
 
         // Act
@@ -161,7 +141,7 @@ public class TagRepositoryTests : IDisposable
         TagEntity articleTag = TagFactory.Create("Kinshasa", "kinshasa");
         TagEntity unusedTag = TagFactory.Create("Afrobeats", "afrobeats");
         _context.Tags.AddRange(articleTag, unusedTag);
-        _context.ArticleTags.Add(ArticleTagEntity.Create(Guid.NewGuid(), Guid.NewGuid(), articleTag.Id));
+        _context.ArticleTags.Add(ArticleTagFactory.Create(Guid.NewGuid(), articleTag.Id));
         await _context.SaveChangesAsync();
 
         // Act
@@ -180,8 +160,8 @@ public class TagRepositoryTests : IDisposable
         TagEntity zebra = TagFactory.Create("Zebra", "zebra");
         TagEntity alpha = TagFactory.Create("Alpha", "alpha");
         _context.Tags.AddRange(zebra, alpha);
-        _context.ArticleTags.Add(ArticleTagEntity.Create(Guid.NewGuid(), Guid.NewGuid(), zebra.Id));
-        _context.ArticleTags.Add(ArticleTagEntity.Create(Guid.NewGuid(), Guid.NewGuid(), alpha.Id));
+        _context.ArticleTags.Add(ArticleTagFactory.Create(Guid.NewGuid(), zebra.Id));
+        _context.ArticleTags.Add(ArticleTagFactory.Create(Guid.NewGuid(), alpha.Id));
         await _context.SaveChangesAsync();
 
         // Act
