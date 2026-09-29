@@ -4,19 +4,6 @@ using _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublicShortB
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Mocks;
 
 namespace _116.Content.Integration.Tests.Application.Editorial.UseCases.Public.Queries.GetPublicShortBySlug.V1;
 
@@ -89,8 +76,8 @@ public class PublicGetPublicShortBySlugEndpointV1Tests(PostgresFixture db) : Bas
         {
             ShortVideoEntity entity = ShortVideoFactory.Create();
             ctx.ShortVideos.Add(entity);
-            ctx.ShortVideoLikes.Add(ShortVideoLikeEntity.Create(Guid.NewGuid(), userId, entity.Id));
-            ctx.ShortVideoBookmarks.Add(ShortVideoBookmarkEntity.Create(Guid.NewGuid(), userId, entity.Id));
+            ctx.ShortVideoLikes.Add(ShortVideoLikeFactory.Create(userId, entity.Id));
+            ctx.ShortVideoBookmarks.Add(ShortVideoBookmarkFactory.Create(userId, entity.Id));
             return entity;
         });
 
@@ -111,7 +98,7 @@ public class PublicGetPublicShortBySlugEndpointV1Tests(PostgresFixture db) : Bas
         {
             ShortVideoEntity entity = ShortVideoFactory.Create();
             ctx.ShortVideos.Add(entity);
-            ctx.ShortVideoLikes.Add(ShortVideoLikeEntity.Create(Guid.NewGuid(), Guid.NewGuid(), entity.Id));
+            ctx.ShortVideoLikes.Add(ShortVideoLikeFactory.Create(Guid.NewGuid(), entity.Id));
             return entity;
         });
 
@@ -132,7 +119,7 @@ public class PublicGetPublicShortBySlugEndpointV1Tests(PostgresFixture db) : Bas
         {
             ShortVideoEntity entity = ShortVideoFactory.Create();
             ctx.ShortVideos.Add(entity);
-            ctx.ShortVideoLikes.Add(ShortVideoLikeEntity.Create(Guid.NewGuid(), likerId, entity.Id));
+            ctx.ShortVideoLikes.Add(ShortVideoLikeFactory.Create(likerId, entity.Id));
             return entity;
         });
 
