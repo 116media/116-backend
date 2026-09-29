@@ -3,19 +3,6 @@ using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Builders;
 using _116.Content.Infrastructure.Persistence;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -59,14 +46,14 @@ public class AllTagsQueryBuilderTests : IDisposable
 
     private async Task SeedArticleTagAsync(Guid tagId)
     {
-        ArticleTagEntity at = ArticleTagEntity.Create(Guid.NewGuid(), Guid.NewGuid(), tagId);
+        ArticleTagEntity at = ArticleTagFactory.Create(Guid.NewGuid(), tagId);
         _context.ArticleTags.Add(at);
         await _context.SaveChangesAsync();
     }
 
     private async Task SeedVideoTagAsync(Guid tagId)
     {
-        VideoTagEntity vt = VideoTagEntity.Create(Guid.NewGuid(), Guid.NewGuid(), tagId);
+        VideoTagEntity vt = VideoTagFactory.Create(Guid.NewGuid(), tagId);
         _context.VideoTags.Add(vt);
         await _context.SaveChangesAsync();
     }
