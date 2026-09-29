@@ -28,37 +28,4 @@ public static class MockVerifyPaymentFactory
             .Returns(Task.CompletedTask);
         return mock;
     }
-
-    public static Mock<IVerifyPaymentFactory> SetupVerifyAsyncThrows(
-        this Mock<IVerifyPaymentFactory> mock,
-        Exception exception
-    )
-    {
-        mock.Setup(x =>
-                x.VerifyAsync(
-                    It.IsAny<ContentOrderEntity>(),
-                    It.IsAny<ContentPaymentEntity>(),
-                    It.IsAny<Guid>(),
-                    It.IsAny<string>(),
-                    It.IsAny<CancellationToken>()
-                )
-            )
-            .ThrowsAsync(exception);
-        return mock;
-    }
-
-    public static void VerifyVerifyCalled(this Mock<IVerifyPaymentFactory> mock)
-    {
-        mock.Verify(
-            x =>
-                x.VerifyAsync(
-                    It.IsAny<ContentOrderEntity>(),
-                    It.IsAny<ContentPaymentEntity>(),
-                    It.IsAny<Guid>(),
-                    It.IsAny<string>(),
-                    It.IsAny<CancellationToken>()
-                ),
-            Times.Once
-        );
-    }
 }
