@@ -3,19 +3,6 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Mocks;
 
 namespace _116.Content.Integration.Tests.Application.Interactions.UseCases.Public.Commands.LikeArticleComment.V1;
 
@@ -112,7 +99,7 @@ public class PublicLikeArticleCommentEndpointV1Tests(PostgresFixture db) : BaseA
         // A different user liked the comment.
         await SeedAsync<ContentDbContext, ArticleCommentLikeEntity>(ctx =>
         {
-            ArticleCommentLikeEntity like = ArticleCommentLikeEntity.Create(Guid.NewGuid(), Guid.NewGuid(), comment.Id);
+            ArticleCommentLikeEntity like = ArticleCommentLikeFactory.Create(Guid.NewGuid(), comment.Id);
             ctx.ArticleCommentLikes.Add(like);
             return like;
         });
