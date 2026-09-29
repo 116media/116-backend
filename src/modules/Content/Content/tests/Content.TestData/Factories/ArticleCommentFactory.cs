@@ -1,11 +1,5 @@
 using _116.Content.Domain.Entities;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
 using _116.Tests.TestData.Constants;
-using _116.Tests.TestData.Mocks;
 
 namespace _116.Content.TestData.Factories;
 
@@ -25,6 +19,30 @@ public static class ArticleCommentFactory
             userId: userId,
             articleId: articleId,
             body: TestConstants.Interactions.ValidCommentBody
+        );
+
+    /// <summary>
+    /// Creates a non-deleted comment carrying a specific body, for tests that assert on ordering
+    /// or on the body itself.
+    /// </summary>
+    public static ArticleCommentEntity Create(Guid articleId, Guid userId, string body) =>
+        ArticleCommentEntity.Create(id: Guid.NewGuid(), userId: userId, articleId: articleId, body: body);
+
+    /// <summary>
+    /// Creates a reply to an existing comment on the given article.
+    /// </summary>
+    public static ArticleCommentEntity CreateReply(
+        Guid articleId,
+        Guid userId,
+        Guid parentCommentId,
+        string? body = null
+    ) =>
+        ArticleCommentEntity.CreateReply(
+            id: Guid.NewGuid(),
+            userId: userId,
+            articleId: articleId,
+            parentCommentId: parentCommentId,
+            body: body ?? TestConstants.Interactions.ValidCommentBody
         );
 
     /// <summary>
