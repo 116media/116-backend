@@ -7,19 +7,6 @@ using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Mocks;
 
 namespace _116.Content.Integration.Tests.Application.Interactions.UseCases.Public.Queries.GetOwnArticleFavorites;
 
@@ -83,9 +70,9 @@ public class PublicGetOwnArticleFavoritesEndpointV1Tests(PostgresFixture db) : B
         await SeedAsync<ContentDbContext>(ctx =>
         {
             ctx.ArticleLikes.AddRange(
-                ArticleLikeEntity.Create(Guid.NewGuid(), TestUser.VisitorId, first.Id),
-                ArticleLikeEntity.Create(Guid.NewGuid(), TestUser.VisitorId, second.Id),
-                ArticleLikeEntity.Create(Guid.NewGuid(), TestUser.AdminId, first.Id)
+                ArticleLikeFactory.Create(TestUser.VisitorId, first.Id),
+                ArticleLikeFactory.Create(TestUser.VisitorId, second.Id),
+                ArticleLikeFactory.Create(TestUser.AdminId, first.Id)
             );
         });
         Client.AuthenticateAsVisitor();
@@ -109,10 +96,10 @@ public class PublicGetOwnArticleFavoritesEndpointV1Tests(PostgresFixture db) : B
         await SeedAsync<ContentDbContext>(ctx =>
         {
             ctx.ArticleShares.AddRange(
-                ArticleShareEntity.Create(Guid.NewGuid(), TestUser.VisitorId, article.Id, EnumShareChannel.Facebook),
-                ArticleShareEntity.Create(Guid.NewGuid(), TestUser.VisitorId, article.Id, EnumShareChannel.WhatsApp),
-                ArticleShareEntity.Create(Guid.NewGuid(), TestUser.AdminId, article.Id, EnumShareChannel.X),
-                ArticleShareEntity.Create(Guid.NewGuid(), null, article.Id, EnumShareChannel.Clipboard)
+                ArticleShareFactory.Create(TestUser.VisitorId, article.Id, EnumShareChannel.Facebook),
+                ArticleShareFactory.Create(TestUser.VisitorId, article.Id, EnumShareChannel.WhatsApp),
+                ArticleShareFactory.Create(TestUser.AdminId, article.Id, EnumShareChannel.X),
+                ArticleShareFactory.CreateAnonymous(article.Id, EnumShareChannel.Clipboard)
             );
         });
         Client.AuthenticateAsVisitor();
@@ -135,10 +122,9 @@ public class PublicGetOwnArticleFavoritesEndpointV1Tests(PostgresFixture db) : B
         await SeedAsync<ContentDbContext>(ctx =>
         {
             ArticleCommentEntity parent = ArticleCommentFactory.Create(article.Id, TestUser.VisitorId);
-            ArticleCommentEntity reply = ArticleCommentEntity.CreateReply(
-                Guid.NewGuid(),
-                TestUser.VisitorId,
+            ArticleCommentEntity reply = ArticleCommentFactory.CreateReply(
                 article.Id,
+                TestUser.VisitorId,
                 parent.Id,
                 "Visitor reply"
             );
@@ -176,7 +162,7 @@ public class PublicGetOwnArticleFavoritesEndpointV1Tests(PostgresFixture db) : B
             );
             ctx.ArticleComments.AddRange(
                 parent,
-                ArticleCommentEntity.CreateReply(Guid.NewGuid(), TestUser.VisitorId, article.Id, parentId, "Reply"),
+                ArticleCommentFactory.CreateReply(article.Id, TestUser.VisitorId, parentId, "Reply"),
                 ArticleCommentFactory.CreateDeleted(article.Id, TestUser.VisitorId),
                 ArticleCommentFactory.Create(article.Id, TestUser.AdminId)
             );
@@ -239,8 +225,8 @@ public class PublicGetOwnArticleFavoritesEndpointV1Tests(PostgresFixture db) : B
         ArticleEntity article = await SeedArticleAsync(published: false);
         await SeedAsync<ContentDbContext>(ctx =>
         {
-            ctx.ArticleLikes.Add(ArticleLikeEntity.Create(Guid.NewGuid(), TestUser.VisitorId, article.Id));
-            ctx.ArticleShares.Add(ArticleShareEntity.Create(Guid.NewGuid(), TestUser.VisitorId, article.Id));
+            ctx.ArticleLikes.Add(ArticleLikeFactory.Create(TestUser.VisitorId, article.Id));
+            ctx.ArticleShares.Add(ArticleShareFactory.Create(TestUser.VisitorId, article.Id));
             ctx.ArticleComments.Add(ArticleCommentFactory.Create(article.Id, TestUser.VisitorId));
         });
         Client.AuthenticateAsVisitor();
