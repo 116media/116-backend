@@ -1,5 +1,6 @@
 using _116.Identity.Domain.Entities;
 using _116.Identity.TestData.Builders.Entities;
+using _116.Tests.TestData.Constants;
 
 namespace _116.Identity.TestData.Factories;
 
@@ -15,6 +16,13 @@ public static class PermissionFactory
     /// </summary>
     /// <returns>A new PermissionEntity with random values.</returns>
     public static PermissionEntity Create() => new PermissionBuilder().Build();
+
+    /// <summary>
+    /// Creates a permission carrying the shared valid resource and action.
+    /// </summary>
+    /// <returns>A new PermissionEntity with the default test values.</returns>
+    public static PermissionEntity CreateDefault() =>
+        Create(TestConstants.Permission.ValidResource, TestConstants.Permission.ValidAction);
 
     /// <summary>
     /// Creates a permission with a specific resource and action.
