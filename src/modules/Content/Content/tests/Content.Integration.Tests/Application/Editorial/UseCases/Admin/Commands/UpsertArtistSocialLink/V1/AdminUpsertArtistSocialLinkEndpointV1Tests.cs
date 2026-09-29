@@ -4,20 +4,8 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpsertArtistSoc
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Content.TestData.Builders.Requests;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Mocks;
 
 namespace _116.Content.Integration.Tests.Application.Editorial.UseCases.Admin.Commands.UpsertArtistSocialLink.V1;
 
@@ -50,7 +38,7 @@ public class AdminUpsertArtistSocialLinkEndpointV1Tests(PostgresFixture db) : Ba
 
         var response = await Client.PutAsJsonAsync(
             Url(Guid.NewGuid(), EnumSocialPlatform.Instagram),
-            new AdminUpsertArtistSocialLinkRequest(InstagramUrl)
+            new AdminUpsertArtistSocialLinkRequestBuilder().WithUrl(InstagramUrl).Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -63,7 +51,7 @@ public class AdminUpsertArtistSocialLinkEndpointV1Tests(PostgresFixture db) : Ba
 
         var response = await Client.PutAsJsonAsync(
             Url(Guid.NewGuid(), EnumSocialPlatform.Instagram),
-            new AdminUpsertArtistSocialLinkRequest(InstagramUrl)
+            new AdminUpsertArtistSocialLinkRequestBuilder().WithUrl(InstagramUrl).Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
@@ -76,7 +64,7 @@ public class AdminUpsertArtistSocialLinkEndpointV1Tests(PostgresFixture db) : Ba
 
         var response = await Client.PutAsJsonAsync(
             Url(Guid.NewGuid(), EnumSocialPlatform.Instagram),
-            new AdminUpsertArtistSocialLinkRequest(InstagramUrl)
+            new AdminUpsertArtistSocialLinkRequestBuilder().WithUrl(InstagramUrl).Build()
         );
 
         await response.ShouldBeProblem<NotFoundException>(
@@ -93,7 +81,7 @@ public class AdminUpsertArtistSocialLinkEndpointV1Tests(PostgresFixture db) : Ba
 
         var response = await Client.PutAsJsonAsync(
             Url(artist.Id, EnumSocialPlatform.Instagram),
-            new AdminUpsertArtistSocialLinkRequest(InstagramUrl)
+            new AdminUpsertArtistSocialLinkRequestBuilder().WithUrl(InstagramUrl).Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -120,11 +108,11 @@ public class AdminUpsertArtistSocialLinkEndpointV1Tests(PostgresFixture db) : Ba
 
         await Client.PutAsJsonAsync(
             Url(artist.Id, EnumSocialPlatform.Instagram),
-            new AdminUpsertArtistSocialLinkRequest(InstagramUrl)
+            new AdminUpsertArtistSocialLinkRequestBuilder().WithUrl(InstagramUrl).Build()
         );
         var response = await Client.PutAsJsonAsync(
             Url(artist.Id, EnumSocialPlatform.Instagram),
-            new AdminUpsertArtistSocialLinkRequest(ReplacementUrl)
+            new AdminUpsertArtistSocialLinkRequestBuilder().WithUrl(ReplacementUrl).Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -146,11 +134,11 @@ public class AdminUpsertArtistSocialLinkEndpointV1Tests(PostgresFixture db) : Ba
 
         await Client.PutAsJsonAsync(
             Url(artist.Id, EnumSocialPlatform.Instagram),
-            new AdminUpsertArtistSocialLinkRequest(InstagramUrl)
+            new AdminUpsertArtistSocialLinkRequestBuilder().WithUrl(InstagramUrl).Build()
         );
         await Client.PutAsJsonAsync(
             Url(artist.Id, EnumSocialPlatform.YouTube),
-            new AdminUpsertArtistSocialLinkRequest("https://youtube.com/@fally")
+            new AdminUpsertArtistSocialLinkRequestBuilder().WithUrl("https://youtube.com/@fally").Build()
         );
 
         await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
@@ -174,7 +162,7 @@ public class AdminUpsertArtistSocialLinkEndpointV1Tests(PostgresFixture db) : Ba
 
         var response = await Client.PutAsJsonAsync(
             Url(artist.Id, EnumSocialPlatform.Instagram),
-            new AdminUpsertArtistSocialLinkRequest(url)
+            new AdminUpsertArtistSocialLinkRequestBuilder().WithUrl(url).Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
