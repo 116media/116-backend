@@ -1,4 +1,3 @@
-using System.Reflection;
 using _116.Content.Domain.Entities;
 using _116.Content.TestData.Builders.Entities;
 
@@ -111,13 +110,19 @@ public static class VideoFactory
     /// Creates a free video filed under the given category. The category name reaches a
     /// projection through the resolved lookups, not through the video.
     /// </summary>
-    public static VideoEntity CreateWithCategory(Guid categoryId, CategoryEntity category) => Create(category.Id);
+    public static VideoEntity CreateWithCategory(CategoryEntity category) => Create(category.Id);
 
     /// <summary>
-    /// Creates a list of free videos with the Category navigation property loaded via reflection.
+    /// Creates a list of free videos filed under the given category.
     /// </summary>
-    public static List<VideoEntity> CreateManyWithCategory(Guid categoryId, CategoryEntity category, int count) =>
-        Enumerable.Range(0, count).Select(_ => CreateWithCategory(categoryId, category)).ToList();
+    public static List<VideoEntity> CreateManyWithCategory(CategoryEntity category, int count) =>
+        Enumerable.Range(0, count).Select(_ => CreateWithCategory(category)).ToList();
+
+    /// <summary>
+    /// Creates a free video filed under the given category with a shoot already scheduled.
+    /// </summary>
+    public static VideoEntity CreateWithShootingScheduledAt(CategoryEntity category, DateTimeOffset scheduledAt) =>
+        new VideoBuilder(category.Id).WithShootingScheduledAt(scheduledAt).Build();
 
     /// <summary>
     /// Creates a free video in Draft status with a specific title.
