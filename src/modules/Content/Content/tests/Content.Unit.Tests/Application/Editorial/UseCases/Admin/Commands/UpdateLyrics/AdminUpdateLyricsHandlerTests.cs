@@ -5,27 +5,19 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.TestData;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
 using _116.Content.TestData.Mocks.Infrastructure;
 using _116.Content.TestData.Mocks.Repositories;
 using _116.Content.TestData.Mocks.Services;
 using _116.Identity.Contracts.Application.Services;
-using _116.Identity.TestData.Factories;
 using _116.Identity.TestData.Mocks.Infrastructure;
 using _116.Identity.TestData.Mocks.Repositories;
 using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.Application.Shared.Repositories;
 using _116.Storage.Contracts.Application.DTOs;
 using _116.Storage.Contracts.Application.Services;
-using _116.Storage.Domain.Entities;
 using _116.Storage.TestData.Factories;
 using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData;
 using _116.Tests.TestData.Constants;
 using _116.Tests.TestData.Helpers;
-using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -99,9 +91,7 @@ public class AdminUpdateLyricsHandlerTests : BaseContentHandlerTest
 
         _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-        _lyricsRepositoryMock
-            .Setup(x => x.GetByIdOrThrowAsync(lyrics.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(lyrics);
+        _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
 
         // Act
         AdminUpdateLyricsResult result = await _handler.Handle(command, CancellationToken.None);
@@ -134,9 +124,7 @@ public class AdminUpdateLyricsHandlerTests : BaseContentHandlerTest
         _videoRepositoryMock
             .Setup(x => x.ExistsOrThrowAsync(videoId, It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
-        _lyricsRepositoryMock
-            .Setup(x => x.GetByIdOrThrowAsync(lyrics.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(lyrics);
+        _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
@@ -162,9 +150,7 @@ public class AdminUpdateLyricsHandlerTests : BaseContentHandlerTest
         _videoRepositoryMock
             .Setup(x => x.ExistsOrThrowAsync(newVideoId, It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
-        _lyricsRepositoryMock
-            .Setup(x => x.GetByIdOrThrowAsync(lyrics.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(lyrics);
+        _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
