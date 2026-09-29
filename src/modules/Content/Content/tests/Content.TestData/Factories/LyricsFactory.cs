@@ -1,4 +1,3 @@
-using System.Reflection;
 using _116.Content.Domain.Entities;
 using _116.Content.TestData.Builders.Entities;
 
@@ -51,6 +50,12 @@ public static class LyricsFactory
     /// </summary>
     public static LyricsEntity CreateWithSlug(Guid categoryId, string slug) =>
         new LyricsBuilder(categoryId).WithSlug(slug).Build();
+
+    /// <summary>
+    /// Creates a published lyrics page with a known valid slug.
+    /// </summary>
+    public static LyricsEntity CreatePublishedWithSlug(Guid categoryId, string slug) =>
+        new LyricsBuilder(categoryId).WithSlug(slug).AsPublished().Build();
 
     /// <summary>
     /// Creates a lyrics page linked to a real, addressable artist profile.
