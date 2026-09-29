@@ -135,21 +135,6 @@ public static class OtpFactory
         new OtpBuilder().WithExpiresAt(expiresAt).Build();
 
     /// <summary>
-    /// Creates an OTP with a specific attempt count.
-    /// </summary>
-    /// <param name="userId">The user identifier.</param>
-    /// <param name="code">The plaintext OTP code the entity should accept.</param>
-    /// <param name="purpose">The OTP purpose.</param>
-    /// <param name="attemptCount">The attempt count.</param>
-    /// <returns>A new OtpEntity with the specified values.</returns>
-    public static OtpEntity CreateWithAttemptCount(
-        Guid userId,
-        string code,
-        EnumOtpPurpose purpose,
-        int attemptCount
-    ) => new OtpBuilder().WithUserId(userId).WithCode(code).WithPurpose(purpose).WithAttemptCount(attemptCount).Build();
-
-    /// <summary>
     /// Creates an expired OTP for a specific user and purpose.
     /// </summary>
     /// <param name="userId">The user identifier.</param>
