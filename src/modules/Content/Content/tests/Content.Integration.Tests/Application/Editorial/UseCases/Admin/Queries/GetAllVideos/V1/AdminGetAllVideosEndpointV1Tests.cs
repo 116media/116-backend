@@ -4,18 +4,6 @@ using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Content.TestData.Factories;
 using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Mocks;
 
 namespace _116.Content.Integration.Tests.Application.Editorial.UseCases.Admin.Queries.GetAllVideos.V1;
 
@@ -25,19 +13,7 @@ namespace _116.Content.Integration.Tests.Application.Editorial.UseCases.Admin.Qu
 [Collection("Database")]
 public class AdminGetAllVideosEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private async Task<Guid> SeedCategoryAsync()
-    {
-        return await SeedAsync<ContentDbContext, Guid>(ctx =>
-        {
-            ContentTypeEntity contentType = ContentTypeFactory.Create();
-            ctx.ContentTypes.Add(contentType);
-
-            CategoryEntity category = CategoryFactory.Create(contentType.Id);
-            ctx.Categories.Add(category);
-
-            return category.Id;
-        });
-    }
+    private async Task<Guid> SeedCategoryAsync() => await SeedAsync<ContentDbContext, Guid>(ContentSeeder.AddCategory);
 
     [Fact]
     public async Task GetAllVideos_WithNoAuth_ReturnsUnauthorized()
