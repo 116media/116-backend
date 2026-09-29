@@ -5,22 +5,8 @@ using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Content.TestData.Builders.Requests;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Mocks;
-using FluentValidation;
-using FluentValidation.Results;
 
 namespace _116.Content.Integration.Tests.Application.Editorial.UseCases.Public.Commands.ProposeLyricsRevision.V1;
 
@@ -38,7 +24,7 @@ public class PublicProposeLyricsRevisionEndpointV1Tests(PostgresFixture db) : Ba
 
         var response = await Client.PostAsJsonAsync(
             Routes.Public.LyricsSubmissionsAndRevisions.Revisions(Guid.NewGuid()),
-            new PublicProposeLyricsRevisionRequest("Corrected text", null)
+            new PublicProposeLyricsRevisionRequestBuilder().WithProposedText("Corrected text").Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -51,7 +37,7 @@ public class PublicProposeLyricsRevisionEndpointV1Tests(PostgresFixture db) : Ba
 
         var response = await Client.PostAsJsonAsync(
             Routes.Public.LyricsSubmissionsAndRevisions.Revisions(Guid.NewGuid()),
-            new PublicProposeLyricsRevisionRequest(string.Empty, null)
+            new PublicProposeLyricsRevisionRequestBuilder().WithProposedText(string.Empty).Build()
         );
 
         await response.ShouldBeValidationProblem(
@@ -67,7 +53,7 @@ public class PublicProposeLyricsRevisionEndpointV1Tests(PostgresFixture db) : Ba
 
         var response = await Client.PostAsJsonAsync(
             Routes.Public.LyricsSubmissionsAndRevisions.Revisions(Guid.NewGuid()),
-            new PublicProposeLyricsRevisionRequest("Corrected text", null)
+            new PublicProposeLyricsRevisionRequestBuilder().WithProposedText("Corrected text").Build()
         );
 
         await response.ShouldBeProblem<NotFoundException>(
@@ -94,7 +80,7 @@ public class PublicProposeLyricsRevisionEndpointV1Tests(PostgresFixture db) : Ba
 
         var response = await Client.PostAsJsonAsync(
             Routes.Public.LyricsSubmissionsAndRevisions.Revisions(lyrics.Id),
-            new PublicProposeLyricsRevisionRequest("Corrected lyrics text", "Fixed a transcription error")
+            new PublicProposeLyricsRevisionRequestBuilder().WithEditSummary("Fixed a transcription error").Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -132,7 +118,7 @@ public class PublicProposeLyricsRevisionEndpointV1Tests(PostgresFixture db) : Ba
 
         var response = await Client.PostAsJsonAsync(
             Routes.Public.LyricsSubmissionsAndRevisions.Revisions(lyrics.Id),
-            new PublicProposeLyricsRevisionRequest("Corrected lyrics text", "Fixed a transcription error")
+            new PublicProposeLyricsRevisionRequestBuilder().WithEditSummary("Fixed a transcription error").Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
