@@ -1,21 +1,7 @@
 using _116.BuildingBlocks.Application.Exceptions;
 using _116.Content.Application.Shared.Repositories;
-using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Mocks;
 
 namespace _116.Content.Integration.Tests.Infrastructure.Repositories;
 
@@ -165,7 +151,7 @@ public class ShortVideoRepositoryTests(PostgresFixture postgres) : BaseRepositor
         await seedContext.SaveChangesAsync();
 
         var userId = Guid.NewGuid();
-        var like = ShortVideoLikeEntity.Create(Guid.NewGuid(), userId, video.Id);
+        var like = ShortVideoLikeFactory.Create(userId, video.Id);
         seedContext.ShortVideoLikes.Add(like);
         await seedContext.SaveChangesAsync();
 
@@ -216,11 +202,9 @@ public class ShortVideoRepositoryTests(PostgresFixture postgres) : BaseRepositor
 
         var userId = Guid.NewGuid();
         var otherUserId = Guid.NewGuid();
-        seedContext.ShortVideoLikes.Add(ShortVideoLikeEntity.Create(Guid.NewGuid(), userId, likedVideo.Id));
-        seedContext.ShortVideoBookmarks.Add(
-            ShortVideoBookmarkEntity.Create(Guid.NewGuid(), userId, bookmarkedVideo.Id)
-        );
-        seedContext.ShortVideoLikes.Add(ShortVideoLikeEntity.Create(Guid.NewGuid(), otherUserId, untouchedVideo.Id));
+        seedContext.ShortVideoLikes.Add(ShortVideoLikeFactory.Create(userId, likedVideo.Id));
+        seedContext.ShortVideoBookmarks.Add(ShortVideoBookmarkFactory.Create(userId, bookmarkedVideo.Id));
+        seedContext.ShortVideoLikes.Add(ShortVideoLikeFactory.Create(otherUserId, untouchedVideo.Id));
         await seedContext.SaveChangesAsync();
 
         var repo = Resolve<IShortVideoRepository>();
