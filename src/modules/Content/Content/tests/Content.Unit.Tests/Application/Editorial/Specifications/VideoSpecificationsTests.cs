@@ -2,20 +2,7 @@ using _116.Content.Application.Editorial.Specifications;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
-using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
 using _116.Tests.TestData.Helpers;
-using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Xunit;
 
@@ -36,7 +23,7 @@ public class VideoSpecificationsTests
     /// </summary>
     private static void AttachTag(VideoEntity video, TagEntity tag)
     {
-        video.Tags.Add(VideoTagEntity.Create(Guid.NewGuid(), video.Id, tag.Id));
+        video.Tags.Add(VideoTagFactory.Create(video.Id, tag.Id));
     }
 
     /// <summary>
@@ -415,7 +402,7 @@ public class VideoSpecificationsTests
     {
         // Arrange
         Guid userId = Guid.NewGuid();
-        VideoShareEntity share = VideoShareEntity.Create(Guid.NewGuid(), userId, Guid.NewGuid());
+        VideoShareEntity share = VideoShareFactory.Create(userId, Guid.NewGuid());
         var spec = new VideoShareByUserIdSpecification(userId);
 
         // Act
@@ -429,7 +416,7 @@ public class VideoSpecificationsTests
     public void VideoShareByUserIdSpecification_WithAnonymousShare_ShouldReturnFalse()
     {
         // Arrange
-        VideoShareEntity share = VideoShareEntity.Create(Guid.NewGuid(), userId: null, videoId: Guid.NewGuid());
+        VideoShareEntity share = VideoShareFactory.CreateAnonymous(Guid.NewGuid());
         var spec = new VideoShareByUserIdSpecification(Guid.NewGuid());
 
         // Act
