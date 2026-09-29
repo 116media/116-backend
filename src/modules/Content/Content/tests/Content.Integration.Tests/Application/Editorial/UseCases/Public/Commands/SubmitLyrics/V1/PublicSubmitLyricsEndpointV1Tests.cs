@@ -5,26 +5,12 @@ using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Content.TestData.Builders.Requests;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Factories.Helpers;
-using _116.Content.TestData.Mocks.Factories;
-using _116.Content.TestData.Mocks.Infrastructure;
-using _116.Content.TestData.Mocks.Repositories;
-using _116.Content.TestData.Mocks.Services;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
 using _116.Tests.TestData.Constants;
-using _116.Tests.TestData.Helpers;
-using _116.Tests.TestData.Mocks;
-using FluentValidation;
-using FluentValidation.Results;
 
 namespace _116.Content.Integration.Tests.Application.Editorial.UseCases.Public.Commands.SubmitLyrics.V1;
 
@@ -42,7 +28,7 @@ public class PublicSubmitLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PostAsJsonAsync(
             Routes.Public.LyricsSubmissionsAndRevisions.Submissions(),
-            new PublicSubmitLyricsRequest("Eloko Oyo", "Fally Ipupa", "Some lyrics text.", "fr", null)
+            new PublicSubmitLyricsRequestBuilder().WithLyricsText("Some lyrics text.").Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -55,7 +41,7 @@ public class PublicSubmitLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PostAsJsonAsync(
             Routes.Public.LyricsSubmissionsAndRevisions.Submissions(),
-            new PublicSubmitLyricsRequest("Eloko Oyo", "Fally Ipupa", "Some submitted lyrics text.", "fr", null)
+            new PublicSubmitLyricsRequestBuilder().Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -81,7 +67,7 @@ public class PublicSubmitLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PostAsJsonAsync(
             Routes.Public.LyricsSubmissionsAndRevisions.Submissions(),
-            new PublicSubmitLyricsRequest("Eloko Oyo", "   ", "Some submitted lyrics text.", "fr", null)
+            new PublicSubmitLyricsRequestBuilder().WithArtistName(" ").Build()
         );
 
         await response.ShouldBeProblem<BadRequestException>(
@@ -122,13 +108,10 @@ public class PublicSubmitLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PostAsJsonAsync(
             Routes.Public.LyricsSubmissionsAndRevisions.Submissions(),
-            new PublicSubmitLyricsRequest(
-                "Eloko Oyo",
-                "Some Impersonator Name",
-                "Some submitted lyrics text.",
-                "fr",
-                "eloko-oyo-fast-path"
-            )
+            new PublicSubmitLyricsRequestBuilder()
+                .WithArtistName("Some Impersonator Name")
+                .WithSlug("eloko-oyo-fast-path")
+                .Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -177,7 +160,7 @@ public class PublicSubmitLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PostAsJsonAsync(
             Routes.Public.LyricsSubmissionsAndRevisions.Submissions(),
-            new PublicSubmitLyricsRequest("Eloko Oyo", null, "Some submitted lyrics text.", "fr", null)
+            new PublicSubmitLyricsRequestBuilder().WithArtistName(null).Build()
         );
 
         await response.ShouldBeProblem<BadRequestException>(
@@ -216,7 +199,7 @@ public class PublicSubmitLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PostAsJsonAsync(
             Routes.Public.LyricsSubmissionsAndRevisions.Submissions(),
-            new PublicSubmitLyricsRequest("Eloko Oyo", null, "Some submitted lyrics text.", "fr", takenSlug)
+            new PublicSubmitLyricsRequestBuilder().WithArtistName(null).WithSlug(takenSlug).Build()
         );
 
         await response.ShouldBeProblem<ConflictException>(
@@ -236,13 +219,7 @@ public class PublicSubmitLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PostAsJsonAsync(
             Routes.Public.LyricsSubmissionsAndRevisions.Submissions(),
-            new PublicSubmitLyricsRequest(
-                "Eloko Oyo",
-                "Fally Ipupa",
-                "Some submitted lyrics text.",
-                "fr",
-                "INVALID SLUG!!!"
-            )
+            new PublicSubmitLyricsRequestBuilder().WithSlug("INVALID SLUG!!!").Build()
         );
 
         await response.ShouldBeValidationProblem("Slug", Localized<LyricsErrorMessage>(m => m.SlugInvalidFormat()));
