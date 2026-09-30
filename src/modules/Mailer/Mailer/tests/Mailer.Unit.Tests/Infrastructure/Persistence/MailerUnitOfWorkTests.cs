@@ -1,10 +1,8 @@
-using _116.Mailer.Domain.Entities;
 using _116.Mailer.Infrastructure.Persistence;
-using _116.Mailer.TestData.Builders.Entities;
+using _116.Mailer.TestData.Factories;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.EntityFrameworkCore.InMemory.Internal;
 using Xunit;
 
 namespace _116.Mailer.Unit.Tests.Infrastructure.Persistence;
@@ -39,7 +37,7 @@ public class MailerUnitOfWorkTests
         // Arrange
         await using var context = new MailerDbContext(CreateOptions());
         var unitOfWork = new MailerUnitOfWork(context, [context]);
-        var subscriber = new NewsletterSubscriberBuilder().WithId(Guid.NewGuid()).WithEmail("fan@example.com").Build();
+        var subscriber = NewsletterSubscriberFactory.Create("fan@example.com");
         context.NewsletterSubscribers.Add(subscriber);
 
         // Act
@@ -92,9 +90,7 @@ public class MailerUnitOfWorkTests
         // Act
         await unitOfWork.ExecuteInTransactionAsync(_ =>
         {
-            context.NewsletterSubscribers.Add(
-                NewsletterSubscriberEntity.Subscribe(Guid.NewGuid(), $"fan-{Guid.NewGuid():N}@test.com")
-            );
+            context.NewsletterSubscribers.Add(NewsletterSubscriberFactory.Create($"fan-{Guid.NewGuid():N}@test.com"));
             return Task.CompletedTask;
         });
 
