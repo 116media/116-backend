@@ -6,7 +6,7 @@ using _116.Mailer.Application.Shared.Persistence;
 using _116.Mailer.Application.Shared.Repositories;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Domain.Enums;
-using _116.Mailer.TestData.Builders.Entities;
+using _116.Mailer.TestData.Factories;
 using _116.Tests.TestData.Helpers;
 using AwesomeAssertions;
 using Moq;
@@ -46,11 +46,7 @@ public class PublicUnsubscribeNewsletterHandlerTests
     public async Task Handle_SubscribedRow_ShouldOptOutAndCommit()
     {
         // Arrange
-        var subscriber = new NewsletterSubscriberBuilder()
-            .WithId(Guid.NewGuid())
-            .WithEmail("fan@example.com")
-            .AsConfirmed()
-            .Build();
+        var subscriber = NewsletterSubscriberFactory.CreateConfirmed("fan@example.com");
         _repository
             .Setup(r => r.GetByUnsubscribeTokenAsync(subscriber.UnsubscribeToken, It.IsAny<CancellationToken>()))
             .ReturnsAsync(subscriber);
@@ -71,11 +67,7 @@ public class PublicUnsubscribeNewsletterHandlerTests
     public async Task Handle_ReClick_ShouldChangeNothingAndStillReportUnsubscribed()
     {
         // Arrange
-        var subscriber = new NewsletterSubscriberBuilder()
-            .WithId(Guid.NewGuid())
-            .WithEmail("fan@example.com")
-            .AsUnsubscribed()
-            .Build();
+        var subscriber = NewsletterSubscriberFactory.CreateUnsubscribed("fan@example.com");
         _repository
             .Setup(r => r.GetByUnsubscribeTokenAsync(subscriber.UnsubscribeToken, It.IsAny<CancellationToken>()))
             .ReturnsAsync(subscriber);
