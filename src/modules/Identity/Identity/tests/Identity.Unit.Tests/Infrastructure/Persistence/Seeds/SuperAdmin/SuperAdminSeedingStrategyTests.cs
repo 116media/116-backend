@@ -4,14 +4,8 @@ using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
 using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
 using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
 using _116.Tests.TestData.Helpers;
-using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -38,7 +32,7 @@ public class SuperAdminSeedingStrategyTests : IDisposable
     {
         _repositoryLoggerMock = new Mock<ILogger<SuperAdminRepositoryManager>>();
         _loggerMock = new Mock<ILogger<SuperAdminSeedingStrategy>>();
-        _passwordServiceMock = new Mock<IPasswordService>();
+        _passwordServiceMock = MockPasswordService.Create();
 
         _passwordServiceMock.Setup(x => x.Hash(It.IsAny<string>())).Returns("hashedPassword");
 
@@ -121,7 +115,7 @@ public class SuperAdminSeedingStrategyTests : IDisposable
         await using var context = new IdentityDbContext(options);
 
         // Pre-seed permission
-        var existingPermission = PermissionEntity.Create(Guid.NewGuid(), "system", "all", "Existing");
+        var existingPermission = PermissionFactory.Create("system", "all", "Existing");
         await context.Permissions.AddAsync(existingPermission);
         await context.SaveChangesAsync();
 
@@ -166,7 +160,7 @@ public class SuperAdminSeedingStrategyTests : IDisposable
         await using var context = new IdentityDbContext(options);
 
         // Pre-seed role
-        var existingRole = RoleEntity.Create(Guid.NewGuid(), "SuperAdmin", "Existing");
+        var existingRole = RoleFactory.Create("SuperAdmin", "Existing");
         await context.Roles.AddAsync(existingRole);
         await context.SaveChangesAsync();
 
@@ -211,9 +205,9 @@ public class SuperAdminSeedingStrategyTests : IDisposable
         await using var context = new IdentityDbContext(options);
 
         // Pre-seed everything
-        var permission = PermissionEntity.Create(Guid.NewGuid(), "system", "all", "Test");
-        var role = RoleEntity.Create(Guid.NewGuid(), "SuperAdmin", "Test");
-        var rolePermission = RolePermissionEntity.Create(role.Id, permission.Id);
+        var permission = PermissionFactory.Create("system", "all", "Test");
+        var role = RoleFactory.Create("SuperAdmin", "Test");
+        var rolePermission = RolePermissionFactory.Create(role.Id, permission.Id);
         await context.Permissions.AddAsync(permission);
         await context.Roles.AddAsync(role);
         await context.RolePermissions.AddAsync(rolePermission);
