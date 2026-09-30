@@ -11,7 +11,6 @@
     <ItemGroup>
         <ProjectReference Include="../../src/Storage.Domain/Storage.Domain.csproj" />
         <ProjectReference Include="../../src/Storage.Application/Storage.Application.csproj" />
-        <ProjectReference Include="../../src/Storage.Infrastructure/Storage.Infrastructure.csproj" />
         <ProjectReference Include="../../../../../../tests/TestData/TestData.csproj" />
     </ItemGroup>
 </Project>
