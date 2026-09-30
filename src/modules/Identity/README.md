@@ -1,8 +1,19 @@
 # Identity
 
-Identity owns users, sessions, roles, permissions, OTPs and the authentication surface. It is one
-module of the 116 modular monolith: its own database schema (`identity`), its own layer projects,
-and no direct dependency on another module's internals.
+Identity owns four use-case areas, each a folder in `Identity.Application`:
+
+| Area | Owns |
+| --- | --- |
+| `Auth` | Sign-up, login, social login, OTP issue and verification, password set / change / reset, sign-out from one device or all |
+| `Roles` | Roles, permissions, role-permission assignment and the soft-delete / restore lifecycle of both |
+| `Session` | Sessions, refresh tokens, revocation, forced logout, expiry cleanup, metrics and session-data export |
+| `User` | Profiles, avatars, activation and deactivation, user-role assignment |
+
+`Adapters` is not a use-case area: it holds the ports to systems outside the module, social token
+verification and client-origin detection, whose implementations live in `Identity.Infrastructure`.
+
+It is one module of the 116 modular monolith: its own database schema (`identity`), its own layer
+projects, and no direct dependency on another module's internals.
 
 ## Layout
 
