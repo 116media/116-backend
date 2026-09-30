@@ -4,13 +4,6 @@ using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Repositories;
 using _116.Identity.TestData.Builders.Entities;
 using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -74,8 +67,8 @@ public class SessionRepositoryTests : IDisposable
         UserEntity user = UserFactory.Create();
         RoleEntity role = RoleFactory.CreateAdmin();
         PermissionEntity permission = PermissionFactory.Create("article", "read");
-        var userRole = UserRoleEntity.Create(user.Id, role.Id);
-        var rolePermission = RolePermissionEntity.Create(role.Id, permission.Id);
+        var userRole = UserRoleFactory.Create(user.Id, role.Id);
+        var rolePermission = RolePermissionFactory.Create(role.Id, permission.Id);
 
         SessionEntity session = CreateSessionWithCreatedAt(user.Id);
 
@@ -307,8 +300,8 @@ public class SessionRepositoryTests : IDisposable
     public async Task DeleteExpiredSessionsAsync_WhenExpiredSessionsExist_ShouldRevokeThemAndReturnCount()
     {
         // Arrange
-        SessionEntity expiredSession1 = new SessionBuilder().AsExpired().WithCreatedAt(DateTime.UtcNow).Build();
-        SessionEntity expiredSession2 = new SessionBuilder().AsExpired().WithCreatedAt(DateTime.UtcNow).Build();
+        SessionEntity expiredSession1 = SessionFactory.CreateExpired();
+        SessionEntity expiredSession2 = SessionFactory.CreateExpired();
         SessionEntity activeSession = CreateSessionWithCreatedAt();
 
         _context.Sessions.AddRange(expiredSession1, expiredSession2, activeSession);
@@ -350,7 +343,7 @@ public class SessionRepositoryTests : IDisposable
     public async Task DeleteExpiredSessionsAsync_ShouldNotRevokeAlreadyRevokedSessions()
     {
         // Arrange
-        SessionEntity expiredSession = new SessionBuilder().AsExpired().WithCreatedAt(DateTime.UtcNow).Build();
+        SessionEntity expiredSession = SessionFactory.CreateExpired();
         expiredSession.Revoke(reason: EnumSessionRevokeReason.SelfSignOut, now: DateTime.UtcNow);
 
         _context.Sessions.Add(expiredSession);
@@ -423,11 +416,7 @@ public class SessionRepositoryTests : IDisposable
         // Arrange
         var userId = Guid.NewGuid();
         string deviceId = "device-123";
-        SessionEntity session = new SessionBuilder()
-            .WithUserId(userId)
-            .WithDeviceId(deviceId)
-            .WithCreatedAt(DateTime.UtcNow)
-            .Build();
+        SessionEntity session = SessionFactory.Create(userId, deviceId);
 
         _context.Sessions.Add(session);
         await _context.SaveChangesAsync();
@@ -567,7 +556,7 @@ public class SessionRepositoryTests : IDisposable
     {
         // Arrange
         SessionEntity activeSession = CreateSessionWithCreatedAt();
-        SessionEntity expiredSession = new SessionBuilder().AsExpired().WithCreatedAt(DateTime.UtcNow).Build();
+        SessionEntity expiredSession = SessionFactory.CreateExpired();
 
         _context.Sessions.AddRange(activeSession, expiredSession);
         await _context.SaveChangesAsync();
@@ -608,14 +597,8 @@ public class SessionRepositoryTests : IDisposable
     public async Task GetAllWithPaginationAsync_WithIpAddressFilter_ShouldFilterByIpAddress()
     {
         // Arrange
-        SessionEntity session1 = new SessionBuilder()
-            .WithIpAddress("192.168.1.1")
-            .WithCreatedAt(DateTime.UtcNow)
-            .Build();
-        SessionEntity session2 = new SessionBuilder()
-            .WithIpAddress("192.168.1.2")
-            .WithCreatedAt(DateTime.UtcNow)
-            .Build();
+        SessionEntity session1 = SessionFactory.CreateWithIpAddress("192.168.1.1");
+        SessionEntity session2 = SessionFactory.CreateWithIpAddress("192.168.1.2");
 
         _context.Sessions.AddRange(session1, session2);
         await _context.SaveChangesAsync();
@@ -665,18 +648,9 @@ public class SessionRepositoryTests : IDisposable
     public async Task GetActiveSessionCountByBrowserAsync_ShouldReturnCountsByBrowser()
     {
         // Arrange
-        SessionEntity chromeSession1 = new SessionBuilder()
-            .WithBrowser(EnumBrowser.Chrome)
-            .WithCreatedAt(DateTime.UtcNow)
-            .Build();
-        SessionEntity chromeSession2 = new SessionBuilder()
-            .WithBrowser(EnumBrowser.Chrome)
-            .WithCreatedAt(DateTime.UtcNow)
-            .Build();
-        SessionEntity firefoxSession = new SessionBuilder()
-            .WithBrowser(EnumBrowser.Firefox)
-            .WithCreatedAt(DateTime.UtcNow)
-            .Build();
+        SessionEntity chromeSession1 = SessionFactory.CreateWithBrowser(EnumBrowser.Chrome);
+        SessionEntity chromeSession2 = SessionFactory.CreateWithBrowser(EnumBrowser.Chrome);
+        SessionEntity firefoxSession = SessionFactory.CreateWithBrowser(EnumBrowser.Firefox);
 
         _context.Sessions.AddRange(chromeSession1, chromeSession2, firefoxSession);
         await _context.SaveChangesAsync();
@@ -695,14 +669,8 @@ public class SessionRepositoryTests : IDisposable
     public async Task GetActiveSessionCountByBrowserAsync_ShouldNotIncludeRevokedSessions()
     {
         // Arrange
-        SessionEntity activeSession = new SessionBuilder()
-            .WithBrowser(EnumBrowser.Chrome)
-            .WithCreatedAt(DateTime.UtcNow)
-            .Build();
-        SessionEntity revokedSession = new SessionBuilder()
-            .WithBrowser(EnumBrowser.Chrome)
-            .WithCreatedAt(DateTime.UtcNow)
-            .Build();
+        SessionEntity activeSession = SessionFactory.CreateWithBrowser(EnumBrowser.Chrome);
+        SessionEntity revokedSession = SessionFactory.CreateWithBrowser(EnumBrowser.Chrome);
         revokedSession.Revoke(reason: EnumSessionRevokeReason.SelfSignOut, now: DateTime.UtcNow);
 
         _context.Sessions.AddRange(activeSession, revokedSession);
@@ -723,8 +691,8 @@ public class SessionRepositoryTests : IDisposable
     public async Task GetActiveSessionCountByDeviceAsync_ShouldReturnCountsByDevice()
     {
         // Arrange
-        SessionEntity desktopSession = new SessionBuilder().AsDesktopSession().WithCreatedAt(DateTime.UtcNow).Build();
-        SessionEntity mobileSession = new SessionBuilder().AsMobileSession().WithCreatedAt(DateTime.UtcNow).Build();
+        SessionEntity desktopSession = SessionFactory.CreateDesktop();
+        SessionEntity mobileSession = SessionFactory.CreateMobile();
 
         _context.Sessions.AddRange(desktopSession, mobileSession);
         await _context.SaveChangesAsync();
@@ -745,14 +713,8 @@ public class SessionRepositoryTests : IDisposable
     public async Task GetActiveSessionCountByPlatformAsync_ShouldReturnCountsByPlatform()
     {
         // Arrange
-        SessionEntity iosSession = new SessionBuilder()
-            .WithPlatform(EnumPlatform.Ios)
-            .WithCreatedAt(DateTime.UtcNow)
-            .Build();
-        SessionEntity windowsSession = new SessionBuilder()
-            .WithPlatform(EnumPlatform.Windows)
-            .WithCreatedAt(DateTime.UtcNow)
-            .Build();
+        SessionEntity iosSession = new SessionBuilder().WithPlatform(EnumPlatform.Ios).Build();
+        SessionEntity windowsSession = new SessionBuilder().WithPlatform(EnumPlatform.Windows).Build();
 
         _context.Sessions.AddRange(windowsSession, iosSession);
         await _context.SaveChangesAsync();
@@ -773,14 +735,8 @@ public class SessionRepositoryTests : IDisposable
     public async Task GetActiveSessionCountByClientAsync_ShouldReturnCountsByClient()
     {
         // Arrange
-        SessionEntity webAppSession = new SessionBuilder()
-            .WithClient(EnumClient.WebApp)
-            .WithCreatedAt(DateTime.UtcNow)
-            .Build();
-        SessionEntity mobileAppSession = new SessionBuilder()
-            .WithClient(EnumClient.MobileApp)
-            .WithCreatedAt(DateTime.UtcNow)
-            .Build();
+        SessionEntity webAppSession = new SessionBuilder().WithClient(EnumClient.WebApp).Build();
+        SessionEntity mobileAppSession = new SessionBuilder().WithClient(EnumClient.MobileApp).Build();
 
         _context.Sessions.AddRange(webAppSession, mobileAppSession);
         await _context.SaveChangesAsync();
