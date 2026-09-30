@@ -1,5 +1,4 @@
 using System.Security.Claims;
-using _116.BuildingBlocks.Presentation.Constants;
 using _116.Identity.Application.Shared.Authorizations.Handlers;
 using _116.Identity.Application.Shared.Authorizations.Requirements;
 using _116.Identity.Application.Shared.Repositories;
@@ -7,7 +6,7 @@ using _116.Identity.Domain.Constants;
 using _116.Identity.Domain.Entities;
 using _116.Identity.TestData.Builders.Entities;
 using _116.Identity.TestData.Factories;
-using _116.Storage.TestData.Factories;
+using _116.Identity.TestData.Mocks.Repositories;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -24,7 +23,7 @@ public class AccountStatusRequirementHandlerTests
 
     public AccountStatusRequirementHandlerTests()
     {
-        _authRepositoryMock = new Mock<IAuthRepository>();
+        _authRepositoryMock = MockAuthRepository.Create();
         _httpContextAccessorMock = new Mock<IHttpContextAccessor>();
         _httpContextAccessorMock.Setup(x => x.HttpContext).Returns(new DefaultHttpContext());
         _handler = new AccountStatusRequirementHandler(_authRepositoryMock.Object, _httpContextAccessorMock.Object);
