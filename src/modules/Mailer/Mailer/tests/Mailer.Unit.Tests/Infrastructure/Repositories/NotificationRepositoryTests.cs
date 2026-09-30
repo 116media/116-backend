@@ -1,9 +1,8 @@
 using _116.BuildingBlocks.Application.Pagination;
-using _116.Mailer.Contracts.Domain.Enums;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Infrastructure.Persistence;
 using _116.Mailer.Infrastructure.Repositories;
-using _116.Mailer.TestData.Builders.Entities;
+using _116.Mailer.TestData.Factories;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -37,13 +36,7 @@ public class NotificationRepositoryTests
     /// <returns>The persisted notification.</returns>
     private NotificationEntity Seed(Guid userId, bool read = false)
     {
-        var notification = new NotificationBuilder()
-            .WithId(Guid.NewGuid())
-            .WithUserId(userId)
-            .WithType(EnumNotificationType.PasswordChanged)
-            .WithContent("title", "body")
-            .WithLinkPath(null)
-            .Build();
+        var notification = NotificationFactory.CreatePasswordChanged(userId);
         if (read)
         {
             notification.MarkRead(DateTime.UtcNow);
@@ -58,13 +51,7 @@ public class NotificationRepositoryTests
     public async Task AddAsync_ShouldPersistTheNotification()
     {
         // Arrange
-        var notification = new NotificationBuilder()
-            .WithId(Guid.NewGuid())
-            .WithUserId(_userId)
-            .WithType(EnumNotificationType.PasswordChanged)
-            .WithContent("title", "body")
-            .WithLinkPath(null)
-            .Build();
+        var notification = NotificationFactory.CreatePasswordChanged(_userId);
 
         // Act
         await _repository.AddAsync(notification, CancellationToken.None);
