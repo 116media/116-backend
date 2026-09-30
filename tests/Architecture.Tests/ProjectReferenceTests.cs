@@ -105,7 +105,8 @@ public class ProjectReferenceTests
         AssertEdges(
             project => project is "TestData" or "Fixtures",
             (project, reference) =>
-                project == "Fixtures" || !reference.EndsWith(".Infrastructure", StringComparison.Ordinal),
+                project == "Fixtures"
+                || !Modules.Any(module => reference.Equals($"{module}.Infrastructure", StringComparison.Ordinal)),
             "the shared test data is used by every module, so it must not bind any module's Infrastructure"
         );
     }
