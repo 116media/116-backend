@@ -1,10 +1,9 @@
 using _116.BuildingBlocks.Application.Exceptions;
 using _116.Mailer.Application.Notifications.UseCases.Public.Commands.MarkNotificationRead.V1;
 using _116.Mailer.Application.Shared.Errors.Messages;
-using _116.Mailer.Contracts.Domain.Enums;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Infrastructure.Persistence;
-using _116.Mailer.TestData.Builders.Entities;
+using _116.Mailer.TestData.Factories;
 
 namespace _116.Mailer.Integration.Tests.Application.Notifications.UseCases.Public.Commands.MarkNotificationRead.V1;
 
@@ -16,17 +15,6 @@ namespace _116.Mailer.Integration.Tests.Application.Notifications.UseCases.Publi
 [Collection("Database")]
 public class PublicMarkNotificationReadEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static NotificationEntity CreateNotification(Guid userId)
-    {
-        return new NotificationBuilder()
-            .WithId(Guid.NewGuid())
-            .WithUserId(userId)
-            .WithType(EnumNotificationType.PasswordChanged)
-            .WithContent("Password changed", "Your password was changed.")
-            .WithLinkPath(null)
-            .Build();
-    }
-
     private async Task<DateTime?> ReadAtOfAsync(Guid notificationId)
     {
         await using MailerDbContext context = CreateDbContext<MailerDbContext>();
@@ -37,7 +25,7 @@ public class PublicMarkNotificationReadEndpointV1Tests(PostgresFixture db) : Bas
     [Fact]
     public async Task MarkRead_AnUnreadOwnNotification_SetsTheReadTime()
     {
-        NotificationEntity seeded = CreateNotification(TestUser.VisitorId);
+        NotificationEntity seeded = NotificationFactory.CreatePasswordChanged(TestUser.VisitorId);
         await SeedAsync<MailerDbContext>(ctx => ctx.Notifications.Add(seeded));
         Client.AuthenticateAsVisitor();
 
@@ -52,7 +40,7 @@ public class PublicMarkNotificationReadEndpointV1Tests(PostgresFixture db) : Bas
     [Fact]
     public async Task MarkRead_Twice_IsIdempotentAndKeepsTheOriginalReadTime()
     {
-        NotificationEntity seeded = CreateNotification(TestUser.VisitorId);
+        NotificationEntity seeded = NotificationFactory.CreatePasswordChanged(TestUser.VisitorId);
         await SeedAsync<MailerDbContext>(ctx => ctx.Notifications.Add(seeded));
         Client.AuthenticateAsVisitor();
 
@@ -69,7 +57,7 @@ public class PublicMarkNotificationReadEndpointV1Tests(PostgresFixture db) : Bas
     [Fact]
     public async Task MarkRead_AnotherUsersRow_ReturnsNotFoundAndLeavesItUnread()
     {
-        NotificationEntity foreign = CreateNotification(Guid.NewGuid());
+        NotificationEntity foreign = NotificationFactory.CreatePasswordChanged(Guid.NewGuid());
         await SeedAsync<MailerDbContext>(ctx => ctx.Notifications.Add(foreign));
         Client.AuthenticateAsVisitor();
 
