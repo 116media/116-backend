@@ -2,6 +2,7 @@ using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
+using _116.Identity.TestData.Mocks.Services;
 using _116.Tests.TestData.Helpers;
 using AwesomeAssertions;
 using Moq;
@@ -24,7 +25,7 @@ public class SuperAdminEntityFactoryTests : IDisposable
 
     public SuperAdminEntityFactoryTests()
     {
-        _passwordServiceMock = new Mock<IPasswordService>();
+        _passwordServiceMock = MockPasswordService.Create();
         _factory = new SuperAdminEntityFactory(_passwordServiceMock.Object);
 
         // Setup default password environment variable
