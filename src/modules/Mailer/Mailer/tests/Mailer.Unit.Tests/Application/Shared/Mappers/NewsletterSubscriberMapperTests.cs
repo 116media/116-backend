@@ -2,7 +2,7 @@ using _116.Mailer.Application.Shared.DTOs;
 using _116.Mailer.Application.Shared.Mappers;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Domain.Enums;
-using _116.Mailer.TestData.Builders.Entities;
+using _116.Mailer.TestData.Factories;
 using AwesomeAssertions;
 using Xunit;
 
@@ -17,10 +17,7 @@ public class NewsletterSubscriberMapperTests
 {
     private static NewsletterSubscriberEntity CreateSubscriber(string email, DateTime? createdAt = null)
     {
-        NewsletterSubscriberEntity subscriber = new NewsletterSubscriberBuilder()
-            .WithId(Guid.NewGuid())
-            .WithEmail(email)
-            .Build();
+        NewsletterSubscriberEntity subscriber = NewsletterSubscriberFactory.Create(email);
         subscriber.CreatedAt = createdAt;
 
         return subscriber;
