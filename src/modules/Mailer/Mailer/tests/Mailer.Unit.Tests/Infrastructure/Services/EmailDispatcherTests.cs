@@ -4,8 +4,7 @@ using _116.Mailer.Contracts.Application.OutboundEmails;
 using _116.Mailer.Contracts.Application.Services;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Infrastructure.Services;
-using _116.Mailer.TestData.Builders.Entities;
-using AwesomeAssertions;
+using _116.Mailer.TestData.Factories;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
@@ -54,7 +53,7 @@ public class EmailDispatcherTests
 
     private static NewsletterSubscriberEntity Pending()
     {
-        return new NewsletterSubscriberBuilder().WithId(Guid.NewGuid()).WithEmail(Address).Build();
+        return NewsletterSubscriberFactory.Create(Address);
     }
 
     private static NewsletterSubscriberEntity Subscribed()
