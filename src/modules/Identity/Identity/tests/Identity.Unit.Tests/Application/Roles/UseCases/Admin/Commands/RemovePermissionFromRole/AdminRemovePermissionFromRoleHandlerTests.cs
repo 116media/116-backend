@@ -8,14 +8,10 @@ using _116.Identity.TestData.Builders.Entities;
 using _116.Identity.TestData.Factories;
 using _116.Identity.TestData.Mocks.Infrastructure;
 using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
 using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
 using _116.Tests.TestData;
 using _116.Tests.TestData.Constants;
 using _116.Tests.TestData.Helpers;
-using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -68,10 +64,7 @@ public class AdminRemovePermissionFromRoleHandlerTests : BaseHandlerTest
     public async Task Handle_WithValidRoleAndPermission_ShouldRemoveAndReturnResult()
     {
         // Arrange
-        PermissionEntity permission = PermissionFactory.Create(
-            TestConstants.Permission.ValidResource,
-            TestConstants.Permission.ValidAction
-        );
+        PermissionEntity permission = PermissionFactory.CreateDefault();
         RoleEntity role = CreateRoleWithPermission(permission);
 
         AdminRemovePermissionFromRoleCommand command = new(
@@ -99,10 +92,7 @@ public class AdminRemovePermissionFromRoleHandlerTests : BaseHandlerTest
     public async Task Handle_ShouldRevokeThroughTheRoleAggregate()
     {
         // Arrange
-        PermissionEntity permission = PermissionFactory.Create(
-            TestConstants.Permission.ValidResource,
-            TestConstants.Permission.ValidAction
-        );
+        PermissionEntity permission = PermissionFactory.CreateDefault();
         RoleEntity role = CreateRoleWithPermission(permission);
 
         AdminRemovePermissionFromRoleCommand command = new(
@@ -146,7 +136,7 @@ public class AdminRemovePermissionFromRoleHandlerTests : BaseHandlerTest
     public async Task Handle_WhenPermissionNotAssigned_ShouldThrowBadRequestException()
     {
         // Arrange
-        RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName, TestConstants.Role.ValidDescription);
+        RoleEntity role = RoleFactory.CreateDefault();
 
         AdminRemovePermissionFromRoleCommand command = new(
             RoleId: role.Id.ToString(),
@@ -166,7 +156,7 @@ public class AdminRemovePermissionFromRoleHandlerTests : BaseHandlerTest
     public async Task Handle_WhenPermissionNotAssigned_ShouldNotCommitOrBump()
     {
         // Arrange
-        RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName, TestConstants.Role.ValidDescription);
+        RoleEntity role = RoleFactory.CreateDefault();
 
         AdminRemovePermissionFromRoleCommand command = new(
             RoleId: role.Id.ToString(),
@@ -195,10 +185,7 @@ public class AdminRemovePermissionFromRoleHandlerTests : BaseHandlerTest
     public async Task Handle_WithCancellationToken_ShouldPassToRepositories()
     {
         // Arrange
-        PermissionEntity permission = PermissionFactory.Create(
-            TestConstants.Permission.ValidResource,
-            TestConstants.Permission.ValidAction
-        );
+        PermissionEntity permission = PermissionFactory.CreateDefault();
         RoleEntity role = CreateRoleWithPermission(permission);
 
         AdminRemovePermissionFromRoleCommand command = new(
