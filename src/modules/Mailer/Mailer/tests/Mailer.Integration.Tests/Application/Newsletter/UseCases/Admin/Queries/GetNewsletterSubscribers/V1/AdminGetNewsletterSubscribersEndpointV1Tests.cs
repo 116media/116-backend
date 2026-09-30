@@ -1,7 +1,6 @@
 using _116.Mailer.Application.Newsletter.UseCases.Admin.Queries.GetNewsletterSubscribers.V1;
-using _116.Mailer.Domain.Entities;
 using _116.Mailer.Infrastructure.Persistence;
-using _116.Mailer.TestData.Builders.Entities;
+using _116.Mailer.TestData.Factories;
 
 namespace _116.Mailer.Integration.Tests.Application.Newsletter.UseCases.Admin.Queries.GetNewsletterSubscribers.V1;
 
@@ -36,15 +35,8 @@ public class AdminGetNewsletterSubscribersEndpointV1Tests(PostgresFixture db) : 
     {
         await SeedAsync<MailerDbContext>(ctx =>
         {
-            var pending = new NewsletterSubscriberBuilder()
-                .WithId(Guid.NewGuid())
-                .WithEmail("pending@example.com")
-                .Build();
-            var subscribed = new NewsletterSubscriberBuilder()
-                .WithId(Guid.NewGuid())
-                .WithEmail("active@example.com")
-                .AsConfirmed()
-                .Build();
+            var pending = NewsletterSubscriberFactory.Create("pending@example.com");
+            var subscribed = NewsletterSubscriberFactory.CreateConfirmed("active@example.com");
             ctx.NewsletterSubscribers.AddRange(pending, subscribed);
         });
 
