@@ -4,14 +4,8 @@ using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
 using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
 using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
 using _116.Tests.TestData.Helpers;
-using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -40,7 +34,7 @@ public class SuperAdminSeederTests : IDisposable
         _seederLoggerMock = new Mock<ILogger<SuperAdminSeeder>>();
         _repositoryLoggerMock = new Mock<ILogger<SuperAdminRepositoryManager>>();
         _strategyLoggerMock = new Mock<ILogger<SuperAdminSeedingStrategy>>();
-        _passwordServiceMock = new Mock<IPasswordService>();
+        _passwordServiceMock = MockPasswordService.Create();
         _passwordServiceMock.Setup(x => x.Hash(It.IsAny<string>())).Returns("hashedPassword");
 
         _originalPassword = Environment.GetEnvironmentVariable("DEFAULT_USER_PASSWORD");
@@ -199,12 +193,7 @@ public class SuperAdminSeederTests : IDisposable
         await using var context = new IdentityDbContext(options);
         await context.Database.EnsureCreatedAsync();
 
-        var existingUser = UserEntity.Create(
-            Guid.NewGuid(),
-            SuperAdminConfiguration.Email,
-            "existingadmin",
-            "hashedPassword"
-        );
+        var existingUser = UserFactory.Create(SuperAdminConfiguration.Email, "existingadmin");
         await context.Users.AddAsync(existingUser);
         await context.SaveChangesAsync();
 
@@ -227,12 +216,7 @@ public class SuperAdminSeederTests : IDisposable
         await using var context = new IdentityDbContext(options);
         await context.Database.EnsureCreatedAsync();
 
-        var existingUser = UserEntity.Create(
-            Guid.NewGuid(),
-            SuperAdminConfiguration.Email,
-            "existingadmin",
-            "hashedPassword"
-        );
+        var existingUser = UserFactory.Create(SuperAdminConfiguration.Email, "existingadmin");
         await context.Users.AddAsync(existingUser);
         await context.SaveChangesAsync();
 
