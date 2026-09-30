@@ -44,11 +44,11 @@ def normalize(filename, source=""):
     repository's src directory, and a module path carries a second 'src' segment
     (modules/Content/Content/src/...). Anchoring on the source root keeps both straight.
     """
-    path = filename.replace("\\", "/").strip()
+    path = (filename or "").replace("\\", "/").strip()
     if path.startswith("/"):
         marker = path.find("/src/")
         return path[marker + 1:] if marker != -1 else path
-    root = source.replace("\\", "/").strip().rstrip("/")
+    root = (source or "").replace("\\", "/").strip().rstrip("/")
     anchor = re.search(r"/(src)(/|$)", root)
     prefix = root[anchor.start() + 1:] if anchor else ""
     return f"{prefix}/{path}" if prefix else path
@@ -76,9 +76,9 @@ def collect(directory):
             root = ET.parse(report).getroot()
         except ET.ParseError:
             continue
-        source = next((s.text for s in root.iter("source")), "")
+        source = next((s.text for s in root.iter("source") if s.text), "")
         for cls in root.iter("class"):
-            name = normalize(cls.get("filename", ""), source)
+            name = normalize(cls.get("filename") or "", source)
             if not name.startswith("src/") or is_ignored(name):
                 continue
             lines = cls.find("lines")
