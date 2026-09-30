@@ -1,6 +1,5 @@
 using System.Text.RegularExpressions;
 using _116.BuildingBlocks.Application.Exceptions;
-using _116.Content.TestData.Factories;
 using _116.Identity.Application.Auth.Exceptions;
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.ForgotPassword.V1;
@@ -14,13 +13,12 @@ using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.TestData.Factories;
 using _116.Mailer.Application.Shared.Exceptions;
-using _116.Mailer.Application.Shared.Repositories;
 using _116.Mailer.Domain.Constants;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Domain.Enums;
 using _116.Mailer.Infrastructure.BackgroundJobs;
 using _116.Mailer.Infrastructure.Persistence;
-using _116.Storage.TestData.Factories;
+using _116.Mailer.TestData.Factories;
 using _116.Tests.Fixtures.Stubs;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -281,15 +279,11 @@ public class EmailDeliveryFlowTests(PostgresFixture db) : BaseApiTest(db)
         Guid emailId = Guid.NewGuid();
         await SeedAsync<MailerDbContext>(ctx =>
             ctx.OutboxEmails.Add(
-                OutboxEmailEntity.Enqueue(
+                OutboxEmailFactory.CreatePendingDueAt(
                     id: emailId,
                     recipientAddress: "drain@example.com",
-                    recipientName: null,
                     subject: "Drain me",
-                    htmlBody: "<p>x</p>",
-                    textBody: "x",
-                    template: "Welcome",
-                    now: DateTime.UtcNow.AddSeconds(-5)
+                    enqueuedAt: DateTime.UtcNow.AddSeconds(-5)
                 )
             )
         );
@@ -318,15 +312,11 @@ public class EmailDeliveryFlowTests(PostgresFixture db) : BaseApiTest(db)
         Guid emailId = Guid.NewGuid();
         await SeedAsync<MailerDbContext>(ctx =>
             ctx.OutboxEmails.Add(
-                OutboxEmailEntity.Enqueue(
+                OutboxEmailFactory.CreatePendingDueAt(
                     id: emailId,
                     recipientAddress: "retry@example.com",
-                    recipientName: null,
                     subject: "Retry me",
-                    htmlBody: "<p>x</p>",
-                    textBody: "x",
-                    template: "Welcome",
-                    now: DateTime.UtcNow.AddSeconds(-5)
+                    enqueuedAt: DateTime.UtcNow.AddSeconds(-5)
                 )
             )
         );
@@ -355,15 +345,11 @@ public class EmailDeliveryFlowTests(PostgresFixture db) : BaseApiTest(db)
         DateTime enqueuedAt = DateTime.UtcNow.AddSeconds(-5);
         await SeedAsync<MailerDbContext>(ctx =>
             ctx.OutboxEmails.Add(
-                OutboxEmailEntity.Enqueue(
+                OutboxEmailFactory.CreatePendingDueAt(
                     id: emailId,
                     recipientAddress: "rejected@example.com",
-                    recipientName: null,
                     subject: "Reject me",
-                    htmlBody: "<p>x</p>",
-                    textBody: "x",
-                    template: "Welcome",
-                    now: enqueuedAt
+                    enqueuedAt: enqueuedAt
                 )
             )
         );
@@ -397,15 +383,11 @@ public class EmailDeliveryFlowTests(PostgresFixture db) : BaseApiTest(db)
         Guid emailId = Guid.NewGuid();
         await SeedAsync<MailerDbContext>(ctx =>
             ctx.OutboxEmails.Add(
-                OutboxEmailEntity.Enqueue(
+                OutboxEmailFactory.CreatePendingDueAt(
                     id: emailId,
                     recipientAddress: "verbose@example.com",
-                    recipientName: null,
                     subject: "Verbose failure",
-                    htmlBody: "<p>x</p>",
-                    textBody: "x",
-                    template: "Welcome",
-                    now: DateTime.UtcNow.AddSeconds(-5)
+                    enqueuedAt: DateTime.UtcNow.AddSeconds(-5)
                 )
             )
         );
