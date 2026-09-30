@@ -1,11 +1,11 @@
 using _116.BuildingBlocks.Application.Exceptions;
 using _116.BuildingBlocks.Application.Exceptions.Messages;
+using _116.BuildingBlocks.Application.Persistence;
 using _116.BuildingBlocks.Presentation.Exceptions.Handlers.Contracts;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Npgsql;
 
 namespace _116.BuildingBlocks.Presentation.Exceptions.Handlers.Strategies;
 
@@ -17,18 +17,14 @@ namespace _116.BuildingBlocks.Presentation.Exceptions.Handlers.Strategies;
 /// </summary>
 public sealed class DbUpdateExceptionStrategy : BaseExceptionStrategy<DbUpdateException>
 {
-    /// <summary>
-    /// The PostgreSQL SQLSTATE for a unique-constraint violation.
-    /// </summary>
-    private const string UniqueViolation = PostgresErrorCodes.UniqueViolation;
-
     /// <inheritdoc />
     public override ProblemDetails CreateProblemDetails(DbUpdateException exception, HttpContext context)
     {
         var msg = context.RequestServices.GetRequiredService<SharedExceptionMessage>();
+        var detector = context.RequestServices.GetRequiredService<IUniqueConstraintDetector>();
 
         // The detail never echoes the constraint or column names the driver reports.
-        bool isUniqueViolation = exception.InnerException is PostgresException { SqlState: UniqueViolation };
+        bool isUniqueViolation = detector.IsUniqueConstraintViolation(exception);
 
         return CreateStandardProblemDetails(
             title: isUniqueViolation ? "ConflictException" : nameof(DbUpdateException),

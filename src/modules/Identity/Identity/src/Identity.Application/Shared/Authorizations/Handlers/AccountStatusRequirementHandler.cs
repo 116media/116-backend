@@ -1,12 +1,12 @@
 using System.Security.Claims;
 using _116.BuildingBlocks.Presentation.Constants;
+using _116.Identity.Application.Shared.Authorizations.Contracts;
 using _116.Identity.Application.Shared.Authorizations.Requirements;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Constants;
 using _116.Identity.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using Npgsql;
 
 namespace _116.Identity.Application.Shared.Authorizations.Handlers;
 
@@ -18,8 +18,11 @@ namespace _116.Identity.Application.Shared.Authorizations.Handlers;
 /// <c>HttpContext.Items</c>. A database outage fails the requirement rather than trusting
 /// possibly stale token claims.
 /// </remarks>
-public class AccountStatusRequirementHandler(IAuthRepository authRepository, IHttpContextAccessor httpContextAccessor)
-    : AuthorizationHandler<AccountStatusRequirement>
+public class AccountStatusRequirementHandler(
+    IAuthRepository authRepository,
+    IHttpContextAccessor httpContextAccessor,
+    ITransientFaultDetector faultDetector
+) : AuthorizationHandler<AccountStatusRequirement>
 {
     private const string AccountStatusItemKey = "account-status";
 
@@ -57,10 +60,9 @@ public class AccountStatusRequirementHandler(IAuthRepository authRepository, IHt
                 context.Succeed(requirement: requirement);
             }
         }
-        catch (Exception ex) when (IsDbConnectivityError(exception: ex))
+        catch (Exception ex) when (faultDetector.IsUnreachable(exception: ex))
         {
-            // Token claims may be stale (deactivation, deletion), so an unverifiable status
-            // fails closed instead of trusting them.
+            // Token claims go stale on deactivation, so an unverifiable status fails closed.
             context.Fail(
                 new AuthorizationFailureReason(handler: this, message: "Account status could not be verified.")
             );
@@ -119,36 +121,5 @@ public class AccountStatusRequirementHandler(IAuthRepository authRepository, IHt
         }
 
         return false;
-    }
-
-    /// <summary>
-    /// Determines if the exception is a database connectivity error that should trigger JWT fallback.
-    /// </summary>
-    /// <param name="exception">The exception to check for connectivity issues.</param>
-    /// <returns><c>true</c> if it's a connectivity error; otherwise, <c>false</c>.</returns>
-    private static bool IsDbConnectivityError(Exception exception)
-    {
-        return exception switch
-        {
-            // Network/connection timeouts
-            TimeoutException => true,
-            TaskCanceledException => true,
-            OperationCanceledException => true,
-            // PostgresQL-specific connectivity errors
-            NpgsqlException npgsqlEx => npgsqlEx.SqlState switch
-            {
-                "08000" => true, // connection_exception
-                "08003" => true, // connection_does_not_exist
-                "08006" => true, // connection_failure
-                "08001" => true, // sqlclient_unable_to_establish_sqlconnection
-                "08004" => true, // sqlserver_rejected_establishment_of_sqlconnection
-                "08007" => true, // transaction_resolution_unknown
-                "57P01" => true, // admin_shutdown
-                "57P02" => true, // crash_shutdown
-                "57P03" => true, // cannot_connect_now
-                _ => false,
-            },
-            _ => false,
-        };
     }
 }

@@ -1,9 +1,11 @@
 using _116.BuildingBlocks.Presentation.Constants.Authorization.Policies;
 using _116.Identity.Application.Shared.Authorizations.Configuration;
+using _116.Identity.Application.Shared.Authorizations.Contracts;
 using _116.Identity.Application.Shared.Authorizations.Extensions;
 using _116.Identity.Application.Shared.Authorizations.Handlers;
 using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Application.Shared.Repositories;
+using _116.Identity.Infrastructure.Persistence;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -31,6 +33,7 @@ public class AuthorizationExtensionsTests
         services.AddAuthorization(); // Required for IAuthorizationHandler registration
         services.AddScoped(_ => Mock.Of<IAuthRepository>()); // Required for AccountStatusRequirementHandler
         services.AddHttpContextAccessor(); // Required for the per-request account-status cache
+        services.AddSingleton<ITransientFaultDetector, PostgresTransientFaultDetector>(); // Registered by IdentityModule in the host
 
         // Act
         services.AddIdentityModuleAuthorization();

@@ -1,4 +1,6 @@
 using _116.BuildingBlocks.Application.Exceptions.Messages;
+using _116.BuildingBlocks.Application.Persistence;
+using _116.BuildingBlocks.Infrastructure.Persistence;
 using _116.Identity.Application.Shared.Errors.Messages;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,6 +32,7 @@ public static class HttpTestHelpers
         services.AddScoped<SharedExceptionMessage>();
         services.AddScoped<AuthenticationErrorMessage>();
         services.AddScoped<ValidationErrorMessage>();
+        services.AddSingleton<IUniqueConstraintDetector, PostgresUniqueConstraintDetector>();
         services.AddSingleton<IHostEnvironment>(new TestHostEnvironment { EnvironmentName = environmentName });
         ServiceProvider provider = services.BuildServiceProvider();
 

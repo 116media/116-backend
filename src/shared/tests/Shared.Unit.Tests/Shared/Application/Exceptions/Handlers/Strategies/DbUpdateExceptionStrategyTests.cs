@@ -1,4 +1,6 @@
 using _116.BuildingBlocks.Application.Exceptions.Messages;
+using _116.BuildingBlocks.Application.Persistence;
+using _116.BuildingBlocks.Infrastructure.Persistence;
 using _116.BuildingBlocks.Presentation.Exceptions.Handlers.Strategies;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
@@ -24,6 +26,7 @@ public class DbUpdateExceptionStrategyTests
             .AddLogging()
             .AddLocalization()
             .AddScoped<SharedExceptionMessage>()
+            .AddSingleton<IUniqueConstraintDetector, PostgresUniqueConstraintDetector>()
             .BuildServiceProvider();
 
         return new DefaultHttpContext

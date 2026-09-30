@@ -3,16 +3,18 @@
 Closes **[15 §15.1]** and **[15 §15.2]** — the two dependency-rule violations found by the
 post-Stage-9 verification that docs 01–14 did not cover.
 
-Eleven files. No behaviour change except where Stage 11 already intends one.
+Two files still carry the driver, plus their tests. No behaviour change except where
+Stage 11 already intends one.
 
-> **Partly landed early.** Stage 14 built `tests/Architecture` and, in doing so, fixed 20.1 and
-> implemented most of 20.5. The `Npgsql` work (20.2, 20.3, 20.4) is untouched. Re-verify against
-> the tree before planning: the violations this stage was written against are no longer all there.
+> **Re-measured against the tree on 2026-09-30, after the project restructure.** Three of the six
+> items are already closed and the paths in this document were all rewritten: every module is now
+> `src/modules/<M>/<M>/src/<M>.{Domain,Application,Infrastructure}`, the shared kernel is
+> `src/shared/src/BuildingBlocks.*`, and the suites are per module rather than `tests/Unit` and
+> `tests/Integration`. What is left is two files and their tests.
 
-**Numbered 20, but it does not run last.** Both fixes are prerequisites, not follow-ups:
-§15.2 must land before Stage 18 splits `Shared.Domain` (the file stops compiling at that
-moment), and §15.1 must be folded into Stage 11 (which rewrites the same method). The stage
-number records where the finding entered the audit, not the execution slot.
+**Numbered 20, but it did not run last.** §15.2 had to land before the restructure split the
+shared kernel, and it did. §15.1 still belongs with Stage 11, which rewrites the same method.
+The stage number records where the finding entered the audit, not the execution slot.
 
 > Draft — 15.1 is finalized against whatever Stage 11 D3 lands.
 
@@ -23,26 +25,58 @@ number records where the finding entered the audit, not the execution slot.
 | # | Question | Options weighed | Decision |
 | --- | --- | --- | --- |
 | D1 | Where the SQLSTATE knowledge lives | keep in the handler, or an Infrastructure-owned detector | **Detector interface in Application, Npgsql implementation in Infrastructure.** The nine connectivity SQLSTATEs are driver knowledge; the handler's question is "was the store unreachable?". This also makes them testable — today no test asserts a single one of them. |
-| D2 | One detector or two | one `IDatabaseFaultDetector`, or split by concern | **Two.** Unique-constraint detection lives in `Shared` (every module's `DbUpdateExceptionStrategy` path); transient-fault detection lives in `Identity` (one consumer, and Stage 11 may delete the fallback entirely). Merging them puts an Identity concern in Shared. |
+| D2 | One detector or two | one `IDatabaseFaultDetector`, or split by concern | **Two.** Unique-constraint detection lives in the shared kernel (`BuildingBlocks`, since every module reaches `DbUpdateExceptionStrategy`); transient-fault detection lives in `Identity` (one consumer, and Stage 11 may delete the fallback entirely). Merging them puts an Identity concern in the shared kernel. |
 | D3 | Newsletter token encoding | keep `WebEncoders`, add a Mailer helper, or use `System.Buffers.Text` | **`Base64Url.EncodeToString`.** Ships in the `net9.0` reference assemblies, identical alphabet and padding, so existing tokens stay valid. A hand-rolled helper would be three lines of transform to maintain for no gain. |
-| D4 | Enforcement | trust review, or an architecture rule | **Architecture rule, owned by Stage 14.7.** This stage contributes the two rules; it does not build the harness. If Stage 14 has not landed, the rules ship here and 14.7 absorbs them. |
+| D4 | Enforcement | trust review, or an architecture rule | **Architecture rule.** The harness exists in `tests/Architecture.Tests` and already carries the Domain rule. This stage adds the one remaining rule, no `Npgsql` in `*.Application`, and it can only be added once the two files below are fixed, since it ships with an empty allowlist. |
 
 ---
 
 ## Checklist
 
-- [x] 20.1 — `Mailer.Domain` off `Microsoft.AspNetCore.WebUtilities` — **absorbed into Stage 14.** `NewsletterSubscriberEntity.GenerateToken` now uses .NET 9's `System.Buffers.Text.Base64Url`; both emit unpadded RFC 4648, so existing tokens stay valid
-- [ ] 20.2 — `IUniqueConstraintDetector` + Npgsql implementation; `DbUpdateExceptionStrategy` off `Npgsql`
-- [ ] 20.3 — `ITransientFaultDetector` + Npgsql implementation; `AccountStatusRequirementHandler` off `Npgsql`
-- [ ] 20.4 — Unit tests for both detectors (the nine SQLSTATEs, `23505`, and the negative cases)
-- [ ] 20.5 — Architecture rules: no `Npgsql`/`Microsoft.AspNetCore` in `*.Domain`; no `Npgsql` in `*.Application` — **partly absorbed into Stage 14.** `tests/Architecture/LayerDependencyTests` already forbids `Microsoft.AspNetCore`, EF Core and `Npgsql` in `*.Domain`, and Infrastructure in `*.Application`. What remains here is the `Npgsql`-in-`*.Application` rule, which stays red until 20.2 and 20.3 land
-- [ ] 20.6 — Verify (build 0/0, csharpier, unit, integration, architecture)
+- [x] 20.1 — `Mailer.Domain` off `Microsoft.AspNetCore.WebUtilities` — **done.**
+      `NewsletterSubscriberEntity.GenerateToken` uses .NET 9's `System.Buffers.Text.Base64Url`
+      (`Entities/NewsletterSubscriberEntity.cs:85`); both emit unpadded RFC 4648, so existing
+      tokens stay valid
+- [x] 20.2 — `IUniqueConstraintDetector` + Npgsql implementation; `DbUpdateExceptionStrategy` off
+      `Npgsql` — **done.** Contract in `BuildingBlocks.Application/Persistence/`, implementation in
+      `BuildingBlocks.Infrastructure/Persistence/`, registered with `TryAddSingleton` in `BaseModule`
+      beside `TimeProvider`, resolved from `context.RequestServices` like `SharedExceptionMessage`
+- [x] 20.3 — `ITransientFaultDetector` + Npgsql implementation; `AccountStatusRequirementHandler`
+      off `Npgsql` — **done.** The handler already failed closed, so this was a pure extraction apart
+      from the cancellation change below. Registered in `IdentityModule`; the handler takes the
+      detector as a third constructor parameter
+- [x] 20.4 — Unit tests for both detectors — **done.** `PostgresTransientFaultDetectorTests`
+      (9 SQLSTATEs, 3 constraint violations, timeout, 2 cancellations, 1 unrelated failure) and
+      `PostgresUniqueConstraintDetectorTests` (`23505`, 3 other states, no inner exception,
+      unrelated failure)
+- [x] 20.5 — Architecture rules: no `Npgsql`/`Microsoft.AspNetCore` in `*.Domain` — **done.**
+      `LayerDependencyTests.DomainDependsOnNoPersistenceOrWebFramework` covers it and
+      `KnownViolations.txt` is empty. `ApplicationNamesNoDatabaseDriver` now ships too, verified by
+      reintroducing `Npgsql` into `Identity.Application` and watching it fail
+- [x] 20.6 — Verified: build 0/0 with no warnings, csharpier clean over 4,180 files, and every
+      suite green (Content 3741 + 1525, Identity 2912 + 394, Mailer 333 + 47, Storage 354 + 18,
+      Shared 1125 + 60, Architecture 15, EndToEnd 190)
 
 ---
 
+## What the tree shows today
+
+`*.Domain` is clean in all four modules: no `Npgsql`, no `Microsoft.AspNetCore`, no EF Core.
+Two files still name the driver, and both reach it transitively rather than by declaring it:
+
+| File | Layer | What it reads |
+| --- | --- | --- |
+| `AccountStatusRequirementHandler.cs:138` | `Identity.Application` | nine connection-class SQLSTATEs |
+| `DbUpdateExceptionStrategy.cs:31` | `BuildingBlocks.Presentation` | `PostgresException` with SQLSTATE 23505 |
+
+Neither project declares `Npgsql`. It arrives through `BuildingBlocks.Infrastructure`, which
+declares `Npgsql.EntityFrameworkCore.PostgreSQL`. That matters for enforcement: a package-level
+rule cannot catch this, so the rule has to be type-level, which is what `LayerDependencyTests`
+already does for `*.Domain`.
+
 ## 20.1 — `Mailer.Domain` off the web stack
 
-**Before** — `Mailer/Domain/Entities/NewsletterSubscriberEntity.cs`:
+**Before** — `src/modules/Mailer/Mailer/src/Mailer.Domain/Entities/NewsletterSubscriberEntity.cs`:
 
 ```csharp
 using Microsoft.AspNetCore.WebUtilities;
@@ -81,7 +115,7 @@ subscribers still validate. With this, all four domain layers import nothing out
 The strategy currently reaches for the driver's error code table:
 
 ```csharp
-// Shared/Application/Exceptions/Handlers/Strategies/DbUpdateExceptionStrategy.cs — before
+// src/shared/src/BuildingBlocks.Presentation/Exceptions/Handlers/Strategies/DbUpdateExceptionStrategy.cs — before
 using Npgsql;
 
 private const string UniqueViolation = PostgresErrorCodes.UniqueViolation;
@@ -89,10 +123,10 @@ private const string UniqueViolation = PostgresErrorCodes.UniqueViolation;
 bool isUniqueViolation = exception.InnerException is PostgresException { SqlState: UniqueViolation };
 ```
 
-**The contract**, in `Shared/Application/Persistence/`:
+**The contract**, in `src/shared/src/BuildingBlocks.Application/Persistence/`, beside `IUnitOfWork`:
 
 ```csharp
-namespace _116.Shared.Application.Persistence;
+namespace _116.BuildingBlocks.Application.Persistence;
 
 /// <summary>
 /// Classifies a persistence failure without exposing the database provider to callers.
@@ -109,13 +143,13 @@ public interface IUniqueConstraintDetector
 }
 ```
 
-**The implementation**, in `Shared/Infrastructure/Persistence/`:
+**The implementation**, in `src/shared/src/BuildingBlocks.Infrastructure/Persistence/`:
 
 ```csharp
-using _116.Shared.Application.Persistence;
+using _116.BuildingBlocks.Application.Persistence;
 using Npgsql;
 
-namespace _116.Shared.Infrastructure.Persistence;
+namespace _116.BuildingBlocks.Infrastructure.Persistence;
 
 /// <summary>
 /// PostgreSQL <see cref="IUniqueConstraintDetector" />, matching SQLSTATE 23505.
@@ -172,7 +206,7 @@ everything else → 500. The Stage 6 integration tests must pass untouched.
 `[11 D3]`; doing the extraction first and the rewrite second edits the same method twice.
 
 ```csharp
-// Identity/Application/Shared/Authorizations/Contracts/ITransientFaultDetector.cs
+// src/modules/Identity/Identity/src/Identity.Application/Shared/Authorizations/Contracts/ITransientFaultDetector.cs
 namespace _116.Identity.Application.Shared.Authorizations.Contracts;
 
 /// <summary>
@@ -191,7 +225,7 @@ public interface ITransientFaultDetector
 ```
 
 ```csharp
-// Identity/Infrastructure/Persistence/PostgresTransientFaultDetector.cs
+// src/modules/Identity/Identity/src/Identity.Infrastructure/Persistence/PostgresTransientFaultDetector.cs
 using _116.Identity.Application.Shared.Authorizations.Contracts;
 using Npgsql;
 
@@ -231,7 +265,12 @@ public sealed class PostgresTransientFaultDetector : ITransientFaultDetector
 
 `TaskCanceledException` and `OperationCanceledException` are **deliberately dropped** — they are
 ordinary client disconnects, and treating them as an outage is the exact defect `[07 §S12]` reports.
-Cancellation propagates.
+Cancellation propagates, and `OperationCanceledExceptionHandler` in `BuildingBlocks.Presentation`
+already answers it at the pipeline level.
+
+**This is the one behaviour change in the stage.** `AccountStatusRequirementHandlerTests` asserted
+that both cancellation types fail closed; that theory now covers `TimeoutException` only, and a new
+one asserts the cancellation propagates instead.
 
 The handler then holds no driver knowledge:
 
@@ -259,7 +298,7 @@ The nine SQLSTATEs have never been asserted. `NpgsqlException`'s `SqlState` is n
 construct a `PostgresException`, whose constructor takes the code:
 
 ```csharp
-// tests/Unit/Modules/Identity/Infrastructure/Persistence/PostgresTransientFaultDetectorTests.cs
+// src/modules/Identity/Identity/tests/Identity.Unit.Tests/Infrastructure/Persistence/PostgresTransientFaultDetectorTests.cs
 [Theory]
 [InlineData("08000")]
 [InlineData("08001")]
@@ -305,44 +344,39 @@ Stage 11 authorization tests must still behave per D3 — that is the whole regr
 
 ## 20.5 — The rules that would have caught this
 
-Contributed to `tests/Architecture` (harness owned by **[Stage 14.7]**):
+**The Domain rule already exists and passes.** `LayerDependencyTests` forbids
+`Microsoft.AspNetCore`, `Microsoft.EntityFrameworkCore` and `Npgsql` in every `*.Domain`
+namespace, iterating `ArchitectureRule.Modules` rather than naming one assembly, and
+`KnownViolations.txt` is empty.
+
+What is still missing is the Application rule. It goes in the same file, in the harness's own
+style, and it stays red until 20.2 and 20.3 land:
 
 ```csharp
-// tests/Architecture/LayerDependencyTests.cs
+// tests/Architecture.Tests/LayerDependencyTests.cs
 [Fact]
-public void Domain_DoesNotDependOnFrameworkPackages()
+public void ApplicationNamesNoDatabaseDriver()
 {
-    TestResult result = Types.InAssembly(typeof(ArticleEntity).Assembly)
-        .That()
-        .ResideInNamespaceMatching(@"_116\.\w+\.Domain")
-        .ShouldNot()
-        .HaveDependencyOnAny("Microsoft.AspNetCore", "Microsoft.EntityFrameworkCore", "Npgsql", "Carter")
-        .GetResult();
-
-    result.IsSuccessful.ShouldBeTrue(result.FailingTypeNames.JoinOrEmpty());
-}
-
-[Fact]
-public void Application_DoesNotDependOnTheDatabaseDriver()
-{
-    // EF is tolerated in specifications [04 §4.12]; the vendor driver is not.
-    TestResult result = Types.InAssembly(typeof(PublicGetPopularArticlesHandler).Assembly)
-        .That()
-        .ResideInNamespaceMatching(@"_116\.\w+\.Application")
-        .ShouldNot()
-        .HaveDependencyOn("Npgsql")
-        .GetResult();
-
-    result.IsSuccessful.ShouldBeTrue(result.FailingTypeNames.JoinOrEmpty());
+    foreach (Module module in ArchitectureRule.Modules)
+    {
+        Types
+            .InAssemblies(module.Assemblies)
+            .That()
+            .ResideInNamespace($"{module.Root}.Application")
+            .ShouldNot()
+            .HaveDependencyOn("Npgsql")
+            .GetResult()
+            .ShouldHold($"{module.Name}.Application must not name the database driver");
+    }
 }
 ```
 
-Both rules ship at **zero allowlist entries** — unlike the boundary rules in 14.7, which start with
-enumerated debt. There are only eleven files to fix, so there is no debt to grandfather.
+EF Core itself stays tolerated in `Application`: specifications are query objects `[04 §4.12]`.
+Only the vendor driver is forbidden.
 
-The third rule — `*.Application` must not depend on `*.Infrastructure` — cannot pass until the
-query builders move `[06 §6.14]`, and belongs to Stage 15. Add it there with the four builders as
-its allowlist, ratcheting to zero when they convert.
+The rule ships at **zero allowlist entries**, so it must not be added before the two files are
+fixed. `ApplicationDoesNotDependOnInfrastructure`, the third rule this section once deferred to
+Stage 15, also exists now and passes.
 
 ---
 
@@ -351,14 +385,16 @@ its allowlist, ratcheting to zero when they convert.
 ```bash
 dotnet build --no-incremental          # 0 errors, 0 warnings
 dotnet csharpier check .
-dotnet test tests/Unit
-dotnet test tests/Integration
-dotnet test tests/Architecture
+dotnet test tests/unit.slnf
+dotnet test tests/integration.slnf
+dotnet test tests/Architecture.Tests
 ```
 
 Plus the two greps this stage exists to make return nothing:
 
 ```bash
-grep -rn --include='*.cs' "using Npgsql" src/Modules/*/*/Application src/Shared/Shared/Application
-grep -rn --include='*.cs' "Microsoft.AspNetCore" src/Modules/*/*/Domain
+grep -rn --include='*.cs' "Npgsql" src/modules/*/*/src/*.Application src/shared/src/BuildingBlocks.Application src/shared/src/BuildingBlocks.Presentation
+grep -rn --include='*.cs' "Microsoft.AspNetCore" src/modules/*/*/src/*.Domain
 ```
+
+The second one already returns nothing.

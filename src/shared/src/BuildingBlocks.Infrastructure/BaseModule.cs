@@ -1,8 +1,10 @@
 using System.Data.Common;
 using _116.BuildingBlocks.Application.Configurations;
 using _116.BuildingBlocks.Application.Configurations.Schemas;
+using _116.BuildingBlocks.Application.Persistence;
 using _116.BuildingBlocks.Application.Services;
 using _116.BuildingBlocks.Infrastructure.interceptors;
+using _116.BuildingBlocks.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
@@ -49,8 +51,7 @@ public static class BaseModule
             }
         );
 
-        // Also resolvable as DbContext, so a unit of work can enlist every module context that
-        // shares the scope's connection.
+        // Also resolvable as DbContext, so a unit of work can enlist every module context that shares the scope's connection.
         services.AddScoped<DbContext>(serviceProvider => serviceProvider.GetRequiredService<TDbContext>());
 
         return services;
@@ -72,8 +73,7 @@ public static class BaseModule
     /// <returns>The formatted connection string</returns>
     private static string GetDefaultConnectionString()
     {
-        // All module contexts share this string, so Npgsql serves them from one physical pool;
-        // the cap is per connection string, not per context.
+        // Npgsql pools per connection string, so one shared string means one pool for every context.
         return $"{DatabaseEnv.ConnectionString()}Maximum Pool Size=100;";
     }
 
@@ -83,12 +83,13 @@ public static class BaseModule
     /// <param name="services">The service collection</param>
     private static void RegisterInterceptorsIfNotExists(IServiceCollection services)
     {
-        // The audit interceptor reads the clock through TimeProvider, so the seam must be present
-        // wherever a module database is registered, not only in the API host.
+        // The audit interceptor reads the clock through TimeProvider, so the seam belongs here too.
         services.TryAddSingleton(TimeProvider.System);
 
-        // The dispatch interceptor logs the post-commit failures it swallows, so the logging
-        // services must be present wherever a module database is registered.
+        // The exception strategies classify driver failures through this seam instead of naming it.
+        services.TryAddSingleton<IUniqueConstraintDetector, PostgresUniqueConstraintDetector>();
+
+        // The dispatch interceptor logs the post-commit failures it swallows, so logging must exist.
         services.AddLogging();
 
         // Check if interceptors are already registered to avoid duplicates
@@ -136,9 +137,7 @@ public static class BaseModule
     {
         options.AddInterceptors(serviceProvider.GetServices<ISaveChangesInterceptor>());
 
-        // Every context in the scope binds the same connection, so one transaction covers them
-        // all. Transient faults retry with backoff; the command timeout keeps a wedged statement
-        // from holding the connection open.
+        // One connection per scope, so one transaction covers every context; the timeout frees it.
         options
             .UseNpgsql(
                 serviceProvider.GetRequiredService<DbConnection>(),

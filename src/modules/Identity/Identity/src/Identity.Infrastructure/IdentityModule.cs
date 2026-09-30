@@ -43,6 +43,7 @@ using _116.Identity.Application.Session.Factories;
 using _116.Identity.Application.Session.Factories.Contracts;
 using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Session.Services;
+using _116.Identity.Application.Shared.Authorizations.Contracts;
 using _116.Identity.Application.Shared.Authorizations.Extensions;
 using _116.Identity.Application.Shared.Cache;
 using _116.Identity.Application.Shared.Errors;
@@ -136,6 +137,7 @@ public static class IdentityModule
         services.AddHttpContextAccessor();
         services.AddDetection();
         services.AddScoped<IIdentityUnitOfWork, IdentityUnitOfWork>();
+        services.AddSingleton<ITransientFaultDetector, PostgresTransientFaultDetector>();
         services.AddScoped(typeof(IIdentityRepository<>), typeof(IdentityRepository<>));
 
         // Replay delivers events raised inside a transaction, not just retries failed dispatches.
