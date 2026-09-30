@@ -7,14 +7,9 @@ using _116.Identity.Domain.Entities;
 using _116.Identity.TestData.Factories;
 using _116.Identity.TestData.Mocks.Infrastructure;
 using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
 using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
 using _116.Tests.TestData;
-using _116.Tests.TestData.Constants;
 using _116.Tests.TestData.Helpers;
-using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -57,12 +52,9 @@ public class AdminAssignPermissionToRoleHandlerTests : BaseHandlerTest
     public async Task Handle_WithValidRoleAndPermission_ShouldAssignAndReturnResult()
     {
         // Arrange
-        PermissionEntity permission = PermissionFactory.Create(
-            TestConstants.Permission.ValidResource,
-            TestConstants.Permission.ValidAction
-        );
+        PermissionEntity permission = PermissionFactory.CreateDefault();
 
-        RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName, TestConstants.Role.ValidDescription);
+        RoleEntity role = RoleFactory.CreateDefault();
 
         AdminAssignPermissionToRoleCommand command = new(RoleId: role.Id.ToString(), PermissionId: permission.Id);
 
@@ -86,12 +78,9 @@ public class AdminAssignPermissionToRoleHandlerTests : BaseHandlerTest
     public async Task Handle_WithValidCommand_ShouldGrantThroughTheRoleAggregate()
     {
         // Arrange
-        PermissionEntity permission = PermissionFactory.Create(
-            TestConstants.Permission.ValidResource,
-            TestConstants.Permission.ValidAction
-        );
+        PermissionEntity permission = PermissionFactory.CreateDefault();
 
-        RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName, TestConstants.Role.ValidDescription);
+        RoleEntity role = RoleFactory.CreateDefault();
 
         AdminAssignPermissionToRoleCommand command = new(RoleId: role.Id.ToString(), PermissionId: permission.Id);
 
@@ -133,7 +122,7 @@ public class AdminAssignPermissionToRoleHandlerTests : BaseHandlerTest
     public async Task Handle_WhenPermissionNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName, TestConstants.Role.ValidDescription);
+        RoleEntity role = RoleFactory.CreateDefault();
 
         var nonExistentPermissionId = Guid.NewGuid();
         AdminAssignPermissionToRoleCommand command = new(
@@ -155,10 +144,7 @@ public class AdminAssignPermissionToRoleHandlerTests : BaseHandlerTest
     public async Task Handle_WhenRoleIsInactive_ShouldThrowBadRequestException()
     {
         // Arrange
-        PermissionEntity permission = PermissionFactory.Create(
-            TestConstants.Permission.ValidResource,
-            TestConstants.Permission.ValidAction
-        );
+        PermissionEntity permission = PermissionFactory.CreateDefault();
 
         RoleEntity inactiveRole = RoleFactory.CreateInactive();
 
@@ -180,10 +166,7 @@ public class AdminAssignPermissionToRoleHandlerTests : BaseHandlerTest
     public async Task Handle_WhenRoleIsDeleted_ShouldThrowBadRequestException()
     {
         // Arrange
-        PermissionEntity permission = PermissionFactory.Create(
-            TestConstants.Permission.ValidResource,
-            TestConstants.Permission.ValidAction
-        );
+        PermissionEntity permission = PermissionFactory.CreateDefault();
 
         RoleEntity deletedRole = RoleFactory.CreateDeleted();
 
@@ -205,13 +188,10 @@ public class AdminAssignPermissionToRoleHandlerTests : BaseHandlerTest
     public async Task Handle_WhenPermissionIsInactive_ShouldThrowBadRequestException()
     {
         // Arrange
-        PermissionEntity inactivePermission = PermissionFactory.Create(
-            TestConstants.Permission.ValidResource,
-            TestConstants.Permission.ValidAction
-        );
+        PermissionEntity inactivePermission = PermissionFactory.CreateDefault();
         inactivePermission.Deactivate();
 
-        RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName, TestConstants.Role.ValidDescription);
+        RoleEntity role = RoleFactory.CreateDefault();
 
         AdminAssignPermissionToRoleCommand command = new(
             RoleId: role.Id.ToString(),
@@ -232,13 +212,10 @@ public class AdminAssignPermissionToRoleHandlerTests : BaseHandlerTest
     public async Task Handle_WhenPermissionIsDeleted_ShouldThrowBadRequestException()
     {
         // Arrange
-        PermissionEntity deletedPermission = PermissionFactory.Create(
-            TestConstants.Permission.ValidResource,
-            TestConstants.Permission.ValidAction
-        );
+        PermissionEntity deletedPermission = PermissionFactory.CreateDefault();
         deletedPermission.SoftDelete(now: DateTime.UtcNow);
 
-        RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName, TestConstants.Role.ValidDescription);
+        RoleEntity role = RoleFactory.CreateDefault();
 
         AdminAssignPermissionToRoleCommand command = new(
             RoleId: role.Id.ToString(),
@@ -259,12 +236,9 @@ public class AdminAssignPermissionToRoleHandlerTests : BaseHandlerTest
     public async Task Handle_WhenPermissionAlreadyAssigned_ShouldThrowConflictException()
     {
         // Arrange
-        PermissionEntity permission = PermissionFactory.Create(
-            TestConstants.Permission.ValidResource,
-            TestConstants.Permission.ValidAction
-        );
+        PermissionEntity permission = PermissionFactory.CreateDefault();
 
-        RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName, TestConstants.Role.ValidDescription);
+        RoleEntity role = RoleFactory.CreateDefault();
         role.GrantPermission(permission.Id);
 
         AdminAssignPermissionToRoleCommand command = new(RoleId: role.Id.ToString(), PermissionId: permission.Id);
@@ -283,12 +257,9 @@ public class AdminAssignPermissionToRoleHandlerTests : BaseHandlerTest
     public async Task Handle_WhenPermissionAlreadyAssigned_ShouldNotCommit()
     {
         // Arrange
-        PermissionEntity permission = PermissionFactory.Create(
-            TestConstants.Permission.ValidResource,
-            TestConstants.Permission.ValidAction
-        );
+        PermissionEntity permission = PermissionFactory.CreateDefault();
 
-        RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName, TestConstants.Role.ValidDescription);
+        RoleEntity role = RoleFactory.CreateDefault();
         role.GrantPermission(permission.Id);
 
         AdminAssignPermissionToRoleCommand command = new(RoleId: role.Id.ToString(), PermissionId: permission.Id);
@@ -316,12 +287,9 @@ public class AdminAssignPermissionToRoleHandlerTests : BaseHandlerTest
     public async Task Handle_WithCancellationToken_ShouldPassToRepositories()
     {
         // Arrange
-        PermissionEntity permission = PermissionFactory.Create(
-            TestConstants.Permission.ValidResource,
-            TestConstants.Permission.ValidAction
-        );
+        PermissionEntity permission = PermissionFactory.CreateDefault();
 
-        RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName, TestConstants.Role.ValidDescription);
+        RoleEntity role = RoleFactory.CreateDefault();
 
         AdminAssignPermissionToRoleCommand command = new(RoleId: role.Id.ToString(), PermissionId: permission.Id);
 
