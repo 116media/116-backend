@@ -51,6 +51,9 @@ def is_ignored(name):
     slashed = "/" + name
     if "/Migrations/" in slashed or "/tests/" in slashed:
         return True
+    # The host composition root is wiring, reached only by the suites that build the real host.
+    if name.startswith("src/host/"):
+        return True
     return name.endswith(".Designer.cs") or name.endswith("Program.cs")
 
 
