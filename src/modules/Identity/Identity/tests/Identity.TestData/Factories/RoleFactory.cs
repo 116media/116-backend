@@ -18,6 +18,13 @@ public static class RoleFactory
     public static RoleEntity Create() => new RoleBuilder().Build();
 
     /// <summary>
+    /// Creates a role carrying the shared valid name and description.
+    /// </summary>
+    /// <returns>A new RoleEntity with the default test values.</returns>
+    public static RoleEntity CreateDefault() =>
+        Create(TestConstants.Role.ValidName, TestConstants.Role.ValidDescription);
+
+    /// <summary>
     /// Creates a role with a specific name.
     /// </summary>
     /// <param name="name">The role name.</param>
