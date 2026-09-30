@@ -41,6 +41,5 @@
     <ItemGroup>
         <ProjectReference Include="../Storage.TestData/Storage.TestData.csproj" />
         <ProjectReference Include="../../../../../../tests/Fixtures/Fixtures.csproj" />
-        <ProjectReference Include="../../../../../../tests/TestData/TestData.csproj" />
     </ItemGroup>
 </Project>
