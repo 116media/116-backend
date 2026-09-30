@@ -3,7 +3,7 @@ using _116.Mailer.Domain.Entities;
 using _116.Mailer.Domain.Enums;
 using _116.Mailer.Infrastructure.Persistence;
 using _116.Mailer.Infrastructure.Repositories;
-using _116.Mailer.TestData.Builders.Entities;
+using _116.Mailer.TestData.Factories;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -35,7 +35,7 @@ public class NewsletterRepositoryTests
     /// <returns>The persisted subscriber.</returns>
     private NewsletterSubscriberEntity Seed(string email)
     {
-        var subscriber = new NewsletterSubscriberBuilder().WithId(Guid.NewGuid()).WithEmail(email).Build();
+        var subscriber = NewsletterSubscriberFactory.Create(email);
         _context.NewsletterSubscribers.Add(subscriber);
         _context.SaveChanges();
         return subscriber;
@@ -45,7 +45,7 @@ public class NewsletterRepositoryTests
     public async Task AddAsync_ShouldPersistTheSubscriber()
     {
         // Arrange
-        var subscriber = new NewsletterSubscriberBuilder().WithId(Guid.NewGuid()).WithEmail("fan@example.com").Build();
+        var subscriber = NewsletterSubscriberFactory.Create("fan@example.com");
 
         // Act
         await _repository.AddAsync(subscriber, CancellationToken.None);
