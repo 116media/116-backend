@@ -1,4 +1,3 @@
-using System.Net;
 using _116.BuildingBlocks.Application.Exceptions;
 using _116.Mailer.Application.Newsletter.Messages;
 using _116.Mailer.Application.Newsletter.UseCases.Public.Commands.ConfirmNewsletter.V1;
@@ -6,7 +5,7 @@ using _116.Mailer.Application.Shared.Errors.Messages;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Domain.Enums;
 using _116.Mailer.Infrastructure.Persistence;
-using _116.Mailer.TestData.Builders.Entities;
+using _116.Mailer.TestData.Factories;
 
 namespace _116.Mailer.Integration.Tests.Application.Newsletter.UseCases.Public.Commands.ConfirmNewsletter.V1;
 
@@ -21,10 +20,7 @@ public class PublicConfirmNewsletterEndpointV1Tests(PostgresFixture db) : BaseAp
     {
         NewsletterSubscriberEntity seeded = await SeedAsync<MailerDbContext, NewsletterSubscriberEntity>(ctx =>
         {
-            var subscriber = new NewsletterSubscriberBuilder()
-                .WithId(Guid.NewGuid())
-                .WithEmail("pending@example.com")
-                .Build();
+            var subscriber = NewsletterSubscriberFactory.Create("pending@example.com");
             ctx.NewsletterSubscribers.Add(subscriber);
             return subscriber;
         });
@@ -54,10 +50,7 @@ public class PublicConfirmNewsletterEndpointV1Tests(PostgresFixture db) : BaseAp
     {
         NewsletterSubscriberEntity seeded = await SeedAsync<MailerDbContext, NewsletterSubscriberEntity>(ctx =>
         {
-            var subscriber = new NewsletterSubscriberBuilder()
-                .WithId(Guid.NewGuid())
-                .WithEmail("twice@example.com")
-                .Build();
+            var subscriber = NewsletterSubscriberFactory.Create("twice@example.com");
             ctx.NewsletterSubscribers.Add(subscriber);
             return subscriber;
         });
@@ -94,10 +87,7 @@ public class PublicConfirmNewsletterEndpointV1Tests(PostgresFixture db) : BaseAp
         NewsletterSubscriberEntity seeded = await SeedAsync<MailerDbContext, NewsletterSubscriberEntity>(ctx =>
         {
             // Left pending: the GET must not be what confirms them.
-            var subscriber = new NewsletterSubscriberBuilder()
-                .WithId(Guid.NewGuid())
-                .WithEmail("scanner-confirm@example.com")
-                .Build();
+            var subscriber = NewsletterSubscriberFactory.Create("scanner-confirm@example.com");
             ctx.NewsletterSubscribers.Add(subscriber);
             return subscriber;
         });
