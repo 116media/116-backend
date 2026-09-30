@@ -3,13 +3,6 @@ using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.TestData.Builders.Entities;
 using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Xunit;
 
@@ -238,8 +231,7 @@ public class OtpSpecificationsTests
         // Arrange
         var userId = Guid.NewGuid();
         var purpose = EnumOtpPurpose.EmailVerification;
-        OtpEntity otp = OtpFactory.Create(userId, "123456", purpose);
-        otp.MarkAsUsed(now: DateTime.UtcNow);
+        OtpEntity otp = OtpFactory.CreateUsed(userId, "123456", purpose);
         OtpForValidationSpecification spec = new(userId, purpose);
 
         // Act
@@ -306,8 +298,7 @@ public class OtpSpecificationsTests
         // Arrange
         var userId = Guid.NewGuid();
         var purpose = EnumOtpPurpose.PasswordReset;
-        OtpEntity otp = OtpFactory.CreateForPasswordReset(userId);
-        otp.MarkAsUsed(now: DateTime.UtcNow);
+        OtpEntity otp = OtpFactory.CreateUsed(userId, EnumOtpPurpose.PasswordReset);
         OtpForInvalidationSpecification spec = new(userId, purpose);
 
         // Act
@@ -343,8 +334,7 @@ public class OtpSpecificationsTests
         // Arrange
         var userId = Guid.NewGuid();
         var purpose = EnumOtpPurpose.TwoFactorAuthentication;
-        OtpEntity otp = OtpFactory.Create(userId, "123456", purpose);
-        otp.MarkAsUsed(now: DateTime.UtcNow);
+        OtpEntity otp = OtpFactory.CreateUsed(userId, "123456", purpose);
         OtpForUsedValidationSpecification spec = new(userId, purpose);
 
         // Act
