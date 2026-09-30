@@ -1,8 +1,7 @@
 using _116.Mailer.Application.Notifications.UseCases.Public.Queries.GetUnreadNotificationCount.V1;
-using _116.Mailer.Contracts.Domain.Enums;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Infrastructure.Persistence;
-using _116.Mailer.TestData.Builders.Entities;
+using _116.Mailer.TestData.Factories;
 
 namespace _116.Mailer.Integration.Tests.Application.Notifications.UseCases.Public.Queries.GetUnreadNotificationCount.V1;
 
@@ -13,28 +12,17 @@ namespace _116.Mailer.Integration.Tests.Application.Notifications.UseCases.Publi
 [Collection("Database")]
 public class PublicGetUnreadNotificationCountEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static NotificationEntity CreateNotification(Guid userId)
-    {
-        return new NotificationBuilder()
-            .WithId(Guid.NewGuid())
-            .WithUserId(userId)
-            .WithType(EnumNotificationType.PasswordChanged)
-            .WithContent("Password changed", "Your password was changed.")
-            .WithLinkPath(null)
-            .Build();
-    }
-
     [Fact]
     public async Task UnreadCount_CountsOwnUnreadRowsOnly()
     {
-        NotificationEntity read = CreateNotification(TestUser.VisitorId);
+        NotificationEntity read = NotificationFactory.CreatePasswordChanged(TestUser.VisitorId);
         read.MarkRead(DateTime.UtcNow);
         await SeedAsync<MailerDbContext>(ctx =>
             ctx.Notifications.AddRange(
-                CreateNotification(TestUser.VisitorId),
-                CreateNotification(TestUser.VisitorId),
+                NotificationFactory.CreatePasswordChanged(TestUser.VisitorId),
+                NotificationFactory.CreatePasswordChanged(TestUser.VisitorId),
                 read,
-                CreateNotification(Guid.NewGuid())
+                NotificationFactory.CreatePasswordChanged(Guid.NewGuid())
             )
         );
         Client.AuthenticateAsVisitor();
