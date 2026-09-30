@@ -78,6 +78,22 @@ public class LayerDependencyTests
     }
 
     [Fact]
+    public void ApplicationNamesNoDatabaseDriver()
+    {
+        foreach (Module module in ArchitectureRule.Modules)
+        {
+            Types
+                .InAssemblies(module.Assemblies)
+                .That()
+                .ResideInNamespace($"{module.Root}.Application")
+                .ShouldNot()
+                .HaveDependencyOn("Npgsql")
+                .GetResult()
+                .ShouldHold($"{module.Name}.Application must classify driver failures behind a seam");
+        }
+    }
+
+    [Fact]
     public void ApplicationDoesNotDependOnInfrastructure()
     {
         foreach (Module module in ArchitectureRule.Modules)
