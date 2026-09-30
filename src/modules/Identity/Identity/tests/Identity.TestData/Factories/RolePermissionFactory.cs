@@ -34,11 +34,4 @@ public static class RolePermissionFactory
     /// <returns>A new RolePermissionEntity with the Permission navigation property set.</returns>
     public static RolePermissionEntity CreateWithPermission(Guid roleId, PermissionEntity permission) =>
         new RolePermissionBuilder().WithRoleId(roleId).WithPermission(permission).Build();
-
-    /// <summary>
-    /// Creates a role-permission association with a specific ID.
-    /// </summary>
-    /// <param name="id">The association identifier.</param>
-    /// <returns>A new RolePermissionEntity with the specified ID.</returns>
-    public static RolePermissionEntity CreateWithId(Guid id) => new RolePermissionBuilder().WithId(id).Build();
 }
