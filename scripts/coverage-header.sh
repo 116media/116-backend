@@ -30,10 +30,21 @@ import xml.etree.ElementTree as ET
 pr, repo, unit_dir, int_dir, diff_path, out = sys.argv[1:7]
 
 
-def normalize(filename):
+def normalize(filename, source=""):
+    """Reduce a coverage path to a repo-relative 'src/...' path.
+
+    Cobertura stores each filename relative to the report's <source> root, which is the
+    repository's src directory, and a module path carries a second 'src' segment
+    (modules/Content/Content/src/...). Anchoring on the source root keeps both straight.
+    """
     path = filename.replace("\\", "/").strip()
-    marker = path.find("/src/")
-    return path[marker + 1:] if marker != -1 else path
+    if path.startswith("/"):
+        marker = path.find("/src/")
+        return path[marker + 1:] if marker != -1 else path
+    root = source.replace("\\", "/").strip().rstrip("/")
+    anchor = re.search(r"/(src)(/|$)", root)
+    prefix = root[anchor.start() + 1:] if anchor else ""
+    return f"{prefix}/{path}" if prefix else path
 
 
 def is_ignored(name):
@@ -53,8 +64,9 @@ def union_hits(directories):
                 root = ET.parse(report).getroot()
             except ET.ParseError:
                 continue
+            source = next((s.text for s in root.iter("source")), "")
             for cls in root.iter("class"):
-                name = normalize(cls.get("filename", ""))
+                name = normalize(cls.get("filename", ""), source)
                 if not name.startswith("src/") or is_ignored(name):
                     continue
                 lines = cls.find("lines")
