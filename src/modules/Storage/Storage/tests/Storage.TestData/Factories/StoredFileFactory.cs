@@ -1,9 +1,6 @@
 using _116.Storage.Contracts.Application.DTOs;
 using _116.Storage.Contracts.Application.Services;
 using _116.Storage.Domain.Entities;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Mocks;
 
 namespace _116.Storage.TestData.Factories;
 
@@ -31,14 +28,5 @@ public static class StoredFileFactory
     public static StoredFile From(FileEntity file)
     {
         return From(file.ToFileReferenceDto());
-    }
-
-    /// <summary>
-    /// Creates a handle with default values.
-    /// </summary>
-    /// <returns>The handle.</returns>
-    public static StoredFile Create()
-    {
-        return From(FileReferenceDtoFactory.Create());
     }
 }
