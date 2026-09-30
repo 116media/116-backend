@@ -7,14 +7,9 @@ using _116.Identity.Domain.Entities;
 using _116.Identity.TestData.Factories;
 using _116.Identity.TestData.Mocks.Infrastructure;
 using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
 using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
 using _116.Tests.TestData;
-using _116.Tests.TestData.Constants;
 using _116.Tests.TestData.Helpers;
-using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -51,10 +46,7 @@ public class AdminDeactivatePermissionHandlerTests : BaseHandlerTest
     public async Task Handle_WithActivePermission_ShouldDeactivateAndReturnResult()
     {
         // Arrange
-        PermissionEntity activePermission = PermissionFactory.Create(
-            TestConstants.Permission.ValidResource,
-            TestConstants.Permission.ValidAction
-        );
+        PermissionEntity activePermission = PermissionFactory.CreateDefault();
 
         AdminDeactivatePermissionCommand command = new(PermissionId: activePermission.Id.ToString());
 
@@ -72,10 +64,7 @@ public class AdminDeactivatePermissionHandlerTests : BaseHandlerTest
     public async Task Handle_WithActivePermission_ShouldSetIsActiveToFalse()
     {
         // Arrange
-        PermissionEntity activePermission = PermissionFactory.Create(
-            TestConstants.Permission.ValidResource,
-            TestConstants.Permission.ValidAction
-        );
+        PermissionEntity activePermission = PermissionFactory.CreateDefault();
 
         AdminDeactivatePermissionCommand command = new(PermissionId: activePermission.Id.ToString());
 
@@ -112,10 +101,7 @@ public class AdminDeactivatePermissionHandlerTests : BaseHandlerTest
     public async Task Handle_WhenPermissionAlreadyInactive_ShouldThrowConflictException()
     {
         // Arrange
-        PermissionEntity inactivePermission = PermissionFactory.Create(
-            TestConstants.Permission.ValidResource,
-            TestConstants.Permission.ValidAction
-        );
+        PermissionEntity inactivePermission = PermissionFactory.CreateDefault();
         inactivePermission.Deactivate();
 
         AdminDeactivatePermissionCommand command = new(PermissionId: inactivePermission.Id.ToString());
@@ -133,10 +119,7 @@ public class AdminDeactivatePermissionHandlerTests : BaseHandlerTest
     public async Task Handle_WhenPermissionAlreadyInactive_ShouldNotCommit()
     {
         // Arrange
-        PermissionEntity inactivePermission = PermissionFactory.Create(
-            TestConstants.Permission.ValidResource,
-            TestConstants.Permission.ValidAction
-        );
+        PermissionEntity inactivePermission = PermissionFactory.CreateDefault();
         inactivePermission.Deactivate();
 
         AdminDeactivatePermissionCommand command = new(PermissionId: inactivePermission.Id.ToString());
@@ -159,10 +142,7 @@ public class AdminDeactivatePermissionHandlerTests : BaseHandlerTest
     public async Task Handle_WithCancellationToken_ShouldPassToRepository()
     {
         // Arrange
-        PermissionEntity activePermission = PermissionFactory.Create(
-            TestConstants.Permission.ValidResource,
-            TestConstants.Permission.ValidAction
-        );
+        PermissionEntity activePermission = PermissionFactory.CreateDefault();
 
         AdminDeactivatePermissionCommand command = new(PermissionId: activePermission.Id.ToString());
 
