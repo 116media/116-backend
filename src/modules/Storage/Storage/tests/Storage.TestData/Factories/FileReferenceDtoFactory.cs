@@ -1,8 +1,5 @@
 using _116.Storage.Contracts.Application.DTOs;
 using _116.Storage.Domain.Entities;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Mocks;
 
 namespace _116.Storage.TestData.Factories;
 
@@ -31,12 +28,6 @@ public static class FileReferenceDtoFactory
     public static FileReferenceDto CreateJpeg() => FileFactory.CreateJpeg().ToFileReferenceDto();
 
     /// <summary>
-    /// Creates a PNG reference.
-    /// </summary>
-    /// <returns>The reference.</returns>
-    public static FileReferenceDto CreatePng() => FileFactory.CreatePng().ToFileReferenceDto();
-
-    /// <summary>
     /// Creates an image reference.
     /// </summary>
     /// <returns>The reference.</returns>
@@ -55,14 +46,6 @@ public static class FileReferenceDtoFactory
     /// <returns>The reference.</returns>
     public static FileReferenceDto CreateWithStorageUrl(string storageUrl) =>
         FileFactory.CreateWithStorageUrl(storageUrl).ToFileReferenceDto();
-
-    /// <summary>
-    /// Creates a reference with the given storage key.
-    /// </summary>
-    /// <param name="storageKey">The provider handle.</param>
-    /// <returns>The reference.</returns>
-    public static FileReferenceDto CreateWithStorageKey(string storageKey) =>
-        FileFactory.CreateWithStorageKey(storageKey).ToFileReferenceDto();
 
     /// <summary>
     /// Creates a reference carrying the given colours.
