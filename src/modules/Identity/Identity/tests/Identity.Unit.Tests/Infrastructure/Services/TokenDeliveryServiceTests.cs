@@ -4,6 +4,7 @@ using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Constants;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Services;
+using _116.Identity.TestData.Mocks.Services;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
 using Moq;
@@ -28,7 +29,7 @@ public class TokenDeliveryServiceTests : IDisposable
         _originalEnvironment = Environment.GetEnvironmentVariable(AspNetCoreEnvVar);
         Environment.SetEnvironmentVariable(AspNetCoreEnvVar, "Development");
         _httpContextAccessorMock = new Mock<IHttpContextAccessor>();
-        _sessionMetadataServiceMock = new Mock<ISessionMetadataService>();
+        _sessionMetadataServiceMock = MockSessionMetadataService.Create();
         _sut = new TokenDeliveryService(_httpContextAccessorMock.Object, _sessionMetadataServiceMock.Object);
     }
 
