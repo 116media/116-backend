@@ -60,6 +60,7 @@
         <ProjectReference Include="../../src/modules/Content/Content/tests/Content.TestData/Content.TestData.csproj" />
         <ProjectReference Include="../../src/modules/Identity/Identity/tests/Identity.TestData/Identity.TestData.csproj" />
         <ProjectReference Include="../../src/modules/Storage/Storage/tests/Storage.TestData/Storage.TestData.csproj" />
+        <ProjectReference Include="../../src/modules/Mailer/Mailer/tests/Mailer.TestData/Mailer.TestData.csproj" />
         <ProjectReference Include="../Fixtures/Fixtures.csproj" />
         <ProjectReference Include="../TestData/TestData.csproj" />
     </ItemGroup>
