@@ -4,9 +4,8 @@ using _116.Mailer.Application.Shared.Errors;
 using _116.Mailer.Application.Shared.Errors.Messages;
 using _116.Mailer.Application.Shared.Persistence;
 using _116.Mailer.Application.Shared.Repositories;
-using _116.Mailer.Contracts.Domain.Enums;
 using _116.Mailer.Domain.Entities;
-using _116.Mailer.TestData.Builders.Entities;
+using _116.Mailer.TestData.Factories;
 using _116.Tests.TestData.Helpers;
 using AwesomeAssertions;
 using Moq;
@@ -26,17 +25,6 @@ public class PublicMarkNotificationReadHandlerTests
     private readonly Mock<INotificationRepository> _repository = new();
     private readonly Mock<IMailerUnitOfWork> _unitOfWork = new();
 
-    private static NotificationEntity CreateNotification(Guid userId)
-    {
-        return new NotificationBuilder()
-            .WithId(Guid.NewGuid())
-            .WithUserId(userId)
-            .WithType(EnumNotificationType.PasswordChanged)
-            .WithContent("Password changed", "Your password was changed.")
-            .WithLinkPath(null)
-            .Build();
-    }
-
     private PublicMarkNotificationReadHandler CreateHandler()
     {
         return new PublicMarkNotificationReadHandler(_repository.Object, _unitOfWork.Object, Errors);
@@ -46,7 +34,7 @@ public class PublicMarkNotificationReadHandlerTests
     public async Task Handle_AnUnreadOwnNotification_ShouldMarkItReadAndCommit()
     {
         var userId = Guid.NewGuid();
-        NotificationEntity notification = CreateNotification(userId);
+        NotificationEntity notification = NotificationFactory.CreatePasswordChanged(userId);
         _repository
             .Setup(r => r.GetForUserAsync(notification.Id, userId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(notification);
@@ -63,7 +51,7 @@ public class PublicMarkNotificationReadHandlerTests
     public async Task Handle_AnAlreadyReadNotification_ShouldSucceedWithoutCommitting()
     {
         var userId = Guid.NewGuid();
-        NotificationEntity notification = CreateNotification(userId);
+        NotificationEntity notification = NotificationFactory.CreatePasswordChanged(userId);
         var originalReadTime = new DateTime(2026, 8, 17, 12, 0, 0, DateTimeKind.Utc);
         notification.MarkRead(originalReadTime);
         _repository
