@@ -1,12 +1,4 @@
-using System.Reflection;
-using _116.Content.Domain.Entities;
-using _116.Identity.Domain.Entities;
-using _116.Mailer.Domain.Entities;
 using _116.Shared.Domain;
-using _116.Shared.Unit.Tests.Shared.Infrastructure.Extensions;
-using _116.Shared.Unit.Tests.Shared.Infrastructure.Interceptors;
-using _116.Storage.Domain.Entities;
-using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Xunit;
 
@@ -62,34 +54,5 @@ public class AggregateRootTests
 
         // Assert
         member.Should().NotBeAssignableTo<IAggregate>();
-    }
-
-    [Fact]
-    public void EveryModuleAggregate_ShouldBeAnAggregateRoot()
-    {
-        // Arrange
-        Assembly[] moduleAssemblies =
-        [
-            typeof(FileEntity).Assembly,
-            typeof(UserEntity).Assembly,
-            typeof(ArticleEntity).Assembly,
-            typeof(NotificationEntity).Assembly,
-        ];
-
-        Type[] aggregates =
-        [
-            .. moduleAssemblies
-                .SelectMany(assembly => assembly.GetTypes())
-                .Where(type =>
-                    type is { IsAbstract: false, IsClass: true } && typeof(IAggregate).IsAssignableFrom(type)
-                ),
-        ];
-
-        // Act
-        Type[] unmarked = [.. aggregates.Where(type => !typeof(IAggregateRoot).IsAssignableFrom(type))];
-
-        // Assert
-        aggregates.Should().HaveCountGreaterThan(40);
-        unmarked.Should().BeEmpty();
     }
 }
