@@ -13,7 +13,7 @@ namespace _116.Mailer.Domain.Entities;
 /// orders by <c>CreatedAt</c> descending.
 /// </para>
 /// </summary>
-public class NotificationEntity : Aggregate<Guid>
+public partial class NotificationEntity : Aggregate<Guid>
 {
     /// <summary>
     /// The recipient platform user. A bare Identity-owned Guid without a
@@ -84,22 +84,5 @@ public class NotificationEntity : Aggregate<Guid>
             LinkPath = linkPath,
             ReadAt = null,
         };
-    }
-
-    /// <summary>
-    /// Marks the notification read. Idempotent: marking an already read
-    /// notification is a no-op that keeps the original read time.
-    /// </summary>
-    /// <param name="now">The current UTC time.</param>
-    /// <returns>True when the notification transitioned to read; false when it already was.</returns>
-    public bool MarkRead(DateTime now)
-    {
-        if (ReadAt is not null)
-        {
-            return false;
-        }
-
-        ReadAt = now;
-        return true;
     }
 }

@@ -5,7 +5,7 @@ namespace _116.Content.Domain.Entities;
 /// <summary>
 /// Junction entity linking a playlist to a video, with display sort order.
 /// </summary>
-public class PlaylistVideoEntity : Entity<Guid>
+public partial class PlaylistVideoEntity : Entity<Guid>
 {
     /// <summary>
     /// The playlist this entry belongs to.
@@ -42,10 +42,4 @@ public class PlaylistVideoEntity : Entity<Guid>
             SortOrder = sortOrder,
         };
     }
-
-    /// <summary>
-    /// Updates the display sort order of this video within the playlist.
-    /// </summary>
-    /// <param name="sortOrder">The new sort order value.</param>
-    public void UpdateSortOrder(int sortOrder) => SortOrder = sortOrder;
 }

@@ -36,7 +36,7 @@ public class OtpIssuedEmailHandler(
             return;
         }
 
-        AuthorDto? user = await userLookupService.GetAuthorInfoByIdAsync(
+        UserProfileDto? user = await userLookupService.GetUserProfileByIdAsync(
             userId: domainEvent.UserId,
             ct: cancellationToken
         );

@@ -8,7 +8,6 @@
         <InternalsVisibleTo Include="Mailer.Infrastructure" />
         <InternalsVisibleTo Include="Mailer.Unit.Tests" />
         <InternalsVisibleTo Include="Mailer.Integration.Tests" />
-        <InternalsVisibleTo Include="Fixtures" />
     </ItemGroup>
 
     <ItemGroup>

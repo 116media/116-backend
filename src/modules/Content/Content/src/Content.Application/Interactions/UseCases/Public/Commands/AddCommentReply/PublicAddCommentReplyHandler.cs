@@ -22,7 +22,7 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.AddComm
 /// <param name="articleCommentRepository">Repository for article comment data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="userLookup">Cross-module service for resolving the replier's profile.</param>
-/// <param name="fileStorage">Core's storage contract.</param>
+/// <param name="fileStorage">Storage's file contract.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class PublicAddCommentReplyHandler(
     IArticleCommentRepository articleCommentRepository,
@@ -85,7 +85,7 @@ public class PublicAddCommentReplyHandler(
     /// <returns>The resolved author DTO, or null.</returns>
     private async Task<PublicAuthorDto?> ResolveAuthorAsync(Guid userId, CancellationToken cancellationToken)
     {
-        AuthorDto? info = await userLookup.GetAuthorInfoByIdAsync(userId: userId, ct: cancellationToken);
+        UserProfileDto? info = await userLookup.GetUserProfileByIdAsync(userId: userId, ct: cancellationToken);
 
         if (info is null)
         {

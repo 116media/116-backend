@@ -11,7 +11,7 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetOwnAr
 /// Handles the <see cref="PublicGetOwnArticleBookmarksQuery" /> to retrieve the user's bookmarked articles.
 /// </summary>
 /// <param name="articleInteractionRepository">Repository for article interaction data access operations.</param>
-/// <param name="fileStorage">Core's storage contract.</param>
+/// <param name="fileStorage">Storage's file contract.</param>
 public class PublicGetOwnArticleBookmarksHandler(
     IArticleInteractionRepository articleInteractionRepository,
     IFileStorageService fileStorage,

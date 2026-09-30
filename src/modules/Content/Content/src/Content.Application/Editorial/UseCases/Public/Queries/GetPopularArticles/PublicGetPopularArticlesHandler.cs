@@ -12,7 +12,7 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPopularA
 /// published articles ranked by a weighted engagement score.
 /// </summary>
 /// <param name="articleRepository">Repository for article data access operations.</param>
-/// <param name="fileStorage">Core's storage contract.</param>
+/// <param name="fileStorage">Storage's file contract.</param>
 public class PublicGetPopularArticlesHandler(
     IArticleRepository articleRepository,
     IFileStorageService fileStorage,

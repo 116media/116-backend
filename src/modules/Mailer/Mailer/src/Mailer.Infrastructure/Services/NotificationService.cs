@@ -44,7 +44,7 @@ public class NotificationService(
     )
     {
         string locale =
-            (await userLookupService.GetAuthorInfoByIdAsync(userId: userId, ct: cancellationToken))?.PreferredLocale
+            (await userLookupService.GetUserProfileByIdAsync(userId: userId, ct: cancellationToken))?.PreferredLocale
             ?? LocaleConstants.DefaultLocale;
 
         RenderedNotification rendered = renderer.Render(type, tokens, locale);

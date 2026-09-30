@@ -19,7 +19,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Queries.GetArticleBy
 /// </summary>
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="userLookup">Cross-module service for resolving author profiles.</param>
-/// <param name="fileStorage">Core's storage contract.</param>
+/// <param name="fileStorage">Storage's file contract.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class AdminGetArticleByIdHandler(
     IArticleRepository articleRepository,
@@ -47,7 +47,7 @@ public class AdminGetArticleByIdHandler(
             cancellationToken
         );
 
-        AuthorDto? authorInfo = await userLookup.GetAuthorInfoByIdAsync(
+        UserProfileDto? authorInfo = await userLookup.GetUserProfileByIdAsync(
             userId: article.AuthorId,
             ct: cancellationToken
         );

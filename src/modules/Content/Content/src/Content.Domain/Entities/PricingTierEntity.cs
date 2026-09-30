@@ -11,7 +11,7 @@ namespace _116.Content.Domain.Entities;
 /// Represents an add-on service fee tier used to price category content (e.g., "base_upload", "social_boost").
 /// Pricing tiers are the building blocks of every category's price list.
 /// </summary>
-public class PricingTierEntity : Aggregate<Guid>
+public partial class PricingTierEntity : Aggregate<Guid>
 {
     /// <summary>
     /// Name of the pricing tier (e.g., "base_upload", "social_boost").
@@ -59,56 +59,5 @@ public class PricingTierEntity : Aggregate<Guid>
         pricingTier.AddDomainEvent(new PricingTierChangedEvent(PricingTierId: id));
 
         return pricingTier;
-    }
-
-    /// <summary>
-    /// Updates the name and description of this pricing tier.
-    /// </summary>
-    /// <param name="name">The new name for the pricing tier.</param>
-    /// <param name="description">The new description for the pricing tier.</param>
-    public void Update(string name, string description)
-    {
-        if (string.IsNullOrWhiteSpace(value: name))
-        {
-            throw new ContentRuleException(ContentRuleCodes.PricingTierNameRequired);
-        }
-
-        Name = name;
-        Description = description;
-        AddDomainEvent(new PricingTierChangedEvent(PricingTierId: Id));
-    }
-
-    /// <summary>
-    /// Activates the pricing tier, making it available for category pricing configuration.
-    /// </summary>
-    /// <returns>True if the pricing tier was activated, false if already active.</returns>
-    public bool Activate()
-    {
-        if (IsActive)
-        {
-            return false;
-        }
-
-        IsActive = true;
-        AddDomainEvent(new PricingTierChangedEvent(PricingTierId: Id));
-
-        return true;
-    }
-
-    /// <summary>
-    /// Deactivates the pricing tier, removing it from the category pricing configuration form.
-    /// </summary>
-    /// <returns>True if the pricing tier was deactivated, false if already inactive.</returns>
-    public bool Deactivate()
-    {
-        if (!IsActive)
-        {
-            return false;
-        }
-
-        IsActive = false;
-        AddDomainEvent(new PricingTierChangedEvent(PricingTierId: Id));
-
-        return true;
     }
 }

@@ -15,7 +15,7 @@ namespace _116.Storage.Unit.Tests.Infrastructure.Services;
 public class UrlSafetyGuardTests
 {
     private static UrlSafetyGuard Guard(string environmentName = "Production") =>
-        new(new TestEnvironment(environmentName), TestErrorsFactory.CreateCoreI18n());
+        new(new TestEnvironment(environmentName), TestErrorsFactory.CreateStorageI18n());
 
     [Theory]
     [InlineData("https://127.0.0.1/avatar.png")]

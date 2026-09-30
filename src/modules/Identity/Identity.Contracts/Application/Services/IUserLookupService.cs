@@ -25,8 +25,9 @@ public interface IUserLookupService
     Task<string?> GetUserNameByIdAsync(Guid userId, CancellationToken ct = default);
 
     /// <summary>
-    /// Resolves the full author profile for the given user ID.
-    /// Includes user name, email, avatar URL, and primary role.
+    /// Resolves the full profile for the given user ID: name, email, avatar and primary role.
+    /// Prefer <see cref="GetUserNameByIdAsync" /> when only the name is needed, since this reads
+    /// the role graph as well.
     /// </summary>
     /// <param name="userId">
     /// The identity user UUID to look up.
@@ -35,12 +36,12 @@ public interface IUserLookupService
     /// Cancellation token.
     /// </param>
     /// <returns>
-    /// The author info if found; otherwise <c>null</c>.
+    /// The profile if found; otherwise <c>null</c>.
     /// </returns>
-    Task<AuthorDto?> GetAuthorInfoByIdAsync(Guid userId, CancellationToken ct = default);
+    Task<UserProfileDto?> GetUserProfileByIdAsync(Guid userId, CancellationToken ct = default);
 
     /// <summary>
-    /// Resolves author profiles for a set of user IDs in a single query.
+    /// Resolves profiles for a set of user IDs in a single query.
     /// </summary>
     /// <param name="userIds">
     /// The identity user UUIDs to look up. Duplicates and unknown IDs are ignored.
@@ -49,10 +50,10 @@ public interface IUserLookupService
     /// Cancellation token.
     /// </param>
     /// <returns>
-    /// A dictionary keyed by user ID containing the resolved author info.
+    /// A dictionary keyed by user ID containing the resolved profiles.
     /// IDs that do not match a user are absent from the result.
     /// </returns>
-    Task<IReadOnlyDictionary<Guid, AuthorDto>> GetAuthorInfosByIdsAsync(
+    Task<IReadOnlyDictionary<Guid, UserProfileDto>> GetUserProfilesByIdsAsync(
         IReadOnlyCollection<Guid> userIds,
         CancellationToken ct = default
     );

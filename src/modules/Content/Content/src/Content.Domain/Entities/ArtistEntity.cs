@@ -1,9 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using System.Globalization;
-using System.Text;
-using System.Text.RegularExpressions;
 using _116.Content.Domain.Constants;
-using _116.Content.Domain.Enums;
 using _116.Content.Domain.Events;
 using _116.Content.Domain.Exceptions;
 using _116.Content.Domain.StateMachines;
@@ -89,7 +85,7 @@ public partial class ArtistEntity : Aggregate<Guid>
     public string? Hometown { get; private set; }
 
     /// <summary>
-    /// ID of the uploaded avatar file tracked in the Core module. Null until uploaded.
+    /// ID of the uploaded avatar file tracked in the Storage module. Null until uploaded.
     /// </summary>
     public Guid? AvatarFileId { get; private set; }
 

@@ -9,7 +9,7 @@ namespace _116.Content.Domain.Entities;
 /// <see cref="LyricsTranslationRevisionEntity" />, they never create a second row for the same
 /// language.
 /// </summary>
-public class LyricsTranslationEntity : Aggregate<Guid>
+public partial class LyricsTranslationEntity : Aggregate<Guid>
 {
     /// <summary>
     /// The lyrics page this translation belongs to.
@@ -52,15 +52,5 @@ public class LyricsTranslationEntity : Aggregate<Guid>
             Text = text,
             Source = EnumTranslationSource.Ai,
         };
-    }
-
-    /// <summary>
-    /// Applies an accepted community revision's text as the new published translation.
-    /// </summary>
-    /// <param name="newText">The proposed text of the accepted revision.</param>
-    public void ApplyAcceptedRevision(string newText)
-    {
-        Text = newText;
-        Source = EnumTranslationSource.Community;
     }
 }

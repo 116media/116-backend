@@ -25,7 +25,7 @@ public class PaymentDtoFactory(IMapper mapper, IUserLookupService userLookup, IC
         CancellationToken ct = default
     )
     {
-        IReadOnlyDictionary<Guid, AuthorDto> verifiers = await ResolveVerifiersAsync([payment], ct);
+        IReadOnlyDictionary<Guid, UserProfileDto> verifiers = await ResolveVerifiersAsync([payment], ct);
 
         return payment.ToPaymentDto(mapper, verifiers, proofFile);
     }
@@ -36,7 +36,7 @@ public class PaymentDtoFactory(IMapper mapper, IUserLookupService userLookup, IC
         CancellationToken ct = default
     )
     {
-        IReadOnlyDictionary<Guid, AuthorDto> verifiers = await ResolveVerifiersAsync(
+        IReadOnlyDictionary<Guid, UserProfileDto> verifiers = await ResolveVerifiersAsync(
             [.. orders.Select(order => order.Payment!)],
             ct
         );
@@ -51,12 +51,12 @@ public class PaymentDtoFactory(IMapper mapper, IUserLookupService userLookup, IC
     /// <param name="payments">The payments whose verifiers to resolve.</param>
     /// <param name="ct">Token to observe for cancellation requests.</param>
     /// <returns>The verifiers, keyed by user id.</returns>
-    private Task<IReadOnlyDictionary<Guid, AuthorDto>> ResolveVerifiersAsync(
+    private Task<IReadOnlyDictionary<Guid, UserProfileDto>> ResolveVerifiersAsync(
         IReadOnlyList<ContentPaymentEntity> payments,
         CancellationToken ct
     )
     {
-        return userLookup.GetAuthorInfosByIdsAsync(
+        return userLookup.GetUserProfilesByIdsAsync(
             payments.Where(p => p.VerifiedById.HasValue).Select(p => p.VerifiedById!.Value).Distinct().ToList(),
             ct
         );

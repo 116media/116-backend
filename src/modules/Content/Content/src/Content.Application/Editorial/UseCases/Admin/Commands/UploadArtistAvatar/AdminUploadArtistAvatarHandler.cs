@@ -12,7 +12,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadArtis
 /// <summary>
 /// Handles the <see cref="AdminUploadArtistAvatarCommand" /> to upload or replace an artist
 /// profile's avatar image. The avatar file is tracked via <see cref="FileReferenceDto" /> in
-/// the Core module.
+/// the Storage module.
 /// </summary>
 /// <param name="artistRepository">Repository for artist profile data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>

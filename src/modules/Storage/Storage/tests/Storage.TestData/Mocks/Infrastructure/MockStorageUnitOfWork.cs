@@ -6,7 +6,7 @@ namespace _116.Storage.TestData.Mocks.Infrastructure;
 /// <summary>
 /// Provides mock setup helpers for <see cref="IStorageUnitOfWork"/>.
 /// </summary>
-public static class MockCoreUnitOfWork
+public static class MockStorageUnitOfWork
 {
     /// <summary>
     /// Creates a new mock instance of IStorageUnitOfWork.

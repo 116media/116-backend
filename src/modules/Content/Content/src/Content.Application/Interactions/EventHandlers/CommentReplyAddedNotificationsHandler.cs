@@ -72,7 +72,7 @@ public class CommentReplyAddedNotificationsHandler(
             return;
         }
 
-        AuthorDto? parentAuthor = await userLookupService.GetAuthorInfoByIdAsync(
+        UserProfileDto? parentAuthor = await userLookupService.GetUserProfileByIdAsync(
             userId: parent.UserId,
             ct: cancellationToken
         );

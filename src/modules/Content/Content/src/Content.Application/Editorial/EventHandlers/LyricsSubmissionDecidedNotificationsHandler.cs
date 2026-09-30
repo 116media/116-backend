@@ -40,7 +40,7 @@ public class LyricsSubmissionDecidedNotificationsHandler(
     /// <inheritdoc />
     public async Task Handle(LyricsSubmissionDecidedEvent domainEvent, CancellationToken cancellationToken = default)
     {
-        AuthorDto? submitter = await userLookupService.GetAuthorInfoByIdAsync(
+        UserProfileDto? submitter = await userLookupService.GetUserProfileByIdAsync(
             userId: domainEvent.SubmittedByUserId,
             ct: cancellationToken
         );

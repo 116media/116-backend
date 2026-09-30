@@ -20,8 +20,8 @@
 
     <ItemGroup>
         <InternalsVisibleTo Include="Shared.Unit.Tests" />
-        <InternalsVisibleTo Include="Shared.Integration.Tests" />
         <InternalsVisibleTo Include="Fixtures" />
+        <InternalsVisibleTo Include="Shared.Integration.Tests" />
     </ItemGroup>
 
     <ItemGroup>

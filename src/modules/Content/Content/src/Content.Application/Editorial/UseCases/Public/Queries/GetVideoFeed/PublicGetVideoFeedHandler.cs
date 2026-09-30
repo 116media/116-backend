@@ -21,7 +21,7 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetVideoFee
 /// <param name="contentTypeRepository">Repository resolving the pinned categories' content types.</param>
 /// <param name="categoryDtoFactory">Builds category projections with their lookups resolved.</param>
 /// <param name="videoRepository">Repository for video data access operations.</param>
-/// <param name="fileStorage">Core's storage contract.</param>
+/// <param name="fileStorage">Storage's file contract.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class PublicGetVideoFeedHandler(
     ICategoryRepository categoryRepository,

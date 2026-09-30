@@ -12,7 +12,7 @@ namespace _116.Storage.Infrastructure.Repositories;
 /// Implementation of <see cref="IFileRepository" /> using Entity Framework Core. Uploads live in
 /// <see cref="Application.Shared.Services.IFileUploadService" />.
 /// </summary>
-/// <param name="context">The core database context.</param>
+/// <param name="context">The Storage database context.</param>
 /// <param name="timeProvider">The clock the lifecycle stamps are read from.</param>
 public class FileRepository(StorageDbContext context, TimeProvider timeProvider)
     : StorageRepository<FileEntity>(context),

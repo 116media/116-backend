@@ -59,7 +59,7 @@ public class StorageModuleTests : IDisposable
     }
 
     [Fact]
-    public void AddCoreModule_ShouldRegisterCoreDbContext()
+    public void AddStorageModule_ShouldRegisterStorageDbContext()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -77,7 +77,7 @@ public class StorageModuleTests : IDisposable
         services.AddSingleton(HostEnvironment("Testing"));
 
         // Act
-        services.AddCoreModule(HostEnvironment("Testing"));
+        services.AddStorageModule(HostEnvironment("Testing"));
         ServiceProvider serviceProvider = services.BuildServiceProvider();
 
         // Assert
@@ -86,7 +86,7 @@ public class StorageModuleTests : IDisposable
     }
 
     [Fact]
-    public void AddCoreModule_ShouldRegisterCoreUnitOfWork()
+    public void AddStorageModule_ShouldRegisterStorageUnitOfWork()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -104,7 +104,7 @@ public class StorageModuleTests : IDisposable
         services.AddSingleton(HostEnvironment("Testing"));
 
         // Act
-        services.AddCoreModule(HostEnvironment("Testing"));
+        services.AddStorageModule(HostEnvironment("Testing"));
         ServiceProvider serviceProvider = services.BuildServiceProvider();
 
         // Assert
@@ -114,7 +114,7 @@ public class StorageModuleTests : IDisposable
     }
 
     [Fact]
-    public void AddCoreModule_ShouldRegisterFileRepository()
+    public void AddStorageModule_ShouldRegisterFileRepository()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -132,7 +132,7 @@ public class StorageModuleTests : IDisposable
         services.AddSingleton(HostEnvironment("Testing"));
 
         // Act
-        services.AddCoreModule(HostEnvironment("Testing"));
+        services.AddStorageModule(HostEnvironment("Testing"));
         ServiceProvider serviceProvider = services.BuildServiceProvider();
 
         // Assert
@@ -142,7 +142,7 @@ public class StorageModuleTests : IDisposable
     }
 
     [Fact]
-    public void AddCoreModule_ShouldRegisterFileService()
+    public void AddStorageModule_ShouldRegisterFileService()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -160,7 +160,7 @@ public class StorageModuleTests : IDisposable
         services.AddSingleton(HostEnvironment("Testing"));
 
         // Act
-        services.AddCoreModule(HostEnvironment("Testing"));
+        services.AddStorageModule(HostEnvironment("Testing"));
         ServiceProvider serviceProvider = services.BuildServiceProvider();
 
         // Assert
@@ -170,7 +170,7 @@ public class StorageModuleTests : IDisposable
     }
 
     [Fact]
-    public void AddCoreModule_ShouldRegisterCloudinaryService()
+    public void AddStorageModule_ShouldRegisterCloudinaryService()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -188,7 +188,7 @@ public class StorageModuleTests : IDisposable
         services.AddSingleton(HostEnvironment("Testing"));
 
         // Act
-        services.AddCoreModule(HostEnvironment("Testing"));
+        services.AddStorageModule(HostEnvironment("Testing"));
         ServiceProvider serviceProvider = services.BuildServiceProvider();
 
         // Assert
@@ -198,13 +198,13 @@ public class StorageModuleTests : IDisposable
     }
 
     [Fact]
-    public void AddCoreModule_ShouldReturnServiceCollection()
+    public void AddStorageModule_ShouldReturnServiceCollection()
     {
         // Arrange
         _services.AddSingleton(_cloudinarySettings);
 
         // Act
-        IServiceCollection result = _services.AddCoreModule(HostEnvironment("Testing"));
+        IServiceCollection result = _services.AddStorageModule(HostEnvironment("Testing"));
 
         // Assert
         result.Should().NotBeNull();
@@ -212,7 +212,7 @@ public class StorageModuleTests : IDisposable
     }
 
     [Fact]
-    public void AddCoreModule_ShouldRegisterHttpClient()
+    public void AddStorageModule_ShouldRegisterHttpClient()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -221,7 +221,7 @@ public class StorageModuleTests : IDisposable
         services.AddSingleton(_cloudinarySettings);
 
         // Act
-        services.AddCoreModule(HostEnvironment("Testing"));
+        services.AddStorageModule(HostEnvironment("Testing"));
         ServiceProvider serviceProvider = services.BuildServiceProvider();
 
         // Assert
@@ -233,11 +233,11 @@ public class StorageModuleTests : IDisposable
     }
 
     [Fact]
-    public void AddCoreModule_ShouldRegisterAllServices()
+    public void AddStorageModule_ShouldRegisterAllServices()
     {
         // Arrange & Act
         _services.AddSingleton(_cloudinarySettings);
-        IServiceCollection result = _services.AddCoreModule(HostEnvironment("Testing"));
+        IServiceCollection result = _services.AddStorageModule(HostEnvironment("Testing"));
 
         ServiceProvider serviceProvider = _services.BuildServiceProvider();
 

@@ -13,7 +13,7 @@ namespace _116.Content.Application.Editorial.Factories;
 /// and the derived published-lyrics fact.
 /// </summary>
 /// <param name="mapper">Injected IMapper instance.</param>
-/// <param name="fileStorage">Core's storage contract.</param>
+/// <param name="fileStorage">Storage's file contract.</param>
 /// <param name="videoRepository">Repository computing the published-lyrics fact.</param>
 /// <param name="contentLookupFactory">Resolves the categories, customers and promotion levels named.</param>
 public class VideoDtoFactory(

@@ -41,9 +41,9 @@ public class OtpIssuedEmailHandlerTests
     private void SetupRecipient(string? email)
     {
         _userLookupMock
-            .Setup(x => x.GetAuthorInfoByIdAsync(UserId, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetUserProfileByIdAsync(UserId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(
-                new AuthorDto(
+                new UserProfileDto(
                     UserName: "Fan",
                     Email: email,
                     AvatarFileId: null,

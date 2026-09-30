@@ -16,7 +16,7 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublicSh
 /// </summary>
 /// <param name="shortVideoRepository">Repository for short video data access operations.</param>
 /// <param name="userLookup">Service for resolving the author profile.</param>
-/// <param name="fileStorage">Core's storage contract.</param>
+/// <param name="fileStorage">Storage's file contract.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class PublicGetPublicShortBySlugHandler(

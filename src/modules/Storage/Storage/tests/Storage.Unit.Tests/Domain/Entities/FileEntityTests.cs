@@ -19,7 +19,7 @@ public class FileEntityTests
 {
     private static readonly DateTime Now = new(2026, 9, 11, 12, 0, 0, DateTimeKind.Utc);
 
-    private readonly StorageI18n _coreErrors = TestErrorsFactory.CreateCoreI18n();
+    private readonly StorageI18n _coreErrors = TestErrorsFactory.CreateStorageI18n();
 
     #region Create Tests
 

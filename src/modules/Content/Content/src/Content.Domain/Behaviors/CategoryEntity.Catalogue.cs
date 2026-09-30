@@ -1,11 +1,6 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using _116.Content.Domain.Constants;
 using _116.Content.Domain.Events;
 using _116.Content.Domain.Exceptions;
 using _116.Content.Domain.StateMachines;
-using _116.Content.Domain.ValueObjects;
-using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
 

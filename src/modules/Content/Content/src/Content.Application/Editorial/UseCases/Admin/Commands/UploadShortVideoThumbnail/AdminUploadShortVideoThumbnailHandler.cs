@@ -10,7 +10,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadShort
 
 /// <summary>
 /// Handles the <see cref="AdminUploadShortVideoThumbnailCommand" /> to upload or replace a short video thumbnail.
-/// The thumbnail file is tracked via <see cref="FileReferenceDto" /> in the Core module.
+/// The thumbnail file is tracked via <see cref="FileReferenceDto" /> in the Storage module.
 /// </summary>
 /// <param name="shortVideoRepository">Repository for short video data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>

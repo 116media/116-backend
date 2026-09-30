@@ -13,7 +13,7 @@ namespace _116.Content.Application.Interactions.Factories;
 /// out of the projection — the rule the filtered include used to carry.
 /// </summary>
 /// <param name="mapper">Injected IMapper instance.</param>
-/// <param name="fileStorage">Core's storage contract.</param>
+/// <param name="fileStorage">Storage's file contract.</param>
 /// <param name="videoRepository">Repository resolving the playlist's published videos.</param>
 /// <param name="categoryRepository">Repository resolving those videos' categories.</param>
 public class PlaylistDtoFactory(

@@ -12,7 +12,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Queries.GetAllLyrics
 /// Handles the <see cref="AdminGetAllLyricsQuery" /> to retrieve a paginated list of lyrics pages.
 /// </summary>
 /// <param name="lyricsRepository">Repository for lyrics data access operations.</param>
-/// <param name="fileStorage">Core's storage contract.</param>
+/// <param name="fileStorage">Storage's file contract.</param>
 public class AdminGetAllLyricsHandler(
     ILyricsRepository lyricsRepository,
     IFileStorageService fileStorage,

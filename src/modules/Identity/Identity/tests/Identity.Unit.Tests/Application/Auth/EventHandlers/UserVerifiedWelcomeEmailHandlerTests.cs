@@ -35,8 +35,10 @@ public class UserVerifiedWelcomeEmailHandlerTests
         // Arrange
         var userId = Guid.NewGuid();
         _userLookupServiceMock
-            .Setup(x => x.GetAuthorInfoByIdAsync(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new AuthorDto("Fally", "fally@test.com", null, "Visitor", LocaleConstants.DefaultLocale));
+            .Setup(x => x.GetUserProfileByIdAsync(userId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(
+                new UserProfileDto("Fally", "fally@test.com", null, "Visitor", LocaleConstants.DefaultLocale)
+            );
 
         // Act
         await _handler.Handle(new UserVerifiedEvent(userId), CancellationToken.None);
@@ -63,8 +65,8 @@ public class UserVerifiedWelcomeEmailHandlerTests
         // Arrange
         var userId = Guid.NewGuid();
         _userLookupServiceMock
-            .Setup(x => x.GetAuthorInfoByIdAsync(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new AuthorDto("Fally", null, null, "Visitor", LocaleConstants.DefaultLocale));
+            .Setup(x => x.GetUserProfileByIdAsync(userId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new UserProfileDto("Fally", null, null, "Visitor", LocaleConstants.DefaultLocale));
 
         // Act
         await _handler.Handle(new UserVerifiedEvent(userId), CancellationToken.None);
@@ -79,8 +81,8 @@ public class UserVerifiedWelcomeEmailHandlerTests
         // Arrange
         var userId = Guid.NewGuid();
         _userLookupServiceMock
-            .Setup(x => x.GetAuthorInfoByIdAsync(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((AuthorDto?)null);
+            .Setup(x => x.GetUserProfileByIdAsync(userId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((UserProfileDto?)null);
 
         // Act
         await _handler.Handle(new UserVerifiedEvent(userId), CancellationToken.None);

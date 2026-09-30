@@ -12,7 +12,7 @@ namespace _116.Content.Domain.Entities;
 /// Represents a content discovery tag (e.g., "Fally Ipupa", "Kinshasa", "Afrobeats").
 /// Tags are the primary discovery mechanism for public users browsing content.
 /// </summary>
-public class TagEntity : Aggregate<Guid>
+public partial class TagEntity : Aggregate<Guid>
 {
     /// <summary>
     /// Display name of the tag (e.g., "Fally Ipupa", "Kinshasa").
@@ -62,39 +62,5 @@ public class TagEntity : Aggregate<Guid>
         tag.AddDomainEvent(new TagGraphChangedEvent(TagId: tag.Id));
 
         return tag;
-    }
-
-    /// <summary>
-    /// Updates the tag's name and slug.
-    /// </summary>
-    /// <param name="name">The new display name for the tag.</param>
-    /// <param name="slug">The new URL-safe slug for the tag.</param>
-    /// <exception cref="ContentRuleException">Thrown when name or slug are empty or whitespace.</exception>
-    public void Update(string name, string slug)
-    {
-        if (string.IsNullOrWhiteSpace(value: name))
-        {
-            throw new ContentRuleException(ContentRuleCodes.TagNameRequired);
-        }
-
-        if (string.IsNullOrWhiteSpace(value: slug))
-        {
-            throw new ContentRuleException(ContentRuleCodes.TagSlugRequired);
-        }
-
-        Name = name;
-        Slug = slug;
-
-        AddDomainEvent(new TagGraphChangedEvent(TagId: Id));
-    }
-
-    /// <summary>
-    /// Declares the tag's removal so post-commit consumers (the tags cache
-    /// invalidation) can act on the change. Called by the delete flow
-    /// immediately before the repository removal.
-    /// </summary>
-    public void MarkDeleted()
-    {
-        AddDomainEvent(new TagGraphChangedEvent(TagId: Id));
     }
 }

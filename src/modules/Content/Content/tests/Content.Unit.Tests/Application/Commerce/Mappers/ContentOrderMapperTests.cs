@@ -26,7 +26,8 @@ public class ContentOrderMapperTests : BaseContentHandlerTest, IDisposable
     /// <summary>
     /// An empty verifier map, for payments nobody has verified.
     /// </summary>
-    private static readonly IReadOnlyDictionary<Guid, AuthorDto> NoVerifiers = new Dictionary<Guid, AuthorDto>();
+    private static readonly IReadOnlyDictionary<Guid, UserProfileDto> NoVerifiers =
+        new Dictionary<Guid, UserProfileDto>();
 
     private readonly ContentDbContext _context;
     private readonly ContentOrderRepository _repository;

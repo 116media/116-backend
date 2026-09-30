@@ -163,13 +163,13 @@ public class PublicGetPublicShortsHandlerTests : BaseContentHandlerTest
         List<ShortVideoEntity> shorts = ShortVideoFactory.CreateMany(2);
         var query = new PublicGetPublicShortsQuery(PaginatedRequest: new PaginatedRequest(0, 10), Search: null);
 
-        Dictionary<Guid, AuthorDto> authors = shorts.ToDictionary(
+        Dictionary<Guid, UserProfileDto> authors = shorts.ToDictionary(
             shortVideo => shortVideo.AuthorId,
-            _ => new AuthorDto("kinix_editor", null, null, "Admin", LocaleConstants.DefaultLocale)
+            _ => new UserProfileDto("kinix_editor", null, null, "Admin", LocaleConstants.DefaultLocale)
         );
 
         _shortVideoRepositoryMock.SetupGetAllAsync(shorts, shorts.Count);
-        _userLookupMock.SetupGetAuthorInfosByIds(authors);
+        _userLookupMock.SetupGetUserProfilesByIds(authors);
 
         // Act
         PublicGetPublicShortsResult result = await _handler.Handle(query, CancellationToken.None);
@@ -178,6 +178,6 @@ public class PublicGetPublicShortsHandlerTests : BaseContentHandlerTest
         result
             .ShortVideos.Items.Should()
             .OnlyContain(dto => dto.Author != null && dto.Author.UserName == "kinix_editor");
-        _userLookupMock.VerifyGetAuthorInfosByIdsCalledOnce();
+        _userLookupMock.VerifyGetUserProfilesByIdsCalledOnce();
     }
 }

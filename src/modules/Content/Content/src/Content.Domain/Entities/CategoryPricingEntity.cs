@@ -9,7 +9,7 @@ namespace _116.Content.Domain.Entities;
 /// Represents a pricing tier assignment for a category, recording the price for a specific
 /// add-on service (e.g., "Artist Profile + base_upload = USD25").
 /// </summary>
-public class CategoryPricingEntity : Entity<Guid>
+public partial class CategoryPricingEntity : Entity<Guid>
 {
     /// <summary>
     /// The identifier of the category this pricing row belongs to.
@@ -54,19 +54,5 @@ public class CategoryPricingEntity : Entity<Guid>
             PriceUsd = priceUsd,
         };
         return pricing;
-    }
-
-    /// <summary>
-    /// Updates the price for this pricing tier within the category.
-    /// </summary>
-    /// <param name="priceUsd">The new price in USD (must be >= 0).</param>
-    internal void UpdatePrice(decimal priceUsd)
-    {
-        if (priceUsd < 0)
-        {
-            throw new ContentRuleException(ContentRuleCodes.CategoryPriceMustBeNonNegative);
-        }
-
-        PriceUsd = priceUsd;
     }
 }

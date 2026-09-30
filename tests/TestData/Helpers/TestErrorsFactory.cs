@@ -213,7 +213,7 @@ public static class TestErrorsFactory
     }
 
     /// <summary>
-    /// Creates a real <see cref="FileErrors"/> instance for use in Core file entity builders.
+    /// Creates a real <see cref="FileErrors"/> instance for use in Storage file entity builders.
     /// </summary>
     public static FileErrors CreateFileErrors()
     {
@@ -273,9 +273,9 @@ public static class TestErrorsFactory
     }
 
     /// <summary>
-    /// Creates a real <see cref="StorageI18n"/> instance for use in Core handler tests.
+    /// Creates a real <see cref="StorageI18n"/> instance for use in Storage handler tests.
     /// </summary>
-    public static StorageI18n CreateCoreI18n()
+    public static StorageI18n CreateStorageI18n()
     {
         return new StorageI18n(CreateFileErrors());
     }

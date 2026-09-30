@@ -16,7 +16,7 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Queries.GetOrderById;
 /// Handles the <see cref="AdminGetOrderByIdQuery" /> to retrieve a full order detail by identifier.
 /// </summary>
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
-/// <param name="fileStorage">Core's storage contract.</param>
+/// <param name="fileStorage">Storage's file contract.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 /// <param name="orderDtoFactory">Builds order projections with their lookups resolved.</param>
 /// <param name="orderDtoFactory">Builds order projections with their lookups resolved.</param>

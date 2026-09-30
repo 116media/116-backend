@@ -126,14 +126,14 @@ public static class ContentOrderMapper
     public static PaymentSummaryDto ToPaymentSummaryDto(
         this ContentOrderEntity order,
         IMapper mapper,
-        IReadOnlyDictionary<Guid, AuthorDto> verifiers,
+        IReadOnlyDictionary<Guid, UserProfileDto> verifiers,
         IReadOnlyDictionary<Guid, CustomerEntity> customers
     )
     {
         ContentPaymentEntity payment = order.Payment!;
         var dto = mapper.Map<PaymentSummaryDto>(payment);
         string? verifiedByUserName =
-            payment.VerifiedById is { } verifierId && verifiers.TryGetValue(verifierId, out AuthorDto? verifier)
+            payment.VerifiedById is { } verifierId && verifiers.TryGetValue(verifierId, out UserProfileDto? verifier)
                 ? verifier.UserName
                 : null;
 
@@ -154,13 +154,13 @@ public static class ContentOrderMapper
     public static PaymentDto ToPaymentDto(
         this ContentPaymentEntity entity,
         IMapper mapper,
-        IReadOnlyDictionary<Guid, AuthorDto> verifiers,
+        IReadOnlyDictionary<Guid, UserProfileDto> verifiers,
         FileDto? proofFile = null
     )
     {
         var dto = mapper.Map<PaymentDto>(entity);
         string? verifiedByUserName =
-            entity.VerifiedById is { } verifierId && verifiers.TryGetValue(verifierId, out AuthorDto? verifier)
+            entity.VerifiedById is { } verifierId && verifiers.TryGetValue(verifierId, out UserProfileDto? verifier)
                 ? verifier.UserName
                 : null;
 

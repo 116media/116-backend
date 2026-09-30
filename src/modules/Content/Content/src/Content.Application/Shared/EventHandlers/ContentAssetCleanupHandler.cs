@@ -20,7 +20,7 @@ namespace _116.Content.Application.Shared.EventHandlers;
 /// Failures are logged and tolerated by the publisher; the assets stay
 /// re-cleanable.
 /// </summary>
-/// <param name="fileStorage">Core's storage contract.</param>
+/// <param name="fileStorage">Storage's file contract.</param>
 /// <param name="articleRepository">Repository for article image rows.</param>
 /// <param name="unitOfWork">Unit of Work committing the soft deletions and the orphaned-row removal.</param>
 public class ContentAssetCleanupHandler(

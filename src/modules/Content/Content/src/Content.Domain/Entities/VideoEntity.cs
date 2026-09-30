@@ -1,7 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using _116.Content.Domain.Constants;
 using _116.Content.Domain.Enums;
-using _116.Content.Domain.Events;
 using _116.Content.Domain.Exceptions;
 using _116.Content.Domain.StateMachines;
 using _116.Content.Domain.ValueObjects;
@@ -65,7 +64,7 @@ public partial class VideoEntity : Aggregate<Guid>
     public string Description { get; private set; } = null!;
 
     /// <summary>
-    /// ID of the uploaded thumbnail file tracked in the Core module.
+    /// ID of the uploaded thumbnail file tracked in the Storage module.
     /// The thumbnail URL and storage key are resolved from the associated FileEntity.
     /// </summary>
     public Guid? ThumbnailFileId { get; private set; }

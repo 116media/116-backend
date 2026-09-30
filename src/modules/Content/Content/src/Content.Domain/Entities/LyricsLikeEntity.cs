@@ -8,7 +8,7 @@ namespace _116.Content.Domain.Entities;
 /// Records that a user has liked a lyrics page.
 /// Created when a user likes; removed when a user unlikes. Never updated.
 /// </summary>
-public class LyricsLikeEntity : Aggregate<Guid>
+public partial class LyricsLikeEntity : Aggregate<Guid>
 {
     /// <summary>
     /// The identity user UUID of the user who liked the lyrics page. No FK to identity schema by design.
@@ -41,15 +41,5 @@ public class LyricsLikeEntity : Aggregate<Guid>
         like.AddDomainEvent(new LyricsEngagedEvent(LyricsId: lyricsId, Kind: EnumEngagementKind.Like, Delta: 1));
 
         return like;
-    }
-
-    /// <summary>
-    /// Declares this like's removal so the post-commit engagement consumer
-    /// can decrement the lyrics page's cached like count.
-    /// Called by the removal path immediately before the row is removed.
-    /// </summary>
-    public void MarkRemoved()
-    {
-        AddDomainEvent(new LyricsEngagedEvent(LyricsId: LyricsId, Kind: EnumEngagementKind.Like, Delta: -1));
     }
 }

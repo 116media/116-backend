@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace _116.Storage.Infrastructure.Persistence;
 
 /// <summary>
-/// Entity Framework database context for the core module.
+/// Entity Framework database context for the storage module.
 /// Manages file entities and related core data within the "storage" schema.
 /// </summary>
 /// <param name="options">The database context configuration options</param>

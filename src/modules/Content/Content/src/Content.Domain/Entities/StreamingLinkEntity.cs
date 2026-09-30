@@ -14,7 +14,7 @@ namespace _116.Content.Domain.Entities;
 /// falls back to a generated search URL when no curated link exists.
 /// </para>
 /// </summary>
-public class StreamingLinkEntity : Aggregate<Guid>
+public partial class StreamingLinkEntity : Aggregate<Guid>
 {
     /// <summary>
     /// The album this link belongs to, when the release is an album. Mutually exclusive with
@@ -81,10 +81,4 @@ public class StreamingLinkEntity : Aggregate<Guid>
             Url = url,
         };
     }
-
-    /// <summary>
-    /// Replaces the curated deep link URL for this platform slot.
-    /// </summary>
-    /// <param name="url">The new curated deep link URL.</param>
-    public void UpdateUrl(string url) => Url = url;
 }

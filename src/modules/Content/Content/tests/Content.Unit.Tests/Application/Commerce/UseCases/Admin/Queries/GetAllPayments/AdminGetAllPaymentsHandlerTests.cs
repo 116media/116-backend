@@ -78,8 +78,8 @@ public class AdminGetAllPaymentsHandlerTests : BaseContentHandlerTest
         );
 
         Guid verifierId = payment.VerifiedById!.Value;
-        _userLookupMock.SetupGetAuthorInfosByIds(
-            new Dictionary<Guid, AuthorDto>
+        _userLookupMock.SetupGetUserProfilesByIds(
+            new Dictionary<Guid, UserProfileDto>
             {
                 [verifierId] = new(
                     TestConstants.User.ValidUserName,
@@ -107,7 +107,7 @@ public class AdminGetAllPaymentsHandlerTests : BaseContentHandlerTest
         // Assert
         result.Payments.Items.Should().ContainSingle();
         result.Payments.Items.First().VerifiedByUserName.Should().Be(TestConstants.User.ValidUserName);
-        _userLookupMock.VerifyGetAuthorInfosByIdsCalledOnce();
+        _userLookupMock.VerifyGetUserProfilesByIdsCalledOnce();
     }
 
     [Fact]

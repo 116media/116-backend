@@ -30,7 +30,7 @@ public class UserPasswordChangedNotificationsHandler(
     /// <inheritdoc />
     public async Task Handle(UserPasswordChangedEvent domainEvent, CancellationToken cancellationToken = default)
     {
-        AuthorDto? user = await userLookupService.GetAuthorInfoByIdAsync(
+        UserProfileDto? user = await userLookupService.GetUserProfileByIdAsync(
             userId: domainEvent.UserId,
             ct: cancellationToken
         );

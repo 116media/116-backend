@@ -19,7 +19,7 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetArtistBy
 /// <param name="videoRepository">Repository for video data access operations.</param>
 /// <param name="artistDtoFactory">Builds artist projections with their avatars resolved.</param>
 /// <param name="videoDtoFactory">Builds video projections with their thumbnails resolved.</param>
-/// <param name="fileStorage">Core's storage contract, for the lyrics listed alongside.</param>
+/// <param name="fileStorage">Storage's file contract, for the lyrics listed alongside.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class PublicGetArtistBySlugHandler(
     IArtistRepository artistRepository,

@@ -37,10 +37,10 @@ public class CrossContextTransactionTests(PostgresFixture db) : BaseRepositoryTe
         });
 
         // Assert
-        await using StorageDbContext verifyCore = CreateDbContext<StorageDbContext>();
+        await using StorageDbContext verifyStorage = CreateDbContext<StorageDbContext>();
         await using ContentDbContext verifyContent = CreateDbContext<ContentDbContext>();
 
-        (await verifyCore.Files.AnyAsync(f => f.Id == file.Id)).Should().BeTrue();
+        (await verifyStorage.Files.AnyAsync(f => f.Id == file.Id)).Should().BeTrue();
         (await verifyContent.Tags.AnyAsync(t => t.Id == tag.Id)).Should().BeTrue();
     }
 
@@ -69,10 +69,10 @@ public class CrossContextTransactionTests(PostgresFixture db) : BaseRepositoryTe
         // Assert
         await act.Should().ThrowAsync<InvalidOperationException>();
 
-        await using StorageDbContext verifyCore = CreateDbContext<StorageDbContext>();
+        await using StorageDbContext verifyStorage = CreateDbContext<StorageDbContext>();
         await using ContentDbContext verifyContent = CreateDbContext<ContentDbContext>();
 
-        (await verifyCore.Files.AnyAsync(f => f.Id == file.Id)).Should().BeFalse();
+        (await verifyStorage.Files.AnyAsync(f => f.Id == file.Id)).Should().BeFalse();
         (await verifyContent.Tags.AnyAsync(t => t.Id == tag.Id)).Should().BeFalse();
     }
 }

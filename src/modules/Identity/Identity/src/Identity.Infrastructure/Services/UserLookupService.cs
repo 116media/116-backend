@@ -1,6 +1,5 @@
 using _116.Identity.Contracts.Application.DTOs;
 using _116.Identity.Contracts.Application.Services;
-using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,55 +20,46 @@ public class UserLookupService(IdentityDbContext context) : IUserLookupService
     }
 
     /// <inheritdoc />
-    public async Task<AuthorDto?> GetAuthorInfoByIdAsync(Guid userId, CancellationToken ct = default)
+    public async Task<UserProfileDto?> GetUserProfileByIdAsync(Guid userId, CancellationToken ct = default)
     {
-        var user = await context
-            .Users.Include(u => u.UserRoles)
-                .ThenInclude(ur => ur.Role)
-            .FirstOrDefaultAsync(u => u.Id == userId, ct);
-
-        if (user is null)
-        {
-            return null;
-        }
-
-        return new AuthorDto(
-            user.UserName,
-            user.Email?.Value,
-            user.AvatarFileId,
-            user.UserRoles.Select(ur => ur.Role.Name).FirstOrDefault(),
-            user.PreferredLocale
-        );
+        return await context
+            .Users.Where(u => u.Id == userId)
+            .Select(u => new UserProfileDto(
+                u.UserName,
+                u.Email!.Value,
+                u.AvatarFileId,
+                u.UserRoles.Select(ur => ur.Role.Name).FirstOrDefault(),
+                u.PreferredLocale
+            ))
+            .FirstOrDefaultAsync(ct);
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyDictionary<Guid, AuthorDto>> GetAuthorInfosByIdsAsync(
+    public async Task<IReadOnlyDictionary<Guid, UserProfileDto>> GetUserProfilesByIdsAsync(
         IReadOnlyCollection<Guid> userIds,
         CancellationToken ct = default
     )
     {
         if (userIds.Count == 0)
         {
-            return new Dictionary<Guid, AuthorDto>();
+            return new Dictionary<Guid, UserProfileDto>();
         }
 
         Guid[] distinctIds = userIds.Distinct().ToArray();
 
-        List<UserEntity> users = await context
-            .Users.Include(u => u.UserRoles)
-                .ThenInclude(ur => ur.Role)
-            .Where(u => distinctIds.Contains(u.Id))
-            .ToListAsync(ct);
-
-        return users.ToDictionary(
-            user => user.Id,
-            user => new AuthorDto(
-                user.UserName,
-                user.Email?.Value,
-                user.AvatarFileId,
-                user.UserRoles.Select(ur => ur.Role.Name).FirstOrDefault(),
-                user.PreferredLocale
-            )
-        );
+        return await context
+            .Users.Where(u => distinctIds.Contains(u.Id))
+            .Select(u => new
+            {
+                u.Id,
+                Profile = new UserProfileDto(
+                    u.UserName,
+                    u.Email!.Value,
+                    u.AvatarFileId,
+                    u.UserRoles.Select(ur => ur.Role.Name).FirstOrDefault(),
+                    u.PreferredLocale
+                ),
+            })
+            .ToDictionaryAsync(row => row.Id, row => row.Profile, ct);
     }
 }

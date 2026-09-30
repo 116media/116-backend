@@ -15,7 +15,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateShort
 /// draft starts inactive (hidden from the feed) until a file is attached and it is activated.
 /// </summary>
 /// <param name="shortVideoRepository">Repository for short video data access operations.</param>
-/// <param name="fileStorage">Core's storage contract.</param>
+/// <param name="fileStorage">Storage's file contract.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>

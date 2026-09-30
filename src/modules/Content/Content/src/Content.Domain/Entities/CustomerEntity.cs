@@ -11,7 +11,7 @@ namespace _116.Content.Domain.Entities;
 /// Customers are entirely separate from platform visitor accounts (identity.users).
 /// A customer account must exist before an order can be opened for them.
 /// </summary>
-public class CustomerEntity : Aggregate<Guid>
+public partial class CustomerEntity : Aggregate<Guid>
 {
     /// <summary>
     /// Full name of the customer or contact person.
@@ -86,32 +86,5 @@ public class CustomerEntity : Aggregate<Guid>
             Company = company,
             Notes = notes,
         };
-    }
-
-    /// <summary>
-    /// Updates the customer's contact information.
-    /// </summary>
-    /// <param name="fullName">The new full name.</param>
-    /// <param name="email">The new email address.</param>
-    /// <param name="phone">The new optional phone number.</param>
-    /// <param name="company">The new optional company name.</param>
-    /// <param name="notes">The new optional internal notes.</param>
-    public void Update(string fullName, string email, string? phone, string? company, string? notes)
-    {
-        if (string.IsNullOrWhiteSpace(value: fullName))
-        {
-            throw new ContentRuleException(ContentRuleCodes.CustomerFullNameRequired);
-        }
-
-        if (string.IsNullOrWhiteSpace(value: email))
-        {
-            throw new ContentRuleException(ContentRuleCodes.CustomerEmailRequired);
-        }
-
-        FullName = fullName;
-        Email = email;
-        Phone = phone;
-        Company = company;
-        Notes = notes;
     }
 }

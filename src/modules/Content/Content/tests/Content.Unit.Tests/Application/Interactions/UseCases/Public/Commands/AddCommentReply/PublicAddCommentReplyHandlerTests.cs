@@ -59,8 +59,8 @@ public class PublicAddCommentReplyHandlerTests : BaseContentHandlerTest
         _articleCommentRepositoryMock.SetupExistsOrThrow(article.Id);
         _articleCommentRepositoryMock.SetupGetCommentByIdAsync(parent);
         _userLookupMock
-            .Setup(x => x.GetAuthorInfoByIdAsync(replierId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new AuthorDto("bob", "bob@example.com", null, "Visitor", LocaleConstants.DefaultLocale));
+            .Setup(x => x.GetUserProfileByIdAsync(replierId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new UserProfileDto("bob", "bob@example.com", null, "Visitor", LocaleConstants.DefaultLocale));
 
         var command = new PublicAddCommentReplyCommand(article.Id, parent.Id, replierId, "A valid reply body.");
 
