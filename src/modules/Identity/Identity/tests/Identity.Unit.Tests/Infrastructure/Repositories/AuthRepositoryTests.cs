@@ -11,14 +11,7 @@ using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Repositories;
 using _116.Identity.TestData.Builders.Entities;
 using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
 using _116.Tests.TestData.Helpers;
-using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -95,7 +88,7 @@ public class AuthRepositoryTests : IDisposable
         // Arrange
         UserEntity user = UserFactory.Create("test@example.com");
         RoleEntity role = RoleFactory.CreateAdmin();
-        var userRole = UserRoleEntity.Create(user.Id, role.Id);
+        var userRole = UserRoleFactory.Create(user.Id, role.Id);
 
         _context.Users.Add(user);
         _context.Roles.Add(role);
@@ -135,8 +128,8 @@ public class AuthRepositoryTests : IDisposable
         UserEntity user = UserFactory.Create();
         RoleEntity role = RoleFactory.CreateAdmin();
         PermissionEntity permission = PermissionFactory.Create("article", "read");
-        var userRole = UserRoleEntity.Create(user.Id, role.Id);
-        var rolePermission = RolePermissionEntity.Create(role.Id, permission.Id);
+        var userRole = UserRoleFactory.Create(user.Id, role.Id);
+        var rolePermission = RolePermissionFactory.Create(role.Id, permission.Id);
 
         _context.Users.Add(user);
         _context.Roles.Add(role);
@@ -488,8 +481,8 @@ public class AuthRepositoryTests : IDisposable
         UserEntity user = UserFactory.Create("test@example.com");
         RoleEntity role = RoleFactory.CreateAdmin();
         PermissionEntity permission = PermissionFactory.Create("article", "read");
-        var userRole = UserRoleEntity.Create(user.Id, role.Id);
-        var rolePermission = RolePermissionEntity.Create(role.Id, permission.Id);
+        var userRole = UserRoleFactory.Create(user.Id, role.Id);
+        var rolePermission = RolePermissionFactory.Create(role.Id, permission.Id);
 
         _context.Users.Add(user);
         _context.Roles.Add(role);
@@ -532,7 +525,7 @@ public class AuthRepositoryTests : IDisposable
         // Arrange
         UserEntity user = UserFactory.Create("credentials@example.com");
         RoleEntity role = RoleFactory.CreateAdmin();
-        var userRole = UserRoleEntity.Create(user.Id, role.Id);
+        var userRole = UserRoleFactory.Create(user.Id, role.Id);
 
         _context.Users.Add(user);
         _context.Roles.Add(role);
@@ -555,7 +548,7 @@ public class AuthRepositoryTests : IDisposable
         // Arrange
         UserEntity user = UserFactory.Create("default@example.com", "testusername");
         RoleEntity role = RoleFactory.CreateAdmin();
-        var userRole = UserRoleEntity.Create(user.Id, role.Id);
+        var userRole = UserRoleFactory.Create(user.Id, role.Id);
 
         _context.Users.Add(user);
         _context.Roles.Add(role);
@@ -590,7 +583,7 @@ public class AuthRepositoryTests : IDisposable
     {
         // Arrange
         UserEntity user = UserFactory.Create();
-        SessionEntity session = new SessionBuilder().WithUserId(user.Id).WithCreatedAt(DateTime.UtcNow).Build();
+        SessionEntity session = SessionFactory.Create(user.Id);
 
         _context.Users.Add(user);
         _context.Sessions.Add(session);
@@ -627,7 +620,7 @@ public class AuthRepositoryTests : IDisposable
     {
         // Arrange
         UserEntity user = UserFactory.Create();
-        SessionEntity session = new SessionBuilder().WithUserId(user.Id).WithCreatedAt(DateTime.UtcNow).Build();
+        SessionEntity session = SessionFactory.Create(user.Id);
 
         _context.Users.Add(user);
         _context.Sessions.Add(session);
@@ -658,11 +651,7 @@ public class AuthRepositoryTests : IDisposable
     {
         // Arrange
         UserEntity user = UserFactory.Create();
-        SessionEntity session = new SessionBuilder()
-            .WithUserId(user.Id)
-            .WithCreatedAt(DateTime.UtcNow)
-            .AsExpired()
-            .Build();
+        SessionEntity session = new SessionBuilder().WithUserId(user.Id).AsExpired().Build();
 
         _context.Users.Add(user);
         _context.Sessions.Add(session);
@@ -732,7 +721,7 @@ public class AuthRepositoryTests : IDisposable
         // Arrange
         UserEntity user = UserFactory.Create();
         RoleEntity adminRole = RoleFactory.CreateAdmin();
-        var userRole = UserRoleEntity.Create(user.Id, adminRole.Id);
+        var userRole = UserRoleFactory.Create(user.Id, adminRole.Id);
 
         _context.Users.Add(user);
         _context.Roles.Add(adminRole);
@@ -758,7 +747,7 @@ public class AuthRepositoryTests : IDisposable
         // Arrange
         UserEntity user = UserFactory.Create();
         RoleEntity visitorRole = RoleFactory.CreateVisitor();
-        var userRole = UserRoleEntity.Create(user.Id, visitorRole.Id);
+        var userRole = UserRoleFactory.Create(user.Id, visitorRole.Id);
 
         _context.Users.Add(user);
         _context.Roles.Add(visitorRole);
@@ -848,11 +837,10 @@ public class AuthRepositoryTests : IDisposable
     {
         // Arrange
         RoleEntity visitorRole = RoleFactory.CreateVisitor();
-        var existingUser = UserEntity.CreateExternal(
-            Guid.NewGuid(),
-            "existinguser",
+        var existingUser = UserFactory.CreateExternalWithSubject(
             EnumAuthProvider.Google,
             "google-subject-2",
+            "existinguser",
             "external@example.com"
         );
 
@@ -901,11 +889,10 @@ public class AuthRepositoryTests : IDisposable
         // Arrange
         // first time is linked, not rejected.
         RoleEntity visitorRole = RoleFactory.CreateVisitor();
-        var existingUser = UserEntity.CreateExternal(
-            Guid.NewGuid(),
-            "existinguser",
+        var existingUser = UserFactory.CreateExternalWithSubject(
             EnumAuthProvider.Google,
             "google-subject-4",
+            "existinguser",
             "external@example.com"
         );
 
@@ -932,11 +919,10 @@ public class AuthRepositoryTests : IDisposable
     {
         // Arrange
         RoleEntity visitorRole = RoleFactory.CreateVisitor();
-        var existingUser = UserEntity.CreateExternal(
-            Guid.NewGuid(),
-            "existinguser",
+        var existingUser = UserFactory.CreateExternalWithSubject(
             EnumAuthProvider.Google,
             "subject-original",
+            "existinguser",
             "external@example.com"
         );
 
@@ -964,11 +950,10 @@ public class AuthRepositoryTests : IDisposable
     {
         // Arrange
         RoleEntity visitorRole = RoleFactory.CreateVisitor();
-        var existingUser = UserEntity.CreateExternal(
-            Guid.NewGuid(),
-            "originalusername",
+        var existingUser = UserFactory.CreateExternalWithSubject(
             EnumAuthProvider.Google,
             "google-subject-6",
+            "originalusername",
             "external@example.com"
         );
 
@@ -997,11 +982,10 @@ public class AuthRepositoryTests : IDisposable
     public void SetPasswordForExternalUser_WhenExternalUser_ShouldSetPasswordAndChangeToLocal()
     {
         // Arrange
-        var externalUser = UserEntity.CreateExternal(
-            Guid.NewGuid(),
-            "externaluser",
+        var externalUser = UserFactory.CreateExternalWithSubject(
             EnumAuthProvider.Google,
             $"sub-{Guid.NewGuid():N}",
+            "externaluser",
             "external@example.com"
         );
 
