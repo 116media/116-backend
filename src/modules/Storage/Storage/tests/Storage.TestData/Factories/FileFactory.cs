@@ -57,26 +57,6 @@ public static class FileFactory
     public static FileEntity CreateDeleted() => new FileBuilder().AsDeleted().Build();
 
     /// <summary>
-    /// Creates a file with a specific size.
-    /// </summary>
-    /// <param name="sizeInBytes">The file size in bytes.</param>
-    /// <returns>A new FileEntity with the specified size.</returns>
-    public static FileEntity CreateWithSize(long sizeInBytes) => new FileBuilder().WithSizeInBytes(sizeInBytes).Build();
-
-    /// <summary>
-    /// Creates a file with known test values.
-    /// </summary>
-    /// <returns>A new FileEntity with test constants.</returns>
-    public static FileEntity CreateWithTestValues() =>
-        new FileBuilder()
-            .WithFileName(TestConstants.File.ValidFileName)
-            .WithOriginalFileName(TestConstants.File.ValidOriginalFileName)
-            .WithMimeType(TestConstants.File.ValidMimeType)
-            .WithStorageUrl(TestConstants.File.ValidStorageUrl)
-            .WithSizeInBytes(TestConstants.File.ValidSizeInBytes)
-            .Build();
-
-    /// <summary>
     /// Creates a file with a specific stored filename.
     /// </summary>
     /// <param name="fileName">The stored filename.</param>
