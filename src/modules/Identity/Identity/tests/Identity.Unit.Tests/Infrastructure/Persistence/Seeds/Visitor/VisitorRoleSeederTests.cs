@@ -4,14 +4,7 @@ using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Persistence.Seeds.Visitor;
 using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
 using _116.Tests.TestData.Helpers;
-using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -132,7 +125,7 @@ public class VisitorRoleSeederTests
         await using var context = new IdentityDbContext(options);
 
         // Pre-seed visitor role
-        var existingRole = RoleEntity.Create(Guid.NewGuid(), nameof(EnumCoreUserRole.Visitor), "Existing role");
+        var existingRole = RoleFactory.Create(nameof(EnumCoreUserRole.Visitor), "Existing role");
         await context.Roles.AddAsync(existingRole);
         await context.SaveChangesAsync();
 
@@ -154,7 +147,7 @@ public class VisitorRoleSeederTests
         await using var context = new IdentityDbContext(options);
 
         // Pre-seed visitor role
-        var existingRole = RoleEntity.Create(Guid.NewGuid(), nameof(EnumCoreUserRole.Visitor), "Existing role");
+        var existingRole = RoleFactory.Create(nameof(EnumCoreUserRole.Visitor), "Existing role");
         await context.Roles.AddAsync(existingRole);
         await context.SaveChangesAsync();
 
@@ -176,7 +169,7 @@ public class VisitorRoleSeederTests
         await using var context = new IdentityDbContext(options);
 
         // Pre-seed visitor role
-        var existingRole = RoleEntity.Create(Guid.NewGuid(), nameof(EnumCoreUserRole.Visitor), "Existing role");
+        var existingRole = RoleFactory.Create(nameof(EnumCoreUserRole.Visitor), "Existing role");
         await context.Roles.AddAsync(existingRole);
         await context.SaveChangesAsync();
 
