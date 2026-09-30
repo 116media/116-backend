@@ -1,8 +1,7 @@
 using _116.Mailer.Application.Notifications.UseCases.Public.Commands.MarkAllNotificationsRead.V1;
-using _116.Mailer.Contracts.Domain.Enums;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Infrastructure.Persistence;
-using _116.Mailer.TestData.Builders.Entities;
+using _116.Mailer.TestData.Factories;
 
 namespace _116.Mailer.Integration.Tests.Application.Notifications.UseCases.Public.Commands.MarkAllNotificationsRead.V1;
 
@@ -13,27 +12,16 @@ namespace _116.Mailer.Integration.Tests.Application.Notifications.UseCases.Publi
 [Collection("Database")]
 public class PublicMarkAllNotificationsReadEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static NotificationEntity CreateNotification(Guid userId)
-    {
-        return new NotificationBuilder()
-            .WithId(Guid.NewGuid())
-            .WithUserId(userId)
-            .WithType(EnumNotificationType.PasswordChanged)
-            .WithContent("Password changed", "Your password was changed.")
-            .WithLinkPath(null)
-            .Build();
-    }
-
     [Fact]
     public async Task ReadAll_MarksEveryOwnUnreadRowAndLeavesOtherUsersUntouched()
     {
-        NotificationEntity alreadyRead = CreateNotification(TestUser.VisitorId);
+        NotificationEntity alreadyRead = NotificationFactory.CreatePasswordChanged(TestUser.VisitorId);
         alreadyRead.MarkRead(DateTime.UtcNow.AddDays(-1));
-        NotificationEntity foreign = CreateNotification(Guid.NewGuid());
+        NotificationEntity foreign = NotificationFactory.CreatePasswordChanged(Guid.NewGuid());
         await SeedAsync<MailerDbContext>(ctx =>
             ctx.Notifications.AddRange(
-                CreateNotification(TestUser.VisitorId),
-                CreateNotification(TestUser.VisitorId),
+                NotificationFactory.CreatePasswordChanged(TestUser.VisitorId),
+                NotificationFactory.CreatePasswordChanged(TestUser.VisitorId),
                 alreadyRead,
                 foreign
             )
@@ -57,7 +45,9 @@ public class PublicMarkAllNotificationsReadEndpointV1Tests(PostgresFixture db) :
     [Fact]
     public async Task ReadAll_SecondCall_FindsNothingUnreadAndMarksZero()
     {
-        await SeedAsync<MailerDbContext>(ctx => ctx.Notifications.Add(CreateNotification(TestUser.VisitorId)));
+        await SeedAsync<MailerDbContext>(ctx =>
+            ctx.Notifications.Add(NotificationFactory.CreatePasswordChanged(TestUser.VisitorId))
+        );
         Client.AuthenticateAsVisitor();
 
         await Client.PatchAsync($"{ApiRoutes.Public.Notifications}/read-all", content: null);
