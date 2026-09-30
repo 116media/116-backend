@@ -3,9 +3,8 @@ using _116.Mailer.Application.Newsletter.UseCases.Public.Commands.SubscribeNewsl
 using _116.Mailer.Application.Shared.Persistence;
 using _116.Mailer.Application.Shared.Repositories;
 using _116.Mailer.Contracts.Application.OutboundEmails;
-using _116.Mailer.Contracts.Domain.Enums;
 using _116.Mailer.Domain.Entities;
-using _116.Mailer.TestData.Builders.Entities;
+using _116.Mailer.TestData.Factories;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -55,11 +54,7 @@ public class PublicSubscribeNewsletterHandlerTests
     [Fact]
     public async Task Handle_UnsubscribedAddress_ShouldReissueConfirmationWithAFreshToken()
     {
-        var existing = new NewsletterSubscriberBuilder()
-            .WithId(Guid.NewGuid())
-            .WithEmail("fan@example.com")
-            .AsUnsubscribed()
-            .Build();
+        var existing = NewsletterSubscriberFactory.CreateUnsubscribed("fan@example.com");
         string oldToken = existing.ConfirmationToken;
 
         _repository
@@ -86,11 +81,7 @@ public class PublicSubscribeNewsletterHandlerTests
     [Fact]
     public async Task Handle_AlreadySubscribed_ShouldChangeNothingAndStillSucceed()
     {
-        var existing = new NewsletterSubscriberBuilder()
-            .WithId(Guid.NewGuid())
-            .WithEmail("fan@example.com")
-            .AsConfirmed()
-            .Build();
+        var existing = NewsletterSubscriberFactory.CreateConfirmed("fan@example.com");
 
         _repository
             .Setup(r => r.GetByEmailAsync("fan@example.com", It.IsAny<CancellationToken>()))
