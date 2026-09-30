@@ -1,8 +1,18 @@
 # Mailer
 
-Mailer owns outbound email and in-app notifications: templates, the send outbox, the dispatcher job
-and newsletter subscriptions. It is one module of the 116 modular monolith: its own database schema
-(`mailer`), its own layer projects, and no direct dependency on another module's internals.
+Mailer owns two use-case areas, each a folder in `Mailer.Application`:
+
+| Area | Owns |
+| --- | --- |
+| `Newsletter` | Subscriptions, the confirm and unsubscribe flows and their hosted pages, the subscriber list |
+| `Notifications` | In-app notifications, read state, unread counts |
+
+`Templates` is not a use-case area: it renders the email bodies the rest of the monolith sends. The
+send outbox (`OutboxEmailEntity`), the dispatcher job and the Resend / SMTP senders live in
+`Mailer.Infrastructure`, driven on a schedule rather than by a request.
+
+It is one module of the 116 modular monolith: its own database schema (`mailer`), its own layer
+projects, and no direct dependency on another module's internals.
 
 ## Layout
 
@@ -28,10 +38,14 @@ modules: `dotnet build src/modules/Mailer/Mailer.slnf`, or point your IDE at it.
 ## Reference direction
 
 ```text
-Mailer.Domain         ─► Shared.Domain, BuildingBlocks.Domain
+Mailer.Domain         ─► Shared.Domain, BuildingBlocks.Domain, Mailer.Contracts
 Mailer.Application    ─► Mailer.Domain, BuildingBlocks.Presentation, <other>.Contracts
 Mailer.Infrastructure ─► Mailer.Application
 ```
+
+`Mailer.Domain` reaches its own Contracts for one reason: `EnumNotificationType` is published there, and the
+entity stores the published value rather than a private copy the seam would have to translate.
+No other module's Contracts are visible to it.
 
 Endpoints live in `Mailer.Application` beside the command, handler and validator they serve, which
 is why that layer reaches the outermost shared project rather than stopping at
