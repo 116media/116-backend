@@ -8,7 +8,8 @@ using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.ValueObjects;
 using _116.Identity.TestData.Factories;
-using _116.Storage.TestData.Factories;
+using _116.Identity.TestData.Mocks.Infrastructure;
+using _116.Identity.TestData.Mocks.Repositories;
 using _116.Tests.TestData.Helpers;
 using AwesomeAssertions;
 using Moq;
@@ -30,10 +31,10 @@ public class PublicUpdateProfileAuthFactoryTests
 
     public PublicUpdateProfileAuthFactoryTests()
     {
-        _authRepositoryMock = new Mock<IAuthRepository>();
-        _sessionRepositoryMock = new Mock<ISessionRepository>();
+        _authRepositoryMock = MockAuthRepository.Create();
+        _sessionRepositoryMock = MockSessionRepository.Create();
         _tokenStateRepositoryMock = new Mock<IUserTokenStateRepository>();
-        _unitOfWorkMock = new Mock<IIdentityUnitOfWork>();
+        _unitOfWorkMock = MockIdentityUnitOfWork.Create();
         _userErrors = TestErrorsFactory.CreateUserErrors();
         _factory = new PublicUpdateProfileAuthFactory(
             _authRepositoryMock.Object,
@@ -60,16 +61,12 @@ public class PublicUpdateProfileAuthFactoryTests
 
         UserEntity user = UserFactory.CreateWithId(userId);
 
-        _authRepositoryMock
-            .Setup(x => x.GetUserWithRolesAndPermissionsByIdOrThrow(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(user);
+        _authRepositoryMock.SetupGetUserWithRolesAndPermissionsById(user);
 
-        _authRepositoryMock.Setup(x => x.IsUserAccountActive(user));
-        _authRepositoryMock.Setup(x => x.IsUserAccountVerified(user));
+        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
+        _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
 
-        _authRepositoryMock
-            .Setup(x => x.IsSessionValidAsync(sessionId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(true);
+        _authRepositoryMock.SetupIsSessionValid(sessionId);
 
         _authRepositoryMock
             .Setup(x => x.ExistsByUserNameAsync(userName, It.IsAny<CancellationToken>()))
@@ -107,16 +104,12 @@ public class PublicUpdateProfileAuthFactoryTests
         var sessionId = Guid.NewGuid();
         UserEntity user = UserFactory.CreateWithId(userId);
 
-        _authRepositoryMock
-            .Setup(x => x.GetUserWithRolesAndPermissionsByIdOrThrow(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(user);
+        _authRepositoryMock.SetupGetUserWithRolesAndPermissionsById(user);
 
-        _authRepositoryMock.Setup(x => x.IsUserAccountActive(user));
-        _authRepositoryMock.Setup(x => x.IsUserAccountVerified(user));
+        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
+        _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
 
-        _authRepositoryMock
-            .Setup(x => x.IsSessionValidAsync(sessionId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(true);
+        _authRepositoryMock.SetupIsSessionValid(sessionId);
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
@@ -146,16 +139,12 @@ public class PublicUpdateProfileAuthFactoryTests
         var sessionId = Guid.NewGuid();
         UserEntity user = UserFactory.CreateWithId(userId);
 
-        _authRepositoryMock
-            .Setup(x => x.GetUserWithRolesAndPermissionsByIdOrThrow(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(user);
+        _authRepositoryMock.SetupGetUserWithRolesAndPermissionsById(user);
 
-        _authRepositoryMock.Setup(x => x.IsUserAccountActive(user));
-        _authRepositoryMock.Setup(x => x.IsUserAccountVerified(user));
+        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
+        _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
 
-        _authRepositoryMock
-            .Setup(x => x.IsSessionValidAsync(sessionId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(true);
+        _authRepositoryMock.SetupIsSessionValid(sessionId);
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
@@ -185,16 +174,12 @@ public class PublicUpdateProfileAuthFactoryTests
         var sessionId = Guid.NewGuid();
         UserEntity user = UserFactory.CreateWithId(userId);
 
-        _authRepositoryMock
-            .Setup(x => x.GetUserWithRolesAndPermissionsByIdOrThrow(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(user);
+        _authRepositoryMock.SetupGetUserWithRolesAndPermissionsById(user);
 
-        _authRepositoryMock.Setup(x => x.IsUserAccountActive(user));
-        _authRepositoryMock.Setup(x => x.IsUserAccountVerified(user));
+        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
+        _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
 
-        _authRepositoryMock
-            .Setup(x => x.IsSessionValidAsync(sessionId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(true);
+        _authRepositoryMock.SetupIsSessionValid(sessionId);
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
@@ -225,16 +210,12 @@ public class PublicUpdateProfileAuthFactoryTests
         string newEmail = "changed.profile@example.com";
         UserEntity user = UserFactory.CreateWithId(userId);
 
-        _authRepositoryMock
-            .Setup(x => x.GetUserWithRolesAndPermissionsByIdOrThrow(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(user);
+        _authRepositoryMock.SetupGetUserWithRolesAndPermissionsById(user);
 
-        _authRepositoryMock.Setup(x => x.IsUserAccountActive(user));
-        _authRepositoryMock.Setup(x => x.IsUserAccountVerified(user));
+        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
+        _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
 
-        _authRepositoryMock
-            .Setup(x => x.IsSessionValidAsync(sessionId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(true);
+        _authRepositoryMock.SetupIsSessionValid(sessionId);
 
         _authRepositoryMock
             .Setup(x => x.ExistsByEmailAsync(It.IsAny<Email>(), It.IsAny<CancellationToken>()))
@@ -273,16 +254,12 @@ public class PublicUpdateProfileAuthFactoryTests
         UserEntity user = UserFactory.CreateWithId(userId);
         user.UpdateUserName("oldusername");
 
-        _authRepositoryMock
-            .Setup(x => x.GetUserWithRolesAndPermissionsByIdOrThrow(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(user);
+        _authRepositoryMock.SetupGetUserWithRolesAndPermissionsById(user);
 
-        _authRepositoryMock.Setup(x => x.IsUserAccountActive(user));
-        _authRepositoryMock.Setup(x => x.IsUserAccountVerified(user));
+        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
+        _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
 
-        _authRepositoryMock
-            .Setup(x => x.IsSessionValidAsync(sessionId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(true);
+        _authRepositoryMock.SetupIsSessionValid(sessionId);
 
         _authRepositoryMock
             .Setup(x => x.ExistsByUserNameAsync(newUserName, It.IsAny<CancellationToken>()))
@@ -321,16 +298,12 @@ public class PublicUpdateProfileAuthFactoryTests
         UserEntity user = UserFactory.CreateWithId(userId);
         user.UpdateUserName(userName);
 
-        _authRepositoryMock
-            .Setup(x => x.GetUserWithRolesAndPermissionsByIdOrThrow(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(user);
+        _authRepositoryMock.SetupGetUserWithRolesAndPermissionsById(user);
 
-        _authRepositoryMock.Setup(x => x.IsUserAccountActive(user));
-        _authRepositoryMock.Setup(x => x.IsUserAccountVerified(user));
+        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
+        _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
 
-        _authRepositoryMock
-            .Setup(x => x.IsSessionValidAsync(sessionId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(true);
+        _authRepositoryMock.SetupIsSessionValid(sessionId);
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
@@ -367,16 +340,12 @@ public class PublicUpdateProfileAuthFactoryTests
 
         UserEntity user = UserFactory.CreateWithId(userId);
 
-        _authRepositoryMock
-            .Setup(x => x.GetUserWithRolesAndPermissionsByIdOrThrow(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(user);
+        _authRepositoryMock.SetupGetUserWithRolesAndPermissionsById(user);
 
-        _authRepositoryMock.Setup(x => x.IsUserAccountActive(user));
-        _authRepositoryMock.Setup(x => x.IsUserAccountVerified(user));
+        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
+        _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
 
-        _authRepositoryMock
-            .Setup(x => x.IsSessionValidAsync(sessionId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(true);
+        _authRepositoryMock.SetupIsSessionValid(sessionId);
 
         _authRepositoryMock
             .Setup(x => x.GetUserByPhoneNumberAsync(fullPhoneNumber, It.IsAny<CancellationToken>()))
@@ -417,16 +386,12 @@ public class PublicUpdateProfileAuthFactoryTests
 
         UserEntity user = UserFactory.CreateWithId(userId);
 
-        _authRepositoryMock
-            .Setup(x => x.GetUserWithRolesAndPermissionsByIdOrThrow(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(user);
+        _authRepositoryMock.SetupGetUserWithRolesAndPermissionsById(user);
 
-        _authRepositoryMock.Setup(x => x.IsUserAccountActive(user));
-        _authRepositoryMock.Setup(x => x.IsUserAccountVerified(user));
+        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
+        _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
 
-        _authRepositoryMock
-            .Setup(x => x.IsSessionValidAsync(sessionId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(true);
+        _authRepositoryMock.SetupIsSessionValid(sessionId);
 
         _authRepositoryMock
             .Setup(x => x.GetUserByPhoneNumberAsync(fullPhoneNumber, It.IsAny<CancellationToken>()))
@@ -463,16 +428,12 @@ public class PublicUpdateProfileAuthFactoryTests
         var sessionId = Guid.NewGuid();
         UserEntity user = UserFactory.CreateWithId(userId);
 
-        _authRepositoryMock
-            .Setup(x => x.GetUserWithRolesAndPermissionsByIdOrThrow(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(user);
+        _authRepositoryMock.SetupGetUserWithRolesAndPermissionsById(user);
 
-        _authRepositoryMock.Setup(x => x.IsUserAccountActive(user));
-        _authRepositoryMock.Setup(x => x.IsUserAccountVerified(user));
+        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
+        _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
 
-        _authRepositoryMock
-            .Setup(x => x.IsSessionValidAsync(sessionId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(true);
+        _authRepositoryMock.SetupIsSessionValid(sessionId);
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
@@ -507,8 +468,8 @@ public class PublicUpdateProfileAuthFactoryTests
             .Setup(x => x.GetUserWithRolesAndPermissionsByIdOrThrow(userId, cancellationToken))
             .ReturnsAsync(user);
 
-        _authRepositoryMock.Setup(x => x.IsUserAccountActive(user));
-        _authRepositoryMock.Setup(x => x.IsUserAccountVerified(user));
+        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
+        _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
 
         _authRepositoryMock.Setup(x => x.IsSessionValidAsync(sessionId, cancellationToken)).ReturnsAsync(true);
 
@@ -550,16 +511,12 @@ public class PublicUpdateProfileAuthFactoryTests
         string newEmail = "fresh@example.com";
         UserEntity user = UserFactory.CreateWithId(userId);
 
-        _authRepositoryMock
-            .Setup(x => x.GetUserWithRolesAndPermissionsByIdOrThrow(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(user);
+        _authRepositoryMock.SetupGetUserWithRolesAndPermissionsById(user);
 
-        _authRepositoryMock.Setup(x => x.IsUserAccountActive(user));
-        _authRepositoryMock.Setup(x => x.IsUserAccountVerified(user));
+        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
+        _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
 
-        _authRepositoryMock
-            .Setup(x => x.IsSessionValidAsync(sessionId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(true);
+        _authRepositoryMock.SetupIsSessionValid(sessionId);
 
         _authRepositoryMock
             .Setup(x => x.ExistsByEmailAsync(It.IsAny<Email>(), It.IsAny<CancellationToken>()))
@@ -614,16 +571,12 @@ public class PublicUpdateProfileAuthFactoryTests
         var sessionId = Guid.NewGuid();
         UserEntity user = UserFactory.CreateWithId(userId);
 
-        _authRepositoryMock
-            .Setup(x => x.GetUserWithRolesAndPermissionsByIdOrThrow(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(user);
+        _authRepositoryMock.SetupGetUserWithRolesAndPermissionsById(user);
 
-        _authRepositoryMock.Setup(x => x.IsUserAccountActive(user));
-        _authRepositoryMock.Setup(x => x.IsUserAccountVerified(user));
+        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
+        _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
 
-        _authRepositoryMock
-            .Setup(x => x.IsSessionValidAsync(sessionId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(true);
+        _authRepositoryMock.SetupIsSessionValid(sessionId);
 
         _authRepositoryMock
             .Setup(x => x.ExistsByUserNameAsync("newusername", It.IsAny<CancellationToken>()))
