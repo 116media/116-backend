@@ -10,10 +10,7 @@ using _116.Identity.TestData.Factories;
 using _116.Identity.TestData.Mocks.Infrastructure;
 using _116.Identity.TestData.Mocks.Repositories;
 using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
 using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -63,7 +60,7 @@ public class PublicSetPasswordHandlerTests
 
         _authRepositoryMock.SetupFindUserByIdOrThrow(user);
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
-        _passwordServiceMock.Setup(x => x.Hash(password)).Returns(hashedPassword);
+        _passwordServiceMock.SetupHash(password, hashedPassword);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
@@ -84,7 +81,7 @@ public class PublicSetPasswordHandlerTests
 
         _authRepositoryMock.SetupFindUserByIdOrThrow(user);
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
-        _passwordServiceMock.Setup(x => x.Hash(password)).Returns(hashedPassword);
+        _passwordServiceMock.SetupHash(password, hashedPassword);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
@@ -105,7 +102,7 @@ public class PublicSetPasswordHandlerTests
 
         _authRepositoryMock.SetupFindUserByIdOrThrow(user);
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
-        _passwordServiceMock.Setup(x => x.Hash(password)).Returns(hashedPassword);
+        _passwordServiceMock.SetupHash(password, hashedPassword);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
@@ -126,7 +123,7 @@ public class PublicSetPasswordHandlerTests
 
         _authRepositoryMock.SetupFindUserByIdOrThrow(user);
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
-        _passwordServiceMock.Setup(x => x.Hash(password)).Returns(hashedPassword);
+        _passwordServiceMock.SetupHash(password, hashedPassword);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
@@ -193,7 +190,7 @@ public class PublicSetPasswordHandlerTests
 
         _authRepositoryMock.SetupFindUserByIdOrThrow(user);
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
-        _passwordServiceMock.Setup(x => x.Hash(password)).Returns(hashedPassword);
+        _passwordServiceMock.SetupHash(password, hashedPassword);
 
         // Act
         await _handler.Handle(command, cts.Token);
@@ -215,7 +212,7 @@ public class PublicSetPasswordHandlerTests
 
         _authRepositoryMock.SetupFindUserByIdOrThrow(user);
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
-        _passwordServiceMock.Setup(x => x.Hash(password)).Returns(hashedPassword);
+        _passwordServiceMock.SetupHash(password, hashedPassword);
 
         // Act
         await _handler.Handle(command, cts.Token);
@@ -240,7 +237,7 @@ public class PublicSetPasswordHandlerTests
 
         _authRepositoryMock.SetupFindUserByIdOrThrow(user);
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
-        _passwordServiceMock.Setup(x => x.Hash(password)).Returns("hashed-password");
+        _passwordServiceMock.SetupHash(password, "hashed-password");
 
         var callOrder = new List<string>();
         _sessionRepositoryMock
