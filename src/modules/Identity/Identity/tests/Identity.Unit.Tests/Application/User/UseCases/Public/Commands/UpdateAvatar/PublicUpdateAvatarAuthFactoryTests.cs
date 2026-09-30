@@ -7,11 +7,6 @@ using _116.Identity.Domain.Enums;
 using _116.Identity.TestData.Factories;
 using _116.Identity.TestData.Mocks.Infrastructure;
 using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -29,8 +24,8 @@ public class PublicUpdateAvatarAuthFactoryTests
 
     public PublicUpdateAvatarAuthFactoryTests()
     {
-        _authRepositoryMock = new Mock<IAuthRepository>();
-        _unitOfWorkMock = new Mock<IIdentityUnitOfWork>();
+        _authRepositoryMock = MockAuthRepository.Create();
+        _unitOfWorkMock = MockIdentityUnitOfWork.Create();
         _factory = new PublicUpdateAvatarAuthFactory(_authRepositoryMock.Object, _unitOfWorkMock.Object);
     }
 
@@ -44,16 +39,12 @@ public class PublicUpdateAvatarAuthFactoryTests
         var sessionId = Guid.NewGuid();
         UserEntity user = UserFactory.CreateWithId(userId);
 
-        _authRepositoryMock
-            .Setup(x => x.GetUserWithRolesAndPermissionsByIdOrThrow(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(user);
+        _authRepositoryMock.SetupGetUserWithRolesAndPermissionsById(user);
 
-        _authRepositoryMock.Setup(x => x.IsUserAccountActive(user));
-        _authRepositoryMock.Setup(x => x.IsUserAccountVerified(user));
+        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
+        _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
 
-        _authRepositoryMock
-            .Setup(x => x.IsSessionValidAsync(sessionId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(true);
+        _authRepositoryMock.SetupIsSessionValid(sessionId);
 
         // Act
         PublicUpdateAvatarAuthData result = await _factory.GetUserForAvatarUpdateAsync(
@@ -74,16 +65,12 @@ public class PublicUpdateAvatarAuthFactoryTests
         var sessionId = Guid.NewGuid();
         UserEntity user = UserFactory.CreateWithId(userId);
 
-        _authRepositoryMock
-            .Setup(x => x.GetUserWithRolesAndPermissionsByIdOrThrow(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(user);
+        _authRepositoryMock.SetupGetUserWithRolesAndPermissionsById(user);
 
-        _authRepositoryMock.Setup(x => x.IsUserAccountActive(user));
-        _authRepositoryMock.Setup(x => x.IsUserAccountVerified(user));
+        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
+        _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
 
-        _authRepositoryMock
-            .Setup(x => x.IsSessionValidAsync(sessionId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(true);
+        _authRepositoryMock.SetupIsSessionValid(sessionId);
 
         // Act
         await _factory.GetUserForAvatarUpdateAsync(userId, sessionId, CancellationToken.None);
@@ -100,16 +87,12 @@ public class PublicUpdateAvatarAuthFactoryTests
         var sessionId = Guid.NewGuid();
         UserEntity user = UserFactory.CreateWithId(userId);
 
-        _authRepositoryMock
-            .Setup(x => x.GetUserWithRolesAndPermissionsByIdOrThrow(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(user);
+        _authRepositoryMock.SetupGetUserWithRolesAndPermissionsById(user);
 
-        _authRepositoryMock.Setup(x => x.IsUserAccountActive(user));
-        _authRepositoryMock.Setup(x => x.IsUserAccountVerified(user));
+        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
+        _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
 
-        _authRepositoryMock
-            .Setup(x => x.IsSessionValidAsync(sessionId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(true);
+        _authRepositoryMock.SetupIsSessionValid(sessionId);
 
         // Act
         await _factory.GetUserForAvatarUpdateAsync(userId, sessionId, CancellationToken.None);
@@ -126,16 +109,12 @@ public class PublicUpdateAvatarAuthFactoryTests
         var sessionId = Guid.NewGuid();
         UserEntity user = UserFactory.CreateWithId(userId);
 
-        _authRepositoryMock
-            .Setup(x => x.GetUserWithRolesAndPermissionsByIdOrThrow(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(user);
+        _authRepositoryMock.SetupGetUserWithRolesAndPermissionsById(user);
 
-        _authRepositoryMock.Setup(x => x.IsUserAccountActive(user));
-        _authRepositoryMock.Setup(x => x.IsUserAccountVerified(user));
+        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
+        _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
 
-        _authRepositoryMock
-            .Setup(x => x.IsSessionValidAsync(sessionId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(true);
+        _authRepositoryMock.SetupIsSessionValid(sessionId);
 
         // Act
         await _factory.GetUserForAvatarUpdateAsync(userId, sessionId, CancellationToken.None);
@@ -157,8 +136,8 @@ public class PublicUpdateAvatarAuthFactoryTests
             .Setup(x => x.GetUserWithRolesAndPermissionsByIdOrThrow(userId, cancellationToken))
             .ReturnsAsync(user);
 
-        _authRepositoryMock.Setup(x => x.IsUserAccountActive(user));
-        _authRepositoryMock.Setup(x => x.IsUserAccountVerified(user));
+        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
+        _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
 
         _authRepositoryMock.Setup(x => x.IsSessionValidAsync(sessionId, cancellationToken)).ReturnsAsync(true);
 
