@@ -4,6 +4,7 @@ using _116.Identity.Application.Shared.Authorizations.Requirements;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Constants;
 using _116.Identity.Domain.Entities;
+using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.TestData.Builders.Entities;
 using _116.Identity.TestData.Factories;
 using _116.Identity.TestData.Mocks.Repositories;
@@ -26,7 +27,11 @@ public class AccountStatusRequirementHandlerTests
         _authRepositoryMock = MockAuthRepository.Create();
         _httpContextAccessorMock = new Mock<IHttpContextAccessor>();
         _httpContextAccessorMock.Setup(x => x.HttpContext).Returns(new DefaultHttpContext());
-        _handler = new AccountStatusRequirementHandler(_authRepositoryMock.Object, _httpContextAccessorMock.Object);
+        _handler = new AccountStatusRequirementHandler(
+            _authRepositoryMock.Object,
+            _httpContextAccessorMock.Object,
+            new PostgresTransientFaultDetector()
+        );
     }
 
     [Fact]
@@ -146,9 +151,6 @@ public class AccountStatusRequirementHandlerTests
         );
     }
 
-    // Note: NpgsqlException tests are difficult to test via unit tests due to internal constructors
-    // The error handling logic for Npgsql errors is covered by integration tests
-
     [Fact]
     public async Task HandleRequirementAsync_WithNullUser_ShouldNotSucceed()
     {
@@ -248,8 +250,6 @@ public class AccountStatusRequirementHandlerTests
 
     [Theory]
     [InlineData(typeof(TimeoutException))]
-    [InlineData(typeof(TaskCanceledException))]
-    [InlineData(typeof(OperationCanceledException))]
     public async Task HandleRequirementAsync_WithDbConnectivityError_ShouldFailClosed(Type exceptionType)
     {
         // Arrange
@@ -272,6 +272,30 @@ public class AccountStatusRequirementHandlerTests
 
         // Assert
         context.HasFailed.Should().BeTrue("an unverifiable account status fails closed");
+        context.HasSucceeded.Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData(typeof(TaskCanceledException))]
+    [InlineData(typeof(OperationCanceledException))]
+    public async Task HandleRequirementAsync_WhenTheClientDisconnects_ShouldLetCancellationPropagate(Type exceptionType)
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var claims = new[] { new Claim(ClaimTypes.NameIdentifier, userId.ToString()) };
+        var user = new ClaimsPrincipal(new ClaimsIdentity(claims));
+        var requirement = new AccountStatusRequirement(JwtClaimsConstants.IsActive, "true");
+        var context = new AuthorizationHandlerContext([requirement], user, null);
+
+        _authRepositoryMock
+            .Setup(x => x.FindUserByIdOrThrow(It.Is<Guid>(id => id == userId), It.IsAny<CancellationToken>()))
+            .ThrowsAsync((Exception)Activator.CreateInstance(exceptionType, "client went away")!);
+
+        // Act
+        Func<Task> act = async () => await _handler.HandleAsync(context);
+
+        // Assert
+        await act.Should().ThrowAsync<OperationCanceledException>();
         context.HasSucceeded.Should().BeFalse();
     }
 
