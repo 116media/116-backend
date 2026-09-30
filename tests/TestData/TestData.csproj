@@ -15,6 +15,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="../../src/shared/src/BuildingBlocks.Infrastructure/BuildingBlocks.Infrastructure.csproj" />
         <ProjectReference Include="../../src/modules/Content/Content/src/Content.Domain/Content.Domain.csproj" />
         <ProjectReference Include="../../src/modules/Content/Content/src/Content.Application/Content.Application.csproj" />
         <ProjectReference Include="../../src/modules/Identity/Identity/src/Identity.Domain/Identity.Domain.csproj" />
