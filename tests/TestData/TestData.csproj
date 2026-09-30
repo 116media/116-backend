@@ -17,15 +17,9 @@
     <ItemGroup>
         <ProjectReference Include="../../src/modules/Content/Content/src/Content.Domain/Content.Domain.csproj" />
         <ProjectReference Include="../../src/modules/Content/Content/src/Content.Application/Content.Application.csproj" />
-        <ProjectReference Include="../../src/modules/Content/Content/src/Content.Infrastructure/Content.Infrastructure.csproj" />
         <ProjectReference Include="../../src/modules/Identity/Identity/src/Identity.Domain/Identity.Domain.csproj" />
         <ProjectReference Include="../../src/modules/Identity/Identity/src/Identity.Application/Identity.Application.csproj" />
-        <ProjectReference Include="../../src/modules/Identity/Identity/src/Identity.Infrastructure/Identity.Infrastructure.csproj" />
         <ProjectReference Include="../../src/modules/Storage/Storage/src/Storage.Domain/Storage.Domain.csproj" />
         <ProjectReference Include="../../src/modules/Storage/Storage/src/Storage.Application/Storage.Application.csproj" />
-        <ProjectReference Include="../../src/modules/Storage/Storage/src/Storage.Infrastructure/Storage.Infrastructure.csproj" />
-        <ProjectReference Include="../../src/modules/Mailer/Mailer/src/Mailer.Domain/Mailer.Domain.csproj" />
-        <ProjectReference Include="../../src/modules/Mailer/Mailer/src/Mailer.Application/Mailer.Application.csproj" />
-        <ProjectReference Include="../../src/modules/Mailer/Mailer/src/Mailer.Infrastructure/Mailer.Infrastructure.csproj" />
     </ItemGroup>
 </Project>
