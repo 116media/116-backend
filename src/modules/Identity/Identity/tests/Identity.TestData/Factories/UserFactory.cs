@@ -85,6 +85,29 @@ public static class UserFactory
         new UserBuilder().WithAuthProvider(authProvider).AsVerified().Build();
 
     /// <summary>
+    /// Creates an external auth user pinned to a known provider subject, user name and email —
+    /// the three values the external-linking tests assert on.
+    /// </summary>
+    /// <param name="authProvider">The authentication provider.</param>
+    /// <param name="providerSubjectId">The provider's subject identifier.</param>
+    /// <param name="userName">The user name.</param>
+    /// <param name="email">The email address.</param>
+    /// <returns>A new external auth UserEntity.</returns>
+    public static UserEntity CreateExternalWithSubject(
+        EnumAuthProvider authProvider,
+        string providerSubjectId,
+        string userName,
+        string email
+    ) =>
+        new UserBuilder()
+            .WithAuthProvider(authProvider)
+            .WithProviderSubjectId(providerSubjectId)
+            .WithUserName(userName)
+            .WithEmail(email)
+            .AsVerified()
+            .Build();
+
+    /// <summary>
     /// Creates an external auth user whose provider shared no email address, so the
     /// account has a usable identity but nothing to send mail to.
     /// </summary>
