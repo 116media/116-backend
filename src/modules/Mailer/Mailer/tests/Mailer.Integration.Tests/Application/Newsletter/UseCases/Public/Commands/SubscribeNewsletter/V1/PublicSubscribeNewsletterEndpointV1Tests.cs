@@ -2,7 +2,7 @@ using _116.Mailer.Application.Newsletter.UseCases.Public.Commands.SubscribeNewsl
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Domain.Enums;
 using _116.Mailer.Infrastructure.Persistence;
-using _116.Mailer.TestData.Builders.Entities;
+using _116.Mailer.TestData.Factories;
 
 namespace _116.Mailer.Integration.Tests.Application.Newsletter.UseCases.Public.Commands.SubscribeNewsletter.V1;
 
@@ -40,11 +40,7 @@ public class PublicSubscribeNewsletterEndpointV1Tests(PostgresFixture db) : Base
     {
         await SeedAsync<MailerDbContext>(ctx =>
         {
-            var subscriber = new NewsletterSubscriberBuilder()
-                .WithId(Guid.NewGuid())
-                .WithEmail("loyal@example.com")
-                .AsConfirmed()
-                .Build();
+            var subscriber = NewsletterSubscriberFactory.CreateConfirmed("loyal@example.com");
             ctx.NewsletterSubscribers.Add(subscriber);
         });
 
@@ -64,11 +60,7 @@ public class PublicSubscribeNewsletterEndpointV1Tests(PostgresFixture db) : Base
     {
         NewsletterSubscriberEntity seeded = await SeedAsync<MailerDbContext, NewsletterSubscriberEntity>(ctx =>
         {
-            var subscriber = new NewsletterSubscriberBuilder()
-                .WithId(Guid.NewGuid())
-                .WithEmail("returning@example.com")
-                .AsUnsubscribed()
-                .Build();
+            var subscriber = NewsletterSubscriberFactory.CreateUnsubscribed("returning@example.com");
             ctx.NewsletterSubscribers.Add(subscriber);
             return subscriber;
         });
