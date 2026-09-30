@@ -10,11 +10,8 @@ using _116.Identity.TestData.Factories;
 using _116.Identity.TestData.Mocks.Infrastructure;
 using _116.Identity.TestData.Mocks.Repositories;
 using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
 using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
 using _116.Tests.TestData.Helpers;
-using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -74,9 +71,9 @@ public class AdminChangePasswordHandlerTests
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
         _authRepositoryMock.SetupIsSessionValid(sessionId);
 
-        _passwordServiceMock.Setup(x => x.Verify(oldPassword, user.PasswordHash)).Returns(true);
-        _passwordServiceMock.Setup(x => x.Verify(newPassword, user.PasswordHash)).Returns(false);
-        _passwordServiceMock.Setup(x => x.Hash(newPassword)).Returns(newPasswordHash);
+        _passwordServiceMock.SetupVerifySuccess(oldPassword, user.PasswordHash);
+        _passwordServiceMock.SetupVerifyFailure(newPassword, user.PasswordHash);
+        _passwordServiceMock.SetupHash(newPassword, newPasswordHash);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
@@ -207,7 +204,7 @@ public class AdminChangePasswordHandlerTests
         _authRepositoryMock.SetupIsSessionValid(sessionId);
 
         // Old password doesn't match
-        _passwordServiceMock.Setup(x => x.Verify(oldPassword, user.PasswordHash)).Returns(false);
+        _passwordServiceMock.SetupVerifyFailure(oldPassword, user.PasswordHash);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
@@ -237,8 +234,8 @@ public class AdminChangePasswordHandlerTests
         _authRepositoryMock.SetupIsSessionValid(sessionId);
 
         // Both old and new password match the hash (they're the same)
-        _passwordServiceMock.Setup(x => x.Verify(oldPassword, user.PasswordHash)).Returns(true);
-        _passwordServiceMock.Setup(x => x.Verify(newPassword, user.PasswordHash)).Returns(true);
+        _passwordServiceMock.SetupVerifySuccess(oldPassword, user.PasswordHash);
+        _passwordServiceMock.SetupVerifySuccess(newPassword, user.PasswordHash);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
@@ -263,7 +260,7 @@ public class AdminChangePasswordHandlerTests
         _authRepositoryMock.SetupFindUserByIdOrThrow(user);
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
         _authRepositoryMock.SetupIsSessionValid(sessionId);
-        _passwordServiceMock.Setup(x => x.Verify("wrong", user.PasswordHash)).Returns(false);
+        _passwordServiceMock.SetupVerifyFailure("wrong", user.PasswordHash);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
@@ -343,9 +340,9 @@ public class AdminChangePasswordHandlerTests
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
         _authRepositoryMock.SetupIsSessionValid(sessionId);
 
-        _passwordServiceMock.Setup(x => x.Verify(oldPassword, user.PasswordHash)).Returns(true);
-        _passwordServiceMock.Setup(x => x.Verify(newPassword, user.PasswordHash)).Returns(false);
-        _passwordServiceMock.Setup(x => x.Hash(newPassword)).Returns("new-hashed-password");
+        _passwordServiceMock.SetupVerifySuccess(oldPassword, user.PasswordHash);
+        _passwordServiceMock.SetupVerifyFailure(newPassword, user.PasswordHash);
+        _passwordServiceMock.SetupHash(newPassword, "new-hashed-password");
     }
 
     #endregion
