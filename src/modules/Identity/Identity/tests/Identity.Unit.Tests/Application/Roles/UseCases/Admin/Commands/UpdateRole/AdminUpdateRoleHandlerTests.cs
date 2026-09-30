@@ -7,14 +7,10 @@ using _116.Identity.Domain.Entities;
 using _116.Identity.TestData.Factories;
 using _116.Identity.TestData.Mocks.Infrastructure;
 using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
 using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
 using _116.Tests.TestData;
 using _116.Tests.TestData.Constants;
 using _116.Tests.TestData.Helpers;
-using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -126,7 +122,7 @@ public class AdminUpdateRoleHandlerTests : BaseHandlerTest
     public async Task Handle_WithNoChanges_ShouldNotCommit()
     {
         // Arrange
-        RoleEntity existingRole = RoleFactory.Create(TestConstants.Role.ValidName, TestConstants.Role.ValidDescription);
+        RoleEntity existingRole = RoleFactory.CreateDefault();
 
         AdminUpdateRoleCommand command = CommandFactory.Role.UpdateCommand(existingRole.Id, null, null);
 
@@ -145,7 +141,7 @@ public class AdminUpdateRoleHandlerTests : BaseHandlerTest
     public async Task Handle_WithSameNameAndDescription_ShouldNotCommit()
     {
         // Arrange
-        RoleEntity existingRole = RoleFactory.Create(TestConstants.Role.ValidName, TestConstants.Role.ValidDescription);
+        RoleEntity existingRole = RoleFactory.CreateDefault();
 
         AdminUpdateRoleCommand command = CommandFactory.Role.UpdateValidCommand(existingRole.Id);
 
@@ -162,7 +158,7 @@ public class AdminUpdateRoleHandlerTests : BaseHandlerTest
     public async Task Handle_WithEmptyName_ShouldTreatAsNoChange()
     {
         // Arrange
-        RoleEntity existingRole = RoleFactory.Create(TestConstants.Role.ValidName, TestConstants.Role.ValidDescription);
+        RoleEntity existingRole = RoleFactory.CreateDefault();
 
         AdminUpdateRoleCommand command = CommandFactory.Role.UpdateCommand(existingRole.Id, string.Empty, null);
 
