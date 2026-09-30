@@ -1,9 +1,17 @@
 # Storage
 
-Storage owns uploaded files: their metadata rows, the Cloudinary transport, colour extraction and
-the outbox that cleans up orphaned assets. It is one module of the 116 modular monolith: its own
-database schema (`storage`), its own layer projects, and no direct dependency on another module's
-internals.
+Storage has no use-case areas and publishes no endpoints of its own: every caller reaches it through
+`Storage.Contracts`. What it owns:
+
+| Concern | Owns |
+| --- | --- |
+| Files | `FileEntity` and the `files` table: metadata, storage key, kind, state |
+| Transport | The Cloudinary client, the upload and delete pipeline, its resilience policy |
+| Derived data | Dominant-colour extraction and the contrast helpers built on it |
+| Cleanup | The orphaned-asset cleanup handler and the outbox replay job behind it |
+
+It is one module of the 116 modular monolith: its own database schema (`storage`), its own layer
+projects, and no direct dependency on another module's internals.
 
 ## Layout
 
@@ -29,10 +37,14 @@ modules: `dotnet build src/modules/Storage/Storage.slnf`, or point your IDE at i
 ## Reference direction
 
 ```text
-Storage.Domain         ─► Shared.Domain, BuildingBlocks.Domain
+Storage.Domain         ─► Shared.Domain, BuildingBlocks.Domain, Storage.Contracts
 Storage.Application    ─► Storage.Domain, BuildingBlocks.Presentation, <other>.Contracts
 Storage.Infrastructure ─► Storage.Application
 ```
+
+`Storage.Domain` reaches its own Contracts for one reason: `EnumStoredFileKind` is published there, and the
+entity stores the published value rather than a private copy the seam would have to translate.
+No other module's Contracts are visible to it.
 
 Endpoints live in `Storage.Application` beside the command, handler and validator they serve, which
 is why that layer reaches the outermost shared project rather than stopping at
