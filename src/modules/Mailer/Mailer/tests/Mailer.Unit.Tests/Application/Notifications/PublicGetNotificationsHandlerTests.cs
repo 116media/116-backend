@@ -1,9 +1,8 @@
 using _116.BuildingBlocks.Application.Pagination;
 using _116.Mailer.Application.Notifications.UseCases.Public.Queries.GetNotifications;
 using _116.Mailer.Application.Shared.Repositories;
-using _116.Mailer.Contracts.Domain.Enums;
 using _116.Mailer.Domain.Entities;
-using _116.Mailer.TestData.Builders.Entities;
+using _116.Mailer.TestData.Factories;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -18,22 +17,11 @@ public class PublicGetNotificationsHandlerTests
 {
     private readonly Mock<INotificationRepository> _repository = new();
 
-    private static NotificationEntity CreateNotification(Guid userId)
-    {
-        return new NotificationBuilder()
-            .WithId(Guid.NewGuid())
-            .WithUserId(userId)
-            .WithType(EnumNotificationType.PasswordChanged)
-            .WithContent("Password changed", "Your password was changed.")
-            .WithLinkPath(null)
-            .Build();
-    }
-
     [Fact]
     public async Task Handle_ShouldPageTheUserScopedReadAndMapToDtos()
     {
         var userId = Guid.NewGuid();
-        NotificationEntity notification = CreateNotification(userId);
+        NotificationEntity notification = NotificationFactory.CreatePasswordChanged(userId);
         _repository
             .Setup(r => r.GetPagedForUserAsync(userId, 1, 20, false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new PaginatedResult<NotificationEntity>(1, 20, 21, [notification]));
