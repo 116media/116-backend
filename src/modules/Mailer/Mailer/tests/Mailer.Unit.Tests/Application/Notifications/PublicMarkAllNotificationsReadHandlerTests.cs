@@ -1,9 +1,8 @@
 using _116.Mailer.Application.Notifications.UseCases.Public.Commands.MarkAllNotificationsRead;
 using _116.Mailer.Application.Shared.Persistence;
 using _116.Mailer.Application.Shared.Repositories;
-using _116.Mailer.Contracts.Domain.Enums;
 using _116.Mailer.Domain.Entities;
-using _116.Mailer.TestData.Builders.Entities;
+using _116.Mailer.TestData.Factories;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -20,17 +19,6 @@ public class PublicMarkAllNotificationsReadHandlerTests
     private readonly Mock<INotificationRepository> _repository = new();
     private readonly Mock<IMailerUnitOfWork> _unitOfWork = new();
 
-    private static NotificationEntity CreateNotification(Guid userId)
-    {
-        return new NotificationBuilder()
-            .WithId(Guid.NewGuid())
-            .WithUserId(userId)
-            .WithType(EnumNotificationType.PasswordChanged)
-            .WithContent("Password changed", "Your password was changed.")
-            .WithLinkPath(null)
-            .Build();
-    }
-
     private PublicMarkAllNotificationsReadHandler CreateHandler()
     {
         return new PublicMarkAllNotificationsReadHandler(_repository.Object, _unitOfWork.Object);
@@ -40,7 +28,11 @@ public class PublicMarkAllNotificationsReadHandlerTests
     public async Task Handle_WithUnreadNotifications_ShouldMarkEveryRowAndCommitOnce()
     {
         var userId = Guid.NewGuid();
-        List<NotificationEntity> unread = [CreateNotification(userId), CreateNotification(userId)];
+        List<NotificationEntity> unread =
+        [
+            NotificationFactory.CreatePasswordChanged(userId),
+            NotificationFactory.CreatePasswordChanged(userId),
+        ];
         _repository.Setup(r => r.GetUnreadForUserAsync(userId, It.IsAny<CancellationToken>())).ReturnsAsync(unread);
 
         PublicMarkAllNotificationsReadResult result = await CreateHandler()
