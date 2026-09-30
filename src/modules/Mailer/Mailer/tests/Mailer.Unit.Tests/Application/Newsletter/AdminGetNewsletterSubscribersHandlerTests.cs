@@ -3,7 +3,7 @@ using _116.Mailer.Application.Newsletter.UseCases.Admin.Queries.GetNewsletterSub
 using _116.Mailer.Application.Shared.Repositories;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Domain.Enums;
-using _116.Mailer.TestData.Builders.Entities;
+using _116.Mailer.TestData.Factories;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -24,7 +24,7 @@ public class AdminGetNewsletterSubscribersHandlerTests
     public async Task Handle_ShouldProjectThePageToDtosPreservingThePagingEnvelope()
     {
         // Arrange
-        var subscriber = new NewsletterSubscriberBuilder().WithId(Guid.NewGuid()).WithEmail("fan@example.com").Build();
+        var subscriber = NewsletterSubscriberFactory.Create("fan@example.com");
         var page = new PaginatedResult<NewsletterSubscriberEntity>(
             pageIndex: 2,
             pageSize: 10,
