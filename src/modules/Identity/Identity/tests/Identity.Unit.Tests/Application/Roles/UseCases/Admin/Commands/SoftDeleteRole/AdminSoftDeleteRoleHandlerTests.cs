@@ -7,14 +7,10 @@ using _116.Identity.Domain.Entities;
 using _116.Identity.TestData.Factories;
 using _116.Identity.TestData.Mocks.Infrastructure;
 using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
 using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
 using _116.Tests.TestData;
 using _116.Tests.TestData.Constants;
 using _116.Tests.TestData.Helpers;
-using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -52,7 +48,7 @@ public class AdminSoftDeleteRoleHandlerTests : BaseHandlerTest
     public async Task Handle_WithActiveRole_ShouldSoftDeleteAndReturnResult()
     {
         // Arrange
-        RoleEntity activeRole = RoleFactory.Create(TestConstants.Role.ValidName, TestConstants.Role.ValidDescription);
+        RoleEntity activeRole = RoleFactory.CreateDefault();
 
         AdminSoftDeleteRoleCommand command = new(RoleId: activeRole.Id.ToString());
 
