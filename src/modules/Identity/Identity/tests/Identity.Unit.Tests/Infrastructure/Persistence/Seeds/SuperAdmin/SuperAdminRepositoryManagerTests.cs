@@ -3,14 +3,7 @@ using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
 using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
 using _116.Tests.TestData.Helpers;
-using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -64,12 +57,7 @@ public class SuperAdminRepositoryManagerTests
         DbContextOptions<IdentityDbContext> options = CreateOptions();
         await using var context = new IdentityDbContext(options);
 
-        var superAdminUser = UserEntity.Create(
-            Guid.NewGuid(),
-            SuperAdminConfiguration.Email,
-            "testuser",
-            "hashedPassword"
-        );
+        var superAdminUser = UserFactory.Create(SuperAdminConfiguration.Email, "testuser");
         await context.Users.AddAsync(superAdminUser);
         await context.SaveChangesAsync();
 
@@ -89,7 +77,7 @@ public class SuperAdminRepositoryManagerTests
         DbContextOptions<IdentityDbContext> options = CreateOptions();
         await using var context = new IdentityDbContext(options);
 
-        var otherUser = UserEntity.Create(Guid.NewGuid(), "other@example.com", "otheruser", "hashedPassword");
+        var otherUser = UserFactory.Create("other@example.com", "otheruser");
         await context.Users.AddAsync(otherUser);
         await context.SaveChangesAsync();
 
@@ -113,7 +101,7 @@ public class SuperAdminRepositoryManagerTests
         DbContextOptions<IdentityDbContext> options = CreateOptions();
         await using var context = new IdentityDbContext(options);
 
-        var permission = PermissionEntity.Create(Guid.NewGuid(), "system", "all", "Test permission");
+        var permission = PermissionFactory.Create("system", "all", "Test permission");
         await context.Permissions.AddAsync(permission);
         await context.SaveChangesAsync();
 
@@ -150,7 +138,7 @@ public class SuperAdminRepositoryManagerTests
         DbContextOptions<IdentityDbContext> options = CreateOptions();
         await using var context = new IdentityDbContext(options);
 
-        var permission = PermissionEntity.Create(Guid.NewGuid(), "system", "read", "Test permission");
+        var permission = PermissionFactory.Create("system", "read", "Test permission");
         await context.Permissions.AddAsync(permission);
         await context.SaveChangesAsync();
 
@@ -174,7 +162,7 @@ public class SuperAdminRepositoryManagerTests
         DbContextOptions<IdentityDbContext> options = CreateOptions();
         await using var context = new IdentityDbContext(options);
 
-        var role = RoleEntity.Create(Guid.NewGuid(), "SuperAdmin", "Test role");
+        var role = RoleFactory.Create("SuperAdmin", "Test role");
         await context.Roles.AddAsync(role);
         await context.SaveChangesAsync();
 
@@ -217,7 +205,7 @@ public class SuperAdminRepositoryManagerTests
         var roleId = Guid.NewGuid();
         var permissionId = Guid.NewGuid();
 
-        var rolePermission = RolePermissionEntity.Create(roleId, permissionId);
+        var rolePermission = RolePermissionFactory.Create(roleId, permissionId);
         await context.RolePermissions.AddAsync(rolePermission);
         await context.SaveChangesAsync();
 
@@ -259,7 +247,7 @@ public class SuperAdminRepositoryManagerTests
         var userId = Guid.NewGuid();
         var roleId = Guid.NewGuid();
 
-        var userRole = UserRoleEntity.Create(userId, roleId);
+        var userRole = UserRoleFactory.Create(userId, roleId);
         await context.UserRoles.AddAsync(userRole);
         await context.SaveChangesAsync();
 
@@ -298,7 +286,7 @@ public class SuperAdminRepositoryManagerTests
         DbContextOptions<IdentityDbContext> options = CreateOptions();
         using var context = new IdentityDbContext(options);
 
-        var permission = PermissionEntity.Create(Guid.NewGuid(), "test", "create", "Test permission");
+        var permission = PermissionFactory.Create("test", "create", "Test permission");
         var manager = new SuperAdminRepositoryManager(context, _loggerMock.Object);
 
         // Act
@@ -315,7 +303,7 @@ public class SuperAdminRepositoryManagerTests
         DbContextOptions<IdentityDbContext> options = CreateOptions();
         using var context = new IdentityDbContext(options);
 
-        var permission = PermissionEntity.Create(Guid.NewGuid(), "test", "create", "Test permission");
+        var permission = PermissionFactory.Create("test", "create", "Test permission");
         var manager = new SuperAdminRepositoryManager(context, _loggerMock.Object);
 
         // Act
@@ -346,7 +334,7 @@ public class SuperAdminRepositoryManagerTests
         DbContextOptions<IdentityDbContext> options = CreateOptions();
         using var context = new IdentityDbContext(options);
 
-        var role = RoleEntity.Create(Guid.NewGuid(), "TestRole", "Test role description");
+        var role = RoleFactory.Create("TestRole", "Test role description");
         var manager = new SuperAdminRepositoryManager(context, _loggerMock.Object);
 
         // Act
@@ -363,7 +351,7 @@ public class SuperAdminRepositoryManagerTests
         DbContextOptions<IdentityDbContext> options = CreateOptions();
         using var context = new IdentityDbContext(options);
 
-        var role = RoleEntity.Create(Guid.NewGuid(), "TestRole", "Test role description");
+        var role = RoleFactory.Create("TestRole", "Test role description");
         var manager = new SuperAdminRepositoryManager(context, _loggerMock.Object);
 
         // Act
@@ -394,7 +382,7 @@ public class SuperAdminRepositoryManagerTests
         DbContextOptions<IdentityDbContext> options = CreateOptions();
         using var context = new IdentityDbContext(options);
 
-        var user = UserEntity.Create(Guid.NewGuid(), "test@example.com", "testuser", "hashedPassword");
+        var user = UserFactory.Create("test@example.com", "testuser");
         var manager = new SuperAdminRepositoryManager(context, _loggerMock.Object);
 
         // Act
@@ -411,7 +399,7 @@ public class SuperAdminRepositoryManagerTests
         DbContextOptions<IdentityDbContext> options = CreateOptions();
         using var context = new IdentityDbContext(options);
 
-        var user = UserEntity.Create(Guid.NewGuid(), "test@example.com", "testuser", "hashedPassword");
+        var user = UserFactory.Create("test@example.com", "testuser");
         var manager = new SuperAdminRepositoryManager(context, _loggerMock.Object);
 
         // Act
@@ -538,7 +526,7 @@ public class SuperAdminRepositoryManagerTests
         DbContextOptions<IdentityDbContext> options = CreateOptions();
         await using var context = new IdentityDbContext(options);
 
-        var role = RoleEntity.Create(Guid.NewGuid(), "TestRole", "Test role");
+        var role = RoleFactory.Create("TestRole", "Test role");
         var manager = new SuperAdminRepositoryManager(context, _loggerMock.Object);
         manager.AddRole(role);
 
