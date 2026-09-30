@@ -8,10 +8,6 @@ using _116.Identity.TestData.Factories;
 using _116.Identity.TestData.Mocks.Infrastructure;
 using _116.Identity.TestData.Mocks.Repositories;
 using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Mocks;
 using Moq;
 using Xunit;
 
@@ -29,9 +25,9 @@ public class AdminSignOutSessionFactoryTests
 
     public AdminSignOutSessionFactoryTests()
     {
-        _sessionRepositoryMock = new Mock<ISessionRepository>();
-        _refreshTokenServiceMock = new Mock<IRefreshTokenService>();
-        _unitOfWorkMock = new Mock<IIdentityUnitOfWork>();
+        _sessionRepositoryMock = MockSessionRepository.Create();
+        _refreshTokenServiceMock = MockRefreshTokenService.Create();
+        _unitOfWorkMock = MockIdentityUnitOfWork.Create();
         _factory = new AdminSignOutSessionFactory(
             _sessionRepositoryMock.Object,
             _refreshTokenServiceMock.Object,
@@ -49,11 +45,9 @@ public class AdminSignOutSessionFactoryTests
         string refreshTokenHash = "hashed_refresh_token";
         SessionEntity session = SessionFactory.Create();
 
-        _refreshTokenServiceMock.Setup(x => x.HashRefreshToken(refreshToken)).Returns(refreshTokenHash);
+        _refreshTokenServiceMock.SetupHashRefreshToken(refreshToken, refreshTokenHash);
 
-        _sessionRepositoryMock
-            .Setup(x => x.GetByRefreshTokenHashAsync(refreshTokenHash, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(session);
+        _sessionRepositoryMock.SetupGetByRefreshTokenHash(refreshTokenHash, session);
 
         _sessionRepositoryMock
             .Setup(x => x.RevokeAsync(session.Id, It.IsAny<EnumSessionRevokeReason>(), It.IsAny<CancellationToken>()))
@@ -79,11 +73,9 @@ public class AdminSignOutSessionFactoryTests
         string refreshTokenHash = "hashed_refresh_token";
         SessionEntity session = SessionFactory.Create();
 
-        _refreshTokenServiceMock.Setup(x => x.HashRefreshToken(refreshToken)).Returns(refreshTokenHash);
+        _refreshTokenServiceMock.SetupHashRefreshToken(refreshToken, refreshTokenHash);
 
-        _sessionRepositoryMock
-            .Setup(x => x.GetByRefreshTokenHashAsync(refreshTokenHash, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(session);
+        _sessionRepositoryMock.SetupGetByRefreshTokenHash(refreshTokenHash, session);
 
         _sessionRepositoryMock
             .Setup(x => x.RevokeAsync(session.Id, It.IsAny<EnumSessionRevokeReason>(), It.IsAny<CancellationToken>()))
@@ -105,11 +97,9 @@ public class AdminSignOutSessionFactoryTests
         string refreshToken = "refresh_token_123";
         string refreshTokenHash = "hashed_refresh_token";
 
-        _refreshTokenServiceMock.Setup(x => x.HashRefreshToken(refreshToken)).Returns(refreshTokenHash);
+        _refreshTokenServiceMock.SetupHashRefreshToken(refreshToken, refreshTokenHash);
 
-        _sessionRepositoryMock
-            .Setup(x => x.GetByRefreshTokenHashAsync(refreshTokenHash, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((SessionEntity?)null);
+        _sessionRepositoryMock.SetupGetByRefreshTokenHashReturnsNull(refreshTokenHash);
 
         // Act
         await _factory.SignOutAsync(refreshToken, CancellationToken.None);
@@ -128,11 +118,9 @@ public class AdminSignOutSessionFactoryTests
         string refreshToken = "refresh_token_123";
         string refreshTokenHash = "hashed_refresh_token";
 
-        _refreshTokenServiceMock.Setup(x => x.HashRefreshToken(refreshToken)).Returns(refreshTokenHash);
+        _refreshTokenServiceMock.SetupHashRefreshToken(refreshToken, refreshTokenHash);
 
-        _sessionRepositoryMock
-            .Setup(x => x.GetByRefreshTokenHashAsync(refreshTokenHash, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((SessionEntity?)null);
+        _sessionRepositoryMock.SetupGetByRefreshTokenHashReturnsNull(refreshTokenHash);
 
         // Act
         await _factory.SignOutAsync(refreshToken, CancellationToken.None);
@@ -148,11 +136,9 @@ public class AdminSignOutSessionFactoryTests
         string refreshToken = "refresh_token_123";
         string refreshTokenHash = "hashed_refresh_token";
 
-        _refreshTokenServiceMock.Setup(x => x.HashRefreshToken(refreshToken)).Returns(refreshTokenHash);
+        _refreshTokenServiceMock.SetupHashRefreshToken(refreshToken, refreshTokenHash);
 
-        _sessionRepositoryMock
-            .Setup(x => x.GetByRefreshTokenHashAsync(refreshTokenHash, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((SessionEntity?)null);
+        _sessionRepositoryMock.SetupGetByRefreshTokenHashReturnsNull(refreshTokenHash);
 
         // Act
         await _factory.SignOutAsync(refreshToken, CancellationToken.None);
@@ -168,11 +154,9 @@ public class AdminSignOutSessionFactoryTests
         string refreshToken = "refresh_token_123";
         string refreshTokenHash = "hashed_refresh_token";
 
-        _refreshTokenServiceMock.Setup(x => x.HashRefreshToken(refreshToken)).Returns(refreshTokenHash);
+        _refreshTokenServiceMock.SetupHashRefreshToken(refreshToken, refreshTokenHash);
 
-        _sessionRepositoryMock
-            .Setup(x => x.GetByRefreshTokenHashAsync(refreshTokenHash, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((SessionEntity?)null);
+        _sessionRepositoryMock.SetupGetByRefreshTokenHashReturnsNull(refreshTokenHash);
 
         // Act
         await _factory.SignOutAsync(refreshToken, CancellationToken.None);
@@ -193,7 +177,7 @@ public class AdminSignOutSessionFactoryTests
         SessionEntity session = SessionFactory.Create();
         CancellationToken cancellationToken = new();
 
-        _refreshTokenServiceMock.Setup(x => x.HashRefreshToken(refreshToken)).Returns(refreshTokenHash);
+        _refreshTokenServiceMock.SetupHashRefreshToken(refreshToken, refreshTokenHash);
 
         _sessionRepositoryMock
             .Setup(x => x.GetByRefreshTokenHashAsync(refreshTokenHash, cancellationToken))
