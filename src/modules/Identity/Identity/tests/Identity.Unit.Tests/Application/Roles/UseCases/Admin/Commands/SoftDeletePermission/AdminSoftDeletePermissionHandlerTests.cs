@@ -7,14 +7,9 @@ using _116.Identity.Domain.Entities;
 using _116.Identity.TestData.Factories;
 using _116.Identity.TestData.Mocks.Infrastructure;
 using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
 using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
 using _116.Tests.TestData;
-using _116.Tests.TestData.Constants;
 using _116.Tests.TestData.Helpers;
-using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -52,10 +47,7 @@ public class AdminSoftDeletePermissionHandlerTests : BaseHandlerTest
     public async Task Handle_WithActivePermission_ShouldSoftDeleteAndReturnResult()
     {
         // Arrange
-        PermissionEntity activePermission = PermissionFactory.Create(
-            TestConstants.Permission.ValidResource,
-            TestConstants.Permission.ValidAction
-        );
+        PermissionEntity activePermission = PermissionFactory.CreateDefault();
 
         AdminSoftDeletePermissionCommand command = new(PermissionId: activePermission.Id.ToString());
 
@@ -73,10 +65,7 @@ public class AdminSoftDeletePermissionHandlerTests : BaseHandlerTest
     public async Task Handle_WithActivePermission_ShouldSetIsDeletedToTrue()
     {
         // Arrange
-        PermissionEntity activePermission = PermissionFactory.Create(
-            TestConstants.Permission.ValidResource,
-            TestConstants.Permission.ValidAction
-        );
+        PermissionEntity activePermission = PermissionFactory.CreateDefault();
 
         AdminSoftDeletePermissionCommand command = new(PermissionId: activePermission.Id.ToString());
 
@@ -94,10 +83,7 @@ public class AdminSoftDeletePermissionHandlerTests : BaseHandlerTest
     public async Task Handle_WithActivePermission_ShouldAlsoDeactivate()
     {
         // Arrange
-        PermissionEntity activePermission = PermissionFactory.Create(
-            TestConstants.Permission.ValidResource,
-            TestConstants.Permission.ValidAction
-        );
+        PermissionEntity activePermission = PermissionFactory.CreateDefault();
 
         AdminSoftDeletePermissionCommand command = new(PermissionId: activePermission.Id.ToString());
 
@@ -134,10 +120,7 @@ public class AdminSoftDeletePermissionHandlerTests : BaseHandlerTest
     public async Task Handle_WhenPermissionAlreadyDeleted_ShouldThrowConflictException()
     {
         // Arrange
-        PermissionEntity deletedPermission = PermissionFactory.Create(
-            TestConstants.Permission.ValidResource,
-            TestConstants.Permission.ValidAction
-        );
+        PermissionEntity deletedPermission = PermissionFactory.CreateDefault();
         deletedPermission.SoftDelete(now: DateTime.UtcNow);
 
         AdminSoftDeletePermissionCommand command = new(PermissionId: deletedPermission.Id.ToString());
@@ -155,10 +138,7 @@ public class AdminSoftDeletePermissionHandlerTests : BaseHandlerTest
     public async Task Handle_WhenPermissionAlreadyDeleted_ShouldNotCommit()
     {
         // Arrange
-        PermissionEntity deletedPermission = PermissionFactory.Create(
-            TestConstants.Permission.ValidResource,
-            TestConstants.Permission.ValidAction
-        );
+        PermissionEntity deletedPermission = PermissionFactory.CreateDefault();
         deletedPermission.SoftDelete(now: DateTime.UtcNow);
 
         AdminSoftDeletePermissionCommand command = new(PermissionId: deletedPermission.Id.ToString());
@@ -181,10 +161,7 @@ public class AdminSoftDeletePermissionHandlerTests : BaseHandlerTest
     public async Task Handle_WithCancellationToken_ShouldPassToRepository()
     {
         // Arrange
-        PermissionEntity activePermission = PermissionFactory.Create(
-            TestConstants.Permission.ValidResource,
-            TestConstants.Permission.ValidAction
-        );
+        PermissionEntity activePermission = PermissionFactory.CreateDefault();
 
         AdminSoftDeletePermissionCommand command = new(PermissionId: activePermission.Id.ToString());
 
