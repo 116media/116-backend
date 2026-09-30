@@ -3,13 +3,6 @@ using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Repositories;
 using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
-using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -50,8 +43,8 @@ public class RoleRepositoryTests : IDisposable
         RoleEntity role = RoleFactory.Create();
         PermissionEntity permission1 = PermissionFactory.Create("article", "read");
         PermissionEntity permission2 = PermissionFactory.Create("article", "write");
-        var rolePermission1 = RolePermissionEntity.Create(role.Id, permission1.Id);
-        var rolePermission2 = RolePermissionEntity.Create(role.Id, permission2.Id);
+        var rolePermission1 = RolePermissionFactory.Create(role.Id, permission1.Id);
+        var rolePermission2 = RolePermissionFactory.Create(role.Id, permission2.Id);
 
         _context.Roles.Add(role);
         _context.Permissions.AddRange(permission1, permission2);
