@@ -14,11 +14,7 @@ using _116.Identity.TestData.Factories;
 using _116.Identity.TestData.Mocks.Infrastructure;
 using _116.Identity.TestData.Mocks.Repositories;
 using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
 using _116.Tests.TestData.Helpers;
-using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -48,10 +44,10 @@ public class RefreshTokenFactoryTests : IDisposable
         _originalRefreshTokenExpiration = Environment.GetEnvironmentVariable(RefreshTokenExpirationVariable);
         Environment.SetEnvironmentVariable(RefreshTokenExpirationVariable, "43200");
 
-        _sessionRepositoryMock = new Mock<ISessionRepository>();
-        _refreshTokenServiceMock = new Mock<IRefreshTokenService>();
+        _sessionRepositoryMock = MockSessionRepository.Create();
+        _refreshTokenServiceMock = MockRefreshTokenService.Create();
         _tokenStateRepositoryMock = new Mock<IUserTokenStateRepository>();
-        _unitOfWorkMock = new Mock<IIdentityUnitOfWork>();
+        _unitOfWorkMock = MockIdentityUnitOfWork.Create();
 
         _tokenStateRepositoryMock
             .Setup(x => x.GetOrCreateAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
@@ -90,15 +86,13 @@ public class RefreshTokenFactoryTests : IDisposable
         UserEntity user = UserFactory.Create();
         SessionEntity session = new SessionBuilder().WithUser(user).Build();
 
-        _refreshTokenServiceMock.Setup(x => x.HashRefreshToken(refreshToken)).Returns(refreshTokenHash);
+        _refreshTokenServiceMock.SetupHashRefreshToken(refreshToken, refreshTokenHash);
 
-        _sessionRepositoryMock
-            .Setup(x => x.GetByRefreshTokenHashAsync(refreshTokenHash, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(session);
+        _sessionRepositoryMock.SetupGetByRefreshTokenHash(refreshTokenHash, session);
 
-        _refreshTokenServiceMock.Setup(x => x.GenerateRefreshToken()).Returns(newRefreshToken);
+        _refreshTokenServiceMock.SetupGenerateRefreshToken(newRefreshToken);
 
-        _refreshTokenServiceMock.Setup(x => x.HashRefreshToken(newRefreshToken)).Returns(newRefreshTokenHash);
+        _refreshTokenServiceMock.SetupHashRefreshToken(newRefreshToken, newRefreshTokenHash);
 
         _sessionRepositoryMock
             .Setup(x =>
@@ -130,11 +124,9 @@ public class RefreshTokenFactoryTests : IDisposable
         string refreshToken = "invalid_refresh_token";
         string refreshTokenHash = "invalid_hashed_refresh_token";
 
-        _refreshTokenServiceMock.Setup(x => x.HashRefreshToken(refreshToken)).Returns(refreshTokenHash);
+        _refreshTokenServiceMock.SetupHashRefreshToken(refreshToken, refreshTokenHash);
 
-        _sessionRepositoryMock
-            .Setup(x => x.GetByRefreshTokenHashAsync(refreshTokenHash, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((SessionEntity?)null);
+        _sessionRepositoryMock.SetupGetByRefreshTokenHashReturnsNull(refreshTokenHash);
 
         // Act & Assert
         Func<Task> act = async () => await _factory.RefreshTokenAsync(refreshToken, CancellationToken.None);
@@ -148,11 +140,9 @@ public class RefreshTokenFactoryTests : IDisposable
         string refreshToken = "refresh_token_123";
         string refreshTokenHash = "hashed_refresh_token";
 
-        _refreshTokenServiceMock.Setup(x => x.HashRefreshToken(refreshToken)).Returns(refreshTokenHash);
+        _refreshTokenServiceMock.SetupHashRefreshToken(refreshToken, refreshTokenHash);
 
-        _sessionRepositoryMock
-            .Setup(x => x.GetByRefreshTokenHashAsync(refreshTokenHash, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((SessionEntity?)null);
+        _sessionRepositoryMock.SetupGetByRefreshTokenHashReturnsNull(refreshTokenHash);
 
         // Act & Assert
         Func<Task> act = async () => await _factory.RefreshTokenAsync(refreshToken, CancellationToken.None);
@@ -168,11 +158,9 @@ public class RefreshTokenFactoryTests : IDisposable
         string refreshToken = "refresh_token_123";
         string refreshTokenHash = "hashed_refresh_token";
 
-        _refreshTokenServiceMock.Setup(x => x.HashRefreshToken(refreshToken)).Returns(refreshTokenHash);
+        _refreshTokenServiceMock.SetupHashRefreshToken(refreshToken, refreshTokenHash);
 
-        _sessionRepositoryMock
-            .Setup(x => x.GetByRefreshTokenHashAsync(refreshTokenHash, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((SessionEntity?)null);
+        _sessionRepositoryMock.SetupGetByRefreshTokenHashReturnsNull(refreshTokenHash);
 
         // Act & Assert
         Func<Task> act = async () => await _factory.RefreshTokenAsync(refreshToken, CancellationToken.None);
@@ -195,15 +183,13 @@ public class RefreshTokenFactoryTests : IDisposable
         UserEntity user = UserFactory.Create();
         SessionEntity session = new SessionBuilder().WithUser(user).Build();
 
-        _refreshTokenServiceMock.Setup(x => x.HashRefreshToken(refreshToken)).Returns(refreshTokenHash);
+        _refreshTokenServiceMock.SetupHashRefreshToken(refreshToken, refreshTokenHash);
 
-        _sessionRepositoryMock
-            .Setup(x => x.GetByRefreshTokenHashAsync(refreshTokenHash, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(session);
+        _sessionRepositoryMock.SetupGetByRefreshTokenHash(refreshTokenHash, session);
 
-        _refreshTokenServiceMock.Setup(x => x.GenerateRefreshToken()).Returns(newRefreshToken);
+        _refreshTokenServiceMock.SetupGenerateRefreshToken(newRefreshToken);
 
-        _refreshTokenServiceMock.Setup(x => x.HashRefreshToken(newRefreshToken)).Returns(newRefreshTokenHash);
+        _refreshTokenServiceMock.SetupHashRefreshToken(newRefreshToken, newRefreshTokenHash);
 
         _sessionRepositoryMock
             .Setup(x =>
@@ -237,15 +223,13 @@ public class RefreshTokenFactoryTests : IDisposable
         UserEntity user = UserFactory.Create();
         SessionEntity session = new SessionBuilder().WithUser(user).Build();
 
-        _refreshTokenServiceMock.Setup(x => x.HashRefreshToken(refreshToken)).Returns(refreshTokenHash);
+        _refreshTokenServiceMock.SetupHashRefreshToken(refreshToken, refreshTokenHash);
 
-        _sessionRepositoryMock
-            .Setup(x => x.GetByRefreshTokenHashAsync(refreshTokenHash, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(session);
+        _sessionRepositoryMock.SetupGetByRefreshTokenHash(refreshTokenHash, session);
 
-        _refreshTokenServiceMock.Setup(x => x.GenerateRefreshToken()).Returns(newRefreshToken);
+        _refreshTokenServiceMock.SetupGenerateRefreshToken(newRefreshToken);
 
-        _refreshTokenServiceMock.Setup(x => x.HashRefreshToken(newRefreshToken)).Returns(newRefreshTokenHash);
+        _refreshTokenServiceMock.SetupHashRefreshToken(newRefreshToken, newRefreshTokenHash);
 
         _sessionRepositoryMock
             .Setup(x =>
@@ -287,15 +271,13 @@ public class RefreshTokenFactoryTests : IDisposable
         UserEntity user = UserFactory.Create();
         SessionEntity session = new SessionBuilder().WithUser(user).Build();
 
-        _refreshTokenServiceMock.Setup(x => x.HashRefreshToken(refreshToken)).Returns(refreshTokenHash);
+        _refreshTokenServiceMock.SetupHashRefreshToken(refreshToken, refreshTokenHash);
 
-        _sessionRepositoryMock
-            .Setup(x => x.GetByRefreshTokenHashAsync(refreshTokenHash, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(session);
+        _sessionRepositoryMock.SetupGetByRefreshTokenHash(refreshTokenHash, session);
 
-        _refreshTokenServiceMock.Setup(x => x.GenerateRefreshToken()).Returns(newRefreshToken);
+        _refreshTokenServiceMock.SetupGenerateRefreshToken(newRefreshToken);
 
-        _refreshTokenServiceMock.Setup(x => x.HashRefreshToken(newRefreshToken)).Returns(newRefreshTokenHash);
+        _refreshTokenServiceMock.SetupHashRefreshToken(newRefreshToken, newRefreshTokenHash);
 
         _sessionRepositoryMock
             .Setup(x =>
@@ -328,15 +310,13 @@ public class RefreshTokenFactoryTests : IDisposable
         UserEntity user = UserFactory.Create();
         SessionEntity session = new SessionBuilder().WithUser(user).Build();
 
-        _refreshTokenServiceMock.Setup(x => x.HashRefreshToken(refreshToken)).Returns(refreshTokenHash);
+        _refreshTokenServiceMock.SetupHashRefreshToken(refreshToken, refreshTokenHash);
 
-        _sessionRepositoryMock
-            .Setup(x => x.GetByRefreshTokenHashAsync(refreshTokenHash, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(session);
+        _sessionRepositoryMock.SetupGetByRefreshTokenHash(refreshTokenHash, session);
 
-        _refreshTokenServiceMock.Setup(x => x.GenerateRefreshToken()).Returns(newRefreshToken);
+        _refreshTokenServiceMock.SetupGenerateRefreshToken(newRefreshToken);
 
-        _refreshTokenServiceMock.Setup(x => x.HashRefreshToken(newRefreshToken)).Returns(newRefreshTokenHash);
+        _refreshTokenServiceMock.SetupHashRefreshToken(newRefreshToken, newRefreshTokenHash);
 
         _sessionRepositoryMock
             .Setup(x =>
@@ -371,15 +351,15 @@ public class RefreshTokenFactoryTests : IDisposable
         SessionEntity session = new SessionBuilder().WithUser(user).Build();
         CancellationToken cancellationToken = new();
 
-        _refreshTokenServiceMock.Setup(x => x.HashRefreshToken(refreshToken)).Returns(refreshTokenHash);
+        _refreshTokenServiceMock.SetupHashRefreshToken(refreshToken, refreshTokenHash);
 
         _sessionRepositoryMock
             .Setup(x => x.GetByRefreshTokenHashAsync(refreshTokenHash, cancellationToken))
             .ReturnsAsync(session);
 
-        _refreshTokenServiceMock.Setup(x => x.GenerateRefreshToken()).Returns(newRefreshToken);
+        _refreshTokenServiceMock.SetupGenerateRefreshToken(newRefreshToken);
 
-        _refreshTokenServiceMock.Setup(x => x.HashRefreshToken(newRefreshToken)).Returns(newRefreshTokenHash);
+        _refreshTokenServiceMock.SetupHashRefreshToken(newRefreshToken, newRefreshTokenHash);
 
         _sessionRepositoryMock
             .Setup(x =>
@@ -414,11 +394,9 @@ public class RefreshTokenFactoryTests : IDisposable
         SessionEntity session = new SessionBuilder().WithUser(user).Build();
         session.ClearDomainEvents();
 
-        _refreshTokenServiceMock.Setup(x => x.HashRefreshToken(refreshToken)).Returns(refreshTokenHash);
+        _refreshTokenServiceMock.SetupHashRefreshToken(refreshToken, refreshTokenHash);
 
-        _sessionRepositoryMock
-            .Setup(x => x.GetByRefreshTokenHashAsync(refreshTokenHash, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(session);
+        _sessionRepositoryMock.SetupGetByRefreshTokenHash(refreshTokenHash, session);
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
@@ -460,11 +438,9 @@ public class RefreshTokenFactoryTests : IDisposable
             .Build();
         session.ClearDomainEvents();
 
-        _refreshTokenServiceMock.Setup(x => x.HashRefreshToken(refreshToken)).Returns(refreshTokenHash);
+        _refreshTokenServiceMock.SetupHashRefreshToken(refreshToken, refreshTokenHash);
 
-        _sessionRepositoryMock
-            .Setup(x => x.GetByRefreshTokenHashAsync(refreshTokenHash, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(session);
+        _sessionRepositoryMock.SetupGetByRefreshTokenHash(refreshTokenHash, session);
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
@@ -502,11 +478,9 @@ public class RefreshTokenFactoryTests : IDisposable
         SessionEntity revokedSession = SessionFactory.CreateRevoked();
         revokedSession.ClearDomainEvents();
 
-        _refreshTokenServiceMock.Setup(x => x.HashRefreshToken(refreshToken)).Returns(refreshTokenHash);
+        _refreshTokenServiceMock.SetupHashRefreshToken(refreshToken, refreshTokenHash);
 
-        _sessionRepositoryMock
-            .Setup(x => x.GetByRefreshTokenHashAsync(refreshTokenHash, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((SessionEntity?)null);
+        _sessionRepositoryMock.SetupGetByRefreshTokenHashReturnsNull(refreshTokenHash);
 
         _sessionRepositoryMock
             .Setup(x => x.GetRevokedSessionByRefreshTokenHashAsync(refreshTokenHash, It.IsAny<CancellationToken>()))
@@ -533,11 +507,9 @@ public class RefreshTokenFactoryTests : IDisposable
         string refreshToken = "unknown_refresh_token";
         string refreshTokenHash = "unknown_hashed_refresh_token";
 
-        _refreshTokenServiceMock.Setup(x => x.HashRefreshToken(refreshToken)).Returns(refreshTokenHash);
+        _refreshTokenServiceMock.SetupHashRefreshToken(refreshToken, refreshTokenHash);
 
-        _sessionRepositoryMock
-            .Setup(x => x.GetByRefreshTokenHashAsync(refreshTokenHash, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((SessionEntity?)null);
+        _sessionRepositoryMock.SetupGetByRefreshTokenHashReturnsNull(refreshTokenHash);
 
         _sessionRepositoryMock
             .Setup(x => x.GetRevokedSessionByRefreshTokenHashAsync(refreshTokenHash, It.IsAny<CancellationToken>()))
