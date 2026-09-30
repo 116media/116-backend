@@ -7,13 +7,9 @@ using _116.Identity.TestData.Builders.Entities;
 using _116.Identity.TestData.Factories;
 using _116.Identity.TestData.Mocks.Infrastructure;
 using _116.Identity.TestData.Mocks.Repositories;
-using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
 using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
 using _116.Tests.TestData;
 using _116.Tests.TestData.Constants;
-using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -63,7 +59,7 @@ public class AdminBulkUpdateRolePermissionsHandlerTests : BaseHandlerTest
     public async Task Handle_WithValidCommand_ShouldUpdatePermissionsAndReturnResult()
     {
         // Arrange
-        RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName, TestConstants.Role.ValidDescription);
+        RoleEntity role = RoleFactory.CreateDefault();
 
         List<Guid> newPermissionIds = [Guid.NewGuid(), Guid.NewGuid()];
 
@@ -90,7 +86,7 @@ public class AdminBulkUpdateRolePermissionsHandlerTests : BaseHandlerTest
     public async Task Handle_WithNewPermissions_ShouldGrantThroughTheRoleAggregate()
     {
         // Arrange
-        RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName, TestConstants.Role.ValidDescription);
+        RoleEntity role = RoleFactory.CreateDefault();
 
         var newPermissionId = Guid.NewGuid();
         AdminBulkUpdateRolePermissionsCommand command = new(
@@ -111,10 +107,7 @@ public class AdminBulkUpdateRolePermissionsHandlerTests : BaseHandlerTest
     public async Task Handle_WithRemovedPermissions_ShouldRevokeThroughTheRoleAggregate()
     {
         // Arrange
-        PermissionEntity existingPermission = PermissionFactory.Create(
-            TestConstants.Permission.ValidResource,
-            TestConstants.Permission.ValidAction
-        );
+        PermissionEntity existingPermission = PermissionFactory.CreateDefault();
         RoleEntity role = CreateRoleWithPermissions(existingPermission);
 
         AdminBulkUpdateRolePermissionsCommand command = new(RoleId: role.Id.ToString(), PermissionIds: []);
@@ -157,10 +150,7 @@ public class AdminBulkUpdateRolePermissionsHandlerTests : BaseHandlerTest
     public async Task Handle_WithNoChanges_ShouldStillCommit()
     {
         // Arrange
-        PermissionEntity permission = PermissionFactory.Create(
-            TestConstants.Permission.ValidResource,
-            TestConstants.Permission.ValidAction
-        );
+        PermissionEntity permission = PermissionFactory.CreateDefault();
         RoleEntity role = CreateRoleWithPermissions(permission);
 
         AdminBulkUpdateRolePermissionsCommand command = new(RoleId: role.Id.ToString(), PermissionIds: [permission.Id]);
@@ -250,7 +240,7 @@ public class AdminBulkUpdateRolePermissionsHandlerTests : BaseHandlerTest
     public async Task Handle_WithCancellationToken_ShouldPassToRepositories()
     {
         // Arrange
-        RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName, TestConstants.Role.ValidDescription);
+        RoleEntity role = RoleFactory.CreateDefault();
 
         List<Guid> permissionIds = [Guid.NewGuid()];
 
@@ -270,7 +260,7 @@ public class AdminBulkUpdateRolePermissionsHandlerTests : BaseHandlerTest
     public async Task Handle_ShouldReloadRoleWithPermissionsAfterUpdate()
     {
         // Arrange
-        RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName, TestConstants.Role.ValidDescription);
+        RoleEntity role = RoleFactory.CreateDefault();
 
         List<Guid> permissionIds = [Guid.NewGuid()];
 
