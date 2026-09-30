@@ -12,11 +12,7 @@ using _116.Identity.TestData.Factories;
 using _116.Identity.TestData.Mocks.Infrastructure;
 using _116.Identity.TestData.Mocks.Repositories;
 using _116.Identity.TestData.Mocks.Services;
-using _116.Storage.TestData.Factories;
-using _116.Storage.TestData.Mocks.Infrastructure;
-using _116.Storage.TestData.Mocks.Services;
 using _116.Tests.TestData.Helpers;
-using _116.Tests.TestData.Mocks;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -37,11 +33,11 @@ public class PublicResetPasswordAuthFactoryTests
 
     public PublicResetPasswordAuthFactoryTests()
     {
-        _authRepositoryMock = new Mock<IAuthRepository>();
-        _passwordServiceMock = new Mock<IPasswordService>();
-        _sessionRepositoryMock = new Mock<ISessionRepository>();
+        _authRepositoryMock = MockAuthRepository.Create();
+        _passwordServiceMock = MockPasswordService.Create();
+        _sessionRepositoryMock = MockSessionRepository.Create();
         _tokenStateRepositoryMock = new Mock<IUserTokenStateRepository>();
-        _unitOfWorkMock = new Mock<IIdentityUnitOfWork>();
+        _unitOfWorkMock = MockIdentityUnitOfWork.Create();
         _factory = new PublicResetPasswordAuthFactory(
             _authRepositoryMock.Object,
             _passwordServiceMock.Object,
@@ -66,9 +62,9 @@ public class PublicResetPasswordAuthFactoryTests
             .Setup(x => x.GetUserWithRolesByEmailOrThrow(It.IsAny<Email>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(user);
 
-        _authRepositoryMock.Setup(x => x.IsUserAccountActive(user));
+        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
 
-        _authRepositoryMock.Setup(x => x.IsUserAccountVerified(user));
+        _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
 
         // Act
         PublicResetPasswordAuthData result = await _factory.GetUserForResetAsync(email, CancellationToken.None);
@@ -88,9 +84,9 @@ public class PublicResetPasswordAuthFactoryTests
             .Setup(x => x.GetUserWithRolesByEmailOrThrow(It.IsAny<Email>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(user);
 
-        _authRepositoryMock.Setup(x => x.IsUserAccountActive(user));
+        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
 
-        _authRepositoryMock.Setup(x => x.IsUserAccountVerified(user));
+        _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
 
         // Act
         await _factory.GetUserForResetAsync(email, CancellationToken.None);
@@ -110,9 +106,9 @@ public class PublicResetPasswordAuthFactoryTests
             .Setup(x => x.GetUserWithRolesByEmailOrThrow(It.IsAny<Email>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(user);
 
-        _authRepositoryMock.Setup(x => x.IsUserAccountActive(user));
+        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
 
-        _authRepositoryMock.Setup(x => x.IsUserAccountVerified(user));
+        _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
 
         // Act
         await _factory.GetUserForResetAsync(email, CancellationToken.None);
@@ -134,9 +130,9 @@ public class PublicResetPasswordAuthFactoryTests
             )
             .ReturnsAsync(user);
 
-        _authRepositoryMock.Setup(x => x.IsUserAccountActive(user));
+        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
 
-        _authRepositoryMock.Setup(x => x.IsUserAccountVerified(user));
+        _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
 
         // Act
         await _factory.GetUserForResetAsync(email, CancellationToken.None);
@@ -160,9 +156,9 @@ public class PublicResetPasswordAuthFactoryTests
             .Setup(x => x.GetUserWithRolesByEmailOrThrow(It.IsAny<Email>(), cancellationToken))
             .ReturnsAsync(user);
 
-        _authRepositoryMock.Setup(x => x.IsUserAccountActive(user));
+        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
 
-        _authRepositoryMock.Setup(x => x.IsUserAccountVerified(user));
+        _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
 
         // Act
         await _factory.GetUserForResetAsync(email, cancellationToken);
@@ -186,9 +182,9 @@ public class PublicResetPasswordAuthFactoryTests
         string hashedPassword = "hashed_new_password";
         UserEntity user = UserFactory.Create();
 
-        _passwordServiceMock.Setup(x => x.Verify(newPassword, user.PasswordHash)).Returns(false);
+        _passwordServiceMock.SetupVerifyFailure(newPassword, user.PasswordHash);
 
-        _passwordServiceMock.Setup(x => x.Hash(newPassword)).Returns(hashedPassword);
+        _passwordServiceMock.SetupHash(newPassword, hashedPassword);
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
@@ -206,7 +202,7 @@ public class PublicResetPasswordAuthFactoryTests
         string newPassword = "SamePassword123!";
         UserEntity user = UserFactory.Create();
 
-        _passwordServiceMock.Setup(x => x.Verify(newPassword, user.PasswordHash)).Returns(true);
+        _passwordServiceMock.SetupVerifySuccess(newPassword, user.PasswordHash);
 
         // Act & Assert
         Func<Task> act = async () => await _factory.ResetPasswordAsync(user, newPassword, CancellationToken.None);
@@ -221,9 +217,9 @@ public class PublicResetPasswordAuthFactoryTests
         string hashedPassword = "hashed_new_password";
         UserEntity user = UserFactory.Create();
 
-        _passwordServiceMock.Setup(x => x.Verify(newPassword, user.PasswordHash)).Returns(false);
+        _passwordServiceMock.SetupVerifyFailure(newPassword, user.PasswordHash);
 
-        _passwordServiceMock.Setup(x => x.Hash(newPassword)).Returns(hashedPassword);
+        _passwordServiceMock.SetupHash(newPassword, hashedPassword);
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
@@ -242,9 +238,9 @@ public class PublicResetPasswordAuthFactoryTests
         string hashedPassword = "hashed_new_password";
         UserEntity user = UserFactory.Create();
 
-        _passwordServiceMock.Setup(x => x.Verify(newPassword, user.PasswordHash)).Returns(false);
+        _passwordServiceMock.SetupVerifyFailure(newPassword, user.PasswordHash);
 
-        _passwordServiceMock.Setup(x => x.Hash(newPassword)).Returns(hashedPassword);
+        _passwordServiceMock.SetupHash(newPassword, hashedPassword);
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
@@ -263,9 +259,9 @@ public class PublicResetPasswordAuthFactoryTests
         string hashedPassword = "hashed_new_password";
         UserEntity user = UserFactory.Create();
 
-        _passwordServiceMock.Setup(x => x.Verify(newPassword, user.PasswordHash)).Returns(false);
+        _passwordServiceMock.SetupVerifyFailure(newPassword, user.PasswordHash);
 
-        _passwordServiceMock.Setup(x => x.Hash(newPassword)).Returns(hashedPassword);
+        _passwordServiceMock.SetupHash(newPassword, hashedPassword);
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
@@ -285,9 +281,9 @@ public class PublicResetPasswordAuthFactoryTests
         UserEntity user = UserFactory.Create();
         CancellationToken cancellationToken = new();
 
-        _passwordServiceMock.Setup(x => x.Verify(newPassword, user.PasswordHash)).Returns(false);
+        _passwordServiceMock.SetupVerifyFailure(newPassword, user.PasswordHash);
 
-        _passwordServiceMock.Setup(x => x.Hash(newPassword)).Returns(hashedPassword);
+        _passwordServiceMock.SetupHash(newPassword, hashedPassword);
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(cancellationToken)).ReturnsAsync(1);
 
@@ -309,8 +305,8 @@ public class PublicResetPasswordAuthFactoryTests
         string newPassword = "NewPassword123!";
         UserEntity user = UserFactory.Create();
 
-        _passwordServiceMock.Setup(x => x.Verify(newPassword, user.PasswordHash)).Returns(false);
-        _passwordServiceMock.Setup(x => x.Hash(newPassword)).Returns("hashed_new_password");
+        _passwordServiceMock.SetupVerifyFailure(newPassword, user.PasswordHash);
+        _passwordServiceMock.SetupHash(newPassword, "hashed_new_password");
 
         var callOrder = new List<string>();
         _sessionRepositoryMock
