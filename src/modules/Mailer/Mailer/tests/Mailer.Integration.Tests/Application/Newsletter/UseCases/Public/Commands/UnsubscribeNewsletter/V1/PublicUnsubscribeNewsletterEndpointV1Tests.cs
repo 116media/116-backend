@@ -1,4 +1,3 @@
-using System.Net;
 using _116.BuildingBlocks.Application.Exceptions;
 using _116.Mailer.Application.Newsletter.Messages;
 using _116.Mailer.Application.Newsletter.UseCases.Public.Commands.UnsubscribeNewsletter.V1;
@@ -6,7 +5,7 @@ using _116.Mailer.Application.Shared.Errors.Messages;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Domain.Enums;
 using _116.Mailer.Infrastructure.Persistence;
-using _116.Mailer.TestData.Builders.Entities;
+using _116.Mailer.TestData.Factories;
 
 namespace _116.Mailer.Integration.Tests.Application.Newsletter.UseCases.Public.Commands.UnsubscribeNewsletter.V1;
 
@@ -21,11 +20,7 @@ public class PublicUnsubscribeNewsletterEndpointV1Tests(PostgresFixture db) : Ba
     {
         NewsletterSubscriberEntity seeded = await SeedAsync<MailerDbContext, NewsletterSubscriberEntity>(ctx =>
         {
-            var subscriber = new NewsletterSubscriberBuilder()
-                .WithId(Guid.NewGuid())
-                .WithEmail("leaving@example.com")
-                .AsConfirmed()
-                .Build();
+            var subscriber = NewsletterSubscriberFactory.CreateConfirmed("leaving@example.com");
             ctx.NewsletterSubscribers.Add(subscriber);
             return subscriber;
         });
@@ -56,11 +51,7 @@ public class PublicUnsubscribeNewsletterEndpointV1Tests(PostgresFixture db) : Ba
     {
         NewsletterSubscriberEntity seeded = await SeedAsync<MailerDbContext, NewsletterSubscriberEntity>(ctx =>
         {
-            var subscriber = new NewsletterSubscriberBuilder()
-                .WithId(Guid.NewGuid())
-                .WithEmail("gone@example.com")
-                .AsConfirmed()
-                .Build();
+            var subscriber = NewsletterSubscriberFactory.CreateConfirmed("gone@example.com");
             ctx.NewsletterSubscribers.Add(subscriber);
             return subscriber;
         });
@@ -92,11 +83,7 @@ public class PublicUnsubscribeNewsletterEndpointV1Tests(PostgresFixture db) : Ba
     {
         NewsletterSubscriberEntity seeded = await SeedAsync<MailerDbContext, NewsletterSubscriberEntity>(ctx =>
         {
-            var subscriber = new NewsletterSubscriberBuilder()
-                .WithId(Guid.NewGuid())
-                .WithEmail("scanner-unsub@example.com")
-                .AsConfirmed()
-                .Build();
+            var subscriber = NewsletterSubscriberFactory.CreateConfirmed("scanner-unsub@example.com");
             ctx.NewsletterSubscribers.Add(subscriber);
             return subscriber;
         });
