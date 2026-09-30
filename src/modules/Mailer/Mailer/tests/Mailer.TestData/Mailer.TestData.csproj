@@ -10,8 +10,6 @@
 
     <ItemGroup>
         <ProjectReference Include="../../src/Mailer.Domain/Mailer.Domain.csproj" />
-        <ProjectReference Include="../../src/Mailer.Application/Mailer.Application.csproj" />
-        <ProjectReference Include="../../src/Mailer.Infrastructure/Mailer.Infrastructure.csproj" />
         <ProjectReference Include="../../../../../../tests/TestData/TestData.csproj" />
     </ItemGroup>
 </Project>
